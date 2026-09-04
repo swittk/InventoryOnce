@@ -199,6 +199,36 @@ describe("rebuildable stock performance indexes", () => {
     ).toBe(1);
   });
 
+  it("keeps traceability at the exact replayed record-sequence cut for filtered history", async () => {
+    const inventory = createTestInventory();
+    for (let index = 1; index <= 4; index += 1) {
+      await inventory.stock.receive({
+        operationId: `cut-receive-${index}`,
+        occurredAt: time0,
+        to: loosePosition("cut-store"),
+        amount: stockAmount("1", "piece"),
+      });
+    }
+    await inventory.traceability.aggregate({
+      operationId: "cut-post-traceability",
+      occurredAt: time0,
+      from: { kind: InventoryTraceabilityNodeKind.Container, id: "cut-child" },
+      to: { kind: InventoryTraceabilityNodeKind.Container, id: "cut-parent" },
+    });
+    const world = await inventory.read.world();
+    const filtered = Object.values(world.projection.events).filter(
+      (event) => event.recordSequence === 1 || event.recordSequence === 5
+    );
+    const historical = projectInventoryEvents({
+      catalog: createTabletCatalog(),
+      events: filtered,
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+      throughRecordSequence: 3,
+    });
+    expect(historical.lastRecordSequence).toBe(1);
+    expect(Object.values(historical.traceability.relations)).toEqual([]);
+  });
+
   it("rebuilds every performance index deterministically from retained events", async () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({

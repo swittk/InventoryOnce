@@ -509,7 +509,12 @@ export function dryRunInventoryMigration({
     throw new Error("Blocked inventory migration cannot be dry-run/applied.");
   }
   assertInventoryCatalogRetainsSnapshot(catalog, targetWorld.catalog);
-  let world = targetWorld;
+  /** Reviewed result starts at the same single publication cut used by durable apply. */
+  let world: InventoryWorldState = {
+    ...targetWorld,
+    revision: targetWorld.revision + 1,
+    catalog: inventoryCatalogSnapshot(catalog),
+  };
   for (const draft of plan.events) {
     const committed = commitInventoryEvent(
       draft,

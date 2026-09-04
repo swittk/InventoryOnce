@@ -71,7 +71,7 @@ The exact seed/fingerprint values vary by run. The latest complete run explored:
 | `CompositionRevision`          |           50,849 |           6,688 |                   10 |
 | `CollectionView`               |           13,123 |           1,458 |                   10 |
 | `FungibilityPool`              |        1,337,922 |         113,054 |                   15 |
-| `CatalogPublication`           |            7,831 |           2,008 |                    4 |
+| `CatalogPublication`           |           88,723 |          52,552 |                    5 |
 | `ReclassificationConservation` |           34,201 |             900 |                    8 |
 | `UseByReservation`             |              728 |             278 |                    9 |
 | `ResourceDimensions`           |           19,849 |           2,016 |                   12 |
@@ -83,7 +83,7 @@ The exact seed/fingerprint values vary by run. The latest complete run explored:
 | `CorrectionHistory`            |                8 |               7 |                    6 |
 | `DurableTransferRefinement`    |               15 |              10 |                    6 |
 | `TransferLifecycle`             |            4,321 |             929 |                    8 |
-| `RepairLiveness`               |              410 |             199 |                   11 |
+| `RepairLiveness`               |              540 |             265 |                   13 |
 | `RecordedDeficit`              |           21,342 |           2,313 |                    9 |
 | `SnapshotSupersededWorkflow`   |               54 |              25 |                    8 |
 | `InventoryOperation`           |           22,689 |           3,889 |                   12 |

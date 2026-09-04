@@ -66,9 +66,11 @@ if (executableTestSources.length === 0) {
   throw new Error(`Compiler call graph found no executable tests below '${testRoot}'.`);
 }
 
+/** Return one compiler source path relative to the repository root. */
 function relativeFile(source) {
   return path.relative(root, source.fileName).replaceAll("\\", "/");
 }
+/** Return the repository-relative source location for one compiler node. */
 function locationOf(node) {
   const source = node.getSourceFile();
   const location = source.getLineAndCharacterOfPosition(node.getStart(source));
@@ -78,6 +80,7 @@ function locationOf(node) {
     column: location.character + 1,
   };
 }
+/** Derive a stable human-readable name for one callable compiler node. */
 function callableName(node) {
   if (node.name !== undefined && typeof node.name.getText === "function") {
     return node.name.getText(node.getSourceFile());
@@ -91,11 +94,13 @@ function callableName(node) {
   }
   return `<anonymous@${locationOf(node).line}>`;
 }
+/** Derive the stable call-graph identity for one callable compiler node. */
 function callableId(node) {
   return `${relativeFile(
     node.getSourceFile()
   )}:${node.getStart()}:${callableName(node)}`;
 }
+/** Describe one callable with its stable identity and source location. */
 function callableDescription(node) {
   const location = locationOf(node);
   return {
@@ -106,6 +111,7 @@ function callableDescription(node) {
     hasBody: node.body !== undefined,
   };
 }
+/** Return whether one compiler node represents a callable declaration or body. */
 function isCallable(node) {
   return (
     ts.isFunctionDeclaration(node) ||
@@ -122,6 +128,7 @@ function isCallable(node) {
 const callables = new Map();
 const callableNodeById = new Map();
 const declarationToCallable = new Map();
+/** Register one callable node in the compiler-resolved call graph. */
 function registerCallable(node) {
   const id = callableId(node);
   callables.set(id, callables.get(id) ?? callableDescription(node));
@@ -139,6 +146,7 @@ for (const source of packageSources) {
 
 const edges = new Map();
 const edgeReasons = new Map();
+/** Add one directed call-graph edge with its resolution reason. */
 function addEdge(from, to, reason) {
   if (from === undefined || to === undefined || from === to) return;
   const targets = edges.get(from) ?? new Set();
@@ -146,6 +154,7 @@ function addEdge(from, to, reason) {
   edges.set(from, targets);
   edgeReasons.set(`${from}\n${to}`, reason);
 }
+/** Find the nearest registered callable that lexically encloses one node. */
 function enclosingCallable(node) {
   let current = node.parent;
   while (current !== undefined) {
@@ -155,6 +164,7 @@ function enclosingCallable(node) {
   }
   return undefined;
 }
+/** Resolve one declaration to package-owned callable targets. */
 function resolvedCallableTargets(declaration) {
   if (declaration === undefined) return [];
   const direct = declarationToCallable.get(declaration);
@@ -175,6 +185,7 @@ function resolvedCallableTargets(declaration) {
   }
   return [];
 }
+/** Resolve one expression symbol to package-owned callable targets. */
 function resolvedTargetsOfExpression(expression) {
   const symbol = checker.getSymbolAtLocation(expression);
   if (symbol === undefined) return [];
@@ -290,9 +301,11 @@ for (const source of executableTestSources) {
   roots.set(rootId, rootDescription);
   callables.set(rootId, rootDescription);
 }
+/** Return the synthetic executable-test root for one source file. */
 function testRootFor(source) {
   return roots.get(`test-root:${relativeFile(source)}`)?.id;
 }
+/** Return whether one callback is registered directly with the test runner. */
 function isTestCallback(node) {
   if (!ts.isArrowFunction(node) && !ts.isFunctionExpression(node)) return false;
   if (!ts.isCallExpression(node.parent)) return false;
@@ -500,6 +513,7 @@ for (let index = 0; index < pending.length; index += 1) {
     pending.push(target);
   }
 }
+/** Reconstruct one executable-test call-chain witness to a target callable. */
 function witnessFor(target) {
   if (!predecessor.has(target)) return undefined;
   const ids = [];
@@ -545,10 +559,12 @@ function moduleExportTargets(entrypoint, exportName) {
       : exported;
   return (resolved.getDeclarations() ?? []).flatMap(resolvedCallableTargets);
 }
+/** Return concrete callable targets for one public class method. */
 function classMethodTargets(className, methodName) {
   return [...(classMethodsByClassAndName.get(`${className}.${methodName}`) ?? [])];
 }
 
+/** Return concrete implementations for one public interface method. */
 function interfaceImplementationTargets(interfaceName, methodName) {
   return [
     ...(implementationsByInterfaceMember.get(

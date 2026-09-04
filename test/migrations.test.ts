@@ -361,6 +361,25 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
     ).toEqual(manifest);
   });
 
+  it("reviews an empty ready migration at the same single revision durable apply publishes", async () => {
+    const catalog = createTabletCatalog();
+    const plan = defineInventoryMigration({
+      catalog,
+      declaration: {
+        migrationId: "empty-ready-migration",
+        sourceSystem: "empty-legacy-source",
+        cutoverAt: time0,
+        openingStock: [],
+      },
+    });
+    expect(plan.status).toBe(InventoryMigrationPlanStatus.Ready);
+    expect(plan.events).toEqual([]);
+    const targetWorld = await createInMemoryInventoryDurableStorage().readWorld();
+    const dryRun = dryRunInventoryMigration({ catalog, plan, targetWorld });
+    expect(dryRun.resultWorld.revision).toBe(targetWorld.revision + 1);
+    expect(dryRun.resultWorld.projection).toEqual(targetWorld.projection);
+  });
+
   it("blocks invalid or duplicate snapshot dispositions rather than guessing", () => {
     const catalog = createTabletCatalog();
     const disposition = inventoryMigrationSnapshotSupersededDisposition({

@@ -206,7 +206,7 @@ is not proof and is therefore not part of the safety model.
 
 ## Code-to-model refinement foundation
 
-The formal state is not inferred informally from class names. `formal-implementation-surface.cjs` enumerates the exported callable/method/field surface using the TypeScript compiler, and `generate-formal-implementation-assurance.py` assigns each discovered member one explicit correspondence entry. The audit rejects additions, removals, renamed fields, unknown invariant names, unknown TLA variables, missing executable projection helpers, and unlinked gaps.
+The formal state is not inferred informally from class names. `scripts/formal-implementation-surface.cjs` enumerates the exported callable/method/field surface using the TypeScript compiler, and `scripts/generate-formal-implementation-assurance.py` assigns each discovered member one explicit correspondence entry. The audit rejects additions, removals, renamed fields, unknown invariant names, unknown TLA variables, missing executable projection helpers, and unlinked gaps.
 
 The refinement relation is organized around independent projections:
 

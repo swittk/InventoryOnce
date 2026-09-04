@@ -75,10 +75,23 @@ function performanceRows(log) {
       // Ignore malformed/non-metric JSON from other gates.
       continue;
     }
+    if (row === null || typeof row !== "object") continue;
+    /** Complete metric shape emitted by the in-memory scale extrapolation. */
+    const scaledShape =
+      typeof row.scaledPositions === "number" &&
+      typeof row.scaledPublishMs === "number" &&
+      typeof row.scaledReadMs === "number" &&
+      typeof row.scaledPlanMs === "number";
+    /** Complete metric shape emitted by a measured durable adapter run. */
+    const measuredShape =
+      typeof row.positionCount === "number" &&
+      typeof row.publishMs === "number" &&
+      typeof row.readMs === "number" &&
+      typeof row.planMs === "number" &&
+      typeof row.serializedWorldBytes === "number";
     if (
       ["memory", "mongo", "sqlite"].includes(row.adapter) &&
-      ("scaledPositions" in row ||
-        ("positionCount" in row && "publishMs" in row))
+      (scaledShape || measuredShape)
     ) {
       byAdapter.set(row.adapter, row);
     }

@@ -114,6 +114,7 @@ function signatureShape(signature, fallback) {
     result: typeText(checker.getReturnTypeOfSignature(signature), declaration),
   };
 }
+/** Enumerate callable method signatures for one exported interface surface. */
 function methodsOfInterface(relativePath, name, prefix) {
   const declaration = interfaceDeclaration(relativePath, name);
   const rows = [];

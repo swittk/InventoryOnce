@@ -719,6 +719,8 @@ export function projectInventoryEvents({
 }: ProjectInventoryEventsInput): InventoryProjectionState {
   const ordered = inventoryEventsInRecordSequence(events);
   let state = emptyInventoryProjectionState();
+  /** Number of ordered events actually replayed into this requested historical cut. */
+  let appliedEventCount = 0;
   for (const event of ordered) {
     if (
       throughRecordSequence !== undefined &&
@@ -730,12 +732,13 @@ export function projectInventoryEvents({
       true,
       false
     ).state;
+    appliedEventCount += 1;
   }
-  /** Sequence-indexed history is contiguous, so the cutoff is one prefix without a predicate scan. */
+  /** Reuse the exact replayed prefix so post-cut traceability can never leak into the historical state. */
   const traceabilityEvents =
     throughRecordSequence === undefined
       ? ordered
-      : ordered.slice(0, throughRecordSequence);
+      : ordered.slice(0, appliedEventCount);
   return {
     ...state,
     traceability: projectInventoryTraceabilityEvents(traceabilityEvents),

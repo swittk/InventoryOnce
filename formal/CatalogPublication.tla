@@ -6,25 +6,35 @@ CONSTANTS RevisionIds,
           OperationIds,
           NoRevision,
           NoMeaning,
-          NoPublication
+          NoPublication,
+          NoRetryEvidence
 
 VARIABLES retained,
           meaning,
           active,
-          publicationByOperation
+          publicationByOperation,
+          retryEvidence
 
-vars == <<retained, meaning, active, publicationByOperation>>
+vars == <<retained, meaning, active, publicationByOperation, retryEvidence>>
 
 PublicationSnapshot(retainedSet, meaningMap, activeRevision) ==
   [retained |-> retainedSet,
    meaning  |-> meaningMap,
    active   |-> activeRevision]
 
+\* Record one bounded retry witness so TLC checks retry semantics instead of treating retry as stutter.
+RetryEvidence(operation, requestedRevision, requestedMeaning, outcome) ==
+  [operation |-> operation,
+   revision  |-> requestedRevision,
+   meaning   |-> requestedMeaning,
+   outcome   |-> outcome]
+
 Init ==
   /\ retained = {}
   /\ meaning = [revision \in RevisionIds |-> NoMeaning]
   /\ active = NoRevision
   /\ publicationByOperation = [operation \in OperationIds |-> NoPublication]
+  /\ retryEvidence = NoRetryEvidence
 
 PublishNew(operation, revision, revisionMeaning) ==
   /\ publicationByOperation[operation] = NoPublication
@@ -36,6 +46,7 @@ PublishNew(operation, revision, revisionMeaning) ==
   /\ publicationByOperation' =
        [publicationByOperation EXCEPT
           ![operation] = PublicationSnapshot(retained', meaning', active')]
+  /\ UNCHANGED retryEvidence
 
 SwitchActive(operation, revision) ==
   /\ publicationByOperation[operation] = NoPublication
@@ -46,12 +57,25 @@ SwitchActive(operation, revision) ==
   /\ publicationByOperation' =
        [publicationByOperation EXCEPT
           ![operation] = PublicationSnapshot(retained', meaning', active')]
+  /\ UNCHANGED retryEvidence
 
 ExactRetry(operation, requestedRevision, requestedMeaning) ==
+  /\ retryEvidence = NoRetryEvidence
   /\ publicationByOperation[operation] # NoPublication
   /\ requestedRevision = publicationByOperation[operation].active
   /\ requestedMeaning = publicationByOperation[operation].meaning[requestedRevision]
-  /\ UNCHANGED vars
+  /\ retryEvidence' =
+       RetryEvidence(operation, requestedRevision, requestedMeaning, "exact")
+  /\ UNCHANGED <<retained, meaning, active, publicationByOperation>>
+
+ChangedRetry(operation, requestedRevision, requestedMeaning) ==
+  /\ retryEvidence = NoRetryEvidence
+  /\ publicationByOperation[operation] # NoPublication
+  /\ ~(requestedRevision = publicationByOperation[operation].active /\
+       requestedMeaning = publicationByOperation[operation].meaning[requestedRevision])
+  /\ retryEvidence' =
+       RetryEvidence(operation, requestedRevision, requestedMeaning, "changed")
+  /\ UNCHANGED <<retained, meaning, active, publicationByOperation>>
 
 Next ==
   \/ \E operation \in OperationIds,
@@ -65,6 +89,10 @@ Next ==
         requestedRevision \in RevisionIds,
         requestedMeaning \in MeaningValues:
        ExactRetry(operation, requestedRevision, requestedMeaning)
+  \/ \E operation \in OperationIds,
+        requestedRevision \in RevisionIds,
+        requestedMeaning \in MeaningValues:
+       ChangedRetry(operation, requestedRevision, requestedMeaning)
 
 Spec == Init /\ [][Next]_vars
 
@@ -73,12 +101,19 @@ PublicationRecordSet ==
    meaning  : [RevisionIds -> MeaningValues \cup {NoMeaning}],
    active   : RevisionIds \cup {NoRevision}]
 
+RetryEvidenceSet ==
+  [operation : OperationIds,
+   revision  : RevisionIds,
+   meaning   : MeaningValues,
+   outcome   : {"exact", "changed"}]
+
 TypeOK ==
   /\ retained \subseteq RevisionIds
   /\ meaning \in [RevisionIds -> MeaningValues \cup {NoMeaning}]
   /\ active \in RevisionIds \cup {NoRevision}
   /\ publicationByOperation \in
        [OperationIds -> PublicationRecordSet \cup {NoPublication}]
+  /\ retryEvidence \in RetryEvidenceSet \cup {NoRetryEvidence}
 
 ActiveIsRetained ==
   active = NoRevision \/ active \in retained
@@ -107,5 +142,23 @@ PublishedActiveRevisionWasRetained ==
     publicationByOperation[operation] = NoPublication \/
       publicationByOperation[operation].active \in
         publicationByOperation[operation].retained
+
+ExactRetryEvidenceMatchesFrozenPublication ==
+  IF retryEvidence = NoRetryEvidence
+  THEN TRUE
+  ELSE retryEvidence.outcome # "exact" \/
+    /\ publicationByOperation[retryEvidence.operation] # NoPublication
+    /\ retryEvidence.revision = publicationByOperation[retryEvidence.operation].active
+    /\ retryEvidence.meaning =
+         publicationByOperation[retryEvidence.operation].meaning[retryEvidence.revision]
+
+ChangedRetryEvidenceConflictsWithFrozenPublication ==
+  IF retryEvidence = NoRetryEvidence
+  THEN TRUE
+  ELSE retryEvidence.outcome # "changed" \/
+    /\ publicationByOperation[retryEvidence.operation] # NoPublication
+    /\ ~(retryEvidence.revision = publicationByOperation[retryEvidence.operation].active /\
+         retryEvidence.meaning =
+           publicationByOperation[retryEvidence.operation].meaning[retryEvidence.revision])
 
 =============================================================================
