@@ -301,6 +301,43 @@ describe("portable InventoryOnce authority controller", () => {
     }
   });
 
+  it("reuses retained adapter certification time before DualRun exists", async () => {
+    const authority = createInventoryAuthorityControl({
+      store: new TestAuthorityStore(),
+      namespaceId: "certification-time-retry:primary",
+    });
+    const storage = createInMemoryInventoryDurableStorage();
+    let now = time0;
+    const compiledAt: string[] = [];
+    const common = {
+      authority,
+      storage,
+      migrationId: "certification-time-retry-migration",
+      fenceToken: "certification-time-retry-fence",
+      adapterCertificationDigest: "adapter-v1",
+      compileSource: async (cutoverAt: string) => {
+        compiledAt.push(cutoverAt);
+        throw new Error("Injected pre-DualRun source failure.");
+      },
+      drainLegacyWriters: (): Promise<void> => Promise.resolve(),
+      clock: { now: (): string => now },
+    };
+
+    await expect(cutoverInventoryAuthority(common)).rejects.toThrow(
+      "Injected pre-DualRun source failure"
+    );
+    now = time2;
+    await expect(cutoverInventoryAuthority(common)).rejects.toThrow(
+      "Injected pre-DualRun source failure"
+    );
+
+    expect(compiledAt).toEqual([time0, time0]);
+    const retained = await authority.read();
+    expect(retained.mode).toBe(InventoryAuthorityMode.Legacy);
+    expect(retained.adapterCertifiedAt).toBe(time0);
+    expect(retained.dualRunStartedAt).toBe("");
+  });
+
   it("reuses the durable DualRun cutover time when retry omits the explicit time", async () => {
     const authority = createInventoryAuthorityControl({
       store: new TestAuthorityStore(),

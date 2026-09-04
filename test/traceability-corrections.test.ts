@@ -127,32 +127,35 @@ describe("traceability graph meanings", () => {
       1
     );
     const correction = commitInventoryEvent(
-      {
-        eventId: "atomic-genealogy-correction",
-        operationId: "atomic-genealogy-correction",
-        kind: InventoryEventKind.Correction,
-        occurredAt: time1,
-        stockEffects: [],
-        traceabilityChanges: [
-          {
-            action: InventoryTraceabilityRelationAction.Add,
-            kind: InventoryTraceabilityRelationKind.Genealogy,
-            from: right,
-            to: left,
+      defineInventoryEvent({
+        catalog,
+        event: {
+          eventId: "atomic-genealogy-correction",
+          operationId: "atomic-genealogy-correction",
+          kind: InventoryEventKind.Correction,
+          occurredAt: time1,
+          stockEffects: [],
+          traceabilityChanges: [
+            {
+              action: InventoryTraceabilityRelationAction.Add,
+              kind: InventoryTraceabilityRelationKind.Genealogy,
+              from: right,
+              to: left,
+            },
+            {
+              action: InventoryTraceabilityRelationAction.Invalidate,
+              kind: InventoryTraceabilityRelationKind.Genealogy,
+              from: left,
+              to: right,
+              invalidatesCreatedByEventId: original.eventId,
+            },
+          ],
+          correction: {
+            correctsEventId: original.eventId,
+            reason: "The genealogy direction was reversed.",
           },
-          {
-            action: InventoryTraceabilityRelationAction.Invalidate,
-            kind: InventoryTraceabilityRelationKind.Genealogy,
-            from: left,
-            to: right,
-            invalidatesCreatedByEventId: original.eventId,
-          },
-        ],
-        correction: {
-          correctsEventId: original.eventId,
-          reason: "The genealogy direction was reversed.",
         },
-      },
+      }),
       time1,
       2
     );
@@ -388,7 +391,7 @@ describe("append-only corrections", () => {
             amount: stockAmount("5", "piece"),
           }),
       })
-    ).rejects.toThrow();
+    ).rejects.toThrow(/primary quantity must not be negative/u);
     expect(
       (await inventory.read.positions({ itemId: "item-a" }))[0]?.measurements
         .primary.quantity.amountMinor

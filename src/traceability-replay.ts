@@ -24,6 +24,7 @@ export function projectInventoryTraceabilityEvents(
   const genealogyOutputsByInput = new Map<string, Set<string>>();
 
   for (const event of events) {
+    // Preserve each touched relation as it existed before this event mutates it.
     const beforeByIdentity = new Map<
       string,
       InventoryTraceabilityRelation | undefined

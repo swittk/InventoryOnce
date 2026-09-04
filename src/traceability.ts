@@ -273,6 +273,7 @@ function assertNoGenealogyCycleFrom(
   if (activePath.has(node))
     throw new Error(`Genealogy graph contains a cycle at '${node}'.`);
   if (visited.has(node)) return;
+  // Hold explicit DFS frames so deep genealogy traversal never consumes call-stack depth.
   const pending: InventoryGenealogyTraversalFrame[] = [
     { node, nextOutput: 0 },
   ];

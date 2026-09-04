@@ -198,103 +198,22 @@ function listTypeScriptSources(root) {
   return result;
 }
 
-/** Resolve one relative TypeScript import inside the executable-test graph. */
-function resolveTestImport(sourcePath, specifier, allSources) {
-  if (
-    specifier.length > 512 ||
-    specifier.includes("\n") ||
-    specifier.includes("\r")
-  ) {
-    return undefined;
-  }
-  const base = resolve(dirname(sourcePath), specifier);
-  const candidates = [base];
-  if (/\.(?:m?js|cjs)$/u.test(base)) {
-    candidates.push(base.replace(/\.(?:m?js|cjs)$/u, ".ts"));
-    candidates.push(base.replace(/\.(?:m?js|cjs)$/u, ".tsx"));
-  } else if (!/\.[A-Za-z0-9]+$/u.test(base)) {
-    candidates.push(
-      `${base}.ts`,
-      `${base}.tsx`,
-      join(base, "index.ts"),
-      join(base, "index.tsx")
-    );
-  }
-  return candidates.find((candidate) => allSources.has(resolve(candidate)));
-}
-
-/** Build the transitive graph from real Vitest entrypoints to helper/source evidence files. */
-function discoverExecutableTestReachability() {
-  const files = listTypeScriptSources(resolve(packageRoot, "test")).map((path) =>
-    resolve(path)
-  );
-  const allSources = new Set(files);
-  const imports = new Map();
-  const importPattern =
-    /(?:\b(?:import|export)\s+(?:type\s+)?(?:[^;]*?\s+from\s*)|\bimport\s*\(\s*)["'](\.[^"']+)["']/gu;
-  for (const path of files) {
-    const imported = new Set();
-    const source = readFileSync(path, "utf8");
-    for (const match of source.matchAll(importPattern)) {
-      const resolved = resolveTestImport(path, match[1], allSources);
-      if (resolved !== undefined) imported.add(resolve(resolved));
-    }
-    imports.set(path, imported);
-  }
-  const entrypoints = files.filter((path) =>
-    /\.(?:test|spec)\.tsx?$/u.test(path)
-  );
-  const bySource = new Map();
-  for (const entrypoint of entrypoints) {
-    const pending = [entrypoint];
-    const visited = new Set();
-    while (pending.length > 0) {
-      const current = pending.pop();
-      if (current === undefined || visited.has(current)) continue;
-      visited.add(current);
-      for (const imported of imports.get(current) ?? []) pending.push(imported);
-    }
-    for (const source of visited) {
-      const rows = bySource.get(source) ?? new Set();
-      rows.add(entrypoint);
-      bySource.set(source, rows);
-    }
-  }
-  const sourceTextByPath = new Map(
-    files.map((path) => [path, readFileSync(path, "utf8")])
-  );
-  return { files, entrypoints, bySource, sourceTextByPath };
-}
-
-/** Return the public callable symbol represented by one discovered signature. */
-function publicSymbol(signature) {
-  return signature.method ?? signature.name;
-}
-
-/** Compute direct symbol-bearing evidence and every executable test root that reaches it. */
-function expectedDirectExecutableEvidence(signature, reachability) {
-  const symbol = publicSymbol(signature);
-  if (typeof symbol !== "string" || symbol.length === 0) {
-    return { sources: [], entrypoints: [] };
-  }
-  const pattern = new RegExp(
-    `\\b${symbol.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&")}\\b`,
-    "u"
-  );
-  const sources = [];
+/** Compute compiler-resolved test call sites that directly invoke one public target. */
+function expectedDirectExecutableEvidence(callGraphEntry) {
+  const sources = new Set();
   const entrypoints = new Set();
-  for (const path of reachability.files) {
-    const sourceText = reachability.sourceTextByPath.get(path);
-    if (sourceText === undefined || !pattern.test(sourceText)) continue;
-    const roots = reachability.bySource.get(path);
-    if (roots === undefined || roots.size === 0) continue;
-    sources.push(relative(repositoryRoot, path).replaceAll("\\", "/"));
-    for (const root of roots) {
-      entrypoints.add(relative(repositoryRoot, root).replaceAll("\\", "/"));
+  for (const row of callGraphEntry.witnesses) {
+    const chain = row.witness.chain;
+    if (chain.length < 2) continue;
+    const caller = chain[chain.length - 2];
+    if (typeof caller.file !== "string" || !caller.file.startsWith("test/")) {
+      continue;
     }
+    sources.add(repositoryCallGraphTest(caller.file));
+    entrypoints.add(repositoryCallGraphTest(row.witness.test));
   }
   return {
-    sources: sources.sort(),
+    sources: [...sources].sort(),
     entrypoints: [...entrypoints].sort(),
   };
 }
@@ -318,8 +237,6 @@ function discoverTraceDeclarations() {
   }
   return declarations;
 }
-
-const executableTestReachability = discoverExecutableTestReachability();
 
 /** Operation families whose concrete mutations require an explicit bounded trace/property witness. */
 const statefulOperationFamilies = new Set([
@@ -609,10 +526,7 @@ function validateApiEntry(
   }
 
   const expectedWitnesses = normalizedCallGraphWitnesses(callGraphEntry);
-  const expectedDirect = expectedDirectExecutableEvidence(
-    entry.signature,
-    executableTestReachability
-  );
+  const expectedDirect = expectedDirectExecutableEvidence(callGraphEntry);
   if (
     canonicalJson(entry.implementationTargets) !==
     canonicalJson(callGraphEntry.targets)

@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "repositoryHead": "6a4e8eecb0400d9f351c1e8698c2c5548ede9e00",
+  "repositoryHead": "ea501e7e5096d1a0ddaa49a26e4cda843eefe194",
   "fullFormal": true,
   "surfaceSha256": "ce8fa6715ae09df35478c1b305bc279f76863a7c12c2615c17e42fc0d9a5aa86",
   "apiEntries": 502,
@@ -9,8 +9,8 @@
   "indirectCallChainApis": 141,
   "explicitGapApis": 4,
   "unreferencedPublicApis": 0,
-  "compilerCallGraphCallables": 2073,
-  "compilerCallGraphEdges": 5704,
+  "compilerCallGraphCallables": 2077,
+  "compilerCallGraphEdges": 5711,
   "compilerCallGraphTestRoots": 36,
   "compilerCallGraphWitnessedApis": 502,
   "compilerCallGraphUnresolvedApis": 0,

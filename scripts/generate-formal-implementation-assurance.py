@@ -20,6 +20,7 @@ call_graph = json.loads(
         text=True,
     )
 )
+# Build one assurance-family declaration with exact model, behavior, and evidence mappings.
 def F(models,invariants,input_mapping,state_projection,result_mapping,retry_relation,rejection_relation,evidence,adapters,status='covered',gaps=()):
  return {'models':models,'invariants':invariants,'inputMapping':input_mapping,'stateProjection':state_projection,'resultMapping':result_mapping,'retryRelation':retry_relation,'rejectionRelation':rejection_relation,'executableEvidence':evidence,'adapterCoverage':adapters,'status':status,'gaps':list(gaps)}
 M='test/formal-implementation-refinement.test.ts'; S='test/formal-storage-refinement.test.ts'; C='test/formal-implementation-conformance.test.ts'; D='test/storage-conformance.test.ts'
@@ -57,8 +58,8 @@ families['allocation-helper']=F(['ReservationScope','ReservationSafety','UseByRe
 families['operation-result-helper']=F(['InventoryOperation'],['FrozenIntentNeverChanges','RetryOutcomeMatchesFrozenIntent','OnePublicationPerOperation'],'Operation/request/group references map to deterministic result partitioning and retained event identity.',['abstractOperationResult'],'Result preserves operation/group/request identities, exact allocations, event, receipt, and replay observation.','Equal frozen references regroup equal evidence; unknown or duplicate references reject.','Missing/duplicate/foreign request evidence rejects before application consumption.',[M,'test/allocation-results.test.ts',C],['memory'])
 families['authority-control']=F(['AuthorityWriterFence'],['ModeMatchesMonotonicPhase','CertificationPrecedesCutover','AdmissionOwnership','FenceExcludesLegacyWriters','NoLegacyPhysicalWriteAfterFence','MismatchCannotBeBypassed','AuthorityRequiresAllEvidence','ActivationProvenanceIsExact','GreenfieldCannotFabricateLegacyEvidence','AuthorityIsIrreversible','ProjectionCannotMutateAuthoritativeTruth'],'Authority mode, activation provenance, certification, mutually exclusive deployment authorization, writer/fence tokens, source/target roots, mismatch, and projection evidence map directly to the writer-fence state machine.',['abstractAuthorityState'],'Result maps to one monotonic authority document revision and exact retained legacy-cutover or greenfield evidence.','Exact CAS intent is idempotent; conflicting token/evidence/authorization or stale document rejects.','Missing prerequisites, active writers, mixed authorization modes, nonempty greenfield target, mismatch, source drift, downgrade, or competing CAS rejects.',[M,'test/authority.test.ts'],['memory','authority-race-tests','greenfield-empty-world-tests'])
 families['authority-cutover']=F(['AuthorityWriterFence','CatalogPublication','PublishedHeadCAS','RepairLiveness','SnapshotSupersededWorkflow'],['FencedReadsAreStable','PublishedTargetMatchesStableSource','AuthorityRequiresAllEvidence','ActivationProvenanceIsExact','GreenfieldCannotFabricateLegacyEvidence','CrashBeforePublicationIsInvisible','CrashStateIsExplicitlyRepairable','PublishedActivationLiveness','GreenfieldActivationRaceResolution','DispositionRequiresFencedSnapshot','SupersededRowsNeverResume','UnknownOutcomeNeverGuessed','PublishedRetainsAllDispositions','FencedSnapshotEventuallyPublishes'],'Certification plus exactly one explicit authorization mode maps either to stable-source fence/migration activation or to certified canonical revision-zero greenfield activation.',['abstractAuthorityState','abstractInventoryState','abstractMigrationState'],'Result maps to authoritative state with disjoint legacy-cutover or greenfield provenance and exact target revision/root.','Exact activation retry resumes retained evidence; changed source/fence/migration/greenfield authorization or target evidence rejects.','Source drift, active writer, blocked migration, nonempty greenfield target, mixed authorization modes, adapter uncertified, mismatch, or failed publication blocks activation.',[M,'test/authority.test.ts','test/migrations.test.ts'],['memory','migration-failpoints','authority-race-tests','greenfield-empty-world-tests'],gaps=['GAP-LEGACY-SOURCE-INTERPRETATION'])
-families['durable-protocol']=F(['InventoryOperation','PublishedHeadCAS','RepairLiveness','DurableTransferRefinement','SnapshotSupersededWorkflow'],['FrozenIntentNeverChanges','ApplyingHasCompletePlan','PartialWritesStayInvisible','PublishedWorldMatchesFrozenPlan','PlanRetainedOnlyWhileApplying','PublishedWorldCannotAbort','ApplyingEventuallyTerminates','PartialWritesRefineToStuttering','PublishedRetainsAllDispositions','DispositionGeneratesNoPhysicalEvent'],'Base revision/root, intent fingerprint, complete next-world plan, component roots, operation ID, and failpoint stage map to applying/published/completed/aborted protocol state.',['abstractInventoryState','abstractReservationState','abstractCountState','abstractOperationResult'],'Storage observations map to invisible staged state, exact published world, compact replay receipt, terminal abort, or repair outcome.','Exact begin/complete retry returns frozen plan/receipt; changed fingerprint or stale base rejects.','Concurrent applying owner, root mismatch, missing/corrupt component, publish-after-abort, or abort-after-publication rejects.',[S,D,'test/storage-conformance.test.ts'],['memory','generic-all-operation-failpoints','generic-all-migration-failpoints'],gaps=['GAP-DB-IMPLEMENTATION-UNBOUNDED','GAP-PRODUCTION-STORAGE-SCALE-GC','GAP-HASH-COLLISION-ASSUMPTION','GAP-V1-CONTENT-ROOT-OBJECT-ORDER'])
-families['storage-integrity']=F(['InventoryOperation','PublishedHeadCAS'],['HeadReferencesCompleteWorld','FenceRetainsExactPreparedPlan','PublishedFencePointsAtExactTarget','OnePublicationPerOperation'],'World/catalog/projection/reservation/count roots and deltas map to canonical abstract component identities.',['abstractInventoryState','abstractReservationState','abstractCountState'],'Result is deterministic digest/delta/materialized world matching the frozen plan.','Pure integrity helpers are deterministic; durable exact retries compare the same roots.','Malformed deltas, missing rows, root mismatch, or invalid begin input rejects.',[C,D,'test/storage-conformance.test.ts'],['memory'],gaps=['GAP-HASH-COLLISION-ASSUMPTION','GAP-V1-CONTENT-ROOT-OBJECT-ORDER'])
+families['durable-protocol']=F(['InventoryOperation','PublishedHeadCAS','RepairLiveness','DurableTransferRefinement','SnapshotSupersededWorkflow'],['FrozenIntentNeverChanges','ApplyingHasCompletePlan','PartialWritesStayInvisible','PublishedWorldMatchesFrozenPlan','PlanRetainedOnlyWhileApplying','PublishedWorldCannotAbort','ApplyingEventuallyTerminates','PartialWritesRefineToStuttering','PublishedRetainsAllDispositions','DispositionGeneratesNoPhysicalEvent'],'Base revision/root, intent fingerprint, complete next-world plan, component roots, operation ID, and failpoint stage map to applying/published/completed/aborted protocol state.',['abstractInventoryState','abstractReservationState','abstractCountState','abstractOperationResult'],'Storage observations map to invisible staged state, exact published world, compact replay receipt, terminal abort, or repair outcome.','Exact begin/complete retry returns frozen plan/receipt; changed fingerprint or stale base rejects.','Concurrent applying owner, root mismatch, missing/corrupt component, publish-after-abort, or abort-after-publication rejects.',[S,D],['memory','generic-all-operation-failpoints','generic-all-migration-failpoints'],gaps=['GAP-DB-IMPLEMENTATION-UNBOUNDED','GAP-PRODUCTION-STORAGE-SCALE-GC','GAP-HASH-COLLISION-ASSUMPTION','GAP-V1-CONTENT-ROOT-OBJECT-ORDER'])
+families['storage-integrity']=F(['InventoryOperation','PublishedHeadCAS'],['HeadReferencesCompleteWorld','FenceRetainsExactPreparedPlan','PublishedFencePointsAtExactTarget','OnePublicationPerOperation'],'World/catalog/projection/reservation/count roots and deltas map to canonical abstract component identities.',['abstractInventoryState','abstractReservationState','abstractCountState'],'Result is deterministic digest/delta/materialized world matching the frozen plan.','Pure integrity helpers are deterministic; durable exact retries compare the same roots.','Malformed deltas, missing rows, root mismatch, or invalid begin input rejects.',[C,D],['memory'],gaps=['GAP-HASH-COLLISION-ASSUMPTION','GAP-V1-CONTENT-ROOT-OBJECT-ORDER'])
 families['migration-definition']=F(['CatalogPublication','TraceabilityGraph','ReclassificationConservation','SnapshotSupersededWorkflow'],['ActiveIsRetained','RegisteredCompositionVectorsAreExact','ContainmentIsAcyclic','ItemQuantityConserved','UnknownOutcomeNeverGuessed','DispositionGeneratesNoPhysicalEvent'],'Typed query/plugin declarations and opening/traceability facts map to a deterministic finite migration declaration and diagnostics.',['abstractMigrationState'],'Result is a frozen declaration/plan/source bundle or explicit blockers; no target world changes.','Equal bounded source rows produce the same digests and declaration.','Unknown query, duplicate source identity, ambiguity, invalid unit/graph/vector, or paging limit rejects/blocks.',[M,'test/migrations.test.ts'],['memory'],gaps=['GAP-LEGACY-SOURCE-INTERPRETATION','GAP-EXTERNAL-MIGRATION-CALLBACKS'])
 families['migration-publication']=F(['CatalogPublication','InventoryOperation','PublishedHeadCAS','RepairLiveness','TraceabilityGraph','SnapshotSupersededWorkflow'],['PublishedSnapshotsRemainRetained','PartialWritesStayInvisible','PublishedWorldMatchesFrozenPlan','ApplyingEventuallyTerminates','ContainmentIsAcyclic'],'Migration ID, source/plan/catalog digests, ordered operations, dry-run roots, and complete target world map to one atomic migration manifest.',['abstractMigrationState','abstractInventoryState','abstractTraceabilityState'],'Result maps to dry-run comparison, one published target revision/root, compact manifest, replay, repair, or safe abort.','Exact manifest retry resumes/publishes the same batch; changed plan/catalog/source under one migration ID rejects.','Blocked diagnostics, dry-run mismatch, source drift, stale/nonempty target, corrupt staged world, or aborted identity rejects.',[M,D,'test/migrations.test.ts','test/storage-conformance.test.ts'],['memory','generic-all-migration-failpoints'],gaps=['GAP-LEGACY-SOURCE-INTERPRETATION','GAP-DB-IMPLEMENTATION-UNBOUNDED'])
 families['external-plugin-boundary']=F(['CatalogPublication'],['ActiveIsRetained'],'Application callback identity/provenance is retained, while callback execution itself is outside the model.',['abstractMigrationState'],'Only validated deterministic callback output enters the migration abstraction.','Repeated callback execution must be deterministic under bounded source snapshots.','Unbounded/nondeterministic/external effects are unsupported and must be caught by application plugin tests.',['test/migrations.test.ts'],['memory'],'explicit-gap',['GAP-EXTERNAL-MIGRATION-CALLBACKS','GAP-LEGACY-SOURCE-INTERPRETATION'])
@@ -153,93 +154,8 @@ def public_symbol(signature):
  return signature.get('method') or signature.get('name')
 
 
-def evidence_path(relative_path):
- path = Path(relative_path)
- return pkg / path
 
-
-ALL_TEST_SOURCES = sorted(
- path for path in (pkg / 'test').rglob('*') if path.suffix in {'.ts', '.tsx'}
-)
-TEST_ENTRYPOINTS = [
- path for path in ALL_TEST_SOURCES
- if path.name.endswith(('.test.ts', '.spec.ts', '.test.tsx', '.spec.tsx'))
-]
 ALL_PRODUCTION_SOURCES = sorted((pkg / 'src').rglob('*.ts'))
-IMPORT_PATTERN = re.compile(
- r'(?:\b(?:import|export)\s+(?:type\s+)?(?:[^;]*?\s+from\s*)|\bimport\s*\(\s*)["\'](\.[^"\']+)["\']',
- re.MULTILINE,
-)
-
-
-def resolve_test_import(source, specifier):
- if len(specifier) > 512 or "\n" in specifier or "\r" in specifier:
-  return None
- base = (source.parent / specifier)
- candidates = [base]
- if base.suffix in {'.js', '.mjs', '.cjs'}:
-  candidates.extend([base.with_suffix('.ts'), base.with_suffix('.tsx')])
- elif base.suffix == '':
-  candidates.extend([
-   base.with_suffix('.ts'),
-   base.with_suffix('.tsx'),
-   base / 'index.ts',
-   base / 'index.tsx',
-  ])
- return next((candidate.resolve() for candidate in candidates if candidate.exists()), None)
-
-
-TEST_IMPORTS = {}
-for source in ALL_TEST_SOURCES:
- imported = set()
- for specifier in IMPORT_PATTERN.findall(source.read_text(errors='ignore')):
-  resolved = resolve_test_import(source, specifier)
-  if resolved is not None and resolved in {path.resolve() for path in ALL_TEST_SOURCES}:
-   imported.add(resolved)
- TEST_IMPORTS[source.resolve()] = imported
-
-
-def reachable_test_sources(entrypoint):
- pending = [entrypoint.resolve()]
- visited = set()
- while pending:
-  current = pending.pop()
-  if current in visited: continue
-  visited.add(current)
-  pending.extend(TEST_IMPORTS.get(current, ()))
- return visited
-
-
-EXECUTABLE_ENTRYPOINTS_BY_SOURCE = {}
-for entrypoint in TEST_ENTRYPOINTS:
- for source in reachable_test_sources(entrypoint):
-  EXECUTABLE_ENTRYPOINTS_BY_SOURCE.setdefault(source, set()).add(entrypoint.resolve())
-
-
-def symbol_occurs(path, symbol):
- return re.search(r'\b' + re.escape(symbol) + r'\b', path.read_text(errors='ignore')) is not None
-
-
-def direct_executable_evidence(signature):
- symbol = public_symbol(signature)
- if symbol is None: return []
- return [
-  str(path.relative_to(repo)).replace('\\', '/')
-  for path in ALL_TEST_SOURCES
-  if symbol_occurs(path, symbol)
-  and EXECUTABLE_ENTRYPOINTS_BY_SOURCE.get(path.resolve())
- ]
-
-
-def direct_executable_entrypoints(signature):
- entrypoints = set()
- for relative_path in direct_executable_evidence(signature):
-  source = (repo / relative_path).resolve()
-  entrypoints.update(EXECUTABLE_ENTRYPOINTS_BY_SOURCE.get(source, ()))
- return sorted(
-  str(path.relative_to(repo)).replace('\\', '/') for path in entrypoints
- )
-
 
 def internal_source_references(signature):
  symbol = public_symbol(signature)
@@ -267,6 +183,22 @@ def call_chain_entry(key):
   raise RuntimeError(f'public API {key} is missing from compiler call graph') from error
 
 
+# Return compiler-resolved test call sites that directly invoke one public target.
+def direct_executable_witnesses(key):
+ sources = set()
+ entrypoints = set()
+ for row in call_chain_entry(key)['witnesses']:
+  witness = row['witness']
+  chain = witness['chain']
+  if len(chain) < 2: continue
+  caller_file = chain[-2].get('file')
+  if not isinstance(caller_file, str) or not caller_file.startswith('test/'):
+   continue
+  sources.add(repository_test_path(caller_file))
+  entrypoints.add(repository_test_path(witness['test']))
+ return sorted(sources), sorted(entrypoints)
+
+
 def normalized_call_chain_witnesses(key):
  rows=[]
  for row in call_chain_entry(key)['witnesses']:
@@ -279,11 +211,11 @@ def normalized_call_chain_witnesses(key):
  return rows
 
 
+# Attach compiler-resolved execution witnesses and diagnostic source references to one API entry.
 def enrich_evidence(key, entry):
  call_entry=call_chain_entry(key)
  witnesses=normalized_call_chain_witnesses(key)
- direct=direct_executable_evidence(entry['signature'])
- entrypoints=direct_executable_entrypoints(entry['signature'])
+ direct,entrypoints=direct_executable_witnesses(key)
  internal=internal_source_references(entry['signature'])
  if entry['status'] == 'explicit-gap': mode = 'explicit-gap'
  elif not witnesses: mode = 'unreferenced-public-gap'

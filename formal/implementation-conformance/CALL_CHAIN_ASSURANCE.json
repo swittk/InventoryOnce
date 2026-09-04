@@ -1,7 +1,7 @@
 {
   "counts": {
-    "callables": 2073,
-    "edges": 5704,
+    "callables": 2077,
+    "edges": 5711,
     "publicEntries": 502,
     "publicEntriesWithTargets": 502,
     "publicEntriesWithWitnesses": 502,
@@ -6336,10 +6336,10 @@
                 "column": 79,
                 "file": "test/traceability-corrections.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-corrections.test.ts:5225:<anonymous@171>",
+                "id": "test/traceability-corrections.test.ts:5340:<anonymous@174>",
                 "kind": "ArrowFunction",
-                "line": 171,
-                "name": "<anonymous@171>",
+                "line": 174,
+                "name": "<anonymous@174>",
                 "reason": "test-callback"
               },
               {
@@ -11811,10 +11811,10 @@
                 "column": 77,
                 "file": "test/traceability-corrections.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-corrections.test.ts:6762:<anonymous@223>",
+                "id": "test/traceability-corrections.test.ts:6877:<anonymous@226>",
                 "kind": "ArrowFunction",
-                "line": 223,
-                "name": "<anonymous@223>",
+                "line": 226,
+                "name": "<anonymous@226>",
                 "reason": "test-callback"
               },
               {
@@ -13454,10 +13454,10 @@
                 "column": 79,
                 "file": "test/traceability-corrections.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-corrections.test.ts:5225:<anonymous@171>",
+                "id": "test/traceability-corrections.test.ts:5340:<anonymous@174>",
                 "kind": "ArrowFunction",
-                "line": 171,
-                "name": "<anonymous@171>",
+                "line": 174,
+                "name": "<anonymous@174>",
                 "reason": "test-callback"
               },
               {
@@ -13525,10 +13525,10 @@
                 "column": 79,
                 "file": "test/traceability-corrections.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-corrections.test.ts:5225:<anonymous@171>",
+                "id": "test/traceability-corrections.test.ts:5340:<anonymous@174>",
                 "kind": "ArrowFunction",
-                "line": 171,
-                "name": "<anonymous@171>",
+                "line": 174,
+                "name": "<anonymous@174>",
                 "reason": "test-callback"
               },
               {
@@ -19112,10 +19112,10 @@
                 "name": "test/authority.test.ts"
               },
               {
-                "column": 84,
+                "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:10822:<anonymous@304>",
+                "id": "test/authority.test.ts:10812:<anonymous@304>",
                 "kind": "ArrowFunction",
                 "line": 304,
                 "name": "<anonymous@304>",
@@ -20493,10 +20493,10 @@
                 "name": "test/authority.test.ts"
               },
               {
-                "column": 84,
+                "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:10822:<anonymous@304>",
+                "id": "test/authority.test.ts:10812:<anonymous@304>",
                 "kind": "ArrowFunction",
                 "line": 304,
                 "name": "<anonymous@304>",
@@ -23700,20 +23700,20 @@
                 "column": 66,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:13080:<anonymous@368>",
+                "id": "test/authority.test.ts:14453:<anonymous@405>",
                 "kind": "ArrowFunction",
-                "line": 368,
-                "name": "<anonymous@368>",
+                "line": 405,
+                "name": "<anonymous@405>",
                 "reason": "test-callback"
               },
               {
                 "column": 12,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:13099:<anonymous@369>",
+                "id": "test/authority.test.ts:14472:<anonymous@406>",
                 "kind": "ArrowFunction",
-                "line": 369,
-                "name": "<anonymous@369>",
+                "line": 406,
+                "name": "<anonymous@406>",
                 "reason": "callback-argument"
               },
               {
@@ -25450,10 +25450,10 @@
                 "name": "test/authority.test.ts"
               },
               {
-                "column": 84,
+                "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:10822:<anonymous@304>",
+                "id": "test/authority.test.ts:10812:<anonymous@304>",
                 "kind": "ArrowFunction",
                 "line": 304,
                 "name": "<anonymous@304>",
@@ -25531,10 +25531,10 @@
                 "name": "test/authority.test.ts"
               },
               {
-                "column": 84,
+                "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:10822:<anonymous@304>",
+                "id": "test/authority.test.ts:10812:<anonymous@304>",
                 "kind": "ArrowFunction",
                 "line": 304,
                 "name": "<anonymous@304>",
@@ -25815,10 +25815,10 @@
                 "name": "test/authority.test.ts"
               },
               {
-                "column": 84,
+                "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:10822:<anonymous@304>",
+                "id": "test/authority.test.ts:10812:<anonymous@304>",
                 "kind": "ArrowFunction",
                 "line": 304,
                 "name": "<anonymous@304>",
@@ -25896,10 +25896,10 @@
                 "name": "test/authority.test.ts"
               },
               {
-                "column": 84,
+                "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:10822:<anonymous@304>",
+                "id": "test/authority.test.ts:10812:<anonymous@304>",
                 "kind": "ArrowFunction",
                 "line": 304,
                 "name": "<anonymous@304>",
@@ -33485,10 +33485,10 @@
                 "column": 77,
                 "file": "test/traceability-corrections.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-corrections.test.ts:6762:<anonymous@223>",
+                "id": "test/traceability-corrections.test.ts:6877:<anonymous@226>",
                 "kind": "ArrowFunction",
-                "line": 223,
-                "name": "<anonymous@223>",
+                "line": 226,
+                "name": "<anonymous@226>",
                 "reason": "test-callback"
               },
               {
