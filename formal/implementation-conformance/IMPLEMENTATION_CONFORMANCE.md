@@ -2,7 +2,7 @@
 
 This file is generated from the exact TypeScript surface plus the checked API, field, and gap manifests. Edit the manifests and executable evidence, then run `pnpm assurance --write-report`.
 
-Surface SHA-256: `4c3da3a157349d970122d5a5bdb8ae0333480e0b568077bebeed5a56c4bdbdd6`
+Surface SHA-256: `e59964344b3ccbd5a383a18089ce210ec8e043767f360d433b6f3bbf68351b2f`
 
 ## Mechanically covered surface
 

@@ -17,7 +17,10 @@ import {
 } from "../src/migrations-api.js";
 import { createInMemoryInventoryDurableStorage } from "../src/storage-api.js";
 import { commitInventoryEvent, defineInventoryEvent } from "../src/events.js";
-import { inventoryGenealogyAncestors } from "../src/kernel.js";
+import {
+  inventoryGenealogyAncestors,
+  inventoryTraceabilityNodeIdentity,
+} from "../src/kernel.js";
 import { projectInventoryTraceabilityEvents } from "../src/traceability-replay.js";
 import {
   applyInventoryTraceabilityChanges,
@@ -41,6 +44,23 @@ export const FORMAL_IMPLEMENTATION_TRACE_IDS = [
 ] as const;
 
 describe("traceability graph meanings", () => {
+  it("rejects item qualifiers on non-lot traceability identities", () => {
+    expect(() =>
+      inventoryTraceabilityNodeIdentity({
+        kind: InventoryTraceabilityNodeKind.Container,
+        id: "QUALIFIED-CONTAINER",
+        itemId: "item-a",
+      })
+    ).toThrow("must not name itemId");
+    expect(
+      inventoryTraceabilityNodeIdentity({
+        kind: InventoryTraceabilityNodeKind.Lot,
+        id: "QUALIFIED-LOT",
+        itemId: "item-a",
+      })
+    ).toContain("item-a");
+  });
+
   it("keeps containment and association independent and rejects containment cycles", async () => {
     const inventory = createTestInventory();
     const child = {

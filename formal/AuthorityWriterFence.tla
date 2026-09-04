@@ -16,6 +16,8 @@ MaxSourceVersion == Cardinality(Writers)
 MaxWorldRevision == Cardinality(Commands)
 IntentOrNone == Intents \cup {None}
 
+\* Authority progression/certification, legacy-writer ownership, frozen source evidence, migration/repair,
+\* authoritative retry/publication, compatibility projection, and denied legacy-attempt evidence.
 VARIABLES mode, phase, adapterCertified, cutoverAuthorized,
   greenfieldAuthorized, activationKind, admitted, usedWriters, wroteWriters, sourceVersion,
   shadowRoot, dualRoot, dualIntent, mismatches,
@@ -233,6 +235,7 @@ RecordDualMismatch(command) ==
 ClaimFence(token) ==
   /\ token \in FenceTokens
   /\ mode = "dual-run"
+  \* Fence ownership requires explicit operator authorization and zero admitted legacy writers/mismatches.
   /\ cutoverAuthorized
   /\ admitted = {}
   /\ mismatches = {}
@@ -410,6 +413,7 @@ ActivateGreenfield ==
   /\ mode \in {"legacy", "shadow"}
   /\ ~crashed
   /\ adapterCertified
+  \* Greenfield activation is fail-closed unless explicitly authorized with no legacy writer/source truth.
   /\ greenfieldAuthorized
   /\ admitted = {}
   /\ sourceVersion = 0
@@ -562,9 +566,13 @@ Next ==
 Spec ==
   /\ Init
   /\ [][Next]_vars
+  \* Once repair is continuously enabled, weak fairness requires the claimed crash/fence work to progress.
   /\ WF_vars(RepairCrash)
+  \* A fully published fenced migration eventually activates; fairness does not force prepared writers to claim a fence.
   /\ WF_vars(ActivateAuthority)
+  \* Explicitly authorized empty greenfield state eventually resolves activation versus writer admission.
   /\ WF_vars(ActivateGreenfield)
+  \* Compatibility projection repair eventually catches the projector up to authoritative truth.
   /\ WF_vars(ProjectSuccess)
 
 TypeOK ==
@@ -706,6 +714,18 @@ OnePublicationPerCommand ==
   /\ worldRevision = Cardinality(publishedCommands)
   /\ \A command \in Commands:
        (command \in publishedCommands) = (commandIntent[command] # None)
+
+\* An exact replay can only be recorded for an already-published authoritative command.
+ReplayReferencesPublishedTruth == replayedCommands \subseteq publishedCommands
+
+\* Changed-retry rejection is only recorded after either dual-run or authoritative intent was frozen.
+ChangedRetryRequiresFrozenIntent ==
+  \A command \in changedRetryRejected:
+    dualIntent[command] # None \/ commandIntent[command] # None
+
+\* A denied legacy attempt can only have been observed after reaching the fence-capable phase.
+BlockedLegacyAttemptsRequireFencePhase ==
+  blockedLegacyWrites # {} => phase >= 2
 
 ProjectionCannotMutateAuthoritativeTruth ==
   /\ projectionRevision <= worldRevision

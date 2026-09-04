@@ -311,7 +311,9 @@ describe("portable InventoryOnce authority controller", () => {
       namespaceId: "certification-time-retry:primary",
     });
     const storage = createInMemoryInventoryDurableStorage();
+    /** Mutable test clock advanced to prove retained certification time wins over retry time. */
     let now = time0;
+    /** Cutover timestamps actually supplied to compileSource, in call order. */
     const compiledAt: string[] = [];
     const common = {
       authority,
@@ -347,8 +349,9 @@ describe("portable InventoryOnce authority controller", () => {
       store: new TestAuthorityStore(),
       namespaceId: "durable-manifest-retry-fence:primary",
     });
+    /** Fail only the first staged migration-world write so the durable manifest survives for retry. */
     let failMigrationWorld = true;
-    const storage = createInMemoryInventoryDurableStorage({
+    const durableStorage = createInMemoryInventoryDurableStorage({
       failpoint: (context) => {
         if (
           failMigrationWorld &&
@@ -358,6 +361,23 @@ describe("portable InventoryOnce authority controller", () => {
           failMigrationWorld = false;
           throw new Error("Injected staged migration failure.");
         }
+      },
+    });
+    /** Fail one retry's manifest read after the durable manifest already exists. */
+    let failManifestRead = false;
+    const storage = new Proxy(durableStorage, {
+      /** Bind durable methods normally, except for the deliberate manifest-read failure. */
+      get(target, property, receiver) {
+        if (property === "readMigrationManifest") {
+          return async (migrationId: string) => {
+            if (failManifestRead) {
+              throw new Error("Injected manifest read failure.");
+            }
+            return target.readMigrationManifest(migrationId);
+          };
+        }
+        const value = Reflect.get(target, property, receiver);
+        return typeof value === "function" ? value.bind(target) : value;
       },
     });
     const compileSource = async (cutoverAt: string) => {
@@ -386,6 +406,7 @@ describe("portable InventoryOnce authority controller", () => {
         }),
       };
     };
+    /** Enable drain failure only after durable migration state already exists. */
     let failRetryDrain = false;
     const common = {
       authority,
@@ -409,6 +430,13 @@ describe("portable InventoryOnce authority controller", () => {
       await storage.readMigrationManifest(common.migrationId)
     ).toMatchObject({ state: "applying" });
     expect((await authority.read()).mode).toBe(InventoryAuthorityMode.Fencing);
+
+    failManifestRead = true;
+    await expect(cutoverInventoryAuthority(common)).rejects.toThrow(
+      "Injected manifest read failure"
+    );
+    expect((await authority.read()).mode).toBe(InventoryAuthorityMode.Fencing);
+    failManifestRead = false;
 
     failRetryDrain = true;
     await expect(cutoverInventoryAuthority(common)).rejects.toThrow(
@@ -455,6 +483,7 @@ describe("portable InventoryOnce authority controller", () => {
         }),
       };
     };
+    /** Fail the first drain only so the successful retry must reuse the retained cutover time. */
     let firstDrain = true;
     const common = {
       authority,

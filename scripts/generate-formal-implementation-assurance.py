@@ -1,16 +1,21 @@
 import hashlib
 import json
+import os
 import re
 import subprocess
 from pathlib import Path
 
 pkg = Path(__file__).resolve().parent.parent
 repo = pkg
+# Nested pnpm must not inherit CI=true because repository validation semantics require normal pnpm behavior.
+child_env = os.environ.copy()
+child_env.pop('CI', None)
 surface = json.loads(
     subprocess.check_output(
         ["pnpm", "exec", "node", "scripts/formal-implementation-surface.cjs"],
         cwd=pkg,
         text=True,
+        env=child_env,
     )
 )
 call_graph = json.loads(
@@ -18,6 +23,7 @@ call_graph = json.loads(
         ["pnpm", "exec", "node", "scripts/formal-implementation-callgraph.cjs"],
         cwd=pkg,
         text=True,
+        env=child_env,
     )
 )
 # Build one assurance-family declaration with exact model, behavior, and evidence mappings.
@@ -64,6 +70,7 @@ families['migration-definition']=F(['CatalogPublication','TraceabilityGraph','Re
 families['migration-publication']=F(['CatalogPublication','InventoryOperation','PublishedHeadCAS','RepairLiveness','TraceabilityGraph','SnapshotSupersededWorkflow'],['PublishedSnapshotsRemainRetained','PartialWritesStayInvisible','PublishedWorldMatchesFrozenPlan','ApplyingEventuallyTerminates','ContainmentIsAcyclic'],'Migration ID, source/plan/catalog digests, ordered operations, dry-run roots, and complete target world map to one atomic migration manifest.',['abstractMigrationState','abstractInventoryState','abstractTraceabilityState'],'Result maps to dry-run comparison, one published target revision/root, compact manifest, replay, repair, or safe abort.','Exact manifest retry resumes/publishes the same batch; changed plan/catalog/source under one migration ID rejects.','Blocked diagnostics, dry-run mismatch, source drift, stale/nonempty target, corrupt staged world, or aborted identity rejects.',[M,D,'test/migrations.test.ts','test/storage-conformance.test.ts'],['memory','generic-all-migration-failpoints'],gaps=['GAP-LEGACY-SOURCE-INTERPRETATION','GAP-DB-IMPLEMENTATION-UNBOUNDED'])
 families['external-plugin-boundary']=F(['CatalogPublication'],['ActiveIsRetained'],'Application callback identity/provenance is retained, while callback execution itself is outside the model.',['abstractMigrationState'],'Only validated deterministic callback output enters the migration abstraction.','Repeated callback execution must be deterministic under bounded source snapshots.','Unbounded/nondeterministic/external effects are unsupported and must be caught by application plugin tests.',['test/migrations.test.ts'],['memory'],'explicit-gap',['GAP-EXTERNAL-MIGRATION-CALLBACKS','GAP-LEGACY-SOURCE-INTERPRETATION'])
 
+# Map one facade API key to its formal assurance family.
 def facade_family(key):
  group,method=key.split('.',1)
  if group=='catalog': return 'catalog-publication'
@@ -92,6 +99,7 @@ def facade_family(key):
   return 'dimension-reclassification'
  raise KeyError(key)
 
+# Map one root export to the formal assurance family that owns its behavior.
 def root_family(name,decl):
  if name in {'InventoryOnce','createInventoryOnce'}: return 'facade-construction'
  if 'Authority' in name or 'authority' in name: return 'authority-cutover' if 'cutover' in name.lower() else 'authority-control'
@@ -107,13 +115,16 @@ def root_family(name,decl):
  if name in {'assertInventoryAmountSum','defineInventoryAmountLineGroup','combineInventoryAmountLineGroups','defineInventoryPolicyBatchRequestGroup','combineInventoryPolicyBatchRequestGroups','inventoryPolicyBatchAllocationLinesByReference'}: return 'operation-result-helper'
  return 'identity-normalization'
 
+# Map one storage export to durable-protocol or storage-integrity assurance.
 def storage_export_family(name):
  if any(k in name for k in ('Digest','ContentRoots','Delta','materialize','emptyInventoryWorldState')): return 'storage-integrity'
  return 'durable-protocol'
 
+# Map one migration export to definition, publication, or external-plugin assurance.
 def migration_family(name):
  return 'migration-publication' if name in {'applyInventoryMigrationPlan','repairInventoryMigrationManifests','resumeInventoryMigrationManifest'} else ('external-plugin-boundary' if name in {'createInventoryLegacyQueryReader','createInventoryMigrationPlanFromPlugin','createInventoryMigrationPlanFromSourcePlugin','readAllInventoryLegacyQuery'} else 'migration-definition')
 
+# Map one expert-kernel export to the formal family matching its source semantics.
 def kernel_family(name,decl):
  low=name.lower()
  if any(x in decl for x in ('quantity.ts','measurements.ts','amounts.ts')): return 'pure-exact-value'
@@ -145,11 +156,13 @@ def kernel_family(name,decl):
   return 'operation-result-helper'
  return 'identity-normalization'
 
+# Expand one discovered public signature with its complete family assurance declaration.
 def expanded_entry(family_id,signature):
  if family_id not in families: raise KeyError(family_id)
  return {'family':family_id,'signature':signature,**families[family_id]}
 
 
+# Return the callable/public symbol name encoded by one discovered signature row.
 def public_symbol(signature):
  return signature.get('method') or signature.get('name')
 
@@ -157,6 +170,7 @@ def public_symbol(signature):
 
 ALL_PRODUCTION_SOURCES = sorted((pkg / 'src').rglob('*.ts'))
 
+# Find diagnostic production-source references for one public symbol without granting coverage.
 def internal_source_references(signature):
  symbol = public_symbol(signature)
  if symbol is None: return []
@@ -172,10 +186,12 @@ def internal_source_references(signature):
  return references
 
 
+# Convert one package-relative test path to the repository-relative evidence path.
 def repository_test_path(package_relative):
  return str((pkg / package_relative).relative_to(repo)).replace('\\', '/')
 
 
+# Require the compiler call-graph entry corresponding to one public API key.
 def call_chain_entry(key):
  try:
   return call_graph['entries'][key]
@@ -200,6 +216,7 @@ def direct_executable_witnesses(key):
  return sorted(sources), sorted(entrypoints)
 
 
+# Normalize compiler call-chain witnesses into deterministic checked JSON evidence.
 def normalized_call_chain_witnesses(key):
  rows=[]
  for row in call_chain_entry(key)['witnesses']:
@@ -270,6 +287,7 @@ for trace_id, trace in trace_manifest['entries'].items():
 trace_path.write_text(json.dumps(trace_manifest, indent=2, sort_keys=True) + '\n')
 
 
+# Count complete call/construct signatures represented by one discovered public row.
 def signature_count(row):
  if 'signatures' in row: return len(row['signatures'])
  return len(row.get('callSignatures', [])) + len(row.get('constructSignatures', []))
@@ -312,6 +330,7 @@ DECOR={'description','message','code'}
 CALLBACK_GAPS={'failpoint':'GAP-TEST-FAILPOINT-HOOK','now':'GAP-EXTERNAL-CLOCK','readPage':'GAP-EXTERNAL-MIGRATION-CALLBACKS','createBundle':'GAP-EXTERNAL-MIGRATION-CALLBACKS','createDeclaration':'GAP-EXTERNAL-MIGRATION-CALLBACKS','compileSource':'GAP-EXTERNAL-MIGRATION-CALLBACKS','drainLegacyWriters':'GAP-EXTERNAL-MIGRATION-CALLBACKS','defineRevision':'GAP-EXTERNAL-POLICY-CALLBACKS','acceptAllocations':'GAP-EXTERNAL-POLICY-CALLBACKS'}
 IDENTITY_EXACT={'operationId','migrationId','eventId','countId','reservationId','requestId','groupId','commandId','changeId','openingId','queryId','pluginId','namespaceId','writerToken','attemptToken','fenceToken','replayed','created'}
 
+# Choose formal model correspondence for one reachable public field from its source and owner.
 def models_for(source,owner,field):
  if (
   'MigrationSourceDisposition' in owner
@@ -339,6 +358,7 @@ def models_for(source,owner,field):
  if any(x in source for x in ('availability.ts','picking.ts','allocation.ts','read-model.ts','usability.ts')): return ['UseByReservation','ReservationScope','PackagingIdentity']
  if any(x in source for x in ('projection.ts','model.ts','selectors.ts')): return ['ResourceDimensions','InventoryOperation']
  return ['InventoryOperation','PublishedHeadCAS']
+# Classify one reachable field and attach its formal/evidence/gap correspondence.
 def classify_field(owner,row):
  field=row['name']; source=row['source']; callable_=row.get('callable',False)
  models=models_for(source,owner,field); gaps=[]

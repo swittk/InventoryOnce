@@ -166,7 +166,12 @@ for (const step of executable.steps) {
 const formal = tlaRows(byStep.get("registered-tlc-model-suite") ?? "");
 if (
   formal.length !== formalModels.length ||
-  formal.some((row) => row.generated === undefined)
+  formal.some(
+    (row) =>
+      row.generated === undefined ||
+      row.distinct === undefined ||
+      row.depth === undefined
+  )
 ) {
   throw new Error(
     `Expected ${formalModels.length} complete TLC rows; found ${formal.length}.`
@@ -225,13 +230,12 @@ const sourcePaths = [
 const sourceDigests = Object.fromEntries(
   sourcePaths.map((path) => [path, digest(resolve(repositoryRoot, path))])
 );
-const traceModes = Object.values(traces.entries).reduce(
-  (counts, entry) => ({
-    ...counts,
-    [entry.refinementMode]: (counts[entry.refinementMode] ?? 0) + 1,
-  }),
-  {}
-);
+/** Count exact trace entries by refinement mode without repeatedly copying the accumulator. */
+const traceModes = {};
+for (const entry of Object.values(traces.entries)) {
+  traceModes[entry.refinementMode] =
+    (traceModes[entry.refinementMode] ?? 0) + 1;
+}
 const tracedOperationFamilies = new Set(
   Object.values(traces.entries).flatMap((entry) => entry.operationFamilies)
 );

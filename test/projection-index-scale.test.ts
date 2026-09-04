@@ -42,6 +42,7 @@ export const FORMAL_IMPLEMENTATION_TRACE_IDS = [
   "TRACE-PROJECTION-INDEX-SCALE-LOCALITY",
 ] as const;
 
+/** Absolute directory used to inspect package source for index-locality guards. */
 const testDirectory = dirname(fileURLToPath(import.meta.url));
 
 /** Attach one exact active reservation to each test lot while counting allocation reads. */
@@ -393,6 +394,7 @@ describe("projection index real-world scale", () => {
   });
 
   it("indexes availability allocations once per revision instead of once per position", async () => {
+    /** Measure reservation-allocation reads for one indexed position population. */
     const measureAllocationReads = async (
       positionCount: number
     ): Promise<number> => {

@@ -17,8 +17,11 @@ const FORMAL_IMPLEMENTATION_TRACE_IDS = [
 
 /** Wrap one durable adapter and count only published-world reads. */
 function countingStorage(storage: InventoryDurableStorage): {
+  /** Wrapped durable adapter whose published-world reads are counted. */
   readonly storage: InventoryDurableStorage;
+  /** Return the number of published-world reads observed so far. */
   readonly reads: () => number;
+  /** Reset the published-world read counter. */
   readonly reset: () => void;
 } {
   let worldReads = 0;

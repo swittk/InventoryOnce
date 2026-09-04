@@ -17,9 +17,9 @@ pnpm formal
 ```
 
 The runner uses the package-pinned `tla2tools.jar`, one unique metadata directory per model process, and
-keeps a failed model directory so a counterexample can be inspected. It also runs four deliberately bad
-snapshot-supersession transitions and requires TLC to reject each one through the named unchanged safety
-invariant.
+keeps a failed model directory so a counterexample can be inspected. It also runs five deliberately bad
+transitions: four snapshot-supersession mutations plus one cross-transfer receive mutation, and requires TLC
+to reject each one through the named unchanged safety invariant.
 
 ## Registered TLC checks
 
@@ -35,6 +35,7 @@ invariant.
 | `ReservationSafety`            | one exact reservation cannot be overallocated, consumed twice, or silently reused with changed lifecycle intent                                                                                                                                                                     | reservation tests and façade fingerprints                                                                 |
 | `PackagingIdentity`            | package revisions with the same human word remain distinct and intact package quantities stay whole                                                                                                                                                                                 | catalogue/stock tests and package event validation                                                        |
 | `DurableTransferRefinement`    | concrete event/projection/reservation/count/receipt writes stutter until completion, which refines one abstract atomic transfer                                                                                                                                                     | storage conformance suite and `AbstractTransfer` mapping                                                  |
+| `TransferLifecycle`            | prepared, dispatched, partial-receipt, completed-receipt, and release transitions conserve one transfer independently; cross-transfer receipt cannot consume another transfer’s in-transit stock                                                                               | `transfer-lifecycle.test.ts`, transfer lifecycle event/projection refinement                              |
 | `RepairLiveness`               | under weak fairness, a pending frozen plan eventually publishes/compacts or aborts before publication; repair needs no original planner                                                                                                                                             | generic operation/migration repair tests                                                                  |
 | `CorrectionHistory`            | original history persists; incomplete correction storage does not replace current truth; completed correction advances current meaning atomically                                                                                                                                   | correction tests and append-only projection indexes                                                       |
 | `PhysicalCount`                | snapshot → observation → discrepancy reconciliation preserves legitimate movements during counting                                                                                                                                                                                  | count lifecycle tests                                                                                     |
@@ -77,6 +78,7 @@ The exact seed/fingerprint values vary by run. The latest complete run explored:
 | `DistributedRights`            |              351 |              70 |                    7 |
 | `CorrectionHistory`            |                8 |               7 |                    6 |
 | `DurableTransferRefinement`    |               15 |              10 |                    6 |
+| `TransferLifecycle`             |            4,321 |             929 |                    8 |
 | `RepairLiveness`               |              410 |             199 |                   11 |
 | `RecordedDeficit`              |           21,342 |           2,313 |                    9 |
 | `SnapshotSupersededWorkflow`   |               54 |              25 |                    8 |
@@ -87,10 +89,11 @@ The exact seed/fingerprint values vary by run. The latest complete run explored:
 
 All reachable states in those finite configurations were checked by TLC.
 
-The normal `SnapshotSupersededWorkflow` row above stays the safe system run. Four extra mutation configs
-allow a resumed disposed row, a physical disposition event, a guessed completed outcome, or source movement
-after capture. Those runs pass only when TLC finds the expected invariant violation; they are not folded into
-the safe model's state count.
+The normal `SnapshotSupersededWorkflow` and `TransferLifecycle` rows above stay the safe system runs. Five
+extra mutation configs cover four snapshot-supersession violations (resume after disposition, physical
+disposition event, guessed completed outcome, and source movement after capture) plus one cross-transfer
+receive that violates transfer isolation. Those runs pass only when TLC finds the expected invariant violation;
+they are not folded into the safe models' state counts.
 
 ## What the claims mean
 

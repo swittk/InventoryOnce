@@ -78,6 +78,7 @@ function sourceFile(relativePath) {
     throw new Error(`Missing source '${relativePath}'.`);
   return result;
 }
+/** Require one named interface declaration from a package source file. */
 function interfaceDeclaration(relativePath, name) {
   const result = sourceFile(relativePath).statements.find(
     (statement) =>
@@ -86,9 +87,11 @@ function interfaceDeclaration(relativePath, name) {
   if (result === undefined) throw new Error(`Missing interface '${name}'.`);
   return result;
 }
+/** Return a symbol declaration, falling back to the surrounding module/interface node for type queries. */
 function declarationOf(symbol, fallback) {
   return symbol.valueDeclaration ?? symbol.declarations?.[0] ?? fallback;
 }
+/** Render one compiler type deterministically at the declaration node that gives it context. */
 function typeText(type, node) {
   return checker.typeToString(type, node, formatFlags);
 }
@@ -234,9 +237,11 @@ function sourceOwnedDeclarations(symbol) {
     return normalizedFileName.startsWith(normalizedSourcePrefix);
   });
 }
+/** Return a compact stable hash used only to disambiguate generated type identities. */
 function shortHash(value) {
   return crypto.createHash("sha256").update(value).digest("hex").slice(0, 12);
 }
+/** Derive one stable package-owned type identity from its declaration and rendered generic shape. */
 function packageTypeIdentity(type) {
   const symbol = type.aliasSymbol ?? type.getSymbol();
   const declarations = sourceOwnedDeclarations(symbol).filter(
@@ -276,6 +281,7 @@ const visitedDirections = new Map();
 const recursiveTypeReferences = new Set();
 const truncatedTypes = new Set();
 let maximumTypeDepth = 0;
+/** Add one input/output reachability direction to a discovered public type row. */
 function addDirection(row, direction) {
   const directions = new Set(row.directions);
   directions.add(direction);

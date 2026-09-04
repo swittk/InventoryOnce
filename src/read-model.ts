@@ -11,11 +11,9 @@ import {
 import type { InventoryCommittedEvent } from "./events.js";
 import {
   addInventoryMeasurements,
-  inventoryMeasurement,
-  inventoryMeasurementVector,
-  type InventoryIndependentMeasurementInput,
   type InventoryMeasurementVector,
 } from "./measurements.js";
+import { zeroInventoryMeasurementsForItem } from "./measurement-schema.js";
 import type {
   InventoryStockPosition,
   ItemId,
@@ -25,7 +23,6 @@ import {
   findInventoryPositions,
   type InventoryProjectionState,
 } from "./projection.js";
-import { parseQuantity } from "./quantity.js";
 import {
   normalizeInventoryStockSelector,
   type InventoryStockSelector,
@@ -63,23 +60,23 @@ export interface InventoryStockRevisionSummary {
   readonly deficit: InventoryMeasurementVector;
   /** Exact current positions contributing to this summary. */
   readonly positions: readonly InventoryStockPosition[];
-  /** Physical totals grouped by location. */
+  /** Signed net totals grouped by location; recorded deficit rows reduce these buckets. */
   readonly byLocation: readonly InventoryStockDimensionBucket[];
-  /** Physical totals grouped by lot identity, including a no-lot bucket when present. */
+  /** Signed net totals grouped by lot identity, including deficit/no-lot buckets when present. */
   readonly byLot: readonly InventoryStockDimensionBucket[];
-  /** Physical totals grouped by exact package revision, including loose stock. */
+  /** Signed net totals grouped by exact package revision, including loose/deficit stock. */
   readonly byPackagingRevision: readonly InventoryStockDimensionBucket[];
-  /** Physical totals grouped by container/handling-unit identity. */
+  /** Signed net totals grouped by container/handling-unit identity. */
   readonly byContainer: readonly InventoryStockDimensionBucket[];
-  /** Physical totals grouped by stock status/disposition. */
+  /** Signed net totals grouped by stock status/disposition. */
   readonly byStatus: readonly InventoryStockDimensionBucket[];
-  /** Physical totals grouped by legal/economic owner. */
+  /** Signed net totals grouped by legal/economic owner. */
   readonly byOwner: readonly InventoryStockDimensionBucket[];
-  /** Physical totals grouped by physical custodian/possessor. */
+  /** Signed net totals grouped by physical custodian/possessor. */
   readonly byCustodian: readonly InventoryStockDimensionBucket[];
-  /** Physical totals grouped by disposition authority. */
+  /** Signed net totals grouped by disposition authority. */
   readonly byDispositionAuthority: readonly InventoryStockDimensionBucket[];
-  /** Physical totals grouped by every qualified dimension present in matching stock. */
+  /** Signed net totals grouped by every qualified dimension present in matching stock. */
   readonly qualifiedDimensions: readonly InventoryQualifiedDimensionSummary[];
 }
 
@@ -252,7 +249,7 @@ function sumRevisionMeasurements(
   item: InventoryItemDefinitionRevision,
   positions: readonly InventoryStockPosition[]
 ): InventoryMeasurementVector {
-  let total = zeroMeasurementsForItem(item);
+  let total = zeroInventoryMeasurementsForItem(item);
   for (const position of positions) {
     total = addInventoryMeasurements(total, position.measurements);
   }
@@ -264,7 +261,7 @@ function sumRevisionPhysicalMeasurements(
   item: InventoryItemDefinitionRevision,
   positions: readonly InventoryStockPosition[]
 ): InventoryMeasurementVector {
-  let total = zeroMeasurementsForItem(item);
+  let total = zeroInventoryMeasurementsForItem(item);
   for (const position of positions) {
     if (inventoryPositionIsDeficit(position)) continue;
     total = addInventoryMeasurements(total, position.measurements);
@@ -277,7 +274,7 @@ function sumRevisionDeficitMeasurements(
   item: InventoryItemDefinitionRevision,
   positions: readonly InventoryStockPosition[]
 ): InventoryMeasurementVector {
-  let total = zeroMeasurementsForItem(item);
+  let total = zeroInventoryMeasurementsForItem(item);
   for (const position of positions) {
     const deficit = inventoryPositionDeficitMeasurements(position);
     if (deficit === undefined) continue;
@@ -286,25 +283,6 @@ function sumRevisionDeficitMeasurements(
   return total;
 }
 
-/** Build exact zero across every configured measurement axis of one item revision. */
-function zeroMeasurementsForItem(
-  item: InventoryItemDefinitionRevision
-): InventoryMeasurementVector {
-  const independent: InventoryIndependentMeasurementInput[] = [];
-  for (const axis of item.independentAxes) {
-    independent.push({
-      axisId: axis.axisId,
-      quantity: parseQuantity("0", axis.unit),
-    });
-  }
-  return inventoryMeasurementVector(
-    inventoryMeasurement(
-      item.primaryAxis.axisId,
-      parseQuantity("0", item.primaryAxis.unit)
-    ),
-    independent
-  );
-}
 
 /** Mutable accumulator used only while building one immutable summary bucket. */
 interface MutableInventoryStockDimensionBucket {

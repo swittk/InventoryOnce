@@ -10,6 +10,7 @@ VARIABLES onHand, claimState, scope, allocated, reportStatus, physicalLossOccurr
 
 vars == <<onHand, claimState, scope, allocated, reportStatus, physicalLossOccurred>>
 
+\* Inactive claims impose no feasibility constraint, so their candidate domain stays the full token set.
 CandidateTokens(c, hand, st, sc, al) ==
   IF st[c] # "active" THEN Tokens
   ELSE IF al[c] # NoToken THEN {al[c]} \cap sc[c] \cap hand

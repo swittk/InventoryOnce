@@ -12,7 +12,9 @@ import { time0, time1, time2 } from "./test-fixtures.js";
 
 /** Build deterministic item/package revisions from one scalar catalogue declaration. */
 function defineRevision(declaration: InventoryScalarCatalogDeclaration): {
+  /** Deterministic item revision derived from the scalar declaration. */
   readonly item: ReturnType<typeof defineScalarInventoryItem>;
+  /** One deterministic packaging revision per declared package level. */
   readonly packaging: readonly ReturnType<typeof defineScalarInventoryPackaging>[];
 } {
   const suffix = [

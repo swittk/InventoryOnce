@@ -228,15 +228,15 @@ export async function cutoverInventoryAuthority({
     sourceRoot,
     sourceRevision,
   });
-  let durableMigrationExists = false;
+  // Fence ownership is already durable. Resolve migration state before entering any path that may release it.
+  const manifest = await storage.readMigrationManifest(migrationId);
+  if (manifest?.state === InventoryMigrationManifestState.Aborted) {
+    throw new Error(
+      "The InventoryOnce migration identity was previously aborted."
+    );
+  }
+  let durableMigrationExists = manifest !== undefined;
   try {
-    const manifest = await storage.readMigrationManifest(migrationId);
-    durableMigrationExists = manifest !== undefined;
-    if (manifest?.state === InventoryMigrationManifestState.Aborted) {
-      throw new Error(
-        "The InventoryOnce migration identity was previously aborted."
-      );
-    }
     await drainLegacyWriters();
     const second = await compileSource(cutoverAt);
     assertInventoryMigrationReady(second);

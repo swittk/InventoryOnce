@@ -174,6 +174,8 @@ const FORMAL_IMPLEMENTATION_TRACE_IDS = [
   "TRACE-COLLECTION-READ-IDENTITY",
 ] as const;
 
+void FORMAL_IMPLEMENTATION_TRACE_IDS;
+
 describe("revision-frozen read-only inventory collections", () => {
   it("shows same-brand and All-OCP views with exact members and explicit pack-count rollups", async () => {
     const catalog = collectionCatalog();

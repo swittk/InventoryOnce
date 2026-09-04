@@ -836,7 +836,7 @@ export class InMemoryInventoryDurableStorage
   private async writeEventUnlocked(
     operationId: string
   ): Promise<InventoryDurableOperation> {
-    const stored = this.requireApplying(operationId);
+    const stored = this.requireWritableOperation(operationId);
     if (stored.value.eventWritten) return structuredClone(stored.value);
     const plan = requireApplyingInventoryOperationPlan(stored.value);
     if (plan.event === undefined) {
@@ -863,7 +863,7 @@ export class InMemoryInventoryDurableStorage
   private async writeProjectionUnlocked(
     operationId: string
   ): Promise<InventoryDurableOperation> {
-    const stored = this.requireApplying(operationId);
+    const stored = this.requireWritableOperation(operationId);
     if (stored.value.projectionWritten) return structuredClone(stored.value);
     const plan = requireApplyingInventoryOperationPlan(stored.value);
     if (plan.event === undefined) {
@@ -900,7 +900,7 @@ export class InMemoryInventoryDurableStorage
   private async writeReservationsUnlocked(
     operationId: string
   ): Promise<InventoryDurableOperation> {
-    const stored = this.requireApplying(operationId);
+    const stored = this.requireWritableOperation(operationId);
     if (stored.value.reservationsWritten) return structuredClone(stored.value);
     requireApplyingInventoryOperationPlan(stored.value);
     await this.fire(
@@ -930,7 +930,7 @@ export class InMemoryInventoryDurableStorage
   private async writeCountsUnlocked(
     operationId: string
   ): Promise<InventoryDurableOperation> {
-    const stored = this.requireApplying(operationId);
+    const stored = this.requireWritableOperation(operationId);
     if (stored.value.countsWritten) return structuredClone(stored.value);
     requireApplyingInventoryOperationPlan(stored.value);
     await this.fire(InventoryStorageWriteStage.Counts, "before", operationId);
@@ -952,7 +952,7 @@ export class InMemoryInventoryDurableStorage
   private async writeReceiptUnlocked(
     operationId: string
   ): Promise<InventoryDurableOperation> {
-    const stored = this.requireApplying(operationId);
+    const stored = this.requireWritableOperation(operationId);
     if (stored.value.receiptWritten) return structuredClone(stored.value);
     requireApplyingInventoryOperationPlan(stored.value);
     await this.fire(InventoryStorageWriteStage.Receipt, "before", operationId);
@@ -1126,8 +1126,8 @@ export class InMemoryInventoryDurableStorage
     }
   }
 
-  /** Load one operation and require it is still applying. */
-  private requireApplying(operationId: string): StoredInventoryOperation {
+  /** Load one operation writable by staged-write calls; completed rows are returned for idempotent no-ops. */
+  private requireWritableOperation(operationId: string): StoredInventoryOperation {
     const stored = this.requireStored(operationId);
     if (stored.value.state === InventoryDurableOperationState.Completed) {
       return stored;

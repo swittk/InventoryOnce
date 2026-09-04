@@ -22,7 +22,7 @@ The generator:
 
 `implementation-refinement-map.json` maps every variable and action in `ImplementationConformance.tla` back to the concrete TypeScript extractor or facade result. Its test rejects an added formal variable/action without a concrete relation and rejects a concrete proof row whose TLA symbol no longer exists.
 
-The bounded implementation model covers four representative physical façade verbs:
+The bounded implementation model covers four representative physical facade verbs:
 
 - `stock.receiveMany`;
 - `stock.issueManyByPolicy`;

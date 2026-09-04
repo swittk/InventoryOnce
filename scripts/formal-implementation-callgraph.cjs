@@ -347,6 +347,13 @@ function callbackTargets(argument) {
 }
 
 /** Return callback argument indexes whose external contract is known to invoke them. */
+/** Standard-library methods whose first argument is synchronously dispatched as a callback. */
+const arrayCallbackMethods = new Set([
+  "map", "flatMap", "filter", "forEach", "some", "every", "find",
+  "findIndex", "findLast", "findLastIndex", "reduce", "reduceRight",
+  "sort", "toSorted",
+]);
+
 function externalCallbackArgumentIndexes(node) {
   const indexes = new Set();
   const sourcePath = normalizedPath(node.getSourceFile().fileName);
@@ -369,7 +376,7 @@ function externalCallbackArgumentIndexes(node) {
   let methodName;
   if (ts.isPropertyAccessExpression(node.expression)) methodName = node.expression.name.text;
   else if (ts.isIdentifier(node.expression)) methodName = node.expression.text;
-  if (new Set(["map","flatMap","filter","forEach","some","every","find","findIndex","findLast","findLastIndex","reduce","reduceRight","sort","toSorted"]).has(methodName)) indexes.add(0);
+  if (arrayCallbackMethods.has(methodName)) indexes.add(0);
   else if (methodName === "then") { indexes.add(0); indexes.add(1); }
   else if (methodName === "catch" || methodName === "finally") indexes.add(0);
   else if (methodName === "from") indexes.add(1);

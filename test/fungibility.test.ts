@@ -3,6 +3,7 @@ import {
   InventoryAllocationMethod,
   InventoryDeficitPolicy,
   InventoryFungibilityReservationEffectKind,
+  InventoryReservationFeasibilityStatus,
   createInventoryOnce,
   defineInventoryCatalog,
   defineScalarInventoryFungibilityPool,
@@ -820,7 +821,7 @@ describe("derived pool summaries and exact member movements", () => {
       )[0]?.measurements.primary.quantity.amountMinor
     ).toBe(1);
     expect((await inventory.read.reservationFeasibility(time3)).status).toBe(
-      "feasible"
+      InventoryReservationFeasibilityStatus.Feasible
     );
   });
 
@@ -929,7 +930,7 @@ describe("derived pool summaries and exact member movements", () => {
         .primary.quantity.amountMinor
     ).toBe(1);
     expect((await inventory.read.reservationFeasibility(time3)).status).toBe(
-      "feasible"
+      InventoryReservationFeasibilityStatus.Feasible
     );
   });
 

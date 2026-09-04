@@ -1,21 +1,30 @@
 /** One source marker proving a guard or negative regression remains present. */
 export interface AssuranceReference {
+  /** Repository-relative file containing the guard or test marker. */
   readonly file: string;
+  /** Exact source marker required in the referenced file. */
   readonly contains?: string;
+  /** Exact test title required in the referenced file. */
   readonly testTitle?: string;
 }
 
 /** One malformed-input invariant bound to implementation guards and executable evidence. */
 export interface MalformedInputAssuranceEntry {
+  /** Stable malformed-input assurance identity. */
   readonly id: string;
+  /** Plain-language invariant this entry requires. */
   readonly invariant: string;
+  /** Implementation guard markers that must remain present. */
   readonly guards: readonly AssuranceReference[];
+  /** Negative regression evidence that must remain present. */
   readonly behaviorEvidence: readonly AssuranceReference[];
 }
 
 /** Runtime-validated malformed-input assurance manifest. */
 export interface MalformedInputAssuranceManifest {
+  /** Checked manifest format version. */
   readonly schemaVersion: number;
+  /** Decoded malformed-input assurance entries. */
   readonly entries: readonly MalformedInputAssuranceEntry[];
 }
 

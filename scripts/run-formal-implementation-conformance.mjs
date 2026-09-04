@@ -80,6 +80,9 @@ if (fullFormal) {
 
 let traces;
 let packageTraceTests = [];
+/** Child validation commands must not inherit CI=true because repository pnpm behavior is defined outside CI mode. */
+const childProcessEnvironment = { ...process.env };
+delete childProcessEnvironment.CI;
 for (const step of steps) {
   if (step.id === "memory-trace-property-and-authority-evidence") {
     traces = readManifest("TRACE_REPLAY_ASSURANCE.json");
@@ -104,7 +107,7 @@ for (const step of steps) {
   const result = spawnSync(step.command, step.args, {
     cwd: repositoryRoot,
     stdio: "inherit",
-    env: { ...process.env, ...(step.env ?? {}) },
+    env: { ...childProcessEnvironment, ...(step.env ?? {}) },
   });
   if (result.error) throw result.error;
   if (result.status !== 0) {

@@ -261,6 +261,11 @@ export function inventoryTraceabilityNodeIdentity(
     if (node.itemId === undefined)
       throw new Error("Lot traceability node needs itemId.");
     assertInventoryIdentity(node.itemId, "lot traceability itemId");
+  } else if (node.itemId !== undefined) {
+    // Only lot nodes are item-qualified; accepting this field would split one non-lot durable identity.
+    throw new Error(
+      `Traceability node kind '${node.kind}' must not name itemId.`
+    );
   }
   return JSON.stringify([node.kind, node.itemId ?? null, node.id]);
 }

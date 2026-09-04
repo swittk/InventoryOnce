@@ -28,6 +28,7 @@ describe("inventorySha256", () => {
 
 /** Mirror the pre-transfer projection digest layout to guard durable-head upgrade compatibility. */
 function legacyProjectionDigest(projection: InventoryProjectionState): string {
+  /** Canonically order one keyed projection family exactly as the legacy digest did. */
   const rows = <T>(values: Readonly<Record<string, T>>): readonly string[] => {
     const keys = Object.keys(values);
     keys.sort();

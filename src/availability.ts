@@ -18,6 +18,7 @@ import {
   type InventoryIndependentMeasurementInput,
   type InventoryMeasurementVector,
 } from "./measurements.js";
+import { zeroInventoryMeasurementsForItem } from "./measurement-schema.js";
 import {
   inventoryStockPositionIdentity,
   type InventoryStockPosition,
@@ -248,9 +249,9 @@ function summarizeAvailabilityRevision(
 ): InventoryAvailabilityRevisionSummary {
   const item = catalog.itemRevision(revisionId);
   const reservationAxis = catalog.measurementAxis(item, item.reservationAxisId);
-  let physicalOnHand = zeroMeasurementsForItem(item);
-  let usablePhysicalOnHand = zeroMeasurementsForItem(item);
-  let expiredOnHand = zeroMeasurementsForItem(item);
+  let physicalOnHand = zeroInventoryMeasurementsForItem(item);
+  let usablePhysicalOnHand = zeroInventoryMeasurementsForItem(item);
+  let expiredOnHand = zeroInventoryMeasurementsForItem(item);
   let exactlyAllocatedUsable = zeroQuantity(reservationAxis.unit);
   let exactlyAllocatedExpired = zeroQuantity(reservationAxis.unit);
   const locationIds = availabilityPoolLocationIds(
@@ -670,7 +671,7 @@ function availabilityPoolDeficitMeasurements(
   locationIds: readonly string[]
 ): InventoryMeasurementVector {
   const selectedLocations = new Set(locationIds);
-  let deficit = zeroMeasurementsForItem(item);
+  let deficit = zeroInventoryMeasurementsForItem(item);
   for (const positionIdentity of projection.positionIdsByItemRevisionId[
     item.revisionId
   ] ?? []) {
@@ -877,25 +878,6 @@ function reservationTouchesPositions(
   return false;
 }
 
-/** Build exact zero across every configured measurement axis of one item revision. */
-function zeroMeasurementsForItem(
-  item: InventoryItemDefinitionRevision
-): InventoryMeasurementVector {
-  const independent: InventoryIndependentMeasurementInput[] = [];
-  for (const axis of item.independentAxes) {
-    independent.push({
-      axisId: axis.axisId,
-      quantity: parseQuantity("0", axis.unit),
-    });
-  }
-  return inventoryMeasurementVector(
-    inventoryMeasurement(
-      item.primaryAxis.axisId,
-      parseQuantity("0", item.primaryAxis.unit)
-    ),
-    independent
-  );
-}
 
 /** Sort selected/current positions by exact deterministic position identity. */
 function compareAvailabilityPosition(
