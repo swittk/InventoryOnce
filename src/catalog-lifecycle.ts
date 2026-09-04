@@ -218,7 +218,7 @@ export async function ensureInventoryScalarCatalogRevision({
     });
   }
 
-  if (!allowCreate && !activateRevision) {
+  if (!allowCreate) {
     throw new Error(
       `Inventory command for '${normalizedItemId}' references an unretained unit/package revision.`
     );

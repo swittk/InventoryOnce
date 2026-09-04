@@ -66161,7 +66161,6 @@
         "test/formal-storage-refinement.test.ts",
         "test/policy-operations.test.ts",
         "test/allocation-results.test.ts",
-        "test/formal-implementation-refinement.test.ts",
         "test/storage-conformance-suite.ts"
       ],
       "family": "stock-policy-issue",
@@ -66466,7 +66465,6 @@
         "test/formal-storage-refinement.test.ts",
         "test/policy-operations.test.ts",
         "test/allocation-results.test.ts",
-        "test/formal-implementation-refinement.test.ts",
         "test/storage-conformance-suite.ts"
       ],
       "family": "stock-policy-issue",
@@ -69997,10 +69995,10 @@
               "column": 86,
               "file": "test/transfer-lifecycle.test.ts",
               "hasBody": true,
-              "id": "test/transfer-lifecycle.test.ts:16788:<anonymous@512>",
+              "id": "test/transfer-lifecycle.test.ts:16871:<anonymous@514>",
               "kind": "ArrowFunction",
-              "line": 512,
-              "name": "<anonymous@512>",
+              "line": 514,
+              "name": "<anonymous@514>",
               "reason": "test-callback"
             },
             {
@@ -75167,7 +75165,6 @@
         "test/formal-storage-refinement.test.ts",
         "test/policy-operations.test.ts",
         "test/allocation-results.test.ts",
-        "test/formal-implementation-refinement.test.ts",
         "test/storage-conformance-suite.ts"
       ],
       "gaps": [],

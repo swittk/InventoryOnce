@@ -277,7 +277,9 @@ describe("first-class physical transfer lifecycle", () => {
         amount: stockAmount("51", "piece"),
         method: InventoryAllocationMethod.Fifo,
       })
-    ).rejects.toThrow();
+    ).rejects.toThrow(
+      "Inventory policy has insufficient eligible stock (1 piece shortfall)."
+    );
 
     await inventory.transfers.dispatch({
       operationId: "dispatch-t1",

@@ -339,7 +339,7 @@ const gapRows = Object.entries(gaps.gaps)
   .join("\n");
 const scaleRows = performance
   .map((row) => {
-    if (row.adapter === "memory") {
+    if (row.scaledPositions !== undefined) {
       return `| memory | ${row.scaledPositions} | ${row.scaledPublishMs.toFixed(
         1
       )} | ${row.scaledReadMs.toFixed(1)} | ${row.scaledPlanMs.toFixed(

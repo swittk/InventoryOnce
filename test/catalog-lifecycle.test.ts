@@ -110,6 +110,24 @@ describe("native scalar catalogue lifecycle", () => {
     expect(activated.catalog.activeItem("item-a").revisionId).toBe(
       historical.itemRevisionId
     );
+
+    await expect(
+      ensureInventoryScalarCatalogRevision({
+        storage,
+        itemId: "item-a",
+        requestedUnit: "pallet",
+        seed: {
+          packageLevels: [{ unit: "pallet", primaryQuantity: "100" }],
+        },
+        allowCreate: false,
+        activateRevision: true,
+        operationId: "catalog-cannot-create-via-activation",
+        occurredAt: time2,
+        defineRevision,
+      })
+    ).rejects.toThrow(
+      "Inventory command for 'item-a' references an unretained unit/package revision."
+    );
   });
 
   it("rejects malformed package declarations and dishonest revision factories", async () => {
