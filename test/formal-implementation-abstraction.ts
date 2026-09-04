@@ -36,6 +36,11 @@ import {
   zeroQuantity,
 } from "../src/quantity.js";
 
+/** Locale-independent ordering used only by the independent executable abstraction. */
+function compareAbstractIdentityText(left: string, right: string): number {
+  return left < right ? -1 : left > right ? 1 : 0;
+}
+
 /** Exact JSON-safe quantity tuple used by the executable abstraction. */
 export type AbstractQuantity = readonly [
   amountMinor: number,
@@ -212,7 +217,7 @@ export function abstractMeasurements(
     axisId: measurement.axisId,
     quantity: abstractQuantity(measurement.quantity),
   }));
-  values.sort((left, right) => left.axisId.localeCompare(right.axisId));
+  values.sort((left, right) => compareAbstractIdentityText(left.axisId, right.axisId));
   return values;
 }
 
@@ -237,12 +242,12 @@ export function abstractPositionKey(
       ? {}
       : { dispositionAuthorityId: key.dispositionAuthorityId }),
     ...(key.transferId === undefined ? {} : { transferId: key.transferId }),
-    ...(key.qualifiedDimensions === undefined
+    ...(key.qualifiedDimensions === undefined || key.qualifiedDimensions.length === 0
       ? {}
       : {
-          qualifiedDimensions: key.qualifiedDimensions.map(
-            (dimension) => `${dimension.dimensionId}=${dimension.valueId}`
-          ),
+          qualifiedDimensions: key.qualifiedDimensions
+            .map((dimension) => `${dimension.dimensionId}=${dimension.valueId}`)
+            .sort(compareAbstractIdentityText),
         }),
   };
 }
@@ -354,7 +359,7 @@ function canonicalValue(value: unknown): unknown {
   if (value !== null && typeof value === "object") {
     const result: Record<string, unknown> = {};
     for (const [key, nested] of Object.entries(value).sort(([left], [right]) =>
-      left.localeCompare(right)
+      compareAbstractIdentityText(left, right)
     )) {
       if (typeof nested === "function" || nested === undefined) continue;
       result[key] = canonicalValue(nested);
@@ -382,7 +387,7 @@ export function abstractInventoryState(
   world: InventoryWorldState
 ): AbstractInventoryState {
   const buckets = Object.values(world.projection.positions).map(abstractBucket);
-  buckets.sort((left, right) => left.identity.localeCompare(right.identity));
+  buckets.sort((left, right) => compareAbstractIdentityText(left.identity, right.identity));
   const events = Object.values(world.projection.events).map(abstractEvent);
   events.sort((left, right) => left.recordSequence - right.recordSequence);
   const lots = Object.entries(world.projection.lots).map(([identity, lot]) =>
@@ -394,7 +399,7 @@ export function abstractInventoryState(
     })
   );
   lots.sort((left, right) =>
-    String(left.identity).localeCompare(String(right.identity))
+    compareAbstractIdentityText(String(left.identity), String(right.identity))
   );
   const containers = Object.entries(world.projection.containers).map(
     ([identity, container]) =>
@@ -406,11 +411,11 @@ export function abstractInventoryState(
       })
   );
   containers.sort((left, right) =>
-    String(left.identity).localeCompare(String(right.identity))
+    compareAbstractIdentityText(String(left.identity), String(right.identity))
   );
   const transfers = Object.values(world.projection.transfers ?? {}).map(abstractTransfer);
   transfers.sort((left, right) =>
-    String(left.transferId).localeCompare(String(right.transferId))
+    compareAbstractIdentityText(String(left.transferId), String(right.transferId))
   );
   return {
     worldRevision: world.revision,
@@ -456,7 +461,7 @@ export function abstractReservationState(
     abstractReservation
   );
   reservations.sort((left, right) =>
-    String(left.reservationId).localeCompare(String(right.reservationId))
+    compareAbstractIdentityText(String(left.reservationId), String(right.reservationId))
   );
   const operations = Object.values(book.operations).map((operation) =>
     canonicalRecord({
@@ -504,7 +509,7 @@ export function abstractCountState(
 ): AbstractCountState {
   const counts = Object.values(book.counts).map(abstractCount);
   counts.sort((left, right) =>
-    String(left.countId).localeCompare(String(right.countId))
+    compareAbstractIdentityText(String(left.countId), String(right.countId))
   );
   const operations = Object.values(book.operations).map((operation) =>
     canonicalRecord({
@@ -515,7 +520,7 @@ export function abstractCountState(
     })
   );
   operations.sort((left, right) =>
-    String(left.operationId).localeCompare(String(right.operationId))
+    compareAbstractIdentityText(String(left.operationId), String(right.operationId))
   );
   return { counts, operations };
 }
@@ -535,7 +540,7 @@ export function abstractTraceabilityState(
       })
   );
   relations.sort((left, right) =>
-    String(left.identity).localeCompare(String(right.identity))
+    compareAbstractIdentityText(String(left.identity), String(right.identity))
   );
   return { relations };
 }
@@ -896,8 +901,8 @@ export function assertAbstractTraceabilityInvariants(
   const childrenByParent = new Map<string, string[]>();
   for (const relation of Object.values(state.relations)) {
     if (relation.kind !== "containment") continue;
-    const child = JSON.stringify(relation.from);
-    const parent = JSON.stringify(relation.to);
+    const child = JSON.stringify(canonicalValue(relation.from));
+    const parent = JSON.stringify(canonicalValue(relation.to));
     const children = childrenByParent.get(parent) ?? [];
     children.push(child);
     childrenByParent.set(parent, children);

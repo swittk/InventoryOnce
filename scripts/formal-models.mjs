@@ -3,6 +3,33 @@ export const formalModels = Object.freeze(
   ["AuthorityWriterFence", "PublishedHeadCAS", "CompositionRevision", "CollectionView", "FungibilityPool", "CatalogPublication", "ReclassificationConservation", "UseByReservation", "ResourceDimensions", "ReservationScope", "TraceabilityGraph", "PhysicalCount", "DualMeasure", "DistributedRights", "CorrectionHistory", "DurableTransferRefinement", "TransferLifecycle", "RepairLiveness", "RecordedDeficit", "SnapshotSupersededWorkflow", "InventoryOperation", "ImplementationConformance", "ReservationSafety", "PackagingIdentity"]
 );
 
+/** Stateful API families that must retain bounded executable trace/property evidence. */
+export const statefulOperationFamilyIds = Object.freeze([
+  "authority-control",
+  "authority-cutover",
+  "catalog-publication",
+  "composition-open",
+  "fungibility-movement",
+  "stock-receipt",
+  "stock-issue",
+  "stock-policy-issue",
+  "stock-transfer",
+  "stock-policy-transfer",
+  "transfer-lifecycle",
+  "dimension-reclassification",
+  "packaging-reclassification",
+  "transformation",
+  "scrap",
+  "correction",
+  "container-command",
+  "lot-command",
+  "reservation",
+  "count",
+  "traceability",
+  "durable-protocol",
+  "migration-publication",
+]);
+
 
 /** Parse invariant/property names from one TLC config using the supported config grammar. */
 export function formalConfigCheckNames(config) {

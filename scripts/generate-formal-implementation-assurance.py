@@ -190,7 +190,8 @@ def direct_executable_witnesses(key):
  for row in call_chain_entry(key)['witnesses']:
   witness = row['witness']
   chain = witness['chain']
-  if len(chain) < 2: continue
+  if len(chain) < 2:
+   continue
   caller_file = chain[-2].get('file')
   if not isinstance(caller_file, str) or not caller_file.startswith('test/'):
    continue

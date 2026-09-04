@@ -206,6 +206,7 @@ export async function ensureInventoryScalarCatalogRevision({
       storage,
       catalog,
       itemId: normalizedItemId,
+      requestedUnit: normalizedRequestedUnit,
       selectedItemRevisionId: selected.revisionId,
       operationId,
       occurredAt,
@@ -229,32 +230,16 @@ export async function ensureInventoryScalarCatalogRevision({
   }
   const definitions = defineRevision(declaration);
   assertScalarDefinitionsMatchDeclaration(definitions, declaration);
-  const retainedItemRevisionIds = new Set(
-    catalog.itemRevisions.map(
-      /** Index exact retained item revision identities before append. */
-      (revision) => revision.revisionId
-    )
-  );
-  const retainedPackagingRevisionIds = new Set(
-    catalog.packagingRevisions.map(
-      /** Index exact retained package revision identities before append. */
-      (revision) => revision.revisionId
-    )
-  );
   return publishScalarCatalog({
     storage,
     catalog,
     itemId: normalizedItemId,
+    requestedUnit: normalizedRequestedUnit,
     selectedItemRevisionId: definitions.item.revisionId,
     operationId,
     occurredAt,
-    itemRevisions: retainedItemRevisionIds.has(definitions.item.revisionId)
-      ? []
-      : [definitions.item],
-    packagingRevisions: definitions.packaging.filter(
-      /** Append only package revisions not already retained by exact identity. */
-      (revision) => !retainedPackagingRevisionIds.has(revision.revisionId)
-    ),
+    itemRevisions: [definitions.item],
+    packagingRevisions: definitions.packaging,
     activeItemRevisionIds:
       activeItem === undefined || activateRevision
         ? { [normalizedItemId]: definitions.item.revisionId }
@@ -300,6 +285,8 @@ interface PublishScalarCatalogInput {
   readonly catalog: InventoryCatalog;
   /** Stable item being selected. */
   readonly itemId: ItemId;
+  /** Exact command unit that must resolve inside the selected retained revision. */
+  readonly requestedUnit: string;
   /** Exact revision selected after publication. */
   readonly selectedItemRevisionId: string;
   /** Stable publication retry identity. */
@@ -321,6 +308,7 @@ async function publishScalarCatalog({
   storage,
   catalog,
   itemId,
+  requestedUnit,
   selectedItemRevisionId,
   operationId,
   occurredAt,
@@ -347,6 +335,12 @@ async function publishScalarCatalog({
     publishedCatalog,
     itemId,
     selectedItemRevisionId
+  );
+  assertScalarUnitResolves(
+    publishedCatalog,
+    itemId,
+    selectedItemRevisionId,
+    requestedUnit
   );
   return {
     world: publishedWorld,

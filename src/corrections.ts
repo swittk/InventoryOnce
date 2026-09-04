@@ -110,6 +110,11 @@ export function createInventoryCorrectionEvent(
           catalog: input.catalog,
           event: input.replacement,
         });
+  if (replacement !== undefined && replacement.occurredAt > original.recordedAt) {
+    throw new Error(
+      "Inventory correction replacement cannot occur after the retained root event was durably recorded."
+    );
+  }
   const desiredProjection = projectHistoryWithReplacement(
     input.catalog,
     input.projection,

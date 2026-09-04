@@ -36,6 +36,24 @@ export const FORMAL_IMPLEMENTATION_TRACE_IDS = [
   "TRACE-PUBLIC-HELPER-DIRECT-EXECUTION",
 ] as const;
 
+/** Execute one expected-failure helper directly and require the intended message. */
+function expectDirectValidationFailure(
+  action: () => unknown,
+  expectedMessage: string
+): void {
+  let failure: unknown;
+  try {
+    action();
+  } catch (error) {
+    failure = error;
+  }
+  expect(failure).toBeInstanceOf(Error);
+  if (!(failure instanceof Error)) {
+    throw new Error("Direct validation helper did not throw an Error.");
+  }
+  expect(failure.message).toContain(expectedMessage);
+}
+
 describe("direct execution of otherwise family-only public helpers", () => {
   it("executes exact quantity conversion and multiplication", () => {
     expect(
@@ -106,38 +124,46 @@ describe("direct execution of otherwise family-only public helpers", () => {
 
   it("executes durable begin/materialization validation helpers directly", () => {
     const base = emptyInventoryWorldState();
-    expect(() =>
-      validateInventoryDurableOperationBeginInput({
-        operationId: "",
-        intentFingerprint: "intent",
-        baseRevision: 0,
-        recordedAt: time0,
-        plan: {} as InventoryDurableOperationPlan,
-      })
-    ).toThrow("operationId");
-    expect(() =>
-      materializeInventoryDurableOperationWorld(
-        base,
-        {} as InventoryDurableOperationPlan
-      )
-    ).toThrow("base world");
-    expect(() =>
-      validateInventoryMigrationManifestBeginInput({
-        migrationId: "",
-        planDigest: "plan",
-        baseRevision: 0,
-        baseWorldRoot: "root",
-        operationIds: [],
-        sourceDispositions: [],
-        plan: {} as InventoryDurableMigrationPlan,
-      })
-    ).toThrow("manifest id");
-    expect(() =>
-      materializeInventoryDurableMigrationWorld(
-        base,
-        {} as InventoryDurableMigrationPlan
-      )
-    ).toThrow("exact target world");
+    expectDirectValidationFailure(
+      () =>
+        validateInventoryDurableOperationBeginInput({
+          operationId: "",
+          intentFingerprint: "intent",
+          baseRevision: 0,
+          recordedAt: time0,
+          plan: {} as InventoryDurableOperationPlan,
+        }),
+      "operationId"
+    );
+    expectDirectValidationFailure(
+      () =>
+        materializeInventoryDurableOperationWorld(
+          base,
+          {} as InventoryDurableOperationPlan
+        ),
+      "base world"
+    );
+    expectDirectValidationFailure(
+      () =>
+        validateInventoryMigrationManifestBeginInput({
+          migrationId: "",
+          planDigest: "plan",
+          baseRevision: 0,
+          baseWorldRoot: "root",
+          operationIds: [],
+          sourceDispositions: [],
+          plan: {} as InventoryDurableMigrationPlan,
+        }),
+      "manifest id"
+    );
+    expectDirectValidationFailure(
+      () =>
+        materializeInventoryDurableMigrationWorld(
+          base,
+          {} as InventoryDurableMigrationPlan
+        ),
+      "exact target world"
+    );
   });
 
   it("invokes portable cutover validation without fabricating a source", async () => {

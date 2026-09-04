@@ -268,6 +268,7 @@ function floorQuantityToIncrement(
   const decimals = Math.max(value.decimals, increment.decimals);
   const valueMinor = integerAtDecimals(value, decimals);
   const incrementMinor = integerAtDecimals(increment, decimals);
+  // BigInt division truncates exactly; non-negative operands therefore floor without Number conversion.
   const floored = (valueMinor / incrementMinor) * incrementMinor;
   return quantity({
     amountMinor: safeNumber(

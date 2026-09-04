@@ -883,7 +883,7 @@ export class InventoryAuthorityControl
         targetWorldRoot,
         targetWorldRevision: input.targetWorldRevision,
         activatedAt,
-        compatibilityProjectionWorldRevision: input.targetWorldRevision,
+        compatibilityProjectionWorldRevision: 0,
         compatibilityProjectionStatus:
           InventoryCompatibilityProjectionStatus.Lagging,
         compatibilityProjectionError: "",

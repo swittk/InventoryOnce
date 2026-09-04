@@ -16,9 +16,12 @@ import {
   InventoryDeficitPolicy,
   defineScalarInventoryItem,
   inventoryIntentFingerprint,
+  inventoryStockPositionIdentity,
+  normalizeInventoryStockPositionKey,
   projectInventoryEvents,
   refineInventoryReservation,
 } from "../src/kernel.js";
+import { applyInventoryRecordedDeficitBurden } from "../src/deficits.js";
 import { createInventoryReservationBookDelta } from "../src/integrity.js";
 import {
   createInMemoryInventoryDurableStorage,
@@ -35,6 +38,57 @@ import {
 } from "./test-fixtures.js";
 
 describe("collision-free retry identity", () => {
+  it("canonicalizes an empty qualified-dimension set to the same position identity as omission", () => {
+    const base = {
+      itemId: "item-a",
+      itemRevisionId: "item-a-v2",
+      locationId: "store",
+    };
+    const withEmptyDimensions = { ...base, qualifiedDimensions: [] };
+    expect(normalizeInventoryStockPositionKey(withEmptyDimensions)).toEqual(base);
+    expect(inventoryStockPositionIdentity(withEmptyDimensions)).toBe(
+      inventoryStockPositionIdentity(base)
+    );
+  });
+
+  it("floors recorded-deficit capacity to exact BigInt allocation increments", async () => {
+    const inventory = createTestInventory(
+      undefined,
+      undefined,
+      undefined,
+      InventoryDeficitPolicy.Record
+    );
+    await inventory.stock.issue({
+      operationId: "bigint-deficit-floor",
+      occurredAt: time0,
+      from: loosePosition("store"),
+      amount: stockAmount("1", "piece"),
+    });
+    const position = {
+      ...loosePosition("store", { lotId: "BIGINT-FLOOR" }),
+      itemRevisionId: "item-a-v2",
+    };
+    const adjusted = applyInventoryRecordedDeficitBurden({
+      projection: (await inventory.read.world()).projection,
+      itemRevisionId: "item-a-v2",
+      axisId: "pieces",
+      unit: unitCode("piece"),
+      locationIds: ["store"],
+      lines: [
+        {
+          position,
+          capacity: parseQuantity("6", "piece"),
+          allocationIncrement: parseQuantity("2", "piece"),
+        },
+      ],
+    });
+    expect(
+      adjusted.capacityByPositionIdentity.get(
+        inventoryStockPositionIdentity(position)
+      )?.amountMinor
+    ).toBe(4);
+    expect(adjusted.uncoveredDeficit.amountMinor).toBe(0);
+  });
   it("keeps delimiter, empty, and null field boundaries distinct", () => {
     expect(inventoryIntentFingerprint(["actor|", "source"]))
       .not.toBe(inventoryIntentFingerprint(["actor", "|source"]));

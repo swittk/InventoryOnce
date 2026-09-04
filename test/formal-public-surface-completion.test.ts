@@ -49,9 +49,36 @@ export const FORMAL_IMPLEMENTATION_TRACE_IDS = [
   "TRACE-PUBLIC-SURFACE-CALLGRAPH-COMPLETION",
 ] as const;
 
-/** Require a synchronous low-level validator to reject malformed public input. */
+/** Require a synchronous low-level validator to reject malformed public input with a deliberate Error. */
 function expectMalformedInputRejected(action: () => unknown): void {
-  expect(action).toThrow();
+  let failure: unknown;
+  try {
+    action();
+  } catch (error) {
+    failure = error;
+  }
+  expect(failure).toBeInstanceOf(Error);
+  if (!(failure instanceof Error)) {
+    throw new Error("Malformed-input validator did not throw an Error.");
+  }
+  expect(failure.message.length).toBeGreaterThan(0);
+}
+
+/** Require an asynchronous façade validator to reject malformed input with a deliberate Error. */
+async function expectMalformedAsyncInputRejected(
+  action: () => Promise<unknown>
+): Promise<void> {
+  let failure: unknown;
+  try {
+    await action();
+  } catch (error) {
+    failure = error;
+  }
+  expect(failure).toBeInstanceOf(Error);
+  if (!(failure instanceof Error)) {
+    throw new Error("Malformed-input façade did not reject with an Error.");
+  }
+  expect(failure.message.length).toBeGreaterThan(0);
 }
 
 describe("remaining public implementation surfaces", () => {
@@ -211,8 +238,8 @@ describe("remaining public implementation surfaces", () => {
     expect(snapshot.reservation("missing-reservation")).toBeUndefined();
     expect(snapshot.count("missing-count")).toBeUndefined();
     expect(snapshot.reservationFeasibility(time2).groups).toEqual([]);
-    expect(() => snapshot.collectionSummary({} as never)).toThrow();
-    expect(() => snapshot.fungibilitySummary({} as never)).toThrow();
+    expectMalformedInputRejected(() => snapshot.collectionSummary({} as never));
+    expectMalformedInputRejected(() => snapshot.fungibilitySummary({} as never));
 
     expect((await inventory.read.event(received.event.eventId))?.eventId).toBe(
       received.event.eventId
@@ -224,24 +251,42 @@ describe("remaining public implementation surfaces", () => {
 
   it("executes the remaining fail-closed facade mutation implementations", async () => {
     const inventory = createTestInventory();
-    await expect(inventory.stock.issueMany({} as never)).rejects.toThrow();
-    await expect(inventory.stock.transferMany({} as never)).rejects.toThrow();
-    await expect(inventory.stock.scrapMany({} as never)).rejects.toThrow();
-    await expect(inventory.stock.clearStatus({} as never)).rejects.toThrow();
-    await expect(inventory.stock.clearOwner({} as never)).rejects.toThrow();
-    await expect(inventory.stock.clearCustodian({} as never)).rejects.toThrow();
-    await expect(
+    await expectMalformedAsyncInputRejected(() =>
+      inventory.stock.issueMany({} as never)
+    );
+    await expectMalformedAsyncInputRejected(() =>
+      inventory.stock.transferMany({} as never)
+    );
+    await expectMalformedAsyncInputRejected(() =>
+      inventory.stock.scrapMany({} as never)
+    );
+    await expectMalformedAsyncInputRejected(() =>
+      inventory.stock.clearStatus({} as never)
+    );
+    await expectMalformedAsyncInputRejected(() =>
+      inventory.stock.clearOwner({} as never)
+    );
+    await expectMalformedAsyncInputRejected(() =>
+      inventory.stock.clearCustodian({} as never)
+    );
+    await expectMalformedAsyncInputRejected(() =>
       inventory.stock.clearDispositionAuthority({} as never)
-    ).rejects.toThrow();
-    await expect(
+    );
+    await expectMalformedAsyncInputRejected(() =>
       inventory.stock.clearQualifiedDimension({} as never)
-    ).rejects.toThrow();
-    await expect(inventory.fungibility.scrap({} as never)).rejects.toThrow();
-    await expect(inventory.reservations.expire({} as never)).rejects.toThrow();
-    await expect(inventory.counts.abandon({} as never)).rejects.toThrow();
-    await expect(
+    );
+    await expectMalformedAsyncInputRejected(() =>
+      inventory.fungibility.scrap({} as never)
+    );
+    await expectMalformedAsyncInputRejected(() =>
+      inventory.reservations.expire({} as never)
+    );
+    await expectMalformedAsyncInputRejected(() =>
+      inventory.counts.abandon({} as never)
+    );
+    await expectMalformedAsyncInputRejected(() =>
       inventory.traceability.disassociate({} as never)
-    ).rejects.toThrow();
+    );
     expect((await inventory.read.world()).revision).toBe(0);
   });
 });

@@ -3,11 +3,14 @@ import {
   InventoryAllocationMethod,
   InventoryAuthorityMode,
   InventoryDeficitPolicy,
+  InventoryTraceabilityNodeKind,
+  InventoryTraceabilityRelationKind,
   createInventoryAuthorityControl,
   inventoryStockSelector,
   stockAmount,
 } from "../src/index.js";
 import { createInMemoryInventoryDurableStorage } from "../src/storage-api.js";
+import type { InventoryTraceabilityState } from "../src/traceability.js";
 import {
   applyInventoryMigrationPlan,
   defineInventoryMigration,
@@ -23,10 +26,12 @@ import {
   abstractInventoryState,
   abstractMigrationState,
   abstractOperationResult,
+  abstractPositionIdentity,
   abstractPrimaryBalance,
   assertAbstractAuthorityInvariants,
   assertAbstractInventoryInvariants,
   assertAbstractMigrationInvariants,
+  assertAbstractTraceabilityInvariants,
   assertStateResultRefinement,
 } from "./formal-implementation-abstraction.js";
 import {
@@ -76,6 +81,42 @@ function createRefinementMigration(balance = "5") {
 }
 
 describe("formal implementation state/result refinement", () => {
+  it("canonicalizes abstraction identities independently of producer ordering", () => {
+    const left = {
+      itemId: "item-a",
+      itemRevisionId: "item-a-v2",
+      locationId: "store",
+      qualifiedDimensions: [
+        { dimensionId: "zone", valueId: "B" },
+        { dimensionId: "temperature", valueId: "cold" },
+      ],
+    };
+    const right = {
+      itemId: "item-a",
+      itemRevisionId: "item-a-v2",
+      locationId: "store",
+      qualifiedDimensions: [
+        { dimensionId: "temperature", valueId: "cold" },
+        { dimensionId: "zone", valueId: "B" },
+      ],
+    };
+    expect(abstractPositionIdentity(left)).toBe(abstractPositionIdentity(right));
+
+    const traceability: InventoryTraceabilityState = {
+      relations: {
+        "semantic-self-cycle": {
+          kind: InventoryTraceabilityRelationKind.Containment,
+          from: { kind: InventoryTraceabilityNodeKind.Container, id: "SAME" },
+          to: { id: "SAME", kind: InventoryTraceabilityNodeKind.Container },
+          createdByEventId: "semantic-self-cycle-event",
+        },
+      },
+      containmentChildContainerIdsByParentNodeIdentity: {},
+    };
+    expect(() => assertAbstractTraceabilityInvariants(traceability)).toThrow(
+      "cycle"
+    );
+  });
   it("replays every bounded receive/issue/transfer trace against arithmetic invariants", async () => {
     for (const received of [4, 5]) {
       for (const issued of [1, 2]) {

@@ -495,7 +495,7 @@ export interface InventoryMigrationDryRun {
   readonly baseRevision: number;
   /** Exact target content root reviewed before the first migration event. */
   readonly baseWorldRoot: string;
-  /** Fully replayed result expected after the complete migration. */
+  /** Expected physical-stock and traceability result of replaying the reviewed migration intent. */
   readonly resultWorld: InventoryWorldState;
 }
 

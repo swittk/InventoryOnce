@@ -120,10 +120,12 @@ function isCallable(node) {
 }
 
 const callables = new Map();
+const callableNodeById = new Map();
 const declarationToCallable = new Map();
 function registerCallable(node) {
   const id = callableId(node);
   callables.set(id, callables.get(id) ?? callableDescription(node));
+  callableNodeById.set(id, node);
   declarationToCallable.set(node, id);
   return id;
 }
@@ -300,7 +302,137 @@ function isTestCallback(node) {
   );
 }
 
-/** Add statically resolved calls and callback dispatch from tests and production bodies. */
+/** Resolve an aliased compiler symbol without changing package ownership. */
+function resolvedSymbolAt(node) {
+  const symbol = checker.getSymbolAtLocation(node);
+  if (symbol === undefined) return undefined;
+  return (symbol.flags & ts.SymbolFlags.Alias) !== 0
+    ? checker.getAliasedSymbol(symbol)
+    : symbol;
+}
+
+/** Resolve concrete package bodies behind one call signature declaration. */
+function concreteCallableTargets(declaration) {
+  const result = new Set();
+  const pending = [...resolvedCallableTargets(declaration)];
+  const visited = new Set();
+  while (pending.length > 0) {
+    const id = pending.pop();
+    if (id === undefined || visited.has(id)) continue;
+    visited.add(id);
+    if (callables.get(id)?.hasBody === true) {
+      result.add(id);
+      continue;
+    }
+    for (const target of edges.get(id) ?? []) {
+      const reason = edgeReasons.get(`${id}\n${target}`);
+      if (
+        reason === "overload-to-body" ||
+        reason === "interface-to-implementation"
+      ) {
+        pending.push(target);
+      }
+    }
+  }
+  return [...result];
+}
+
+/** Resolve callable package targets carried by one argument expression. */
+function callbackTargets(argument) {
+  if (ts.isArrowFunction(argument) || ts.isFunctionExpression(argument)) {
+    const target = declarationToCallable.get(argument);
+    return target === undefined ? [] : [target];
+  }
+  return resolvedTargetsOfExpression(argument);
+}
+
+/** Return callback argument indexes whose external contract is known to invoke them. */
+function externalCallbackArgumentIndexes(node) {
+  const indexes = new Set();
+  const sourcePath = normalizedPath(node.getSourceFile().fileName);
+  const expressionText = node.expression.getText(node.getSourceFile());
+  if (
+    sourcePath.startsWith(`${testRoot}/`) &&
+    /(?:^|\.)(?:it|test|describe|beforeAll|beforeEach|afterAll|afterEach)(?:\.|\(|$)/u.test(
+      expressionText
+    )
+  ) {
+    for (let index = 0; index < (node.arguments?.length ?? 0); index += 1) {
+      if (callbackTargets(node.arguments[index]).length > 0) indexes.add(index);
+    }
+  }
+  const signature = checker.getResolvedSignature(node);
+  const declaration = signature?.declaration;
+  const declarationPath = declaration === undefined ? "" : normalizedPath(declaration.getSourceFile().fileName);
+  const typescriptLibrary = /\/typescript\/lib\/lib\..*\.d\.ts$/u.test(declarationPath);
+  if (!typescriptLibrary) return indexes;
+  let methodName;
+  if (ts.isPropertyAccessExpression(node.expression)) methodName = node.expression.name.text;
+  else if (ts.isIdentifier(node.expression)) methodName = node.expression.text;
+  if (new Set(["map","flatMap","filter","forEach","some","every","find","findIndex","findLast","findLastIndex","reduce","reduceRight","sort","toSorted"]).has(methodName)) indexes.add(0);
+  else if (methodName === "then") { indexes.add(0); indexes.add(1); }
+  else if (methodName === "catch" || methodName === "finally") indexes.add(0);
+  else if (methodName === "from") indexes.add(1);
+  if (ts.isNewExpression(node) && node.expression.getText(node.getSourceFile()) === "Promise") indexes.add(0);
+  return indexes;
+}
+
+const parameterInvocationMemo = new Map();
+const parameterInvocationActive = new Set();
+
+/** Return whether one concrete package callable executes the named parameter. */
+function callableInvokesParameter(callableId, parameterIndex) {
+  const key = `${callableId}:${parameterIndex}`;
+  if (parameterInvocationMemo.has(key)) return parameterInvocationMemo.get(key);
+  if (parameterInvocationActive.has(key)) return false;
+  const callable = callableNodeById.get(callableId);
+  const parameter = callable?.parameters?.[parameterIndex];
+  if (callable === undefined || parameter === undefined || !ts.isIdentifier(parameter.name)) {
+    parameterInvocationMemo.set(key, false);
+    return false;
+  }
+  const parameterSymbol = resolvedSymbolAt(parameter.name);
+  if (parameterSymbol === undefined) {
+    parameterInvocationMemo.set(key, false);
+    return false;
+  }
+  parameterInvocationActive.add(key);
+  const inspectedCallbacks = new Set();
+  function scan(current, callableRoot) {
+    if (current !== callableRoot && isCallable(current)) return false;
+    if (ts.isCallExpression(current) || ts.isNewExpression(current)) {
+      if (resolvedSymbolAt(current.expression) === parameterSymbol) return true;
+      for (let index = 0; index < (current.arguments?.length ?? 0); index += 1) {
+        if (!callInvokesArgument(current, index)) continue;
+        const argument = current.arguments[index];
+        if (resolvedSymbolAt(argument) === parameterSymbol) return true;
+        for (const target of callbackTargets(argument)) {
+          if (inspectedCallbacks.has(target)) continue;
+          inspectedCallbacks.add(target);
+          const targetNode = callableNodeById.get(target);
+          if (targetNode !== undefined && scan(targetNode, targetNode)) return true;
+        }
+      }
+    }
+    let found = false;
+    ts.forEachChild(current, (child) => { if (!found && scan(child, callableRoot)) found = true; });
+    return found;
+  }
+  const result = scan(callable, callable);
+  parameterInvocationActive.delete(key);
+  parameterInvocationMemo.set(key, result);
+  return result;
+}
+
+/** Return whether this call contract executes one argument as a callback. */
+function callInvokesArgument(node, argumentIndex) {
+  if (externalCallbackArgumentIndexes(node).has(argumentIndex)) return true;
+  const signature = checker.getResolvedSignature(node);
+  const targets = concreteCallableTargets(signature?.declaration);
+  return targets.length > 0 && targets.every((target) => callableInvokesParameter(target, argumentIndex));
+}
+
+/** Add statically resolved calls and only contract-proven callback dispatch. */
 for (const source of packageSources) {
   function visit(node) {
     if (
@@ -323,17 +455,18 @@ for (const source of packageSources) {
       for (const target of resolvedCallableTargets(signature?.declaration)) {
         addEdge(caller, target, "resolved-call");
       }
-      for (const argument of node.arguments ?? []) {
-        if (ts.isArrowFunction(argument) || ts.isFunctionExpression(argument)) {
-          addEdge(
-            caller,
-            declarationToCallable.get(argument),
-            "callback-argument"
-          );
-        } else {
-          for (const target of resolvedTargetsOfExpression(argument)) {
-            addEdge(caller, target, "callback-reference");
-          }
+      const concreteCallees = concreteCallableTargets(signature?.declaration);
+      for (let index = 0; index < (node.arguments?.length ?? 0); index += 1) {
+        if (!callInvokesArgument(node, index)) continue;
+        const targets = callbackTargets(node.arguments[index]);
+        if (targets.length === 0) continue;
+        if (concreteCallees.length === 0) {
+          for (const target of targets) addEdge(caller, target, "external-callback-dispatch");
+          continue;
+        }
+        for (const callee of concreteCallees) {
+          if (!callableInvokesParameter(callee, index)) continue;
+          for (const target of targets) addEdge(callee, target, "callback-dispatch");
         }
       }
     }

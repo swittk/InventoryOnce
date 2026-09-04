@@ -3,7 +3,11 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { formalConfigCheckNames, formalModels } from "./formal-models.mjs";
+import {
+  formalConfigCheckNames,
+  formalModels,
+  statefulOperationFamilyIds,
+} from "./formal-models.mjs";
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repositoryRoot = packageRoot;
@@ -228,6 +232,28 @@ const traceModes = Object.values(traces.entries).reduce(
   }),
   {}
 );
+const tracedOperationFamilies = new Set(
+  Object.values(traces.entries).flatMap((entry) => entry.operationFamilies)
+);
+/** Count shared stateful families whose declaration and bounded trace evidence remain covered. */
+const coveredStatefulOperationFamilies = statefulOperationFamilyIds.filter(
+  (familyId) => {
+    const family = api.families[familyId];
+    return (
+      family?.status === "covered" &&
+      family.models.length > 0 &&
+      family.stateProjection.length > 0 &&
+      tracedOperationFamilies.has(familyId)
+    );
+  }
+);
+if (coveredStatefulOperationFamilies.length !== statefulOperationFamilyIds.length) {
+  const covered = new Set(coveredStatefulOperationFamilies);
+  const missing = statefulOperationFamilyIds.filter((familyId) => !covered.has(familyId));
+  throw new Error(
+    `Final report is missing bounded coverage for stateful families: ${missing.join(", ")}.`
+  );
+}
 const report = {
   schemaVersion: 2,
   generatedAt: new Date().toISOString(),
@@ -257,12 +283,8 @@ const report = {
     maximumTypeDepth: api.counts.maximumTypeDepth,
     truncatedTypes: fields.counts.truncatedTypes,
     families: Object.keys(api.families).length,
-    statefulFamilies: Object.values(api.families).filter(
-      (family) =>
-        family.status === "covered" &&
-        family.models.length > 0 &&
-        family.stateProjection.length > 0
-    ).length,
+    statefulFamiliesCovered: coveredStatefulOperationFamilies.length,
+    statefulFamiliesTotal: statefulOperationFamilyIds.length,
   },
   traces: {
     total: Object.keys(traces.entries).length,
@@ -367,8 +389,8 @@ Generated: ${report.generatedAt}
 
 ## Implementation evidence
 
-- Stateful operation families: **${report.coverage.statefulFamilies} / ${
-  report.coverage.statefulFamilies
+- Stateful operation families: **${report.coverage.statefulFamiliesCovered} / ${
+  report.coverage.statefulFamiliesTotal
 }** with bounded trace/property witnesses.
 - Trace entries: **${report.traces.total}** — ${modeText}.
 - The package reference adapter runs the complete frozen-plan and failpoint matrix.

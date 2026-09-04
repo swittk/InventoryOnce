@@ -38,6 +38,7 @@ import {
   zeroInventoryMeasurements,
   type InventoryMeasurementVector,
 } from "./measurements.js";
+import { compareInventoryIdentityText } from "./ordering.js";
 import {
   inventoryStockPositionIdentity,
   normalizeInventoryStockPositionKey,
@@ -1002,11 +1003,6 @@ export function inventoryTransferDispatchIntentFingerprint(
   );
 }
 
-/** Locale-independent code-unit ordering for durable transfer identity strings. */
-function compareTransferIdentityText(left: string, right: string): number {
-  return left < right ? -1 : left > right ? 1 : 0;
-}
-
 /** Stable caller-intent fingerprint for state-dependent receive planning. */
 export function inventoryTransferReceiveIntentFingerprint(
   header: InventoryCommandHeader,
@@ -1018,7 +1014,7 @@ export function inventoryTransferReceiveIntentFingerprint(
     const orderedLines = [...lines];
     orderedLines.sort(
       /** Keep receive intent independent of caller array order. */
-      (left, right) => compareTransferIdentityText(left.lineId, right.lineId)
+      (left, right) => compareInventoryIdentityText(left.lineId, right.lineId)
     );
     encoded = orderedLines.map(
       /** Encode one receive line into collision-free fingerprint parts. */
@@ -1074,7 +1070,7 @@ export function inventoryTransferReleaseIntentFingerprint(
   const orderedIndependent = [...amount.independent];
   orderedIndependent.sort(
     /** Keep independently measured axes in deterministic identity order. */
-    (left, right) => compareTransferIdentityText(left.axisId, right.axisId)
+    (left, right) => compareInventoryIdentityText(left.axisId, right.axisId)
   );
   const independent = orderedIndependent.map(
     /** Encode one independent measured axis into stable fingerprint parts. */

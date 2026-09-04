@@ -197,7 +197,9 @@ export function normalizeInventoryStockPositionKey(
     if (value !== undefined) assertInventoryIdentity(value, label);
   }
   if (key.qualifiedDimensions === undefined) return key;
-  const dimensions = [...key.qualifiedDimensions];
+  const { qualifiedDimensions, ...withoutQualifiedDimensions } = key;
+  if (qualifiedDimensions.length === 0) return withoutQualifiedDimensions;
+  const dimensions = [...qualifiedDimensions];
   dimensions.sort(compareQualifiedDimension);
   let previousDimensionId: string | undefined;
   for (const dimension of dimensions) {

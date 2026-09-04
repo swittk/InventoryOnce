@@ -357,6 +357,32 @@ describe("append-only corrections", () => {
     expect(positions[0]?.measurements.primary.quantity.amountMinor).toBe(8);
   });
 
+  it("rejects replacement occurrence after the retained root was durably recorded", async () => {
+    const inventory = createTestInventory();
+    const original = await inventory.stock.receive({
+      operationId: "future-replacement-root",
+      occurredAt: time0,
+      to: loosePosition("future-replacement-store"),
+      amount: stockAmount("1", "piece"),
+    });
+
+    await expect(
+      inventory.stock.correct({
+        operationId: "future-replacement-correction",
+        occurredAt: time2,
+        correctsEventId: original.event.eventId,
+        reason: "Reject impossible replacement chronology explicitly.",
+        replaceWith: (plans) =>
+          plans.receive({
+            occurredAt: "2026-08-24T12:00:00.000Z",
+            to: loosePosition("future-replacement-store"),
+            amount: stockAmount("1", "piece"),
+          }),
+      })
+    ).rejects.toThrow("after the retained root event was durably recorded");
+    expect((await inventory.read.world()).revision).toBe(1);
+  });
+
   it("rejects a replacement whose historical replay violates Reject deficit policy", async () => {
     const inventory = createTestInventory();
     const original = await inventory.stock.receive({

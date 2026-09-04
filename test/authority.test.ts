@@ -14,7 +14,10 @@ import {
   type InventoryAuthorityStateStore,
 } from "../src/index.js";
 import { defineInventoryMigration } from "../src/migrations-api.js";
-import { createInMemoryInventoryDurableStorage } from "../src/storage-api.js";
+import {
+  InventoryStorageWriteStage,
+  createInMemoryInventoryDurableStorage,
+} from "../src/storage-api.js";
 import { createTabletCatalog } from "./test-fixtures.js";
 
 /** Machine-audited bounded trace identities executed by this suite. */
@@ -143,6 +146,7 @@ describe("portable InventoryOnce authority controller", () => {
     expect(activated.activationKind).toBe(
       InventoryAuthorityActivationKind.LegacyCutover
     );
+    expect(activated.compatibilityProjectionWorldRevision).toBe(0);
     await expect(
       authority.activate({
         fenceToken: " cutover-a ",
@@ -338,6 +342,87 @@ describe("portable InventoryOnce authority controller", () => {
     expect(retained.dualRunStartedAt).toBe("");
   });
 
+  it("keeps the legacy fence after a durable migration exists even when retry drain fails", async () => {
+    const authority = createInventoryAuthorityControl({
+      store: new TestAuthorityStore(),
+      namespaceId: "durable-manifest-retry-fence:primary",
+    });
+    let failMigrationWorld = true;
+    const storage = createInMemoryInventoryDurableStorage({
+      failpoint: (context) => {
+        if (
+          failMigrationWorld &&
+          context.stage === InventoryStorageWriteStage.MigrationWorld &&
+          context.timing === "before"
+        ) {
+          failMigrationWorld = false;
+          throw new Error("Injected staged migration failure.");
+        }
+      },
+    });
+    const compileSource = async (cutoverAt: string) => {
+      const catalog = createTabletCatalog();
+      return {
+        catalog,
+        plan: defineInventoryMigration({
+          catalog,
+          declaration: {
+            migrationId: "durable-manifest-retry-fence-migration",
+            sourceSystem: "durable-manifest-retry-fence-source",
+            cutoverAt,
+            openingStock: [
+              {
+                openingId: "durable-manifest-retry-fence-row",
+                position: { itemId: "item-a", locationId: "store" },
+                amount: stockAmount("1", "piece"),
+                itemRevisionId: "item-a-v2",
+                source: {
+                  sourceType: "legacy-stock",
+                  sourceId: "durable-manifest-retry-fence-row",
+                },
+              },
+            ],
+          },
+        }),
+      };
+    };
+    let failRetryDrain = false;
+    const common = {
+      authority,
+      storage,
+      migrationId: "durable-manifest-retry-fence-migration",
+      fenceToken: "durable-manifest-retry-fence",
+      adapterCertificationDigest: "adapter-v1",
+      sourceRevision: 9,
+      compileSource,
+      drainLegacyWriters: (): Promise<void> =>
+        failRetryDrain
+          ? Promise.reject(new Error("Injected retry drain failure."))
+          : Promise.resolve(),
+      clock: { now: (): string => time2 },
+    };
+
+    await expect(
+      cutoverInventoryAuthority({ ...common, cutoverAt: time1 })
+    ).rejects.toThrow("Injected staged migration failure");
+    expect(
+      await storage.readMigrationManifest(common.migrationId)
+    ).toMatchObject({ state: "applying" });
+    expect((await authority.read()).mode).toBe(InventoryAuthorityMode.Fencing);
+
+    failRetryDrain = true;
+    await expect(cutoverInventoryAuthority(common)).rejects.toThrow(
+      "Injected retry drain failure"
+    );
+    expect((await authority.read()).mode).toBe(InventoryAuthorityMode.Fencing);
+    await expect(
+      authority.admitLegacyWriter({
+        writerToken: "blocked-after-durable-manifest",
+        attemptToken: "blocked-after-durable-manifest-attempt",
+      })
+    ).rejects.toThrow("currently owns the legacy write fence");
+  });
+
   it("reuses the durable DualRun cutover time when retry omits the explicit time", async () => {
     const authority = createInventoryAuthorityControl({
       store: new TestAuthorityStore(),
@@ -403,13 +488,11 @@ describe("portable InventoryOnce authority controller", () => {
   });
 
   it("gates application operations on one exact persisted mode", () => {
-    expect(() =>
-      requireInventoryAuthorityMode(
-        InventoryAuthorityMode.Authoritative,
-        InventoryAuthorityMode.Authoritative,
-        "Physical command"
-      )
-    ).not.toThrow();
+    requireInventoryAuthorityMode(
+      InventoryAuthorityMode.Authoritative,
+      InventoryAuthorityMode.Authoritative,
+      "Physical command"
+    );
     expect(() =>
       requireInventoryAuthorityMode(
         InventoryAuthorityMode.Fencing,

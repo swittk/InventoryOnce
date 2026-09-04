@@ -250,7 +250,7 @@ abandoned legacy write is safe to forget.
 
 TLC establishes properties of the bounded abstract machines in this directory. Production assurance also requires an explicit correspondence relation from the exported TypeScript surface to those machines. The repository therefore generates and audits four machine-readable artifacts in `formal/implementation-conformance/`:
 
-- `API_ASSURANCE.json`: every mechanically discovered public root, `/storage`, `/migrations`, `/kernel`, authority-port, and facade method, with model/invariant, input abstraction, state projection, result, retry, rejection, adapter evidence, and gap links;
+- `API_ASSURANCE.json`: every mechanically discovered public root, `/storage`, `/migrations`, `/kernel`, authority-port, and façade method, with model/invariant, input abstraction, state projection, result, retry, rejection, adapter evidence, and gap links;
 - `FIELD_CLASSIFICATION.json`: every semantic input/output field, mapped to an executable abstraction helper and exact qualified TLA state variable, or explicitly excluded as application decoration, observational evidence, or unsupported scope;
 - `TRACE_REPLAY_ASSURANCE.json`: finitely bounded real-facade traces covering receive, issue, transfer, count, transformation definition reads/planning, migration publication/repair, authority transitions, and metamorphic state/result replay;
 - `FORMAL_COVERAGE_GAPS.json`: the complete nonclaim/gap ledger. An API or field cannot silently omit its gaps.

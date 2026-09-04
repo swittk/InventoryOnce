@@ -230,10 +230,6 @@ export async function cutoverInventoryAuthority({
   });
   let durableMigrationExists = false;
   try {
-    await drainLegacyWriters();
-    const second = await compileSource(cutoverAt);
-    assertInventoryMigrationReady(second);
-    assertSameInventoryMigrationSource(first, second);
     const manifest = await storage.readMigrationManifest(migrationId);
     durableMigrationExists = manifest !== undefined;
     if (manifest?.state === InventoryMigrationManifestState.Aborted) {
@@ -241,6 +237,10 @@ export async function cutoverInventoryAuthority({
         "The InventoryOnce migration identity was previously aborted."
       );
     }
+    await drainLegacyWriters();
+    const second = await compileSource(cutoverAt);
+    assertInventoryMigrationReady(second);
+    assertSameInventoryMigrationSource(first, second);
     const targetBefore = await storage.readWorld();
     if (manifest === undefined)
       assertEmptyInventoryAuthorityTarget(targetBefore);

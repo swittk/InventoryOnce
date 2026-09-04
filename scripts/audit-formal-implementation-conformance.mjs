@@ -10,7 +10,11 @@ import {
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { formalConfigCheckNames, formalModels } from "./formal-models.mjs";
+import {
+  formalConfigCheckNames,
+  formalModels,
+  statefulOperationFamilyIds,
+} from "./formal-models.mjs";
 
 /** InventoryOnce package root. */
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -239,31 +243,7 @@ function discoverTraceDeclarations() {
 }
 
 /** Operation families whose concrete mutations require an explicit bounded trace/property witness. */
-const statefulOperationFamilies = new Set([
-  "authority-control",
-  "authority-cutover",
-  "catalog-publication",
-  "composition-open",
-  "fungibility-movement",
-  "stock-receipt",
-  "stock-issue",
-  "stock-policy-issue",
-  "stock-transfer",
-  "stock-policy-transfer",
-  "transfer-lifecycle",
-  "dimension-reclassification",
-  "packaging-reclassification",
-  "transformation",
-  "scrap",
-  "correction",
-  "container-command",
-  "lot-command",
-  "reservation",
-  "count",
-  "traceability",
-  "durable-protocol",
-  "migration-publication",
-]);
+const statefulOperationFamilies = new Set(statefulOperationFamilyIds);
 
 /** Validate exact bounded trace declarations, models, evidence, and adapter scope. */
 function validateTraceAssurance(traceManifest, apiManifest, vocabulary) {
@@ -598,6 +578,14 @@ function validateApiEntry(
       ) {
         throw new Error(
           `${key} witness edge ${index} lacks a compiler-resolution reason.`
+        );
+      }
+      if (
+        node.reason === "callback-argument" ||
+        node.reason === "callback-reference"
+      ) {
+        throw new Error(
+          `${key} witness uses unsound generic callback evidence '${node.reason}'.`
         );
       }
     }

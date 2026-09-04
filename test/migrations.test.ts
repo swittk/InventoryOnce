@@ -56,6 +56,8 @@ const FORMAL_IMPLEMENTATION_TRACE_IDS = [
   "TRACE-SNAPSHOT-SUPERSEDED-WORKFLOW",
 ] as const;
 
+void FORMAL_IMPLEMENTATION_TRACE_IDS;
+
 /** One typed legacy stock row owned by the test application query. */
 interface LegacyStockRow {
   /** Stable source row identity. */

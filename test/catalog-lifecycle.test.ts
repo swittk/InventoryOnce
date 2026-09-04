@@ -164,6 +164,111 @@ describe("native scalar catalogue lifecycle", () => {
     expect((await dishonestStorage.readWorld()).revision).toBe(0);
   });
 
+  it("rejects reused scalar item and package revision ids whose retained meaning differs", async () => {
+    const itemConflict = defineScalarInventoryItem({
+      itemId: "item-conflict",
+      revisionId: "item-conflict-v1",
+      axisId: "stock",
+      unit: "piece",
+    });
+    const itemStorage = createInMemoryInventoryDurableStorage();
+    await createInventoryOnce({
+      catalog: defineInventoryCatalog({
+        itemRevisions: [itemConflict],
+        activeItemRevisionIds: { "item-conflict": itemConflict.revisionId },
+      }),
+      storage: itemStorage,
+    }).catalog.publish({
+      operationId: "publish-item-conflict-base",
+      occurredAt: time0,
+    });
+    await expect(
+      ensureInventoryScalarCatalogRevision({
+        storage: itemStorage,
+        itemId: "item-conflict",
+        requestedUnit: "carton",
+        seed: {
+          packageLevels: [{ unit: "carton", primaryQuantity: "24" }],
+        },
+        allowCreate: true,
+        operationId: "redefine-item-conflict",
+        occurredAt: time1,
+        defineRevision: (declaration) => ({
+          item: defineScalarInventoryItem({
+            itemId: declaration.itemId,
+            revisionId: itemConflict.revisionId,
+            axisId: "different-stock-axis",
+            unit: declaration.primaryUnit,
+          }),
+          packaging: [
+            defineScalarInventoryPackaging({
+              revisionId: "item-conflict-carton-v1",
+              item: defineScalarInventoryItem({
+                itemId: declaration.itemId,
+                revisionId: itemConflict.revisionId,
+                axisId: "different-stock-axis",
+                unit: declaration.primaryUnit,
+              }),
+              packageUnit: "carton",
+              contains: "24",
+            }),
+          ],
+        }),
+      })
+    ).rejects.toThrow("cannot be redefined");
+    expect((await itemStorage.readWorld()).revision).toBe(1);
+
+    const packageItem = defineScalarInventoryItem({
+      itemId: "package-conflict",
+      revisionId: "package-conflict-item-v1",
+      axisId: "stock",
+      unit: "piece",
+    });
+    const retainedPackage = defineScalarInventoryPackaging({
+      revisionId: "package-conflict-box-v1",
+      item: packageItem,
+      packageUnit: "box",
+      contains: "10",
+    });
+    const packageStorage = createInMemoryInventoryDurableStorage();
+    await createInventoryOnce({
+      catalog: defineInventoryCatalog({
+        itemRevisions: [packageItem],
+        activeItemRevisionIds: { "package-conflict": packageItem.revisionId },
+        packagingRevisions: [retainedPackage],
+      }),
+      storage: packageStorage,
+    }).catalog.publish({
+      operationId: "publish-package-conflict-base",
+      occurredAt: time0,
+    });
+    await expect(
+      ensureInventoryScalarCatalogRevision({
+        storage: packageStorage,
+        itemId: "package-conflict",
+        requestedUnit: "box",
+        seed: {
+          packageLevels: [{ unit: "box", primaryQuantity: "12" }],
+        },
+        allowCreate: true,
+        operationId: "redefine-package-conflict",
+        occurredAt: time1,
+        defineRevision: (declaration) => ({
+          item: packageItem,
+          packaging: [
+            defineScalarInventoryPackaging({
+              revisionId: retainedPackage.revisionId,
+              item: packageItem,
+              packageUnit: "box",
+              contains: declaration.packageLevels[0]?.primaryQuantity ?? "12",
+            }),
+          ],
+        }),
+      })
+    ).rejects.toThrow("cannot be redefined");
+    expect((await packageStorage.readWorld()).revision).toBe(1);
+  });
+
   it("fails closed when several historical revisions share one physical declaration", async () => {
     const itemA = defineScalarInventoryItem({
       itemId: "item-a",

@@ -2,7 +2,7 @@
 
 This file is generated from the exact TypeScript surface plus the checked API, field, and gap manifests. Edit the manifests and executable evidence, then run `pnpm assurance --write-report`.
 
-Surface SHA-256: `ce8fa6715ae09df35478c1b305bc279f76863a7c12c2615c17e42fc0d9a5aa86`
+Surface SHA-256: `4c3da3a157349d970122d5a5bdb8ae0333480e0b568077bebeed5a56c4bdbdd6`
 
 ## Mechanically covered surface
 
@@ -25,8 +25,8 @@ Surface SHA-256: `ce8fa6715ae09df35478c1b305bc279f76863a7c12c2615c17e42fc0d9a5aa
 - Explicit undefined-union fields: 2
 - Explicit nullable fields: 0
 - Public call/construct overload signatures: 502
-- Directly executed public APIs: 357
-- Public APIs exercised through tested internal call chains: 141
+- Directly executed public APIs: 323
+- Public APIs exercised through tested internal call chains: 175
 - Explicit-gap public APIs: 4
 - Unreferenced public APIs: 0
 - Explicit recursive type edges: 3

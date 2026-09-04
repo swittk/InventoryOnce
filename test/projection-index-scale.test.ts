@@ -479,7 +479,7 @@ describe("projection index real-world scale", () => {
     );
     const candidateStart = projection.indexOf("function candidatePositionIds");
     const candidateEnd = projection.indexOf(
-      "/** Capture FIFO age",
+      "\nfunction captureConservedPositiveLayerStarts(",
       candidateStart
     );
     expect(candidateStart).toBeGreaterThanOrEqual(0);
@@ -489,7 +489,7 @@ describe("projection index real-world scale", () => {
       "export function findInventoryPositions"
     );
     const findEnd = projection.indexOf(
-      "/** Select the narrowest retained position index",
+      "\nfunction candidatePositionIds(",
       findStart + 1
     );
     expect(findStart).toBeGreaterThanOrEqual(0);
