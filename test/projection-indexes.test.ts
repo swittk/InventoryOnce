@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   InventoryAllocationMethod,
   InventoryTraceabilityNodeKind,
-  defineInventoryCatalog,
   defineScalarInventoryItem,
+  extendInventoryCatalog,
   planInventoryAllocation,
   stockAmount,
 } from "../src/index.js";
@@ -39,15 +39,10 @@ function twoItemCatalog(): ReturnType<typeof createTabletCatalog> {
     unit: "piece",
     axisId: "pieces",
   });
-  return defineInventoryCatalog({
-    itemRevisions: [...base.itemRevisions, itemB],
-    activeItemRevisionIds: {
-      ...base.activeItemRevisionIds,
-      "item-b": itemB.revisionId,
-    },
-    packagingRevisions: base.packagingRevisions,
-    fungibilityRevisions: base.fungibilityRevisions,
-    activeFungibilityRevisionIds: base.activeFungibilityRevisionIds,
+  return extendInventoryCatalog({
+    catalog: base,
+    itemRevisions: [itemB],
+    activeItemRevisionIds: { "item-b": itemB.revisionId },
   });
 }
 

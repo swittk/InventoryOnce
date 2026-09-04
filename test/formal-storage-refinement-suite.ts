@@ -9,6 +9,7 @@ import {
   type InventoryOnceCountResult,
   type InventoryOnceEventResult,
   type InventoryOncePolicyBatchResult,
+  type InventoryOnceTransferResult,
   type InventoryWorldState,
 } from "../src/index.js";
 import {
@@ -121,6 +122,7 @@ async function runAndReplay<
     | InventoryOnceEventResult
     | InventoryOncePolicyBatchResult
     | InventoryOnceCountResult
+    | InventoryOnceTransferResult
 >(
   inventory: InventoryOnce,
   command: () => Promise<TResult>,

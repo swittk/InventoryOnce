@@ -6,7 +6,6 @@ import {
   InventoryTraceabilityRelationAction,
   InventoryTraceabilityRelationKind,
   inventoryStockSelector,
-  packageAmount,
   parseQuantity,
   stockAmount,
 } from "../src/index.js";

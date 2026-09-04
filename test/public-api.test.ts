@@ -55,6 +55,7 @@ describe("public export boundaries", () => {
   it("puts expert kernel, durable storage, and migration plumbing on explicit subpaths", () => {
     expect(hasExport(kernel, "applyInventoryCommittedEvent")).toBe(true);
     expect(hasExport(kernel, "createInventoryCompositionOpenEvent")).toBe(true);
+    expect(hasExport(kernel, "createInventoryTransferPrepareEvent")).toBe(true);
     expect(hasExport(kernel, "summarizeInventoryCollection")).toBe(true);
     expect(hasExport(kernel, "commitInventoryOperation")).toBe(false);
     expect(hasExport(storage, "createInMemoryInventoryDurableStorage")).toBe(

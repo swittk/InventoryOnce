@@ -851,7 +851,7 @@ function normalizeStockEffects(
   effects: readonly InventoryStockEffect[],
   kind: InventoryEventKind
 ): readonly InventoryStockEffect[] {
-  const normalized: InventoryStockEffect[] = [];
+  const normalized: NormalizedStockEffectEntry[] = [];
   const seenPositions = new Set<string>();
   for (const rawEffect of effects) {
     const item = catalog.itemRevision(rawEffect.itemRevisionId);
@@ -907,10 +907,13 @@ function normalizeStockEffects(
         );
       }
     }
-    normalized.push({ ...rawEffect, position });
+    normalized.push({
+      effect: { ...rawEffect, position },
+      positionIdentity,
+    });
   }
-  normalized.sort(compareStockEffect);
-  return normalized;
+  normalized.sort(compareNormalizedStockEffect);
+  return normalized.map(unwrapNormalizedStockEffect);
 }
 
 /** Validate item-scoped lot facts and return deterministic identity ordering. */
@@ -1416,17 +1419,36 @@ function traceabilityChangeIdentity(
   ]);
 }
 
-/** Sort effects by exact position then frozen item revision. */
-function compareStockEffect(
-  left: InventoryStockEffect,
-  right: InventoryStockEffect
+/** One normalized stock effect paired with its precomputed exact position identity. */
+interface NormalizedStockEffectEntry {
+  /** Normalized public event effect returned after deterministic ordering. */
+  readonly effect: InventoryStockEffect;
+  /** Canonical position identity cached before sort to avoid comparator recomputation. */
+  readonly positionIdentity: string;
+}
+
+/** Sort normalized effects by cached position identity then frozen item revision. */
+function compareNormalizedStockEffect(
+  left: NormalizedStockEffectEntry,
+  right: NormalizedStockEffectEntry
 ): number {
-  const positionOrder = compareInventoryIdentityText(inventoryStockPositionIdentity(
-    left.position
-  ), inventoryStockPositionIdentity(right.position));
+  const positionOrder = compareInventoryIdentityText(
+    left.positionIdentity,
+    right.positionIdentity
+  );
   return positionOrder === 0
-    ? compareInventoryIdentityText(left.itemRevisionId, right.itemRevisionId)
+    ? compareInventoryIdentityText(
+        left.effect.itemRevisionId,
+        right.effect.itemRevisionId
+      )
     : positionOrder;
+}
+
+/** Remove the private cached identity decoration after deterministic ordering. */
+function unwrapNormalizedStockEffect(
+  entry: NormalizedStockEffectEntry
+): InventoryStockEffect {
+  return entry.effect;
 }
 
 /** Sort traceability changes by stable relation identity. */

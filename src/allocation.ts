@@ -5,6 +5,7 @@ import {
   type InventoryStockPositionKey,
 } from "./model.js";
 import {
+  addQuantity,
   compareQuantity,
   positiveQuantity,
   quantity,
@@ -136,11 +137,22 @@ export function allocateInventory({
       eligible,
       undefined
     );
+    let incrementBlockedStock = false;
+    if (unconstrainedExact === undefined) {
+      let eligibleCapacity = zeroQuantity(requested.unit, requested.decimals);
+      for (const candidate of eligible) {
+        eligibleCapacity = addQuantity(eligibleCapacity, candidate.available);
+        if (compareQuantity(eligibleCapacity, requested) >= 0) {
+          incrementBlockedStock = true;
+          break;
+        }
+      }
+    }
     return {
       allocations: [],
       shortfall: requested,
       expiredStockWasExcluded,
-      incrementBlockedStock: unconstrainedExact === undefined,
+      incrementBlockedStock,
       allocationConstraintBlockedStock: unconstrainedExact !== undefined,
     };
   }

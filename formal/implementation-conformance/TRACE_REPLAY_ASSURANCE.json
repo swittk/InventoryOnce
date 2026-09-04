@@ -158,7 +158,6 @@
         "entrypoint.root.inventoryPositionEffectiveUseBy",
         "entrypoint.root.inventoryPositionIsExpiredAt",
         "entrypoint.root.readPublishedInventoryCatalog",
-        "entrypoint.root.readPublishedInventorySnapshot",
         "entrypoint.root.summarizeInventoryAvailability",
         "facade.read.availability",
         "facade.read.container",
@@ -464,7 +463,6 @@
         "entrypoint.root.inventoryPositionEffectiveUseBy",
         "entrypoint.root.inventoryPositionIsExpiredAt",
         "entrypoint.root.readPublishedInventoryCatalog",
-        "entrypoint.root.readPublishedInventorySnapshot",
         "entrypoint.root.summarizeInventoryAvailability",
         "entrypoint.storage.InMemoryInventoryDurableStorage",
         "entrypoint.storage.InventoryApplyingOperationConflictError",
@@ -864,7 +862,6 @@
         "entrypoint.root.inventoryPositionIsExpiredAt",
         "entrypoint.root.planInventoryAllocation",
         "entrypoint.root.readPublishedInventoryCatalog",
-        "entrypoint.root.readPublishedInventorySnapshot",
         "entrypoint.root.summarizeInventoryAvailability",
         "facade.read.availability",
         "facade.read.container",
@@ -1208,7 +1205,8 @@
         "CatalogPublication",
         "TraceabilityGraph",
         "PublishedHeadCAS",
-        "AuthorityWriterFence"
+        "AuthorityWriterFence",
+        "InventoryOperation"
       ],
       "operationFamilies": [
         "authority-cutover",
@@ -1289,8 +1287,6 @@
         "entrypoint.kernel.createInventoryScrapEvent",
         "entrypoint.kernel.createInventoryScrapManyEvent",
         "entrypoint.kernel.createInventoryTraceabilityEvent",
-        "entrypoint.kernel.createInventoryTransferEvent",
-        "entrypoint.kernel.createInventoryTransferManyEvent",
         "entrypoint.kernel.emptyInventoryCountBook",
         "entrypoint.kernel.emptyInventoryProjectionState",
         "entrypoint.kernel.emptyInventoryReservationBook",
@@ -1623,6 +1619,7 @@
         "entrypoint.kernel.createInventoryOpeningEvent",
         "entrypoint.kernel.createInventoryReceiptEvent",
         "entrypoint.kernel.createInventoryReceiptManyEvent",
+        "entrypoint.root.readPublishedInventorySnapshot",
         "entrypoint.storage.InMemoryInventoryDurableStorage",
         "entrypoint.storage.InventoryApplyingOperationConflictError",
         "entrypoint.storage.InventoryWorldRevisionConflictError",
@@ -1930,8 +1927,6 @@
         "memory"
       ],
       "apiEntries": [
-        "entrypoint.kernel.createInventoryTransferEvent",
-        "entrypoint.kernel.createInventoryTransferManyEvent",
         "facade.stock.transfer",
         "facade.stock.transferMany"
       ],
@@ -1968,6 +1963,12 @@
         "memory"
       ],
       "apiEntries": [
+        "entrypoint.kernel.createInventoryTransferDispatchEvent",
+        "entrypoint.kernel.createInventoryTransferEvent",
+        "entrypoint.kernel.createInventoryTransferManyEvent",
+        "entrypoint.kernel.createInventoryTransferPrepareEvent",
+        "entrypoint.kernel.createInventoryTransferReceiveEvent",
+        "entrypoint.kernel.createInventoryTransferReleaseEvent",
         "facade.transfers.dispatch",
         "facade.transfers.find",
         "facade.transfers.prepare",
@@ -2000,7 +2001,8 @@
         "ResourceDimensions",
         "ReservationSafety",
         "InventoryOperation",
-        "DurableTransferRefinement"
+        "DurableTransferRefinement",
+        "FungibilityPool"
       ],
       "operationFamilies": [
         "transfer-lifecycle"

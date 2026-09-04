@@ -96,6 +96,24 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
     });
     expect(explicitlyAllowed.shortfall.amountMinor).toBe(0);
   });
+  it("does not mislabel ordinary constrained shortfall as increment-blocked stock", () => {
+    const result = allocateInventory({
+      requested: parseQuantity("2", "piece"),
+      candidates: [
+        candidate("insufficient", time0, time3, {
+          available: parseQuantity("1", "piece"),
+        }),
+      ],
+      method: InventoryAllocationMethod.Fifo,
+      now: time1,
+      acceptAllocations: () => true,
+    });
+    expect(result.allocations).toEqual([]);
+    expect(result.shortfall).toEqual(parseQuantity("2", "piece"));
+    expect(result.incrementBlockedStock).toBe(false);
+    expect(result.allocationConstraintBlockedStock).toBe(false);
+  });
+
   it("fails closed at a bounded exact-search budget instead of looping on adversarial predicates", () => {
     const capacity = String(MAXIMUM_EXACT_ALLOCATION_STATES + 1);
     expect(() => allocateInventory({

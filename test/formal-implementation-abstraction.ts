@@ -1044,6 +1044,7 @@ export function assertStateResultRefinement(
     | InventoryOnceEventResult
     | InventoryOnceReservationResult
     | InventoryOnceCountResult
+    | InventoryOnceTransferResult
     | InventoryOncePolicyBatchResult,
   expectedNewRevisionDelta = 1
 ): void {

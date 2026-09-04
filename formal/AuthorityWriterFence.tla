@@ -506,14 +506,13 @@ ProjectFailure ==
   /\ mode = "authoritative"
   /\ ~crashed
   /\ projectionStatus = "lagging"
-  /\ projectionRevision' = worldRevision
   /\ projectionStatus' = "failed"
   /\ UNCHANGED <<mode, phase, adapterCertified, admitted, usedWriters,
     wroteWriters, sourceVersion, shadowRoot, dualRoot, dualIntent,
     mismatches, fenceToken, fencedRoot, firstReadRoot, secondReadRoot,
     migrationStage, targetRoot, crashed, repairNeeded, crashPoints,
     authorityEverActivated, commandIntent, publishedCommands,
-    replayedCommands, changedRetryRejected, worldRevision,
+    replayedCommands, changedRetryRejected, worldRevision, projectionRevision,
     blockedLegacyWrites, cutoverAuthorized, greenfieldAuthorized, activationKind>>
 
 ProjectSuccess ==

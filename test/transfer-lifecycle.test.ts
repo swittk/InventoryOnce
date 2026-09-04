@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { defineInventoryEvent } from "../src/kernel.js";
-import { createInventoryTransferPrepareEvent } from "../src/transfers.js";
+import {
+  createInventoryTransferDispatchEvent,
+  createInventoryTransferPrepareEvent,
+  createInventoryTransferReceiveEvent,
+  createInventoryTransferReleaseEvent,
+  defineInventoryEvent,
+} from "../src/kernel.js";
 import {
   createInventoryOnce,
   InventoryAllocationMethod,
@@ -408,7 +413,7 @@ describe("first-class physical transfer lifecycle", () => {
       to: loosePosition("A"),
       amount: stockAmount("20", "piece"),
     });
-    await inventory.transfers.prepare({
+    const prepared = await inventory.transfers.prepare({
       operationId: "prepare-retry",
       occurredAt: time1,
       transferId: "TR",
@@ -422,11 +427,26 @@ describe("first-class physical transfer lifecycle", () => {
         },
       ],
     });
-    await inventory.transfers.dispatch({
+    const directDispatchDraft = createInventoryTransferDispatchEvent({
+      catalog: createTabletCatalog(),
+      operationId: "direct-dispatch-builder",
+      occurredAt: time2,
+      transfer: prepared.transfer,
+    });
+    expect(directDispatchDraft.stockEffects.length).toBeGreaterThan(0);
+    const dispatched = await inventory.transfers.dispatch({
       operationId: "dispatch-retry",
       occurredAt: time2,
       transferId: "TR",
     });
+    const directReceiveDraft = createInventoryTransferReceiveEvent({
+      catalog: createTabletCatalog(),
+      operationId: "direct-receive-builder",
+      occurredAt: time3,
+      transfer: dispatched.transfer,
+      lines: [{ lineId: "line", amount: stockAmount("1", "piece") }],
+    });
+    expect(directReceiveDraft.stockEffects.length).toBeGreaterThan(0);
 
     const first = await inventory.transfers.receive({
       operationId: "receive-seven",
@@ -519,7 +539,7 @@ describe("first-class physical transfer lifecycle", () => {
       to: loosePosition("A"),
       amount: stockAmount("10", "piece"),
     });
-    await inventory.transfers.prepare({
+    const prepared = await inventory.transfers.prepare({
       operationId: "prepare-release",
       occurredAt: time1,
       transferId: "REL",
@@ -533,6 +553,13 @@ describe("first-class physical transfer lifecycle", () => {
         },
       ],
     });
+    const directReleaseDraft = createInventoryTransferReleaseEvent({
+      catalog: createTabletCatalog(),
+      operationId: "direct-release-builder",
+      occurredAt: time2,
+      transfer: prepared.transfer,
+    });
+    expect(directReleaseDraft.stockEffects.length).toBeGreaterThan(0);
     let availability = await inventory.read.availability(
       inventoryStockSelector("item-a", { locationIds: ["A"] }),
       time1

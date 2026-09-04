@@ -40,6 +40,10 @@ to reject each one through the named unchanged safety invariant.
 | `CorrectionHistory`            | original history persists; incomplete correction storage does not replace current truth; completed correction advances current meaning atomically                                                                                                                                   | correction tests and append-only projection indexes                                                       |
 | `PhysicalCount`                | snapshot → observation → discrepancy reconciliation preserves legitimate movements during counting                                                                                                                                                                                  | count lifecycle tests                                                                                     |
 | `TraceabilityGraph`            | containment is acyclic; aggregation, association, and irreversible genealogy remain distinct                                                                                                                                                                                        | traceability/correction tests                                                                             |
+| `AuthorityWriterFence`         | explicitly authorized cutover fencing cannot overlap admitted legacy physical writers; activation provenance stays exact and greenfield activation cannot fabricate legacy evidence                                                                                                | `authority.test.ts`, authority control/cutover compare-and-set tests                                      |
+| `SnapshotSupersededWorkflow`   | migration-only snapshot-superseded legacy workflow rows remain audit evidence, generate no physical event or guessed terminal outcome, and cannot resume after the authoritative snapshot/fence transition                                                                          | migration/storage refinement plus four deliberate mutation configs                                        |
+| `RecordedDeficit`              | Record mode keeps genuine shortfall as a signed non-allocatable liability while Reject mode stutters; exact replay preserves the frozen deficit/shortfall and receipts never turn deficit into physical stock                                                                         | policy-operation, migration, projection, and replay tests                                                  |
+| `ImplementationConformance`    | bounded state/result correspondence for representative public calls, exact replay, changed-intent rejection, and the generated API/field/trace/gap evidence bridge                                                                                                                  | generated assurance audit plus executable refinement/conformance tests                                     |
 
 ### Mature-system constraints ahead of some production adapters
 
@@ -62,7 +66,7 @@ The exact seed/fingerprint values vary by run. The latest complete run explored:
 
 | Model/property                 | Generated states | Distinct states | Complete graph depth |
 | ------------------------------ | ---------------: | --------------: | -------------------: |
-| `AuthorityWriterFence`         |       10,238,911 |       2,258,576 |                   34 |
+| `AuthorityWriterFence`         |       12,393,407 |       2,594,448 |                   35 |
 | `PublishedHeadCAS`             |            4,284 |           1,871 |                   24 |
 | `CompositionRevision`          |           50,849 |           6,688 |                   10 |
 | `CollectionView`               |           13,123 |           1,458 |                   10 |

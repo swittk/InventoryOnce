@@ -1,22 +1,22 @@
 {
   "counts": {
     "authorityMethods": 13,
-    "callAndConstructSignatures": 502,
+    "callAndConstructSignatures": 506,
     "classMethods": 68,
-    "compilerCallGraphCallables": 2104,
-    "compilerCallGraphEdges": 5746,
+    "compilerCallGraphCallables": 2107,
+    "compilerCallGraphEdges": 5757,
     "compilerCallGraphTestRoots": 36,
     "compilerCallGraphUnresolvedApis": 0,
-    "compilerCallGraphWitnessedApis": 502,
-    "directExecutableApis": 323,
+    "compilerCallGraphWitnessedApis": 506,
+    "directExecutableApis": 182,
     "explicitGapApis": 4,
     "facadeMethods": 117,
-    "indirectCallChainApis": 175,
-    "kernelCallables": 151,
+    "indirectCallChainApis": 320,
+    "kernelCallables": 155,
     "maximumTypeDepth": 12,
     "migrationCallables": 15,
-    "reachableFields": 2239,
-    "reachableTypes": 373,
+    "reachableFields": 2285,
+    "reachableTypes": 377,
     "recursiveTypeReferences": 3,
     "rootCallables": 98,
     "storageCallables": 23,
@@ -2598,7 +2598,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/catalog-stock.test.ts",
@@ -7273,7 +7273,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/catalog-stock.test.ts",
@@ -10623,9 +10623,9 @@
               "column": 1,
               "file": "test/formal-storage-refinement-suite.ts",
               "hasBody": true,
-              "id": "test/formal-storage-refinement-suite.ts:11844:runInventoryFormalStorageRefinementSuite",
+              "id": "test/formal-storage-refinement-suite.ts:11914:runInventoryFormalStorageRefinementSuite",
               "kind": "FunctionDeclaration",
-              "line": 384,
+              "line": 386,
               "name": "runInventoryFormalStorageRefinementSuite",
               "reason": "resolved-call"
             },
@@ -10633,20 +10633,20 @@
               "column": 59,
               "file": "test/formal-storage-refinement-suite.ts",
               "hasBody": true,
-              "id": "test/formal-storage-refinement-suite.ts:12038:<anonymous@388>",
+              "id": "test/formal-storage-refinement-suite.ts:12108:<anonymous@390>",
               "kind": "ArrowFunction",
-              "line": 388,
-              "name": "<anonymous@388>",
+              "line": 390,
+              "name": "<anonymous@390>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 60,
               "file": "test/formal-storage-refinement-suite.ts",
               "hasBody": true,
-              "id": "test/formal-storage-refinement-suite.ts:19952:<anonymous@609>",
+              "id": "test/formal-storage-refinement-suite.ts:20022:<anonymous@611>",
               "kind": "ArrowFunction",
-              "line": 609,
-              "name": "<anonymous@609>",
+              "line": 611,
+              "name": "<anonymous@611>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -12605,7 +12605,7 @@
       "directExecutableEvidence": [
         "test/formal-public-surface-completion.test.ts"
       ],
-      "evidenceMode": "indirect-call-chain",
+      "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-storage-refinement.test.ts",
@@ -12735,7 +12735,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -12850,31 +12850,31 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/formal-implementation-refinement.test.ts",
+              "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test-root:test/formal-implementation-refinement.test.ts",
+              "id": "test-root:test/allocation.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/formal-implementation-refinement.test.ts"
+              "name": "test/allocation.test.ts"
             },
             {
-              "column": 90,
-              "file": "test/formal-implementation-refinement.test.ts",
+              "column": 51,
+              "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/formal-implementation-refinement.test.ts:3795:<anonymous@120>",
+              "id": "test/allocation.test.ts:966:<anonymous@35>",
               "kind": "ArrowFunction",
-              "line": 120,
-              "name": "<anonymous@120>",
+              "line": 35,
+              "name": "<anonymous@35>",
               "reason": "test-callback"
             },
             {
               "column": 1,
-              "file": "test/formal-implementation-abstraction.ts",
+              "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "test/formal-implementation-abstraction.ts:40748:abstractPrimaryBalance",
+              "id": "src/allocation.ts:3461:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 1094,
-              "name": "abstractPrimaryBalance",
+              "line": 85,
+              "name": "allocateInventory",
               "reason": "resolved-call"
             },
             {
@@ -12897,16 +12897,12 @@
             "line": 122,
             "name": "addQuantity"
           },
-          "test": "test/formal-implementation-refinement.test.ts"
+          "test": "test/allocation.test.ts"
         }
       ],
-      "directExecutableEntrypoints": [
-        "test/formal-implementation-refinement.test.ts"
-      ],
-      "directExecutableEvidence": [
-        "test/formal-implementation-abstraction.ts"
-      ],
-      "evidenceMode": "direct-executable",
+      "directExecutableEntrypoints": [],
+      "directExecutableEvidence": [],
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -12926,6 +12922,10 @@
       ],
       "inputMapping": "Exact decimal/unit/package inputs map directly to finite quantity or measurement tuples.",
       "internalReferences": [
+        {
+          "occurrences": 2,
+          "path": "src/allocation.ts"
+        },
         {
           "occurrences": 8,
           "path": "src/availability.ts"
@@ -13030,9 +13030,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3446:allocateInventory",
+              "id": "src/allocation.ts:3461:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 84,
+              "line": 85,
               "name": "allocateInventory",
               "reason": "resolved-call"
             }
@@ -13041,9 +13041,9 @@
             "column": 1,
             "file": "src/allocation.ts",
             "hasBody": true,
-            "id": "src/allocation.ts:3446:allocateInventory",
+            "id": "src/allocation.ts:3461:allocateInventory",
             "kind": "FunctionDeclaration",
-            "line": 84,
+            "line": 85,
             "name": "allocateInventory"
           },
           "test": "test/allocation.test.ts"
@@ -13069,9 +13069,9 @@
           "column": 1,
           "file": "src/allocation.ts",
           "hasBody": true,
-          "id": "src/allocation.ts:3446:allocateInventory",
+          "id": "src/allocation.ts:3461:allocateInventory",
           "kind": "FunctionDeclaration",
-          "line": 84,
+          "line": 85,
           "name": "allocateInventory"
         }
       ],
@@ -13202,7 +13202,7 @@
       "directExecutableEvidence": [
         "test/formal-public-surface-completion.test.ts"
       ],
-      "evidenceMode": "indirect-call-chain",
+      "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/reservations-counts.test.ts",
@@ -13334,7 +13334,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/reclassification.test.ts",
@@ -13429,10 +13429,10 @@
               "column": 79,
               "file": "test/traceability-corrections.test.ts",
               "hasBody": true,
-              "id": "test/traceability-corrections.test.ts:5879:<anonymous@194>",
+              "id": "test/traceability-corrections.test.ts:5862:<anonymous@193>",
               "kind": "ArrowFunction",
-              "line": 194,
-              "name": "<anonymous@194>",
+              "line": 193,
+              "name": "<anonymous@193>",
               "reason": "test-callback"
             },
             {
@@ -13563,9 +13563,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3446:allocateInventory",
+              "id": "src/allocation.ts:3461:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 84,
+              "line": 85,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -13573,9 +13573,9 @@
               "column": 1,
               "file": "src/events.ts",
               "hasBody": true,
-              "id": "src/events.ts:53973:assertCanonicalInventoryTime",
+              "id": "src/events.ts:54693:assertCanonicalInventoryTime",
               "kind": "FunctionDeclaration",
-              "line": 1441,
+              "line": 1463,
               "name": "assertCanonicalInventoryTime",
               "reason": "resolved-call"
             }
@@ -13584,9 +13584,9 @@
             "column": 1,
             "file": "src/events.ts",
             "hasBody": true,
-            "id": "src/events.ts:53973:assertCanonicalInventoryTime",
+            "id": "src/events.ts:54693:assertCanonicalInventoryTime",
             "kind": "FunctionDeclaration",
-            "line": 1441,
+            "line": 1463,
             "name": "assertCanonicalInventoryTime"
           },
           "test": "test/allocation.test.ts"
@@ -13594,7 +13594,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/allocation-results.test.ts",
@@ -13607,9 +13607,9 @@
           "column": 1,
           "file": "src/events.ts",
           "hasBody": true,
-          "id": "src/events.ts:53973:assertCanonicalInventoryTime",
+          "id": "src/events.ts:54693:assertCanonicalInventoryTime",
           "kind": "FunctionDeclaration",
-          "line": 1441,
+          "line": 1463,
           "name": "assertCanonicalInventoryTime"
         }
       ],
@@ -13753,7 +13753,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -13875,7 +13875,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/catalog-stock.test.ts",
@@ -14028,7 +14028,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -14309,7 +14309,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/reservations-counts.test.ts",
@@ -14608,7 +14608,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -14706,10 +14706,10 @@
               "column": 80,
               "file": "test/traceability-corrections.test.ts",
               "hasBody": true,
-              "id": "test/traceability-corrections.test.ts:3523:<anonymous@117>",
+              "id": "test/traceability-corrections.test.ts:3506:<anonymous@116>",
               "kind": "ArrowFunction",
-              "line": 117,
-              "name": "<anonymous@117>",
+              "line": 116,
+              "name": "<anonymous@116>",
               "reason": "test-callback"
             },
             {
@@ -14871,9 +14871,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3446:allocateInventory",
+              "id": "src/allocation.ts:3461:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 84,
+              "line": 85,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -14881,10 +14881,10 @@
               "column": 1,
               "file": "src/quantity.ts",
               "hasBody": true,
-              "id": "src/quantity.ts:4340:compareQuantity",
+              "id": "src/quantity.ts:5036:addQuantity",
               "kind": "FunctionDeclaration",
-              "line": 106,
-              "name": "compareQuantity",
+              "line": 122,
+              "name": "addQuantity",
               "reason": "resolved-call"
             },
             {
@@ -14998,10 +14998,10 @@
               "column": 80,
               "file": "test/traceability-corrections.test.ts",
               "hasBody": true,
-              "id": "test/traceability-corrections.test.ts:3523:<anonymous@117>",
+              "id": "test/traceability-corrections.test.ts:3506:<anonymous@116>",
               "kind": "ArrowFunction",
-              "line": 117,
-              "name": "<anonymous@117>",
+              "line": 116,
+              "name": "<anonymous@116>",
               "reason": "test-callback"
             },
             {
@@ -15136,10 +15136,10 @@
               "column": 80,
               "file": "test/traceability-corrections.test.ts",
               "hasBody": true,
-              "id": "test/traceability-corrections.test.ts:3523:<anonymous@117>",
+              "id": "test/traceability-corrections.test.ts:3506:<anonymous@116>",
               "kind": "ArrowFunction",
-              "line": 117,
-              "name": "<anonymous@117>",
+              "line": 116,
+              "name": "<anonymous@116>",
               "reason": "test-callback"
             },
             {
@@ -15177,7 +15177,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/traceability-corrections.test.ts",
@@ -15270,10 +15270,10 @@
               "column": 80,
               "file": "test/traceability-corrections.test.ts",
               "hasBody": true,
-              "id": "test/traceability-corrections.test.ts:3523:<anonymous@117>",
+              "id": "test/traceability-corrections.test.ts:3506:<anonymous@116>",
               "kind": "ArrowFunction",
-              "line": 117,
-              "name": "<anonymous@117>",
+              "line": 116,
+              "name": "<anonymous@116>",
               "reason": "test-callback"
             },
             {
@@ -15561,9 +15561,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3446:allocateInventory",
+              "id": "src/allocation.ts:3461:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 84,
+              "line": 85,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -15571,9 +15571,9 @@
               "column": 37,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:4256:compareEligibleCandidates",
+              "id": "src/allocation.ts:4271:compareEligibleCandidates",
               "kind": "ArrowFunction",
-              "line": 107,
+              "line": 108,
               "name": "compareEligibleCandidates",
               "reason": "external-callback-dispatch"
             },
@@ -15581,9 +15581,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:13298:compareInventoryAllocationCandidates",
+              "id": "src/allocation.ts:13708:compareInventoryAllocationCandidates",
               "kind": "FunctionDeclaration",
-              "line": 367,
+              "line": 379,
               "name": "compareInventoryAllocationCandidates",
               "reason": "resolved-call"
             }
@@ -15592,9 +15592,9 @@
             "column": 1,
             "file": "src/allocation.ts",
             "hasBody": true,
-            "id": "src/allocation.ts:13298:compareInventoryAllocationCandidates",
+            "id": "src/allocation.ts:13708:compareInventoryAllocationCandidates",
             "kind": "FunctionDeclaration",
-            "line": 367,
+            "line": 379,
             "name": "compareInventoryAllocationCandidates"
           },
           "test": "test/allocation.test.ts"
@@ -15616,9 +15616,9 @@
           "column": 1,
           "file": "src/allocation.ts",
           "hasBody": true,
-          "id": "src/allocation.ts:13298:compareInventoryAllocationCandidates",
+          "id": "src/allocation.ts:13708:compareInventoryAllocationCandidates",
           "kind": "FunctionDeclaration",
-          "line": 367,
+          "line": 379,
           "name": "compareInventoryAllocationCandidates"
         }
       ],
@@ -15713,9 +15713,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3446:allocateInventory",
+              "id": "src/allocation.ts:3461:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 84,
+              "line": 85,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -15744,7 +15744,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -15765,7 +15765,7 @@
       "inputMapping": "Exact decimal/unit/package inputs map directly to finite quantity or measurement tuples.",
       "internalReferences": [
         {
-          "occurrences": 8,
+          "occurrences": 9,
           "path": "src/allocation.ts"
         },
         {
@@ -15926,7 +15926,7 @@
       "directExecutableEvidence": [
         "test/formal-public-surface-completion.test.ts"
       ],
-      "evidenceMode": "indirect-call-chain",
+      "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-storage-refinement.test.ts",
@@ -16480,7 +16480,7 @@
       "directExecutableEvidence": [
         "test/formal-public-surface-completion.test.ts"
       ],
-      "evidenceMode": "indirect-call-chain",
+      "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/composition.test.ts",
@@ -16770,7 +16770,7 @@
       "directExecutableEvidence": [
         "test/formal-public-surface-completion.test.ts"
       ],
-      "evidenceMode": "indirect-call-chain",
+      "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/traceability-corrections.test.ts",
@@ -16921,7 +16921,7 @@
       "directExecutableEvidence": [
         "test/formal-public-surface-completion.test.ts"
       ],
-      "evidenceMode": "indirect-call-chain",
+      "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-storage-refinement.test.ts",
@@ -17052,7 +17052,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/catalog-stock.test.ts",
@@ -17202,7 +17202,7 @@
       "directExecutableEvidence": [
         "test/formal-public-surface-completion.test.ts"
       ],
-      "evidenceMode": "indirect-call-chain",
+      "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/catalog-stock.test.ts",
@@ -17472,7 +17472,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-storage-refinement.test.ts",
@@ -18136,10 +18136,10 @@
               "column": 82,
               "file": "test/projection-indexes.test.ts",
               "hasBody": true,
-              "id": "test/projection-indexes.test.ts:18322:<anonymous@523>",
+              "id": "test/projection-indexes.test.ts:18099:<anonymous@518>",
               "kind": "ArrowFunction",
-              "line": 523,
-              "name": "<anonymous@523>",
+              "line": 518,
+              "name": "<anonymous@518>",
               "reason": "test-callback"
             },
             {
@@ -18329,7 +18329,7 @@
       "directExecutableEvidence": [
         "test/formal-public-surface-completion.test.ts"
       ],
-      "evidenceMode": "indirect-call-chain",
+      "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/reservations-counts.test.ts",
@@ -18616,7 +18616,7 @@
       "directExecutableEvidence": [
         "test/formal-public-surface-completion.test.ts"
       ],
-      "evidenceMode": "indirect-call-chain",
+      "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/catalog-stock.test.ts",
@@ -18747,7 +18747,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/traceability-corrections.test.ts",
@@ -18816,6 +18816,147 @@
       "stateProjection": [
         "abstractTraceabilityState",
         "abstractInventoryState",
+        "abstractOperationResult"
+      ],
+      "status": "covered"
+    },
+    "entrypoint.kernel.createInventoryTransferDispatchEvent": {
+      "adapterCoverage": [
+        "memory",
+        "all-operation-failpoints"
+      ],
+      "callChainWitnesses": [
+        {
+          "chain": [
+            {
+              "column": 1,
+              "file": "test/transfer-lifecycle.test.ts",
+              "hasBody": true,
+              "id": "test-root:test/transfer-lifecycle.test.ts",
+              "kind": "TestRoot",
+              "line": 1,
+              "name": "test/transfer-lifecycle.test.ts"
+            },
+            {
+              "column": 79,
+              "file": "test/transfer-lifecycle.test.ts",
+              "hasBody": true,
+              "id": "test/transfer-lifecycle.test.ts:13345:<anonymous@408>",
+              "kind": "ArrowFunction",
+              "line": 408,
+              "name": "<anonymous@408>",
+              "reason": "test-callback"
+            },
+            {
+              "column": 1,
+              "file": "src/transfers.ts",
+              "hasBody": true,
+              "id": "src/transfers.ts:25427:createInventoryTransferDispatchEvent",
+              "kind": "FunctionDeclaration",
+              "line": 621,
+              "name": "createInventoryTransferDispatchEvent",
+              "reason": "resolved-call"
+            }
+          ],
+          "target": {
+            "column": 1,
+            "file": "src/transfers.ts",
+            "hasBody": true,
+            "id": "src/transfers.ts:25427:createInventoryTransferDispatchEvent",
+            "kind": "FunctionDeclaration",
+            "line": 621,
+            "name": "createInventoryTransferDispatchEvent"
+          },
+          "test": "test/transfer-lifecycle.test.ts"
+        }
+      ],
+      "directExecutableEntrypoints": [
+        "test/transfer-lifecycle.test.ts"
+      ],
+      "directExecutableEvidence": [
+        "test/transfer-lifecycle.test.ts"
+      ],
+      "evidenceMode": "direct-executable",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/transfer-lifecycle.test.ts",
+        "test/formal-storage-refinement.test.ts"
+      ],
+      "family": "transfer-lifecycle",
+      "gaps": [],
+      "implementationTargets": [
+        {
+          "column": 1,
+          "file": "src/transfers.ts",
+          "hasBody": true,
+          "id": "src/transfers.ts:25427:createInventoryTransferDispatchEvent",
+          "kind": "FunctionDeclaration",
+          "line": 621,
+          "name": "createInventoryTransferDispatchEvent"
+        }
+      ],
+      "inputMapping": "Transfer identity, source/transit/destination, exact lines, custody, receipt quantities, and immutable operation intent map to one time-separated physical transfer lifecycle.",
+      "internalReferences": [
+        {
+          "occurrences": 2,
+          "path": "src/facade.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/transfers.ts"
+        }
+      ],
+      "invariants": [
+        "TransferQuantityConserved",
+        "ReceivedNeverExceedsDispatched",
+        "TransferIsolation",
+        "PreparedIsUnavailableAtSource",
+        "DispatchedIsNotPrepared",
+        "BeforeReceiptDestinationIsEmpty",
+        "PartialReceiptLeavesTransit",
+        "CompletedReceiptLeavesNoTransit",
+        "ReleasedReturnsCommitment",
+        "IntentNeverChanges",
+        "OwnershipIsOrthogonal",
+        "TransitCustodyDoesNotChangeOwnership",
+        "PartialWritesRefineToStuttering",
+        "AllActiveClaimsRemainFeasible",
+        "PhysicalQuantityConserved"
+      ],
+      "models": [
+        "TransferLifecycle",
+        "ResourceDimensions",
+        "ReservationSafety",
+        "InventoryOperation",
+        "DurableTransferRefinement",
+        "PublishedHeadCAS",
+        "PackagingIdentity"
+      ],
+      "rejectionRelation": "Insufficient source, existing transfer identity, pre-dispatch receipt, post-dispatch release, over-receipt, cross-transfer receipt, package/line collapse, reservation conflict, or stale publication rejects atomically.",
+      "resultMapping": "Result maps to exact prepared/dispatched/received/remainder state plus immutable stock event and replay truth.",
+      "retryRelation": "Exact prepare/dispatch/receive/release retry stutters or replays; changed intent under one operation identity rejects.",
+      "signature": {
+        "callSignatures": [
+          {
+            "parameters": [
+              {
+                "name": "input",
+                "optional": false,
+                "type": "CreateInventoryTransferDispatchEventInput"
+              }
+            ],
+            "result": "InventoryEventDraft"
+          }
+        ],
+        "callable": true,
+        "constructSignatures": [],
+        "constructable": false,
+        "declaration": "src/kernel.ts",
+        "name": "createInventoryTransferDispatchEvent"
+      },
+      "stateProjection": [
+        "abstractInventoryState",
+        "abstractReservationState",
         "abstractOperationResult"
       ],
       "status": "covered"
@@ -18895,10 +19036,10 @@
       "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
-        "test/catalog-stock.test.ts",
+        "test/transfer-lifecycle.test.ts",
         "test/formal-storage-refinement.test.ts"
       ],
-      "family": "stock-transfer",
+      "family": "transfer-lifecycle",
       "gaps": [],
       "implementationTargets": [
         {
@@ -18911,7 +19052,7 @@
           "name": "createInventoryTransferEvent"
         }
       ],
-      "inputMapping": "Exact source, destination location, and amount map to one atomic location rewrite preserving all other dimensions.",
+      "inputMapping": "Transfer identity, source/transit/destination, exact lines, custody, receipt quantities, and immutable operation intent map to one time-separated physical transfer lifecycle.",
       "internalReferences": [
         {
           "occurrences": 3,
@@ -18919,21 +19060,34 @@
         }
       ],
       "invariants": [
-        "ResourceAccounting",
-        "InTransitStillExists",
-        "ActiveTokensHaveExactlyOneRealLocation",
+        "TransferQuantityConserved",
+        "ReceivedNeverExceedsDispatched",
+        "TransferIsolation",
+        "PreparedIsUnavailableAtSource",
+        "DispatchedIsNotPrepared",
+        "BeforeReceiptDestinationIsEmpty",
+        "PartialReceiptLeavesTransit",
+        "CompletedReceiptLeavesNoTransit",
+        "ReleasedReturnsCommitment",
+        "IntentNeverChanges",
+        "OwnershipIsOrthogonal",
+        "TransitCustodyDoesNotChangeOwnership",
         "PartialWritesRefineToStuttering",
+        "AllActiveClaimsRemainFeasible",
         "PhysicalQuantityConserved"
       ],
       "models": [
+        "TransferLifecycle",
         "ResourceDimensions",
-        "DurableTransferRefinement",
+        "ReservationSafety",
         "InventoryOperation",
+        "DurableTransferRefinement",
+        "PublishedHeadCAS",
         "PackagingIdentity"
       ],
-      "rejectionRelation": "Deficit, package mismatch, invalid destination, or stale base rejects atomically.",
-      "resultMapping": "Result maps to one transfer event and equal global quantity before/after.",
-      "retryRelation": "Exact transfer intent replays once; changed destination/source/amount rejects.",
+      "rejectionRelation": "Insufficient source, existing transfer identity, pre-dispatch receipt, post-dispatch release, over-receipt, cross-transfer receipt, package/line collapse, reservation conflict, or stale publication rejects atomically.",
+      "resultMapping": "Result maps to exact prepared/dispatched/received/remainder state plus immutable stock event and replay truth.",
+      "retryRelation": "Exact prepare/dispatch/receive/release retry stutters or replays; changed intent under one operation identity rejects.",
       "signature": {
         "callSignatures": [
           {
@@ -18955,6 +19109,7 @@
       },
       "stateProjection": [
         "abstractInventoryState",
+        "abstractReservationState",
         "abstractOperationResult"
       ],
       "status": "covered"
@@ -19035,13 +19190,13 @@
       "directExecutableEvidence": [
         "test/formal-public-surface-completion.test.ts"
       ],
-      "evidenceMode": "indirect-call-chain",
+      "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
-        "test/catalog-stock.test.ts",
+        "test/transfer-lifecycle.test.ts",
         "test/formal-storage-refinement.test.ts"
       ],
-      "family": "stock-transfer",
+      "family": "transfer-lifecycle",
       "gaps": [],
       "implementationTargets": [
         {
@@ -19054,7 +19209,7 @@
           "name": "createInventoryTransferManyEvent"
         }
       ],
-      "inputMapping": "Exact source, destination location, and amount map to one atomic location rewrite preserving all other dimensions.",
+      "inputMapping": "Transfer identity, source/transit/destination, exact lines, custody, receipt quantities, and immutable operation intent map to one time-separated physical transfer lifecycle.",
       "internalReferences": [
         {
           "occurrences": 6,
@@ -19062,21 +19217,34 @@
         }
       ],
       "invariants": [
-        "ResourceAccounting",
-        "InTransitStillExists",
-        "ActiveTokensHaveExactlyOneRealLocation",
+        "TransferQuantityConserved",
+        "ReceivedNeverExceedsDispatched",
+        "TransferIsolation",
+        "PreparedIsUnavailableAtSource",
+        "DispatchedIsNotPrepared",
+        "BeforeReceiptDestinationIsEmpty",
+        "PartialReceiptLeavesTransit",
+        "CompletedReceiptLeavesNoTransit",
+        "ReleasedReturnsCommitment",
+        "IntentNeverChanges",
+        "OwnershipIsOrthogonal",
+        "TransitCustodyDoesNotChangeOwnership",
         "PartialWritesRefineToStuttering",
+        "AllActiveClaimsRemainFeasible",
         "PhysicalQuantityConserved"
       ],
       "models": [
+        "TransferLifecycle",
         "ResourceDimensions",
-        "DurableTransferRefinement",
+        "ReservationSafety",
         "InventoryOperation",
+        "DurableTransferRefinement",
+        "PublishedHeadCAS",
         "PackagingIdentity"
       ],
-      "rejectionRelation": "Deficit, package mismatch, invalid destination, or stale base rejects atomically.",
-      "resultMapping": "Result maps to one transfer event and equal global quantity before/after.",
-      "retryRelation": "Exact transfer intent replays once; changed destination/source/amount rejects.",
+      "rejectionRelation": "Insufficient source, existing transfer identity, pre-dispatch receipt, post-dispatch release, over-receipt, cross-transfer receipt, package/line collapse, reservation conflict, or stale publication rejects atomically.",
+      "resultMapping": "Result maps to exact prepared/dispatched/received/remainder state plus immutable stock event and replay truth.",
+      "retryRelation": "Exact prepare/dispatch/receive/release retry stutters or replays; changed intent under one operation identity rejects.",
       "signature": {
         "callSignatures": [
           {
@@ -19098,6 +19266,430 @@
       },
       "stateProjection": [
         "abstractInventoryState",
+        "abstractReservationState",
+        "abstractOperationResult"
+      ],
+      "status": "covered"
+    },
+    "entrypoint.kernel.createInventoryTransferPrepareEvent": {
+      "adapterCoverage": [
+        "memory",
+        "all-operation-failpoints"
+      ],
+      "callChainWitnesses": [
+        {
+          "chain": [
+            {
+              "column": 1,
+              "file": "test/transfer-lifecycle.test.ts",
+              "hasBody": true,
+              "id": "test-root:test/transfer-lifecycle.test.ts",
+              "kind": "TestRoot",
+              "line": 1,
+              "name": "test/transfer-lifecycle.test.ts"
+            },
+            {
+              "column": 78,
+              "file": "test/transfer-lifecycle.test.ts",
+              "hasBody": true,
+              "id": "test/transfer-lifecycle.test.ts:2602:<anonymous@83>",
+              "kind": "ArrowFunction",
+              "line": 83,
+              "name": "<anonymous@83>",
+              "reason": "test-callback"
+            },
+            {
+              "column": 1,
+              "file": "src/transfers.ts",
+              "hasBody": true,
+              "id": "src/transfers.ts:22551:createInventoryTransferPrepareEvent",
+              "kind": "FunctionDeclaration",
+              "line": 544,
+              "name": "createInventoryTransferPrepareEvent",
+              "reason": "resolved-call"
+            }
+          ],
+          "target": {
+            "column": 1,
+            "file": "src/transfers.ts",
+            "hasBody": true,
+            "id": "src/transfers.ts:22551:createInventoryTransferPrepareEvent",
+            "kind": "FunctionDeclaration",
+            "line": 544,
+            "name": "createInventoryTransferPrepareEvent"
+          },
+          "test": "test/transfer-lifecycle.test.ts"
+        }
+      ],
+      "directExecutableEntrypoints": [
+        "test/transfer-lifecycle.test.ts"
+      ],
+      "directExecutableEvidence": [
+        "test/transfer-lifecycle.test.ts"
+      ],
+      "evidenceMode": "direct-executable",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/transfer-lifecycle.test.ts",
+        "test/formal-storage-refinement.test.ts"
+      ],
+      "family": "transfer-lifecycle",
+      "gaps": [],
+      "implementationTargets": [
+        {
+          "column": 1,
+          "file": "src/transfers.ts",
+          "hasBody": true,
+          "id": "src/transfers.ts:22551:createInventoryTransferPrepareEvent",
+          "kind": "FunctionDeclaration",
+          "line": 544,
+          "name": "createInventoryTransferPrepareEvent"
+        }
+      ],
+      "inputMapping": "Transfer identity, source/transit/destination, exact lines, custody, receipt quantities, and immutable operation intent map to one time-separated physical transfer lifecycle.",
+      "internalReferences": [
+        {
+          "occurrences": 2,
+          "path": "src/facade.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/transfers.ts"
+        }
+      ],
+      "invariants": [
+        "TransferQuantityConserved",
+        "ReceivedNeverExceedsDispatched",
+        "TransferIsolation",
+        "PreparedIsUnavailableAtSource",
+        "DispatchedIsNotPrepared",
+        "BeforeReceiptDestinationIsEmpty",
+        "PartialReceiptLeavesTransit",
+        "CompletedReceiptLeavesNoTransit",
+        "ReleasedReturnsCommitment",
+        "IntentNeverChanges",
+        "OwnershipIsOrthogonal",
+        "TransitCustodyDoesNotChangeOwnership",
+        "PartialWritesRefineToStuttering",
+        "AllActiveClaimsRemainFeasible",
+        "PhysicalQuantityConserved"
+      ],
+      "models": [
+        "TransferLifecycle",
+        "ResourceDimensions",
+        "ReservationSafety",
+        "InventoryOperation",
+        "DurableTransferRefinement",
+        "PublishedHeadCAS",
+        "PackagingIdentity"
+      ],
+      "rejectionRelation": "Insufficient source, existing transfer identity, pre-dispatch receipt, post-dispatch release, over-receipt, cross-transfer receipt, package/line collapse, reservation conflict, or stale publication rejects atomically.",
+      "resultMapping": "Result maps to exact prepared/dispatched/received/remainder state plus immutable stock event and replay truth.",
+      "retryRelation": "Exact prepare/dispatch/receive/release retry stutters or replays; changed intent under one operation identity rejects.",
+      "signature": {
+        "callSignatures": [
+          {
+            "parameters": [
+              {
+                "name": "input",
+                "optional": false,
+                "type": "CreateInventoryTransferPrepareEventInput"
+              }
+            ],
+            "result": "InventoryEventDraft"
+          }
+        ],
+        "callable": true,
+        "constructSignatures": [],
+        "constructable": false,
+        "declaration": "src/kernel.ts",
+        "name": "createInventoryTransferPrepareEvent"
+      },
+      "stateProjection": [
+        "abstractInventoryState",
+        "abstractReservationState",
+        "abstractOperationResult"
+      ],
+      "status": "covered"
+    },
+    "entrypoint.kernel.createInventoryTransferReceiveEvent": {
+      "adapterCoverage": [
+        "memory",
+        "all-operation-failpoints"
+      ],
+      "callChainWitnesses": [
+        {
+          "chain": [
+            {
+              "column": 1,
+              "file": "test/transfer-lifecycle.test.ts",
+              "hasBody": true,
+              "id": "test-root:test/transfer-lifecycle.test.ts",
+              "kind": "TestRoot",
+              "line": 1,
+              "name": "test/transfer-lifecycle.test.ts"
+            },
+            {
+              "column": 79,
+              "file": "test/transfer-lifecycle.test.ts",
+              "hasBody": true,
+              "id": "test/transfer-lifecycle.test.ts:13345:<anonymous@408>",
+              "kind": "ArrowFunction",
+              "line": 408,
+              "name": "<anonymous@408>",
+              "reason": "test-callback"
+            },
+            {
+              "column": 1,
+              "file": "src/transfers.ts",
+              "hasBody": true,
+              "id": "src/transfers.ts:27001:createInventoryTransferReceiveEvent",
+              "kind": "FunctionDeclaration",
+              "line": 666,
+              "name": "createInventoryTransferReceiveEvent",
+              "reason": "resolved-call"
+            }
+          ],
+          "target": {
+            "column": 1,
+            "file": "src/transfers.ts",
+            "hasBody": true,
+            "id": "src/transfers.ts:27001:createInventoryTransferReceiveEvent",
+            "kind": "FunctionDeclaration",
+            "line": 666,
+            "name": "createInventoryTransferReceiveEvent"
+          },
+          "test": "test/transfer-lifecycle.test.ts"
+        }
+      ],
+      "directExecutableEntrypoints": [
+        "test/transfer-lifecycle.test.ts"
+      ],
+      "directExecutableEvidence": [
+        "test/transfer-lifecycle.test.ts"
+      ],
+      "evidenceMode": "direct-executable",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/transfer-lifecycle.test.ts",
+        "test/formal-storage-refinement.test.ts"
+      ],
+      "family": "transfer-lifecycle",
+      "gaps": [],
+      "implementationTargets": [
+        {
+          "column": 1,
+          "file": "src/transfers.ts",
+          "hasBody": true,
+          "id": "src/transfers.ts:27001:createInventoryTransferReceiveEvent",
+          "kind": "FunctionDeclaration",
+          "line": 666,
+          "name": "createInventoryTransferReceiveEvent"
+        }
+      ],
+      "inputMapping": "Transfer identity, source/transit/destination, exact lines, custody, receipt quantities, and immutable operation intent map to one time-separated physical transfer lifecycle.",
+      "internalReferences": [
+        {
+          "occurrences": 2,
+          "path": "src/facade.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/transfers.ts"
+        }
+      ],
+      "invariants": [
+        "TransferQuantityConserved",
+        "ReceivedNeverExceedsDispatched",
+        "TransferIsolation",
+        "PreparedIsUnavailableAtSource",
+        "DispatchedIsNotPrepared",
+        "BeforeReceiptDestinationIsEmpty",
+        "PartialReceiptLeavesTransit",
+        "CompletedReceiptLeavesNoTransit",
+        "ReleasedReturnsCommitment",
+        "IntentNeverChanges",
+        "OwnershipIsOrthogonal",
+        "TransitCustodyDoesNotChangeOwnership",
+        "PartialWritesRefineToStuttering",
+        "AllActiveClaimsRemainFeasible",
+        "PhysicalQuantityConserved"
+      ],
+      "models": [
+        "TransferLifecycle",
+        "ResourceDimensions",
+        "ReservationSafety",
+        "InventoryOperation",
+        "DurableTransferRefinement",
+        "PublishedHeadCAS",
+        "PackagingIdentity"
+      ],
+      "rejectionRelation": "Insufficient source, existing transfer identity, pre-dispatch receipt, post-dispatch release, over-receipt, cross-transfer receipt, package/line collapse, reservation conflict, or stale publication rejects atomically.",
+      "resultMapping": "Result maps to exact prepared/dispatched/received/remainder state plus immutable stock event and replay truth.",
+      "retryRelation": "Exact prepare/dispatch/receive/release retry stutters or replays; changed intent under one operation identity rejects.",
+      "signature": {
+        "callSignatures": [
+          {
+            "parameters": [
+              {
+                "name": "input",
+                "optional": false,
+                "type": "CreateInventoryTransferReceiveEventInput"
+              }
+            ],
+            "result": "InventoryEventDraft"
+          }
+        ],
+        "callable": true,
+        "constructSignatures": [],
+        "constructable": false,
+        "declaration": "src/kernel.ts",
+        "name": "createInventoryTransferReceiveEvent"
+      },
+      "stateProjection": [
+        "abstractInventoryState",
+        "abstractReservationState",
+        "abstractOperationResult"
+      ],
+      "status": "covered"
+    },
+    "entrypoint.kernel.createInventoryTransferReleaseEvent": {
+      "adapterCoverage": [
+        "memory",
+        "all-operation-failpoints"
+      ],
+      "callChainWitnesses": [
+        {
+          "chain": [
+            {
+              "column": 1,
+              "file": "test/transfer-lifecycle.test.ts",
+              "hasBody": true,
+              "id": "test-root:test/transfer-lifecycle.test.ts",
+              "kind": "TestRoot",
+              "line": 1,
+              "name": "test/transfer-lifecycle.test.ts"
+            },
+            {
+              "column": 86,
+              "file": "test/transfer-lifecycle.test.ts",
+              "hasBody": true,
+              "id": "test/transfer-lifecycle.test.ts:17650:<anonymous@534>",
+              "kind": "ArrowFunction",
+              "line": 534,
+              "name": "<anonymous@534>",
+              "reason": "test-callback"
+            },
+            {
+              "column": 1,
+              "file": "src/transfers.ts",
+              "hasBody": true,
+              "id": "src/transfers.ts:29083:createInventoryTransferReleaseEvent",
+              "kind": "FunctionDeclaration",
+              "line": 731,
+              "name": "createInventoryTransferReleaseEvent",
+              "reason": "resolved-call"
+            }
+          ],
+          "target": {
+            "column": 1,
+            "file": "src/transfers.ts",
+            "hasBody": true,
+            "id": "src/transfers.ts:29083:createInventoryTransferReleaseEvent",
+            "kind": "FunctionDeclaration",
+            "line": 731,
+            "name": "createInventoryTransferReleaseEvent"
+          },
+          "test": "test/transfer-lifecycle.test.ts"
+        }
+      ],
+      "directExecutableEntrypoints": [
+        "test/transfer-lifecycle.test.ts"
+      ],
+      "directExecutableEvidence": [
+        "test/transfer-lifecycle.test.ts"
+      ],
+      "evidenceMode": "direct-executable",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/transfer-lifecycle.test.ts",
+        "test/formal-storage-refinement.test.ts"
+      ],
+      "family": "transfer-lifecycle",
+      "gaps": [],
+      "implementationTargets": [
+        {
+          "column": 1,
+          "file": "src/transfers.ts",
+          "hasBody": true,
+          "id": "src/transfers.ts:29083:createInventoryTransferReleaseEvent",
+          "kind": "FunctionDeclaration",
+          "line": 731,
+          "name": "createInventoryTransferReleaseEvent"
+        }
+      ],
+      "inputMapping": "Transfer identity, source/transit/destination, exact lines, custody, receipt quantities, and immutable operation intent map to one time-separated physical transfer lifecycle.",
+      "internalReferences": [
+        {
+          "occurrences": 2,
+          "path": "src/facade.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/transfers.ts"
+        }
+      ],
+      "invariants": [
+        "TransferQuantityConserved",
+        "ReceivedNeverExceedsDispatched",
+        "TransferIsolation",
+        "PreparedIsUnavailableAtSource",
+        "DispatchedIsNotPrepared",
+        "BeforeReceiptDestinationIsEmpty",
+        "PartialReceiptLeavesTransit",
+        "CompletedReceiptLeavesNoTransit",
+        "ReleasedReturnsCommitment",
+        "IntentNeverChanges",
+        "OwnershipIsOrthogonal",
+        "TransitCustodyDoesNotChangeOwnership",
+        "PartialWritesRefineToStuttering",
+        "AllActiveClaimsRemainFeasible",
+        "PhysicalQuantityConserved"
+      ],
+      "models": [
+        "TransferLifecycle",
+        "ResourceDimensions",
+        "ReservationSafety",
+        "InventoryOperation",
+        "DurableTransferRefinement",
+        "PublishedHeadCAS",
+        "PackagingIdentity"
+      ],
+      "rejectionRelation": "Insufficient source, existing transfer identity, pre-dispatch receipt, post-dispatch release, over-receipt, cross-transfer receipt, package/line collapse, reservation conflict, or stale publication rejects atomically.",
+      "resultMapping": "Result maps to exact prepared/dispatched/received/remainder state plus immutable stock event and replay truth.",
+      "retryRelation": "Exact prepare/dispatch/receive/release retry stutters or replays; changed intent under one operation identity rejects.",
+      "signature": {
+        "callSignatures": [
+          {
+            "parameters": [
+              {
+                "name": "input",
+                "optional": false,
+                "type": "CreateInventoryTransferReleaseEventInput"
+              }
+            ],
+            "result": "InventoryEventDraft"
+          }
+        ],
+        "callable": true,
+        "constructSignatures": [],
+        "constructable": false,
+        "declaration": "src/kernel.ts",
+        "name": "createInventoryTransferReleaseEvent"
+      },
+      "stateProjection": [
+        "abstractInventoryState",
+        "abstractReservationState",
         "abstractOperationResult"
       ],
       "status": "covered"
@@ -19123,10 +19715,10 @@
               "column": 77,
               "file": "test/traceability-corrections.test.ts",
               "hasBody": true,
-              "id": "test/traceability-corrections.test.ts:7416:<anonymous@246>",
+              "id": "test/traceability-corrections.test.ts:7399:<anonymous@245>",
               "kind": "ArrowFunction",
-              "line": 246,
-              "name": "<anonymous@246>",
+              "line": 245,
+              "name": "<anonymous@245>",
               "reason": "test-callback"
             },
             {
@@ -19809,10 +20401,10 @@
               "column": 80,
               "file": "test/traceability-corrections.test.ts",
               "hasBody": true,
-              "id": "test/traceability-corrections.test.ts:3523:<anonymous@117>",
+              "id": "test/traceability-corrections.test.ts:3506:<anonymous@116>",
               "kind": "ArrowFunction",
-              "line": 117,
-              "name": "<anonymous@117>",
+              "line": 116,
+              "name": "<anonymous@116>",
               "reason": "test-callback"
             },
             {
@@ -19986,7 +20578,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/catalog-stock.test.ts",
@@ -20244,7 +20836,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/catalog-stock.test.ts",
@@ -20896,7 +21488,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/catalog-stock.test.ts",
@@ -21023,7 +21615,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-storage-refinement.test.ts",
@@ -21148,7 +21740,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/reclassification.test.ts",
@@ -21274,7 +21866,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/reservations-counts.test.ts",
@@ -21653,7 +22245,7 @@
       "directExecutableEvidence": [
         "test/formal-public-surface-completion.test.ts"
       ],
-      "evidenceMode": "indirect-call-chain",
+      "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/reservations-counts.test.ts",
@@ -21994,10 +22586,10 @@
               "column": 68,
               "file": "test/projection-indexes.test.ts",
               "hasBody": true,
-              "id": "test/projection-indexes.test.ts:2586:<anonymous@79>",
+              "id": "test/projection-indexes.test.ts:2363:<anonymous@74>",
               "kind": "ArrowFunction",
-              "line": 79,
-              "name": "<anonymous@79>",
+              "line": 74,
+              "name": "<anonymous@74>",
               "reason": "test-callback"
             },
             {
@@ -22300,9 +22892,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3446:allocateInventory",
+              "id": "src/allocation.ts:3461:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 84,
+              "line": 85,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -22310,10 +22902,10 @@
               "column": 1,
               "file": "src/quantity.ts",
               "hasBody": true,
-              "id": "src/quantity.ts:4340:compareQuantity",
+              "id": "src/quantity.ts:5036:addQuantity",
               "kind": "FunctionDeclaration",
-              "line": 106,
-              "name": "compareQuantity",
+              "line": 122,
+              "name": "addQuantity",
               "reason": "resolved-call"
             },
             {
@@ -22476,7 +23068,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/allocation.test.ts",
@@ -22723,7 +23315,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/catalog-stock.test.ts",
@@ -23269,10 +23861,10 @@
               "column": 78,
               "file": "test/transfer-lifecycle.test.ts",
               "hasBody": true,
-              "id": "test/transfer-lifecycle.test.ts:2517:<anonymous@78>",
+              "id": "test/transfer-lifecycle.test.ts:2602:<anonymous@83>",
               "kind": "ArrowFunction",
-              "line": 78,
-              "name": "<anonymous@78>",
+              "line": 83,
+              "name": "<anonymous@83>",
               "reason": "test-callback"
             },
             {
@@ -23599,7 +24191,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/reclassification.test.ts",
@@ -23836,10 +24428,10 @@
               "column": 77,
               "file": "test/traceability-corrections.test.ts",
               "hasBody": true,
-              "id": "test/traceability-corrections.test.ts:7416:<anonymous@246>",
+              "id": "test/traceability-corrections.test.ts:7399:<anonymous@245>",
               "kind": "ArrowFunction",
-              "line": 246,
-              "name": "<anonymous@246>",
+              "line": 245,
+              "name": "<anonymous@245>",
               "reason": "test-callback"
             },
             {
@@ -25026,7 +25618,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -26249,10 +26841,10 @@
               "column": 91,
               "file": "test/projection-indexes.test.ts",
               "hasBody": true,
-              "id": "test/projection-indexes.test.ts:5942:<anonymous@175>",
+              "id": "test/projection-indexes.test.ts:5719:<anonymous@170>",
               "kind": "ArrowFunction",
-              "line": 175,
-              "name": "<anonymous@175>",
+              "line": 170,
+              "name": "<anonymous@170>",
               "reason": "test-callback"
             },
             {
@@ -26374,10 +26966,10 @@
               "column": 91,
               "file": "test/projection-indexes.test.ts",
               "hasBody": true,
-              "id": "test/projection-indexes.test.ts:5942:<anonymous@175>",
+              "id": "test/projection-indexes.test.ts:5719:<anonymous@170>",
               "kind": "ArrowFunction",
-              "line": 175,
-              "name": "<anonymous@175>",
+              "line": 170,
+              "name": "<anonymous@170>",
               "reason": "test-callback"
             },
             {
@@ -26458,7 +27050,7 @@
           "path": "src/deficits.ts"
         },
         {
-          "occurrences": 20,
+          "occurrences": 18,
           "path": "src/events.ts"
         },
         {
@@ -26554,10 +27146,10 @@
               "column": 68,
               "file": "test/projection-indexes.test.ts",
               "hasBody": true,
-              "id": "test/projection-indexes.test.ts:2586:<anonymous@79>",
+              "id": "test/projection-indexes.test.ts:2363:<anonymous@74>",
               "kind": "ArrowFunction",
-              "line": 79,
-              "name": "<anonymous@79>",
+              "line": 74,
+              "name": "<anonymous@74>",
               "reason": "test-callback"
             },
             {
@@ -26595,7 +27187,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -27020,7 +27612,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -27158,7 +27750,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -27248,10 +27840,10 @@
               "column": 68,
               "file": "test/traceability-corrections.test.ts",
               "hasBody": true,
-              "id": "test/traceability-corrections.test.ts:1391:<anonymous@47>",
+              "id": "test/traceability-corrections.test.ts:1374:<anonymous@46>",
               "kind": "ArrowFunction",
-              "line": 47,
-              "name": "<anonymous@47>",
+              "line": 46,
+              "name": "<anonymous@46>",
               "reason": "test-callback"
             },
             {
@@ -27389,10 +27981,10 @@
               "column": 79,
               "file": "test/traceability-corrections.test.ts",
               "hasBody": true,
-              "id": "test/traceability-corrections.test.ts:5879:<anonymous@194>",
+              "id": "test/traceability-corrections.test.ts:5862:<anonymous@193>",
               "kind": "ArrowFunction",
-              "line": 194,
-              "name": "<anonymous@194>",
+              "line": 193,
+              "name": "<anonymous@193>",
               "reason": "test-callback"
             },
             {
@@ -28015,7 +28607,7 @@
       "directExecutableEvidence": [
         "test/formal-public-surface-completion.test.ts"
       ],
-      "evidenceMode": "indirect-call-chain",
+      "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/reservations-counts.test.ts",
@@ -28688,7 +29280,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -29405,7 +29997,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -29582,7 +30174,7 @@
       "directExecutableEvidence": [
         "test/formal-public-surface-completion.test.ts"
       ],
-      "evidenceMode": "indirect-call-chain",
+      "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-storage-refinement.test.ts",
@@ -30261,7 +30853,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -30365,9 +30957,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3446:allocateInventory",
+              "id": "src/allocation.ts:3461:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 84,
+              "line": 85,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -30396,7 +30988,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -30677,7 +31269,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -30991,10 +31583,10 @@
               "column": 80,
               "file": "test/traceability-corrections.test.ts",
               "hasBody": true,
-              "id": "test/traceability-corrections.test.ts:3523:<anonymous@117>",
+              "id": "test/traceability-corrections.test.ts:3506:<anonymous@116>",
               "kind": "ArrowFunction",
-              "line": 117,
-              "name": "<anonymous@117>",
+              "line": 116,
+              "name": "<anonymous@116>",
               "reason": "test-callback"
             },
             {
@@ -31273,9 +31865,9 @@
               "column": 1,
               "file": "test/formal-implementation-abstraction.ts",
               "hasBody": true,
-              "id": "test/formal-implementation-abstraction.ts:40748:abstractPrimaryBalance",
+              "id": "test/formal-implementation-abstraction.ts:40782:abstractPrimaryBalance",
               "kind": "FunctionDeclaration",
-              "line": 1094,
+              "line": 1095,
               "name": "abstractPrimaryBalance",
               "reason": "resolved-call"
             },
@@ -31446,7 +32038,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -31718,7 +32310,7 @@
       "directExecutableEvidence": [
         "test/formal-public-surface-completion.test.ts"
       ],
-      "evidenceMode": "indirect-call-chain",
+      "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/reservations-counts.test.ts",
@@ -31849,7 +32441,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -32001,7 +32593,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -32272,7 +32864,7 @@
       "directExecutableEvidence": [
         "test/formal-public-surface-completion.test.ts"
       ],
-      "evidenceMode": "indirect-call-chain",
+      "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-storage-refinement.test.ts",
@@ -32641,9 +33233,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3446:allocateInventory",
+              "id": "src/allocation.ts:3461:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 84,
+              "line": 85,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -32672,7 +33264,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -33597,9 +34189,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3446:allocateInventory",
+              "id": "src/allocation.ts:3461:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 84,
+              "line": 85,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -33628,7 +34220,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -33649,7 +34241,7 @@
       "inputMapping": "Exact decimal/unit/package inputs map directly to finite quantity or measurement tuples.",
       "internalReferences": [
         {
-          "occurrences": 6,
+          "occurrences": 7,
           "path": "src/allocation.ts"
         },
         {
@@ -35618,7 +36210,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/authority.test.ts"
@@ -35970,7 +36562,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-conformance.test.ts",
         "test/formal-implementation-refinement.test.ts"
@@ -36136,7 +36728,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -36251,31 +36843,31 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/formal-implementation-refinement.test.ts",
+              "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test-root:test/formal-implementation-refinement.test.ts",
+              "id": "test-root:test/allocation.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/formal-implementation-refinement.test.ts"
+              "name": "test/allocation.test.ts"
             },
             {
-              "column": 90,
-              "file": "test/formal-implementation-refinement.test.ts",
+              "column": 51,
+              "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/formal-implementation-refinement.test.ts:3795:<anonymous@120>",
+              "id": "test/allocation.test.ts:966:<anonymous@35>",
               "kind": "ArrowFunction",
-              "line": 120,
-              "name": "<anonymous@120>",
+              "line": 35,
+              "name": "<anonymous@35>",
               "reason": "test-callback"
             },
             {
               "column": 1,
-              "file": "test/formal-implementation-abstraction.ts",
+              "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "test/formal-implementation-abstraction.ts:40748:abstractPrimaryBalance",
+              "id": "src/allocation.ts:3461:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 1094,
-              "name": "abstractPrimaryBalance",
+              "line": 85,
+              "name": "allocateInventory",
               "reason": "resolved-call"
             },
             {
@@ -36298,16 +36890,12 @@
             "line": 122,
             "name": "addQuantity"
           },
-          "test": "test/formal-implementation-refinement.test.ts"
+          "test": "test/allocation.test.ts"
         }
       ],
-      "directExecutableEntrypoints": [
-        "test/formal-implementation-refinement.test.ts"
-      ],
-      "directExecutableEvidence": [
-        "test/formal-implementation-abstraction.ts"
-      ],
-      "evidenceMode": "direct-executable",
+      "directExecutableEntrypoints": [],
+      "directExecutableEvidence": [],
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -36327,6 +36915,10 @@
       ],
       "inputMapping": "Exact decimal/unit/package inputs map directly to finite quantity or measurement tuples.",
       "internalReferences": [
+        {
+          "occurrences": 2,
+          "path": "src/allocation.ts"
+        },
         {
           "occurrences": 8,
           "path": "src/availability.ts"
@@ -36462,7 +37054,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -36584,7 +37176,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/catalog-stock.test.ts",
@@ -36997,10 +37589,10 @@
               "column": 80,
               "file": "test/traceability-corrections.test.ts",
               "hasBody": true,
-              "id": "test/traceability-corrections.test.ts:3523:<anonymous@117>",
+              "id": "test/traceability-corrections.test.ts:3506:<anonymous@116>",
               "kind": "ArrowFunction",
-              "line": 117,
-              "name": "<anonymous@117>",
+              "line": 116,
+              "name": "<anonymous@116>",
               "reason": "test-callback"
             },
             {
@@ -37162,9 +37754,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3446:allocateInventory",
+              "id": "src/allocation.ts:3461:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 84,
+              "line": 85,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -37172,10 +37764,10 @@
               "column": 1,
               "file": "src/quantity.ts",
               "hasBody": true,
-              "id": "src/quantity.ts:4340:compareQuantity",
+              "id": "src/quantity.ts:5036:addQuantity",
               "kind": "FunctionDeclaration",
-              "line": 106,
-              "name": "compareQuantity",
+              "line": 122,
+              "name": "addQuantity",
               "reason": "resolved-call"
             },
             {
@@ -37289,10 +37881,10 @@
               "column": 80,
               "file": "test/traceability-corrections.test.ts",
               "hasBody": true,
-              "id": "test/traceability-corrections.test.ts:3523:<anonymous@117>",
+              "id": "test/traceability-corrections.test.ts:3506:<anonymous@116>",
               "kind": "ArrowFunction",
-              "line": 117,
-              "name": "<anonymous@117>",
+              "line": 116,
+              "name": "<anonymous@116>",
               "reason": "test-callback"
             },
             {
@@ -37778,9 +38370,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3446:allocateInventory",
+              "id": "src/allocation.ts:3461:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 84,
+              "line": 85,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -37809,7 +38401,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -37830,7 +38422,7 @@
       "inputMapping": "Exact decimal/unit/package inputs map directly to finite quantity or measurement tuples.",
       "internalReferences": [
         {
-          "occurrences": 8,
+          "occurrences": 9,
           "path": "src/allocation.ts"
         },
         {
@@ -39136,7 +39728,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/catalog-stock.test.ts",
@@ -39394,7 +39986,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/catalog-stock.test.ts",
@@ -40157,7 +40749,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/catalog-stock.test.ts",
@@ -40750,9 +41342,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3446:allocateInventory",
+              "id": "src/allocation.ts:3461:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 84,
+              "line": 85,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -40760,10 +41352,10 @@
               "column": 1,
               "file": "src/quantity.ts",
               "hasBody": true,
-              "id": "src/quantity.ts:4340:compareQuantity",
+              "id": "src/quantity.ts:5036:addQuantity",
               "kind": "FunctionDeclaration",
-              "line": 106,
-              "name": "compareQuantity",
+              "line": 122,
+              "name": "addQuantity",
               "reason": "resolved-call"
             },
             {
@@ -40926,7 +41518,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/allocation.test.ts",
@@ -41176,7 +41768,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/authority.test.ts",
@@ -41319,7 +41911,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/authority.test.ts"
@@ -41448,7 +42040,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/catalog-stock.test.ts",
@@ -42905,7 +43497,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -44631,7 +45223,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -45757,7 +46349,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -45861,9 +46453,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3446:allocateInventory",
+              "id": "src/allocation.ts:3461:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 84,
+              "line": 85,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -45892,7 +46484,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -46294,7 +46886,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -46608,10 +47200,10 @@
               "column": 80,
               "file": "test/traceability-corrections.test.ts",
               "hasBody": true,
-              "id": "test/traceability-corrections.test.ts:3523:<anonymous@117>",
+              "id": "test/traceability-corrections.test.ts:3506:<anonymous@116>",
               "kind": "ArrowFunction",
-              "line": 117,
-              "name": "<anonymous@117>",
+              "line": 116,
+              "name": "<anonymous@116>",
               "reason": "test-callback"
             },
             {
@@ -46890,9 +47482,9 @@
               "column": 1,
               "file": "test/formal-implementation-abstraction.ts",
               "hasBody": true,
-              "id": "test/formal-implementation-abstraction.ts:40748:abstractPrimaryBalance",
+              "id": "test/formal-implementation-abstraction.ts:40782:abstractPrimaryBalance",
               "kind": "FunctionDeclaration",
-              "line": 1094,
+              "line": 1095,
               "name": "abstractPrimaryBalance",
               "reason": "resolved-call"
             },
@@ -47063,7 +47655,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -47257,7 +47849,8 @@
     },
     "entrypoint.root.readPublishedInventorySnapshot": {
       "adapterCoverage": [
-        "memory"
+        "memory",
+        "all-operation-failpoints"
       ],
       "callChainWitnesses": [
         {
@@ -47313,12 +47906,13 @@
       "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
-        "test/read-model.test.ts",
         "test/read-snapshot.test.ts",
-        "test/availability.test.ts"
+        "test/formal-storage-refinement.test.ts"
       ],
-      "family": "read-current",
-      "gaps": [],
+      "family": "read-snapshot",
+      "gaps": [
+        "GAP-DB-IMPLEMENTATION-UNBOUNDED"
+      ],
       "implementationTargets": [
         {
           "column": 1,
@@ -47330,26 +47924,19 @@
           "name": "readPublishedInventorySnapshot"
         }
       ],
-      "inputMapping": "Selector/identity/scope/time fields map to a query over one fully published abstract world.",
+      "inputMapping": "One public snapshot freezes one published world revision and its catalogue/projection/books.",
       "internalReferences": [],
       "invariants": [
         "HeadReferencesCompleteWorld",
-        "ReportMatchesCurrentTruth",
-        "ReportsMatchExactPhysicalIdentity",
-        "PoolReportMatchesExactPhysicalTruth",
-        "ReportMatchesCurrentPhysicalTruth"
+        "PartialWritesAreInvisible",
+        "PublishedFencePointsAtExactTarget"
       ],
       "models": [
-        "PublishedHeadCAS",
-        "ResourceDimensions",
-        "UseByReservation",
-        "ReservationScope",
-        "CollectionView",
-        "FungibilityPool"
+        "PublishedHeadCAS"
       ],
-      "rejectionRelation": "Unknown identity or invalid selector/time rejects; reads never fall back to staged or compatibility truth.",
-      "resultMapping": "Read result maps to exact current positions, summaries, availability, plans, metadata, claims, counts, or events from one world revision.",
-      "retryRelation": "Reads are side-effect-free; repeated reads without publication are equal.",
+      "rejectionRelation": "No staged component may appear; corrupt/missing published roots fail closed.",
+      "resultMapping": "Every snapshot method reports observations from the same worldRevision even if later publications occur.",
+      "retryRelation": "Snapshot methods are synchronous and repeatable over frozen state.",
       "signature": {
         "callSignatures": [
           {
@@ -47573,7 +48160,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -47725,7 +48312,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -48220,9 +48807,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3446:allocateInventory",
+              "id": "src/allocation.ts:3461:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 84,
+              "line": 85,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -48251,7 +48838,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -49060,9 +49647,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3446:allocateInventory",
+              "id": "src/allocation.ts:3461:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 84,
+              "line": 85,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -49091,7 +49678,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -49112,7 +49699,7 @@
       "inputMapping": "Exact decimal/unit/package inputs map directly to finite quantity or measurement tuples.",
       "internalReferences": [
         {
-          "occurrences": 6,
+          "occurrences": 7,
           "path": "src/allocation.ts"
         },
         {
@@ -51642,7 +52229,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-conformance.test.ts",
         "test/storage-conformance.test.ts"
@@ -51796,7 +52383,7 @@
       "directExecutableEvidence": [
         "test/formal-public-surface-direct.test.ts"
       ],
-      "evidenceMode": "indirect-call-chain",
+      "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-implementation-conformance.test.ts",
         "test/storage-conformance.test.ts"
@@ -51938,7 +52525,7 @@
       "directExecutableEvidence": [
         "test/formal-public-surface-direct.test.ts"
       ],
-      "evidenceMode": "indirect-call-chain",
+      "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-implementation-conformance.test.ts",
         "test/storage-conformance.test.ts"
@@ -52027,9 +52614,9 @@
               "column": 1,
               "file": "test/formal-storage-refinement-suite.ts",
               "hasBody": true,
-              "id": "test/formal-storage-refinement-suite.ts:11844:runInventoryFormalStorageRefinementSuite",
+              "id": "test/formal-storage-refinement-suite.ts:11914:runInventoryFormalStorageRefinementSuite",
               "kind": "FunctionDeclaration",
-              "line": 384,
+              "line": 386,
               "name": "runInventoryFormalStorageRefinementSuite",
               "reason": "resolved-call"
             },
@@ -52037,20 +52624,20 @@
               "column": 59,
               "file": "test/formal-storage-refinement-suite.ts",
               "hasBody": true,
-              "id": "test/formal-storage-refinement-suite.ts:12038:<anonymous@388>",
+              "id": "test/formal-storage-refinement-suite.ts:12108:<anonymous@390>",
               "kind": "ArrowFunction",
-              "line": 388,
-              "name": "<anonymous@388>",
+              "line": 390,
+              "name": "<anonymous@390>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 60,
               "file": "test/formal-storage-refinement-suite.ts",
               "hasBody": true,
-              "id": "test/formal-storage-refinement-suite.ts:19952:<anonymous@609>",
+              "id": "test/formal-storage-refinement-suite.ts:20022:<anonymous@611>",
               "kind": "ArrowFunction",
-              "line": 609,
-              "name": "<anonymous@609>",
+              "line": 611,
+              "name": "<anonymous@611>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -52082,7 +52669,7 @@
       "directExecutableEvidence": [
         "test/formal-storage-refinement-suite.ts"
       ],
-      "evidenceMode": "indirect-call-chain",
+      "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-storage-refinement.test.ts",
         "test/storage-conformance.test.ts"
@@ -52233,7 +52820,7 @@
       "directExecutableEvidence": [
         "test/storage-conformance-suite.ts"
       ],
-      "evidenceMode": "indirect-call-chain",
+      "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-storage-refinement.test.ts",
         "test/storage-conformance.test.ts"
@@ -52394,7 +52981,7 @@
       "directExecutableEvidence": [
         "test/formal-public-surface-direct.test.ts"
       ],
-      "evidenceMode": "indirect-call-chain",
+      "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-storage-refinement.test.ts",
         "test/storage-conformance.test.ts"
@@ -52545,7 +53132,7 @@
       "directExecutableEvidence": [
         "test/formal-public-surface-direct.test.ts"
       ],
-      "evidenceMode": "indirect-call-chain",
+      "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-storage-refinement.test.ts",
         "test/storage-conformance.test.ts"
@@ -52681,7 +53268,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-storage-refinement.test.ts",
@@ -52855,7 +53442,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-storage-refinement.test.ts",
@@ -53053,7 +53640,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-storage-refinement.test.ts",
@@ -53195,7 +53782,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-storage-refinement.test.ts",
@@ -53352,7 +53939,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/collections.test.ts"
@@ -53480,7 +54067,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/collections.test.ts"
@@ -53676,7 +54263,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/collections.test.ts"
@@ -53820,7 +54407,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/composition.test.ts"
@@ -53946,7 +54533,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/composition.test.ts"
@@ -54140,7 +54727,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/composition.test.ts"
@@ -54267,7 +54854,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/composition.test.ts",
@@ -54408,7 +54995,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/containers.test.ts",
@@ -54549,7 +55136,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/containers.test.ts",
@@ -54690,7 +55277,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/containers.test.ts",
@@ -54843,7 +55430,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/containers.test.ts",
@@ -54996,7 +55583,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/containers.test.ts",
@@ -55161,7 +55748,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/containers.test.ts",
@@ -55322,7 +55909,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/containers.test.ts",
@@ -55382,6 +55969,10 @@
         {
           "occurrences": 4,
           "path": "src/integrity.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/kernel.ts"
         },
         {
           "occurrences": 2,
@@ -55680,7 +56271,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-storage-refinement.test.ts",
@@ -55821,7 +56412,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-storage-refinement.test.ts",
@@ -55962,7 +56553,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-storage-refinement.test.ts",
@@ -56099,7 +56690,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-storage-refinement.test.ts",
@@ -56271,7 +56862,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/fungibility.test.ts",
@@ -56403,7 +56994,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/fungibility.test.ts",
@@ -56604,7 +57195,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/fungibility.test.ts",
@@ -56768,7 +57359,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/fungibility.test.ts",
@@ -57125,7 +57716,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/fungibility.test.ts",
@@ -57274,7 +57865,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/fungibility.test.ts",
@@ -57333,6 +57924,10 @@
         {
           "occurrences": 4,
           "path": "src/integrity.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/kernel.ts"
         },
         {
           "occurrences": 2,
@@ -57467,7 +58062,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/lots.test.ts",
@@ -57613,7 +58208,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/lots.test.ts",
@@ -57758,7 +58353,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/read-model.test.ts",
@@ -57931,7 +58526,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/read-model.test.ts",
@@ -58134,7 +58729,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/read-model.test.ts",
@@ -58277,7 +58872,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/read-model.test.ts",
@@ -58496,7 +59091,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/read-model.test.ts",
@@ -58551,7 +59146,7 @@
           "path": "src/counts.ts"
         },
         {
-          "occurrences": 136,
+          "occurrences": 137,
           "path": "src/events.ts"
         },
         {
@@ -58571,7 +59166,7 @@
           "path": "src/integrity.ts"
         },
         {
-          "occurrences": 3,
+          "occurrences": 4,
           "path": "src/kernel.ts"
         },
         {
@@ -58731,7 +59326,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/read-model.test.ts",
@@ -58952,7 +59547,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/read-model.test.ts",
@@ -59127,7 +59722,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/read-model.test.ts",
@@ -59282,7 +59877,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/read-model.test.ts",
@@ -59421,7 +60016,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/read-model.test.ts",
@@ -59640,7 +60235,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/read-model.test.ts",
@@ -59823,7 +60418,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/read-model.test.ts",
@@ -59967,7 +60562,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/read-snapshot.test.ts",
@@ -60128,7 +60723,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/read-model.test.ts",
@@ -60283,7 +60878,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/read-model.test.ts",
@@ -60471,7 +61066,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/reservations-counts.test.ts",
@@ -60613,7 +61208,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/reservations-counts.test.ts",
@@ -60751,7 +61346,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/reservations-counts.test.ts",
@@ -60913,7 +61508,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/reservations-counts.test.ts",
@@ -61213,7 +61808,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/reservations-counts.test.ts",
@@ -61359,7 +61954,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/reservations-counts.test.ts",
@@ -61521,7 +62116,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/reservations-counts.test.ts",
@@ -61663,7 +62258,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/read-snapshot.test.ts",
@@ -61985,7 +62580,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/read-snapshot.test.ts",
@@ -62119,7 +62714,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/read-snapshot.test.ts",
@@ -62317,7 +62912,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/read-snapshot.test.ts",
@@ -62455,7 +63050,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/read-snapshot.test.ts",
@@ -62669,7 +63264,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/read-snapshot.test.ts",
@@ -62725,7 +63320,7 @@
           "path": "src/counts.ts"
         },
         {
-          "occurrences": 136,
+          "occurrences": 137,
           "path": "src/events.ts"
         },
         {
@@ -62745,7 +63340,7 @@
           "path": "src/integrity.ts"
         },
         {
-          "occurrences": 3,
+          "occurrences": 4,
           "path": "src/kernel.ts"
         },
         {
@@ -63053,7 +63648,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/read-snapshot.test.ts",
@@ -63269,7 +63864,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/read-snapshot.test.ts",
@@ -63439,7 +64034,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/read-snapshot.test.ts",
@@ -63589,7 +64184,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/read-snapshot.test.ts",
@@ -63723,7 +64318,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/read-snapshot.test.ts",
@@ -63937,7 +64532,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/read-snapshot.test.ts",
@@ -64115,7 +64710,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/read-snapshot.test.ts",
@@ -64253,7 +64848,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/read-snapshot.test.ts",
@@ -64403,7 +64998,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/reclassification.test.ts",
@@ -64537,7 +65132,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/reclassification.test.ts",
@@ -64671,7 +65266,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/reclassification.test.ts",
@@ -64805,7 +65400,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/reclassification.test.ts",
@@ -64939,7 +65534,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/reclassification.test.ts",
@@ -65843,7 +66438,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/traceability-corrections.test.ts",
@@ -65993,7 +66588,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/catalog-stock.test.ts",
@@ -66155,7 +66750,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-storage-refinement.test.ts",
@@ -66459,7 +67054,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-storage-refinement.test.ts",
@@ -66605,7 +67200,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/reclassification.test.ts",
@@ -66753,7 +67348,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/reclassification.test.ts",
@@ -66887,7 +67482,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-storage-refinement.test.ts",
@@ -67040,7 +67635,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-storage-refinement.test.ts",
@@ -67136,10 +67731,10 @@
               "column": 82,
               "file": "test/projection-indexes.test.ts",
               "hasBody": true,
-              "id": "test/projection-indexes.test.ts:18322:<anonymous@523>",
+              "id": "test/projection-indexes.test.ts:18099:<anonymous@518>",
               "kind": "ArrowFunction",
-              "line": 523,
-              "name": "<anonymous@523>",
+              "line": 518,
+              "name": "<anonymous@518>",
               "reason": "test-callback"
             },
             {
@@ -67177,7 +67772,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/reclassification.test.ts",
@@ -67311,7 +67906,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/reclassification.test.ts",
@@ -67445,7 +68040,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/catalog-stock.test.ts",
@@ -67602,7 +68197,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/catalog-stock.test.ts",
@@ -67896,7 +68491,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/catalog-stock.test.ts",
@@ -67952,6 +68547,10 @@
         {
           "occurrences": 4,
           "path": "src/integrity.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/kernel.ts"
         },
         {
           "occurrences": 2,
@@ -68083,7 +68682,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-storage-refinement.test.ts",
@@ -68336,9 +68935,9 @@
               "column": 1,
               "file": "test/formal-storage-refinement-suite.ts",
               "hasBody": true,
-              "id": "test/formal-storage-refinement-suite.ts:11844:runInventoryFormalStorageRefinementSuite",
+              "id": "test/formal-storage-refinement-suite.ts:11914:runInventoryFormalStorageRefinementSuite",
               "kind": "FunctionDeclaration",
-              "line": 384,
+              "line": 386,
               "name": "runInventoryFormalStorageRefinementSuite",
               "reason": "resolved-call"
             },
@@ -68346,20 +68945,20 @@
               "column": 59,
               "file": "test/formal-storage-refinement-suite.ts",
               "hasBody": true,
-              "id": "test/formal-storage-refinement-suite.ts:12038:<anonymous@388>",
+              "id": "test/formal-storage-refinement-suite.ts:12108:<anonymous@390>",
               "kind": "ArrowFunction",
-              "line": 388,
-              "name": "<anonymous@388>",
+              "line": 390,
+              "name": "<anonymous@390>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 68,
               "file": "test/formal-storage-refinement-suite.ts",
               "hasBody": true,
-              "id": "test/formal-storage-refinement-suite.ts:23466:<anonymous@705>",
+              "id": "test/formal-storage-refinement-suite.ts:23536:<anonymous@707>",
               "kind": "ArrowFunction",
-              "line": 705,
-              "name": "<anonymous@705>",
+              "line": 707,
+              "name": "<anonymous@707>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -68495,10 +69094,10 @@
               "column": 77,
               "file": "test/traceability-corrections.test.ts",
               "hasBody": true,
-              "id": "test/traceability-corrections.test.ts:7416:<anonymous@246>",
+              "id": "test/traceability-corrections.test.ts:7399:<anonymous@245>",
               "kind": "ArrowFunction",
-              "line": 246,
-              "name": "<anonymous@246>",
+              "line": 245,
+              "name": "<anonymous@245>",
               "reason": "test-callback"
             },
             {
@@ -68536,7 +69135,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/reclassification.test.ts",
@@ -68680,7 +69279,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/reclassification.test.ts",
@@ -68828,7 +69427,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/traceability-corrections.test.ts",
@@ -68924,10 +69523,10 @@
               "column": 86,
               "file": "test/traceability-corrections.test.ts",
               "hasBody": true,
-              "id": "test/traceability-corrections.test.ts:1908:<anonymous@64>",
+              "id": "test/traceability-corrections.test.ts:1891:<anonymous@63>",
               "kind": "ArrowFunction",
-              "line": 64,
-              "name": "<anonymous@64>",
+              "line": 63,
+              "name": "<anonymous@63>",
               "reason": "test-callback"
             },
             {
@@ -68965,7 +69564,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/traceability-corrections.test.ts",
@@ -69061,10 +69660,10 @@
               "column": 86,
               "file": "test/traceability-corrections.test.ts",
               "hasBody": true,
-              "id": "test/traceability-corrections.test.ts:1908:<anonymous@64>",
+              "id": "test/traceability-corrections.test.ts:1891:<anonymous@63>",
               "kind": "ArrowFunction",
-              "line": 64,
-              "name": "<anonymous@64>",
+              "line": 63,
+              "name": "<anonymous@63>",
               "reason": "test-callback"
             },
             {
@@ -69102,7 +69701,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/traceability-corrections.test.ts",
@@ -69355,10 +69954,10 @@
               "column": 76,
               "file": "test/transfer-lifecycle.test.ts",
               "hasBody": true,
-              "id": "test/transfer-lifecycle.test.ts:4364:<anonymous@134>",
+              "id": "test/transfer-lifecycle.test.ts:4449:<anonymous@139>",
               "kind": "ArrowFunction",
-              "line": 134,
-              "name": "<anonymous@134>",
+              "line": 139,
+              "name": "<anonymous@139>",
               "reason": "test-callback"
             },
             {
@@ -69396,7 +69995,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/transfer-lifecycle.test.ts",
@@ -69512,10 +70111,10 @@
               "column": 76,
               "file": "test/transfer-lifecycle.test.ts",
               "hasBody": true,
-              "id": "test/transfer-lifecycle.test.ts:4364:<anonymous@134>",
+              "id": "test/transfer-lifecycle.test.ts:4449:<anonymous@139>",
               "kind": "ArrowFunction",
-              "line": 134,
-              "name": "<anonymous@134>",
+              "line": 139,
+              "name": "<anonymous@139>",
               "reason": "test-callback"
             },
             {
@@ -69553,7 +70152,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/transfer-lifecycle.test.ts",
@@ -69714,7 +70313,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/transfer-lifecycle.test.ts",
@@ -69830,10 +70429,10 @@
               "column": 76,
               "file": "test/transfer-lifecycle.test.ts",
               "hasBody": true,
-              "id": "test/transfer-lifecycle.test.ts:4364:<anonymous@134>",
+              "id": "test/transfer-lifecycle.test.ts:4449:<anonymous@139>",
               "kind": "ArrowFunction",
-              "line": 134,
-              "name": "<anonymous@134>",
+              "line": 139,
+              "name": "<anonymous@139>",
               "reason": "test-callback"
             },
             {
@@ -69871,7 +70470,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/transfer-lifecycle.test.ts",
@@ -69995,10 +70594,10 @@
               "column": 86,
               "file": "test/transfer-lifecycle.test.ts",
               "hasBody": true,
-              "id": "test/transfer-lifecycle.test.ts:16871:<anonymous@514>",
+              "id": "test/transfer-lifecycle.test.ts:17650:<anonymous@534>",
               "kind": "ArrowFunction",
-              "line": 514,
-              "name": "<anonymous@514>",
+              "line": 534,
+              "name": "<anonymous@534>",
               "reason": "test-callback"
             },
             {
@@ -70036,7 +70635,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/transfer-lifecycle.test.ts",
@@ -70208,7 +70807,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/transformations.test.ts"
@@ -70343,7 +70942,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/transformations.test.ts"
@@ -70488,7 +71087,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/transformations.test.ts"
@@ -70691,7 +71290,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/transformations.test.ts"
@@ -70826,7 +71425,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/transformations.test.ts"
@@ -70961,7 +71560,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/transformations.test.ts"
@@ -71140,7 +71739,7 @@
       ],
       "directExecutableEntrypoints": [],
       "directExecutableEvidence": [],
-      "evidenceMode": "direct-executable",
+      "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/transformations.test.ts"
@@ -72468,9 +73067,9 @@
               "column": 1,
               "file": "test/formal-storage-refinement-suite.ts",
               "hasBody": true,
-              "id": "test/formal-storage-refinement-suite.ts:11844:runInventoryFormalStorageRefinementSuite",
+              "id": "test/formal-storage-refinement-suite.ts:11914:runInventoryFormalStorageRefinementSuite",
               "kind": "FunctionDeclaration",
-              "line": 384,
+              "line": 386,
               "name": "runInventoryFormalStorageRefinementSuite",
               "reason": "resolved-call"
             },
@@ -72478,20 +73077,20 @@
               "column": 59,
               "file": "test/formal-storage-refinement-suite.ts",
               "hasBody": true,
-              "id": "test/formal-storage-refinement-suite.ts:12038:<anonymous@388>",
+              "id": "test/formal-storage-refinement-suite.ts:12108:<anonymous@390>",
               "kind": "ArrowFunction",
-              "line": 388,
-              "name": "<anonymous@388>",
+              "line": 390,
+              "name": "<anonymous@390>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 60,
               "file": "test/formal-storage-refinement-suite.ts",
               "hasBody": true,
-              "id": "test/formal-storage-refinement-suite.ts:19952:<anonymous@609>",
+              "id": "test/formal-storage-refinement-suite.ts:20022:<anonymous@611>",
               "kind": "ArrowFunction",
-              "line": 609,
-              "name": "<anonymous@609>",
+              "line": 611,
+              "name": "<anonymous@611>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -75509,5 +76108,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "e59964344b3ccbd5a383a18089ce210ec8e043767f360d433b6f3bbf68351b2f"
+  "surfaceSha256": "dc691201529070cf4abcc0dbaa027228f3b8c9070cf651dfab355ccaee4bd57c"
 }

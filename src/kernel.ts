@@ -42,3 +42,16 @@ export * from "./reservations.js";
 export * from "./selectors.js";
 /** Containment/association/genealogy projection. */
 export * from "./traceability.js";
+/** First-class physical transfer lifecycle event builders. */
+export {
+  createInventoryTransferDispatchEvent,
+  createInventoryTransferPrepareEvent,
+  createInventoryTransferReceiveEvent,
+  createInventoryTransferReleaseEvent,
+} from "./transfers.js";
+export type {
+  CreateInventoryTransferDispatchEventInput,
+  CreateInventoryTransferPrepareEventInput,
+  CreateInventoryTransferReceiveEventInput,
+  CreateInventoryTransferReleaseEventInput,
+} from "./transfers.js";

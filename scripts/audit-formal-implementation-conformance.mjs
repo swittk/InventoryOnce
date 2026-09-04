@@ -532,7 +532,7 @@ function validateApiEntry(
       ? "explicit-gap"
       : expectedWitnesses.length === 0
       ? "unreferenced-public-gap"
-      : expectedWitnesses.some((witness) => witness.chain.length <= 4)
+      : expectedDirect.sources.length > 0
       ? "direct-executable"
       : "indirect-call-chain";
   if (entry.evidenceMode !== expectedMode) {

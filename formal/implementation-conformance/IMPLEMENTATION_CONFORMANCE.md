@@ -2,7 +2,7 @@
 
 This file is generated from the exact TypeScript surface plus the checked API, field, and gap manifests. Edit the manifests and executable evidence, then run `pnpm assurance --write-report`.
 
-Surface SHA-256: `e59964344b3ccbd5a383a18089ce210ec8e043767f360d433b6f3bbf68351b2f`
+Surface SHA-256: `dc691201529070cf4abcc0dbaa027228f3b8c9070cf651dfab355ccaee4bd57c`
 
 ## Mechanically covered surface
 
@@ -13,20 +13,20 @@ Surface SHA-256: `e59964344b3ccbd5a383a18089ce210ec8e043767f360d433b6f3bbf68351b
 - Root callable exports: 98
 - Storage callable exports: 23
 - Migration callable exports: 15
-- Kernel callable exports: 151
-- Reachable public data types: 373
-- Classified public fields: 2239
-- Input-reachable fields: 1922
+- Kernel callable exports: 155
+- Reachable public data types: 377
+- Classified public fields: 2285
+- Input-reachable fields: 1968
 - Output-reachable fields: 845
 - Callback-argument-reachable fields: 342
 - Callback-result-reachable fields: 401
 - Callable-field overload signatures: 10
-- Optional fields: 877
+- Optional fields: 904
 - Explicit undefined-union fields: 2
 - Explicit nullable fields: 0
-- Public call/construct overload signatures: 502
-- Directly executed public APIs: 323
-- Public APIs exercised through tested internal call chains: 175
+- Public call/construct overload signatures: 506
+- Directly executed public APIs: 182
+- Public APIs exercised through tested internal call chains: 320
 - Explicit-gap public APIs: 4
 - Unreferenced public APIs: 0
 - Explicit recursive type edges: 3
@@ -62,18 +62,18 @@ Any added/removed method, callable export, class method, type field, field type,
 | operation-result-helper | 11 | InventoryOperation | covered | — |
 | packaging-reclassification | 4 | PackagingIdentity, ReclassificationConservation, DualMeasure, InventoryOperation | covered | — |
 | pure-exact-value | 90 | DualMeasure, PackagingIdentity | covered | — |
-| read-current | 23 | PublishedHeadCAS, ResourceDimensions, UseByReservation, ReservationScope, CollectionView, FungibilityPool | covered | — |
-| read-snapshot | 17 | PublishedHeadCAS | covered | GAP-DB-IMPLEMENTATION-UNBOUNDED |
+| read-current | 22 | PublishedHeadCAS, ResourceDimensions, UseByReservation, ReservationScope, CollectionView, FungibilityPool | covered | — |
+| read-snapshot | 18 | PublishedHeadCAS | covered | GAP-DB-IMPLEMENTATION-UNBOUNDED |
 | reservation | 19 | ReservationSafety, ReservationScope, UseByReservation, InventoryOperation | covered | — |
 | scrap | 5 | InventoryOperation, PackagingIdentity, DualMeasure, ReservationSafety, UseByReservation | covered | — |
 | stock-issue | 4 | InventoryOperation, PackagingIdentity, DualMeasure, ReservationSafety, UseByReservation | covered | — |
 | stock-policy-issue | 2 | InventoryOperation, ReservationScope, ReservationSafety, UseByReservation, PackagingIdentity, RecordedDeficit | covered | — |
 | stock-policy-transfer | 2 | ResourceDimensions, DurableTransferRefinement, ReservationScope, ReservationSafety, UseByReservation, InventoryOperation | covered | — |
 | stock-receipt | 5 | InventoryOperation, PublishedHeadCAS, PackagingIdentity, DualMeasure, ResourceDimensions | covered | — |
-| stock-transfer | 4 | ResourceDimensions, DurableTransferRefinement, InventoryOperation, PackagingIdentity | covered | — |
+| stock-transfer | 2 | ResourceDimensions, DurableTransferRefinement, InventoryOperation, PackagingIdentity | covered | — |
 | storage-integrity | 14 | InventoryOperation, PublishedHeadCAS | covered | GAP-HASH-COLLISION-ASSUMPTION, GAP-V1-CONTENT-ROOT-OBJECT-ORDER |
 | traceability | 11 | TraceabilityGraph, InventoryOperation | covered | GAP-TRACEABILITY-ADVERSARIAL-GRAPH-SEARCH |
-| transfer-lifecycle | 5 | TransferLifecycle, ResourceDimensions, ReservationSafety, InventoryOperation, DurableTransferRefinement, PublishedHeadCAS, PackagingIdentity | covered | — |
+| transfer-lifecycle | 11 | TransferLifecycle, ResourceDimensions, ReservationSafety, InventoryOperation, DurableTransferRefinement, PublishedHeadCAS, PackagingIdentity | covered | — |
 | transformation | 2 | TraceabilityGraph, ReclassificationConservation, DualMeasure, InventoryOperation | covered | GAP-TRACEABILITY-ADVERSARIAL-GRAPH-SEARCH |
 | transformation-read | 7 | CatalogPublication, PublishedHeadCAS, ReclassificationConservation, DualMeasure | covered | — |
 
@@ -81,10 +81,10 @@ Any added/removed method, callable export, class method, type field, field type,
 
 | Classification | Fields |
 |---|---:|
-| abstract-semantic | 1091 |
+| abstract-semantic | 1104 |
 | application decoration | 5 |
-| identity/retry-semantic | 645 |
-| observational/audit-only | 481 |
+| identity/retry-semantic | 654 |
+| observational/audit-only | 505 |
 | unsupported/unmodelled | 17 |
 
 ## Kernel reference-adapter seam

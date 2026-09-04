@@ -103,7 +103,8 @@ def facade_family(key):
 def root_family(name,decl):
  if name in {'InventoryOnce','createInventoryOnce'}: return 'facade-construction'
  if 'Authority' in name or 'authority' in name: return 'authority-cutover' if 'cutover' in name.lower() else 'authority-control'
- if name in {'readPublishedInventoryCatalog','readPublishedInventorySnapshot','findInventoryEventByOperationId'}: return 'read-current'
+ if name == 'readPublishedInventorySnapshot': return 'read-snapshot'
+ if name in {'readPublishedInventoryCatalog','findInventoryEventByOperationId'}: return 'read-current'
  if name.startswith(('publishInventoryCatalog','ensureInventoryScalarCatalogRevision')): return 'catalog-publication'
  if any(x in decl for x in ('amounts.ts','measurements.ts','quantity.ts')): return 'pure-exact-value'
  if any(x in decl for x in ('selectors.ts','model.ts','canonical.ts')): return 'identity-normalization'
@@ -127,6 +128,7 @@ def migration_family(name):
 # Map one expert-kernel export to the formal family matching its source semantics.
 def kernel_family(name,decl):
  low=name.lower()
+ if name.startswith('createInventoryTransfer') and name.endswith('Event'): return 'transfer-lifecycle'
  if any(x in decl for x in ('quantity.ts','measurements.ts','amounts.ts')): return 'pure-exact-value'
  if any(x in decl for x in ('canonical.ts','model.ts','selectors.ts')): return 'identity-normalization'
  if 'catalog.ts' in decl: return 'catalog-definition'
@@ -237,7 +239,7 @@ def enrich_evidence(key, entry):
  internal=internal_source_references(entry['signature'])
  if entry['status'] == 'explicit-gap': mode = 'explicit-gap'
  elif not witnesses: mode = 'unreferenced-public-gap'
- elif any(len(row['chain']) <= 4 for row in witnesses): mode = 'direct-executable'
+ elif direct: mode = 'direct-executable'
  else: mode = 'indirect-call-chain'
  return {
   **entry,
