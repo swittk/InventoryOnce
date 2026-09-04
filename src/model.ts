@@ -1,3 +1,4 @@
+import { compareInventoryIdentityText } from "./ordering.js";
 import type { InventoryMeasurementVector } from "./measurements.js";
 
 /** Generic item identity with no application/database meaning. */
@@ -217,7 +218,7 @@ function compareQualifiedDimension(
   left: InventoryQualifiedDimension,
   right: InventoryQualifiedDimension
 ): number {
-  return left.dimensionId.localeCompare(right.dimensionId);
+  return compareInventoryIdentityText(left.dimensionId, right.dimensionId);
 }
 
 /** Reduce one qualified dimension to the fixed primitive tuple used in position identity. */

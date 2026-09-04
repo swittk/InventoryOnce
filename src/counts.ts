@@ -1,3 +1,4 @@
+import { compareInventoryIdentityText } from "./ordering.js";
 import {
   assertMeasurementsMatchItem,
   assertPositionMatchesItem,
@@ -759,7 +760,5 @@ function compareObservationLine(
   left: InventoryCountObservationLine,
   right: InventoryCountObservationLine
 ): number {
-  return inventoryStockPositionIdentity(left.position).localeCompare(
-    inventoryStockPositionIdentity(right.position)
-  );
+  return compareInventoryIdentityText(inventoryStockPositionIdentity(left.position), inventoryStockPositionIdentity(right.position));
 }

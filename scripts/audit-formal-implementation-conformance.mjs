@@ -10,7 +10,7 @@ import {
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { formalModels } from "./formal-models.mjs";
+import { formalConfigCheckNames, formalModels } from "./formal-models.mjs";
 
 /** InventoryOnce package root. */
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -39,6 +39,13 @@ const requiredAssuranceProperties = [
   "adapterCoverage",
   "status",
   "gaps",
+];
+/** Kernel reference calls requiring memory plus all-operation-failpoint evidence. */
+const kernelReferenceCalls = [
+  "facade.counts.replaceAbsolute",
+  "facade.stock.receiveMany",
+  "facade.stock.issueManyByPolicy",
+  "facade.stock.transferManyByPolicy",
 ];
 
 /** Read one checked JSON file. */
@@ -164,32 +171,8 @@ function readFormalVocabulary() {
         `Registered formal model '${name}' is missing '${configPath}'.`
       );
     }
-    const config = readFileSync(configPath, "utf8");
-    let block = undefined;
-    for (const rawLine of config.split(/\r?\n/u)) {
-      const line = rawLine.trim();
-      const inline = /^(INVARIANT|PROPERTY)\s+([A-Za-z][A-Za-z0-9_]*)$/u.exec(
-        line
-      );
-      if (inline !== null) {
-        invariantNames.add(inline[2]);
-        block = undefined;
-        continue;
-      }
-      if (
-        line === "INVARIANT" ||
-        line === "INVARIANTS" ||
-        line === "PROPERTY" ||
-        line === "PROPERTIES"
-      ) {
-        block = line;
-        continue;
-      }
-      if (block !== undefined && /^[A-Za-z][A-Za-z0-9_]*$/u.test(line)) {
-        invariantNames.add(line);
-        continue;
-      }
-      if (line !== "" && !line.startsWith("\\*")) block = undefined;
+    for (const check of formalConfigCheckNames(readFileSync(configPath, "utf8"))) {
+      invariantNames.add(check);
     }
   }
   return { modelNames, invariantNames };
@@ -350,6 +333,7 @@ const statefulOperationFamilies = new Set([
   "stock-policy-issue",
   "stock-transfer",
   "stock-policy-transfer",
+  "transfer-lifecycle",
   "dimension-reclassification",
   "packaging-reclassification",
   "transformation",
@@ -892,17 +876,12 @@ function coverageReport(apiManifest, fieldManifest, gaps) {
     "",
     "## Kernel reference-adapter seam",
     "",
-    "The finite refinement suite runs the core façade against the memory reference adapter. Mongo/SQLite and Shinebright call evidence belong to the later backend/data slice.",
+    "The finite refinement suite runs the core façade against the memory reference adapter. Mongo/SQLite adapter and Shinebright application-call evidence belong to downstream integration repositories and are not executed here.",
     "",
     "| Kernel call | Family | Required evidence |",
     "|---|---|---|"
   );
-  for (const key of [
-    "facade.counts.replaceAbsolute",
-    "facade.stock.receiveMany",
-    "facade.stock.issueManyByPolicy",
-    "facade.stock.transferManyByPolicy",
-  ]) {
+  for (const key of kernelReferenceCalls) {
     const entry = apiManifest.entries[key];
     lines.push(
       `| \`${key.replace("facade.", "inventory.")}\` | ${
@@ -1152,12 +1131,7 @@ for (const helper of [
   }
 }
 
-for (const key of [
-  "facade.counts.replaceAbsolute",
-  "facade.stock.receiveMany",
-  "facade.stock.issueManyByPolicy",
-  "facade.stock.transferManyByPolicy",
-]) {
+for (const key of kernelReferenceCalls) {
   const entry = apiManifest.entries[key];
   if (entry === undefined || entry.status !== "covered") {
     throw new Error(
@@ -1250,7 +1224,7 @@ console.log(
       fieldClassCounts,
       registeredModels: vocabulary.modelNames.size,
       configuredInvariantsAndProperties: vocabulary.invariantNames.size,
-      criticalKernelCalls: 4,
+      criticalKernelCalls: kernelReferenceCalls.length,
       boundedTraceEntries: traceDeclarations.size,
       stateResultTraceEntries: Object.values(traceManifest.entries).filter(
         (entry) => entry.refinementMode === "state-result-refinement"

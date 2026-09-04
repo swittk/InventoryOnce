@@ -1,3 +1,4 @@
+import { compareInventoryIdentityText } from "./ordering.js";
 import {
   inventoryMeasuredAmountFromVector,
   packageAmount,
@@ -110,7 +111,7 @@ export function inventoryCompositionOpenIntentFingerprint(
   const placementEntries = Object.entries(input.outputPlacements ?? {});
   placementEntries.sort(
     /** Sort output placement keys so caller object insertion order cannot change intent. */
-    ([left], [right]) => left.localeCompare(right)
+    ([left], [right]) => compareInventoryIdentityText(left, right)
   );
   return inventoryIntentFingerprint([
     "composition-open",
@@ -172,9 +173,9 @@ function compareCompositionQualifiedDimensionFingerprint(
   left: readonly [string, string],
   right: readonly [string, string]
 ): number {
-  const dimensionOrder = left[0].localeCompare(right[0]);
+  const dimensionOrder = compareInventoryIdentityText(left[0], right[0]);
   return dimensionOrder === 0
-    ? left[1].localeCompare(right[1])
+    ? compareInventoryIdentityText(left[1], right[1])
     : dimensionOrder;
 }
 

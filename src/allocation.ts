@@ -1,3 +1,4 @@
+import { compareInventoryIdentityText } from "./ordering.js";
 import { assertCanonicalInventoryTime } from "./events.js";
 import {
   inventoryStockPositionIdentity,
@@ -374,15 +375,13 @@ export function compareInventoryAllocationCandidates(
     const expiryOrder = compareOptionalExpiry(left.expiresAt, right.expiresAt);
     if (expiryOrder !== 0) return expiryOrder;
   }
-  const receiptOrder = left.receivedAt.localeCompare(right.receivedAt);
+  const receiptOrder = compareInventoryIdentityText(left.receivedAt, right.receivedAt);
   if (receiptOrder !== 0) return receiptOrder;
   if (method === InventoryAllocationMethod.Fifo) {
     const expiryOrder = compareOptionalExpiry(left.expiresAt, right.expiresAt);
     if (expiryOrder !== 0) return expiryOrder;
   }
-  return inventoryStockPositionIdentity(left.position).localeCompare(
-    inventoryStockPositionIdentity(right.position)
-  );
+  return compareInventoryIdentityText(inventoryStockPositionIdentity(left.position), inventoryStockPositionIdentity(right.position));
 }
 
 /** Compare expiry times with no-expiry candidates sorted last. */
@@ -393,7 +392,7 @@ function compareOptionalExpiry(
   if (left === undefined && right === undefined) return 0;
   if (left === undefined) return 1;
   if (right === undefined) return -1;
-  return left.localeCompare(right);
+  return compareInventoryIdentityText(left, right);
 }
 
 /** Round one exact same-unit quantity down to a whole number of one increment. */

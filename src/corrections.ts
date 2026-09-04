@@ -1,3 +1,4 @@
+import { compareInventoryIdentityText } from "./ordering.js";
 import type { InventoryCatalog } from "./catalog.js";
 import { inventoryIntentFingerprint } from "./canonical.js";
 import {
@@ -52,7 +53,8 @@ export interface CreateInventoryCorrectionInput extends InventoryCommandHeader {
  * Original history remains; current stock/reversible relations move from original result to replacement result.
  */
 export function createInventoryCorrectionEvent(
-  input: CreateInventoryCorrectionInput
+  input: CreateInventoryCorrectionInput,
+  deficitPolicy: InventoryDeficitPolicy = InventoryDeficitPolicy.Record
 ): InventoryEventDraft {
   const correctionReason = input.reason;
   if (correctionReason === undefined || correctionReason.trim().length === 0) {
@@ -112,7 +114,8 @@ export function createInventoryCorrectionEvent(
     input.catalog,
     input.projection,
     original.eventId,
-    replacement
+    replacement,
+    deficitPolicy
   );
   const stockEffects = createCorrectionStockEffects(
     input.projection.positions,
@@ -177,7 +180,8 @@ function projectHistoryWithReplacement(
   catalog: InventoryCatalog,
   projection: InventoryProjectionState,
   rootEventId: string,
-  replacement: InventoryEventDraft | undefined
+  replacement: InventoryEventDraft | undefined,
+  deficitPolicy: InventoryDeficitPolicy
 ): InventoryProjectionState {
   const root = projection.events[rootEventId];
   if (root === undefined)
@@ -237,7 +241,7 @@ function projectHistoryWithReplacement(
   return projectInventoryEvents({
     catalog,
     events: hypothetical,
-    deficitPolicy: InventoryDeficitPolicy.Record,
+    deficitPolicy,
   });
 }
 
@@ -360,9 +364,7 @@ function compareCorrectionStockEffect(
   left: InventoryStockEffect,
   right: InventoryStockEffect
 ): number {
-  return inventoryStockPositionIdentity(left.position).localeCompare(
-    inventoryStockPositionIdentity(right.position)
-  );
+  return compareInventoryIdentityText(inventoryStockPositionIdentity(left.position), inventoryStockPositionIdentity(right.position));
 }
 
 /** Sort correction relation changes by stable edge plus exact invalidated creator. */
@@ -380,5 +382,5 @@ function compareCorrectionTraceabilityChange(
     right.action,
     right.invalidatesCreatedByEventId ?? null,
   ]);
-  return leftIdentity.localeCompare(rightIdentity);
+  return compareInventoryIdentityText(leftIdentity, rightIdentity);
 }

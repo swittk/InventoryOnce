@@ -1,3 +1,4 @@
+import { compareInventoryIdentityText } from "./ordering.js";
 import {
   InventoryTraceabilityRelationAction,
   InventoryTraceabilityRelationKind,
@@ -254,7 +255,15 @@ function assertGenealogyHasNoCycles(
   }
 }
 
-/** Depth-first genealogy cycle check using explicit path/visited sets. */
+/** One explicit DFS frame used to avoid consuming the JavaScript call stack. */
+interface InventoryGenealogyTraversalFrame {
+  /** Current genealogy node being expanded. */
+  readonly node: string;
+  /** Index of the next outgoing edge to inspect. */
+  nextOutput: number;
+}
+
+/** Depth-first genealogy cycle check without consuming the JavaScript call stack. */
 function assertNoGenealogyCycleFrom(
   node: string,
   outputsByInput: ReadonlyMap<string, readonly string[]>,
@@ -264,12 +273,30 @@ function assertNoGenealogyCycleFrom(
   if (activePath.has(node))
     throw new Error(`Genealogy graph contains a cycle at '${node}'.`);
   if (visited.has(node)) return;
+  const pending: InventoryGenealogyTraversalFrame[] = [
+    { node, nextOutput: 0 },
+  ];
   activePath.add(node);
-  for (const output of outputsByInput.get(node) ?? []) {
-    assertNoGenealogyCycleFrom(output, outputsByInput, visited, activePath);
+  while (pending.length > 0) {
+    const frame = pending[pending.length - 1];
+    if (frame === undefined) break;
+    const outputs = outputsByInput.get(frame.node) ?? [];
+    if (frame.nextOutput >= outputs.length) {
+      activePath.delete(frame.node);
+      visited.add(frame.node);
+      pending.pop();
+      continue;
+    }
+    const output = outputs[frame.nextOutput];
+    frame.nextOutput += 1;
+    if (output === undefined) continue;
+    if (activePath.has(output)) {
+      throw new Error(`Genealogy graph contains a cycle at '${output}'.`);
+    }
+    if (visited.has(output)) continue;
+    activePath.add(output);
+    pending.push({ node: output, nextOutput: 0 });
   }
-  activePath.delete(node);
-  visited.add(node);
 }
 
 /** Sort relations by stable relation identity. */
@@ -277,13 +304,11 @@ function compareRelation(
   left: InventoryTraceabilityRelation,
   right: InventoryTraceabilityRelation
 ): number {
-  return inventoryTraceabilityRelationIdentity(
+  return compareInventoryIdentityText(inventoryTraceabilityRelationIdentity(
     left.kind,
     left.from,
     left.to
-  ).localeCompare(
-    inventoryTraceabilityRelationIdentity(right.kind, right.from, right.to)
-  );
+  ), inventoryTraceabilityRelationIdentity(right.kind, right.from, right.to));
 }
 
 /** Sort graph nodes by stable node identity. */
@@ -291,7 +316,5 @@ function compareNode(
   left: InventoryTraceabilityNodeRef,
   right: InventoryTraceabilityNodeRef
 ): number {
-  return inventoryTraceabilityNodeIdentity(left).localeCompare(
-    inventoryTraceabilityNodeIdentity(right)
-  );
+  return compareInventoryIdentityText(inventoryTraceabilityNodeIdentity(left), inventoryTraceabilityNodeIdentity(right));
 }

@@ -1,9 +1,9 @@
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { formalModels } from "./formal-models.mjs";
+import { formalConfigCheckNames, formalModels } from "./formal-models.mjs";
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repositoryRoot = packageRoot;
@@ -34,7 +34,7 @@ function digest(path) {
 /** Split the runner log by named step. */
 function sections(log) {
   const result = new Map();
-  const matches = [...log.matchAll(/^=== ([^=\n]+) ===$/gmu)];
+  const matches = [...log.matchAll(/^=== ([a-z0-9-]+) ===$/gmu)];
   for (let index = 0; index < matches.length; index += 1) {
     const match = matches[index];
     const start = (match.index ?? 0) + match[0].length;
@@ -121,24 +121,7 @@ function configuredFormalCheckCount() {
         `Registered formal model '${model}' is missing '${configPath}'.`
       );
     }
-    let block = false;
-    for (const rawLine of readFileSync(configPath, "utf8").split(/\r?\n/u)) {
-      const line = rawLine.trim();
-      if (/^(?:INVARIANT|PROPERTY)\s+[A-Za-z][A-Za-z0-9_]*$/u.test(line)) {
-        count += 1;
-        block = false;
-        continue;
-      }
-      if (/^(?:INVARIANTS?|PROPERT(?:Y|IES))$/u.test(line)) {
-        block = true;
-        continue;
-      }
-      if (block && /^[A-Za-z][A-Za-z0-9_]*$/u.test(line)) {
-        count += 1;
-        continue;
-      }
-      if (line !== "" && !line.startsWith("\\*")) block = false;
-    }
+    count += formalConfigCheckNames(readFileSync(configPath, "utf8")).length;
   }
   return count;
 }
@@ -308,6 +291,8 @@ const reportPath = resolve(
   chatgptRoot,
   "formal-implementation-conformance-final-report.json"
 );
+const markerRoot = resolve(chatgptRoot, "test-markers");
+mkdirSync(markerRoot, { recursive: true });
 writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
 
 const formalRows = formal
@@ -421,10 +406,7 @@ ${gapRows}
 - \`formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json\`
 `;
 writeFileSync(
-  resolve(
-    chatgptRoot,
-    "test-markers/formal-implementation-conformance-final.report.md"
-  ),
+  resolve(markerRoot, "formal-implementation-conformance-final.report.md"),
   markdownReport
 );
 const review = `# Formal implementation conformance semantic review
@@ -440,10 +422,7 @@ Verdict: **PASS within the explicit bounded assurance boundary**.
 - Remaining gaps are machine-enumerated and are not presented as proved behavior.
 `;
 writeFileSync(
-  resolve(
-    chatgptRoot,
-    "test-markers/formal-implementation-conformance-final.review.md"
-  ),
+  resolve(markerRoot, "formal-implementation-conformance-final.review.md"),
   review
 );
 console.log(

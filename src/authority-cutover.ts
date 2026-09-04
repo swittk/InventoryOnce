@@ -30,7 +30,7 @@ export interface CutoverInventoryAuthorityInput {
   readonly fenceToken: string;
   /** Exact adapter-conformance certification accepted by this deployment. */
   readonly adapterCertificationDigest: string;
-  /** Optional canonical source time; defaults to retained certification/fence evidence. */
+  /** Optional canonical source time; retries prefer retained DualRun time, then certification/fence evidence. */
   readonly cutoverAt?: string;
   /** Monotonic application source revision bound into DualRun/fence evidence. */
   readonly sourceRevision?: number;
@@ -293,8 +293,8 @@ function resolveInventoryCutoverAt(
     return explicit;
   }
   const retained =
-    authority.adapterCertifiedAt ||
     authority.dualRunStartedAt ||
+    authority.adapterCertifiedAt ||
     authority.fenceStartedAt;
   requireCanonicalCutoverTime(retained, "retained cutoverAt");
   return retained;

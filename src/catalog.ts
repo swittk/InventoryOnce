@@ -1,3 +1,4 @@
+import { compareInventoryIdentityText } from "./ordering.js";
 import {
   inventoryIntentFingerprint,
   inventoryMetadataFingerprint,
@@ -2329,7 +2330,7 @@ function inventoryCatalogDigest(input: InventoryCatalogInput): string {
   const activeEntries = Object.entries(input.activeItemRevisionIds);
   activeEntries.sort(
     /** Sort active item entries before fingerprinting caller-owned record keys. */
-    ([left], [right]) => left.localeCompare(right)
+    ([left], [right]) => compareInventoryIdentityText(left, right)
   );
   const compositionDigests = (input.compositionRevisions ?? []).map(
     inventoryCompositionRevisionDigest
@@ -2340,7 +2341,7 @@ function inventoryCatalogDigest(input: InventoryCatalogInput): string {
   );
   activeCompositionEntries.sort(
     /** Sort active composition entries before fingerprinting caller-owned keys. */
-    ([left], [right]) => left.localeCompare(right)
+    ([left], [right]) => compareInventoryIdentityText(left, right)
   );
   const transformationDigests = (input.transformationRevisions ?? []).map(
     inventoryTransformationRevisionDigest
@@ -2351,7 +2352,7 @@ function inventoryCatalogDigest(input: InventoryCatalogInput): string {
   );
   activeTransformationEntries.sort(
     /** Sort active transformation entries before fingerprinting caller-owned keys. */
-    ([left], [right]) => left.localeCompare(right)
+    ([left], [right]) => compareInventoryIdentityText(left, right)
   );
   const collectionDigests = (input.collectionRevisions ?? []).map(
     inventoryCollectionRevisionDigest
@@ -2362,7 +2363,7 @@ function inventoryCatalogDigest(input: InventoryCatalogInput): string {
   );
   activeCollectionEntries.sort(
     /** Sort active collection entries before fingerprinting caller-owned keys. */
-    ([left], [right]) => left.localeCompare(right)
+    ([left], [right]) => compareInventoryIdentityText(left, right)
   );
   const fungibilityDigests = (input.fungibilityRevisions ?? []).map(
     inventoryFungibilityRevisionDigest
@@ -2373,7 +2374,7 @@ function inventoryCatalogDigest(input: InventoryCatalogInput): string {
   );
   activeFungibilityEntries.sort(
     /** Sort active fungibility entries before fingerprinting caller-owned record keys. */
-    ([left], [right]) => left.localeCompare(right)
+    ([left], [right]) => compareInventoryIdentityText(left, right)
   );
   const fingerprintParts: InventoryIntentFingerprintValue[] = [
     itemDigests,
@@ -2601,7 +2602,7 @@ function stringRecordDigest(
   const entries = Object.entries(values);
   entries.sort(
     /** Sort external identifier keys before adding them to revision meaning. */
-    ([left], [right]) => left.localeCompare(right)
+    ([left], [right]) => compareInventoryIdentityText(left, right)
   );
   return inventoryIntentFingerprint(entries);
 }
@@ -3233,7 +3234,7 @@ function compareCompositionOutput(
   left: InventoryCompositionOutputDefinition,
   right: InventoryCompositionOutputDefinition
 ): number {
-  return left.outputId.localeCompare(right.outputId);
+  return compareInventoryIdentityText(left.outputId, right.outputId);
 }
 
 /** Sort composition revisions by stable composition then exact revision identity. */
@@ -3241,11 +3242,9 @@ function compareCompositionRevision(
   left: InventoryCompositionDefinitionRevision,
   right: InventoryCompositionDefinitionRevision
 ): number {
-  const compositionOrder = left.compositionId.localeCompare(
-    right.compositionId
-  );
+  const compositionOrder = compareInventoryIdentityText(left.compositionId, right.compositionId);
   return compositionOrder === 0
-    ? left.revisionId.localeCompare(right.revisionId)
+    ? compareInventoryIdentityText(left.revisionId, right.revisionId)
     : compositionOrder;
 }
 
@@ -3254,7 +3253,7 @@ function compareTransformationLine(
   left: InventoryTransformationDefinitionLine,
   right: InventoryTransformationDefinitionLine
 ): number {
-  return left.lineId.localeCompare(right.lineId);
+  return compareInventoryIdentityText(left.lineId, right.lineId);
 }
 
 /** Sort transformation revisions by stable transformation then exact revision identity. */
@@ -3262,11 +3261,9 @@ function compareTransformationRevision(
   left: InventoryTransformationDefinitionRevision,
   right: InventoryTransformationDefinitionRevision
 ): number {
-  const transformationOrder = left.transformationId.localeCompare(
-    right.transformationId
-  );
+  const transformationOrder = compareInventoryIdentityText(left.transformationId, right.transformationId);
   return transformationOrder === 0
-    ? left.revisionId.localeCompare(right.revisionId)
+    ? compareInventoryIdentityText(left.revisionId, right.revisionId)
     : transformationOrder;
 }
 
@@ -3275,9 +3272,9 @@ function compareCollectionMember(
   left: InventoryCollectionMemberDefinition,
   right: InventoryCollectionMemberDefinition
 ): number {
-  const kindOrder = left.kind.localeCompare(right.kind);
+  const kindOrder = compareInventoryIdentityText(left.kind, right.kind);
   return kindOrder === 0
-    ? left.revisionId.localeCompare(right.revisionId)
+    ? compareInventoryIdentityText(left.revisionId, right.revisionId)
     : kindOrder;
 }
 
@@ -3286,9 +3283,9 @@ function compareCollectionRevision(
   left: InventoryCollectionDefinitionRevision,
   right: InventoryCollectionDefinitionRevision
 ): number {
-  const collectionOrder = left.collectionId.localeCompare(right.collectionId);
+  const collectionOrder = compareInventoryIdentityText(left.collectionId, right.collectionId);
   return collectionOrder === 0
-    ? left.revisionId.localeCompare(right.revisionId)
+    ? compareInventoryIdentityText(left.revisionId, right.revisionId)
     : collectionOrder;
 }
 
@@ -3297,7 +3294,7 @@ function compareCollectionRollupMember(
   left: InventoryCollectionRollupMemberDefinition,
   right: InventoryCollectionRollupMemberDefinition
 ): number {
-  return left.itemRevisionId.localeCompare(right.itemRevisionId);
+  return compareInventoryIdentityText(left.itemRevisionId, right.itemRevisionId);
 }
 
 /** Sort collection roll-ups by stable roll-up identity. */
@@ -3305,7 +3302,7 @@ function compareCollectionRollup(
   left: InventoryCollectionRollupDefinition,
   right: InventoryCollectionRollupDefinition
 ): number {
-  return left.rollupId.localeCompare(right.rollupId);
+  return compareInventoryIdentityText(left.rollupId, right.rollupId);
 }
 
 /** Sort pool members by exact item revision identity. */
@@ -3313,7 +3310,7 @@ function compareFungibilityMember(
   left: InventoryFungibilityMemberDefinition,
   right: InventoryFungibilityMemberDefinition
 ): number {
-  return left.itemRevisionId.localeCompare(right.itemRevisionId);
+  return compareInventoryIdentityText(left.itemRevisionId, right.itemRevisionId);
 }
 
 /** Sort fungibility revisions by stable pool then exact revision identity. */
@@ -3321,9 +3318,9 @@ function compareFungibilityRevision(
   left: InventoryFungibilityPoolDefinitionRevision,
   right: InventoryFungibilityPoolDefinitionRevision
 ): number {
-  const poolOrder = left.poolId.localeCompare(right.poolId);
+  const poolOrder = compareInventoryIdentityText(left.poolId, right.poolId);
   return poolOrder === 0
-    ? left.revisionId.localeCompare(right.revisionId)
+    ? compareInventoryIdentityText(left.revisionId, right.revisionId)
     : poolOrder;
 }
 
@@ -3332,9 +3329,9 @@ function compareItemRevision(
   left: InventoryItemDefinitionRevision,
   right: InventoryItemDefinitionRevision
 ): number {
-  const itemOrder = left.itemId.localeCompare(right.itemId);
+  const itemOrder = compareInventoryIdentityText(left.itemId, right.itemId);
   return itemOrder === 0
-    ? left.revisionId.localeCompare(right.revisionId)
+    ? compareInventoryIdentityText(left.revisionId, right.revisionId)
     : itemOrder;
 }
 
@@ -3343,9 +3340,9 @@ function comparePackagingRevision(
   left: InventoryPackagingDefinitionRevision,
   right: InventoryPackagingDefinitionRevision
 ): number {
-  const itemOrder = left.itemId.localeCompare(right.itemId);
+  const itemOrder = compareInventoryIdentityText(left.itemId, right.itemId);
   return itemOrder === 0
-    ? left.revisionId.localeCompare(right.revisionId)
+    ? compareInventoryIdentityText(left.revisionId, right.revisionId)
     : itemOrder;
 }
 
@@ -3354,7 +3351,7 @@ function compareMeasurementAxisDefinition(
   left: InventoryMeasurementAxisDefinition,
   right: InventoryMeasurementAxisDefinition
 ): number {
-  return left.axisId.localeCompare(right.axisId);
+  return compareInventoryIdentityText(left.axisId, right.axisId);
 }
 
 /** Sort extra dimension definitions by stable dimension identity. */
@@ -3362,5 +3359,5 @@ function compareDimensionDefinition(
   left: InventoryDimensionDefinition,
   right: InventoryDimensionDefinition
 ): number {
-  return left.dimensionId.localeCompare(right.dimensionId);
+  return compareInventoryIdentityText(left.dimensionId, right.dimensionId);
 }

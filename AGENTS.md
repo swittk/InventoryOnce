@@ -1,9 +1,9 @@
 # InventoryOnce agent rules
 
-These rules are non-negotiable for every file under `packages/inventoryonce`. They intentionally mirror the PayMeOnce hardening discipline.
+These rules are non-negotiable for every file in this standalone repository. They intentionally mirror the PayMeOnce hardening discipline.
 
 ## Runtime
-- Before any `pnpm` command, load nvm and use the repository `.nvmrc`.
+- Before any `pnpm` command, use the repository `.nvmrc` when present; otherwise use a Node version allowed by `package.json#engines`.
 - Never run pnpm with `CI=true`.
 - Never insert `--` between `pnpm test` and a Vitest filter/path.
 

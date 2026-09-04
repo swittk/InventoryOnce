@@ -1,3 +1,4 @@
+import { compareInventoryIdentityText } from "./ordering.js";
 import {
   extendInventoryCatalog,
   inventoryCatalogFromSnapshot,
@@ -396,7 +397,7 @@ function matchingScalarPhysicalRevisions(
   }
   matching.sort(
     /** Select deterministically when no active physical match exists. */
-    (left, right) => left.revisionId.localeCompare(right.revisionId)
+    (left, right) => compareInventoryIdentityText(left.revisionId, right.revisionId)
   );
   return matching;
 }
@@ -634,9 +635,9 @@ function compareScalarPackageLevel(
   left: InventoryScalarPackageLevel,
   right: InventoryScalarPackageLevel
 ): number {
-  const unitOrder = left.unit.localeCompare(right.unit);
+  const unitOrder = compareInventoryIdentityText(left.unit, right.unit);
   return unitOrder === 0
-    ? left.primaryQuantity.localeCompare(right.primaryQuantity)
+    ? compareInventoryIdentityText(left.primaryQuantity, right.primaryQuantity)
     : unitOrder;
 }
 

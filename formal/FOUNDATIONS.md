@@ -218,7 +218,7 @@ The refinement relation is organized around independent projections:
 
 A field that contributes to conserved or lifecycle truth must name one of these executable helpers and at least one literal variable in a registered TLA module. A field excluded as price, currency, display configuration, audit-only evidence, or unsupported future scope must instead carry an explicit exclusion relation and no TLA-variable claim.
 
-Bounded trace replay is the executable bridge from actions to implementations. Each trace has a maximum abstract step count, facade calls, model/invariant set, state projection, result refinement, retry relation, rejection relation, adapter set, failpoints, evidence marker, and linked gaps. Mongo/SQLite tests run the same storage refinement suite and the exact four-call Shinebright seam; memory tests provide the reference implementation and broader finite metamorphic corpus.
+Bounded trace replay is the executable bridge from actions to implementations. Each trace has a maximum abstract step count, facade calls, model/invariant set, state projection, result refinement, retry relation, rejection relation, adapter set, failpoints, evidence marker, and linked gaps. This standalone repository executes the memory reference implementation and its broader finite metamorphic corpus. Mongo/SQLite adapter checks and the exact four-call Shinebright seam are required downstream integration evidence, not tests executed by this repository.
 
 ## Implementation refinement foundation
 

@@ -1,3 +1,4 @@
+import { compareInventoryIdentityText } from "./ordering.js";
 import {
   assertInventoryIdentity,
   inventoryStockPositionIdentity,
@@ -408,7 +409,7 @@ function compareQualifiedDimensionSelector(
   left: InventoryQualifiedDimensionConstraint,
   right: InventoryQualifiedDimensionConstraint
 ): number {
-  return left.dimensionId.localeCompare(right.dimensionId);
+  return compareInventoryIdentityText(left.dimensionId, right.dimensionId);
 }
 
 /** Return whether `narrower` can only match positions already matched by `broader`. */

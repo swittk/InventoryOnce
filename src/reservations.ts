@@ -1,3 +1,4 @@
+import { compareInventoryIdentityText } from "./ordering.js";
 import {
   inventoryIntentFingerprint,
   inventoryMetadataFingerprint,
@@ -2021,9 +2022,7 @@ function compareReservationAllocation(
   left: InventoryReservationAllocation,
   right: InventoryReservationAllocation
 ): number {
-  return inventoryStockPositionIdentity(left.position).localeCompare(
-    inventoryStockPositionIdentity(right.position)
-  );
+  return compareInventoryIdentityText(inventoryStockPositionIdentity(left.position), inventoryStockPositionIdentity(right.position));
 }
 
 /** Sort reservations by stable claim identity. */
@@ -2031,7 +2030,7 @@ function compareReservationIdentity(
   left: InventoryReservation,
   right: InventoryReservation
 ): number {
-  return left.reservationId.localeCompare(right.reservationId);
+  return compareInventoryIdentityText(left.reservationId, right.reservationId);
 }
 
 /** Burden non-claimable stock first, then less-flexible reservation positions. */
@@ -2045,7 +2044,7 @@ function compareReservationDeficitBurdenPosition(
   if (left.eligibleReservationCount !== right.eligibleReservationCount) {
     return left.eligibleReservationCount - right.eligibleReservationCount;
   }
-  return left.identity.localeCompare(right.identity);
+  return compareInventoryIdentityText(left.identity, right.identity);
 }
 
 /** Sort feasibility positions by exact position identity. */
@@ -2053,7 +2052,7 @@ function compareFeasibilityPosition(
   left: ReservationFeasibilityPosition,
   right: ReservationFeasibilityPosition
 ): number {
-  return left.identity.localeCompare(right.identity);
+  return compareInventoryIdentityText(left.identity, right.identity);
 }
 
 /** Sort read-side feasibility groups by stable item/axis/unit identity. */
@@ -2061,9 +2060,6 @@ function compareReservationFeasibilityGroup(
   left: InventoryReservationFeasibilityGroup,
   right: InventoryReservationFeasibilityGroup
 ): number {
-  return [left.itemId, left.axisId, left.requested.unit]
-    .join("|")
-    .localeCompare(
-      [right.itemId, right.axisId, right.requested.unit].join("|")
-    );
+  return compareInventoryIdentityText([left.itemId, left.axisId, left.requested.unit]
+    .join("|"), [right.itemId, right.axisId, right.requested.unit].join("|"));
 }

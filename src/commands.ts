@@ -13,6 +13,7 @@ import {
   type InventoryPackagingDefinitionRevision,
 } from "./catalog.js";
 import { inventoryMetadataFingerprint } from "./canonical.js";
+import { compareInventoryIdentityText } from "./ordering.js";
 import {
   InventoryEventKind,
   InventoryTraceabilityRelationAction,
@@ -666,7 +667,7 @@ function compareGroupedInventoryReceiptEntry(
   left: readonly [string, GroupedInventoryReceiptLine],
   right: readonly [string, GroupedInventoryReceiptLine]
 ): number {
-  return left[0].localeCompare(right[0]);
+  return compareInventoryIdentityText(left[0], right[0]);
 }
 
 /** Create one atomic issue event from multiple exact source lines. */
@@ -1282,7 +1283,7 @@ function compareLotDefinitionEntry(
   left: readonly [string, InventoryLotDefinition],
   right: readonly [string, InventoryLotDefinition]
 ): number {
-  return left[0].localeCompare(right[0]);
+  return compareInventoryIdentityText(left[0], right[0]);
 }
 
 /** Build one typed lot assertion from a lot-qualified stock position. */
@@ -1352,7 +1353,7 @@ function compareContainerDefinitionEntry(
   left: readonly [string, InventoryContainerDefinition],
   right: readonly [string, InventoryContainerDefinition]
 ): number {
-  return left[0].localeCompare(right[0]);
+  return compareInventoryIdentityText(left[0], right[0]);
 }
 
 /** Build one typed container assertion from a container-qualified stock position. */

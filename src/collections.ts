@@ -1,3 +1,4 @@
+import { compareInventoryIdentityText } from "./ordering.js";
 import type {
   InventoryCatalog,
   InventoryCollectionDefinitionRevision,
@@ -274,7 +275,7 @@ function compareCollectionMemberSummary(
   left: InventoryCollectionMemberSummary,
   right: InventoryCollectionMemberSummary
 ): number {
-  return left.itemRevisionId.localeCompare(right.itemRevisionId);
+  return compareInventoryIdentityText(left.itemRevisionId, right.itemRevisionId);
 }
 
 /** Sort scalar roll-up summaries by stable roll-up identity. */
@@ -282,7 +283,7 @@ function compareCollectionRollupSummary(
   left: InventoryCollectionRollupSummary,
   right: InventoryCollectionRollupSummary
 ): number {
-  return left.rollupId.localeCompare(right.rollupId);
+  return compareInventoryIdentityText(left.rollupId, right.rollupId);
 }
 
 /** Sort roll-up contributions by exact item revision identity. */
@@ -290,5 +291,5 @@ function compareCollectionRollupContribution(
   left: InventoryCollectionRollupContribution,
   right: InventoryCollectionRollupContribution
 ): number {
-  return left.itemRevisionId.localeCompare(right.itemRevisionId);
+  return compareInventoryIdentityText(left.itemRevisionId, right.itemRevisionId);
 }

@@ -3,6 +3,7 @@ import {
   InventoryAllocationMethod,
   InventoryEventKind,
   InventoryTraceabilityNodeKind,
+  InventoryTraceabilityRelationAction,
   InventoryTraceabilityRelationKind,
   inventoryStockSelector,
   packageAmount,
@@ -15,7 +16,14 @@ import {
   dryRunInventoryMigration,
 } from "../src/migrations-api.js";
 import { createInMemoryInventoryDurableStorage } from "../src/storage-api.js";
+import { commitInventoryEvent, defineInventoryEvent } from "../src/events.js";
 import { inventoryGenealogyAncestors } from "../src/kernel.js";
+import { projectInventoryTraceabilityEvents } from "../src/traceability-replay.js";
+import {
+  applyInventoryTraceabilityChanges,
+  inventoryTraceabilityRelationIdentity,
+  type InventoryTraceabilityRelation,
+} from "../src/traceability.js";
 import {
   createTestInventory,
   clockAt,
@@ -84,6 +92,132 @@ describe("traceability graph meanings", () => {
     expect(remaining[0]?.kind).toBe(
       InventoryTraceabilityRelationKind.Association
     );
+  });
+
+  it("replays same-event genealogy replacement against the event-final graph", () => {
+    const catalog = createTabletCatalog();
+    const left = {
+      kind: InventoryTraceabilityNodeKind.Container,
+      id: "atomic-left",
+    };
+    const right = {
+      kind: InventoryTraceabilityNodeKind.Container,
+      id: "atomic-right",
+    };
+    const original = commitInventoryEvent(
+      defineInventoryEvent({
+        catalog,
+        event: {
+          eventId: "atomic-genealogy-root",
+          operationId: "atomic-genealogy-root",
+          kind: InventoryEventKind.Traceability,
+          occurredAt: time0,
+          stockEffects: [],
+          traceabilityChanges: [
+            {
+              action: InventoryTraceabilityRelationAction.Add,
+              kind: InventoryTraceabilityRelationKind.Genealogy,
+              from: left,
+              to: right,
+            },
+          ],
+        },
+      }),
+      time0,
+      1
+    );
+    const correction = commitInventoryEvent(
+      {
+        eventId: "atomic-genealogy-correction",
+        operationId: "atomic-genealogy-correction",
+        kind: InventoryEventKind.Correction,
+        occurredAt: time1,
+        stockEffects: [],
+        traceabilityChanges: [
+          {
+            action: InventoryTraceabilityRelationAction.Add,
+            kind: InventoryTraceabilityRelationKind.Genealogy,
+            from: right,
+            to: left,
+          },
+          {
+            action: InventoryTraceabilityRelationAction.Invalidate,
+            kind: InventoryTraceabilityRelationKind.Genealogy,
+            from: left,
+            to: right,
+            invalidatesCreatedByEventId: original.eventId,
+          },
+        ],
+        correction: {
+          correctsEventId: original.eventId,
+          reason: "The genealogy direction was reversed.",
+        },
+      },
+      time1,
+      2
+    );
+
+    const replayed = projectInventoryTraceabilityEvents([original, correction]);
+    const relations = Object.values(replayed.relations);
+    expect(relations).toHaveLength(1);
+    expect(relations[0]).toMatchObject({
+      kind: InventoryTraceabilityRelationKind.Genealogy,
+      from: right,
+      to: left,
+      createdByEventId: correction.eventId,
+    });
+  });
+
+  it("validates deep genealogy without relying on the JavaScript call stack", () => {
+    const relationCount = 20_000;
+    const relations: Record<string, InventoryTraceabilityRelation> = {};
+    for (let index = 0; index < relationCount; index += 1) {
+      const from = {
+        kind: InventoryTraceabilityNodeKind.Serial,
+        id: `deep-${String(index)}`,
+      };
+      const to = {
+        kind: InventoryTraceabilityNodeKind.Serial,
+        id: `deep-${String(index + 1)}`,
+      };
+      relations[
+        inventoryTraceabilityRelationIdentity(
+          InventoryTraceabilityRelationKind.Genealogy,
+          from,
+          to
+        )
+      ] = {
+        kind: InventoryTraceabilityRelationKind.Genealogy,
+        from,
+        to,
+        createdByEventId: `deep-event-${String(index)}`,
+      };
+    }
+    const from = {
+      kind: InventoryTraceabilityNodeKind.Serial,
+      id: `deep-${String(relationCount)}`,
+    };
+    const to = {
+      kind: InventoryTraceabilityNodeKind.Serial,
+      id: `deep-${String(relationCount + 1)}`,
+    };
+
+    const next = applyInventoryTraceabilityChanges({
+      state: {
+        relations,
+        containmentChildContainerIdsByParentNodeIdentity: {},
+      },
+      eventId: "deep-tail-event",
+      changes: [
+        {
+          action: InventoryTraceabilityRelationAction.Add,
+          kind: InventoryTraceabilityRelationKind.Genealogy,
+          from,
+          to,
+        },
+      ],
+    });
+    expect(Object.keys(next.relations)).toHaveLength(relationCount + 1);
   });
 
   it("records transformation genealogy without treating it as containment", async () => {
@@ -218,6 +352,47 @@ describe("append-only corrections", () => {
     ).toBe(secondCorrection.event.eventId);
     const positions = await inventory.read.positions({ itemId: "item-a" });
     expect(positions[0]?.measurements.primary.quantity.amountMinor).toBe(8);
+  });
+
+  it("rejects a replacement whose historical replay violates Reject deficit policy", async () => {
+    const inventory = createTestInventory();
+    const original = await inventory.stock.receive({
+      operationId: "reject-correction-root",
+      occurredAt: time0,
+      to: loosePosition("reject-correction-store"),
+      amount: stockAmount("10", "piece"),
+    });
+    await inventory.stock.issue({
+      operationId: "reject-correction-issue",
+      occurredAt: time1,
+      from: loosePosition("reject-correction-store"),
+      amount: stockAmount("8", "piece"),
+    });
+    await inventory.stock.receive({
+      operationId: "reject-correction-later-receipt",
+      occurredAt: time2,
+      to: loosePosition("reject-correction-store"),
+      amount: stockAmount("5", "piece"),
+    });
+
+    await expect(
+      inventory.stock.correct({
+        operationId: "reject-correction-rewrite-root",
+        occurredAt: time3,
+        correctsEventId: original.event.eventId,
+        reason: "The original receipt was only five pieces.",
+        replaceWith: (plans) =>
+          plans.receive({
+            occurredAt: time0,
+            to: loosePosition("reject-correction-store"),
+            amount: stockAmount("5", "piece"),
+          }),
+      })
+    ).rejects.toThrow();
+    expect(
+      (await inventory.read.positions({ itemId: "item-a" }))[0]?.measurements
+        .primary.quantity.amountMinor
+    ).toBe(7);
   });
 
   it("replaces same-quantity FIFO provenance and supersedes it without stale history", async () => {

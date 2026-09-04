@@ -136,7 +136,7 @@ function runInvariantMutationCheck(model, config, invariant) {
         `formal/${config}.cfg`,
         `formal/${model}.tla`,
       ],
-      { encoding: "utf8" }
+      { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }
     );
     if (result.error) throw result.error;
     const output = `${result.stdout ?? ""}${result.stderr ?? ""}`;

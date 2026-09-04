@@ -1,3 +1,4 @@
+import { compareInventoryIdentityText } from "./ordering.js";
 import type {
   InventoryCatalog,
   InventoryItemDefinitionRevision,
@@ -901,7 +902,5 @@ function compareAvailabilityPosition(
   left: InventoryStockPosition,
   right: InventoryStockPosition
 ): number {
-  return inventoryStockPositionIdentity(left.key).localeCompare(
-    inventoryStockPositionIdentity(right.key)
-  );
+  return compareInventoryIdentityText(inventoryStockPositionIdentity(left.key), inventoryStockPositionIdentity(right.key));
 }

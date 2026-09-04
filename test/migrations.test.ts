@@ -434,7 +434,7 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
     expect(
       Object.values(dryRun.resultWorld.projection.positions)
         .map((row) => row.measurements.primary.quantity.amountMinor)
-        .sort()
+        .sort((left, right) => left - right)
     ).toEqual([2, 3]);
     expect(
       inventoryMigrationPositionsMatch({

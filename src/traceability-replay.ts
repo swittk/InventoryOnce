@@ -24,6 +24,10 @@ export function projectInventoryTraceabilityEvents(
   const genealogyOutputsByInput = new Map<string, Set<string>>();
 
   for (const event of events) {
+    const beforeByIdentity = new Map<
+      string,
+      InventoryTraceabilityRelation | undefined
+    >();
     for (const change of event.traceabilityChanges) {
       const identity = inventoryTraceabilityRelationIdentity(
         change.kind,
@@ -31,17 +35,15 @@ export function projectInventoryTraceabilityEvents(
         change.to
       );
       const earlier = relations[identity];
+      if (!beforeByIdentity.has(identity)) {
+        beforeByIdentity.set(identity, earlier);
+      }
       if (change.action === InventoryTraceabilityRelationAction.Add) {
         if (earlier !== undefined) {
           throw new Error(
             `Traceability relationship '${identity}' already exists.`
           );
         }
-        validateAndIndexAddition(
-          change,
-          containmentParentByChild,
-          genealogyOutputsByInput
-        );
         relations[identity] = {
           kind: change.kind,
           from: change.from,
@@ -69,12 +71,30 @@ export function projectInventoryTraceabilityEvents(
             `'${change.invalidatesCreatedByEventId}', not '${earlier.createdByEventId}'.`
         );
       }
-      removeIndexedRelation(
-        earlier,
-        containmentParentByChild,
-        genealogyOutputsByInput
-      );
       delete relations[identity];
+    }
+
+    // Event changes are atomic. Remove every superseded pre-event edge first so a
+    // replacement edge is checked against the event's final graph, not a transient graph.
+    for (const [identity, before] of beforeByIdentity) {
+      const after = relations[identity];
+      if (before !== undefined && before !== after) {
+        removeIndexedRelation(
+          before,
+          containmentParentByChild,
+          genealogyOutputsByInput
+        );
+      }
+    }
+    for (const [identity, before] of beforeByIdentity) {
+      const after = relations[identity];
+      if (after !== undefined && before !== after) {
+        validateAndIndexAddition(
+          after,
+          containmentParentByChild,
+          genealogyOutputsByInput
+        );
+      }
     }
   }
 
@@ -87,7 +107,7 @@ export function projectInventoryTraceabilityEvents(
 
 /** Prove one new structural edge preserves forest/DAG invariants, then index it. */
 function validateAndIndexAddition(
-  change: InventoryTraceabilityRelationChange,
+  change: Pick<InventoryTraceabilityRelationChange, "kind" | "from" | "to">,
   containmentParentByChild: Map<string, string>,
   genealogyOutputsByInput: Map<string, Set<string>>
 ): void {

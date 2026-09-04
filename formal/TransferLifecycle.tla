@@ -118,14 +118,18 @@ TypeOK ==
   /\ transitCustodian \in [Transfers -> {"clinic", "carrier"}]
   /\ destinationCustodian \in [Transfers -> {"clinic", "destination"}]
 
+RECURSIVE TransferSum(_, _)
+TransferSum(transferSet, values) ==
+  IF transferSet = {}
+  THEN 0
+  ELSE LET transfer == CHOOSE candidate \in transferSet: TRUE
+       IN values[transfer] + TransferSum(transferSet \ {transfer}, values)
+
 TransferQuantityConserved ==
   sourceFree +
-    Cardinality({x \in 1..InitialSource : x <= prepared["T1"]}) +
-    Cardinality({x \in 1..InitialSource : x <= prepared["T2"]}) +
-    Cardinality({x \in 1..InitialSource : x <= transit["T1"]}) +
-    Cardinality({x \in 1..InitialSource : x <= transit["T2"]}) +
-    Cardinality({x \in 1..InitialSource : x <= received["T1"]}) +
-    Cardinality({x \in 1..InitialSource : x <= received["T2"]}) = InitialSource
+    TransferSum(Transfers, prepared) +
+    TransferSum(Transfers, transit) +
+    TransferSum(Transfers, received) = InitialSource
 
 ReceivedNeverExceedsDispatched ==
   \A t \in Transfers: received[t] <= dispatched[t]

@@ -154,8 +154,9 @@ describe("generic InventoryOnce read model", () => {
         primaryMinor(bucket.measurements),
       ])
     ).toEqual([
-      ["__untracked__", -5],
+      // Read-model output uses locale-independent UTF-16 code-unit identity ordering.
       ["POSITIVE", 10],
+      ["__untracked__", -5],
     ]);
   });
 

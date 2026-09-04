@@ -2,7 +2,7 @@
 
 This file is generated from the exact TypeScript surface plus the checked API, field, and gap manifests. Edit the manifests and executable evidence, then run `pnpm assurance --write-report`.
 
-Surface SHA-256: `b31a357c6c4cd6f723725e0b0ae3741a89df5d596c3761d212c71725f601e668`
+Surface SHA-256: `ce8fa6715ae09df35478c1b305bc279f76863a7c12c2615c17e42fc0d9a5aa86`
 
 ## Mechanically covered surface
 
@@ -25,8 +25,8 @@ Surface SHA-256: `b31a357c6c4cd6f723725e0b0ae3741a89df5d596c3761d212c71725f601e6
 - Explicit undefined-union fields: 2
 - Explicit nullable fields: 0
 - Public call/construct overload signatures: 502
-- Directly executed public APIs: 354
-- Public APIs exercised through tested internal call chains: 144
+- Directly executed public APIs: 357
+- Public APIs exercised through tested internal call chains: 141
 - Explicit-gap public APIs: 4
 - Unreferenced public APIs: 0
 - Explicit recursive type edges: 3
@@ -50,7 +50,7 @@ Any added/removed method, callable export, class method, type field, field type,
 | correction | 2 | CorrectionHistory, InventoryOperation, PublishedHeadCAS | covered | GAP-COUNT-CORRECTION-HISTORY-REPLAY |
 | count | 11 | PhysicalCount, InventoryOperation, PublishedHeadCAS | covered | GAP-COUNT-CORRECTION-HISTORY-REPLAY |
 | dimension-reclassification | 21 | ResourceDimensions, ReclassificationConservation, InventoryOperation | covered | — |
-| durable-protocol | 43 | InventoryOperation, PublishedHeadCAS, RepairLiveness, DurableTransferRefinement, SnapshotSupersededWorkflow | covered | GAP-DB-IMPLEMENTATION-UNBOUNDED, GAP-PRODUCTION-STORAGE-SCALE-GC, GAP-HASH-COLLISION-ASSUMPTION |
+| durable-protocol | 43 | InventoryOperation, PublishedHeadCAS, RepairLiveness, DurableTransferRefinement, SnapshotSupersededWorkflow | covered | GAP-DB-IMPLEMENTATION-UNBOUNDED, GAP-PRODUCTION-STORAGE-SCALE-GC, GAP-HASH-COLLISION-ASSUMPTION, GAP-V1-CONTENT-ROOT-OBJECT-ORDER |
 | external-plugin-boundary | 4 | CatalogPublication | explicit-gap | GAP-EXTERNAL-MIGRATION-CALLBACKS, GAP-LEGACY-SOURCE-INTERPRETATION |
 | facade-construction | 2 | InventoryOperation | covered | GAP-EXTERNAL-CLOCK, GAP-DB-IMPLEMENTATION-UNBOUNDED |
 | fungibility-movement | 3 | FungibilityPool, ReservationScope, ReservationSafety, UseByReservation, InventoryOperation, PublishedHeadCAS | covered | GAP-FUNGIBILITY-EXACT-SEARCH-BOUND |
@@ -71,7 +71,7 @@ Any added/removed method, callable export, class method, type field, field type,
 | stock-policy-transfer | 2 | ResourceDimensions, DurableTransferRefinement, ReservationScope, ReservationSafety, UseByReservation, InventoryOperation | covered | — |
 | stock-receipt | 5 | InventoryOperation, PublishedHeadCAS, PackagingIdentity, DualMeasure, ResourceDimensions | covered | — |
 | stock-transfer | 4 | ResourceDimensions, DurableTransferRefinement, InventoryOperation, PackagingIdentity | covered | — |
-| storage-integrity | 14 | InventoryOperation, PublishedHeadCAS | covered | GAP-HASH-COLLISION-ASSUMPTION |
+| storage-integrity | 14 | InventoryOperation, PublishedHeadCAS | covered | GAP-HASH-COLLISION-ASSUMPTION, GAP-V1-CONTENT-ROOT-OBJECT-ORDER |
 | traceability | 11 | TraceabilityGraph, InventoryOperation | covered | GAP-TRACEABILITY-ADVERSARIAL-GRAPH-SEARCH |
 | transfer-lifecycle | 5 | TransferLifecycle, ResourceDimensions, ReservationSafety, InventoryOperation, DurableTransferRefinement, PublishedHeadCAS, PackagingIdentity | covered | — |
 | transformation | 2 | TraceabilityGraph, ReclassificationConservation, DualMeasure, InventoryOperation | covered | GAP-TRACEABILITY-ADVERSARIAL-GRAPH-SEARCH |
@@ -89,7 +89,7 @@ Any added/removed method, callable export, class method, type field, field type,
 
 ## Kernel reference-adapter seam
 
-The finite refinement suite runs the core façade against the memory reference adapter. Mongo/SQLite and Shinebright call evidence belong to the later backend/data slice.
+The finite refinement suite runs the core façade against the memory reference adapter. Mongo/SQLite adapter and Shinebright application-call evidence belong to downstream integration repositories and are not executed here.
 
 | Kernel call | Family | Required evidence |
 |---|---|---|
@@ -106,7 +106,7 @@ The finite refinement suite runs the core façade against the memory reference a
 | GAP-ARBITRARY-AUDIT-METADATA | observational-only | Arbitrary JSON-safe audit/application metadata is not represented in resource-conservation models. | Metamorphic tests must prove audit-only changes preserve abstract physical state; changed retry intent under one operation identity remains fail-closed. |
 | GAP-BROAD-RESERVATION-DENSE-GRAPH | bounded-adversarial-performance-caveat | Exact-position reservations use the sparse linear fast path, but truly broad competing claims still require a bounded max-flow graph over eligible claims and positions. The implementation fails closed at configured claim, position, edge, and indivisible-search ceilings rather than promising unbounded latency. | Keep current hard ceilings and diagnostics, monitor broad-claim cardinality in production, partition unusually broad scopes, and add a specialized solver only if measured clinic workloads approach the bounds. |
 | GAP-COUNT-CORRECTION-HISTORY-REPLAY | bounded-history-performance-caveat | Observation-time count reconciliation and retained-root correction must reconstruct occurrence-sensitive physical history. The implementation now traverses the durable sequence index and uses a private linear replay builder, but latency and memory still grow with retained event history rather than remaining constant-time. | Keep the 500-to-2,000-event near-linear replay regression, measure event-history length on real clinics, and introduce trusted projection checkpoints or segmented history before long-lived streams approach operational replay limits. |
-| GAP-DB-IMPLEMENTATION-UNBOUNDED | tested-not-proved | Mongo and SQLite conformance/failpoint tests exercise finite schedules; they do not prove every database/driver/runtime behavior. | Pin supported versions, retain CAS/uniqueness/private-class tests, run both adapters in CI, and fail closed on unsupported guarantees. |
+| GAP-DB-IMPLEMENTATION-UNBOUNDED | downstream-adapter-obligation | This standalone core executes the memory reference adapter only. Mongo/SQLite conformance and failpoint schedules are downstream integration evidence and still cannot prove every database/driver/runtime behavior. | Each production adapter must pin supported versions, run its own CAS/uniqueness/private-class/failpoint/conformance suite in downstream CI, and fail closed on unsupported guarantees. |
 | GAP-DISTRIBUTED-RIGHTS-NOT-IMPLEMENTED | unsupported-production-capability | The DistributedRights model does not imply offline or partition-tolerant multiwriter decrement/reservation safety in current adapters. | Use one coordinating authoritative stream. Do not advertise offline/multiwriter stock until escrow/right-transfer code and adapter refinement tests exist. |
 | GAP-EXTERNAL-CLOCK | environment-assumption | Canonical time validation is tested, but correctness assumes the injected clock supplies canonical UTC instants and trusted monotonic record sequencing where required. | Validate every persisted time, distinguish occurrence from record time, and use database recordSequence/CAS rather than wall-clock expiry for safety. |
 | GAP-EXTERNAL-MIGRATION-CALLBACKS | application-boundary | InventoryOnce cannot formally prove arbitrary application-owned query, bundle, or declaration callbacks. | Bound query paging, require deterministic plugin output, retain source provenance, run the produced declaration through normal validation, and separately test each production plugin. |
@@ -120,6 +120,7 @@ The finite refinement suite runs the core façade against the memory reference a
 | GAP-TEST-FAILPOINT-HOOK | test-only-unmodelled-input | Failure-injection callbacks are test controls, not production inventory semantics. | Classify them unsupported/unmodelled and use them only to exercise modeled crash boundaries. |
 | GAP-TLC-BOUNDED-DOMAINS | accepted-release-limit | Every TLC result is finite-domain model checking, not a theorem over arbitrary identities, quantities, traces, TypeScript, or databases. | Keep exact model constants/counts in reports and pair each claimed model with executable refinement/property tests. |
 | GAP-TRACEABILITY-ADVERSARIAL-GRAPH-SEARCH | bounded-graph-performance-caveat | Whole-history graph replay now uses one private sequential builder and is near-linear for broad independent containment/genealogy graphs, but each newly added structural edge must still prove no ancestor/reachability path exists. Adversarial very deep containment chains or dense genealogy DAGs can therefore exceed linear time. | Keep the 250-to-1,000-edge replay regressions, measure real clinic graph depth/density, and introduce bounded topological/ancestor indexing or explicit safety ceilings before supporting very large industrial traceability graphs. |
+| GAP-V1-CONTENT-ROOT-OBJECT-ORDER | versioned-digest-compatibility-boundary | The v1 durable content-root encoding sorts record identities but preserves the normalized typed row property order. Silently switching to recursive object-key sorting would change already-published roots. | Production adapters must round-trip normalized v1 row shapes without reordering object fields. Any key-order-independent root algorithm must be introduced as an explicit versioned digest/root format with compatibility or migration evidence rather than silently changing v1 roots. |
 
 ## Proof boundary
 

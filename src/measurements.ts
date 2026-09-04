@@ -1,4 +1,5 @@
 import { inventoryIntentFingerprint } from "./canonical.js";
+import { compareInventoryIdentityText } from "./ordering.js";
 import {
   addQuantity,
   compareQuantity,
@@ -335,7 +336,7 @@ function compareMeasurementAxis(
   left: InventoryMeasurement,
   right: InventoryMeasurement,
 ): number {
-  return left.axisId.localeCompare(right.axisId);
+  return compareInventoryIdentityText(left.axisId, right.axisId);
 }
 
 /** Require the same primary axis/unit before vector arithmetic. */

@@ -31,7 +31,7 @@ invariant.
 | `ReclassificationConservation` | split, merge, and movement conserve quantity per item and per exact packaging bucket                                                                                                                                                                                                | `reclassification.test.ts`, `createInventoryReclassificationManyEvent`, event-shape guards                |
 | `UseByReservation`             | normal allocation/consumption excludes expired resources; time or physical loss may create a visible shortage; explicit allow-expired policy remains distinct                                                                                                                       | `availability.test.ts`, `policy-operations.test.ts`, `reservations-counts.test.ts`                        |
 | `InventoryOperation`           | Begin freezes stock, catalogue, lot, container, traceability, reservation, and count roots; staged writes remain hidden; publication changes every root together; later compaction drops only the repair plan and cannot abort the visible world                                    | storage conformance/failpoint suite                                                                       |
-| `PublishedHeadCAS`             | two writers may plan from one published head, but only one compare-and-swap Begin may claim that base; stale work cannot publish over the winner; exact retry stutters; committed history and visible revision stay aligned; enabled writers eventually resolve under weak fairness | durable begin validators/materializers, memory conformance tests, and the contract later adapters must meet |
+| `PublishedHeadCAS`             | two writers may plan from one published head, but only one compare-and-swap Begin may claim that base; stale work cannot publish over the winner; exact retry stutters; committed history and visible revision stay aligned; once a fence is claimed, repair eventually clears it under weak fairness | durable begin validators/materializers, memory conformance tests, and the contract later adapters must meet |
 | `ReservationSafety`            | one exact reservation cannot be overallocated, consumed twice, or silently reused with changed lifecycle intent                                                                                                                                                                     | reservation tests and façade fingerprints                                                                 |
 | `PackagingIdentity`            | package revisions with the same human word remain distinct and intact package quantities stay whole                                                                                                                                                                                 | catalogue/stock tests and package event validation                                                        |
 | `DurableTransferRefinement`    | concrete event/projection/reservation/count/receipt writes stutter until completion, which refines one abstract atomic transfer                                                                                                                                                     | storage conformance suite and `AbstractTransfer` mapping                                                  |
@@ -197,8 +197,8 @@ Executable refinement in the TypeScript façade reconstructs `InventoryOnceEvent
 Two writers read the same published revision, independently freeze exact next-world plans, and race to
 Begin. A compare-and-swap claim on the published head permits at most one winner; the loser becomes stale
 and cannot publish over that winner. Exact retry of the winning operation stutters, publication advances
-the visible revision/history together, and weak fairness checks that an enabled writer eventually commits
-or resolves stale. The bounded exploration result is reported once in the generated-state table above; keep that table as the authoritative PublishedHeadCAS run record.
+the visible revision/history together, and weak fairness checks that a successfully claimed fence eventually
+repairs and clears. Prepared-but-unclaimed attempts intentionally carry no scheduler-progress claim. The bounded exploration result is reported once in the generated-state table above; keep that table as the authoritative PublishedHeadCAS run record.
 
 The model is an adapter contract, not evidence that Parse, SQL, or another document store already provides
 that compare-and-swap. Each production adapter must implement the same atomic head claim and pass the
@@ -258,8 +258,8 @@ TLC establishes properties of the bounded abstract machines in this directory. P
 Run:
 
 ```sh
-pnpm --dir packages/inventoryonce assurance:generate
-pnpm --dir packages/inventoryonce assurance
+pnpm assurance:generate
+pnpm assurance
 ```
 
 `assurance:generate` re-discovers the current compiler surface; it does not read a hand-maintained `/tmp` inventory. `assurance` requires exact key equality, validates every referenced TLC model/invariant and TLA variable, confirms executable abstraction helpers and evidence files, and checks the kernel plus memory reference adapter. A later backend/data slice must add its own database trace evidence without making this kernel slice depend on absent application code.

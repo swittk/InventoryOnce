@@ -324,7 +324,7 @@ pnpm assurance
 pnpm conformance:check
 ```
 
-The audit enumerates every public API and semantic field, validates every referenced TLA symbol, requires executable witnesses for state/result refinements or emits an explicit gap, and includes the migration/storage machinery. Bounded traces execute the real facade against memory, Mongo, and SQLite; Shinebright's receive, issue, transfer, and absolute-count calls are proven end-to-end at this same boundary. See `formal/IMPLEMENTATION_CONFORMANCE.md`.
+The audit enumerates every public API and semantic field, validates every referenced TLA symbol, requires executable witnesses for state/result refinements or emits an explicit gap, and includes the migration/storage machinery. Bounded traces in this standalone repository execute the real facade against the memory reference adapter. Mongo/SQLite adapter evidence and Shinebright's receive, issue, transfer, and absolute-count seam are downstream integration responsibilities and are not claimed as executable evidence here. See `formal/IMPLEMENTATION_CONFORMANCE.md`.
 
 ## Formal boundary and future work
 
@@ -371,7 +371,7 @@ pnpm assurance           # audit the current source against those manifests
 pnpm formal              # run every registered bounded TLA+ model
 ```
 
-The assurance audit includes the `/migrations` surface and every public input/output field. It requires executable state/result abstraction, bounded real-facade traces, retry/rejection semantics, Mongo/SQLite adapter/failpoint evidence for durable claims, and end-to-end evidence for Shinebright's `receiveMany`, `issueManyByPolicy`, `transferManyByPolicy`, and `counts.replaceAbsolute` calls. See `formal/IMPLEMENTATION_CONFORMANCE.md` and `formal/implementation-conformance/FORMAL_COVERAGE_GAPS.json` for the exact claims and remaining bounds.
+The assurance audit includes the `/migrations` surface and every public input/output field. It requires executable state/result abstraction, bounded real-facade traces, retry/rejection semantics, and the memory reference-adapter/failpoint evidence owned by this repository. Mongo/SQLite adapter conformance and Shinebright's `receiveMany`, `issueManyByPolicy`, `transferManyByPolicy`, and `counts.replaceAbsolute` seam remain explicit downstream evidence obligations. See `formal/IMPLEMENTATION_CONFORMANCE.md` and `formal/implementation-conformance/FORMAL_COVERAGE_GAPS.json` for the exact claims and remaining bounds.
 
 ## Opening-snapshot workflow disposition
 

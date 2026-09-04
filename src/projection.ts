@@ -1,3 +1,4 @@
+import { compareInventoryIdentityText } from "./ordering.js";
 import { inventoryMetadataFingerprint } from "./canonical.js";
 import type { InventoryCatalog } from "./catalog.js";
 import {
@@ -967,7 +968,5 @@ function compareStockPosition(
   left: InventoryStockPosition,
   right: InventoryStockPosition
 ): number {
-  return inventoryStockPositionIdentity(left.key).localeCompare(
-    inventoryStockPositionIdentity(right.key)
-  );
+  return compareInventoryIdentityText(inventoryStockPositionIdentity(left.key), inventoryStockPositionIdentity(right.key));
 }

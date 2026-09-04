@@ -21,9 +21,9 @@
       "status": "bounded-history-performance-caveat"
     },
     "GAP-DB-IMPLEMENTATION-UNBOUNDED": {
-      "productionImpact": "Mongo and SQLite conformance/failpoint tests exercise finite schedules; they do not prove every database/driver/runtime behavior.",
-      "requiredMitigation": "Pin supported versions, retain CAS/uniqueness/private-class tests, run both adapters in CI, and fail closed on unsupported guarantees.",
-      "status": "tested-not-proved"
+      "productionImpact": "This standalone core executes the memory reference adapter only. Mongo/SQLite conformance and failpoint schedules are downstream integration evidence and still cannot prove every database/driver/runtime behavior.",
+      "requiredMitigation": "Each production adapter must pin supported versions, run its own CAS/uniqueness/private-class/failpoint/conformance suite in downstream CI, and fail closed on unsupported guarantees.",
+      "status": "downstream-adapter-obligation"
     },
     "GAP-DISTRIBUTED-RIGHTS-NOT-IMPLEMENTED": {
       "productionImpact": "The DistributedRights model does not imply offline or partition-tolerant multiwriter decrement/reservation safety in current adapters.",
@@ -89,6 +89,11 @@
       "productionImpact": "Whole-history graph replay now uses one private sequential builder and is near-linear for broad independent containment/genealogy graphs, but each newly added structural edge must still prove no ancestor/reachability path exists. Adversarial very deep containment chains or dense genealogy DAGs can therefore exceed linear time.",
       "requiredMitigation": "Keep the 250-to-1,000-edge replay regressions, measure real clinic graph depth/density, and introduce bounded topological/ancestor indexing or explicit safety ceilings before supporting very large industrial traceability graphs.",
       "status": "bounded-graph-performance-caveat"
+    },
+    "GAP-V1-CONTENT-ROOT-OBJECT-ORDER": {
+      "productionImpact": "The v1 durable content-root encoding sorts record identities but preserves the normalized typed row property order. Silently switching to recursive object-key sorting would change already-published roots.",
+      "requiredMitigation": "Production adapters must round-trip normalized v1 row shapes without reordering object fields. Any key-order-independent root algorithm must be introduced as an explicit versioned digest/root format with compatibility or migration evidence rather than silently changing v1 roots.",
+      "status": "versioned-digest-compatibility-boundary"
     }
   },
   "schemaVersion": 1

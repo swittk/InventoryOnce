@@ -2,6 +2,7 @@
 EXTENDS FiniteSets, Integers
 
 Objects == {"P", "C1", "C2", "O"}
+ASSUME Cardinality(Objects) <= 4
 NoParent == "none"
 ParentDomain == Objects \cup {NoParent}
 InputObjects == {"C1", "C2"}

@@ -637,7 +637,7 @@ function sameJson(left: object, right: object | undefined): boolean {
   return right !== undefined && JSON.stringify(left) === JSON.stringify(right);
 }
 
-/** Turn one typed record into sorted key/value JSON rows before hashing it. */
+/** Turn one normalized typed record into v1 sorted key/value JSON rows. Nested property order is intentionally retained for published-root compatibility; a recursive canonicalization change requires a versioned root format. */
 function sortedRecordRows<T>(
   values: Readonly<Record<string, T>>
 ): readonly string[] {

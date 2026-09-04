@@ -1,3 +1,4 @@
+import { compareInventoryIdentityText } from "./ordering.js";
 import type {
   InventoryCatalog,
   InventoryItemDefinitionRevision,
@@ -392,7 +393,7 @@ function compareDimensionBucket(
   if (left.valueId === undefined && right.valueId === undefined) return 0;
   if (left.valueId === undefined) return 1;
   if (right.valueId === undefined) return -1;
-  return left.valueId.localeCompare(right.valueId);
+  return compareInventoryIdentityText(left.valueId, right.valueId);
 }
 
 /** Sort package definitions by human unit then exact immutable revision identity. */
@@ -400,8 +401,11 @@ function comparePackagingDefinition(
   left: InventoryPackagingDefinitionRevision,
   right: InventoryPackagingDefinitionRevision
 ): number {
-  const unitOrder = left.packageUnit.localeCompare(right.packageUnit);
+  const unitOrder = compareInventoryIdentityText(
+    left.packageUnit,
+    right.packageUnit
+  );
   return unitOrder !== 0
     ? unitOrder
-    : left.revisionId.localeCompare(right.revisionId);
+    : compareInventoryIdentityText(left.revisionId, right.revisionId);
 }

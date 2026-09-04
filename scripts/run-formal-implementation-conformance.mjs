@@ -13,10 +13,8 @@ function readManifest(name) {
   return JSON.parse(readFileSync(join(manifestRoot, name), "utf8"));
 }
 
-const traces = readManifest("TRACE_REPLAY_ASSURANCE.json");
-
 /** Return every executable evidence path selected for one adapter scope. */
-function traceEvidenceTests(adapter) {
+function traceEvidenceTests(traces, adapter) {
   const paths = new Set();
   for (const entry of Object.values(traces.entries)) {
     if (adapter !== undefined && !entry.adapters.includes(adapter)) continue;
@@ -35,15 +33,6 @@ function relativeEvidence(path, workingRoot) {
     "/"
   );
 }
-
-const packageTraceTests = [
-  ...new Set([
-    "test/formal-implementation-conformance.test.ts",
-    ...traceEvidenceTests("memory")
-      .filter((path) => path.startsWith("test/"))
-      .map((path) => relativeEvidence(path, packageRoot)),
-  ]),
-].sort();
 
 /** Ordered deterministic assurance commands. */
 const steps = [
@@ -65,7 +54,7 @@ const steps = [
   {
     id: "memory-trace-property-and-authority-evidence",
     command: "pnpm",
-    args: ["--dir", packageRoot, "exec", "vitest", "run", ...packageTraceTests],
+    args: undefined,
   },
 ];
 
@@ -89,7 +78,28 @@ if (fullFormal) {
   );
 }
 
+let traces;
+let packageTraceTests = [];
 for (const step of steps) {
+  if (step.id === "memory-trace-property-and-authority-evidence") {
+    traces = readManifest("TRACE_REPLAY_ASSURANCE.json");
+    packageTraceTests = [
+      ...new Set([
+        "test/formal-implementation-conformance.test.ts",
+        ...traceEvidenceTests(traces, "memory")
+          .filter((path) => path.startsWith("test/"))
+          .map((path) => relativeEvidence(path, packageRoot)),
+      ]),
+    ].sort();
+    step.args = [
+      "--dir",
+      packageRoot,
+      "exec",
+      "vitest",
+      "run",
+      ...packageTraceTests,
+    ];
+  }
   console.log(`\n=== ${step.id} ===`);
   const result = spawnSync(step.command, step.args, {
     cwd: repositoryRoot,
@@ -106,6 +116,7 @@ for (const step of steps) {
   }
 }
 
+traces ??= readManifest("TRACE_REPLAY_ASSURANCE.json");
 const api = readManifest("API_ASSURANCE.json");
 const fields = readManifest("FIELD_CLASSIFICATION.json");
 const callChains = readManifest("CALL_CHAIN_ASSURANCE.json");

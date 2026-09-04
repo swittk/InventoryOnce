@@ -1,3 +1,4 @@
+import { compareInventoryIdentityText } from "./ordering.js";
 import {
   summarizeInventoryAvailability,
   type InventoryAvailabilitySummary,
@@ -2888,7 +2889,7 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
             : { sourceReference: input.sourceReference }),
           ...(input.reason === undefined ? {} : { reason: input.reason }),
           ...(input.metadata === undefined ? {} : { metadata: input.metadata }),
-        }),
+        }, internals.deficitPolicy),
         reservationProtection:
           InventoryReservationProtection.RecordPhysicalTruth,
       }),
@@ -3539,9 +3540,9 @@ function policyDeficitPositionFingerprint(
   dimensions.sort(
     /** Qualified dimension order is not physical intent. */
     (left, right) => {
-      const dimensionOrder = left.dimensionId.localeCompare(right.dimensionId);
+      const dimensionOrder = compareInventoryIdentityText(left.dimensionId, right.dimensionId);
       return dimensionOrder === 0
-        ? left.valueId.localeCompare(right.valueId)
+        ? compareInventoryIdentityText(left.valueId, right.valueId)
         : dimensionOrder;
     }
   );
@@ -5669,7 +5670,7 @@ class InventoryOnceContainersImplementation
             ...(input.metadata === undefined
               ? {}
               : { metadata: input.metadata }),
-          }),
+          }, internals.deficitPolicy),
         };
       },
     });
@@ -6023,9 +6024,7 @@ function compareWholeContainerPosition(
   left: InventoryStockPosition,
   right: InventoryStockPosition
 ): number {
-  return inventoryStockPositionIdentity(left.key).localeCompare(
-    inventoryStockPositionIdentity(right.key)
-  );
+  return compareInventoryIdentityText(inventoryStockPositionIdentity(left.key), inventoryStockPositionIdentity(right.key));
 }
 
 /** Replace, append, or omit one exact container definition inside a retained root assertion. */
@@ -6163,7 +6162,7 @@ class InventoryOnceLotsImplementation implements InventoryOnceLotsApi {
             ...(input.metadata === undefined
               ? {}
               : { metadata: input.metadata }),
-          }),
+          }, internals.deficitPolicy),
         };
       },
     });
@@ -6810,9 +6809,7 @@ function compareReservationAllocationLine(
   left: InventoryReservationAllocation,
   right: InventoryReservationAllocation
 ): number {
-  return inventoryStockPositionIdentity(left.position).localeCompare(
-    inventoryStockPositionIdentity(right.position)
-  );
+  return compareInventoryIdentityText(inventoryStockPositionIdentity(left.position), inventoryStockPositionIdentity(right.position));
 }
 
 /** Stable exact quantity fingerprint. */
@@ -6865,9 +6862,7 @@ function compareReservationFulfillmentLine(
   left: InventoryReservationFulfillmentLine,
   right: InventoryReservationFulfillmentLine
 ): number {
-  return inventoryStockPositionIdentity(left.from).localeCompare(
-    inventoryStockPositionIdentity(right.from)
-  );
+  return compareInventoryIdentityText(inventoryStockPositionIdentity(left.from), inventoryStockPositionIdentity(right.from));
 }
 
 /** Return a stable amount copy with independently measured axes sorted/rejected if duplicated. */
@@ -6908,7 +6903,7 @@ function compareIndependentAmountAxis(
   left: InventoryAmount["independent"][number],
   right: InventoryAmount["independent"][number]
 ): number {
-  return left.axisId.localeCompare(right.axisId);
+  return compareInventoryIdentityText(left.axisId, right.axisId);
 }
 
 /** Build one exact multi-position issue event and prove it matches the frozen allocation. */
@@ -8061,9 +8056,7 @@ function compareCountObservationLine(
   left: InventoryCountObservationLine,
   right: InventoryCountObservationLine
 ): number {
-  return inventoryStockPositionIdentity(left.position).localeCompare(
-    inventoryStockPositionIdentity(right.position)
-  );
+  return compareInventoryIdentityText(inventoryStockPositionIdentity(left.position), inventoryStockPositionIdentity(right.position));
 }
 
 /** Private implementation of containment/association traceability verbs. */
@@ -8536,7 +8529,7 @@ function compareInventoryCompositionRevision(
   left: InventoryCompositionDefinitionRevision,
   right: InventoryCompositionDefinitionRevision
 ): number {
-  return left.revisionId.localeCompare(right.revisionId);
+  return compareInventoryIdentityText(left.revisionId, right.revisionId);
 }
 
 /** Sort current container masters by exact handling-unit identity. */
@@ -8544,9 +8537,7 @@ function compareProjectedContainerDefinition(
   left: InventoryProjectedContainerDefinition,
   right: InventoryProjectedContainerDefinition
 ): number {
-  return inventoryContainerIdentity(left.definition.containerId).localeCompare(
-    inventoryContainerIdentity(right.definition.containerId)
-  );
+  return compareInventoryIdentityText(inventoryContainerIdentity(left.definition.containerId), inventoryContainerIdentity(right.definition.containerId));
 }
 
 /** Read item-filtered lot masters from the rebuildable index and fail closed on index drift. */
@@ -8582,12 +8573,10 @@ function compareProjectedLotDefinition(
   left: InventoryProjectedLotDefinition,
   right: InventoryProjectedLotDefinition
 ): number {
-  return inventoryLotIdentity(
+  return compareInventoryIdentityText(inventoryLotIdentity(
     left.definition.itemId,
     left.definition.lotId
-  ).localeCompare(
-    inventoryLotIdentity(right.definition.itemId, right.definition.lotId)
-  );
+  ), inventoryLotIdentity(right.definition.itemId, right.definition.lotId));
 }
 
 /** Reject future lifecycle facts because current claim authority is frozen at durable record time. */

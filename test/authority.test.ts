@@ -6,11 +6,14 @@ import {
   bootstrapGreenfieldInventoryAuthority,
   createInventoryAuthorityControl,
   createInventoryOnce,
+  cutoverInventoryAuthority,
   requireInventoryAuthorityMode,
+  stockAmount,
   type InventoryAuthorityDocument,
   type InventoryAuthorityFields,
   type InventoryAuthorityStateStore,
 } from "../src/index.js";
+import { defineInventoryMigration } from "../src/migrations-api.js";
 import { createInMemoryInventoryDurableStorage } from "../src/storage-api.js";
 import { createTabletCatalog } from "./test-fixtures.js";
 
@@ -296,6 +299,70 @@ describe("portable InventoryOnce authority controller", () => {
         expect(admission.value.admittedLegacyWriter).toBe(true);
       }
     }
+  });
+
+  it("reuses the durable DualRun cutover time when retry omits the explicit time", async () => {
+    const authority = createInventoryAuthorityControl({
+      store: new TestAuthorityStore(),
+      namespaceId: "cutover-time-retry:primary",
+    });
+    const storage = createInMemoryInventoryDurableStorage();
+    const compileSource = async (cutoverAt: string) => {
+      const catalog = createTabletCatalog();
+      return {
+        catalog,
+        plan: defineInventoryMigration({
+          catalog,
+          declaration: {
+            migrationId: "cutover-time-retry-migration",
+            sourceSystem: "cutover-time-retry-source",
+            cutoverAt,
+            openingStock: [
+              {
+                openingId: "cutover-time-retry-row",
+                position: { itemId: "item-a", locationId: "store" },
+                amount: stockAmount("1", "piece"),
+                itemRevisionId: "item-a-v2",
+                source: {
+                  sourceType: "legacy-stock",
+                  sourceId: "cutover-time-retry-row",
+                },
+              },
+            ],
+          },
+        }),
+      };
+    };
+    let firstDrain = true;
+    const common = {
+      authority,
+      storage,
+      migrationId: "cutover-time-retry-migration",
+      fenceToken: "cutover-time-retry-fence",
+      adapterCertificationDigest: "adapter-v1",
+      sourceRevision: 7,
+      compileSource,
+      drainLegacyWriters: (): Promise<void> => {
+        if (firstDrain) {
+          firstDrain = false;
+          return Promise.reject(new Error("Injected pre-migration drain failure."));
+        }
+        return Promise.resolve();
+      },
+      clock: { now: (): string => time2 },
+    };
+
+    await expect(
+      cutoverInventoryAuthority({ ...common, cutoverAt: time1 })
+    ).rejects.toThrow("Injected pre-migration drain failure");
+    const retained = await authority.read();
+    expect(retained.mode).toBe(InventoryAuthorityMode.DualRun);
+    expect(retained.adapterCertifiedAt).toBe(time2);
+    expect(retained.dualRunStartedAt).toBe(time1);
+
+    const retried = await cutoverInventoryAuthority(common);
+    expect(retried.authority.mode).toBe(InventoryAuthorityMode.Authoritative);
+    expect(retried.authority.dualRunStartedAt).toBe(time1);
   });
 
   it("gates application operations on one exact persisted mode", () => {

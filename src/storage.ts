@@ -1,3 +1,4 @@
+import { compareInventoryIdentityText } from "./ordering.js";
 import {
   assertCanonicalInventoryTime,
   type InventoryCommittedEvent,
@@ -1605,7 +1606,7 @@ function compareDurableOperationId(
   left: InventoryDurableOperation,
   right: InventoryDurableOperation
 ): number {
-  return left.operationId.localeCompare(right.operationId);
+  return compareInventoryIdentityText(left.operationId, right.operationId);
 }
 
 /** Sort applying migration manifests deterministically for bounded repair workers. */
@@ -1613,7 +1614,7 @@ function compareMigrationManifestId(
   left: InventoryMigrationManifest,
   right: InventoryMigrationManifest
 ): number {
-  return left.migrationId.localeCompare(right.migrationId);
+  return compareInventoryIdentityText(left.migrationId, right.migrationId);
 }
 
 /** Reject unsafe bounded list/query values. */

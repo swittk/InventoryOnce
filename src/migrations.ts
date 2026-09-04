@@ -9,6 +9,7 @@ import {
   inventoryMetadataFingerprint,
   type InventoryIntentFingerprintValue,
 } from "./canonical.js";
+import { compareInventoryIdentityText } from "./ordering.js";
 import { type InventoryClock } from "./coordinator.js";
 import {
   inventoryDurableMigrationPlanDigest,
@@ -881,7 +882,7 @@ function compareInventoryMigrationSourceDisposition(
   left: InventoryMigrationSourceDisposition,
   right: InventoryMigrationSourceDisposition
 ): number {
-  return left.dispositionId.localeCompare(right.dispositionId);
+  return compareInventoryIdentityText(left.dispositionId, right.dispositionId);
 }
 
 /** Fingerprint the complete compiled plan so callers cannot swap rows after review. */
@@ -1089,7 +1090,7 @@ function compareMigrationEvent(
   left: InventoryEventDraft,
   right: InventoryEventDraft
 ): number {
-  return left.operationId.localeCompare(right.operationId);
+  return compareInventoryIdentityText(left.operationId, right.operationId);
 }
 
 /** Sort diagnostics by severity/code/source/message for deterministic review output. */
@@ -1111,5 +1112,5 @@ function compareMigrationDiagnostic(
     right.source?.sourceId ?? "",
     right.message,
   ].join("|");
-  return leftIdentity.localeCompare(rightIdentity);
+  return compareInventoryIdentityText(leftIdentity, rightIdentity);
 }

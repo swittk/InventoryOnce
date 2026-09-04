@@ -9,6 +9,9 @@ Positions ==
 Items == {"A", "B"}
 PackageBuckets == {"loose", "box24"}
 
+\* This module intentionally covers same-package-bucket Move/Split/Merge only.
+\* Cross-bucket Pack/Unpack and exact 20/24-piece package conversion are modeled by PackagingIdentity.
+
 ItemOf(position) ==
   IF position \in {"aLoose1", "aLoose2", "aLoose3",
                    "aBox1", "aBox2", "aBox3"}

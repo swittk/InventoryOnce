@@ -1,3 +1,4 @@
+import { compareInventoryIdentityText } from "./ordering.js";
 import {
   inventoryIntentFingerprint,
   inventoryMetadataFingerprint,
@@ -595,7 +596,7 @@ function normalizeInventoryTransferLifecycleChange(
       /** Process one transfer-lifecycle collection entry deterministically. */ (
         left,
         right
-      ) => left.lineId.localeCompare(right.lineId)
+      ) => compareInventoryIdentityText(left.lineId, right.lineId)
     );
     return { ...change, lines };
   }
@@ -627,7 +628,7 @@ function normalizeInventoryTransferLifecycleChange(
       /** Process one transfer-lifecycle collection entry deterministically. */ (
         left,
         right
-      ) => left.lineId.localeCompare(right.lineId)
+      ) => compareInventoryIdentityText(left.lineId, right.lineId)
     );
     return { ...change, lines };
   }
@@ -776,13 +777,11 @@ function comparePositiveLayerProvenanceTransfer(
   left: InventoryPositiveLayerProvenanceTransfer,
   right: InventoryPositiveLayerProvenanceTransfer
 ): number {
-  const destinationOrder = inventoryStockPositionIdentity(
+  const destinationOrder = compareInventoryIdentityText(inventoryStockPositionIdentity(
     left.to
-  ).localeCompare(inventoryStockPositionIdentity(right.to));
+  ), inventoryStockPositionIdentity(right.to));
   return destinationOrder === 0
-    ? inventoryStockPositionIdentity(left.from).localeCompare(
-        inventoryStockPositionIdentity(right.from)
-      )
+    ? compareInventoryIdentityText(inventoryStockPositionIdentity(left.from), inventoryStockPositionIdentity(right.from))
     : destinationOrder;
 }
 
@@ -843,9 +842,7 @@ function comparePositiveLayerProvenanceOverride(
   left: InventoryPositiveLayerProvenanceOverride,
   right: InventoryPositiveLayerProvenanceOverride
 ): number {
-  return inventoryStockPositionIdentity(left.position).localeCompare(
-    inventoryStockPositionIdentity(right.position)
-  );
+  return compareInventoryIdentityText(inventoryStockPositionIdentity(left.position), inventoryStockPositionIdentity(right.position));
 }
 
 /** Validate each effect against catalogue truth and return stable position ordering. */
@@ -1007,9 +1004,7 @@ function compareLotDefinition(
   left: InventoryLotDefinition,
   right: InventoryLotDefinition
 ): number {
-  return inventoryLotIdentity(left.itemId, left.lotId).localeCompare(
-    inventoryLotIdentity(right.itemId, right.lotId)
-  );
+  return compareInventoryIdentityText(inventoryLotIdentity(left.itemId, left.lotId), inventoryLotIdentity(right.itemId, right.lotId));
 }
 
 /** Validate exact handling-unit facts and return deterministic identity ordering. */
@@ -1147,9 +1142,7 @@ function compareContainerDefinition(
   left: InventoryContainerDefinition,
   right: InventoryContainerDefinition
 ): number {
-  return inventoryContainerIdentity(left.containerId).localeCompare(
-    inventoryContainerIdentity(right.containerId)
-  );
+  return compareInventoryIdentityText(inventoryContainerIdentity(left.containerId), inventoryContainerIdentity(right.containerId));
 }
 
 /** Validate graph changes, forbid genealogy deletion, and return stable ordering. */
@@ -1428,11 +1421,11 @@ function compareStockEffect(
   left: InventoryStockEffect,
   right: InventoryStockEffect
 ): number {
-  const positionOrder = inventoryStockPositionIdentity(
+  const positionOrder = compareInventoryIdentityText(inventoryStockPositionIdentity(
     left.position
-  ).localeCompare(inventoryStockPositionIdentity(right.position));
+  ), inventoryStockPositionIdentity(right.position));
   return positionOrder === 0
-    ? left.itemRevisionId.localeCompare(right.itemRevisionId)
+    ? compareInventoryIdentityText(left.itemRevisionId, right.itemRevisionId)
     : positionOrder;
 }
 
@@ -1441,9 +1434,7 @@ function compareTraceabilityChange(
   left: InventoryTraceabilityRelationChange,
   right: InventoryTraceabilityRelationChange
 ): number {
-  return traceabilityChangeIdentity(left).localeCompare(
-    traceabilityChangeIdentity(right)
-  );
+  return compareInventoryIdentityText(traceabilityChangeIdentity(left), traceabilityChangeIdentity(right));
 }
 
 /** Require canonical ISO-8601 text so intent fingerprints do not accept equivalent spellings. */
