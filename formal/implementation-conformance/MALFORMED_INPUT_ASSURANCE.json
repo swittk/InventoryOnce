@@ -1,0 +1,56 @@
+{
+  "entries": [
+    {
+      "behaviorEvidence": [
+        {
+          "contains": "beforeDuplicatePrepare",
+          "file": "test/transfer-lifecycle.test.ts",
+          "testTitle": "rejects duplicate transfer line ids and cross-transfer stock effects"
+        }
+      ],
+      "guards": [
+        {
+          "contains": "assertUniqueTransferLineIds(change.lines, \"prepared transfer\")",
+          "file": "src/transfers.ts"
+        }
+      ],
+      "id": "duplicate-transfer-prepare-line-id",
+      "invariant": "One logical transfer prepare line identity cannot be represented twice."
+    },
+    {
+      "behaviorEvidence": [
+        {
+          "contains": "receive-duplicate-lines",
+          "file": "test/transfer-lifecycle.test.ts",
+          "testTitle": "rejects duplicate receipt line ids without changing transfer truth"
+        }
+      ],
+      "guards": [
+        {
+          "contains": "assertUniqueTransferLineIds(change.lines, \"transfer receipt\")",
+          "file": "src/transfers.ts"
+        }
+      ],
+      "id": "duplicate-transfer-receipt-line-id",
+      "invariant": "One receipt line identity can contribute at most once to a lifecycle transition."
+    },
+    {
+      "behaviorEvidence": [
+        {
+          "contains": "cross-transfer-effect-op",
+          "file": "test/transfer-lifecycle.test.ts",
+          "testTitle": "rejects duplicate transfer line ids and cross-transfer stock effects"
+        }
+      ],
+      "guards": [
+        {
+          "contains": "effectTransferId !== transferLifecycle.transferId",
+          "file": "src/events.ts"
+        }
+      ],
+      "id": "transfer-effect-lifecycle-binding",
+      "invariant": "Every transfer-bound stock effect names the same transfer as the structured lifecycle transition."
+    }
+  ],
+  "schemaVersion": 1
+}

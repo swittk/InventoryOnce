@@ -1,0 +1,70 @@
+{
+  "name": "@inventoryonce/core",
+  "version": "0.1.0",
+  "description": "Framework-free exact inventory events, projections, claims, counts, traceability, and durable repair",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./kernel": {
+      "types": "./dist/kernel.d.ts",
+      "import": "./dist/kernel.js"
+    },
+    "./storage": {
+      "types": "./dist/storage-api.d.ts",
+      "import": "./dist/storage-api.js"
+    },
+    "./migrations": {
+      "types": "./dist/migrations-api.d.ts",
+      "import": "./dist/migrations-api.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "docs",
+    "formal"
+  ],
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "pnpm run clean && tsc -p tsconfig.json",
+    "check": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.test.json && pnpm assurance",
+    "test": "vitest run",
+    "formal": "node scripts/run-formal.mjs",
+    "assurance": "node scripts/audit-formal-implementation-conformance.mjs",
+    "assurance:write": "pnpm run assurance:generate && node scripts/audit-formal-implementation-conformance.mjs --write-report",
+    "assurance:generate": "python3 scripts/generate-formal-implementation-assurance.py",
+    "assurance:implementation": "node scripts/run-formal-implementation-conformance.mjs",
+    "assurance:implementation:full": "node scripts/run-formal-implementation-conformance.mjs --full-formal",
+    "conformance:generate": "pnpm assurance:generate && pnpm assurance --write-report",
+    "conformance:check": "pnpm assurance:implementation",
+    "conformance:report": "node scripts/report-implementation-conformance.mjs",
+    "conformance:full": "pnpm assurance:implementation:full"
+  },
+  "engines": {
+    "node": "^20.0.0 || ^22.0.0 || >=24.0.0"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.20.1",
+    "typescript": "^5.9.0",
+    "vitest": "4.0.5"
+  },
+  "typesVersions": {
+    "*": {
+      "kernel": [
+        "dist/kernel.d.ts"
+      ],
+      "storage": [
+        "dist/storage-api.d.ts"
+      ],
+      "migrations": [
+        "dist/migrations-api.d.ts"
+      ]
+    }
+  }
+}

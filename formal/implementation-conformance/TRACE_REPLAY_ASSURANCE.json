@@ -1,0 +1,2154 @@
+{
+  "entries": {
+    "TRACE-AUTHORITY-GREENFIELD-EMPTY-RACE": {
+      "adapters": [
+        "memory"
+      ],
+      "apiEntries": [
+        "authority-port.activate",
+        "authority-port.activateGreenfield",
+        "authority-port.admitLegacyWriter",
+        "authority-port.certifyAdapter",
+        "authority-port.claimFence",
+        "authority-port.enterDualRun",
+        "authority-port.enterShadow",
+        "authority-port.markCompatibilityProjectionApplied",
+        "authority-port.markCompatibilityProjectionFailed",
+        "authority-port.read",
+        "authority-port.recordDualRunMismatch",
+        "authority-port.releaseFence",
+        "authority-port.releaseLegacyWriter",
+        "class.root.InventoryAuthorityControl.activate",
+        "class.root.InventoryAuthorityControl.activateGreenfield",
+        "class.root.InventoryAuthorityControl.admitLegacyWriter",
+        "class.root.InventoryAuthorityControl.certifyAdapter",
+        "class.root.InventoryAuthorityControl.claimFence",
+        "class.root.InventoryAuthorityControl.enterDualRun",
+        "class.root.InventoryAuthorityControl.enterShadow",
+        "class.root.InventoryAuthorityControl.markCompatibilityProjectionApplied",
+        "class.root.InventoryAuthorityControl.markCompatibilityProjectionFailed",
+        "class.root.InventoryAuthorityControl.read",
+        "class.root.InventoryAuthorityControl.recordDualRunMismatch",
+        "class.root.InventoryAuthorityControl.releaseFence",
+        "class.root.InventoryAuthorityControl.releaseLegacyWriter",
+        "entrypoint.root.InventoryAuthorityControl",
+        "entrypoint.root.bootstrapGreenfieldInventoryAuthority",
+        "entrypoint.root.createInventoryAuthorityControl",
+        "entrypoint.root.cutoverInventoryAuthority",
+        "entrypoint.root.inventoryAuthorityCutoverResult",
+        "entrypoint.root.inventoryAuthorityGreenfieldResult",
+        "entrypoint.root.requireInventoryAuthorityMode"
+      ],
+      "evidence": [
+        "test/authority.test.ts"
+      ],
+      "failpoints": [
+        "authority-cas-race"
+      ],
+      "finiteDomain": "One empty namespace, one authorization, two controllers, and one competing writer admission.",
+      "invariants": [
+        "ActivationProvenanceIsExact",
+        "GreenfieldCannotFabricateLegacyEvidence",
+        "GreenfieldActivationRaceResolution"
+      ],
+      "models": [
+        "AuthorityWriterFence"
+      ],
+      "operationFamilies": [
+        "authority-control",
+        "authority-cutover"
+      ],
+      "refinementMode": "bounded-property",
+      "resultProjection": "Activation evidence, empty-world revision, exact replay, and the compare-and-set winner agree.",
+      "stateProjection": [
+        "abstractAuthorityState"
+      ],
+      "status": "covered"
+    },
+    "TRACE-AUTHORITY-LEGACY-CUTOVER-RACE": {
+      "adapters": [
+        "memory"
+      ],
+      "apiEntries": [
+        "authority-port.activate",
+        "authority-port.activateGreenfield",
+        "authority-port.admitLegacyWriter",
+        "authority-port.certifyAdapter",
+        "authority-port.claimFence",
+        "authority-port.enterDualRun",
+        "authority-port.enterShadow",
+        "authority-port.markCompatibilityProjectionApplied",
+        "authority-port.markCompatibilityProjectionFailed",
+        "authority-port.read",
+        "authority-port.recordDualRunMismatch",
+        "authority-port.releaseFence",
+        "authority-port.releaseLegacyWriter",
+        "class.root.InventoryAuthorityControl.activate",
+        "class.root.InventoryAuthorityControl.activateGreenfield",
+        "class.root.InventoryAuthorityControl.admitLegacyWriter",
+        "class.root.InventoryAuthorityControl.certifyAdapter",
+        "class.root.InventoryAuthorityControl.claimFence",
+        "class.root.InventoryAuthorityControl.enterDualRun",
+        "class.root.InventoryAuthorityControl.enterShadow",
+        "class.root.InventoryAuthorityControl.markCompatibilityProjectionApplied",
+        "class.root.InventoryAuthorityControl.markCompatibilityProjectionFailed",
+        "class.root.InventoryAuthorityControl.read",
+        "class.root.InventoryAuthorityControl.recordDualRunMismatch",
+        "class.root.InventoryAuthorityControl.releaseFence",
+        "class.root.InventoryAuthorityControl.releaseLegacyWriter",
+        "entrypoint.root.InventoryAuthorityControl",
+        "entrypoint.root.bootstrapGreenfieldInventoryAuthority",
+        "entrypoint.root.createInventoryAuthorityControl",
+        "entrypoint.root.cutoverInventoryAuthority",
+        "entrypoint.root.inventoryAuthorityCutoverResult",
+        "entrypoint.root.inventoryAuthorityGreenfieldResult",
+        "entrypoint.root.requireInventoryAuthorityMode"
+      ],
+      "evidence": [
+        "test/authority.test.ts",
+        "test/formal-implementation-refinement.test.ts"
+      ],
+      "failpoints": [
+        "writer-admission-versus-fence-cas"
+      ],
+      "finiteDomain": "Two controllers, one writer, one fence contender, one mismatch.",
+      "invariants": [
+        "ModeMatchesMonotonicPhase",
+        "FenceExcludesLegacyWriters",
+        "MismatchCannotBeBypassed",
+        "AuthorityRequiresAllEvidence"
+      ],
+      "models": [
+        "AuthorityWriterFence"
+      ],
+      "operationFamilies": [
+        "authority-control",
+        "authority-cutover"
+      ],
+      "refinementMode": "state-result-refinement",
+      "resultProjection": "Monotonic state and CAS winner agree with the writer-fence abstraction.",
+      "stateProjection": [
+        "abstractAuthorityState"
+      ],
+      "status": "covered"
+    },
+    "TRACE-BOUNDED-FACADE-METAMORPHIC-CORPUS": {
+      "adapters": [
+        "memory"
+      ],
+      "apiEntries": [
+        "entrypoint.kernel.assertCanonicalInventoryTime",
+        "entrypoint.kernel.commitInventoryEvent",
+        "entrypoint.kernel.createInventoryCatalogPublicationEvent",
+        "entrypoint.kernel.createInventoryOpeningEvent",
+        "entrypoint.kernel.createInventoryReceiptEvent",
+        "entrypoint.kernel.createInventoryReceiptManyEvent",
+        "entrypoint.kernel.defineInventoryEvent",
+        "entrypoint.kernel.inventoryEventIdForOperation",
+        "entrypoint.kernel.inventoryEventIntentFingerprint",
+        "entrypoint.kernel.inventoryPositionEffectiveUseBy",
+        "entrypoint.kernel.inventoryPositionIsExpiredAt",
+        "entrypoint.kernel.summarizeInventoryAvailability",
+        "entrypoint.root.combineInventoryAmountLineGroups",
+        "entrypoint.root.combineInventoryPolicyBatchRequestGroups",
+        "entrypoint.root.defineInventoryAmountLineGroup",
+        "entrypoint.root.defineInventoryPolicyBatchRequestGroup",
+        "entrypoint.root.findInventoryEventByOperationId",
+        "entrypoint.root.inventoryPolicyBatchAllocationLinesByReference",
+        "entrypoint.root.inventoryPositionEffectiveUseBy",
+        "entrypoint.root.inventoryPositionIsExpiredAt",
+        "entrypoint.root.readPublishedInventoryCatalog",
+        "entrypoint.root.readPublishedInventorySnapshot",
+        "entrypoint.root.summarizeInventoryAvailability",
+        "facade.read.availability",
+        "facade.read.container",
+        "facade.read.containers",
+        "facade.read.count",
+        "facade.read.event",
+        "facade.read.lot",
+        "facade.read.lots",
+        "facade.read.packagingRevisions",
+        "facade.read.planAllocation",
+        "facade.read.positions",
+        "facade.read.reservation",
+        "facade.read.reservationFeasibility",
+        "facade.read.summary",
+        "facade.read.world",
+        "facade.stock.issueByPolicy",
+        "facade.stock.issueManyByPolicy",
+        "facade.stock.receive",
+        "facade.stock.receiveMany",
+        "facade.stock.transferByPolicy",
+        "facade.stock.transferManyByPolicy"
+      ],
+      "evidence": [
+        "test/formal-implementation-refinement.test.ts"
+      ],
+      "failpoints": [],
+      "finiteDomain": "Receive 4 or 5; issue 1 or 2; transfer 1 or 2; exact terminal replay.",
+      "invariants": [
+        "FrozenIntentNeverChanges",
+        "RetryOutcomeMatchesFrozenIntent",
+        "VisibleQuantityConserved",
+        "ResourceAccounting"
+      ],
+      "models": [
+        "InventoryOperation",
+        "ResourceDimensions",
+        "DualMeasure"
+      ],
+      "operationFamilies": [
+        "stock-receipt",
+        "stock-policy-issue",
+        "stock-policy-transfer",
+        "read-current",
+        "operation-result-helper"
+      ],
+      "refinementMode": "state-result-refinement",
+      "resultProjection": "Independent arithmetic, event order, revision, and replay stutter agree.",
+      "stateProjection": [
+        "abstractInventoryState"
+      ],
+      "status": "covered"
+    },
+    "TRACE-CATALOG-PUBLICATION-REPLAY": {
+      "adapters": [
+        "memory"
+      ],
+      "apiEntries": [
+        "entrypoint.root.ensureInventoryScalarCatalogRevision",
+        "entrypoint.root.publishInventoryCatalogExtension",
+        "entrypoint.root.publishInventoryCatalogIfChanged",
+        "facade.catalog.activeItem",
+        "facade.catalog.itemRevision",
+        "facade.catalog.itemRevisionsForItem",
+        "facade.catalog.publish"
+      ],
+      "evidence": [
+        "test/catalog-publication.test.ts"
+      ],
+      "failpoints": [],
+      "finiteDomain": "One retained catalogue, append-only extensions, exact retries, conflicting definitions, and stale publication attempts.",
+      "invariants": [
+        "PublishedSnapshotsRemainRetained",
+        "PublishedMeaningsNeverChange",
+        "OnePublicationPerOperation",
+        "PartialWritesAreInvisible",
+        "ApplyingEventuallyTerminates"
+      ],
+      "models": [
+        "CatalogPublication",
+        "InventoryOperation",
+        "PublishedHeadCAS",
+        "RepairLiveness"
+      ],
+      "operationFamilies": [
+        "catalog-publication"
+      ],
+      "refinementMode": "bounded-property",
+      "resultProjection": "Published catalogue, replay, immutable revision retention, and rejection properties agree.",
+      "stateProjection": [
+        "published-world catalogue root and event result"
+      ],
+      "status": "covered"
+    },
+    "TRACE-COLLECTION-READ-IDENTITY": {
+      "adapters": [
+        "memory"
+      ],
+      "apiEntries": [
+        "entrypoint.kernel.summarizeInventoryCollection",
+        "facade.collections.activeDefinition",
+        "facade.collections.definition",
+        "facade.collections.summary"
+      ],
+      "evidence": [
+        "test/collections.test.ts"
+      ],
+      "failpoints": [],
+      "finiteDomain": "Two immutable item members, one collection revision, exact per-member positions, and one roll-up summary.",
+      "invariants": [
+        "ReportsMatchExactPhysicalIdentity",
+        "NonMembersNeverAppearInAView",
+        "ActivePointerDoesNotRewriteRetainedViews",
+        "ViewMembershipNeverChangesItemIdentity"
+      ],
+      "models": [
+        "CollectionView"
+      ],
+      "operationFamilies": [
+        "collection-read"
+      ],
+      "refinementMode": "bounded-property",
+      "resultProjection": "Collection definition and summaries preserve exact member identity and never grant substitution authority.",
+      "stateProjection": [
+        "collection revision, member positions, per-member and roll-up summary"
+      ],
+      "status": "covered"
+    },
+    "TRACE-COMPOSITION-OPEN-REVISION": {
+      "adapters": [
+        "memory"
+      ],
+      "apiEntries": [
+        "entrypoint.kernel.createInventoryCompositionOpenEvent",
+        "entrypoint.kernel.inventoryCompositionOpenIntentFingerprint",
+        "facade.compositions.activeDefinition",
+        "facade.compositions.definition",
+        "facade.compositions.forSourcePackagingRevision",
+        "facade.compositions.open"
+      ],
+      "evidence": [
+        "test/composition.test.ts"
+      ],
+      "failpoints": [],
+      "finiteDomain": "Two immutable heterogeneous composition generations, one old-pack transfer/open, exact replay, and invalid opens.",
+      "invariants": [
+        "SourcePackageConservationPerRevision",
+        "ExactComponentProductionFromOpenedRevisions",
+        "ComponentPotentialIsConserved",
+        "OperationIdentityContributesAtMostOneOpen",
+        "PartialWritesStayInvisible"
+      ],
+      "models": [
+        "CompositionRevision",
+        "PackagingIdentity",
+        "ReclassificationConservation",
+        "DualMeasure",
+        "TraceabilityGraph",
+        "InventoryOperation"
+      ],
+      "operationFamilies": [
+        "composition-open",
+        "composition-read"
+      ],
+      "refinementMode": "bounded-property",
+      "resultProjection": "Opened components, source consumption, frozen revision, genealogy, and replay agree.",
+      "stateProjection": [
+        "published positions, event effects, genealogy, retained composition revision"
+      ],
+      "status": "covered"
+    },
+    "TRACE-CONTAINER-COMMAND-ATOMIC": {
+      "adapters": [
+        "memory"
+      ],
+      "apiEntries": [
+        "entrypoint.kernel.createInventoryContainerMetadataEvent",
+        "facade.containers.changeStatus",
+        "facade.containers.clearStatus",
+        "facade.containers.correct",
+        "facade.containers.define",
+        "facade.containers.issue",
+        "facade.containers.scrap",
+        "facade.containers.transfer"
+      ],
+      "evidence": [
+        "test/containers.test.ts"
+      ],
+      "failpoints": [],
+      "finiteDomain": "Nested finite containers, exact package/serial rows, one whole-container transfer, and blocked reservation case.",
+      "invariants": [
+        "ResourceAccounting",
+        "ContainmentIsAcyclic",
+        "AggregationNeverConsumesIdentity",
+        "ReportMatchesCurrentTruth",
+        "OriginalHistoryIsNeverErased"
+      ],
+      "models": [
+        "ResourceDimensions",
+        "TraceabilityGraph",
+        "UseByReservation",
+        "CorrectionHistory",
+        "InventoryOperation"
+      ],
+      "operationFamilies": [
+        "container-command"
+      ],
+      "refinementMode": "bounded-property",
+      "resultProjection": "Whole-container movement preserves every contained physical identity and fails atomically when bound.",
+      "stateProjection": [
+        "contained positions, container metadata, event result"
+      ],
+      "status": "covered"
+    },
+    "TRACE-CORRECTION-TRANSFORMATION-PACKAGING": {
+      "adapters": [
+        "memory"
+      ],
+      "apiEntries": [
+        "entrypoint.kernel.createInventoryCorrectionEvent",
+        "entrypoint.kernel.createInventoryPackEvent",
+        "entrypoint.kernel.createInventoryTransformationEvent",
+        "entrypoint.kernel.createInventoryUnpackEvent",
+        "facade.stock.correct",
+        "facade.stock.pack",
+        "facade.stock.transform",
+        "facade.stock.unpack"
+      ],
+      "evidence": [
+        "test/traceability-corrections.test.ts"
+      ],
+      "failpoints": [],
+      "finiteDomain": "Finite issue/transfer/pack/unpack/transform/scrap roots with append-only correction chains.",
+      "invariants": [
+        "OriginalHistoryIsNeverErased",
+        "PartialCorrectionDoesNotRewriteCurrentTruth",
+        "CorrectedVisibilityRequiresBothNewFacts",
+        "VisibleProjectionMatchesLogicalRecordVersion",
+        "PartialWritesStayInvisible",
+        "ConsumedIdentityIsNotStillActive",
+        "ProducedIdentityWasCreatedOnce",
+        "GenealogyOnlyPointsFromConsumedToProduced",
+        "ItemQuantityConserved",
+        "SecondaryMeasureHasExplicitCause",
+        "PhysicalQuantityConserved",
+        "EveryIntact20BoxIsWhole",
+        "EveryIntact24BoxIsWhole",
+        "PackagingBucketConserved",
+        "PrimaryQuantityConserved"
+      ],
+      "models": [
+        "CorrectionHistory",
+        "InventoryOperation",
+        "PublishedHeadCAS",
+        "TraceabilityGraph",
+        "ReclassificationConservation",
+        "DualMeasure",
+        "PackagingIdentity"
+      ],
+      "operationFamilies": [
+        "correction",
+        "transformation",
+        "packaging-reclassification"
+      ],
+      "refinementMode": "bounded-property",
+      "resultProjection": "Corrections retain original history; packaging/transformation conserve declared vectors and genealogy.",
+      "stateProjection": [
+        "published event history, current positions, traceability relations"
+      ],
+      "status": "covered"
+    },
+    "TRACE-COUNT-ABSOLUTE-OBSERVATION-MOVEMENT": {
+      "adapters": [
+        "memory"
+      ],
+      "apiEntries": [
+        "class.storage.InMemoryInventoryDurableStorage.abort",
+        "class.storage.InMemoryInventoryDurableStorage.abortMigrationManifest",
+        "class.storage.InMemoryInventoryDurableStorage.begin",
+        "class.storage.InMemoryInventoryDurableStorage.beginMigrationManifest",
+        "class.storage.InMemoryInventoryDurableStorage.complete",
+        "class.storage.InMemoryInventoryDurableStorage.completeMigrationManifest",
+        "class.storage.InMemoryInventoryDurableStorage.listApplyingMigrationManifests",
+        "class.storage.InMemoryInventoryDurableStorage.listApplyingOperations",
+        "class.storage.InMemoryInventoryDurableStorage.readMigrationManifest",
+        "class.storage.InMemoryInventoryDurableStorage.readOperation",
+        "class.storage.InMemoryInventoryDurableStorage.readWorld",
+        "class.storage.InMemoryInventoryDurableStorage.writeCounts",
+        "class.storage.InMemoryInventoryDurableStorage.writeEvent",
+        "class.storage.InMemoryInventoryDurableStorage.writeMigrationWorld",
+        "class.storage.InMemoryInventoryDurableStorage.writeProjection",
+        "class.storage.InMemoryInventoryDurableStorage.writeReceipt",
+        "class.storage.InMemoryInventoryDurableStorage.writeReservations",
+        "entrypoint.kernel.abandonInventoryCount",
+        "entrypoint.kernel.completeInventoryCount",
+        "entrypoint.kernel.createInventoryCountReconciliationPlan",
+        "entrypoint.kernel.emptyInventoryCountBook",
+        "entrypoint.kernel.inventoryPositionEffectiveUseBy",
+        "entrypoint.kernel.inventoryPositionIsExpiredAt",
+        "entrypoint.kernel.observeInventoryCount",
+        "entrypoint.kernel.startInventoryCount",
+        "entrypoint.kernel.summarizeInventoryAvailability",
+        "entrypoint.root.findInventoryEventByOperationId",
+        "entrypoint.root.inventoryPositionEffectiveUseBy",
+        "entrypoint.root.inventoryPositionIsExpiredAt",
+        "entrypoint.root.readPublishedInventoryCatalog",
+        "entrypoint.root.readPublishedInventorySnapshot",
+        "entrypoint.root.summarizeInventoryAvailability",
+        "entrypoint.storage.InMemoryInventoryDurableStorage",
+        "entrypoint.storage.InventoryApplyingOperationConflictError",
+        "entrypoint.storage.InventoryWorldRevisionConflictError",
+        "entrypoint.storage.commitInventoryOperation",
+        "entrypoint.storage.createInMemoryInventoryDurableStorage",
+        "entrypoint.storage.repairInventoryDurableOperations",
+        "entrypoint.storage.resumeInventoryDurableOperation",
+        "entrypoint.storage.validateInventoryDurableOperationBeginInput",
+        "entrypoint.storage.validateInventoryMigrationManifestBeginInput",
+        "facade.counts.abandon",
+        "facade.counts.observe",
+        "facade.counts.reconcile",
+        "facade.counts.replaceAbsolute",
+        "facade.counts.start",
+        "facade.read.availability",
+        "facade.read.container",
+        "facade.read.containers",
+        "facade.read.count",
+        "facade.read.event",
+        "facade.read.lot",
+        "facade.read.lots",
+        "facade.read.packagingRevisions",
+        "facade.read.planAllocation",
+        "facade.read.positions",
+        "facade.read.reservation",
+        "facade.read.reservationFeasibility",
+        "facade.read.summary",
+        "facade.read.world",
+        "storage-port.abort",
+        "storage-port.abortMigrationManifest",
+        "storage-port.begin",
+        "storage-port.beginMigrationManifest",
+        "storage-port.complete",
+        "storage-port.completeMigrationManifest",
+        "storage-port.listApplyingMigrationManifests",
+        "storage-port.listApplyingOperations",
+        "storage-port.readMigrationManifest",
+        "storage-port.readOperation",
+        "storage-port.readWorld",
+        "storage-port.writeCounts",
+        "storage-port.writeEvent",
+        "storage-port.writeMigrationWorld",
+        "storage-port.writeProjection",
+        "storage-port.writeReceipt",
+        "storage-port.writeReservations"
+      ],
+      "evidence": [
+        "test/formal-storage-refinement-suite.ts",
+        "test/formal-storage-refinement.test.ts"
+      ],
+      "failpoints": [
+        "reconcile-publish-after",
+        "repair-resume"
+      ],
+      "finiteDomain": "One exact lot counted four to three while other movement remains intact.",
+      "invariants": [
+        "RecordedMovementAccounting",
+        "CompletedCountMatchesPhysicalReality",
+        "PartialWritesStayInvisible",
+        "OnePublicationPerOperation"
+      ],
+      "models": [
+        "PhysicalCount",
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "operationFamilies": [
+        "count",
+        "durable-protocol",
+        "read-current"
+      ],
+      "refinementMode": "state-result-refinement",
+      "resultProjection": "Lifecycle, discrepancy, target, revision, and replay agree.",
+      "stateProjection": [
+        "abstractInventoryState",
+        "abstractOperationResult",
+        "assertAbstractCountInvariants"
+      ],
+      "status": "covered"
+    },
+    "TRACE-DIMENSION-RECLASSIFICATION-CONSERVATION": {
+      "adapters": [
+        "memory"
+      ],
+      "apiEntries": [
+        "entrypoint.kernel.applyInventoryCommittedEvent",
+        "entrypoint.kernel.compareCommittedEventSequence",
+        "entrypoint.kernel.createInventoryReclassificationEvent",
+        "entrypoint.kernel.createInventoryReclassificationManyEvent",
+        "entrypoint.kernel.emptyInventoryProjectionState",
+        "entrypoint.kernel.findInventoryPositions",
+        "entrypoint.kernel.inventoryEventsInRecordSequence",
+        "entrypoint.kernel.projectInventoryEvents",
+        "facade.stock.changeCustodian",
+        "facade.stock.changeDispositionAuthority",
+        "facade.stock.changeOwner",
+        "facade.stock.changeQualifiedDimension",
+        "facade.stock.changeStatus",
+        "facade.stock.clearCustodian",
+        "facade.stock.clearDispositionAuthority",
+        "facade.stock.clearOwner",
+        "facade.stock.clearQualifiedDimension",
+        "facade.stock.clearStatus",
+        "facade.stock.placeInContainer",
+        "facade.stock.reclassifyMany",
+        "facade.stock.removeFromContainer"
+      ],
+      "evidence": [
+        "test/reclassification.test.ts"
+      ],
+      "failpoints": [],
+      "finiteDomain": "Finite one-to-many and many-to-one status/owner/custodian/dimension reclassifications with reservation blockers.",
+      "invariants": [
+        "ResourceAccounting",
+        "ActiveTokensHaveExactlyOneRealLocation",
+        "ItemQuantityConserved",
+        "PackagingBucketConserved",
+        "PartialWritesStayInvisible"
+      ],
+      "models": [
+        "ResourceDimensions",
+        "ReclassificationConservation",
+        "InventoryOperation"
+      ],
+      "operationFamilies": [
+        "dimension-reclassification"
+      ],
+      "refinementMode": "bounded-property",
+      "resultProjection": "Declared dimensions change while item/package/measurement totals remain conserved.",
+      "stateProjection": [
+        "resource-key buckets and event effects"
+      ],
+      "status": "covered"
+    },
+    "TRACE-FUNGIBILITY-MOVEMENT-IDENTITY": {
+      "adapters": [
+        "memory"
+      ],
+      "apiEntries": [
+        "entrypoint.kernel.inventoryFungibilityScopeIdentity",
+        "entrypoint.kernel.normalizeInventoryFungibilityScope",
+        "entrypoint.kernel.planInventoryFungibilityAllocation",
+        "entrypoint.kernel.summarizeInventoryFungibility",
+        "entrypoint.root.inventoryFungibilityScopeIdentity",
+        "entrypoint.root.normalizeInventoryFungibilityScope",
+        "entrypoint.root.planInventoryFungibilityAllocation",
+        "entrypoint.root.summarizeInventoryFungibility",
+        "facade.fungibility.activeDefinition",
+        "facade.fungibility.definition",
+        "facade.fungibility.issue",
+        "facade.fungibility.plan",
+        "facade.fungibility.scrap",
+        "facade.fungibility.summary",
+        "facade.fungibility.transfer"
+      ],
+      "evidence": [
+        "test/fungibility.test.ts"
+      ],
+      "failpoints": [],
+      "finiteDomain": "Revision-frozen pool issue and transfer over finite member items/lots with replay and reservation conflicts.",
+      "invariants": [
+        "PoolViewsConserveActualIssuedTokens",
+        "ActiveAllocationsRemainDisjoint",
+        "IssuedTokensCannotBackActiveClaims",
+        "AllActiveClaimsRemainFeasible",
+        "OrdinaryAllocationWasUsable",
+        "PartialWritesStayInvisible"
+      ],
+      "models": [
+        "FungibilityPool",
+        "ReservationScope",
+        "ReservationSafety",
+        "UseByReservation",
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "operationFamilies": [
+        "fungibility-movement",
+        "fungibility-read"
+      ],
+      "refinementMode": "bounded-property",
+      "resultProjection": "Member identity, exact basis contribution, conservation, reservation protection, and replay agree.",
+      "stateProjection": [
+        "member positions, pool contribution, event and allocation results"
+      ],
+      "status": "covered"
+    },
+    "TRACE-ISSUE-MANY-FEFO-SHORTFALL": {
+      "adapters": [
+        "memory"
+      ],
+      "apiEntries": [
+        "entrypoint.kernel.allocateInventory",
+        "entrypoint.kernel.assertCanonicalInventoryTime",
+        "entrypoint.kernel.commitInventoryEvent",
+        "entrypoint.kernel.compareInventoryAllocationCandidates",
+        "entrypoint.kernel.createInventoryCatalogPublicationEvent",
+        "entrypoint.kernel.defineInventoryEvent",
+        "entrypoint.kernel.inventoryAmountForPrimaryAllocation",
+        "entrypoint.kernel.inventoryEventIdForOperation",
+        "entrypoint.kernel.inventoryEventIntentFingerprint",
+        "entrypoint.kernel.planInventoryAllocation",
+        "entrypoint.root.combineInventoryAmountLineGroups",
+        "entrypoint.root.combineInventoryPolicyBatchRequestGroups",
+        "entrypoint.root.defineInventoryAmountLineGroup",
+        "entrypoint.root.defineInventoryPolicyBatchRequestGroup",
+        "entrypoint.root.inventoryAmountForPrimaryAllocation",
+        "entrypoint.root.inventoryPolicyBatchAllocationLinesByReference",
+        "entrypoint.root.planInventoryAllocation",
+        "facade.stock.issueByPolicy",
+        "facade.stock.issueManyByPolicy"
+      ],
+      "evidence": [
+        "test/formal-storage-refinement-suite.ts",
+        "test/formal-storage-refinement.test.ts"
+      ],
+      "failpoints": [
+        "receipt-after",
+        "changed-intent",
+        "shortfall-rejection"
+      ],
+      "finiteDomain": "Two dated lots, one two-unit FEFO issue, one impossible 100-unit request.",
+      "invariants": [
+        "PartialWritesStayInvisible",
+        "NoOverReservation",
+        "OrdinaryAllocationWasUsable",
+        "PhysicalQuantityConserved"
+      ],
+      "models": [
+        "InventoryOperation",
+        "ReservationSafety",
+        "UseByReservation",
+        "PackagingIdentity"
+      ],
+      "operationFamilies": [
+        "stock-policy-issue",
+        "allocation-helper",
+        "operation-result-helper"
+      ],
+      "refinementMode": "state-result-refinement",
+      "resultProjection": "Lot choice, allocation, decrement, rejection, and replay agree.",
+      "stateProjection": [
+        "abstractInventoryState",
+        "abstractOperationResult"
+      ],
+      "status": "covered"
+    },
+    "TRACE-LOT-METADATA-CORRECTION": {
+      "adapters": [
+        "memory"
+      ],
+      "apiEntries": [
+        "entrypoint.kernel.createInventoryLotMetadataEvent",
+        "facade.lots.correct",
+        "facade.lots.define"
+      ],
+      "evidence": [
+        "test/lots.test.ts"
+      ],
+      "failpoints": [],
+      "finiteDomain": "One item-scoped lot master, append-only metadata correction, exact replay, and cross-item rejection.",
+      "invariants": [
+        "ReportMatchesCurrentTruth",
+        "OrdinaryAllocationWasUsable",
+        "OriginalHistoryIsNeverErased",
+        "VisibleProjectionMatchesLogicalRecordVersion"
+      ],
+      "models": [
+        "UseByReservation",
+        "CorrectionHistory",
+        "InventoryOperation"
+      ],
+      "operationFamilies": [
+        "lot-command"
+      ],
+      "refinementMode": "bounded-property",
+      "resultProjection": "Lot identity, effective metadata, correction provenance, and replay agree.",
+      "stateProjection": [
+        "effective lot master and retained correction event"
+      ],
+      "status": "covered"
+    },
+    "TRACE-MIGRATION-PLAN-PUBLISH-REPAIR": {
+      "adapters": [
+        "memory"
+      ],
+      "apiEntries": [
+        "class.storage.InMemoryInventoryDurableStorage.abort",
+        "class.storage.InMemoryInventoryDurableStorage.abortMigrationManifest",
+        "class.storage.InMemoryInventoryDurableStorage.begin",
+        "class.storage.InMemoryInventoryDurableStorage.beginMigrationManifest",
+        "class.storage.InMemoryInventoryDurableStorage.complete",
+        "class.storage.InMemoryInventoryDurableStorage.completeMigrationManifest",
+        "class.storage.InMemoryInventoryDurableStorage.listApplyingMigrationManifests",
+        "class.storage.InMemoryInventoryDurableStorage.listApplyingOperations",
+        "class.storage.InMemoryInventoryDurableStorage.readMigrationManifest",
+        "class.storage.InMemoryInventoryDurableStorage.readOperation",
+        "class.storage.InMemoryInventoryDurableStorage.readWorld",
+        "class.storage.InMemoryInventoryDurableStorage.writeCounts",
+        "class.storage.InMemoryInventoryDurableStorage.writeEvent",
+        "class.storage.InMemoryInventoryDurableStorage.writeMigrationWorld",
+        "class.storage.InMemoryInventoryDurableStorage.writeProjection",
+        "class.storage.InMemoryInventoryDurableStorage.writeReceipt",
+        "class.storage.InMemoryInventoryDurableStorage.writeReservations",
+        "entrypoint.migrations.applyInventoryMigrationPlan",
+        "entrypoint.migrations.defineInventoryLegacyQuery",
+        "entrypoint.migrations.defineInventoryMigration",
+        "entrypoint.migrations.defineInventoryMigrationPlugin",
+        "entrypoint.migrations.defineInventoryMigrationSourcePlugin",
+        "entrypoint.migrations.dryRunInventoryMigration",
+        "entrypoint.migrations.inventoryMigrationPositionsMatch",
+        "entrypoint.migrations.inventoryMigrationProblem",
+        "entrypoint.migrations.inventoryMigrationSnapshotSupersededDisposition",
+        "entrypoint.migrations.repairInventoryMigrationManifests",
+        "entrypoint.migrations.resumeInventoryMigrationManifest",
+        "entrypoint.storage.InMemoryInventoryDurableStorage",
+        "entrypoint.storage.InventoryApplyingOperationConflictError",
+        "entrypoint.storage.InventoryWorldRevisionConflictError",
+        "entrypoint.storage.commitInventoryOperation",
+        "entrypoint.storage.createInMemoryInventoryDurableStorage",
+        "entrypoint.storage.repairInventoryDurableOperations",
+        "entrypoint.storage.resumeInventoryDurableOperation",
+        "entrypoint.storage.validateInventoryDurableOperationBeginInput",
+        "entrypoint.storage.validateInventoryMigrationManifestBeginInput",
+        "storage-port.abort",
+        "storage-port.abortMigrationManifest",
+        "storage-port.begin",
+        "storage-port.beginMigrationManifest",
+        "storage-port.complete",
+        "storage-port.completeMigrationManifest",
+        "storage-port.listApplyingMigrationManifests",
+        "storage-port.listApplyingOperations",
+        "storage-port.readMigrationManifest",
+        "storage-port.readOperation",
+        "storage-port.readWorld",
+        "storage-port.writeCounts",
+        "storage-port.writeEvent",
+        "storage-port.writeMigrationWorld",
+        "storage-port.writeProjection",
+        "storage-port.writeReceipt",
+        "storage-port.writeReservations"
+      ],
+      "evidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-storage-refinement-suite.ts"
+      ],
+      "failpoints": [
+        "migration-world-after",
+        "migration-publish-after",
+        "migration-compact-before"
+      ],
+      "finiteDomain": "One catalogue, one opening, one manifest, changed plan, three crashes.",
+      "invariants": [
+        "PublishedSnapshotsRemainRetained",
+        "PartialWritesAreInvisible",
+        "ApplyingEventuallyTerminates",
+        "PublishedWorldMatchesFrozenPlan"
+      ],
+      "models": [
+        "CatalogPublication",
+        "PublishedHeadCAS",
+        "RepairLiveness",
+        "InventoryOperation"
+      ],
+      "operationFamilies": [
+        "migration-definition",
+        "migration-publication",
+        "durable-protocol"
+      ],
+      "refinementMode": "state-result-refinement",
+      "resultProjection": "Dry-run, publication, replay, rejection, repair, and terminal manifest agree.",
+      "stateProjection": [
+        "abstractMigrationState",
+        "abstractInventoryState"
+      ],
+      "status": "covered"
+    },
+    "TRACE-PROJECTION-INDEX-SCALE-LOCALITY": {
+      "adapters": [
+        "memory"
+      ],
+      "apiEntries": [
+        "entrypoint.kernel.allocateInventory",
+        "entrypoint.kernel.compareInventoryAllocationCandidates",
+        "entrypoint.kernel.createInventoryOpeningEvent",
+        "entrypoint.kernel.createInventoryReceiptEvent",
+        "entrypoint.kernel.createInventoryReceiptManyEvent",
+        "entrypoint.kernel.inventoryAmountForPrimaryAllocation",
+        "entrypoint.kernel.inventoryPositionEffectiveUseBy",
+        "entrypoint.kernel.inventoryPositionIsExpiredAt",
+        "entrypoint.kernel.planInventoryAllocation",
+        "entrypoint.kernel.summarizeInventoryAvailability",
+        "entrypoint.root.findInventoryEventByOperationId",
+        "entrypoint.root.inventoryAmountForPrimaryAllocation",
+        "entrypoint.root.inventoryPositionEffectiveUseBy",
+        "entrypoint.root.inventoryPositionIsExpiredAt",
+        "entrypoint.root.planInventoryAllocation",
+        "entrypoint.root.readPublishedInventoryCatalog",
+        "entrypoint.root.readPublishedInventorySnapshot",
+        "entrypoint.root.summarizeInventoryAvailability",
+        "facade.read.availability",
+        "facade.read.container",
+        "facade.read.containers",
+        "facade.read.count",
+        "facade.read.event",
+        "facade.read.lot",
+        "facade.read.lots",
+        "facade.read.packagingRevisions",
+        "facade.read.planAllocation",
+        "facade.read.positions",
+        "facade.read.reservation",
+        "facade.read.reservationFeasibility",
+        "facade.read.summary",
+        "facade.read.world",
+        "facade.stock.receive",
+        "facade.stock.receiveMany"
+      ],
+      "evidence": [
+        "test/projection-index-scale.test.ts"
+      ],
+      "failpoints": [],
+      "finiteDomain": "One 1,000-lot baseline and one 5,000-lot item, exact indexed reads and FIFO allocation.",
+      "invariants": [
+        "PublishedWorldMatchesFrozenPlan",
+        "VisibleQuantityConserved",
+        "ResourceAccounting"
+      ],
+      "models": [
+        "InventoryOperation",
+        "ResourceDimensions"
+      ],
+      "operationFamilies": [
+        "stock-receipt",
+        "read-current",
+        "allocation-helper"
+      ],
+      "refinementMode": "bounded-property",
+      "resultProjection": "Published indexes rebuild exactly and write/read/allocation growth remains bounded near-linear.",
+      "stateProjection": [
+        "abstractInventoryState"
+      ],
+      "status": "covered"
+    },
+    "TRACE-PUBLIC-HELPER-DIRECT-EXECUTION": {
+      "adapters": [
+        "memory"
+      ],
+      "apiEntries": [
+        "class.kernel.InventoryCatalog.activeCollection",
+        "class.kernel.InventoryCatalog.activeComposition",
+        "class.kernel.InventoryCatalog.activeFungibilityPool",
+        "class.kernel.InventoryCatalog.activeItem",
+        "class.kernel.InventoryCatalog.activeTransformation",
+        "class.kernel.InventoryCatalog.collectionItemRevisionIds",
+        "class.kernel.InventoryCatalog.collectionRevision",
+        "class.kernel.InventoryCatalog.compositionForSourcePackagingRevision",
+        "class.kernel.InventoryCatalog.compositionRevision",
+        "class.kernel.InventoryCatalog.fungibilityRevision",
+        "class.kernel.InventoryCatalog.itemRevision",
+        "class.kernel.InventoryCatalog.itemRevisionsForItem",
+        "class.kernel.InventoryCatalog.measurementAxis",
+        "class.kernel.InventoryCatalog.packagingRevision",
+        "class.kernel.InventoryCatalog.transformationRevision",
+        "class.kernel.InventoryCatalog.transformationsBetweenRevisions",
+        "class.kernel.InventoryCatalog.transformationsForItem",
+        "class.kernel.InventoryCatalog.transformationsFromRevision",
+        "class.kernel.InventoryCatalog.transformationsToRevision",
+        "class.root.InventoryCatalog.activeCollection",
+        "class.root.InventoryCatalog.activeComposition",
+        "class.root.InventoryCatalog.activeFungibilityPool",
+        "class.root.InventoryCatalog.activeItem",
+        "class.root.InventoryCatalog.activeTransformation",
+        "class.root.InventoryCatalog.collectionItemRevisionIds",
+        "class.root.InventoryCatalog.collectionRevision",
+        "class.root.InventoryCatalog.compositionForSourcePackagingRevision",
+        "class.root.InventoryCatalog.compositionRevision",
+        "class.root.InventoryCatalog.fungibilityRevision",
+        "class.root.InventoryCatalog.itemRevision",
+        "class.root.InventoryCatalog.itemRevisionsForItem",
+        "class.root.InventoryCatalog.measurementAxis",
+        "class.root.InventoryCatalog.packagingRevision",
+        "class.root.InventoryCatalog.transformationRevision",
+        "class.root.InventoryCatalog.transformationsBetweenRevisions",
+        "class.root.InventoryCatalog.transformationsForItem",
+        "class.root.InventoryCatalog.transformationsFromRevision",
+        "class.root.InventoryCatalog.transformationsToRevision",
+        "class.storage.InMemoryInventoryDurableStorage.abort",
+        "class.storage.InMemoryInventoryDurableStorage.abortMigrationManifest",
+        "class.storage.InMemoryInventoryDurableStorage.begin",
+        "class.storage.InMemoryInventoryDurableStorage.beginMigrationManifest",
+        "class.storage.InMemoryInventoryDurableStorage.complete",
+        "class.storage.InMemoryInventoryDurableStorage.completeMigrationManifest",
+        "class.storage.InMemoryInventoryDurableStorage.listApplyingMigrationManifests",
+        "class.storage.InMemoryInventoryDurableStorage.listApplyingOperations",
+        "class.storage.InMemoryInventoryDurableStorage.readMigrationManifest",
+        "class.storage.InMemoryInventoryDurableStorage.readOperation",
+        "class.storage.InMemoryInventoryDurableStorage.readWorld",
+        "class.storage.InMemoryInventoryDurableStorage.writeCounts",
+        "class.storage.InMemoryInventoryDurableStorage.writeEvent",
+        "class.storage.InMemoryInventoryDurableStorage.writeMigrationWorld",
+        "class.storage.InMemoryInventoryDurableStorage.writeProjection",
+        "class.storage.InMemoryInventoryDurableStorage.writeReceipt",
+        "class.storage.InMemoryInventoryDurableStorage.writeReservations",
+        "entrypoint.kernel.InventoryCatalog",
+        "entrypoint.kernel.addInventoryMeasurements",
+        "entrypoint.kernel.addQuantity",
+        "entrypoint.kernel.applyInventoryTraceabilityChanges",
+        "entrypoint.kernel.assertCanonicalInventoryTime",
+        "entrypoint.kernel.assertInventoryAmountSum",
+        "entrypoint.kernel.assertInventoryCatalogRetainsSnapshot",
+        "entrypoint.kernel.assertInventoryIdentity",
+        "entrypoint.kernel.assertInventoryMeasurementsFollowPrimarySign",
+        "entrypoint.kernel.assertMeasurementsMatchItem",
+        "entrypoint.kernel.assertPositionInsideSelector",
+        "entrypoint.kernel.assertPositionMatchesItem",
+        "entrypoint.kernel.assertSameUnit",
+        "entrypoint.kernel.assertWholeMeasurementMultiple",
+        "entrypoint.kernel.buildContainmentChildContainerIndex",
+        "entrypoint.kernel.commitInventoryEvent",
+        "entrypoint.kernel.compareQuantity",
+        "entrypoint.kernel.convertQuantityByReferenceExact",
+        "entrypoint.kernel.convertQuantityExact",
+        "entrypoint.kernel.createInventoryCatalogPublicationEvent",
+        "entrypoint.kernel.createInventoryTraceabilityEvent",
+        "entrypoint.kernel.defineInventoryCatalog",
+        "entrypoint.kernel.defineInventoryCollection",
+        "entrypoint.kernel.defineInventoryComposition",
+        "entrypoint.kernel.defineInventoryEvent",
+        "entrypoint.kernel.defineInventoryFungibilityPool",
+        "entrypoint.kernel.defineInventoryItem",
+        "entrypoint.kernel.defineInventoryPackaging",
+        "entrypoint.kernel.defineInventoryTransformation",
+        "entrypoint.kernel.defineScalarInventoryFungibilityPool",
+        "entrypoint.kernel.defineScalarInventoryItem",
+        "entrypoint.kernel.defineScalarInventoryPackaging",
+        "entrypoint.kernel.emptyInventoryCatalogSnapshot",
+        "entrypoint.kernel.emptyInventoryTraceabilityState",
+        "entrypoint.kernel.everythingInInventoryStockSelector",
+        "entrypoint.kernel.extendInventoryCatalog",
+        "entrypoint.kernel.findInventoryEventByOperationId",
+        "entrypoint.kernel.integerAtDecimals",
+        "entrypoint.kernel.inventoryAmountFromUnit",
+        "entrypoint.kernel.inventoryCatalogFromSnapshot",
+        "entrypoint.kernel.inventoryCatalogSnapshot",
+        "entrypoint.kernel.inventoryContainerIdentity",
+        "entrypoint.kernel.inventoryEventIdForOperation",
+        "entrypoint.kernel.inventoryEventIntentFingerprint",
+        "entrypoint.kernel.inventoryGenealogyAncestors",
+        "entrypoint.kernel.inventoryIntentFingerprint",
+        "entrypoint.kernel.inventoryLotIdentity",
+        "entrypoint.kernel.inventoryMeasuredAmountFromVector",
+        "entrypoint.kernel.inventoryMeasurement",
+        "entrypoint.kernel.inventoryMeasurementAt",
+        "entrypoint.kernel.inventoryMeasurementVector",
+        "entrypoint.kernel.inventoryMeasurementsAreZero",
+        "entrypoint.kernel.inventoryMeasurementsEqual",
+        "entrypoint.kernel.inventoryMeasurementsFingerprint",
+        "entrypoint.kernel.inventoryMetadataFingerprint",
+        "entrypoint.kernel.inventoryMetadataValueFingerprint",
+        "entrypoint.kernel.inventorySerialIdentity",
+        "entrypoint.kernel.inventoryStockPositionIdentity",
+        "entrypoint.kernel.inventoryStockPositionMatchesNormalizedSelector",
+        "entrypoint.kernel.inventoryStockPositionMatchesSelector",
+        "entrypoint.kernel.inventoryStockSelector",
+        "entrypoint.kernel.inventoryStockSelectorIdentity",
+        "entrypoint.kernel.inventoryStockSelectorIsSubset",
+        "entrypoint.kernel.inventoryTraceabilityNodeIdentity",
+        "entrypoint.kernel.inventoryTraceabilityRelationIdentity",
+        "entrypoint.kernel.inventoryTraceabilityRelationsOfKind",
+        "entrypoint.kernel.leastCommonQuantityMultiple",
+        "entrypoint.kernel.listInventoryPackagingRevisions",
+        "entrypoint.kernel.measuredStockAmount",
+        "entrypoint.kernel.multiplyInventoryMeasurementsByWholeNumber",
+        "entrypoint.kernel.multiplyQuantityByFactor",
+        "entrypoint.kernel.multiplyQuantityByWholeNumber",
+        "entrypoint.kernel.negateInventoryMeasurements",
+        "entrypoint.kernel.negateQuantity",
+        "entrypoint.kernel.nonNegativeInventoryMeasurements",
+        "entrypoint.kernel.normalizeInventoryStockPositionKey",
+        "entrypoint.kernel.normalizeInventoryStockSelector",
+        "entrypoint.kernel.packageAmount",
+        "entrypoint.kernel.parseQuantity",
+        "entrypoint.kernel.positiveInventoryMeasurements",
+        "entrypoint.kernel.positiveQuantity",
+        "entrypoint.kernel.quantity",
+        "entrypoint.kernel.quantityEq",
+        "entrypoint.kernel.quantityIsWholeMultipleOf",
+        "entrypoint.kernel.quantityRatio",
+        "entrypoint.kernel.quantityToDecimalString",
+        "entrypoint.kernel.quantityWholeMultipleCount",
+        "entrypoint.kernel.resolveInventoryAmount",
+        "entrypoint.kernel.safeNumber",
+        "entrypoint.kernel.scalarInventoryMeasurements",
+        "entrypoint.kernel.stockAmount",
+        "entrypoint.kernel.subtractInventoryMeasurements",
+        "entrypoint.kernel.subtractQuantity",
+        "entrypoint.kernel.summarizeInventoryStock",
+        "entrypoint.kernel.unitCode",
+        "entrypoint.kernel.zeroInventoryMeasurements",
+        "entrypoint.kernel.zeroQuantity",
+        "entrypoint.root.InventoryCatalog",
+        "entrypoint.root.InventoryOnce",
+        "entrypoint.root.addInventoryMeasurements",
+        "entrypoint.root.addQuantity",
+        "entrypoint.root.assertInventoryAmountSum",
+        "entrypoint.root.assertInventoryCatalogRetainsSnapshot",
+        "entrypoint.root.assertInventoryMeasurementsFollowPrimarySign",
+        "entrypoint.root.assertMeasurementsMatchItem",
+        "entrypoint.root.assertPositionMatchesItem",
+        "entrypoint.root.assertSameUnit",
+        "entrypoint.root.assertWholeMeasurementMultiple",
+        "entrypoint.root.combineInventoryAmountLineGroups",
+        "entrypoint.root.combineInventoryPolicyBatchRequestGroups",
+        "entrypoint.root.compareQuantity",
+        "entrypoint.root.convertQuantityByReferenceExact",
+        "entrypoint.root.convertQuantityExact",
+        "entrypoint.root.createInventoryOnce",
+        "entrypoint.root.cutoverInventoryAuthority",
+        "entrypoint.root.defineInventoryAmountLineGroup",
+        "entrypoint.root.defineInventoryCatalog",
+        "entrypoint.root.defineInventoryCollection",
+        "entrypoint.root.defineInventoryComposition",
+        "entrypoint.root.defineInventoryFungibilityPool",
+        "entrypoint.root.defineInventoryItem",
+        "entrypoint.root.defineInventoryPackaging",
+        "entrypoint.root.defineInventoryPolicyBatchRequestGroup",
+        "entrypoint.root.defineInventoryTransformation",
+        "entrypoint.root.defineScalarInventoryFungibilityPool",
+        "entrypoint.root.defineScalarInventoryItem",
+        "entrypoint.root.defineScalarInventoryPackaging",
+        "entrypoint.root.emptyInventoryCatalogSnapshot",
+        "entrypoint.root.everythingInInventoryStockSelector",
+        "entrypoint.root.extendInventoryCatalog",
+        "entrypoint.root.integerAtDecimals",
+        "entrypoint.root.inventoryAmountFromUnit",
+        "entrypoint.root.inventoryAuthorityCutoverResult",
+        "entrypoint.root.inventoryCatalogFromSnapshot",
+        "entrypoint.root.inventoryCatalogSnapshot",
+        "entrypoint.root.inventoryContainerIdentity",
+        "entrypoint.root.inventoryLotIdentity",
+        "entrypoint.root.inventoryMeasuredAmountFromVector",
+        "entrypoint.root.inventoryMeasurement",
+        "entrypoint.root.inventoryMeasurementAt",
+        "entrypoint.root.inventoryMeasurementVector",
+        "entrypoint.root.inventoryMeasurementsAreZero",
+        "entrypoint.root.inventoryMeasurementsEqual",
+        "entrypoint.root.inventoryMeasurementsFingerprint",
+        "entrypoint.root.inventoryPolicyBatchAllocationLinesByReference",
+        "entrypoint.root.inventoryStockSelector",
+        "entrypoint.root.leastCommonQuantityMultiple",
+        "entrypoint.root.listInventoryPackagingRevisions",
+        "entrypoint.root.measuredStockAmount",
+        "entrypoint.root.multiplyInventoryMeasurementsByWholeNumber",
+        "entrypoint.root.multiplyQuantityByFactor",
+        "entrypoint.root.multiplyQuantityByWholeNumber",
+        "entrypoint.root.negateInventoryMeasurements",
+        "entrypoint.root.negateQuantity",
+        "entrypoint.root.nonNegativeInventoryMeasurements",
+        "entrypoint.root.packageAmount",
+        "entrypoint.root.parseQuantity",
+        "entrypoint.root.positiveInventoryMeasurements",
+        "entrypoint.root.positiveQuantity",
+        "entrypoint.root.quantity",
+        "entrypoint.root.quantityEq",
+        "entrypoint.root.quantityIsWholeMultipleOf",
+        "entrypoint.root.quantityRatio",
+        "entrypoint.root.quantityToDecimalString",
+        "entrypoint.root.quantityWholeMultipleCount",
+        "entrypoint.root.resolveInventoryAmount",
+        "entrypoint.root.safeNumber",
+        "entrypoint.root.scalarInventoryMeasurements",
+        "entrypoint.root.stockAmount",
+        "entrypoint.root.subtractInventoryMeasurements",
+        "entrypoint.root.subtractQuantity",
+        "entrypoint.root.summarizeInventoryStock",
+        "entrypoint.root.unitCode",
+        "entrypoint.root.zeroInventoryMeasurements",
+        "entrypoint.root.zeroQuantity",
+        "entrypoint.storage.InMemoryInventoryDurableStorage",
+        "entrypoint.storage.InventoryApplyingOperationConflictError",
+        "entrypoint.storage.InventoryWorldRevisionConflictError",
+        "entrypoint.storage.applyInventoryCountBookDelta",
+        "entrypoint.storage.applyInventoryReservationBookDelta",
+        "entrypoint.storage.commitInventoryOperation",
+        "entrypoint.storage.createInMemoryInventoryDurableStorage",
+        "entrypoint.storage.createInventoryCountBookDelta",
+        "entrypoint.storage.createInventoryReservationBookDelta",
+        "entrypoint.storage.emptyInventoryWorldState",
+        "entrypoint.storage.inventoryCatalogSnapshotDigest",
+        "entrypoint.storage.inventoryCountBookDigest",
+        "entrypoint.storage.inventoryDurableMigrationPlanDigest",
+        "entrypoint.storage.inventoryDurablePlanDigest",
+        "entrypoint.storage.inventoryProjectionDigest",
+        "entrypoint.storage.inventoryReservationBookDigest",
+        "entrypoint.storage.inventoryWorldContentRoots",
+        "entrypoint.storage.materializeInventoryDurableMigrationWorld",
+        "entrypoint.storage.materializeInventoryDurableOperationWorld",
+        "entrypoint.storage.repairInventoryDurableOperations",
+        "entrypoint.storage.resumeInventoryDurableOperation",
+        "entrypoint.storage.validateInventoryDurableOperationBeginInput",
+        "entrypoint.storage.validateInventoryMigrationManifestBeginInput",
+        "facade.traceability.aggregate",
+        "facade.traceability.associate",
+        "facade.traceability.disaggregate",
+        "facade.traceability.disassociate",
+        "storage-port.abort",
+        "storage-port.abortMigrationManifest",
+        "storage-port.begin",
+        "storage-port.beginMigrationManifest",
+        "storage-port.complete",
+        "storage-port.completeMigrationManifest",
+        "storage-port.listApplyingMigrationManifests",
+        "storage-port.listApplyingOperations",
+        "storage-port.readMigrationManifest",
+        "storage-port.readOperation",
+        "storage-port.readWorld",
+        "storage-port.writeCounts",
+        "storage-port.writeEvent",
+        "storage-port.writeMigrationWorld",
+        "storage-port.writeProjection",
+        "storage-port.writeReceipt",
+        "storage-port.writeReservations"
+      ],
+      "evidence": [
+        "test/formal-public-surface-direct.test.ts"
+      ],
+      "failpoints": [],
+      "finiteDomain": "Direct exact-value, collection, amount-group, traceability, durable validation/materialization, and cutover-precondition inputs.",
+      "invariants": [
+        "PrimaryQuantityConserved",
+        "PhysicalQuantityConserved",
+        "ActiveIsRetained",
+        "ContainmentIsAcyclic",
+        "FrozenIntentNeverChanges",
+        "CertificationPrecedesCutover"
+      ],
+      "models": [
+        "DualMeasure",
+        "PackagingIdentity",
+        "CatalogPublication",
+        "TraceabilityGraph",
+        "PublishedHeadCAS",
+        "AuthorityWriterFence"
+      ],
+      "operationFamilies": [
+        "authority-cutover",
+        "catalog-definition",
+        "durable-protocol",
+        "facade-construction",
+        "identity-normalization",
+        "operation-result-helper",
+        "pure-exact-value",
+        "storage-integrity",
+        "traceability"
+      ],
+      "refinementMode": "direct-property",
+      "resultProjection": "Direct public helper outputs or fail-closed validation results agree with the mapped family invariants.",
+      "stateProjection": [
+        "abstractInventoryState",
+        "abstractTraceabilityState",
+        "abstractMigrationState",
+        "abstractAuthorityState"
+      ],
+      "status": "covered"
+    },
+    "TRACE-PUBLIC-SURFACE-CALLGRAPH-COMPLETION": {
+      "adapters": [
+        "memory"
+      ],
+      "apiEntries": [
+        "authority-port.activate",
+        "authority-port.activateGreenfield",
+        "authority-port.admitLegacyWriter",
+        "authority-port.certifyAdapter",
+        "authority-port.claimFence",
+        "authority-port.enterDualRun",
+        "authority-port.enterShadow",
+        "authority-port.markCompatibilityProjectionApplied",
+        "authority-port.markCompatibilityProjectionFailed",
+        "authority-port.read",
+        "authority-port.recordDualRunMismatch",
+        "authority-port.releaseFence",
+        "authority-port.releaseLegacyWriter",
+        "class.root.InventoryAuthorityControl.activate",
+        "class.root.InventoryAuthorityControl.activateGreenfield",
+        "class.root.InventoryAuthorityControl.admitLegacyWriter",
+        "class.root.InventoryAuthorityControl.certifyAdapter",
+        "class.root.InventoryAuthorityControl.claimFence",
+        "class.root.InventoryAuthorityControl.enterDualRun",
+        "class.root.InventoryAuthorityControl.enterShadow",
+        "class.root.InventoryAuthorityControl.markCompatibilityProjectionApplied",
+        "class.root.InventoryAuthorityControl.markCompatibilityProjectionFailed",
+        "class.root.InventoryAuthorityControl.read",
+        "class.root.InventoryAuthorityControl.recordDualRunMismatch",
+        "class.root.InventoryAuthorityControl.releaseFence",
+        "class.root.InventoryAuthorityControl.releaseLegacyWriter",
+        "entrypoint.kernel.abandonInventoryCount",
+        "entrypoint.kernel.addInventoryMeasurements",
+        "entrypoint.kernel.addQuantity",
+        "entrypoint.kernel.allocateInventoryReservation",
+        "entrypoint.kernel.applyInventoryCommittedEvent",
+        "entrypoint.kernel.applyInventoryTraceabilityChanges",
+        "entrypoint.kernel.assertInventoryAmountSum",
+        "entrypoint.kernel.assertInventoryMeasurementsFollowPrimarySign",
+        "entrypoint.kernel.assertInventoryReservationsFeasible",
+        "entrypoint.kernel.assertSameUnit",
+        "entrypoint.kernel.assertWholeMeasurementMultiple",
+        "entrypoint.kernel.buildContainmentChildContainerIndex",
+        "entrypoint.kernel.compareCommittedEventSequence",
+        "entrypoint.kernel.compareQuantity",
+        "entrypoint.kernel.completeInventoryCount",
+        "entrypoint.kernel.convertQuantityByReferenceExact",
+        "entrypoint.kernel.convertQuantityExact",
+        "entrypoint.kernel.createInventoryCompositionOpenEvent",
+        "entrypoint.kernel.createInventoryCountReconciliationPlan",
+        "entrypoint.kernel.createInventoryIssueEvent",
+        "entrypoint.kernel.createInventoryIssueManyEvent",
+        "entrypoint.kernel.createInventoryReclassificationEvent",
+        "entrypoint.kernel.createInventoryReclassificationManyEvent",
+        "entrypoint.kernel.createInventoryReservation",
+        "entrypoint.kernel.createInventoryScrapEvent",
+        "entrypoint.kernel.createInventoryScrapManyEvent",
+        "entrypoint.kernel.createInventoryTraceabilityEvent",
+        "entrypoint.kernel.createInventoryTransferEvent",
+        "entrypoint.kernel.createInventoryTransferManyEvent",
+        "entrypoint.kernel.emptyInventoryCountBook",
+        "entrypoint.kernel.emptyInventoryProjectionState",
+        "entrypoint.kernel.emptyInventoryReservationBook",
+        "entrypoint.kernel.emptyInventoryTraceabilityState",
+        "entrypoint.kernel.expireInventoryReservation",
+        "entrypoint.kernel.findInventoryPositions",
+        "entrypoint.kernel.inspectInventoryReservationFeasibility",
+        "entrypoint.kernel.integerAtDecimals",
+        "entrypoint.kernel.inventoryAmountFromUnit",
+        "entrypoint.kernel.inventoryCompositionOpenIntentFingerprint",
+        "entrypoint.kernel.inventoryEventsInRecordSequence",
+        "entrypoint.kernel.inventoryGenealogyAncestors",
+        "entrypoint.kernel.inventoryMeasuredAmountFromVector",
+        "entrypoint.kernel.inventoryMeasurement",
+        "entrypoint.kernel.inventoryMeasurementAt",
+        "entrypoint.kernel.inventoryMeasurementVector",
+        "entrypoint.kernel.inventoryMeasurementsAreZero",
+        "entrypoint.kernel.inventoryMeasurementsEqual",
+        "entrypoint.kernel.inventoryMeasurementsFingerprint",
+        "entrypoint.kernel.inventoryPositionEffectiveUseBy",
+        "entrypoint.kernel.inventoryPositionIsExpiredAt",
+        "entrypoint.kernel.inventoryReservationIsActiveAt",
+        "entrypoint.kernel.inventoryReservationsAt",
+        "entrypoint.kernel.inventoryTraceabilityRelationIdentity",
+        "entrypoint.kernel.inventoryTraceabilityRelationsOfKind",
+        "entrypoint.kernel.leastCommonQuantityMultiple",
+        "entrypoint.kernel.markInventoryReservationConsumed",
+        "entrypoint.kernel.measuredStockAmount",
+        "entrypoint.kernel.multiplyInventoryMeasurementsByWholeNumber",
+        "entrypoint.kernel.multiplyQuantityByFactor",
+        "entrypoint.kernel.multiplyQuantityByWholeNumber",
+        "entrypoint.kernel.negateInventoryMeasurements",
+        "entrypoint.kernel.negateQuantity",
+        "entrypoint.kernel.nonNegativeInventoryMeasurements",
+        "entrypoint.kernel.observeInventoryCount",
+        "entrypoint.kernel.packageAmount",
+        "entrypoint.kernel.parseQuantity",
+        "entrypoint.kernel.positiveInventoryMeasurements",
+        "entrypoint.kernel.positiveQuantity",
+        "entrypoint.kernel.projectInventoryEvents",
+        "entrypoint.kernel.quantity",
+        "entrypoint.kernel.quantityEq",
+        "entrypoint.kernel.quantityIsWholeMultipleOf",
+        "entrypoint.kernel.quantityRatio",
+        "entrypoint.kernel.quantityToDecimalString",
+        "entrypoint.kernel.quantityWholeMultipleCount",
+        "entrypoint.kernel.refineInventoryReservation",
+        "entrypoint.kernel.releaseInventoryReservation",
+        "entrypoint.kernel.resolveInventoryAmount",
+        "entrypoint.kernel.safeNumber",
+        "entrypoint.kernel.scalarInventoryMeasurements",
+        "entrypoint.kernel.startInventoryCount",
+        "entrypoint.kernel.stockAmount",
+        "entrypoint.kernel.subtractInventoryMeasurements",
+        "entrypoint.kernel.subtractQuantity",
+        "entrypoint.kernel.summarizeInventoryAvailability",
+        "entrypoint.kernel.unitCode",
+        "entrypoint.kernel.zeroInventoryMeasurements",
+        "entrypoint.kernel.zeroQuantity",
+        "entrypoint.migrations.defineInventoryLegacyQuery",
+        "entrypoint.migrations.defineInventoryMigration",
+        "entrypoint.migrations.defineInventoryMigrationPlugin",
+        "entrypoint.migrations.defineInventoryMigrationSourcePlugin",
+        "entrypoint.migrations.dryRunInventoryMigration",
+        "entrypoint.migrations.inventoryMigrationPositionsMatch",
+        "entrypoint.migrations.inventoryMigrationProblem",
+        "entrypoint.migrations.inventoryMigrationSnapshotSupersededDisposition",
+        "entrypoint.root.InventoryAuthorityControl",
+        "entrypoint.root.addInventoryMeasurements",
+        "entrypoint.root.addQuantity",
+        "entrypoint.root.assertInventoryAmountSum",
+        "entrypoint.root.assertInventoryMeasurementsFollowPrimarySign",
+        "entrypoint.root.assertSameUnit",
+        "entrypoint.root.assertWholeMeasurementMultiple",
+        "entrypoint.root.bootstrapGreenfieldInventoryAuthority",
+        "entrypoint.root.compareQuantity",
+        "entrypoint.root.convertQuantityByReferenceExact",
+        "entrypoint.root.convertQuantityExact",
+        "entrypoint.root.createInventoryAuthorityControl",
+        "entrypoint.root.findInventoryEventByOperationId",
+        "entrypoint.root.integerAtDecimals",
+        "entrypoint.root.inventoryAmountFromUnit",
+        "entrypoint.root.inventoryAuthorityGreenfieldResult",
+        "entrypoint.root.inventoryMeasuredAmountFromVector",
+        "entrypoint.root.inventoryMeasurement",
+        "entrypoint.root.inventoryMeasurementAt",
+        "entrypoint.root.inventoryMeasurementVector",
+        "entrypoint.root.inventoryMeasurementsAreZero",
+        "entrypoint.root.inventoryMeasurementsEqual",
+        "entrypoint.root.inventoryMeasurementsFingerprint",
+        "entrypoint.root.inventoryPositionEffectiveUseBy",
+        "entrypoint.root.inventoryPositionIsExpiredAt",
+        "entrypoint.root.leastCommonQuantityMultiple",
+        "entrypoint.root.measuredStockAmount",
+        "entrypoint.root.multiplyInventoryMeasurementsByWholeNumber",
+        "entrypoint.root.multiplyQuantityByFactor",
+        "entrypoint.root.multiplyQuantityByWholeNumber",
+        "entrypoint.root.negateInventoryMeasurements",
+        "entrypoint.root.negateQuantity",
+        "entrypoint.root.nonNegativeInventoryMeasurements",
+        "entrypoint.root.packageAmount",
+        "entrypoint.root.parseQuantity",
+        "entrypoint.root.positiveInventoryMeasurements",
+        "entrypoint.root.positiveQuantity",
+        "entrypoint.root.quantity",
+        "entrypoint.root.quantityEq",
+        "entrypoint.root.quantityIsWholeMultipleOf",
+        "entrypoint.root.quantityRatio",
+        "entrypoint.root.quantityToDecimalString",
+        "entrypoint.root.quantityWholeMultipleCount",
+        "entrypoint.root.readPublishedInventoryCatalog",
+        "entrypoint.root.readPublishedInventorySnapshot",
+        "entrypoint.root.requireInventoryAuthorityMode",
+        "entrypoint.root.resolveInventoryAmount",
+        "entrypoint.root.safeNumber",
+        "entrypoint.root.scalarInventoryMeasurements",
+        "entrypoint.root.stockAmount",
+        "entrypoint.root.subtractInventoryMeasurements",
+        "entrypoint.root.subtractQuantity",
+        "entrypoint.root.summarizeInventoryAvailability",
+        "entrypoint.root.unitCode",
+        "entrypoint.root.zeroInventoryMeasurements",
+        "entrypoint.root.zeroQuantity",
+        "facade.compositions.open",
+        "facade.counts.abandon",
+        "facade.counts.observe",
+        "facade.counts.reconcile",
+        "facade.counts.replaceAbsolute",
+        "facade.counts.start",
+        "facade.fungibility.issue",
+        "facade.fungibility.scrap",
+        "facade.fungibility.transfer",
+        "facade.read.availability",
+        "facade.read.container",
+        "facade.read.containers",
+        "facade.read.count",
+        "facade.read.event",
+        "facade.read.lot",
+        "facade.read.lots",
+        "facade.read.packagingRevisions",
+        "facade.read.planAllocation",
+        "facade.read.positions",
+        "facade.read.reservation",
+        "facade.read.reservationFeasibility",
+        "facade.read.snapshot",
+        "facade.read.summary",
+        "facade.read.world",
+        "facade.reservations.allocate",
+        "facade.reservations.allocateByPolicy",
+        "facade.reservations.consume",
+        "facade.reservations.consumeAllocated",
+        "facade.reservations.expire",
+        "facade.reservations.refine",
+        "facade.reservations.release",
+        "facade.reservations.reserve",
+        "facade.snapshot.availability",
+        "facade.snapshot.collectionSummary",
+        "facade.snapshot.compositionRevisionsForItem",
+        "facade.snapshot.container",
+        "facade.snapshot.containers",
+        "facade.snapshot.count",
+        "facade.snapshot.event",
+        "facade.snapshot.fungibilitySummary",
+        "facade.snapshot.lot",
+        "facade.snapshot.lots",
+        "facade.snapshot.packagingRevisions",
+        "facade.snapshot.planAllocation",
+        "facade.snapshot.positions",
+        "facade.snapshot.reservation",
+        "facade.snapshot.reservationFeasibility",
+        "facade.snapshot.summary",
+        "facade.stock.changeCustodian",
+        "facade.stock.changeDispositionAuthority",
+        "facade.stock.changeOwner",
+        "facade.stock.changeQualifiedDimension",
+        "facade.stock.changeStatus",
+        "facade.stock.clearCustodian",
+        "facade.stock.clearDispositionAuthority",
+        "facade.stock.clearOwner",
+        "facade.stock.clearQualifiedDimension",
+        "facade.stock.clearStatus",
+        "facade.stock.issue",
+        "facade.stock.issueMany",
+        "facade.stock.placeInContainer",
+        "facade.stock.reclassifyMany",
+        "facade.stock.removeFromContainer",
+        "facade.stock.scrap",
+        "facade.stock.scrapByPolicy",
+        "facade.stock.scrapMany",
+        "facade.stock.transfer",
+        "facade.stock.transferMany",
+        "facade.traceability.aggregate",
+        "facade.traceability.associate",
+        "facade.traceability.disaggregate",
+        "facade.traceability.disassociate"
+      ],
+      "evidence": [
+        "test/formal-public-surface-completion.test.ts"
+      ],
+      "failpoints": [],
+      "finiteDomain": "Direct successful and fail-closed execution of every public implementation body that previously lacked a compiler-resolved tested call-chain witness.",
+      "invariants": [
+        "TypeOK",
+        "FrozenIntentNeverChanges",
+        "PrimaryQuantityConserved",
+        "ContainmentIsAcyclic",
+        "ProjectionCannotMutateAuthoritativeTruth"
+      ],
+      "models": [
+        "InventoryOperation",
+        "DualMeasure",
+        "TraceabilityGraph",
+        "AuthorityWriterFence"
+      ],
+      "operationFamilies": [
+        "pure-exact-value",
+        "authority-control",
+        "read-current",
+        "read-snapshot",
+        "stock-issue",
+        "stock-transfer",
+        "scrap",
+        "dimension-reclassification",
+        "reservation",
+        "count",
+        "traceability",
+        "fungibility-movement",
+        "migration-definition",
+        "composition-open"
+      ],
+      "refinementMode": "direct-property",
+      "resultProjection": "Every mapped implementation body is reached from a registered Vitest callback and either returns the expected finite result or rejects malformed input without publishing state.",
+      "stateProjection": [
+        "compiler-resolved tested call graph and direct public observations"
+      ],
+      "status": "covered"
+    },
+    "TRACE-READ-SNAPSHOT-COHERENCE": {
+      "adapters": [
+        "memory"
+      ],
+      "apiEntries": [
+        "entrypoint.kernel.inventoryPositionEffectiveUseBy",
+        "entrypoint.kernel.inventoryPositionIsExpiredAt",
+        "entrypoint.kernel.summarizeInventoryAvailability",
+        "entrypoint.root.findInventoryEventByOperationId",
+        "entrypoint.root.inventoryPositionEffectiveUseBy",
+        "entrypoint.root.inventoryPositionIsExpiredAt",
+        "entrypoint.root.readPublishedInventoryCatalog",
+        "entrypoint.root.readPublishedInventorySnapshot",
+        "entrypoint.root.summarizeInventoryAvailability",
+        "facade.read.availability",
+        "facade.read.container",
+        "facade.read.containers",
+        "facade.read.count",
+        "facade.read.event",
+        "facade.read.lot",
+        "facade.read.lots",
+        "facade.read.packagingRevisions",
+        "facade.read.planAllocation",
+        "facade.read.positions",
+        "facade.read.reservation",
+        "facade.read.reservationFeasibility",
+        "facade.read.snapshot",
+        "facade.read.summary",
+        "facade.read.world",
+        "facade.snapshot.availability",
+        "facade.snapshot.collectionSummary",
+        "facade.snapshot.compositionRevisionsForItem",
+        "facade.snapshot.container",
+        "facade.snapshot.containers",
+        "facade.snapshot.count",
+        "facade.snapshot.event",
+        "facade.snapshot.fungibilitySummary",
+        "facade.snapshot.lot",
+        "facade.snapshot.lots",
+        "facade.snapshot.packagingRevisions",
+        "facade.snapshot.planAllocation",
+        "facade.snapshot.positions",
+        "facade.snapshot.reservation",
+        "facade.snapshot.reservationFeasibility",
+        "facade.snapshot.summary"
+      ],
+      "evidence": [
+        "test/read-snapshot.test.ts"
+      ],
+      "failpoints": [],
+      "finiteDomain": "One published catalogue, one item, two lots, one frozen snapshot, and one later successful receipt.",
+      "invariants": [
+        "HeadReferencesCompleteWorld",
+        "PartialWritesAreInvisible",
+        "PublishedFencePointsAtExactTarget"
+      ],
+      "models": [
+        "PublishedHeadCAS"
+      ],
+      "operationFamilies": [
+        "read-current",
+        "read-snapshot"
+      ],
+      "refinementMode": "bounded-property",
+      "resultProjection": "Every summary, lot, container, package, and worldRevision observation remains bound to the first published world after a later publication.",
+      "stateProjection": [
+        "one readWorld call followed by synchronous frozen snapshot observations"
+      ],
+      "status": "covered"
+    },
+    "TRACE-RECEIVE-MANY-PUBLISH-REPLAY": {
+      "adapters": [
+        "memory"
+      ],
+      "apiEntries": [
+        "class.storage.InMemoryInventoryDurableStorage.abort",
+        "class.storage.InMemoryInventoryDurableStorage.abortMigrationManifest",
+        "class.storage.InMemoryInventoryDurableStorage.begin",
+        "class.storage.InMemoryInventoryDurableStorage.beginMigrationManifest",
+        "class.storage.InMemoryInventoryDurableStorage.complete",
+        "class.storage.InMemoryInventoryDurableStorage.completeMigrationManifest",
+        "class.storage.InMemoryInventoryDurableStorage.listApplyingMigrationManifests",
+        "class.storage.InMemoryInventoryDurableStorage.listApplyingOperations",
+        "class.storage.InMemoryInventoryDurableStorage.readMigrationManifest",
+        "class.storage.InMemoryInventoryDurableStorage.readOperation",
+        "class.storage.InMemoryInventoryDurableStorage.readWorld",
+        "class.storage.InMemoryInventoryDurableStorage.writeCounts",
+        "class.storage.InMemoryInventoryDurableStorage.writeEvent",
+        "class.storage.InMemoryInventoryDurableStorage.writeMigrationWorld",
+        "class.storage.InMemoryInventoryDurableStorage.writeProjection",
+        "class.storage.InMemoryInventoryDurableStorage.writeReceipt",
+        "class.storage.InMemoryInventoryDurableStorage.writeReservations",
+        "entrypoint.kernel.createInventoryOpeningEvent",
+        "entrypoint.kernel.createInventoryReceiptEvent",
+        "entrypoint.kernel.createInventoryReceiptManyEvent",
+        "entrypoint.storage.InMemoryInventoryDurableStorage",
+        "entrypoint.storage.InventoryApplyingOperationConflictError",
+        "entrypoint.storage.InventoryWorldRevisionConflictError",
+        "entrypoint.storage.commitInventoryOperation",
+        "entrypoint.storage.createInMemoryInventoryDurableStorage",
+        "entrypoint.storage.repairInventoryDurableOperations",
+        "entrypoint.storage.resumeInventoryDurableOperation",
+        "entrypoint.storage.validateInventoryDurableOperationBeginInput",
+        "entrypoint.storage.validateInventoryMigrationManifestBeginInput",
+        "facade.read.snapshot",
+        "facade.snapshot.availability",
+        "facade.snapshot.collectionSummary",
+        "facade.snapshot.compositionRevisionsForItem",
+        "facade.snapshot.container",
+        "facade.snapshot.containers",
+        "facade.snapshot.count",
+        "facade.snapshot.event",
+        "facade.snapshot.fungibilitySummary",
+        "facade.snapshot.lot",
+        "facade.snapshot.lots",
+        "facade.snapshot.packagingRevisions",
+        "facade.snapshot.planAllocation",
+        "facade.snapshot.positions",
+        "facade.snapshot.reservation",
+        "facade.snapshot.reservationFeasibility",
+        "facade.snapshot.summary",
+        "facade.stock.receive",
+        "facade.stock.receiveMany",
+        "storage-port.abort",
+        "storage-port.abortMigrationManifest",
+        "storage-port.begin",
+        "storage-port.beginMigrationManifest",
+        "storage-port.complete",
+        "storage-port.completeMigrationManifest",
+        "storage-port.listApplyingMigrationManifests",
+        "storage-port.listApplyingOperations",
+        "storage-port.readMigrationManifest",
+        "storage-port.readOperation",
+        "storage-port.readWorld",
+        "storage-port.writeCounts",
+        "storage-port.writeEvent",
+        "storage-port.writeMigrationWorld",
+        "storage-port.writeProjection",
+        "storage-port.writeReceipt",
+        "storage-port.writeReservations"
+      ],
+      "evidence": [
+        "test/formal-storage-refinement-suite.ts",
+        "test/formal-storage-refinement.test.ts"
+      ],
+      "failpoints": [
+        "projection-after",
+        "receipt-after",
+        "publish-world-after"
+      ],
+      "finiteDomain": "Two receipt lines, two lots, nine units, exact retry.",
+      "invariants": [
+        "PartialWritesStayInvisible",
+        "PublishedWorldMatchesFrozenPlan",
+        "OnePublicationPerOperation",
+        "PhysicalQuantityConserved"
+      ],
+      "models": [
+        "InventoryOperation",
+        "PublishedHeadCAS",
+        "PackagingIdentity",
+        "DualMeasure"
+      ],
+      "operationFamilies": [
+        "stock-receipt",
+        "durable-protocol",
+        "read-snapshot"
+      ],
+      "refinementMode": "state-result-refinement",
+      "resultProjection": "Effects, total, event identity, revision, and replay agree.",
+      "stateProjection": [
+        "abstractInventoryState",
+        "abstractOperationResult"
+      ],
+      "status": "covered"
+    },
+    "TRACE-RECORDED-DEFICIT-REFINEMENT": {
+      "adapters": [
+        "memory"
+      ],
+      "apiEntries": [
+        "facade.stock.issueByPolicy",
+        "facade.stock.issueManyByPolicy"
+      ],
+      "evidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/storage-conformance-suite.ts"
+      ],
+      "failpoints": [
+        "exact-replay",
+        "changed-intent",
+        "restart-after-deficit"
+      ],
+      "finiteDomain": "One item revision, one location-level deficit position, bounded issue quantities, one late receipt, two operation identities, Record and Reject modes.",
+      "invariants": [
+        "SignedNetIsPhysicalMinusDeficit",
+        "RecordedDeficitNeverBecomesPhysical",
+        "SeenIntentAndResultAreDurable",
+        "ReceiptPreservesDeficit",
+        "RecordShortageIsExplicit",
+        "RejectShortagePreservesTruth",
+        "ReplayPreservesTruthAndResult",
+        "ChangedIntentRejectsAndStutters"
+      ],
+      "models": [
+        "RecordedDeficit",
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "operationFamilies": [
+        "stock-policy-issue"
+      ],
+      "refinementMode": "state-result-refinement",
+      "resultProjection": "First execution and exact replay return the same explicit deficit amount, position, primary shortfall, receipt revision, and event identity; changed intent is rejected.",
+      "stateProjection": [
+        "abstractInventoryState",
+        "abstractOperationResult"
+      ],
+      "status": "covered"
+    },
+    "TRACE-RESERVATION-EXACT-ISSUE-SCRAP": {
+      "adapters": [
+        "memory"
+      ],
+      "apiEntries": [
+        "entrypoint.kernel.allocateInventoryReservation",
+        "entrypoint.kernel.assertInventoryReservationsFeasible",
+        "entrypoint.kernel.createInventoryIssueEvent",
+        "entrypoint.kernel.createInventoryIssueManyEvent",
+        "entrypoint.kernel.createInventoryReservation",
+        "entrypoint.kernel.createInventoryScrapEvent",
+        "entrypoint.kernel.createInventoryScrapManyEvent",
+        "entrypoint.kernel.emptyInventoryReservationBook",
+        "entrypoint.kernel.expireInventoryReservation",
+        "entrypoint.kernel.inspectInventoryReservationFeasibility",
+        "entrypoint.kernel.inventoryReservationIsActiveAt",
+        "entrypoint.kernel.inventoryReservationsAt",
+        "entrypoint.kernel.markInventoryReservationConsumed",
+        "entrypoint.kernel.refineInventoryReservation",
+        "entrypoint.kernel.releaseInventoryReservation",
+        "facade.reservations.allocate",
+        "facade.reservations.allocateByPolicy",
+        "facade.reservations.consume",
+        "facade.reservations.consumeAllocated",
+        "facade.reservations.expire",
+        "facade.reservations.refine",
+        "facade.reservations.release",
+        "facade.reservations.reserve",
+        "facade.stock.issue",
+        "facade.stock.issueMany",
+        "facade.stock.scrap",
+        "facade.stock.scrapByPolicy",
+        "facade.stock.scrapMany"
+      ],
+      "evidence": [
+        "test/reservations-counts.test.ts"
+      ],
+      "failpoints": [],
+      "finiteDomain": "Finite broad/exact reservations, allocation, exact issue/scrap, consume replay, and conflict rejection.",
+      "invariants": [
+        "NoOverReservation",
+        "NoDoubleConsume",
+        "AllocatedClaimsRespectScope",
+        "ShortageRequiresExplicitPhysicalLoss",
+        "ConsumedClaimHasEvidence",
+        "ReleasedOrExpiredWasNeverConsumed",
+        "VisibleQuantityConserved",
+        "EveryIntact20BoxIsWhole",
+        "EveryIntact24BoxIsWhole",
+        "OrdinaryConsumptionWasUsable",
+        "PhysicalQuantityConserved"
+      ],
+      "models": [
+        "ReservationSafety",
+        "ReservationScope",
+        "UseByReservation",
+        "InventoryOperation",
+        "PackagingIdentity",
+        "DualMeasure"
+      ],
+      "operationFamilies": [
+        "reservation",
+        "stock-issue",
+        "scrap"
+      ],
+      "refinementMode": "bounded-property",
+      "resultProjection": "No over-reservation or double consume; destructive effects are explicit and exact.",
+      "stateProjection": [
+        "reservation book, physical positions, issue/scrap event results"
+      ],
+      "status": "covered"
+    },
+    "TRACE-SNAPSHOT-SUPERSEDED-WORKFLOW": {
+      "adapters": [
+        "memory"
+      ],
+      "apiEntries": [
+        "class.storage.InMemoryInventoryDurableStorage.abort",
+        "class.storage.InMemoryInventoryDurableStorage.abortMigrationManifest",
+        "class.storage.InMemoryInventoryDurableStorage.begin",
+        "class.storage.InMemoryInventoryDurableStorage.beginMigrationManifest",
+        "class.storage.InMemoryInventoryDurableStorage.complete",
+        "class.storage.InMemoryInventoryDurableStorage.completeMigrationManifest",
+        "class.storage.InMemoryInventoryDurableStorage.listApplyingMigrationManifests",
+        "class.storage.InMemoryInventoryDurableStorage.listApplyingOperations",
+        "class.storage.InMemoryInventoryDurableStorage.readMigrationManifest",
+        "class.storage.InMemoryInventoryDurableStorage.readOperation",
+        "class.storage.InMemoryInventoryDurableStorage.readWorld",
+        "class.storage.InMemoryInventoryDurableStorage.writeCounts",
+        "class.storage.InMemoryInventoryDurableStorage.writeEvent",
+        "class.storage.InMemoryInventoryDurableStorage.writeMigrationWorld",
+        "class.storage.InMemoryInventoryDurableStorage.writeProjection",
+        "class.storage.InMemoryInventoryDurableStorage.writeReceipt",
+        "class.storage.InMemoryInventoryDurableStorage.writeReservations",
+        "entrypoint.migrations.applyInventoryMigrationPlan",
+        "entrypoint.migrations.defineInventoryLegacyQuery",
+        "entrypoint.migrations.defineInventoryMigration",
+        "entrypoint.migrations.defineInventoryMigrationPlugin",
+        "entrypoint.migrations.defineInventoryMigrationSourcePlugin",
+        "entrypoint.migrations.dryRunInventoryMigration",
+        "entrypoint.migrations.inventoryMigrationPositionsMatch",
+        "entrypoint.migrations.inventoryMigrationProblem",
+        "entrypoint.migrations.inventoryMigrationSnapshotSupersededDisposition",
+        "entrypoint.migrations.repairInventoryMigrationManifests",
+        "entrypoint.migrations.resumeInventoryMigrationManifest",
+        "entrypoint.root.cutoverInventoryAuthority",
+        "entrypoint.root.inventoryAuthorityCutoverResult",
+        "entrypoint.storage.InMemoryInventoryDurableStorage",
+        "entrypoint.storage.InventoryApplyingOperationConflictError",
+        "entrypoint.storage.InventoryWorldRevisionConflictError",
+        "entrypoint.storage.commitInventoryOperation",
+        "entrypoint.storage.createInMemoryInventoryDurableStorage",
+        "entrypoint.storage.repairInventoryDurableOperations",
+        "entrypoint.storage.resumeInventoryDurableOperation",
+        "entrypoint.storage.validateInventoryDurableOperationBeginInput",
+        "entrypoint.storage.validateInventoryMigrationManifestBeginInput",
+        "storage-port.abort",
+        "storage-port.abortMigrationManifest",
+        "storage-port.begin",
+        "storage-port.beginMigrationManifest",
+        "storage-port.complete",
+        "storage-port.completeMigrationManifest",
+        "storage-port.listApplyingMigrationManifests",
+        "storage-port.listApplyingOperations",
+        "storage-port.readMigrationManifest",
+        "storage-port.readOperation",
+        "storage-port.readWorld",
+        "storage-port.writeCounts",
+        "storage-port.writeEvent",
+        "storage-port.writeMigrationWorld",
+        "storage-port.writeProjection",
+        "storage-port.writeReceipt",
+        "storage-port.writeReservations"
+      ],
+      "evidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/migrations.test.ts",
+        "test/storage-conformance-suite.ts"
+      ],
+      "failpoints": [
+        "migration-begin",
+        "migration-publish",
+        "migration-compact",
+        "post-fence-legacy-resume"
+      ],
+      "finiteDomain": "Two unresolved legacy workflow rows, one source snapshot revision, one fence, one disposition per row, one atomic migration publication, and bounded post-fence resume attempts.",
+      "invariants": [
+        "DispositionRequiresFencedSnapshot",
+        "DispositionGeneratesNoPhysicalEvent",
+        "SupersededRowsNeverResume",
+        "UnknownOutcomeNeverGuessed",
+        "PublishedRetainsAllDispositions",
+        "PublishedWorldMatchesSnapshot",
+        "ResumeAttemptCannotChangeSourceTruth",
+        "FencedSnapshotEventuallyPublishes"
+      ],
+      "models": [
+        "SnapshotSupersededWorkflow",
+        "AuthorityWriterFence",
+        "PublishedHeadCAS",
+        "RepairLiveness"
+      ],
+      "operationFamilies": [
+        "migration-definition",
+        "migration-publication",
+        "authority-cutover",
+        "durable-protocol"
+      ],
+      "refinementMode": "state-result-refinement",
+      "resultProjection": "Compiled plan, dry-run, applying manifest, terminal compact manifest, and exact retry retain the same sorted dispositions while operation/event count excludes every disposed row; post-fence legacy admission rejects.",
+      "stateProjection": [
+        "abstractMigrationState",
+        "abstractInventoryState",
+        "abstractAuthorityState"
+      ],
+      "status": "covered"
+    },
+    "TRACE-STOCK-EXACT-TRANSFER": {
+      "adapters": [
+        "memory"
+      ],
+      "apiEntries": [
+        "entrypoint.kernel.createInventoryTransferEvent",
+        "entrypoint.kernel.createInventoryTransferManyEvent",
+        "facade.stock.transfer",
+        "facade.stock.transferMany"
+      ],
+      "evidence": [
+        "test/composition.test.ts"
+      ],
+      "failpoints": [],
+      "finiteDomain": "One exact package revision transferred between two locations before opening.",
+      "invariants": [
+        "ResourceAccounting",
+        "InTransitStillExists",
+        "ActiveTokensHaveExactlyOneRealLocation",
+        "PartialWritesRefineToStuttering",
+        "PhysicalQuantityConserved"
+      ],
+      "models": [
+        "ResourceDimensions",
+        "DurableTransferRefinement",
+        "InventoryOperation",
+        "PackagingIdentity"
+      ],
+      "operationFamilies": [
+        "stock-transfer"
+      ],
+      "refinementMode": "bounded-property",
+      "resultProjection": "Global amount and package identity are conserved across exact transfer.",
+      "stateProjection": [
+        "source and destination exact package positions"
+      ],
+      "status": "covered"
+    },
+    "TRACE-TRANSFER-LIFECYCLE": {
+      "adapters": [
+        "memory"
+      ],
+      "apiEntries": [
+        "facade.transfers.dispatch",
+        "facade.transfers.find",
+        "facade.transfers.prepare",
+        "facade.transfers.receive",
+        "facade.transfers.release"
+      ],
+      "evidence": [
+        "test/transfer-lifecycle.test.ts"
+      ],
+      "failpoints": [],
+      "finiteDomain": "Two otherwise identical concurrent transfers sharing one transit location, including prepare, dispatch, partial/full receipt, release, replay, and changed-intent rejection.",
+      "invariants": [
+        "TransferQuantityConserved",
+        "ReceivedNeverExceedsDispatched",
+        "TransferIsolation",
+        "PreparedIsUnavailableAtSource",
+        "DispatchedIsNotPrepared",
+        "BeforeReceiptDestinationIsEmpty",
+        "PartialReceiptLeavesTransit",
+        "CompletedReceiptLeavesNoTransit",
+        "ReleasedReturnsCommitment",
+        "IntentNeverChanges",
+        "OwnershipIsOrthogonal",
+        "TransitCustodyDoesNotChangeOwnership",
+        "AllActiveClaimsRemainFeasible",
+        "PartialWritesRefineToStuttering"
+      ],
+      "models": [
+        "TransferLifecycle",
+        "ResourceDimensions",
+        "ReservationSafety",
+        "InventoryOperation",
+        "DurableTransferRefinement"
+      ],
+      "operationFamilies": [
+        "transfer-lifecycle"
+      ],
+      "refinementMode": "state-result-refinement",
+      "resultProjection": "Transfer result reports exact lifecycle state and received/remainder quantities; retry is observationally identical and cannot cross transfer identities.",
+      "stateProjection": [
+        "abstractInventoryState",
+        "abstractReservationState",
+        "abstractOperationResult"
+      ],
+      "status": "covered"
+    },
+    "TRACE-TRANSFER-MANY-FEFO-ATOMIC": {
+      "adapters": [
+        "memory"
+      ],
+      "apiEntries": [
+        "class.storage.InMemoryInventoryDurableStorage.abort",
+        "class.storage.InMemoryInventoryDurableStorage.abortMigrationManifest",
+        "class.storage.InMemoryInventoryDurableStorage.begin",
+        "class.storage.InMemoryInventoryDurableStorage.beginMigrationManifest",
+        "class.storage.InMemoryInventoryDurableStorage.complete",
+        "class.storage.InMemoryInventoryDurableStorage.completeMigrationManifest",
+        "class.storage.InMemoryInventoryDurableStorage.listApplyingMigrationManifests",
+        "class.storage.InMemoryInventoryDurableStorage.listApplyingOperations",
+        "class.storage.InMemoryInventoryDurableStorage.readMigrationManifest",
+        "class.storage.InMemoryInventoryDurableStorage.readOperation",
+        "class.storage.InMemoryInventoryDurableStorage.readWorld",
+        "class.storage.InMemoryInventoryDurableStorage.writeCounts",
+        "class.storage.InMemoryInventoryDurableStorage.writeEvent",
+        "class.storage.InMemoryInventoryDurableStorage.writeMigrationWorld",
+        "class.storage.InMemoryInventoryDurableStorage.writeProjection",
+        "class.storage.InMemoryInventoryDurableStorage.writeReceipt",
+        "class.storage.InMemoryInventoryDurableStorage.writeReservations",
+        "entrypoint.kernel.allocateInventory",
+        "entrypoint.kernel.compareInventoryAllocationCandidates",
+        "entrypoint.kernel.inventoryAmountForPrimaryAllocation",
+        "entrypoint.kernel.planInventoryAllocation",
+        "entrypoint.root.inventoryAmountForPrimaryAllocation",
+        "entrypoint.root.planInventoryAllocation",
+        "entrypoint.storage.InMemoryInventoryDurableStorage",
+        "entrypoint.storage.InventoryApplyingOperationConflictError",
+        "entrypoint.storage.InventoryWorldRevisionConflictError",
+        "entrypoint.storage.commitInventoryOperation",
+        "entrypoint.storage.createInMemoryInventoryDurableStorage",
+        "entrypoint.storage.repairInventoryDurableOperations",
+        "entrypoint.storage.resumeInventoryDurableOperation",
+        "entrypoint.storage.validateInventoryDurableOperationBeginInput",
+        "entrypoint.storage.validateInventoryMigrationManifestBeginInput",
+        "facade.stock.transferByPolicy",
+        "facade.stock.transferManyByPolicy",
+        "storage-port.abort",
+        "storage-port.abortMigrationManifest",
+        "storage-port.begin",
+        "storage-port.beginMigrationManifest",
+        "storage-port.complete",
+        "storage-port.completeMigrationManifest",
+        "storage-port.listApplyingMigrationManifests",
+        "storage-port.listApplyingOperations",
+        "storage-port.readMigrationManifest",
+        "storage-port.readOperation",
+        "storage-port.readWorld",
+        "storage-port.writeCounts",
+        "storage-port.writeEvent",
+        "storage-port.writeMigrationWorld",
+        "storage-port.writeProjection",
+        "storage-port.writeReceipt",
+        "storage-port.writeReservations"
+      ],
+      "evidence": [
+        "test/formal-storage-refinement-suite.ts",
+        "test/formal-storage-refinement.test.ts"
+      ],
+      "failpoints": [
+        "publish-world-after",
+        "repair-resume"
+      ],
+      "finiteDomain": "One three-unit FEFO transfer between two locations.",
+      "invariants": [
+        "PartialWritesStayInvisible",
+        "PartialWritesRefineToStuttering",
+        "AllocatedClaimsRespectScope",
+        "ResourceAccounting"
+      ],
+      "models": [
+        "InventoryOperation",
+        "DurableTransferRefinement",
+        "ReservationScope",
+        "ResourceDimensions"
+      ],
+      "operationFamilies": [
+        "stock-policy-transfer",
+        "durable-protocol",
+        "allocation-helper"
+      ],
+      "refinementMode": "state-result-refinement",
+      "resultProjection": "Source decrement equals destination increment; replay and repair agree.",
+      "stateProjection": [
+        "abstractInventoryState",
+        "abstractOperationResult"
+      ],
+      "status": "covered"
+    },
+    "TRACE-TRANSFORMATION-DEFINITION-READ-PLAN": {
+      "adapters": [
+        "memory"
+      ],
+      "apiEntries": [
+        "facade.transformations.activeDefinition",
+        "facade.transformations.betweenRevisions",
+        "facade.transformations.definition",
+        "facade.transformations.definitionsForItem",
+        "facade.transformations.fromRevision",
+        "facade.transformations.plan",
+        "facade.transformations.toRevision"
+      ],
+      "evidence": [
+        "test/transformations.test.ts"
+      ],
+      "failpoints": [],
+      "finiteDomain": "Three exact item form revisions, four retained transformation revisions, one current stock row, and one published-world plan.",
+      "invariants": [
+        "ActiveIsRetained",
+        "PublishedSnapshotsRemainRetained",
+        "PublishedMeaningsNeverChange",
+        "HeadReferencesCompleteWorld",
+        "PublishedFencePointsAtExactTarget",
+        "ItemQuantityConserved",
+        "PrimaryQuantityConserved",
+        "SecondaryMeasureHasExplicitCause"
+      ],
+      "models": [
+        "CatalogPublication",
+        "PublishedHeadCAS",
+        "ReclassificationConservation",
+        "DualMeasure"
+      ],
+      "operationFamilies": [
+        "transformation-read"
+      ],
+      "refinementMode": "bounded-property",
+      "resultProjection": "Definition reads keep exact revision identity, and planning reports exact required and available vectors from one unchanged published world.",
+      "stateProjection": [
+        "published catalogue snapshot, exact current positions, and read-only transformation plan"
+      ],
+      "status": "covered"
+    }
+  },
+  "schemaVersion": 1
+}

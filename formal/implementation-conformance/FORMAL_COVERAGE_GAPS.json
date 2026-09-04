@@ -1,0 +1,95 @@
+{
+  "gaps": {
+    "GAP-APPLICATION-DECORATION": {
+      "productionImpact": "Human descriptions, UI labels, pricing, currency, threshold policy, and other application decoration are deliberately outside conserved physical models.",
+      "requiredMitigation": "Keep decoration separate from physical selection/quantity and prove it cannot mutate authoritative state.",
+      "status": "outside-physical-authority"
+    },
+    "GAP-ARBITRARY-AUDIT-METADATA": {
+      "productionImpact": "Arbitrary JSON-safe audit/application metadata is not represented in resource-conservation models.",
+      "requiredMitigation": "Metamorphic tests must prove audit-only changes preserve abstract physical state; changed retry intent under one operation identity remains fail-closed.",
+      "status": "observational-only"
+    },
+    "GAP-BROAD-RESERVATION-DENSE-GRAPH": {
+      "productionImpact": "Exact-position reservations use the sparse linear fast path, but truly broad competing claims still require a bounded max-flow graph over eligible claims and positions. The implementation fails closed at configured claim, position, edge, and indivisible-search ceilings rather than promising unbounded latency.",
+      "requiredMitigation": "Keep current hard ceilings and diagnostics, monitor broad-claim cardinality in production, partition unusually broad scopes, and add a specialized solver only if measured clinic workloads approach the bounds.",
+      "status": "bounded-adversarial-performance-caveat"
+    },
+    "GAP-COUNT-CORRECTION-HISTORY-REPLAY": {
+      "productionImpact": "Observation-time count reconciliation and retained-root correction must reconstruct occurrence-sensitive physical history. The implementation now traverses the durable sequence index and uses a private linear replay builder, but latency and memory still grow with retained event history rather than remaining constant-time.",
+      "requiredMitigation": "Keep the 500-to-2,000-event near-linear replay regression, measure event-history length on real clinics, and introduce trusted projection checkpoints or segmented history before long-lived streams approach operational replay limits.",
+      "status": "bounded-history-performance-caveat"
+    },
+    "GAP-DB-IMPLEMENTATION-UNBOUNDED": {
+      "productionImpact": "Mongo and SQLite conformance/failpoint tests exercise finite schedules; they do not prove every database/driver/runtime behavior.",
+      "requiredMitigation": "Pin supported versions, retain CAS/uniqueness/private-class tests, run both adapters in CI, and fail closed on unsupported guarantees.",
+      "status": "tested-not-proved"
+    },
+    "GAP-DISTRIBUTED-RIGHTS-NOT-IMPLEMENTED": {
+      "productionImpact": "The DistributedRights model does not imply offline or partition-tolerant multiwriter decrement/reservation safety in current adapters.",
+      "requiredMitigation": "Use one coordinating authoritative stream. Do not advertise offline/multiwriter stock until escrow/right-transfer code and adapter refinement tests exist.",
+      "status": "unsupported-production-capability"
+    },
+    "GAP-EXTERNAL-CLOCK": {
+      "productionImpact": "Canonical time validation is tested, but correctness assumes the injected clock supplies canonical UTC instants and trusted monotonic record sequencing where required.",
+      "requiredMitigation": "Validate every persisted time, distinguish occurrence from record time, and use database recordSequence/CAS rather than wall-clock expiry for safety.",
+      "status": "environment-assumption"
+    },
+    "GAP-EXTERNAL-MIGRATION-CALLBACKS": {
+      "productionImpact": "InventoryOnce cannot formally prove arbitrary application-owned query, bundle, or declaration callbacks.",
+      "requiredMitigation": "Bound query paging, require deterministic plugin output, retain source provenance, run the produced declaration through normal validation, and separately test each production plugin.",
+      "status": "application-boundary"
+    },
+    "GAP-EXTERNAL-POLICY-CALLBACKS": {
+      "productionImpact": "Public low-level allocation/catalog callbacks can encode arbitrary application policy that is not represented by the finite TLA state machines.",
+      "requiredMitigation": "Production application code should prefer declarative grouped APIs; callback output must pass exact validators and dedicated application tests, and callbacks must be deterministic for retry.",
+      "status": "explicit-public-kernel-boundary"
+    },
+    "GAP-FUNGIBILITY-EXACT-SEARCH-BOUND": {
+      "productionImpact": "Fungibility allocation uses exact bounded integer search with reservation-feasibility acceptance. Hypothetical states now use sparse overlays and do not clone unrelated projection rows, but adversarial candidate/increment combinations may still explore up to the configured 100,000 search-state ceiling and then fail closed.",
+      "requiredMitigation": "Keep the hard search-state ceiling and sparse-overlay regression, monitor real pool candidate cardinality/package increments, partition unusually broad pools/scopes, and add a specialized optimizer only if measured clinic workloads approach the bound.",
+      "status": "bounded-combinatorial-performance-caveat"
+    },
+    "GAP-HASH-COLLISION-ASSUMPTION": {
+      "productionImpact": "Content roots and intent digests assume collision resistance of the selected hash and canonical encoding.",
+      "requiredMitigation": "Keep canonical encoding tests, immutable blob verification, and fail closed on digest/root mismatch.",
+      "status": "cryptographic-assumption"
+    },
+    "GAP-HISTORICAL-RESERVATION-RECONSTRUCTION-SCAN": {
+      "productionImpact": "Historical as-of reservation reads reconstruct lifecycle state from retained reservation operations. Current/live reads and exact feasibility are indexed, but very long historical operation books can make retrospective reports scale with retained claim history.",
+      "requiredMitigation": "Measure historical-report workloads on real clinics, retain paging/retention observability, and introduce reservation checkpoints or lifecycle snapshots before unbounded history makes retrospective reads operationally expensive.",
+      "status": "bounded-history-performance-caveat"
+    },
+    "GAP-JAVASCRIPT-RUNTIME": {
+      "productionImpact": "Executable refinement evidence runs the real TypeScript/JavaScript implementation but is not a machine-checked semantic proof of the JavaScript runtime.",
+      "requiredMitigation": "Use strict TypeScript, exact arithmetic, exhaustive finite traces, mutation/retry tests, and supported Node versions.",
+      "status": "tested-not-proved"
+    },
+    "GAP-LEGACY-SOURCE-INTERPRETATION": {
+      "productionImpact": "The generic migration machinery proves deterministic compilation/publication, not that one clinic's ambiguous legacy rows were interpreted correctly.",
+      "requiredMitigation": "Replay each real clinic snapshot, review every blocker/assumption, compare roots and operational reports, and obtain explicit cutover approval.",
+      "status": "blocks-clinic-cutover-until-replayed"
+    },
+    "GAP-PRODUCTION-STORAGE-SCALE-GC": {
+      "productionImpact": "The current adapter stores complete content-addressed world snapshots and lacks accepted production GC/segmentation evidence at broad scale.",
+      "requiredMitigation": "Measure write amplification/retention on real clinic workloads and approve safe GC, segmentation, or checkpointing before broad production scale.",
+      "status": "production-scale-caveat"
+    },
+    "GAP-TEST-FAILPOINT-HOOK": {
+      "productionImpact": "Failure-injection callbacks are test controls, not production inventory semantics.",
+      "requiredMitigation": "Classify them unsupported/unmodelled and use them only to exercise modeled crash boundaries.",
+      "status": "test-only-unmodelled-input"
+    },
+    "GAP-TLC-BOUNDED-DOMAINS": {
+      "productionImpact": "Every TLC result is finite-domain model checking, not a theorem over arbitrary identities, quantities, traces, TypeScript, or databases.",
+      "requiredMitigation": "Keep exact model constants/counts in reports and pair each claimed model with executable refinement/property tests.",
+      "status": "accepted-release-limit"
+    },
+    "GAP-TRACEABILITY-ADVERSARIAL-GRAPH-SEARCH": {
+      "productionImpact": "Whole-history graph replay now uses one private sequential builder and is near-linear for broad independent containment/genealogy graphs, but each newly added structural edge must still prove no ancestor/reachability path exists. Adversarial very deep containment chains or dense genealogy DAGs can therefore exceed linear time.",
+      "requiredMitigation": "Keep the 250-to-1,000-edge replay regressions, measure real clinic graph depth/density, and introduce bounded topological/ancestor indexing or explicit safety ceilings before supporting very large industrial traceability graphs.",
+      "status": "bounded-graph-performance-caveat"
+    }
+  },
+  "schemaVersion": 1
+}

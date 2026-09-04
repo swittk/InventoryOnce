@@ -1,0 +1,2069 @@
+import {
+  inventoryIntentFingerprint,
+  inventoryMetadataFingerprint,
+} from "./canonical.js";
+import type { InventoryCatalog } from "./catalog.js";
+import { applyInventoryRecordedDeficitBurden } from "./deficits.js";
+import { assertCanonicalInventoryTime } from "./events.js";
+import { inventoryMeasurementAt } from "./measurements.js";
+import {
+  inventoryStockPositionIdentity,
+  type InventoryMetadata,
+  type InventoryStockPositionKey,
+  type ItemId,
+  type PartyId,
+} from "./model.js";
+import type { InventoryProjectionState } from "./projection.js";
+import {
+  assertPositionInsideSelector,
+  inventoryStockPositionMatchesSelector,
+  inventoryStockSelectorIdentity,
+  inventoryStockSelectorIsSubset,
+  normalizeInventoryStockSelector,
+  type InventoryStockSelector,
+} from "./selectors.js";
+import { inventoryPositionIsExpiredAt } from "./usability.js";
+import {
+  addQuantity,
+  compareQuantity,
+  positiveQuantity,
+  quantity,
+  quantityEq,
+  quantityIsWholeMultipleOf,
+  zeroQuantity,
+  type Quantity,
+} from "./quantity.js";
+
+/** Durable lifecycle of one claim against eligible inventory. */
+export enum InventoryReservationStatus {
+  /** Claim still reduces global available stock and may be refined/allocated/released/consumed. */
+  Active = "active",
+  /** Caller explicitly released the claim without consuming stock. */
+  Released = "released",
+  /** Claim was converted into one committed issue event. */
+  Consumed = "consumed",
+  /** Claim passed its explicit expiry and was closed without consumption. */
+  Expired = "expired",
+}
+
+/** Whether current physical stock can still satisfy every active claim together. */
+export enum InventoryReservationFeasibilityStatus {
+  /** A simultaneous non-overlapping assignment exists for every active claim. */
+  Feasible = "feasible",
+  /** Physical stock cannot currently cover at least one competing claim group. */
+  Shortage = "shortage",
+}
+
+/** Exact feasibility result for claims competing on one item measurement axis. */
+export interface InventoryReservationFeasibilityGroup {
+  /** Stable item whose positions back this claim group. */
+  readonly itemId: ItemId;
+  /** Item measurement axis used by every claim in this group. */
+  readonly axisId: string;
+  /** Active reservations competing in this group, sorted by identity. */
+  readonly reservationIds: readonly string[];
+  /** Exact total quantity requested by the active claims. */
+  readonly requested: Quantity;
+  /** Exact maximum quantity current eligible stock can assign simultaneously. */
+  readonly fulfillable: Quantity;
+  /** Exact requested minus fulfillable quantity; zero means this group is feasible. */
+  readonly shortage: Quantity;
+}
+
+/** Read-side explanation of active-claim feasibility after ordinary or physical-truth changes. */
+export interface InventoryReservationFeasibilityReport {
+  /** Time used to decide which active reservations have expired logically. */
+  readonly at: string;
+  /** Feasible only when every competing group has zero shortage. */
+  readonly status: InventoryReservationFeasibilityStatus;
+  /** Exact results for every active competing claim group. */
+  readonly groups: readonly InventoryReservationFeasibilityGroup[];
+}
+
+/** One exact position/quantity binding for an otherwise broad reservation. */
+export interface InventoryReservationAllocation {
+  /** Exact stock position assigned to this claim. */
+  readonly position: InventoryStockPositionKey;
+  /** Positive amount on the reservation axis assigned at this position. */
+  readonly quantity: Quantity;
+}
+
+/** Creation facts for one broad or exact reservation. */
+export interface NewInventoryReservation {
+  /** Stable identity for this claim. */
+  readonly reservationId: string;
+  /** Stable creation retry identity. */
+  readonly operationId: string;
+  /** Frozen item definition used for selector/axis validation. */
+  readonly itemRevisionId: string;
+  /** Eligible-stock scope; omitted dimensions remain broad. */
+  readonly selector: InventoryStockSelector;
+  /** Positive requested quantity on the item's configured reservation axis. */
+  readonly requested: Quantity;
+  /** Time the claim was created. */
+  readonly createdAt: string;
+  /** Optional time after which the claim stops reducing availability. */
+  readonly expiresAt?: string;
+  /** Explicitly permit stock past its lot/container use-by to back this claim. */
+  readonly allowExpiredStock?: boolean;
+  /** Application/source row that requested this claim. */
+  readonly sourceReference?: string;
+  /** Actor who requested this claim when known. */
+  readonly actorId?: PartyId;
+  /** Extra application facts that do not change claim math. */
+  readonly metadata?: InventoryMetadata;
+}
+
+/** Current reservation row including optional exact allocation and terminal lifecycle facts. */
+export interface InventoryReservation extends NewInventoryReservation {
+  /** Current lifecycle status. */
+  readonly status: InventoryReservationStatus;
+  /** Exact position bindings when picking/allocation has happened. */
+  readonly allocations: readonly InventoryReservationAllocation[];
+  /** Time the current terminal status was set. */
+  readonly statusAt?: string;
+  /** Latest causally ordered lifecycle change, including refinement/allocation. */
+  readonly lastChangedAt: string;
+  /** Committed issue event that consumed this reservation. */
+  readonly consumptionEventId?: string;
+}
+
+/** Kind of durable reservation operation retained for exact retry comparison. */
+export enum InventoryReservationOperationKind {
+  /** Create one new claim. */
+  Create = "create",
+  /** Narrow one claim's eligible selector. */
+  Refine = "refine",
+  /** Bind one claim to exact positions. */
+  Allocate = "allocate",
+  /** Release one active claim. */
+  Release = "release",
+  /** Expire one active claim. */
+  Expire = "expire",
+  /** Mark one claim consumed by a committed issue event. */
+  Consume = "consume",
+}
+
+/** Immutable reservation-operation evidence used for idempotent lifecycle retries. */
+export interface InventoryReservationOperation {
+  /** Stable retry identity. */
+  readonly operationId: string;
+  /** Reservation affected. */
+  readonly reservationId: string;
+  /** Lifecycle action performed. */
+  readonly kind: InventoryReservationOperationKind;
+  /** Stable normalized intent fingerprint. */
+  readonly intentFingerprint: string;
+  /** Monotonic order of this lifecycle change inside the reservation book. */
+  readonly lifecycleSequence: number;
+  /** Exact reservation row after this lifecycle change, used for honest `at` reconstruction. */
+  readonly reservationAfter: InventoryReservation;
+}
+
+/** New lifecycle evidence before the book assigns order and freezes the resulting row. */
+type NewInventoryReservationOperation = Pick<
+  InventoryReservationOperation,
+  "operationId" | "reservationId" | "kind" | "intentFingerprint"
+>;
+
+/** Current reservation rows plus append-only operation/idempotency evidence. */
+export interface InventoryReservationBook {
+  /** Reservations keyed by stable claim identity. */
+  readonly reservations: Readonly<Record<string, InventoryReservation>>;
+  /** Lifecycle operations keyed by operation id. */
+  readonly operations: Readonly<Record<string, InventoryReservationOperation>>;
+}
+
+/** Result after applying/replaying one reservation lifecycle operation. */
+export interface InventoryReservationBookResult {
+  /** Next book; unchanged on exact replay. */
+  readonly book: InventoryReservationBook;
+  /** Current reservation after the operation. */
+  readonly reservation: InventoryReservation;
+  /** True when this exact operation was already recorded. */
+  readonly replayed: boolean;
+}
+
+/** Inputs for creating one globally feasible claim. */
+export interface CreateInventoryReservationInput {
+  /** Frozen catalogue. */
+  readonly catalog: InventoryCatalog;
+  /** Current on-hand projection. */
+  readonly projection: InventoryProjectionState;
+  /** Existing active/terminal claims. */
+  readonly book: InventoryReservationBook;
+  /** New claim intent. */
+  readonly reservation: NewInventoryReservation;
+  /** Current time used for expiry and feasibility. */
+  readonly now: string;
+}
+
+/** Create an empty reservation book. */
+export function emptyInventoryReservationBook(): InventoryReservationBook {
+  return { reservations: {}, operations: {} };
+}
+
+/** Create one broad/exact claim only when every active claim remains globally feasible. */
+export function createInventoryReservation({
+  catalog,
+  projection,
+  book,
+  reservation,
+  now,
+}: CreateInventoryReservationInput): InventoryReservationBookResult {
+  assertCanonicalInventoryTime(now, "reservation now");
+  assertCanonicalInventoryTime(reservation.createdAt, "reservation createdAt");
+  if (reservation.createdAt > now) {
+    throw new Error(
+      "Reservation createdAt cannot be after its durable record time."
+    );
+  }
+  if (reservation.expiresAt !== undefined) {
+    assertCanonicalInventoryTime(
+      reservation.expiresAt,
+      "reservation expiresAt"
+    );
+    if (
+      reservation.expiresAt <= reservation.createdAt ||
+      reservation.expiresAt <= now
+    ) {
+      throw new Error(
+        "Cannot create an already-expired inventory reservation."
+      );
+    }
+  }
+  const item = catalog.itemRevision(reservation.itemRevisionId);
+  const selector = freezeReservationEligibleItemRevisions(
+    catalog,
+    item.revisionId,
+    reservation.selector
+  );
+  if (selector.itemId !== item.itemId) {
+    throw new Error(
+      "Reservation selector item differs from frozen item revision."
+    );
+  }
+  const reservationAxis = catalog.measurementAxis(item, item.reservationAxisId);
+  positiveQuantity(reservation.requested, "Reservation requested quantity");
+  if (reservation.requested.unit !== reservationAxis.unit) {
+    throw new Error(
+      `Reservation quantity must use '${reservationAxis.unit}', not '${reservation.requested.unit}'.`
+    );
+  }
+  const normalizedCreation: NewInventoryReservation = {
+    ...reservation,
+    selector,
+  };
+  const fingerprint = newReservationFingerprint(normalizedCreation);
+  const replay = findReservationOperationReplay(
+    book,
+    reservation.operationId,
+    InventoryReservationOperationKind.Create,
+    reservation.reservationId,
+    fingerprint
+  );
+  if (replay !== undefined) return replay;
+  if (book.reservations[reservation.reservationId] !== undefined) {
+    throw new Error(
+      `Inventory reservation '${reservation.reservationId}' already exists.`
+    );
+  }
+  const value: InventoryReservation = {
+    ...normalizedCreation,
+    status: InventoryReservationStatus.Active,
+    allocations: [],
+    lastChangedAt: reservation.createdAt,
+  };
+  const nextBook = addReservationOperation(
+    {
+      reservations: {
+        ...book.reservations,
+        [value.reservationId]: value,
+      },
+      operations: book.operations,
+    },
+    value,
+    {
+      operationId: value.operationId,
+      reservationId: value.reservationId,
+      kind: InventoryReservationOperationKind.Create,
+      intentFingerprint: fingerprint,
+    }
+  );
+  assertInventoryReservationsFeasible({
+    catalog,
+    projection,
+    book: nextBook,
+    at: now,
+  });
+  return { book: nextBook, reservation: value, replayed: false };
+}
+
+/** Inputs for checking the global non-overlapping assignment invariant. */
+export interface AssertInventoryReservationsFeasibleInput {
+  /** Frozen catalogue. */
+  readonly catalog: InventoryCatalog;
+  /** Current on-hand projection. */
+  readonly projection: InventoryProjectionState;
+  /** Reservation book to test. */
+  readonly book: InventoryReservationBook;
+  /** Time determining which active claims have expired logically. */
+  readonly at: string;
+}
+
+/** Throw unless all active claims have one simultaneous non-overlapping stock assignment. */
+export function assertInventoryReservationsFeasible({
+  catalog,
+  projection,
+  book,
+  at,
+}: AssertInventoryReservationsFeasibleInput): void {
+  const report = inspectInventoryReservationFeasibility({
+    catalog,
+    projection,
+    book,
+    at,
+  });
+  if (report.status === InventoryReservationFeasibilityStatus.Feasible) return;
+  const shortReservationIds: string[] = [];
+  for (const group of report.groups) {
+    if (group.shortage.amountMinor === 0) continue;
+    shortReservationIds.push(...group.reservationIds);
+  }
+  shortReservationIds.sort();
+  throw new Error(
+    `Inventory reservations cannot all be fulfilled simultaneously: ${shortReservationIds.join(
+      ", "
+    )}.`
+  );
+}
+
+/** Return exact group shortages instead of hiding physical loss behind a thrown feasibility check. */
+export function inspectInventoryReservationFeasibility({
+  catalog,
+  projection,
+  book,
+  at,
+}: AssertInventoryReservationsFeasibleInput): InventoryReservationFeasibilityReport {
+  assertCanonicalInventoryTime(at, "reservation feasibility time");
+  const activeReservations: InventoryReservation[] = [];
+  for (const reservation of inventoryReservationsAt(book, at)) {
+    if (inventoryReservationIsActiveAt(reservation, at)) {
+      activeReservations.push(reservation);
+    }
+  }
+  const groups = groupReservationsByCompetingAxis(catalog, activeReservations);
+  const results: InventoryReservationFeasibilityGroup[] = [];
+  let status = InventoryReservationFeasibilityStatus.Feasible;
+  for (const reservations of groups.values()) {
+    const first = reservations[0];
+    if (first === undefined) continue;
+    const item = catalog.itemRevision(first.itemRevisionId);
+    const axis = catalog.measurementAxis(item, item.reservationAxisId);
+    const feasibility = reservationGroupFeasibility(
+      catalog,
+      projection,
+      reservations,
+      at
+    );
+    const shortage = quantity({
+      amountMinor: safeNumberFromBigInt(
+        feasibility.requestedMinor - feasibility.fulfillableMinor,
+        "Reservation feasibility shortage"
+      ),
+      decimals: feasibility.decimals,
+      unit: axis.unit,
+    });
+    if (shortage.amountMinor > 0) {
+      status = InventoryReservationFeasibilityStatus.Shortage;
+    }
+    const reservationIds: string[] = [];
+    for (const reservation of reservations) {
+      reservationIds.push(reservation.reservationId);
+    }
+    results.push({
+      itemId: item.itemId,
+      axisId: axis.axisId,
+      reservationIds,
+      requested: quantity({
+        amountMinor: safeNumberFromBigInt(
+          feasibility.requestedMinor,
+          "Reservation feasibility requested quantity"
+        ),
+        decimals: feasibility.decimals,
+        unit: axis.unit,
+      }),
+      fulfillable: quantity({
+        amountMinor: safeNumberFromBigInt(
+          feasibility.fulfillableMinor,
+          "Reservation feasibility fulfillable quantity"
+        ),
+        decimals: feasibility.decimals,
+        unit: axis.unit,
+      }),
+      shortage,
+    });
+  }
+  results.sort(compareReservationFeasibilityGroup);
+  return { at, status, groups: results };
+}
+
+/** Rebuild every reservation row as it existed at one lifecycle occurrence time. */
+export function inventoryReservationsAt(
+  book: InventoryReservationBook,
+  at: string
+): readonly InventoryReservation[] {
+  const current = currentInventoryReservationsAt(book, at);
+  if (current !== undefined) return current;
+  const latestByReservationId = new Map<
+    string,
+    InventoryReservationOperation
+  >();
+  for (const operation of Object.values(book.operations)) {
+    if (operation.reservationAfter.lastChangedAt > at) continue;
+    const earlier = latestByReservationId.get(operation.reservationId);
+    if (
+      earlier === undefined ||
+      operation.lifecycleSequence > earlier.lifecycleSequence
+    ) {
+      latestByReservationId.set(operation.reservationId, operation);
+    }
+  }
+  const reservations: InventoryReservation[] = [];
+  for (const operation of latestByReservationId.values()) {
+    reservations.push(operation.reservationAfter);
+  }
+  reservations.sort(compareReservationIdentity);
+  return reservations;
+}
+
+/**
+ * Return the current claim rows when the requested authority time is at or after every
+ * retained current lifecycle fact. Current availability/allocation reads therefore scale
+ * with current claims rather than replaying an ever-growing operation history.
+ */
+function currentInventoryReservationsAt(
+  book: InventoryReservationBook,
+  at: string
+): readonly InventoryReservation[] | undefined {
+  const reservations = Object.values(book.reservations);
+  for (const reservation of reservations) {
+    if (reservation.lastChangedAt > at) return undefined;
+  }
+  reservations.sort(compareReservationIdentity);
+  return reservations;
+}
+
+/** Return whether this retained reservation row reduced availability at this authority time. */
+export function inventoryReservationIsActiveAt(
+  reservation: InventoryReservation,
+  at: string
+): boolean {
+  if (at < reservation.createdAt) return false;
+  if (reservation.expiresAt !== undefined && at >= reservation.expiresAt)
+    return false;
+  if (reservation.status === InventoryReservationStatus.Active) return true;
+  // A released, expired, or consumed row still protected stock before that terminal fact happened.
+  return reservation.statusAt !== undefined && at < reservation.statusAt;
+}
+
+/** Inputs for narrowing one active reservation selector. */
+export interface RefineInventoryReservationInput {
+  /** Frozen catalogue. */
+  readonly catalog: InventoryCatalog;
+  /** Current on-hand projection. */
+  readonly projection: InventoryProjectionState;
+  /** Current reservation book. */
+  readonly book: InventoryReservationBook;
+  /** Stable lifecycle retry identity. */
+  readonly operationId: string;
+  /** Reservation being narrowed. */
+  readonly reservationId: string;
+  /** New selector that must be a structural subset of the existing selector. */
+  readonly selector: InventoryStockSelector;
+  /** Lifecycle operation occurrence time. */
+  readonly occurredAt: string;
+}
+
+/** Narrow one claim without making the global set of claims infeasible. */
+export function refineInventoryReservation(
+  input: RefineInventoryReservationInput
+): InventoryReservationBookResult {
+  assertCanonicalInventoryTime(
+    input.occurredAt,
+    "reservation refine occurredAt"
+  );
+  const reservation = requireActiveReservation(
+    input.book,
+    input.reservationId,
+    input.occurredAt
+  );
+  const selector = freezeReservationEligibleItemRevisions(
+    input.catalog,
+    reservation.itemRevisionId,
+    input.selector
+  );
+  if (!inventoryStockSelectorIsSubset(selector, reservation.selector)) {
+    throw new Error(
+      "Reservation refinement must narrow, not broaden, the eligible stock scope."
+    );
+  }
+  for (const allocation of reservation.allocations) {
+    assertPositionInsideSelector(allocation.position, selector);
+  }
+  const fingerprint = inventoryIntentFingerprint([
+    input.reservationId,
+    input.occurredAt,
+    inventoryStockSelectorIdentity(selector),
+  ]);
+  const replay = findReservationOperationReplay(
+    input.book,
+    input.operationId,
+    InventoryReservationOperationKind.Refine,
+    input.reservationId,
+    fingerprint
+  );
+  if (replay !== undefined) return replay;
+  const value: InventoryReservation = {
+    ...reservation,
+    selector,
+    lastChangedAt: input.occurredAt,
+  };
+  const nextBook = replaceReservationWithOperation(input.book, value, {
+    operationId: input.operationId,
+    reservationId: input.reservationId,
+    kind: InventoryReservationOperationKind.Refine,
+    intentFingerprint: fingerprint,
+  });
+  assertInventoryReservationsFeasible({
+    catalog: input.catalog,
+    projection: input.projection,
+    book: nextBook,
+    at: input.occurredAt,
+  });
+  return { book: nextBook, reservation: value, replayed: false };
+}
+
+/** Inputs for binding one active claim to exact stock positions. */
+export interface AllocateInventoryReservationInput {
+  /** Frozen catalogue. */
+  readonly catalog: InventoryCatalog;
+  /** Current on-hand projection. */
+  readonly projection: InventoryProjectionState;
+  /** Current reservation book. */
+  readonly book: InventoryReservationBook;
+  /** Stable lifecycle retry identity. */
+  readonly operationId: string;
+  /** Reservation being allocated/reallocated. */
+  readonly reservationId: string;
+  /** Exact position quantities whose total must equal the request. */
+  readonly allocations: readonly InventoryReservationAllocation[];
+  /** Lifecycle operation occurrence time. */
+  readonly occurredAt: string;
+}
+
+/** Bind one broad claim to exact positions while preserving global feasibility. */
+export function allocateInventoryReservation(
+  input: AllocateInventoryReservationInput
+): InventoryReservationBookResult {
+  assertCanonicalInventoryTime(
+    input.occurredAt,
+    "reservation allocation occurredAt"
+  );
+  const reservation = requireActiveReservation(
+    input.book,
+    input.reservationId,
+    input.occurredAt
+  );
+  const item = input.catalog.itemRevision(reservation.itemRevisionId);
+  const axis = input.catalog.measurementAxis(item, item.reservationAxisId);
+  const allocations = normalizeReservationAllocations(
+    input.catalog,
+    input.projection,
+    input.allocations,
+    reservation,
+    axis.axisId,
+    axis.unit,
+    input.occurredAt
+  );
+  const fingerprint = inventoryIntentFingerprint([
+    input.reservationId,
+    input.occurredAt,
+    allocations.map(allocationFingerprint),
+  ]);
+  const replay = findReservationOperationReplay(
+    input.book,
+    input.operationId,
+    InventoryReservationOperationKind.Allocate,
+    input.reservationId,
+    fingerprint
+  );
+  if (replay !== undefined) return replay;
+  const value: InventoryReservation = {
+    ...reservation,
+    allocations,
+    lastChangedAt: input.occurredAt,
+  };
+  const nextBook = replaceReservationWithOperation(input.book, value, {
+    operationId: input.operationId,
+    reservationId: input.reservationId,
+    kind: InventoryReservationOperationKind.Allocate,
+    intentFingerprint: fingerprint,
+  });
+  assertInventoryReservationsFeasible({
+    catalog: input.catalog,
+    projection: input.projection,
+    book: nextBook,
+    at: input.occurredAt,
+  });
+  return { book: nextBook, reservation: value, replayed: false };
+}
+
+/** Inputs shared by release/expiry lifecycle commands. */
+export interface CloseInventoryReservationInput {
+  /** Current reservation book. */
+  readonly book: InventoryReservationBook;
+  /** Stable lifecycle retry identity. */
+  readonly operationId: string;
+  /** Reservation being closed. */
+  readonly reservationId: string;
+  /** Lifecycle operation occurrence time. */
+  readonly occurredAt: string;
+}
+
+/** Release one active claim without changing physical stock. */
+export function releaseInventoryReservation(
+  input: CloseInventoryReservationInput
+): InventoryReservationBookResult {
+  assertCanonicalInventoryTime(
+    input.occurredAt,
+    "reservation release occurredAt"
+  );
+  const fingerprint = inventoryIntentFingerprint([
+    input.reservationId,
+    input.occurredAt,
+  ]);
+  const replay = findReservationOperationReplay(
+    input.book,
+    input.operationId,
+    InventoryReservationOperationKind.Release,
+    input.reservationId,
+    fingerprint
+  );
+  if (replay !== undefined) return replay;
+  const reservation = requireActiveReservation(
+    input.book,
+    input.reservationId,
+    input.occurredAt
+  );
+  const value: InventoryReservation = {
+    ...reservation,
+    status: InventoryReservationStatus.Released,
+    statusAt: input.occurredAt,
+    lastChangedAt: input.occurredAt,
+  };
+  const book = replaceReservationWithOperation(input.book, value, {
+    operationId: input.operationId,
+    reservationId: input.reservationId,
+    kind: InventoryReservationOperationKind.Release,
+    intentFingerprint: fingerprint,
+  });
+  return { book, reservation: value, replayed: false };
+}
+
+/** Mark one active claim durably expired after its configured expiry time. */
+export function expireInventoryReservation(
+  input: CloseInventoryReservationInput
+): InventoryReservationBookResult {
+  assertCanonicalInventoryTime(
+    input.occurredAt,
+    "reservation expiry occurredAt"
+  );
+  const fingerprint = inventoryIntentFingerprint([
+    input.reservationId,
+    input.occurredAt,
+  ]);
+  const replay = findReservationOperationReplay(
+    input.book,
+    input.operationId,
+    InventoryReservationOperationKind.Expire,
+    input.reservationId,
+    fingerprint
+  );
+  if (replay !== undefined) return replay;
+  const reservation = input.book.reservations[input.reservationId];
+  if (reservation === undefined)
+    throw new Error("Unknown inventory reservation.");
+  if (reservation.status !== InventoryReservationStatus.Active) {
+    throw new Error("Only an active inventory reservation can expire.");
+  }
+  assertReservationLifecycleTime(reservation, input.occurredAt);
+  if (
+    reservation.expiresAt === undefined ||
+    reservation.expiresAt > input.occurredAt
+  ) {
+    throw new Error("Inventory reservation has not reached its expiry time.");
+  }
+  const value: InventoryReservation = {
+    ...reservation,
+    status: InventoryReservationStatus.Expired,
+    statusAt: input.occurredAt,
+    lastChangedAt: input.occurredAt,
+  };
+  const book = replaceReservationWithOperation(input.book, value, {
+    operationId: input.operationId,
+    reservationId: input.reservationId,
+    kind: InventoryReservationOperationKind.Expire,
+    intentFingerprint: fingerprint,
+  });
+  return { book, reservation: value, replayed: false };
+}
+
+/** Inputs for marking a claim consumed after its issue event committed atomically. */
+export interface MarkInventoryReservationConsumedInput {
+  /** Current reservation book. */
+  readonly book: InventoryReservationBook;
+  /** Stable lifecycle retry identity (normally the consuming inventory operation id). */
+  readonly operationId: string;
+  /** Reservation being consumed. */
+  readonly reservationId: string;
+  /** Committed issue event that consumed the exact allocation. */
+  readonly consumptionEventId: string;
+  /** Physical issue occurrence time. */
+  readonly occurredAt: string;
+}
+
+/** Close one active allocated claim against one committed issue event exactly once. */
+export function markInventoryReservationConsumed(
+  input: MarkInventoryReservationConsumedInput
+): InventoryReservationBookResult {
+  assertCanonicalInventoryTime(
+    input.occurredAt,
+    "reservation consume occurredAt"
+  );
+  const fingerprint = inventoryIntentFingerprint([
+    input.reservationId,
+    input.consumptionEventId,
+    input.occurredAt,
+  ]);
+  const replay = findReservationOperationReplay(
+    input.book,
+    input.operationId,
+    InventoryReservationOperationKind.Consume,
+    input.reservationId,
+    fingerprint
+  );
+  if (replay !== undefined) return replay;
+  const reservation = requireActiveReservation(
+    input.book,
+    input.reservationId,
+    input.occurredAt
+  );
+  if (reservation.allocations.length === 0) {
+    throw new Error("Reservation must be allocated before it can be consumed.");
+  }
+  const value: InventoryReservation = {
+    ...reservation,
+    status: InventoryReservationStatus.Consumed,
+    statusAt: input.occurredAt,
+    lastChangedAt: input.occurredAt,
+    consumptionEventId: input.consumptionEventId,
+  };
+  const book = replaceReservationWithOperation(input.book, value, {
+    operationId: input.operationId,
+    reservationId: input.reservationId,
+    kind: InventoryReservationOperationKind.Consume,
+    intentFingerprint: fingerprint,
+  });
+  return { book, reservation: value, replayed: false };
+}
+
+/** Normalize allocation lines, merge duplicate positions, and require exact requested total. */
+function normalizeReservationAllocations(
+  catalog: InventoryCatalog,
+  projection: InventoryProjectionState,
+  allocations: readonly InventoryReservationAllocation[],
+  reservation: InventoryReservation,
+  axisId: string,
+  unit: Quantity["unit"],
+  at: string
+): readonly InventoryReservationAllocation[] {
+  if (allocations.length === 0) {
+    throw new Error(
+      "Reservation allocation needs at least one exact position."
+    );
+  }
+  const grouped = new Map<string, InventoryReservationAllocation>();
+  for (const allocation of allocations) {
+    positiveQuantity(allocation.quantity, "Reservation allocation quantity");
+    if (allocation.quantity.unit !== unit) {
+      throw new Error(`Reservation allocation must use '${unit}'.`);
+    }
+    assertPositionInsideSelector(allocation.position, reservation.selector);
+    const identity = inventoryStockPositionIdentity(allocation.position);
+    const earlier = grouped.get(identity);
+    grouped.set(
+      identity,
+      earlier === undefined
+        ? allocation
+        : {
+            position: earlier.position,
+            quantity: addQuantity(earlier.quantity, allocation.quantity),
+          }
+    );
+  }
+  const normalized = [...grouped.values()];
+  normalized.sort(compareReservationAllocation);
+  let total = zeroQuantity(unit);
+  for (const allocation of normalized)
+    total = addQuantity(total, allocation.quantity);
+  if (!quantityEq(total, reservation.requested)) {
+    throw new Error(
+      "Reservation allocation total must exactly equal requested quantity."
+    );
+  }
+  for (const allocation of normalized) {
+    assertReservationAllocationCanBecomeLegalIssue(
+      catalog,
+      projection,
+      allocation,
+      reservation,
+      axisId,
+      unit,
+      at
+    );
+  }
+  return normalized;
+}
+
+/** Reject an exact allocation that no legal issue amount can consume from that stock row. */
+function assertReservationAllocationCanBecomeLegalIssue(
+  catalog: InventoryCatalog,
+  projection: InventoryProjectionState,
+  allocation: InventoryReservationAllocation,
+  reservation: InventoryReservation,
+  axisId: string,
+  unit: Quantity["unit"],
+  at: string
+): void {
+  if (allocation.position.transferId !== undefined) {
+    throw new Error("Reservation allocation cannot bind prepared or in-transit transfer stock.");
+  }
+  const identity = inventoryStockPositionIdentity(allocation.position);
+  const projected = projection.positions[identity];
+  if (projected === undefined) {
+    throw new Error(
+      `Reservation allocation position ${identity} has no positive stock.`
+    );
+  }
+  if (
+    reservation.allowExpiredStock !== true &&
+    inventoryPositionIsExpiredAt(projection, projected.key, at)
+  ) {
+    throw new Error(
+      "Reservation allocation cannot use stock past its lot/container use-by unless the claim explicitly permits it."
+    );
+  }
+  const capacity = inventoryMeasurementAt(projected.measurements, axisId, unit);
+  if (compareQuantity(allocation.quantity, capacity) > 0) {
+    throw new Error(
+      "Reservation allocation exceeds current stock at its exact position."
+    );
+  }
+  if (
+    allocation.position.serialId !== undefined &&
+    !quantityEq(allocation.quantity, capacity)
+  ) {
+    throw new Error(
+      "A serial allocation must reserve the complete one-serial stock row."
+    );
+  }
+  const packagingRevisionId = allocation.position.packagingRevisionId;
+  if (packagingRevisionId === undefined) return;
+  const item = catalog.itemRevision(allocation.position.itemRevisionId);
+  if (axisId !== item.primaryAxis.axisId) {
+    if (!quantityEq(allocation.quantity, capacity)) {
+      throw new Error(
+        "A package allocation on an independently measured reservation axis must reserve the whole stock row."
+      );
+    }
+    return;
+  }
+  const packaging = catalog.packagingRevision(packagingRevisionId);
+  const onePackage = inventoryMeasurementAt(
+    packaging.fixedContents,
+    axisId,
+    unit
+  );
+  if (!quantityIsWholeMultipleOf(allocation.quantity, onePackage)) {
+    throw new Error(
+      "Intact package allocation must equal a whole number of exact packages."
+    );
+  }
+}
+
+/** Keep lifecycle writes in causal order even when callers submit backdated commands. */
+function assertReservationLifecycleTime(
+  reservation: InventoryReservation,
+  occurredAt: string
+): void {
+  if (occurredAt < reservation.createdAt) {
+    throw new Error(
+      "Reservation lifecycle change cannot happen before creation."
+    );
+  }
+  if (occurredAt < reservation.lastChangedAt) {
+    throw new Error(
+      "Reservation lifecycle change cannot predate the latest change."
+    );
+  }
+}
+
+/** Group claims that compete for the same item/axis/unit resource pool. */
+function groupReservationsByCompetingAxis(
+  catalog: InventoryCatalog,
+  reservations: readonly InventoryReservation[]
+): ReadonlyMap<string, InventoryReservation[]> {
+  const groups = new Map<string, InventoryReservation[]>();
+  for (const reservation of reservations) {
+    const item = catalog.itemRevision(reservation.itemRevisionId);
+    const axis = catalog.measurementAxis(item, item.reservationAxisId);
+    // Separate revision pools unless their exact frozen eligible revision set is identical.
+    const key = JSON.stringify([
+      item.itemId,
+      reservation.selector.itemRevisionIds ?? [],
+      axis.axisId,
+      axis.unit,
+    ]);
+    const group = groups.get(key) ?? [];
+    group.push(reservation);
+    groups.set(key, group);
+  }
+  for (const group of groups.values()) {
+    group.sort(compareReservationIdentity);
+  }
+  return groups;
+}
+
+/** One positive on-hand position exposed to the reservation max-flow check. */
+interface ReservationFeasibilityPosition {
+  /** Exact position identity. */
+  readonly identity: string;
+  /** Exact position key. */
+  readonly position: InventoryStockPositionKey;
+  /** Positive on-hand capacity on the competing axis. */
+  readonly capacity: Quantity;
+  /** Smallest legal issue from this row; omitted means the row is divisible on this axis. */
+  readonly indivisibleIncrement?: Quantity;
+}
+
+/** One positive position participating in deterministic deficit burden before feasibility. */
+interface ReservationDeficitBurdenPosition
+  extends ReservationFeasibilityPosition {
+  /** True when at least one real reservation can use this exact position. */
+  readonly reservationCandidate: boolean;
+  /** Number of real reservations eligible for this position; lower means more constrained. */
+  readonly eligibleReservationCount: number;
+}
+
+/** Equal package/serial pieces from one merged stock row, kept as integer capacity. */
+interface ReservationIndivisibleGroup {
+  /** Position index these equal legal issue pieces come from. */
+  readonly positionIndex: number;
+  /** Exact shared-scale size of one legal issue piece. */
+  readonly capacityMinor: bigint;
+  /** Number of equal pieces in this projected position. */
+  readonly count: bigint;
+  /** Claims that can take at least one whole piece from this position. */
+  readonly eligibleReservationCount: number;
+}
+
+/** Exact scaled max-flow result for one competing claim group. */
+interface ReservationGroupFeasibility {
+  /** Shared decimal scale used by every flow edge. */
+  readonly decimals: number;
+  /** Total active claim demand at the shared scale. */
+  readonly requestedMinor: bigint;
+  /** Maximum assignable demand at the shared scale. */
+  readonly fulfillableMinor: bigint;
+}
+
+/** Maximum claims accepted in one competing feasibility group. */
+export const MAXIMUM_RESERVATION_FEASIBILITY_RESERVATIONS = 128;
+/** Maximum positive stock rows accepted in one competing feasibility group. */
+export const MAXIMUM_RESERVATION_FEASIBILITY_POSITIONS = 512;
+/** Maximum claim-to-position eligibility edges accepted before failing closed. */
+export const MAXIMUM_RESERVATION_FEASIBILITY_EDGES = 8_192;
+/** Maximum real integer-assignment states explored before asking the caller to narrow scope. */
+export const MAXIMUM_RESERVATION_FEASIBILITY_STATES = 100_000;
+
+/** Return whether one current position may back this claim at the supplied authority time. */
+function reservationPositionEligible(
+  reservation: InventoryReservation,
+  projection: InventoryProjectionState,
+  position: InventoryStockPositionKey,
+  at: string
+): boolean {
+  if (position.transferId !== undefined) return false;
+  if (!inventoryStockPositionMatchesSelector(position, reservation.selector))
+    return false;
+  return (
+    reservation.allowExpiredStock === true ||
+    !inventoryPositionIsExpiredAt(projection, position, at)
+  );
+}
+
+/** Return the exact maximum simultaneous assignment for one competing group. */
+function reservationGroupFeasibility(
+  catalog: InventoryCatalog,
+  projection: InventoryProjectionState,
+  reservations: readonly InventoryReservation[],
+  at: string
+): ReservationGroupFeasibility {
+  const first = reservations[0];
+  if (first === undefined) {
+    return { decimals: 0, requestedMinor: 0n, fulfillableMinor: 0n };
+  }
+  const item = catalog.itemRevision(first.itemRevisionId);
+  const axis = catalog.measurementAxis(item, item.reservationAxisId);
+  if (reservations.length > MAXIMUM_RESERVATION_FEASIBILITY_RESERVATIONS) {
+    throw new Error(
+      "Reservation feasibility group has too many claims; narrow or partition the scope."
+    );
+  }
+  // Freeze each allocation list once. Exact claims do not need broad selector × position scans.
+  const allocationsByReservation = reservations.map(
+    /** Freeze one reservation's exact allocation list before graph construction. */
+    (reservation) => reservation.allocations
+  );
+  const broadReservations: InventoryReservation[] = [];
+  const candidatePositionIdentities = new Set<string>();
+  for (
+    let reservationIndex = 0;
+    reservationIndex < reservations.length;
+    reservationIndex += 1
+  ) {
+    const reservation = reservations[reservationIndex];
+    const allocations = allocationsByReservation[reservationIndex];
+    if (reservation === undefined || allocations === undefined) continue;
+    if (allocations.length === 0) {
+      broadReservations.push(reservation);
+      continue;
+    }
+    for (const allocation of allocations) {
+      const identity = inventoryStockPositionIdentity(allocation.position);
+      const position = projection.positions[identity];
+      if (
+        position !== undefined &&
+        reservationPositionEligible(reservation, projection, position.key, at)
+      ) {
+        candidatePositionIdentities.add(identity);
+      }
+    }
+  }
+  if (broadReservations.length > 0) {
+    for (const identity of projection.positionIdsByItemRevisionId[
+      first.itemRevisionId
+    ] ?? []) {
+      const position = projection.positions[identity];
+      if (position === undefined) {
+        throw new Error(
+          `Reservation item-revision index references missing position ${identity}.`
+        );
+      }
+      for (const reservation of broadReservations) {
+        if (
+          reservationPositionEligible(reservation, projection, position.key, at)
+        ) {
+          candidatePositionIdentities.add(identity);
+          break;
+        }
+      }
+    }
+  }
+  const locationIds = reservationFeasibilityLocationIds(
+    projection,
+    reservations,
+    allocationsByReservation,
+    first.itemRevisionId
+  );
+  const selectedLocations = new Set(locationIds);
+  const burdenPositions: ReservationDeficitBurdenPosition[] = [];
+  for (const identity of projection.positionIdsByItemRevisionId[
+    first.itemRevisionId
+  ] ?? []) {
+    const position = projection.positions[identity];
+    if (position === undefined) {
+      throw new Error(
+        `Reservation item-revision index references missing position ${identity}.`
+      );
+    }
+    if (!selectedLocations.has(position.key.locationId)) continue;
+    const capacity = inventoryMeasurementAt(
+      position.measurements,
+      axis.axisId,
+      axis.unit
+    );
+    if (
+      compareQuantity(capacity, zeroQuantity(axis.unit, capacity.decimals)) <= 0
+    ) {
+      continue;
+    }
+    let eligibleReservationCount = 0;
+    for (
+      let reservationIndex = 0;
+      reservationIndex < reservations.length;
+      reservationIndex += 1
+    ) {
+      const reservation = reservations[reservationIndex];
+      const allocations = allocationsByReservation[reservationIndex];
+      if (reservation === undefined || allocations === undefined) continue;
+      if (
+        allocations.length === 0
+          ? reservationPositionEligible(
+              reservation,
+              projection,
+              position.key,
+              at
+            )
+          : allocations.some(
+              /** Exact claims can use only their retained allocation positions. */
+              (allocation) =>
+                inventoryStockPositionIdentity(allocation.position) ===
+                  identity &&
+                reservationPositionEligible(
+                  reservation,
+                  projection,
+                  position.key,
+                  at
+                )
+            )
+      ) {
+        eligibleReservationCount += 1;
+      }
+    }
+    burdenPositions.push({
+      identity,
+      position: position.key,
+      capacity,
+      reservationCandidate: candidatePositionIdentities.has(identity),
+      eligibleReservationCount,
+      ...createIndivisibleReservationIncrement(
+        catalog,
+        position.key,
+        axis.axisId,
+        capacity
+      ),
+    });
+  }
+  burdenPositions.sort(compareReservationDeficitBurdenPosition);
+  const burden = applyInventoryRecordedDeficitBurden({
+    projection,
+    itemRevisionId: first.itemRevisionId,
+    axisId: axis.axisId,
+    unit: axis.unit,
+    locationIds,
+    lines: burdenPositions.map(
+      /** Non-candidate rows back deficit first; candidate order remains deterministic. */
+      (position) => ({
+        position: position.position,
+        capacity: position.capacity,
+        ...(position.indivisibleIncrement === undefined
+          ? {}
+          : { allocationIncrement: position.indivisibleIncrement }),
+      })
+    ),
+  });
+  const positions: ReservationFeasibilityPosition[] = [];
+  for (const position of burdenPositions) {
+    if (!position.reservationCandidate) continue;
+    const capacity = burden.capacityByPositionIdentity.get(position.identity);
+    if (capacity === undefined) {
+      throw new Error(
+        `Reservation deficit burden lost position '${position.identity}'.`
+      );
+    }
+    if (
+      compareQuantity(capacity, zeroQuantity(axis.unit, capacity.decimals)) <= 0
+    ) {
+      continue;
+    }
+    positions.push({
+      identity: position.identity,
+      position: position.position,
+      capacity,
+      ...(position.indivisibleIncrement === undefined
+        ? {}
+        : { indivisibleIncrement: position.indivisibleIncrement }),
+    });
+  }
+  positions.sort(compareFeasibilityPosition);
+  if (positions.length > MAXIMUM_RESERVATION_FEASIBILITY_POSITIONS) {
+    throw new Error(
+      "Reservation feasibility group has too many stock rows; narrow or partition the scope."
+    );
+  }
+
+  let decimals = 0;
+  for (
+    let reservationIndex = 0;
+    reservationIndex < reservations.length;
+    reservationIndex += 1
+  ) {
+    const reservation = reservations[reservationIndex];
+    const allocations = allocationsByReservation[reservationIndex];
+    if (reservation === undefined || allocations === undefined) continue;
+    decimals = Math.max(decimals, reservation.requested.decimals);
+    for (const allocation of allocations) {
+      decimals = Math.max(decimals, allocation.quantity.decimals);
+    }
+  }
+  for (const position of positions)
+    decimals = Math.max(decimals, position.capacity.decimals);
+
+  if (broadReservations.length === 0) {
+    return exactReservationGroupFeasibility({
+      reservations,
+      allocationsByReservation,
+      positions,
+      projection,
+      at,
+      decimals,
+    });
+  }
+
+  let totalRequested = 0n;
+  const requestedByReservation: bigint[] = [];
+  const edgeCapacityByReservation: bigint[][] = [];
+  let edgeCount = 0;
+  for (
+    let reservationIndex = 0;
+    reservationIndex < reservations.length;
+    reservationIndex += 1
+  ) {
+    const reservation = reservations[reservationIndex];
+    const allocations = allocationsByReservation[reservationIndex];
+    if (reservation === undefined || allocations === undefined) continue;
+    const requested = quantityAtDecimals(reservation.requested, decimals);
+    totalRequested += requested;
+    requestedByReservation.push(requested);
+    const allocatedByPosition = new Map<string, bigint>();
+    for (const allocation of allocations) {
+      allocatedByPosition.set(
+        inventoryStockPositionIdentity(allocation.position),
+        quantityAtDecimals(allocation.quantity, decimals)
+      );
+    }
+    const edgeCapacities: bigint[] = [];
+    for (
+      let positionIndex = 0;
+      positionIndex < positions.length;
+      positionIndex += 1
+    ) {
+      const candidate = positions[positionIndex];
+      if (candidate === undefined) continue;
+      const edgeCapacity =
+        allocations.length === 0
+          ? reservationPositionEligible(
+              reservation,
+              projection,
+              candidate.position,
+              at
+            )
+            ? requested
+            : 0n
+          : reservationPositionEligible(
+              reservation,
+              projection,
+              candidate.position,
+              at
+            )
+          ? allocatedByPosition.get(candidate.identity) ?? 0n
+          : 0n;
+      edgeCapacities.push(edgeCapacity);
+      if (edgeCapacity > 0n) edgeCount += 1;
+    }
+    edgeCapacityByReservation.push(edgeCapacities);
+  }
+  if (edgeCount > MAXIMUM_RESERVATION_FEASIBILITY_EDGES) {
+    throw new Error(
+      "Reservation feasibility graph has too many eligible claim/stock pairs; narrow the selectors."
+    );
+  }
+
+  /** Merged package/serial capacities; ordinary package count does not create search nodes. */
+  const indivisibleGroups: ReservationIndivisibleGroup[] = [];
+  for (
+    let positionIndex = 0;
+    positionIndex < positions.length;
+    positionIndex += 1
+  ) {
+    const candidate = positions[positionIndex];
+    if (candidate === undefined) continue;
+    const increment = candidate.indivisibleIncrement;
+    if (increment === undefined) continue;
+    const capacityMinor = quantityAtDecimals(candidate.capacity, decimals);
+    const incrementMinor = quantityAtDecimals(increment, decimals);
+    const slotCount = capacityMinor / incrementMinor;
+    if (capacityMinor % incrementMinor !== 0n) {
+      throw new Error(
+        "Indivisible reservation stock is not a whole number of legal issue increments."
+      );
+    }
+    let eligibleReservationCount = 0;
+    for (const edgeCapacities of edgeCapacityByReservation) {
+      if ((edgeCapacities[positionIndex] ?? 0n) >= incrementMinor) {
+        eligibleReservationCount += 1;
+      }
+    }
+    if (eligibleReservationCount === 0) continue;
+    indivisibleGroups.push({
+      positionIndex,
+      capacityMinor: incrementMinor,
+      count: slotCount,
+      eligibleReservationCount,
+    });
+    if (indivisibleGroups.length > MAXIMUM_RESERVATION_FEASIBILITY_POSITIONS) {
+      throw new Error(
+        "Reservation feasibility has too many indivisible stock groups; narrow the selectors."
+      );
+    }
+  }
+  indivisibleGroups.sort(compareReservationIndivisibleGroup);
+  return {
+    decimals,
+    requestedMinor: totalRequested,
+    fulfillableMinor: maximumReservationAssignmentWithIndivisibleGroups(
+      positions,
+      indivisibleGroups,
+      requestedByReservation,
+      edgeCapacityByReservation,
+      decimals,
+      totalRequested
+    ),
+  };
+}
+
+/** Inputs for the sparse exact-allocation feasibility fast path. */
+interface ExactReservationGroupFeasibilityInput {
+  /** Exact claims competing on one revision/axis. */
+  readonly reservations: readonly InventoryReservation[];
+  /** Allocation lists frozen once by reservation index. */
+  readonly allocationsByReservation: readonly (readonly InventoryReservationAllocation[])[];
+  /** Positive eligible positions retained by at least one exact claim. */
+  readonly positions: readonly ReservationFeasibilityPosition[];
+  /** Current published projection used for expiry/selector checks. */
+  readonly projection: InventoryProjectionState;
+  /** Authority time for eligibility. */
+  readonly at: string;
+  /** Shared exact decimal scale. */
+  readonly decimals: number;
+}
+
+/**
+ * Solve an exact-only claim group without materializing a dense claim × position graph.
+ * Exact allocations already freeze each claim's legal edges, so full coexistence reduces to
+ * checking the summed bound quantity against each exact position's current capacity.
+ */
+function exactReservationGroupFeasibility({
+  reservations,
+  allocationsByReservation,
+  positions,
+  projection,
+  at,
+  decimals,
+}: ExactReservationGroupFeasibilityInput): ReservationGroupFeasibility {
+  const capacityByPositionIdentity = new Map<string, bigint>();
+  for (const position of positions) {
+    capacityByPositionIdentity.set(
+      position.identity,
+      quantityAtDecimals(position.capacity, decimals)
+    );
+  }
+  const allocatedByPositionIdentity = new Map<string, bigint>();
+  let totalRequested = 0n;
+  for (
+    let reservationIndex = 0;
+    reservationIndex < reservations.length;
+    reservationIndex += 1
+  ) {
+    const reservation = reservations[reservationIndex];
+    const allocations = allocationsByReservation[reservationIndex];
+    if (reservation === undefined || allocations === undefined) continue;
+    const requested = quantityAtDecimals(reservation.requested, decimals);
+    totalRequested += requested;
+    let allocationTotal = 0n;
+    for (const allocation of allocations) {
+      const allocationMinor = quantityAtDecimals(allocation.quantity, decimals);
+      allocationTotal += allocationMinor;
+      const identity = inventoryStockPositionIdentity(allocation.position);
+      if (
+        !capacityByPositionIdentity.has(identity) ||
+        !reservationPositionEligible(
+          reservation,
+          projection,
+          allocation.position,
+          at
+        )
+      ) {
+        continue;
+      }
+      allocatedByPositionIdentity.set(
+        identity,
+        (allocatedByPositionIdentity.get(identity) ?? 0n) + allocationMinor
+      );
+    }
+    if (allocationTotal !== requested) {
+      throw new Error(
+        `Exact reservation '${reservation.reservationId}' allocations no longer equal its requested quantity.`
+      );
+    }
+  }
+
+  let fulfillable = 0n;
+  for (const [identity, capacity] of capacityByPositionIdentity) {
+    const allocated = allocatedByPositionIdentity.get(identity) ?? 0n;
+    fulfillable += allocated < capacity ? allocated : capacity;
+  }
+  return {
+    decimals,
+    requestedMinor: totalRequested,
+    fulfillableMinor:
+      fulfillable < totalRequested ? fulfillable : totalRequested,
+  };
+}
+
+/** Freeze one reservation to the exact item revision that defines its requested axis. */
+function freezeReservationEligibleItemRevisions(
+  catalog: InventoryCatalog,
+  itemRevisionId: string,
+  rawSelector: InventoryStockSelector
+): InventoryStockSelector {
+  const item = catalog.itemRevision(itemRevisionId);
+  const selector = normalizeInventoryStockSelector(rawSelector);
+  if (selector.itemId !== item.itemId) {
+    throw new Error(
+      "Reservation selector item differs from frozen item revision."
+    );
+  }
+  for (const eligibleRevisionId of selector.itemRevisionIds ?? [
+    itemRevisionId,
+  ]) {
+    const eligible = catalog.itemRevision(eligibleRevisionId);
+    if (eligible.itemId !== item.itemId) {
+      throw new Error(
+        "Reservation selector item revision belongs to a different item."
+      );
+    }
+    // The catalogue has no immutable cross-revision interchangeability declaration, so fail closed.
+    if (eligible.revisionId !== itemRevisionId) {
+      throw new Error(
+        "Reservation selector cannot span item revisions without a declared compatibility relation."
+      );
+    }
+  }
+  return normalizeInventoryStockSelector({
+    ...selector,
+    itemRevisionIds: [itemRevisionId],
+  });
+}
+
+/** Resolve location pools whose positive stock can back this competing claim group. */
+function reservationFeasibilityLocationIds(
+  projection: InventoryProjectionState,
+  reservations: readonly InventoryReservation[],
+  allocationsByReservation: readonly (readonly InventoryReservationAllocation[])[],
+  revisionId: string
+): readonly string[] {
+  const locationIds = new Set<string>();
+  let includeEveryLocation = false;
+  for (
+    let reservationIndex = 0;
+    reservationIndex < reservations.length;
+    reservationIndex += 1
+  ) {
+    const reservation = reservations[reservationIndex];
+    const allocations = allocationsByReservation[reservationIndex];
+    if (reservation === undefined || allocations === undefined) continue;
+    if (allocations.length > 0) {
+      for (const allocation of allocations) {
+        locationIds.add(allocation.position.locationId);
+      }
+      continue;
+    }
+    if (reservation.selector.locationIds === undefined) {
+      includeEveryLocation = true;
+      continue;
+    }
+    for (const locationId of reservation.selector.locationIds) {
+      locationIds.add(locationId);
+    }
+  }
+  if (includeEveryLocation) {
+    for (const positionIdentity of projection.positionIdsByItemRevisionId[
+      revisionId
+    ] ?? []) {
+      const position = projection.positions[positionIdentity];
+      if (position === undefined) {
+        throw new Error(
+          `Reservation item-revision index references missing position ${positionIdentity}.`
+        );
+      }
+      locationIds.add(position.key.locationId);
+    }
+  }
+  const ordered = [...locationIds];
+  ordered.sort();
+  return ordered;
+}
+
+/** Mark package/serial rows with the smallest amount one legal issue can take. */
+function createIndivisibleReservationIncrement(
+  catalog: InventoryCatalog,
+  position: InventoryStockPositionKey,
+  axisId: string,
+  capacity: Quantity
+): Pick<ReservationFeasibilityPosition, "indivisibleIncrement"> {
+  if (position.serialId !== undefined) {
+    return { indivisibleIncrement: capacity };
+  }
+  const packagingRevisionId = position.packagingRevisionId;
+  if (packagingRevisionId === undefined) return {};
+  const item = catalog.itemRevision(position.itemRevisionId);
+  if (axisId !== item.primaryAxis.axisId) {
+    // We do not know how a variable independent measure splits between intact packages.
+    return { indivisibleIncrement: capacity };
+  }
+  const packaging = catalog.packagingRevision(packagingRevisionId);
+  return {
+    indivisibleIncrement: inventoryMeasurementAt(
+      packaging.fixedContents,
+      axisId,
+      capacity.unit
+    ),
+  };
+}
+
+/** Assign grouped whole package/serial capacity exactly, then fill from divisible rows. */
+function maximumReservationAssignmentWithIndivisibleGroups(
+  positions: readonly ReservationFeasibilityPosition[],
+  groups: readonly ReservationIndivisibleGroup[],
+  requestedByReservation: readonly bigint[],
+  edgeCapacityByReservation: readonly bigint[][],
+  decimals: number,
+  totalRequested: bigint
+): bigint {
+  let best = 0n;
+  let exploredStates = 0;
+  const seen = new Set<string>();
+  /** Walk one bounded integer-capacity assignment without expanding ordinary package counts. */
+  const assignGroup = (
+    groupIndex: number,
+    remainingDemand: bigint[],
+    remainingEdgeCapacity: bigint[][],
+    assignedMinor: bigint
+  ): void => {
+    if (best === totalRequested) return;
+    exploredStates += 1;
+    if (exploredStates > MAXIMUM_RESERVATION_FEASIBILITY_STATES) {
+      throw new Error(
+        "Reservation indivisible assignment exceeded its safe search bound; narrow the selectors."
+      );
+    }
+    const stateIdentity = inventoryIntentFingerprint([
+      groupIndex,
+      remainingDemand.map(String),
+      remainingEdgeCapacity.map(
+        /** Encode one claim's remaining position capacities for search deduplication. */
+        (row) => row.map(String)
+      ),
+    ]);
+    if (seen.has(stateIdentity)) return;
+    seen.add(stateIdentity);
+    if (groupIndex === groups.length) {
+      const continuous = maximumContinuousReservationFlow(
+        positions,
+        remainingDemand,
+        remainingEdgeCapacity,
+        decimals
+      );
+      const fulfillable = assignedMinor + continuous;
+      if (fulfillable > best) best = fulfillable;
+      return;
+    }
+    const group = groups[groupIndex];
+    if (group === undefined) return;
+    assignIndivisibleGroupCounts(
+      group,
+      remainingDemand,
+      remainingEdgeCapacity,
+      /** Try each real integer distribution, with large assignments first for quick full-demand exits. */
+      (assignedCounts) => {
+        if (best === totalRequested) return false;
+        const nextDemand = [...remainingDemand];
+        const nextEdges = remainingEdgeCapacity.map(
+          /** Copy one claim's edge capacities before changing this group branch. */
+          (row) => [...row]
+        );
+        let groupAssignedMinor = 0n;
+        for (
+          let reservationIndex = 0;
+          reservationIndex < assignedCounts.length;
+          reservationIndex += 1
+        ) {
+          const assignedCount = assignedCounts[reservationIndex] ?? 0n;
+          if (assignedCount === 0n) continue;
+          const assignedForReservation = assignedCount * group.capacityMinor;
+          const demand = nextDemand[reservationIndex];
+          const edgeRow = nextEdges[reservationIndex];
+          const edgeCapacity = edgeRow?.[group.positionIndex];
+          if (
+            demand === undefined ||
+            edgeRow === undefined ||
+            edgeCapacity === undefined
+          ) {
+            throw new Error(
+              "Reservation grouped assignment lost one claim/position capacity."
+            );
+          }
+          nextDemand[reservationIndex] = demand - assignedForReservation;
+          edgeRow[group.positionIndex] = edgeCapacity - assignedForReservation;
+          groupAssignedMinor += assignedForReservation;
+        }
+        assignGroup(
+          groupIndex + 1,
+          nextDemand,
+          nextEdges,
+          assignedMinor + groupAssignedMinor
+        );
+        return best !== totalRequested;
+      }
+    );
+  };
+  assignGroup(
+    0,
+    [...requestedByReservation],
+    edgeCapacityByReservation.map(
+      /** Copy one claim's starting edge capacities for the exact search. */
+      (row) => [...row]
+    ),
+    0n
+  );
+  return best;
+}
+
+/** Enumerate the real integer distributions for one merged package/serial stock group. */
+function assignIndivisibleGroupCounts(
+  group: ReservationIndivisibleGroup,
+  remainingDemand: readonly bigint[],
+  remainingEdgeCapacity: readonly (readonly bigint[])[],
+  useAssignment: (assignedCounts: readonly bigint[]) => boolean
+): void {
+  const assignedCounts = remainingDemand.map(
+    /** Start every claim at zero pieces from this one stock group. */
+    () => 0n
+  );
+  /** Give this group's integer capacity to eligible claims without splitting one piece. */
+  const assignReservation = (
+    reservationIndex: number,
+    remainingPieces: bigint
+  ): boolean => {
+    if (reservationIndex === remainingDemand.length) {
+      return useAssignment(assignedCounts);
+    }
+    const demand = remainingDemand[reservationIndex] ?? 0n;
+    const edgeCapacity =
+      remainingEdgeCapacity[reservationIndex]?.[group.positionIndex] ?? 0n;
+    let maximumPieces = demand / group.capacityMinor;
+    const edgePieces = edgeCapacity / group.capacityMinor;
+    if (edgePieces < maximumPieces) maximumPieces = edgePieces;
+    if (remainingPieces < maximumPieces) maximumPieces = remainingPieces;
+    let assignedPieces = maximumPieces;
+    while (assignedPieces >= 0n) {
+      assignedCounts[reservationIndex] = assignedPieces;
+      const shouldContinue = assignReservation(
+        reservationIndex + 1,
+        remainingPieces - assignedPieces
+      );
+      if (!shouldContinue) return false;
+      if (assignedPieces === 0n) break;
+      assignedPieces -= 1n;
+    }
+    assignedCounts[reservationIndex] = 0n;
+    return true;
+  };
+  assignReservation(0, group.count);
+}
+
+/** Run ordinary exact max-flow only across stock rows legal to divide on the reservation axis. */
+function maximumContinuousReservationFlow(
+  positions: readonly ReservationFeasibilityPosition[],
+  remainingDemand: readonly bigint[],
+  remainingEdgeCapacity: readonly bigint[][],
+  decimals: number
+): bigint {
+  const source = 0;
+  const firstReservationNode = 1;
+  const firstPositionNode = firstReservationNode + remainingDemand.length;
+  const sink = firstPositionNode + positions.length;
+  const network = new BigIntFlowNetwork();
+  let target = 0n;
+  for (
+    let reservationIndex = 0;
+    reservationIndex < remainingDemand.length;
+    reservationIndex += 1
+  ) {
+    const demand = remainingDemand[reservationIndex] ?? 0n;
+    target += demand;
+    network.addEdge(source, firstReservationNode + reservationIndex, demand);
+    for (
+      let positionIndex = 0;
+      positionIndex < positions.length;
+      positionIndex += 1
+    ) {
+      const position = positions[positionIndex];
+      if (position === undefined || position.indivisibleIncrement !== undefined)
+        continue;
+      const edgeCapacity =
+        remainingEdgeCapacity[reservationIndex]?.[positionIndex] ?? 0n;
+      if (edgeCapacity > 0n) {
+        network.addEdge(
+          firstReservationNode + reservationIndex,
+          firstPositionNode + positionIndex,
+          edgeCapacity
+        );
+      }
+    }
+  }
+  for (
+    let positionIndex = 0;
+    positionIndex < positions.length;
+    positionIndex += 1
+  ) {
+    const position = positions[positionIndex];
+    if (position === undefined || position.indivisibleIncrement !== undefined)
+      continue;
+    network.addEdge(
+      firstPositionNode + positionIndex,
+      sink,
+      quantityAtDecimals(position.capacity, decimals)
+    );
+  }
+  return network.maximumFlow(source, sink, target);
+}
+
+/** Put constrained groups first, then larger pieces, so exact searches finish sooner. */
+function compareReservationIndivisibleGroup(
+  left: ReservationIndivisibleGroup,
+  right: ReservationIndivisibleGroup
+): number {
+  if (left.eligibleReservationCount !== right.eligibleReservationCount) {
+    return left.eligibleReservationCount - right.eligibleReservationCount;
+  }
+  if (left.capacityMinor > right.capacityMinor) return -1;
+  if (left.capacityMinor < right.capacityMinor) return 1;
+  return left.positionIndex - right.positionIndex;
+}
+
+/** Small exact-capacity residual network used to prove all claims can coexist. */
+class BigIntFlowNetwork {
+  /** Directed residual capacities keyed by from/to node. */
+  private readonly residual = new Map<string, bigint>();
+  /** Bidirectional adjacency used by breadth-first augmenting-path search. */
+  private readonly adjacency = new Map<number, number[]>();
+
+  /** Add one directed capacity and its zero-capacity reverse edge. */
+  addEdge(from: number, to: number, capacity: bigint): void {
+    if (capacity < 0n)
+      throw new Error("Flow edge capacity must not be negative.");
+    this.setResidual(from, to, this.readResidual(from, to) + capacity);
+    if (!this.residual.has(flowEdgeIdentity(to, from)))
+      this.setResidual(to, from, 0n);
+    this.addNeighbor(from, to);
+    this.addNeighbor(to, from);
+  }
+
+  /** Return maximum source/sink flow, stopping early once the target demand is met. */
+  maximumFlow(source: number, sink: number, target: bigint): bigint {
+    let total = 0n;
+    while (total < target) {
+      const parents = this.findAugmentingPath(source, sink);
+      if (parents === undefined) break;
+      let pathCapacity = target - total;
+      let current = sink;
+      while (current !== source) {
+        const parent = parents.get(current);
+        if (parent === undefined)
+          throw new Error("Flow path lost one parent node.");
+        const residual = this.readResidual(parent, current);
+        if (residual < pathCapacity) pathCapacity = residual;
+        current = parent;
+      }
+      current = sink;
+      while (current !== source) {
+        const parent = parents.get(current);
+        if (parent === undefined)
+          throw new Error("Flow path lost one parent node.");
+        this.setResidual(
+          parent,
+          current,
+          this.readResidual(parent, current) - pathCapacity
+        );
+        this.setResidual(
+          current,
+          parent,
+          this.readResidual(current, parent) + pathCapacity
+        );
+        current = parent;
+      }
+      total += pathCapacity;
+    }
+    return total;
+  }
+
+  /** Find one positive-residual path using deterministic breadth-first traversal. */
+  private findAugmentingPath(
+    source: number,
+    sink: number
+  ): ReadonlyMap<number, number> | undefined {
+    const parents = new Map<number, number>();
+    parents.set(source, source);
+    const queue = [source];
+    let queueIndex = 0;
+    while (queueIndex < queue.length) {
+      const current = queue[queueIndex];
+      queueIndex += 1;
+      if (current === undefined) continue;
+      for (const next of this.adjacency.get(current) ?? []) {
+        if (parents.has(next) || this.readResidual(current, next) <= 0n)
+          continue;
+        parents.set(next, current);
+        if (next === sink) return parents;
+        queue.push(next);
+      }
+    }
+    return undefined;
+  }
+
+  /** Add one neighbor once while preserving deterministic insertion order. */
+  private addNeighbor(node: number, neighbor: number): void {
+    const neighbors = this.adjacency.get(node) ?? [];
+    if (!neighbors.includes(neighbor)) neighbors.push(neighbor);
+    this.adjacency.set(node, neighbors);
+  }
+
+  /** Read one directed residual capacity, defaulting missing edges to zero. */
+  private readResidual(from: number, to: number): bigint {
+    return this.residual.get(flowEdgeIdentity(from, to)) ?? 0n;
+  }
+
+  /** Write one directed residual capacity. */
+  private setResidual(from: number, to: number, value: bigint): void {
+    this.residual.set(flowEdgeIdentity(from, to), value);
+  }
+}
+
+/** Stable map key for one directed flow edge. */
+function flowEdgeIdentity(from: number, to: number): string {
+  return `${from}:${to}`;
+}
+
+/** Convert one exact quantity into a bigint at a shared decimal scale. */
+function quantityAtDecimals(value: Quantity, decimals: number): bigint {
+  if (decimals < value.decimals) {
+    throw new Error("Reservation flow scale cannot discard exact digits.");
+  }
+  return BigInt(value.amountMinor) * 10n ** BigInt(decimals - value.decimals);
+}
+
+/** Convert one exact flow bigint to public safe-integer quantity storage. */
+function safeNumberFromBigInt(value: bigint, label: string): number {
+  const converted = Number(value);
+  if (!Number.isSafeInteger(converted)) {
+    throw new Error(`${label} exceeds the safe integer storage range.`);
+  }
+  return converted;
+}
+
+/** Stable normalized creation fingerprint including selector, quantity, provenance, and metadata. */
+function newReservationFingerprint(
+  reservation: NewInventoryReservation
+): string {
+  return inventoryIntentFingerprint([
+    reservation.reservationId,
+    reservation.operationId,
+    reservation.itemRevisionId,
+    inventoryStockSelectorIdentity(reservation.selector),
+    quantityFingerprint(reservation.requested),
+    reservation.createdAt,
+    reservation.expiresAt ?? null,
+    reservation.allowExpiredStock ?? false,
+    reservation.sourceReference ?? null,
+    reservation.actorId ?? null,
+    inventoryMetadataFingerprint(reservation.metadata),
+  ]);
+}
+
+/** Return an exact operation replay or throw when the same operation id changed intent. */
+function findReservationOperationReplay(
+  book: InventoryReservationBook,
+  operationId: string,
+  kind: InventoryReservationOperationKind,
+  reservationId: string,
+  fingerprint: string
+): InventoryReservationBookResult | undefined {
+  const earlier = book.operations[operationId];
+  if (earlier === undefined) return undefined;
+  if (
+    earlier.kind !== kind ||
+    earlier.reservationId !== reservationId ||
+    earlier.intentFingerprint !== fingerprint
+  ) {
+    throw new Error("Reservation operationId was retried with changed intent.");
+  }
+  if (book.reservations[reservationId] === undefined) {
+    throw new Error("Reservation operation references a missing reservation.");
+  }
+  return { book, reservation: earlier.reservationAfter, replayed: true };
+}
+
+/** Add one immutable lifecycle operation, rejecting accidental operation-id replacement. */
+function addReservationOperation(
+  book: InventoryReservationBook,
+  reservation: InventoryReservation,
+  operation: NewInventoryReservationOperation
+): InventoryReservationBook {
+  if (book.operations[operation.operationId] !== undefined) {
+    throw new Error(
+      `Reservation operation '${operation.operationId}' already exists.`
+    );
+  }
+  let lifecycleSequence = 1;
+  for (const earlier of Object.values(book.operations)) {
+    lifecycleSequence = Math.max(
+      lifecycleSequence,
+      earlier.lifecycleSequence + 1
+    );
+  }
+  const retainedOperation: InventoryReservationOperation = {
+    ...operation,
+    lifecycleSequence,
+    reservationAfter: reservation,
+  };
+  return {
+    reservations: book.reservations,
+    operations: {
+      ...book.operations,
+      [operation.operationId]: retainedOperation,
+    },
+  };
+}
+
+/** Replace one current reservation row and append its immutable lifecycle operation together. */
+function replaceReservationWithOperation(
+  book: InventoryReservationBook,
+  reservation: InventoryReservation,
+  operation: NewInventoryReservationOperation
+): InventoryReservationBook {
+  return addReservationOperation(
+    {
+      reservations: {
+        ...book.reservations,
+        [reservation.reservationId]: reservation,
+      },
+      operations: book.operations,
+    },
+    reservation,
+    operation
+  );
+}
+
+/** Load one reservation and require it still counts as active at this exact time. */
+function requireActiveReservation(
+  book: InventoryReservationBook,
+  reservationId: string,
+  at: string
+): InventoryReservation {
+  const reservation = book.reservations[reservationId];
+  if (reservation === undefined)
+    throw new Error("Unknown inventory reservation.");
+  if (reservation.status !== InventoryReservationStatus.Active) {
+    throw new Error("Inventory reservation is no longer active.");
+  }
+  assertReservationLifecycleTime(reservation, at);
+  if (!inventoryReservationIsActiveAt(reservation, at)) {
+    throw new Error("Inventory reservation is no longer active.");
+  }
+  return reservation;
+}
+
+/** Stable exact quantity fingerprint. */
+function quantityFingerprint(value: Quantity): string {
+  return inventoryIntentFingerprint([
+    value.amountMinor,
+    value.decimals,
+    value.unit,
+  ]);
+}
+
+/** Stable allocation-line fingerprint. */
+function allocationFingerprint(
+  allocation: InventoryReservationAllocation
+): string {
+  return inventoryIntentFingerprint([
+    inventoryStockPositionIdentity(allocation.position),
+    quantityFingerprint(allocation.quantity),
+  ]);
+}
+
+/** Sort reservation allocations by exact position identity. */
+function compareReservationAllocation(
+  left: InventoryReservationAllocation,
+  right: InventoryReservationAllocation
+): number {
+  return inventoryStockPositionIdentity(left.position).localeCompare(
+    inventoryStockPositionIdentity(right.position)
+  );
+}
+
+/** Sort reservations by stable claim identity. */
+function compareReservationIdentity(
+  left: InventoryReservation,
+  right: InventoryReservation
+): number {
+  return left.reservationId.localeCompare(right.reservationId);
+}
+
+/** Burden non-claimable stock first, then less-flexible reservation positions. */
+function compareReservationDeficitBurdenPosition(
+  left: ReservationDeficitBurdenPosition,
+  right: ReservationDeficitBurdenPosition
+): number {
+  if (left.reservationCandidate !== right.reservationCandidate) {
+    return left.reservationCandidate ? 1 : -1;
+  }
+  if (left.eligibleReservationCount !== right.eligibleReservationCount) {
+    return left.eligibleReservationCount - right.eligibleReservationCount;
+  }
+  return left.identity.localeCompare(right.identity);
+}
+
+/** Sort feasibility positions by exact position identity. */
+function compareFeasibilityPosition(
+  left: ReservationFeasibilityPosition,
+  right: ReservationFeasibilityPosition
+): number {
+  return left.identity.localeCompare(right.identity);
+}
+
+/** Sort read-side feasibility groups by stable item/axis/unit identity. */
+function compareReservationFeasibilityGroup(
+  left: InventoryReservationFeasibilityGroup,
+  right: InventoryReservationFeasibilityGroup
+): number {
+  return [left.itemId, left.axisId, left.requested.unit]
+    .join("|")
+    .localeCompare(
+      [right.itemId, right.axisId, right.requested.unit].join("|")
+    );
+}

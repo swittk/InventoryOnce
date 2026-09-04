@@ -1,0 +1,649 @@
+import {
+  inventoryCatalogFromSnapshot,
+  type InventoryCatalogSnapshot,
+} from "./catalog.js";
+import {
+  InventoryCountOperationKind,
+  InventoryCountStatus,
+  type InventoryCount,
+  type InventoryCountBook,
+  type InventoryCountOperation,
+} from "./counts.js";
+import { inventorySha256 } from "./digest.js";
+import type { InventoryCommittedEvent } from "./events.js";
+import type {
+  InventoryDeficitPolicy,
+  InventoryProjectionState,
+} from "./projection.js";
+import {
+  InventoryReservationOperationKind,
+  InventoryReservationStatus,
+  type InventoryReservation,
+  type InventoryReservationBook,
+  type InventoryReservationOperation,
+} from "./reservations.js";
+import type { InventoryWorldState } from "./world.js";
+
+/** One append-only reservation row/operation change frozen in a compact durable plan. */
+export interface InventoryReservationBookDelta {
+  /** Current reservation row after the one allowed lifecycle action. */
+  readonly reservation: InventoryReservation;
+  /** New immutable lifecycle operation appended by this command. */
+  readonly operation: InventoryReservationOperation;
+}
+
+/** One append-only count row/operation change frozen in a compact durable plan. */
+export interface InventoryCountBookDelta {
+  /** Current count row after the one allowed lifecycle action. */
+  readonly count: InventoryCount;
+  /** New immutable lifecycle operation appended by this command. */
+  readonly operation: InventoryCountOperation;
+}
+
+/** Small content roots proving exactly which base components one plan advances. */
+export interface InventoryWorldContentRoots {
+  /** Full published world root, including its revision and component roots. */
+  readonly world: string;
+  /** Durable catalogue-definition root. */
+  readonly catalog: string;
+  /** Committed event/current-stock/traceability projection root. */
+  readonly projection: string;
+  /** Current reservation rows plus append-only lifecycle evidence root. */
+  readonly reservations: string;
+  /** Current count rows plus append-only lifecycle evidence root. */
+  readonly counts: string;
+}
+
+/** Calculate deterministic SHA-256 roots for one published world snapshot. */
+export function inventoryWorldContentRoots(
+  world: InventoryWorldState
+): InventoryWorldContentRoots {
+  const catalog = inventoryCatalogSnapshotDigest(world.catalog);
+  const projection = inventoryProjectionDigest(world.projection);
+  const reservations = inventoryReservationBookDigest(world.reservations);
+  const counts = inventoryCountBookDigest(world.counts);
+  return {
+    catalog,
+    projection,
+    reservations,
+    counts,
+    world: inventorySha256(
+      JSON.stringify([
+        world.revision,
+        catalog,
+        projection,
+        reservations,
+        counts,
+      ])
+    ),
+  };
+}
+
+/** Verify and hash one persisted catalogue snapshot without trusting its digest field. */
+export function inventoryCatalogSnapshotDigest(
+  snapshot: InventoryCatalogSnapshot
+): string {
+  return inventoryCatalogFromSnapshot(snapshot).digest;
+}
+
+/** Hash one event/current-stock/traceability projection in key-sorted row order. */
+export function inventoryProjectionDigest(
+  projection: InventoryProjectionState
+): string {
+  const transferRows = sortedRecordRows(projection.transfers ?? {});
+  const digestParts: unknown[] = [
+    projection.lastRecordSequence,
+    sortedRecordRows(projection.positions),
+    sortedRecordRows(projection.positionIdsByItemId),
+    sortedRecordRows(projection.positionIdsByItemRevisionId),
+    sortedRecordRows(projection.positionIdsByContainerIdentity),
+    sortedRecordRows(projection.positiveLayerStartedAtByPositionId),
+    sortedRecordRows(projection.positivePositionIdBySerialIdentity),
+    sortedRecordRows(projection.containers),
+    sortedRecordRows(projection.containerRootEventIdByIdentity),
+    sortedRecordRows(projection.lots),
+    sortedRecordRows(projection.lotIdentitiesByItemId),
+    sortedRecordRows(projection.lotRootEventIdByIdentity),
+  ];
+  // Empty transfer state must hash exactly like the pre-transfer kernel so existing durable heads
+  // remain readable after upgrade. Once transfer truth exists, tag the extended projection shape.
+  if (transferRows.length > 0) {
+    digestParts.push(["transfer-lifecycle-v1", transferRows]);
+  }
+  digestParts.push(
+    sortedRecordRows(projection.events),
+    sortedRecordRows(projection.eventIdsBySequence),
+    sortedRecordRows(projection.eventIdByOperationId),
+    sortedRecordRows(projection.correctionEventIdByCorrectedEventId),
+    sortedRecordRows(projection.traceability.relations),
+    sortedRecordRows(
+      projection.traceability.containmentChildContainerIdsByParentNodeIdentity
+    )
+  );
+  return inventorySha256(JSON.stringify(digestParts));
+}
+
+/** Hash the complete reservation book in stable identity order. */
+export function inventoryReservationBookDigest(
+  book: InventoryReservationBook
+): string {
+  return inventorySha256(
+    JSON.stringify([
+      sortedRecordRows(book.reservations),
+      sortedRecordRows(book.operations),
+    ])
+  );
+}
+
+/** Hash the complete count book in stable identity order. */
+export function inventoryCountBookDigest(book: InventoryCountBook): string {
+  return inventorySha256(
+    JSON.stringify([
+      sortedRecordRows(book.counts),
+      sortedRecordRows(book.operations),
+    ])
+  );
+}
+
+/** Extract and validate the one legal append-only reservation change in a planner result. */
+export function createInventoryReservationBookDelta(
+  base: InventoryReservationBook,
+  next: InventoryReservationBook,
+  operationId: string,
+  reservationId: string | undefined
+): InventoryReservationBookDelta | undefined {
+  retainEveryReservationOperation(base, next);
+  const addedOperationIds = addedRecordKeys(base.operations, next.operations);
+  if (addedOperationIds.length === 0) {
+    if (!sameJson(base, next) || reservationId !== undefined) {
+      throw new Error(
+        "Inventory reservation planner changed rows without one new lifecycle operation."
+      );
+    }
+    return undefined;
+  }
+  if (addedOperationIds.length !== 1 || addedOperationIds[0] !== operationId) {
+    throw new Error(
+      "Inventory reservation planner must append exactly its own lifecycle operation."
+    );
+  }
+  const operation = next.operations[operationId];
+  if (operation === undefined || operation.reservationId !== reservationId) {
+    throw new Error(
+      "Inventory reservation receipt must name the row changed by its lifecycle operation."
+    );
+  }
+  const reservation = next.reservations[operation.reservationId];
+  if (reservation === undefined) {
+    throw new Error(
+      "Inventory reservation lifecycle operation references a missing row."
+    );
+  }
+  retainUnchangedReservationRows(base, next, operation.reservationId);
+  assertAllowedReservationTransition(
+    base.reservations[operation.reservationId],
+    reservation,
+    operation
+  );
+  return { reservation, operation };
+}
+
+/** Apply one already-validated reservation delta and recheck it against this exact base book. */
+export function applyInventoryReservationBookDelta(
+  base: InventoryReservationBook,
+  delta: InventoryReservationBookDelta | undefined
+): InventoryReservationBook {
+  if (delta === undefined) return base;
+  const next: InventoryReservationBook = {
+    reservations: {
+      ...base.reservations,
+      [delta.reservation.reservationId]: delta.reservation,
+    },
+    operations: {
+      ...base.operations,
+      [delta.operation.operationId]: delta.operation,
+    },
+  };
+  createInventoryReservationBookDelta(
+    base,
+    next,
+    delta.operation.operationId,
+    delta.reservation.reservationId
+  );
+  return next;
+}
+
+/** Extract and validate the one legal append-only count change in a planner result. */
+export function createInventoryCountBookDelta(
+  base: InventoryCountBook,
+  next: InventoryCountBook,
+  operationId: string,
+  countId: string | undefined
+): InventoryCountBookDelta | undefined {
+  retainEveryCountOperation(base, next);
+  const addedOperationIds = addedRecordKeys(base.operations, next.operations);
+  if (addedOperationIds.length === 0) {
+    if (!sameJson(base, next) || countId !== undefined) {
+      throw new Error(
+        "Inventory count planner changed rows without one new lifecycle operation."
+      );
+    }
+    return undefined;
+  }
+  if (addedOperationIds.length !== 1 || addedOperationIds[0] !== operationId) {
+    throw new Error(
+      "Inventory count planner must append exactly its own lifecycle operation."
+    );
+  }
+  const operation = next.operations[operationId];
+  if (operation === undefined || operation.countId !== countId) {
+    throw new Error(
+      "Inventory count receipt must name the row changed by its lifecycle operation."
+    );
+  }
+  const count = next.counts[operation.countId];
+  if (count === undefined)
+    throw new Error(
+      "Inventory count lifecycle operation references a missing row."
+    );
+  retainUnchangedCountRows(base, next, operation.countId);
+  assertAllowedCountTransition(
+    base.counts[operation.countId],
+    count,
+    operation
+  );
+  return { count, operation };
+}
+
+/** Apply one already-validated count delta and recheck it against this exact base book. */
+export function applyInventoryCountBookDelta(
+  base: InventoryCountBook,
+  delta: InventoryCountBookDelta | undefined
+): InventoryCountBook {
+  if (delta === undefined) return base;
+  const next: InventoryCountBook = {
+    counts: { ...base.counts, [delta.count.countId]: delta.count },
+    operations: {
+      ...base.operations,
+      [delta.operation.operationId]: delta.operation,
+    },
+  };
+  createInventoryCountBookDelta(
+    base,
+    next,
+    delta.operation.operationId,
+    delta.count.countId
+  );
+  return next;
+}
+
+/** Return the exact plan digest covering its base, catalogue, deltas, event, receipt, and next roots. */
+export function inventoryDurablePlanDigest(parts: {
+  /** Exact base-world content root. */
+  readonly baseWorldRoot: string;
+  /** Exact retained catalogue root used to validate and replay the plan. */
+  readonly catalogRoot: string;
+  /** Explicit negative-stock replay policy frozen with the plan. */
+  readonly deficitPolicy: InventoryDeficitPolicy;
+  /** Optional immutable committed event delta. */
+  readonly event?: InventoryCommittedEvent;
+  /** Optional single reservation lifecycle delta. */
+  readonly reservationDelta?: InventoryReservationBookDelta;
+  /** Optional single count lifecycle delta. */
+  readonly countDelta?: InventoryCountBookDelta;
+  /** Frozen replay receipt. */
+  readonly receipt: {
+    /** Stable operation identity. */
+    readonly operationId: string;
+    /** Frozen durable record time. */
+    readonly recordedAt: string;
+    /** Published world revision after this plan. */
+    readonly worldRevision: number;
+    /** Optional committed event identity. */
+    readonly eventId?: string;
+    /** Optional changed reservation identity. */
+    readonly reservationId?: string;
+    /** Optional changed count identity. */
+    readonly countId?: string;
+  };
+  /** Exact roots expected after applying this compact plan. */
+  readonly nextRoots: InventoryWorldContentRoots;
+}): string {
+  return inventorySha256(
+    JSON.stringify([
+      parts.baseWorldRoot,
+      parts.catalogRoot,
+      parts.deficitPolicy,
+      parts.event ?? null,
+      parts.reservationDelta ?? null,
+      parts.countDelta ?? null,
+      parts.receipt,
+      parts.nextRoots,
+    ])
+  );
+}
+
+/** Hash one complete migration batch plan without storing a duplicate next-world snapshot. */
+export function inventoryDurableMigrationPlanDigest(parts: {
+  /** Exact target-world content root used for validation. */
+  readonly baseWorldRoot: string;
+  /** Exact retained catalogue root used to interpret every event. */
+  readonly catalogRoot: string;
+  /** Explicit negative-stock policy for legacy physical truth. */
+  readonly deficitPolicy: InventoryDeficitPolicy;
+  /** Complete committed migration event batch in final durable order. */
+  readonly events: readonly InventoryCommittedEvent[];
+  /** Canonical non-physical source dispositions retained through completion. */
+  readonly sourceDispositions: readonly unknown[];
+  /** Exact roots expected after the one visible migration cut. */
+  readonly nextRoots: InventoryWorldContentRoots;
+}): string {
+  return inventorySha256(
+    JSON.stringify([
+      parts.baseWorldRoot,
+      parts.catalogRoot,
+      parts.deficitPolicy,
+      parts.events,
+      parts.sourceDispositions,
+      parts.nextRoots,
+    ])
+  );
+}
+
+/** Keep all earlier immutable reservation operation evidence byte-for-byte equal. */
+function retainEveryReservationOperation(
+  base: InventoryReservationBook,
+  next: InventoryReservationBook
+): void {
+  for (const [operationId, operation] of Object.entries(base.operations)) {
+    if (!sameJson(operation, next.operations[operationId])) {
+      throw new Error(
+        "Inventory reservation planner deleted or changed append-only operation evidence."
+      );
+    }
+  }
+}
+
+/** Keep every reservation row except the row named by the new operation unchanged. */
+function retainUnchangedReservationRows(
+  base: InventoryReservationBook,
+  next: InventoryReservationBook,
+  changedReservationId: string
+): void {
+  for (const [reservationId, reservation] of Object.entries(
+    base.reservations
+  )) {
+    if (reservationId === changedReservationId) continue;
+    if (!sameJson(reservation, next.reservations[reservationId])) {
+      throw new Error(
+        "Inventory reservation planner changed or deleted an unrelated row."
+      );
+    }
+  }
+  for (const reservationId of Object.keys(next.reservations)) {
+    if (
+      reservationId !== changedReservationId &&
+      base.reservations[reservationId] === undefined
+    ) {
+      throw new Error(
+        "Inventory reservation planner added a row not named by its lifecycle operation."
+      );
+    }
+  }
+}
+
+/** Check the exact status/field shape allowed by each reservation lifecycle operation. */
+function assertAllowedReservationTransition(
+  base: InventoryReservation | undefined,
+  next: InventoryReservation,
+  operation: InventoryReservationOperation
+): void {
+  if (operation.kind === InventoryReservationOperationKind.Create) {
+    if (
+      base !== undefined ||
+      next.status !== InventoryReservationStatus.Active
+    ) {
+      throw new Error("Reservation create must add one new active row.");
+    }
+    return;
+  }
+  if (base === undefined || base.status !== InventoryReservationStatus.Active) {
+    throw new Error(
+      "Only an existing active reservation can receive another lifecycle operation."
+    );
+  }
+  if (!sameReservationCreationFacts(base, next)) {
+    throw new Error(
+      "Reservation lifecycle operation changed frozen creation facts."
+    );
+  }
+  if (operation.kind === InventoryReservationOperationKind.Refine) {
+    if (
+      next.status !== InventoryReservationStatus.Active ||
+      !sameJson(base.allocations, next.allocations)
+    )
+      throw new Error(
+        "Reservation refine may only narrow its selector and change time."
+      );
+    return;
+  }
+  if (operation.kind === InventoryReservationOperationKind.Allocate) {
+    if (
+      next.status !== InventoryReservationStatus.Active ||
+      !sameJson(base.selector, next.selector)
+    ) {
+      throw new Error(
+        "Reservation allocation may only replace exact bindings and change time."
+      );
+    }
+    return;
+  }
+  if (
+    !sameJson(base.selector, next.selector) ||
+    !sameJson(base.allocations, next.allocations)
+  ) {
+    throw new Error(
+      "Closing a reservation cannot change its selector or exact bindings."
+    );
+  }
+  const expectedStatus =
+    operation.kind === InventoryReservationOperationKind.Release
+      ? InventoryReservationStatus.Released
+      : operation.kind === InventoryReservationOperationKind.Expire
+      ? InventoryReservationStatus.Expired
+      : InventoryReservationStatus.Consumed;
+  if (next.status !== expectedStatus) {
+    throw new Error(
+      "Reservation terminal operation and resulting status disagree."
+    );
+  }
+  if (
+    operation.kind !== InventoryReservationOperationKind.Consume &&
+    next.consumptionEventId !== undefined
+  ) {
+    throw new Error(
+      "Only reservation consumption may attach a consumption event."
+    );
+  }
+}
+
+/** Compare every reservation creation fact that later lifecycle actions must retain. */
+function sameReservationCreationFacts(
+  left: InventoryReservation,
+  right: InventoryReservation
+): boolean {
+  return sameJson(
+    [
+      left.reservationId,
+      left.operationId,
+      left.itemRevisionId,
+      left.requested,
+      left.createdAt,
+      left.expiresAt ?? null,
+      left.allowExpiredStock ?? false,
+      left.sourceReference ?? null,
+      left.actorId ?? null,
+      left.metadata ?? null,
+    ],
+    [
+      right.reservationId,
+      right.operationId,
+      right.itemRevisionId,
+      right.requested,
+      right.createdAt,
+      right.expiresAt ?? null,
+      right.allowExpiredStock ?? false,
+      right.sourceReference ?? null,
+      right.actorId ?? null,
+      right.metadata ?? null,
+    ]
+  );
+}
+
+/** Keep all earlier immutable count operation evidence byte-for-byte equal. */
+function retainEveryCountOperation(
+  base: InventoryCountBook,
+  next: InventoryCountBook
+): void {
+  for (const [operationId, operation] of Object.entries(base.operations)) {
+    if (!sameJson(operation, next.operations[operationId])) {
+      throw new Error(
+        "Inventory count planner deleted or changed append-only operation evidence."
+      );
+    }
+  }
+}
+
+/** Keep every count row except the row named by the new operation unchanged. */
+function retainUnchangedCountRows(
+  base: InventoryCountBook,
+  next: InventoryCountBook,
+  changedCountId: string
+): void {
+  for (const [countId, count] of Object.entries(base.counts)) {
+    if (countId === changedCountId) continue;
+    if (!sameJson(count, next.counts[countId])) {
+      throw new Error(
+        "Inventory count planner changed or deleted an unrelated row."
+      );
+    }
+  }
+  for (const countId of Object.keys(next.counts)) {
+    if (countId !== changedCountId && base.counts[countId] === undefined) {
+      throw new Error(
+        "Inventory count planner added a row not named by its lifecycle operation."
+      );
+    }
+  }
+}
+
+/** Check the exact status order and retained fields allowed by each count lifecycle operation. */
+function assertAllowedCountTransition(
+  base: InventoryCount | undefined,
+  next: InventoryCount,
+  operation: InventoryCountOperation
+): void {
+  if (operation.kind === InventoryCountOperationKind.Start) {
+    if (base !== undefined || next.status !== InventoryCountStatus.Started) {
+      throw new Error("Count start must add one new started row.");
+    }
+    return;
+  }
+  if (base === undefined || !sameCountStartFacts(base, next)) {
+    throw new Error("Count lifecycle operation changed frozen start facts.");
+  }
+  if (operation.kind === InventoryCountOperationKind.Observe) {
+    if (
+      base.status !== InventoryCountStatus.Started ||
+      next.status !== InventoryCountStatus.Observed
+    ) {
+      throw new Error(
+        "Count observation must move one started row to observed."
+      );
+    }
+    return;
+  }
+  if (operation.kind === InventoryCountOperationKind.Complete) {
+    if (
+      base.status !== InventoryCountStatus.Observed ||
+      next.status !== InventoryCountStatus.Completed
+    ) {
+      throw new Error(
+        "Count completion must move one observed row to completed."
+      );
+    }
+    if (
+      !sameJson(base.observations, next.observations) ||
+      base.observedAt !== next.observedAt
+    ) {
+      throw new Error(
+        "Count completion cannot replace the physical observation."
+      );
+    }
+    return;
+  }
+  if (
+    (base.status !== InventoryCountStatus.Started &&
+      base.status !== InventoryCountStatus.Observed) ||
+    next.status !== InventoryCountStatus.Abandoned
+  )
+    throw new Error("Count abandon must make one non-terminal row abandoned.");
+}
+
+/** Compare the count fields frozen when the count was opened. */
+function sameCountStartFacts(
+  left: InventoryCount,
+  right: InventoryCount
+): boolean {
+  return sameJson(
+    [
+      left.countId,
+      left.operationId,
+      left.itemRevisionId,
+      left.selector,
+      left.startedAt,
+      left.snapshotRecordSequence,
+      left.actorId ?? null,
+      left.sourceReference ?? null,
+    ],
+    [
+      right.countId,
+      right.operationId,
+      right.itemRevisionId,
+      right.selector,
+      right.startedAt,
+      right.snapshotRecordSequence,
+      right.actorId ?? null,
+      right.sourceReference ?? null,
+    ]
+  );
+}
+
+/** Return keys present only in the next record in stable identity order. */
+function addedRecordKeys<T>(
+  base: Readonly<Record<string, T>>,
+  next: Readonly<Record<string, T>>
+): string[] {
+  const added: string[] = [];
+  for (const key of Object.keys(next)) {
+    if (base[key] === undefined) added.push(key);
+  }
+  added.sort();
+  return added;
+}
+
+/** Compare already-normalized typed values exactly without accepting coercion. */
+function sameJson(left: object, right: object | undefined): boolean {
+  return right !== undefined && JSON.stringify(left) === JSON.stringify(right);
+}
+
+/** Turn one typed record into sorted key/value JSON rows before hashing it. */
+function sortedRecordRows<T>(
+  values: Readonly<Record<string, T>>
+): readonly string[] {
+  const keys = Object.keys(values);
+  keys.sort();
+  const rows: string[] = [];
+  for (const key of keys) rows.push(JSON.stringify([key, values[key]]));
+  return rows;
+}
