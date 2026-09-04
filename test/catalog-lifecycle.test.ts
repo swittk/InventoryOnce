@@ -130,6 +130,59 @@ describe("native scalar catalogue lifecycle", () => {
     );
   });
 
+  it("ignores a retained one-to-one primary-unit package alias when matching physical meaning", async () => {
+    const item = defineScalarInventoryItem({
+      itemId: "alias-item",
+      revisionId: "alias-item-v1",
+      axisId: "stock",
+      unit: "piece",
+    });
+    const storage = createInMemoryInventoryDurableStorage();
+    await createInventoryOnce({
+      catalog: defineInventoryCatalog({
+        itemRevisions: [item],
+        activeItemRevisionIds: { "alias-item": item.revisionId },
+        packagingRevisions: [
+          defineScalarInventoryPackaging({
+            revisionId: "alias-item-primary",
+            item,
+            packageUnit: "piece",
+            contains: "1",
+          }),
+          defineScalarInventoryPackaging({
+            revisionId: "alias-item-box",
+            item,
+            packageUnit: "box",
+            contains: "10",
+          }),
+        ],
+      }),
+      storage,
+    }).catalog.publish({
+      operationId: "publish-alias-item",
+      occurredAt: time0,
+    });
+
+    const selected = await ensureInventoryScalarCatalogRevision({
+      storage,
+      itemId: "alias-item",
+      requestedUnit: "box",
+      seed: {
+        primaryUnit: "piece",
+        packageLevels: [{ unit: "box", primaryQuantity: "10" }],
+      },
+      allowCreate: false,
+      operationId: "reuse-alias-item",
+      occurredAt: time1,
+      defineRevision,
+    });
+    expect(selected).toMatchObject({
+      itemRevisionId: item.revisionId,
+      published: false,
+      replayed: false,
+    });
+  });
+
   it("rejects malformed package declarations and dishonest revision factories", async () => {
     const malformedStorage = createInMemoryInventoryDurableStorage();
     await expect(

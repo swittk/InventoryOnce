@@ -189,6 +189,12 @@ export async function cutoverInventoryAuthority({
       certifiedAt: clock.now(),
     });
   }
+  // Retries may resume after certification transitions, so bind every attempt to the durable adapter evidence.
+  if (authority.adapterCertificationDigest !== certificationDigest) {
+    throw new Error(
+      "InventoryOnce cutover certification differs from durable evidence."
+    );
+  }
   const cutoverAt = resolveInventoryCutoverAt(explicitCutoverAt, authority);
   const first = await compileSource(cutoverAt);
   assertInventoryMigrationReady(first);

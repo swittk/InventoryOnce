@@ -17,7 +17,7 @@
     },
     "GAP-COUNT-CORRECTION-HISTORY-REPLAY": {
       "productionImpact": "Observation-time count reconciliation and retained-root correction must reconstruct occurrence-sensitive physical history. The implementation now traverses the durable sequence index and uses a private linear replay builder, but latency and memory still grow with retained event history rather than remaining constant-time.",
-      "requiredMitigation": "Keep the 500-to-2,000-event near-linear replay regression, measure event-history length on real clinics, and introduce trusted projection checkpoints or segmented history before long-lived streams approach operational replay limits.",
+      "requiredMitigation": "Keep the 500-to-2,000-event near-linear replay regression, measure event-history length on real clinics, and preserve exact occurrence-time replay until any checkpoint or segmented-history protocol is formally specified as occurrence-time complete and backed by refinement evidence.",
       "status": "bounded-history-performance-caveat"
     },
     "GAP-DB-IMPLEMENTATION-UNBOUNDED": {

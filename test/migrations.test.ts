@@ -541,6 +541,27 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
         maxRows: 3,
       })
     ).rejects.toThrow("repeated cursor");
+
+    const oversizedPageQuery = defineInventoryLegacyQuery<LegacyStockRow>({
+      queryId: "oversized-page-query",
+      /** Deliberately ignore the requested limit to prove the reader owns its safety bound. */
+      readPage: () =>
+        Promise.resolve({
+          rows: [
+            { id: "row-1", locationId: "store", balance: "1" },
+            { id: "row-2", locationId: "store", balance: "1" },
+            { id: "row-3", locationId: "store", balance: "1" },
+            { id: "row-4", locationId: "store", balance: "1" },
+          ],
+        }),
+    });
+    await expect(
+      readAllInventoryLegacyQuery(oversizedPageQuery, {
+        pageSize: 1,
+        maxPages: 1,
+        maxRows: 3,
+      })
+    ).rejects.toThrow("exceeded its 3-row safety bound");
   });
 
   it("blocks a combined graph failure before apply writes anything", () => {

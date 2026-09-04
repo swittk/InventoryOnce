@@ -2,14 +2,14 @@
 
 This file is generated from the exact TypeScript surface plus the checked API, field, and gap manifests. Edit the manifests and executable evidence, then run `pnpm assurance --write-report`.
 
-Surface SHA-256: `dc691201529070cf4abcc0dbaa027228f3b8c9070cf651dfab355ccaee4bd57c`
+Surface SHA-256: `b48c7614291bd722817e7d4a1c1ccca965cb8252c78231c8ea56fecd2542c3a0`
 
 ## Mechanically covered surface
 
 - Grouped façade/read methods: 117
 - Authority-port methods: 13
 - Durable-storage-port methods: 17
-- Public exported class methods: 68
+- Public exported class methods: 70
 - Root callable exports: 98
 - Storage callable exports: 23
 - Migration callable exports: 15
@@ -24,9 +24,9 @@ Surface SHA-256: `dc691201529070cf4abcc0dbaa027228f3b8c9070cf651dfab355ccaee4bd5
 - Optional fields: 904
 - Explicit undefined-union fields: 2
 - Explicit nullable fields: 0
-- Public call/construct overload signatures: 506
+- Public call/construct overload signatures: 508
 - Directly executed public APIs: 182
-- Public APIs exercised through tested internal call chains: 320
+- Public APIs exercised through tested internal call chains: 322
 - Explicit-gap public APIs: 4
 - Unreferenced public APIs: 0
 - Explicit recursive type edges: 3
@@ -41,7 +41,7 @@ Any added/removed method, callable export, class method, type field, field type,
 | allocation-helper | 6 | ReservationScope, ReservationSafety, UseByReservation, PackagingIdentity | covered | — |
 | authority-control | 31 | AuthorityWriterFence | covered | — |
 | authority-cutover | 2 | AuthorityWriterFence, CatalogPublication, PublishedHeadCAS, RepairLiveness, SnapshotSupersededWorkflow | covered | GAP-LEGACY-SOURCE-INTERPRETATION |
-| catalog-definition | 74 | CatalogPublication, PackagingIdentity, CompositionRevision, CollectionView, FungibilityPool | covered | GAP-HASH-COLLISION-ASSUMPTION |
+| catalog-definition | 76 | CatalogPublication, PackagingIdentity, CompositionRevision, CollectionView, FungibilityPool | covered | GAP-HASH-COLLISION-ASSUMPTION |
 | catalog-publication | 7 | CatalogPublication, InventoryOperation, PublishedHeadCAS, RepairLiveness | covered | GAP-HASH-COLLISION-ASSUMPTION, GAP-DB-IMPLEMENTATION-UNBOUNDED |
 | collection-read | 4 | CollectionView | covered | — |
 | composition-open | 3 | CompositionRevision, PackagingIdentity, ReclassificationConservation, DualMeasure, TraceabilityGraph, InventoryOperation | covered | — |
@@ -105,7 +105,7 @@ The finite refinement suite runs the core façade against the memory reference a
 | GAP-APPLICATION-DECORATION | outside-physical-authority | Human descriptions, UI labels, pricing, currency, threshold policy, and other application decoration are deliberately outside conserved physical models. | Keep decoration separate from physical selection/quantity and prove it cannot mutate authoritative state. |
 | GAP-ARBITRARY-AUDIT-METADATA | observational-only | Arbitrary JSON-safe audit/application metadata is not represented in resource-conservation models. | Metamorphic tests must prove audit-only changes preserve abstract physical state; changed retry intent under one operation identity remains fail-closed. |
 | GAP-BROAD-RESERVATION-DENSE-GRAPH | bounded-adversarial-performance-caveat | Exact-position reservations use the sparse linear fast path, but truly broad competing claims still require a bounded max-flow graph over eligible claims and positions. The implementation fails closed at configured claim, position, edge, and indivisible-search ceilings rather than promising unbounded latency. | Keep current hard ceilings and diagnostics, monitor broad-claim cardinality in production, partition unusually broad scopes, and add a specialized solver only if measured clinic workloads approach the bounds. |
-| GAP-COUNT-CORRECTION-HISTORY-REPLAY | bounded-history-performance-caveat | Observation-time count reconciliation and retained-root correction must reconstruct occurrence-sensitive physical history. The implementation now traverses the durable sequence index and uses a private linear replay builder, but latency and memory still grow with retained event history rather than remaining constant-time. | Keep the 500-to-2,000-event near-linear replay regression, measure event-history length on real clinics, and introduce trusted projection checkpoints or segmented history before long-lived streams approach operational replay limits. |
+| GAP-COUNT-CORRECTION-HISTORY-REPLAY | bounded-history-performance-caveat | Observation-time count reconciliation and retained-root correction must reconstruct occurrence-sensitive physical history. The implementation now traverses the durable sequence index and uses a private linear replay builder, but latency and memory still grow with retained event history rather than remaining constant-time. | Keep the 500-to-2,000-event near-linear replay regression, measure event-history length on real clinics, and preserve exact occurrence-time replay until any checkpoint or segmented-history protocol is formally specified as occurrence-time complete and backed by refinement evidence. |
 | GAP-DB-IMPLEMENTATION-UNBOUNDED | downstream-adapter-obligation | This standalone core executes the memory reference adapter only. Mongo/SQLite conformance and failpoint schedules are downstream integration evidence and still cannot prove every database/driver/runtime behavior. | Each production adapter must pin supported versions, run its own CAS/uniqueness/private-class/failpoint/conformance suite in downstream CI, and fail closed on unsupported guarantees. |
 | GAP-DISTRIBUTED-RIGHTS-NOT-IMPLEMENTED | unsupported-production-capability | The DistributedRights model does not imply offline or partition-tolerant multiwriter decrement/reservation safety in current adapters. | Use one coordinating authoritative stream. Do not advertise offline/multiwriter stock until escrow/right-transfer code and adapter refinement tests exist. |
 | GAP-EXTERNAL-CLOCK | environment-assumption | Canonical time validation is tested, but correctness assumes the injected clock supplies canonical UTC instants and trusted monotonic record sequencing where required. | Validate every persisted time, distinguish occurrence from record time, and use database recordSequence/CAS rather than wall-clock expiry for safety. |

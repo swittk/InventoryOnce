@@ -511,6 +511,16 @@ describe("portable InventoryOnce authority controller", () => {
     expect(retained.adapterCertifiedAt).toBe(time2);
     expect(retained.dualRunStartedAt).toBe(time1);
 
+    await expect(
+      cutoverInventoryAuthority({
+        ...common,
+        adapterCertificationDigest: "adapter-v2",
+      })
+    ).rejects.toThrow(
+      "InventoryOnce cutover certification differs from durable evidence."
+    );
+    expect((await authority.read()).mode).toBe(InventoryAuthorityMode.DualRun);
+
     const retried = await cutoverInventoryAuthority(common);
     expect(retried.authority.mode).toBe(InventoryAuthorityMode.Authoritative);
     expect(retried.authority.dualRunStartedAt).toBe(time1);

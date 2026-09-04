@@ -1414,7 +1414,11 @@ function validateBeginInventoryMigrationManifest(
   const seen = new Set<string>();
   for (let index = 0; index < input.operationIds.length; index += 1) {
     const operationId = input.operationIds[index];
-    if (operationId === undefined) continue;
+    if (operationId === undefined) {
+      throw new Error(
+        "Inventory migration manifest operation id must not be empty."
+      );
+    }
     if (operationId.trim().length === 0) {
       throw new Error(
         "Inventory migration manifest operation id must not be empty."

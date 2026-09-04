@@ -478,7 +478,16 @@ function scalarPackageLevelsForRevision(
     ) {
       continue;
     }
-    levels.push(scalarPackageLevelFromDefinition(packaging, item));
+    const level = scalarPackageLevelFromDefinition(packaging, item);
+    if (level.unit === item.primaryAxis.unit) {
+      if (level.primaryQuantity !== "1") {
+        throw new Error(
+          `Inventory package '${level.unit}' aliases primary unit '${item.primaryAxis.unit}' with quantity ${level.primaryQuantity}; the primary alias must be 1.`
+        );
+      }
+      continue;
+    }
+    levels.push(level);
   }
   levels.sort(compareScalarPackageLevel);
   return levels;

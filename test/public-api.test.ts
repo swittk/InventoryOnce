@@ -68,6 +68,7 @@ describe("public export boundaries", () => {
   });
 
   it("publishes only root, kernel, storage, and migrations package entrypoints", () => {
+    // JSON.parse returns any; narrow only the manifest keys this test reads, leaving values unknown by design.
     const packageManifest = JSON.parse(
       readFileSync(path.resolve(__dirname, "../package.json"), "utf8")
     ) as { readonly exports?: Readonly<Record<string, unknown>> };

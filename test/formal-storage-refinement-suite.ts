@@ -46,7 +46,7 @@ import {
   time3,
 } from "./test-fixtures.js";
 
-/** Machine-audited bounded trace identities executed by this suite. */
+/** Machine-audited bounded trace identities executed by this suite; scripts/audit-formal-implementation-conformance.mjs discovers this declaration from source. */
 const FORMAL_IMPLEMENTATION_TRACE_IDS = [
   "TRACE-RECEIVE-MANY-PUBLISH-REPLAY",
   "TRACE-ISSUE-MANY-FEFO-SHORTFALL",

@@ -29,13 +29,25 @@ function form(revisionId: string, unit: string) {
   });
 }
 
+/** Named inputs for one exact measured transformation line. */
+interface TransformationLineInput {
+  /** Stable line identity. */
+  readonly lineId: string;
+  /** Exact immutable item revision consumed or produced. */
+  readonly itemRevisionId: string;
+  /** Exact scalar amount text. */
+  readonly amount: string;
+  /** Exact scalar unit. */
+  readonly unit: string;
+}
+
 /** Build one exact measured transformation line. */
-function line(
-  lineId: string,
-  itemRevisionId: string,
-  amount: string,
-  unit: string
-) {
+function line({
+  lineId,
+  itemRevisionId,
+  amount,
+  unit,
+}: TransformationLineInput) {
   return {
     lineId,
     itemRevisionId,
@@ -43,13 +55,25 @@ function line(
   };
 }
 
+/** Named inputs for one immutable reusable transformation definition. */
+interface TransformationDefinitionInput {
+  /** Stable transformation identity. */
+  readonly transformationId: string;
+  /** Exact immutable transformation revision identity. */
+  readonly revisionId: string;
+  /** Exact input line for this test recipe. */
+  readonly input: ReturnType<typeof line>;
+  /** Exact output line for this test recipe. */
+  readonly output: ReturnType<typeof line>;
+}
+
 /** Build one immutable reusable transformation definition. */
-function transformation(
-  transformationId: string,
-  revisionId: string,
-  input: ReturnType<typeof line>,
-  output: ReturnType<typeof line>
-): InventoryTransformationDefinitionRevision {
+function transformation({
+  transformationId,
+  revisionId,
+  input,
+  output,
+}: TransformationDefinitionInput): InventoryTransformationDefinitionRevision {
   return { transformationId, revisionId, inputs: [input], outputs: [output] };
 }
 
@@ -58,30 +82,40 @@ describe("reusable physical transformation definitions", () => {
     const bottle = form("med-a:bottle", "bottle");
     const openedMl = form("med-a:opened-ml", "mL");
     const syringe = form("med-a:syringe", "syringe");
-    const bottleToMlV1 = transformation(
-      "open-bottle",
-      "open-bottle:v1",
-      line("bottle-in", bottle.revisionId, "1", "bottle"),
-      line("ml-out", openedMl.revisionId, "100", "mL")
-    );
-    const bottleToMlV2 = transformation(
-      "open-bottle",
-      "open-bottle:v2",
-      line("bottle-in", bottle.revisionId, "1", "bottle"),
-      line("ml-out", openedMl.revisionId, "95", "mL")
-    );
-    const mlToSyringe = transformation(
-      "fill-syringe",
-      "fill-syringe:v1",
-      line("ml-in", openedMl.revisionId, "5", "mL"),
-      line("syringe-out", syringe.revisionId, "1", "syringe")
-    );
-    const bottleToSyringe = transformation(
-      "direct-fill",
-      "direct-fill:v1",
-      line("bottle-in", bottle.revisionId, "1", "bottle"),
-      line("syringe-out", syringe.revisionId, "20", "syringe")
-    );
+    const bottleToMlV1 = transformation({
+      transformationId: "open-bottle",
+      revisionId: "open-bottle:v1",
+      input: line({ lineId: "bottle-in", itemRevisionId: bottle.revisionId, amount: "1", unit: "bottle" }),
+      output: line({ lineId: "ml-out", itemRevisionId: openedMl.revisionId, amount: "100", unit: "mL" }),
+    });
+    const bottleToMlV2 = transformation({
+      transformationId: "open-bottle",
+      revisionId: "open-bottle:v2",
+      input: line({
+        lineId: "bottle-in",
+        itemRevisionId: bottle.revisionId,
+        amount: "1",
+        unit: "bottle",
+      }),
+      output: line({ lineId: "ml-out", itemRevisionId: openedMl.revisionId, amount: "95", unit: "mL" }),
+    });
+    const mlToSyringe = transformation({
+      transformationId: "fill-syringe",
+      revisionId: "fill-syringe:v1",
+      input: line({ lineId: "ml-in", itemRevisionId: openedMl.revisionId, amount: "5", unit: "mL" }),
+      output: line({ lineId: "syringe-out", itemRevisionId: syringe.revisionId, amount: "1", unit: "syringe" }),
+    });
+    const bottleToSyringe = transformation({
+      transformationId: "direct-fill",
+      revisionId: "direct-fill:v1",
+      input: line({
+        lineId: "bottle-in",
+        itemRevisionId: bottle.revisionId,
+        amount: "1",
+        unit: "bottle",
+      }),
+      output: line({ lineId: "syringe-out", itemRevisionId: syringe.revisionId, amount: "20", unit: "syringe" }),
+    });
     const catalog = defineInventoryCatalog({
       itemRevisions: [bottle, openedMl, syringe],
       activeItemRevisionIds: { "med-a": bottle.revisionId },
@@ -156,12 +190,12 @@ describe("reusable physical transformation definitions", () => {
   it("previews exact source quantity from one coherent world without writing", async () => {
     const bottle = form("med-a:bottle", "bottle");
     const openedMl = form("med-a:opened-ml", "mL");
-    const definition = transformation(
-      "open-bottle",
-      "open-bottle:v1",
-      line("bottle-in", bottle.revisionId, "2", "bottle"),
-      line("ml-out", openedMl.revisionId, "200", "mL")
-    );
+    const definition = transformation({
+      transformationId: "open-bottle",
+      revisionId: "open-bottle:v1",
+      input: line({ lineId: "bottle-in", itemRevisionId: bottle.revisionId, amount: "2", unit: "bottle" }),
+      output: line({ lineId: "ml-out", itemRevisionId: openedMl.revisionId, amount: "200", unit: "mL" }),
+    });
     const catalog = defineInventoryCatalog({
       itemRevisions: [bottle, openedMl],
       activeItemRevisionIds: { "med-a": bottle.revisionId },
@@ -191,6 +225,12 @@ describe("reusable physical transformation definitions", () => {
       sufficient: true,
     });
     expect(plan.inputs[0]?.positions).toHaveLength(1);
+    expect(plan.inputs[0]?.required).toEqual(
+      scalarInventoryMeasurements("stock", parseQuantity("2", "bottle"))
+    );
+    expect(plan.inputs[0]?.available).toEqual(
+      scalarInventoryMeasurements("stock", parseQuantity("3", "bottle"))
+    );
     expect((await storage.readWorld()).revision).toBe(before);
 
     const unavailable = await inventory.transformations.plan({
@@ -218,12 +258,12 @@ describe("reusable physical transformation definitions", () => {
     });
     expect(explicitEmpty.digest).toBe(base.digest);
 
-    const first = transformation(
-      "open-bottle",
-      "open-bottle:v1",
-      line("in", bottle.revisionId, "1", "bottle"),
-      line("out", openedMl.revisionId, "100", "mL")
-    );
+    const first = transformation({
+      transformationId: "open-bottle",
+      revisionId: "open-bottle:v1",
+      input: line({ lineId: "in", itemRevisionId: bottle.revisionId, amount: "1", unit: "bottle" }),
+      output: line({ lineId: "out", itemRevisionId: openedMl.revisionId, amount: "100", unit: "mL" }),
+    });
     const extended = extendInventoryCatalog({
       catalog: base,
       transformationRevisions: [first],
@@ -234,7 +274,7 @@ describe("reusable physical transformation definitions", () => {
       extendInventoryCatalog({
         catalog: extended,
         transformationRevisions: [
-          { ...first, outputs: [line("out", openedMl.revisionId, "99", "mL")] },
+          { ...first, outputs: [line({ lineId: "out", itemRevisionId: openedMl.revisionId, amount: "99", unit: "mL" })] },
         ],
       })
     ).toThrow("cannot be redefined");

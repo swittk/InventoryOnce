@@ -52,7 +52,14 @@ describe("malformed concrete input assurance manifest", () => {
     expect(() =>
       decodeMalformedInputAssuranceManifest({
         schemaVersion: 1,
-        entries: [{ id: "broken", invariant: "broken", guards: "not-an-array" }],
+        entries: [
+          {
+            id: "broken",
+            invariant: "broken",
+            guards: "not-an-array",
+            behaviorEvidence: [],
+          },
+        ],
       })
     ).toThrow(/guard\/evidence arrays/i);
   });

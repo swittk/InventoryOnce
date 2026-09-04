@@ -161,11 +161,13 @@ export async function readAllInventoryLegacyQuery<Row extends object>(
       ...(cursor === undefined ? {} : { cursor }),
       limit: pageSize,
     });
-    rows.push(...page.rows);
-    if (rows.length > maxRows) {
-      throw new Error(
-        `Inventory legacy query '${query.queryId}' exceeded its ${maxRows}-row safety bound.`,
-      );
+    for (const row of page.rows) {
+      if (rows.length === maxRows) {
+        throw new Error(
+          `Inventory legacy query '${query.queryId}' exceeded its ${maxRows}-row safety bound.`,
+        );
+      }
+      rows.push(row);
     }
     if (page.nextCursor === undefined) return rows;
     if (page.nextCursor.trim().length === 0) {

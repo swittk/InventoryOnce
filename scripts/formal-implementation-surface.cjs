@@ -174,6 +174,32 @@ function moduleExports(relativePath) {
   return rows.sort((left, right) => left.name.localeCompare(right.name));
 }
 
+/** Return every public callable instance member plus statics declared directly on one exported class. */
+function publicClassMembers(exported, constructorType) {
+  const instanceMembers = checker.getPropertiesOfType(
+    checker.getDeclaredTypeOfSymbol(exported)
+  );
+  const members = [...instanceMembers];
+  const memberNames = new Set(instanceMembers.map((member) => member.name));
+  for (const member of checker.getPropertiesOfType(constructorType)) {
+    const memberDeclaration = member.valueDeclaration ?? member.declarations?.[0];
+    if (
+      memberDeclaration === undefined ||
+      (ts.getCombinedModifierFlags(memberDeclaration) & ts.ModifierFlags.Static) === 0
+    ) {
+      continue;
+    }
+    if (memberNames.has(member.name)) {
+      throw new Error(
+        `Exported class '${exported.name}' has both static and instance member '${member.name}'; surface keys must distinguish them before that API can be certified.`
+      );
+    }
+    memberNames.add(member.name);
+    members.push(member);
+  }
+  return members;
+}
+
 /** Preserve every overload on every public exported class method. */
 function classMethods(relativePath, entrypoint) {
   const source = sourceFile(relativePath);
@@ -192,9 +218,7 @@ function classMethods(relativePath, entrypoint) {
     ) {
       continue;
     }
-    for (const member of checker.getPropertiesOfType(
-      checker.getDeclaredTypeOfSymbol(exported)
-    )) {
+    for (const member of publicClassMembers(exported, constructorType)) {
       const memberDeclaration = declarationOf(member, declaration);
       const flags = ts.getCombinedModifierFlags(memberDeclaration);
       if (
@@ -478,9 +502,7 @@ function visitEntrypointTypes(relativePath) {
     ) {
       continue;
     }
-    for (const member of checker.getPropertiesOfType(
-      checker.getDeclaredTypeOfSymbol(exported)
-    )) {
+    for (const member of publicClassMembers(exported, exportedType)) {
       const memberDeclaration = declarationOf(member, declaration);
       const flags = ts.getCombinedModifierFlags(memberDeclaration);
       if (
