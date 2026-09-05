@@ -219,6 +219,16 @@ function projectHistoryWithReplacement(
       );
     }
     if (event.correction?.correctsEventId === rootEventId) continue;
+    const correctedEvent =
+      event.correction === undefined
+        ? undefined
+        : projection.events[event.correction.correctsEventId];
+    if (
+      correctedEvent?.kind === InventoryEventKind.LotMetadata ||
+      correctedEvent?.kind === InventoryEventKind.ContainerMetadata
+    ) {
+      continue;
+    }
     // Metadata-only events remain their own master assertions. Replaying them as
     // stock/graph drafts would consume a physical sequence without changing stock truth.
     if (

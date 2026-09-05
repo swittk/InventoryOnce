@@ -3,8 +3,8 @@
     "authorityMethods": 13,
     "callAndConstructSignatures": 508,
     "classMethods": 70,
-    "compilerCallGraphCallables": 2145,
-    "compilerCallGraphEdges": 5881,
+    "compilerCallGraphCallables": 2147,
+    "compilerCallGraphEdges": 5894,
     "compilerCallGraphTestRoots": 37,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 508,
@@ -59546,7 +59546,7 @@
           "path": "src/coordinator.ts"
         },
         {
-          "occurrences": 26,
+          "occurrences": 28,
           "path": "src/corrections.ts"
         },
         {
@@ -63720,7 +63720,7 @@
           "path": "src/coordinator.ts"
         },
         {
-          "occurrences": 26,
+          "occurrences": 28,
           "path": "src/corrections.ts"
         },
         {

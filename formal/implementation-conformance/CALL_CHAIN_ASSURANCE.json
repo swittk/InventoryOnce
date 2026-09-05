@@ -1,7 +1,7 @@
 {
   "counts": {
-    "callables": 2145,
-    "edges": 5881,
+    "callables": 2147,
+    "edges": 5894,
     "publicEntries": 508,
     "publicEntriesWithTargets": 508,
     "publicEntriesWithWitnesses": 508,

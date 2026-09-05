@@ -609,6 +609,51 @@ describe("append-only corrections", () => {
     expect(plan.lines[0]?.allocatedPrimary.amountMinor).toBe(1);
   });
 
+  it("ignores metadata-only correction chains during later physical correction replay", async () => {
+    const inventory = createTestInventory();
+    await inventory.lots.define({
+      operationId: "metadata-replay-lot-root",
+      occurredAt: time0,
+      itemId: "item-a",
+      lotId: "META-REPLAY",
+      lot: { manufacturedAt: time0 },
+    });
+    await inventory.lots.correct({
+      operationId: "metadata-replay-lot-correction",
+      occurredAt: time1,
+      itemId: "item-a",
+      lotId: "META-REPLAY",
+      lot: { manufacturedAt: time0, expiresAt: time3 },
+      reason: "Expiry date was confirmed later.",
+    });
+    const root = await inventory.stock.receive({
+      operationId: "metadata-replay-stock-root",
+      occurredAt: time1,
+      to: loosePosition("metadata-replay-store"),
+      amount: stockAmount("2", "piece"),
+    });
+
+    await inventory.stock.correct({
+      operationId: "metadata-replay-stock-correction",
+      occurredAt: time2,
+      correctsEventId: root.event.eventId,
+      reason: "Physical receipt was independently checked.",
+      replaceWith: (plans) =>
+        plans.receive({
+          occurredAt: time1,
+          to: loosePosition("metadata-replay-store"),
+          amount: stockAmount("2", "piece"),
+        }),
+    });
+
+    const positions = await inventory.read.positions({
+      itemId: "item-a",
+      locationIds: ["metadata-replay-store"],
+    });
+    expect(positions).toHaveLength(1);
+    expect(positions[0]?.measurements.primary.quantity.amountMinor).toBe(2);
+  });
+
   it("offers a truthful declarative replacement for every non-correction event kind", async () => {
     // Accumulate every corrected root kind for the final coverage assertion below.
     const correctedRootKinds = new Set<InventoryEventKind>();

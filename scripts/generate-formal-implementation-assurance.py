@@ -114,16 +114,21 @@ def root_family(name,decl):
  if any(x in decl for x in ('read-model.ts','availability.ts','usability.ts')): return 'read-current'
  if any(x in decl for x in ('picking.ts','allocation.ts')): return 'allocation-helper'
  if name in {'assertInventoryAmountSum','defineInventoryAmountLineGroup','combineInventoryAmountLineGroups','defineInventoryPolicyBatchRequestGroup','combineInventoryPolicyBatchRequestGroups','inventoryPolicyBatchAllocationLinesByReference'}: return 'operation-result-helper'
- return 'identity-normalization'
+ if name in {'everythingInInventoryStockSelector','inventoryContainerIdentity','inventoryLotIdentity','inventoryStockSelector'}: return 'identity-normalization'
+ raise KeyError(f'unmapped root public API {name} from {decl}')
 
 # Map one storage export to durable-protocol or storage-integrity assurance.
 def storage_export_family(name):
  if any(k in name for k in ('Digest','ContentRoots','Delta','materialize','emptyInventoryWorldState')): return 'storage-integrity'
- return 'durable-protocol'
+ if name in {'InMemoryInventoryDurableStorage','InventoryApplyingOperationConflictError','InventoryWorldRevisionConflictError','commitInventoryOperation','createInMemoryInventoryDurableStorage','repairInventoryDurableOperations','resumeInventoryDurableOperation','validateInventoryDurableOperationBeginInput','validateInventoryMigrationManifestBeginInput'}: return 'durable-protocol'
+ raise KeyError(f'unmapped storage public API {name}')
 
 # Map one migration export to definition, publication, or external-plugin assurance.
 def migration_family(name):
- return 'migration-publication' if name in {'applyInventoryMigrationPlan','repairInventoryMigrationManifests','resumeInventoryMigrationManifest'} else ('external-plugin-boundary' if name in {'createInventoryLegacyQueryReader','createInventoryMigrationPlanFromPlugin','createInventoryMigrationPlanFromSourcePlugin','readAllInventoryLegacyQuery'} else 'migration-definition')
+ if name in {'applyInventoryMigrationPlan','repairInventoryMigrationManifests','resumeInventoryMigrationManifest'}: return 'migration-publication'
+ if name in {'createInventoryLegacyQueryReader','createInventoryMigrationPlanFromPlugin','createInventoryMigrationPlanFromSourcePlugin','readAllInventoryLegacyQuery'}: return 'external-plugin-boundary'
+ if name in {'defineInventoryLegacyQuery','defineInventoryMigration','defineInventoryMigrationPlugin','defineInventoryMigrationSourcePlugin','dryRunInventoryMigration','inventoryMigrationPositionsMatch','inventoryMigrationProblem','inventoryMigrationSnapshotSupersededDisposition'}: return 'migration-definition'
+ raise KeyError(f'unmapped migration public API {name}')
 
 # Map one expert-kernel export to the formal family matching its source semantics.
 def kernel_family(name,decl):
@@ -155,8 +160,9 @@ def kernel_family(name,decl):
   if 'container' in low: return 'container-command'
   if 'lot' in low: return 'lot-command'
   if 'traceability' in low: return 'traceability'
-  return 'operation-result-helper'
- return 'identity-normalization'
+  if name in {'assertCanonicalInventoryTime','commitInventoryEvent','createInventoryCatalogPublicationEvent','defineInventoryEvent','inventoryEventIdForOperation','inventoryEventIntentFingerprint'}: return 'operation-result-helper'
+  raise KeyError(f'unmapped event/command public API {name} from {decl}')
+ raise KeyError(f'unmapped kernel public API {name} from {decl}')
 
 # Expand one discovered public signature with its complete family assurance declaration.
 def expanded_entry(family_id,signature):
