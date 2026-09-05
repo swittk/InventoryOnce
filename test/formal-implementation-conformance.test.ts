@@ -70,6 +70,8 @@ describe("formal implementation conformance manifest", () => {
         timeout: 25_000,
       }
     );
+    // JSON.parse returns any; this assertion narrows the audit output to the
+    // exact counter shape asserted below, whose fields are then checked directly.
     const summary = JSON.parse(
       output
     ) as FormalImplementationConformanceSummary;

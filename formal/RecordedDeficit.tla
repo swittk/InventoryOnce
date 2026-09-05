@@ -200,6 +200,12 @@ RecordedDeficitNeverBecomesPhysical ==
   /\ Available(physical, deficit) <= physical
   /\ deficit > 0 => Available(physical, deficit) < physical \/ physical = 0
 
+\* Issue transitions may consume only capacity available before the step;
+\* recorded deficit is a liability and can never fund physical allocation.
+IssueConsumesOnlyAvailableCapacity ==
+  ~(lastOutcome \in {"record-full", "record-shortage", "reject-full"}) \/
+    beforePhysical - physical <= Available(beforePhysical, beforeDeficit)
+
 SeenIntentAndResultAreDurable ==
   \A op \in OperationIds:
     /\ Seen(op) <=> (intentByOperation[op] # NoIntent)

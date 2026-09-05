@@ -29,9 +29,13 @@ function tablets(value: string) {
 /** Build one explicit one-pack read-only roll-up conversion. */
 function packRollupMember(itemRevisionId: string) {
   return {
+    /** Exact item revision represented by this read-only member. */
     itemRevisionId,
+    /** Measurement axis used to interpret the member quantity. */
     measurementAxisId: "packs",
+    /** Quantity contributed by one member instance. */
     memberQuantity: parseQuantity("1", "pack"),
+    /** Quantity exposed through the collection roll-up view. */
     rollupQuantity: parseQuantity("1", "pack-count"),
   };
 }

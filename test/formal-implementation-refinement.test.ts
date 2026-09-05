@@ -517,7 +517,11 @@ describe("formal implementation state/result refinement", () => {
     );
     const repaired = await repairInventoryMigrationManifests({ storage });
     expect(repaired).toHaveLength(1);
-    assertAbstractMigrationInvariants(repaired[0]!);
+    const repairedManifest = repaired[0];
+    if (repairedManifest === undefined) {
+      throw new Error("Expected one repaired migration manifest.");
+    }
+    assertAbstractMigrationInvariants(repairedManifest);
     const published = await storage.readWorld();
     expect(abstractInventoryState(published)).toEqual(
       abstractInventoryState(dryRun.resultWorld)

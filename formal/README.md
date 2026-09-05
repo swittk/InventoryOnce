@@ -194,7 +194,7 @@ revision or exact substitute; normal stock events continue to record the item ac
 
 ### Recorded deficits
 
-`RecordedDeficit.tla` distinguishes allocatable physical stock from a signed recorded liability. Its bounded operation model covers Record and Reject issue modes, receipts after a deficit, frozen operation intent/result shortfall, exact replay, and changed-intent rejection. Checked invariants require signed net to equal physical minus deficit, prevent deficit from becoming allocatable capacity, preserve Reject-mode shortage stutter, and require replay to return the frozen shortfall without changing truth.
+`RecordedDeficit.tla` distinguishes allocatable physical stock from a signed recorded liability. Its bounded operation model covers Record and Reject issue modes, receipts after a deficit, frozen operation intent/result shortfall, exact replay, and changed-intent rejection. Checked invariants require signed net to equal physical minus deficit and bound every issue physical decrement by the pre-step available capacity, so recorded deficit cannot fund allocation; they also preserve Reject-mode shortage stutter and require replay to return the frozen shortfall without changing truth.
 
 Executable refinement in the TypeScript façade reconstructs `InventoryOnceEventResult.deficit` from immutable event metadata/effects and checks it after restart with the memory reference adapter. Migration uses the same signed Issue semantics for coherent negative `__untracked__` rows rather than inventing opening receipts. Mongo/SQLite adapter checks belong to the backend/data slice.
 

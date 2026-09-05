@@ -322,6 +322,13 @@ describe("atomic conserved split/merge/reclassification", () => {
         ],
       })
     ).rejects.toThrow("cannot all be fulfilled simultaneously");
-    expect((await storePositions(inventory))[0]?.key.statusId).toBeUndefined();
+    const retained = await storePositions(inventory);
+    expect(retained).toHaveLength(1);
+    const retainedPosition = retained[0];
+    if (retainedPosition === undefined) {
+      throw new Error("Reserved position disappeared after rejected reclassification.");
+    }
+    expect(retainedPosition.key.statusId).toBeUndefined();
+    expect(retainedPosition.measurements.primary.quantity.amountMinor).toBe(2);
   });
 });

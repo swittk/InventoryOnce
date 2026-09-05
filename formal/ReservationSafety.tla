@@ -88,6 +88,10 @@ TypeOK ==
 
 NoOverReservation == Available >= 0
 
+\* Scope note: TypeOK deliberately bounds each consume counter to 0..1, so
+\* NoDoubleConsume names the lifecycle obligation but is not an independent
+\* counterexample source in this finite domain. Reservation executable tests
+\* exercise the same single-consume and terminal-lifecycle contract.
 NoDoubleConsume ==
   /\ consumeCount1 <= 1
   /\ consumeCount2 <= 1

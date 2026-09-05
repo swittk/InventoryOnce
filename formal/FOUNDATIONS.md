@@ -116,9 +116,9 @@ No single notation is forced to do every job.
 - **Invariant-confluence/escrow analysis**: documented proof obligations for distributed/offline adapters, deciding exactly which operations require coordination.
 - **Executable refinement/property tests**: every abstract invariant must have a real TypeScript companion. Durable adapters additionally need before/after failpoints at every physical write boundary.
 
-## Required mature-system model suite
+## Registered mature-system model suite
 
-The initial three models remain useful implementation-level checks, but they are not the final formal boundary. The formal runner should grow toward these abstract models:
+The formal runner now executes a registered 24-model suite from `scripts/formal-models.mjs` as release evidence. The mature-system obligations highlighted below are already registered and checked; each implemented behavior is paired with executable refinement/property or failure-injection evidence. Future scope is limited to behavior explicitly called out as unmodeled below, such as distributed partition/merge behavior:
 
 - `CompositionRevision`: exact heterogeneous package generations, revision-pinned opening, transfer preservation, idempotent intent, and component-vector conservation.
 - `CollectionView`: retained read-only group membership and exact member breakdowns without physical merging or substitution authority.
