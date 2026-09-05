@@ -233,7 +233,9 @@
         "PublishedMeaningsNeverChange",
         "OnePublicationPerOperation",
         "PartialWritesAreInvisible",
-        "ApplyingEventuallyTerminates"
+        "ApplyingEventuallyTerminates",
+        "ExactRetryEvidenceMatchesFrozenPublication",
+        "ChangedRetryEvidenceConflictsWithFrozenPublication"
       ],
       "models": [
         "CatalogPublication",

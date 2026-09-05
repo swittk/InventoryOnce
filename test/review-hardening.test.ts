@@ -24,7 +24,9 @@ import {
 import { applyInventoryRecordedDeficitBurden } from "../src/deficits.js";
 import { createInventoryReservationBookDelta } from "../src/integrity.js";
 import {
+  InventoryStorageWriteStage,
   createInMemoryInventoryDurableStorage,
+  type InventoryDurableStorage,
 } from "../src/storage-api.js";
 import {
   createTabletCatalog,
@@ -89,6 +91,39 @@ describe("collision-free retry identity", () => {
     ).toBe(4);
     expect(adjusted.uncoveredDeficit.amountMinor).toBe(0);
   });
+  it("rejects storage mutation re-entry from an async failpoint instead of deadlocking", async () => {
+    let storage: InventoryDurableStorage | undefined;
+    let attemptedReentry = false;
+    storage = createInMemoryInventoryDurableStorage({
+      failpoint: async ({ stage, timing }) => {
+        if (
+          attemptedReentry ||
+          stage !== InventoryStorageWriteStage.Begin ||
+          timing !== "before"
+        ) {
+          return;
+        }
+        attemptedReentry = true;
+        await Promise.resolve();
+        if (storage === undefined) throw new Error("Missing failpoint storage.");
+        await storage.abort("nested-failpoint-mutation");
+      },
+    });
+    const inventory = createTestInventory(storage);
+    await expect(
+      inventory.stock.receive({
+        operationId: "failpoint-reentry",
+        occurredAt: time0,
+        to: loosePosition("store"),
+        amount: stockAmount("1", "piece"),
+      })
+    ).rejects.toThrow(
+      "Inventory storage failpoint callbacks must not invoke storage mutations."
+    );
+    expect(attemptedReentry).toBe(true);
+    expect((await storage.readWorld()).revision).toBe(0);
+  });
+
   it("keeps delimiter, empty, and null field boundaries distinct", () => {
     expect(inventoryIntentFingerprint(["actor|", "source"]))
       .not.toBe(inventoryIntentFingerprint(["actor", "|source"]));

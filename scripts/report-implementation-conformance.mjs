@@ -187,8 +187,13 @@ for (const step of executable.steps) {
   }
 }
 const formal = tlaRows(byStep.get("registered-tlc-model-suite") ?? "");
+const observedFormalModels = formal.map((row) => row.model).sort();
+const expectedFormalModels = [...formalModels].sort();
 if (
   formal.length !== formalModels.length ||
+  observedFormalModels.some(
+    (model, index) => model !== expectedFormalModels[index]
+  ) ||
   formal.some(
     (row) =>
       row.generated === undefined ||

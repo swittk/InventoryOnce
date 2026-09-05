@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from "node:async_hooks";
 import { compareInventoryIdentityText } from "./ordering.js";
 import {
   assertCanonicalInventoryTime,
@@ -28,6 +29,9 @@ import {
   type InventoryMigrationSourceDisposition,
 } from "./migration-evidence.js";
 import { emptyInventoryWorldState, type InventoryWorldState } from "./world.js";
+
+/** Async execution context used only to reject same-adapter mutation re-entry from failpoints. */
+const inventoryStorageFailpointExecution = new AsyncLocalStorage<object>();
 
 /** Storage guarantee advertised by one durable adapter. */
 export enum InventoryStorageGuarantee {
@@ -100,7 +104,7 @@ export interface InventoryStorageFailpointContext {
   readonly operationId: string;
 }
 
-/** Optional callback used only by tests/adapters to inject deterministic failures. */
+/** Optional callback used only by tests/adapters to inject deterministic failures; it must not invoke storage mutations. */
 export type InventoryStorageFailpoint = (
   context: InventoryStorageFailpointContext
 ) => void | Promise<void>;
@@ -1090,6 +1094,11 @@ export class InMemoryInventoryDurableStorage
   private async runStorageMutationAtomically<Result>(
     operation: () => Promise<Result>
   ): Promise<Result> {
+    if (inventoryStorageFailpointExecution.getStore() === this) {
+      throw new Error(
+        "Inventory storage failpoint callbacks must not invoke storage mutations."
+      );
+    }
     const result = this.storageMutationBarrier.then(operation);
     this.storageMutationBarrier = result.then(
       finishInventoryStorageMutationSection,
@@ -1144,7 +1153,12 @@ export class InMemoryInventoryDurableStorage
     timing: InventoryStorageWriteTiming,
     operationId: string
   ): Promise<void> {
-    await this.failpoint?.({ stage, timing, operationId });
+    if (this.failpoint === undefined) return;
+    await inventoryStorageFailpointExecution.run(
+      this,
+      /** Execute only the deterministic failure injector inside the marked async context. */
+      () => this.failpoint?.({ stage, timing, operationId })
+    );
   }
 }
 
