@@ -561,8 +561,10 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
   });
 
   it("resumes the native lifecycle after failure between start and observation", async () => {
+    // One-shot flag controlling the simulated crash before the first observation write.
     let shouldFailObservation = true;
     const storage = createInMemoryInventoryDurableStorage({
+      // Inject the one-shot observation failure while allowing the resumed attempt through.
       failpoint: ({ stage, timing, operationId }) => {
         if (
           shouldFailObservation &&

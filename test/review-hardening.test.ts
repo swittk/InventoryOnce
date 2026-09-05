@@ -249,6 +249,52 @@ describe("durable planner output guards", () => {
       "planner-guard-claim",
     )).toThrow("changed frozen creation facts");
   });
+
+  it("rejects a direct refine delta that widens the frozen selector", async () => {
+    const catalog = createTabletCatalog();
+    const inventory = createTestInventory(undefined, catalog);
+    await inventory.stock.receive({
+      operationId: "receive-for-selector-guard",
+      occurredAt: time0,
+      to: loosePosition("store"),
+      amount: stockAmount("2", "piece"),
+    });
+    await inventory.reservations.reserve({
+      reservationId: "selector-guard-claim",
+      operationId: "create-selector-guard-claim",
+      itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a", locationIds: ["store"] },
+      requested: parseQuantity("1", "piece"),
+      createdAt: time1,
+    });
+    const world = await inventory.read.world();
+    const refined = refineInventoryReservation({
+      catalog,
+      projection: world.projection,
+      book: world.reservations,
+      operationId: "widened-refine-output",
+      reservationId: "selector-guard-claim",
+      selector: { itemId: "item-a", locationIds: ["store"] },
+      occurredAt: time2,
+    });
+    const widenedReservation = {
+      ...refined.reservation,
+      selector: { itemId: "item-a" },
+    };
+    const widenedBook = {
+      reservations: {
+        ...refined.book.reservations,
+        [widenedReservation.reservationId]: widenedReservation,
+      },
+      operations: refined.book.operations,
+    };
+    expect(() => createInventoryReservationBookDelta(
+      world.reservations,
+      widenedBook,
+      "widened-refine-output",
+      "selector-guard-claim",
+    )).toThrow("may only narrow its selector");
+  });
 });
 
 describe("package and serial reservation granularity", () => {

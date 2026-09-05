@@ -347,13 +347,18 @@ export function planInventoryFungibilityAllocation({
       `Fungibility allocation request must use basis unit '${definition.basisUnit}'.`
     );
   }
+  // Common-basis candidates retained across all member planning passes.
   const candidates: InventoryAllocationCandidate[] = [];
+  // Per-position member evidence retained to map allocator output back to source identity.
   const evidenceByPosition = new Map<
     string,
     InventoryFungibilityCandidateEvidence
   >();
+  // Remember whether any member excluded otherwise-positive expired stock.
   let expiredStockWasExcluded = false;
+  // Remember whether any member was blocked by intact package or serial increments.
   let incrementBlockedStock = false;
+  // Remember whether any active member reservation remained broad rather than position-bound.
   let unallocatedReservationsPresent = false;
 
   for (const member of definition.members) {

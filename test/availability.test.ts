@@ -44,6 +44,7 @@ async function currentAvailability(
 
 describe("truthful native availability read model", () => {
   it("separates physical, expired, exact-allocation, and broad-claim facts", async () => {
+    // Mutable instant driving the injected clock across this availability scenario.
     let recordedAt = time1;
     const inventory = createTestInventory(undefined, undefined, {
       now: () => recordedAt,

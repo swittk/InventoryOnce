@@ -51,7 +51,9 @@ function createWorldWithExactReservations(
   positionCount: number,
   onAllocationRead: () => void
 ): InventoryWorldState {
+  // Accumulate exact reservation rows for the synthetic reservation book.
   const reservations: Record<string, InventoryReservation> = {};
+  // Accumulate matching lifecycle operations for the synthetic reservation book.
   const operations: Record<string, InventoryReservationOperation> = {};
   const selector = inventoryStockSelector("item-a", {
     itemRevisionIds: ["item-a-v2"],

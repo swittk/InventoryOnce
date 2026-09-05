@@ -22,6 +22,7 @@ import {
   type InventoryReservationBook,
   type InventoryReservationOperation,
 } from "./reservations.js";
+import { inventoryStockSelectorIsSubset } from "./selectors.js";
 import type { InventoryWorldState } from "./world.js";
 
 /** One append-only reservation row/operation change frozen in a compact durable plan. */
@@ -420,7 +421,8 @@ function assertAllowedReservationTransition(
   if (operation.kind === InventoryReservationOperationKind.Refine) {
     if (
       next.status !== InventoryReservationStatus.Active ||
-      !sameJson(base.allocations, next.allocations)
+      !sameJson(base.allocations, next.allocations) ||
+      !inventoryStockSelectorIsSubset(next.selector, base.selector)
     )
       throw new Error(
         "Reservation refine may only narrow its selector and change time."
