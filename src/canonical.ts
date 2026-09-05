@@ -51,6 +51,9 @@ export function inventoryMetadataValueFingerprint(
   if (isInventoryMetadataArray(value)) {
     let result = "[";
     for (const child of value) {
+      if (child === undefined) {
+        throw new Error("Inventory metadata must not contain undefined.");
+      }
       result += `${inventoryMetadataValueFingerprint(child)},`;
     }
     return `${result}]`;

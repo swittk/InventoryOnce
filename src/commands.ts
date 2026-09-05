@@ -1415,6 +1415,7 @@ function findCommandItem(
 function assertCommandPositionIsNotTransferBound(
   position: InventoryStockPositionInput
 ): void {
+  // Untyped JavaScript callers may supply transferId even though the typed input omits it.
   const transferId = (position as InventoryStockPositionKey).transferId;
   if (transferId !== undefined) {
     throw new Error(

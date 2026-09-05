@@ -207,7 +207,8 @@ export function createInventoryCompositionOpenEvent(
   const sourceTraceabilityNode = compositionTraceabilityNode(
     input.from,
     input.sourceTraceabilityNode,
-    `${input.operationId}:source`
+    `${input.operationId}:source`,
+    false
   );
   const consume: InventoryTransformationLine = {
     position: input.from,
@@ -299,7 +300,8 @@ function createCompositionOutputLine({
   const traceabilityNode = compositionTraceabilityNode(
     position,
     placement?.traceabilityNode,
-    `${input.operationId}:output:${output.outputId}`
+    `${input.operationId}:output:${output.outputId}`,
+    true
   );
   return {
     position,
@@ -472,9 +474,19 @@ function currentSourceLot(
 function compositionTraceabilityNode(
   position: InventoryStockPositionInput,
   explicit: InventoryTraceabilityNodeRef | undefined,
-  externalId: string
+  externalId: string,
+  requireExplicitForAmbiguity: boolean
 ): InventoryTraceabilityNodeRef | undefined {
   if (explicit !== undefined) return explicit;
+  const identityCount =
+    (position.serialId === undefined ? 0 : 1) +
+    (position.containerId === undefined ? 0 : 1) +
+    (position.lotId === undefined ? 0 : 1);
+  if (requireExplicitForAmbiguity && identityCount > 1) {
+    throw new Error(
+      "Composition line has several stock identities; name which serial, container, or lot is the genealogy node."
+    );
+  }
   if (position.serialId !== undefined) {
     return {
       kind: InventoryTraceabilityNodeKind.Serial,

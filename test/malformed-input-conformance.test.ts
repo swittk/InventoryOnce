@@ -16,10 +16,18 @@ const manifestPath = path.join(
 
 /** Read one repository file referenced by machine malformed-input assurance. */
 function source(relativePath: string): string {
-  return readFileSync(path.join(repositoryRoot, relativePath), "utf8");
+  const resolved = path.resolve(repositoryRoot, relativePath);
+  const relative = path.relative(repositoryRoot, resolved);
+  if (relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+    throw new Error("Malformed-input assurance path must stay inside the repository.");
+  }
+  return readFileSync(resolved, "utf8");
 }
 
 describe("malformed concrete input assurance manifest", () => {
+  it("rejects assurance evidence paths that escape the repository", () => {
+    expect(() => source("../outside-repository.txt")).toThrow(/stay inside the repository/i);
+  });
   it("binds every malformed-input invariant to a live guard and negative behavior regression", () => {
     const manifest = decodeMalformedInputAssuranceManifest(
       JSON.parse(readFileSync(manifestPath, "utf8"))

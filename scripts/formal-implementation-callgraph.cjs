@@ -1,6 +1,7 @@
 const ts = require("typescript");
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
+const { vitestCallbackExecutes, vitestRegistrationName } = require("./formal-implementation-vitest-semantics.cjs");
 
 const root = path.resolve(__dirname, "..");
 /** Normalize compiler paths before comparing Windows and POSIX source roots. */
@@ -125,8 +126,11 @@ function isCallable(node) {
   );
 }
 
+/** Stable callable descriptions keyed by compiler-derived callable id. */
 const callables = new Map();
+/** Compiler callable nodes keyed by the same stable callable id. */
 const callableNodeById = new Map();
+/** Callable ids keyed by their declaration/compiler node. */
 const declarationToCallable = new Map();
 /** Register one callable node in the compiler-resolved call graph. */
 function registerCallable(node) {
@@ -144,7 +148,9 @@ for (const source of packageSources) {
   visit(source);
 }
 
+/** Outbound call-graph targets retained for every discovered caller. */
 const edges = new Map();
+/** Edge provenance keyed by caller/target identity. */
 const edgeReasons = new Map();
 /** Add one directed call-graph edge with its resolution reason. */
 function addEdge(from, to, reason) {
@@ -197,6 +203,7 @@ function resolvedTargetsOfExpression(expression) {
 }
 
 /** Link overload/interface declarations to package-owned bodies sharing one symbol. */
+/** Callable ids indexed by resolved TypeScript symbol. */
 const callableIdsBySymbol = new Map();
 for (const source of packageSources) {
   function visit(node) {
@@ -226,7 +233,9 @@ for (const ids of callableIdsBySymbol.values()) {
 }
 
 /** Link interface method signatures to package classes explicitly implementing them. */
+/** Concrete implementation ids indexed by interface member identity. */
 const implementationsByInterfaceMember = new Map();
+/** Class method ids indexed by class and method name. */
 const classMethodsByClassAndName = new Map();
 for (const source of productionSources) {
   function visit(node) {
@@ -305,14 +314,27 @@ for (const source of executableTestSources) {
 function testRootFor(source) {
   return roots.get(`test-root:${relativeFile(source)}`)?.id;
 }
-/** Return whether one callback is registered directly with the test runner. */
+/** Return whether this node is lexically nested in a describe.skip collection callback. */
+function isInsideSkippedSuite(node) {
+  let current = node.parent;
+  while (current !== undefined) {
+    if ((ts.isArrowFunction(current) || ts.isFunctionExpression(current)) && ts.isCallExpression(current.parent)) {
+      const callee = current.parent.expression.getText(current.getSourceFile());
+      if (vitestRegistrationName(callee) === "describe" && /(?:^|\.)skip(?:\.|$)/u.test(callee)) {
+        return true;
+      }
+    }
+    current = current.parent;
+  }
+  return false;
+}
+
+/** Return whether one test-runner callback is actually executed by Vitest. */
 function isTestCallback(node) {
   if (!ts.isArrowFunction(node) && !ts.isFunctionExpression(node)) return false;
   if (!ts.isCallExpression(node.parent)) return false;
   const callee = node.parent.expression.getText(node.getSourceFile());
-  return /(?:^|\.)(?:it|test|describe|beforeAll|beforeEach|afterAll|afterEach)(?:\.|\(|$)/u.test(
-    callee
-  );
+  return vitestCallbackExecutes(callee, isInsideSkippedSuite(node));
 }
 
 /** Resolve an aliased compiler symbol without changing package ownership. */
@@ -373,9 +395,8 @@ function externalCallbackArgumentIndexes(node) {
   const expressionText = node.expression.getText(node.getSourceFile());
   if (
     sourcePath.startsWith(`${testRoot}/`) &&
-    /(?:^|\.)(?:it|test|describe|beforeAll|beforeEach|afterAll|afterEach)(?:\.|\(|$)/u.test(
-      expressionText
-    )
+    vitestRegistrationName(expressionText) !== undefined &&
+    vitestCallbackExecutes(expressionText, isInsideSkippedSuite(node))
   ) {
     for (let index = 0; index < (node.arguments?.length ?? 0); index += 1) {
       if (callbackTargets(node.arguments[index]).length > 0) indexes.add(index);
@@ -397,7 +418,9 @@ function externalCallbackArgumentIndexes(node) {
   return indexes;
 }
 
+/** Memoized proof that a concrete callable invokes a parameter as a callback. */
 const parameterInvocationMemo = new Map();
+/** Active parameter-invocation proofs used to break recursive analysis cycles. */
 const parameterInvocationActive = new Set();
 
 /** Return whether one concrete package callable executes the named parameter. */
@@ -496,7 +519,9 @@ for (const source of packageSources) {
 }
 
 /** Multi-root breadth-first tested call-chain reachability. */
+/** First predecessor retained for each callable reached from an executable test root. */
 const predecessor = new Map();
+/** Originating executable test root retained for each reached callable. */
 const rootOf = new Map();
 const pending = [];
 for (const rootId of roots.keys()) {
@@ -574,6 +599,7 @@ function interfaceImplementationTargets(interfaceName, methodName) {
 }
 
 /** Public API keys exactly match API_ASSURANCE.json generation. */
+/** Concrete callable targets indexed by public assurance API key. */
 const publicTargets = new Map();
 for (const row of surface.facade) {
   publicTargets.set(

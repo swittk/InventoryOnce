@@ -1,11 +1,11 @@
 {
   "counts": {
-    "callables": 2112,
-    "edges": 5786,
+    "callables": 2123,
+    "edges": 5811,
     "publicEntries": 508,
     "publicEntriesWithTargets": 508,
     "publicEntriesWithWitnesses": 508,
-    "testRoots": 36,
+    "testRoots": 37,
     "unresolvedPublicEntries": 0
   },
   "entries": {
@@ -9446,10 +9446,10 @@
                 "column": 79,
                 "file": "test/transfer-lifecycle.test.ts",
                 "hasBody": true,
-                "id": "test/transfer-lifecycle.test.ts:13450:<anonymous@409>",
+                "id": "test/transfer-lifecycle.test.ts:13523:<anonymous@408>",
                 "kind": "ArrowFunction",
-                "line": 409,
-                "name": "<anonymous@409>",
+                "line": 408,
+                "name": "<anonymous@408>",
                 "reason": "test-callback"
               },
               {
@@ -9730,10 +9730,10 @@
                 "column": 79,
                 "file": "test/transfer-lifecycle.test.ts",
                 "hasBody": true,
-                "id": "test/transfer-lifecycle.test.ts:13450:<anonymous@409>",
+                "id": "test/transfer-lifecycle.test.ts:13523:<anonymous@408>",
                 "kind": "ArrowFunction",
-                "line": 409,
-                "name": "<anonymous@409>",
+                "line": 408,
+                "name": "<anonymous@408>",
                 "reason": "test-callback"
               },
               {
@@ -9791,10 +9791,10 @@
                 "column": 86,
                 "file": "test/transfer-lifecycle.test.ts",
                 "hasBody": true,
-                "id": "test/transfer-lifecycle.test.ts:17755:<anonymous@535>",
+                "id": "test/transfer-lifecycle.test.ts:17828:<anonymous@534>",
                 "kind": "ArrowFunction",
-                "line": 535,
-                "name": "<anonymous@535>",
+                "line": 534,
+                "name": "<anonymous@534>",
                 "reason": "test-callback"
               },
               {
@@ -13310,9 +13310,9 @@
                 "column": 1,
                 "file": "src/availability.ts",
                 "hasBody": true,
-                "id": "src/availability.ts:6209:summarizeInventoryAvailability",
+                "id": "src/availability.ts:6260:summarizeInventoryAvailability",
                 "kind": "FunctionDeclaration",
-                "line": 145,
+                "line": 146,
                 "name": "summarizeInventoryAvailability",
                 "reason": "resolved-call"
               },
@@ -13320,9 +13320,9 @@
                 "column": 1,
                 "file": "src/availability.ts",
                 "hasBody": true,
-                "id": "src/availability.ts:9308:summarizeAvailabilityRevision",
+                "id": "src/availability.ts:9359:summarizeAvailabilityRevision",
                 "kind": "FunctionDeclaration",
-                "line": 241,
+                "line": 242,
                 "name": "summarizeAvailabilityRevision",
                 "reason": "resolved-call"
               },
@@ -13401,9 +13401,9 @@
                 "column": 1,
                 "file": "src/availability.ts",
                 "hasBody": true,
-                "id": "src/availability.ts:6209:summarizeInventoryAvailability",
+                "id": "src/availability.ts:6260:summarizeInventoryAvailability",
                 "kind": "FunctionDeclaration",
-                "line": 145,
+                "line": 146,
                 "name": "summarizeInventoryAvailability",
                 "reason": "resolved-call"
               },
@@ -16786,9 +16786,9 @@
           "column": 1,
           "file": "src/availability.ts",
           "hasBody": true,
-          "id": "src/availability.ts:6209:summarizeInventoryAvailability",
+          "id": "src/availability.ts:6260:summarizeInventoryAvailability",
           "kind": "FunctionDeclaration",
-          "line": 145,
+          "line": 146,
           "name": "summarizeInventoryAvailability"
         }
       ],
@@ -16799,9 +16799,9 @@
             "column": 1,
             "file": "src/availability.ts",
             "hasBody": true,
-            "id": "src/availability.ts:6209:summarizeInventoryAvailability",
+            "id": "src/availability.ts:6260:summarizeInventoryAvailability",
             "kind": "FunctionDeclaration",
-            "line": 145,
+            "line": 146,
             "name": "summarizeInventoryAvailability"
           },
           "witness": {
@@ -16839,9 +16839,9 @@
                 "column": 1,
                 "file": "src/availability.ts",
                 "hasBody": true,
-                "id": "src/availability.ts:6209:summarizeInventoryAvailability",
+                "id": "src/availability.ts:6260:summarizeInventoryAvailability",
                 "kind": "FunctionDeclaration",
-                "line": 145,
+                "line": 146,
                 "name": "summarizeInventoryAvailability",
                 "reason": "resolved-call"
               }
@@ -22258,9 +22258,9 @@
                 "column": 1,
                 "file": "src/availability.ts",
                 "hasBody": true,
-                "id": "src/availability.ts:6209:summarizeInventoryAvailability",
+                "id": "src/availability.ts:6260:summarizeInventoryAvailability",
                 "kind": "FunctionDeclaration",
-                "line": 145,
+                "line": 146,
                 "name": "summarizeInventoryAvailability",
                 "reason": "resolved-call"
               },
@@ -22268,9 +22268,9 @@
                 "column": 1,
                 "file": "src/availability.ts",
                 "hasBody": true,
-                "id": "src/availability.ts:9308:summarizeAvailabilityRevision",
+                "id": "src/availability.ts:9359:summarizeAvailabilityRevision",
                 "kind": "FunctionDeclaration",
-                "line": 241,
+                "line": 242,
                 "name": "summarizeAvailabilityRevision",
                 "reason": "resolved-call"
               },
@@ -24720,9 +24720,9 @@
           "column": 1,
           "file": "src/availability.ts",
           "hasBody": true,
-          "id": "src/availability.ts:6209:summarizeInventoryAvailability",
+          "id": "src/availability.ts:6260:summarizeInventoryAvailability",
           "kind": "FunctionDeclaration",
-          "line": 145,
+          "line": 146,
           "name": "summarizeInventoryAvailability"
         }
       ],
@@ -24733,9 +24733,9 @@
             "column": 1,
             "file": "src/availability.ts",
             "hasBody": true,
-            "id": "src/availability.ts:6209:summarizeInventoryAvailability",
+            "id": "src/availability.ts:6260:summarizeInventoryAvailability",
             "kind": "FunctionDeclaration",
-            "line": 145,
+            "line": 146,
             "name": "summarizeInventoryAvailability"
           },
           "witness": {
@@ -24773,9 +24773,9 @@
                 "column": 1,
                 "file": "src/availability.ts",
                 "hasBody": true,
-                "id": "src/availability.ts:6209:summarizeInventoryAvailability",
+                "id": "src/availability.ts:6260:summarizeInventoryAvailability",
                 "kind": "FunctionDeclaration",
-                "line": 145,
+                "line": 146,
                 "name": "summarizeInventoryAvailability",
                 "reason": "resolved-call"
               }
@@ -26373,10 +26373,10 @@
                 "column": 68,
                 "file": "test/digest.test.ts",
                 "hasBody": true,
-                "id": "test/digest.test.ts:2552:<anonymous@64>",
+                "id": "test/digest.test.ts:3030:<anonymous@76>",
                 "kind": "ArrowFunction",
-                "line": 64,
-                "name": "<anonymous@64>",
+                "line": 76,
+                "name": "<anonymous@76>",
                 "reason": "test-callback"
               },
               {
@@ -35111,10 +35111,10 @@
                 "column": 86,
                 "file": "test/transfer-lifecycle.test.ts",
                 "hasBody": true,
-                "id": "test/transfer-lifecycle.test.ts:17755:<anonymous@535>",
+                "id": "test/transfer-lifecycle.test.ts:17828:<anonymous@534>",
                 "kind": "ArrowFunction",
-                "line": 535,
-                "name": "<anonymous@535>",
+                "line": 534,
+                "name": "<anonymous@534>",
                 "reason": "test-callback"
               },
               {
@@ -37109,5 +37109,5 @@
     }
   },
   "schemaVersion": 1,
-  "surfaceSha256": "18cd64fad539d01dabe4e46290e0d52ea1d8ecd4a46ad4a1f786c0439271db14"
+  "surfaceSha256": "d33acec205770d51aa8a677dfb28dcb4edc4e364900722bac01ce8834df66141"
 }

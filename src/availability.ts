@@ -45,6 +45,7 @@ import {
   type InventoryReservationFeasibilityReport,
 } from "./reservations.js";
 import {
+  inventoryStockPositionMatchesNormalizedSelector,
   inventoryStockPositionMatchesSelector,
   inventoryStockSelectorIdentity,
   normalizeInventoryStockSelector,
@@ -752,6 +753,7 @@ function indexAvailabilityReservations({
   unit,
   at,
 }: IndexAvailabilityReservationsInput): AvailabilityReservationIndex {
+  const normalizedSelector = normalizeInventoryStockSelector(selector);
   const selectedPositionIdentities = new Set(
     positions.map(
       /** Convert one selected position to its exact immutable identity. */
@@ -807,7 +809,10 @@ function indexAvailabilityReservations({
       }
       if (
         projection.positions[identity] === undefined &&
-        inventoryStockPositionMatchesSelector(allocation.position, selector)
+        inventoryStockPositionMatchesNormalizedSelector(
+          allocation.position,
+          normalizedSelector
+        )
       ) {
         unbackedQuantity = addQuantity(unbackedQuantity, allocation.quantity);
         contributesUnbacked = true;
@@ -861,9 +866,13 @@ function reservationTouchesPositions(
   positions: readonly InventoryStockPosition[],
   at: string
 ): boolean {
+  const normalizedSelector = normalizeInventoryStockSelector(reservation.selector);
   for (const position of positions) {
     if (
-      !inventoryStockPositionMatchesSelector(position.key, reservation.selector)
+      !inventoryStockPositionMatchesNormalizedSelector(
+        position.key,
+        normalizedSelector
+      )
     ) {
       continue;
     }

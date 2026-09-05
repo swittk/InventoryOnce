@@ -675,6 +675,45 @@ describe("revision-frozen heterogeneous package composition", () => {
     ).toEqual([]);
   });
 
+  it("requires an explicit genealogy choice when an output has several physical identities", async () => {
+    const fixture = ocpCatalog();
+    const inventory = createInventoryOnce({
+      catalog: fixture.catalog,
+      storage: createInMemoryInventoryDurableStorage(),
+      clock: clockAt(time3),
+    });
+    await inventory.stock.receive({
+      operationId: "receive-ambiguous-output-pack",
+      occurredAt: time0,
+      to: {
+        itemId: fixture.newPackItem.itemId,
+        locationId: "store",
+        lotId: "AMBIGUOUS-SOURCE-LOT",
+      },
+      amount: packageAmount(1, fixture.newPack.revisionId),
+      lot: { expiresAt: "2029-01-01T00:00:00.000Z" },
+    });
+    await expect(
+      inventory.compositions.open({
+        operationId: "open-ambiguous-output-pack",
+        occurredAt: time1,
+        from: {
+          itemId: fixture.newPackItem.itemId,
+          locationId: "store",
+          lotId: "AMBIGUOUS-SOURCE-LOT",
+          packagingRevisionId: fixture.newPack.revisionId,
+        },
+        packageCount: 1,
+        outputPlacements: {
+          "active-a": {
+            serialId: "AMBIGUOUS-SERIAL",
+            containerId: "AMBIGUOUS-CONTAINER",
+          },
+        },
+      })
+    ).rejects.toThrow(/several stock identities/i);
+  });
+
   it("enforces strict, optional, and explicit lot policies without guessing", async () => {
     const fixture = ocpCatalog();
     const strictInventory = createInventoryOnce({

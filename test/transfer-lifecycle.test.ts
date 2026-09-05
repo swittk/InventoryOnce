@@ -322,10 +322,9 @@ describe("first-class physical transfer lifecycle", () => {
       ([, position]) => position.key.transferId === "T1"
     )?.[0];
     expect(t1TransitIdentity).toBeDefined();
+    if (t1TransitIdentity === undefined) throw new Error("Missing T1 transit identity.");
     expect(
-      transitWorld.projection.positiveLayerStartedAtByPositionId[
-        t1TransitIdentity!
-      ]
+      transitWorld.projection.positiveLayerStartedAtByPositionId[t1TransitIdentity]
     ).toBe(time0);
     await expect(
       inventory.stock.issue({

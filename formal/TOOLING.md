@@ -6,7 +6,7 @@ InventoryOnce uses formal tools for different proof obligations. More tools are 
 
 TLA+ is the primary behavioral language and TLC is the mandatory model checker because InventoryOnce's hardest bugs are state-machine bugs: concurrent claims, retries, crash-separated writes, in-transit operations, corrections, count/reconcile races, and eventual repair. TLC gives complete explicit-state exploration for the finite models we commit, supports temporal properties/fairness, and can directly check implementation/refinement properties.
 
-Every `formal/*.tla` model in `scripts/run-formal.mjs` is part of `pnpm formal`. The runner pins official TLA+ tools by version and SHA-256.
+`scripts/formal-models.mjs` exports `formalModels`, the model registry consumed by the formal runner and conformance/audit scripts; every registered model is part of `pnpm formal`. `formal/AbstractTransfer.tla` is an imported module rather than a runner entry. The runner pins official TLA+ tools by version and SHA-256.
 
 ## Complement when state spaces demand it: Apalache
 

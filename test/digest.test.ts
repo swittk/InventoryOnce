@@ -1,10 +1,22 @@
 import { describe, expect, it } from "vitest";
 
+import { inventoryMetadataValueFingerprint } from "../src/canonical.js";
 import { inventorySha256 } from "../src/digest.js";
 import { inventoryProjectionDigest } from "../src/integrity.js";
 import { stockAmount } from "../src/index.js";
+import type { InventoryMetadataValue } from "../src/model.js";
 import type { InventoryProjectionState } from "../src/projection.js";
 import { createTestInventory, loosePosition, time0 } from "./test-fixtures.js";
+
+describe("inventory metadata fingerprint", () => {
+  it("rejects undefined array elements just like undefined object properties", () => {
+    const malformed: InventoryMetadataValue[] = [];
+    malformed.length = 1;
+    expect(() => inventoryMetadataValueFingerprint(malformed)).toThrow(
+      /must not contain undefined/i
+    );
+  });
+});
 
 describe("inventorySha256", () => {
   it.each([
