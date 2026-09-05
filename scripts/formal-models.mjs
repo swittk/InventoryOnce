@@ -47,6 +47,9 @@ export function formalConfigCheckNames(config) {
       block = true;
       continue;
     }
+    if (/^(?:INVARIANTS?|PROPERT(?:Y|IES))\s+\S/u.test(line)) {
+      throw new Error(`Unsupported TLC check declaration '${line}'.`);
+    }
     if (block && /^[A-Za-z][A-Za-z0-9_]*$/u.test(line)) {
       names.push(line);
       continue;

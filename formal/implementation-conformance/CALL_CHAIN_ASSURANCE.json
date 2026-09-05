@@ -1,7 +1,7 @@
 {
   "counts": {
-    "callables": 2129,
-    "edges": 5831,
+    "callables": 2130,
+    "edges": 5832,
     "publicEntries": 508,
     "publicEntriesWithTargets": 508,
     "publicEntriesWithWitnesses": 508,
@@ -4716,9 +4716,9 @@
                 "column": 1,
                 "file": "src/coordinator.ts",
                 "hasBody": true,
-                "id": "src/coordinator.ts:4450:commitInventoryOperation",
+                "id": "src/coordinator.ts:4549:commitInventoryOperation",
                 "kind": "FunctionDeclaration",
-                "line": 115,
+                "line": 118,
                 "name": "commitInventoryOperation",
                 "reason": "resolved-call"
               },
@@ -4898,9 +4898,9 @@
                 "column": 1,
                 "file": "src/coordinator.ts",
                 "hasBody": true,
-                "id": "src/coordinator.ts:11861:resumeInventoryDurableOperation",
+                "id": "src/coordinator.ts:11960:resumeInventoryDurableOperation",
                 "kind": "FunctionDeclaration",
-                "line": 340,
+                "line": 343,
                 "name": "resumeInventoryDurableOperation",
                 "reason": "resolved-call"
               },
@@ -5161,9 +5161,9 @@
                 "column": 1,
                 "file": "src/coordinator.ts",
                 "hasBody": true,
-                "id": "src/coordinator.ts:13159:repairInventoryDurableOperations",
+                "id": "src/coordinator.ts:13258:repairInventoryDurableOperations",
                 "kind": "FunctionDeclaration",
-                "line": 373,
+                "line": 376,
                 "name": "repairInventoryDurableOperations",
                 "reason": "resolved-call"
               },
@@ -5445,9 +5445,9 @@
                 "column": 1,
                 "file": "src/coordinator.ts",
                 "hasBody": true,
-                "id": "src/coordinator.ts:11861:resumeInventoryDurableOperation",
+                "id": "src/coordinator.ts:11960:resumeInventoryDurableOperation",
                 "kind": "FunctionDeclaration",
-                "line": 340,
+                "line": 343,
                 "name": "resumeInventoryDurableOperation",
                 "reason": "resolved-call"
               },
@@ -5546,9 +5546,9 @@
                 "column": 1,
                 "file": "src/coordinator.ts",
                 "hasBody": true,
-                "id": "src/coordinator.ts:11861:resumeInventoryDurableOperation",
+                "id": "src/coordinator.ts:11960:resumeInventoryDurableOperation",
                 "kind": "FunctionDeclaration",
-                "line": 340,
+                "line": 343,
                 "name": "resumeInventoryDurableOperation",
                 "reason": "resolved-call"
               },
@@ -5728,9 +5728,9 @@
                 "column": 1,
                 "file": "src/coordinator.ts",
                 "hasBody": true,
-                "id": "src/coordinator.ts:11861:resumeInventoryDurableOperation",
+                "id": "src/coordinator.ts:11960:resumeInventoryDurableOperation",
                 "kind": "FunctionDeclaration",
-                "line": 340,
+                "line": 343,
                 "name": "resumeInventoryDurableOperation",
                 "reason": "resolved-call"
               },
@@ -5829,9 +5829,9 @@
                 "column": 1,
                 "file": "src/coordinator.ts",
                 "hasBody": true,
-                "id": "src/coordinator.ts:11861:resumeInventoryDurableOperation",
+                "id": "src/coordinator.ts:11960:resumeInventoryDurableOperation",
                 "kind": "FunctionDeclaration",
-                "line": 340,
+                "line": 343,
                 "name": "resumeInventoryDurableOperation",
                 "reason": "resolved-call"
               },
@@ -5930,9 +5930,9 @@
                 "column": 1,
                 "file": "src/coordinator.ts",
                 "hasBody": true,
-                "id": "src/coordinator.ts:11861:resumeInventoryDurableOperation",
+                "id": "src/coordinator.ts:11960:resumeInventoryDurableOperation",
                 "kind": "FunctionDeclaration",
-                "line": 340,
+                "line": 343,
                 "name": "resumeInventoryDurableOperation",
                 "reason": "resolved-call"
               },
@@ -7590,9 +7590,9 @@
           "column": 1,
           "file": "src/allocation.ts",
           "hasBody": true,
-          "id": "src/allocation.ts:14028:compareInventoryAllocationCandidates",
+          "id": "src/allocation.ts:14247:compareInventoryAllocationCandidates",
           "kind": "FunctionDeclaration",
-          "line": 387,
+          "line": 392,
           "name": "compareInventoryAllocationCandidates"
         }
       ],
@@ -7603,9 +7603,9 @@
             "column": 1,
             "file": "src/allocation.ts",
             "hasBody": true,
-            "id": "src/allocation.ts:14028:compareInventoryAllocationCandidates",
+            "id": "src/allocation.ts:14247:compareInventoryAllocationCandidates",
             "kind": "FunctionDeclaration",
-            "line": 387,
+            "line": 392,
             "name": "compareInventoryAllocationCandidates"
           },
           "witness": {
@@ -7653,9 +7653,9 @@
                 "column": 1,
                 "file": "src/allocation.ts",
                 "hasBody": true,
-                "id": "src/allocation.ts:14028:compareInventoryAllocationCandidates",
+                "id": "src/allocation.ts:14247:compareInventoryAllocationCandidates",
                 "kind": "FunctionDeclaration",
-                "line": 387,
+                "line": 392,
                 "name": "compareInventoryAllocationCandidates",
                 "reason": "resolved-call"
               }
@@ -9413,9 +9413,9 @@
           "column": 1,
           "file": "src/transfers.ts",
           "hasBody": true,
-          "id": "src/transfers.ts:25427:createInventoryTransferDispatchEvent",
+          "id": "src/transfers.ts:25723:createInventoryTransferDispatchEvent",
           "kind": "FunctionDeclaration",
-          "line": 621,
+          "line": 625,
           "name": "createInventoryTransferDispatchEvent"
         }
       ],
@@ -9426,9 +9426,9 @@
             "column": 1,
             "file": "src/transfers.ts",
             "hasBody": true,
-            "id": "src/transfers.ts:25427:createInventoryTransferDispatchEvent",
+            "id": "src/transfers.ts:25723:createInventoryTransferDispatchEvent",
             "kind": "FunctionDeclaration",
-            "line": 621,
+            "line": 625,
             "name": "createInventoryTransferDispatchEvent"
           },
           "witness": {
@@ -9456,9 +9456,9 @@
                 "column": 1,
                 "file": "src/transfers.ts",
                 "hasBody": true,
-                "id": "src/transfers.ts:25427:createInventoryTransferDispatchEvent",
+                "id": "src/transfers.ts:25723:createInventoryTransferDispatchEvent",
                 "kind": "FunctionDeclaration",
-                "line": 621,
+                "line": 625,
                 "name": "createInventoryTransferDispatchEvent",
                 "reason": "resolved-call"
               }
@@ -9697,9 +9697,9 @@
           "column": 1,
           "file": "src/transfers.ts",
           "hasBody": true,
-          "id": "src/transfers.ts:27001:createInventoryTransferReceiveEvent",
+          "id": "src/transfers.ts:27297:createInventoryTransferReceiveEvent",
           "kind": "FunctionDeclaration",
-          "line": 666,
+          "line": 670,
           "name": "createInventoryTransferReceiveEvent"
         }
       ],
@@ -9710,9 +9710,9 @@
             "column": 1,
             "file": "src/transfers.ts",
             "hasBody": true,
-            "id": "src/transfers.ts:27001:createInventoryTransferReceiveEvent",
+            "id": "src/transfers.ts:27297:createInventoryTransferReceiveEvent",
             "kind": "FunctionDeclaration",
-            "line": 666,
+            "line": 670,
             "name": "createInventoryTransferReceiveEvent"
           },
           "witness": {
@@ -9740,9 +9740,9 @@
                 "column": 1,
                 "file": "src/transfers.ts",
                 "hasBody": true,
-                "id": "src/transfers.ts:27001:createInventoryTransferReceiveEvent",
+                "id": "src/transfers.ts:27297:createInventoryTransferReceiveEvent",
                 "kind": "FunctionDeclaration",
-                "line": 666,
+                "line": 670,
                 "name": "createInventoryTransferReceiveEvent",
                 "reason": "resolved-call"
               }
@@ -9758,9 +9758,9 @@
           "column": 1,
           "file": "src/transfers.ts",
           "hasBody": true,
-          "id": "src/transfers.ts:29083:createInventoryTransferReleaseEvent",
+          "id": "src/transfers.ts:29379:createInventoryTransferReleaseEvent",
           "kind": "FunctionDeclaration",
-          "line": 731,
+          "line": 735,
           "name": "createInventoryTransferReleaseEvent"
         }
       ],
@@ -9771,9 +9771,9 @@
             "column": 1,
             "file": "src/transfers.ts",
             "hasBody": true,
-            "id": "src/transfers.ts:29083:createInventoryTransferReleaseEvent",
+            "id": "src/transfers.ts:29379:createInventoryTransferReleaseEvent",
             "kind": "FunctionDeclaration",
-            "line": 731,
+            "line": 735,
             "name": "createInventoryTransferReleaseEvent"
           },
           "witness": {
@@ -9801,9 +9801,9 @@
                 "column": 1,
                 "file": "src/transfers.ts",
                 "hasBody": true,
-                "id": "src/transfers.ts:29083:createInventoryTransferReleaseEvent",
+                "id": "src/transfers.ts:29379:createInventoryTransferReleaseEvent",
                 "kind": "FunctionDeclaration",
-                "line": 731,
+                "line": 735,
                 "name": "createInventoryTransferReleaseEvent",
                 "reason": "resolved-call"
               }
@@ -12043,9 +12043,9 @@
                 "column": 78,
                 "file": "src/transfers.ts",
                 "hasBody": true,
-                "id": "src/transfers.ts:37478:transferLifecycleEvent",
+                "id": "src/transfers.ts:37774:transferLifecycleEvent",
                 "kind": "FunctionDeclaration",
-                "line": 957,
+                "line": 961,
                 "name": "transferLifecycleEvent",
                 "reason": "resolved-call"
               },
@@ -25631,9 +25631,9 @@
           "column": 1,
           "file": "src/coordinator.ts",
           "hasBody": true,
-          "id": "src/coordinator.ts:4450:commitInventoryOperation",
+          "id": "src/coordinator.ts:4549:commitInventoryOperation",
           "kind": "FunctionDeclaration",
-          "line": 115,
+          "line": 118,
           "name": "commitInventoryOperation"
         }
       ],
@@ -25644,9 +25644,9 @@
             "column": 1,
             "file": "src/coordinator.ts",
             "hasBody": true,
-            "id": "src/coordinator.ts:4450:commitInventoryOperation",
+            "id": "src/coordinator.ts:4549:commitInventoryOperation",
             "kind": "FunctionDeclaration",
-            "line": 115,
+            "line": 118,
             "name": "commitInventoryOperation"
           },
           "witness": {
@@ -25694,9 +25694,9 @@
                 "column": 1,
                 "file": "src/coordinator.ts",
                 "hasBody": true,
-                "id": "src/coordinator.ts:4450:commitInventoryOperation",
+                "id": "src/coordinator.ts:4549:commitInventoryOperation",
                 "kind": "FunctionDeclaration",
-                "line": 115,
+                "line": 118,
                 "name": "commitInventoryOperation",
                 "reason": "resolved-call"
               }
@@ -25836,9 +25836,9 @@
                 "column": 1,
                 "file": "src/coordinator.ts",
                 "hasBody": true,
-                "id": "src/coordinator.ts:4450:commitInventoryOperation",
+                "id": "src/coordinator.ts:4549:commitInventoryOperation",
                 "kind": "FunctionDeclaration",
-                "line": 115,
+                "line": 118,
                 "name": "commitInventoryOperation",
                 "reason": "resolved-call"
               },
@@ -25846,9 +25846,9 @@
                 "column": 1,
                 "file": "src/coordinator.ts",
                 "hasBody": true,
-                "id": "src/coordinator.ts:7616:createDurableOperationPlan",
+                "id": "src/coordinator.ts:7715:createDurableOperationPlan",
                 "kind": "FunctionDeclaration",
-                "line": 210,
+                "line": 213,
                 "name": "createDurableOperationPlan",
                 "reason": "resolved-call"
               },
@@ -25937,9 +25937,9 @@
                 "column": 1,
                 "file": "src/coordinator.ts",
                 "hasBody": true,
-                "id": "src/coordinator.ts:4450:commitInventoryOperation",
+                "id": "src/coordinator.ts:4549:commitInventoryOperation",
                 "kind": "FunctionDeclaration",
-                "line": 115,
+                "line": 118,
                 "name": "commitInventoryOperation",
                 "reason": "resolved-call"
               },
@@ -25947,9 +25947,9 @@
                 "column": 1,
                 "file": "src/coordinator.ts",
                 "hasBody": true,
-                "id": "src/coordinator.ts:7616:createDurableOperationPlan",
+                "id": "src/coordinator.ts:7715:createDurableOperationPlan",
                 "kind": "FunctionDeclaration",
-                "line": 210,
+                "line": 213,
                 "name": "createDurableOperationPlan",
                 "reason": "resolved-call"
               },
@@ -26715,9 +26715,9 @@
           "column": 1,
           "file": "src/coordinator.ts",
           "hasBody": true,
-          "id": "src/coordinator.ts:13159:repairInventoryDurableOperations",
+          "id": "src/coordinator.ts:13258:repairInventoryDurableOperations",
           "kind": "FunctionDeclaration",
-          "line": 373,
+          "line": 376,
           "name": "repairInventoryDurableOperations"
         }
       ],
@@ -26728,9 +26728,9 @@
             "column": 1,
             "file": "src/coordinator.ts",
             "hasBody": true,
-            "id": "src/coordinator.ts:13159:repairInventoryDurableOperations",
+            "id": "src/coordinator.ts:13258:repairInventoryDurableOperations",
             "kind": "FunctionDeclaration",
-            "line": 373,
+            "line": 376,
             "name": "repairInventoryDurableOperations"
           },
           "witness": {
@@ -26778,9 +26778,9 @@
                 "column": 1,
                 "file": "src/coordinator.ts",
                 "hasBody": true,
-                "id": "src/coordinator.ts:13159:repairInventoryDurableOperations",
+                "id": "src/coordinator.ts:13258:repairInventoryDurableOperations",
                 "kind": "FunctionDeclaration",
-                "line": 373,
+                "line": 376,
                 "name": "repairInventoryDurableOperations",
                 "reason": "resolved-call"
               }
@@ -26796,9 +26796,9 @@
           "column": 1,
           "file": "src/coordinator.ts",
           "hasBody": true,
-          "id": "src/coordinator.ts:11861:resumeInventoryDurableOperation",
+          "id": "src/coordinator.ts:11960:resumeInventoryDurableOperation",
           "kind": "FunctionDeclaration",
-          "line": 340,
+          "line": 343,
           "name": "resumeInventoryDurableOperation"
         }
       ],
@@ -26809,9 +26809,9 @@
             "column": 1,
             "file": "src/coordinator.ts",
             "hasBody": true,
-            "id": "src/coordinator.ts:11861:resumeInventoryDurableOperation",
+            "id": "src/coordinator.ts:11960:resumeInventoryDurableOperation",
             "kind": "FunctionDeclaration",
-            "line": 340,
+            "line": 343,
             "name": "resumeInventoryDurableOperation"
           },
           "witness": {
@@ -26859,9 +26859,9 @@
                 "column": 1,
                 "file": "src/coordinator.ts",
                 "hasBody": true,
-                "id": "src/coordinator.ts:11861:resumeInventoryDurableOperation",
+                "id": "src/coordinator.ts:11960:resumeInventoryDurableOperation",
                 "kind": "FunctionDeclaration",
-                "line": 340,
+                "line": 343,
                 "name": "resumeInventoryDurableOperation",
                 "reason": "resolved-call"
               }
@@ -35861,9 +35861,9 @@
                 "column": 1,
                 "file": "src/coordinator.ts",
                 "hasBody": true,
-                "id": "src/coordinator.ts:4450:commitInventoryOperation",
+                "id": "src/coordinator.ts:4549:commitInventoryOperation",
                 "kind": "FunctionDeclaration",
-                "line": 115,
+                "line": 118,
                 "name": "commitInventoryOperation",
                 "reason": "resolved-call"
               },
@@ -36043,9 +36043,9 @@
                 "column": 1,
                 "file": "src/coordinator.ts",
                 "hasBody": true,
-                "id": "src/coordinator.ts:11861:resumeInventoryDurableOperation",
+                "id": "src/coordinator.ts:11960:resumeInventoryDurableOperation",
                 "kind": "FunctionDeclaration",
-                "line": 340,
+                "line": 343,
                 "name": "resumeInventoryDurableOperation",
                 "reason": "resolved-call"
               },
@@ -36306,9 +36306,9 @@
                 "column": 1,
                 "file": "src/coordinator.ts",
                 "hasBody": true,
-                "id": "src/coordinator.ts:13159:repairInventoryDurableOperations",
+                "id": "src/coordinator.ts:13258:repairInventoryDurableOperations",
                 "kind": "FunctionDeclaration",
-                "line": 373,
+                "line": 376,
                 "name": "repairInventoryDurableOperations",
                 "reason": "resolved-call"
               },
@@ -36590,9 +36590,9 @@
                 "column": 1,
                 "file": "src/coordinator.ts",
                 "hasBody": true,
-                "id": "src/coordinator.ts:11861:resumeInventoryDurableOperation",
+                "id": "src/coordinator.ts:11960:resumeInventoryDurableOperation",
                 "kind": "FunctionDeclaration",
-                "line": 340,
+                "line": 343,
                 "name": "resumeInventoryDurableOperation",
                 "reason": "resolved-call"
               },
@@ -36691,9 +36691,9 @@
                 "column": 1,
                 "file": "src/coordinator.ts",
                 "hasBody": true,
-                "id": "src/coordinator.ts:11861:resumeInventoryDurableOperation",
+                "id": "src/coordinator.ts:11960:resumeInventoryDurableOperation",
                 "kind": "FunctionDeclaration",
-                "line": 340,
+                "line": 343,
                 "name": "resumeInventoryDurableOperation",
                 "reason": "resolved-call"
               },
@@ -36873,9 +36873,9 @@
                 "column": 1,
                 "file": "src/coordinator.ts",
                 "hasBody": true,
-                "id": "src/coordinator.ts:11861:resumeInventoryDurableOperation",
+                "id": "src/coordinator.ts:11960:resumeInventoryDurableOperation",
                 "kind": "FunctionDeclaration",
-                "line": 340,
+                "line": 343,
                 "name": "resumeInventoryDurableOperation",
                 "reason": "resolved-call"
               },
@@ -36974,9 +36974,9 @@
                 "column": 1,
                 "file": "src/coordinator.ts",
                 "hasBody": true,
-                "id": "src/coordinator.ts:11861:resumeInventoryDurableOperation",
+                "id": "src/coordinator.ts:11960:resumeInventoryDurableOperation",
                 "kind": "FunctionDeclaration",
-                "line": 340,
+                "line": 343,
                 "name": "resumeInventoryDurableOperation",
                 "reason": "resolved-call"
               },
@@ -37075,9 +37075,9 @@
                 "column": 1,
                 "file": "src/coordinator.ts",
                 "hasBody": true,
-                "id": "src/coordinator.ts:11861:resumeInventoryDurableOperation",
+                "id": "src/coordinator.ts:11960:resumeInventoryDurableOperation",
                 "kind": "FunctionDeclaration",
-                "line": 340,
+                "line": 343,
                 "name": "resumeInventoryDurableOperation",
                 "reason": "resolved-call"
               },
@@ -37109,5 +37109,5 @@
     }
   },
   "schemaVersion": 1,
-  "surfaceSha256": "d33acec205770d51aa8a677dfb28dcb4edc4e364900722bac01ce8834df66141"
+  "surfaceSha256": "3af359a8745476986d04e0a4f3b096ef8f428b548389aad057311d260a9e0301"
 }

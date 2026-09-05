@@ -308,7 +308,17 @@
         "ExactComponentProductionFromOpenedRevisions",
         "ComponentPotentialIsConserved",
         "OperationIdentityContributesAtMostOneOpen",
-        "PartialWritesStayInvisible"
+        "PartialWritesStayInvisible",
+        "TypeOK",
+        "RegisteredCompositionVectorsAreExact",
+        "FrozenCompletedOpenVector",
+        "ComponentsStayAtTheirOpeningLocation",
+        "ComponentIdentitiesNeverMerge",
+        "ReportIsDerivedOnly",
+        "OpenedPackHasExactlyOneCompletedOperation",
+        "OpenedCountMatchesCompletedOperationCount",
+        "ActivePointerNeverReinterpretsOpenedIntent",
+        "CompletedOperationIntentNeverChanges"
       ],
       "models": [
         "CompositionRevision",

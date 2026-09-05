@@ -125,11 +125,16 @@ export function allocateInventory({
       allocations: exactAllocations,
       shortfall: zeroQuantity(requested.unit, requested.decimals),
       expiredStockWasExcluded,
-      incrementBlockedStock: exactAllocationsDoNotFollowGreedyPrefix(
-        requested,
-        eligible,
-        exactAllocations
-      ),
+      incrementBlockedStock:
+        eligible.some(
+          /** Only an indivisible increment can make an exact-plan deviation increment-driven. */
+          (candidate) => candidate.allocationIncrement !== undefined
+        ) &&
+        exactAllocationsDoNotFollowGreedyPrefix(
+          requested,
+          eligible,
+          exactAllocations
+        ),
       allocationConstraintBlockedStock: false,
     };
   }

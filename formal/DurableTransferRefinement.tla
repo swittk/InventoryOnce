@@ -70,6 +70,8 @@ HL == INSTANCE AbstractTransfer
        status <- AbstractStatus
 
 RefinesAbstractTransfer == HL!Spec
+AbstractTypeOK == HL!TypeOK
+AbstractConserved == HL!Conserved
 
 TypeOK ==
   /\ phase \in {"ready", "pending", "done"}

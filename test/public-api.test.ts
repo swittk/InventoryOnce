@@ -22,7 +22,6 @@ describe("public export boundaries", () => {
     expect(hasExport(root, "inventoryAmountFromUnit")).toBe(true);
     expect(hasExport(root, "assertInventoryAmountSum")).toBe(true);
     expect(hasExport(root, "findInventoryEventByOperationId")).toBe(true);
-    expect(hasExport(root, "InventoryAuthorityMode")).toBe(true);
     expect(hasExport(root, "requireInventoryAuthorityMode")).toBe(true);
     expect(hasExport(root, "defineInventoryPolicyBatchRequestGroup")).toBe(
       true

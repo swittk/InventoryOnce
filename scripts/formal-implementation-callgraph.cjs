@@ -759,7 +759,7 @@ for (const row of surface.classes) {
 
 const entries = {};
 for (const [key, targets] of [...publicTargets].sort(([left], [right]) =>
-  left.localeCompare(right)
+  left < right ? -1 : left > right ? 1 : 0
 )) {
   const uniqueTargets = [...new Set(targets)];
   const witnesses = uniqueTargets

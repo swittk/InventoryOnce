@@ -597,6 +597,10 @@ export function createInventoryTransferPrepareEvent(
   const sourceLocationId = sourceLocations.values().next().value;
   if (sourceLocationId === undefined)
     throw new Error("Transfer prepare source location is missing.");
+  if (input.transitLocationId === sourceLocationId)
+    throw new Error("Transfer transit location must differ from the source location.");
+  if (input.transitLocationId === input.destinationLocationId)
+    throw new Error("Transfer transit location must differ from the destination location.");
   return transferLifecycleEvent(
     input.catalog,
     InventoryEventKind.Reclassification,

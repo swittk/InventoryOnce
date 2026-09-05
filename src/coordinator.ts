@@ -78,7 +78,10 @@ export interface InventoryOperationPlan {
 export interface CommitInventoryOperationResult {
   /** Frozen replay receipt. */
   readonly receipt: InventoryOperationReceipt;
-  /** Complete world revision published by this operation. */
+  /**
+   * Latest published world observed after this operation completed.
+   * Use `receipt.worldRevision` for this operation's exact published revision.
+   */
   readonly world: InventoryWorldState;
   /** Committed event when the operation has one. */
   readonly event?: InventoryCommittedEvent;
