@@ -555,7 +555,7 @@ function fungibilityAllocationsPreserveReservations({
     const amount = inventoryAmountForPrimaryAllocation({
       catalog,
       itemRevisionId: evidence.item.revisionId,
-      position: current,
+      position: evidence.position,
       allocatedPrimary: memberQuantity,
     });
     const resolved = resolveInventoryAmount(catalog, evidence.item, amount);

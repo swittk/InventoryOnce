@@ -1,7 +1,7 @@
 {
   "counts": {
     "callables": 2133,
-    "edges": 5841,
+    "edges": 5842,
     "publicEntries": 508,
     "publicEntriesWithTargets": 508,
     "publicEntriesWithWitnesses": 508,
@@ -4625,10 +4625,10 @@
                 "column": 5,
                 "file": "test/migrations.test.ts",
                 "hasBody": true,
-                "id": "test/migrations.test.ts:30816:<anonymous@888>",
+                "id": "test/migrations.test.ts:30915:<anonymous@890>",
                 "kind": "ArrowFunction",
-                "line": 888,
-                "name": "<anonymous@888>",
+                "line": 890,
+                "name": "<anonymous@890>",
                 "reason": "test-callback"
               },
               {
@@ -9413,9 +9413,9 @@
           "column": 1,
           "file": "src/transfers.ts",
           "hasBody": true,
-          "id": "src/transfers.ts:25723:createInventoryTransferDispatchEvent",
+          "id": "src/transfers.ts:25934:createInventoryTransferDispatchEvent",
           "kind": "FunctionDeclaration",
-          "line": 625,
+          "line": 631,
           "name": "createInventoryTransferDispatchEvent"
         }
       ],
@@ -9426,9 +9426,9 @@
             "column": 1,
             "file": "src/transfers.ts",
             "hasBody": true,
-            "id": "src/transfers.ts:25723:createInventoryTransferDispatchEvent",
+            "id": "src/transfers.ts:25934:createInventoryTransferDispatchEvent",
             "kind": "FunctionDeclaration",
-            "line": 625,
+            "line": 631,
             "name": "createInventoryTransferDispatchEvent"
           },
           "witness": {
@@ -9456,9 +9456,9 @@
                 "column": 1,
                 "file": "src/transfers.ts",
                 "hasBody": true,
-                "id": "src/transfers.ts:25723:createInventoryTransferDispatchEvent",
+                "id": "src/transfers.ts:25934:createInventoryTransferDispatchEvent",
                 "kind": "FunctionDeclaration",
-                "line": 625,
+                "line": 631,
                 "name": "createInventoryTransferDispatchEvent",
                 "reason": "resolved-call"
               }
@@ -9636,9 +9636,9 @@
           "column": 1,
           "file": "src/transfers.ts",
           "hasBody": true,
-          "id": "src/transfers.ts:22551:createInventoryTransferPrepareEvent",
+          "id": "src/transfers.ts:22578:createInventoryTransferPrepareEvent",
           "kind": "FunctionDeclaration",
-          "line": 544,
+          "line": 545,
           "name": "createInventoryTransferPrepareEvent"
         }
       ],
@@ -9649,9 +9649,9 @@
             "column": 1,
             "file": "src/transfers.ts",
             "hasBody": true,
-            "id": "src/transfers.ts:22551:createInventoryTransferPrepareEvent",
+            "id": "src/transfers.ts:22578:createInventoryTransferPrepareEvent",
             "kind": "FunctionDeclaration",
-            "line": 544,
+            "line": 545,
             "name": "createInventoryTransferPrepareEvent"
           },
           "witness": {
@@ -9679,9 +9679,9 @@
                 "column": 1,
                 "file": "src/transfers.ts",
                 "hasBody": true,
-                "id": "src/transfers.ts:22551:createInventoryTransferPrepareEvent",
+                "id": "src/transfers.ts:22578:createInventoryTransferPrepareEvent",
                 "kind": "FunctionDeclaration",
-                "line": 544,
+                "line": 545,
                 "name": "createInventoryTransferPrepareEvent",
                 "reason": "resolved-call"
               }
@@ -9697,9 +9697,9 @@
           "column": 1,
           "file": "src/transfers.ts",
           "hasBody": true,
-          "id": "src/transfers.ts:27297:createInventoryTransferReceiveEvent",
+          "id": "src/transfers.ts:27508:createInventoryTransferReceiveEvent",
           "kind": "FunctionDeclaration",
-          "line": 670,
+          "line": 676,
           "name": "createInventoryTransferReceiveEvent"
         }
       ],
@@ -9710,9 +9710,9 @@
             "column": 1,
             "file": "src/transfers.ts",
             "hasBody": true,
-            "id": "src/transfers.ts:27297:createInventoryTransferReceiveEvent",
+            "id": "src/transfers.ts:27508:createInventoryTransferReceiveEvent",
             "kind": "FunctionDeclaration",
-            "line": 670,
+            "line": 676,
             "name": "createInventoryTransferReceiveEvent"
           },
           "witness": {
@@ -9740,9 +9740,9 @@
                 "column": 1,
                 "file": "src/transfers.ts",
                 "hasBody": true,
-                "id": "src/transfers.ts:27297:createInventoryTransferReceiveEvent",
+                "id": "src/transfers.ts:27508:createInventoryTransferReceiveEvent",
                 "kind": "FunctionDeclaration",
-                "line": 670,
+                "line": 676,
                 "name": "createInventoryTransferReceiveEvent",
                 "reason": "resolved-call"
               }
@@ -9758,9 +9758,9 @@
           "column": 1,
           "file": "src/transfers.ts",
           "hasBody": true,
-          "id": "src/transfers.ts:29379:createInventoryTransferReleaseEvent",
+          "id": "src/transfers.ts:29590:createInventoryTransferReleaseEvent",
           "kind": "FunctionDeclaration",
-          "line": 735,
+          "line": 741,
           "name": "createInventoryTransferReleaseEvent"
         }
       ],
@@ -9771,9 +9771,9 @@
             "column": 1,
             "file": "src/transfers.ts",
             "hasBody": true,
-            "id": "src/transfers.ts:29379:createInventoryTransferReleaseEvent",
+            "id": "src/transfers.ts:29590:createInventoryTransferReleaseEvent",
             "kind": "FunctionDeclaration",
-            "line": 735,
+            "line": 741,
             "name": "createInventoryTransferReleaseEvent"
           },
           "witness": {
@@ -9801,9 +9801,9 @@
                 "column": 1,
                 "file": "src/transfers.ts",
                 "hasBody": true,
-                "id": "src/transfers.ts:29379:createInventoryTransferReleaseEvent",
+                "id": "src/transfers.ts:29590:createInventoryTransferReleaseEvent",
                 "kind": "FunctionDeclaration",
-                "line": 735,
+                "line": 741,
                 "name": "createInventoryTransferReleaseEvent",
                 "reason": "resolved-call"
               }
@@ -12033,9 +12033,9 @@
                 "column": 1,
                 "file": "src/transfers.ts",
                 "hasBody": true,
-                "id": "src/transfers.ts:22551:createInventoryTransferPrepareEvent",
+                "id": "src/transfers.ts:22578:createInventoryTransferPrepareEvent",
                 "kind": "FunctionDeclaration",
-                "line": 544,
+                "line": 545,
                 "name": "createInventoryTransferPrepareEvent",
                 "reason": "resolved-call"
               },
@@ -12043,9 +12043,9 @@
                 "column": 78,
                 "file": "src/transfers.ts",
                 "hasBody": true,
-                "id": "src/transfers.ts:37774:transferLifecycleEvent",
+                "id": "src/transfers.ts:37985:transferLifecycleEvent",
                 "kind": "FunctionDeclaration",
-                "line": 961,
+                "line": 967,
                 "name": "transferLifecycleEvent",
                 "reason": "resolved-call"
               },
@@ -12875,10 +12875,10 @@
                 "column": 93,
                 "file": "test/migrations.test.ts",
                 "hasBody": true,
-                "id": "test/migrations.test.ts:15037:<anonymous@413>",
+                "id": "test/migrations.test.ts:15136:<anonymous@415>",
                 "kind": "ArrowFunction",
-                "line": 413,
-                "name": "<anonymous@413>",
+                "line": 415,
+                "name": "<anonymous@415>",
                 "reason": "test-callback"
               },
               {
@@ -14223,7 +14223,7 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:27336:addFungibilityCandidate",
+                "id": "src/fungibility.ts:27346:addFungibilityCandidate",
                 "kind": "FunctionDeclaration",
                 "line": 745,
                 "name": "addFungibilityCandidate",
@@ -14233,7 +14233,7 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:28785:fungibilityAllocationIncrement",
+                "id": "src/fungibility.ts:28795:fungibilityAllocationIncrement",
                 "kind": "FunctionDeclaration",
                 "line": 800,
                 "name": "fungibilityAllocationIncrement",
@@ -15825,10 +15825,10 @@
                 "column": 93,
                 "file": "test/migrations.test.ts",
                 "hasBody": true,
-                "id": "test/migrations.test.ts:15037:<anonymous@413>",
+                "id": "test/migrations.test.ts:15136:<anonymous@415>",
                 "kind": "ArrowFunction",
-                "line": 413,
-                "name": "<anonymous@413>",
+                "line": 415,
+                "name": "<anonymous@415>",
                 "reason": "test-callback"
               },
               {
@@ -16068,7 +16068,7 @@
                 "column": 1,
                 "file": "test/formal-implementation-abstraction.ts",
                 "hasBody": true,
-                "id": "test/formal-implementation-abstraction.ts:40782:abstractPrimaryBalance",
+                "id": "test/formal-implementation-abstraction.ts:40762:abstractPrimaryBalance",
                 "kind": "FunctionDeclaration",
                 "line": 1095,
                 "name": "abstractPrimaryBalance",
@@ -16484,10 +16484,10 @@
                 "column": 93,
                 "file": "test/migrations.test.ts",
                 "hasBody": true,
-                "id": "test/migrations.test.ts:15037:<anonymous@413>",
+                "id": "test/migrations.test.ts:15136:<anonymous@415>",
                 "kind": "ArrowFunction",
-                "line": 413,
-                "name": "<anonymous@413>",
+                "line": 415,
+                "name": "<anonymous@415>",
                 "reason": "test-callback"
               },
               {
@@ -17387,10 +17387,10 @@
                 "column": 93,
                 "file": "test/migrations.test.ts",
                 "hasBody": true,
-                "id": "test/migrations.test.ts:15037:<anonymous@413>",
+                "id": "test/migrations.test.ts:15136:<anonymous@415>",
                 "kind": "ArrowFunction",
-                "line": 413,
-                "name": "<anonymous@413>",
+                "line": 415,
+                "name": "<anonymous@415>",
                 "reason": "test-callback"
               },
               {
@@ -17448,10 +17448,10 @@
                 "column": 93,
                 "file": "test/migrations.test.ts",
                 "hasBody": true,
-                "id": "test/migrations.test.ts:15037:<anonymous@413>",
+                "id": "test/migrations.test.ts:15136:<anonymous@415>",
                 "kind": "ArrowFunction",
-                "line": 413,
-                "name": "<anonymous@413>",
+                "line": 415,
+                "name": "<anonymous@415>",
                 "reason": "test-callback"
               },
               {
@@ -17692,10 +17692,10 @@
                 "column": 93,
                 "file": "test/migrations.test.ts",
                 "hasBody": true,
-                "id": "test/migrations.test.ts:15037:<anonymous@413>",
+                "id": "test/migrations.test.ts:15136:<anonymous@415>",
                 "kind": "ArrowFunction",
-                "line": 413,
-                "name": "<anonymous@413>",
+                "line": 415,
+                "name": "<anonymous@415>",
                 "reason": "test-callback"
               },
               {
@@ -17875,10 +17875,10 @@
                 "column": 93,
                 "file": "test/migrations.test.ts",
                 "hasBody": true,
-                "id": "test/migrations.test.ts:15037:<anonymous@413>",
+                "id": "test/migrations.test.ts:15136:<anonymous@415>",
                 "kind": "ArrowFunction",
-                "line": 413,
-                "name": "<anonymous@413>",
+                "line": 415,
+                "name": "<anonymous@415>",
                 "reason": "test-callback"
               },
               {
@@ -18058,10 +18058,10 @@
                 "column": 88,
                 "file": "test/migrations.test.ts",
                 "hasBody": true,
-                "id": "test/migrations.test.ts:18338:<anonymous@516>",
+                "id": "test/migrations.test.ts:18437:<anonymous@518>",
                 "kind": "ArrowFunction",
-                "line": 516,
-                "name": "<anonymous@516>",
+                "line": 518,
+                "name": "<anonymous@518>",
                 "reason": "test-callback"
               },
               {
@@ -21934,10 +21934,10 @@
                 "column": 93,
                 "file": "test/migrations.test.ts",
                 "hasBody": true,
-                "id": "test/migrations.test.ts:15037:<anonymous@413>",
+                "id": "test/migrations.test.ts:15136:<anonymous@415>",
                 "kind": "ArrowFunction",
-                "line": 413,
-                "name": "<anonymous@413>",
+                "line": 415,
+                "name": "<anonymous@415>",
                 "reason": "test-callback"
               },
               {
@@ -22430,7 +22430,7 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:27336:addFungibilityCandidate",
+                "id": "src/fungibility.ts:27346:addFungibilityCandidate",
                 "kind": "FunctionDeclaration",
                 "line": 745,
                 "name": "addFungibilityCandidate",
@@ -22440,7 +22440,7 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:28785:fungibilityAllocationIncrement",
+                "id": "src/fungibility.ts:28795:fungibilityAllocationIncrement",
                 "kind": "FunctionDeclaration",
                 "line": 800,
                 "name": "fungibilityAllocationIncrement",
@@ -23799,10 +23799,10 @@
                 "column": 93,
                 "file": "test/migrations.test.ts",
                 "hasBody": true,
-                "id": "test/migrations.test.ts:15037:<anonymous@413>",
+                "id": "test/migrations.test.ts:15136:<anonymous@415>",
                 "kind": "ArrowFunction",
-                "line": 413,
-                "name": "<anonymous@413>",
+                "line": 415,
+                "name": "<anonymous@415>",
                 "reason": "test-callback"
               },
               {
@@ -24042,7 +24042,7 @@
                 "column": 1,
                 "file": "test/formal-implementation-abstraction.ts",
                 "hasBody": true,
-                "id": "test/formal-implementation-abstraction.ts:40782:abstractPrimaryBalance",
+                "id": "test/formal-implementation-abstraction.ts:40762:abstractPrimaryBalance",
                 "kind": "FunctionDeclaration",
                 "line": 1095,
                 "name": "abstractPrimaryBalance",
@@ -24499,10 +24499,10 @@
                 "column": 93,
                 "file": "test/migrations.test.ts",
                 "hasBody": true,
-                "id": "test/migrations.test.ts:15037:<anonymous@413>",
+                "id": "test/migrations.test.ts:15136:<anonymous@415>",
                 "kind": "ArrowFunction",
-                "line": 413,
-                "name": "<anonymous@413>",
+                "line": 415,
+                "name": "<anonymous@415>",
                 "reason": "test-callback"
               },
               {
@@ -25260,10 +25260,10 @@
                 "column": 5,
                 "file": "test/migrations.test.ts",
                 "hasBody": true,
-                "id": "test/migrations.test.ts:30816:<anonymous@888>",
+                "id": "test/migrations.test.ts:30915:<anonymous@890>",
                 "kind": "ArrowFunction",
-                "line": 888,
-                "name": "<anonymous@888>",
+                "line": 890,
+                "name": "<anonymous@890>",
                 "reason": "test-callback"
               },
               {
@@ -25361,10 +25361,10 @@
                 "column": 5,
                 "file": "test/migrations.test.ts",
                 "hasBody": true,
-                "id": "test/migrations.test.ts:30816:<anonymous@888>",
+                "id": "test/migrations.test.ts:30915:<anonymous@890>",
                 "kind": "ArrowFunction",
-                "line": 888,
-                "name": "<anonymous@888>",
+                "line": 890,
+                "name": "<anonymous@890>",
                 "reason": "test-callback"
               },
               {
@@ -26373,10 +26373,10 @@
                 "column": 68,
                 "file": "test/digest.test.ts",
                 "hasBody": true,
-                "id": "test/digest.test.ts:3030:<anonymous@76>",
+                "id": "test/digest.test.ts:3278:<anonymous@82>",
                 "kind": "ArrowFunction",
-                "line": 76,
-                "name": "<anonymous@76>",
+                "line": 82,
+                "name": "<anonymous@82>",
                 "reason": "test-callback"
               },
               {
@@ -35770,10 +35770,10 @@
                 "column": 5,
                 "file": "test/migrations.test.ts",
                 "hasBody": true,
-                "id": "test/migrations.test.ts:30816:<anonymous@888>",
+                "id": "test/migrations.test.ts:30915:<anonymous@890>",
                 "kind": "ArrowFunction",
-                "line": 888,
-                "name": "<anonymous@888>",
+                "line": 890,
+                "name": "<anonymous@890>",
                 "reason": "test-callback"
               },
               {
@@ -37109,5 +37109,5 @@
     }
   },
   "schemaVersion": 1,
-  "surfaceSha256": "08e40f4b027ceb4c699b44e8b7a4f3b8bf1e9450546c4859ecc23a1923d83695"
+  "surfaceSha256": "ae2992b8ec54cf20d4dd326887dcc2a0fbf8468fb6eff7f073265d7e9d70e2a5"
 }

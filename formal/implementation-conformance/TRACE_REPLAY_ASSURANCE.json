@@ -1996,6 +1996,7 @@
       "failpoints": [],
       "finiteDomain": "Two otherwise identical concurrent transfers sharing one transit location, including prepare, dispatch, partial/full receipt, release, replay, and changed-intent rejection.",
       "invariants": [
+        "TypeOK",
         "TransferQuantityConserved",
         "ReceivedNeverExceedsDispatched",
         "TransferIsolation",

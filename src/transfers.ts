@@ -40,6 +40,7 @@ import {
 } from "./measurements.js";
 import { compareInventoryIdentityText } from "./ordering.js";
 import {
+  assertInventoryIdentity,
   inventoryStockPositionIdentity,
   normalizeInventoryStockPositionKey,
   type InventoryStockPosition,
@@ -597,6 +598,11 @@ export function createInventoryTransferPrepareEvent(
   const sourceLocationId = sourceLocations.values().next().value;
   if (sourceLocationId === undefined)
     throw new Error("Transfer prepare source location is missing.");
+  assertInventoryIdentity(input.transitLocationId, "transfer transitLocationId");
+  assertInventoryIdentity(
+    input.destinationLocationId,
+    "transfer destinationLocationId"
+  );
   if (input.transitLocationId === sourceLocationId)
     throw new Error("Transfer transit location must differ from the source location.");
   if (input.transitLocationId === input.destinationLocationId)

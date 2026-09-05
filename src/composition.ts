@@ -470,6 +470,8 @@ function currentSourceLot(
 /**
  * Supply complete genealogy: natural single identities are derived by the transformation kernel;
  * identity-free lines receive stable external nodes, while ambiguous positions require an explicit choice.
+ * `all-identities` rejects any multiple identity; `serial-container-only` rejects only serial+container
+ * ambiguity and otherwise keeps serial, then container, then lot precedence.
  */
 function compositionTraceabilityNode(
   position: InventoryStockPositionInput,

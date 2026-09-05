@@ -894,7 +894,7 @@ export function assertAbstractCountInvariants(book: InventoryCountBook): void {
   }
 }
 
-/** Independently check effective containment is acyclic and relation identities are unique. */
+/** Independently check that the effective containment graph is acyclic. */
 export function assertAbstractTraceabilityInvariants(
   state: InventoryTraceabilityState
 ): void {

@@ -160,6 +160,15 @@ const gaps = readJson(resolve(manifestRoot, "FORMAL_COVERAGE_GAPS.json"));
 const executable = readJson(
   resolve(manifestRoot, "EXECUTABLE_ASSURANCE_REPORT.json")
 );
+const observedFullLogSha256 = digest(fullLogPath);
+if (
+  typeof executable.fullLogSha256 !== "string" ||
+  executable.fullLogSha256 !== observedFullLogSha256
+) {
+  throw new Error(
+    "Full assurance log does not match the executable assurance run that certified it."
+  );
+}
 const log = plain(readFileSync(fullLogPath, "utf8"));
 const byStep = sections(log);
 const currentRepositoryStateSha256 = repositoryAssuranceStateSha256(repositoryRoot);
@@ -291,6 +300,7 @@ const report = {
   generatedAt: new Date().toISOString(),
   repositoryHead: executable.repositoryHead,
   repositoryStateSha256: currentRepositoryStateSha256,
+  fullLogSha256: observedFullLogSha256,
   fullFormal: true,
   surfaceSha256: api.surfaceSha256,
   coverage: {

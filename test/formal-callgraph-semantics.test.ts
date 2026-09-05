@@ -5,11 +5,17 @@ import { describe, expect, it } from "vitest";
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
+/** Static facts used to decide whether one Vitest registration callback executes. */
 interface VitestExecutionMetadata {
+  /** Vitest primitive that registered the callback. */
   readonly registration?: string;
+  /** Statically resolved run/skip/todo state. */
   readonly mode: "run" | "skip" | "todo" | "unknown";
+  /** Conditional registration form when present. */
   readonly conditionKind?: "skipIf" | "runIf";
+  /** Statically resolved conditional value when known. */
   readonly conditionValue?: boolean;
+  /** Whether an enclosing suite prevents child execution. */
   readonly insideNonExecutingSuite?: boolean;
 }
 
@@ -82,8 +88,14 @@ describe("formal call-graph Vitest callback semantics", () => {
   });
 
   it("preserves skipped-suite collection while excluding its test and hook callbacks", () => {
-    const skippedSuite = { registration: "describe", mode: "skip" } as const;
+    const skippedSuite: VitestExecutionMetadata = {
+      registration: "describe",
+      mode: "skip",
+    };
     expect(callbackExecutes(skippedSuite)).toBe(true);
+    expect(callbackExecutes({ registration: "describe", mode: "todo" })).toBe(
+      false
+    );
     expect(suiteChildrenExecute(skippedSuite)).toBe(false);
     expect(callbackExecutes({
       registration: "describe",

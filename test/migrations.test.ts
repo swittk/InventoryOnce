@@ -353,7 +353,9 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
       operationIds: [plan.events[0]?.operationId],
     });
     expect(manifest?.plan).toBeUndefined();
-    expect(abstractMigrationState(manifest!).sourceDispositions).toEqual(
+    if (manifest === undefined)
+      throw new Error("Completed migration manifest disappeared.");
+    expect(abstractMigrationState(manifest).sourceDispositions).toEqual(
       abstractMigrationState(plan).sourceDispositions
     );
     expect(

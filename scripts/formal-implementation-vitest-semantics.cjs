@@ -1,4 +1,4 @@
-/** Return the Vitest registration primitive named by one call expression string. */
+/** Return the syntactic Vitest primitive after the caller has established Vitest symbol ownership. */
 function vitestRegistrationName(callee) {
   const match = /(?:^|\.)(it|test|describe|beforeAll|beforeEach|afterAll|afterEach)(?:\.|$)/u.exec(callee);
   return match?.[1];
@@ -18,8 +18,8 @@ function vitestRegistrationRuns(metadata) {
 function vitestCallbackExecutes(metadata) {
   const registration = metadata.registration;
   if (registration === undefined) return false;
-  // Suite factories always execute during collection, even when their suite is skipped/todo.
-  if (registration === "describe") return true;
+  // Skipped suite factories still collect children; todo suites are placeholders and do not.
+  if (registration === "describe") return metadata.mode !== "todo";
   if (metadata.insideNonExecutingSuite === true) return false;
   if (
     registration === "beforeAll" ||

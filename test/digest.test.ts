@@ -19,7 +19,7 @@ describe("inventory metadata fingerprint", () => {
 });
 
 describe("inventorySha256", () => {
-  it.each([
+  const sha256Vectors: readonly (readonly [string, string])[] = [
     ["", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"],
     ["abc", "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"],
     [
@@ -27,10 +27,16 @@ describe("inventorySha256", () => {
       "248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1",
     ],
     [
+      "01234567890123456789012345678901234567890123456789012345678901234567890123456789",
+      "af1909413b96cbb29927b3a67f3a8879c801a37be383e5f9b31df5fa8d10fa2b",
+    ],
+    [
       "สวัสดี InventoryOnce",
       "5bebf12a7f7a884bc001b0d729eaa4fd461e2d42c9f275a03555157655f55b3e",
     ],
-  ] as const)(
+  ];
+
+  it.each(sha256Vectors)(
     "matches the SHA-256 known-answer vector for %j",
     (value, expected) => {
       expect(inventorySha256(value)).toBe(expected);

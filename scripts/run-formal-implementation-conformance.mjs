@@ -1,5 +1,6 @@
-import { spawnSync } from "node:child_process";
-import { readFileSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { spawn, spawnSync } from "node:child_process";
+import { createWriteStream, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -9,6 +10,57 @@ const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repositoryRoot = packageRoot;
 const fullFormal = process.argv.includes("--full-formal");
 const manifestRoot = join(packageRoot, "formal/implementation-conformance");
+const fullLogPath = join(
+  repositoryRoot,
+  ".chatgpt",
+  "formal-assurance-full-current.log"
+);
+if (fullFormal) mkdirSync(dirname(fullLogPath), { recursive: true });
+const fullLog = fullFormal ? createWriteStream(fullLogPath, { flags: "w" }) : undefined;
+
+/** Mirror runner output to the terminal and, for full assurance, its canonical evidence log. */
+function writeAssuranceOutput(stream, chunk) {
+  stream.write(chunk);
+  fullLog?.write(chunk);
+}
+
+/** Execute one assurance step while streaming bounded-memory output into canonical evidence. */
+function runAssuranceStep(step, environment) {
+  return new Promise((resolveStep, rejectStep) => {
+    const child = spawn(step.command, step.args, {
+      cwd: repositoryRoot,
+      stdio: ["ignore", "pipe", "pipe"],
+      env: { ...environment, ...(step.env ?? {}) },
+    });
+    child.stdout.on("data", (chunk) => writeAssuranceOutput(process.stdout, chunk));
+    child.stderr.on("data", (chunk) => writeAssuranceOutput(process.stderr, chunk));
+    child.once("error", rejectStep);
+    child.once("close", (status) => {
+      if (status === 0) resolveStep();
+      else {
+        rejectStep(
+          new Error(
+            `Formal implementation conformance step '${step.id}' failed with status ${String(status)}.`
+          )
+        );
+      }
+    });
+  });
+}
+
+/** Finish the canonical full-run log before hashing it into executable evidence. */
+function closeFullLog() {
+  if (fullLog === undefined) return Promise.resolve();
+  return new Promise((resolveLog, rejectLog) => {
+    fullLog.once("error", rejectLog);
+    fullLog.end(resolveLog);
+  });
+}
+
+/** SHA-256 the exact bytes emitted by the full assurance runner. */
+function fullLogSha256() {
+  return createHash("sha256").update(readFileSync(fullLogPath)).digest("hex");
+}
 
 /** Read one checked implementation-conformance manifest. */
 function readManifest(name) {
@@ -105,20 +157,8 @@ for (const step of steps) {
       ...packageTraceTests,
     ];
   }
-  console.log(`\n=== ${step.id} ===`);
-  const result = spawnSync(step.command, step.args, {
-    cwd: repositoryRoot,
-    stdio: "inherit",
-    env: { ...childProcessEnvironment, ...(step.env ?? {}) },
-  });
-  if (result.error) throw result.error;
-  if (result.status !== 0) {
-    throw new Error(
-      `Formal implementation conformance step '${
-        step.id
-      }' failed with status ${String(result.status)}.`
-    );
-  }
+  writeAssuranceOutput(process.stdout, `\n=== ${step.id} ===\n`);
+  await runAssuranceStep(step, childProcessEnvironment);
 }
 
 traces ??= readManifest("TRACE_REPLAY_ASSURANCE.json");
@@ -133,11 +173,16 @@ const head = spawnSync("git", ["rev-parse", "HEAD"], {
 if (head.status !== 0) {
   throw new Error("Unable to record the certified repository HEAD.");
 }
+const successMessage = "\nFormal implementation conformance production assurance passed.\n";
+writeAssuranceOutput(process.stdout, successMessage);
+await closeFullLog();
+
 const report = {
-  version: 4,
+  version: 5,
   repositoryHead: head.stdout.trim(),
   repositoryStateSha256: repositoryAssuranceStateSha256(repositoryRoot),
   fullFormal,
+  ...(fullFormal ? { fullLogSha256: fullLogSha256() } : {}),
   surfaceSha256: api.surfaceSha256,
   apiEntries: Object.keys(api.entries).length,
   callAndConstructSignatures: api.counts.callAndConstructSignatures,
@@ -176,4 +221,3 @@ writeFileSync(
   join(manifestRoot, "EXECUTABLE_ASSURANCE_REPORT.json"),
   `${JSON.stringify(report, null, 2)}\n`
 );
-console.log("\nFormal implementation conformance production assurance passed.");

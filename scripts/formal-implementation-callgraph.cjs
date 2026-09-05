@@ -408,10 +408,20 @@ function vitestRegistrationMode(node, callbackArgumentIndex) {
   return "run";
 }
 
+/** Return whether one call resolves to the installed Vitest registration contract. */
+function isVitestRegistrationCall(node) {
+  const declaration = checker.getResolvedSignature(node)?.declaration;
+  if (declaration === undefined) return false;
+  const declarationPath = normalizedPath(declaration.getSourceFile().fileName);
+  return /\/node_modules\/(?:vitest|@vitest\/runner)\//u.test(declarationPath);
+}
+
 /** Build conservative static execution metadata for one Vitest registration callback. */
 function vitestRegistrationMetadata(node, callbackArgumentIndex, insideNonExecutingSuite) {
   const callee = node.expression.getText(node.getSourceFile());
-  const registration = vitestRegistrationName(callee);
+  const registration = isVitestRegistrationCall(node)
+    ? vitestRegistrationName(callee)
+    : undefined;
   return {
     registration,
     mode: vitestRegistrationMode(node, callbackArgumentIndex),
@@ -511,6 +521,7 @@ function externalCallbackArgumentIndexes(node) {
   const expressionText = node.expression.getText(node.getSourceFile());
   if (
     sourcePath.startsWith(`${testRoot}/`) &&
+    isVitestRegistrationCall(node) &&
     vitestRegistrationName(expressionText) !== undefined
   ) {
     const insideNonExecutingSuite = isInsideNonExecutingSuite(node);
