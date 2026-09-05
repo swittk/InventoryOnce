@@ -490,10 +490,30 @@ function projectInventoryEventsAtOrBefore(
   observedAt: string
 ): InventoryProjectionState {
   const ordered = inventoryEventsInRecordSequence(events);
+  const eventById = new Map<string, InventoryCommittedEvent>();
+  const includedEventIds = new Set<string>();
+  for (const event of ordered) {
+    eventById.set(event.eventId, event);
+    if (event.occurredAt <= observedAt) includedEventIds.add(event.eventId);
+  }
+  for (const event of ordered) {
+    if (!includedEventIds.has(event.eventId)) continue;
+    let predecessorId = event.correction?.supersedesCorrectionEventId;
+    while (predecessorId !== undefined && !includedEventIds.has(predecessorId)) {
+      const predecessor = eventById.get(predecessorId);
+      if (predecessor === undefined) {
+        throw new Error(
+          `Occurrence-time correction chain references missing predecessor '${predecessorId}'.`
+        );
+      }
+      includedEventIds.add(predecessorId);
+      predecessorId = predecessor.correction?.supersedesCorrectionEventId;
+    }
+  }
   const occurrenceCut: InventoryCommittedEvent[] = [];
   let cutSequence = 1;
   for (const event of ordered) {
-    if (event.occurredAt > observedAt) continue;
+    if (!includedEventIds.has(event.eventId)) continue;
     // Historical replay needs contiguous local sequence numbers after later-occurring rows are removed.
     occurrenceCut.push({ ...event, recordSequence: cutSequence });
     cutSequence += 1;

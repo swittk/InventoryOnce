@@ -3,8 +3,8 @@
     "authorityMethods": 13,
     "callAndConstructSignatures": 508,
     "classMethods": 70,
-    "compilerCallGraphCallables": 2139,
-    "compilerCallGraphEdges": 5859,
+    "compilerCallGraphCallables": 2142,
+    "compilerCallGraphEdges": 5876,
     "compilerCallGraphTestRoots": 37,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 508,
@@ -12882,9 +12882,9 @@
               "column": 1,
               "file": "src/counts.ts",
               "hasBody": true,
-              "id": "src/counts.ts:21207:abandonInventoryCount",
+              "id": "src/counts.ts:22084:abandonInventoryCount",
               "kind": "FunctionDeclaration",
-              "line": 577,
+              "line": 597,
               "name": "abandonInventoryCount",
               "reason": "resolved-call"
             }
@@ -12893,9 +12893,9 @@
             "column": 1,
             "file": "src/counts.ts",
             "hasBody": true,
-            "id": "src/counts.ts:21207:abandonInventoryCount",
+            "id": "src/counts.ts:22084:abandonInventoryCount",
             "kind": "FunctionDeclaration",
-            "line": 577,
+            "line": 597,
             "name": "abandonInventoryCount"
           },
           "test": "test/formal-public-surface-completion.test.ts"
@@ -12923,9 +12923,9 @@
           "column": 1,
           "file": "src/counts.ts",
           "hasBody": true,
-          "id": "src/counts.ts:21207:abandonInventoryCount",
+          "id": "src/counts.ts:22084:abandonInventoryCount",
           "kind": "FunctionDeclaration",
-          "line": 577,
+          "line": 597,
           "name": "abandonInventoryCount"
         }
       ],
@@ -16215,9 +16215,9 @@
               "column": 1,
               "file": "src/counts.ts",
               "hasBody": true,
-              "id": "src/counts.ts:19301:completeInventoryCount",
+              "id": "src/counts.ts:20178:completeInventoryCount",
               "kind": "FunctionDeclaration",
-              "line": 525,
+              "line": 545,
               "name": "completeInventoryCount",
               "reason": "resolved-call"
             }
@@ -16226,9 +16226,9 @@
             "column": 1,
             "file": "src/counts.ts",
             "hasBody": true,
-            "id": "src/counts.ts:19301:completeInventoryCount",
+            "id": "src/counts.ts:20178:completeInventoryCount",
             "kind": "FunctionDeclaration",
-            "line": 525,
+            "line": 545,
             "name": "completeInventoryCount"
           },
           "test": "test/formal-public-surface-completion.test.ts"
@@ -16256,9 +16256,9 @@
           "column": 1,
           "file": "src/counts.ts",
           "hasBody": true,
-          "id": "src/counts.ts:19301:completeInventoryCount",
+          "id": "src/counts.ts:20178:completeInventoryCount",
           "kind": "FunctionDeclaration",
-          "line": 525,
+          "line": 545,
           "name": "completeInventoryCount"
         }
       ],
@@ -56912,10 +56912,10 @@
               "column": 96,
               "file": "test/reservations-counts.test.ts",
               "hasBody": true,
-              "id": "test/reservations-counts.test.ts:12952:<anonymous@392>",
+              "id": "test/reservations-counts.test.ts:15305:<anonymous@455>",
               "kind": "ArrowFunction",
-              "line": 392,
-              "name": "<anonymous@392>",
+              "line": 455,
+              "name": "<anonymous@455>",
               "reason": "test-callback"
             },
             {
@@ -59231,10 +59231,10 @@
               "column": 82,
               "file": "test/reservations-counts.test.ts",
               "hasBody": true,
-              "id": "test/reservations-counts.test.ts:16387:<anonymous@500>",
+              "id": "test/reservations-counts.test.ts:18740:<anonymous@563>",
               "kind": "ArrowFunction",
-              "line": 500,
-              "name": "<anonymous@500>",
+              "line": 563,
+              "name": "<anonymous@563>",
               "reason": "test-callback"
             },
             {
@@ -59542,7 +59542,7 @@
           "path": "src/corrections.ts"
         },
         {
-          "occurrences": 18,
+          "occurrences": 26,
           "path": "src/counts.ts"
         },
         {
@@ -63716,7 +63716,7 @@
           "path": "src/corrections.ts"
         },
         {
-          "occurrences": 18,
+          "occurrences": 26,
           "path": "src/counts.ts"
         },
         {
@@ -76532,5 +76532,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "82d4864f15d6576a749929ef33beb4d7495f61ce7a04c964b35bba2974be88bb"
+  "surfaceSha256": "538ddae66a51d60e3e27dc0c93e0c6dad65629d75135d071ff665ce0cfa01df9"
 }

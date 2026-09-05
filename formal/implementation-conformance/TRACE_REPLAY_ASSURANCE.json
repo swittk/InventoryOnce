@@ -1742,7 +1742,9 @@
         "RecordShortageIsExplicit",
         "RejectShortagePreservesTruth",
         "ReplayPreservesTruthAndResult",
-        "ChangedIntentRejectsAndStutters"
+        "ChangedIntentRejectsAndStutters",
+        "TypeOK",
+        "FullIssueNeverCreatesDeficit"
       ],
       "models": [
         "RecordedDeficit",

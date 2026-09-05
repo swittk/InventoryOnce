@@ -389,6 +389,69 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     ]);
   });
 
+  it("retains correction supersession predecessors in occurrence-time count replay", async () => {
+    const inventory = createTestInventory();
+    const original = await inventory.stock.receive({
+      operationId: "count-correction-root",
+      occurredAt: time0,
+      to: loosePosition("a"),
+      amount: stockAmount("10", "piece"),
+    });
+    await inventory.counts.start({
+      countId: "count-correction-cut",
+      operationId: "count-correction-cut-start",
+      selector: { itemId: "item-a", locationIds: ["a"] },
+      startedAt: time0,
+    });
+    await inventory.stock.correct({
+      operationId: "count-correction-later-occurrence",
+      occurredAt: time3,
+      correctsEventId: original.event.eventId,
+      reason: "First retained correction was recorded with a later occurrence time.",
+      replaceWith: (plans) =>
+        plans.receive({
+          occurredAt: time0,
+          to: loosePosition("a"),
+          amount: stockAmount("7", "piece"),
+        }),
+    });
+    await inventory.stock.correct({
+      operationId: "count-correction-earlier-occurrence",
+      occurredAt: time1,
+      correctsEventId: original.event.eventId,
+      reason: "Later correction is the final retained meaning at observation time.",
+      replaceWith: (plans) =>
+        plans.receive({
+          occurredAt: time0,
+          to: loosePosition("a"),
+          amount: stockAmount("8", "piece"),
+        }),
+    });
+    const position = (
+      await inventory.read.positions({ itemId: "item-a", locationIds: ["a"] })
+    )[0];
+    if (position === undefined) throw new Error("Expected corrected count position.");
+    expect(position.measurements.primary.quantity.amountMinor).toBe(8);
+    await inventory.counts.observe({
+      operationId: "count-correction-cut-observe",
+      countId: "count-correction-cut",
+      observedAt: time2,
+      observations: [
+        { position: position.key, measurements: position.measurements },
+      ],
+    });
+
+    const reconciled = await inventory.counts.reconcile({
+      operationId: "count-correction-cut-reconcile",
+      countId: "count-correction-cut",
+      completedAt: time3,
+      reason: "Observed quantity already matches the final correction meaning.",
+    });
+
+    expect(reconciled.count.status).toBe(InventoryCountStatus.Completed);
+    expect(reconciled.event).toBeUndefined();
+  });
+
   it("replaces one exact bucket through the native lifecycle and replays the complete intent", async () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
