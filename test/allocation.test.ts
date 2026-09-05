@@ -114,6 +114,21 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
     expect(result.allocationConstraintBlockedStock).toBe(false);
   });
 
+  it("fails with the domain search-bound error before recursive candidate depth can overflow", () => {
+    const deepCandidates = Array.from({ length: 7_000 }, (_, index) =>
+      candidate(`deep-${index}`, time0, time3, {
+        available: parseQuantity("1", "piece"),
+        allocationIncrement: parseQuantity("1", "piece"),
+      })
+    );
+    expect(() => allocateInventory({
+      requested: parseQuantity("7000", "piece"),
+      candidates: deepCandidates,
+      method: InventoryAllocationMethod.Fifo,
+      now: time2,
+    })).toThrow("safe search bound");
+  });
+
   it("fails closed at a bounded exact-search budget instead of looping on adversarial predicates", () => {
     const capacity = String(MAXIMUM_EXACT_ALLOCATION_STATES + 1);
     expect(() => allocateInventory({

@@ -1,6 +1,9 @@
 ------------------------ MODULE CompositionRevision ------------------------
 EXTENDS FiniteSets, Naturals
 
+\* Scope: revision-frozen composition opening, exact component conservation, and retained intent.
+\* Generic exact/changed retry observation is intentionally owned by InventoryOperation,
+\* which composes with this model in implementation assurance rather than duplicating ghost state here.
 \* Two immutable generations of one heterogeneous calendar pack coexist.
 Packs == {"v1-pack-1", "v1-pack-2", "v2-pack-1", "v2-pack-2"}
 PackRevisions == {"pack-v1", "pack-v2"}
@@ -250,38 +253,10 @@ Open(op, pack) ==
   /\ openedBy' = [openedBy EXCEPT ![pack] = op]
   /\ UNCHANGED activeRevision
 
-\* Only the exact durable intent can replay; changed package/composition/location has no transition.
-ReplayOpen(
-  op,
-  pack,
-  requestedPackageRevision,
-  requestedCompositionRevision,
-  requestedLocation
-) ==
-  /\ op \in OpenOperations
-  /\ operationState[op] = "completed"
-  /\ operationPack[op] = pack
-  /\ operationPackageRevision[op] = requestedPackageRevision
-  /\ operationCompositionRevision[op] = requestedCompositionRevision
-  /\ operationLocation[op] = requestedLocation
-  /\ UNCHANGED vars
-
 Next ==
   \/ \E revision \in CompositionRevisions: Activate(revision)
   \/ \E pack \in Packs, destination \in Locations: Transfer(pack, destination)
   \/ \E op \in OpenOperations, pack \in Packs: Open(op, pack)
-  \/ \E op \in OpenOperations,
-       pack \in Packs,
-       requestedPackageRevision \in PackRevisions,
-       requestedCompositionRevision \in CompositionRevisions,
-       requestedLocation \in Locations:
-         ReplayOpen(
-           op,
-           pack,
-           requestedPackageRevision,
-           requestedCompositionRevision,
-           requestedLocation
-         )
 
 Spec == Init /\ [][Next]_vars
 

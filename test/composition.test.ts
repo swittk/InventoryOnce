@@ -714,6 +714,58 @@ describe("revision-frozen heterogeneous package composition", () => {
     ).rejects.toThrow(/several stock identities/i);
   });
 
+  it("requires an explicit genealogy choice when the source has several physical identities", async () => {
+    const fixture = ocpCatalog();
+    const inventory = createInventoryOnce({
+      catalog: fixture.catalog,
+      storage: createInMemoryInventoryDurableStorage(),
+      clock: clockAt(time3),
+    });
+    await inventory.stock.receive({
+      operationId: "receive-ambiguous-source-pack",
+      occurredAt: time0,
+      to: {
+        itemId: fixture.newPackItem.itemId,
+        locationId: "store",
+        lotId: "AMBIGUOUS-SOURCE-LOT",
+        serialId: "AMBIGUOUS-SOURCE-SERIAL",
+        containerId: "AMBIGUOUS-SOURCE-CONTAINER",
+      },
+      amount: packageAmount(1, fixture.newPack.revisionId),
+      lot: { expiresAt: "2029-01-01T00:00:00.000Z" },
+      container: { containerType: "calendar-pack" },
+    });
+    const from = {
+      itemId: fixture.newPackItem.itemId,
+      locationId: "store",
+      lotId: "AMBIGUOUS-SOURCE-LOT",
+      serialId: "AMBIGUOUS-SOURCE-SERIAL",
+      containerId: "AMBIGUOUS-SOURCE-CONTAINER",
+      packagingRevisionId: fixture.newPack.revisionId,
+    };
+    await expect(
+      inventory.compositions.open({
+        operationId: "reject-ambiguous-source-pack",
+        occurredAt: time1,
+        from,
+        packageCount: 1,
+      })
+    ).rejects.toThrow(/several stock identities/i);
+
+    await expect(
+      inventory.compositions.open({
+        operationId: "open-explicit-ambiguous-source-pack",
+        occurredAt: time2,
+        from,
+        packageCount: 1,
+        sourceTraceabilityNode: {
+          kind: InventoryTraceabilityNodeKind.Container,
+          id: "AMBIGUOUS-SOURCE-CONTAINER",
+        },
+      })
+    ).resolves.toBeDefined();
+  });
+
   it("enforces strict, optional, and explicit lot policies without guessing", async () => {
     const fixture = ocpCatalog();
     const strictInventory = createInventoryOnce({

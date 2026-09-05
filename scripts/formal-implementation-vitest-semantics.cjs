@@ -4,15 +4,41 @@ function vitestRegistrationName(callee) {
   return match?.[1];
 }
 
-/** Return whether Vitest executes this registration callback in the current suite context. */
-function vitestCallbackExecutes(callee, insideSkippedSuite = false) {
-  const registration = vitestRegistrationName(callee);
-  if (registration === undefined) return false;
-  if ((registration === "it" || registration === "test") && /(?:^|\.)skip(?:\.|$)/u.test(callee)) {
-    return false;
-  }
-  if (insideSkippedSuite && registration !== "describe") return false;
-  return true;
+/** Return whether a statically described registration is runnable rather than skipped/todo/unknown. */
+function vitestRegistrationRuns(metadata) {
+  if (metadata.mode !== "run") return false;
+  if (metadata.conditionKind === undefined) return true;
+  if (typeof metadata.conditionValue !== "boolean") return false;
+  return metadata.conditionKind === "skipIf"
+    ? metadata.conditionValue === false
+    : metadata.conditionValue === true;
 }
 
-module.exports = { vitestCallbackExecutes, vitestRegistrationName };
+/** Return whether Vitest executes this registration callback in the current suite context. */
+function vitestCallbackExecutes(metadata) {
+  const registration = metadata.registration;
+  if (registration === undefined) return false;
+  // Suite factories always execute during collection, even when their suite is skipped/todo.
+  if (registration === "describe") return true;
+  if (metadata.insideNonExecutingSuite === true) return false;
+  if (
+    registration === "beforeAll" ||
+    registration === "beforeEach" ||
+    registration === "afterAll" ||
+    registration === "afterEach"
+  ) {
+    return true;
+  }
+  return vitestRegistrationRuns(metadata);
+}
+
+/** Return whether tests/hooks registered inside this suite can execute after collection. */
+function vitestSuiteChildrenExecute(metadata) {
+  return metadata.registration === "describe" && vitestRegistrationRuns(metadata);
+}
+
+module.exports = {
+  vitestCallbackExecutes,
+  vitestRegistrationName,
+  vitestSuiteChildrenExecute,
+};

@@ -3,8 +3,8 @@
     "authorityMethods": 13,
     "callAndConstructSignatures": 508,
     "classMethods": 70,
-    "compilerCallGraphCallables": 2123,
-    "compilerCallGraphEdges": 5811,
+    "compilerCallGraphCallables": 2129,
+    "compilerCallGraphEdges": 5831,
     "compilerCallGraphTestRoots": 37,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 508,
@@ -13173,9 +13173,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3461:allocateInventory",
+              "id": "src/allocation.ts:3598:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 85,
+              "line": 88,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -13332,9 +13332,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3461:allocateInventory",
+              "id": "src/allocation.ts:3598:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 85,
+              "line": 88,
               "name": "allocateInventory",
               "reason": "resolved-call"
             }
@@ -13343,9 +13343,9 @@
             "column": 1,
             "file": "src/allocation.ts",
             "hasBody": true,
-            "id": "src/allocation.ts:3461:allocateInventory",
+            "id": "src/allocation.ts:3598:allocateInventory",
             "kind": "FunctionDeclaration",
-            "line": 85,
+            "line": 88,
             "name": "allocateInventory"
           },
           "test": "test/allocation.test.ts"
@@ -13371,9 +13371,9 @@
           "column": 1,
           "file": "src/allocation.ts",
           "hasBody": true,
-          "id": "src/allocation.ts:3461:allocateInventory",
+          "id": "src/allocation.ts:3598:allocateInventory",
           "kind": "FunctionDeclaration",
-          "line": 85,
+          "line": 88,
           "name": "allocateInventory"
         }
       ],
@@ -13865,9 +13865,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3461:allocateInventory",
+              "id": "src/allocation.ts:3598:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 85,
+              "line": 88,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -15173,9 +15173,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3461:allocateInventory",
+              "id": "src/allocation.ts:3598:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 85,
+              "line": 88,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -15863,9 +15863,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3461:allocateInventory",
+              "id": "src/allocation.ts:3598:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 85,
+              "line": 88,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -15873,9 +15873,9 @@
               "column": 37,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:4271:compareEligibleCandidates",
+              "id": "src/allocation.ts:4408:compareEligibleCandidates",
               "kind": "ArrowFunction",
-              "line": 108,
+              "line": 111,
               "name": "compareEligibleCandidates",
               "reason": "external-callback-dispatch"
             },
@@ -15883,9 +15883,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:13708:compareInventoryAllocationCandidates",
+              "id": "src/allocation.ts:14028:compareInventoryAllocationCandidates",
               "kind": "FunctionDeclaration",
-              "line": 379,
+              "line": 387,
               "name": "compareInventoryAllocationCandidates",
               "reason": "resolved-call"
             }
@@ -15894,9 +15894,9 @@
             "column": 1,
             "file": "src/allocation.ts",
             "hasBody": true,
-            "id": "src/allocation.ts:13708:compareInventoryAllocationCandidates",
+            "id": "src/allocation.ts:14028:compareInventoryAllocationCandidates",
             "kind": "FunctionDeclaration",
-            "line": 379,
+            "line": 387,
             "name": "compareInventoryAllocationCandidates"
           },
           "test": "test/allocation.test.ts"
@@ -15918,9 +15918,9 @@
           "column": 1,
           "file": "src/allocation.ts",
           "hasBody": true,
-          "id": "src/allocation.ts:13708:compareInventoryAllocationCandidates",
+          "id": "src/allocation.ts:14028:compareInventoryAllocationCandidates",
           "kind": "FunctionDeclaration",
-          "line": 379,
+          "line": 387,
           "name": "compareInventoryAllocationCandidates"
         }
       ],
@@ -16015,9 +16015,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3461:allocateInventory",
+              "id": "src/allocation.ts:3598:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 85,
+              "line": 88,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -23194,9 +23194,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3461:allocateInventory",
+              "id": "src/allocation.ts:3598:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 85,
+              "line": 88,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -31263,9 +31263,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3461:allocateInventory",
+              "id": "src/allocation.ts:3598:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 85,
+              "line": 88,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -33539,9 +33539,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3461:allocateInventory",
+              "id": "src/allocation.ts:3598:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 85,
+              "line": 88,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -34496,9 +34496,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3461:allocateInventory",
+              "id": "src/allocation.ts:3598:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 85,
+              "line": 88,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -37171,9 +37171,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3461:allocateInventory",
+              "id": "src/allocation.ts:3598:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 85,
+              "line": 88,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -38061,9 +38061,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3461:allocateInventory",
+              "id": "src/allocation.ts:3598:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 85,
+              "line": 88,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -38677,9 +38677,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3461:allocateInventory",
+              "id": "src/allocation.ts:3598:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 85,
+              "line": 88,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -41649,9 +41649,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3461:allocateInventory",
+              "id": "src/allocation.ts:3598:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 85,
+              "line": 88,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -46760,9 +46760,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3461:allocateInventory",
+              "id": "src/allocation.ts:3598:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 85,
+              "line": 88,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -49114,9 +49114,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3461:allocateInventory",
+              "id": "src/allocation.ts:3598:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 85,
+              "line": 88,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -49954,9 +49954,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3461:allocateInventory",
+              "id": "src/allocation.ts:3598:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 85,
+              "line": 88,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -58871,7 +58871,7 @@
           "path": "src/commands.ts"
         },
         {
-          "occurrences": 13,
+          "occurrences": 15,
           "path": "src/composition.ts"
         },
         {
@@ -63060,7 +63060,7 @@
           "path": "src/commands.ts"
         },
         {
-          "occurrences": 13,
+          "occurrences": 15,
           "path": "src/composition.ts"
         },
         {

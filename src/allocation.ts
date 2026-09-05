@@ -81,6 +81,9 @@ export interface InventoryAllocationResult {
 /** Maximum exact-allocation search choices before callers must narrow the candidate set. */
 export const MAXIMUM_EXACT_ALLOCATION_STATES = 100_000;
 
+/** Maximum recursive exact-search depth before callers must narrow the candidate set. */
+const MAXIMUM_EXACT_ALLOCATION_DEPTH = 5_000;
+
 /** Pick FIFO/FEFO stock without inventing synthetic lots or hiding expiry/shortfall policy. */
 export function allocateInventory({
   requested,
@@ -232,6 +235,11 @@ function createExactAllocationsIfPossible(
       (suffixCapacity[index + 1] ?? 0n) + (capacityMinor[index] ?? 0n);
   }
   if ((suffixCapacity[0] ?? 0n) < requestedMinor) return undefined;
+  if (candidates.length > MAXIMUM_EXACT_ALLOCATION_DEPTH) {
+    throw new Error(
+      "Exact allocation exceeded its safe search bound; narrow the candidates or request."
+    );
+  }
 
   /** Chosen shared-scale amount for each sorted candidate. */
   const chosenMinor = new Array<bigint>(candidates.length).fill(0n);

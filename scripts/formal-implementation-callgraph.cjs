@@ -1,7 +1,11 @@
 const ts = require("typescript");
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
-const { vitestCallbackExecutes, vitestRegistrationName } = require("./formal-implementation-vitest-semantics.cjs");
+const {
+  vitestCallbackExecutes,
+  vitestRegistrationName,
+  vitestSuiteChildrenExecute,
+} = require("./formal-implementation-vitest-semantics.cjs");
 
 const root = path.resolve(__dirname, "..");
 /** Normalize compiler paths before comparing Windows and POSIX source roots. */
@@ -314,14 +318,119 @@ for (const source of executableTestSources) {
 function testRootFor(source) {
   return roots.get(`test-root:${relativeFile(source)}`)?.id;
 }
-/** Return whether this node is lexically nested in a describe.skip collection callback. */
-function isInsideSkippedSuite(node) {
+/** Return a statically known boolean, or undefined when runtime evaluation would be required. */
+function staticBooleanValue(node) {
+  if (node === undefined) return undefined;
+  if (node.kind === ts.SyntaxKind.TrueKeyword) return true;
+  if (node.kind === ts.SyntaxKind.FalseKeyword) return false;
+  if (ts.isParenthesizedExpression(node)) return staticBooleanValue(node.expression);
+  if (ts.isPrefixUnaryExpression(node) && node.operator === ts.SyntaxKind.ExclamationToken) {
+    const value = staticBooleanValue(node.operand);
+    return value === undefined ? undefined : !value;
+  }
+  if (ts.isAsExpression(node) || ts.isTypeAssertionExpression(node) || ts.isNonNullExpression(node)) {
+    return staticBooleanValue(node.expression);
+  }
+  return undefined;
+}
+
+/** Return whether one chained Vitest registration expression contains an exact property modifier. */
+function vitestExpressionHasProperty(expression, propertyName) {
+  if (ts.isPropertyAccessExpression(expression)) {
+    return expression.name.text === propertyName || vitestExpressionHasProperty(expression.expression, propertyName);
+  }
+  if (ts.isCallExpression(expression)) {
+    return vitestExpressionHasProperty(expression.expression, propertyName);
+  }
+  return false;
+}
+
+/** Return the nearest skipIf/runIf condition carried by one chained registration expression. */
+function vitestConditionalMetadata(expression) {
+  if (ts.isCallExpression(expression)) {
+    if (ts.isPropertyAccessExpression(expression.expression)) {
+      const name = expression.expression.name.text;
+      if (name === "skipIf" || name === "runIf") {
+        return {
+          conditionKind: name,
+          conditionValue: staticBooleanValue(expression.arguments[0]),
+        };
+      }
+    }
+    return vitestConditionalMetadata(expression.expression);
+  }
+  if (ts.isPropertyAccessExpression(expression)) {
+    return vitestConditionalMetadata(expression.expression);
+  }
+  return {};
+}
+
+/** Read a boolean skip/todo option from one object literal without executing test code. */
+function vitestObjectBooleanOptions(object) {
+  let skip = false;
+  let todo = false;
+  for (const property of object.properties) {
+    if (ts.isSpreadAssignment(property)) {
+      skip = undefined;
+      todo = undefined;
+      continue;
+    }
+    let name;
+    if (ts.isPropertyAssignment(property) || ts.isShorthandPropertyAssignment(property)) {
+      name = property.name.getText(object.getSourceFile()).replace(/^['"]|['"]$/gu, "");
+    } else {
+      continue;
+    }
+    if (name !== "skip" && name !== "todo") continue;
+    const value = ts.isPropertyAssignment(property)
+      ? staticBooleanValue(property.initializer)
+      : undefined;
+    if (name === "skip") skip = value;
+    else todo = value;
+  }
+  return { skip, todo };
+}
+
+/** Resolve the effective static mode for a test/suite registration callback argument. */
+function vitestRegistrationMode(node, callbackArgumentIndex) {
+  if (vitestExpressionHasProperty(node.expression, "skip")) return "skip";
+  if (vitestExpressionHasProperty(node.expression, "todo")) return "todo";
+  if (callbackArgumentIndex !== 2) return "run";
+  const options = node.arguments[1];
+  if (options === undefined || (ts.isIdentifier(options) && options.text === "undefined")) {
+    return "run";
+  }
+  if (!ts.isObjectLiteralExpression(options)) return "unknown";
+  const flags = vitestObjectBooleanOptions(options);
+  if (flags.skip === true) return "skip";
+  if (flags.todo === true) return "todo";
+  if (flags.skip === undefined || flags.todo === undefined) return "unknown";
+  return "run";
+}
+
+/** Build conservative static execution metadata for one Vitest registration callback. */
+function vitestRegistrationMetadata(node, callbackArgumentIndex, insideNonExecutingSuite) {
+  const callee = node.expression.getText(node.getSourceFile());
+  const registration = vitestRegistrationName(callee);
+  return {
+    registration,
+    mode: vitestRegistrationMode(node, callbackArgumentIndex),
+    ...vitestConditionalMetadata(node.expression),
+    insideNonExecutingSuite,
+  };
+}
+
+/** Return whether this node is lexically nested in a suite whose tests/hooks cannot execute. */
+function isInsideNonExecutingSuite(node) {
   let current = node.parent;
   while (current !== undefined) {
     if ((ts.isArrowFunction(current) || ts.isFunctionExpression(current)) && ts.isCallExpression(current.parent)) {
-      const callee = current.parent.expression.getText(current.getSourceFile());
-      if (vitestRegistrationName(callee) === "describe" && /(?:^|\.)skip(?:\.|$)/u.test(callee)) {
-        return true;
+      const callbackIndex = current.parent.arguments.indexOf(current);
+      if (callbackIndex >= 0) {
+        const metadata = vitestRegistrationMetadata(current.parent, callbackIndex, false);
+        if (metadata.registration === "describe" && !vitestSuiteChildrenExecute(metadata)) {
+          return true;
+        }
       }
     }
     current = current.parent;
@@ -333,8 +442,15 @@ function isInsideSkippedSuite(node) {
 function isTestCallback(node) {
   if (!ts.isArrowFunction(node) && !ts.isFunctionExpression(node)) return false;
   if (!ts.isCallExpression(node.parent)) return false;
-  const callee = node.parent.expression.getText(node.getSourceFile());
-  return vitestCallbackExecutes(callee, isInsideSkippedSuite(node));
+  const callbackIndex = node.parent.arguments.indexOf(node);
+  if (callbackIndex < 0) return false;
+  return vitestCallbackExecutes(
+    vitestRegistrationMetadata(
+      node.parent,
+      callbackIndex,
+      isInsideNonExecutingSuite(node)
+    )
+  );
 }
 
 /** Resolve an aliased compiler symbol without changing package ownership. */
@@ -395,11 +511,18 @@ function externalCallbackArgumentIndexes(node) {
   const expressionText = node.expression.getText(node.getSourceFile());
   if (
     sourcePath.startsWith(`${testRoot}/`) &&
-    vitestRegistrationName(expressionText) !== undefined &&
-    vitestCallbackExecutes(expressionText, isInsideSkippedSuite(node))
+    vitestRegistrationName(expressionText) !== undefined
   ) {
+    const insideNonExecutingSuite = isInsideNonExecutingSuite(node);
     for (let index = 0; index < (node.arguments?.length ?? 0); index += 1) {
-      if (callbackTargets(node.arguments[index]).length > 0) indexes.add(index);
+      if (callbackTargets(node.arguments[index]).length === 0) continue;
+      if (
+        vitestCallbackExecutes(
+          vitestRegistrationMetadata(node, index, insideNonExecutingSuite)
+        )
+      ) {
+        indexes.add(index);
+      }
     }
   }
   const signature = checker.getResolvedSignature(node);
