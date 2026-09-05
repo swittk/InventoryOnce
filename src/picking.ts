@@ -210,6 +210,7 @@ export function planInventoryAllocation({
     // Expired rows were removed before assigning the location-level deficit burden.
     allowExpired: true,
   });
+  // Final allocation lines assembled from the reviewed candidate/result pairing.
   const lines: InventoryPolicyAllocationLine[] = [];
   for (const allocation of allocated.allocations) {
     const candidate = deficitAdjusted.byPositionIdentity.get(
@@ -347,7 +348,9 @@ function applyPolicyAllocationDeficitBurden({
   poolCandidates,
 }: ApplyPolicyAllocationDeficitBurdenInput): DeficitAdjustedPolicyAllocationCandidates {
   const normalizedSelector = normalizeInventoryStockSelector(selector);
+  // Remember whether policy filtering hid otherwise selector-matching expired stock.
   let expiredStockWasExcluded = false;
+  // Candidate buffer retained in policy order before location deficit burden is applied.
   const ordered: InventoryAllocationCandidate[] = [];
   for (const candidate of poolCandidates) {
     const expired =
@@ -386,7 +389,9 @@ function applyPolicyAllocationDeficitBurden({
       })
     ),
   });
+  // Candidate buffer after selector matching and one-time location deficit burden.
   const adjusted: InventoryAllocationCandidate[] = [];
+  // Exact lookup used to reconcile allocator output back to the adjusted candidate metadata.
   const byPositionIdentity = new Map<string, InventoryAllocationCandidate>();
   for (const candidate of ordered) {
     if (
@@ -567,8 +572,11 @@ function createPolicyAllocationCandidates({
   allowAllocatedStock,
 }: CreatePolicyAllocationCandidatesInput): PolicyAllocationCandidates {
   const normalizedSelector = normalizeInventoryStockSelector(selector);
+  // Positive exact-position candidates retained for the allocation pass.
   const candidates: InventoryAllocationCandidate[] = [];
+  // Exact-position lookup shared with the later allocation-result reconciliation pass.
   const byPositionIdentity = new Map<string, InventoryAllocationCandidate>();
+  // Reservation book frozen to the same authority time as this candidate plan.
   const historicalReservations = inventoryReservationsAt(
     reservations,
     reservationAt
@@ -680,7 +688,9 @@ function createExactPrimaryReservationSummary({
   at,
   excludedReservationId,
 }: CreateExactPrimaryReservationSummaryInput): ExactPrimaryReservationSummary {
+  // Exact primary-axis pressure accumulated once per bound stock position.
   const reservedPrimaryByPositionIdentity = new Map<string, Quantity>();
+  // Remember whether any active broad claim still needs global feasibility protection.
   let unallocatedReservationsPresent = false;
   for (const reservation of reservations) {
     if (reservation.reservationId === excludedReservationId) continue;

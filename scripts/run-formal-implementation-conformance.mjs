@@ -3,6 +3,8 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { repositoryAssuranceStateSha256 } from "./repository-assurance-state.mjs";
+
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repositoryRoot = packageRoot;
 const fullFormal = process.argv.includes("--full-formal");
@@ -132,8 +134,9 @@ if (head.status !== 0) {
   throw new Error("Unable to record the certified repository HEAD.");
 }
 const report = {
-  version: 3,
+  version: 4,
   repositoryHead: head.stdout.trim(),
+  repositoryStateSha256: repositoryAssuranceStateSha256(repositoryRoot),
   fullFormal,
   surfaceSha256: api.surfaceSha256,
   apiEntries: Object.keys(api.entries).length,

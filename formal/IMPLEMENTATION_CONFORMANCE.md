@@ -4,7 +4,7 @@ The TLA+ specifications are not treated as a detached design document. This dire
 
 ## Mechanical coverage ledger
 
-`implementation-conformance/API_ASSURANCE.json`, `FIELD_CLASSIFICATION.json`, `CALL_CHAIN_ASSURANCE.json`, and `TRACE_REPLAY_ASSURANCE.json` are generated or checked from the real TypeScript program by `scripts/generate-formal-implementation-assurance.py` and `scripts/audit-formal-implementation-conformance.mjs`.
+`formal/implementation-conformance/API_ASSURANCE.json`, `formal/implementation-conformance/FIELD_CLASSIFICATION.json`, `formal/implementation-conformance/CALL_CHAIN_ASSURANCE.json`, and `formal/implementation-conformance/TRACE_REPLAY_ASSURANCE.json` are generated or checked from the real TypeScript program by `scripts/generate-formal-implementation-assurance.py` and `scripts/audit-formal-implementation-conformance.mjs`.
 
 The generator:
 
@@ -20,7 +20,7 @@ The generator:
 
 ## Bidirectional refinement
 
-`implementation-refinement-map.json` maps every variable and action in `ImplementationConformance.tla` back to the concrete TypeScript extractor or facade result. Its test rejects an added formal variable/action without a concrete relation and rejects a concrete proof row whose TLA symbol no longer exists.
+`test/formal-implementation-refinement.test.ts` maps the bounded `ImplementationConformance.tla` variables/actions to concrete TypeScript extractors and facade results. The test rejects an added formal variable/action without a concrete relation and rejects a concrete proof row whose TLA symbol no longer exists.
 
 The bounded implementation model covers four representative physical facade verbs:
 
@@ -38,7 +38,7 @@ The TypeScript trace harness computes an independent abstract transition, execut
 
 ## Migration machinery
 
-`migration-implementation-proof.json` explicitly covers:
+`TRACE-MIGRATION-PLAN-PUBLISH-REPAIR` in `formal/implementation-conformance/TRACE_REPLAY_ASSURANCE.json`, backed by the migration and storage-refinement tests, explicitly covers:
 
 - typed source compilation and dry-run with no writes;
 - the frozen source/catalogue/plan digest;

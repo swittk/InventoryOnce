@@ -110,7 +110,7 @@ PhysicalQuantityAccounting == stock + consumed = 4
 
 NoOversell == consumed <= 4
 
-ReservedRightsCannotBeTransferred ==
+HeldRightsRemainPhysicallyBacked ==
   heldA + heldB <= stock
 
 =============================================================================

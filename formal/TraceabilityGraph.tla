@@ -57,6 +57,7 @@ Disassociate(child, durableParent) ==
   /\ association' = association \ {<<child, durableParent>>}
   /\ UNCHANGED <<active, parent, everConsumed, everProduced, genealogy>>
 
+\* Transformation records irreversible genealogy only; containment/association are explicit relations.
 Transform ==
   /\ InputObjects \subseteq active
   /\ "O" \notin active
@@ -66,9 +67,7 @@ Transform ==
   /\ everConsumed' = everConsumed \cup InputObjects
   /\ everProduced' = everProduced \cup {"O"}
   /\ genealogy' = genealogy \cup {<<"C1", "O">>, <<"C2", "O">>}
-  /\ association' = {edge \in association: edge[1] \notin InputObjects /\ edge[2] \notin InputObjects}
-  /\ parent' = [object \in ParentDomain |->
-                   IF parent[object] \in InputObjects THEN NoParent ELSE parent[object]]
+  /\ UNCHANGED <<parent, association>>
 
 Next ==
   \/ \E child \in Objects, p \in Objects: Aggregate(child, p)
@@ -97,6 +96,7 @@ GenealogyOnlyPointsFromConsumedToProduced ==
   \A edge \in genealogy:    edge[1] \in everConsumed /\ edge[2] \in everProduced
 
 AggregationNeverConsumesIdentity ==
-  \A o \in active: o \notin everConsumed
+  \A o \in Objects:
+    parent[o] # NoParent => o \in active /\ o \notin everConsumed
 
 =============================================================================

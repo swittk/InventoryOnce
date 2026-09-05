@@ -359,7 +359,6 @@ function callbackTargets(argument) {
   return resolvedTargetsOfExpression(argument);
 }
 
-/** Return callback argument indexes whose external contract is known to invoke them. */
 /** Standard-library methods whose first argument is synchronously dispatched as a callback. */
 const arrayCallbackMethods = new Set([
   "map", "flatMap", "filter", "forEach", "some", "every", "find",
@@ -367,6 +366,7 @@ const arrayCallbackMethods = new Set([
   "sort", "toSorted",
 ]);
 
+/** Return callback argument indexes whose external contract is known to invoke them. */
 function externalCallbackArgumentIndexes(node) {
   const indexes = new Set();
   const sourcePath = normalizedPath(node.getSourceFile().fileName);

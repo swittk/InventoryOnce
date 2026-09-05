@@ -270,7 +270,8 @@
         "ReportsMatchExactPhysicalIdentity",
         "NonMembersNeverAppearInAView",
         "ActivePointerDoesNotRewriteRetainedViews",
-        "ViewMembershipNeverChangesItemIdentity"
+        "ViewMembershipNeverChangesItemIdentity",
+        "IssuedTokensDisappearOnlyFromTheirExactItemBucket"
       ],
       "models": [
         "CollectionView"

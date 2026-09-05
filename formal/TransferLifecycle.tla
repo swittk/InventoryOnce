@@ -161,6 +161,8 @@ ReleasedReturnsCommitment ==
 IntentNeverChanges ==
   \A t \in Transfers: phase[t] = "ready" <=> intent[t] = NoIntent
 
+\* `owner` is constant in this bounded lifecycle model; these checks pin that modeled constant.
+\* They do not independently prove custody/ownership separation without an ownership-change action.
 OwnershipIsOrthogonal ==
   \A t \in Transfers: owner[t] = "clinic"
 

@@ -8,6 +8,7 @@ import {
   formalModels,
   statefulOperationFamilyIds,
 } from "./formal-models.mjs";
+import { repositoryAssuranceStateSha256 } from "./repository-assurance-state.mjs";
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repositoryRoot = packageRoot;
@@ -161,6 +162,15 @@ const executable = readJson(
 );
 const log = plain(readFileSync(fullLogPath, "utf8"));
 const byStep = sections(log);
+const currentRepositoryStateSha256 = repositoryAssuranceStateSha256(repositoryRoot);
+if (
+  typeof executable.repositoryStateSha256 !== "string" ||
+  executable.repositoryStateSha256 !== currentRepositoryStateSha256
+) {
+  throw new Error(
+    "Executable assurance evidence does not match the current repository source/evidence state."
+  );
+}
 if (!executable.fullFormal) {
   throw new Error("Executable report was not produced by --full-formal.");
 }
@@ -200,7 +210,7 @@ const testRuns = Object.fromEntries(
   [...byStep].map(([step, section]) => [step, vitestRuns(section)])
 );
 const expectedRuns = {
-  "complete-package-tests": [32, 403],
+  "complete-package-tests": [36, 450],
 };
 for (const [step, [minimumFiles, minimumTests]] of Object.entries(
   expectedRuns
@@ -275,6 +285,7 @@ const report = {
   schemaVersion: 2,
   generatedAt: new Date().toISOString(),
   repositoryHead: executable.repositoryHead,
+  repositoryStateSha256: currentRepositoryStateSha256,
   fullFormal: true,
   surfaceSha256: api.surfaceSha256,
   coverage: {
@@ -372,6 +383,9 @@ const modeText = Object.entries(traceModes)
 const markdownReport = `# InventoryOnce formal implementation conformance — exact final tree
 
 Generated: ${report.generatedAt}
+
+Validated source/evidence state: \`${report.repositoryStateSha256}\`
+Validation HEAD provenance: \`${report.repositoryHead}\`
 
 ## Surface assurance
 

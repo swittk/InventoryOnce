@@ -12,7 +12,7 @@ Run every registered model/property with:
 
 ```bash
 source ~/.nvm/nvm.sh
-nvm use
+if [[ -f .nvmrc ]]; then nvm use; else nvm use 22; fi  # fallback must satisfy package.json#engines
 pnpm formal
 ```
 
@@ -265,6 +265,8 @@ TLC establishes properties of the bounded abstract machines in this directory. P
 Run:
 
 ```sh
+source ~/.nvm/nvm.sh
+if [ -f .nvmrc ]; then nvm use; else nvm use 22; fi  # fallback must satisfy package.json#engines
 pnpm assurance:generate
 pnpm assurance
 ```
