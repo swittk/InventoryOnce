@@ -67,7 +67,7 @@ interface StorageFailureCase {
   /** Physical write boundary. */
   readonly stage: InventoryStorageWriteStage;
   /** Side of the write where the simulated crash happens. */
-  readonly timing: "before" | "after";
+  readonly timing: InventoryStorageWriteTiming;
 }
 
 /** Every required physical boundary and both crash sides. */
