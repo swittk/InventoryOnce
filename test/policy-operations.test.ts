@@ -38,8 +38,9 @@ async function quantityByLot(
   });
   const result: Record<string, number> = {};
   for (const position of positions) {
-    result[position.key.lotId ?? "no-lot"] =
-      position.measurements.primary.quantity.amountMinor;
+    const lotId = position.key.lotId ?? "no-lot";
+    result[lotId] =
+      (result[lotId] ?? 0) + position.measurements.primary.quantity.amountMinor;
   }
   return result;
 }

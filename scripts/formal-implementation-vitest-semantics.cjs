@@ -40,5 +40,6 @@ function vitestSuiteChildrenExecute(metadata) {
 module.exports = {
   vitestCallbackExecutes,
   vitestRegistrationName,
+  vitestRegistrationRuns,
   vitestSuiteChildrenExecute,
 };

@@ -4,6 +4,7 @@ const { execFileSync } = require("node:child_process");
 const {
   vitestCallbackExecutes,
   vitestRegistrationName,
+  vitestRegistrationRuns,
   vitestSuiteChildrenExecute,
 } = require("./formal-implementation-vitest-semantics.cjs");
 
