@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, realpathSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
@@ -13,6 +13,7 @@ const manifestPath = path.join(
   repositoryRoot,
   "formal/implementation-conformance/MALFORMED_INPUT_ASSURANCE.json"
 );
+const realRepositoryRoot = realpathSync(repositoryRoot);
 
 /** Read one repository file referenced by machine malformed-input assurance. */
 function source(relativePath: string): string {
@@ -21,7 +22,12 @@ function source(relativePath: string): string {
   if (relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
     throw new Error("Malformed-input assurance path must stay inside the repository.");
   }
-  return readFileSync(resolved, "utf8");
+  const realResolved = realpathSync(resolved);
+  const realRelative = path.relative(realRepositoryRoot, realResolved);
+  if (realRelative.startsWith(`..${path.sep}`) || path.isAbsolute(realRelative)) {
+    throw new Error("Malformed-input assurance path must stay inside the repository.");
+  }
+  return readFileSync(realResolved, "utf8");
 }
 
 describe("malformed concrete input assurance manifest", () => {

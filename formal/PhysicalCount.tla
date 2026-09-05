@@ -28,6 +28,14 @@ UnrecordedLoss ==
   /\ UNCHANGED <<book, countState, snapshotBook, movementSinceStart,
                  movementAtObservation, observed>>
 
+\* Unrecorded physical gain before observation models count overage symmetrically with loss.
+UnrecordedGain ==
+  /\ countState \in {"none", "started"}
+  /\ actual < 4
+  /\ actual' = actual + 1
+  /\ UNCHANGED <<book, countState, snapshotBook, movementSinceStart,
+                 movementAtObservation, observed>>
+
 RecordedOut ==
   /\ actual > 0
   /\ book > 0
@@ -73,6 +81,7 @@ Complete ==
 
 Next ==
   \/ UnrecordedLoss
+  \/ UnrecordedGain
   \/ RecordedOut
   \/ RecordedIn
   \/ StartCount
