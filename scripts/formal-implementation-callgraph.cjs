@@ -418,7 +418,12 @@ function isVitestRegistrationCall(node) {
 }
 
 /** Build conservative static execution metadata for one Vitest registration callback. */
-function vitestRegistrationMetadata(node, callbackArgumentIndex, insideNonExecutingSuite) {
+function vitestRegistrationMetadata(
+  node,
+  callbackArgumentIndex,
+  insideNonExecutingSuite,
+  insideTodoSuite = false
+) {
   const callee = node.expression.getText(node.getSourceFile());
   const registration = isVitestRegistrationCall(node)
     ? vitestRegistrationName(callee)
@@ -428,7 +433,24 @@ function vitestRegistrationMetadata(node, callbackArgumentIndex, insideNonExecut
     mode: vitestRegistrationMode(node, callbackArgumentIndex),
     ...vitestConditionalMetadata(node.expression),
     insideNonExecutingSuite,
+    insideTodoSuite,
   };
+}
+
+/** Return whether this node is lexically nested in a suite whose tests/hooks cannot execute. */
+function isInsideTodoSuite(node) {
+  let current = node.parent;
+  while (current !== undefined) {
+    if ((ts.isArrowFunction(current) || ts.isFunctionExpression(current)) && ts.isCallExpression(current.parent)) {
+      const callbackIndex = current.parent.arguments.indexOf(current);
+      if (callbackIndex >= 0) {
+        const metadata = vitestRegistrationMetadata(current.parent, callbackIndex, false);
+        if (metadata.registration === "describe" && metadata.mode === "todo") return true;
+      }
+    }
+    current = current.parent;
+  }
+  return false;
 }
 
 /** Return whether this node is lexically nested in a suite whose tests/hooks cannot execute. */
@@ -499,9 +521,14 @@ function vitestSuiteHasRunnableTest(node) {
           const metadata = vitestRegistrationMetadata(
             current,
             callbackIndex,
-            isInsideNonExecutingSuite(current)
+            isInsideNonExecutingSuite(current),
+            isInsideTodoSuite(current)
           );
-          if (!metadata.insideNonExecutingSuite && vitestRegistrationRuns(metadata)) {
+          if (
+            !metadata.insideNonExecutingSuite &&
+            !metadata.insideTodoSuite &&
+            vitestRegistrationRuns(metadata)
+          ) {
             found = true;
             return;
           }
@@ -516,11 +543,17 @@ function vitestSuiteHasRunnableTest(node) {
 }
 
 /** Add suite-level execution evidence needed to decide whether hooks actually run. */
-function vitestExecutionMetadata(node, callbackArgumentIndex, insideNonExecutingSuite) {
+function vitestExecutionMetadata(
+  node,
+  callbackArgumentIndex,
+  insideNonExecutingSuite,
+  insideTodoSuite
+) {
   const metadata = vitestRegistrationMetadata(
     node,
     callbackArgumentIndex,
-    insideNonExecutingSuite
+    insideNonExecutingSuite,
+    insideTodoSuite
   );
   if (
     metadata.registration !== "beforeAll" &&
@@ -547,7 +580,8 @@ function isTestCallback(node) {
     vitestExecutionMetadata(
       node.parent,
       callbackIndex,
-      isInsideNonExecutingSuite(node)
+      isInsideNonExecutingSuite(node),
+      isInsideTodoSuite(node)
     )
   );
 }
@@ -614,11 +648,17 @@ function externalCallbackArgumentIndexes(node) {
     vitestRegistrationName(expressionText) !== undefined
   ) {
     const insideNonExecutingSuite = isInsideNonExecutingSuite(node);
+    const insideTodoSuite = isInsideTodoSuite(node);
     for (let index = 0; index < (node.arguments?.length ?? 0); index += 1) {
       if (callbackTargets(node.arguments[index]).length === 0) continue;
       if (
         vitestCallbackExecutes(
-          vitestExecutionMetadata(node, index, insideNonExecutingSuite)
+          vitestExecutionMetadata(
+            node,
+            index,
+            insideNonExecutingSuite,
+            insideTodoSuite
+          )
         )
       ) {
         indexes.add(index);

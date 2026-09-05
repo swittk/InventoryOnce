@@ -168,6 +168,8 @@ PublishedRetainsAllDispositions == published => dispositions = Rows
 PublishedWorldMatchesSnapshot ==
   published => publishedRevision = snapshotRevision
 
+\* Base Spec keeps sourceRevision fixed; SourceAdvanceMutationSpec makes this
+\* invariant discriminate the forbidden post-snapshot source-advance transition.
 ResumeAttemptCannotChangeSourceTruth ==
   resumeAttempts # {} => sourceRevision = snapshotRevision
 

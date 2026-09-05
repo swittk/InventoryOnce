@@ -15,8 +15,10 @@ interface VitestExecutionMetadata {
   readonly conditionKind?: "skipIf" | "runIf";
   /** Statically resolved conditional value when known. */
   readonly conditionValue?: boolean;
-  /** Whether an enclosing suite prevents child execution. */
+  /** Whether an enclosing skipped/non-running suite prevents test/hook execution. */
   readonly insideNonExecutingSuite?: boolean;
+  /** Whether an enclosing todo suite prevents even nested suite collection. */
+  readonly insideTodoSuite?: boolean;
   /** Whether the enclosing suite/file contains at least one runnable test. */
   readonly suiteHasRunnableTest?: boolean;
 }
@@ -127,6 +129,11 @@ describe("formal call-graph Vitest callback semantics", () => {
       mode: "run",
       insideNonExecutingSuite: true,
     })).toBe(true);
+    expect(callbackExecutes({
+      registration: "describe",
+      mode: "run",
+      insideTodoSuite: true,
+    })).toBe(false);
     expect(callbackExecutes({
       registration: "test",
       mode: "run",

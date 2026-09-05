@@ -10,7 +10,7 @@
       ],
       "guards": [
         {
-          "contains": "assertUniqueTransferLineIds(change.lines, \"prepared transfer\")",
+          "contains": "seenLineIds.has(line.lineId)",
           "file": "src/transfers.ts"
         }
       ],
@@ -27,7 +27,7 @@
       ],
       "guards": [
         {
-          "contains": "assertUniqueTransferLineIds(change.lines, \"transfer receipt\")",
+          "contains": "seen.has(request.lineId)",
           "file": "src/transfers.ts"
         }
       ],

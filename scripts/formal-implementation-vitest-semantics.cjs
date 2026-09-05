@@ -18,8 +18,11 @@ function vitestRegistrationRuns(metadata) {
 function vitestCallbackExecutes(metadata) {
   const registration = metadata.registration;
   if (registration === undefined) return false;
-  // Skipped suite factories still collect children; todo suites are placeholders and do not.
-  if (registration === "describe") return metadata.mode !== "todo";
+  // Todo-suite factories and their descendants never execute; skipped suites still collect nested describe callbacks.
+  if (registration === "describe") {
+    if (metadata.insideTodoSuite === true) return false;
+    return metadata.mode !== "todo";
+  }
   if (metadata.insideNonExecutingSuite === true) return false;
   if (
     registration === "beforeAll" ||
