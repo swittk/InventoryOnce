@@ -3938,10 +3938,10 @@
               "column": 80,
               "file": "test/catalog-extension.test.ts",
               "hasBody": true,
-              "id": "test/catalog-extension.test.ts:4774:<anonymous@139>",
+              "id": "test/catalog-extension.test.ts:4860:<anonymous@140>",
               "kind": "ArrowFunction",
-              "line": 139,
-              "name": "<anonymous@139>",
+              "line": 140,
+              "name": "<anonymous@140>",
               "reason": "test-callback"
             },
             {
@@ -8764,10 +8764,10 @@
               "column": 80,
               "file": "test/catalog-extension.test.ts",
               "hasBody": true,
-              "id": "test/catalog-extension.test.ts:4774:<anonymous@139>",
+              "id": "test/catalog-extension.test.ts:4860:<anonymous@140>",
               "kind": "ArrowFunction",
-              "line": 139,
-              "name": "<anonymous@139>",
+              "line": 140,
+              "name": "<anonymous@140>",
               "reason": "test-callback"
             },
             {

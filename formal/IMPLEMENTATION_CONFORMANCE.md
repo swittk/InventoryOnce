@@ -16,6 +16,8 @@ The generator:
 6. emits an explicit generated gap for every unclassified surface or state/result row without executable evidence; and
 7. fails instead of silently truncating a large type graph.
 
+Use the repository `.nvmrc` when one exists; otherwise run these commands with a Node version permitted by `package.json#engines`.
+
 `pnpm conformance:generate` rewrites the current surface ledgers and audits them. `pnpm conformance:check` runs the executable implementation-refinement gate.
 
 ## Bidirectional refinement

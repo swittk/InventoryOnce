@@ -88,6 +88,7 @@ describe("append-only native catalogue publication", () => {
         },
       }),
     ]);
+    // Snapshot after both concurrent extensions, before the no-op publication below.
     const world = await storage.readWorld();
     const finalCatalog = (
       await publishInventoryCatalogExtension({

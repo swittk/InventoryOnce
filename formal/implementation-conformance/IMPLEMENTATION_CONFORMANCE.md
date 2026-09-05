@@ -1,6 +1,8 @@
 # InventoryOnce formal implementation conformance
 
-This file is generated from the exact TypeScript surface plus the checked API, field, and gap manifests. Edit the manifests and executable evidence, then run `pnpm assurance --write-report`.
+This file is generated from the exact TypeScript surface plus the checked API, field, and gap manifests.
+
+Use the repository `.nvmrc` when one exists; otherwise run the assurance command with a Node version permitted by `package.json#engines`. Then edit the manifests and executable evidence and run `pnpm assurance --write-report`.
 
 Surface SHA-256: `538ddae66a51d60e3e27dc0c93e0c6dad65629d75135d071ff665ce0cfa01df9`
 
