@@ -19,8 +19,11 @@ import {
 export function projectInventoryTraceabilityEvents(
   events: readonly InventoryCommittedEvent[]
 ): InventoryTraceabilityState {
+  // Canonical effective relation truth accumulated in durable event order.
   const relations: Record<string, InventoryTraceabilityRelation> = {};
+  // Fast child-to-parent index used to reject containment cycles and double parents.
   const containmentParentByChild = new Map<string, string>();
+  // Genealogy adjacency index used to reject ancestry cycles during replay.
   const genealogyOutputsByInput = new Map<string, Set<string>>();
 
   for (const event of events) {

@@ -73,6 +73,9 @@ function assertFiniteInventoryIntentFingerprintNumbers(
   values: readonly InventoryIntentFingerprintValue[],
 ): void {
   for (const value of values) {
+    if (value === undefined) {
+      throw new Error("Inventory intent fingerprint values must not be undefined.");
+    }
     if (typeof value === "number" && !Number.isFinite(value)) {
       throw new Error("Inventory intent fingerprint numbers must be finite.");
     }

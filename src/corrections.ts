@@ -310,6 +310,11 @@ function createCorrectionStockEffects(
       actualMeasurements
     );
     if (inventoryMeasurementsAreZero(delta)) continue;
+    if (delta.primary.quantity.amountMinor === 0) {
+      throw new Error(
+        "Inventory correction cannot change independent measurements without changing primary stock."
+      );
+    }
     const position = desiredPosition?.key ?? actualPosition?.key;
     if (position === undefined) continue;
     effects.push({

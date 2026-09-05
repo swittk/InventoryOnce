@@ -245,8 +245,11 @@ export function abstractPositionKey(
     ...(key.qualifiedDimensions === undefined || key.qualifiedDimensions.length === 0
       ? {}
       : {
+          // Keep each dimension pair structured so delimiters inside IDs cannot alias.
           qualifiedDimensions: key.qualifiedDimensions
-            .map((dimension) => `${dimension.dimensionId}=${dimension.valueId}`)
+            .map((dimension) =>
+              JSON.stringify([dimension.dimensionId, dimension.valueId])
+            )
             .sort(compareAbstractIdentityText),
         }),
   };
@@ -737,7 +740,7 @@ export function assertAbstractInventoryInvariants(
       throw new Error("Published projection retained an all-zero position.");
     const serialId = bucket.key.serialId;
     if (typeof serialId === "string") {
-      const serialIdentity = `${String(bucket.key.itemId)}/${serialId}`;
+      const serialIdentity = JSON.stringify([String(bucket.key.itemId), serialId]);
       if (positiveSerials.has(serialIdentity)) {
         throw new Error(
           `Positive serial '${serialIdentity}' appears in two buckets.`

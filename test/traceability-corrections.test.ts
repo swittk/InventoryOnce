@@ -610,6 +610,7 @@ describe("append-only corrections", () => {
   });
 
   it("offers a truthful declarative replacement for every non-correction event kind", async () => {
+    // Accumulate every corrected root kind for the final coverage assertion below.
     const correctedRootKinds = new Set<InventoryEventKind>();
 
     {

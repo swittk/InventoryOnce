@@ -312,7 +312,7 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
       activeItemRevisionIds: { "catch-item": measuredItem.revisionId },
     });
     const inventory = createTestInventory(undefined, catalog);
-    await inventory.stock.receive({
+    const received = await inventory.stock.receive({
       operationId: "receive-measured",
       occurredAt: time0,
       to: { itemId: "catch-item", locationId: "cold-room" },
@@ -336,6 +336,24 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
       decimals: 2,
       unit: "kg",
     });
+    await expect(
+      inventory.stock.correct({
+        operationId: "correct-measured-only-weight",
+        occurredAt: time1,
+        correctsEventId: received.event.eventId,
+        reason: "Replacement changes only the independently measured weight.",
+        replaceWith: (plans) =>
+          plans.receive({
+            occurredAt: time0,
+            to: { itemId: "catch-item", locationId: "cold-room" },
+            amount: measuredStockAmount("2", "piece", [
+              { axisId: "weight", value: "3.50", unit: "kg" },
+            ]),
+          }),
+      })
+    ).rejects.toThrow(
+      "Inventory correction cannot change independent measurements without changing primary stock."
+    );
   });
 
   it("uses declarative verbs and preserves every unnamed dimension on transfer", async () => {

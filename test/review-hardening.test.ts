@@ -131,6 +131,12 @@ describe("collision-free retry identity", () => {
       .not.toBe(inventoryIntentFingerprint(["axis", ":unit"]));
     expect(inventoryIntentFingerprint(["reason", ""]))
       .not.toBe(inventoryIntentFingerprint(["reason", null]));
+    expect(() =>
+      inventoryIntentFingerprint(["reason", undefined] as unknown as readonly import("../src/canonical.js").InventoryIntentFingerprintValue[])
+    ).toThrow("must not be undefined");
+    expect(() =>
+      inventoryIntentFingerprint([["nested", undefined]] as unknown as readonly import("../src/canonical.js").InventoryIntentFingerprintValue[])
+    ).toThrow("must not be undefined");
   });
 
   it("rejects delimiter-shifted header identities before another world revision is planned", async () => {

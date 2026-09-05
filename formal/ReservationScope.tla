@@ -16,6 +16,7 @@ CandidateTokens(c, hand, st, sc, al) ==
   ELSE IF al[c] # NoToken THEN {al[c]} \cap sc[c] \cap hand
   ELSE sc[c] \cap hand
 
+\* This finite model intentionally fixes Claims to c1/c2; the second conjunct checks the exact two-claim matching case.
 FeasibleFor(hand, st, sc, al) ==
   /\ \A c \in Claims:
        st[c] = "active" => CandidateTokens(c, hand, st, sc, al) # {}

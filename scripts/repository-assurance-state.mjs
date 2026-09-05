@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { lstatSync, readFileSync, readlinkSync } from "node:fs";
 import { resolve } from "node:path";
 
 const excludedPaths = new Set([
@@ -31,8 +31,15 @@ export function repositoryAssuranceStateSha256(repositoryRoot) {
     hash.update(path);
     hash.update("\0");
     const absolute = resolve(repositoryRoot, path);
-    if (existsSync(absolute)) hash.update(readFileSync(absolute));
-    else hash.update("<deleted>");
+    try {
+      const stat = lstatSync(absolute);
+      if (stat.isSymbolicLink()) hash.update(readlinkSync(absolute));
+      else if (stat.isFile()) hash.update(readFileSync(absolute));
+      else throw new Error(`Repository assurance path '${path}' is not a regular file or symbolic link.`);
+    } catch (error) {
+      if (error instanceof Error && error.code === "ENOENT") hash.update("<deleted>");
+      else throw error;
+    }
     hash.update("\0");
   }
   return hash.digest("hex");

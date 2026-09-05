@@ -31,6 +31,7 @@ ExactBreakdown(viewRevision, whereState) ==
 ExactReports(whereState) ==
   [viewRevision \in ViewRevisions |-> ExactBreakdown(viewRevision, whereState)]
 
+\* Items is the explicit four-member finite domain above; this bounded sum intentionally enumerates that domain.
 SumViewReport(viewRevision, reportState) ==
     reportState[viewRevision]["brand-old"]
   + reportState[viewRevision]["brand-new"]
@@ -89,6 +90,7 @@ NonMembersNeverAppearInAView ==
   \A viewRevision \in ViewRevisions, item \in Items:
     item \notin Members(viewRevision) => reports[viewRevision][item] = 0
 
+\* Named correspondence evidence: this intentionally restates the derived-report rule for both retained all-view revisions.
 ActivePointerDoesNotRewriteRetainedViews ==
   /\ reports["all-v1"] = ExactBreakdown("all-v1", where)
   /\ reports["all-v2"] = ExactBreakdown("all-v2", where)

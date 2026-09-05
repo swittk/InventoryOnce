@@ -356,3 +356,10 @@ edit: 2026-09-04 — standalone repository export completed
 - Removed only the two Shinebright-owned executable trace declarations `TRACE-REAL-ADAPTER-INDEX-SCALE` and `TRACE-SHINEBRIGHT-FOUR-AUTHORITATIVE-CALLS`. Their Mongo/SQLite adapter and four-call application seam implementations live downstream, so this core must not claim them as locally executable evidence.
 - Regenerated standalone assurance after narrowing that evidence boundary: 502 public API entries, 2,239 field entries, 26 standalone bounded traces, 498 traced public APIs, and 18 explicit gaps.
 - Standalone export gates passed: strict TypeScript/package assurance checks; 434 tests across 36 files; production build; implementation-conformance generation/audit; the complete registered TLA+ model suite; and every registered forbidden-transition mutation rejected by its intended invariant.
+
+
+edit: 2026-09-06 01:25 +0700 — standalone PR-01 review-loop assurance refresh
+
+- Preserved the September 4 export checkpoint unchanged and appended the current standalone result instead of rewriting historical evidence. Current assurance reports 508 public API entries, 2,285 fields, 504 traced public APIs, and 19 explicit gaps.
+- `pnpm assurance:write` regenerated and audited the implementation-conformance manifests; `pnpm check` passed strict source/test TypeScript plus assurance; `pnpm test` passed 465 tests across 37 files; `pnpm build` passed the production TypeScript build. The package-suite count is one higher than the prior 464-test checkpoint because this review added the missing 55-byte SHA-256 known-answer vector.
+- Focused review validation passed 61 tests across `test/catalog-stock.test.ts`, `test/digest.test.ts`, `test/review-hardening.test.ts`, `test/formal-implementation-refinement.test.ts`, and `test/traceability-corrections.test.ts`. A temporary-git-repository harness also proved repository assurance hashing is stable when external symlink target bytes change and changes when the symlink target text itself changes.
