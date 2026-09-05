@@ -27,6 +27,14 @@ function writeAssuranceOutput(stream, chunk) {
 /** Execute one assurance step while streaming bounded-memory output into canonical evidence. */
 function runAssuranceStep(step, environment) {
   return new Promise((resolveStep, rejectStep) => {
+    if (!Array.isArray(step.args) || step.args.length === 0) {
+      rejectStep(
+        new Error(
+          `Formal implementation conformance step '${step.id}' has no resolved command arguments.`
+        )
+      );
+      return;
+    }
     const child = spawn(step.command, step.args, {
       cwd: repositoryRoot,
       stdio: ["ignore", "pipe", "pipe"],

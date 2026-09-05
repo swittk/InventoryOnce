@@ -94,7 +94,10 @@ function performanceRows(log) {
       ["memory", "mongo", "sqlite"].includes(row.adapter) &&
       (scaledShape || measuredShape)
     ) {
-      byAdapter.set(row.adapter, row);
+      byAdapter.set(row.adapter, {
+        ...row,
+        metricShape: scaledShape ? "scaled" : "measured",
+      });
     }
   }
   return [...byAdapter.values()].sort((left, right) =>
@@ -378,8 +381,8 @@ const gapRows = Object.entries(gaps.gaps)
   .join("\n");
 const scaleRows = performance
   .map((row) => {
-    if (row.scaledPositions !== undefined) {
-      return `| memory | ${row.scaledPositions} | ${row.scaledPublishMs.toFixed(
+    if (row.metricShape === "scaled") {
+      return `| ${row.adapter} | ${row.scaledPositions} | ${row.scaledPublishMs.toFixed(
         1
       )} | ${row.scaledReadMs.toFixed(1)} | ${row.scaledPlanMs.toFixed(
         1

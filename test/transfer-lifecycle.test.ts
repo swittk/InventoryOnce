@@ -65,7 +65,9 @@ describe("first-class physical transfer lifecycle", () => {
           },
         ],
       })
-    ).rejects.toThrow(/not currently physical|physical remainder/i);
+    ).rejects.toThrow(
+      "Transfer lifecycle cannot subtract stock that is not currently physical."
+    );
 
     const world = await inventory.read.world();
     expect(world.projection.transfers?.["RECORD-T"]).toBeUndefined();
@@ -198,9 +200,7 @@ describe("first-class physical transfer lifecycle", () => {
           { lineId: "line", amount: stockAmount("1", "piece") },
         ],
       })
-    ).rejects.toThrow(
-      /duplicate transfer receive line|duplicate transfer receipt lineid/i
-    );
+    ).rejects.toThrow("Duplicate transfer receive line 'line'.");
     expect(
       await inventory.transfers.find({ transferId: "DUP-RECEIVE" })
     ).toEqual(before);
