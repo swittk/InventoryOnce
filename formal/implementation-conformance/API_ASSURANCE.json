@@ -13398,7 +13398,8 @@
         "ReservationScope",
         "ReservationSafety",
         "UseByReservation",
-        "PackagingIdentity"
+        "PackagingIdentity",
+        "FungibilityPool"
       ],
       "rejectionRelation": "Invalid increment, incompatible revision/unit, shortfall where full allocation is required, or reservation violation rejects/reports explicitly.",
       "resultMapping": "Plan/result reports exact lines, allocated total, shortfall, and blocked/excluded evidence without mutating state.",
@@ -13960,7 +13961,8 @@
         "OnePublicationPerOperation"
       ],
       "models": [
-        "InventoryOperation"
+        "InventoryOperation",
+        "PublishedHeadCAS"
       ],
       "rejectionRelation": "Missing/duplicate/foreign request evidence rejects before application consumption.",
       "resultMapping": "Result preserves operation/group/request identities, exact allocations, event, receipt, and replay observation.",
@@ -14381,7 +14383,8 @@
       ],
       "models": [
         "ResourceDimensions",
-        "TraceabilityGraph"
+        "TraceabilityGraph",
+        "SnapshotSupersededWorkflow"
       ],
       "rejectionRelation": "Empty, duplicate, contradictory, or non-canonical identities reject.",
       "resultMapping": "Result is a canonical collision-free identity/selector observation.",
@@ -14957,7 +14960,8 @@
       ],
       "models": [
         "ResourceDimensions",
-        "TraceabilityGraph"
+        "TraceabilityGraph",
+        "SnapshotSupersededWorkflow"
       ],
       "rejectionRelation": "Empty, duplicate, contradictory, or non-canonical identities reject.",
       "resultMapping": "Result is a canonical collision-free identity/selector observation.",
@@ -15655,7 +15659,8 @@
         "OnePublicationPerOperation"
       ],
       "models": [
-        "InventoryOperation"
+        "InventoryOperation",
+        "PublishedHeadCAS"
       ],
       "rejectionRelation": "Missing/duplicate/foreign request evidence rejects before application consumption.",
       "resultMapping": "Result preserves operation/group/request identities, exact allocations, event, receipt, and replay observation.",
@@ -15949,7 +15954,8 @@
         "ReservationScope",
         "ReservationSafety",
         "UseByReservation",
-        "PackagingIdentity"
+        "PackagingIdentity",
+        "FungibilityPool"
       ],
       "rejectionRelation": "Invalid increment, incompatible revision/unit, shortfall where full allocation is required, or reservation violation rejects/reports explicitly.",
       "resultMapping": "Plan/result reports exact lines, allocated total, shortfall, and blocked/excluded evidence without mutating state.",
@@ -16681,7 +16687,8 @@
         "OnePublicationPerOperation"
       ],
       "models": [
-        "InventoryOperation"
+        "InventoryOperation",
+        "PublishedHeadCAS"
       ],
       "rejectionRelation": "Missing/duplicate/foreign request evidence rejects before application consumption.",
       "resultMapping": "Result preserves operation/group/request identities, exact allocations, event, receipt, and replay observation.",
@@ -19147,10 +19154,10 @@
               "column": 79,
               "file": "test/transfer-lifecycle.test.ts",
               "hasBody": true,
-              "id": "test/transfer-lifecycle.test.ts:13523:<anonymous@408>",
+              "id": "test/transfer-lifecycle.test.ts:13615:<anonymous@409>",
               "kind": "ArrowFunction",
-              "line": 408,
-              "name": "<anonymous@408>",
+              "line": 409,
+              "name": "<anonymous@409>",
               "reason": "test-callback"
             },
             {
@@ -19236,7 +19243,8 @@
         "InventoryOperation",
         "DurableTransferRefinement",
         "PublishedHeadCAS",
-        "PackagingIdentity"
+        "PackagingIdentity",
+        "FungibilityPool"
       ],
       "rejectionRelation": "Insufficient source, existing transfer identity, pre-dispatch receipt, post-dispatch release, over-receipt, cross-transfer receipt, package/line collapse, reservation conflict, or stale publication rejects atomically.",
       "resultMapping": "Result maps to exact prepared/dispatched/received/remainder state plus immutable stock event and replay truth.",
@@ -19389,7 +19397,8 @@
         "InventoryOperation",
         "DurableTransferRefinement",
         "PublishedHeadCAS",
-        "PackagingIdentity"
+        "PackagingIdentity",
+        "FungibilityPool"
       ],
       "rejectionRelation": "Insufficient source, existing transfer identity, pre-dispatch receipt, post-dispatch release, over-receipt, cross-transfer receipt, package/line collapse, reservation conflict, or stale publication rejects atomically.",
       "resultMapping": "Result maps to exact prepared/dispatched/received/remainder state plus immutable stock event and replay truth.",
@@ -19546,7 +19555,8 @@
         "InventoryOperation",
         "DurableTransferRefinement",
         "PublishedHeadCAS",
-        "PackagingIdentity"
+        "PackagingIdentity",
+        "FungibilityPool"
       ],
       "rejectionRelation": "Insufficient source, existing transfer identity, pre-dispatch receipt, post-dispatch release, over-receipt, cross-transfer receipt, package/line collapse, reservation conflict, or stale publication rejects atomically.",
       "resultMapping": "Result maps to exact prepared/dispatched/received/remainder state plus immutable stock event and replay truth.",
@@ -19687,7 +19697,8 @@
         "InventoryOperation",
         "DurableTransferRefinement",
         "PublishedHeadCAS",
-        "PackagingIdentity"
+        "PackagingIdentity",
+        "FungibilityPool"
       ],
       "rejectionRelation": "Insufficient source, existing transfer identity, pre-dispatch receipt, post-dispatch release, over-receipt, cross-transfer receipt, package/line collapse, reservation conflict, or stale publication rejects atomically.",
       "resultMapping": "Result maps to exact prepared/dispatched/received/remainder state plus immutable stock event and replay truth.",
@@ -19739,10 +19750,10 @@
               "column": 79,
               "file": "test/transfer-lifecycle.test.ts",
               "hasBody": true,
-              "id": "test/transfer-lifecycle.test.ts:13523:<anonymous@408>",
+              "id": "test/transfer-lifecycle.test.ts:13615:<anonymous@409>",
               "kind": "ArrowFunction",
-              "line": 408,
-              "name": "<anonymous@408>",
+              "line": 409,
+              "name": "<anonymous@409>",
               "reason": "test-callback"
             },
             {
@@ -19828,7 +19839,8 @@
         "InventoryOperation",
         "DurableTransferRefinement",
         "PublishedHeadCAS",
-        "PackagingIdentity"
+        "PackagingIdentity",
+        "FungibilityPool"
       ],
       "rejectionRelation": "Insufficient source, existing transfer identity, pre-dispatch receipt, post-dispatch release, over-receipt, cross-transfer receipt, package/line collapse, reservation conflict, or stale publication rejects atomically.",
       "resultMapping": "Result maps to exact prepared/dispatched/received/remainder state plus immutable stock event and replay truth.",
@@ -19880,10 +19892,10 @@
               "column": 86,
               "file": "test/transfer-lifecycle.test.ts",
               "hasBody": true,
-              "id": "test/transfer-lifecycle.test.ts:17828:<anonymous@534>",
+              "id": "test/transfer-lifecycle.test.ts:17920:<anonymous@535>",
               "kind": "ArrowFunction",
-              "line": 534,
-              "name": "<anonymous@534>",
+              "line": 535,
+              "name": "<anonymous@535>",
               "reason": "test-callback"
             },
             {
@@ -19969,7 +19981,8 @@
         "InventoryOperation",
         "DurableTransferRefinement",
         "PublishedHeadCAS",
-        "PackagingIdentity"
+        "PackagingIdentity",
+        "FungibilityPool"
       ],
       "rejectionRelation": "Insufficient source, existing transfer identity, pre-dispatch receipt, post-dispatch release, over-receipt, cross-transfer receipt, package/line collapse, reservation conflict, or stale publication rejects atomically.",
       "resultMapping": "Result maps to exact prepared/dispatched/received/remainder state plus immutable stock event and replay truth.",
@@ -20794,7 +20807,8 @@
         "OnePublicationPerOperation"
       ],
       "models": [
-        "InventoryOperation"
+        "InventoryOperation",
+        "PublishedHeadCAS"
       ],
       "rejectionRelation": "Missing/duplicate/foreign request evidence rejects before application consumption.",
       "resultMapping": "Result preserves operation/group/request identities, exact allocations, event, receipt, and replay observation.",
@@ -22445,7 +22459,8 @@
       ],
       "models": [
         "ResourceDimensions",
-        "TraceabilityGraph"
+        "TraceabilityGraph",
+        "SnapshotSupersededWorkflow"
       ],
       "rejectionRelation": "Empty, duplicate, contradictory, or non-canonical identities reject.",
       "resultMapping": "Result is a canonical collision-free identity/selector observation.",
@@ -22836,7 +22851,8 @@
       ],
       "models": [
         "ResourceDimensions",
-        "TraceabilityGraph"
+        "TraceabilityGraph",
+        "SnapshotSupersededWorkflow"
       ],
       "rejectionRelation": "Empty, duplicate, contradictory, or non-canonical identities reject.",
       "resultMapping": "Result is a canonical collision-free identity/selector observation.",
@@ -23419,7 +23435,8 @@
         "ReservationScope",
         "ReservationSafety",
         "UseByReservation",
-        "PackagingIdentity"
+        "PackagingIdentity",
+        "FungibilityPool"
       ],
       "rejectionRelation": "Invalid increment, incompatible revision/unit, shortfall where full allocation is required, or reservation violation rejects/reports explicitly.",
       "resultMapping": "Plan/result reports exact lines, allocated total, shortfall, and blocked/excluded evidence without mutating state.",
@@ -24117,7 +24134,8 @@
       ],
       "models": [
         "ResourceDimensions",
-        "TraceabilityGraph"
+        "TraceabilityGraph",
+        "SnapshotSupersededWorkflow"
       ],
       "rejectionRelation": "Empty, duplicate, contradictory, or non-canonical identities reject.",
       "resultMapping": "Result is a canonical collision-free identity/selector observation.",
@@ -24266,7 +24284,8 @@
         "OnePublicationPerOperation"
       ],
       "models": [
-        "InventoryOperation"
+        "InventoryOperation",
+        "PublishedHeadCAS"
       ],
       "rejectionRelation": "Missing/duplicate/foreign request evidence rejects before application consumption.",
       "resultMapping": "Result preserves operation/group/request identities, exact allocations, event, receipt, and replay observation.",
@@ -24406,7 +24425,8 @@
         "OnePublicationPerOperation"
       ],
       "models": [
-        "InventoryOperation"
+        "InventoryOperation",
+        "PublishedHeadCAS"
       ],
       "rejectionRelation": "Missing/duplicate/foreign request evidence rejects before application consumption.",
       "resultMapping": "Result preserves operation/group/request identities, exact allocations, event, receipt, and replay observation.",
@@ -24968,7 +24988,8 @@
       ],
       "models": [
         "ResourceDimensions",
-        "TraceabilityGraph"
+        "TraceabilityGraph",
+        "SnapshotSupersededWorkflow"
       ],
       "rejectionRelation": "Empty, duplicate, contradictory, or non-canonical identities reject.",
       "resultMapping": "Result is a canonical collision-free identity/selector observation.",
@@ -25112,7 +25133,8 @@
       ],
       "models": [
         "ResourceDimensions",
-        "TraceabilityGraph"
+        "TraceabilityGraph",
+        "SnapshotSupersededWorkflow"
       ],
       "rejectionRelation": "Empty, duplicate, contradictory, or non-canonical identities reject.",
       "resultMapping": "Result is a canonical collision-free identity/selector observation.",
@@ -26322,7 +26344,8 @@
       ],
       "models": [
         "ResourceDimensions",
-        "TraceabilityGraph"
+        "TraceabilityGraph",
+        "SnapshotSupersededWorkflow"
       ],
       "rejectionRelation": "Empty, duplicate, contradictory, or non-canonical identities reject.",
       "resultMapping": "Result is a canonical collision-free identity/selector observation.",
@@ -26468,7 +26491,8 @@
       ],
       "models": [
         "ResourceDimensions",
-        "TraceabilityGraph"
+        "TraceabilityGraph",
+        "SnapshotSupersededWorkflow"
       ],
       "rejectionRelation": "Empty, duplicate, contradictory, or non-canonical identities reject.",
       "resultMapping": "Result is a canonical collision-free identity/selector observation.",
@@ -27217,7 +27241,8 @@
       ],
       "models": [
         "ResourceDimensions",
-        "TraceabilityGraph"
+        "TraceabilityGraph",
+        "SnapshotSupersededWorkflow"
       ],
       "rejectionRelation": "Empty, duplicate, contradictory, or non-canonical identities reject.",
       "resultMapping": "Result is a canonical collision-free identity/selector observation.",
@@ -27402,7 +27427,8 @@
       ],
       "models": [
         "ResourceDimensions",
-        "TraceabilityGraph"
+        "TraceabilityGraph",
+        "SnapshotSupersededWorkflow"
       ],
       "rejectionRelation": "Empty, duplicate, contradictory, or non-canonical identities reject.",
       "resultMapping": "Result is a canonical collision-free identity/selector observation.",
@@ -27540,7 +27566,8 @@
       ],
       "models": [
         "ResourceDimensions",
-        "TraceabilityGraph"
+        "TraceabilityGraph",
+        "SnapshotSupersededWorkflow"
       ],
       "rejectionRelation": "Empty, duplicate, contradictory, or non-canonical identities reject.",
       "resultMapping": "Result is a canonical collision-free identity/selector observation.",
@@ -27693,7 +27720,8 @@
       ],
       "models": [
         "ResourceDimensions",
-        "TraceabilityGraph"
+        "TraceabilityGraph",
+        "SnapshotSupersededWorkflow"
       ],
       "rejectionRelation": "Empty, duplicate, contradictory, or non-canonical identities reject.",
       "resultMapping": "Result is a canonical collision-free identity/selector observation.",
@@ -27826,7 +27854,8 @@
       ],
       "models": [
         "ResourceDimensions",
-        "TraceabilityGraph"
+        "TraceabilityGraph",
+        "SnapshotSupersededWorkflow"
       ],
       "rejectionRelation": "Empty, duplicate, contradictory, or non-canonical identities reject.",
       "resultMapping": "Result is a canonical collision-free identity/selector observation.",
@@ -27969,7 +27998,8 @@
       ],
       "models": [
         "ResourceDimensions",
-        "TraceabilityGraph"
+        "TraceabilityGraph",
+        "SnapshotSupersededWorkflow"
       ],
       "rejectionRelation": "Empty, duplicate, contradictory, or non-canonical identities reject.",
       "resultMapping": "Result is a canonical collision-free identity/selector observation.",
@@ -28095,7 +28125,8 @@
       ],
       "models": [
         "ResourceDimensions",
-        "TraceabilityGraph"
+        "TraceabilityGraph",
+        "SnapshotSupersededWorkflow"
       ],
       "rejectionRelation": "Empty, duplicate, contradictory, or non-canonical identities reject.",
       "resultMapping": "Result is a canonical collision-free identity/selector observation.",
@@ -28240,7 +28271,8 @@
       ],
       "models": [
         "ResourceDimensions",
-        "TraceabilityGraph"
+        "TraceabilityGraph",
+        "SnapshotSupersededWorkflow"
       ],
       "rejectionRelation": "Empty, duplicate, contradictory, or non-canonical identities reject.",
       "resultMapping": "Result is a canonical collision-free identity/selector observation.",
@@ -28811,7 +28843,8 @@
       ],
       "models": [
         "ResourceDimensions",
-        "TraceabilityGraph"
+        "TraceabilityGraph",
+        "SnapshotSupersededWorkflow"
       ],
       "rejectionRelation": "Empty, duplicate, contradictory, or non-canonical identities reject.",
       "resultMapping": "Result is a canonical collision-free identity/selector observation.",
@@ -30216,7 +30249,8 @@
       ],
       "models": [
         "ResourceDimensions",
-        "TraceabilityGraph"
+        "TraceabilityGraph",
+        "SnapshotSupersededWorkflow"
       ],
       "rejectionRelation": "Empty, duplicate, contradictory, or non-canonical identities reject.",
       "resultMapping": "Result is a canonical collision-free identity/selector observation.",
@@ -30378,7 +30412,8 @@
       ],
       "models": [
         "ResourceDimensions",
-        "TraceabilityGraph"
+        "TraceabilityGraph",
+        "SnapshotSupersededWorkflow"
       ],
       "rejectionRelation": "Empty, duplicate, contradictory, or non-canonical identities reject.",
       "resultMapping": "Result is a canonical collision-free identity/selector observation.",
@@ -30936,7 +30971,8 @@
         "ReservationScope",
         "ReservationSafety",
         "UseByReservation",
-        "PackagingIdentity"
+        "PackagingIdentity",
+        "FungibilityPool"
       ],
       "rejectionRelation": "Invalid increment, incompatible revision/unit, shortfall where full allocation is required, or reservation violation rejects/reports explicitly.",
       "resultMapping": "Plan/result reports exact lines, allocated total, shortfall, and blocked/excluded evidence without mutating state.",
@@ -32175,9 +32211,9 @@
               "column": 1,
               "file": "test/formal-implementation-abstraction.ts",
               "hasBody": true,
-              "id": "test/formal-implementation-abstraction.ts:40762:abstractPrimaryBalance",
+              "id": "test/formal-implementation-abstraction.ts:40716:abstractPrimaryBalance",
               "kind": "FunctionDeclaration",
-              "line": 1095,
+              "line": 1094,
               "name": "abstractPrimaryBalance",
               "reason": "resolved-call"
             },
@@ -34156,7 +34192,8 @@
       ],
       "models": [
         "ResourceDimensions",
-        "TraceabilityGraph"
+        "TraceabilityGraph",
+        "SnapshotSupersededWorkflow"
       ],
       "rejectionRelation": "Empty, duplicate, contradictory, or non-canonical identities reject.",
       "resultMapping": "Result is a canonical collision-free identity/selector observation.",
@@ -35192,7 +35229,8 @@
         "CatalogPublication",
         "TraceabilityGraph",
         "ReclassificationConservation",
-        "SnapshotSupersededWorkflow"
+        "SnapshotSupersededWorkflow",
+        "CompositionRevision"
       ],
       "rejectionRelation": "Unknown query, duplicate source identity, ambiguity, invalid unit/graph/vector, or paging limit rejects/blocks.",
       "resultMapping": "Result is a frozen declaration/plan/source bundle or explicit blockers; no target world changes.",
@@ -35316,7 +35354,8 @@
         "CatalogPublication",
         "TraceabilityGraph",
         "ReclassificationConservation",
-        "SnapshotSupersededWorkflow"
+        "SnapshotSupersededWorkflow",
+        "CompositionRevision"
       ],
       "rejectionRelation": "Unknown query, duplicate source identity, ambiguity, invalid unit/graph/vector, or paging limit rejects/blocks.",
       "resultMapping": "Result is a frozen declaration/plan/source bundle or explicit blockers; no target world changes.",
@@ -35435,7 +35474,8 @@
         "CatalogPublication",
         "TraceabilityGraph",
         "ReclassificationConservation",
-        "SnapshotSupersededWorkflow"
+        "SnapshotSupersededWorkflow",
+        "CompositionRevision"
       ],
       "rejectionRelation": "Unknown query, duplicate source identity, ambiguity, invalid unit/graph/vector, or paging limit rejects/blocks.",
       "resultMapping": "Result is a frozen declaration/plan/source bundle or explicit blockers; no target world changes.",
@@ -35554,7 +35594,8 @@
         "CatalogPublication",
         "TraceabilityGraph",
         "ReclassificationConservation",
-        "SnapshotSupersededWorkflow"
+        "SnapshotSupersededWorkflow",
+        "CompositionRevision"
       ],
       "rejectionRelation": "Unknown query, duplicate source identity, ambiguity, invalid unit/graph/vector, or paging limit rejects/blocks.",
       "resultMapping": "Result is a frozen declaration/plan/source bundle or explicit blockers; no target world changes.",
@@ -35682,7 +35723,8 @@
         "CatalogPublication",
         "TraceabilityGraph",
         "ReclassificationConservation",
-        "SnapshotSupersededWorkflow"
+        "SnapshotSupersededWorkflow",
+        "CompositionRevision"
       ],
       "rejectionRelation": "Unknown query, duplicate source identity, ambiguity, invalid unit/graph/vector, or paging limit rejects/blocks.",
       "resultMapping": "Result is a frozen declaration/plan/source bundle or explicit blockers; no target world changes.",
@@ -35801,7 +35843,8 @@
         "CatalogPublication",
         "TraceabilityGraph",
         "ReclassificationConservation",
-        "SnapshotSupersededWorkflow"
+        "SnapshotSupersededWorkflow",
+        "CompositionRevision"
       ],
       "rejectionRelation": "Unknown query, duplicate source identity, ambiguity, invalid unit/graph/vector, or paging limit rejects/blocks.",
       "resultMapping": "Result is a frozen declaration/plan/source bundle or explicit blockers; no target world changes.",
@@ -35920,7 +35963,8 @@
         "CatalogPublication",
         "TraceabilityGraph",
         "ReclassificationConservation",
-        "SnapshotSupersededWorkflow"
+        "SnapshotSupersededWorkflow",
+        "CompositionRevision"
       ],
       "rejectionRelation": "Unknown query, duplicate source identity, ambiguity, invalid unit/graph/vector, or paging limit rejects/blocks.",
       "resultMapping": "Result is a frozen declaration/plan/source bundle or explicit blockers; no target world changes.",
@@ -36049,7 +36093,8 @@
         "CatalogPublication",
         "TraceabilityGraph",
         "ReclassificationConservation",
-        "SnapshotSupersededWorkflow"
+        "SnapshotSupersededWorkflow",
+        "CompositionRevision"
       ],
       "rejectionRelation": "Unknown query, duplicate source identity, ambiguity, invalid unit/graph/vector, or paging limit rejects/blocks.",
       "resultMapping": "Result is a frozen declaration/plan/source bundle or explicit blockers; no target world changes.",
@@ -38511,7 +38556,8 @@
         "OnePublicationPerOperation"
       ],
       "models": [
-        "InventoryOperation"
+        "InventoryOperation",
+        "PublishedHeadCAS"
       ],
       "rejectionRelation": "Missing/duplicate/foreign request evidence rejects before application consumption.",
       "resultMapping": "Result preserves operation/group/request identities, exact allocations, event, receipt, and replay observation.",
@@ -38622,7 +38668,8 @@
         "OnePublicationPerOperation"
       ],
       "models": [
-        "InventoryOperation"
+        "InventoryOperation",
+        "PublishedHeadCAS"
       ],
       "rejectionRelation": "Missing/duplicate/foreign request evidence rejects before application consumption.",
       "resultMapping": "Result preserves operation/group/request identities, exact allocations, event, receipt, and replay observation.",
@@ -39550,7 +39597,8 @@
         "OnePublicationPerOperation"
       ],
       "models": [
-        "InventoryOperation"
+        "InventoryOperation",
+        "PublishedHeadCAS"
       ],
       "rejectionRelation": "Missing/duplicate/foreign request evidence rejects before application consumption.",
       "resultMapping": "Result preserves operation/group/request identities, exact allocations, event, receipt, and replay observation.",
@@ -40455,7 +40503,8 @@
         "OnePublicationPerOperation"
       ],
       "models": [
-        "InventoryOperation"
+        "InventoryOperation",
+        "PublishedHeadCAS"
       ],
       "rejectionRelation": "Missing/duplicate/foreign request evidence rejects before application consumption.",
       "resultMapping": "Result preserves operation/group/request identities, exact allocations, event, receipt, and replay observation.",
@@ -41336,7 +41385,8 @@
       ],
       "models": [
         "ResourceDimensions",
-        "TraceabilityGraph"
+        "TraceabilityGraph",
+        "SnapshotSupersededWorkflow"
       ],
       "rejectionRelation": "Empty, duplicate, contradictory, or non-canonical identities reject.",
       "resultMapping": "Result is a canonical collision-free identity/selector observation.",
@@ -41874,7 +41924,8 @@
         "ReservationScope",
         "ReservationSafety",
         "UseByReservation",
-        "PackagingIdentity"
+        "PackagingIdentity",
+        "FungibilityPool"
       ],
       "rejectionRelation": "Invalid increment, incompatible revision/unit, shortfall where full allocation is required, or reservation violation rejects/reports explicitly.",
       "resultMapping": "Plan/result reports exact lines, allocated total, shortfall, and blocked/excluded evidence without mutating state.",
@@ -42706,7 +42757,8 @@
       ],
       "models": [
         "ResourceDimensions",
-        "TraceabilityGraph"
+        "TraceabilityGraph",
+        "SnapshotSupersededWorkflow"
       ],
       "rejectionRelation": "Empty, duplicate, contradictory, or non-canonical identities reject.",
       "resultMapping": "Result is a canonical collision-free identity/selector observation.",
@@ -42996,7 +43048,8 @@
       ],
       "models": [
         "ResourceDimensions",
-        "TraceabilityGraph"
+        "TraceabilityGraph",
+        "SnapshotSupersededWorkflow"
       ],
       "rejectionRelation": "Empty, duplicate, contradictory, or non-canonical identities reject.",
       "resultMapping": "Result is a canonical collision-free identity/selector observation.",
@@ -44138,7 +44191,8 @@
         "OnePublicationPerOperation"
       ],
       "models": [
-        "InventoryOperation"
+        "InventoryOperation",
+        "PublishedHeadCAS"
       ],
       "rejectionRelation": "Missing/duplicate/foreign request evidence rejects before application consumption.",
       "resultMapping": "Result preserves operation/group/request identities, exact allocations, event, receipt, and replay observation.",
@@ -44593,7 +44647,8 @@
       ],
       "models": [
         "ResourceDimensions",
-        "TraceabilityGraph"
+        "TraceabilityGraph",
+        "SnapshotSupersededWorkflow"
       ],
       "rejectionRelation": "Empty, duplicate, contradictory, or non-canonical identities reject.",
       "resultMapping": "Result is a canonical collision-free identity/selector observation.",
@@ -44901,7 +44956,8 @@
       ],
       "models": [
         "ResourceDimensions",
-        "TraceabilityGraph"
+        "TraceabilityGraph",
+        "SnapshotSupersededWorkflow"
       ],
       "rejectionRelation": "Empty, duplicate, contradictory, or non-canonical identities reject.",
       "resultMapping": "Result is a canonical collision-free identity/selector observation.",
@@ -46433,7 +46489,8 @@
         "ReservationScope",
         "ReservationSafety",
         "UseByReservation",
-        "PackagingIdentity"
+        "PackagingIdentity",
+        "FungibilityPool"
       ],
       "rejectionRelation": "Invalid increment, incompatible revision/unit, shortfall where full allocation is required, or reservation violation rejects/reports explicitly.",
       "resultMapping": "Plan/result reports exact lines, allocated total, shortfall, and blocked/excluded evidence without mutating state.",
@@ -47793,9 +47850,9 @@
               "column": 1,
               "file": "test/formal-implementation-abstraction.ts",
               "hasBody": true,
-              "id": "test/formal-implementation-abstraction.ts:40762:abstractPrimaryBalance",
+              "id": "test/formal-implementation-abstraction.ts:40716:abstractPrimaryBalance",
               "kind": "FunctionDeclaration",
-              "line": 1095,
+              "line": 1094,
               "name": "abstractPrimaryBalance",
               "reason": "resolved-call"
             },
@@ -49614,7 +49671,8 @@
       ],
       "models": [
         "ResourceDimensions",
-        "TraceabilityGraph"
+        "TraceabilityGraph",
+        "SnapshotSupersededWorkflow"
       ],
       "rejectionRelation": "Empty, duplicate, contradictory, or non-canonical identities reject.",
       "resultMapping": "Result is a canonical collision-free identity/selector observation.",
@@ -67115,7 +67173,8 @@
         "ReservationSafety",
         "UseByReservation",
         "PackagingIdentity",
-        "RecordedDeficit"
+        "RecordedDeficit",
+        "FungibilityPool"
       ],
       "rejectionRelation": "Reject mode preserves the old fail-closed shortfall stutter; Record mode records only genuine stock shortfall, while package ambiguity, expiry, allocation constraints, and reservation conflicts still reject atomically.",
       "resultMapping": "Result maps request/group identities to exact allocated positions/amounts, optional durable deficit evidence, one published event, and replay identity.",
@@ -67419,7 +67478,8 @@
         "ReservationSafety",
         "UseByReservation",
         "PackagingIdentity",
-        "RecordedDeficit"
+        "RecordedDeficit",
+        "FungibilityPool"
       ],
       "rejectionRelation": "Reject mode preserves the old fail-closed shortfall stutter; Record mode records only genuine stock shortfall, while package ambiguity, expiry, allocation constraints, and reservation conflicts still reject atomically.",
       "resultMapping": "Result maps request/group identities to exact allocated positions/amounts, optional durable deficit evidence, one published event, and replay identity.",
@@ -69040,7 +69100,8 @@
         "ReservationScope",
         "ReservationSafety",
         "UseByReservation",
-        "InventoryOperation"
+        "InventoryOperation",
+        "FungibilityPool"
       ],
       "rejectionRelation": "Shortfall, expiry, package increment, reservation conflict, or invalid destination rejects with no partial transfer.",
       "resultMapping": "Result maps groups to exact sources, one transfer event, unchanged global quantity, and published revision.",
@@ -69354,7 +69415,8 @@
         "ReservationScope",
         "ReservationSafety",
         "UseByReservation",
-        "InventoryOperation"
+        "InventoryOperation",
+        "FungibilityPool"
       ],
       "rejectionRelation": "Shortfall, expiry, package increment, reservation conflict, or invalid destination rejects with no partial transfer.",
       "resultMapping": "Result maps groups to exact sources, one transfer event, unchanged global quantity, and published revision.",
@@ -70371,7 +70433,8 @@
         "InventoryOperation",
         "DurableTransferRefinement",
         "PublishedHeadCAS",
-        "PackagingIdentity"
+        "PackagingIdentity",
+        "FungibilityPool"
       ],
       "rejectionRelation": "Insufficient source, existing transfer identity, pre-dispatch receipt, post-dispatch release, over-receipt, cross-transfer receipt, package/line collapse, reservation conflict, or stale publication rejects atomically.",
       "resultMapping": "Result maps to exact prepared/dispatched/received/remainder state plus immutable stock event and replay truth.",
@@ -70532,7 +70595,8 @@
         "InventoryOperation",
         "DurableTransferRefinement",
         "PublishedHeadCAS",
-        "PackagingIdentity"
+        "PackagingIdentity",
+        "FungibilityPool"
       ],
       "rejectionRelation": "Insufficient source, existing transfer identity, pre-dispatch receipt, post-dispatch release, over-receipt, cross-transfer receipt, package/line collapse, reservation conflict, or stale publication rejects atomically.",
       "resultMapping": "Result maps to exact prepared/dispatched/received/remainder state plus immutable stock event and replay truth.",
@@ -70689,7 +70753,8 @@
         "InventoryOperation",
         "DurableTransferRefinement",
         "PublishedHeadCAS",
-        "PackagingIdentity"
+        "PackagingIdentity",
+        "FungibilityPool"
       ],
       "rejectionRelation": "Insufficient source, existing transfer identity, pre-dispatch receipt, post-dispatch release, over-receipt, cross-transfer receipt, package/line collapse, reservation conflict, or stale publication rejects atomically.",
       "resultMapping": "Result maps to exact prepared/dispatched/received/remainder state plus immutable stock event and replay truth.",
@@ -70854,7 +70919,8 @@
         "InventoryOperation",
         "DurableTransferRefinement",
         "PublishedHeadCAS",
-        "PackagingIdentity"
+        "PackagingIdentity",
+        "FungibilityPool"
       ],
       "rejectionRelation": "Insufficient source, existing transfer identity, pre-dispatch receipt, post-dispatch release, over-receipt, cross-transfer receipt, package/line collapse, reservation conflict, or stale publication rejects atomically.",
       "resultMapping": "Result maps to exact prepared/dispatched/received/remainder state plus immutable stock event and replay truth.",
@@ -70912,10 +70978,10 @@
               "column": 86,
               "file": "test/transfer-lifecycle.test.ts",
               "hasBody": true,
-              "id": "test/transfer-lifecycle.test.ts:17828:<anonymous@534>",
+              "id": "test/transfer-lifecycle.test.ts:17920:<anonymous@535>",
               "kind": "ArrowFunction",
-              "line": 534,
-              "name": "<anonymous@534>",
+              "line": 535,
+              "name": "<anonymous@535>",
               "reason": "test-callback"
             },
             {
@@ -71027,7 +71093,8 @@
         "InventoryOperation",
         "DurableTransferRefinement",
         "PublishedHeadCAS",
-        "PackagingIdentity"
+        "PackagingIdentity",
+        "FungibilityPool"
       ],
       "rejectionRelation": "Insufficient source, existing transfer identity, pre-dispatch receipt, post-dispatch release, over-receipt, cross-transfer receipt, package/line collapse, reservation conflict, or stale publication rejects atomically.",
       "resultMapping": "Result maps to exact prepared/dispatched/received/remainder state plus immutable stock event and replay truth.",
@@ -75087,7 +75154,8 @@
         "ReservationScope",
         "ReservationSafety",
         "UseByReservation",
-        "PackagingIdentity"
+        "PackagingIdentity",
+        "FungibilityPool"
       ],
       "rejectionRelation": "Invalid increment, incompatible revision/unit, shortfall where full allocation is required, or reservation violation rejects/reports explicitly.",
       "resultMapping": "Plan/result reports exact lines, allocated total, shortfall, and blocked/excluded evidence without mutating state.",
@@ -75683,7 +75751,8 @@
       ],
       "models": [
         "ResourceDimensions",
-        "TraceabilityGraph"
+        "TraceabilityGraph",
+        "SnapshotSupersededWorkflow"
       ],
       "rejectionRelation": "Empty, duplicate, contradictory, or non-canonical identities reject.",
       "resultMapping": "Result is a canonical collision-free identity/selector observation.",
@@ -75752,7 +75821,8 @@
         "CatalogPublication",
         "TraceabilityGraph",
         "ReclassificationConservation",
-        "SnapshotSupersededWorkflow"
+        "SnapshotSupersededWorkflow",
+        "CompositionRevision"
       ],
       "rejectionRelation": "Unknown query, duplicate source identity, ambiguity, invalid unit/graph/vector, or paging limit rejects/blocks.",
       "resultMapping": "Result is a frozen declaration/plan/source bundle or explicit blockers; no target world changes.",
@@ -75820,7 +75890,8 @@
         "OnePublicationPerOperation"
       ],
       "models": [
-        "InventoryOperation"
+        "InventoryOperation",
+        "PublishedHeadCAS"
       ],
       "rejectionRelation": "Missing/duplicate/foreign request evidence rejects before application consumption.",
       "resultMapping": "Result preserves operation/group/request identities, exact allocations, event, receipt, and replay observation.",
@@ -76106,7 +76177,8 @@
         "ReservationSafety",
         "UseByReservation",
         "PackagingIdentity",
-        "RecordedDeficit"
+        "RecordedDeficit",
+        "FungibilityPool"
       ],
       "rejectionRelation": "Reject mode preserves the old fail-closed shortfall stutter; Record mode records only genuine stock shortfall, while package ambiguity, expiry, allocation constraints, and reservation conflicts still reject atomically.",
       "resultMapping": "Result maps request/group identities to exact allocated positions/amounts, optional durable deficit evidence, one published event, and replay identity.",
@@ -76144,7 +76216,8 @@
         "ReservationScope",
         "ReservationSafety",
         "UseByReservation",
-        "InventoryOperation"
+        "InventoryOperation",
+        "FungibilityPool"
       ],
       "rejectionRelation": "Shortfall, expiry, package increment, reservation conflict, or invalid destination rejects with no partial transfer.",
       "resultMapping": "Result maps groups to exact sources, one transfer event, unchanged global quantity, and published revision.",
@@ -76331,7 +76404,8 @@
         "InventoryOperation",
         "DurableTransferRefinement",
         "PublishedHeadCAS",
-        "PackagingIdentity"
+        "PackagingIdentity",
+        "FungibilityPool"
       ],
       "rejectionRelation": "Insufficient source, existing transfer identity, pre-dispatch receipt, post-dispatch release, over-receipt, cross-transfer receipt, package/line collapse, reservation conflict, or stale publication rejects atomically.",
       "resultMapping": "Result maps to exact prepared/dispatched/received/remainder state plus immutable stock event and replay truth.",

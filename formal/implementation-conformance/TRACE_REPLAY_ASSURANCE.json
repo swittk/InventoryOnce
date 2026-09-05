@@ -1907,6 +1907,7 @@
       ],
       "finiteDomain": "Two unresolved legacy workflow rows, one source snapshot revision, one fence, one disposition per row, one atomic migration publication, and bounded post-fence resume attempts.",
       "invariants": [
+        "TypeOK",
         "DispositionRequiresFencedSnapshot",
         "DispositionGeneratesNoPhysicalEvent",
         "SupersededRowsNeverResume",

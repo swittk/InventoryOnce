@@ -414,10 +414,8 @@ describe("revision-frozen read-only inventory collections", () => {
       kind: InventoryCollectionMemberKind.ItemRevision,
       revisionId: "mutated-item-v1",
     };
-    rollupMembers[0] = {
-      ...rollupMembers[0]!,
-      rollupQuantity: parseQuantity("999", "pack-count"),
-    };
+    rollupMembers[0] = packRollupMember(item.revisionId);
+    rollupMembers[0].rollupQuantity = parseQuantity("999", "pack-count");
     const retained = catalog.collectionRevision(collection.revisionId);
     expect(retained.members).toEqual([
       {

@@ -162,6 +162,7 @@ function requireExactKeys(label, actual, expected) {
 function readFormalVocabulary() {
   const modelNames = new Set(formalModels);
   const invariantNames = new Set();
+  const invariantNamesByModel = new Map();
   for (const name of modelNames) {
     const modulePath = resolve(packageRoot, `formal/${name}.tla`);
     const configPath = resolve(packageRoot, `formal/${name}.cfg`);
@@ -175,11 +176,11 @@ function readFormalVocabulary() {
         `Registered formal model '${name}' is missing '${configPath}'.`
       );
     }
-    for (const check of formalConfigCheckNames(readFileSync(configPath, "utf8"))) {
-      invariantNames.add(check);
-    }
+    const checks = formalConfigCheckNames(readFileSync(configPath, "utf8"));
+    invariantNamesByModel.set(name, new Set(checks));
+    for (const check of checks) invariantNames.add(check);
   }
-  return { modelNames, invariantNames };
+  return { modelNames, invariantNames, invariantNamesByModel };
 }
 
 /** Resolve one evidence path from a package-relative or repository-relative declaration. */
@@ -420,6 +421,14 @@ function validateApiEntry(
     if (!vocabulary.invariantNames.has(invariant)) {
       throw new Error(
         `${key} names unknown invariant/property '${invariant}'.`
+      );
+    }
+    const owned = entry.models.some((model) =>
+      vocabulary.invariantNamesByModel.get(model)?.has(invariant)
+    );
+    if (!owned) {
+      throw new Error(
+        `${key} names invariant/property '${invariant}' that none of its models configure.`
       );
     }
   }

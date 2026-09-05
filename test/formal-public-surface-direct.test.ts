@@ -167,6 +167,7 @@ describe("direct execution of otherwise family-only public helpers", () => {
   });
 
   it("invokes portable cutover validation without fabricating a source", async () => {
+    // Intentionally bypass typed cutover constraints so runtime validation sees invalid migration/authority input.
     const invalid = {
       authority: undefined,
       storage: createInMemoryInventoryDurableStorage(),

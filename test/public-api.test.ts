@@ -6,7 +6,7 @@ import * as kernel from "../src/kernel.js";
 import * as migrations from "../src/migrations-api.js";
 import * as storage from "../src/storage-api.js";
 
-/** Return whether one module namespace exposes a named runtime footgun. */
+/** Return whether one module namespace has this own named export. */
 function hasExport(module: object, name: string): boolean {
   return Object.prototype.hasOwnProperty.call(module, name);
 }

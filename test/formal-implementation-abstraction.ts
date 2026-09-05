@@ -300,9 +300,8 @@ function abstractTransfer(transfer: InventoryTransfer): Readonly<Record<string, 
 
 /** Convert one structured transfer event transition to executable abstract evidence. */
 function abstractTransferLifecycle(
-  change: InventoryCommittedEvent["transferLifecycle"]
-): Readonly<Record<string, unknown>> | undefined {
-  if (change === undefined) return undefined;
+  change: NonNullable<InventoryCommittedEvent["transferLifecycle"]>
+): Readonly<Record<string, unknown>> {
   if (change.action === "prepare") {
     return canonicalRecord({
       ...change,
@@ -349,7 +348,7 @@ function abstractEvent(event: InventoryCommittedEvent): AbstractInventoryEvent {
       : { correctsEventId: event.correction.correctsEventId }),
     ...(event.transferLifecycle === undefined
       ? {}
-      : { transferLifecycle: abstractTransferLifecycle(event.transferLifecycle)! }),
+      : { transferLifecycle: abstractTransferLifecycle(event.transferLifecycle) }),
   };
 }
 

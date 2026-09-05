@@ -38,7 +38,7 @@ Any added/removed method, callable export, class method, type field, field type,
 
 | Family | API entries | Formal models | Status | Gaps |
 |---|---:|---|---|---|
-| allocation-helper | 6 | ReservationScope, ReservationSafety, UseByReservation, PackagingIdentity | covered | — |
+| allocation-helper | 6 | ReservationScope, ReservationSafety, UseByReservation, PackagingIdentity, FungibilityPool | covered | — |
 | authority-control | 31 | AuthorityWriterFence | covered | — |
 | authority-cutover | 2 | AuthorityWriterFence, CatalogPublication, PublishedHeadCAS, RepairLiveness, SnapshotSupersededWorkflow | covered | GAP-LEGACY-SOURCE-INTERPRETATION |
 | catalog-definition | 76 | CatalogPublication, PackagingIdentity, CompositionRevision, CollectionView, FungibilityPool | covered | GAP-HASH-COLLISION-ASSUMPTION |
@@ -55,11 +55,11 @@ Any added/removed method, callable export, class method, type field, field type,
 | facade-construction | 2 | InventoryOperation | covered | GAP-EXTERNAL-CLOCK, GAP-DB-IMPLEMENTATION-UNBOUNDED |
 | fungibility-movement | 3 | FungibilityPool, ReservationScope, ReservationSafety, UseByReservation, InventoryOperation, PublishedHeadCAS | covered | GAP-FUNGIBILITY-EXACT-SEARCH-BOUND |
 | fungibility-read | 12 | FungibilityPool, UseByReservation | covered | GAP-FUNGIBILITY-EXACT-SEARCH-BOUND |
-| identity-normalization | 27 | ResourceDimensions, TraceabilityGraph | covered | — |
+| identity-normalization | 27 | ResourceDimensions, TraceabilityGraph, SnapshotSupersededWorkflow | covered | — |
 | lot-command | 3 | UseByReservation, CorrectionHistory, InventoryOperation | covered | — |
-| migration-definition | 8 | CatalogPublication, TraceabilityGraph, ReclassificationConservation, SnapshotSupersededWorkflow | covered | GAP-LEGACY-SOURCE-INTERPRETATION, GAP-EXTERNAL-MIGRATION-CALLBACKS |
+| migration-definition | 8 | CatalogPublication, TraceabilityGraph, ReclassificationConservation, SnapshotSupersededWorkflow, CompositionRevision | covered | GAP-LEGACY-SOURCE-INTERPRETATION, GAP-EXTERNAL-MIGRATION-CALLBACKS |
 | migration-publication | 3 | CatalogPublication, InventoryOperation, PublishedHeadCAS, RepairLiveness, TraceabilityGraph, SnapshotSupersededWorkflow | covered | GAP-LEGACY-SOURCE-INTERPRETATION, GAP-DB-IMPLEMENTATION-UNBOUNDED |
-| operation-result-helper | 11 | InventoryOperation | covered | — |
+| operation-result-helper | 11 | InventoryOperation, PublishedHeadCAS | covered | — |
 | packaging-reclassification | 4 | PackagingIdentity, ReclassificationConservation, DualMeasure, InventoryOperation | covered | — |
 | pure-exact-value | 90 | DualMeasure, PackagingIdentity | covered | — |
 | read-current | 22 | PublishedHeadCAS, ResourceDimensions, UseByReservation, ReservationScope, CollectionView, FungibilityPool | covered | — |
@@ -67,13 +67,13 @@ Any added/removed method, callable export, class method, type field, field type,
 | reservation | 19 | ReservationSafety, ReservationScope, UseByReservation, InventoryOperation | covered | — |
 | scrap | 5 | InventoryOperation, PackagingIdentity, DualMeasure, ReservationSafety, UseByReservation | covered | — |
 | stock-issue | 4 | InventoryOperation, PackagingIdentity, DualMeasure, ReservationSafety, UseByReservation | covered | — |
-| stock-policy-issue | 2 | InventoryOperation, ReservationScope, ReservationSafety, UseByReservation, PackagingIdentity, RecordedDeficit | covered | — |
-| stock-policy-transfer | 2 | ResourceDimensions, DurableTransferRefinement, ReservationScope, ReservationSafety, UseByReservation, InventoryOperation | covered | — |
+| stock-policy-issue | 2 | InventoryOperation, ReservationScope, ReservationSafety, UseByReservation, PackagingIdentity, RecordedDeficit, FungibilityPool | covered | — |
+| stock-policy-transfer | 2 | ResourceDimensions, DurableTransferRefinement, ReservationScope, ReservationSafety, UseByReservation, InventoryOperation, FungibilityPool | covered | — |
 | stock-receipt | 5 | InventoryOperation, PublishedHeadCAS, PackagingIdentity, DualMeasure, ResourceDimensions | covered | — |
 | stock-transfer | 2 | ResourceDimensions, DurableTransferRefinement, InventoryOperation, PackagingIdentity | covered | — |
 | storage-integrity | 14 | InventoryOperation, PublishedHeadCAS | covered | GAP-HASH-COLLISION-ASSUMPTION, GAP-V1-CONTENT-ROOT-OBJECT-ORDER |
 | traceability | 11 | TraceabilityGraph, InventoryOperation | covered | GAP-TRACEABILITY-ADVERSARIAL-GRAPH-SEARCH |
-| transfer-lifecycle | 11 | TransferLifecycle, ResourceDimensions, ReservationSafety, InventoryOperation, DurableTransferRefinement, PublishedHeadCAS, PackagingIdentity | covered | — |
+| transfer-lifecycle | 11 | TransferLifecycle, ResourceDimensions, ReservationSafety, InventoryOperation, DurableTransferRefinement, PublishedHeadCAS, PackagingIdentity, FungibilityPool | covered | — |
 | transformation | 2 | TraceabilityGraph, ReclassificationConservation, DualMeasure, InventoryOperation | covered | GAP-TRACEABILITY-ADVERSARIAL-GRAPH-SEARCH |
 | transformation-read | 7 | CatalogPublication, PublishedHeadCAS, ReclassificationConservation, DualMeasure | covered | — |
 

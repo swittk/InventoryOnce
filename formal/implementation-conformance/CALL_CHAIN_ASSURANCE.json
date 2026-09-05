@@ -9446,10 +9446,10 @@
                 "column": 79,
                 "file": "test/transfer-lifecycle.test.ts",
                 "hasBody": true,
-                "id": "test/transfer-lifecycle.test.ts:13523:<anonymous@408>",
+                "id": "test/transfer-lifecycle.test.ts:13615:<anonymous@409>",
                 "kind": "ArrowFunction",
-                "line": 408,
-                "name": "<anonymous@408>",
+                "line": 409,
+                "name": "<anonymous@409>",
                 "reason": "test-callback"
               },
               {
@@ -9730,10 +9730,10 @@
                 "column": 79,
                 "file": "test/transfer-lifecycle.test.ts",
                 "hasBody": true,
-                "id": "test/transfer-lifecycle.test.ts:13523:<anonymous@408>",
+                "id": "test/transfer-lifecycle.test.ts:13615:<anonymous@409>",
                 "kind": "ArrowFunction",
-                "line": 408,
-                "name": "<anonymous@408>",
+                "line": 409,
+                "name": "<anonymous@409>",
                 "reason": "test-callback"
               },
               {
@@ -9791,10 +9791,10 @@
                 "column": 86,
                 "file": "test/transfer-lifecycle.test.ts",
                 "hasBody": true,
-                "id": "test/transfer-lifecycle.test.ts:17828:<anonymous@534>",
+                "id": "test/transfer-lifecycle.test.ts:17920:<anonymous@535>",
                 "kind": "ArrowFunction",
-                "line": 534,
-                "name": "<anonymous@534>",
+                "line": 535,
+                "name": "<anonymous@535>",
                 "reason": "test-callback"
               },
               {
@@ -16068,9 +16068,9 @@
                 "column": 1,
                 "file": "test/formal-implementation-abstraction.ts",
                 "hasBody": true,
-                "id": "test/formal-implementation-abstraction.ts:40762:abstractPrimaryBalance",
+                "id": "test/formal-implementation-abstraction.ts:40716:abstractPrimaryBalance",
                 "kind": "FunctionDeclaration",
-                "line": 1095,
+                "line": 1094,
                 "name": "abstractPrimaryBalance",
                 "reason": "resolved-call"
               },
@@ -24042,9 +24042,9 @@
                 "column": 1,
                 "file": "test/formal-implementation-abstraction.ts",
                 "hasBody": true,
-                "id": "test/formal-implementation-abstraction.ts:40762:abstractPrimaryBalance",
+                "id": "test/formal-implementation-abstraction.ts:40716:abstractPrimaryBalance",
                 "kind": "FunctionDeclaration",
-                "line": 1095,
+                "line": 1094,
                 "name": "abstractPrimaryBalance",
                 "reason": "resolved-call"
               },
@@ -35111,10 +35111,10 @@
                 "column": 86,
                 "file": "test/transfer-lifecycle.test.ts",
                 "hasBody": true,
-                "id": "test/transfer-lifecycle.test.ts:17828:<anonymous@534>",
+                "id": "test/transfer-lifecycle.test.ts:17920:<anonymous@535>",
                 "kind": "ArrowFunction",
-                "line": 534,
-                "name": "<anonymous@534>",
+                "line": 535,
+                "name": "<anonymous@535>",
                 "reason": "test-callback"
               },
               {

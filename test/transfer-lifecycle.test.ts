@@ -398,9 +398,10 @@ describe("first-class physical transfer lifecycle", () => {
       ([, position]) => position.key.locationId === "B"
     )?.[0];
     expect(destinationIdentity).toBeDefined();
+    if (destinationIdentity === undefined) throw new Error("Missing destination identity.");
     expect(
       receivedWorld.projection.positiveLayerStartedAtByPositionId[
-        destinationIdentity!
+        destinationIdentity
       ]
     ).toBe(time0);
   });
