@@ -17,6 +17,8 @@ interface VitestExecutionMetadata {
   readonly conditionValue?: boolean;
   /** Whether an enclosing suite prevents child execution. */
   readonly insideNonExecutingSuite?: boolean;
+  /** Whether the enclosing suite/file contains at least one runnable test. */
+  readonly suiteHasRunnableTest?: boolean;
 }
 
 /** Run one named call-graph semantics helper and require one boolean decision. */
@@ -88,6 +90,26 @@ describe("formal call-graph Vitest callback semantics", () => {
       conditionKind: "runIf",
       conditionValue: true,
     })).toBe(true);
+  });
+
+  it("executes hooks only when their suite has a runnable test", () => {
+    for (const registration of [
+      "beforeAll",
+      "beforeEach",
+      "afterAll",
+      "afterEach",
+    ] as const) {
+      expect(callbackExecutes({
+        registration,
+        mode: "run",
+        suiteHasRunnableTest: false,
+      })).toBe(false);
+      expect(callbackExecutes({
+        registration,
+        mode: "run",
+        suiteHasRunnableTest: true,
+      })).toBe(true);
+    }
   });
 
   it("preserves skipped-suite collection while excluding its test and hook callbacks", () => {

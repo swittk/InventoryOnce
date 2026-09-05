@@ -448,6 +448,94 @@ function isInsideNonExecutingSuite(node) {
   return false;
 }
 
+/** Return the nearest enclosing Vitest suite callback, or the whole file for top-level hooks. */
+function vitestSuiteExecutionRoot(node) {
+  let current = node.parent;
+  while (current !== undefined) {
+    if ((ts.isArrowFunction(current) || ts.isFunctionExpression(current)) && ts.isCallExpression(current.parent)) {
+      const callbackIndex = current.parent.arguments.indexOf(current);
+      if (callbackIndex >= 0) {
+        const metadata = vitestRegistrationMetadata(current.parent, callbackIndex, false);
+        if (metadata.registration === "describe") return current;
+      }
+    }
+    current = current.parent;
+  }
+  return node.getSourceFile();
+}
+
+/** Cache suite/file runnable-test decisions because multiple hooks share one execution root. */
+const vitestRunnableSuiteCache = new WeakMap();
+
+/** Return the callback argument index for one test registration, or -1 when no callable argument exists. */
+function vitestTestCallbackArgumentIndex(node) {
+  for (let index = 1; index < node.arguments.length; index += 1) {
+    const argument = node.arguments[index];
+    if (ts.isArrowFunction(argument) || ts.isFunctionExpression(argument)) return index;
+    const argumentType = checker.getTypeAtLocation(argument);
+    if (checker.getSignaturesOfType(argumentType, ts.SignatureKind.Call).length > 0) {
+      return index;
+    }
+  }
+  return -1;
+}
+
+/** Return whether the hook's suite/file contains any statically runnable test. */
+function vitestSuiteHasRunnableTest(node) {
+  const root = vitestSuiteExecutionRoot(node);
+  const cached = vitestRunnableSuiteCache.get(root);
+  if (cached !== undefined) return cached;
+  let found = false;
+  const visit = (current) => {
+    if (found) return;
+    if (ts.isCallExpression(current) && isVitestRegistrationCall(current)) {
+      const registration = vitestRegistrationName(
+        current.expression.getText(current.getSourceFile())
+      );
+      if (registration === "it" || registration === "test") {
+        const callbackIndex = vitestTestCallbackArgumentIndex(current);
+        if (callbackIndex >= 0) {
+          const metadata = vitestRegistrationMetadata(
+            current,
+            callbackIndex,
+            isInsideNonExecutingSuite(current)
+          );
+          if (!metadata.insideNonExecutingSuite && vitestRegistrationRuns(metadata)) {
+            found = true;
+            return;
+          }
+        }
+      }
+    }
+    ts.forEachChild(current, visit);
+  };
+  ts.forEachChild(root, visit);
+  vitestRunnableSuiteCache.set(root, found);
+  return found;
+}
+
+/** Add suite-level execution evidence needed to decide whether hooks actually run. */
+function vitestExecutionMetadata(node, callbackArgumentIndex, insideNonExecutingSuite) {
+  const metadata = vitestRegistrationMetadata(
+    node,
+    callbackArgumentIndex,
+    insideNonExecutingSuite
+  );
+  if (
+    metadata.registration !== "beforeAll" &&
+    metadata.registration !== "beforeEach" &&
+    metadata.registration !== "afterAll" &&
+    metadata.registration !== "afterEach"
+  ) {
+    return metadata;
+  }
+  return {
+    ...metadata,
+    suiteHasRunnableTest:
+      insideNonExecutingSuite === true ? false : vitestSuiteHasRunnableTest(node),
+  };
+}
+
 /** Return whether one test-runner callback is actually executed by Vitest. */
 function isTestCallback(node) {
   if (!ts.isArrowFunction(node) && !ts.isFunctionExpression(node)) return false;
@@ -455,7 +543,7 @@ function isTestCallback(node) {
   const callbackIndex = node.parent.arguments.indexOf(node);
   if (callbackIndex < 0) return false;
   return vitestCallbackExecutes(
-    vitestRegistrationMetadata(
+    vitestExecutionMetadata(
       node.parent,
       callbackIndex,
       isInsideNonExecutingSuite(node)
@@ -529,7 +617,7 @@ function externalCallbackArgumentIndexes(node) {
       if (callbackTargets(node.arguments[index]).length === 0) continue;
       if (
         vitestCallbackExecutes(
-          vitestRegistrationMetadata(node, index, insideNonExecutingSuite)
+          vitestExecutionMetadata(node, index, insideNonExecutingSuite)
         )
       ) {
         indexes.add(index);

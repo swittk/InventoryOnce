@@ -1014,6 +1014,54 @@ describe("append-only corrections", () => {
 
     {
       const inventory = createTestInventory();
+      const root = await inventory.lots.define({
+        operationId: "lot-metadata-root",
+        occurredAt: time0,
+        itemId: "item-a",
+        lotId: "lot-correction",
+        lot: { expiresAt: time3 },
+      });
+      await inventory.stock.correct({
+        operationId: "correct-lot-metadata",
+        occurredAt: time1,
+        correctsEventId: root.event.eventId,
+        reason: "Lot metadata row was checked.",
+        replaceWith: (plans) =>
+          plans.lotMetadata({
+            occurredAt: time0,
+            itemId: "item-a",
+            lotId: "lot-correction",
+            lot: { expiresAt: time3 },
+          }),
+      });
+      correctedRootKinds.add(root.event.kind);
+    }
+
+    {
+      const inventory = createTestInventory();
+      const root = await inventory.containers.define({
+        operationId: "container-metadata-root",
+        occurredAt: time0,
+        containerId: "container-correction",
+        container: { containerType: "tray", useBy: time3 },
+      });
+      await inventory.stock.correct({
+        operationId: "correct-container-metadata",
+        occurredAt: time1,
+        correctsEventId: root.event.eventId,
+        reason: "Container metadata row was checked.",
+        replaceWith: (plans) =>
+          plans.containerMetadata({
+            occurredAt: time0,
+            containerId: "container-correction",
+            container: { containerType: "tray", useBy: time3 },
+          }),
+      });
+      correctedRootKinds.add(root.event.kind);
+    }
+
+    {
+      const inventory = createTestInventory();
       await inventory.stock.receive({
         operationId: "count-correction-stock",
         occurredAt: time0,
@@ -1072,20 +1120,13 @@ describe("append-only corrections", () => {
       correctedRootKinds.add(root.event.kind);
     }
 
-    expect(correctedRootKinds).toEqual(
-      new Set([
-        InventoryEventKind.Opening,
-        InventoryEventKind.Receipt,
-        InventoryEventKind.Issue,
-        InventoryEventKind.Transfer,
-        InventoryEventKind.Reclassification,
-        InventoryEventKind.Pack,
-        InventoryEventKind.Unpack,
-        InventoryEventKind.Transformation,
-        InventoryEventKind.Scrap,
-        InventoryEventKind.Traceability,
-        InventoryEventKind.CountAdjustment,
-      ])
+    const expectedCorrectableKinds = new Set(
+      Object.values(InventoryEventKind).filter(
+        (kind) =>
+          kind !== InventoryEventKind.Correction &&
+          kind !== InventoryEventKind.CatalogPublication
+      )
     );
+    expect(correctedRootKinds).toEqual(expectedCorrectableKinds);
   });
 });

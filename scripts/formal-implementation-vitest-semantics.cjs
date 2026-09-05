@@ -27,7 +27,7 @@ function vitestCallbackExecutes(metadata) {
     registration === "afterAll" ||
     registration === "afterEach"
   ) {
-    return true;
+    return metadata.suiteHasRunnableTest === true;
   }
   return vitestRegistrationRuns(metadata);
 }

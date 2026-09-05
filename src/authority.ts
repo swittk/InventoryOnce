@@ -342,6 +342,11 @@ export class InventoryAuthorityControl
     this.namespaceId = requireText(namespaceId, "namespaceId");
     this.store = store;
     this.ready = this.initialize();
+    // Observe boot-time storage failure immediately while preserving the rejected promise for callers.
+    void this.ready.catch(
+      /** Observe the rejection without converting the stored ready promise. */
+      () => undefined
+    );
   }
 
   /** Read the current primary-stored state. */

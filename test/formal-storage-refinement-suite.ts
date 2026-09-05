@@ -604,6 +604,7 @@ export function runInventoryFormalStorageRefinementSuite(
         }
         await repairInventoryMigrationManifests({ storage });
         const manifest = await storage.readMigrationManifest(migrationId);
+        // Pre-publication crash stages can remain applying after repair and need the explicit resume path.
         if (manifest?.state === "applying") {
           await resumeInventoryMigrationManifest(storage, migrationId);
         }

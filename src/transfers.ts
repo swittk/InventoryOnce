@@ -556,12 +556,21 @@ export function createInventoryTransferPrepareEvent(
     /** Transfer-lifecycle preparedMeasurements value retained or supplied by this record. */ preparedMeasurements: InventoryMeasurementVector;
   }[] = [];
   const seenLineIds = new Set<string>();
+  /** Resolved source buckets already claimed by earlier lines in this prepare command. */
+  const seenSourcePositions = new Set<string>();
   for (const line of input.lines) {
     if (seenLineIds.has(line.lineId)) {
       throw new Error(`Duplicate transfer prepare lineId '${line.lineId}'.`);
     }
     seenLineIds.add(line.lineId);
     const resolvedLine = resolveTransferPrepareLine(input.catalog, line);
+    const sourceIdentity = inventoryStockPositionIdentity(resolvedLine.position);
+    if (seenSourcePositions.has(sourceIdentity)) {
+      throw new Error(
+        "Transfer prepare lines must resolve to distinct source positions."
+      );
+    }
+    seenSourcePositions.add(sourceIdentity);
     sourceLocations.add(resolvedLine.position.locationId);
     effects.push(
       transferEffect(

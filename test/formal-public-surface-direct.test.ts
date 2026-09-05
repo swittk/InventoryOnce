@@ -124,6 +124,7 @@ describe("direct execution of otherwise family-only public helpers", () => {
 
   it("executes durable begin/materialization validation helpers directly", () => {
     const base = emptyInventoryWorldState();
+    // Empty plan assertions intentionally prove validation fails before any plan field is read.
     expectDirectValidationFailure(
       () =>
         validateInventoryDurableOperationBeginInput({

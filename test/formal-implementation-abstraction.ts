@@ -21,6 +21,7 @@ import type {
   InventoryMigrationDryRun,
   InventoryMigrationPlan,
 } from "../src/migrations.js";
+import type { InventoryMigrationSourceDisposition } from "../src/migration-evidence.js";
 import type { InventoryTraceabilityState } from "../src/traceability.js";
 import {
   InventoryAuthorityActivationKind,
@@ -637,7 +638,7 @@ export function abstractAuthorityState(
 
 /** Canonicalize source dispositions without interpreting application evidence. */
 function abstractMigrationSourceDispositions(
-  dispositions: readonly import("../src/migration-evidence.js").InventoryMigrationSourceDisposition[]
+  dispositions: readonly InventoryMigrationSourceDisposition[]
 ): readonly Readonly<Record<string, unknown>>[] {
   return dispositions.map((disposition) =>
     canonicalRecord({

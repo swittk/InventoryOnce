@@ -1,7 +1,7 @@
 {
   "counts": {
-    "callables": 2147,
-    "edges": 5894,
+    "callables": 2159,
+    "edges": 5912,
     "publicEntries": 508,
     "publicEntriesWithTargets": 508,
     "publicEntriesWithWitnesses": 508,
@@ -15,9 +15,9 @@
           "column": 3,
           "file": "src/authority.ts",
           "hasBody": true,
-          "id": "src/authority.ts:30026:activate",
+          "id": "src/authority.ts:30266:activate",
           "kind": "MethodDeclaration",
-          "line": 797,
+          "line": 802,
           "name": "activate"
         }
       ],
@@ -28,9 +28,9 @@
             "column": 3,
             "file": "src/authority.ts",
             "hasBody": true,
-            "id": "src/authority.ts:30026:activate",
+            "id": "src/authority.ts:30266:activate",
             "kind": "MethodDeclaration",
-            "line": 797,
+            "line": 802,
             "name": "activate"
           },
           "witness": {
@@ -48,19 +48,19 @@
                 "column": 76,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:4032:<anonymous@119>",
+                "id": "test/authority.test.ts:4708:<anonymous@138>",
                 "kind": "ArrowFunction",
-                "line": 119,
-                "name": "<anonymous@119>",
+                "line": 138,
+                "name": "<anonymous@138>",
                 "reason": "test-callback"
               },
               {
                 "column": 3,
                 "file": "src/authority.ts",
                 "hasBody": true,
-                "id": "src/authority.ts:30026:activate",
+                "id": "src/authority.ts:30266:activate",
                 "kind": "MethodDeclaration",
-                "line": 797,
+                "line": 802,
                 "name": "activate",
                 "reason": "resolved-call"
               }
@@ -76,9 +76,9 @@
           "column": 3,
           "file": "src/authority.ts",
           "hasBody": true,
-          "id": "src/authority.ts:33488:activateGreenfield",
+          "id": "src/authority.ts:33728:activateGreenfield",
           "kind": "MethodDeclaration",
-          "line": 906,
+          "line": 911,
           "name": "activateGreenfield"
         }
       ],
@@ -89,9 +89,9 @@
             "column": 3,
             "file": "src/authority.ts",
             "hasBody": true,
-            "id": "src/authority.ts:33488:activateGreenfield",
+            "id": "src/authority.ts:33728:activateGreenfield",
             "kind": "MethodDeclaration",
-            "line": 906,
+            "line": 911,
             "name": "activateGreenfield"
           },
           "witness": {
@@ -109,19 +109,19 @@
                 "column": 84,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:9026:<anonymous@258>",
+                "id": "test/authority.test.ts:9702:<anonymous@277>",
                 "kind": "ArrowFunction",
-                "line": 258,
-                "name": "<anonymous@258>",
+                "line": 277,
+                "name": "<anonymous@277>",
                 "reason": "test-callback"
               },
               {
                 "column": 3,
                 "file": "src/authority.ts",
                 "hasBody": true,
-                "id": "src/authority.ts:33488:activateGreenfield",
+                "id": "src/authority.ts:33728:activateGreenfield",
                 "kind": "MethodDeclaration",
-                "line": 906,
+                "line": 911,
                 "name": "activateGreenfield",
                 "reason": "resolved-call"
               }
@@ -137,9 +137,9 @@
           "column": 3,
           "file": "src/authority.ts",
           "hasBody": true,
-          "id": "src/authority.ts:22432:admitLegacyWriter",
+          "id": "src/authority.ts:22672:admitLegacyWriter",
           "kind": "MethodDeclaration",
-          "line": 579,
+          "line": 584,
           "name": "admitLegacyWriter"
         }
       ],
@@ -150,9 +150,9 @@
             "column": 3,
             "file": "src/authority.ts",
             "hasBody": true,
-            "id": "src/authority.ts:22432:admitLegacyWriter",
+            "id": "src/authority.ts:22672:admitLegacyWriter",
             "kind": "MethodDeclaration",
-            "line": 579,
+            "line": 584,
             "name": "admitLegacyWriter"
           },
           "witness": {
@@ -170,19 +170,19 @@
                 "column": 84,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:9026:<anonymous@258>",
+                "id": "test/authority.test.ts:9702:<anonymous@277>",
                 "kind": "ArrowFunction",
-                "line": 258,
-                "name": "<anonymous@258>",
+                "line": 277,
+                "name": "<anonymous@277>",
                 "reason": "test-callback"
               },
               {
                 "column": 3,
                 "file": "src/authority.ts",
                 "hasBody": true,
-                "id": "src/authority.ts:22432:admitLegacyWriter",
+                "id": "src/authority.ts:22672:admitLegacyWriter",
                 "kind": "MethodDeclaration",
-                "line": 579,
+                "line": 584,
                 "name": "admitLegacyWriter",
                 "reason": "resolved-call"
               }
@@ -198,9 +198,9 @@
           "column": 3,
           "file": "src/authority.ts",
           "hasBody": true,
-          "id": "src/authority.ts:14952:certifyAdapter",
+          "id": "src/authority.ts:15192:certifyAdapter",
           "kind": "MethodDeclaration",
-          "line": 357,
+          "line": 362,
           "name": "certifyAdapter"
         }
       ],
@@ -211,9 +211,9 @@
             "column": 3,
             "file": "src/authority.ts",
             "hasBody": true,
-            "id": "src/authority.ts:14952:certifyAdapter",
+            "id": "src/authority.ts:15192:certifyAdapter",
             "kind": "MethodDeclaration",
-            "line": 357,
+            "line": 362,
             "name": "certifyAdapter"
           },
           "witness": {
@@ -231,19 +231,19 @@
                 "column": 84,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:9026:<anonymous@258>",
+                "id": "test/authority.test.ts:9702:<anonymous@277>",
                 "kind": "ArrowFunction",
-                "line": 258,
-                "name": "<anonymous@258>",
+                "line": 277,
+                "name": "<anonymous@277>",
                 "reason": "test-callback"
               },
               {
                 "column": 3,
                 "file": "src/authority.ts",
                 "hasBody": true,
-                "id": "src/authority.ts:14952:certifyAdapter",
+                "id": "src/authority.ts:15192:certifyAdapter",
                 "kind": "MethodDeclaration",
-                "line": 357,
+                "line": 362,
                 "name": "certifyAdapter",
                 "reason": "resolved-call"
               }
@@ -259,9 +259,9 @@
           "column": 3,
           "file": "src/authority.ts",
           "hasBody": true,
-          "id": "src/authority.ts:26635:claimFence",
+          "id": "src/authority.ts:26875:claimFence",
           "kind": "MethodDeclaration",
-          "line": 697,
+          "line": 702,
           "name": "claimFence"
         }
       ],
@@ -272,9 +272,9 @@
             "column": 3,
             "file": "src/authority.ts",
             "hasBody": true,
-            "id": "src/authority.ts:26635:claimFence",
+            "id": "src/authority.ts:26875:claimFence",
             "kind": "MethodDeclaration",
-            "line": 697,
+            "line": 702,
             "name": "claimFence"
           },
           "witness": {
@@ -292,19 +292,19 @@
                 "column": 76,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:4032:<anonymous@119>",
+                "id": "test/authority.test.ts:4708:<anonymous@138>",
                 "kind": "ArrowFunction",
-                "line": 119,
-                "name": "<anonymous@119>",
+                "line": 138,
+                "name": "<anonymous@138>",
                 "reason": "test-callback"
               },
               {
                 "column": 3,
                 "file": "src/authority.ts",
                 "hasBody": true,
-                "id": "src/authority.ts:26635:claimFence",
+                "id": "src/authority.ts:26875:claimFence",
                 "kind": "MethodDeclaration",
-                "line": 697,
+                "line": 702,
                 "name": "claimFence",
                 "reason": "resolved-call"
               }
@@ -320,9 +320,9 @@
           "column": 3,
           "file": "src/authority.ts",
           "hasBody": true,
-          "id": "src/authority.ts:18272:enterDualRun",
+          "id": "src/authority.ts:18512:enterDualRun",
           "kind": "MethodDeclaration",
-          "line": 453,
+          "line": 458,
           "name": "enterDualRun"
         }
       ],
@@ -333,9 +333,9 @@
             "column": 3,
             "file": "src/authority.ts",
             "hasBody": true,
-            "id": "src/authority.ts:18272:enterDualRun",
+            "id": "src/authority.ts:18512:enterDualRun",
             "kind": "MethodDeclaration",
-            "line": 453,
+            "line": 458,
             "name": "enterDualRun"
           },
           "witness": {
@@ -363,9 +363,9 @@
                 "column": 3,
                 "file": "src/authority.ts",
                 "hasBody": true,
-                "id": "src/authority.ts:18272:enterDualRun",
+                "id": "src/authority.ts:18512:enterDualRun",
                 "kind": "MethodDeclaration",
-                "line": 453,
+                "line": 458,
                 "name": "enterDualRun",
                 "reason": "resolved-call"
               }
@@ -381,9 +381,9 @@
           "column": 3,
           "file": "src/authority.ts",
           "hasBody": true,
-          "id": "src/authority.ts:16662:enterShadow",
+          "id": "src/authority.ts:16902:enterShadow",
           "kind": "MethodDeclaration",
-          "line": 407,
+          "line": 412,
           "name": "enterShadow"
         }
       ],
@@ -394,9 +394,9 @@
             "column": 3,
             "file": "src/authority.ts",
             "hasBody": true,
-            "id": "src/authority.ts:16662:enterShadow",
+            "id": "src/authority.ts:16902:enterShadow",
             "kind": "MethodDeclaration",
-            "line": 407,
+            "line": 412,
             "name": "enterShadow"
           },
           "witness": {
@@ -424,9 +424,9 @@
                 "column": 3,
                 "file": "src/authority.ts",
                 "hasBody": true,
-                "id": "src/authority.ts:16662:enterShadow",
+                "id": "src/authority.ts:16902:enterShadow",
                 "kind": "MethodDeclaration",
-                "line": 407,
+                "line": 412,
                 "name": "enterShadow",
                 "reason": "resolved-call"
               }
@@ -442,9 +442,9 @@
           "column": 3,
           "file": "src/authority.ts",
           "hasBody": true,
-          "id": "src/authority.ts:38458:markCompatibilityProjectionApplied",
+          "id": "src/authority.ts:38698:markCompatibilityProjectionApplied",
           "kind": "MethodDeclaration",
-          "line": 1053,
+          "line": 1058,
           "name": "markCompatibilityProjectionApplied"
         }
       ],
@@ -455,9 +455,9 @@
             "column": 3,
             "file": "src/authority.ts",
             "hasBody": true,
-            "id": "src/authority.ts:38458:markCompatibilityProjectionApplied",
+            "id": "src/authority.ts:38698:markCompatibilityProjectionApplied",
             "kind": "MethodDeclaration",
-            "line": 1053,
+            "line": 1058,
             "name": "markCompatibilityProjectionApplied"
           },
           "witness": {
@@ -485,9 +485,9 @@
                 "column": 3,
                 "file": "src/authority.ts",
                 "hasBody": true,
-                "id": "src/authority.ts:38458:markCompatibilityProjectionApplied",
+                "id": "src/authority.ts:38698:markCompatibilityProjectionApplied",
                 "kind": "MethodDeclaration",
-                "line": 1053,
+                "line": 1058,
                 "name": "markCompatibilityProjectionApplied",
                 "reason": "resolved-call"
               }
@@ -503,9 +503,9 @@
           "column": 3,
           "file": "src/authority.ts",
           "hasBody": true,
-          "id": "src/authority.ts:39043:markCompatibilityProjectionFailed",
+          "id": "src/authority.ts:39283:markCompatibilityProjectionFailed",
           "kind": "MethodDeclaration",
-          "line": 1069,
+          "line": 1074,
           "name": "markCompatibilityProjectionFailed"
         }
       ],
@@ -516,9 +516,9 @@
             "column": 3,
             "file": "src/authority.ts",
             "hasBody": true,
-            "id": "src/authority.ts:39043:markCompatibilityProjectionFailed",
+            "id": "src/authority.ts:39283:markCompatibilityProjectionFailed",
             "kind": "MethodDeclaration",
-            "line": 1069,
+            "line": 1074,
             "name": "markCompatibilityProjectionFailed"
           },
           "witness": {
@@ -546,9 +546,9 @@
                 "column": 3,
                 "file": "src/authority.ts",
                 "hasBody": true,
-                "id": "src/authority.ts:39043:markCompatibilityProjectionFailed",
+                "id": "src/authority.ts:39283:markCompatibilityProjectionFailed",
                 "kind": "MethodDeclaration",
-                "line": 1069,
+                "line": 1074,
                 "name": "markCompatibilityProjectionFailed",
                 "reason": "resolved-call"
               }
@@ -564,9 +564,9 @@
           "column": 3,
           "file": "src/authority.ts",
           "hasBody": true,
-          "id": "src/authority.ts:14602:read",
+          "id": "src/authority.ts:14842:read",
           "kind": "MethodDeclaration",
-          "line": 348,
+          "line": 353,
           "name": "read"
         }
       ],
@@ -577,9 +577,9 @@
             "column": 3,
             "file": "src/authority.ts",
             "hasBody": true,
-            "id": "src/authority.ts:14602:read",
+            "id": "src/authority.ts:14842:read",
             "kind": "MethodDeclaration",
-            "line": 348,
+            "line": 353,
             "name": "read"
           },
           "witness": {
@@ -594,10 +594,10 @@
                 "name": "test/authority.test.ts"
               },
               {
-                "column": 76,
+                "column": 80,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:4032:<anonymous@119>",
+                "id": "test/authority.test.ts:4036:<anonymous@119>",
                 "kind": "ArrowFunction",
                 "line": 119,
                 "name": "<anonymous@119>",
@@ -607,9 +607,9 @@
                 "column": 3,
                 "file": "src/authority.ts",
                 "hasBody": true,
-                "id": "src/authority.ts:14602:read",
+                "id": "src/authority.ts:14842:read",
                 "kind": "MethodDeclaration",
-                "line": 348,
+                "line": 353,
                 "name": "read",
                 "reason": "resolved-call"
               }
@@ -625,9 +625,9 @@
           "column": 3,
           "file": "src/authority.ts",
           "hasBody": true,
-          "id": "src/authority.ts:20438:recordDualRunMismatch",
+          "id": "src/authority.ts:20678:recordDualRunMismatch",
           "kind": "MethodDeclaration",
-          "line": 518,
+          "line": 523,
           "name": "recordDualRunMismatch"
         }
       ],
@@ -638,9 +638,9 @@
             "column": 3,
             "file": "src/authority.ts",
             "hasBody": true,
-            "id": "src/authority.ts:20438:recordDualRunMismatch",
+            "id": "src/authority.ts:20678:recordDualRunMismatch",
             "kind": "MethodDeclaration",
-            "line": 518,
+            "line": 523,
             "name": "recordDualRunMismatch"
           },
           "witness": {
@@ -658,19 +658,19 @@
                 "column": 64,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:5641:<anonymous@166>",
+                "id": "test/authority.test.ts:6317:<anonymous@185>",
                 "kind": "ArrowFunction",
-                "line": 166,
-                "name": "<anonymous@166>",
+                "line": 185,
+                "name": "<anonymous@185>",
                 "reason": "test-callback"
               },
               {
                 "column": 3,
                 "file": "src/authority.ts",
                 "hasBody": true,
-                "id": "src/authority.ts:20438:recordDualRunMismatch",
+                "id": "src/authority.ts:20678:recordDualRunMismatch",
                 "kind": "MethodDeclaration",
-                "line": 518,
+                "line": 523,
                 "name": "recordDualRunMismatch",
                 "reason": "resolved-call"
               }
@@ -686,9 +686,9 @@
           "column": 3,
           "file": "src/authority.ts",
           "hasBody": true,
-          "id": "src/authority.ts:37220:releaseFence",
+          "id": "src/authority.ts:37460:releaseFence",
           "kind": "MethodDeclaration",
-          "line": 1017,
+          "line": 1022,
           "name": "releaseFence"
         }
       ],
@@ -699,9 +699,9 @@
             "column": 3,
             "file": "src/authority.ts",
             "hasBody": true,
-            "id": "src/authority.ts:37220:releaseFence",
+            "id": "src/authority.ts:37460:releaseFence",
             "kind": "MethodDeclaration",
-            "line": 1017,
+            "line": 1022,
             "name": "releaseFence"
           },
           "witness": {
@@ -719,19 +719,19 @@
                 "column": 76,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:4032:<anonymous@119>",
+                "id": "test/authority.test.ts:4708:<anonymous@138>",
                 "kind": "ArrowFunction",
-                "line": 119,
-                "name": "<anonymous@119>",
+                "line": 138,
+                "name": "<anonymous@138>",
                 "reason": "test-callback"
               },
               {
                 "column": 3,
                 "file": "src/authority.ts",
                 "hasBody": true,
-                "id": "src/authority.ts:37220:releaseFence",
+                "id": "src/authority.ts:37460:releaseFence",
                 "kind": "MethodDeclaration",
-                "line": 1017,
+                "line": 1022,
                 "name": "releaseFence",
                 "reason": "resolved-call"
               }
@@ -747,9 +747,9 @@
           "column": 3,
           "file": "src/authority.ts",
           "hasBody": true,
-          "id": "src/authority.ts:24694:releaseLegacyWriter",
+          "id": "src/authority.ts:24934:releaseLegacyWriter",
           "kind": "MethodDeclaration",
-          "line": 646,
+          "line": 651,
           "name": "releaseLegacyWriter"
         }
       ],
@@ -760,9 +760,9 @@
             "column": 3,
             "file": "src/authority.ts",
             "hasBody": true,
-            "id": "src/authority.ts:24694:releaseLegacyWriter",
+            "id": "src/authority.ts:24934:releaseLegacyWriter",
             "kind": "MethodDeclaration",
-            "line": 646,
+            "line": 651,
             "name": "releaseLegacyWriter"
           },
           "witness": {
@@ -790,9 +790,9 @@
                 "column": 3,
                 "file": "src/authority.ts",
                 "hasBody": true,
-                "id": "src/authority.ts:24694:releaseLegacyWriter",
+                "id": "src/authority.ts:24934:releaseLegacyWriter",
                 "kind": "MethodDeclaration",
-                "line": 646,
+                "line": 651,
                 "name": "releaseLegacyWriter",
                 "reason": "resolved-call"
               }
@@ -2258,9 +2258,9 @@
           "column": 3,
           "file": "src/authority.ts",
           "hasBody": true,
-          "id": "src/authority.ts:30026:activate",
+          "id": "src/authority.ts:30266:activate",
           "kind": "MethodDeclaration",
-          "line": 797,
+          "line": 802,
           "name": "activate"
         }
       ],
@@ -2271,9 +2271,9 @@
             "column": 3,
             "file": "src/authority.ts",
             "hasBody": true,
-            "id": "src/authority.ts:30026:activate",
+            "id": "src/authority.ts:30266:activate",
             "kind": "MethodDeclaration",
-            "line": 797,
+            "line": 802,
             "name": "activate"
           },
           "witness": {
@@ -2291,19 +2291,19 @@
                 "column": 76,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:4032:<anonymous@119>",
+                "id": "test/authority.test.ts:4708:<anonymous@138>",
                 "kind": "ArrowFunction",
-                "line": 119,
-                "name": "<anonymous@119>",
+                "line": 138,
+                "name": "<anonymous@138>",
                 "reason": "test-callback"
               },
               {
                 "column": 3,
                 "file": "src/authority.ts",
                 "hasBody": true,
-                "id": "src/authority.ts:30026:activate",
+                "id": "src/authority.ts:30266:activate",
                 "kind": "MethodDeclaration",
-                "line": 797,
+                "line": 802,
                 "name": "activate",
                 "reason": "resolved-call"
               }
@@ -2319,9 +2319,9 @@
           "column": 3,
           "file": "src/authority.ts",
           "hasBody": true,
-          "id": "src/authority.ts:33488:activateGreenfield",
+          "id": "src/authority.ts:33728:activateGreenfield",
           "kind": "MethodDeclaration",
-          "line": 906,
+          "line": 911,
           "name": "activateGreenfield"
         }
       ],
@@ -2332,9 +2332,9 @@
             "column": 3,
             "file": "src/authority.ts",
             "hasBody": true,
-            "id": "src/authority.ts:33488:activateGreenfield",
+            "id": "src/authority.ts:33728:activateGreenfield",
             "kind": "MethodDeclaration",
-            "line": 906,
+            "line": 911,
             "name": "activateGreenfield"
           },
           "witness": {
@@ -2352,19 +2352,19 @@
                 "column": 84,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:9026:<anonymous@258>",
+                "id": "test/authority.test.ts:9702:<anonymous@277>",
                 "kind": "ArrowFunction",
-                "line": 258,
-                "name": "<anonymous@258>",
+                "line": 277,
+                "name": "<anonymous@277>",
                 "reason": "test-callback"
               },
               {
                 "column": 3,
                 "file": "src/authority.ts",
                 "hasBody": true,
-                "id": "src/authority.ts:33488:activateGreenfield",
+                "id": "src/authority.ts:33728:activateGreenfield",
                 "kind": "MethodDeclaration",
-                "line": 906,
+                "line": 911,
                 "name": "activateGreenfield",
                 "reason": "resolved-call"
               }
@@ -2380,9 +2380,9 @@
           "column": 3,
           "file": "src/authority.ts",
           "hasBody": true,
-          "id": "src/authority.ts:22432:admitLegacyWriter",
+          "id": "src/authority.ts:22672:admitLegacyWriter",
           "kind": "MethodDeclaration",
-          "line": 579,
+          "line": 584,
           "name": "admitLegacyWriter"
         }
       ],
@@ -2393,9 +2393,9 @@
             "column": 3,
             "file": "src/authority.ts",
             "hasBody": true,
-            "id": "src/authority.ts:22432:admitLegacyWriter",
+            "id": "src/authority.ts:22672:admitLegacyWriter",
             "kind": "MethodDeclaration",
-            "line": 579,
+            "line": 584,
             "name": "admitLegacyWriter"
           },
           "witness": {
@@ -2413,19 +2413,19 @@
                 "column": 84,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:9026:<anonymous@258>",
+                "id": "test/authority.test.ts:9702:<anonymous@277>",
                 "kind": "ArrowFunction",
-                "line": 258,
-                "name": "<anonymous@258>",
+                "line": 277,
+                "name": "<anonymous@277>",
                 "reason": "test-callback"
               },
               {
                 "column": 3,
                 "file": "src/authority.ts",
                 "hasBody": true,
-                "id": "src/authority.ts:22432:admitLegacyWriter",
+                "id": "src/authority.ts:22672:admitLegacyWriter",
                 "kind": "MethodDeclaration",
-                "line": 579,
+                "line": 584,
                 "name": "admitLegacyWriter",
                 "reason": "resolved-call"
               }
@@ -2441,9 +2441,9 @@
           "column": 3,
           "file": "src/authority.ts",
           "hasBody": true,
-          "id": "src/authority.ts:14952:certifyAdapter",
+          "id": "src/authority.ts:15192:certifyAdapter",
           "kind": "MethodDeclaration",
-          "line": 357,
+          "line": 362,
           "name": "certifyAdapter"
         }
       ],
@@ -2454,9 +2454,9 @@
             "column": 3,
             "file": "src/authority.ts",
             "hasBody": true,
-            "id": "src/authority.ts:14952:certifyAdapter",
+            "id": "src/authority.ts:15192:certifyAdapter",
             "kind": "MethodDeclaration",
-            "line": 357,
+            "line": 362,
             "name": "certifyAdapter"
           },
           "witness": {
@@ -2474,19 +2474,19 @@
                 "column": 84,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:9026:<anonymous@258>",
+                "id": "test/authority.test.ts:9702:<anonymous@277>",
                 "kind": "ArrowFunction",
-                "line": 258,
-                "name": "<anonymous@258>",
+                "line": 277,
+                "name": "<anonymous@277>",
                 "reason": "test-callback"
               },
               {
                 "column": 3,
                 "file": "src/authority.ts",
                 "hasBody": true,
-                "id": "src/authority.ts:14952:certifyAdapter",
+                "id": "src/authority.ts:15192:certifyAdapter",
                 "kind": "MethodDeclaration",
-                "line": 357,
+                "line": 362,
                 "name": "certifyAdapter",
                 "reason": "resolved-call"
               }
@@ -2502,9 +2502,9 @@
           "column": 3,
           "file": "src/authority.ts",
           "hasBody": true,
-          "id": "src/authority.ts:26635:claimFence",
+          "id": "src/authority.ts:26875:claimFence",
           "kind": "MethodDeclaration",
-          "line": 697,
+          "line": 702,
           "name": "claimFence"
         }
       ],
@@ -2515,9 +2515,9 @@
             "column": 3,
             "file": "src/authority.ts",
             "hasBody": true,
-            "id": "src/authority.ts:26635:claimFence",
+            "id": "src/authority.ts:26875:claimFence",
             "kind": "MethodDeclaration",
-            "line": 697,
+            "line": 702,
             "name": "claimFence"
           },
           "witness": {
@@ -2535,19 +2535,19 @@
                 "column": 76,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:4032:<anonymous@119>",
+                "id": "test/authority.test.ts:4708:<anonymous@138>",
                 "kind": "ArrowFunction",
-                "line": 119,
-                "name": "<anonymous@119>",
+                "line": 138,
+                "name": "<anonymous@138>",
                 "reason": "test-callback"
               },
               {
                 "column": 3,
                 "file": "src/authority.ts",
                 "hasBody": true,
-                "id": "src/authority.ts:26635:claimFence",
+                "id": "src/authority.ts:26875:claimFence",
                 "kind": "MethodDeclaration",
-                "line": 697,
+                "line": 702,
                 "name": "claimFence",
                 "reason": "resolved-call"
               }
@@ -2563,9 +2563,9 @@
           "column": 3,
           "file": "src/authority.ts",
           "hasBody": true,
-          "id": "src/authority.ts:18272:enterDualRun",
+          "id": "src/authority.ts:18512:enterDualRun",
           "kind": "MethodDeclaration",
-          "line": 453,
+          "line": 458,
           "name": "enterDualRun"
         }
       ],
@@ -2576,9 +2576,9 @@
             "column": 3,
             "file": "src/authority.ts",
             "hasBody": true,
-            "id": "src/authority.ts:18272:enterDualRun",
+            "id": "src/authority.ts:18512:enterDualRun",
             "kind": "MethodDeclaration",
-            "line": 453,
+            "line": 458,
             "name": "enterDualRun"
           },
           "witness": {
@@ -2606,9 +2606,9 @@
                 "column": 3,
                 "file": "src/authority.ts",
                 "hasBody": true,
-                "id": "src/authority.ts:18272:enterDualRun",
+                "id": "src/authority.ts:18512:enterDualRun",
                 "kind": "MethodDeclaration",
-                "line": 453,
+                "line": 458,
                 "name": "enterDualRun",
                 "reason": "resolved-call"
               }
@@ -2624,9 +2624,9 @@
           "column": 3,
           "file": "src/authority.ts",
           "hasBody": true,
-          "id": "src/authority.ts:16662:enterShadow",
+          "id": "src/authority.ts:16902:enterShadow",
           "kind": "MethodDeclaration",
-          "line": 407,
+          "line": 412,
           "name": "enterShadow"
         }
       ],
@@ -2637,9 +2637,9 @@
             "column": 3,
             "file": "src/authority.ts",
             "hasBody": true,
-            "id": "src/authority.ts:16662:enterShadow",
+            "id": "src/authority.ts:16902:enterShadow",
             "kind": "MethodDeclaration",
-            "line": 407,
+            "line": 412,
             "name": "enterShadow"
           },
           "witness": {
@@ -2667,9 +2667,9 @@
                 "column": 3,
                 "file": "src/authority.ts",
                 "hasBody": true,
-                "id": "src/authority.ts:16662:enterShadow",
+                "id": "src/authority.ts:16902:enterShadow",
                 "kind": "MethodDeclaration",
-                "line": 407,
+                "line": 412,
                 "name": "enterShadow",
                 "reason": "resolved-call"
               }
@@ -2685,9 +2685,9 @@
           "column": 3,
           "file": "src/authority.ts",
           "hasBody": true,
-          "id": "src/authority.ts:38458:markCompatibilityProjectionApplied",
+          "id": "src/authority.ts:38698:markCompatibilityProjectionApplied",
           "kind": "MethodDeclaration",
-          "line": 1053,
+          "line": 1058,
           "name": "markCompatibilityProjectionApplied"
         }
       ],
@@ -2698,9 +2698,9 @@
             "column": 3,
             "file": "src/authority.ts",
             "hasBody": true,
-            "id": "src/authority.ts:38458:markCompatibilityProjectionApplied",
+            "id": "src/authority.ts:38698:markCompatibilityProjectionApplied",
             "kind": "MethodDeclaration",
-            "line": 1053,
+            "line": 1058,
             "name": "markCompatibilityProjectionApplied"
           },
           "witness": {
@@ -2728,9 +2728,9 @@
                 "column": 3,
                 "file": "src/authority.ts",
                 "hasBody": true,
-                "id": "src/authority.ts:38458:markCompatibilityProjectionApplied",
+                "id": "src/authority.ts:38698:markCompatibilityProjectionApplied",
                 "kind": "MethodDeclaration",
-                "line": 1053,
+                "line": 1058,
                 "name": "markCompatibilityProjectionApplied",
                 "reason": "resolved-call"
               }
@@ -2746,9 +2746,9 @@
           "column": 3,
           "file": "src/authority.ts",
           "hasBody": true,
-          "id": "src/authority.ts:39043:markCompatibilityProjectionFailed",
+          "id": "src/authority.ts:39283:markCompatibilityProjectionFailed",
           "kind": "MethodDeclaration",
-          "line": 1069,
+          "line": 1074,
           "name": "markCompatibilityProjectionFailed"
         }
       ],
@@ -2759,9 +2759,9 @@
             "column": 3,
             "file": "src/authority.ts",
             "hasBody": true,
-            "id": "src/authority.ts:39043:markCompatibilityProjectionFailed",
+            "id": "src/authority.ts:39283:markCompatibilityProjectionFailed",
             "kind": "MethodDeclaration",
-            "line": 1069,
+            "line": 1074,
             "name": "markCompatibilityProjectionFailed"
           },
           "witness": {
@@ -2789,9 +2789,9 @@
                 "column": 3,
                 "file": "src/authority.ts",
                 "hasBody": true,
-                "id": "src/authority.ts:39043:markCompatibilityProjectionFailed",
+                "id": "src/authority.ts:39283:markCompatibilityProjectionFailed",
                 "kind": "MethodDeclaration",
-                "line": 1069,
+                "line": 1074,
                 "name": "markCompatibilityProjectionFailed",
                 "reason": "resolved-call"
               }
@@ -2807,9 +2807,9 @@
           "column": 3,
           "file": "src/authority.ts",
           "hasBody": true,
-          "id": "src/authority.ts:14602:read",
+          "id": "src/authority.ts:14842:read",
           "kind": "MethodDeclaration",
-          "line": 348,
+          "line": 353,
           "name": "read"
         }
       ],
@@ -2820,9 +2820,9 @@
             "column": 3,
             "file": "src/authority.ts",
             "hasBody": true,
-            "id": "src/authority.ts:14602:read",
+            "id": "src/authority.ts:14842:read",
             "kind": "MethodDeclaration",
-            "line": 348,
+            "line": 353,
             "name": "read"
           },
           "witness": {
@@ -2837,10 +2837,10 @@
                 "name": "test/authority.test.ts"
               },
               {
-                "column": 76,
+                "column": 80,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:4032:<anonymous@119>",
+                "id": "test/authority.test.ts:4036:<anonymous@119>",
                 "kind": "ArrowFunction",
                 "line": 119,
                 "name": "<anonymous@119>",
@@ -2850,9 +2850,9 @@
                 "column": 3,
                 "file": "src/authority.ts",
                 "hasBody": true,
-                "id": "src/authority.ts:14602:read",
+                "id": "src/authority.ts:14842:read",
                 "kind": "MethodDeclaration",
-                "line": 348,
+                "line": 353,
                 "name": "read",
                 "reason": "resolved-call"
               }
@@ -2868,9 +2868,9 @@
           "column": 3,
           "file": "src/authority.ts",
           "hasBody": true,
-          "id": "src/authority.ts:20438:recordDualRunMismatch",
+          "id": "src/authority.ts:20678:recordDualRunMismatch",
           "kind": "MethodDeclaration",
-          "line": 518,
+          "line": 523,
           "name": "recordDualRunMismatch"
         }
       ],
@@ -2881,9 +2881,9 @@
             "column": 3,
             "file": "src/authority.ts",
             "hasBody": true,
-            "id": "src/authority.ts:20438:recordDualRunMismatch",
+            "id": "src/authority.ts:20678:recordDualRunMismatch",
             "kind": "MethodDeclaration",
-            "line": 518,
+            "line": 523,
             "name": "recordDualRunMismatch"
           },
           "witness": {
@@ -2901,19 +2901,19 @@
                 "column": 64,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:5641:<anonymous@166>",
+                "id": "test/authority.test.ts:6317:<anonymous@185>",
                 "kind": "ArrowFunction",
-                "line": 166,
-                "name": "<anonymous@166>",
+                "line": 185,
+                "name": "<anonymous@185>",
                 "reason": "test-callback"
               },
               {
                 "column": 3,
                 "file": "src/authority.ts",
                 "hasBody": true,
-                "id": "src/authority.ts:20438:recordDualRunMismatch",
+                "id": "src/authority.ts:20678:recordDualRunMismatch",
                 "kind": "MethodDeclaration",
-                "line": 518,
+                "line": 523,
                 "name": "recordDualRunMismatch",
                 "reason": "resolved-call"
               }
@@ -2929,9 +2929,9 @@
           "column": 3,
           "file": "src/authority.ts",
           "hasBody": true,
-          "id": "src/authority.ts:37220:releaseFence",
+          "id": "src/authority.ts:37460:releaseFence",
           "kind": "MethodDeclaration",
-          "line": 1017,
+          "line": 1022,
           "name": "releaseFence"
         }
       ],
@@ -2942,9 +2942,9 @@
             "column": 3,
             "file": "src/authority.ts",
             "hasBody": true,
-            "id": "src/authority.ts:37220:releaseFence",
+            "id": "src/authority.ts:37460:releaseFence",
             "kind": "MethodDeclaration",
-            "line": 1017,
+            "line": 1022,
             "name": "releaseFence"
           },
           "witness": {
@@ -2962,19 +2962,19 @@
                 "column": 76,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:4032:<anonymous@119>",
+                "id": "test/authority.test.ts:4708:<anonymous@138>",
                 "kind": "ArrowFunction",
-                "line": 119,
-                "name": "<anonymous@119>",
+                "line": 138,
+                "name": "<anonymous@138>",
                 "reason": "test-callback"
               },
               {
                 "column": 3,
                 "file": "src/authority.ts",
                 "hasBody": true,
-                "id": "src/authority.ts:37220:releaseFence",
+                "id": "src/authority.ts:37460:releaseFence",
                 "kind": "MethodDeclaration",
-                "line": 1017,
+                "line": 1022,
                 "name": "releaseFence",
                 "reason": "resolved-call"
               }
@@ -2990,9 +2990,9 @@
           "column": 3,
           "file": "src/authority.ts",
           "hasBody": true,
-          "id": "src/authority.ts:24694:releaseLegacyWriter",
+          "id": "src/authority.ts:24934:releaseLegacyWriter",
           "kind": "MethodDeclaration",
-          "line": 646,
+          "line": 651,
           "name": "releaseLegacyWriter"
         }
       ],
@@ -3003,9 +3003,9 @@
             "column": 3,
             "file": "src/authority.ts",
             "hasBody": true,
-            "id": "src/authority.ts:24694:releaseLegacyWriter",
+            "id": "src/authority.ts:24934:releaseLegacyWriter",
             "kind": "MethodDeclaration",
-            "line": 646,
+            "line": 651,
             "name": "releaseLegacyWriter"
           },
           "witness": {
@@ -3033,9 +3033,9 @@
                 "column": 3,
                 "file": "src/authority.ts",
                 "hasBody": true,
-                "id": "src/authority.ts:24694:releaseLegacyWriter",
+                "id": "src/authority.ts:24934:releaseLegacyWriter",
                 "kind": "MethodDeclaration",
-                "line": 646,
+                "line": 651,
                 "name": "releaseLegacyWriter",
                 "reason": "resolved-call"
               }
@@ -4686,10 +4686,10 @@
                 "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:8036:<anonymous@231>",
+                "id": "test/authority.test.ts:8712:<anonymous@250>",
                 "kind": "ArrowFunction",
-                "line": 231,
-                "name": "<anonymous@231>",
+                "line": 250,
+                "name": "<anonymous@250>",
                 "reason": "test-callback"
               },
               {
@@ -5151,10 +5151,10 @@
                 "column": 60,
                 "file": "test/formal-storage-refinement-suite.ts",
                 "hasBody": true,
-                "id": "test/formal-storage-refinement-suite.ts:20487:<anonymous@621>",
+                "id": "test/formal-storage-refinement-suite.ts:20595:<anonymous@622>",
                 "kind": "ArrowFunction",
-                "line": 621,
-                "name": "<anonymous@621>",
+                "line": 622,
+                "name": "<anonymous@622>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -5232,10 +5232,10 @@
                 "column": 93,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:12484:<anonymous@347>",
+                "id": "test/authority.test.ts:13160:<anonymous@366>",
                 "kind": "ArrowFunction",
-                "line": 347,
-                "name": "<anonymous@347>",
+                "line": 366,
+                "name": "<anonymous@366>",
                 "reason": "test-callback"
               },
               {
@@ -8008,10 +8008,10 @@
                 "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:8036:<anonymous@231>",
+                "id": "test/authority.test.ts:8712:<anonymous@250>",
                 "kind": "ArrowFunction",
-                "line": 231,
-                "name": "<anonymous@231>",
+                "line": 250,
+                "name": "<anonymous@250>",
                 "reason": "test-callback"
               },
               {
@@ -9413,9 +9413,9 @@
           "column": 1,
           "file": "src/transfers.ts",
           "hasBody": true,
-          "id": "src/transfers.ts:25934:createInventoryTransferDispatchEvent",
+          "id": "src/transfers.ts:26366:createInventoryTransferDispatchEvent",
           "kind": "FunctionDeclaration",
-          "line": 631,
+          "line": 640,
           "name": "createInventoryTransferDispatchEvent"
         }
       ],
@@ -9426,9 +9426,9 @@
             "column": 1,
             "file": "src/transfers.ts",
             "hasBody": true,
-            "id": "src/transfers.ts:25934:createInventoryTransferDispatchEvent",
+            "id": "src/transfers.ts:26366:createInventoryTransferDispatchEvent",
             "kind": "FunctionDeclaration",
-            "line": 631,
+            "line": 640,
             "name": "createInventoryTransferDispatchEvent"
           },
           "witness": {
@@ -9446,19 +9446,19 @@
                 "column": 79,
                 "file": "test/transfer-lifecycle.test.ts",
                 "hasBody": true,
-                "id": "test/transfer-lifecycle.test.ts:14215:<anonymous@431>",
+                "id": "test/transfer-lifecycle.test.ts:14839:<anonymous@454>",
                 "kind": "ArrowFunction",
-                "line": 431,
-                "name": "<anonymous@431>",
+                "line": 454,
+                "name": "<anonymous@454>",
                 "reason": "test-callback"
               },
               {
                 "column": 1,
                 "file": "src/transfers.ts",
                 "hasBody": true,
-                "id": "src/transfers.ts:25934:createInventoryTransferDispatchEvent",
+                "id": "src/transfers.ts:26366:createInventoryTransferDispatchEvent",
                 "kind": "FunctionDeclaration",
-                "line": 631,
+                "line": 640,
                 "name": "createInventoryTransferDispatchEvent",
                 "reason": "resolved-call"
               }
@@ -9697,9 +9697,9 @@
           "column": 1,
           "file": "src/transfers.ts",
           "hasBody": true,
-          "id": "src/transfers.ts:27508:createInventoryTransferReceiveEvent",
+          "id": "src/transfers.ts:27940:createInventoryTransferReceiveEvent",
           "kind": "FunctionDeclaration",
-          "line": 676,
+          "line": 685,
           "name": "createInventoryTransferReceiveEvent"
         }
       ],
@@ -9710,9 +9710,9 @@
             "column": 1,
             "file": "src/transfers.ts",
             "hasBody": true,
-            "id": "src/transfers.ts:27508:createInventoryTransferReceiveEvent",
+            "id": "src/transfers.ts:27940:createInventoryTransferReceiveEvent",
             "kind": "FunctionDeclaration",
-            "line": 676,
+            "line": 685,
             "name": "createInventoryTransferReceiveEvent"
           },
           "witness": {
@@ -9730,19 +9730,19 @@
                 "column": 79,
                 "file": "test/transfer-lifecycle.test.ts",
                 "hasBody": true,
-                "id": "test/transfer-lifecycle.test.ts:14215:<anonymous@431>",
+                "id": "test/transfer-lifecycle.test.ts:14839:<anonymous@454>",
                 "kind": "ArrowFunction",
-                "line": 431,
-                "name": "<anonymous@431>",
+                "line": 454,
+                "name": "<anonymous@454>",
                 "reason": "test-callback"
               },
               {
                 "column": 1,
                 "file": "src/transfers.ts",
                 "hasBody": true,
-                "id": "src/transfers.ts:27508:createInventoryTransferReceiveEvent",
+                "id": "src/transfers.ts:27940:createInventoryTransferReceiveEvent",
                 "kind": "FunctionDeclaration",
-                "line": 676,
+                "line": 685,
                 "name": "createInventoryTransferReceiveEvent",
                 "reason": "resolved-call"
               }
@@ -9758,9 +9758,9 @@
           "column": 1,
           "file": "src/transfers.ts",
           "hasBody": true,
-          "id": "src/transfers.ts:29590:createInventoryTransferReleaseEvent",
+          "id": "src/transfers.ts:30022:createInventoryTransferReleaseEvent",
           "kind": "FunctionDeclaration",
-          "line": 741,
+          "line": 750,
           "name": "createInventoryTransferReleaseEvent"
         }
       ],
@@ -9771,9 +9771,9 @@
             "column": 1,
             "file": "src/transfers.ts",
             "hasBody": true,
-            "id": "src/transfers.ts:29590:createInventoryTransferReleaseEvent",
+            "id": "src/transfers.ts:30022:createInventoryTransferReleaseEvent",
             "kind": "FunctionDeclaration",
-            "line": 741,
+            "line": 750,
             "name": "createInventoryTransferReleaseEvent"
           },
           "witness": {
@@ -9791,19 +9791,19 @@
                 "column": 86,
                 "file": "test/transfer-lifecycle.test.ts",
                 "hasBody": true,
-                "id": "test/transfer-lifecycle.test.ts:18520:<anonymous@557>",
+                "id": "test/transfer-lifecycle.test.ts:19144:<anonymous@580>",
                 "kind": "ArrowFunction",
-                "line": 557,
-                "name": "<anonymous@557>",
+                "line": 580,
+                "name": "<anonymous@580>",
                 "reason": "test-callback"
               },
               {
                 "column": 1,
                 "file": "src/transfers.ts",
                 "hasBody": true,
-                "id": "src/transfers.ts:29590:createInventoryTransferReleaseEvent",
+                "id": "src/transfers.ts:30022:createInventoryTransferReleaseEvent",
                 "kind": "FunctionDeclaration",
-                "line": 741,
+                "line": 750,
                 "name": "createInventoryTransferReleaseEvent",
                 "reason": "resolved-call"
               }
@@ -12043,9 +12043,9 @@
                 "column": 78,
                 "file": "src/transfers.ts",
                 "hasBody": true,
-                "id": "src/transfers.ts:38269:transferLifecycleEvent",
+                "id": "src/transfers.ts:38701:transferLifecycleEvent",
                 "kind": "FunctionDeclaration",
-                "line": 973,
+                "line": 982,
                 "name": "transferLifecycleEvent",
                 "reason": "resolved-call"
               },
@@ -12104,10 +12104,10 @@
                 "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:8036:<anonymous@231>",
+                "id": "test/authority.test.ts:8712:<anonymous@250>",
                 "kind": "ArrowFunction",
-                "line": 231,
-                "name": "<anonymous@231>",
+                "line": 250,
+                "name": "<anonymous@250>",
                 "reason": "test-callback"
               },
               {
@@ -16068,9 +16068,9 @@
                 "column": 1,
                 "file": "test/formal-implementation-abstraction.ts",
                 "hasBody": true,
-                "id": "test/formal-implementation-abstraction.ts:40853:abstractPrimaryBalance",
+                "id": "test/formal-implementation-abstraction.ts:40903:abstractPrimaryBalance",
                 "kind": "FunctionDeclaration",
-                "line": 1097,
+                "line": 1098,
                 "name": "abstractPrimaryBalance",
                 "reason": "resolved-call"
               },
@@ -18238,10 +18238,10 @@
                 "name": "test/authority.test.ts"
               },
               {
-                "column": 76,
+                "column": 80,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:4032:<anonymous@119>",
+                "id": "test/authority.test.ts:4036:<anonymous@119>",
                 "kind": "ArrowFunction",
                 "line": 119,
                 "name": "<anonymous@119>",
@@ -18393,10 +18393,10 @@
                 "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:8036:<anonymous@231>",
+                "id": "test/authority.test.ts:8712:<anonymous@250>",
                 "kind": "ArrowFunction",
-                "line": 231,
-                "name": "<anonymous@231>",
+                "line": 250,
+                "name": "<anonymous@250>",
                 "reason": "test-callback"
               },
               {
@@ -19153,10 +19153,10 @@
                 "column": 82,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:6334:<anonymous@184>",
+                "id": "test/authority.test.ts:7010:<anonymous@203>",
                 "kind": "ArrowFunction",
-                "line": 184,
-                "name": "<anonymous@184>",
+                "line": 203,
+                "name": "<anonymous@203>",
                 "reason": "test-callback"
               },
               {
@@ -19556,10 +19556,10 @@
                 "name": "test/authority.test.ts"
               },
               {
-                "column": 76,
+                "column": 80,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:4032:<anonymous@119>",
+                "id": "test/authority.test.ts:4036:<anonymous@119>",
                 "kind": "ArrowFunction",
                 "line": 119,
                 "name": "<anonymous@119>",
@@ -19620,10 +19620,10 @@
                 "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:8036:<anonymous@231>",
+                "id": "test/authority.test.ts:8712:<anonymous@250>",
                 "kind": "ArrowFunction",
-                "line": 231,
-                "name": "<anonymous@231>",
+                "line": 250,
+                "name": "<anonymous@250>",
                 "reason": "test-callback"
               },
               {
@@ -19681,10 +19681,10 @@
                 "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:10913:<anonymous@308>",
+                "id": "test/authority.test.ts:11589:<anonymous@327>",
                 "kind": "ArrowFunction",
-                "line": 308,
-                "name": "<anonymous@308>",
+                "line": 327,
+                "name": "<anonymous@327>",
                 "reason": "test-callback"
               },
               {
@@ -21082,10 +21082,10 @@
                 "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:10913:<anonymous@308>",
+                "id": "test/authority.test.ts:11589:<anonymous@327>",
                 "kind": "ArrowFunction",
-                "line": 308,
-                "name": "<anonymous@308>",
+                "line": 327,
+                "name": "<anonymous@327>",
                 "reason": "test-callback"
               },
               {
@@ -21153,10 +21153,10 @@
                 "column": 82,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:6334:<anonymous@184>",
+                "id": "test/authority.test.ts:7010:<anonymous@203>",
                 "kind": "ArrowFunction",
-                "line": 184,
-                "name": "<anonymous@184>",
+                "line": 203,
+                "name": "<anonymous@203>",
                 "reason": "test-callback"
               },
               {
@@ -24042,9 +24042,9 @@
                 "column": 1,
                 "file": "test/formal-implementation-abstraction.ts",
                 "hasBody": true,
-                "id": "test/formal-implementation-abstraction.ts:40853:abstractPrimaryBalance",
+                "id": "test/formal-implementation-abstraction.ts:40903:abstractPrimaryBalance",
                 "kind": "FunctionDeclaration",
-                "line": 1097,
+                "line": 1098,
                 "name": "abstractPrimaryBalance",
                 "reason": "resolved-call"
               },
@@ -24263,9 +24263,9 @@
           "column": 1,
           "file": "src/authority.ts",
           "hasBody": true,
-          "id": "src/authority.ts:59467:requireInventoryAuthorityMode",
+          "id": "src/authority.ts:59707:requireInventoryAuthorityMode",
           "kind": "FunctionDeclaration",
-          "line": 1672,
+          "line": 1677,
           "name": "requireInventoryAuthorityMode"
         }
       ],
@@ -24276,9 +24276,9 @@
             "column": 1,
             "file": "src/authority.ts",
             "hasBody": true,
-            "id": "src/authority.ts:59467:requireInventoryAuthorityMode",
+            "id": "src/authority.ts:59707:requireInventoryAuthorityMode",
             "kind": "FunctionDeclaration",
-            "line": 1672,
+            "line": 1677,
             "name": "requireInventoryAuthorityMode"
           },
           "witness": {
@@ -24296,19 +24296,19 @@
                 "column": 66,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:19248:<anonymous@529>",
+                "id": "test/authority.test.ts:19924:<anonymous@548>",
                 "kind": "ArrowFunction",
-                "line": 529,
-                "name": "<anonymous@529>",
+                "line": 548,
+                "name": "<anonymous@548>",
                 "reason": "test-callback"
               },
               {
                 "column": 1,
                 "file": "src/authority.ts",
                 "hasBody": true,
-                "id": "src/authority.ts:59467:requireInventoryAuthorityMode",
+                "id": "src/authority.ts:59707:requireInventoryAuthorityMode",
                 "kind": "FunctionDeclaration",
-                "line": 1672,
+                "line": 1677,
                 "name": "requireInventoryAuthorityMode",
                 "reason": "resolved-call"
               }
@@ -25482,10 +25482,10 @@
                 "column": 7,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:4160:<anonymous@139>",
+                "id": "test/formal-public-surface-direct.test.ts:4257:<anonymous@140>",
                 "kind": "ArrowFunction",
-                "line": 139,
-                "name": "<anonymous@139>",
+                "line": 140,
+                "name": "<anonymous@140>",
                 "reason": "callback-dispatch"
               },
               {
@@ -25583,10 +25583,10 @@
                 "column": 7,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:4160:<anonymous@139>",
+                "id": "test/formal-public-surface-direct.test.ts:4257:<anonymous@140>",
                 "kind": "ArrowFunction",
-                "line": 139,
-                "name": "<anonymous@139>",
+                "line": 140,
+                "name": "<anonymous@140>",
                 "reason": "callback-dispatch"
               },
               {
@@ -25664,10 +25664,10 @@
                 "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:8036:<anonymous@231>",
+                "id": "test/authority.test.ts:8712:<anonymous@250>",
                 "kind": "ArrowFunction",
-                "line": 231,
-                "name": "<anonymous@231>",
+                "line": 250,
+                "name": "<anonymous@250>",
                 "reason": "test-callback"
               },
               {
@@ -25745,10 +25745,10 @@
                 "column": 82,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:6334:<anonymous@184>",
+                "id": "test/authority.test.ts:7010:<anonymous@203>",
                 "kind": "ArrowFunction",
-                "line": 184,
-                "name": "<anonymous@184>",
+                "line": 203,
+                "name": "<anonymous@203>",
                 "reason": "test-callback"
               },
               {
@@ -25806,10 +25806,10 @@
                 "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:8036:<anonymous@231>",
+                "id": "test/authority.test.ts:8712:<anonymous@250>",
                 "kind": "ArrowFunction",
-                "line": 231,
-                "name": "<anonymous@231>",
+                "line": 250,
+                "name": "<anonymous@250>",
                 "reason": "test-callback"
               },
               {
@@ -25907,10 +25907,10 @@
                 "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:8036:<anonymous@231>",
+                "id": "test/authority.test.ts:8712:<anonymous@250>",
                 "kind": "ArrowFunction",
-                "line": 231,
-                "name": "<anonymous@231>",
+                "line": 250,
+                "name": "<anonymous@250>",
                 "reason": "test-callback"
               },
               {
@@ -26069,10 +26069,10 @@
                 "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:10913:<anonymous@308>",
+                "id": "test/authority.test.ts:11589:<anonymous@327>",
                 "kind": "ArrowFunction",
-                "line": 308,
-                "name": "<anonymous@308>",
+                "line": 327,
+                "name": "<anonymous@327>",
                 "reason": "test-callback"
               },
               {
@@ -26150,10 +26150,10 @@
                 "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:10913:<anonymous@308>",
+                "id": "test/authority.test.ts:11589:<anonymous@327>",
                 "kind": "ArrowFunction",
-                "line": 308,
-                "name": "<anonymous@308>",
+                "line": 327,
+                "name": "<anonymous@327>",
                 "reason": "test-callback"
               },
               {
@@ -26434,10 +26434,10 @@
                 "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:10913:<anonymous@308>",
+                "id": "test/authority.test.ts:11589:<anonymous@327>",
                 "kind": "ArrowFunction",
-                "line": 308,
-                "name": "<anonymous@308>",
+                "line": 327,
+                "name": "<anonymous@327>",
                 "reason": "test-callback"
               },
               {
@@ -26515,10 +26515,10 @@
                 "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:10913:<anonymous@308>",
+                "id": "test/authority.test.ts:11589:<anonymous@327>",
                 "kind": "ArrowFunction",
-                "line": 308,
-                "name": "<anonymous@308>",
+                "line": 327,
+                "name": "<anonymous@327>",
                 "reason": "test-callback"
               },
               {
@@ -26606,10 +26606,10 @@
                 "column": 7,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:4730:<anonymous@160>",
+                "id": "test/formal-public-surface-direct.test.ts:4827:<anonymous@161>",
                 "kind": "ArrowFunction",
-                "line": 160,
-                "name": "<anonymous@160>",
+                "line": 161,
+                "name": "<anonymous@161>",
                 "reason": "callback-dispatch"
               },
               {
@@ -26687,10 +26687,10 @@
                 "column": 7,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:4160:<anonymous@139>",
+                "id": "test/formal-public-surface-direct.test.ts:4257:<anonymous@140>",
                 "kind": "ArrowFunction",
-                "line": 139,
-                "name": "<anonymous@139>",
+                "line": 140,
+                "name": "<anonymous@140>",
                 "reason": "callback-dispatch"
               },
               {
@@ -26768,10 +26768,10 @@
                 "column": 60,
                 "file": "test/formal-storage-refinement-suite.ts",
                 "hasBody": true,
-                "id": "test/formal-storage-refinement-suite.ts:20487:<anonymous@621>",
+                "id": "test/formal-storage-refinement-suite.ts:20595:<anonymous@622>",
                 "kind": "ArrowFunction",
-                "line": 621,
-                "name": "<anonymous@621>",
+                "line": 622,
+                "name": "<anonymous@622>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -26930,10 +26930,10 @@
                 "column": 7,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:3845:<anonymous@128>",
+                "id": "test/formal-public-surface-direct.test.ts:3942:<anonymous@129>",
                 "kind": "ArrowFunction",
-                "line": 128,
-                "name": "<anonymous@128>",
+                "line": 129,
+                "name": "<anonymous@129>",
                 "reason": "callback-dispatch"
               },
               {
@@ -27011,10 +27011,10 @@
                 "column": 7,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:4357:<anonymous@147>",
+                "id": "test/formal-public-surface-direct.test.ts:4454:<anonymous@148>",
                 "kind": "ArrowFunction",
-                "line": 147,
-                "name": "<anonymous@147>",
+                "line": 148,
+                "name": "<anonymous@148>",
                 "reason": "callback-dispatch"
               },
               {
@@ -27285,10 +27285,10 @@
                 "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:8036:<anonymous@231>",
+                "id": "test/authority.test.ts:8712:<anonymous@250>",
                 "kind": "ArrowFunction",
-                "line": 231,
-                "name": "<anonymous@231>",
+                "line": 250,
+                "name": "<anonymous@250>",
                 "reason": "test-callback"
               },
               {
@@ -34310,10 +34310,10 @@
                 "column": 68,
                 "file": "test/formal-storage-refinement-suite.ts",
                 "hasBody": true,
-                "id": "test/formal-storage-refinement-suite.ts:24001:<anonymous@717>",
+                "id": "test/formal-storage-refinement-suite.ts:24109:<anonymous@718>",
                 "kind": "ArrowFunction",
-                "line": 717,
-                "name": "<anonymous@717>",
+                "line": 718,
+                "name": "<anonymous@718>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -34827,10 +34827,10 @@
                 "column": 76,
                 "file": "test/transfer-lifecycle.test.ts",
                 "hasBody": true,
-                "id": "test/transfer-lifecycle.test.ts:5088:<anonymous@163>",
+                "id": "test/transfer-lifecycle.test.ts:5712:<anonymous@186>",
                 "kind": "ArrowFunction",
-                "line": 163,
-                "name": "<anonymous@163>",
+                "line": 186,
+                "name": "<anonymous@186>",
                 "reason": "test-callback"
               },
               {
@@ -34898,10 +34898,10 @@
                 "column": 76,
                 "file": "test/transfer-lifecycle.test.ts",
                 "hasBody": true,
-                "id": "test/transfer-lifecycle.test.ts:5088:<anonymous@163>",
+                "id": "test/transfer-lifecycle.test.ts:5712:<anonymous@186>",
                 "kind": "ArrowFunction",
-                "line": 163,
-                "name": "<anonymous@163>",
+                "line": 186,
+                "name": "<anonymous@186>",
                 "reason": "test-callback"
               },
               {
@@ -35040,10 +35040,10 @@
                 "column": 76,
                 "file": "test/transfer-lifecycle.test.ts",
                 "hasBody": true,
-                "id": "test/transfer-lifecycle.test.ts:5088:<anonymous@163>",
+                "id": "test/transfer-lifecycle.test.ts:5712:<anonymous@186>",
                 "kind": "ArrowFunction",
-                "line": 163,
-                "name": "<anonymous@163>",
+                "line": 186,
+                "name": "<anonymous@186>",
                 "reason": "test-callback"
               },
               {
@@ -35111,10 +35111,10 @@
                 "column": 86,
                 "file": "test/transfer-lifecycle.test.ts",
                 "hasBody": true,
-                "id": "test/transfer-lifecycle.test.ts:18520:<anonymous@557>",
+                "id": "test/transfer-lifecycle.test.ts:19144:<anonymous@580>",
                 "kind": "ArrowFunction",
-                "line": 557,
-                "name": "<anonymous@557>",
+                "line": 580,
+                "name": "<anonymous@580>",
                 "reason": "test-callback"
               },
               {
@@ -35831,10 +35831,10 @@
                 "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:8036:<anonymous@231>",
+                "id": "test/authority.test.ts:8712:<anonymous@250>",
                 "kind": "ArrowFunction",
-                "line": 231,
-                "name": "<anonymous@231>",
+                "line": 250,
+                "name": "<anonymous@250>",
                 "reason": "test-callback"
               },
               {
@@ -36296,10 +36296,10 @@
                 "column": 60,
                 "file": "test/formal-storage-refinement-suite.ts",
                 "hasBody": true,
-                "id": "test/formal-storage-refinement-suite.ts:20487:<anonymous@621>",
+                "id": "test/formal-storage-refinement-suite.ts:20595:<anonymous@622>",
                 "kind": "ArrowFunction",
-                "line": 621,
-                "name": "<anonymous@621>",
+                "line": 622,
+                "name": "<anonymous@622>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -36377,10 +36377,10 @@
                 "column": 93,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:12484:<anonymous@347>",
+                "id": "test/authority.test.ts:13160:<anonymous@366>",
                 "kind": "ArrowFunction",
-                "line": 347,
-                "name": "<anonymous@347>",
+                "line": 366,
+                "name": "<anonymous@366>",
                 "reason": "test-callback"
               },
               {
@@ -37109,5 +37109,5 @@
     }
   },
   "schemaVersion": 1,
-  "surfaceSha256": "538ddae66a51d60e3e27dc0c93e0c6dad65629d75135d071ff665ce0cfa01df9"
+  "surfaceSha256": "0a813a524d5f37b17fcdf9c44926706317b837c393b129f496e9002b7782fe74"
 }

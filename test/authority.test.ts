@@ -116,6 +116,25 @@ async function enterDualRun(
 }
 
 describe("portable InventoryOnce authority controller", () => {
+  it("observes initialization failure before first use without swallowing it", async () => {
+    const failure = new Error("authority initialization failed");
+    const store: InventoryAuthorityStateStore = {
+      ensure: async () => {
+        throw failure;
+      },
+      read: async () => undefined,
+      create: async () => InventoryAuthorityCreateResult.Created,
+      compareAndSet: async () => false,
+    };
+    const authority = createInventoryAuthorityControl({
+      store,
+      namespaceId: "clinic-init-failure:primary",
+    });
+
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    await expect(authority.read()).rejects.toBe(failure);
+  });
+
   it("moves monotonically through certification, fencing, and activation", async () => {
     const authority = createInventoryAuthorityControl({
       store: new TestAuthorityStore(),
