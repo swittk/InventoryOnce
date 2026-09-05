@@ -158,6 +158,8 @@ CompletedReceiptLeavesNoTransit ==
 ReleasedReturnsCommitment ==
   \A t \in Transfers: phase[t] = "released" => prepared[t] = 0 /\ dispatched[t] = 0
 
+\* State predicate only: NoIntent is present exactly while a transfer remains ready.
+\* Cross-step immutability is enforced by the action structure: only Prepare writes intent.
 IntentNeverChanges ==
   \A t \in Transfers: phase[t] = "ready" <=> intent[t] = NoIntent
 

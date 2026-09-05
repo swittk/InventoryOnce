@@ -217,8 +217,10 @@ describe("generic InventoryOnce read model", () => {
       inventoryStockSelector("item-a", { locationIds: ["empty-store"] })
     );
     expect(summary.revisions).toHaveLength(1);
-    expect(summary.revisions[0]?.itemRevisionId).toBe("item-a-v2");
-    expect(primaryMinor(summary.revisions[0]!.total)).toBe(0);
-    expect(summary.revisions[0]?.positions).toEqual([]);
+    const revision = summary.revisions[0];
+    if (revision === undefined) throw new Error("Missing zero-stock revision.");
+    expect(revision.itemRevisionId).toBe("item-a-v2");
+    expect(primaryMinor(revision.total)).toBe(0);
+    expect(revision.positions).toEqual([]);
   });
 });

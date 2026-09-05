@@ -346,7 +346,7 @@ is a cross-item pool claim. One-way/priority/clinical substitution remains outsi
 
 Most single-authority semantics above now have TypeScript companions. `DistributedRights` remains a future design constraint for offline/multi-writer stock. The TLA+ models are bounded state machines, not a proof of arbitrary TypeScript or arbitrary database code. See `formal/README.md`, `formal/FOUNDATIONS.md`, and `formal/TOOLING.md` for the exact claims.
 
-Required local gates are `pnpm check`, `pnpm test`, `pnpm build`, and `pnpm formal` after loading the repository `.nvmrc`.
+Required local gates are `pnpm check`, `pnpm test`, `pnpm build`, and `pnpm formal` using a Node version permitted by `package.json#engines`.
 
 ## Authority cutover admission
 

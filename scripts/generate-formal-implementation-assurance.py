@@ -171,6 +171,9 @@ def public_symbol(signature):
 
 
 ALL_PRODUCTION_SOURCES = sorted((pkg / 'src').rglob('*.ts'))
+PRODUCTION_SOURCE_TEXTS = [
+ (path, path.read_text(errors='ignore')) for path in ALL_PRODUCTION_SOURCES
+]
 
 # Find diagnostic production-source references for one public symbol without granting coverage.
 def internal_source_references(signature):
@@ -178,8 +181,7 @@ def internal_source_references(signature):
  if symbol is None: return []
  declaration = signature.get('declaration')
  references = []
- for path in ALL_PRODUCTION_SOURCES:
-  text = path.read_text(errors='ignore')
+ for path, text in PRODUCTION_SOURCE_TEXTS:
   count = len(re.findall(r'\b' + re.escape(symbol) + r'\b', text))
   relative = str(path.relative_to(pkg)).replace('\\', '/')
   if count == 0: continue

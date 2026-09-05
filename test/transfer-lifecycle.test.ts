@@ -331,6 +331,7 @@ describe("first-class physical transfer lifecycle", () => {
       inventory.stock.issue({
         operationId: "cannot-smuggle-transfer-position",
         occurredAt: time2,
+        // Deliberately pass a transfer-bound key to verify issue refuses what its honest type excludes.
         from: transitPositions[0]!.key as never,
         amount: stockAmount("1", "piece"),
       })

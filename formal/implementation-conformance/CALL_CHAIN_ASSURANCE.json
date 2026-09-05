@@ -9446,10 +9446,10 @@
                 "column": 79,
                 "file": "test/transfer-lifecycle.test.ts",
                 "hasBody": true,
-                "id": "test/transfer-lifecycle.test.ts:13345:<anonymous@408>",
+                "id": "test/transfer-lifecycle.test.ts:13450:<anonymous@409>",
                 "kind": "ArrowFunction",
-                "line": 408,
-                "name": "<anonymous@408>",
+                "line": 409,
+                "name": "<anonymous@409>",
                 "reason": "test-callback"
               },
               {
@@ -9730,10 +9730,10 @@
                 "column": 79,
                 "file": "test/transfer-lifecycle.test.ts",
                 "hasBody": true,
-                "id": "test/transfer-lifecycle.test.ts:13345:<anonymous@408>",
+                "id": "test/transfer-lifecycle.test.ts:13450:<anonymous@409>",
                 "kind": "ArrowFunction",
-                "line": 408,
-                "name": "<anonymous@408>",
+                "line": 409,
+                "name": "<anonymous@409>",
                 "reason": "test-callback"
               },
               {
@@ -9791,10 +9791,10 @@
                 "column": 86,
                 "file": "test/transfer-lifecycle.test.ts",
                 "hasBody": true,
-                "id": "test/transfer-lifecycle.test.ts:17650:<anonymous@534>",
+                "id": "test/transfer-lifecycle.test.ts:17755:<anonymous@535>",
                 "kind": "ArrowFunction",
-                "line": 534,
-                "name": "<anonymous@534>",
+                "line": 535,
+                "name": "<anonymous@535>",
                 "reason": "test-callback"
               },
               {
@@ -35111,10 +35111,10 @@
                 "column": 86,
                 "file": "test/transfer-lifecycle.test.ts",
                 "hasBody": true,
-                "id": "test/transfer-lifecycle.test.ts:17650:<anonymous@534>",
+                "id": "test/transfer-lifecycle.test.ts:17755:<anonymous@535>",
                 "kind": "ArrowFunction",
-                "line": 534,
-                "name": "<anonymous@534>",
+                "line": 535,
+                "name": "<anonymous@535>",
                 "reason": "test-callback"
               },
               {
