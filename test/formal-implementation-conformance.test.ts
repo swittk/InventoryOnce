@@ -46,6 +46,19 @@ interface FormalImplementationConformanceSummary {
 }
 
 describe("formal implementation conformance manifest", () => {
+  it("does not count TLC section keywords as configured checks", () => {
+    const output = execFileSync(
+      process.execPath,
+      [
+        "--input-type=module",
+        "--eval",
+        'import { formalConfigCheckNames } from "./scripts/formal-models.mjs"; process.stdout.write(JSON.stringify(formalConfigCheckNames("INVARIANTS\\nTypeOK\\nSPECIFICATION\\nSpec\\n")));',
+      ],
+      { cwd: packageRoot, encoding: "utf8" }
+    );
+    expect(JSON.parse(output) as unknown).toEqual(["TypeOK"]);
+  });
+
   it("matches every public callable and reachable field to checked formal obligations", () => {
     const output = execFileSync(
       process.execPath,

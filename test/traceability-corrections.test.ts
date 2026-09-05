@@ -84,7 +84,10 @@ describe("traceability graph meanings", () => {
     });
     const world = await inventory.read.world();
     const kinds = Object.values(world.projection.traceability.relations)
-      .map((relation) => relation.kind)
+      .map(
+        /** Return each retained relation kind for deterministic comparison. */
+        (relation) => relation.kind
+      )
       .sort();
     expect(kinds).toEqual([
       InventoryTraceabilityRelationKind.Association,

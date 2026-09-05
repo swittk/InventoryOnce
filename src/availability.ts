@@ -206,9 +206,6 @@ function selectedPositionsByRevision(
     positions.push(position);
     positionsByRevision.set(position.key.itemRevisionId, positions);
   }
-  for (const positions of positionsByRevision.values()) {
-    positions.sort(compareAvailabilityPosition);
-  }
   return positionsByRevision;
 }
 
@@ -268,7 +265,6 @@ function summarizeAvailabilityRevision(
   const poolPositions = [
     ...findInventoryPositions(projection, deficitPoolSelector),
   ];
-  poolPositions.sort(compareAvailabilityPosition);
   const reservationIndex = indexAvailabilityReservations({
     activeReservations,
     projection,
@@ -885,13 +881,4 @@ function reservationTouchesPositions(
     return true;
   }
   return false;
-}
-
-
-/** Sort selected/current positions by exact deterministic position identity. */
-function compareAvailabilityPosition(
-  left: InventoryStockPosition,
-  right: InventoryStockPosition
-): number {
-  return compareInventoryIdentityText(inventoryStockPositionIdentity(left.key), inventoryStockPositionIdentity(right.key));
 }

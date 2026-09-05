@@ -20,9 +20,13 @@ import { clockAt, time0, time1, time2 } from "./test-fixtures.js";
 /** Build one exact scalar collection roll-up member. */
 function packRollupMember(itemRevisionId: string) {
   return {
+    /** Exact catalog revision included in this roll-up member. */
     itemRevisionId,
+    /** Scalar measurement axis read from the member revision. */
     measurementAxisId: "packs",
+    /** One physical pack contributes to the roll-up. */
     memberQuantity: parseQuantity("1", "pack"),
+    /** One member pack contributes one pack-count unit. */
     rollupQuantity: parseQuantity("1", "pack-count"),
   };
 }
@@ -154,10 +158,15 @@ function collectionCatalog(): InventoryCatalog {
 
 /** Add one exact pack item at one location. */
 async function receivePacks(
+  /** Inventory façade receiving the stock. */
   inventory: ReturnType<typeof createInventoryOnce>,
+  /** Stable item identity. */
   itemId: string,
+  /** Exact item revision identity. */
   itemRevisionId: string,
+  /** Exact pack quantity text. */
   amount: string,
+  /** Physical destination location. */
   locationId = "store"
 ): Promise<void> {
   await inventory.stock.receive({

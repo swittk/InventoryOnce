@@ -107,6 +107,28 @@ describe("first-class physical transfer lifecycle", () => {
     expect(await inventory.read.world()).toEqual(beforeDuplicatePrepare);
 
     const catalog = createTabletCatalog();
+    const transferBoundFrom = {
+      ...loosePosition("A"),
+      transferId: "FOREIGN-TRANSFER",
+    };
+    expect(() =>
+      createInventoryTransferPrepareEvent({
+        catalog,
+        operationId: "reject-transfer-bound-source",
+        occurredAt: time1,
+        transferId: "NEW-TRANSFER",
+        transitLocationId: "TRANSIT",
+        destinationLocationId: "B",
+        lines: [
+          {
+            lineId: "bound-source",
+            from: transferBoundFrom,
+            amount: stockAmount("1", "piece"),
+          },
+        ],
+      })
+    ).toThrow(/transfer-bound stock/i);
+
     const draft = createInventoryTransferPrepareEvent({
       catalog,
       operationId: "cross-transfer-effect-op",

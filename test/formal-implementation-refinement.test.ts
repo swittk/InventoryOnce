@@ -55,7 +55,12 @@ const FORMAL_IMPLEMENTATION_TRACE_IDS = [
 void FORMAL_IMPLEMENTATION_TRACE_IDS;
 
 /** Build one fixed migration used by publish/replay/failure refinement. */
-function createRefinementMigration(balance = "5") {
+function createRefinementMigration(balance = "5"): {
+  /** Catalog used to compile the migration plan. */
+  readonly catalog: ReturnType<typeof createTabletCatalog>;
+  /** Deterministic migration plan used by refinement checks. */
+  readonly plan: ReturnType<typeof defineInventoryMigration>;
+} {
   const catalog = createTabletCatalog();
   const plan = defineInventoryMigration({
     catalog,

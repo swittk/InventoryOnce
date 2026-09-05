@@ -49,7 +49,7 @@ async function ensureTlaTools() {
   );
   try {
     const response = await fetch(TLA_URL, {
-      signal: AbortSignal.timeout(30_000),
+      signal: AbortSignal.timeout(300_000),
     });
     if (!response.ok) {
       throw new Error(

@@ -884,6 +884,12 @@ export function createInventoryTransferReleaseEvent(
   amount: ResolvedInventoryAmount,
   itemRevisionId: string
 ): InventoryStockPositionKey {
+  // Untyped JavaScript callers may supply transferId even though the typed input omits it.
+  if ((raw as InventoryStockPositionKey).transferId !== undefined) {
+    throw new Error(
+      "Transfer-bound stock can only move through the first-class transfer lifecycle API."
+    );
+  }
   if (amount.packaging === undefined) {
     if (raw.packagingRevisionId !== undefined)
       throw new Error(

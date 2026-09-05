@@ -305,7 +305,18 @@ const typeRecords = new Map();
 const visitedDirections = new Map();
 const recursiveTypeReferences = new Set();
 const truncatedTypes = new Set();
+const externalTypeIdentities = new WeakMap();
+let nextExternalTypeIdentity = 0;
 let maximumTypeDepth = 0;
+/** Return one stable traversal identity for a compiler type outside this package. */
+function externalTypeIdentity(type) {
+  const existing = externalTypeIdentities.get(type);
+  if (existing !== undefined) return existing;
+  nextExternalTypeIdentity += 1;
+  const identity = `external:${nextExternalTypeIdentity}`;
+  externalTypeIdentities.set(type, identity);
+  return identity;
+}
 /** Add one input/output reachability direction to a discovered public type row. */
 function addDirection(row, direction) {
   const directions = new Set(row.directions);
@@ -332,8 +343,7 @@ function visitType(type, direction, lineage = new Set(), depth = 0) {
   if (/\.\.\. [0-9]+ more \.\.\./u.test(renderedType)) {
     truncatedTypes.add(owned?.identity ?? renderedType);
   }
-  const traversalIdentity =
-    owned?.identity ?? `external:${type.id ?? typeText(type)}`;
+  const traversalIdentity = owned?.identity ?? externalTypeIdentity(type);
   if (lineage.has(traversalIdentity)) {
     recursiveTypeReferences.add(traversalIdentity);
     return;

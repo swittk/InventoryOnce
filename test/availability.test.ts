@@ -192,6 +192,7 @@ describe("truthful native availability read model", () => {
 
     const broad = await currentAvailability(inventory, time2);
     const deficitPosition = broad.revision.positions.find(
+      /** Select the explicit recorded-deficit row from broad availability. */
       (position) => position.isDeficit
     );
     expect(deficitPosition).toMatchObject({

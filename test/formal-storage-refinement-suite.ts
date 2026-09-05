@@ -310,7 +310,15 @@ export async function runInventoryFormalCriticalTrace(
 }
 
 /** Build one deterministic migration for memory/Mongo/SQLite state refinement. */
-function createFormalRefinementMigration(migrationId: string, balance = "5") {
+function createFormalRefinementMigration(
+  migrationId: string,
+  balance = "5"
+): {
+  /** Catalog used to compile the migration plan. */
+  readonly catalog: ReturnType<typeof createTabletCatalog>;
+  /** Deterministic migration plan used by adapter refinement checks. */
+  readonly plan: ReturnType<typeof defineInventoryMigration>;
+} {
   const catalog = createTabletCatalog();
   const plan = defineInventoryMigration({
     catalog,
@@ -358,7 +366,9 @@ function oneShotFailure(
   stage: InventoryStorageWriteStage,
   timing: "before" | "after"
 ): {
+  /** Failpoint callback injected into the storage adapter. */
   readonly failpoint: InventoryStorageFailpoint;
+  /** Report whether this one-shot failpoint has fired. */
   readonly fired: () => boolean;
 } {
   let fired = false;

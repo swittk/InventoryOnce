@@ -767,7 +767,12 @@ export function findInventoryPositions(
   selector: InventoryStockSelector
 ): readonly InventoryStockPosition[] {
   const normalizedSelector = normalizeInventoryStockSelector(selector);
-  const result: InventoryStockPosition[] = [];
+  const result: Array<{
+    /** Stable identity already retained by the projection index. */
+    readonly identity: string;
+    /** Projected stock row for this identity. */
+    readonly position: InventoryStockPosition;
+  }> = [];
   for (const identity of candidatePositionIds(state, normalizedSelector)) {
     const position = state.positions[identity];
     if (position === undefined) {
@@ -781,11 +786,17 @@ export function findInventoryPositions(
         normalizedSelector
       )
     ) {
-      result.push(position);
+      result.push({ identity, position });
     }
   }
-  result.sort(compareStockPosition);
-  return result;
+  result.sort(
+    /** Sort once using retained identities instead of recomputing position keys. */
+    (left, right) => compareInventoryIdentityText(left.identity, right.identity)
+  );
+  return result.map(
+    /** Return the projected row after deterministic identity ordering. */
+    (entry) => entry.position
+  );
 }
 
 /** Select the narrowest retained position index that satisfies this selector. */
@@ -964,12 +975,4 @@ export function compareCommittedEventSequence(
   right: InventoryCommittedEvent
 ): number {
   return left.recordSequence - right.recordSequence;
-}
-
-/** Sort projected stock rows by exact deterministic position identity. */
-function compareStockPosition(
-  left: InventoryStockPosition,
-  right: InventoryStockPosition
-): number {
-  return compareInventoryIdentityText(inventoryStockPositionIdentity(left.key), inventoryStockPositionIdentity(right.key));
 }

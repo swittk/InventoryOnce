@@ -283,7 +283,14 @@ export async function cutoverInventoryAuthority({
     };
   } catch (error) {
     if (!durableMigrationExists) {
-      await authorityControl.releaseFence(fenceToken);
+      try {
+        await authorityControl.releaseFence(fenceToken);
+      } catch (releaseError) {
+        // Cleanup failure is secondary; retain the original cutover failure as the thrown error.
+        if (error instanceof Error && error.cause === undefined) {
+          error.cause = releaseError;
+        }
+      }
     }
     throw error;
   }

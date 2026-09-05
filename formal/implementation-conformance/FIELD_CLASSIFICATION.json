@@ -54642,9 +54642,9 @@
     "recursiveTypeReferences": [
       "InventoryIntentFingerprintValue|src/canonical.ts|81|409e33b74f02",
       "InventoryMetadataValue|src/model.ts|1143|5d09d8b2fba1",
-      "external:14"
+      "external:1"
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "ae2992b8ec54cf20d4dd326887dcc2a0fbf8468fb6eff7f073265d7e9d70e2a5"
+  "surfaceSha256": "958cef490a85767d1e50b5b497d5ad1570ea6806fc3de1e6b0c5ff9c272a8956"
 }
