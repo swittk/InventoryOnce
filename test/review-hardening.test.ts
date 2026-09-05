@@ -814,6 +814,21 @@ describe("retained catalogue alias safety", () => {
     expect(catalog.itemRevision("alias-item-v1").primaryAxis.unit).toBe("piece");
     expect(catalog.itemRevision("alias-item-v1").independentAxes).toEqual([]);
     expect(catalog.itemRevision("alias-item-v1").metadata).toEqual({ tags: ["original"] });
+    expect(catalog.itemRevision("alias-item-v1").tracking.serial).toBe(
+      InventoryTrackingRequirement.Optional
+    );
+    expect(catalog.itemRevision("alias-item-v1").qualifiedDimensions).toEqual([
+      { dimensionId: "grade", description: "Grade." },
+    ]);
+    expect(catalog.itemRevision("alias-item-v1").identifiers).toEqual({
+      sku: "sku-one",
+    });
+    expect(catalog.packagingRevision("alias-box-v1").identifiers).toEqual({
+      gtin: "gtin-one",
+    });
+    expect(catalog.packagingRevision("alias-box-v1").metadata).toEqual({
+      tags: ["sealed"],
+    });
     expect(catalog.packagingRevision("alias-box-v1").fixedContents.primary.quantity.amountMinor)
       .toBe(20);
     expect(catalog.packagingRevision("alias-box-v1").innerPackage?.count).toBe(2);

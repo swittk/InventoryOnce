@@ -349,3 +349,10 @@ edit: 2026-08-30 — PR-02 backend/data audit repair certified
 - Formal assurance is fresh: 497 public APIs, 2,138 fields, 1,941 callables / 5,277 edges / 34 test roots, all 497 APIs witnessed, zero unreferenced or unresolved APIs, 27 bounded traces, and 18 explicit gaps.
 - Final gates: package check/build and 34 files / 421 tests; data-logic CJS+ESM build assertions and 81 files / 614 tests; backend strict TypeScript and production build; Mongo 14 files / 304 tests; SQLite 14 files / 304 tests. The fenced backup rehearsal stayed its expected opt-in skip in both database runs.
 - All 23 registered TLC models passed. AuthorityWriterFence checked 10,238,911 generated / 2,258,576 distinct states at depth 34, and all four forbidden-transition mutations were rejected by their named invariants. `git diff --check` is clean.
+
+edit: 2026-09-04 — standalone repository export completed
+
+- Exported the InventoryOnce package subtree from Shinebright source commit `eb1cd0f1146832ddd1d08e971cb05ff88e7b4116` (`fix(inventory): preserve strict location and replay guards`) into the standalone repository root. Before standalone-only adjustments, the source subtree and staged standalone tree were byte/mode-identical at tree `e94f5b77aa05866465022df9b57ad5a13c1038e2`.
+- Removed only the two Shinebright-owned executable trace declarations `TRACE-REAL-ADAPTER-INDEX-SCALE` and `TRACE-SHINEBRIGHT-FOUR-AUTHORITATIVE-CALLS`. Their Mongo/SQLite adapter and four-call application seam implementations live downstream, so this core must not claim them as locally executable evidence.
+- Regenerated standalone assurance after narrowing that evidence boundary: 502 public API entries, 2,239 field entries, 26 standalone bounded traces, 498 traced public APIs, and 18 explicit gaps.
+- Standalone export gates passed: strict TypeScript/package assurance checks; 434 tests across 36 files; production build; implementation-conformance generation/audit; the complete registered TLA+ model suite; and every registered forbidden-transition mutation rejected by its intended invariant.

@@ -1839,7 +1839,8 @@ function requireInventoryOnceInternals(
 async function commitInventoryEventDraft(
   owner: InventoryOnce,
   event: InventoryEventDraft,
-  reservationProtection = InventoryReservationProtection.ProtectClaims
+  reservationProtection = InventoryReservationProtection.ProtectClaims,
+  validateWorld?: (world: InventoryWorldState) => void
 ): Promise<InventoryOnceEventResult> {
   const internals = requireInventoryOnceInternals(owner);
   const result = await commitInventoryOperation({
@@ -1850,10 +1851,10 @@ async function commitInventoryEventDraft(
     clock: internals.clock,
     deficitPolicy: internals.deficitPolicy,
     /** Freeze this already-built event against the current published world. */
-    plan: () => ({
-      event,
-      reservationProtection,
-    }),
+    plan: ({ world }) => {
+      validateWorld?.(world);
+      return { event, reservationProtection };
+    },
   });
   return createInventoryOnceEventResult(result);
 }
@@ -1869,6 +1870,38 @@ function createInventoryOnceEventResult(
   if (event === undefined)
     throw new Error("Inventory event receipt references missing event.");
   return { receipt: result.receipt, event, replayed: result.replayed };
+}
+
+/** Reject transforming a traceability node before its current containment is explicitly removed. */
+function assertTransformationInputsAreDetached(
+  world: InventoryWorldState,
+  event: InventoryEventDraft
+): void {
+  const consumedNodeIdentities = new Set<string>();
+  for (const change of event.traceabilityChanges) {
+    if (
+      change.action === InventoryTraceabilityRelationAction.Add &&
+      change.kind === InventoryTraceabilityRelationKind.Genealogy
+    ) {
+      consumedNodeIdentities.add(inventoryTraceabilityNodeIdentity(change.from));
+    }
+  }
+  if (consumedNodeIdentities.size === 0) return;
+  for (const relation of Object.values(
+    world.projection.traceability.relations
+  )) {
+    if (relation.kind !== InventoryTraceabilityRelationKind.Containment) continue;
+    const childIdentity = inventoryTraceabilityNodeIdentity(relation.from);
+    const parentIdentity = inventoryTraceabilityNodeIdentity(relation.to);
+    if (
+      consumedNodeIdentities.has(childIdentity) ||
+      consumedNodeIdentities.has(parentIdentity)
+    ) {
+      throw new Error(
+        "Transformation input must be disaggregated from containment before it can be consumed."
+      );
+    }
+  }
 }
 
 /** Commit one state-dependent transfer lifecycle transition through normal durable publication. */
@@ -2785,12 +2818,16 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
     input: InventoryOnceTransformationInput
   ): Promise<InventoryOnceEventResult> {
     const { catalog } = requireInventoryOnceInternals(this.owner);
+    const event = createInventoryTransformationEvent({
+      ...input,
+      catalog,
+    });
     return commitInventoryEventDraft(
       this.owner,
-      createInventoryTransformationEvent({
-        ...input,
-        catalog,
-      })
+      event,
+      InventoryReservationProtection.ProtectClaims,
+      /** Check the frozen world before consuming a traceability identity. */
+      (world) => assertTransformationInputsAreDetached(world, event)
     );
   }
 

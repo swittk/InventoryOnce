@@ -776,6 +776,12 @@ export function runInventoryFormalStorageRefinementSuite(
       const transferAfter = await transferInventory.read.world();
       assertWorld(transferAfter);
       expect(
+        abstractPrimaryBalance(transferAfter, "item-a", "store", "piece")
+      ).toBe(String(3));
+      expect(
+        abstractPrimaryBalance(transferAfter, "item-a", "room", "piece")
+      ).toBe(String(2));
+      expect(
         (await transferInventory.stock.transferManyByPolicy(transferCommand))
           .replayed
       ).toBe(true);
@@ -834,6 +840,9 @@ export function runInventoryFormalStorageRefinementSuite(
       await repairInventoryDurableOperations({ storage: countStorage });
       const countAfter = await countInventory.read.world();
       assertWorld(countAfter);
+      expect(
+        abstractPrimaryBalance(countAfter, "item-a", "store", "piece")
+      ).toBe(String(3));
       const countReplay = await countInventory.counts.replaceAbsolute(
         countCommand
       );

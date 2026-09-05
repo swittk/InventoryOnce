@@ -167,15 +167,15 @@ export function summarizeInventoryAvailability({
   const revisions: InventoryAvailabilityRevisionSummary[] = [];
   for (const revisionId of revisionIds) {
     revisions.push(
-      summarizeAvailabilityRevision(
+      summarizeAvailabilityRevision({
         catalog,
         projection,
         selector,
-        positionsByRevision.get(revisionId) ?? [],
+        positions: positionsByRevision.get(revisionId) ?? [],
         activeReservations,
         revisionId,
-        at
-      )
+        at,
+      })
     );
   }
   return {
@@ -235,16 +235,34 @@ function selectedRevisionIds(
   return ordered;
 }
 
+/** Inputs for building one exact revision availability summary. */
+interface SummarizeAvailabilityRevisionInput {
+  /** Frozen catalogue defining measurement/reservation axes. */
+  readonly catalog: InventoryCatalog;
+  /** Current physical/event/lot/container projection. */
+  readonly projection: InventoryProjectionState;
+  /** Normalized read selector. */
+  readonly selector: InventoryStockSelector;
+  /** Selected current positions for this revision. */
+  readonly positions: readonly InventoryStockPosition[];
+  /** Active claim rows reconstructed at the authority time. */
+  readonly activeReservations: readonly InventoryReservation[];
+  /** Exact frozen item revision. */
+  readonly revisionId: ItemRevisionId;
+  /** Authority time for expiry and claim lifecycle. */
+  readonly at: string;
+}
+
 /** Build one exact revision summary from physical positions and active claim rows. */
-function summarizeAvailabilityRevision(
-  catalog: InventoryCatalog,
-  projection: InventoryProjectionState,
-  selector: InventoryStockSelector,
-  positions: readonly InventoryStockPosition[],
-  activeReservations: readonly InventoryReservation[],
-  revisionId: ItemRevisionId,
-  at: string
-): InventoryAvailabilityRevisionSummary {
+function summarizeAvailabilityRevision({
+  catalog,
+  projection,
+  selector,
+  positions,
+  activeReservations,
+  revisionId,
+  at,
+}: SummarizeAvailabilityRevisionInput): InventoryAvailabilityRevisionSummary {
   const item = catalog.itemRevision(revisionId);
   const reservationAxis = catalog.measurementAxis(item, item.reservationAxisId);
   let physicalOnHand = zeroInventoryMeasurementsForItem(item);

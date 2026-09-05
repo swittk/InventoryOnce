@@ -63,6 +63,8 @@ Transform ==
   /\ "O" \notin active
   /\ "O" \notin everProduced
   /\ \A i \in InputObjects: parent[i] = NoParent
+  \* An input may not be consumed while an active object is still contained in it.
+  /\ \A o \in active: parent[o] \notin InputObjects
   /\ active' = (active \ InputObjects) \cup {"O"}
   /\ everConsumed' = everConsumed \cup InputObjects
   /\ everProduced' = everProduced \cup {"O"}

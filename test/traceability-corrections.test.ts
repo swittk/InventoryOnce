@@ -245,6 +245,60 @@ describe("traceability graph meanings", () => {
     expect(Object.keys(next.relations)).toHaveLength(relationCount + 1);
   });
 
+  it("rejects transforming a container while an effective containment edge still uses it", async () => {
+    const inventory = createTestInventory();
+    const child = {
+      kind: InventoryTraceabilityNodeKind.Container,
+      id: "transform-contained-child",
+    };
+    const container = {
+      kind: InventoryTraceabilityNodeKind.Container,
+      id: "transform-containing-input",
+    };
+    await inventory.stock.receive({
+      operationId: "receive-containing-input",
+      occurredAt: time0,
+      to: loosePosition("transform-containment-store", {
+        containerId: container.id,
+      }),
+      amount: stockAmount("1", "piece"),
+    });
+    await inventory.traceability.aggregate({
+      operationId: "aggregate-before-transform",
+      occurredAt: time0,
+      from: child,
+      to: container,
+    });
+    await expect(
+      inventory.stock.transform({
+        operationId: "transform-containing-input",
+        occurredAt: time1,
+        consume: [
+          {
+            position: loosePosition("transform-containment-store", {
+              containerId: container.id,
+            }),
+            amount: stockAmount("1", "piece"),
+          },
+        ],
+        produce: [
+          {
+            position: loosePosition("transform-containment-store", {
+              containerId: "transform-output",
+            }),
+            amount: stockAmount("1", "piece"),
+          },
+        ],
+      })
+    ).rejects.toThrow("disaggregated from containment");
+    expect(
+      (await inventory.read.positions({
+        itemId: "item-a",
+        locationIds: ["transform-containment-store"],
+      }))[0]?.key.containerId
+    ).toBe(container.id);
+  });
+
   it("records transformation genealogy without treating it as containment", async () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
