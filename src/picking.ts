@@ -861,6 +861,7 @@ export function inventoryAmountForPrimaryAllocation({
       allocatedPrimary,
       onePackagePrimary
     );
+    // Retain package-fixed axis IDs so only unfixed independent axes repeat their amount.
     const fixedAxes = new Set<string>();
     for (const measured of packaging.fixedContents.independent) {
       fixedAxes.add(measured.axisId);

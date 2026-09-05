@@ -130,7 +130,7 @@ The initial three models remain useful implementation-level checks, but they are
 - `DualMeasure`: primary quantity plus independent catch-weight/secondary measurement.
 - `InventoryOperation`: durable idempotent all-or-nothing visibility.
 - `PackagingIdentity`: revision-frozen whole-package constraints.
-- `DistributedRights`: escrow/right transfer and partition-safe decrement/reservation semantics.
+- `DistributedRights`: allocated decrement/reservation rights and free-right transfer, checking rights-to-stock backing, physical accounting, and consumption bounds. Partition/merge behavior is not yet modeled.
 - `CorrectionHistory`: immutable event correction/supersession with partial correction writes hidden until the logical correction is complete.
 - `DurableTransferRefinement`: the concrete crash-separated transfer protocol must implement an abstract atomic transfer under an explicit refinement mapping.
 - `RepairLiveness`: under weak fairness, pending repair work eventually reaches a terminal completed/aborted state.

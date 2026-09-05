@@ -97,6 +97,11 @@ ProducedIdentityWasCreatedOnce == everProduced \subseteq active \cup everConsume
 GenealogyOnlyPointsFromConsumedToProduced ==
   \A edge \in genealogy:    edge[1] \in everConsumed /\ edge[2] \in everProduced
 
+\* Associations are durable across consumption and disappear only via Disassociate.
+AssociationEndpointsRemainKnown ==
+  \A edge \in association:
+    edge[1] \in active \cup everConsumed /\ edge[2] \in active \cup everConsumed
+
 AggregationNeverConsumesIdentity ==
   \A o \in Objects:
     parent[o] # NoParent => o \in active /\ o \notin everConsumed

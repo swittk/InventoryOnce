@@ -114,6 +114,18 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
     expect(result.allocationConstraintBlockedStock).toBe(false);
   });
 
+  it("rejects an invalid requested decimal scale before returning shortfall", () => {
+    const requested = { ...parseQuantity("1", "piece"), decimals: 19 };
+    expect(() =>
+      allocateInventory({
+        requested,
+        candidates: [],
+        method: InventoryAllocationMethod.Fifo,
+        now: time1,
+      }),
+    ).toThrow("Quantity decimals must be an integer");
+  });
+
   it("fails with the domain search-bound error before recursive candidate depth can overflow", () => {
     const deepCandidates = Array.from({ length: 7_000 }, (_, index) =>
       candidate(`deep-${index}`, time0, time3, {

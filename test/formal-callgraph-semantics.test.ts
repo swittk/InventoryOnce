@@ -19,32 +19,35 @@ interface VitestExecutionMetadata {
   readonly insideNonExecutingSuite?: boolean;
 }
 
-/** Ask the exact call-graph helper whether Vitest executes one registration callback. */
-function callbackExecutes(metadata: VitestExecutionMetadata): boolean {
+/** Run one named call-graph semantics helper and require one boolean decision. */
+function semanticsDecision(
+  helperName: "vitestCallbackExecutes" | "vitestSuiteChildrenExecute",
+  metadata: VitestExecutionMetadata,
+): boolean {
   const script = [
-    'const { vitestCallbackExecutes } = require("./scripts/formal-implementation-vitest-semantics.cjs");',
-    'process.stdout.write(JSON.stringify(vitestCallbackExecutes(JSON.parse(process.argv[1]))));',
+    `const { ${helperName} } = require("./scripts/formal-implementation-vitest-semantics.cjs");`,
+    `process.stdout.write(JSON.stringify(${helperName}(JSON.parse(process.argv[1]))));`,
   ].join("\n");
-  return JSON.parse(
+  const decoded: unknown = JSON.parse(
     execFileSync(process.execPath, ["-e", script, JSON.stringify(metadata)], {
       cwd: repositoryRoot,
       encoding: "utf8",
-    })
+    }),
   );
+  if (typeof decoded !== "boolean") {
+    throw new Error(`${helperName} returned a non-boolean decision.`);
+  }
+  return decoded;
+}
+
+/** Ask the exact call-graph helper whether Vitest executes one registration callback. */
+function callbackExecutes(metadata: VitestExecutionMetadata): boolean {
+  return semanticsDecision("vitestCallbackExecutes", metadata);
 }
 
 /** Ask whether tests/hooks registered inside one suite can execute after collection. */
 function suiteChildrenExecute(metadata: VitestExecutionMetadata): boolean {
-  const script = [
-    'const { vitestSuiteChildrenExecute } = require("./scripts/formal-implementation-vitest-semantics.cjs");',
-    'process.stdout.write(JSON.stringify(vitestSuiteChildrenExecute(JSON.parse(process.argv[1]))));',
-  ].join("\n");
-  return JSON.parse(
-    execFileSync(process.execPath, ["-e", script, JSON.stringify(metadata)], {
-      cwd: repositoryRoot,
-      encoding: "utf8",
-    })
-  );
+  return semanticsDecision("vitestSuiteChildrenExecute", metadata);
 }
 
 describe("formal call-graph Vitest callback semantics", () => {

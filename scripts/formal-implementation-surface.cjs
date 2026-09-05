@@ -184,9 +184,12 @@ function publicClassMembers(exported, constructorType) {
   const memberNames = new Set(instanceMembers.map((member) => member.name));
   for (const member of checker.getPropertiesOfType(constructorType)) {
     const memberDeclaration = member.valueDeclaration ?? member.declarations?.[0];
+    if (memberDeclaration === undefined) continue;
+    const staticFlags = ts.getCombinedModifierFlags(memberDeclaration);
+    if ((staticFlags & ts.ModifierFlags.Static) === 0) continue;
     if (
-      memberDeclaration === undefined ||
-      (ts.getCombinedModifierFlags(memberDeclaration) & ts.ModifierFlags.Static) === 0
+      (staticFlags & ts.ModifierFlags.Private) !== 0 ||
+      (staticFlags & ts.ModifierFlags.Protected) !== 0
     ) {
       continue;
     }

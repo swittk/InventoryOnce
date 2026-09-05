@@ -3,8 +3,8 @@
     "authorityMethods": 13,
     "callAndConstructSignatures": 508,
     "classMethods": 70,
-    "compilerCallGraphCallables": 2138,
-    "compilerCallGraphEdges": 5853,
+    "compilerCallGraphCallables": 2139,
+    "compilerCallGraphEdges": 5859,
     "compilerCallGraphTestRoots": 37,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 508,
@@ -10925,7 +10925,7 @@
               "column": 1,
               "file": "test/formal-storage-refinement-suite.ts",
               "hasBody": true,
-              "id": "test/formal-storage-refinement-suite.ts:12387:runInventoryFormalStorageRefinementSuite",
+              "id": "test/formal-storage-refinement-suite.ts:12379:runInventoryFormalStorageRefinementSuite",
               "kind": "FunctionDeclaration",
               "line": 396,
               "name": "runInventoryFormalStorageRefinementSuite",
@@ -10935,7 +10935,7 @@
               "column": 59,
               "file": "test/formal-storage-refinement-suite.ts",
               "hasBody": true,
-              "id": "test/formal-storage-refinement-suite.ts:12581:<anonymous@400>",
+              "id": "test/formal-storage-refinement-suite.ts:12573:<anonymous@400>",
               "kind": "ArrowFunction",
               "line": 400,
               "name": "<anonymous@400>",
@@ -10945,7 +10945,7 @@
               "column": 60,
               "file": "test/formal-storage-refinement-suite.ts",
               "hasBody": true,
-              "id": "test/formal-storage-refinement-suite.ts:20495:<anonymous@621>",
+              "id": "test/formal-storage-refinement-suite.ts:20487:<anonymous@621>",
               "kind": "ArrowFunction",
               "line": 621,
               "name": "<anonymous@621>",
@@ -13173,9 +13173,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3598:allocateInventory",
+              "id": "src/allocation.ts:3633:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 88,
+              "line": 90,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -13332,9 +13332,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3598:allocateInventory",
+              "id": "src/allocation.ts:3633:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 88,
+              "line": 90,
               "name": "allocateInventory",
               "reason": "resolved-call"
             }
@@ -13343,9 +13343,9 @@
             "column": 1,
             "file": "src/allocation.ts",
             "hasBody": true,
-            "id": "src/allocation.ts:3598:allocateInventory",
+            "id": "src/allocation.ts:3633:allocateInventory",
             "kind": "FunctionDeclaration",
-            "line": 88,
+            "line": 90,
             "name": "allocateInventory"
           },
           "test": "test/allocation.test.ts"
@@ -13371,9 +13371,9 @@
           "column": 1,
           "file": "src/allocation.ts",
           "hasBody": true,
-          "id": "src/allocation.ts:3598:allocateInventory",
+          "id": "src/allocation.ts:3633:allocateInventory",
           "kind": "FunctionDeclaration",
-          "line": 88,
+          "line": 90,
           "name": "allocateInventory"
         }
       ],
@@ -13801,6 +13801,7 @@
         "ConsumedIdentityIsNotStillActive",
         "ProducedIdentityWasCreatedOnce",
         "GenealogyOnlyPointsFromConsumedToProduced",
+        "AssociationEndpointsRemainKnown",
         "AggregationNeverConsumesIdentity"
       ],
       "models": [
@@ -13866,9 +13867,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3598:allocateInventory",
+              "id": "src/allocation.ts:3633:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 88,
+              "line": 90,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -15181,9 +15182,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3598:allocateInventory",
+              "id": "src/allocation.ts:3633:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 88,
+              "line": 90,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -15525,6 +15526,7 @@
         "ConsumedIdentityIsNotStillActive",
         "ProducedIdentityWasCreatedOnce",
         "GenealogyOnlyPointsFromConsumedToProduced",
+        "AssociationEndpointsRemainKnown",
         "AggregationNeverConsumesIdentity"
       ],
       "models": [
@@ -15872,9 +15874,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3598:allocateInventory",
+              "id": "src/allocation.ts:3633:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 88,
+              "line": 90,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -15882,9 +15884,9 @@
               "column": 37,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:4408:compareEligibleCandidates",
+              "id": "src/allocation.ts:4443:compareEligibleCandidates",
               "kind": "ArrowFunction",
-              "line": 111,
+              "line": 113,
               "name": "compareEligibleCandidates",
               "reason": "external-callback-dispatch"
             },
@@ -15892,9 +15894,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:14247:compareInventoryAllocationCandidates",
+              "id": "src/allocation.ts:14269:compareInventoryAllocationCandidates",
               "kind": "FunctionDeclaration",
-              "line": 392,
+              "line": 394,
               "name": "compareInventoryAllocationCandidates",
               "reason": "resolved-call"
             }
@@ -15903,9 +15905,9 @@
             "column": 1,
             "file": "src/allocation.ts",
             "hasBody": true,
-            "id": "src/allocation.ts:14247:compareInventoryAllocationCandidates",
+            "id": "src/allocation.ts:14269:compareInventoryAllocationCandidates",
             "kind": "FunctionDeclaration",
-            "line": 392,
+            "line": 394,
             "name": "compareInventoryAllocationCandidates"
           },
           "test": "test/allocation.test.ts"
@@ -15927,9 +15929,9 @@
           "column": 1,
           "file": "src/allocation.ts",
           "hasBody": true,
-          "id": "src/allocation.ts:14247:compareInventoryAllocationCandidates",
+          "id": "src/allocation.ts:14269:compareInventoryAllocationCandidates",
           "kind": "FunctionDeclaration",
-          "line": 392,
+          "line": 394,
           "name": "compareInventoryAllocationCandidates"
         }
       ],
@@ -16025,9 +16027,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3598:allocateInventory",
+              "id": "src/allocation.ts:3633:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 88,
+              "line": 90,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -19098,6 +19100,7 @@
         "ConsumedIdentityIsNotStillActive",
         "ProducedIdentityWasCreatedOnce",
         "GenealogyOnlyPointsFromConsumedToProduced",
+        "AssociationEndpointsRemainKnown",
         "AggregationNeverConsumesIdentity"
       ],
       "models": [
@@ -20123,6 +20126,7 @@
         "ConsumedIdentityIsNotStillActive",
         "ProducedIdentityWasCreatedOnce",
         "GenealogyOnlyPointsFromConsumedToProduced",
+        "AssociationEndpointsRemainKnown",
         "ItemQuantityConserved",
         "SecondaryMeasureHasExplicitCause"
       ],
@@ -22340,6 +22344,7 @@
         "ConsumedIdentityIsNotStillActive",
         "ProducedIdentityWasCreatedOnce",
         "GenealogyOnlyPointsFromConsumedToProduced",
+        "AssociationEndpointsRemainKnown",
         "AggregationNeverConsumesIdentity"
       ],
       "models": [
@@ -23214,20 +23219,20 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3598:allocateInventory",
+              "id": "src/allocation.ts:3633:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 88,
+              "line": 90,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
             {
               "column": 1,
-              "file": "src/quantity.ts",
+              "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/quantity.ts:5036:addQuantity",
+              "id": "src/allocation.ts:7537:createExactAllocationsIfPossible",
               "kind": "FunctionDeclaration",
-              "line": 122,
-              "name": "addQuantity",
+              "line": 215,
+              "name": "createExactAllocationsIfPossible",
               "reason": "resolved-call"
             },
             {
@@ -23275,6 +23280,10 @@
       ],
       "inputMapping": "Exact decimal/unit/package inputs map directly to finite quantity or measurement tuples.",
       "internalReferences": [
+        {
+          "occurrences": 6,
+          "path": "src/allocation.ts"
+        },
         {
           "occurrences": 3,
           "path": "src/deficits.ts"
@@ -24818,6 +24827,7 @@
         "ConsumedIdentityIsNotStillActive",
         "ProducedIdentityWasCreatedOnce",
         "GenealogyOnlyPointsFromConsumedToProduced",
+        "AssociationEndpointsRemainKnown",
         "AggregationNeverConsumesIdentity"
       ],
       "models": [
@@ -28400,6 +28410,7 @@
         "ConsumedIdentityIsNotStillActive",
         "ProducedIdentityWasCreatedOnce",
         "GenealogyOnlyPointsFromConsumedToProduced",
+        "AssociationEndpointsRemainKnown",
         "AggregationNeverConsumesIdentity"
       ],
       "models": [
@@ -28530,6 +28541,7 @@
         "ConsumedIdentityIsNotStillActive",
         "ProducedIdentityWasCreatedOnce",
         "GenealogyOnlyPointsFromConsumedToProduced",
+        "AssociationEndpointsRemainKnown",
         "AggregationNeverConsumesIdentity"
       ],
       "models": [
@@ -31303,9 +31315,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3598:allocateInventory",
+              "id": "src/allocation.ts:3633:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 88,
+              "line": 90,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -31636,7 +31648,7 @@
       "inputMapping": "Exact decimal/unit/package inputs map directly to finite quantity or measurement tuples.",
       "internalReferences": [
         {
-          "occurrences": 18,
+          "occurrences": 17,
           "path": "src/allocation.ts"
         },
         {
@@ -32960,6 +32972,10 @@
       "inputMapping": "Exact decimal/unit/package inputs map directly to finite quantity or measurement tuples.",
       "internalReferences": [
         {
+          "occurrences": 3,
+          "path": "src/allocation.ts"
+        },
+        {
           "occurrences": 2,
           "path": "src/deficits.ts"
         },
@@ -33579,9 +33595,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3598:allocateInventory",
+              "id": "src/allocation.ts:3633:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 88,
+              "line": 90,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -34537,9 +34553,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3598:allocateInventory",
+              "id": "src/allocation.ts:3633:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 88,
+              "line": 90,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -37220,9 +37236,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3598:allocateInventory",
+              "id": "src/allocation.ts:3633:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 88,
+              "line": 90,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -38110,9 +38126,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3598:allocateInventory",
+              "id": "src/allocation.ts:3633:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 88,
+              "line": 90,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -38728,9 +38744,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3598:allocateInventory",
+              "id": "src/allocation.ts:3633:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 88,
+              "line": 90,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -41703,20 +41719,20 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3598:allocateInventory",
+              "id": "src/allocation.ts:3633:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 88,
+              "line": 90,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
             {
               "column": 1,
-              "file": "src/quantity.ts",
+              "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/quantity.ts:5036:addQuantity",
+              "id": "src/allocation.ts:7537:createExactAllocationsIfPossible",
               "kind": "FunctionDeclaration",
-              "line": 122,
-              "name": "addQuantity",
+              "line": 215,
+              "name": "createExactAllocationsIfPossible",
               "reason": "resolved-call"
             },
             {
@@ -41764,6 +41780,10 @@
       ],
       "inputMapping": "Exact decimal/unit/package inputs map directly to finite quantity or measurement tuples.",
       "internalReferences": [
+        {
+          "occurrences": 6,
+          "path": "src/allocation.ts"
+        },
         {
           "occurrences": 3,
           "path": "src/deficits.ts"
@@ -46821,9 +46841,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3598:allocateInventory",
+              "id": "src/allocation.ts:3633:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 88,
+              "line": 90,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -47275,7 +47295,7 @@
       "inputMapping": "Exact decimal/unit/package inputs map directly to finite quantity or measurement tuples.",
       "internalReferences": [
         {
-          "occurrences": 18,
+          "occurrences": 17,
           "path": "src/allocation.ts"
         },
         {
@@ -48701,6 +48721,10 @@
       "inputMapping": "Exact decimal/unit/package inputs map directly to finite quantity or measurement tuples.",
       "internalReferences": [
         {
+          "occurrences": 3,
+          "path": "src/allocation.ts"
+        },
+        {
           "occurrences": 2,
           "path": "src/deficits.ts"
         },
@@ -49175,9 +49199,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3598:allocateInventory",
+              "id": "src/allocation.ts:3633:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 88,
+              "line": 90,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -50016,9 +50040,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:3598:allocateInventory",
+              "id": "src/allocation.ts:3633:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 88,
+              "line": 90,
               "name": "allocateInventory",
               "reason": "resolved-call"
             },
@@ -52983,7 +53007,7 @@
               "column": 1,
               "file": "test/formal-storage-refinement-suite.ts",
               "hasBody": true,
-              "id": "test/formal-storage-refinement-suite.ts:12387:runInventoryFormalStorageRefinementSuite",
+              "id": "test/formal-storage-refinement-suite.ts:12379:runInventoryFormalStorageRefinementSuite",
               "kind": "FunctionDeclaration",
               "line": 396,
               "name": "runInventoryFormalStorageRefinementSuite",
@@ -52993,7 +53017,7 @@
               "column": 59,
               "file": "test/formal-storage-refinement-suite.ts",
               "hasBody": true,
-              "id": "test/formal-storage-refinement-suite.ts:12581:<anonymous@400>",
+              "id": "test/formal-storage-refinement-suite.ts:12573:<anonymous@400>",
               "kind": "ArrowFunction",
               "line": 400,
               "name": "<anonymous@400>",
@@ -53003,7 +53027,7 @@
               "column": 60,
               "file": "test/formal-storage-refinement-suite.ts",
               "hasBody": true,
-              "id": "test/formal-storage-refinement-suite.ts:20495:<anonymous@621>",
+              "id": "test/formal-storage-refinement-suite.ts:20487:<anonymous@621>",
               "kind": "ArrowFunction",
               "line": 621,
               "name": "<anonymous@621>",
@@ -69314,7 +69338,7 @@
               "column": 1,
               "file": "test/formal-storage-refinement-suite.ts",
               "hasBody": true,
-              "id": "test/formal-storage-refinement-suite.ts:12387:runInventoryFormalStorageRefinementSuite",
+              "id": "test/formal-storage-refinement-suite.ts:12379:runInventoryFormalStorageRefinementSuite",
               "kind": "FunctionDeclaration",
               "line": 396,
               "name": "runInventoryFormalStorageRefinementSuite",
@@ -69324,7 +69348,7 @@
               "column": 59,
               "file": "test/formal-storage-refinement-suite.ts",
               "hasBody": true,
-              "id": "test/formal-storage-refinement-suite.ts:12581:<anonymous@400>",
+              "id": "test/formal-storage-refinement-suite.ts:12573:<anonymous@400>",
               "kind": "ArrowFunction",
               "line": 400,
               "name": "<anonymous@400>",
@@ -69334,7 +69358,7 @@
               "column": 68,
               "file": "test/formal-storage-refinement-suite.ts",
               "hasBody": true,
-              "id": "test/formal-storage-refinement-suite.ts:24009:<anonymous@717>",
+              "id": "test/formal-storage-refinement-suite.ts:24001:<anonymous@717>",
               "kind": "ArrowFunction",
               "line": 717,
               "name": "<anonymous@717>",
@@ -69553,6 +69577,7 @@
         "ConsumedIdentityIsNotStillActive",
         "ProducedIdentityWasCreatedOnce",
         "GenealogyOnlyPointsFromConsumedToProduced",
+        "AssociationEndpointsRemainKnown",
         "ItemQuantityConserved",
         "SecondaryMeasureHasExplicitCause"
       ],
@@ -69841,6 +69866,7 @@
         "ConsumedIdentityIsNotStillActive",
         "ProducedIdentityWasCreatedOnce",
         "GenealogyOnlyPointsFromConsumedToProduced",
+        "AssociationEndpointsRemainKnown",
         "AggregationNeverConsumesIdentity"
       ],
       "models": [
@@ -69978,6 +70004,7 @@
         "ConsumedIdentityIsNotStillActive",
         "ProducedIdentityWasCreatedOnce",
         "GenealogyOnlyPointsFromConsumedToProduced",
+        "AssociationEndpointsRemainKnown",
         "AggregationNeverConsumesIdentity"
       ],
       "models": [
@@ -70115,6 +70142,7 @@
         "ConsumedIdentityIsNotStillActive",
         "ProducedIdentityWasCreatedOnce",
         "GenealogyOnlyPointsFromConsumedToProduced",
+        "AssociationEndpointsRemainKnown",
         "AggregationNeverConsumesIdentity"
       ],
       "models": [
@@ -70272,6 +70300,7 @@
         "ConsumedIdentityIsNotStillActive",
         "ProducedIdentityWasCreatedOnce",
         "GenealogyOnlyPointsFromConsumedToProduced",
+        "AssociationEndpointsRemainKnown",
         "AggregationNeverConsumesIdentity"
       ],
       "models": [
@@ -73452,7 +73481,7 @@
               "column": 1,
               "file": "test/formal-storage-refinement-suite.ts",
               "hasBody": true,
-              "id": "test/formal-storage-refinement-suite.ts:12387:runInventoryFormalStorageRefinementSuite",
+              "id": "test/formal-storage-refinement-suite.ts:12379:runInventoryFormalStorageRefinementSuite",
               "kind": "FunctionDeclaration",
               "line": 396,
               "name": "runInventoryFormalStorageRefinementSuite",
@@ -73462,7 +73491,7 @@
               "column": 59,
               "file": "test/formal-storage-refinement-suite.ts",
               "hasBody": true,
-              "id": "test/formal-storage-refinement-suite.ts:12581:<anonymous@400>",
+              "id": "test/formal-storage-refinement-suite.ts:12573:<anonymous@400>",
               "kind": "ArrowFunction",
               "line": 400,
               "name": "<anonymous@400>",
@@ -73472,7 +73501,7 @@
               "column": 60,
               "file": "test/formal-storage-refinement-suite.ts",
               "hasBody": true,
-              "id": "test/formal-storage-refinement-suite.ts:20495:<anonymous@621>",
+              "id": "test/formal-storage-refinement-suite.ts:20487:<anonymous@621>",
               "kind": "ArrowFunction",
               "line": 621,
               "name": "<anonymous@621>",
@@ -76352,6 +76381,7 @@
         "ConsumedIdentityIsNotStillActive",
         "ProducedIdentityWasCreatedOnce",
         "GenealogyOnlyPointsFromConsumedToProduced",
+        "AssociationEndpointsRemainKnown",
         "AggregationNeverConsumesIdentity"
       ],
       "models": [
@@ -76437,6 +76467,7 @@
         "ConsumedIdentityIsNotStillActive",
         "ProducedIdentityWasCreatedOnce",
         "GenealogyOnlyPointsFromConsumedToProduced",
+        "AssociationEndpointsRemainKnown",
         "ItemQuantityConserved",
         "SecondaryMeasureHasExplicitCause"
       ],
@@ -76501,5 +76532,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "152b108133b15244888d7d54c164e6250227ebd42a2cae8efc8691c461209788"
+  "surfaceSha256": "82d4864f15d6576a749929ef33beb4d7495f61ce7a04c964b35bba2974be88bb"
 }

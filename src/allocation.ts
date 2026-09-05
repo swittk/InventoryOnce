@@ -7,8 +7,10 @@ import {
 import {
   addQuantity,
   compareQuantity,
+  integerAtDecimals,
   positiveQuantity,
   quantity,
+  safeNumber,
   subtractQuantity,
   zeroQuantity,
   type Quantity,
@@ -222,17 +224,17 @@ function createExactAllocationsIfPossible(
       decimals = Math.max(decimals, candidate.allocationIncrement.decimals);
     }
   }
-  const requestedMinor = quantityAtDecimals(requested, decimals);
+  const requestedMinor = integerAtDecimals(requested, decimals);
   const capacityMinor = candidates.map(
     /** Put every candidate capacity on one exact integer scale for the bounded search. */
-    (candidate) => quantityAtDecimals(candidate.available, decimals)
+    (candidate) => integerAtDecimals(candidate.available, decimals)
   );
   const incrementMinor = candidates.map(
     /** Divisible rows use the smallest exact digit on the shared scale. */
     (candidate) =>
       candidate.allocationIncrement === undefined
         ? 1n
-        : quantityAtDecimals(candidate.allocationIncrement, decimals)
+        : integerAtDecimals(candidate.allocationIncrement, decimals)
   );
   const suffixCapacity: bigint[] = new Array(candidates.length + 1).fill(0n);
   for (let index = candidates.length - 1; index >= 0; index -= 1) {
@@ -306,7 +308,7 @@ function materializeExactAllocations(
     allocations.push({
       position: candidate.position,
       quantity: quantity({
-        amountMinor: safeNumberFromBigInt(
+        amountMinor: safeNumber(
           amountMinor,
           "Exact allocation quantity"
         ),
@@ -429,32 +431,15 @@ function floorQuantityToIncrement(
     throw new Error("Allocation quantity and increment units must match.");
   }
   const decimals = Math.max(value.decimals, increment.decimals);
-  const valueMinor = quantityAtDecimals(value, decimals);
-  const incrementMinor = quantityAtDecimals(increment, decimals);
+  const valueMinor = integerAtDecimals(value, decimals);
+  const incrementMinor = integerAtDecimals(increment, decimals);
   const wholeMinor = (valueMinor / incrementMinor) * incrementMinor;
   return quantity({
-    amountMinor: safeNumberFromBigInt(
+    amountMinor: safeNumber(
       wholeMinor,
       "Rounded allocation quantity"
     ),
     decimals,
     unit: value.unit,
   });
-}
-
-/** Convert one quantity to a bigint at a requested equal-or-larger decimal scale. */
-function quantityAtDecimals(value: Quantity, decimals: number): bigint {
-  if (decimals < value.decimals) {
-    throw new Error("Allocation scale cannot discard exact digits.");
-  }
-  return BigInt(value.amountMinor) * 10n ** BigInt(decimals - value.decimals);
-}
-
-/** Convert one bigint to a safe integer or fail rather than lose digits. */
-function safeNumberFromBigInt(value: bigint, label: string): number {
-  const converted = Number(value);
-  if (!Number.isSafeInteger(converted)) {
-    throw new Error(`${label} exceeds safe integer storage range.`);
-  }
-  return converted;
 }

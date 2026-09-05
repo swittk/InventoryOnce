@@ -57,7 +57,7 @@ const FORMAL_IMPLEMENTATION_TRACE_IDS = [
 
 void FORMAL_IMPLEMENTATION_TRACE_IDS;
 
-/** Inputs accepted by one reusable memory/Mongo/SQLite refinement factory. */
+/** Inputs accepted by one reusable durable-adapter refinement factory. */
 export interface InventoryFormalStorageRefinementFactoryInput {
   /** Namespace isolated from every other refinement case. */
   readonly namespaceId: string;
@@ -309,7 +309,7 @@ export async function runInventoryFormalCriticalTrace(
   return { world, receive, issue, transfer, count };
 }
 
-/** Build one deterministic migration for memory/Mongo/SQLite state refinement. */
+/** Build one deterministic migration for durable-adapter state refinement. */
 function createFormalRefinementMigration(
   migrationId: string,
   balance = "5"
