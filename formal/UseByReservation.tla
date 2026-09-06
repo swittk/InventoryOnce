@@ -35,6 +35,8 @@ vars ==
 ResourceUsable(resource, time, allowsExpired) ==
   resource \in stock /\ (allowsExpired \/ time < UseBy(resource))
 
+\* Active allocated claims require that exact resource to remain usable; active
+\* unallocated claims require at least one usable resource in current stock.
 ClaimFeasible(stockSet, time, state, allowsExpired, allocatedResource) ==
   IF state # "active"
   THEN TRUE
@@ -44,6 +46,7 @@ ClaimFeasible(stockSet, time, state, allowsExpired, allocatedResource) ==
        ELSE \E resource \in stockSet:
               allowsExpired \/ time < UseBy(resource)
 
+\* A shortage is exactly the negation of current claim feasibility.
 ShortageFor(stockSet, time, state, allowsExpired, allocatedResource) ==
   ~ClaimFeasible(stockSet, time, state, allowsExpired, allocatedResource)
 

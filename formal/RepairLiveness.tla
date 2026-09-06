@@ -25,6 +25,9 @@ Begin ==
   /\ workerReady' = TRUE
   /\ UNCHANGED <<written, worldPublished, interruptions>>
 
+\* Scope: TLC bounds interruption histories to at most two worker losses.
+\* WF_vars(RepairStep) applies only after Begin claims an operation; Begin and Abort
+\* themselves are not fair actions, so liveness is asserted within that repair scope.
 Interrupt ==
   /\ phase = "applying"
   /\ workerReady

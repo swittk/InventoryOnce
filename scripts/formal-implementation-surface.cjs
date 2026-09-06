@@ -47,6 +47,11 @@ const formatFlags =
   ts.TypeFormatFlags.NoTruncation |
   ts.TypeFormatFlags.UseAliasDefinedOutsideCurrentScope;
 
+/** Compare generated identities by exact UTF-16 code units, independent of host locale. */
+function compareExact(left, right) {
+  return left < right ? -1 : left > right ? 1 : 0;
+}
+
 /** Grouped public APIs and package entrypoint modules. */
 const facadeInterfaces = [
   ["InventoryOnceCatalogApi", "catalog"],
@@ -139,7 +144,7 @@ function methodsOfInterface(relativePath, name, prefix) {
       result: signatures[0].result,
     });
   }
-  return rows.sort((left, right) => left.key.localeCompare(right.key));
+  return rows.sort((left, right) => compareExact(left.key, right.key));
 }
 
 /** Preserve callable and constructable export signatures. */
@@ -172,7 +177,7 @@ function moduleExports(relativePath) {
       constructSignatures,
     });
   }
-  return rows.sort((left, right) => left.name.localeCompare(right.name));
+  return rows.sort((left, right) => compareExact(left.name, right.name));
 }
 
 /** Return every public callable instance member plus statics declared directly on one exported class. */
@@ -253,7 +258,7 @@ function classMethods(relativePath, entrypoint) {
       });
     }
   }
-  return rows.sort((left, right) => left.key.localeCompare(right.key));
+  return rows.sort((left, right) => compareExact(left.key, right.key));
 }
 
 /** Return package-owned declarations and a stable type identity. */
@@ -454,7 +459,7 @@ function visitType(type, direction, lineage = new Set(), depth = 0) {
     addDirection(field, direction);
     visitType(propertyType, direction, nextLineage, depth + 1);
   }
-  record.fields.sort((left, right) => left.name.localeCompare(right.name));
+  record.fields.sort((left, right) => compareExact(left.name, right.name));
 }
 
 /** Traverse all overloads on one public interface. */
@@ -570,7 +575,7 @@ const entrypoints = Object.fromEntries(
 );
 const classes = Object.entries(entrypointSources)
   .flatMap(([name, relativePath]) => classMethods(relativePath, name))
-  .sort((left, right) => left.key.localeCompare(right.key));
+  .sort((left, right) => compareExact(left.key, right.key));
 
 for (const [name] of facadeInterfaces) {
   visitInterfaceTypes("src/facade.ts", name);
@@ -590,7 +595,7 @@ const types = [...typeRecords.values()]
       directions: [...field.directions].sort(),
     })),
   }))
-  .sort((left, right) => left.identity.localeCompare(right.identity));
+  .sort((left, right) => compareExact(left.identity, right.identity));
 
 console.log(
   JSON.stringify(
