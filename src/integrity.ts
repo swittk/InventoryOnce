@@ -576,7 +576,8 @@ function assertAllowedCountTransition(
     }
     if (
       !sameJson(base.observations, next.observations) ||
-      base.observedAt !== next.observedAt
+      base.observedAt !== next.observedAt ||
+      base.observedThroughRecordSequence !== next.observedThroughRecordSequence
     ) {
       throw new Error(
         "Count completion cannot replace the physical observation."
@@ -590,6 +591,15 @@ function assertAllowedCountTransition(
     next.status !== InventoryCountStatus.Abandoned
   )
     throw new Error("Count abandon must make one non-terminal row abandoned.");
+  if (
+    !sameJson(base.observations, next.observations) ||
+    base.observedAt !== next.observedAt ||
+    base.observedThroughRecordSequence !== next.observedThroughRecordSequence
+  ) {
+    throw new Error(
+      "Count abandonment cannot replace the physical observation."
+    );
+  }
 }
 
 /** Compare the count fields frozen when the count was opened. */

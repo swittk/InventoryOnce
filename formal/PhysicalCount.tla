@@ -103,6 +103,9 @@ RecordedMovementAccounting ==
   countState \in {"started", "observed"} =>
     book = snapshotBook + movementSinceStart
 
+\* Scope: unrecorded drift exists only before Observe. From observed onward,
+\* including completed states, only recorded movement changes actual; this checks
+\* reconciliation exactness under that modeled restriction, not perpetual accuracy.
 CompletedCountMatchesPhysicalReality ==
   countState # "completed" \/ book = actual
 

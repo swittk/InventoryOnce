@@ -13,6 +13,8 @@ import {
   type InventoryMetadataValue,
 } from "../src/index.js";
 import {
+  InventoryCountOperationKind,
+  InventoryCountStatus,
   InventoryDeficitPolicy,
   defineScalarInventoryItem,
   inventoryIntentFingerprint,
@@ -22,7 +24,10 @@ import {
   refineInventoryReservation,
 } from "../src/kernel.js";
 import { applyInventoryRecordedDeficitBurden } from "../src/deficits.js";
-import { createInventoryReservationBookDelta } from "../src/integrity.js";
+import {
+  applyInventoryCountBookDelta,
+  createInventoryReservationBookDelta,
+} from "../src/integrity.js";
 import {
   InventoryStorageWriteStage,
   createInMemoryInventoryDurableStorage,
@@ -765,6 +770,61 @@ describe("historical reservation authority and one-revision counts", () => {
       observedAt: time2,
       observations: [{ position: oldPosition.key, measurements: oldPosition.measurements }],
     })).rejects.toThrow("outside the declared selector");
+  });
+});
+
+describe("count delta integrity", () => {
+  it("rejects forged completion and abandonment deltas that rewrite observation evidence", () => {
+    const observedCount = {
+      countId: "forged-observation-count",
+      operationId: "forged-observation-count-start",
+      itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a", itemRevisionIds: ["item-a-v2"] },
+      startedAt: time0,
+      snapshotRecordSequence: 1,
+      status: InventoryCountStatus.Observed,
+      observedAt: time1,
+      observedThroughRecordSequence: 2,
+      observations: [],
+    };
+    const base = {
+      counts: { [observedCount.countId]: observedCount },
+      operations: {},
+    };
+
+    expect(() =>
+      applyInventoryCountBookDelta(base, {
+        count: {
+          ...observedCount,
+          status: InventoryCountStatus.Completed,
+          statusAt: time2,
+          observedThroughRecordSequence: 3,
+        },
+        operation: {
+          operationId: "forged-observation-complete",
+          countId: observedCount.countId,
+          kind: InventoryCountOperationKind.Complete,
+          intentFingerprint: "forged-observation-complete",
+        },
+      })
+    ).toThrow("Count completion cannot replace the physical observation.");
+
+    expect(() =>
+      applyInventoryCountBookDelta(base, {
+        count: {
+          ...observedCount,
+          status: InventoryCountStatus.Abandoned,
+          statusAt: time2,
+          observedAt: time0,
+        },
+        operation: {
+          operationId: "forged-observation-abandon",
+          countId: observedCount.countId,
+          kind: InventoryCountOperationKind.Abandon,
+          intentFingerprint: "forged-observation-abandon",
+        },
+      })
+    ).toThrow("Count abandonment cannot replace the physical observation.");
   });
 });
 

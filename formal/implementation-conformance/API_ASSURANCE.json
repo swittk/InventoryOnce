@@ -3,8 +3,8 @@
     "authorityMethods": 13,
     "callAndConstructSignatures": 508,
     "classMethods": 70,
-    "compilerCallGraphCallables": 2161,
-    "compilerCallGraphEdges": 5925,
+    "compilerCallGraphCallables": 2165,
+    "compilerCallGraphEdges": 5930,
     "compilerCallGraphTestRoots": 37,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 508,
@@ -3419,10 +3419,10 @@
               "column": 90,
               "file": "test/review-hardening.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:28522:<anonymous@772>",
+              "id": "test/review-hardening.test.ts:30410:<anonymous@832>",
               "kind": "ArrowFunction",
-              "line": 772,
-              "name": "<anonymous@772>",
+              "line": 832,
+              "name": "<anonymous@832>",
               "reason": "test-callback"
             },
             {
@@ -8245,10 +8245,10 @@
               "column": 90,
               "file": "test/review-hardening.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:28522:<anonymous@772>",
+              "id": "test/review-hardening.test.ts:30410:<anonymous@832>",
               "kind": "ArrowFunction",
-              "line": 772,
-              "name": "<anonymous@772>",
+              "line": 832,
+              "name": "<anonymous@832>",
               "reason": "test-callback"
             },
             {
@@ -14578,10 +14578,10 @@
               "column": 80,
               "file": "test/review-hardening.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:7102:<anonymous@205>",
+              "id": "test/review-hardening.test.ts:7192:<anonymous@210>",
               "kind": "ArrowFunction",
-              "line": 205,
-              "name": "<anonymous@205>",
+              "line": 210,
+              "name": "<anonymous@210>",
               "reason": "test-callback"
             },
             {
@@ -14877,10 +14877,10 @@
               "column": 80,
               "file": "test/review-hardening.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:7102:<anonymous@205>",
+              "id": "test/review-hardening.test.ts:7192:<anonymous@210>",
               "kind": "ArrowFunction",
-              "line": 205,
-              "name": "<anonymous@205>",
+              "line": 210,
+              "name": "<anonymous@210>",
               "reason": "test-callback"
             },
             {
@@ -24888,10 +24888,10 @@
               "column": 68,
               "file": "test/review-hardening.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:4002:<anonymous@127>",
+              "id": "test/review-hardening.test.ts:4092:<anonymous@132>",
               "kind": "ArrowFunction",
-              "line": 127,
-              "name": "<anonymous@127>",
+              "line": 132,
+              "name": "<anonymous@132>",
               "reason": "test-callback"
             },
             {
@@ -27632,10 +27632,10 @@
               "column": 80,
               "file": "test/review-hardening.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:7102:<anonymous@205>",
+              "id": "test/review-hardening.test.ts:7192:<anonymous@210>",
               "kind": "ArrowFunction",
-              "line": 205,
-              "name": "<anonymous@205>",
+              "line": 210,
+              "name": "<anonymous@210>",
               "reason": "test-callback"
             },
             {
@@ -27920,10 +27920,10 @@
               "column": 80,
               "file": "test/review-hardening.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:7102:<anonymous@205>",
+              "id": "test/review-hardening.test.ts:7192:<anonymous@210>",
               "kind": "ArrowFunction",
-              "line": 205,
-              "name": "<anonymous@205>",
+              "line": 210,
+              "name": "<anonymous@210>",
               "reason": "test-callback"
             },
             {
@@ -28059,10 +28059,10 @@
               "column": 80,
               "file": "test/review-hardening.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:7102:<anonymous@205>",
+              "id": "test/review-hardening.test.ts:7192:<anonymous@210>",
               "kind": "ArrowFunction",
-              "line": 205,
-              "name": "<anonymous@205>",
+              "line": 210,
+              "name": "<anonymous@210>",
               "reason": "test-callback"
             },
             {
@@ -30175,10 +30175,10 @@
               "column": 98,
               "file": "test/review-hardening.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:1201:<anonymous@43>",
+              "id": "test/review-hardening.test.ts:1291:<anonymous@48>",
               "kind": "ArrowFunction",
-              "line": 43,
-              "name": "<anonymous@43>",
+              "line": 48,
+              "name": "<anonymous@48>",
               "reason": "test-callback"
             },
             {
@@ -32495,10 +32495,10 @@
               "column": 80,
               "file": "test/review-hardening.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:7102:<anonymous@205>",
+              "id": "test/review-hardening.test.ts:7192:<anonymous@210>",
               "kind": "ArrowFunction",
-              "line": 205,
-              "name": "<anonymous@205>",
+              "line": 210,
+              "name": "<anonymous@210>",
               "reason": "test-callback"
             },
             {
@@ -34758,8 +34758,7 @@
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/storage-conformance.test.ts",
-        "test/migrations.test.ts",
-        "test/storage-conformance.test.ts"
+        "test/migrations.test.ts"
       ],
       "family": "migration-publication",
       "gaps": [
@@ -36327,8 +36326,7 @@
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/storage-conformance.test.ts",
-        "test/migrations.test.ts",
-        "test/storage-conformance.test.ts"
+        "test/migrations.test.ts"
       ],
       "family": "migration-publication",
       "gaps": [
@@ -36452,8 +36450,7 @@
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/storage-conformance.test.ts",
-        "test/migrations.test.ts",
-        "test/storage-conformance.test.ts"
+        "test/migrations.test.ts"
       ],
       "family": "migration-publication",
       "gaps": [
@@ -75881,8 +75878,7 @@
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/storage-conformance.test.ts",
-        "test/migrations.test.ts",
-        "test/storage-conformance.test.ts"
+        "test/migrations.test.ts"
       ],
       "gaps": [
         "GAP-LEGACY-SOURCE-INTERPRETATION",
