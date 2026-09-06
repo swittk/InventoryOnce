@@ -4,7 +4,7 @@ This file is generated from the exact TypeScript surface plus the checked API, f
 
 Use the repository `.nvmrc` when one exists; otherwise run the assurance command with a Node version permitted by `package.json#engines`. Then edit the manifests and executable evidence and run `pnpm assurance --write-report`.
 
-Surface SHA-256: `56432ad7f93e02d297a357b7c54b2a32b6633b98dffde2117be1a5244d3a5631`
+Surface SHA-256: `0e8c90a9099868b901ea1fac48b53540d0daa1d870f25b95f9bd2ce9ad87104f`
 
 ## Mechanically covered surface
 
@@ -52,7 +52,7 @@ Any added/removed method, callable export, class method, type field, field type,
 | correction | 2 | CorrectionHistory, InventoryOperation, PublishedHeadCAS | covered | GAP-COUNT-CORRECTION-HISTORY-REPLAY |
 | count | 11 | PhysicalCount, InventoryOperation, PublishedHeadCAS | covered | GAP-COUNT-CORRECTION-HISTORY-REPLAY |
 | dimension-reclassification | 21 | ResourceDimensions, ReclassificationConservation, InventoryOperation | covered | — |
-| durable-protocol | 43 | InventoryOperation, PublishedHeadCAS, RepairLiveness, DurableTransferRefinement, SnapshotSupersededWorkflow | covered | GAP-DB-IMPLEMENTATION-UNBOUNDED, GAP-PRODUCTION-STORAGE-SCALE-GC, GAP-HASH-COLLISION-ASSUMPTION, GAP-V1-CONTENT-ROOT-OBJECT-ORDER |
+| durable-protocol | 43 | InventoryOperation, PublishedHeadCAS, RepairLiveness, DurableTransferRefinement, SnapshotSupersededWorkflow | covered | GAP-DB-IMPLEMENTATION-UNBOUNDED, GAP-PRODUCTION-STORAGE-SCALE-GC, GAP-HASH-COLLISION-ASSUMPTION |
 | external-plugin-boundary | 4 | CatalogPublication | explicit-gap | GAP-EXTERNAL-MIGRATION-CALLBACKS, GAP-LEGACY-SOURCE-INTERPRETATION |
 | facade-construction | 2 | InventoryOperation | covered | GAP-EXTERNAL-CLOCK, GAP-DB-IMPLEMENTATION-UNBOUNDED |
 | fungibility-movement | 3 | FungibilityPool, ReservationScope, ReservationSafety, UseByReservation, InventoryOperation, PublishedHeadCAS | covered | GAP-FUNGIBILITY-EXACT-SEARCH-BOUND |
@@ -73,7 +73,7 @@ Any added/removed method, callable export, class method, type field, field type,
 | stock-policy-transfer | 2 | ResourceDimensions, DurableTransferRefinement, ReservationScope, ReservationSafety, UseByReservation, InventoryOperation, FungibilityPool | covered | — |
 | stock-receipt | 5 | InventoryOperation, PublishedHeadCAS, PackagingIdentity, DualMeasure, ResourceDimensions | covered | — |
 | stock-transfer | 2 | ResourceDimensions, DurableTransferRefinement, InventoryOperation, PackagingIdentity | covered | — |
-| storage-integrity | 14 | InventoryOperation, PublishedHeadCAS | covered | GAP-HASH-COLLISION-ASSUMPTION, GAP-V1-CONTENT-ROOT-OBJECT-ORDER |
+| storage-integrity | 14 | InventoryOperation, PublishedHeadCAS | covered | GAP-HASH-COLLISION-ASSUMPTION |
 | traceability | 11 | TraceabilityGraph, InventoryOperation | covered | GAP-TRACEABILITY-ADVERSARIAL-GRAPH-SEARCH |
 | transfer-lifecycle | 11 | TransferLifecycle, ResourceDimensions, ReservationSafety, InventoryOperation, DurableTransferRefinement, PublishedHeadCAS, PackagingIdentity, FungibilityPool | covered | — |
 | transformation | 2 | TraceabilityGraph, ReclassificationConservation, DualMeasure, InventoryOperation | covered | GAP-TRACEABILITY-ADVERSARIAL-GRAPH-SEARCH |
@@ -122,7 +122,6 @@ The finite refinement suite runs the core façade against the memory reference a
 | GAP-TEST-FAILPOINT-HOOK | test-only-unmodelled-input | Failure-injection callbacks are test controls, not production inventory semantics. | Classify them unsupported/unmodelled and use them only to exercise modeled crash boundaries. |
 | GAP-TLC-BOUNDED-DOMAINS | accepted-release-limit | Every TLC result is finite-domain model checking, not a theorem over arbitrary identities, quantities, traces, TypeScript, or databases. | Keep exact model constants/counts in reports and pair each claimed model with executable refinement/property tests. |
 | GAP-TRACEABILITY-ADVERSARIAL-GRAPH-SEARCH | bounded-graph-performance-caveat | Whole-history graph replay now uses one private sequential builder and is near-linear for broad independent containment/genealogy graphs, but each newly added structural edge must still prove no ancestor/reachability path exists. Adversarial very deep containment chains or dense genealogy DAGs can therefore exceed linear time. | Keep the 250-to-1,000-edge replay regressions, measure real clinic graph depth/density, and introduce bounded topological/ancestor indexing or explicit safety ceilings before supporting very large industrial traceability graphs. |
-| GAP-V1-CONTENT-ROOT-OBJECT-ORDER | versioned-digest-compatibility-boundary | The v1 durable content-root encoding sorts record identities but preserves the normalized typed row property order. Silently switching to recursive object-key sorting would change already-published roots. | Production adapters must round-trip normalized v1 row shapes without reordering object fields. Any key-order-independent root algorithm must be introduced as an explicit versioned digest/root format with compatibility or migration evidence rather than silently changing v1 roots. |
 
 ## Proof boundary
 

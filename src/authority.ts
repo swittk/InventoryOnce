@@ -1521,9 +1521,9 @@ function serializeActiveWriters(
 function parseActiveWriters(
   value: string
 ): readonly InventoryLegacyWriterAdmission[] {
-  let parsed: object;
+  let parsed: unknown;
   try {
-    parsed = JSON.parse(value) as object;
+    parsed = JSON.parse(value) as unknown;
   } catch {
     throw new Error("InventoryOnce active legacy writer JSON is invalid.");
   }

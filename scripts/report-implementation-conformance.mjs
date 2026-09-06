@@ -94,6 +94,7 @@ function performanceRows(log) {
       ["memory", "mongo", "sqlite"].includes(row.adapter) &&
       (scaledShape || measuredShape)
     ) {
+      // Keep one accepted row per adapter; later rows replace earlier ones and scaleRows renders the retained entry.
       byAdapter.set(row.adapter, {
         ...row,
         metricShape: scaledShape ? "scaled" : "measured",

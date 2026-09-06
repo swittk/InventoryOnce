@@ -16,16 +16,21 @@ import {
   InventoryCountOperationKind,
   InventoryCountStatus,
   InventoryDeficitPolicy,
+  allocateInventoryReservation,
+  createInventoryReservation,
   defineScalarInventoryItem,
   inventoryIntentFingerprint,
   inventoryStockPositionIdentity,
   normalizeInventoryStockPositionKey,
   projectInventoryEvents,
   refineInventoryReservation,
+  markInventoryReservationConsumed,
 } from "../src/kernel.js";
+import type { InventoryIntentFingerprintValue } from "../src/canonical.js";
 import { applyInventoryRecordedDeficitBurden } from "../src/deficits.js";
 import {
   applyInventoryCountBookDelta,
+  applyInventoryReservationBookDelta,
   createInventoryReservationBookDelta,
 } from "../src/integrity.js";
 import {
@@ -136,11 +141,17 @@ describe("collision-free retry identity", () => {
       .not.toBe(inventoryIntentFingerprint(["axis", ":unit"]));
     expect(inventoryIntentFingerprint(["reason", ""]))
       .not.toBe(inventoryIntentFingerprint(["reason", null]));
+    // Deliberately escape the static contract so the public runtime guard is exercised.
     expect(() =>
-      inventoryIntentFingerprint(["reason", undefined] as unknown as readonly import("../src/canonical.js").InventoryIntentFingerprintValue[])
+      inventoryIntentFingerprint(
+        ["reason", undefined] as unknown as readonly InventoryIntentFingerprintValue[]
+      )
     ).toThrow("must not be undefined");
+    // Nested undefined must fail at the same runtime boundary rather than canonicalizing away.
     expect(() =>
-      inventoryIntentFingerprint([["nested", undefined]] as unknown as readonly import("../src/canonical.js").InventoryIntentFingerprintValue[])
+      inventoryIntentFingerprint(
+        [["nested", undefined]] as unknown as readonly InventoryIntentFingerprintValue[]
+      )
     ).toThrow("must not be undefined");
   });
 
@@ -299,6 +310,130 @@ describe("durable planner output guards", () => {
       "widened-refine-output",
       "selector-guard-claim",
     )).toThrow("may only narrow its selector");
+  });
+
+  it("requires consumption evidence exactly on consumed reservation deltas", async () => {
+    const catalog = createTabletCatalog();
+    const inventory = createTestInventory(undefined, catalog);
+    await inventory.stock.receive({
+      operationId: "receive-for-consumption-evidence-guard",
+      occurredAt: time0,
+      to: loosePosition("store"),
+      amount: stockAmount("2", "piece"),
+    });
+    const base = await inventory.read.world();
+    const reservationId = "consumption-evidence-claim";
+    const created = createInventoryReservation({
+      catalog,
+      projection: base.projection,
+      book: base.reservations,
+      reservation: {
+        reservationId,
+        operationId: "consumption-evidence-create",
+        itemRevisionId: "item-a-v2",
+        selector: { itemId: "item-a", locationIds: ["store"] },
+        requested: parseQuantity("1", "piece"),
+        createdAt: time1,
+      },
+      now: time1,
+    });
+    const createDelta = createInventoryReservationBookDelta(
+      base.reservations,
+      created.book,
+      "consumption-evidence-create",
+      reservationId
+    );
+    if (createDelta === undefined) throw new Error("Expected reservation create delta.");
+    expect(() =>
+      applyInventoryReservationBookDelta(base.reservations, {
+        ...createDelta,
+        reservation: {
+          ...createDelta.reservation,
+          consumptionEventId: "forged-create-event",
+        },
+      })
+    ).toThrow("Only reservation consumption may attach a consumption event");
+
+    const refined = refineInventoryReservation({
+      catalog,
+      projection: base.projection,
+      book: created.book,
+      operationId: "consumption-evidence-refine",
+      reservationId,
+      selector: { itemId: "item-a", locationIds: ["store"] },
+      occurredAt: time2,
+    });
+    const refineDelta = createInventoryReservationBookDelta(
+      created.book,
+      refined.book,
+      "consumption-evidence-refine",
+      reservationId
+    );
+    if (refineDelta === undefined) throw new Error("Expected reservation refine delta.");
+    expect(() =>
+      applyInventoryReservationBookDelta(created.book, {
+        ...refineDelta,
+        reservation: {
+          ...refineDelta.reservation,
+          consumptionEventId: "forged-refine-event",
+        },
+      })
+    ).toThrow("Only reservation consumption may attach a consumption event");
+
+    const position = Object.values(base.projection.positions)[0];
+    if (position === undefined) throw new Error("Expected stock position.");
+    const allocated = allocateInventoryReservation({
+      catalog,
+      projection: base.projection,
+      book: refined.book,
+      operationId: "consumption-evidence-allocate",
+      reservationId,
+      allocations: [
+        { position: position.key, quantity: parseQuantity("1", "piece") },
+      ],
+      occurredAt: time2,
+    });
+    const allocateDelta = createInventoryReservationBookDelta(
+      refined.book,
+      allocated.book,
+      "consumption-evidence-allocate",
+      reservationId
+    );
+    if (allocateDelta === undefined) throw new Error("Expected reservation allocation delta.");
+    expect(() =>
+      applyInventoryReservationBookDelta(refined.book, {
+        ...allocateDelta,
+        reservation: {
+          ...allocateDelta.reservation,
+          consumptionEventId: "forged-allocate-event",
+        },
+      })
+    ).toThrow("Only reservation consumption may attach a consumption event");
+
+    const consumed = markInventoryReservationConsumed({
+      book: allocated.book,
+      operationId: "consumption-evidence-consume",
+      reservationId,
+      consumptionEventId: "real-consumption-event",
+      occurredAt: time3,
+    });
+    const consumeDelta = createInventoryReservationBookDelta(
+      allocated.book,
+      consumed.book,
+      "consumption-evidence-consume",
+      reservationId
+    );
+    if (consumeDelta === undefined) throw new Error("Expected reservation consume delta.");
+    const {
+      consumptionEventId: _consumptionEventId,
+      ...missingConsumptionEvidence
+    } = consumeDelta.reservation;
+    expect(() =>
+      applyInventoryReservationBookDelta(allocated.book, {
+        ...consumeDelta,
+        reservation: missingConsumptionEvidence,
+      })
+    ).toThrow("Consumed reservation must attach a consumption event");
   });
 });
 

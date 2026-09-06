@@ -190,6 +190,18 @@ describe("generic InventoryOnce read model", () => {
         "broken"
       )
     ).toThrow("references missing event");
+    expect(() =>
+      findInventoryEventByOperationId(
+        {
+          ...world.projection,
+          eventIdByOperationId: {
+            ...world.projection.eventIdByOperationId,
+            mismatched: received.event.eventId,
+          },
+        },
+        "mismatched"
+      )
+    ).toThrow("points to event for");
   });
 
   it("lists exact retained package revisions instead of treating a human unit word as identity", async () => {

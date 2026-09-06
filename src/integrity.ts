@@ -91,7 +91,6 @@ export function inventoryCatalogSnapshotDigest(
 export function inventoryProjectionDigest(
   projection: InventoryProjectionState
 ): string {
-  const transferRows = sortedRecordRows(projection.transfers ?? {});
   const digestParts: unknown[] = [
     projection.lastRecordSequence,
     sortedRecordRows(projection.positions),
@@ -105,13 +104,7 @@ export function inventoryProjectionDigest(
     sortedRecordRows(projection.lots),
     sortedRecordRows(projection.lotIdentitiesByItemId),
     sortedRecordRows(projection.lotRootEventIdByIdentity),
-  ];
-  // Empty transfer state must hash exactly like the pre-transfer kernel so existing durable heads
-  // remain readable after upgrade. Once transfer truth exists, tag the extended projection shape.
-  if (transferRows.length > 0) {
-    digestParts.push(["transfer-lifecycle-v1", transferRows]);
-  }
-  digestParts.push(
+    sortedRecordRows(projection.transfers),
     sortedRecordRows(projection.events),
     sortedRecordRows(projection.eventIdsBySequence),
     sortedRecordRows(projection.eventIdByOperationId),
@@ -119,8 +112,8 @@ export function inventoryProjectionDigest(
     sortedRecordRows(projection.traceability.relations),
     sortedRecordRows(
       projection.traceability.containmentChildContainerIdsByParentNodeIdentity
-    )
-  );
+    ),
+  ];
   return inventorySha256(JSON.stringify(digestParts));
 }
 
@@ -399,6 +392,14 @@ function assertAllowedReservationTransition(
   next: InventoryReservation,
   operation: InventoryReservationOperation
 ): void {
+  if (
+    operation.kind !== InventoryReservationOperationKind.Consume &&
+    next.consumptionEventId !== undefined
+  ) {
+    throw new Error(
+      "Only reservation consumption may attach a consumption event."
+    );
+  }
   if (operation.kind === InventoryReservationOperationKind.Create) {
     if (
       base !== undefined ||
@@ -460,12 +461,10 @@ function assertAllowedReservationTransition(
     );
   }
   if (
-    operation.kind !== InventoryReservationOperationKind.Consume &&
-    next.consumptionEventId !== undefined
+    operation.kind === InventoryReservationOperationKind.Consume &&
+    next.consumptionEventId === undefined
   ) {
-    throw new Error(
-      "Only reservation consumption may attach a consumption event."
-    );
+    throw new Error("Consumed reservation must attach a consumption event.");
   }
 }
 
@@ -649,7 +648,7 @@ function sameJson(left: object, right: object | undefined): boolean {
   return right !== undefined && JSON.stringify(left) === JSON.stringify(right);
 }
 
-/** Turn one normalized typed record into v1 sorted key/value JSON rows. Nested property order is intentionally retained for published-root compatibility; a recursive canonicalization change requires a versioned root format. */
+/** Turn one normalized typed record into stable key-sorted JSON rows while retaining canonical writer property order. */
 function sortedRecordRows<T>(
   values: Readonly<Record<string, T>>
 ): readonly string[] {

@@ -17,6 +17,10 @@ const fullLogPath = join(
 );
 if (fullFormal) mkdirSync(dirname(fullLogPath), { recursive: true });
 const fullLog = fullFormal ? createWriteStream(fullLogPath, { flags: "w" }) : undefined;
+let fullLogError;
+fullLog?.on("error", (error) => {
+  fullLogError ??= error;
+});
 
 /** Mirror runner output to the terminal and, for full assurance, its canonical evidence log. */
 function writeAssuranceOutput(stream, chunk) {
@@ -60,8 +64,16 @@ function runAssuranceStep(step, environment) {
 function closeFullLog() {
   if (fullLog === undefined) return Promise.resolve();
   return new Promise((resolveLog, rejectLog) => {
-    fullLog.once("error", rejectLog);
-    fullLog.end(resolveLog);
+    const settle = () => {
+      if (fullLogError !== undefined) rejectLog(fullLogError);
+      else resolveLog();
+    };
+    if (fullLog.closed) {
+      settle();
+      return;
+    }
+    fullLog.once("close", settle);
+    fullLog.end();
   });
 }
 

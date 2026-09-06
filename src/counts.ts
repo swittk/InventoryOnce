@@ -490,7 +490,9 @@ function projectInventoryEventsAtOrBefore(
   observedAt: string
 ): InventoryProjectionState {
   const ordered = inventoryEventsInRecordSequence(events);
+  // Retain every ordered event by identity so required correction predecessors can be recovered.
   const eventById = new Map<string, InventoryCommittedEvent>();
+  // Track events participating in the observed-at replay, including predecessor evidence added below.
   const includedEventIds = new Set<string>();
   for (const event of ordered) {
     eventById.set(event.eventId, event);

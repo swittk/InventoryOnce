@@ -12,9 +12,9 @@ export function repositoryAssuranceStateSha256(repositoryRoot) {
   const listed = spawnSync(
     "git",
     ["ls-files", "--cached", "--others", "--exclude-standard", "-z"],
-    { cwd: repositoryRoot, encoding: "utf8" }
+    { cwd: repositoryRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }
   );
-  if (listed.status !== 0) {
+  if (listed.error !== undefined || listed.status !== 0) {
     throw new Error("Unable to enumerate the repository assurance state.");
   }
   const paths = listed.stdout
@@ -31,15 +31,26 @@ export function repositoryAssuranceStateSha256(repositoryRoot) {
     hash.update(path);
     hash.update("\0");
     const absolute = resolve(repositoryRoot, path);
+    let stat;
+    let content;
     try {
-      const stat = lstatSync(absolute);
-      if (stat.isSymbolicLink()) hash.update(readlinkSync(absolute));
-      else if (stat.isFile()) hash.update(readFileSync(absolute));
-      else throw new Error(`Repository assurance path '${path}' is not a regular file or symbolic link.`);
+      stat = lstatSync(absolute);
+      if (stat.isSymbolicLink()) content = readlinkSync(absolute);
+      else if (stat.isFile()) content = readFileSync(absolute);
     } catch (error) {
-      if (error instanceof Error && error.code === "ENOENT") hash.update("<deleted>");
+      if (error instanceof Error && error.code === "ENOENT") content = "<deleted>";
       else throw error;
     }
+    if (
+      stat !== undefined &&
+      !stat.isSymbolicLink() &&
+      !stat.isFile()
+    ) {
+      throw new Error(
+        `Repository assurance path '${path}' is not a regular file or symbolic link.`
+      );
+    }
+    if (content !== undefined) hash.update(content);
     hash.update("\0");
   }
   return hash.digest("hex");

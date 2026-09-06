@@ -729,9 +729,6 @@ export interface InventoryOnceRecordedDeficit {
   readonly primary: Quantity;
 }
 
-/** Backward-compatible name for one request's recorded policy-batch deficit. */
-export type InventoryOncePolicyBatchDeficit = InventoryOnceRecordedDeficit;
-
 /** Exact frozen allocation for one caller request inside a policy batch. */
 export interface InventoryOncePolicyBatchAllocation {
   /** Stable request identity supplied by the caller. */
@@ -741,7 +738,7 @@ export interface InventoryOncePolicyBatchAllocation {
   /** Exact source lines assigned to only this request. */
   readonly lines: readonly InventoryOncePolicyBatchAllocationLine[];
   /** Durable unallocated shortfall recorded only under Issue + Record mode. */
-  readonly deficit?: InventoryOncePolicyBatchDeficit;
+  readonly deficit?: InventoryOnceRecordedDeficit;
 }
 
 /** Replay-safe aggregate of several exact policy subrequests for one caller result line. */
@@ -3256,8 +3253,6 @@ enum InventoryPolicyMovementKind {
 const inventoryPolicyBatchMetadataKey = "inventoryOncePolicyBatch";
 /** Version of the compact replay evidence encoded under the reserved metadata key. */
 const inventoryPolicyBatchMetadataVersion = 2;
-/** Earlier allocation-only metadata remains readable for durable replay compatibility. */
-const inventoryPolicyBatchLegacyMetadataVersion = 1;
 /** Reserved event-metadata key identifying one recorded policy shortfall. */
 const inventoryPolicyDeficitMetadataKey = "inventoryOncePolicyDeficit";
 /** Version of single-request recorded-deficit evidence. */
@@ -3271,7 +3266,7 @@ type InventoryPolicyBatchAllocationEvidenceLine = Omit<
 
 /** Compact recorded-deficit evidence decoded before position enrichment. */
 type InventoryPolicyBatchDeficitEvidence = Omit<
-  InventoryOncePolicyBatchDeficit,
+  InventoryOnceRecordedDeficit,
   "position"
 > & {
   /** Exact signed stock-effect position retained in the event. */
@@ -3295,7 +3290,7 @@ interface InventoryPolicyRecordedDeficit {
   /** Positive exact amount/position whose Issue creates or extends signed deficit. */
   readonly line: CreateInventoryIssueManyInput["lines"][number];
   /** Public exact evidence retained in immutable event metadata. */
-  readonly evidence: InventoryOncePolicyBatchDeficit;
+  readonly evidence: InventoryOnceRecordedDeficit;
 }
 
 /** One grouped exact source after several requests selected the same position. */
@@ -3605,7 +3600,7 @@ function policyDeficitPositionFingerprint(
 function policyBatchAllocation(
   request: InventoryOncePolicyBatchRequest,
   lines: readonly InventoryPolicyAllocationLine[],
-  deficit: InventoryOncePolicyBatchDeficit | undefined
+  deficit: InventoryOnceRecordedDeficit | undefined
 ): InventoryOncePolicyBatchAllocation {
   return {
     requestId: request.requestId,
@@ -3660,7 +3655,7 @@ function applyPolicyDeficitToPlanningProjection(
   catalog: InventoryCatalog,
   positions: Record<string, InventoryStockPosition>,
   positionIdsByItemRevisionId: Record<string, readonly string[]>,
-  deficit: InventoryOncePolicyBatchDeficit
+  deficit: InventoryOnceRecordedDeficit
 ): void {
   const item = catalog.itemRevision(deficit.position.itemRevisionId);
   const resolved = resolveInventoryAmount(catalog, item, deficit.amount);
@@ -3986,10 +3981,7 @@ function inventoryPolicyBatchAllocationsFromEvent(
     root.version,
     "policy batch version"
   );
-  if (
-    version !== inventoryPolicyBatchLegacyMetadataVersion &&
-    version !== inventoryPolicyBatchMetadataVersion
-  ) {
+  if (version !== inventoryPolicyBatchMetadataVersion) {
     throw new Error(
       `Unsupported inventory policy batch metadata version '${version}'.`
     );
@@ -4015,13 +4007,10 @@ function inventoryPolicyBatchAllocationsFromEvent(
       );
     }
     requestIds.add(requestId);
-    const groupId =
-      record.groupId === undefined
-        ? requestId
-        : requirePolicyBatchMetadataString(
-            record.groupId,
-            "policy batch groupId"
-          );
+    const groupId = requirePolicyBatchMetadataString(
+      record.groupId,
+      "policy batch groupId"
+    );
     const lineValues = requirePolicyBatchMetadataArray(
       record.lines,
       `policy batch '${requestId}' lines`
@@ -4059,14 +4048,6 @@ function inventoryPolicyBatchAllocationsFromEvent(
       record.deficit === undefined
         ? undefined
         : policyBatchDeficitFromMetadata(record.deficit);
-    if (
-      version === inventoryPolicyBatchLegacyMetadataVersion &&
-      deficit !== undefined
-    ) {
-      throw new Error(
-        "Legacy inventory policy batch metadata cannot contain deficit evidence."
-      );
-    }
     if (lines.length === 0 && deficit === undefined) {
       throw new Error(
         `Inventory policy batch '${requestId}' has no allocation or deficit evidence.`
@@ -4820,7 +4801,7 @@ function resolvePolicyDeficitPosition(
 
 /** Encode one recorded shortfall as immutable JSON-safe event evidence. */
 function policyDeficitMetadataValue(
-  deficit: InventoryOncePolicyBatchDeficit
+  deficit: InventoryOnceRecordedDeficit
 ): InventoryMetadataValue {
   return {
     version: inventoryPolicyDeficitMetadataVersion,
