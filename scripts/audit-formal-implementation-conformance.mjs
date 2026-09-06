@@ -279,6 +279,15 @@ function validateTraceAssurance(traceManifest, apiManifest, vocabulary) {
       if (!vocabulary.invariantNames.has(invariant)) {
         throw new Error(`${traceId} names unknown invariant '${invariant}'.`);
       }
+      if (
+        !entry.models.some((model) =>
+          vocabulary.invariantNamesByModel.get(model)?.has(invariant)
+        )
+      ) {
+        throw new Error(
+          `${traceId} names invariant '${invariant}' that none of its models configure.`
+        );
+      }
     }
     for (const family of entry.operationFamilies) {
       if (!(family in apiManifest.families)) {

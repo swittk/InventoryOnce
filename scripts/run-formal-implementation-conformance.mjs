@@ -225,7 +225,12 @@ const report = {
   packageTraceTests,
   steps: steps.map((step) => ({ id: step.id, status: "passed" })),
 };
-writeFileSync(
-  join(manifestRoot, "EXECUTABLE_ASSURANCE_REPORT.json"),
-  `${JSON.stringify(report, null, 2)}\n`
-);
+const reportPath = fullFormal
+  ? join(manifestRoot, "EXECUTABLE_ASSURANCE_REPORT.json")
+  : join(
+      repositoryRoot,
+      ".chatgpt",
+      "executable-assurance-report-partial.json"
+    );
+mkdirSync(dirname(reportPath), { recursive: true });
+writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
