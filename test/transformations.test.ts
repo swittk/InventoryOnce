@@ -169,9 +169,9 @@ describe("reusable physical transformation definitions", () => {
     ]);
     expect(
       (await inventory.transformations.fromRevision(bottle.revisionId)).map(
-        (row) => row.transformationId
+        (row) => row.revisionId
       )
-    ).toEqual(["direct-fill", "open-bottle"]);
+    ).toEqual(["direct-fill:v1", "open-bottle:v2"]);
     expect(
       (await inventory.transformations.toRevision(syringe.revisionId)).map(
         (row) => row.transformationId

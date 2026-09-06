@@ -27,19 +27,35 @@ export function repositoryAssuranceStateSha256(repositoryRoot) {
     )
     .sort();
   const hash = createHash("sha256");
+  const writeLength = (length) => {
+    const encoded = Buffer.allocUnsafe(8);
+    encoded.writeBigUInt64BE(BigInt(length));
+    hash.update(encoded);
+  };
   for (const path of paths) {
-    hash.update(path);
-    hash.update("\0");
+    const pathBytes = Buffer.from(path);
+    writeLength(pathBytes.length);
+    hash.update(pathBytes);
     const absolute = resolve(repositoryRoot, path);
     let stat;
-    let content;
+    let kind;
+    let payload;
     try {
       stat = lstatSync(absolute);
-      if (stat.isSymbolicLink()) content = readlinkSync(absolute);
-      else if (stat.isFile()) content = readFileSync(absolute);
+      if (stat.isSymbolicLink()) {
+        kind = 1;
+        payload = Buffer.from(readlinkSync(absolute));
+      } else if (stat.isFile()) {
+        kind = 0;
+        payload = readFileSync(absolute);
+      }
     } catch (error) {
-      if (error instanceof Error && error.code === "ENOENT") content = "<deleted>";
-      else throw error;
+      if (error instanceof Error && error.code === "ENOENT") {
+        kind = 2;
+        payload = Buffer.alloc(0);
+      } else {
+        throw error;
+      }
     }
     if (
       stat !== undefined &&
@@ -50,8 +66,12 @@ export function repositoryAssuranceStateSha256(repositoryRoot) {
         `Repository assurance path '${path}' is not a regular file or symbolic link.`
       );
     }
-    if (content !== undefined) hash.update(content);
-    hash.update("\0");
+    if (kind === undefined || payload === undefined) {
+      throw new Error(`Unable to frame repository assurance path '${path}'.`);
+    }
+    hash.update(Buffer.from([kind]));
+    writeLength(payload.length);
+    hash.update(payload);
   }
   return hash.digest("hex");
 }

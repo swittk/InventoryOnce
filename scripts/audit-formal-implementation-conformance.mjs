@@ -333,8 +333,11 @@ function validateTraceAssurance(traceManifest, apiManifest, vocabulary) {
       throw new Error(`${traceId} lacks result refinement.`);
     }
     const actualSources = new Set(declarations.get(traceId));
+    // Track whether the trace evidence includes its declaring executable test.
     let declarationCovered = false;
+    // Track whether any cited evidence contains an executable test registration.
     let executableTestCovered = false;
+    // Retain cited source text for the later state/result projection checks.
     const evidenceSources = [];
     for (const evidence of entry.evidence) {
       const path = evidencePath(evidence);

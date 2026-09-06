@@ -9,13 +9,25 @@ import {
 } from "../src/kernel.js";
 import { time0, time1, time2, time3 } from "./test-fixtures.js";
 
+/** Named fields for one revision-qualified allocation candidate fixture. */
+interface AllocationCandidateInput {
+  /** Stable lot identity used by ordering assertions. */
+  readonly lotId: string;
+  /** Durable receipt time used by FIFO ordering. */
+  readonly receivedAt: string;
+  /** Lot expiry time used by FEFO and expiry filtering. */
+  readonly expiresAt: string;
+  /** Optional candidate fields varied by the individual test. */
+  readonly extra?: Partial<InventoryAllocationCandidate>;
+}
+
 /** Build one revision-qualified allocation candidate with a stable lot identity. */
-function candidate(
-  lotId: string,
-  receivedAt: string,
-  expiresAt: string,
-  extra: Partial<InventoryAllocationCandidate> = {},
-): InventoryAllocationCandidate {
+function candidate({
+  lotId,
+  receivedAt,
+  expiresAt,
+  extra = {},
+}: AllocationCandidateInput): InventoryAllocationCandidate {
   const position: InventoryStockPositionKey = {
     itemId: "item-a",
     itemRevisionId: "item-a-v2",
@@ -33,8 +45,8 @@ function candidate(
 
 describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
   it("orders FIFO by receipt and FEFO by expiry", () => {
-    const oldReceipt = candidate("old", time0, time3);
-    const earlyExpiry = candidate("early-expiry", time1, time2);
+    const oldReceipt = candidate({ lotId: "old", receivedAt: time0, expiresAt: time3 });
+    const earlyExpiry = candidate({ lotId: "early-expiry", receivedAt: time1, expiresAt: time2 });
     const fifo = allocateInventory({
       requested: parseQuantity("1", "piece"),
       candidates: [earlyExpiry, oldReceipt],
@@ -55,8 +67,8 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
     const result = allocateInventory({
       requested: parseQuantity("1", "piece"),
       candidates: [
-        candidate("normal", time0, time2),
-        candidate("priority", time1, time3, { priority: -1 }),
+        candidate({ lotId: "normal", receivedAt: time0, expiresAt: time2 }),
+        candidate({ lotId: "priority", receivedAt: time1, expiresAt: time3, extra: { priority: -1 } }),
       ],
       method: InventoryAllocationMethod.Fefo,
       now: time1,
@@ -65,7 +77,7 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
   });
 
   it("excludes expired stock by default and reports stock blocked by whole increments", () => {
-    const expired = candidate("expired", time0, time1);
+    const expired = candidate({ lotId: "expired", receivedAt: time0, expiresAt: time1 });
     const excluded = allocateInventory({
       requested: parseQuantity("1", "piece"),
       candidates: [expired],
@@ -77,8 +89,11 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
 
     const incremented = allocateInventory({
       requested: parseQuantity("5", "piece"),
-      candidates: [candidate("pack-sized", time0, time3, {
-        allocationIncrement: parseQuantity("2", "piece"),
+      candidates: [candidate({
+        lotId: "pack-sized",
+        receivedAt: time0,
+        expiresAt: time3,
+        extra: { allocationIncrement: parseQuantity("2", "piece") },
       })],
       method: InventoryAllocationMethod.Fifo,
       now: time1,
@@ -100,8 +115,11 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
     const result = allocateInventory({
       requested: parseQuantity("2", "piece"),
       candidates: [
-        candidate("insufficient", time0, time3, {
-          available: parseQuantity("1", "piece"),
+        candidate({
+          lotId: "insufficient",
+          receivedAt: time0,
+          expiresAt: time3,
+          extra: { available: parseQuantity("1", "piece") },
         }),
       ],
       method: InventoryAllocationMethod.Fifo,
@@ -128,9 +146,14 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
 
   it("fails with the domain search-bound error before recursive candidate depth can overflow", () => {
     const deepCandidates = Array.from({ length: 7_000 }, (_, index) =>
-      candidate(`deep-${index}`, time0, time3, {
-        available: parseQuantity("1", "piece"),
-        allocationIncrement: parseQuantity("1", "piece"),
+      candidate({
+        lotId: `deep-${index}`,
+        receivedAt: time0,
+        expiresAt: time3,
+        extra: {
+          available: parseQuantity("1", "piece"),
+          allocationIncrement: parseQuantity("1", "piece"),
+        },
       })
     );
     expect(() => allocateInventory({
@@ -146,11 +169,17 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
     expect(() => allocateInventory({
       requested: parseQuantity(capacity, "piece"),
       candidates: [
-        candidate("rejected-first", time0, time3, {
-          available: parseQuantity(capacity, "piece"),
+        candidate({
+          lotId: "rejected-first",
+          receivedAt: time0,
+          expiresAt: time3,
+          extra: { available: parseQuantity(capacity, "piece") },
         }),
-        candidate("acceptable-second", time1, time3, {
-          available: parseQuantity(capacity, "piece"),
+        candidate({
+          lotId: "acceptable-second",
+          receivedAt: time1,
+          expiresAt: time3,
+          extra: { available: parseQuantity(capacity, "piece") },
         }),
       ],
       method: InventoryAllocationMethod.Fifo,

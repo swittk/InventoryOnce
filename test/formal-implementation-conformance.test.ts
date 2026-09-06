@@ -1,4 +1,6 @@
 import { execFileSync } from "node:child_process";
+import { mkdtempSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -57,6 +59,55 @@ describe("formal implementation conformance manifest", () => {
       { cwd: packageRoot, encoding: "utf8" }
     );
     expect(JSON.parse(output) as unknown).toEqual(["TypeOK"]);
+  });
+
+  it("fails closed on unsupported entries inside TLC check blocks", () => {
+    expect(() =>
+      execFileSync(
+        process.execPath,
+        [
+          "--input-type=module",
+          "--eval",
+          'import { formalConfigCheckNames } from "./scripts/formal-models.mjs"; formalConfigCheckNames("INVARIANTS\\nTypeOK, ReportMatchesCurrentTruth\\nAnotherInvariant\\n");',
+        ],
+        { cwd: packageRoot, encoding: "utf8" }
+      )
+    ).toThrow();
+  });
+
+  it("frames repository assurance entries without path/content or deleted-marker collisions", () => {
+    const collisionSingle = mkdtempSync(path.join(tmpdir(), "inventoryonce-assurance-state-"));
+    const collisionSplit = mkdtempSync(path.join(tmpdir(), "inventoryonce-assurance-state-"));
+    const presentDeletedMarker = mkdtempSync(path.join(tmpdir(), "inventoryonce-assurance-state-"));
+    const missingTracked = mkdtempSync(path.join(tmpdir(), "inventoryonce-assurance-state-"));
+    const roots = [collisionSingle, collisionSplit, presentDeletedMarker, missingTracked] as const;
+    try {
+      for (const root of roots) {
+        execFileSync("git", ["init", "-q"], { cwd: root });
+      }
+      writeFileSync(path.join(collisionSingle, "a"), Buffer.from([0, 98, 0, 120]));
+      writeFileSync(path.join(collisionSplit, "a"), Buffer.alloc(0));
+      writeFileSync(path.join(collisionSplit, "b"), "x");
+      writeFileSync(path.join(presentDeletedMarker, "a"), "<deleted>");
+      writeFileSync(path.join(missingTracked, "a"), "<deleted>");
+      execFileSync("git", ["add", "a"], { cwd: missingTracked });
+      unlinkSync(path.join(missingTracked, "a"));
+
+      const script = [
+        'import { repositoryAssuranceStateSha256 } from "./scripts/repository-assurance-state.mjs";',
+        "process.stdout.write(JSON.stringify(process.argv.slice(1).map(repositoryAssuranceStateSha256)));",
+      ].join("\n");
+      const output = execFileSync(
+        process.execPath,
+        ["--input-type=module", "--eval", script, ...roots],
+        { cwd: packageRoot, encoding: "utf8" }
+      );
+      const hashes = JSON.parse(output) as readonly string[];
+      expect(hashes[0]).not.toBe(hashes[1]);
+      expect(hashes[2]).not.toBe(hashes[3]);
+    } finally {
+      for (const root of roots) rmSync(root, { recursive: true, force: true });
+    }
   });
 
   it("matches every public callable and reachable field to checked formal obligations", () => {

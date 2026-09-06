@@ -109,7 +109,9 @@ export function summarizeInventoryCollection({
 }: SummarizeInventoryCollectionInput): InventoryCollectionSummary {
   const scope = normalizeInventoryCollectionScope(rawScope);
   const definition = catalog.collectionRevision(collectionRevisionId);
+  // Retain the exact member summaries returned after the collection pass.
   const members: InventoryCollectionMemberSummary[] = [];
+  // Index retained member summaries for the later compatible roll-up pass.
   const memberByRevisionId = new Map<
     string,
     InventoryCollectionMemberSummary
@@ -128,6 +130,7 @@ export function summarizeInventoryCollection({
     memberByRevisionId.set(itemRevisionId, summary);
   }
   members.sort(compareCollectionMemberSummary);
+  // Accumulate only explicitly compatible scalar roll-ups for the final summary.
   const rollups: InventoryCollectionRollupSummary[] = [];
   for (const rollup of definition.rollups ?? []) {
     rollups.push(summarizeCollectionRollup(rollup, memberByRevisionId));

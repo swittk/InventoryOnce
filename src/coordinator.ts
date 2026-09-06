@@ -323,16 +323,7 @@ function createDurableOperationPlan({
   };
   return {
     ...planWithoutDigest,
-    planDigest: inventoryDurablePlanDigest({
-      baseWorldRoot,
-      catalogRoot: catalog.digest,
-      deficitPolicy,
-      ...(committedEvent === undefined ? {} : { event: committedEvent }),
-      ...(reservationDelta === undefined ? {} : { reservationDelta }),
-      ...(countDelta === undefined ? {} : { countDelta }),
-      receipt,
-      nextRoots,
-    }),
+    planDigest: inventoryDurablePlanDigest(planWithoutDigest),
   };
 }
 

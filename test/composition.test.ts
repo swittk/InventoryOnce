@@ -184,14 +184,28 @@ function ocpCatalog(
   return { catalog, oldPackItem, newPackItem, oldPack, newPack };
 }
 
+/** Named lookup for one exact item revision/location/lot quantity fixture. */
+interface ItemQuantityQuery {
+  /** Inventory facade queried by the fixture. */
+  readonly inventory: ReturnType<typeof createInventoryOnce>;
+  /** Stable catalog item identity. */
+  readonly itemId: string;
+  /** Exact item revision identity. */
+  readonly itemRevisionId: string;
+  /** Exact stock location identity. */
+  readonly locationId: string;
+  /** Exact lot identity. */
+  readonly lotId: string;
+}
+
 /** Read one exact item revision/location/lot primary tablet amount. */
-async function itemQuantity(
-  inventory: ReturnType<typeof createInventoryOnce>,
-  itemId: string,
-  itemRevisionId: string,
-  locationId: string,
-  lotId: string
-): Promise<number> {
+async function itemQuantity({
+  inventory,
+  itemId,
+  itemRevisionId,
+  locationId,
+  lotId,
+}: ItemQuantityQuery): Promise<number> {
   const positions = await inventory.read.positions({
     itemId,
     itemRevisionIds: [itemRevisionId],
@@ -296,31 +310,31 @@ describe("revision-frozen heterogeneous package composition", () => {
     expect(replayed.replayed).toBe(true);
 
     expect(
-      await itemQuantity(
-        inventory,
-        "active-a",
-        "active-a-v1",
-        "room",
-        "OLD-OCP-LOT"
-      )
+      await itemQuantity({
+        inventory: inventory,
+        itemId: "active-a",
+        itemRevisionId: "active-a-v1",
+        locationId: "room",
+        lotId: "OLD-OCP-LOT",
+      })
     ).toBe(21);
     expect(
-      await itemQuantity(
-        inventory,
-        "placebo-a",
-        "placebo-a-v1",
-        "room",
-        "OLD-OCP-LOT"
-      )
+      await itemQuantity({
+        inventory: inventory,
+        itemId: "placebo-a",
+        itemRevisionId: "placebo-a-v1",
+        locationId: "room",
+        lotId: "OLD-OCP-LOT",
+      })
     ).toBe(7);
     expect(
-      await itemQuantity(
-        inventory,
-        "active-b",
-        "active-b-v1",
-        "room",
-        "OLD-OCP-LOT"
-      )
+      await itemQuantity({
+        inventory: inventory,
+        itemId: "active-b",
+        itemRevisionId: "active-b-v1",
+        locationId: "room",
+        lotId: "OLD-OCP-LOT",
+      })
     ).toBe(0);
     expect(
       (await inventory.read.lot("active-a", "OLD-OCP-LOT"))?.definition
@@ -371,31 +385,31 @@ describe("revision-frozen heterogeneous package composition", () => {
       packageCount: 2,
     });
     expect(
-      await itemQuantity(
-        inventory,
-        "active-a",
-        "active-a-v1",
-        "store",
-        "NEW-TWO"
-      )
+      await itemQuantity({
+        inventory: inventory,
+        itemId: "active-a",
+        itemRevisionId: "active-a-v1",
+        locationId: "store",
+        lotId: "NEW-TWO",
+      })
     ).toBe(40);
     expect(
-      await itemQuantity(
-        inventory,
-        "active-b",
-        "active-b-v1",
-        "store",
-        "NEW-TWO"
-      )
+      await itemQuantity({
+        inventory: inventory,
+        itemId: "active-b",
+        itemRevisionId: "active-b-v1",
+        locationId: "store",
+        lotId: "NEW-TWO",
+      })
     ).toBe(10);
     expect(
-      await itemQuantity(
-        inventory,
-        "placebo-b",
-        "placebo-b-v1",
-        "store",
-        "NEW-TWO"
-      )
+      await itemQuantity({
+        inventory: inventory,
+        itemId: "placebo-b",
+        itemRevisionId: "placebo-b-v1",
+        locationId: "store",
+        lotId: "NEW-TWO",
+      })
     ).toBe(6);
   });
 
@@ -911,22 +925,22 @@ describe("revision-frozen heterogeneous package composition", () => {
       },
     });
     expect(
-      await itemQuantity(
-        explicitInventory,
-        "active-a",
-        "active-a-v1",
-        "store",
-        "ACTIVE-OUTPUT-LOT"
-      )
+      await itemQuantity({
+        inventory: explicitInventory,
+        itemId: "active-a",
+        itemRevisionId: "active-a-v1",
+        locationId: "store",
+        lotId: "ACTIVE-OUTPUT-LOT",
+      })
     ).toBe(21);
     expect(
-      await itemQuantity(
-        explicitInventory,
-        "placebo-a",
-        "placebo-a-v1",
-        "store",
-        "PLACEBO-OUTPUT-LOT"
-      )
+      await itemQuantity({
+        inventory: explicitInventory,
+        itemId: "placebo-a",
+        itemRevisionId: "placebo-a-v1",
+        locationId: "store",
+        lotId: "PLACEBO-OUTPUT-LOT",
+      })
     ).toBe(7);
   });
 });

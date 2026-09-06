@@ -203,8 +203,8 @@ Executable refinement in the TypeScript façade reconstructs `InventoryOnceEvent
 `PublishedHeadCAS` isolates the production storage-adapter obligation that an in-memory mutex cannot prove.
 Two writers read the same published revision, independently freeze exact next-world plans, and race to
 Begin. A compare-and-swap claim on the published head permits at most one winner; the loser becomes stale
-and cannot publish over that winner. Exact retry of the winning operation stutters, publication advances
-the visible revision/history together, and weak fairness checks that a successfully claimed fence eventually
+and cannot publish over that winner. Exact retry of the winning operation stutters, `Publish` advances
+the visible revision, `WriteCompletedHistory` later persists completed history, and weak fairness checks that a successfully claimed fence eventually
 repairs and clears. Prepared-but-unclaimed attempts intentionally carry no scheduler-progress claim. The bounded exploration result is reported once in the generated-state table above; keep that table as the authoritative PublishedHeadCAS run record.
 
 The model is an adapter contract, not evidence that Parse, SQL, or another document store already provides

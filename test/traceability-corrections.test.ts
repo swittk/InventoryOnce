@@ -194,7 +194,9 @@ describe("traceability graph meanings", () => {
   });
 
   it("validates deep genealogy without relying on the JavaScript call stack", () => {
+    // Exercise a genealogy deep enough to expose accidental recursive traversal.
     const relationCount = 20_000;
+    // Retain each relation by its canonical traceability relation identity.
     const relations: Record<string, InventoryTraceabilityRelation> = {};
     for (let index = 0; index < relationCount; index += 1) {
       const from = {

@@ -249,6 +249,7 @@ const sourcePaths = [
   "scripts/generate-formal-implementation-assurance.py",
   "scripts/audit-formal-implementation-conformance.mjs",
   "scripts/run-formal-implementation-conformance.mjs",
+  "scripts/repository-assurance-state.mjs",
   "scripts/report-implementation-conformance.mjs",
   "scripts/run-formal.mjs",
   "scripts/formal-models.mjs",

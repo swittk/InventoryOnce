@@ -124,6 +124,7 @@ describe("formal call-graph Vitest callback semantics", () => {
       false
     );
     expect(suiteChildrenExecute(skippedSuite)).toBe(false);
+    expect(suiteChildrenExecute({ registration: "describe", mode: "run" })).toBe(true);
     expect(callbackExecutes({
       registration: "describe",
       mode: "run",

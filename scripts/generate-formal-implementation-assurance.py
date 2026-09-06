@@ -10,6 +10,7 @@ repo = pkg
 # Nested pnpm must not inherit CI=true because repository validation semantics require normal pnpm behavior.
 child_env = os.environ.copy()
 child_env.pop('CI', None)
+# Cached discovered public surface reused by all later assurance-expansion steps.
 surface = json.loads(
     subprocess.check_output(
         ["pnpm", "exec", "node", "scripts/formal-implementation-surface.cjs"],
@@ -18,6 +19,7 @@ surface = json.loads(
         env=child_env,
     )
 )
+# Cached compiler call graph reused by later witness and traceability checks.
 call_graph = json.loads(
     subprocess.check_output(
         ["pnpm", "exec", "node", "scripts/formal-implementation-callgraph.cjs"],
@@ -182,7 +184,9 @@ def public_symbol(signature):
 
 
 
+# Cached production source inventory reused by diagnostic symbol-reference scans.
 ALL_PRODUCTION_SOURCES = sorted((pkg / 'src').rglob('*.ts'))
+# Cached production source text avoids rereading files for every public symbol.
 PRODUCTION_SOURCE_TEXTS = [
  (path, path.read_text(errors='ignore')) for path in ALL_PRODUCTION_SOURCES
 ]

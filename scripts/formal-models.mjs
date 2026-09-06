@@ -32,7 +32,7 @@ export const statefulOperationFamilyIds = Object.freeze([
 
 
 /** TLC cfg sections that terminate an INVARIANT/PROPERTY block. */
-const formalConfigSectionKeyword = /^(?:CONSTANTS?|SPECIFICATION|INIT|NEXT|SYMMETRY|VIEW|CONSTRAINTS?|ACTION_CONSTRAINTS?|CHECK_DEADLOCK|ALIAS|POSTCONDITION)$/u;
+const formalConfigSectionKeyword = /^(?:CONSTANTS?|SPECIFICATION|INIT|NEXT|SYMMETRY|VIEW|CONSTRAINTS?|ACTION_CONSTRAINTS?|CHECK_DEADLOCK|ALIAS|POSTCONDITION)(?:\s|$)/u;
 
 /** Parse invariant/property names from one TLC config using the supported config grammar. */
 export function formalConfigCheckNames(config) {
@@ -60,6 +60,9 @@ export function formalConfigCheckNames(config) {
     if (block && /^[A-Za-z][A-Za-z0-9_]*$/u.test(line)) {
       names.push(line);
       continue;
+    }
+    if (block && line !== "" && !line.startsWith("\\*")) {
+      throw new Error(`Unsupported TLC check list entry '${line}'.`);
     }
     if (line !== "" && !line.startsWith("\\*")) block = false;
   }

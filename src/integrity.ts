@@ -328,6 +328,7 @@ export function inventoryDurableMigrationPlanDigest(parts: {
   /** Complete committed migration event batch in final durable order. */
   readonly events: readonly InventoryCommittedEvent[];
   /** Canonical non-physical source dispositions retained through completion. */
+  // Keep the digest primitive structural rather than coupling integrity to migration types.
   readonly sourceDispositions: readonly unknown[];
   /** Exact roots expected after the one visible migration cut. */
   readonly nextRoots: InventoryWorldContentRoots;
