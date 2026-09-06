@@ -4,6 +4,67 @@ function vitestRegistrationName(callee) {
   return match?.[1];
 }
 
+/** Return the exact node that makes one Vitest registration focused, or undefined. */
+function vitestFocusedRegistrationNode(ts, node) {
+  const expressionHasProperty = (expression, propertyName) => {
+    if (ts.isPropertyAccessExpression(expression)) {
+      return (
+        expression.name.text === propertyName ||
+        expressionHasProperty(expression.expression, propertyName)
+      );
+    }
+    if (ts.isCallExpression(expression)) {
+      return expressionHasProperty(expression.expression, propertyName);
+    }
+    return false;
+  };
+  const staticBooleanValue = (valueNode) => {
+    if (valueNode === undefined) return undefined;
+    if (valueNode.kind === ts.SyntaxKind.TrueKeyword) return true;
+    if (valueNode.kind === ts.SyntaxKind.FalseKeyword) return false;
+    if (ts.isParenthesizedExpression(valueNode)) {
+      return staticBooleanValue(valueNode.expression);
+    }
+    if (
+      ts.isPrefixUnaryExpression(valueNode) &&
+      valueNode.operator === ts.SyntaxKind.ExclamationToken
+    ) {
+      const value = staticBooleanValue(valueNode.operand);
+      return value === undefined ? undefined : !value;
+    }
+    if (
+      ts.isAsExpression(valueNode) ||
+      ts.isTypeAssertionExpression(valueNode) ||
+      ts.isNonNullExpression(valueNode)
+    ) {
+      return staticBooleanValue(valueNode.expression);
+    }
+    return undefined;
+  };
+
+  if (expressionHasProperty(node.expression, "only")) return node;
+  for (const argument of node.arguments) {
+    if (!ts.isObjectLiteralExpression(argument)) continue;
+    for (const property of argument.properties) {
+      if (
+        !ts.isPropertyAssignment(property) &&
+        !ts.isShorthandPropertyAssignment(property)
+      ) {
+        continue;
+      }
+      const name = property.name
+        .getText(node.getSourceFile())
+        .replace(/^['"]|['"]$/gu, "");
+      if (name !== "only") continue;
+      const value = ts.isPropertyAssignment(property)
+        ? staticBooleanValue(property.initializer)
+        : undefined;
+      if (value !== false) return property;
+    }
+  }
+  return undefined;
+}
+
 /** Return whether a statically described registration is runnable rather than skipped/todo/unknown. */
 function vitestRegistrationRuns(metadata) {
   if (metadata.mode !== "run") return false;
@@ -42,6 +103,7 @@ function vitestSuiteChildrenExecute(metadata) {
 
 module.exports = {
   vitestCallbackExecutes,
+  vitestFocusedRegistrationNode,
   vitestRegistrationName,
   vitestRegistrationRuns,
   vitestSuiteChildrenExecute,

@@ -394,11 +394,19 @@ describe("append-only corrections", () => {
       from: child,
       to: parent,
     });
-    await inventory.traceability.disaggregate({
+    const removal = await inventory.traceability.disaggregate({
       operationId: "omit-trace-later-remove",
       occurredAt: time1,
       from: child,
       to: parent,
+    });
+    await inventory.stock.correct({
+      operationId: "verify-omit-trace-later-remove",
+      occurredAt: time2,
+      correctsEventId: removal.event.eventId,
+      reason: "The later removal was verified before the root was corrected.",
+      replaceWith: (plans) =>
+        plans.disaggregate({ occurredAt: time1, from: child, to: parent }),
     });
 
     const correction = await inventory.stock.correct({

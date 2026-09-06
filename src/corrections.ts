@@ -202,6 +202,9 @@ function projectHistoryWithReplacement(
   const hypothetical: InventoryCommittedEvent[] = [];
   // Effective relation creators for the hypothetical history built below.
   const hypotheticalRelationCreatorById = new Map<string, string>();
+  // Traceability rows can become semantic no-ops after an earlier replacement; their
+  // correction chain must disappear from the same hypothetical history as well.
+  const droppedTraceabilityEventIds = new Set<string>();
   let nextSequence = 1;
   for (
     let recordSequence = 1;
@@ -226,6 +229,8 @@ function projectHistoryWithReplacement(
         ? undefined
         : projection.events[event.correction.correctsEventId];
     if (
+      (event.correction !== undefined &&
+        droppedTraceabilityEventIds.has(event.correction.correctsEventId)) ||
       correctedEvent?.kind === InventoryEventKind.LotMetadata ||
       correctedEvent?.kind === InventoryEventKind.ContainerMetadata
     ) {
@@ -260,6 +265,7 @@ function projectHistoryWithReplacement(
       stockAndGraphDraft.kind === InventoryEventKind.Traceability &&
       reconciledTraceabilityChanges.length === 0
     ) {
+      droppedTraceabilityEventIds.add(event.eventId);
       continue;
     }
     hypothetical.push(

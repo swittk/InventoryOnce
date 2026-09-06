@@ -49,12 +49,53 @@ function callbackExecutes(metadata: VitestExecutionMetadata): boolean {
   return semanticsDecision("vitestCallbackExecutes", metadata);
 }
 
+/** Ask the exact call-graph detector whether each source contains a focused Vitest registration. */
+function focusedRegistrationDecisions(sources: readonly string[]): readonly boolean[] {
+  const script = [
+    'const ts = require("typescript");',
+    'const { vitestFocusedRegistrationNode } = require("./scripts/formal-implementation-vitest-semantics.cjs");',
+    'const sources = JSON.parse(process.argv[1]);',
+    'const decisions = sources.map((text, index) => {',
+    '  const source = ts.createSourceFile(`focus-${index}.ts`, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);',
+    '  let focused = false;',
+    '  const visit = (node) => {',
+    '    if (focused) return;',
+    '    if (ts.isCallExpression(node) && vitestFocusedRegistrationNode(ts, node) !== undefined) focused = true;',
+    '    ts.forEachChild(node, visit);',
+    '  };',
+    '  ts.forEachChild(source, visit);',
+    '  return focused;',
+    '});',
+    'process.stdout.write(JSON.stringify(decisions));',
+  ].join("\n");
+  const decoded: unknown = JSON.parse(
+    execFileSync(process.execPath, ["-e", script, JSON.stringify(sources)], {
+      cwd: repositoryRoot,
+      encoding: "utf8",
+    }),
+  );
+  if (!Array.isArray(decoded) || decoded.some((value) => typeof value !== "boolean")) {
+    throw new Error("Focused-registration detector returned a non-boolean decision list.");
+  }
+  return decoded as boolean[];
+}
+
 /** Ask whether tests/hooks registered inside one suite can execute after collection. */
 function suiteChildrenExecute(metadata: VitestExecutionMetadata): boolean {
   return semanticsDecision("vitestSuiteChildrenExecute", metadata);
 }
 
 describe("formal call-graph Vitest callback semantics", () => {
+  it("rejects every focused Vitest registration spelling used by the call graph", () => {
+    expect(focusedRegistrationDecisions([
+      'it.only("focused", () => {});',
+      'test.only("focused", () => {});',
+      'describe.only("focused", () => {});',
+      'test("focused", { only: true }, () => {});',
+      'test("ordinary", { only: false }, () => {});',
+      'test("ordinary", () => {});',
+    ])).toEqual([true, true, true, true, false, false]);
+  });
   it("excludes skipped, todo, option-skipped, and non-running conditional tests", () => {
     expect(callbackExecutes({ registration: "test", mode: "skip" })).toBe(false);
     expect(callbackExecutes({ registration: "it", mode: "todo" })).toBe(false);

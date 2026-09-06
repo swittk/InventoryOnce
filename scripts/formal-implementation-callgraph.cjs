@@ -3,6 +3,7 @@ const path = require("node:path");
 const { execFileSync } = require("node:child_process");
 const {
   vitestCallbackExecutes,
+  vitestFocusedRegistrationNode,
   vitestRegistrationName,
   vitestRegistrationRuns,
   vitestSuiteChildrenExecute,
@@ -70,6 +71,29 @@ if (productionSources.length === 0) {
 }
 if (executableTestSources.length === 0) {
   throw new Error(`Compiler call graph found no executable tests below '${testRoot}'.`);
+}
+
+/** Reject focused Vitest runs because partial execution cannot certify repository-wide witnesses. */
+for (const source of executableTestSources) {
+  let focused;
+  const visitFocusedRegistration = (node) => {
+    if (focused !== undefined) return;
+    if (ts.isCallExpression(node) && isVitestRegistrationCall(node)) {
+      const focusedRegistration = vitestFocusedRegistrationNode(ts, node);
+      if (focusedRegistration !== undefined) {
+        focused = focusedRegistration;
+        return;
+      }
+    }
+    ts.forEachChild(node, visitFocusedRegistration);
+  };
+  ts.forEachChild(source, visitFocusedRegistration);
+  if (focused !== undefined) {
+    const location = source.getLineAndCharacterOfPosition(focused.getStart(source));
+    throw new Error(
+      `Compiler call graph refuses focused Vitest registration in ${relativeFile(source)}:${location.line + 1}; remove .only/{ only: true } before generating assurance.`
+    );
+  }
 }
 
 /** Return one compiler source path relative to the repository root. */

@@ -1110,13 +1110,12 @@ if (process.argv.includes("--write-report")) {
   );
 }
 
-const fieldClassCounts = Object.values(fieldManifest.entries).reduce(
-  (counts, entry) => ({
-    ...counts,
-    [entry.classification]: (counts[entry.classification] ?? 0) + 1,
-  }),
-  {}
-);
+/** Field count per classification, tallied in one pass for emitted metrics. */
+const fieldClassCounts = {};
+for (const entry of Object.values(fieldManifest.entries)) {
+  fieldClassCounts[entry.classification] =
+    (fieldClassCounts[entry.classification] ?? 0) + 1;
+}
 console.log(
   JSON.stringify(
     {
