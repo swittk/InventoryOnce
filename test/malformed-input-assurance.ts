@@ -33,6 +33,7 @@ function decodeAssuranceReference(value: unknown, label: string): AssuranceRefer
   if (typeof value !== "object" || value === null) {
     throw new Error(`${label} must be an object.`);
   }
+  // The object/null guard above proves record access is safe; values remain unknown until each field is checked.
   const record = value as Record<string, unknown>;
   if (typeof record.file !== "string" || record.file.length === 0) {
     throw new Error(`${label}.file must be a non-empty string.`);
@@ -58,6 +59,7 @@ function decodeMalformedInputAssuranceEntry(
   if (typeof value !== "object" || value === null) {
     throw new Error(`Malformed input assurance entry ${index} must be an object.`);
   }
+  // The object/null guard above proves record access is safe; values remain unknown until each field is checked.
   const record = value as Record<string, unknown>;
   if (typeof record.id !== "string" || record.id.length === 0) {
     throw new Error(`Malformed input assurance entry ${index}.id must be a non-empty string.`);
@@ -90,6 +92,7 @@ export function decodeMalformedInputAssuranceManifest(
   if (typeof value !== "object" || value === null) {
     throw new Error("Malformed input assurance manifest must be an object.");
   }
+  // The object/null guard above proves record access is safe; values remain unknown until each field is checked.
   const record = value as Record<string, unknown>;
   if (record.schemaVersion !== 1) {
     throw new Error("Malformed input assurance manifest schemaVersion must be 1.");

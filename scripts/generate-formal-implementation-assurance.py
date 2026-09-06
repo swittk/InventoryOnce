@@ -30,6 +30,7 @@ call_graph = json.loads(
 def create_assurance_family(models,invariants,input_mapping,state_projection,result_mapping,retry_relation,rejection_relation,evidence,adapters,status='covered',gaps=()):
  return {'models':models,'invariants':invariants,'inputMapping':input_mapping,'stateProjection':state_projection,'resultMapping':result_mapping,'retryRelation':retry_relation,'rejectionRelation':rejection_relation,'executableEvidence':evidence,'adapterCoverage':adapters,'status':status,'gaps':list(gaps)}
 M='test/formal-implementation-refinement.test.ts'; S='test/formal-storage-refinement.test.ts'; C='test/formal-implementation-conformance.test.ts'; D='test/storage-conformance.test.ts'
+# Registry of reusable formal-assurance families referenced by every discovered public API.
 families={}
 families['pure-exact-value']=create_assurance_family(['DualMeasure','PackagingIdentity'],['PrimaryQuantityConserved','SecondaryMeasureHasExplicitCause','PhysicalQuantityConserved'],'Exact decimal/unit/package inputs map directly to finite quantity or measurement tuples.',['abstractInventoryState'],'Pure output is the exact normalized value; no world changes.','No durable identity; equal input produces equal output.','Malformed decimals, unit mismatches, fractional packages, and ambiguous conversions reject before state.',[M,C],['memory'])
 families['identity-normalization']=create_assurance_family(['ResourceDimensions','TraceabilityGraph','SnapshotSupersededWorkflow'],['TypeOK','ResourceAccounting','ContainmentIsAcyclic','PublishedRetainsAllDispositions','PublishedWorldMatchesSnapshot','SupersededRowsNeverResume'],'Identity and selector fields map to finite model atoms and exact set constraints.',['abstractInventoryState','abstractTraceabilityState'],'Result is a canonical collision-free identity/selector observation.','Pure helper; retry is ordinary referential equality.','Empty, duplicate, contradictory, or non-canonical identities reject.',[M,C],['memory'])
@@ -259,6 +260,7 @@ def enrich_evidence(key, entry):
   'callChainWitnesses':witnesses,
  }
 
+# Public API assurance entries keyed by their stable discovered surface identity.
 entries={}
 for row in surface['facade']:
  key='facade.'+row['key']; entries[key]=expanded_entry(facade_family(row['key']),row)
@@ -307,6 +309,7 @@ all_export_rows = [row for rows in surface['entrypoints'].values() for row in ro
 surface_diagnostics = surface.get('diagnostics', {})
 if surface_diagnostics.get('truncatedTypes', []) != []:
  raise RuntimeError('public type discovery silently truncated types')
+# Aggregate discovered-surface and executable-callgraph counts emitted into the API manifest.
 surface_counts={
  'facadeMethods':len(surface['facade']),
  'authorityMethods':len(surface['authority']),
@@ -335,9 +338,13 @@ surface_counts={
 surface_hash=hashlib.sha256(json.dumps(surface,sort_keys=True,separators=(',',':')).encode()).hexdigest()
 api_manifest={'schemaVersion':2,'surfaceSha256':surface_hash,'surfaceDiagnostics':surface_diagnostics,'counts':surface_counts,'families':families,'entries':dict(sorted(entries.items()))}
 
+# Fields retained as audit/provenance evidence rather than conserved physical semantics.
 AUDIT={'metadata','actorId','sourcePartyId','destinationPartyId','sourceReference','reason','note','compatibilityProjectionError'}
+# Human-facing decoration fields intentionally outside conserved inventory semantics.
 DECOR={'description','message','code'}
+# External callback fields mapped to their explicit formal-coverage gaps.
 CALLBACK_GAPS={'failpoint':'GAP-TEST-FAILPOINT-HOOK','now':'GAP-EXTERNAL-CLOCK','readPage':'GAP-EXTERNAL-MIGRATION-CALLBACKS','createBundle':'GAP-EXTERNAL-MIGRATION-CALLBACKS','createDeclaration':'GAP-EXTERNAL-MIGRATION-CALLBACKS','compileSource':'GAP-EXTERNAL-MIGRATION-CALLBACKS','drainLegacyWriters':'GAP-EXTERNAL-MIGRATION-CALLBACKS','defineRevision':'GAP-EXTERNAL-POLICY-CALLBACKS','acceptAllocations':'GAP-EXTERNAL-POLICY-CALLBACKS'}
+# Exact identity/retry fields whose values select or fence modeled facts.
 IDENTITY_EXACT={'operationId','migrationId','eventId','countId','reservationId','requestId','groupId','commandId','changeId','openingId','queryId','pluginId','namespaceId','writerToken','attemptToken','fenceToken','replayed','created'}
 
 # Choose formal model correspondence for one reachable public field from its source and owner.
@@ -415,6 +422,7 @@ def classify_field(owner,row):
   'gaps':gaps,
  }
 
+# Reachable public fields keyed by owner/name with their classification and evidence mapping.
 field_entries={}
 for type_row in surface['types']:
  for row in type_row['fields']:

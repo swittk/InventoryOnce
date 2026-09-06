@@ -25,7 +25,7 @@ export function inventoryPositionEffectiveUseBy(
   return lotExpiry <= containerUseBy ? lotExpiry : containerUseBy;
 }
 
-/** Return whether one position is past its effective lot/container use-by at the supplied time. */
+/** Return whether one position is expired at the supplied time; expiry is inclusive at effective use-by. */
 export function inventoryPositionIsExpiredAt(
   projection: InventoryProjectionState,
   position: InventoryStockPositionKey,

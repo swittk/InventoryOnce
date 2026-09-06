@@ -17,6 +17,7 @@ import {
   InventoryMeasurementRequirement,
   type InventoryCatalog,
   type InventoryItemDefinitionRevision,
+  type InventoryPackagingDefinitionRevision,
 } from "./catalog.js";
 import {
   applyInventoryRecordedDeficitBurden,
@@ -725,7 +726,37 @@ function createExactPrimaryReservationSummary({
   };
 }
 
-/** Mark intact packages and serial rows with the smallest legal automatic issue increment. */
+/** Return whether automatic primary allocation would lose an unfixed independent measurement. */
+function positionHasUnfixedIndependentMeasuredContents(
+  position: InventoryStockPosition,
+  item: InventoryItemDefinitionRevision,
+  packaging?: InventoryPackagingDefinitionRevision
+): boolean {
+  for (const axis of item.independentAxes) {
+    if (
+      packaging?.fixedContents.independent.some(
+        /** Match one package-fixed independent axis by exact axis identity. */
+        (measured) => measured.axisId === axis.axisId
+      ) === true
+    ) {
+      continue;
+    }
+    const measured = inventoryMeasurementAt(
+      position.measurements,
+      axis.axisId,
+      axis.unit
+    );
+    if (
+      axis.requirement === InventoryMeasurementRequirement.Required ||
+      compareQuantity(measured, zeroQuantity(axis.unit, measured.decimals)) !== 0
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/** Mark serial, measured, and intact-package rows with the smallest legal automatic issue increment. */
 function allocationIncrementForPosition(
   catalog: InventoryCatalog,
   position: InventoryStockPosition,
@@ -739,8 +770,15 @@ function allocationIncrementForPosition(
   if (position.key.serialId !== undefined)
     return { allocationIncrement: capacity };
   const packagingRevisionId = position.key.packagingRevisionId;
-  if (packagingRevisionId === undefined) return {};
+  if (packagingRevisionId === undefined) {
+    return positionHasUnfixedIndependentMeasuredContents(position, item)
+      ? { allocationIncrement: capacity }
+      : {};
+  }
   const packaging = catalog.packagingRevision(packagingRevisionId);
+  if (positionHasUnfixedIndependentMeasuredContents(position, item, packaging)) {
+    return { allocationIncrement: capacity };
+  }
   return {
     allocationIncrement: inventoryMeasurementAt(
       packaging.fixedContents,
@@ -852,6 +890,14 @@ export function inventoryAmountForPrimaryAllocation({
   const packagingRevisionId = position.key.packagingRevisionId;
   if (packagingRevisionId !== undefined) {
     const packaging = catalog.packagingRevision(packagingRevisionId);
+    if (
+      !takesWholePosition &&
+      positionHasUnfixedIndependentMeasuredContents(position, item, packaging)
+    ) {
+      throw new Error(
+        "Automatic picking cannot split a package position with independently measured contents; select exact measured lines."
+      );
+    }
     const onePackagePrimary = inventoryMeasurementAt(
       packaging.fixedContents,
       item.primaryAxis.axisId,
@@ -881,11 +927,6 @@ export function inventoryAmountForPrimaryAllocation({
           zeroQuantity(axis.unit, measured.decimals)
         ) !== 0;
       if (!preservesIndependentMeasurement) continue;
-      if (!takesWholePosition) {
-        throw new Error(
-          "Automatic picking cannot split a package position with independently measured contents; select exact measured lines."
-        );
-      }
       independent.push({
         axisId: axis.axisId,
         value: quantityToDecimalString(measured),
@@ -902,23 +943,10 @@ export function inventoryAmountForPrimaryAllocation({
     );
   }
   if (!takesWholePosition) {
-    for (const axis of item.independentAxes) {
-      const measured = inventoryMeasurementAt(
-        position.measurements,
-        axis.axisId,
-        axis.unit
+    if (positionHasUnfixedIndependentMeasuredContents(position, item)) {
+      throw new Error(
+        "Automatic picking cannot proportionally split independently measured stock; select exact measured lines."
       );
-      if (
-        axis.requirement === InventoryMeasurementRequirement.Required ||
-        compareQuantity(
-          measured,
-          zeroQuantity(axis.unit, measured.decimals)
-        ) !== 0
-      ) {
-        throw new Error(
-          "Automatic picking cannot proportionally split independently measured stock; select exact measured lines."
-        );
-      }
     }
     return stockAmount(
       quantityToDecimalString(allocatedPrimary),

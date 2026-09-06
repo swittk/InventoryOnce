@@ -3,12 +3,18 @@ import {
   InventoryAllocationMethod,
   InventoryAmountKind,
   InventoryDeficitPolicy,
+  InventoryMeasurementAxisRole,
+  InventoryMeasurementRequirement,
   InventoryReservationFeasibilityStatus,
+  InventoryTrackingRequirement,
   InventoryReservationStatus,
+  defineInventoryCatalog,
   inventoryStockSelector,
+  measuredStockAmount,
   packageAmount,
   parseQuantity,
   stockAmount,
+  unitCode,
 } from "../src/index.js";
 import {
   createTestInventory,
@@ -406,6 +412,92 @@ describe("native FIFO/FEFO movement policy", () => {
       count: 1,
       packagingRevisionId: "item-a-box-24-v1",
     });
+  });
+
+  it("does not split a packaged position with unfixed independent measurement", async () => {
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [{
+        itemId: "measured-package-item",
+        revisionId: "measured-package-item-v1",
+        primaryAxis: {
+          axisId: "pieces",
+          role: InventoryMeasurementAxisRole.Primary,
+          unit: unitCode("piece"),
+          requirement: InventoryMeasurementRequirement.Required,
+        },
+        independentAxes: [{
+          axisId: "weight",
+          role: InventoryMeasurementAxisRole.Independent,
+          unit: unitCode("kg"),
+          requirement: InventoryMeasurementRequirement.Optional,
+        }],
+        reservationAxisId: "pieces",
+        tracking: {
+          lot: InventoryTrackingRequirement.Optional,
+          serial: InventoryTrackingRequirement.Optional,
+        },
+        qualifiedDimensions: [],
+      }],
+      activeItemRevisionIds: {
+        "measured-package-item": "measured-package-item-v1",
+      },
+      packagingRevisions: [{
+        revisionId: "measured-package-box-v1",
+        itemId: "measured-package-item",
+        itemRevisionId: "measured-package-item-v1",
+        packageUnit: unitCode("box"),
+        fixedContents: {
+          primary: {
+            axisId: "pieces",
+            quantity: parseQuantity("24", "piece"),
+          },
+          independent: [],
+        },
+      }],
+    });
+    const inventory = createTestInventory(undefined, catalog);
+    await inventory.stock.receive({
+      operationId: "receive-two-measured-packages",
+      occurredAt: time0,
+      to: { itemId: "measured-package-item", locationId: "store" },
+      amount: packageAmount(2, "measured-package-box-v1", [
+        { axisId: "weight", value: "3", unit: "kg" },
+      ]),
+    });
+
+    const blocked = await inventory.read.planAllocation({
+      selector: inventoryStockSelector("measured-package-item", {
+        locationIds: ["store"],
+      }),
+      amount: packageAmount(1, "measured-package-box-v1"),
+      method: InventoryAllocationMethod.Fifo,
+      at: time1,
+    });
+
+    expect(blocked.lines).toEqual([]);
+    expect(blocked.incrementBlockedStock).toBe(true);
+    expect(blocked.shortfall.amountMinor).toBe(24);
+
+    const looseInventory = createTestInventory(undefined, catalog);
+    await looseInventory.stock.receive({
+      operationId: "receive-loose-measured-position",
+      occurredAt: time0,
+      to: { itemId: "measured-package-item", locationId: "store" },
+      amount: measuredStockAmount("2", "piece", [
+        { axisId: "weight", value: "3", unit: "kg" },
+      ]),
+    });
+    const looseBlocked = await looseInventory.read.planAllocation({
+      selector: inventoryStockSelector("measured-package-item", {
+        locationIds: ["store"],
+      }),
+      amount: stockAmount("1", "piece"),
+      method: InventoryAllocationMethod.Fifo,
+      at: time1,
+    });
+    expect(looseBlocked.lines).toEqual([]);
+    expect(looseBlocked.incrementBlockedStock).toBe(true);
+    expect(looseBlocked.shortfall.amountMinor).toBe(1);
   });
 
   it("keeps repeated intact-package allocations packaged in one batch event", async () => {

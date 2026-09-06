@@ -3,8 +3,8 @@
     "authorityMethods": 13,
     "callAndConstructSignatures": 508,
     "classMethods": 70,
-    "compilerCallGraphCallables": 2168,
-    "compilerCallGraphEdges": 5940,
+    "compilerCallGraphCallables": 2171,
+    "compilerCallGraphEdges": 5958,
     "compilerCallGraphTestRoots": 37,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 508,
@@ -992,10 +992,10 @@
               "column": 84,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:5002:<anonymous@154>",
+              "id": "test/formal-public-surface-completion.test.ts:5137:<anonymous@155>",
               "kind": "ArrowFunction",
-              "line": 154,
-              "name": "<anonymous@154>",
+              "line": 155,
+              "name": "<anonymous@155>",
               "reason": "test-callback"
             },
             {
@@ -1123,10 +1123,10 @@
               "column": 84,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:5002:<anonymous@154>",
+              "id": "test/formal-public-surface-completion.test.ts:5137:<anonymous@155>",
               "kind": "ArrowFunction",
-              "line": 154,
-              "name": "<anonymous@154>",
+              "line": 155,
+              "name": "<anonymous@155>",
               "reason": "test-callback"
             },
             {
@@ -1683,10 +1683,10 @@
               "column": 84,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:5002:<anonymous@154>",
+              "id": "test/formal-public-surface-completion.test.ts:5137:<anonymous@155>",
               "kind": "ArrowFunction",
-              "line": 154,
-              "name": "<anonymous@154>",
+              "line": 155,
+              "name": "<anonymous@155>",
               "reason": "test-callback"
             },
             {
@@ -5812,10 +5812,10 @@
               "column": 84,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:5002:<anonymous@154>",
+              "id": "test/formal-public-surface-completion.test.ts:5137:<anonymous@155>",
               "kind": "ArrowFunction",
-              "line": 154,
-              "name": "<anonymous@154>",
+              "line": 155,
+              "name": "<anonymous@155>",
               "reason": "test-callback"
             },
             {
@@ -5944,10 +5944,10 @@
               "column": 84,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:5002:<anonymous@154>",
+              "id": "test/formal-public-surface-completion.test.ts:5137:<anonymous@155>",
               "kind": "ArrowFunction",
-              "line": 154,
-              "name": "<anonymous@154>",
+              "line": 155,
+              "name": "<anonymous@155>",
               "reason": "test-callback"
             },
             {
@@ -6508,10 +6508,10 @@
               "column": 84,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:5002:<anonymous@154>",
+              "id": "test/formal-public-surface-completion.test.ts:5137:<anonymous@155>",
               "kind": "ArrowFunction",
-              "line": 154,
-              "name": "<anonymous@154>",
+              "line": 155,
+              "name": "<anonymous@155>",
               "reason": "test-callback"
             },
             {
@@ -12872,10 +12872,10 @@
               "column": 34,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:3606:<anonymous@119>",
+              "id": "test/formal-public-surface-completion.test.ts:3741:<anonymous@120>",
               "kind": "ArrowFunction",
-              "line": 119,
-              "name": "<anonymous@119>",
+              "line": 120,
+              "name": "<anonymous@120>",
               "reason": "callback-dispatch"
             },
             {
@@ -13470,10 +13470,10 @@
               "column": 34,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:3682:<anonymous@120>",
+              "id": "test/formal-public-surface-completion.test.ts:3817:<anonymous@121>",
               "kind": "ArrowFunction",
-              "line": 120,
-              "name": "<anonymous@120>",
+              "line": 121,
+              "name": "<anonymous@121>",
               "reason": "callback-dispatch"
             },
             {
@@ -16205,10 +16205,10 @@
               "column": 34,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:3776:<anonymous@123>",
+              "id": "test/formal-public-surface-completion.test.ts:3911:<anonymous@124>",
               "kind": "ArrowFunction",
-              "line": 123,
-              "name": "<anonymous@123>",
+              "line": 124,
+              "name": "<anonymous@124>",
               "reason": "callback-dispatch"
             },
             {
@@ -16760,10 +16760,10 @@
               "column": 34,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:3853:<anonymous@124>",
+              "id": "test/formal-public-surface-completion.test.ts:3988:<anonymous@125>",
               "kind": "ArrowFunction",
-              "line": 124,
-              "name": "<anonymous@124>",
+              "line": 125,
+              "name": "<anonymous@125>",
               "reason": "callback-dispatch"
             },
             {
@@ -17050,10 +17050,10 @@
               "column": 34,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:3954:<anonymous@127>",
+              "id": "test/formal-public-surface-completion.test.ts:4089:<anonymous@128>",
               "kind": "ArrowFunction",
-              "line": 127,
-              "name": "<anonymous@127>",
+              "line": 128,
+              "name": "<anonymous@128>",
               "reason": "callback-dispatch"
             },
             {
@@ -17201,10 +17201,10 @@
               "column": 34,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:4050:<anonymous@130>",
+              "id": "test/formal-public-surface-completion.test.ts:4185:<anonymous@131>",
               "kind": "ArrowFunction",
-              "line": 130,
-              "name": "<anonymous@130>",
+              "line": 131,
+              "name": "<anonymous@131>",
               "reason": "callback-dispatch"
             },
             {
@@ -17482,10 +17482,10 @@
               "column": 34,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:4154:<anonymous@133>",
+              "id": "test/formal-public-surface-completion.test.ts:4289:<anonymous@134>",
               "kind": "ArrowFunction",
-              "line": 133,
-              "name": "<anonymous@133>",
+              "line": 134,
+              "name": "<anonymous@134>",
               "reason": "callback-dispatch"
             },
             {
@@ -18609,10 +18609,10 @@
               "column": 34,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:4249:<anonymous@136>",
+              "id": "test/formal-public-surface-completion.test.ts:4384:<anonymous@137>",
               "kind": "ArrowFunction",
-              "line": 136,
-              "name": "<anonymous@136>",
+              "line": 137,
+              "name": "<anonymous@137>",
               "reason": "callback-dispatch"
             },
             {
@@ -18896,10 +18896,10 @@
               "column": 34,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:4330:<anonymous@137>",
+              "id": "test/formal-public-surface-completion.test.ts:4465:<anonymous@138>",
               "kind": "ArrowFunction",
-              "line": 137,
-              "name": "<anonymous@137>",
+              "line": 138,
+              "name": "<anonymous@138>",
               "reason": "callback-dispatch"
             },
             {
@@ -19473,10 +19473,10 @@
               "column": 34,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:4425:<anonymous@140>",
+              "id": "test/formal-public-surface-completion.test.ts:4560:<anonymous@141>",
               "kind": "ArrowFunction",
-              "line": 140,
-              "name": "<anonymous@140>",
+              "line": 141,
+              "name": "<anonymous@141>",
               "reason": "callback-dispatch"
             },
             {
@@ -22536,10 +22536,10 @@
               "column": 34,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:4523:<anonymous@143>",
+              "id": "test/formal-public-surface-completion.test.ts:4658:<anonymous@144>",
               "kind": "ArrowFunction",
-              "line": 143,
-              "name": "<anonymous@143>",
+              "line": 144,
+              "name": "<anonymous@144>",
               "reason": "callback-dispatch"
             },
             {
@@ -23368,9 +23368,9 @@
               "column": 1,
               "file": "src/picking.ts",
               "hasBody": true,
-              "id": "src/picking.ts:5820:planInventoryAllocation",
+              "id": "src/picking.ts:5865:planInventoryAllocation",
               "kind": "FunctionDeclaration",
-              "line": 145,
+              "line": 146,
               "name": "planInventoryAllocation",
               "reason": "resolved-call"
             },
@@ -23378,9 +23378,9 @@
               "column": 1,
               "file": "src/picking.ts",
               "hasBody": true,
-              "id": "src/picking.ts:30604:inventoryAmountForPrimaryAllocation",
+              "id": "src/picking.ts:31826:inventoryAmountForPrimaryAllocation",
               "kind": "FunctionDeclaration",
-              "line": 824,
+              "line": 862,
               "name": "inventoryAmountForPrimaryAllocation",
               "reason": "resolved-call"
             }
@@ -23389,9 +23389,9 @@
             "column": 1,
             "file": "src/picking.ts",
             "hasBody": true,
-            "id": "src/picking.ts:30604:inventoryAmountForPrimaryAllocation",
+            "id": "src/picking.ts:31826:inventoryAmountForPrimaryAllocation",
             "kind": "FunctionDeclaration",
-            "line": 824,
+            "line": 862,
             "name": "inventoryAmountForPrimaryAllocation"
           },
           "test": "test/projection-index-scale.test.ts"
@@ -23413,9 +23413,9 @@
           "column": 1,
           "file": "src/picking.ts",
           "hasBody": true,
-          "id": "src/picking.ts:30604:inventoryAmountForPrimaryAllocation",
+          "id": "src/picking.ts:31826:inventoryAmountForPrimaryAllocation",
           "kind": "FunctionDeclaration",
-          "line": 824,
+          "line": 862,
           "name": "inventoryAmountForPrimaryAllocation"
         }
       ],
@@ -25462,9 +25462,9 @@
               "column": 1,
               "file": "src/picking.ts",
               "hasBody": true,
-              "id": "src/picking.ts:5820:planInventoryAllocation",
+              "id": "src/picking.ts:5865:planInventoryAllocation",
               "kind": "FunctionDeclaration",
-              "line": 145,
+              "line": 146,
               "name": "planInventoryAllocation",
               "reason": "resolved-call"
             },
@@ -25472,9 +25472,9 @@
               "column": 1,
               "file": "src/picking.ts",
               "hasBody": true,
-              "id": "src/picking.ts:20801:createPolicyAllocationCandidates",
+              "id": "src/picking.ts:20846:createPolicyAllocationCandidates",
               "kind": "FunctionDeclaration",
-              "line": 563,
+              "line": 564,
               "name": "createPolicyAllocationCandidates",
               "reason": "resolved-call"
             },
@@ -26562,9 +26562,9 @@
               "column": 1,
               "file": "src/picking.ts",
               "hasBody": true,
-              "id": "src/picking.ts:5820:planInventoryAllocation",
+              "id": "src/picking.ts:5865:planInventoryAllocation",
               "kind": "FunctionDeclaration",
-              "line": 145,
+              "line": 146,
               "name": "planInventoryAllocation",
               "reason": "resolved-call"
             },
@@ -26572,9 +26572,9 @@
               "column": 1,
               "file": "src/picking.ts",
               "hasBody": true,
-              "id": "src/picking.ts:20801:createPolicyAllocationCandidates",
+              "id": "src/picking.ts:20846:createPolicyAllocationCandidates",
               "kind": "FunctionDeclaration",
-              "line": 563,
+              "line": 564,
               "name": "createPolicyAllocationCandidates",
               "reason": "resolved-call"
             },
@@ -26748,7 +26748,7 @@
               "column": 1,
               "file": "src/usability.ts",
               "hasBody": true,
-              "id": "src/usability.ts:1075:inventoryPositionIsExpiredAt",
+              "id": "src/usability.ts:1084:inventoryPositionIsExpiredAt",
               "kind": "FunctionDeclaration",
               "line": 29,
               "name": "inventoryPositionIsExpiredAt",
@@ -26759,7 +26759,7 @@
             "column": 1,
             "file": "src/usability.ts",
             "hasBody": true,
-            "id": "src/usability.ts:1075:inventoryPositionIsExpiredAt",
+            "id": "src/usability.ts:1084:inventoryPositionIsExpiredAt",
             "kind": "FunctionDeclaration",
             "line": 29,
             "name": "inventoryPositionIsExpiredAt"
@@ -26783,7 +26783,7 @@
           "column": 1,
           "file": "src/usability.ts",
           "hasBody": true,
-          "id": "src/usability.ts:1075:inventoryPositionIsExpiredAt",
+          "id": "src/usability.ts:1084:inventoryPositionIsExpiredAt",
           "kind": "FunctionDeclaration",
           "line": 29,
           "name": "inventoryPositionIsExpiredAt"
@@ -28931,10 +28931,10 @@
               "column": 34,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:4604:<anonymous@144>",
+              "id": "test/formal-public-surface-completion.test.ts:4739:<anonymous@145>",
               "kind": "ArrowFunction",
-              "line": 144,
-              "name": "<anonymous@144>",
+              "line": 145,
+              "name": "<anonymous@145>",
               "reason": "callback-dispatch"
             },
             {
@@ -30500,10 +30500,10 @@
               "column": 34,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:4702:<anonymous@147>",
+              "id": "test/formal-public-surface-completion.test.ts:4837:<anonymous@148>",
               "kind": "ArrowFunction",
-              "line": 147,
-              "name": "<anonymous@147>",
+              "line": 148,
+              "name": "<anonymous@148>",
               "reason": "callback-dispatch"
             },
             {
@@ -30921,9 +30921,9 @@
               "column": 1,
               "file": "src/picking.ts",
               "hasBody": true,
-              "id": "src/picking.ts:5820:planInventoryAllocation",
+              "id": "src/picking.ts:5865:planInventoryAllocation",
               "kind": "FunctionDeclaration",
-              "line": 145,
+              "line": 146,
               "name": "planInventoryAllocation",
               "reason": "resolved-call"
             }
@@ -30932,9 +30932,9 @@
             "column": 1,
             "file": "src/picking.ts",
             "hasBody": true,
-            "id": "src/picking.ts:5820:planInventoryAllocation",
+            "id": "src/picking.ts:5865:planInventoryAllocation",
             "kind": "FunctionDeclaration",
-            "line": 145,
+            "line": 146,
             "name": "planInventoryAllocation"
           },
           "test": "test/projection-index-scale.test.ts"
@@ -30960,9 +30960,9 @@
           "column": 1,
           "file": "src/picking.ts",
           "hasBody": true,
-          "id": "src/picking.ts:5820:planInventoryAllocation",
+          "id": "src/picking.ts:5865:planInventoryAllocation",
           "kind": "FunctionDeclaration",
-          "line": 145,
+          "line": 146,
           "name": "planInventoryAllocation"
         }
       ],
@@ -32641,10 +32641,10 @@
               "column": 34,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:4778:<anonymous@148>",
+              "id": "test/formal-public-surface-completion.test.ts:4913:<anonymous@149>",
               "kind": "ArrowFunction",
-              "line": 148,
-              "name": "<anonymous@148>",
+              "line": 149,
+              "name": "<anonymous@149>",
               "reason": "callback-dispatch"
             },
             {
@@ -33199,10 +33199,10 @@
               "column": 34,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:4871:<anonymous@151>",
+              "id": "test/formal-public-surface-completion.test.ts:5006:<anonymous@152>",
               "kind": "ArrowFunction",
-              "line": 151,
-              "name": "<anonymous@151>",
+              "line": 152,
+              "name": "<anonymous@152>",
               "reason": "callback-dispatch"
             },
             {
@@ -41873,9 +41873,9 @@
               "column": 1,
               "file": "src/picking.ts",
               "hasBody": true,
-              "id": "src/picking.ts:5820:planInventoryAllocation",
+              "id": "src/picking.ts:5865:planInventoryAllocation",
               "kind": "FunctionDeclaration",
-              "line": 145,
+              "line": 146,
               "name": "planInventoryAllocation",
               "reason": "resolved-call"
             },
@@ -41883,9 +41883,9 @@
               "column": 1,
               "file": "src/picking.ts",
               "hasBody": true,
-              "id": "src/picking.ts:30604:inventoryAmountForPrimaryAllocation",
+              "id": "src/picking.ts:31826:inventoryAmountForPrimaryAllocation",
               "kind": "FunctionDeclaration",
-              "line": 824,
+              "line": 862,
               "name": "inventoryAmountForPrimaryAllocation",
               "reason": "resolved-call"
             }
@@ -41894,9 +41894,9 @@
             "column": 1,
             "file": "src/picking.ts",
             "hasBody": true,
-            "id": "src/picking.ts:30604:inventoryAmountForPrimaryAllocation",
+            "id": "src/picking.ts:31826:inventoryAmountForPrimaryAllocation",
             "kind": "FunctionDeclaration",
-            "line": 824,
+            "line": 862,
             "name": "inventoryAmountForPrimaryAllocation"
           },
           "test": "test/projection-index-scale.test.ts"
@@ -41918,9 +41918,9 @@
           "column": 1,
           "file": "src/picking.ts",
           "hasBody": true,
-          "id": "src/picking.ts:30604:inventoryAmountForPrimaryAllocation",
+          "id": "src/picking.ts:31826:inventoryAmountForPrimaryAllocation",
           "kind": "FunctionDeclaration",
-          "line": 824,
+          "line": 862,
           "name": "inventoryAmountForPrimaryAllocation"
         }
       ],
@@ -43392,9 +43392,9 @@
               "column": 1,
               "file": "src/picking.ts",
               "hasBody": true,
-              "id": "src/picking.ts:5820:planInventoryAllocation",
+              "id": "src/picking.ts:5865:planInventoryAllocation",
               "kind": "FunctionDeclaration",
-              "line": 145,
+              "line": 146,
               "name": "planInventoryAllocation",
               "reason": "resolved-call"
             },
@@ -43402,9 +43402,9 @@
               "column": 1,
               "file": "src/picking.ts",
               "hasBody": true,
-              "id": "src/picking.ts:20801:createPolicyAllocationCandidates",
+              "id": "src/picking.ts:20846:createPolicyAllocationCandidates",
               "kind": "FunctionDeclaration",
-              "line": 563,
+              "line": 564,
               "name": "createPolicyAllocationCandidates",
               "reason": "resolved-call"
             },
@@ -44281,9 +44281,9 @@
               "column": 1,
               "file": "src/picking.ts",
               "hasBody": true,
-              "id": "src/picking.ts:5820:planInventoryAllocation",
+              "id": "src/picking.ts:5865:planInventoryAllocation",
               "kind": "FunctionDeclaration",
-              "line": 145,
+              "line": 146,
               "name": "planInventoryAllocation",
               "reason": "resolved-call"
             },
@@ -44291,9 +44291,9 @@
               "column": 1,
               "file": "src/picking.ts",
               "hasBody": true,
-              "id": "src/picking.ts:20801:createPolicyAllocationCandidates",
+              "id": "src/picking.ts:20846:createPolicyAllocationCandidates",
               "kind": "FunctionDeclaration",
-              "line": 563,
+              "line": 564,
               "name": "createPolicyAllocationCandidates",
               "reason": "resolved-call"
             },
@@ -44467,7 +44467,7 @@
               "column": 1,
               "file": "src/usability.ts",
               "hasBody": true,
-              "id": "src/usability.ts:1075:inventoryPositionIsExpiredAt",
+              "id": "src/usability.ts:1084:inventoryPositionIsExpiredAt",
               "kind": "FunctionDeclaration",
               "line": 29,
               "name": "inventoryPositionIsExpiredAt",
@@ -44478,7 +44478,7 @@
             "column": 1,
             "file": "src/usability.ts",
             "hasBody": true,
-            "id": "src/usability.ts:1075:inventoryPositionIsExpiredAt",
+            "id": "src/usability.ts:1084:inventoryPositionIsExpiredAt",
             "kind": "FunctionDeclaration",
             "line": 29,
             "name": "inventoryPositionIsExpiredAt"
@@ -44502,7 +44502,7 @@
           "column": 1,
           "file": "src/usability.ts",
           "hasBody": true,
-          "id": "src/usability.ts:1075:inventoryPositionIsExpiredAt",
+          "id": "src/usability.ts:1084:inventoryPositionIsExpiredAt",
           "kind": "FunctionDeclaration",
           "line": 29,
           "name": "inventoryPositionIsExpiredAt"
@@ -46448,9 +46448,9 @@
               "column": 1,
               "file": "src/picking.ts",
               "hasBody": true,
-              "id": "src/picking.ts:5820:planInventoryAllocation",
+              "id": "src/picking.ts:5865:planInventoryAllocation",
               "kind": "FunctionDeclaration",
-              "line": 145,
+              "line": 146,
               "name": "planInventoryAllocation",
               "reason": "resolved-call"
             }
@@ -46459,9 +46459,9 @@
             "column": 1,
             "file": "src/picking.ts",
             "hasBody": true,
-            "id": "src/picking.ts:5820:planInventoryAllocation",
+            "id": "src/picking.ts:5865:planInventoryAllocation",
             "kind": "FunctionDeclaration",
-            "line": 145,
+            "line": 146,
             "name": "planInventoryAllocation"
           },
           "test": "test/projection-index-scale.test.ts"
@@ -46487,9 +46487,9 @@
           "column": 1,
           "file": "src/picking.ts",
           "hasBody": true,
-          "id": "src/picking.ts:5820:planInventoryAllocation",
+          "id": "src/picking.ts:5865:planInventoryAllocation",
           "kind": "FunctionDeclaration",
-          "line": 145,
+          "line": 146,
           "name": "planInventoryAllocation"
         }
       ],
@@ -48265,10 +48265,10 @@
               "column": 73,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:6723:<anonymous@198>",
+              "id": "test/formal-public-surface-completion.test.ts:6858:<anonymous@199>",
               "kind": "ArrowFunction",
-              "line": 198,
-              "name": "<anonymous@198>",
+              "line": 199,
+              "name": "<anonymous@199>",
               "reason": "test-callback"
             },
             {
@@ -56470,10 +56470,10 @@
               "column": 76,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:8904:<anonymous@252>",
+              "id": "test/formal-public-surface-completion.test.ts:9039:<anonymous@253>",
               "kind": "ArrowFunction",
-              "line": 252,
-              "name": "<anonymous@252>",
+              "line": 253,
+              "name": "<anonymous@253>",
               "reason": "test-callback"
             },
             {
@@ -56490,10 +56490,10 @@
               "column": 45,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:10074:<anonymous@284>",
+              "id": "test/formal-public-surface-completion.test.ts:10209:<anonymous@285>",
               "kind": "ArrowFunction",
-              "line": 284,
-              "name": "<anonymous@284>",
+              "line": 285,
+              "name": "<anonymous@285>",
               "reason": "callback-dispatch"
             },
             {
@@ -57904,10 +57904,10 @@
               "column": 76,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:8904:<anonymous@252>",
+              "id": "test/formal-public-surface-completion.test.ts:9039:<anonymous@253>",
               "kind": "ArrowFunction",
-              "line": 252,
-              "name": "<anonymous@252>",
+              "line": 253,
+              "name": "<anonymous@253>",
               "reason": "test-callback"
             },
             {
@@ -57924,10 +57924,10 @@
               "column": 45,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:9864:<anonymous@278>",
+              "id": "test/formal-public-surface-completion.test.ts:9999:<anonymous@279>",
               "kind": "ArrowFunction",
-              "line": 278,
-              "name": "<anonymous@278>",
+              "line": 279,
+              "name": "<anonymous@279>",
               "reason": "callback-dispatch"
             },
             {
@@ -59022,7 +59022,7 @@
           "path": "src/traceability.ts"
         },
         {
-          "occurrences": 2,
+          "occurrences": 1,
           "path": "src/usability.ts"
         }
       ],
@@ -59459,10 +59459,10 @@
               "column": 73,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:6723:<anonymous@198>",
+              "id": "test/formal-public-surface-completion.test.ts:6858:<anonymous@199>",
               "kind": "ArrowFunction",
-              "line": 198,
-              "name": "<anonymous@198>",
+              "line": 199,
+              "name": "<anonymous@199>",
               "reason": "test-callback"
             },
             {
@@ -59830,7 +59830,7 @@
           "path": "src/selectors.ts"
         },
         {
-          "occurrences": 2,
+          "occurrences": 1,
           "path": "src/usability.ts"
         }
       ],
@@ -60603,10 +60603,10 @@
               "column": 73,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:6723:<anonymous@198>",
+              "id": "test/formal-public-surface-completion.test.ts:6858:<anonymous@199>",
               "kind": "ArrowFunction",
-              "line": 198,
-              "name": "<anonymous@198>",
+              "line": 199,
+              "name": "<anonymous@199>",
               "reason": "test-callback"
             },
             {
@@ -61876,10 +61876,10 @@
               "column": 98,
               "file": "test/policy-operations.test.ts",
               "hasBody": true,
-              "id": "test/policy-operations.test.ts:25667:<anonymous@764>",
+              "id": "test/policy-operations.test.ts:28897:<anonymous@856>",
               "kind": "ArrowFunction",
-              "line": 764,
-              "name": "<anonymous@764>",
+              "line": 856,
+              "name": "<anonymous@856>",
               "reason": "test-callback"
             },
             {
@@ -62014,10 +62014,10 @@
               "column": 76,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:8904:<anonymous@252>",
+              "id": "test/formal-public-surface-completion.test.ts:9039:<anonymous@253>",
               "kind": "ArrowFunction",
-              "line": 252,
-              "name": "<anonymous@252>",
+              "line": 253,
+              "name": "<anonymous@253>",
               "reason": "test-callback"
             },
             {
@@ -62034,10 +62034,10 @@
               "column": 45,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:9968:<anonymous@281>",
+              "id": "test/formal-public-surface-completion.test.ts:10103:<anonymous@282>",
               "kind": "ArrowFunction",
-              "line": 281,
-              "name": "<anonymous@281>",
+              "line": 282,
+              "name": "<anonymous@282>",
               "reason": "callback-dispatch"
             },
             {
@@ -62626,10 +62626,10 @@
               "column": 73,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:6723:<anonymous@198>",
+              "id": "test/formal-public-surface-completion.test.ts:6858:<anonymous@199>",
               "kind": "ArrowFunction",
-              "line": 198,
-              "name": "<anonymous@198>",
+              "line": 199,
+              "name": "<anonymous@199>",
               "reason": "test-callback"
             },
             {
@@ -62814,10 +62814,10 @@
               "column": 34,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:8478:<anonymous@241>",
+              "id": "test/formal-public-surface-completion.test.ts:8613:<anonymous@242>",
               "kind": "ArrowFunction",
-              "line": 241,
-              "name": "<anonymous@241>",
+              "line": 242,
+              "name": "<anonymous@242>",
               "reason": "callback-dispatch"
             },
             {
@@ -62948,10 +62948,10 @@
               "column": 73,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:6723:<anonymous@198>",
+              "id": "test/formal-public-surface-completion.test.ts:6858:<anonymous@199>",
               "kind": "ArrowFunction",
-              "line": 198,
-              "name": "<anonymous@198>",
+              "line": 199,
+              "name": "<anonymous@199>",
               "reason": "test-callback"
             },
             {
@@ -63082,10 +63082,10 @@
               "column": 73,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:6723:<anonymous@198>",
+              "id": "test/formal-public-surface-completion.test.ts:6858:<anonymous@199>",
               "kind": "ArrowFunction",
-              "line": 198,
-              "name": "<anonymous@198>",
+              "line": 199,
+              "name": "<anonymous@199>",
               "reason": "test-callback"
             },
             {
@@ -63211,7 +63211,7 @@
           "path": "src/traceability.ts"
         },
         {
-          "occurrences": 2,
+          "occurrences": 1,
           "path": "src/usability.ts"
         }
       ],
@@ -63418,10 +63418,10 @@
               "column": 73,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:6723:<anonymous@198>",
+              "id": "test/formal-public-surface-completion.test.ts:6858:<anonymous@199>",
               "kind": "ArrowFunction",
-              "line": 198,
-              "name": "<anonymous@198>",
+              "line": 199,
+              "name": "<anonymous@199>",
               "reason": "test-callback"
             },
             {
@@ -63632,10 +63632,10 @@
               "column": 73,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:6723:<anonymous@198>",
+              "id": "test/formal-public-surface-completion.test.ts:6858:<anonymous@199>",
               "kind": "ArrowFunction",
-              "line": 198,
-              "name": "<anonymous@198>",
+              "line": 199,
+              "name": "<anonymous@199>",
               "reason": "test-callback"
             },
             {
@@ -63882,10 +63882,10 @@
               "column": 34,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:8559:<anonymous@242>",
+              "id": "test/formal-public-surface-completion.test.ts:8694:<anonymous@243>",
               "kind": "ArrowFunction",
-              "line": 242,
-              "name": "<anonymous@242>",
+              "line": 243,
+              "name": "<anonymous@243>",
               "reason": "callback-dispatch"
             },
             {
@@ -64016,10 +64016,10 @@
               "column": 73,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:6723:<anonymous@198>",
+              "id": "test/formal-public-surface-completion.test.ts:6858:<anonymous@199>",
               "kind": "ArrowFunction",
-              "line": 198,
-              "name": "<anonymous@198>",
+              "line": 199,
+              "name": "<anonymous@199>",
               "reason": "test-callback"
             },
             {
@@ -64153,7 +64153,7 @@
           "path": "src/selectors.ts"
         },
         {
-          "occurrences": 2,
+          "occurrences": 1,
           "path": "src/usability.ts"
         }
       ],
@@ -64552,10 +64552,10 @@
               "column": 73,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:6723:<anonymous@198>",
+              "id": "test/formal-public-surface-completion.test.ts:6858:<anonymous@199>",
               "kind": "ArrowFunction",
-              "line": 198,
-              "name": "<anonymous@198>",
+              "line": 199,
+              "name": "<anonymous@199>",
               "reason": "test-callback"
             },
             {
@@ -64686,10 +64686,10 @@
               "column": 73,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:6723:<anonymous@198>",
+              "id": "test/formal-public-surface-completion.test.ts:6858:<anonymous@199>",
               "kind": "ArrowFunction",
-              "line": 198,
-              "name": "<anonymous@198>",
+              "line": 199,
+              "name": "<anonymous@199>",
               "reason": "test-callback"
             },
             {
@@ -64900,10 +64900,10 @@
               "column": 73,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:6723:<anonymous@198>",
+              "id": "test/formal-public-surface-completion.test.ts:6858:<anonymous@199>",
               "kind": "ArrowFunction",
-              "line": 198,
-              "name": "<anonymous@198>",
+              "line": 199,
+              "name": "<anonymous@199>",
               "reason": "test-callback"
             },
             {
@@ -65078,10 +65078,10 @@
               "column": 73,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:6723:<anonymous@198>",
+              "id": "test/formal-public-surface-completion.test.ts:6858:<anonymous@199>",
               "kind": "ArrowFunction",
-              "line": 198,
-              "name": "<anonymous@198>",
+              "line": 199,
+              "name": "<anonymous@199>",
               "reason": "test-callback"
             },
             {
@@ -66036,10 +66036,10 @@
               "column": 76,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:8904:<anonymous@252>",
+              "id": "test/formal-public-surface-completion.test.ts:9039:<anonymous@253>",
               "kind": "ArrowFunction",
-              "line": 252,
-              "name": "<anonymous@252>",
+              "line": 253,
+              "name": "<anonymous@253>",
               "reason": "test-callback"
             },
             {
@@ -66056,10 +66056,10 @@
               "column": 45,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:9523:<anonymous@269>",
+              "id": "test/formal-public-surface-completion.test.ts:9658:<anonymous@270>",
               "kind": "ArrowFunction",
-              "line": 269,
-              "name": "<anonymous@269>",
+              "line": 270,
+              "name": "<anonymous@270>",
               "reason": "callback-dispatch"
             },
             {
@@ -66190,10 +66190,10 @@
               "column": 76,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:8904:<anonymous@252>",
+              "id": "test/formal-public-surface-completion.test.ts:9039:<anonymous@253>",
               "kind": "ArrowFunction",
-              "line": 252,
-              "name": "<anonymous@252>",
+              "line": 253,
+              "name": "<anonymous@253>",
               "reason": "test-callback"
             },
             {
@@ -66210,10 +66210,10 @@
               "column": 45,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:9630:<anonymous@272>",
+              "id": "test/formal-public-surface-completion.test.ts:9765:<anonymous@273>",
               "kind": "ArrowFunction",
-              "line": 272,
-              "name": "<anonymous@272>",
+              "line": 273,
+              "name": "<anonymous@273>",
               "reason": "callback-dispatch"
             },
             {
@@ -66344,10 +66344,10 @@
               "column": 76,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:8904:<anonymous@252>",
+              "id": "test/formal-public-surface-completion.test.ts:9039:<anonymous@253>",
               "kind": "ArrowFunction",
-              "line": 252,
-              "name": "<anonymous@252>",
+              "line": 253,
+              "name": "<anonymous@253>",
               "reason": "test-callback"
             },
             {
@@ -66364,10 +66364,10 @@
               "column": 45,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:9420:<anonymous@266>",
+              "id": "test/formal-public-surface-completion.test.ts:9555:<anonymous@267>",
               "kind": "ArrowFunction",
-              "line": 266,
-              "name": "<anonymous@266>",
+              "line": 267,
+              "name": "<anonymous@267>",
               "reason": "callback-dispatch"
             },
             {
@@ -66498,10 +66498,10 @@
               "column": 76,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:8904:<anonymous@252>",
+              "id": "test/formal-public-surface-completion.test.ts:9039:<anonymous@253>",
               "kind": "ArrowFunction",
-              "line": 252,
-              "name": "<anonymous@252>",
+              "line": 253,
+              "name": "<anonymous@253>",
               "reason": "test-callback"
             },
             {
@@ -66518,10 +66518,10 @@
               "column": 45,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:9748:<anonymous@275>",
+              "id": "test/formal-public-surface-completion.test.ts:9883:<anonymous@276>",
               "kind": "ArrowFunction",
-              "line": 275,
-              "name": "<anonymous@275>",
+              "line": 276,
+              "name": "<anonymous@276>",
               "reason": "callback-dispatch"
             },
             {
@@ -66652,10 +66652,10 @@
               "column": 76,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:8904:<anonymous@252>",
+              "id": "test/formal-public-surface-completion.test.ts:9039:<anonymous@253>",
               "kind": "ArrowFunction",
-              "line": 252,
-              "name": "<anonymous@252>",
+              "line": 253,
+              "name": "<anonymous@253>",
               "reason": "test-callback"
             },
             {
@@ -66672,10 +66672,10 @@
               "column": 45,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:9316:<anonymous@263>",
+              "id": "test/formal-public-surface-completion.test.ts:9451:<anonymous@264>",
               "kind": "ArrowFunction",
-              "line": 263,
-              "name": "<anonymous@263>",
+              "line": 264,
+              "name": "<anonymous@264>",
               "reason": "callback-dispatch"
             },
             {
@@ -67265,10 +67265,10 @@
               "column": 76,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:8904:<anonymous@252>",
+              "id": "test/formal-public-surface-completion.test.ts:9039:<anonymous@253>",
               "kind": "ArrowFunction",
-              "line": 252,
-              "name": "<anonymous@252>",
+              "line": 253,
+              "name": "<anonymous@253>",
               "reason": "test-callback"
             },
             {
@@ -67285,10 +67285,10 @@
               "column": 45,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:9007:<anonymous@254>",
+              "id": "test/formal-public-surface-completion.test.ts:9142:<anonymous@255>",
               "kind": "ArrowFunction",
-              "line": 254,
-              "name": "<anonymous@254>",
+              "line": 255,
+              "name": "<anonymous@255>",
               "reason": "callback-dispatch"
             },
             {
@@ -67423,10 +67423,10 @@
               "column": 79,
               "file": "test/policy-operations.test.ts",
               "hasBody": true,
-              "id": "test/policy-operations.test.ts:14087:<anonymous@411>",
+              "id": "test/policy-operations.test.ts:17317:<anonymous@503>",
               "kind": "ArrowFunction",
-              "line": 411,
-              "name": "<anonymous@411>",
+              "line": 503,
+              "name": "<anonymous@503>",
               "reason": "test-callback"
             },
             {
@@ -68567,10 +68567,10 @@
               "column": 94,
               "file": "test/policy-operations.test.ts",
               "hasBody": true,
-              "id": "test/policy-operations.test.ts:30946:<anonymous@918>",
+              "id": "test/policy-operations.test.ts:34176:<anonymous@1010>",
               "kind": "ArrowFunction",
-              "line": 918,
-              "name": "<anonymous@918>",
+              "line": 1010,
+              "name": "<anonymous@1010>",
               "reason": "test-callback"
             },
             {
@@ -68704,10 +68704,10 @@
               "column": 76,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:8904:<anonymous@252>",
+              "id": "test/formal-public-surface-completion.test.ts:9039:<anonymous@253>",
               "kind": "ArrowFunction",
-              "line": 252,
-              "name": "<anonymous@252>",
+              "line": 253,
+              "name": "<anonymous@253>",
               "reason": "test-callback"
             },
             {
@@ -68724,10 +68724,10 @@
               "column": 45,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:9214:<anonymous@260>",
+              "id": "test/formal-public-surface-completion.test.ts:9349:<anonymous@261>",
               "kind": "ArrowFunction",
-              "line": 260,
-              "name": "<anonymous@260>",
+              "line": 261,
+              "name": "<anonymous@261>",
               "reason": "callback-dispatch"
             },
             {
@@ -69192,10 +69192,10 @@
               "column": 76,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:8904:<anonymous@252>",
+              "id": "test/formal-public-surface-completion.test.ts:9039:<anonymous@253>",
               "kind": "ArrowFunction",
-              "line": 252,
-              "name": "<anonymous@252>",
+              "line": 253,
+              "name": "<anonymous@253>",
               "reason": "test-callback"
             },
             {
@@ -69212,10 +69212,10 @@
               "column": 45,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:9109:<anonymous@257>",
+              "id": "test/formal-public-surface-completion.test.ts:9244:<anonymous@258>",
               "kind": "ArrowFunction",
-              "line": 257,
-              "name": "<anonymous@257>",
+              "line": 258,
+              "name": "<anonymous@258>",
               "reason": "callback-dispatch"
             },
             {
@@ -70214,10 +70214,10 @@
               "column": 76,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:8904:<anonymous@252>",
+              "id": "test/formal-public-surface-completion.test.ts:9039:<anonymous@253>",
               "kind": "ArrowFunction",
-              "line": 252,
-              "name": "<anonymous@252>",
+              "line": 253,
+              "name": "<anonymous@253>",
               "reason": "test-callback"
             },
             {
@@ -70234,10 +70234,10 @@
               "column": 45,
               "file": "test/formal-public-surface-completion.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:10175:<anonymous@287>",
+              "id": "test/formal-public-surface-completion.test.ts:10310:<anonymous@288>",
               "kind": "ArrowFunction",
-              "line": 287,
-              "name": "<anonymous@287>",
+              "line": 288,
+              "name": "<anonymous@288>",
               "reason": "callback-dispatch"
             },
             {
@@ -76540,5 +76540,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "659d6b091a97f4c8e59087421174aecd8c0b68b45fded936c5ff91ea92380547"
+  "surfaceSha256": "56432ad7f93e02d297a357b7c54b2a32b6633b98dffde2117be1a5244d3a5631"
 }

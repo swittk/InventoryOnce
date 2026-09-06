@@ -116,6 +116,7 @@ describe("remaining public implementation surfaces", () => {
       })
     );
 
+    // `as never` deliberately bypasses typed inputs to exercise runtime validators; this applies to the malformed-input blocks below.
     expectMalformedInputRejected(() => abandonInventoryCount({} as never));
     expectMalformedInputRejected(() =>
       allocateInventoryReservation({} as never)

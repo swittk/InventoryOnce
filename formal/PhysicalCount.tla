@@ -2,6 +2,8 @@
 EXTENDS Integers
 
 CountStates == {"none", "started", "observed", "completed"}
+MaxQuantity == 4
+MaxTrackedMovement == 2
 
 VARIABLES actual, book, countState, snapshotBook, movementSinceStart,
           movementAtObservation, observed
@@ -31,7 +33,7 @@ UnrecordedLoss ==
 \* Unrecorded physical gain before observation models count overage symmetrically with loss.
 UnrecordedGain ==
   /\ countState \in {"none", "started"}
-  /\ actual < 4
+  /\ actual < MaxQuantity
   /\ actual' = actual + 1
   /\ UNCHANGED <<book, countState, snapshotBook, movementSinceStart,
                  movementAtObservation, observed>>
@@ -39,16 +41,16 @@ UnrecordedGain ==
 RecordedOut ==
   /\ actual > 0
   /\ book > 0
-  /\ (~Tracking \/ movementSinceStart > -2)
+  /\ (~Tracking \/ movementSinceStart > -MaxTrackedMovement)
   /\ actual' = actual - 1
   /\ book' = book - 1
   /\ movementSinceStart' = IF Tracking THEN movementSinceStart - 1 ELSE movementSinceStart
   /\ UNCHANGED <<countState, snapshotBook, movementAtObservation, observed>>
 
 RecordedIn ==
-  /\ actual < 4
-  /\ book < 4
-  /\ (~Tracking \/ movementSinceStart < 2)
+  /\ actual < MaxQuantity
+  /\ book < MaxQuantity
+  /\ (~Tracking \/ movementSinceStart < MaxTrackedMovement)
   /\ actual' = actual + 1
   /\ book' = book + 1
   /\ movementSinceStart' = IF Tracking THEN movementSinceStart + 1 ELSE movementSinceStart
@@ -91,13 +93,13 @@ Next ==
 Spec == Init /\ [][Next]_vars
 
 TypeOK ==
-  /\ actual \in 0..4
-  /\ book \in 0..4
+  /\ actual \in 0..MaxQuantity
+  /\ book \in 0..MaxQuantity
   /\ countState \in CountStates
-  /\ snapshotBook \in 0..4
-  /\ movementSinceStart \in -2..2
-  /\ movementAtObservation \in -2..2
-  /\ observed \in 0..4
+  /\ snapshotBook \in 0..MaxQuantity
+  /\ movementSinceStart \in -MaxTrackedMovement..MaxTrackedMovement
+  /\ movementAtObservation \in -MaxTrackedMovement..MaxTrackedMovement
+  /\ observed \in 0..MaxQuantity
 
 RecordedMovementAccounting ==
   countState \in {"started", "observed"} =>
