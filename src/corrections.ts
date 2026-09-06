@@ -200,6 +200,8 @@ function projectHistoryWithReplacement(
           operationId: root.operationId,
         };
   const hypothetical: InventoryCommittedEvent[] = [];
+  // Effective relation creators for the hypothetical history built below.
+  const hypotheticalRelationCreatorById = new Map<string, string>();
   let nextSequence = 1;
   for (
     let recordSequence = 1;
@@ -248,8 +250,29 @@ function projectHistoryWithReplacement(
       lotDefinitions: [],
       containerDefinitions: [],
     };
+    const reconciledTraceabilityChanges =
+      reconcileHypotheticalTraceabilityChanges(
+        stockAndGraphDraft.traceabilityChanges,
+        stockAndGraphDraft.eventId,
+        hypotheticalRelationCreatorById
+      );
+    if (
+      stockAndGraphDraft.kind === InventoryEventKind.Traceability &&
+      reconciledTraceabilityChanges.length === 0
+    ) {
+      continue;
+    }
     hypothetical.push(
-      commitInventoryEvent(stockAndGraphDraft, event.recordedAt, nextSequence)
+      commitInventoryEvent(
+        reconciledTraceabilityChanges === stockAndGraphDraft.traceabilityChanges
+          ? stockAndGraphDraft
+          : {
+              ...stockAndGraphDraft,
+              traceabilityChanges: reconciledTraceabilityChanges,
+            },
+        event.recordedAt,
+        nextSequence
+      )
     );
     nextSequence += 1;
   }
@@ -258,6 +281,46 @@ function projectHistoryWithReplacement(
     events: hypothetical,
     deficitPolicy,
   });
+}
+
+/** Reconcile relation removals that became unnecessary only because earlier corrected history changed. */
+function reconcileHypotheticalTraceabilityChanges(
+  changes: readonly InventoryTraceabilityRelationChange[],
+  eventId: string,
+  relationCreatorById: Map<string, string>
+): readonly InventoryTraceabilityRelationChange[] {
+  let filtered: InventoryTraceabilityRelationChange[] | undefined;
+  for (let index = 0; index < changes.length; index += 1) {
+    const change = changes[index];
+    if (change === undefined) continue;
+    const identity = inventoryTraceabilityRelationIdentity(
+      change.kind,
+      change.from,
+      change.to
+    );
+    const earlierCreator = relationCreatorById.get(identity);
+    if (change.action === InventoryTraceabilityRelationAction.Add) {
+      // Preserve duplicate adds for the strict projector to reject; only valid adds advance the local fact map.
+      if (earlierCreator === undefined) relationCreatorById.set(identity, eventId);
+      if (filtered !== undefined) filtered.push(change);
+      continue;
+    }
+    if (earlierCreator === undefined) {
+      // This removal was valid in retained history but is now unnecessary because the
+      // corrected hypothetical history no longer contains the relation it targeted.
+      filtered ??= changes.slice(0, index);
+      continue;
+    }
+    if (
+      change.action !== InventoryTraceabilityRelationAction.Invalidate ||
+      change.invalidatesCreatedByEventId === earlierCreator
+    ) {
+      relationCreatorById.delete(identity);
+    }
+    // Preserve wrong-creator invalidations for the strict projector to reject.
+    if (filtered !== undefined) filtered.push(change);
+  }
+  return filtered ?? changes;
 }
 
 /** Replace FIFO positive-layer provenance so correction equals hypothetical retained-history replay. */

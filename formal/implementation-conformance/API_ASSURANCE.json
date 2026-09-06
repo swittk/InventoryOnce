@@ -3,8 +3,8 @@
     "authorityMethods": 13,
     "callAndConstructSignatures": 508,
     "classMethods": 70,
-    "compilerCallGraphCallables": 2165,
-    "compilerCallGraphEdges": 5930,
+    "compilerCallGraphCallables": 2168,
+    "compilerCallGraphEdges": 5940,
     "compilerCallGraphTestRoots": 37,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 508,
@@ -28397,7 +28397,7 @@
       "inputMapping": "Node identities, relation kind/action, source provenance, and command header map to one graph edge transition.",
       "internalReferences": [
         {
-          "occurrences": 3,
+          "occurrences": 4,
           "path": "src/corrections.ts"
         },
         {

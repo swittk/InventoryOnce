@@ -118,7 +118,7 @@ No single notation is forced to do every job.
 
 ## Registered mature-system model suite
 
-The formal runner now executes a registered 24-model suite from `scripts/formal-models.mjs` as release evidence. The mature-system obligations highlighted below are already registered and checked; each implemented behavior is paired with executable refinement/property or failure-injection evidence. Future scope is limited to behavior explicitly called out as unmodeled below, such as distributed partition/merge behavior:
+The formal runner now executes a registered 24-model suite from `scripts/formal-models.mjs` as release evidence. The mature-system obligations highlighted below are already registered and checked; each claimed modeled behavior has companion executable refinement, property, or failure-injection evidence. The generated gap ledger records fields, state/result surfaces, and other boundaries that remain explicitly unmodeled. Future scope is limited to behavior explicitly called out as unmodeled below, such as distributed partition/merge behavior:
 
 - `CompositionRevision`: exact heterogeneous package generations, revision-pinned opening, transfer preservation, idempotent intent, and component-vector conservation.
 - `CollectionView`: retained read-only group membership and exact member breakdowns without physical merging or substitution authority.

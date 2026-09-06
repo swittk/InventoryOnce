@@ -376,6 +376,43 @@ describe("traceability graph meanings", () => {
 });
 
 describe("append-only corrections", () => {
+  it("treats a later traceability removal as a no-op when correction omits its root add", async () => {
+    const inventory = createTestInventory();
+    const child = {
+      kind: InventoryTraceabilityNodeKind.Container,
+      id: "omit-trace-child",
+    };
+    const parent = {
+      kind: InventoryTraceabilityNodeKind.Container,
+      id: "omit-trace-parent",
+    };
+    const root = await inventory.traceability.aggregate({
+      operationId: "omit-trace-root",
+      occurredAt: time0,
+      from: child,
+      to: parent,
+    });
+    await inventory.traceability.disaggregate({
+      operationId: "omit-trace-later-remove",
+      occurredAt: time1,
+      from: child,
+      to: parent,
+    });
+
+    const correction = await inventory.stock.correct({
+      operationId: "omit-trace-root-correction",
+      occurredAt: time2,
+      correctsEventId: root.event.eventId,
+      reason: "The original aggregation never occurred.",
+      replaceWith: (plans) => plans.omit(),
+    });
+
+    expect(correction.event.traceabilityChanges).toEqual([]);
+    expect(
+      Object.values((await inventory.read.world()).projection.traceability.relations)
+    ).toEqual([]);
+  });
+
   it("retains the original event and supersedes correction heads without rewriting history", async () => {
     const inventory = createTestInventory();
     const original = await inventory.stock.receive({
