@@ -371,12 +371,15 @@ describe("first-class physical transfer lifecycle", () => {
     expect(
       transitWorld.projection.positiveLayerStartedAtByPositionId[t1TransitIdentity]
     ).toBe(time0);
+    const smuggledTransitPosition = transitPositions[0];
+    if (smuggledTransitPosition === undefined)
+      throw new Error("Missing transit position.");
     await expect(
       inventory.stock.issue({
         operationId: "cannot-smuggle-transfer-position",
         occurredAt: time2,
         // Deliberately pass a transfer-bound key to verify issue refuses what its honest type excludes.
-        from: transitPositions[0]!.key as never,
+        from: smuggledTransitPosition.key as never,
         amount: stockAmount("1", "piece"),
       })
     ).rejects.toThrow(/first-class transfer lifecycle API/i);

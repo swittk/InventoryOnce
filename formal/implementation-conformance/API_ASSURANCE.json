@@ -3,8 +3,8 @@
     "authorityMethods": 13,
     "callAndConstructSignatures": 508,
     "classMethods": 70,
-    "compilerCallGraphCallables": 2179,
-    "compilerCallGraphEdges": 5972,
+    "compilerCallGraphCallables": 2178,
+    "compilerCallGraphEdges": 5971,
     "compilerCallGraphTestRoots": 37,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 508,
@@ -19060,19 +19060,19 @@
               "column": 79,
               "file": "test/transfer-lifecycle.test.ts",
               "hasBody": true,
-              "id": "test/transfer-lifecycle.test.ts:14839:<anonymous@454>",
+              "id": "test/transfer-lifecycle.test.ts:14998:<anonymous@457>",
               "kind": "ArrowFunction",
-              "line": 454,
-              "name": "<anonymous@454>",
+              "line": 457,
+              "name": "<anonymous@457>",
               "reason": "test-callback"
             },
             {
               "column": 1,
               "file": "src/transfers.ts",
               "hasBody": true,
-              "id": "src/transfers.ts:26366:createInventoryTransferDispatchEvent",
+              "id": "src/transfers.ts:26367:createInventoryTransferDispatchEvent",
               "kind": "FunctionDeclaration",
-              "line": 640,
+              "line": 644,
               "name": "createInventoryTransferDispatchEvent",
               "reason": "resolved-call"
             }
@@ -19081,9 +19081,9 @@
             "column": 1,
             "file": "src/transfers.ts",
             "hasBody": true,
-            "id": "src/transfers.ts:26366:createInventoryTransferDispatchEvent",
+            "id": "src/transfers.ts:26367:createInventoryTransferDispatchEvent",
             "kind": "FunctionDeclaration",
-            "line": 640,
+            "line": 644,
             "name": "createInventoryTransferDispatchEvent"
           },
           "test": "test/transfer-lifecycle.test.ts"
@@ -19108,9 +19108,9 @@
           "column": 1,
           "file": "src/transfers.ts",
           "hasBody": true,
-          "id": "src/transfers.ts:26366:createInventoryTransferDispatchEvent",
+          "id": "src/transfers.ts:26367:createInventoryTransferDispatchEvent",
           "kind": "FunctionDeclaration",
-          "line": 640,
+          "line": 644,
           "name": "createInventoryTransferDispatchEvent"
         }
       ],
@@ -19524,9 +19524,9 @@
               "column": 1,
               "file": "src/transfers.ts",
               "hasBody": true,
-              "id": "src/transfers.ts:22578:createInventoryTransferPrepareEvent",
+              "id": "src/transfers.ts:22579:createInventoryTransferPrepareEvent",
               "kind": "FunctionDeclaration",
-              "line": 545,
+              "line": 549,
               "name": "createInventoryTransferPrepareEvent",
               "reason": "resolved-call"
             }
@@ -19535,9 +19535,9 @@
             "column": 1,
             "file": "src/transfers.ts",
             "hasBody": true,
-            "id": "src/transfers.ts:22578:createInventoryTransferPrepareEvent",
+            "id": "src/transfers.ts:22579:createInventoryTransferPrepareEvent",
             "kind": "FunctionDeclaration",
-            "line": 545,
+            "line": 549,
             "name": "createInventoryTransferPrepareEvent"
           },
           "test": "test/transfer-lifecycle.test.ts"
@@ -19562,9 +19562,9 @@
           "column": 1,
           "file": "src/transfers.ts",
           "hasBody": true,
-          "id": "src/transfers.ts:22578:createInventoryTransferPrepareEvent",
+          "id": "src/transfers.ts:22579:createInventoryTransferPrepareEvent",
           "kind": "FunctionDeclaration",
-          "line": 545,
+          "line": 549,
           "name": "createInventoryTransferPrepareEvent"
         }
       ],
@@ -19656,19 +19656,19 @@
               "column": 79,
               "file": "test/transfer-lifecycle.test.ts",
               "hasBody": true,
-              "id": "test/transfer-lifecycle.test.ts:14839:<anonymous@454>",
+              "id": "test/transfer-lifecycle.test.ts:14998:<anonymous@457>",
               "kind": "ArrowFunction",
-              "line": 454,
-              "name": "<anonymous@454>",
+              "line": 457,
+              "name": "<anonymous@457>",
               "reason": "test-callback"
             },
             {
               "column": 1,
               "file": "src/transfers.ts",
               "hasBody": true,
-              "id": "src/transfers.ts:27940:createInventoryTransferReceiveEvent",
+              "id": "src/transfers.ts:27941:createInventoryTransferReceiveEvent",
               "kind": "FunctionDeclaration",
-              "line": 685,
+              "line": 689,
               "name": "createInventoryTransferReceiveEvent",
               "reason": "resolved-call"
             }
@@ -19677,9 +19677,9 @@
             "column": 1,
             "file": "src/transfers.ts",
             "hasBody": true,
-            "id": "src/transfers.ts:27940:createInventoryTransferReceiveEvent",
+            "id": "src/transfers.ts:27941:createInventoryTransferReceiveEvent",
             "kind": "FunctionDeclaration",
-            "line": 685,
+            "line": 689,
             "name": "createInventoryTransferReceiveEvent"
           },
           "test": "test/transfer-lifecycle.test.ts"
@@ -19704,9 +19704,9 @@
           "column": 1,
           "file": "src/transfers.ts",
           "hasBody": true,
-          "id": "src/transfers.ts:27940:createInventoryTransferReceiveEvent",
+          "id": "src/transfers.ts:27941:createInventoryTransferReceiveEvent",
           "kind": "FunctionDeclaration",
-          "line": 685,
+          "line": 689,
           "name": "createInventoryTransferReceiveEvent"
         }
       ],
@@ -19798,19 +19798,19 @@
               "column": 86,
               "file": "test/transfer-lifecycle.test.ts",
               "hasBody": true,
-              "id": "test/transfer-lifecycle.test.ts:19144:<anonymous@580>",
+              "id": "test/transfer-lifecycle.test.ts:19303:<anonymous@583>",
               "kind": "ArrowFunction",
-              "line": 580,
-              "name": "<anonymous@580>",
+              "line": 583,
+              "name": "<anonymous@583>",
               "reason": "test-callback"
             },
             {
               "column": 1,
               "file": "src/transfers.ts",
               "hasBody": true,
-              "id": "src/transfers.ts:30022:createInventoryTransferReleaseEvent",
+              "id": "src/transfers.ts:30023:createInventoryTransferReleaseEvent",
               "kind": "FunctionDeclaration",
-              "line": 750,
+              "line": 754,
               "name": "createInventoryTransferReleaseEvent",
               "reason": "resolved-call"
             }
@@ -19819,9 +19819,9 @@
             "column": 1,
             "file": "src/transfers.ts",
             "hasBody": true,
-            "id": "src/transfers.ts:30022:createInventoryTransferReleaseEvent",
+            "id": "src/transfers.ts:30023:createInventoryTransferReleaseEvent",
             "kind": "FunctionDeclaration",
-            "line": 750,
+            "line": 754,
             "name": "createInventoryTransferReleaseEvent"
           },
           "test": "test/transfer-lifecycle.test.ts"
@@ -19846,9 +19846,9 @@
           "column": 1,
           "file": "src/transfers.ts",
           "hasBody": true,
-          "id": "src/transfers.ts:30022:createInventoryTransferReleaseEvent",
+          "id": "src/transfers.ts:30023:createInventoryTransferReleaseEvent",
           "kind": "FunctionDeclaration",
-          "line": 750,
+          "line": 754,
           "name": "createInventoryTransferReleaseEvent"
         }
       ],
@@ -24107,19 +24107,19 @@
               "column": 1,
               "file": "src/transfers.ts",
               "hasBody": true,
-              "id": "src/transfers.ts:22578:createInventoryTransferPrepareEvent",
+              "id": "src/transfers.ts:22579:createInventoryTransferPrepareEvent",
               "kind": "FunctionDeclaration",
-              "line": 545,
+              "line": 549,
               "name": "createInventoryTransferPrepareEvent",
               "reason": "resolved-call"
             },
             {
-              "column": 78,
+              "column": 1,
               "file": "src/transfers.ts",
               "hasBody": true,
-              "id": "src/transfers.ts:38701:transferLifecycleEvent",
+              "id": "src/transfers.ts:38818:transferLifecycleEvent",
               "kind": "FunctionDeclaration",
-              "line": 982,
+              "line": 995,
               "name": "transferLifecycleEvent",
               "reason": "resolved-call"
             },
@@ -31619,7 +31619,7 @@
           "path": "src/reservations.ts"
         },
         {
-          "occurrences": 2,
+          "occurrences": 3,
           "path": "src/transfers.ts"
         }
       ],
@@ -32114,9 +32114,9 @@
               "column": 1,
               "file": "test/formal-implementation-abstraction.ts",
               "hasBody": true,
-              "id": "test/formal-implementation-abstraction.ts:40903:abstractPrimaryBalance",
+              "id": "test/formal-implementation-abstraction.ts:40989:abstractPrimaryBalance",
               "kind": "FunctionDeclaration",
-              "line": 1098,
+              "line": 1099,
               "name": "abstractPrimaryBalance",
               "reason": "resolved-call"
             },
@@ -47267,7 +47267,7 @@
           "path": "src/reservations.ts"
         },
         {
-          "occurrences": 2,
+          "occurrences": 3,
           "path": "src/transfers.ts"
         }
       ],
@@ -47762,9 +47762,9 @@
               "column": 1,
               "file": "test/formal-implementation-abstraction.ts",
               "hasBody": true,
-              "id": "test/formal-implementation-abstraction.ts:40903:abstractPrimaryBalance",
+              "id": "test/formal-implementation-abstraction.ts:40989:abstractPrimaryBalance",
               "kind": "FunctionDeclaration",
-              "line": 1098,
+              "line": 1099,
               "name": "abstractPrimaryBalance",
               "reason": "resolved-call"
             },
@@ -56232,7 +56232,7 @@
           "path": "src/reservations.ts"
         },
         {
-          "occurrences": 138,
+          "occurrences": 132,
           "path": "src/transfers.ts"
         }
       ],
@@ -58187,7 +58187,7 @@
           "path": "src/reservations.ts"
         },
         {
-          "occurrences": 138,
+          "occurrences": 132,
           "path": "src/transfers.ts"
         }
       ],
@@ -59447,7 +59447,7 @@
           "path": "src/traceability.ts"
         },
         {
-          "occurrences": 18,
+          "occurrences": 19,
           "path": "src/transfers.ts"
         },
         {
@@ -63621,7 +63621,7 @@
           "path": "src/traceability.ts"
         },
         {
-          "occurrences": 18,
+          "occurrences": 19,
           "path": "src/transfers.ts"
         },
         {
@@ -67763,7 +67763,7 @@
           "path": "src/integrity.ts"
         },
         {
-          "occurrences": 6,
+          "occurrences": 7,
           "path": "src/transfers.ts"
         }
       ],
@@ -68808,7 +68808,7 @@
           "path": "src/reservations.ts"
         },
         {
-          "occurrences": 138,
+          "occurrences": 132,
           "path": "src/transfers.ts"
         }
       ],
@@ -70591,7 +70591,7 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 6,
+          "occurrences": 8,
           "path": "src/transfers.ts"
         }
       ],
@@ -70757,7 +70757,7 @@
           "path": "src/integrity.ts"
         },
         {
-          "occurrences": 6,
+          "occurrences": 7,
           "path": "src/transfers.ts"
         }
       ],
@@ -70844,10 +70844,10 @@
               "column": 86,
               "file": "test/transfer-lifecycle.test.ts",
               "hasBody": true,
-              "id": "test/transfer-lifecycle.test.ts:19144:<anonymous@580>",
+              "id": "test/transfer-lifecycle.test.ts:19303:<anonymous@583>",
               "kind": "ArrowFunction",
-              "line": 580,
-              "name": "<anonymous@580>",
+              "line": 583,
+              "name": "<anonymous@583>",
               "reason": "test-callback"
             },
             {
@@ -76349,5 +76349,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "72ecaf7f299ed90f6366eea3d5f1183a2006c7c0b7d2ad063fae512b3aa258c2"
+  "surfaceSha256": "671429c5722f200584fe8ffd4423f77f16ad7116ed56083f4383ae649306a6eb"
 }

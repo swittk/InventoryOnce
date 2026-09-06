@@ -382,6 +382,7 @@ function canonicalRecord(value: object): Readonly<Record<string, unknown>> {
   ) {
     throw new Error("Formal abstraction expected a structured record.");
   }
+  // The guards above establish the canonical value is a non-array structured record.
   return canonical as Readonly<Record<string, unknown>>;
 }
 

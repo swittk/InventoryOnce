@@ -382,9 +382,12 @@ function receiveEffects(
   return effects;
 }
 
-/** ExpectedTransferEffect shape used by exact transfer-lifecycle semantics. */ interface ExpectedTransferEffect {
-  /** Transfer-lifecycle position value retained or supplied by this record. */ readonly position: InventoryStockPositionKey;
-  /** Transfer-lifecycle measurements value retained or supplied by this record. */ readonly measurements: InventoryMeasurementVector;
+/** Expected stock effect used to verify one transfer lifecycle transition exactly. */
+interface ExpectedTransferEffect {
+  /** Exact stock position that the lifecycle transition must debit or credit. */
+  readonly position: InventoryStockPositionKey;
+  /** Exact measurement delta expected at that position. */
+  readonly measurements: InventoryMeasurementVector;
 }
 
 /** Prove lifecycle metadata and physical effects describe exactly the same conserved movement. */
@@ -478,7 +481,8 @@ function assertDistinctLifecyclePositions(transfer: InventoryTransfer): void {
   );
 }
 
-/** assertDistinctPositions helper for exact transfer-lifecycle semantics. */ function assertDistinctPositions(
+/** Reject lifecycle effect sets that mention the same canonical stock position twice. */
+function assertDistinctPositions(
   positions: readonly InventoryStockPositionKey[],
   label: string
 ): void {
@@ -784,9 +788,12 @@ export function createInventoryTransferReleaseEvent(
   );
 }
 
-/** ResolvedTransferPrepareLine shape used by exact transfer-lifecycle semantics. */ interface ResolvedTransferPrepareLine {
-  /** Transfer-lifecycle position value retained or supplied by this record. */ readonly position: InventoryStockPositionKey;
-  /** Transfer-lifecycle amount value retained or supplied by this record. */ readonly amount: ResolvedInventoryAmount;
+/** Canonical source position and resolved amount for one prepare command line. */
+interface ResolvedTransferPrepareLine {
+  /** Canonical ordinary-stock source position, including resolved revision/packaging identity. */
+  readonly position: InventoryStockPositionKey;
+  /** Amount resolved into canonical measurements and optional package evidence. */
+  readonly amount: ResolvedInventoryAmount;
 }
 /** ResolvedTransferReceiveLine shape used by exact transfer-lifecycle semantics. */ interface ResolvedTransferReceiveLine {
   /** Transfer-lifecycle lineId value retained or supplied by this record. */ readonly lineId: string;
@@ -794,7 +801,8 @@ export function createInventoryTransferReleaseEvent(
   /** Transfer-lifecycle resolvedAmount value retained or supplied by this record. */ readonly resolvedAmount?: ResolvedInventoryAmount;
 }
 
-/** resolveTransferPrepareLine helper for exact transfer-lifecycle semantics. */ function resolveTransferPrepareLine(
+/** Resolve one prepare request to its exact item revision, package identity, and measurements. */
+function resolveTransferPrepareLine(
   catalog: InventoryCatalog,
   line: InventoryTransferPrepareLineInput
 ): ResolvedTransferPrepareLine {
@@ -811,7 +819,8 @@ export function createInventoryTransferReleaseEvent(
   };
 }
 
-/** fullRemainingReceiptLines helper for exact transfer-lifecycle semantics. */ function fullRemainingReceiptLines(
+/** Expand an omitted receive-line list to every nonzero quantity still in transit. */
+function fullRemainingReceiptLines(
   transfer: InventoryTransfer
 ): readonly ResolvedTransferReceiveLine[] {
   const result: ResolvedTransferReceiveLine[] = [];
@@ -860,7 +869,8 @@ export function createInventoryTransferReleaseEvent(
   return result;
 }
 
-/** transferCommandItem helper for exact transfer-lifecycle semantics. */ function transferCommandItem(
+/** Resolve the item revision selected by a transfer amount and optional explicit revision. */
+function transferCommandItem(
   catalog: InventoryCatalog,
   position: InventoryStockPositionInput,
   amount: InventoryAmount,
@@ -888,7 +898,8 @@ export function createInventoryTransferReleaseEvent(
   return item;
 }
 
-/** transferPositionWithPackaging helper for exact transfer-lifecycle semantics. */ function transferPositionWithPackaging(
+/** Canonicalize an ordinary source position while enforcing the amount's package revision. */
+function transferPositionWithPackaging(
   raw: InventoryStockPositionInput,
   amount: ResolvedInventoryAmount,
   itemRevisionId: string
@@ -950,7 +961,8 @@ export function createInventoryTransferReleaseEvent(
   return line;
 }
 
-/** transferEffect helper for exact transfer-lifecycle semantics. */ function transferEffect(
+/** Build one stock effect and attach exact transacted-amount evidence when available. */
+function transferEffect(
   position: InventoryStockPositionKey,
   measurementsDelta: InventoryMeasurementVector,
   amount?: ResolvedInventoryAmount
@@ -979,7 +991,8 @@ export function createInventoryTransferReleaseEvent(
   };
 }
 
-/** transferLifecycleEvent helper for exact transfer-lifecycle semantics. */ function transferLifecycleEvent(
+/** Build and kernel-validate the event draft for one transfer lifecycle transition. */
+function transferLifecycleEvent(
   catalog: InventoryCatalog,
   kind: InventoryEventKind,
   header: InventoryCommandHeader,
@@ -1068,7 +1081,8 @@ export function inventoryTransferReleaseIntentFingerprint(
   );
 }
 
-/** inventoryTransferActionIntentFingerprint helper for exact transfer-lifecycle semantics. */ function inventoryTransferActionIntentFingerprint(
+/** Fingerprint the full caller intent shared by state-dependent transfer actions. */
+function inventoryTransferActionIntentFingerprint(
   header: InventoryCommandHeader,
   action: InventoryTransferLifecycleAction,
   transferId: string,

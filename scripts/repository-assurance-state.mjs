@@ -27,6 +27,7 @@ export function repositoryAssuranceStateSha256(repositoryRoot) {
     )
     .sort();
   const hash = createHash("sha256");
+  /** Write one unsigned 64-bit big-endian byte length for unambiguous record framing. */
   const writeLength = (length) => {
     const encoded = Buffer.allocUnsafe(8);
     encoded.writeBigUInt64BE(BigInt(length));
@@ -38,6 +39,7 @@ export function repositoryAssuranceStateSha256(repositoryRoot) {
     hash.update(pathBytes);
     const absolute = resolve(repositoryRoot, path);
     let stat;
+    // Record kind bytes: 0 = regular file, 1 = symbolic link target, 2 = tracked-but-deleted path.
     let kind;
     let payload;
     try {

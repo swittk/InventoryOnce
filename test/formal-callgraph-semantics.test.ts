@@ -74,10 +74,17 @@ function focusedRegistrationDecisions(sources: readonly string[]): readonly bool
       encoding: "utf8",
     }),
   );
-  if (!Array.isArray(decoded) || decoded.some((value) => typeof value !== "boolean")) {
+  if (!Array.isArray(decoded)) {
     throw new Error("Focused-registration detector returned a non-boolean decision list.");
   }
-  return decoded as boolean[];
+  const decisions: boolean[] = [];
+  for (const value of decoded) {
+    if (typeof value !== "boolean") {
+      throw new Error("Focused-registration detector returned a non-boolean decision list.");
+    }
+    decisions.push(value);
+  }
+  return decisions;
 }
 
 /** Ask whether tests/hooks registered inside one suite can execute after collection. */

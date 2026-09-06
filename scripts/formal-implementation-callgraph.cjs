@@ -529,8 +529,8 @@ function vitestTestCallbackArgumentIndex(node) {
 
 /** Return whether the hook's suite/file contains any statically runnable test. */
 function vitestSuiteHasRunnableTest(node) {
-  const root = vitestSuiteExecutionRoot(node);
-  const cached = vitestRunnableSuiteCache.get(root);
+  const executionRoot = vitestSuiteExecutionRoot(node);
+  const cached = vitestRunnableSuiteCache.get(executionRoot);
   if (cached !== undefined) return cached;
   let found = false;
   const visit = (current) => {
@@ -561,8 +561,8 @@ function vitestSuiteHasRunnableTest(node) {
     }
     ts.forEachChild(current, visit);
   };
-  ts.forEachChild(root, visit);
-  vitestRunnableSuiteCache.set(root, found);
+  ts.forEachChild(executionRoot, visit);
+  vitestRunnableSuiteCache.set(executionRoot, found);
   return found;
 }
 

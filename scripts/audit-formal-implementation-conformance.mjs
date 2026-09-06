@@ -57,12 +57,17 @@ function readJson(name) {
   return JSON.parse(readFileSync(resolve(manifestRoot, name), "utf8"));
 }
 
+/** Locale-independent UTF-16 code-unit ordering for generated artifact keys. */
+function compareText(left, right) {
+  return left < right ? -1 : left > right ? 1 : 0;
+}
+
 /** Canonical JSON used by both the generated manifest and this audit. */
 function canonicalJson(value) {
   if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
   if (value !== null && typeof value === "object") {
     return `{${Object.entries(value)
-      .sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0))
+      .sort(([left], [right]) => compareText(left, right))
       .map(([key, nested]) => `${JSON.stringify(key)}:${canonicalJson(nested)}`)
       .join(",")}}`;
   }
@@ -776,7 +781,7 @@ function coverageReport(apiManifest, fieldManifest, gaps) {
     "|---|---:|---|---|---|",
   ];
   for (const [family, count] of [...familyCounts].sort(([left], [right]) =>
-    left.localeCompare(right)
+    compareText(left, right)
   )) {
     const assurance = apiManifest.families[family];
     lines.push(
@@ -793,7 +798,7 @@ function coverageReport(apiManifest, fieldManifest, gaps) {
     "|---|---:|"
   );
   for (const [classification, count] of [...classificationCounts].sort(
-    ([left], [right]) => left.localeCompare(right)
+    ([left], [right]) => compareText(left, right)
   )) {
     lines.push(`| ${classification} | ${count} |`);
   }
@@ -822,7 +827,7 @@ function coverageReport(apiManifest, fieldManifest, gaps) {
     "|---|---|---|---|"
   );
   for (const [gap, detail] of Object.entries(gaps).sort(([left], [right]) =>
-    left.localeCompare(right)
+    compareText(left, right)
   )) {
     lines.push(
       `| ${gap} | ${detail.status} | ${detail.productionImpact} | ${detail.requiredMitigation} |`
