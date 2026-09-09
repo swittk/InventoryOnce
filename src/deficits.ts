@@ -115,12 +115,13 @@ export function applyInventoryRecordedDeficitBurden({
   lines,
 }: ApplyInventoryRecordedDeficitBurdenInput): InventoryDeficitCapacityAdjustment {
   const selectedLocations = normalizeLocationIds(locationIds);
+  const allLocationsSelected = selectedLocations.size === 0;
   const deficitByLocation = recordedDeficitByLocation(
     projection,
     itemRevisionId,
     axisId,
     unit,
-    selectedLocations
+    allLocationsSelected ? undefined : selectedLocations
   );
   let recordedDeficit = zeroQuantity(unit);
   for (const deficit of deficitByLocation.values()) {
@@ -135,7 +136,10 @@ export function applyInventoryRecordedDeficitBurden({
         "Inventory deficit capacity line belongs to another item revision."
       );
     }
-    if (!selectedLocations.has(line.position.locationId)) {
+    if (
+      !allLocationsSelected &&
+      !selectedLocations.has(line.position.locationId)
+    ) {
       throw new Error(
         "Inventory deficit capacity line belongs to an unselected location."
       );
@@ -160,8 +164,16 @@ export function applyInventoryRecordedDeficitBurden({
     linesByLocation.set(line.position.locationId, locationLines);
   }
 
+  let burdenLocations: ReadonlySet<string> = selectedLocations;
+  if (allLocationsSelected) {
+    const allLocations = new Set<string>();
+    for (const locationId of deficitByLocation.keys()) allLocations.add(locationId);
+    for (const locationId of linesByLocation.keys()) allLocations.add(locationId);
+    burdenLocations = new Set([...allLocations].sort());
+  }
+
   let uncoveredDeficit = zeroQuantity(unit);
-  for (const locationId of selectedLocations) {
+  for (const locationId of burdenLocations) {
     let remaining = deficitByLocation.get(locationId) ?? zeroQuantity(unit);
     const locationLines = linesByLocation.get(locationId) ?? [];
     for (const line of locationLines) {
@@ -200,7 +212,7 @@ function recordedDeficitByLocation(
   itemRevisionId: ItemRevisionId,
   axisId: string,
   unit: UnitCode,
-  selectedLocations: ReadonlySet<string>
+  selectedLocations: ReadonlySet<string> | undefined
 ): ReadonlyMap<string, Quantity> {
   const result = new Map<string, Quantity>();
   for (const positionIdentity of inventorySparseRecordValue(
@@ -213,7 +225,10 @@ function recordedDeficitByLocation(
         `Inventory deficit item-revision index references missing position '${positionIdentity}'.`
       );
     }
-    if (!selectedLocations.has(position.key.locationId)) continue;
+    if (
+      selectedLocations !== undefined &&
+      !selectedLocations.has(position.key.locationId)
+    ) continue;
     if (!inventoryPositionIsDeficit(position)) continue;
     const signed = inventoryMeasurementAt(position.measurements, axisId, unit);
     if (compareQuantity(signed, zeroQuantity(unit, signed.decimals)) >= 0) {

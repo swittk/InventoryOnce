@@ -287,11 +287,14 @@ async function runInvariantMutationCheck(model, config, invariant) {
       { capture: true }
     );
     const output = `${result.stdout ?? ""}${result.stderr ?? ""}`;
+    const mutationEvidence = {
+      status: result.status,
+      signal: result.signal,
+      output,
+    };
     if (
       !formalMutationProcessProvesInvariantRejection({
-        status: result.status,
-        signal: result.signal,
-        output,
+        ...mutationEvidence,
         invariant,
       })
     ) {
@@ -307,7 +310,7 @@ async function runInvariantMutationCheck(model, config, invariant) {
     }
     mutationRejected = true;
     let successOutput = `${output}TLC rejected '${config}' through '${invariant}'.\n`;
-    const written = cacheVerifiedProof(descriptor);
+    const written = cacheVerifiedProof(descriptor, mutationEvidence);
     if (written !== undefined) {
       successOutput +=
         `Cached verified TLC mutation proof for '${config}' (${written.key.slice(0, 12)}).\n`;

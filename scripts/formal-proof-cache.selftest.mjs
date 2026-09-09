@@ -133,9 +133,31 @@ test("cache records require exact descriptor identity and verified status", () =
   assert.equal(descriptor.mutationProcessContractVersion, 2);
   const cache = join(root, "cache");
   assert.equal(readFormalProofCache(cache, descriptor), undefined);
-  const written = writeFormalProofCache(cache, descriptor);
-  assert.equal(readFormalProofCache(cache, descriptor)?.key, written.key);
-  const record = JSON.parse(readFileSync(written.path, "utf8"));
+  assert.throws(
+    () => writeFormalProofCache(cache, descriptor),
+    /completed TLC invariant-violation evidence/u,
+  );
+  assert.throws(
+    () => writeFormalProofCache(cache, descriptor, {
+      status: 0,
+      signal: null,
+      output: "Model checking completed without a violation.",
+    }),
+    /completed TLC invariant-violation evidence/u,
+  );
+  const evidence = {
+    status: 12,
+    signal: null,
+    output: "Error: Invariant Forbidden is violated.\n",
+  };
+  const written = writeFormalProofCache(cache, descriptor, evidence);
+  assert.deepEqual(readFormalProofCache(cache, descriptor)?.evidence, evidence);
+  let record = JSON.parse(readFileSync(written.path, "utf8"));
+  record.evidence.output = "Error: Invariant Other is violated.\n";
+  writeFileSync(written.path, JSON.stringify(record));
+  assert.equal(readFormalProofCache(cache, descriptor), undefined);
+  writeFormalProofCache(cache, descriptor, evidence);
+  record = JSON.parse(readFileSync(written.path, "utf8"));
   record.status = "partial";
   writeFileSync(written.path, JSON.stringify(record));
   assert.equal(readFormalProofCache(cache, descriptor), undefined);

@@ -63,6 +63,86 @@ describe("collision-free retry identity", () => {
     );
   });
 
+  it("treats an empty recorded-deficit location selection as all locations", async () => {
+    const inventory = createTestInventory(
+      undefined,
+      undefined,
+      undefined,
+      InventoryDeficitPolicy.Record
+    );
+    await inventory.stock.issue({
+      operationId: "all-location-deficit-a",
+      occurredAt: time0,
+      from: loosePosition("store-a"),
+      amount: stockAmount("1", "piece"),
+    });
+    await inventory.stock.issue({
+      operationId: "all-location-deficit-b",
+      occurredAt: time1,
+      from: loosePosition("store-b"),
+      amount: stockAmount("2", "piece"),
+    });
+    await inventory.stock.issue({
+      operationId: "all-location-deficit-c",
+      occurredAt: time2,
+      from: loosePosition("store-c"),
+      amount: stockAmount("3", "piece"),
+    });
+    const positionA = {
+      ...loosePosition("store-a", { lotId: "ALL-LOCATION-A" }),
+      itemRevisionId: "item-a-v2",
+    };
+    const positionB = {
+      ...loosePosition("store-b", { lotId: "ALL-LOCATION-B" }),
+      itemRevisionId: "item-a-v2",
+    };
+    const world = await inventory.read.world();
+    const allLocations = applyInventoryRecordedDeficitBurden({
+      projection: world.projection,
+      itemRevisionId: "item-a-v2",
+      axisId: "pieces",
+      unit: unitCode("piece"),
+      locationIds: [],
+      lines: [
+        { position: positionA, capacity: parseQuantity("3", "piece") },
+        { position: positionB, capacity: parseQuantity("4", "piece") },
+      ],
+    });
+    expect(allLocations.recordedDeficit.amountMinor).toBe(6);
+    expect(allLocations.uncoveredDeficit.amountMinor).toBe(3);
+    expect(
+      allLocations.capacityByPositionIdentity.get(
+        inventoryStockPositionIdentity(positionA)
+      )?.amountMinor
+    ).toBe(2);
+    expect(
+      allLocations.capacityByPositionIdentity.get(
+        inventoryStockPositionIdentity(positionB)
+      )?.amountMinor
+    ).toBe(2);
+
+    const storeAOnly = applyInventoryRecordedDeficitBurden({
+      projection: world.projection,
+      itemRevisionId: "item-a-v2",
+      axisId: "pieces",
+      unit: unitCode("piece"),
+      locationIds: ["store-a"],
+      lines: [{ position: positionA, capacity: parseQuantity("3", "piece") }],
+    });
+    expect(storeAOnly.recordedDeficit.amountMinor).toBe(1);
+    expect(storeAOnly.uncoveredDeficit.amountMinor).toBe(0);
+    expect(() =>
+      applyInventoryRecordedDeficitBurden({
+        projection: world.projection,
+        itemRevisionId: "item-a-v2",
+        axisId: "pieces",
+        unit: unitCode("piece"),
+        locationIds: ["store-a"],
+        lines: [{ position: positionB, capacity: parseQuantity("4", "piece") }],
+      })
+    ).toThrow("unselected location");
+  });
+
   it("floors recorded-deficit capacity to exact BigInt allocation increments", async () => {
     const inventory = createTestInventory(
       undefined,

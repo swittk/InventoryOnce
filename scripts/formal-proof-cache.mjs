@@ -174,6 +174,21 @@ export function formalMutationProcessProvesInvariantRejection({
   );
 }
 
+/** Return whether persisted mutation-process evidence proves this exact invariant rejection. */
+function validFormalMutationProcessEvidence(value, invariant) {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    typeof value.output === "string" &&
+    formalMutationProcessProvesInvariantRejection({
+      status: value.status,
+      signal: value.signal,
+      output: value.output,
+      invariant,
+    })
+  );
+}
+
 /** Return the stable content address of one exact proof descriptor. */
 export function formalProofCacheKey(descriptor) {
   return sha256Bytes(JSON.stringify(descriptor));
@@ -211,6 +226,12 @@ export function readFormalProofCache(cacheDirectory, descriptor) {
   ) {
     return undefined;
   }
+  if (
+    descriptor.outcome === "mutation-rejected" &&
+    !validFormalMutationProcessEvidence(value.evidence, descriptor.invariant)
+  ) {
+    return undefined;
+  }
   return { key, path, evidence: value.evidence };
 }
 
@@ -221,6 +242,12 @@ export function writeFormalProofCache(cacheDirectory, descriptor, evidence = und
     !validFormalModelProofSummary(evidence)
   ) {
     throw new Error("Positive formal proof cache entries require exact terminal TLC state/depth evidence.");
+  }
+  if (
+    descriptor.outcome === "mutation-rejected" &&
+    !validFormalMutationProcessEvidence(evidence, descriptor.invariant)
+  ) {
+    throw new Error("Mutation formal proof cache entries require exact completed TLC invariant-violation evidence.");
   }
   mkdirSync(cacheDirectory, { recursive: true });
   const key = formalProofCacheKey(descriptor);
@@ -234,7 +261,7 @@ export function writeFormalProofCache(cacheDirectory, descriptor, evidence = und
     cacheKey: key,
     status: "verified",
     descriptor,
-    ...(descriptor.outcome === "model-passed" ? { evidence } : {}),
+    evidence,
   };
   try {
     writeFileSync(temporaryPath, `${JSON.stringify(record, undefined, 2)}\n`, { flag: "wx" });
