@@ -116,6 +116,34 @@ async function enterDualRun(
 }
 
 describe("portable InventoryOnce authority controller", () => {
+  it("rejects authority revision exhaustion before publishing an unreadable durable row", async () => {
+    const database = new TestAuthorityDatabase();
+    const authority = createInventoryAuthorityControl({
+      store: new TestAuthorityStore(database),
+      namespaceId: "revision-exhaustion:primary",
+    });
+    await authority.read();
+    if (database.document === undefined) {
+      throw new Error("Authority initialization did not create its durable row.");
+    }
+    database.document = {
+      ...database.document,
+      revision: Number.MAX_SAFE_INTEGER,
+    };
+
+    await expect(
+      authority.certifyAdapter({
+        certificationDigest: "adapter-v1",
+        certifiedAt: time0,
+      })
+    ).rejects.toThrow("next revision must be a non-negative safe integer");
+    expect(database.document.revision).toBe(Number.MAX_SAFE_INTEGER);
+    await expect(authority.read()).resolves.toMatchObject({
+      revision: Number.MAX_SAFE_INTEGER,
+      mode: InventoryAuthorityMode.Legacy,
+    });
+  });
+
   it("observes initialization failure before first use without swallowing it", async () => {
     const failure = new Error("authority initialization failed");
     const store: InventoryAuthorityStateStore = {
@@ -142,6 +170,24 @@ describe("portable InventoryOnce authority controller", () => {
     });
     expect((await authority.read()).mode).toBe(InventoryAuthorityMode.Legacy);
     await enterDualRun(authority);
+    await expect(
+      authority.claimFence({
+        fenceToken: "cutover-a",
+        startedAt: time1,
+        sourceRoot: "source-root-1",
+        sourceRevision: 1,
+      })
+    ).rejects.toThrow("requires explicit durable cutover authorization");
+    const authorized = await authority.authorizeCutover({
+      authorizationId: "legacy-cutover-a",
+    });
+    expect(authorized.cutoverAuthorizationId).toBe("legacy-cutover-a");
+    await expect(
+      authority.authorizeCutover({ authorizationId: "legacy-cutover-a" })
+    ).resolves.toEqual(authorized);
+    await expect(
+      authority.authorizeCutover({ authorizationId: "different-cutover" })
+    ).rejects.toThrow("differs from durable evidence");
     expect(
       (
         await authority.claimFence({
@@ -188,6 +234,7 @@ describe("portable InventoryOnce authority controller", () => {
       namespaceId: "clinic-mismatch:primary",
     });
     await enterDualRun(authority);
+    await authority.authorizeCutover({ authorizationId: "mismatch-cutover" });
     const mismatched = await authority.recordDualRunMismatch({
       commandId: "command-a",
       legacyIntentDigest: "legacy-a",
@@ -245,6 +292,36 @@ describe("portable InventoryOnce authority controller", () => {
         activatedAt: time2,
       })
     ).rejects.toThrow("differs from activation evidence");
+  });
+
+  it("does not reinterpret retained legacy-cutover authorization as greenfield authority", async () => {
+    const authority = createInventoryAuthorityControl({
+      store: new TestAuthorityStore(),
+      namespaceId: "authorization-domain:primary",
+    });
+    const storage = createInMemoryInventoryDurableStorage();
+    await authority.certifyAdapter({
+      certificationDigest: "adapter-v1",
+      certifiedAt: time0,
+    });
+    const authorized = await authority.authorizeCutover({
+      authorizationId: "legacy-cutover-authorization",
+    });
+    expect(authorized.cutoverAuthorizationId).toBe(
+      "legacy-cutover-authorization"
+    );
+    await expect(
+      bootstrapGreenfieldInventoryAuthority({
+        authority,
+        storage,
+        adapterCertificationDigest: "adapter-v1",
+        authorizationId: "greenfield-authorization",
+        clock: { now: (): string => time1 },
+      })
+    ).rejects.toThrow("cannot reuse legacy source");
+    expect((await authority.read()).cutoverAuthorizationId).toBe(
+      "legacy-cutover-authorization"
+    );
   });
 
   it("rejects greenfield bootstrap after any native target publication", async () => {
@@ -339,6 +416,7 @@ describe("portable InventoryOnce authority controller", () => {
       storage,
       migrationId: "certification-time-retry-migration",
       fenceToken: "certification-time-retry-fence",
+      authorizationId: "certification-time-retry-authorization",
       adapterCertificationDigest: "adapter-v1",
       compileSource: async (cutoverAt: string) => {
         compiledAt.push(cutoverAt);
@@ -360,7 +438,17 @@ describe("portable InventoryOnce authority controller", () => {
     const retained = await authority.read();
     expect(retained.mode).toBe(InventoryAuthorityMode.Legacy);
     expect(retained.adapterCertifiedAt).toBe(time0);
+    expect(retained.cutoverAuthorizationId).toBe(
+      "certification-time-retry-authorization"
+    );
     expect(retained.dualRunStartedAt).toBe("");
+    await expect(
+      cutoverInventoryAuthority({
+        ...common,
+        authorizationId: "different-certification-time-authorization",
+      })
+    ).rejects.toThrow("authorization differs from durable evidence");
+    expect(compiledAt).toEqual([time0, time0]);
   });
 
   it("keeps the legacy fence after a durable migration exists even when retry drain fails", async () => {
@@ -432,6 +520,7 @@ describe("portable InventoryOnce authority controller", () => {
       storage,
       migrationId: "durable-manifest-retry-fence-migration",
       fenceToken: "durable-manifest-retry-fence",
+      authorizationId: "durable-manifest-retry-authorization",
       adapterCertificationDigest: "adapter-v1",
       sourceRevision: 9,
       compileSource,
@@ -509,6 +598,7 @@ describe("portable InventoryOnce authority controller", () => {
       storage,
       migrationId: "cutover-time-retry-migration",
       fenceToken: "cutover-time-retry-fence",
+      authorizationId: "cutover-time-retry-authorization",
       adapterCertificationDigest: "adapter-v1",
       sourceRevision: 7,
       compileSource,
@@ -542,7 +632,17 @@ describe("portable InventoryOnce authority controller", () => {
 
     const retried = await cutoverInventoryAuthority(common);
     expect(retried.authority.mode).toBe(InventoryAuthorityMode.Authoritative);
+    expect(retried.authorizationId).toBe("cutover-time-retry-authorization");
+    expect(retried.authority.cutoverAuthorizationId).toBe(
+      "cutover-time-retry-authorization"
+    );
     expect(retried.authority.dualRunStartedAt).toBe(time1);
+    await expect(
+      cutoverInventoryAuthority({
+        ...common,
+        authorizationId: "changed-cutover-authorization",
+      })
+    ).rejects.toThrow("authorization differs from this retry");
   });
 
   it("gates application operations on one exact persisted mode", () => {

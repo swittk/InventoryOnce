@@ -28,19 +28,15 @@ WriteTransaction ==
   /\ UNCHANGED <<phase, sourceProjectionWritten, destinationProjectionWritten,
                  visibleSource, visibleDestination>>
 
-WriteSourceProjection ==
+\* The durable adapter stages the complete event-derived projection in one physical write.
+\* Source and destination facts therefore become durable at the same boundary.
+WriteProjection ==
   /\ phase = "pending"
   /\ ~sourceProjectionWritten
-  /\ sourceProjectionWritten' = TRUE
-  /\ UNCHANGED <<phase, transactionWritten, destinationProjectionWritten,
-                 visibleSource, visibleDestination>>
-
-WriteDestinationProjection ==
-  /\ phase = "pending"
   /\ ~destinationProjectionWritten
+  /\ sourceProjectionWritten' = TRUE
   /\ destinationProjectionWritten' = TRUE
-  /\ UNCHANGED <<phase, transactionWritten, sourceProjectionWritten,
-                 visibleSource, visibleDestination>>
+  /\ UNCHANGED <<phase, transactionWritten, visibleSource, visibleDestination>>
 
 Complete ==
   /\ phase = "pending"
@@ -56,11 +52,21 @@ Complete ==
 Next ==
   \/ Start
   \/ WriteTransaction
-  \/ WriteSourceProjection
-  \/ WriteDestinationProjection
+  \/ WriteProjection
   \/ Complete
 
+\* Deliberate forbidden transition used only by the mutation gate: stage one side alone.
+SplitSourceProjectionMutation ==
+  /\ phase = "pending"
+  /\ ~sourceProjectionWritten
+  /\ sourceProjectionWritten' = TRUE
+  /\ UNCHANGED <<phase, transactionWritten, destinationProjectionWritten,
+                 visibleSource, visibleDestination>>
+
+SplitProjectionMutationNext == Next \/ SplitSourceProjectionMutation
+
 Spec == Init /\ [][Next]_vars
+SplitProjectionMutationSpec == Init /\ [][SplitProjectionMutationNext]_vars
 
 AbstractStatus == IF phase = "done" THEN "done" ELSE "ready"
 
@@ -83,5 +89,9 @@ TypeOK ==
 
 PartialWritesRefineToStuttering ==
   phase # "done" => /\ visibleSource = 2 /\ visibleDestination = 0
+
+\* Both location facts belong to the same staged projection image.
+ProjectionWriteIsAtomic ==
+  sourceProjectionWritten = destinationProjectionWritten
 
 =============================================================================

@@ -13,9 +13,17 @@ vars == <<source, destination, seen, intentByOperation,
 
 Quantities == 0..MaxQuantity
 PositiveQuantities == 1..MaxQuantity
-Kinds == {"None", "ReceiveMany", "IssueManyByPolicy",
-          "TransferManyByPolicy", "ReplaceAbsolute",
-          "Replay", "RejectChangedIntent"}
+BusinessKinds == {"ReceiveMany", "IssueManyByPolicy",
+                  "TransferManyByPolicy", "ReplaceAbsolute"}
+IntentKinds == BusinessKinds \cup {"None"}
+Kinds == IntentKinds \cup {"Replay", "RejectChangedIntent"}
+
+ValidBusinessIntent(kind, quantity) ==
+  /\ kind \in BusinessKinds
+  /\ \/ /\ kind = "ReplaceAbsolute"
+         /\ quantity \in Quantities
+     \/ /\ kind # "ReplaceAbsolute"
+         /\ quantity \in PositiveQuantities
 
 Intent(kind, quantity) == <<kind, quantity>>
 
@@ -96,6 +104,7 @@ ReplaceAbsolute(op, quantity) ==
   /\ lastDestinationDelta' = 0
 
 Replay(op, kind, quantity) ==
+  /\ ValidBusinessIntent(kind, quantity)
   /\ SameIntent(op, kind, quantity)
   /\ UNCHANGED <<source, destination, seen, intentByOperation>>
   /\ lastKind' = "Replay"
@@ -106,6 +115,7 @@ Replay(op, kind, quantity) ==
   /\ lastDestinationDelta' = 0
 
 RejectChangedIntent(op, kind, quantity) ==
+  /\ ValidBusinessIntent(kind, quantity)
   /\ ChangedIntent(op, kind, quantity)
   /\ UNCHANGED <<source, destination, seen, intentByOperation>>
   /\ lastKind' = "RejectChangedIntent"
@@ -120,8 +130,8 @@ Next ==
   \/ \E op \in OperationIds, quantity \in PositiveQuantities : IssueManyByPolicy(op, quantity)
   \/ \E op \in OperationIds, quantity \in PositiveQuantities : TransferManyByPolicy(op, quantity)
   \/ \E op \in OperationIds, quantity \in Quantities : ReplaceAbsolute(op, quantity)
-  \/ \E op \in OperationIds, kind \in Kinds, quantity \in Quantities : Replay(op, kind, quantity)
-  \/ \E op \in OperationIds, kind \in Kinds, quantity \in Quantities : RejectChangedIntent(op, kind, quantity)
+  \/ \E op \in OperationIds, kind \in BusinessKinds, quantity \in Quantities : Replay(op, kind, quantity)
+  \/ \E op \in OperationIds, kind \in BusinessKinds, quantity \in Quantities : RejectChangedIntent(op, kind, quantity)
 
 Spec == Init /\ [][Next]_vars
 
@@ -129,7 +139,7 @@ TypeOK ==
   /\ source \in Nat
   /\ destination \in Nat
   /\ seen \subseteq OperationIds
-  /\ intentByOperation \in [OperationIds -> Kinds \X Quantities]
+  /\ intentByOperation \in [OperationIds -> IntentKinds \X Quantities]
   /\ lastKind \in Kinds
   /\ lastReplay \in BOOLEAN
   /\ lastRejected \in BOOLEAN

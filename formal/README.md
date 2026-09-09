@@ -81,7 +81,7 @@ The exact seed/fingerprint values vary by run. The latest complete run explored:
 | `DualMeasure`                  |              213 |              43 |                    7 |
 | `DistributedRights`            |              351 |              70 |                    7 |
 | `CorrectionHistory`            |                8 |               7 |                    6 |
-| `DurableTransferRefinement`    |               15 |              10 |                    6 |
+| `DurableTransferRefinement`    |                7 |               6 |                    5 |
 | `TransferLifecycle`             |            4,321 |             929 |                    8 |
 | `RepairLiveness`               |              540 |             265 |                   13 |
 | `RecordedDeficit`              |           21,342 |           2,313 |                    9 |

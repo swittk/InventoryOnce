@@ -107,6 +107,8 @@ export interface InventoryAuthorityState {
   readonly mode: InventoryAuthorityMode;
   /** Exact first-activation provenance; None before authority. */
   readonly activationKind: InventoryAuthorityActivationKind;
+  /** Explicit operator/deployment authorization retained for legacy cutover. */
+  readonly cutoverAuthorizationId: string;
   /** Explicit deployment authorization retained only for greenfield activation. */
   readonly greenfieldAuthorizationId: string;
   /** Canonically sorted active legacy writer attempts. */
@@ -183,6 +185,12 @@ export interface RecordInventoryDualRunMismatchInput {
   readonly authoritativeIntentDigest: string;
   /** Canonical time the mismatch was recorded. */
   readonly recordedAt: string;
+}
+
+/** Inputs for explicitly authorizing one legacy-source authority cutover. */
+export interface AuthorizeInventoryCutoverInput {
+  /** Stable operator/deployment authorization identity; exact retries must reuse it. */
+  readonly authorizationId: string;
 }
 
 /** Inputs for one namespace-isolated authority control. */
@@ -286,6 +294,10 @@ export interface InventoryAuthorityControlPort {
   /** Retain one deterministic DualRun mismatch that blocks fencing. */
   recordDualRunMismatch(
     input: RecordInventoryDualRunMismatchInput
+  ): Promise<InventoryAuthorityState>;
+  /** Durably authorize a legacy-source cutover before fence ownership can be claimed. */
+  authorizeCutover(
+    input: AuthorizeInventoryCutoverInput
   ): Promise<InventoryAuthorityState>;
   /** Atomically route and admit one legacy writer attempt when allowed. */
   admitLegacyWriter(
@@ -394,7 +406,7 @@ export class InventoryAuthorityControl
         ),
       },
       {
-        revision: current.revision + 1,
+        revision: nextInventoryAuthorityRevision(current.revision),
         adapterCertificationDigest: certificationDigest,
         adapterCertifiedAt: certifiedAt,
       }
@@ -443,7 +455,7 @@ export class InventoryAuthorityControl
         mode: InventoryAuthorityMode.Legacy,
         activeLegacyWritersJson: "[]",
       },
-      { revision: current.revision + 1, mode: InventoryAuthorityMode.Shadow }
+      { revision: nextInventoryAuthorityRevision(current.revision), mode: InventoryAuthorityMode.Shadow }
     );
     const next = await this.read();
     if (!changed && next.mode !== InventoryAuthorityMode.Shadow) {
@@ -500,7 +512,7 @@ export class InventoryAuthorityControl
         activeLegacyWritersJson: "[]",
       },
       {
-        revision: current.revision + 1,
+        revision: nextInventoryAuthorityRevision(current.revision),
         mode: InventoryAuthorityMode.DualRun,
         sourceRoot,
         sourceRevision: input.sourceRevision,
@@ -569,7 +581,7 @@ export class InventoryAuthorityControl
           ),
         },
         {
-          revision: current.revision + 1,
+          revision: nextInventoryAuthorityRevision(current.revision),
           dualRunMismatchEvidenceJson: serializeMismatchEvidence(nextEvidence),
         }
       );
@@ -577,6 +589,55 @@ export class InventoryAuthorityControl
     }
     throw new Error(
       "InventoryOnce DualRun mismatch evidence CAS exceeded its retry bound."
+    );
+  }
+
+  /** Durably authorize one legacy-source cutover with exact retry semantics. */
+  async authorizeCutover(
+    input: AuthorizeInventoryCutoverInput
+  ): Promise<InventoryAuthorityState> {
+    const authorizationId = requireText(
+      input.authorizationId,
+      "cutover authorizationId"
+    );
+    for (let attempt = 0; attempt < AUTHORITY_CAS_RETRY_LIMIT; attempt += 1) {
+      const current = await this.read();
+      if (current.greenfieldAuthorizationId.length !== 0) {
+        throw new Error(
+          "InventoryOnce legacy cutover cannot reuse greenfield authorization."
+        );
+      }
+      if (current.cutoverAuthorizationId.length !== 0) {
+        if (current.cutoverAuthorizationId === authorizationId) return current;
+        throw new Error(
+          "InventoryOnce legacy cutover authorization differs from durable evidence."
+        );
+      }
+      if (
+        current.mode !== InventoryAuthorityMode.Legacy &&
+        current.mode !== InventoryAuthorityMode.Shadow &&
+        current.mode !== InventoryAuthorityMode.DualRun
+      ) {
+        throw new Error(
+          "InventoryOnce legacy cutover authorization must precede fence ownership."
+        );
+      }
+      const changed = await this.store.compareAndSet(
+        {
+          revision: current.revision,
+          mode: current.mode,
+          cutoverAuthorizationId: "",
+          greenfieldAuthorizationId: "",
+        },
+        {
+          revision: nextInventoryAuthorityRevision(current.revision),
+          cutoverAuthorizationId: authorizationId,
+        }
+      );
+      if (changed) return this.read();
+    }
+    throw new Error(
+      "InventoryOnce legacy cutover authorization exceeded its CAS retry bound."
     );
   }
 
@@ -629,7 +690,7 @@ export class InventoryAuthorityControl
           ),
         },
         {
-          revision: current.revision + 1,
+          revision: nextInventoryAuthorityRevision(current.revision),
           activeLegacyWritersJson: serializeActiveWriters(nextWriters),
         }
       );
@@ -687,7 +748,7 @@ export class InventoryAuthorityControl
           ),
         },
         {
-          revision: current.revision + 1,
+          revision: nextInventoryAuthorityRevision(current.revision),
           activeLegacyWritersJson: serializeActiveWriters(nextWriters),
         }
       );
@@ -719,6 +780,11 @@ export class InventoryAuthorityControl
     }
     if (current.mode !== InventoryAuthorityMode.DualRun) {
       throw new Error("InventoryOnce source fence must follow DualRun mode.");
+    }
+    if (current.cutoverAuthorizationId.length === 0) {
+      throw new Error(
+        "InventoryOnce source fence requires explicit durable cutover authorization."
+      );
     }
     if (current.dualRunMismatchEvidence.length !== 0) {
       throw new Error(
@@ -757,11 +823,12 @@ export class InventoryAuthorityControl
       {
         revision: current.revision,
         mode: InventoryAuthorityMode.DualRun,
+        cutoverAuthorizationId: current.cutoverAuthorizationId,
         fenceToken: "",
         activeLegacyWritersJson: "[]",
       },
       {
-        revision: current.revision + 1,
+        revision: nextInventoryAuthorityRevision(current.revision),
         mode: InventoryAuthorityMode.Fencing,
         fenceToken: token,
         fenceStartedAt: startedAt,
@@ -837,6 +904,11 @@ export class InventoryAuthorityControl
         "InventoryOnce activation does not own the current write fence."
       );
     }
+    if (current.cutoverAuthorizationId.length === 0) {
+      throw new Error(
+        "InventoryOnce activation is missing durable legacy-cutover authorization."
+      );
+    }
     if (current.activeLegacyWriters.length !== 0) {
       throw new Error(
         "InventoryOnce activation cannot retain legacy writer admissions."
@@ -879,7 +951,7 @@ export class InventoryAuthorityControl
         activeLegacyWritersJson: "[]",
       },
       {
-        revision: current.revision + 1,
+        revision: nextInventoryAuthorityRevision(current.revision),
         mode: InventoryAuthorityMode.Authoritative,
         activationKind: InventoryAuthorityActivationKind.LegacyCutover,
         greenfieldAuthorizationId: "",
@@ -961,6 +1033,7 @@ export class InventoryAuthorityControl
       );
     }
     if (
+      current.cutoverAuthorizationId.length !== 0 ||
       current.sourceRoot.length !== 0 ||
       current.sourcePlanDigest.length !== 0 ||
       current.sourceCatalogDigest.length !== 0 ||
@@ -979,13 +1052,14 @@ export class InventoryAuthorityControl
         mode: current.mode,
         activeLegacyWritersJson: "[]",
         adapterCertificationDigest: certificationDigest,
+        cutoverAuthorizationId: "",
         sourceRoot: "",
         sourcePlanDigest: "",
         sourceCatalogDigest: "",
         fenceToken: "",
       },
       {
-        revision: current.revision + 1,
+        revision: nextInventoryAuthorityRevision(current.revision),
         mode: InventoryAuthorityMode.Authoritative,
         activationKind: InventoryAuthorityActivationKind.Greenfield,
         greenfieldAuthorizationId: authorizationId,
@@ -1041,7 +1115,7 @@ export class InventoryAuthorityControl
         activeLegacyWritersJson: "[]",
       },
       {
-        revision: current.revision + 1,
+        revision: nextInventoryAuthorityRevision(current.revision),
         mode: InventoryAuthorityMode.DualRun,
         fenceToken: "",
         fenceStartedAt: "",
@@ -1118,7 +1192,7 @@ export class InventoryAuthorityControl
           mode: InventoryAuthorityMode.Authoritative,
         },
         {
-          revision: current.revision + 1,
+          revision: nextInventoryAuthorityRevision(current.revision),
           compatibilityProjectionWorldRevision:
             patch.compatibilityProjectionWorldRevision,
           compatibilityProjectionStatus: patch.compatibilityProjectionStatus,
@@ -1139,6 +1213,7 @@ export class InventoryAuthorityControl
       revision: "Number",
       mode: "String",
       activationKind: "String",
+      cutoverAuthorizationId: "String",
       greenfieldAuthorizationId: "String",
       activeLegacyWritersJson: "String",
       fenceToken: "String",
@@ -1163,6 +1238,7 @@ export class InventoryAuthorityControl
       revision: 0,
       mode: InventoryAuthorityMode.Legacy,
       activationKind: InventoryAuthorityActivationKind.None,
+      cutoverAuthorizationId: "",
       greenfieldAuthorizationId: "",
       activeLegacyWriters: [],
       fenceToken: "",
@@ -1204,6 +1280,7 @@ function stateDocument(
     revision: state.revision,
     mode: state.mode,
     activationKind: state.activationKind,
+    cutoverAuthorizationId: state.cutoverAuthorizationId,
     greenfieldAuthorizationId: state.greenfieldAuthorizationId,
     activeLegacyWritersJson: serializeActiveWriters(state.activeLegacyWriters),
     fenceToken: state.fenceToken,
@@ -1241,6 +1318,7 @@ function parseState(
   }
   const mode = requireMode(row);
   const activationKind = requireActivationKind(row, mode);
+  const cutoverAuthorizationId = optionalString(row, "cutoverAuthorizationId");
   const greenfieldAuthorizationId = optionalString(
     row,
     "greenfieldAuthorizationId"
@@ -1273,6 +1351,21 @@ function parseState(
       "InventoryOnce non-authoritative state cannot retain completed activation provenance."
     );
   }
+  if (cutoverAuthorizationId.length !== 0 && greenfieldAuthorizationId.length !== 0) {
+    throw new Error(
+      "InventoryOnce authority cannot retain both legacy-cutover and greenfield authorization."
+    );
+  }
+  if (
+    (mode === InventoryAuthorityMode.Fencing ||
+      (mode === InventoryAuthorityMode.Authoritative &&
+        activationKind === InventoryAuthorityActivationKind.LegacyCutover)) &&
+    cutoverAuthorizationId.length === 0
+  ) {
+    throw new Error(
+      "InventoryOnce fenced/legacy-authoritative state is missing cutover authorization."
+    );
+  }
   if (
     activationKind === InventoryAuthorityActivationKind.Greenfield &&
     greenfieldAuthorizationId.length === 0
@@ -1289,11 +1382,12 @@ function parseState(
       "InventoryOnce non-greenfield authority cannot retain greenfield authorization."
     );
   }
-  return {
+  const state: InventoryAuthorityState = {
     namespaceId,
     revision: requireNonNegativeInteger(row, "revision"),
     mode,
     activationKind,
+    cutoverAuthorizationId,
     greenfieldAuthorizationId,
     activeLegacyWriters,
     fenceToken: requireString(row, "fenceToken"),
@@ -1324,6 +1418,228 @@ function parseState(
       "compatibilityProjectionError"
     ),
   };
+  assertInventoryAuthorityDurableStateReachable(state);
+  return state;
+}
+
+/** Reject durable field combinations that no InventoryAuthorityControl transition can persist. */
+function assertInventoryAuthorityDurableStateReachable(
+  state: InventoryAuthorityState
+): void {
+  /** Whether adapter certification has been durably accepted. */
+  const adapterCertified = state.adapterCertificationDigest.length !== 0;
+  if (adapterCertified !== (state.adapterCertifiedAt.length !== 0)) {
+    throw new Error(
+      "InventoryOnce authority adapter certification digest/time must be retained together."
+    );
+  }
+  if (adapterCertified) {
+    requireCanonicalStoredText(
+      state.adapterCertificationDigest,
+      "adapterCertificationDigest"
+    );
+    requireCanonicalStoredTime(state.adapterCertifiedAt, "adapterCertifiedAt");
+  }
+  if (state.cutoverAuthorizationId.length !== 0)
+    requireCanonicalStoredText(
+      state.cutoverAuthorizationId,
+      "cutoverAuthorizationId"
+    );
+  if (state.greenfieldAuthorizationId.length !== 0)
+    requireCanonicalStoredText(
+      state.greenfieldAuthorizationId,
+      "greenfieldAuthorizationId"
+    );
+
+  /** Source evidence is written atomically when Shadow becomes DualRun. */
+  const sourceParts = [
+    state.sourceRoot,
+    state.sourcePlanDigest,
+    state.sourceCatalogDigest,
+    state.dualRunStartedAt,
+  ];
+  /** Number of fields present in the atomic source-evidence bundle. */
+  let sourcePartCount = 0;
+  for (const value of sourceParts) {
+    if (value.length !== 0) sourcePartCount += 1;
+  }
+  if (sourcePartCount !== 0 && sourcePartCount !== sourceParts.length) {
+    throw new Error(
+      "InventoryOnce authority source evidence must be retained as one complete bundle."
+    );
+  }
+  const sourceBound = sourcePartCount === sourceParts.length;
+  if (sourceBound) {
+    requireCanonicalStoredText(state.sourceRoot, "sourceRoot");
+    requireCanonicalStoredText(state.sourcePlanDigest, "sourcePlanDigest");
+    requireCanonicalStoredText(state.sourceCatalogDigest, "sourceCatalogDigest");
+    requireCanonicalStoredTime(state.dualRunStartedAt, "DualRun startedAt");
+  } else if (state.sourceRevision !== 0) {
+    throw new Error(
+      "InventoryOnce authority cannot retain a source revision without complete source evidence."
+    );
+  }
+
+  /** Fence token and start time are created and released as one pair. */
+  const fenceTokenPresent = state.fenceToken.length !== 0;
+  const fenceTimePresent = state.fenceStartedAt.length !== 0;
+  if (fenceTokenPresent !== fenceTimePresent) {
+    throw new Error(
+      "InventoryOnce authority fence token/time must be retained together."
+    );
+  }
+  const fenceBound = fenceTokenPresent && fenceTimePresent;
+  if (fenceBound) {
+    requireCanonicalStoredText(state.fenceToken, "fenceToken");
+    requireCanonicalStoredTime(state.fenceStartedAt, "fence startedAt");
+  }
+
+  /** Activation target root and time are published together. */
+  const targetRootPresent = state.targetWorldRoot.length !== 0;
+  const activatedAtPresent = state.activatedAt.length !== 0;
+  if (targetRootPresent !== activatedAtPresent) {
+    throw new Error(
+      "InventoryOnce authority target root/activation time must be retained together."
+    );
+  }
+  const targetBound = targetRootPresent && activatedAtPresent;
+  if (targetBound) {
+    requireCanonicalStoredText(state.targetWorldRoot, "targetWorldRoot");
+    requireCanonicalStoredTime(state.activatedAt, "activatedAt");
+  } else if (state.targetWorldRevision !== 0) {
+    throw new Error(
+      "InventoryOnce authority cannot retain a target revision before activation."
+    );
+  }
+
+  if (state.compatibilityProjectionStatus === InventoryCompatibilityProjectionStatus.Failed) {
+    requireCanonicalStoredText(
+      state.compatibilityProjectionError,
+      "compatibility projection error"
+    );
+    if (state.compatibilityProjectionError.length > 2000) {
+      throw new Error(
+        "InventoryOnce compatibility projection error exceeds its durable bound."
+      );
+    }
+  } else if (state.compatibilityProjectionError.length !== 0) {
+    throw new Error(
+      "InventoryOnce non-failed compatibility projection cannot retain an error."
+    );
+  }
+  if (
+    state.compatibilityProjectionStatus === InventoryCompatibilityProjectionStatus.Lagging &&
+    state.compatibilityProjectionWorldRevision !== 0
+  ) {
+    throw new Error(
+      "InventoryOnce lagging compatibility projection must remain at revision zero until first projection."
+    );
+  }
+
+  /** DualRun is the only phase in which unresolved mismatch evidence can exist. */
+  if (
+    state.mode !== InventoryAuthorityMode.DualRun &&
+    state.dualRunMismatchEvidence.length !== 0
+  ) {
+    throw new Error(
+      "InventoryOnce authority can retain DualRun mismatch evidence only in DualRun mode."
+    );
+  }
+
+  /** Every phase after Legacy descends from one accepted adapter certification. */
+  if (state.mode !== InventoryAuthorityMode.Legacy && !adapterCertified) {
+    throw new Error(
+      "InventoryOnce non-legacy authority state is missing adapter certification."
+    );
+  }
+
+  const legacyActivation =
+    state.mode === InventoryAuthorityMode.Authoritative &&
+    state.activationKind === InventoryAuthorityActivationKind.LegacyCutover;
+  const greenfieldActivation =
+    state.mode === InventoryAuthorityMode.Authoritative &&
+    state.activationKind === InventoryAuthorityActivationKind.Greenfield;
+  const sourceRequired =
+    state.mode === InventoryAuthorityMode.DualRun ||
+    state.mode === InventoryAuthorityMode.Fencing ||
+    legacyActivation;
+  if (sourceBound !== sourceRequired) {
+    throw new Error(
+      "InventoryOnce authority source evidence does not match its durable phase."
+    );
+  }
+  const fenceRequired = state.mode === InventoryAuthorityMode.Fencing || legacyActivation;
+  if (fenceBound !== fenceRequired) {
+    throw new Error(
+      "InventoryOnce authority fence evidence does not match its durable phase."
+    );
+  }
+  if (targetBound !== (state.mode === InventoryAuthorityMode.Authoritative)) {
+    throw new Error(
+      "InventoryOnce authority target evidence does not match its durable phase."
+    );
+  }
+
+  if (state.mode !== InventoryAuthorityMode.Authoritative) {
+    if (
+      state.compatibilityProjectionStatus !== InventoryCompatibilityProjectionStatus.Lagging ||
+      state.compatibilityProjectionWorldRevision !== 0
+    ) {
+      throw new Error(
+        "InventoryOnce pre-authority state cannot retain compatibility projection progress."
+      );
+    }
+  } else if (
+    greenfieldActivation &&
+    state.compatibilityProjectionStatus === InventoryCompatibilityProjectionStatus.Lagging
+  ) {
+    throw new Error(
+      "InventoryOnce greenfield authority cannot enter the legacy-cutover lagging projection state."
+    );
+  }
+
+  if (
+    (state.mode === InventoryAuthorityMode.Fencing || legacyActivation) &&
+    state.cutoverAuthorizationId.length === 0
+  ) {
+    throw new Error(
+      "InventoryOnce fenced/legacy-authoritative state is missing cutover authorization."
+    );
+  }
+  if (greenfieldActivation) {
+    if (state.cutoverAuthorizationId.length !== 0 || !adapterCertified) {
+      throw new Error(
+        "InventoryOnce greenfield authority cannot retain legacy cutover evidence."
+      );
+    }
+    if (state.targetWorldRevision !== 0) {
+      throw new Error(
+        "InventoryOnce greenfield authority must retain target world revision zero."
+      );
+    }
+  }
+}
+
+/** Require one persisted text field to already equal the writer-side trimmed form. */
+function requireCanonicalStoredText(value: string, label: string): string {
+  const normalized = requireText(value, label);
+  if (normalized !== value) {
+    throw new Error(
+      `InventoryOnce authority ${label} is not stored in canonical trimmed form.`
+    );
+  }
+  return value;
+}
+
+/** Require one persisted timestamp to already equal the writer-side canonical UTC form. */
+function requireCanonicalStoredTime(value: string, label: string): string {
+  const normalized = requireCanonicalTime(value, label);
+  if (normalized !== value) {
+    throw new Error(
+      `InventoryOnce authority ${label} is not stored in canonical UTC form.`
+    );
+  }
+  return value;
 }
 
 /** Read explicit activation provenance, inferring legacy cutover for pre-field authoritative rows. */
@@ -1407,6 +1723,8 @@ function parseMismatchEvidence(
     );
   }
   const evidence: InventoryDualRunMismatchEvidence[] = [];
+  /** Commands are idempotent mismatch identities and may appear at most once. */
+  const seenCommandIds = new Set<string>();
   for (const entry of parsed) {
     if (
       typeof entry !== "object" ||
@@ -1424,11 +1742,30 @@ function parseMismatchEvidence(
         "InventoryOnce DualRun mismatch evidence entry is invalid."
       );
     }
+    const commandId = requireCanonicalStoredText(
+      entry.commandId,
+      "mismatch commandId"
+    );
+    if (seenCommandIds.has(commandId)) {
+      throw new Error(
+        `InventoryOnce DualRun mismatch evidence repeats command '${commandId}'.`
+      );
+    }
+    seenCommandIds.add(commandId);
     evidence.push({
-      commandId: entry.commandId,
-      legacyIntentDigest: entry.legacyIntentDigest,
-      authoritativeIntentDigest: entry.authoritativeIntentDigest,
-      recordedAt: entry.recordedAt,
+      commandId,
+      legacyIntentDigest: requireCanonicalStoredText(
+        entry.legacyIntentDigest,
+        "mismatch legacyIntentDigest"
+      ),
+      authoritativeIntentDigest: requireCanonicalStoredText(
+        entry.authoritativeIntentDigest,
+        "mismatch authoritativeIntentDigest"
+      ),
+      recordedAt: requireCanonicalStoredTime(
+        entry.recordedAt,
+        "mismatch recordedAt"
+      ),
     });
   }
   const normalized = [...evidence].sort(compareMismatchEvidence);
@@ -1470,6 +1807,14 @@ function requireSafeNonNegativeInteger(value: number, label: string): void {
       `InventoryOnce authority ${label} must be a non-negative safe integer.`
     );
   }
+}
+
+/** Return the next durable authority revision without ever publishing an unreadable number. */
+function nextInventoryAuthorityRevision(revision: number): number {
+  requireSafeNonNegativeInteger(revision, "revision");
+  const nextRevision = revision + 1;
+  requireSafeNonNegativeInteger(nextRevision, "next revision");
+  return nextRevision;
 }
 
 /** Require one supported compatibility projection status. */
@@ -1588,6 +1933,7 @@ function assertActivationMatches(
 ): void {
   if (
     current.activationKind !== InventoryAuthorityActivationKind.LegacyCutover ||
+    current.cutoverAuthorizationId.length === 0 ||
     current.greenfieldAuthorizationId.length !== 0 ||
     current.fenceToken !== input.fenceToken.trim() ||
     current.sourcePlanDigest !== input.sourcePlanDigest.trim() ||
@@ -1609,6 +1955,7 @@ function assertGreenfieldActivationMatches(
 ): void {
   if (
     current.activationKind !== InventoryAuthorityActivationKind.Greenfield ||
+    current.cutoverAuthorizationId.length !== 0 ||
     current.greenfieldAuthorizationId !== input.authorizationId.trim() ||
     current.adapterCertificationDigest !== input.certificationDigest.trim() ||
     current.targetWorldRoot !== input.targetWorldRoot.trim() ||

@@ -118,7 +118,9 @@ describe("formal implementation conformance manifest", () => {
         cwd: packageRoot,
         encoding: "utf8",
         maxBuffer: 32 * 1024 * 1024,
-        timeout: 25_000,
+        // Full compiler/formal audit is ~15–17s alone and can exceed 25s under parallel Vitest load.
+        // This changes only the subprocess budget; every audit obligation remains identical.
+        timeout: 90_000,
       }
     );
     // JSON.parse returns any; this assertion narrows the audit output to the
@@ -146,5 +148,5 @@ describe("formal implementation conformance manifest", () => {
     expect(summary.apiEntries - summary.tracedPublicApis).toBe(
       summary.explicitGapApis
     );
-  }, 30_000);
+  }, 90_000);
 });

@@ -259,6 +259,87 @@ describe("broad reservations and physical truth", () => {
     });
   });
 
+  it("keeps count lifecycle usable through an existing shortage and records further physical loss", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receive({
+      operationId: "count-shortage-receive",
+      occurredAt: time0,
+      to: loosePosition("store"),
+      amount: stockAmount("2", "piece"),
+    });
+    await inventory.reservations.reserve({
+      reservationId: "count-shortage-claim",
+      operationId: "count-shortage-reserve",
+      itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a", locationIds: ["store"] },
+      requested: parseQuantity("2", "piece"),
+      createdAt: time1,
+    });
+    await inventory.stock.scrap({
+      operationId: "count-shortage-scrap",
+      occurredAt: time2,
+      from: loosePosition("store"),
+      amount: stockAmount("1", "piece"),
+      reason: "Observed physical loss creates an existing shortage.",
+    });
+    expect((await inventory.read.reservationFeasibility()).status).toBe(
+      InventoryReservationFeasibilityStatus.Shortage
+    );
+
+    await inventory.counts.start({
+      countId: "count-during-shortage",
+      operationId: "count-during-shortage:start",
+      itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a", locationIds: ["store"] },
+      startedAt: time2,
+    });
+    const position = (
+      await inventory.read.positions({ itemId: "item-a", locationIds: ["store"] })
+    )[0];
+    if (position === undefined) throw new Error("Expected remaining shortage stock.");
+    await inventory.counts.observe({
+      operationId: "count-during-shortage:observe",
+      countId: "count-during-shortage",
+      observedAt: time2,
+      observations: [
+        {
+          position: position.key,
+          measurements: {
+            primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") },
+            independent: [],
+          },
+        },
+      ],
+    });
+    const abandoned = await inventory.counts.abandon({
+      operationId: "count-during-shortage:abandon",
+      countId: "count-during-shortage",
+      occurredAt: time2,
+      reason: "Metadata-only count lifecycle remains usable during shortage.",
+    });
+    expect(abandoned.count.status).toBe(InventoryCountStatus.Abandoned);
+
+    const replaced = await inventory.counts.replaceAbsolute({
+      countId: "absolute-loss-during-shortage",
+      operationId: "absolute-loss-during-shortage",
+      itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a", locationIds: ["store"] },
+      occurredAt: time2,
+      reason: "The remaining piece was also physically absent.",
+    });
+    expect(
+      replaced.event?.stockEffects[0]?.measurementsDelta.primary.quantity.amountMinor
+    ).toBe(-1);
+    const report = await inventory.read.reservationFeasibility();
+    expect(report.status).toBe(InventoryReservationFeasibilityStatus.Shortage);
+    expect(report.groups[0]).toMatchObject({
+      reservationIds: ["count-shortage-claim"],
+      requested: { amountMinor: 2 },
+      fulfillable: { amountMinor: 0 },
+      shortage: { amountMinor: 2 },
+    });
+  });
+
   it("consumes one exact allocated claim and physical issue together exactly once", async () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
@@ -513,6 +594,14 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
             quantity: parseQuantity("8", "piece"),
           },
         },
+      })
+    ).rejects.toThrow("changed intent");
+    await expect(
+      inventory.stock.receive({
+        operationId: command.operationId,
+        occurredAt: time2,
+        to: loosePosition("store"),
+        amount: stockAmount("1", "piece"),
       })
     ).rejects.toThrow("changed intent");
     const positions = await inventory.read.positions({

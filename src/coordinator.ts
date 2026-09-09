@@ -9,6 +9,7 @@ import {
   createInventoryReservationBookDelta,
   inventoryDurablePlanDigest,
   inventoryWorldContentRoots,
+  type InventoryReservationBookDelta,
 } from "./integrity.js";
 import {
   assertCanonicalInventoryTime,
@@ -23,8 +24,17 @@ import {
 } from "./projection.js";
 import {
   assertInventoryReservationsFeasible,
+  inspectInventoryReservationFeasibility,
+  InventoryReservationFeasibilityStatus,
+  InventoryReservationOperationKind,
+  InventoryReservationStatus,
+  type InventoryReservationBook,
+  type InventoryReservationFeasibilityGroup,
   type InventoryReservationBookResult,
 } from "./reservations.js";
+import { inventoryMeasurementAt } from "./measurements.js";
+import { inventoryStockPositionIdentity } from "./model.js";
+import { compareQuantity, negateQuantity, quantityEq } from "./quantity.js";
 import {
   InventoryApplyingOperationConflictError,
   InventoryDurableOperationState,
@@ -128,8 +138,6 @@ export async function commitInventoryOperation({
   assertOperationIdentity(operationId, intentFingerprint);
   assertPositiveSafeInteger(maxRevisionRetries, "maxRevisionRetries");
 
-  const initialWorld = await storage.readWorld();
-  assertInventoryCatalogRetainsSnapshot(catalog, initialWorld.catalog);
   const existing = await storage.readOperation(operationId);
   if (existing !== undefined) {
     assertSameIntent(existing, intentFingerprint);
@@ -142,6 +150,8 @@ export async function commitInventoryOperation({
     };
   }
 
+  const initialWorld = await storage.readWorld();
+  assertInventoryCatalogRetainsSnapshot(catalog, initialWorld.catalog);
   for (let attempt = 0; attempt < maxRevisionRetries; attempt += 1) {
     const world = await storage.readWorld();
     assertInventoryCatalogRetainsSnapshot(catalog, world.catalog);
@@ -271,10 +281,48 @@ function createDurableOperationPlan({
     operationId,
     logicalPlan.countId
   );
+  // A validated release or expiry only removes one active claim. With no event,
+  // it cannot reduce the stock available to any reservation that remains active.
+  const closesReservationWithoutPhysicalEvent =
+    committedEvent === undefined &&
+    reservationDelta !== undefined &&
+    ((reservationDelta.operation.kind ===
+      InventoryReservationOperationKind.Release &&
+      reservationDelta.reservation.status ===
+        InventoryReservationStatus.Released) ||
+      (reservationDelta.operation.kind ===
+        InventoryReservationOperationKind.Expire &&
+        reservationDelta.reservation.status ===
+          InventoryReservationStatus.Expired));
+  let consumptionDoesNotIncreaseShortage = false;
+  if (
+    reservationDelta?.operation.kind ===
+    InventoryReservationOperationKind.Consume
+  ) {
+    assertReservationConsumptionMatchesIssue({
+      catalog,
+      baseBook: world.reservations,
+      reservationDelta,
+      committedEvent,
+      operationId,
+    });
+    consumptionDoesNotIncreaseShortage =
+      countDelta === undefined &&
+      inventoryReservationConsumptionDoesNotIncreaseShortage({
+        catalog,
+        baseWorld: world,
+        projection,
+        reservations,
+        recordedAt,
+        consumedReservationId: reservationDelta.reservation.reservationId,
+      });
+  }
   if (
     (logicalPlan.reservationProtection ??
       InventoryReservationProtection.ProtectClaims) ===
-    InventoryReservationProtection.ProtectClaims
+      InventoryReservationProtection.ProtectClaims &&
+    !closesReservationWithoutPhysicalEvent &&
+    !consumptionDoesNotIncreaseShortage
   ) {
     // Ordinary commands protect the claim book that exists when durable truth is recorded.
     // Backdating occurredAt must not bypass a reservation created before this commit.
@@ -325,6 +373,211 @@ function createDurableOperationPlan({
     ...planWithoutDigest,
     planDigest: inventoryDurablePlanDigest(planWithoutDigest),
   };
+}
+
+/** Inputs for checking that one Consume delta is exactly the Issue fact it claims. */
+interface AssertReservationConsumptionMatchesIssueInput {
+  /** Frozen catalogue used to resolve the reservation measurement axis. */
+  readonly catalog: InventoryCatalog;
+  /** Published reservation book before the Consume transition. */
+  readonly baseBook: InventoryReservationBook;
+  /** Validated one-row Consume transition produced by the planner. */
+  readonly reservationDelta: InventoryReservationBookDelta;
+  /** Committed physical event paired with the Consume transition. */
+  readonly committedEvent: InventoryCommittedEvent | undefined;
+  /** Stable outer durable operation identity. */
+  readonly operationId: string;
+}
+
+/** Reject a Consume transition unless one exact Issue removes every frozen allocation. */
+function assertReservationConsumptionMatchesIssue({
+  catalog,
+  baseBook,
+  reservationDelta,
+  committedEvent,
+  operationId,
+}: AssertReservationConsumptionMatchesIssueInput): void {
+  const consumed = reservationDelta.reservation;
+  const baseReservation = baseBook.reservations[consumed.reservationId];
+  if (
+    baseReservation === undefined ||
+    baseReservation.allocations.length === 0 ||
+    JSON.stringify(reservationDelta.operation.reservationAfter) !==
+      JSON.stringify(consumed)
+  ) {
+    throw new Error(
+      "Reservation consumption must issue one previously allocated claim with exact lifecycle evidence."
+    );
+  }
+  if (
+    committedEvent === undefined ||
+    committedEvent.kind !== InventoryEventKind.Issue ||
+    committedEvent.operationId !== operationId ||
+    committedEvent.eventId !== consumed.consumptionEventId ||
+    committedEvent.occurredAt !== consumed.statusAt ||
+    committedEvent.metadata?.reservationId !== consumed.reservationId
+  ) {
+    throw new Error(
+      "Reservation consumption must name its exact same-operation Issue event."
+    );
+  }
+  if (
+    committedEvent.traceabilityChanges.length !== 0 ||
+    (committedEvent.positiveLayerProvenanceTransfers?.length ?? 0) !== 0 ||
+    (committedEvent.positiveLayerProvenanceOverrides?.length ?? 0) !== 0 ||
+    (committedEvent.lotDefinitions?.length ?? 0) !== 0 ||
+    (committedEvent.containerDefinitions?.length ?? 0) !== 0 ||
+    committedEvent.transferLifecycle !== undefined ||
+    committedEvent.catalogDigest !== undefined ||
+    committedEvent.catalogSnapshot !== undefined ||
+    committedEvent.correction !== undefined
+  ) {
+    throw new Error(
+      "Reservation consumption Issue cannot carry unrelated inventory changes."
+    );
+  }
+  if (committedEvent.stockEffects.length !== baseReservation.allocations.length) {
+    throw new Error(
+      "Reservation consumption Issue must have exactly one stock effect per allocation."
+    );
+  }
+  const item = catalog.itemRevision(baseReservation.itemRevisionId);
+  const axis = catalog.measurementAxis(item, item.reservationAxisId);
+  const allocationByPosition = new Map<
+    string,
+    (typeof baseReservation.allocations)[number]
+  >();
+  for (const allocation of baseReservation.allocations) {
+    allocationByPosition.set(
+      inventoryStockPositionIdentity(allocation.position),
+      allocation
+    );
+  }
+  for (const effect of committedEvent.stockEffects) {
+    const positionIdentity = inventoryStockPositionIdentity(effect.position);
+    const allocation = allocationByPosition.get(positionIdentity);
+    if (
+      allocation === undefined ||
+      effect.itemRevisionId !== baseReservation.itemRevisionId ||
+      effect.metadata?.reservationId !== consumed.reservationId
+    ) {
+      throw new Error(
+        "Reservation consumption Issue stock effects must name only exact allocated positions."
+      );
+    }
+    const issued = inventoryMeasurementAt(
+      effect.measurementsDelta,
+      axis.axisId,
+      axis.unit
+    );
+    if (!quantityEq(issued, negateQuantity(allocation.quantity))) {
+      throw new Error(
+        "Reservation consumption Issue must remove each exact allocated quantity."
+      );
+    }
+    allocationByPosition.delete(positionIdentity);
+  }
+  if (allocationByPosition.size !== 0) {
+    throw new Error(
+      "Reservation consumption Issue did not remove every exact allocation."
+    );
+  }
+}
+
+/** Inputs for proving a Consume transition does not worsen any surviving claim group. */
+interface InventoryReservationConsumptionShortageInput {
+  /** Frozen catalogue used by both exact feasibility calculations. */
+  readonly catalog: InventoryCatalog;
+  /** Published world before the atomic Issue and Consume transition. */
+  readonly baseWorld: InventoryWorldState;
+  /** Projection after applying the paired Issue event. */
+  readonly projection: InventoryWorldState["projection"];
+  /** Reservation book after closing the consumed reservation. */
+  readonly reservations: InventoryReservationBook;
+  /** Same durable time used to interpret both reservation books. */
+  readonly recordedAt: string;
+  /** Only reservation identity removed from active competition. */
+  readonly consumedReservationId: string;
+}
+
+/** Return true only when every surviving exact claim group keeps or reduces its shortage. */
+function inventoryReservationConsumptionDoesNotIncreaseShortage({
+  catalog,
+  baseWorld,
+  projection,
+  reservations,
+  recordedAt,
+  consumedReservationId,
+}: InventoryReservationConsumptionShortageInput): boolean {
+  // Most consumes leave every group feasible; calculate the prior max-flow only
+  // when an existing shortage actually needs the non-worsening exception.
+  const after = inspectInventoryReservationFeasibility({
+    catalog,
+    projection,
+    book: reservations,
+    at: recordedAt,
+  });
+  if (after.status === InventoryReservationFeasibilityStatus.Feasible) return true;
+  const before = inspectInventoryReservationFeasibility({
+    catalog,
+    projection: baseWorld.projection,
+    book: baseWorld.reservations,
+    at: recordedAt,
+  });
+  // Revision-scoped groups may share item/axis/unit. A surviving reservation
+  // identity locates its one prior group without a quadratic cross-group scan.
+  const beforeByReservationId = new Map<
+    string,
+    InventoryReservationFeasibilityGroup
+  >();
+  for (const group of before.groups) {
+    for (const reservationId of group.reservationIds) {
+      beforeByReservationId.set(reservationId, group);
+    }
+  }
+  for (const afterGroup of after.groups) {
+    if (afterGroup.shortage.amountMinor === 0) continue;
+    const survivor = afterGroup.reservationIds[0];
+    const beforeGroup = survivor === undefined
+      ? undefined
+      : beforeByReservationId.get(survivor);
+    if (
+      beforeGroup === undefined ||
+      !reservationFeasibilityGroupsMatchAfterConsumption(
+        beforeGroup,
+        afterGroup,
+        consumedReservationId
+      ) ||
+      compareQuantity(afterGroup.shortage, beforeGroup.shortage) > 0
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/** Match one surviving group to its unique pre-Consume membership and measurement identity. */
+function reservationFeasibilityGroupsMatchAfterConsumption(
+  before: InventoryReservationFeasibilityGroup,
+  after: InventoryReservationFeasibilityGroup,
+  consumedReservationId: string
+): boolean {
+  if (
+    before.itemId !== after.itemId ||
+    before.axisId !== after.axisId ||
+    before.shortage.unit !== after.shortage.unit
+  ) {
+    return false;
+  }
+  // Feasibility reports sort membership by reservation identity. Removing the
+  // consumed identity must leave the exact same order, with no extra members.
+  let survivorIndex = 0;
+  for (const reservationId of before.reservationIds) {
+    if (reservationId === consumedReservationId) continue;
+    if (after.reservationIds[survivorIndex] !== reservationId) return false;
+    survivorIndex += 1;
+  }
+  return survivorIndex === after.reservationIds.length;
 }
 
 /**

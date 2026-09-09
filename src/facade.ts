@@ -7388,7 +7388,11 @@ class InventoryOnceCountsImplementation implements InventoryOnceCountsApi {
             : { sourceReference: input.sourceReference }),
           ...(input.metadata === undefined ? {} : { metadata: input.metadata }),
         });
-        return { countResult: started, countId: input.countId };
+        return {
+          countResult: started,
+          countId: input.countId,
+          reservationProtection: InventoryReservationProtection.RecordPhysicalTruth,
+        };
       },
     });
     return createInventoryOnceCountResult(result);
@@ -7429,7 +7433,11 @@ class InventoryOnceCountsImplementation implements InventoryOnceCountsApi {
           observedAt: input.observedAt,
           observations,
         });
-        return { countResult: observed, countId: input.countId };
+        return {
+          countResult: observed,
+          countId: input.countId,
+          reservationProtection: InventoryReservationProtection.RecordPhysicalTruth,
+        };
       },
     });
     return createInventoryOnceCountResult(result);
@@ -7523,7 +7531,11 @@ class InventoryOnceCountsImplementation implements InventoryOnceCountsApi {
           ...input,
           book: world.counts,
         });
-        return { countResult: abandoned, countId: input.countId };
+        return {
+          countResult: abandoned,
+          countId: input.countId,
+          reservationProtection: InventoryReservationProtection.RecordPhysicalTruth,
+        };
       },
     });
     return createInventoryOnceCountResult(result);
@@ -7552,10 +7564,7 @@ async function commitAbsoluteCountStart({
   fallbackPosition,
   intentFingerprint,
 }: CommitAbsoluteCountStartInput): Promise<InventoryOnceCountResult> {
-  const startOperationId = absoluteCountLifecycleOperationId(
-    input.operationId,
-    "start"
-  );
+  const startOperationId = input.operationId;
   const result = await commitInventoryOperation({
     catalog: internals.catalog,
     storage: internals.storage,
@@ -7684,7 +7693,11 @@ async function commitAbsoluteCountStart({
           ? {}
           : { reconciliationEventId: reconciliation.event.eventId }),
       });
-      return { countResult: started, countId: input.countId };
+      return {
+        countResult: started,
+        countId: input.countId,
+        reservationProtection: InventoryReservationProtection.RecordPhysicalTruth,
+      };
     },
   });
   return createInventoryOnceCountResult(result);

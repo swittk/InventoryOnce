@@ -8,14 +8,19 @@ import {
   unlinkSync,
   writeFileSync,
 } from "node:fs";
-import { homedir } from "node:os";
+import { availableParallelism, homedir } from "node:os";
 import { join } from "node:path";
-import { spawnSync } from "node:child_process";
+import { spawn } from "node:child_process";
 
 import {
   formalInvariantMutationChecks,
   formalModels,
 } from "./formal-models.mjs";
+import {
+  formalProofDescriptor,
+  readFormalProofCache,
+  writeFormalProofCache,
+} from "./formal-proof-cache.mjs";
 
 const TLA_VERSION = "1.7.4";
 const TLA_SHA256 =
@@ -28,10 +33,36 @@ const inventoryOnceJar = join(
   `tla2tools-${TLA_VERSION}.jar`
 );
 const jarPath = process.env.TLA2TOOLS_JAR ?? inventoryOnceJar;
+const formalProofCacheDirectory =
+  process.env.INVENTORYONCE_TLA_PROOF_CACHE ?? join(inventoryOnceCache, "proofs-v1");
+const coldFormalRun = process.env.INVENTORYONCE_FORMAL_COLD === "1";
+const availableCpus = availableParallelism();
+const requestedJobsText = process.env.INVENTORYONCE_TLC_JOBS ?? String(Math.min(2, availableCpus));
+if (!/^[1-9][0-9]*$/u.test(requestedJobsText)) {
+  throw new Error("INVENTORYONCE_TLC_JOBS must be a positive integer.");
+}
+const requestedJobs = Number(requestedJobsText);
+const defaultWorkers = Math.max(1, Math.min(16, Math.floor(availableCpus / requestedJobs)));
+const requestedWorkers = process.env.INVENTORYONCE_TLC_WORKERS ?? String(defaultWorkers);
+if (requestedWorkers !== "auto" && !/^[1-9][0-9]*$/u.test(requestedWorkers)) {
+  throw new Error("INVENTORYONCE_TLC_WORKERS must be 'auto' or a positive integer.");
+}
 
 /** Return the SHA-256 of one local file without trusting its name. */
 function sha256(path) {
   return createHash("sha256").update(readFileSync(path)).digest("hex");
+}
+
+/** Return a verified cache hit unless this invocation explicitly requests a cold proof. */
+function cachedProof(descriptor) {
+  if (coldFormalRun) return undefined;
+  return readFormalProofCache(formalProofCacheDirectory, descriptor);
+}
+
+/** Publish one proof only after TLC has produced the required terminal outcome. */
+function cacheVerifiedProof(descriptor) {
+  // Cold mode bypasses reads but still refreshes exact verified proof entries for the next run.
+  return writeFormalProofCache(formalProofCacheDirectory, descriptor);
 }
 
 /** Make sure the exact pinned official TLA+ tools jar exists before running TLC. */
@@ -72,8 +103,78 @@ async function ensureTlaTools() {
 }
 
 
+/** Run one Java child to completion without blocking the scheduler. */
+function runJava(args, { capture = false, maxBytes = 64 * 1024 * 1024 } = {}) {
+  return new Promise((resolvePromise, rejectPromise) => {
+    const child = spawn("java", args, {
+      stdio: capture ? ["ignore", "pipe", "pipe"] : "inherit",
+    });
+    let stdout = "";
+    let stderr = "";
+    let capturedBytes = 0;
+    let overflowed = false;
+    const retain = (which, chunk) => {
+      if (overflowed) return;
+      capturedBytes += chunk.length;
+      if (capturedBytes > maxBytes) {
+        overflowed = true;
+        child.kill("SIGTERM");
+        return;
+      }
+      if (which === "stdout") stdout += chunk.toString("utf8");
+      else stderr += chunk.toString("utf8");
+    };
+    if (capture) {
+      child.stdout.on("data", (chunk) => retain("stdout", chunk));
+      child.stderr.on("data", (chunk) => retain("stderr", chunk));
+    }
+    child.once("error", rejectPromise);
+    child.once("close", (code, signal) => {
+      if (overflowed) {
+        rejectPromise(new Error(`TLC captured output exceeded ${maxBytes} bytes.`));
+        return;
+      }
+      resolvePromise({ status: code ?? 1, signal, stdout, stderr });
+    });
+  });
+}
+
+/** Run independent proof units through a deterministic bounded worker pool. */
+async function runBoundedPool(items, runItem) {
+  let nextIndex = 0;
+  let firstFailure = 0;
+  async function worker() {
+    while (firstFailure === 0) {
+      const index = nextIndex;
+      nextIndex += 1;
+      if (index >= items.length) return;
+      const status = await runItem(items[index]);
+      if (status !== 0 && firstFailure === 0) firstFailure = status;
+    }
+  }
+  const workers = Array.from(
+    { length: Math.min(requestedJobs, Math.max(1, items.length)) },
+    () => worker()
+  );
+  await Promise.all(workers);
+  return firstFailure;
+}
+
 /** Run one model in its own collision-safe TLC metadata folder. */
-function runModel(model) {
+async function runModel(model) {
+  const descriptor = formalProofDescriptor({
+    repositoryRoot: process.cwd(),
+    model,
+    config: model,
+    outcome: "model-passed",
+    tlaToolsSha256: TLA_SHA256,
+  });
+  const hit = cachedProof(descriptor);
+  if (hit !== undefined) {
+    console.log(`TLC proof cache hit for '${model}' (${hit.key.slice(0, 12)}).`);
+    return 0;
+  }
+
   // TLC's default metadata folder only has second-level time precision, so concurrent gates collide.
   const modelMetadataDirectory = join(
     "states",
@@ -81,23 +182,18 @@ function runModel(model) {
   );
   let modelPassed = false;
   try {
-    const result = spawnSync(
-      "java",
-      [
-        "-XX:+UseParallelGC",
-        "-jar",
-        jarPath,
-        "-workers",
-        "auto",
-        "-metadir",
-        modelMetadataDirectory,
-        "-config",
-        `formal/${model}.cfg`,
-        `formal/${model}.tla`,
-      ],
-      { stdio: "inherit" }
-    );
-    if (result.error) throw result.error;
+    const result = await runJava([
+      "-XX:+UseParallelGC",
+      "-jar",
+      jarPath,
+      "-workers",
+      requestedWorkers,
+      "-metadir",
+      modelMetadataDirectory,
+      "-config",
+      `formal/${model}.cfg`,
+      `formal/${model}.tla`,
+    ]);
     if (result.status !== 0) {
       console.error(
         `TLC failure metadata remains at ${modelMetadataDirectory}.`
@@ -105,6 +201,10 @@ function runModel(model) {
       return result.status ?? 1;
     }
     modelPassed = true;
+    const written = cacheVerifiedProof(descriptor);
+    if (written !== undefined) {
+      console.log(`Cached verified TLC proof for '${model}' (${written.key.slice(0, 12)}).`);
+    }
     return 0;
   } finally {
     if (modelPassed) {
@@ -114,7 +214,23 @@ function runModel(model) {
 }
 
 /** Run one forbidden transition and require TLC to reject its named invariant. */
-function runInvariantMutationCheck(model, config, invariant) {
+async function runInvariantMutationCheck(model, config, invariant) {
+  const descriptor = formalProofDescriptor({
+    repositoryRoot: process.cwd(),
+    model,
+    config,
+    outcome: "mutation-rejected",
+    invariant,
+    tlaToolsSha256: TLA_SHA256,
+  });
+  const hit = cachedProof(descriptor);
+  if (hit !== undefined) {
+    console.log(
+      `TLC mutation proof cache hit for '${config}'/'${invariant}' (${hit.key.slice(0, 12)}).`
+    );
+    return 0;
+  }
+
   // Keep each expected counterexample separate so one invariant cannot hide another.
   const modelMetadataDirectory = join(
     "states",
@@ -122,23 +238,21 @@ function runInvariantMutationCheck(model, config, invariant) {
   );
   let mutationRejected = false;
   try {
-    const result = spawnSync(
-      "java",
+    const result = await runJava(
       [
         "-XX:+UseParallelGC",
         "-jar",
         jarPath,
         "-workers",
-        "auto",
+        requestedWorkers,
         "-metadir",
         modelMetadataDirectory,
         "-config",
         `formal/${config}.cfg`,
         `formal/${model}.tla`,
       ],
-      { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }
+      { capture: true }
     );
-    if (result.error) throw result.error;
     const output = `${result.stdout ?? ""}${result.stderr ?? ""}`;
     const expectedViolation = `Invariant ${invariant} is violated.`;
     if (result.status === 0 || !output.includes(expectedViolation)) {
@@ -150,6 +264,12 @@ function runInvariantMutationCheck(model, config, invariant) {
     }
     mutationRejected = true;
     console.log(`TLC rejected '${config}' through '${invariant}'.`);
+    const written = cacheVerifiedProof(descriptor);
+    if (written !== undefined) {
+      console.log(
+        `Cached verified TLC mutation proof for '${config}' (${written.key.slice(0, 12)}).`
+      );
+    }
     return 0;
   } finally {
     if (mutationRejected) {
@@ -159,17 +279,23 @@ function runInvariantMutationCheck(model, config, invariant) {
 }
 
 await ensureTlaTools();
-for (const model of formalModels) {
+console.log(
+  `InventoryOnce formal mode: ${coldFormalRun ? "cold/full (cache bypassed)" : "content-addressed proof cache enabled"}; TLC jobs=${requestedJobs}; workers/job=${requestedWorkers}.`
+);
+const modelStatus = await runBoundedPool(formalModels, async (model) => {
   console.log(`\n=== TLC: ${model} ===`);
-  const status = runModel(model);
-  if (status !== 0) process.exit(status);
-}
+  return runModel(model);
+});
+if (modelStatus !== 0) process.exit(modelStatus);
 
-for (const [model, config, invariant] of formalInvariantMutationChecks) {
-  console.log(`\n=== TLC expected rejection: ${config} ===`);
-  const status = runInvariantMutationCheck(model, config, invariant);
-  if (status !== 0) process.exit(status);
-}
+const mutationStatus = await runBoundedPool(
+  formalInvariantMutationChecks,
+  async ([model, config, invariant]) => {
+    console.log(`\n=== TLC expected rejection: ${config} ===`);
+    return runInvariantMutationCheck(model, config, invariant);
+  }
+);
+if (mutationStatus !== 0) process.exit(mutationStatus);
 
 console.log(
   "\nAll InventoryOnce TLA+ models passed, and every registered forbidden transition was rejected by its safety invariant."

@@ -347,6 +347,11 @@ describe("formal implementation state/result refinement", () => {
         startedAt: time1,
       })
     );
+    states.push(
+      await authority.authorizeCutover({
+        authorizationId: "formal-cutover-authorization",
+      })
+    );
     const beforeMismatch = await authority.read();
     await authority.recordDualRunMismatch({
       commandId: "formal-mismatch",
@@ -377,6 +382,9 @@ describe("formal implementation state/result refinement", () => {
       sourceCatalogDigest: "formal-source-catalog",
       startedAt: time1,
     });
+    await cleanAuthority.authorizeCutover({
+      authorizationId: "formal-clean-cutover-authorization",
+    });
     states.push(
       await cleanAuthority.claimFence({
         fenceToken: "formal-fence",
@@ -399,6 +407,7 @@ describe("formal implementation state/result refinement", () => {
     expect(states.map((state) => abstractAuthorityState(state).mode)).toEqual([
       InventoryAuthorityMode.Legacy,
       InventoryAuthorityMode.Shadow,
+      InventoryAuthorityMode.DualRun,
       InventoryAuthorityMode.DualRun,
       InventoryAuthorityMode.Fencing,
       InventoryAuthorityMode.Authoritative,

@@ -4,14 +4,14 @@
     "callableFields": 10,
     "callbackArgumentFields": 342,
     "callbackResultFields": 401,
-    "fields": 2285,
-    "inputFields": 1968,
+    "fields": 2289,
+    "inputFields": 1971,
     "nullableFields": 0,
     "optionalFields": 904,
-    "outputFields": 845,
+    "outputFields": 847,
     "recursiveTypeReferences": 3,
     "truncatedTypes": 0,
-    "types": 377,
+    "types": 378,
     "undefinedFields": 2
   },
   "entries": {
@@ -1345,6 +1345,28 @@
       "gaps": [],
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "AuthorizeInventoryCutoverInput.authorizationId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/authority.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/authority.test.ts"
+      ],
+      "formalModels": [
+        "AuthorityWriterFence"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
     "BeginInventoryDurableOperationInput.baseRevision": {
       "allowsNull": false,
@@ -9778,6 +9800,28 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
+    "CutoverInventoryAuthorityInput.authorizationId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/authority-cutover.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/authority.test.ts"
+      ],
+      "formalModels": [
+        "AuthorityWriterFence"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
     "CutoverInventoryAuthorityInput.clock": {
       "allowsNull": false,
       "allowsUndefined": false,
@@ -9997,6 +10041,28 @@
       "gaps": [],
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "CutoverInventoryAuthorityResult.authorizationId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/authority-cutover.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/authority.test.ts"
+      ],
+      "formalModels": [
+        "AuthorityWriterFence"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
     "CutoverInventoryAuthorityResult.sourceCatalogDigest": {
       "allowsNull": false,
@@ -13317,6 +13383,29 @@
         "output"
       ],
       "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/authority.test.ts"
+      ],
+      "formalModels": [
+        "AuthorityWriterFence"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryAuthorityState.cutoverAuthorizationId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/authority.ts",
+      "directions": [
+        "input",
+        "output"
+      ],
+      "discoveredType": "string",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/authority.test.ts"
@@ -54646,5 +54735,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "c286ef8510c48e1541553885383f9d879cf1b30e5787a683f9200658115ea241"
+  "surfaceSha256": "1feb72c84a827b35ae5c9b85f97c9f43c7f753008a2d47deed2ee16b708af14f"
 }

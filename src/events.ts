@@ -869,7 +869,18 @@ function normalizeStockEffects(
     if (inventoryMeasurementsAreZero(rawEffect.measurementsDelta)) {
       throw new Error("Inventory event must not contain a zero stock effect.");
     }
-    const absolute = absoluteInventoryMeasurements(rawEffect.measurementsDelta);
+    const primaryDeltaIsZero =
+      compareQuantity(
+        rawEffect.measurementsDelta.primary.quantity,
+        zeroQuantity(
+          rawEffect.measurementsDelta.primary.quantity.unit,
+          rawEffect.measurementsDelta.primary.quantity.decimals
+        )
+      ) === 0;
+    const absolute =
+      primaryDeltaIsZero && kind === InventoryEventKind.CountAdjustment
+        ? undefined
+        : absoluteInventoryMeasurements(rawEffect.measurementsDelta);
     const positionIdentity = inventoryStockPositionIdentity(position);
     if (seenPositions.has(positionIdentity)) {
       throw new Error(
@@ -887,7 +898,10 @@ function normalizeStockEffects(
           "Packaged stock effect does not match its exact item/package revisions."
         );
       }
-      assertWholeMeasurementMultiple(absolute, packaging.fixedContents);
+      assertWholeMeasurementMultiple(
+        absolute ?? rawEffect.measurementsDelta,
+        packaging.fixedContents
+      );
     }
     if (rawEffect.evidence !== undefined) {
       assertMeasurementsMatchItem(

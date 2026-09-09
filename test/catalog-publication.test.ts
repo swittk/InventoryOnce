@@ -62,6 +62,47 @@ describe("append-only retained catalogue publication", () => {
     ).rejects.toThrow("already the current durable catalogue");
   });
 
+  it("replays an earlier exact publication after a later retained extension", async () => {
+    const baseCatalog = createTabletCatalog();
+    const storage = createInMemoryInventoryDurableStorage();
+    const baseInventory = createInventoryOnce({
+      catalog: baseCatalog,
+      storage,
+      clock: clockAt(time3),
+    });
+    const originalCommand = {
+      operationId: "publish-before-later-extension",
+      occurredAt: time0,
+    };
+    await baseInventory.catalog.publish(originalCommand);
+
+    const itemV3 = defineScalarInventoryItem({
+      itemId: "item-a",
+      revisionId: "item-a-v3-retry-proof",
+      unit: "piece",
+      axisId: "pieces",
+    });
+    const extendedCatalog = extendInventoryCatalog({
+      catalog: baseCatalog,
+      itemRevisions: [itemV3],
+      activeItemRevisionIds: { "item-a": itemV3.revisionId },
+    });
+    await createInventoryOnce({
+      catalog: extendedCatalog,
+      storage,
+      clock: clockAt(time3),
+    }).catalog.publish({
+      operationId: "publish-later-extension",
+      occurredAt: time1,
+    });
+    const beforeRetry = await storage.readWorld();
+
+    const replayed = await baseInventory.catalog.publish(originalCommand);
+
+    expect(replayed.replayed).toBe(true);
+    expect(await storage.readWorld()).toEqual(beforeRetry);
+  });
+
   it("appends immutable revisions, changes active pointers, and then accepts the new package", async () => {
     const baseCatalog = createTabletCatalog();
     const storage = createInMemoryInventoryDurableStorage();

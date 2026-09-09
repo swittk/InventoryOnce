@@ -59,7 +59,18 @@ Next ==
   \/ WriteCorrectedEvent
   \/ CompleteCorrection
 
+\* Deliberate forbidden transition used only by the mutation gate: lose the retained root.
+EraseOriginalMutation ==
+  /\ phase = "original"
+  /\ phase' = "correcting"
+  /\ originalRecorded' = FALSE
+  /\ UNCHANGED <<errorDeclarationWritten, correctedEventWritten,
+                 visibleQuantity, recordVersion>>
+
+EraseOriginalMutationNext == Next \/ EraseOriginalMutation
+
 Spec == Init /\ [][Next]_vars
+EraseOriginalMutationSpec == Init /\ [][EraseOriginalMutationNext]_vars
 
 TypeOK ==
   /\ phase \in {"none", "original", "correcting", "corrected"}

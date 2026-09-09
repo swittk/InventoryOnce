@@ -63,6 +63,7 @@ Init ==
 
 CreateClaim(allowsExpired) ==
   /\ claimState = "none"
+  /\ ClaimFeasible(stock, now, "active", allowsExpired, NoResource)
   /\ allowExpired' = allowsExpired
   /\ claimState' = "active"
   /\ allocation' = NoResource
@@ -76,7 +77,6 @@ CreateClaim(allowsExpired) ==
 
 Allocate(resource) ==
   /\ claimState = "active"
-  /\ allocation = NoResource
   /\ ResourceUsable(resource, now, allowExpired)
   /\ allocation' = resource
   /\ allocatedAt' = now

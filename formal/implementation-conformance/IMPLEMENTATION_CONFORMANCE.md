@@ -4,31 +4,31 @@ This file is generated from the exact TypeScript surface plus the checked API, f
 
 Use the repository `.nvmrc` when one exists; otherwise run the assurance command with a Node version permitted by `package.json#engines`. Then edit the manifests and executable evidence and run `pnpm assurance --write-report`.
 
-Surface SHA-256: `c286ef8510c48e1541553885383f9d879cf1b30e5787a683f9200658115ea241`
+Surface SHA-256: `1feb72c84a827b35ae5c9b85f97c9f43c7f753008a2d47deed2ee16b708af14f`
 
 ## Mechanically covered surface
 
 - Grouped façade/read methods: 117
-- Authority-port methods: 13
+- Authority-port methods: 14
 - Durable-storage-port methods: 17
-- Public exported class methods: 70
+- Public exported class methods: 71
 - Root callable exports: 98
 - Storage callable exports: 23
 - Migration callable exports: 15
 - Kernel callable exports: 155
-- Reachable public data types: 377
-- Classified public fields: 2285
-- Input-reachable fields: 1968
-- Output-reachable fields: 845
+- Reachable public data types: 378
+- Classified public fields: 2289
+- Input-reachable fields: 1971
+- Output-reachable fields: 847
 - Callback-argument-reachable fields: 342
 - Callback-result-reachable fields: 401
 - Callable-field overload signatures: 10
 - Optional fields: 904
 - Explicit undefined-union fields: 2
 - Explicit nullable fields: 0
-- Public call/construct overload signatures: 508
-- Directly executed public APIs: 182
-- Public APIs exercised through tested internal call chains: 322
+- Public call/construct overload signatures: 510
+- Directly executed public APIs: 188
+- Public APIs exercised through tested internal call chains: 318
 - Explicit-gap public APIs: 4
 - Unreferenced public APIs: 0
 - Explicit recursive type edges: 3
@@ -41,7 +41,7 @@ Any added/removed method, callable export, class method, type field, field type,
 | Family | API entries | Formal models | Status | Gaps |
 |---|---:|---|---|---|
 | allocation-helper | 6 | ReservationScope, ReservationSafety, UseByReservation, PackagingIdentity, FungibilityPool | covered | — |
-| authority-control | 31 | AuthorityWriterFence | covered | — |
+| authority-control | 33 | AuthorityWriterFence | covered | — |
 | authority-cutover | 2 | AuthorityWriterFence, CatalogPublication, PublishedHeadCAS, RepairLiveness, SnapshotSupersededWorkflow | covered | GAP-LEGACY-SOURCE-INTERPRETATION |
 | catalog-definition | 76 | CatalogPublication, PackagingIdentity, CompositionRevision, CollectionView, FungibilityPool | covered | GAP-HASH-COLLISION-ASSUMPTION |
 | catalog-publication | 7 | CatalogPublication, InventoryOperation, PublishedHeadCAS, RepairLiveness | covered | GAP-HASH-COLLISION-ASSUMPTION, GAP-DB-IMPLEMENTATION-UNBOUNDED |
@@ -85,7 +85,7 @@ Any added/removed method, callable export, class method, type field, field type,
 |---|---:|
 | abstract-semantic | 1104 |
 | application decoration | 5 |
-| identity/retry-semantic | 654 |
+| identity/retry-semantic | 658 |
 | observational/audit-only | 505 |
 | unsupported/unmodelled | 17 |
 
