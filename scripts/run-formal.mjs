@@ -3,6 +3,7 @@ import {
   existsSync,
   mkdirSync,
   readFileSync,
+  readdirSync,
   renameSync,
   rmSync,
   unlinkSync,
@@ -13,6 +14,7 @@ import { join } from "node:path";
 import { spawn } from "node:child_process";
 
 import {
+  assertFormalMutationRegistrationCompleteness,
   formalInvariantMutationChecks,
   formalModels,
 } from "./formal-models.mjs";
@@ -287,6 +289,9 @@ async function runInvariantMutationCheck(model, config, invariant) {
   }
 }
 
+assertFormalMutationRegistrationCompleteness(
+  readdirSync(join(process.cwd(), "formal")),
+);
 await ensureTlaTools();
 console.log(
   `InventoryOnce formal mode: ${coldFormalRun ? "cold/full (cache bypassed)" : "content-addressed proof cache enabled"}; TLC jobs=${requestedJobs}; workers/job=${requestedWorkers}.`

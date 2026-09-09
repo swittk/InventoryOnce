@@ -96,4 +96,45 @@ export const formalInvariantMutationChecks = Object.freeze([
     "TransferLifecycleIsolationMutation",
     "TransferIsolation",
   ],
+  [
+    "CorrectionHistory",
+    "CorrectionHistoryErasureMutation",
+    "OriginalHistoryIsNeverErased",
+  ],
+  [
+    "DurableTransferRefinement",
+    "DurableTransferRefinementSplitProjectionMutation",
+    "ProjectionWriteIsAtomic",
+  ],
 ]);
+
+/** Require every *Mutation.cfg file to have exactly one registered expected rejection. */
+export function assertFormalMutationRegistrationCompleteness(
+  configFileNames,
+  mutationChecks = formalInvariantMutationChecks,
+) {
+  const expected = configFileNames
+    .filter((file) => file.endsWith("Mutation.cfg"))
+    .slice()
+    .sort();
+  const registered = mutationChecks
+    .map((entry) => `${entry[1]}.cfg`)
+    .slice()
+    .sort();
+  const seen = new Set();
+  for (const file of registered) {
+    if (seen.has(file)) {
+      throw new Error(`Formal mutation config '${file}' is registered more than once.`);
+    }
+    seen.add(file);
+  }
+  const missing = expected.filter((file) => !seen.has(file));
+  const expectedSet = new Set(expected);
+  const extra = registered.filter((file) => !expectedSet.has(file));
+  if (missing.length !== 0 || extra.length !== 0) {
+    throw new Error(
+      `Formal mutation registry mismatch: missing=[${missing.join(", ")}], extra=[${extra.join(", ")}].`,
+    );
+  }
+  return expected;
+}

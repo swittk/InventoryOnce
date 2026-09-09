@@ -11,6 +11,7 @@ import {
   transitiveLocalTlaFiles,
   writeFormalProofCache,
 } from "./formal-proof-cache.mjs";
+import { assertFormalMutationRegistrationCompleteness } from "./formal-models.mjs";
 
 test("transitive local module bytes participate in the proof key", () => {
   const root = mkdtempSync(join(tmpdir(), "inventoryonce-formal-cache-"));
@@ -84,4 +85,29 @@ test("mutation proof acceptance requires one completed TLC safety-violation proc
   ]) {
     assert.equal(formalMutationProcessProvesInvariantRejection(candidate), false);
   }
+});
+
+
+test("mutation registry rejects missing, duplicate, and extra configs", () => {
+  const files = ["AlphaMutation.cfg", "BetaMutation.cfg", "Ordinary.cfg"];
+  const complete = [
+    ["Alpha", "AlphaMutation", "AlphaInvariant"],
+    ["Beta", "BetaMutation", "BetaInvariant"],
+  ];
+  assert.deepEqual(
+    assertFormalMutationRegistrationCompleteness(files, complete),
+    ["AlphaMutation.cfg", "BetaMutation.cfg"],
+  );
+  assert.throws(
+    () => assertFormalMutationRegistrationCompleteness(files, complete.slice(0, 1)),
+    /missing=\[BetaMutation\.cfg\]/u,
+  );
+  assert.throws(
+    () => assertFormalMutationRegistrationCompleteness(files, [...complete, complete[0]]),
+    /registered more than once/u,
+  );
+  assert.throws(
+    () => assertFormalMutationRegistrationCompleteness(files, [...complete, ["Gamma", "GammaMutation", "GammaInvariant"]]),
+    /extra=\[GammaMutation\.cfg\]/u,
+  );
 });
