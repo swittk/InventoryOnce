@@ -5,6 +5,7 @@ import {
   executableAssuranceSummary,
 } from "./executable-assurance-coherence.mjs";
 
+/** Build same-run fixture manifests using the exact production summary input shape. */
 function fixtures() {
   const api = {
     surfaceSha256: "surface-a",
@@ -32,7 +33,9 @@ function fixtures() {
     },
   };
   const gaps = { gaps: { external: {} } };
-  return { api, fields, callChains, traces, gaps };
+  /** @type {Parameters<typeof executableAssuranceSummary>[0]} */
+  const manifests = { api, fields, callChains, traces, gaps };
+  return manifests;
 }
 
 test("same-run executable summary matches every manifest-derived field", () => {

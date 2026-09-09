@@ -22,6 +22,7 @@ import { createInMemoryInventoryDurableStorage } from "../src/storage.js";
 import { emptyInventoryWorldState } from "../src/world.js";
 
 const time = "2030-01-01T00:00:00.000Z";
+/** Build one complete durable authority state with explicit field overrides for malformed-port cases. */
 function baseState(
   overrides: Partial<InventoryAuthorityState> = {},
 ): InventoryAuthorityState {
@@ -52,6 +53,7 @@ function baseState(
     ...overrides,
   } as InventoryAuthorityState;
 }
+/** Compile the fixed empty migration source used by authority-port rejection cases. */
 function compiled(migrationId = "m", cutoverAt = time) {
   const catalog = inventoryCatalogFromSnapshot(
     emptyInventoryWorldState().catalog,
@@ -171,9 +173,13 @@ function cutoverPort(
   return port;
 }
 
+/** Create a CAS store whose replacement hook can inject concurrent authority transitions. */
 function createHookedAuthorityStore(): {
+  /** Shared durable authority store used by the competing controls. */
   readonly store: InventoryAuthorityStateStore;
+  /** Install a hook that fires when an Authoritative replacement is observed. */
   onAuthoritative: (hook: () => Promise<void>) => void;
+  /** Install a hook for one caller-supplied replacement predicate. */
   onReplacement: (
     predicate: (replacement: InventoryAuthorityDocument) => boolean,
     hook: () => Promise<void>,
@@ -199,6 +205,7 @@ function createHookedAuthorityStore(): {
         if (row[key] !== value) return false;
       }
       row = { ...row, ...structuredClone(replacement) };
+      // Prevent the injected hook from recursively firing when its own CAS also satisfies hookPredicate.
       if (
         hook !== undefined &&
         !insideHook &&

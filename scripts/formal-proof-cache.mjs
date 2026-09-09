@@ -94,6 +94,9 @@ export function formalProofDescriptor({
   if (outcome === "mutation-rejected" && (typeof invariant !== "string" || invariant.length === 0)) {
     throw new Error("Mutation proof cache entries require an invariant identity.");
   }
+  if (typeof tlaToolsSha256 !== "string" || !/^[a-f0-9]{64}$/u.test(tlaToolsSha256)) {
+    throw new Error("Formal proof cache entries require the exact lowercase SHA-256 identity of tla2tools.jar.");
+  }
   if (typeof tlcWorkers !== "string" || !/^(?:auto|[1-9][0-9]*)$/u.test(tlcWorkers)) {
     throw new Error("Formal proof cache entries require the exact TLC worker setting.");
   }

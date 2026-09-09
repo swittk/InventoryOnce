@@ -69,6 +69,14 @@ test("exact TLC worker setting participates in the proof key", () => {
     () => formalProofDescriptor({ ...common, tlcWorkers: "0" }),
     /exact TLC worker setting/u,
   );
+  assert.throws(
+    () => formalProofDescriptor({ ...common, tlaToolsSha256: "not-a-sha", tlcWorkers: "4" }),
+    /exact lowercase SHA-256 identity/u,
+  );
+  assert.throws(
+    () => formalProofDescriptor({ ...common, tlaToolsSha256: undefined, tlcWorkers: "4" }),
+    /exact lowercase SHA-256 identity/u,
+  );
 });
 
 test("positive cache records persist exact terminal TLC state/depth evidence", () => {

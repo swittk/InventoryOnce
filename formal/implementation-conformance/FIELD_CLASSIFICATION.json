@@ -13056,7 +13056,7 @@
       "callSignatures": [],
       "callable": false,
       "classification": "abstract-semantic",
-      "declaration": "../InventoryOnce-pr-projection-r109/node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2022.error.d.ts",
+      "declaration": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2022.error.d.ts",
       "directions": [
         "output"
       ],
@@ -13079,7 +13079,7 @@
       "callSignatures": [],
       "callable": false,
       "classification": "application decoration",
-      "declaration": "../InventoryOnce-pr-projection-r109/node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
+      "declaration": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
       "directions": [
         "output"
       ],
@@ -13104,7 +13104,7 @@
       "callSignatures": [],
       "callable": false,
       "classification": "abstract-semantic",
-      "declaration": "../InventoryOnce-pr-projection-r109/node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
+      "declaration": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
       "directions": [
         "output"
       ],
@@ -13127,7 +13127,7 @@
       "callSignatures": [],
       "callable": false,
       "classification": "abstract-semantic",
-      "declaration": "../InventoryOnce-pr-projection-r109/node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
+      "declaration": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
       "directions": [
         "output"
       ],
@@ -47910,7 +47910,7 @@
       "callSignatures": [],
       "callable": false,
       "classification": "abstract-semantic",
-      "declaration": "../InventoryOnce-pr-projection-r109/node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
+      "declaration": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
       "directions": [
         "callback-argument"
       ],
@@ -49902,7 +49902,7 @@
       "callSignatures": [],
       "callable": false,
       "classification": "abstract-semantic",
-      "declaration": "../InventoryOnce-pr-projection-r109/node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2022.error.d.ts",
+      "declaration": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2022.error.d.ts",
       "directions": [
         "output"
       ],
@@ -49949,7 +49949,7 @@
       "callSignatures": [],
       "callable": false,
       "classification": "application decoration",
-      "declaration": "../InventoryOnce-pr-projection-r109/node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
+      "declaration": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
       "directions": [
         "output"
       ],
@@ -49974,7 +49974,7 @@
       "callSignatures": [],
       "callable": false,
       "classification": "abstract-semantic",
-      "declaration": "../InventoryOnce-pr-projection-r109/node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
+      "declaration": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
       "directions": [
         "output"
       ],
@@ -49997,7 +49997,7 @@
       "callSignatures": [],
       "callable": false,
       "classification": "abstract-semantic",
-      "declaration": "../InventoryOnce-pr-projection-r109/node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
+      "declaration": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
       "directions": [
         "output"
       ],
@@ -53337,7 +53337,7 @@
       "callSignatures": [],
       "callable": false,
       "classification": "abstract-semantic",
-      "declaration": "../InventoryOnce-pr-projection-r109/node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
+      "declaration": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
       "directions": [
         "callback-argument",
         "callback-result",
@@ -54735,5 +54735,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "6d415d1f958255a4d4128beca9e6f65c5bbef772356fc1b6a3e08c7249e3b8e8"
+  "surfaceSha256": "ce84a89b9ef0d346f8440e7624db8982c0e6cade7391bda6eb2ffbb08834ec53"
 }

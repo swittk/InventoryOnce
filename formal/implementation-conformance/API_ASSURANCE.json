@@ -1389,10 +1389,10 @@
               "column": 106,
               "file": "test/authority-arbitrary-port.test.ts",
               "hasBody": true,
-              "id": "test/authority-arbitrary-port.test.ts:18266:<anonymous@524>",
+              "id": "test/authority-arbitrary-port.test.ts:18885:<anonymous@531>",
               "kind": "ArrowFunction",
-              "line": 524,
-              "name": "<anonymous@524>",
+              "line": 531,
+              "name": "<anonymous@531>",
               "reason": "test-callback"
             },
             {
@@ -6331,10 +6331,10 @@
               "column": 106,
               "file": "test/authority-arbitrary-port.test.ts",
               "hasBody": true,
-              "id": "test/authority-arbitrary-port.test.ts:18266:<anonymous@524>",
+              "id": "test/authority-arbitrary-port.test.ts:18885:<anonymous@531>",
               "kind": "ArrowFunction",
-              "line": 524,
-              "name": "<anonymous@524>",
+              "line": 531,
+              "name": "<anonymous@531>",
               "reason": "test-callback"
             },
             {
@@ -36580,10 +36580,10 @@
               "column": 106,
               "file": "test/authority-arbitrary-port.test.ts",
               "hasBody": true,
-              "id": "test/authority-arbitrary-port.test.ts:18266:<anonymous@524>",
+              "id": "test/authority-arbitrary-port.test.ts:18885:<anonymous@531>",
               "kind": "ArrowFunction",
-              "line": 524,
-              "name": "<anonymous@524>",
+              "line": 531,
+              "name": "<anonymous@531>",
               "reason": "test-callback"
             },
             {
@@ -38421,10 +38421,10 @@
               "column": 75,
               "file": "test/authority-arbitrary-port.test.ts",
               "hasBody": true,
-              "id": "test/authority-arbitrary-port.test.ts:13138:<anonymous@381>",
+              "id": "test/authority-arbitrary-port.test.ts:13757:<anonymous@388>",
               "kind": "ArrowFunction",
-              "line": 381,
-              "name": "<anonymous@381>",
+              "line": 388,
+              "name": "<anonymous@388>",
               "reason": "test-callback"
             },
             {
@@ -39213,10 +39213,10 @@
               "column": 106,
               "file": "test/authority-arbitrary-port.test.ts",
               "hasBody": true,
-              "id": "test/authority-arbitrary-port.test.ts:18266:<anonymous@524>",
+              "id": "test/authority-arbitrary-port.test.ts:18885:<anonymous@531>",
               "kind": "ArrowFunction",
-              "line": 524,
-              "name": "<anonymous@524>",
+              "line": 531,
+              "name": "<anonymous@531>",
               "reason": "test-callback"
             },
             {
@@ -39454,10 +39454,10 @@
               "column": 60,
               "file": "test/authority-arbitrary-port.test.ts",
               "hasBody": true,
-              "id": "test/authority-arbitrary-port.test.ts:7776:<anonymous@232>",
+              "id": "test/authority-arbitrary-port.test.ts:8395:<anonymous@239>",
               "kind": "ArrowFunction",
-              "line": 232,
-              "name": "<anonymous@232>",
+              "line": 239,
+              "name": "<anonymous@239>",
               "reason": "test-callback"
             },
             {
@@ -42110,10 +42110,10 @@
               "column": 60,
               "file": "test/authority-arbitrary-port.test.ts",
               "hasBody": true,
-              "id": "test/authority-arbitrary-port.test.ts:7776:<anonymous@232>",
+              "id": "test/authority-arbitrary-port.test.ts:8395:<anonymous@239>",
               "kind": "ArrowFunction",
-              "line": 232,
-              "name": "<anonymous@232>",
+              "line": 239,
+              "name": "<anonymous@239>",
               "reason": "test-callback"
             },
             {
@@ -42253,10 +42253,10 @@
               "column": 75,
               "file": "test/authority-arbitrary-port.test.ts",
               "hasBody": true,
-              "id": "test/authority-arbitrary-port.test.ts:13138:<anonymous@381>",
+              "id": "test/authority-arbitrary-port.test.ts:13757:<anonymous@388>",
               "kind": "ArrowFunction",
-              "line": 381,
-              "name": "<anonymous@381>",
+              "line": 388,
+              "name": "<anonymous@388>",
               "reason": "test-callback"
             },
             {
@@ -51153,10 +51153,10 @@
               "column": 60,
               "file": "test/authority-arbitrary-port.test.ts",
               "hasBody": true,
-              "id": "test/authority-arbitrary-port.test.ts:7776:<anonymous@232>",
+              "id": "test/authority-arbitrary-port.test.ts:8395:<anonymous@239>",
               "kind": "ArrowFunction",
-              "line": 232,
-              "name": "<anonymous@232>",
+              "line": 239,
+              "name": "<anonymous@239>",
               "reason": "test-callback"
             },
             {
@@ -51700,10 +51700,10 @@
               "column": 60,
               "file": "test/authority-arbitrary-port.test.ts",
               "hasBody": true,
-              "id": "test/authority-arbitrary-port.test.ts:7776:<anonymous@232>",
+              "id": "test/authority-arbitrary-port.test.ts:8395:<anonymous@239>",
               "kind": "ArrowFunction",
-              "line": 232,
-              "name": "<anonymous@232>",
+              "line": 239,
+              "name": "<anonymous@239>",
               "reason": "test-callback"
             },
             {
@@ -51837,10 +51837,10 @@
               "column": 60,
               "file": "test/authority-arbitrary-port.test.ts",
               "hasBody": true,
-              "id": "test/authority-arbitrary-port.test.ts:7776:<anonymous@232>",
+              "id": "test/authority-arbitrary-port.test.ts:8395:<anonymous@239>",
               "kind": "ArrowFunction",
-              "line": 232,
-              "name": "<anonymous@232>",
+              "line": 239,
+              "name": "<anonymous@239>",
               "reason": "test-callback"
             },
             {
@@ -52240,10 +52240,10 @@
               "column": 60,
               "file": "test/authority-arbitrary-port.test.ts",
               "hasBody": true,
-              "id": "test/authority-arbitrary-port.test.ts:7776:<anonymous@232>",
+              "id": "test/authority-arbitrary-port.test.ts:8395:<anonymous@239>",
               "kind": "ArrowFunction",
-              "line": 232,
-              "name": "<anonymous@232>",
+              "line": 239,
+              "name": "<anonymous@239>",
               "reason": "test-callback"
             },
             {
@@ -52377,10 +52377,10 @@
               "column": 60,
               "file": "test/authority-arbitrary-port.test.ts",
               "hasBody": true,
-              "id": "test/authority-arbitrary-port.test.ts:7776:<anonymous@232>",
+              "id": "test/authority-arbitrary-port.test.ts:8395:<anonymous@239>",
               "kind": "ArrowFunction",
-              "line": 232,
-              "name": "<anonymous@232>",
+              "line": 239,
+              "name": "<anonymous@239>",
               "reason": "test-callback"
             },
             {
@@ -52514,10 +52514,10 @@
               "column": 60,
               "file": "test/authority-arbitrary-port.test.ts",
               "hasBody": true,
-              "id": "test/authority-arbitrary-port.test.ts:7776:<anonymous@232>",
+              "id": "test/authority-arbitrary-port.test.ts:8395:<anonymous@239>",
               "kind": "ArrowFunction",
-              "line": 232,
-              "name": "<anonymous@232>",
+              "line": 239,
+              "name": "<anonymous@239>",
               "reason": "test-callback"
             },
             {
@@ -76332,5 +76332,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "6d415d1f958255a4d4128beca9e6f65c5bbef772356fc1b6a3e08c7249e3b8e8"
+  "surfaceSha256": "ce84a89b9ef0d346f8440e7624db8982c0e6cade7391bda6eb2ffbb08834ec53"
 }

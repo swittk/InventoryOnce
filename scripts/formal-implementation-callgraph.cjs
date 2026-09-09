@@ -2,6 +2,8 @@ const ts = require("typescript");
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
 const {
+  expressionHasProperty,
+  staticBooleanValue,
   vitestCallbackExecutes,
   vitestFocusedRegistrationNode,
   vitestRegistrationName,
@@ -346,33 +348,6 @@ for (const source of executableTestSources) {
 function testRootFor(source) {
   return roots.get(`test-root:${relativeFile(source)}`)?.id;
 }
-/** Return a statically known boolean, or undefined when runtime evaluation would be required. */
-function staticBooleanValue(node) {
-  if (node === undefined) return undefined;
-  if (node.kind === ts.SyntaxKind.TrueKeyword) return true;
-  if (node.kind === ts.SyntaxKind.FalseKeyword) return false;
-  if (ts.isParenthesizedExpression(node)) return staticBooleanValue(node.expression);
-  if (ts.isPrefixUnaryExpression(node) && node.operator === ts.SyntaxKind.ExclamationToken) {
-    const value = staticBooleanValue(node.operand);
-    return value === undefined ? undefined : !value;
-  }
-  if (ts.isAsExpression(node) || ts.isTypeAssertionExpression(node) || ts.isNonNullExpression(node)) {
-    return staticBooleanValue(node.expression);
-  }
-  return undefined;
-}
-
-/** Return whether one chained Vitest registration expression contains an exact property modifier. */
-function vitestExpressionHasProperty(expression, propertyName) {
-  if (ts.isPropertyAccessExpression(expression)) {
-    return expression.name.text === propertyName || vitestExpressionHasProperty(expression.expression, propertyName);
-  }
-  if (ts.isCallExpression(expression)) {
-    return vitestExpressionHasProperty(expression.expression, propertyName);
-  }
-  return false;
-}
-
 /** Return the nearest skipIf/runIf condition carried by one chained registration expression. */
 function vitestConditionalMetadata(expression) {
   if (ts.isCallExpression(expression)) {
@@ -381,7 +356,7 @@ function vitestConditionalMetadata(expression) {
       if (name === "skipIf" || name === "runIf") {
         return {
           conditionKind: name,
-          conditionValue: staticBooleanValue(expression.arguments[0]),
+          conditionValue: staticBooleanValue(ts, expression.arguments[0]),
         };
       }
     }
@@ -411,7 +386,7 @@ function vitestObjectBooleanOptions(object) {
     }
     if (name !== "skip" && name !== "todo") continue;
     const value = ts.isPropertyAssignment(property)
-      ? staticBooleanValue(property.initializer)
+      ? staticBooleanValue(ts, property.initializer)
       : undefined;
     if (name === "skip") skip = value;
     else todo = value;
@@ -421,8 +396,8 @@ function vitestObjectBooleanOptions(object) {
 
 /** Resolve the effective static mode for a test/suite registration callback argument. */
 function vitestRegistrationMode(node, callbackArgumentIndex) {
-  if (vitestExpressionHasProperty(node.expression, "skip")) return "skip";
-  if (vitestExpressionHasProperty(node.expression, "todo")) return "todo";
+  if (expressionHasProperty(ts, node.expression, "skip")) return "skip";
+  if (expressionHasProperty(ts, node.expression, "todo")) return "todo";
   if (callbackArgumentIndex !== 2) return "run";
   const options = node.arguments[1];
   if (options === undefined || (ts.isIdentifier(options) && options.text === "undefined")) {
@@ -464,7 +439,7 @@ function vitestRegistrationMetadata(
   };
 }
 
-/** Return whether this node is lexically nested in a suite whose tests/hooks cannot execute. */
+/** Return whether this node is nested in describe.todo; its factory never executes, so nested tests/hooks are not collected. */
 function isInsideTodoSuite(node) {
   let current = node.parent;
   while (current !== undefined) {

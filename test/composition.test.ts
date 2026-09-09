@@ -655,6 +655,7 @@ describe("revision-frozen heterogeneous package composition", () => {
       })
     ).rejects.toThrow("unsupported field 'locationId'");
 
+    // Put active-a on the prototype so compositions.open proves it reads only own placement properties.
     const inheritedPlacements = Object.create({
       "active-a": hiddenRelocation,
     }) as Record<string, { readonly metadata?: InventoryMetadata }>;

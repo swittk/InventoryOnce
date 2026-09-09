@@ -8,6 +8,7 @@ ParentDomain == Objects \cup {NoParent}
 VARIABLE parent
 vars == <<parent>>
 
+\* Bounded unrolling: four parent hops match Cardinality(Objects); update this depth whenever Objects changes.
 ParentChainTerminates(p, o) ==
   \/ p[o] = NoParent
   \/ p[p[o]] = NoParent

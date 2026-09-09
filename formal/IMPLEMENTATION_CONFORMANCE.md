@@ -4,7 +4,7 @@ The TLA+ specifications are not treated as a detached design document. This dire
 
 ## Mechanical coverage ledger
 
-`formal/implementation-conformance/API_ASSURANCE.json`, `formal/implementation-conformance/FIELD_CLASSIFICATION.json`, `formal/implementation-conformance/CALL_CHAIN_ASSURANCE.json`, and `formal/implementation-conformance/TRACE_REPLAY_ASSURANCE.json` are generated or checked from the real TypeScript program by `scripts/generate-formal-implementation-assurance.py` and `scripts/audit-formal-implementation-conformance.mjs`.
+`formal/implementation-conformance/API_ASSURANCE.json`, `formal/implementation-conformance/FIELD_CLASSIFICATION.json`, `formal/implementation-conformance/CALL_CHAIN_ASSURANCE.json`, `formal/implementation-conformance/TRACE_REPLAY_ASSURANCE.json`, and `formal/implementation-conformance/FORMAL_COVERAGE_GAPS.json` are generated or checked from the real TypeScript program by `scripts/generate-formal-implementation-assurance.py` and `scripts/audit-formal-implementation-conformance.mjs`.
 
 The generator:
 

@@ -1,6 +1,7 @@
 --------------------------- MODULE PackagingIdentity --------------------------
 EXTENDS Integers
 
+\* Location-specific intact 20/24-pack quantities plus loose stock at locations A and B.
 VARIABLES a20, b20, a24, b24, looseA, looseB
 
 vars == <<a20, b20, a24, b24, looseA, looseB>>

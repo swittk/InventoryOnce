@@ -17,10 +17,10 @@ pnpm formal
 ```
 
 The runner uses the package-pinned `tla2tools.jar`, one unique metadata directory per model process, and
-keeps a failed model directory so a counterexample can be inspected. It also runs seven deliberately bad
+keeps a failed model directory so a counterexample can be inspected. It also runs eleven deliberately bad
 transitions: four snapshot-supersession mutations, one cross-transfer receive mutation, one correction-history
-erasure mutation, and one split durable-transfer projection mutation. TLC must reject every one through its named
-unchanged safety invariant.
+erasure mutation, one split durable-transfer projection mutation, three use-by/reservation guard mutations, and one
+duplicate traceability-production mutation. TLC must reject every one through its named unchanged safety invariant.
 
 ## Registered TLC checks
 
@@ -60,10 +60,6 @@ unchanged safety invariant.
 
 `AbstractTransfer` is imported by `DurableTransferRefinement`; it is the abstract specification rather
 than a separate runner entry.
-
-`ReservationScopeAllocationReplacementCandidate` is intentionally **unregistered** exploratory coverage. Its
-configuration is not part of `formalModels`, `pnpm formal`, or checked formal-coverage claims; only the registered
-`ReservationScopeAllocationReplacement` model contributes assurance credit.
 
 ## Latest bounded exploration sizes
 

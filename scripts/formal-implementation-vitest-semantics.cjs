@@ -4,45 +4,48 @@ function vitestRegistrationName(callee) {
   return match?.[1];
 }
 
+/** Return whether one chained registration expression contains an exact property modifier. */
+function expressionHasProperty(ts, expression, propertyName) {
+  if (ts.isPropertyAccessExpression(expression)) {
+    return (
+      expression.name.text === propertyName ||
+      expressionHasProperty(ts, expression.expression, propertyName)
+    );
+  }
+  if (ts.isCallExpression(expression)) {
+    return expressionHasProperty(ts, expression.expression, propertyName);
+  }
+  return false;
+}
+
+/** Return a statically known boolean, or undefined when runtime evaluation would be required. */
+function staticBooleanValue(ts, valueNode) {
+  if (valueNode === undefined) return undefined;
+  if (valueNode.kind === ts.SyntaxKind.TrueKeyword) return true;
+  if (valueNode.kind === ts.SyntaxKind.FalseKeyword) return false;
+  if (ts.isParenthesizedExpression(valueNode)) {
+    return staticBooleanValue(ts, valueNode.expression);
+  }
+  if (
+    ts.isPrefixUnaryExpression(valueNode) &&
+    valueNode.operator === ts.SyntaxKind.ExclamationToken
+  ) {
+    const value = staticBooleanValue(ts, valueNode.operand);
+    return value === undefined ? undefined : !value;
+  }
+  if (
+    ts.isAsExpression(valueNode) ||
+    ts.isTypeAssertionExpression(valueNode) ||
+    ts.isNonNullExpression(valueNode)
+  ) {
+    return staticBooleanValue(ts, valueNode.expression);
+  }
+  return undefined;
+}
+
 /** Return the exact node that makes one Vitest registration focused, or undefined. */
 function vitestFocusedRegistrationNode(ts, node) {
-  const expressionHasProperty = (expression, propertyName) => {
-    if (ts.isPropertyAccessExpression(expression)) {
-      return (
-        expression.name.text === propertyName ||
-        expressionHasProperty(expression.expression, propertyName)
-      );
-    }
-    if (ts.isCallExpression(expression)) {
-      return expressionHasProperty(expression.expression, propertyName);
-    }
-    return false;
-  };
-  const staticBooleanValue = (valueNode) => {
-    if (valueNode === undefined) return undefined;
-    if (valueNode.kind === ts.SyntaxKind.TrueKeyword) return true;
-    if (valueNode.kind === ts.SyntaxKind.FalseKeyword) return false;
-    if (ts.isParenthesizedExpression(valueNode)) {
-      return staticBooleanValue(valueNode.expression);
-    }
-    if (
-      ts.isPrefixUnaryExpression(valueNode) &&
-      valueNode.operator === ts.SyntaxKind.ExclamationToken
-    ) {
-      const value = staticBooleanValue(valueNode.operand);
-      return value === undefined ? undefined : !value;
-    }
-    if (
-      ts.isAsExpression(valueNode) ||
-      ts.isTypeAssertionExpression(valueNode) ||
-      ts.isNonNullExpression(valueNode)
-    ) {
-      return staticBooleanValue(valueNode.expression);
-    }
-    return undefined;
-  };
-
-  if (expressionHasProperty(node.expression, "only")) return node;
+  if (expressionHasProperty(ts, node.expression, "only")) return node;
   for (const argument of node.arguments) {
     if (!ts.isObjectLiteralExpression(argument)) continue;
     for (const property of argument.properties) {
@@ -57,7 +60,7 @@ function vitestFocusedRegistrationNode(ts, node) {
         .replace(/^['"]|['"]$/gu, "");
       if (name !== "only") continue;
       const value = ts.isPropertyAssignment(property)
-        ? staticBooleanValue(property.initializer)
+        ? staticBooleanValue(ts, property.initializer)
         : undefined;
       if (value !== false) return property;
     }
@@ -102,6 +105,8 @@ function vitestSuiteChildrenExecute(metadata) {
 }
 
 module.exports = {
+  expressionHasProperty,
+  staticBooleanValue,
   vitestCallbackExecutes,
   vitestFocusedRegistrationNode,
   vitestRegistrationName,

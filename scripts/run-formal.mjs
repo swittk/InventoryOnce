@@ -334,21 +334,27 @@ for (let index = 0; index < modelRun.results.length; index += 1) {
     emitProofSection(`=== TLC: ${model} ===`, result);
   }
 }
-if (modelRun.status !== 0) process.exit(modelRun.status);
-
-const mutationRun = await runBoundedPool(
-  formalInvariantMutationChecks,
-  ([model, config, invariant]) => runInvariantMutationCheck(model, config, invariant)
-);
-for (let index = 0; index < mutationRun.results.length; index += 1) {
-  const result = mutationRun.results[index];
-  const row = formalInvariantMutationChecks[index];
-  if (result !== undefined && row !== undefined) {
-    emitProofSection(`=== TLC expected rejection: ${row[1]} ===`, result);
+if (modelRun.status !== 0) {
+  // Defer process termination until Node flushes every emitted proof section.
+  process.exitCode = modelRun.status;
+} else {
+  const mutationRun = await runBoundedPool(
+    formalInvariantMutationChecks,
+    ([model, config, invariant]) => runInvariantMutationCheck(model, config, invariant)
+  );
+  for (let index = 0; index < mutationRun.results.length; index += 1) {
+    const result = mutationRun.results[index];
+    const row = formalInvariantMutationChecks[index];
+    if (result !== undefined && row !== undefined) {
+      emitProofSection(`=== TLC expected rejection: ${row[1]} ===`, result);
+    }
+  }
+  if (mutationRun.status !== 0) {
+    // Preserve mutation failure while allowing the just-emitted witness sections to flush.
+    process.exitCode = mutationRun.status;
+  } else {
+    console.log(
+      "\nAll InventoryOnce TLA+ models passed, and every registered forbidden transition was rejected by its safety invariant."
+    );
   }
 }
-if (mutationRun.status !== 0) process.exit(mutationRun.status);
-
-console.log(
-  "\nAll InventoryOnce TLA+ models passed, and every registered forbidden transition was rejected by its safety invariant."
-);
