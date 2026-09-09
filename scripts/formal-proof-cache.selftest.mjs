@@ -12,7 +12,10 @@ import {
   transitiveLocalTlaFiles,
   writeFormalProofCache,
 } from "./formal-proof-cache.mjs";
-import { assertFormalMutationRegistrationCompleteness } from "./formal-models.mjs";
+import {
+  assertFormalMutationRegistrationCompleteness,
+  assertFormalMutationRegistrationConsistency,
+} from "./formal-models.mjs";
 
 test("transitive local module bytes participate in the proof key", () => {
   const root = mkdtempSync(join(tmpdir(), "inventoryonce-formal-cache-"));
@@ -157,6 +160,41 @@ test("mutation proof acceptance requires one completed TLC safety-violation proc
   }
 });
 
+
+test("mutation registry rejects invalid model and invariant tuple content before TLC", () => {
+  const configs = new Map([
+    ["AlphaMutation", "INVARIANT AlphaInvariant\n"],
+    ["BetaMutation", "INVARIANT BetaInvariant\n"],
+  ]);
+  const readConfig = (config) => {
+    const value = configs.get(config);
+    if (value === undefined) throw new Error(`Missing synthetic config '${config}'.`);
+    return value;
+  };
+  const complete = [
+    ["Alpha", "AlphaMutation", "AlphaInvariant"],
+    ["Beta", "BetaMutation", "BetaInvariant"],
+  ];
+  assert.doesNotThrow(() =>
+    assertFormalMutationRegistrationConsistency(readConfig, complete, ["Alpha", "Beta"]),
+  );
+  assert.throws(
+    () => assertFormalMutationRegistrationConsistency(
+      readConfig,
+      [["Gamma", "AlphaMutation", "AlphaInvariant"]],
+      ["Alpha", "Beta"],
+    ),
+    /targets unregistered model 'Gamma'/u,
+  );
+  assert.throws(
+    () => assertFormalMutationRegistrationConsistency(
+      readConfig,
+      [["Alpha", "AlphaMutation", "WrongInvariant"]],
+      ["Alpha", "Beta"],
+    ),
+    /expects undeclared invariant 'WrongInvariant'/u,
+  );
+});
 
 test("mutation registry rejects missing, duplicate, and extra configs", () => {
   const files = ["AlphaMutation.cfg", "BetaMutation.cfg", "Ordinary.cfg"];

@@ -15,6 +15,7 @@ import { spawn } from "node:child_process";
 
 import {
   assertFormalMutationRegistrationCompleteness,
+  assertFormalMutationRegistrationConsistency,
   formalInvariantMutationChecks,
   formalModels,
 } from "./formal-models.mjs";
@@ -321,6 +322,9 @@ async function runInvariantMutationCheck(model, config, invariant) {
 
 assertFormalMutationRegistrationCompleteness(
   readdirSync(join(process.cwd(), "formal")),
+);
+assertFormalMutationRegistrationConsistency((config) =>
+  readFileSync(join(process.cwd(), "formal", `${config}.cfg`), "utf8"),
 );
 await ensureTlaTools();
 console.log(

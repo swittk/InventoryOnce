@@ -639,7 +639,7 @@ describe("first-class physical transfer lifecycle", () => {
         occurredAt: time3,
         transferId: "REL",
       })
-    ).rejects.toThrow(/prepared/i);
+    ).rejects.toThrow(/^Only a prepared transfer can be dispatched\.$/u);
   });
 
   it("preserves exact lot/package/container/form identity across transit", async () => {

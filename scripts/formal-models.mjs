@@ -158,3 +158,25 @@ export function assertFormalMutationRegistrationCompleteness(
   }
   return expected;
 }
+
+/** Require every mutation tuple to target a registered model and an invariant declared by its config. */
+export function assertFormalMutationRegistrationConsistency(
+  readConfig,
+  mutationChecks = formalInvariantMutationChecks,
+  models = formalModels,
+) {
+  const registeredModels = new Set(models);
+  for (const [model, config, invariant] of mutationChecks) {
+    if (!registeredModels.has(model)) {
+      throw new Error(
+        `Formal mutation '${config}' targets unregistered model '${model}'.`,
+      );
+    }
+    const declaredChecks = formalConfigCheckNames(readConfig(config));
+    if (!declaredChecks.includes(invariant)) {
+      throw new Error(
+        `Formal mutation '${config}' expects undeclared invariant '${invariant}'.`,
+      );
+    }
+  }
+}
