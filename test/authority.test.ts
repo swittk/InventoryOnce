@@ -596,7 +596,124 @@ describe("portable InventoryOnce authority controller", () => {
     ).rejects.toThrow("currently owns the legacy write fence");
   });
 
-  it("reuses the durable DualRun cutover time when retry omits the explicit time", async () => {
+  it("retains the shared fence when a same-token contender publishes after a stale no-manifest read", async () => {
+    const database = new TestAuthorityDatabase();
+    const stale = createInventoryAuthorityControl({
+      store: new TestAuthorityStore(database),
+      namespaceId: "same-token-stale-release:primary",
+    });
+    const publisher = createInventoryAuthorityControl({
+      store: new TestAuthorityStore(database),
+      namespaceId: "same-token-stale-release:primary",
+    });
+    await stale.read();
+    await publisher.read();
+    const storage = createInMemoryInventoryDurableStorage();
+    const compileSource = async (cutoverAt: string) => {
+      const catalog = createTabletCatalog();
+      return {
+        catalog,
+        plan: defineInventoryMigration({
+          catalog,
+          declaration: {
+            migrationId: "same-token-stale-release-migration",
+            sourceSystem: "same-token-stale-release-source",
+            cutoverAt,
+            openingStock: [
+              {
+                openingId: "same-token-stale-release-row",
+                position: { itemId: "item-a", locationId: "store" },
+                amount: stockAmount("1", "piece"),
+                itemRevisionId: "item-a-v2",
+                source: {
+                  sourceType: "legacy-stock",
+                  sourceId: "same-token-stale-release-row",
+                },
+              },
+            ],
+          },
+        }),
+      };
+    };
+    let staleObservedNoManifest!: () => void;
+    const staleObservedNoManifestPromise = new Promise<void>((resolve) => {
+      staleObservedNoManifest = resolve;
+    });
+    let publisherAtActivate!: () => void;
+    const publisherAtActivatePromise = new Promise<void>((resolve) => {
+      publisherAtActivate = resolve;
+    });
+    let allowPublisherActivate!: () => void;
+    const publisherActivateGate = new Promise<void>((resolve) => {
+      allowPublisherActivate = resolve;
+    });
+    const delayedPublisher = new Proxy(publisher, {
+      get(target, property, receiver) {
+        if (property === "activate") {
+          return async (input: Parameters<typeof target.activate>[0]) => {
+            publisherAtActivate();
+            await publisherActivateGate;
+            return target.activate(input);
+          };
+        }
+        const value = Reflect.get(target, property, receiver);
+        return typeof value === "function" ? value.bind(target) : value;
+      },
+    });
+    const common = {
+      storage,
+      migrationId: "same-token-stale-release-migration",
+      fenceToken: "same-token-stale-release-fence",
+      authorizationId: "same-token-stale-release-authorization",
+      adapterCertificationDigest: "adapter-v1",
+      sourceRevision: 17,
+      cutoverAt: time1,
+      compileSource,
+      clock: { now: (): string => time2 },
+    };
+
+    const staleRun = cutoverInventoryAuthority({
+      ...common,
+      authority: stale,
+      drainLegacyWriters: async () => {
+        // This callback begins only after the stale contender has read no manifest.
+        staleObservedNoManifest();
+        await publisherAtActivatePromise;
+      },
+    }).then(
+      (value) => ({ value, error: undefined }),
+      (error: unknown) => ({ value: undefined, error: error as Error }),
+    );
+    await staleObservedNoManifestPromise;
+    const publisherRun = cutoverInventoryAuthority({
+      ...common,
+      authority: delayedPublisher,
+      drainLegacyWriters: async () => {},
+    }).then(
+      (value) => ({ value, error: undefined }),
+      (error: unknown) => ({ value: undefined, error: error as Error }),
+    );
+    const staleResult = await staleRun;
+    const stateBeforePublisherActivation = await stale.read();
+    const manifestBeforePublisherActivation =
+      await storage.readMigrationManifest(common.migrationId);
+    allowPublisherActivate();
+    const publisherResult = await publisherRun;
+
+    expect(staleResult.error?.message).toContain(
+      "authority target is not empty and has no matching migration manifest",
+    );
+    expect(manifestBeforePublisherActivation?.state).toBe("completed");
+    expect(stateBeforePublisherActivation.mode).toBe(
+      InventoryAuthorityMode.Fencing,
+    );
+    expect(publisherResult.error).toBeUndefined();
+    expect(publisherResult.value?.authority.mode).toBe(
+      InventoryAuthorityMode.Authoritative,
+    );
+  });
+
+  it("reuses the retained fenced cutover time when retry omits the explicit time", async () => {
     const authority = createInventoryAuthorityControl({
       store: new TestAuthorityStore(),
       namespaceId: "cutover-time-retry:primary",
@@ -653,7 +770,7 @@ describe("portable InventoryOnce authority controller", () => {
       cutoverInventoryAuthority({ ...common, cutoverAt: time1 })
     ).rejects.toThrow("Injected pre-migration drain failure");
     const retained = await authority.read();
-    expect(retained.mode).toBe(InventoryAuthorityMode.DualRun);
+    expect(retained.mode).toBe(InventoryAuthorityMode.Fencing);
     expect(retained.adapterCertifiedAt).toBe(time2);
     expect(retained.dualRunStartedAt).toBe(time1);
 
@@ -665,7 +782,7 @@ describe("portable InventoryOnce authority controller", () => {
     ).rejects.toThrow(
       "InventoryOnce cutover certification differs from durable evidence."
     );
-    expect((await authority.read()).mode).toBe(InventoryAuthorityMode.DualRun);
+    expect((await authority.read()).mode).toBe(InventoryAuthorityMode.Fencing);
 
     const retried = await cutoverInventoryAuthority(common);
     expect(retried.authority.mode).toBe(InventoryAuthorityMode.Authoritative);

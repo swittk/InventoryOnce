@@ -15,6 +15,7 @@ import {
   applyInventoryMigrationPlan,
   defineInventoryMigration,
   dryRunInventoryMigration,
+  inventoryMigrationSnapshotSupersededDisposition,
   repairInventoryMigrationManifests,
 } from "../src/migrations-api.js";
 import {
@@ -122,6 +123,44 @@ describe("formal implementation state/result refinement", () => {
       "cycle"
     );
   });
+  it("preserves special metadata keys in the independent formal abstraction", () => {
+    const catalog = createTabletCatalog();
+    const evidence = JSON.parse(
+      '{"__proto__":{"__proto__":"formal-special-key"},"ordinary":"kept"}'
+    ) as Record<string, unknown>;
+    const plan = defineInventoryMigration({
+      catalog,
+      declaration: {
+        migrationId: "formal-special-key-migration",
+        sourceSystem: "formal-special-key-source",
+        cutoverAt: time0,
+        openingStock: [],
+        sourceDispositions: [
+          inventoryMigrationSnapshotSupersededDisposition({
+            dispositionId: "formal-special-key-row",
+            source: { sourceType: "legacy", sourceId: "row" },
+            snapshotAt: time0,
+            reason: "Retain exact audit evidence.",
+            evidence: evidence as never,
+          }),
+        ],
+      },
+    });
+    const abstracted = abstractMigrationState(plan);
+    const disposition = abstracted.sourceDispositions[0];
+    const retainedEvidence = disposition?.evidence as
+      | Readonly<Record<string, unknown>>
+      | undefined;
+    expect(Object.prototype.hasOwnProperty.call(retainedEvidence, "__proto__"))
+      .toBe(true);
+    const nested = retainedEvidence?.["__proto__"] as
+      | Readonly<Record<string, unknown>>
+      | undefined;
+    expect(Object.prototype.hasOwnProperty.call(nested, "__proto__")).toBe(true);
+    expect(nested?.["__proto__"]).toBe("formal-special-key");
+    expect(retainedEvidence?.ordinary).toBe("kept");
+  });
+
   it("replays every bounded receive/issue/transfer trace against arithmetic invariants", async () => {
     for (const received of [4, 5]) {
       for (const issued of [1, 2]) {

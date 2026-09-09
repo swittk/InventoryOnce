@@ -1094,7 +1094,12 @@ function normalizeContainerIdentifiers(
         "Inventory container identifiers need non-empty keys and values."
       );
     }
-    normalized[key] = value;
+    Object.defineProperty(normalized, key, {
+      value,
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
   }
   return normalized;
 }

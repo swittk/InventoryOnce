@@ -358,6 +358,39 @@ describe("native handling-unit masters", () => {
     expect(preview.shortfall.amountMinor).toBe(1);
   });
 
+  it("preserves an own __proto__ container identifier through event and projection normalization", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receive({
+      operationId: "receive-proto-container-box",
+      occurredAt: time0,
+      to: loosePosition("store", { lotId: "PROTO-LOT" }),
+      amount: packageAmount(1, "item-a-box-24-v1"),
+      lot: { expiresAt: lotExpiry },
+    });
+    const identifiers = JSON.parse(
+      '{"__proto__":"SSCC-PROTO","gtin":"GTIN-PROTO"}'
+    ) as Record<string, string>;
+    const unpacked = await inventory.stock.unpack({
+      operationId: "unpack-proto-container",
+      occurredAt: time1,
+      from: loosePosition("store", {
+        lotId: "PROTO-LOT",
+        packagingRevisionId: "item-a-box-24-v1",
+      }),
+      packageCount: 1,
+      toContainerId: "PROTO-CONTAINER",
+      container: { identifiers },
+    });
+    const eventIdentifiers = unpacked.event.containerDefinitions?.[0]?.identifiers;
+    expect(Object.prototype.hasOwnProperty.call(eventIdentifiers, "__proto__")).toBe(true);
+    expect(eventIdentifiers?.["__proto__"]).toBe("SSCC-PROTO");
+    const projectedIdentifiers = (await inventory.read.container("PROTO-CONTAINER"))
+      ?.definition.identifiers;
+    expect(Object.prototype.hasOwnProperty.call(projectedIdentifiers, "__proto__")).toBe(true);
+    expect(projectedIdentifiers?.["__proto__"]).toBe("SSCC-PROTO");
+    expect(projectedIdentifiers?.gtin).toBe("GTIN-PROTO");
+  });
+
   it("corrects, omits, and restores container use-by append-only without moving contents", async () => {
     const inventory = createTestInventory();
     const placed = await inventory.stock.receive({

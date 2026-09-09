@@ -2016,7 +2016,12 @@ function createInventoryCatalogParts(
       );
     }
     activeItemById.set(itemId, item);
-    activeItemRevisionIds[itemId] = revisionId;
+    Object.defineProperty(activeItemRevisionIds, itemId, {
+      value: revisionId,
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
   }
   const retainedItemIds = new Set<ItemId>();
   for (const item of itemRevisions) retainedItemIds.add(item.itemId);
@@ -2846,7 +2851,12 @@ function cloneAndFreezeInventoryMetadata(
   if (metadata === undefined) return undefined;
   const result: Record<string, InventoryMetadataValue> = {};
   for (const [key, value] of Object.entries(metadata)) {
-    result[key] = cloneAndFreezeInventoryMetadataValue(value);
+    Object.defineProperty(result, key, {
+      value: cloneAndFreezeInventoryMetadataValue(value),
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
   }
   return Object.freeze(result);
 }
@@ -2872,7 +2882,12 @@ function cloneAndFreezeInventoryMetadataValue(
   }
   const result: Record<string, InventoryMetadataValue> = {};
   for (const [key, child] of Object.entries(value)) {
-    result[key] = cloneAndFreezeInventoryMetadataValue(child);
+    Object.defineProperty(result, key, {
+      value: cloneAndFreezeInventoryMetadataValue(child),
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
   }
   return Object.freeze(result);
 }

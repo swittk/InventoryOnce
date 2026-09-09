@@ -66,6 +66,9 @@ const executableTestSources = packageSources.filter((source) => {
     fileName.startsWith(`${testRoot}/`) && /\.(?:test|spec)\.tsx?$/u.test(fileName)
   );
 });
+const testDirectorySources = packageSources.filter((source) =>
+  normalizedPath(source.fileName).startsWith(`${testRoot}/`)
+);
 if (productionSources.length === 0) {
   throw new Error(`Compiler call graph found no production sources below '${sourceRoot}'.`);
 }
@@ -73,8 +76,8 @@ if (executableTestSources.length === 0) {
   throw new Error(`Compiler call graph found no executable tests below '${testRoot}'.`);
 }
 
-/** Reject focused Vitest runs because partial execution cannot certify repository-wide witnesses. */
-for (const source of executableTestSources) {
+/** Reject focused Vitest runs anywhere in the collected test module graph. */
+for (const source of testDirectorySources) {
   let focused;
   const visitFocusedRegistration = (node) => {
     if (focused !== undefined) return;

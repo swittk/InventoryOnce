@@ -963,6 +963,52 @@ describe("count delta integrity", () => {
   });
 });
 
+describe("prototype-safe retained catalogue records", () => {
+  it("preserves own __proto__ item keys and recursive metadata fields", () => {
+    const activeItemRevisionIds = JSON.parse(
+      '{"__proto__":"proto-item-v1"}'
+    ) as Record<string, string>;
+    const metadata = JSON.parse(
+      '{"__proto__":{"__proto__":"nested-value"},"ordinary":"kept"}'
+    ) as Record<string, InventoryMetadataValue>;
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [{
+        itemId: "__proto__",
+        revisionId: "proto-item-v1",
+        primaryAxis: {
+          axisId: "pieces",
+          role: InventoryMeasurementAxisRole.Primary,
+          unit: unitCode("piece"),
+          requirement: InventoryMeasurementRequirement.Required,
+        },
+        independentAxes: [],
+        reservationAxisId: "pieces",
+        tracking: {
+          lot: InventoryTrackingRequirement.Forbidden,
+          serial: InventoryTrackingRequirement.Forbidden,
+        },
+        qualifiedDimensions: [],
+        metadata,
+      }],
+      activeItemRevisionIds,
+      packagingRevisions: [],
+    });
+    expect(Object.prototype.hasOwnProperty.call(catalog.activeItemRevisionIds, "__proto__"))
+      .toBe(true);
+    expect(catalog.activeItemRevisionIds["__proto__"]).toBe("proto-item-v1");
+    expect(catalog.activeItem("__proto__").revisionId).toBe("proto-item-v1");
+    const retained = catalog.itemRevision("proto-item-v1").metadata;
+    expect(Object.prototype.hasOwnProperty.call(retained, "__proto__")).toBe(true);
+    const nested = retained?.["__proto__"];
+    expect(typeof nested).toBe("object");
+    expect(nested).not.toBeNull();
+    expect(Object.prototype.hasOwnProperty.call(nested, "__proto__")).toBe(true);
+    expect((nested as Readonly<Record<string, InventoryMetadataValue>>)["__proto__"])
+      .toBe("nested-value");
+    expect(retained?.ordinary).toBe("kept");
+  });
+});
+
 describe("retained catalogue alias safety", () => {
   it("deep-copies and freezes caller-owned revision/package values before event replay", async () => {
     const primaryAxis = {

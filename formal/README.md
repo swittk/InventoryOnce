@@ -17,9 +17,10 @@ pnpm formal
 ```
 
 The runner uses the package-pinned `tla2tools.jar`, one unique metadata directory per model process, and
-keeps a failed model directory so a counterexample can be inspected. It also runs five deliberately bad
-transitions: four snapshot-supersession mutations plus one cross-transfer receive mutation, and requires TLC
-to reject each one through the named unchanged safety invariant.
+keeps a failed model directory so a counterexample can be inspected. It also runs seven deliberately bad
+transitions: four snapshot-supersession mutations, one cross-transfer receive mutation, one correction-history
+erasure mutation, and one split durable-transfer projection mutation. TLC must reject every one through its named
+unchanged safety invariant.
 
 ## Registered TLC checks
 
@@ -60,6 +61,10 @@ to reject each one through the named unchanged safety invariant.
 `AbstractTransfer` is imported by `DurableTransferRefinement`; it is the abstract specification rather
 than a separate runner entry.
 
+`ReservationScopeAllocationReplacementCandidate` is intentionally **unregistered** exploratory coverage. Its
+configuration is not part of `formalModels`, `pnpm formal`, or checked formal-coverage claims; only the registered
+`ReservationScopeAllocationReplacement` model contributes assurance credit.
+
 ## Latest bounded exploration sizes
 
 The exact seed/fingerprint values vary by run. The latest complete run explored:
@@ -93,11 +98,11 @@ The exact seed/fingerprint values vary by run. The latest complete run explored:
 
 All reachable states in those finite configurations were checked by TLC.
 
-The normal `SnapshotSupersededWorkflow` and `TransferLifecycle` rows above stay the safe system runs. Five
-extra mutation configs cover four snapshot-supersession violations (resume after disposition, physical
-disposition event, guessed completed outcome, and source movement after capture) plus one cross-transfer
-receive that violates transfer isolation. Those runs pass only when TLC finds the expected invariant violation;
-they are not folded into the safe models' state counts.
+The normal safe-model rows above stay the positive system runs. Seven extra mutation configs cover four
+snapshot-supersession violations (resume after disposition, physical disposition event, guessed completed
+outcome, and source movement after capture), one cross-transfer receive that violates transfer isolation, one
+correction-history erasure, and one split durable-transfer projection. Those runs pass only when TLC finds the
+expected invariant violation; they are not folded into the safe models' state counts.
 
 ## What the claims mean
 

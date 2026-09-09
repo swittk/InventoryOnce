@@ -1007,6 +1007,82 @@ describe("native policy and reservation safety", () => {
     expect(await quantityByLot(inventory, "store")).toEqual({});
   });
 
+  it("allows physical-truth policy planning across exact independent-axis allocations", async () => {
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [{
+        itemId: "weight-policy-item",
+        revisionId: "weight-policy-item-v1",
+        primaryAxis: {
+          axisId: "pieces",
+          role: InventoryMeasurementAxisRole.Primary,
+          unit: unitCode("piece"),
+          requirement: InventoryMeasurementRequirement.Required,
+        },
+        independentAxes: [{
+          axisId: "weight",
+          role: InventoryMeasurementAxisRole.Independent,
+          unit: unitCode("kg"),
+          requirement: InventoryMeasurementRequirement.Required,
+        }],
+        reservationAxisId: "weight",
+        tracking: {
+          lot: InventoryTrackingRequirement.Forbidden,
+          serial: InventoryTrackingRequirement.Forbidden,
+        },
+        qualifiedDimensions: [],
+      }],
+      activeItemRevisionIds: { "weight-policy-item": "weight-policy-item-v1" },
+      packagingRevisions: [],
+    });
+    const inventory = createTestInventory(undefined, catalog);
+    const position = { itemId: "weight-policy-item", locationId: "store" };
+    await inventory.stock.receive({
+      operationId: "weight-policy-receive",
+      occurredAt: time0,
+      to: position,
+      amount: measuredStockAmount("2", "piece", [
+        { axisId: "weight", value: "10", unit: "kg" },
+      ]),
+    });
+    await inventory.reservations.reserve({
+      reservationId: "weight-policy-claim",
+      operationId: "weight-policy-reserve",
+      itemRevisionId: "weight-policy-item-v1",
+      selector: { itemId: "weight-policy-item", locationIds: ["store"] },
+      requested: parseQuantity("4", "kg"),
+      createdAt: time1,
+    });
+    const [stockPosition] = await inventory.read.positions({
+      itemId: "weight-policy-item",
+      locationIds: ["store"],
+    });
+    if (stockPosition === undefined) throw new Error("Weight-policy fixture lost stock.");
+    await inventory.reservations.allocate({
+      reservationId: "weight-policy-claim",
+      operationId: "weight-policy-allocate",
+      occurredAt: time1,
+      allocations: [{ position: stockPosition.key, quantity: parseQuantity("4", "kg") }],
+    });
+    const request = {
+      selector: inventoryStockSelector("weight-policy-item", { locationIds: ["store"] }),
+      amount: measuredStockAmount("2", "piece", [
+        { axisId: "weight", value: "10", unit: "kg" },
+      ]),
+      method: InventoryAllocationMethod.Fifo,
+      at: time2,
+    };
+    await expect(inventory.read.planAllocation(request)).rejects.toThrow(
+      "independent axis"
+    );
+    const physicalTruth = await inventory.read.planAllocation({
+      ...request,
+      allowAllocatedStock: true,
+    });
+    expect(physicalTruth.shortfall.amountMinor).toBe(0);
+    expect(physicalTruth.lines).toHaveLength(1);
+    expect(physicalTruth.lines[0]?.allocatedPrimary.amountMinor).toBe(2);
+  });
+
   it("lets explicit physical scrap reveal a shortage without pretending promises still fit", async () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({

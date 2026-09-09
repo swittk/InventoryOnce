@@ -142,10 +142,12 @@ export async function commitInventoryOperation({
   if (existing !== undefined) {
     assertSameIntent(existing, intentFingerprint);
     const receipt = await resumeInventoryDurableOperation(storage, operationId);
+    const completedWorld = await storage.readWorld();
+    const event = completedInventoryOperationEvent(receipt, completedWorld);
     return {
       receipt,
-      world: await storage.readWorld(),
-      ...(existing.event === undefined ? {} : { event: existing.event }),
+      world: completedWorld,
+      ...(event === undefined ? {} : { event }),
       replayed: true,
     };
   }
@@ -180,10 +182,12 @@ export async function commitInventoryOperation({
         storage,
         operationId
       );
+      const completedWorld = await storage.readWorld();
+      const event = completedInventoryOperationEvent(receipt, completedWorld);
       return {
         receipt,
-        world: await storage.readWorld(),
-        ...(begun.event === undefined ? {} : { event: begun.event }),
+        world: completedWorld,
+        ...(event === undefined ? {} : { event }),
         replayed: !beginResult.created,
       };
     } catch (error) {
@@ -201,6 +205,21 @@ export async function commitInventoryOperation({
   throw new Error(
     `Inventory operation '${operationId}' could not freeze a current world revision after ${maxRevisionRetries} attempts.`
   );
+}
+
+/** Resolve the committed event named by a completed receipt from the freshly published world. */
+function completedInventoryOperationEvent(
+  receipt: InventoryOperationReceipt,
+  world: InventoryWorldState
+): InventoryCommittedEvent | undefined {
+  if (receipt.eventId === undefined) return undefined;
+  const event = world.projection.events[receipt.eventId];
+  if (event === undefined) {
+    throw new Error(
+      `Completed inventory operation receipt references missing event '${receipt.eventId}'.`
+    );
+  }
+  return event;
 }
 
 /** Inputs for converting one logical plan into a complete semantically checked durable plan. */

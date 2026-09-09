@@ -261,6 +261,11 @@ function validateTraceAssurance(traceManifest, apiManifest, vocabulary) {
     new Set(Object.keys(traceManifest.entries))
   );
   for (const [traceId, entry] of Object.entries(traceManifest.entries)) {
+    for (const field of ["models", "invariants", "operationFamilies", "evidence"]) {
+      if (!Array.isArray(entry[field]) || entry[field].length === 0) {
+        throw new Error(`${traceId} has malformed or empty '${field}' evidence.`);
+      }
+    }
     if (entry.status !== "covered") {
       throw new Error(`${traceId} is not marked covered.`);
     }

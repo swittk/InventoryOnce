@@ -489,68 +489,58 @@ export async function cutoverInventoryAuthority({
       "The InventoryOnce migration identity was previously aborted.",
     );
   }
-  let durableMigrationExists = manifest !== undefined;
-  try {
-    await drainLegacyWriters();
-    const second = await compileSource(cutoverAt);
-    assertInventoryMigrationReady(second);
-    assertInventoryCutoverSourceMatchesRequest(second, migrationId, cutoverAt);
-    assertSameInventoryMigrationSource(first, second);
-    const targetBefore = await storage.readWorld();
-    if (manifest === undefined)
-      assertEmptyInventoryAuthorityTarget(targetBefore);
-    const dryRun = dryRunInventoryMigration({
-      catalog: second.catalog,
-      plan: second.plan,
-      targetWorld:
-        manifest === undefined ? targetBefore : emptyInventoryWorldState(),
-    });
-    durableMigrationExists = true;
-    const targetAfter = await applyInventoryMigrationPlan({
-      catalog: second.catalog,
-      storage,
-      plan: second.plan,
-      dryRun,
-      clock,
-    });
-    const targetWorldRoot = inventoryWorldContentRoots(targetAfter).world;
-    const activated = await authorityControl.activate({
-      fenceToken,
-      sourcePlanDigest: second.plan.planDigest,
-      sourceCatalogDigest: second.catalog.digest,
-      sourceRoot,
-      targetWorldRoot,
-      targetWorldRevision: targetAfter.revision,
-      activatedAt: clock.now(),
-    });
-    const result = inventoryAuthorityCutoverResult(activated);
-    assertInventoryCutoverResultMatches(result, {
-      authorizationId,
-      fenceToken,
-      certificationDigest,
-      sourceRevision,
-      cutoverAt,
-      sourceRoot,
-      sourcePlanDigest: second.plan.planDigest,
-      sourceCatalogDigest: second.catalog.digest,
-      targetWorldRoot,
-      targetWorldRevision: targetAfter.revision,
-    });
-    acceptAuthorityPortState(authorityStream, activated, "legacy activation");
-    return result;
-  } catch (error) {
-    if (!durableMigrationExists) {
-      try {
-        await authorityControl.releaseFence(fenceToken);
-      } catch (releaseError) {
-        // Cleanup failure is secondary; retain the original cutover failure as the thrown error.
-        if (error instanceof Error && error.cause === undefined) {
-          error.cause = releaseError;
-        }
-      }
-    }
-    throw error;
-  }
+  // Once the shared fence is durable, never release it automatically from one
+  // cutover attempt. Same-token retries intentionally join that fence, and a
+  // peer can publish migration state after any local manifest observation. No
+  // cross-store read can atomically prove that release is still safe. Failures
+  // therefore retain fencing for an exact retry; explicit administrative
+  // release remains a separate operation after the caller has quiesced peers.
+  await drainLegacyWriters();
+  const second = await compileSource(cutoverAt);
+  assertInventoryMigrationReady(second);
+  assertInventoryCutoverSourceMatchesRequest(second, migrationId, cutoverAt);
+  assertSameInventoryMigrationSource(first, second);
+  const targetBefore = await storage.readWorld();
+  if (manifest === undefined)
+    assertEmptyInventoryAuthorityTarget(targetBefore);
+  const dryRun = dryRunInventoryMigration({
+    catalog: second.catalog,
+    plan: second.plan,
+    targetWorld:
+      manifest === undefined ? targetBefore : emptyInventoryWorldState(),
+  });
+  const targetAfter = await applyInventoryMigrationPlan({
+    catalog: second.catalog,
+    storage,
+    plan: second.plan,
+    dryRun,
+    clock,
+  });
+  const targetWorldRoot = inventoryWorldContentRoots(targetAfter).world;
+  const activated = await authorityControl.activate({
+    fenceToken,
+    sourcePlanDigest: second.plan.planDigest,
+    sourceCatalogDigest: second.catalog.digest,
+    sourceRoot,
+    targetWorldRoot,
+    targetWorldRevision: targetAfter.revision,
+    activatedAt: clock.now(),
+  });
+  const result = inventoryAuthorityCutoverResult(activated);
+  assertInventoryCutoverResultMatches(result, {
+    authorizationId,
+    fenceToken,
+    certificationDigest,
+    sourceRevision,
+    cutoverAt,
+    sourceRoot,
+    sourcePlanDigest: second.plan.planDigest,
+    sourceCatalogDigest: second.catalog.digest,
+    targetWorldRoot,
+    targetWorldRevision: targetAfter.revision,
+  });
+  acceptAuthorityPortState(authorityStream, activated, "legacy activation");
+  return result;
 }
 
 /** Reuse one durable timestamp across retries and concurrent process contenders. */

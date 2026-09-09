@@ -292,6 +292,11 @@ for row in surface['classes']:
 
 entries = {key: enrich_evidence(key, entry) for key, entry in entries.items()}
 
+# Fail before rewriting any generated artifact when public type discovery is incomplete.
+surface_diagnostics = surface.get('diagnostics', {})
+if surface_diagnostics.get('truncatedTypes', []) != []:
+ raise RuntimeError('public type discovery silently truncated types')
+
 # Bind every checked bounded trace to the exact current public APIs whose assurance
 # family it exercises. This is generated from the live surface, not hand-copied.
 trace_path = pkg / 'formal/implementation-conformance/TRACE_REPLAY_ASSURANCE.json'
@@ -315,9 +320,6 @@ def signature_count(row):
 
 all_method_rows = [*surface['facade'], *surface['authority'], *surface['storage'], *surface['classes']]
 all_export_rows = [row for rows in surface['entrypoints'].values() for row in rows]
-surface_diagnostics = surface.get('diagnostics', {})
-if surface_diagnostics.get('truncatedTypes', []) != []:
- raise RuntimeError('public type discovery silently truncated types')
 # Aggregate discovered-surface and executable-callgraph counts emitted into the API manifest.
 surface_counts={
  'facadeMethods':len(surface['facade']),

@@ -365,7 +365,12 @@ function canonicalValue(value: unknown): unknown {
       compareAbstractIdentityText(left, right)
     )) {
       if (typeof nested === "function" || nested === undefined) continue;
-      result[key] = canonicalValue(nested);
+      Object.defineProperty(result, key, {
+        value: canonicalValue(nested),
+        enumerable: true,
+        configurable: true,
+        writable: true,
+      });
     }
     return result;
   }

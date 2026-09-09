@@ -590,6 +590,7 @@ function createPolicyAllocationCandidates({
     ...(reservationId === undefined
       ? {}
       : { excludedReservationId: reservationId }),
+    allowAllocatedStock,
   });
 
   for (const positionIdentity of projection.positionIdsByItemRevisionId[
@@ -680,6 +681,8 @@ interface CreateExactPrimaryReservationSummaryInput {
   readonly at: string;
   /** Optional reservation whose own binding stays available to its allocator/consumer. */
   readonly excludedReservationId?: string;
+  /** Whether exact bindings are deliberately ignored as physical-truth candidates. */
+  readonly allowAllocatedStock: boolean;
 }
 
 /** Sum every active exact binding once so candidate planning stays O(reservations + allocations + candidates). */
@@ -688,6 +691,7 @@ function createExactPrimaryReservationSummary({
   item,
   at,
   excludedReservationId,
+  allowAllocatedStock,
 }: CreateExactPrimaryReservationSummaryInput): ExactPrimaryReservationSummary {
   // Exact primary-axis pressure accumulated once per bound stock position.
   const reservedPrimaryByPositionIdentity = new Map<string, Quantity>();
@@ -702,6 +706,7 @@ function createExactPrimaryReservationSummary({
       unallocatedReservationsPresent = true;
       continue;
     }
+    if (allowAllocatedStock) continue;
     if (item.reservationAxisId !== item.primaryAxis.axisId) {
       throw new Error(
         "Automatic primary-quantity picking cannot subtract an exact reservation on an independent axis; use explicit fulfillment lines."
