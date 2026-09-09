@@ -19,6 +19,7 @@ import {
   formalModels,
 } from "./formal-models.mjs";
 import {
+  formalModelProofSummary,
   formalMutationProcessProvesInvariantRejection,
   formalProofDescriptor,
   readFormalProofCache,
@@ -63,9 +64,9 @@ function cachedProof(descriptor) {
 }
 
 /** Publish one proof only after TLC has produced the required terminal outcome. */
-function cacheVerifiedProof(descriptor) {
+function cacheVerifiedProof(descriptor, evidence = undefined) {
   // Cold mode bypasses reads but still refreshes exact verified proof entries for the next run.
-  return writeFormalProofCache(formalProofCacheDirectory, descriptor);
+  return writeFormalProofCache(formalProofCacheDirectory, descriptor, evidence);
 }
 
 /** Make sure the exact pinned official TLA+ tools jar exists before running TLC. */
@@ -185,9 +186,13 @@ async function runModel(model) {
   });
   const hit = cachedProof(descriptor);
   if (hit !== undefined) {
+    const evidence = hit.evidence;
     return {
       status: 0,
-      output: `TLC proof cache hit for '${model}' (${hit.key.slice(0, 12)}).\n`,
+      output:
+        `TLC proof cache hit for '${model}' (${hit.key.slice(0, 12)}).\n` +
+        `${evidence.generated} states generated, ${evidence.distinct} distinct states found, 0 states left on queue.\n` +
+        `The depth of the complete state graph search is ${evidence.depth}.\n`,
     };
   }
 
@@ -221,8 +226,13 @@ async function runModel(model) {
         output,
       };
     }
+    const evidence = formalModelProofSummary(output);
+    if (evidence === undefined) {
+      output += `TLC completed without one exact terminal state/depth summary; metadata remains at ${modelMetadataDirectory}.\n`;
+      return { status: 1, output };
+    }
     modelPassed = true;
-    const written = cacheVerifiedProof(descriptor);
+    const written = cacheVerifiedProof(descriptor, evidence);
     if (written !== undefined) {
       output += `Cached verified TLC proof for '${model}' (${written.key.slice(0, 12)}).\n`;
     }

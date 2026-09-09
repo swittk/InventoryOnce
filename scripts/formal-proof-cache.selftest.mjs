@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import {
+  formalModelProofSummary,
   formalMutationProcessProvesInvariantRejection,
   formalProofCacheKey,
   formalProofDescriptor,
@@ -68,6 +69,40 @@ test("exact TLC worker setting participates in the proof key", () => {
     () => formalProofDescriptor({ ...common, tlcWorkers: "0" }),
     /exact TLC worker setting/u,
   );
+});
+
+test("positive cache records persist exact terminal TLC state/depth evidence", () => {
+  const root = mkdtempSync(join(tmpdir(), "inventoryonce-formal-cache-"));
+  mkdirSync(join(root, "formal"));
+  writeFileSync(join(root, "formal", "Model.tla"), "---- MODULE Model ----\n====\n");
+  writeFileSync(join(root, "formal", "Model.cfg"), "SPECIFICATION Spec\n");
+  const descriptor = formalProofDescriptor({
+    repositoryRoot: root,
+    model: "Model",
+    config: "Model",
+    outcome: "model-passed",
+    tlaToolsSha256: "d".repeat(64),
+    tlcWorkers: "4",
+  });
+  const output = [
+    "Progress(9) at 2026-09-09 15:00:00: 12,345 states generated, 678 distinct states found, 0 states left on queue.",
+    "12345 states generated, 678 distinct states found, 0 states left on queue.",
+    "The depth of the complete state graph search is 9.",
+  ].join("\n");
+  const evidence = formalModelProofSummary(output);
+  assert.deepEqual(evidence, { generated: 12345, distinct: 678, depth: 9 });
+  assert.equal(formalModelProofSummary("TLC finished without state totals."), undefined);
+  const cache = join(root, "cache");
+  assert.throws(
+    () => writeFormalProofCache(cache, descriptor),
+    /exact terminal TLC state\/depth evidence/u,
+  );
+  const written = writeFormalProofCache(cache, descriptor, evidence);
+  assert.deepEqual(readFormalProofCache(cache, descriptor)?.evidence, evidence);
+  const record = JSON.parse(readFileSync(written.path, "utf8"));
+  delete record.evidence;
+  writeFileSync(written.path, JSON.stringify(record));
+  assert.equal(readFormalProofCache(cache, descriptor), undefined);
 });
 
 test("cache records require exact descriptor identity and verified status", () => {

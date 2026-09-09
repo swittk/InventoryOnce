@@ -126,6 +126,37 @@ export function formalProofDescriptor({
   };
 }
 
+/** Parse the exact terminal state/depth summary from one completed positive TLC run. */
+export function formalModelProofSummary(output) {
+  const states = [...output.matchAll(
+    /^([0-9,]+) states generated, ([0-9,]+) distinct states found, 0 states left on queue\.$/gmu
+  )];
+  const depths = [...output.matchAll(
+    /^The depth of the complete state graph search is ([0-9]+)\.$/gmu
+  )];
+  if (states.length !== 1 || depths.length !== 1) return undefined;
+  const generated = Number(states[0][1].replaceAll(",", ""));
+  const distinct = Number(states[0][2].replaceAll(",", ""));
+  const depth = Number(depths[0][1]);
+  const summary = { generated, distinct, depth };
+  return validFormalModelProofSummary(summary) ? summary : undefined;
+}
+
+/** Return whether one cached positive proof carries complete terminal TLC evidence. */
+function validFormalModelProofSummary(value) {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    Number.isSafeInteger(value.generated) &&
+    value.generated >= 0 &&
+    Number.isSafeInteger(value.distinct) &&
+    value.distinct >= 0 &&
+    value.distinct <= value.generated &&
+    Number.isSafeInteger(value.depth) &&
+    value.depth >= 0
+  );
+}
+
 /** Return whether one completed TLC child proves the named mutation invariant was violated. */
 export function formalMutationProcessProvesInvariantRejection({
   status,
@@ -171,11 +202,23 @@ export function readFormalProofCache(cacheDirectory, descriptor) {
   ) {
     return undefined;
   }
-  return { key, path };
+  if (
+    descriptor.outcome === "model-passed" &&
+    !validFormalModelProofSummary(value.evidence)
+  ) {
+    return undefined;
+  }
+  return { key, path, evidence: value.evidence };
 }
 
 /** Atomically publish a successful proof cache entry after TLC has exited as required. */
-export function writeFormalProofCache(cacheDirectory, descriptor) {
+export function writeFormalProofCache(cacheDirectory, descriptor, evidence = undefined) {
+  if (
+    descriptor.outcome === "model-passed" &&
+    !validFormalModelProofSummary(evidence)
+  ) {
+    throw new Error("Positive formal proof cache entries require exact terminal TLC state/depth evidence.");
+  }
   mkdirSync(cacheDirectory, { recursive: true });
   const key = formalProofCacheKey(descriptor);
   const path = formalProofCachePath(cacheDirectory, key);
@@ -188,6 +231,7 @@ export function writeFormalProofCache(cacheDirectory, descriptor) {
     cacheKey: key,
     status: "verified",
     descriptor,
+    ...(descriptor.outcome === "model-passed" ? { evidence } : {}),
   };
   try {
     writeFileSync(temporaryPath, `${JSON.stringify(record, undefined, 2)}\n`, { flag: "wx" });
