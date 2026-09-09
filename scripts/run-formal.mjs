@@ -17,6 +17,7 @@ import {
   formalModels,
 } from "./formal-models.mjs";
 import {
+  formalMutationProcessProvesInvariantRejection,
   formalProofDescriptor,
   readFormalProofCache,
   writeFormalProofCache,
@@ -134,7 +135,7 @@ function runJava(args, { capture = false, maxBytes = 64 * 1024 * 1024 } = {}) {
         rejectPromise(new Error(`TLC captured output exceeded ${maxBytes} bytes.`));
         return;
       }
-      resolvePromise({ status: code ?? 1, signal, stdout, stderr });
+      resolvePromise({ status: code, signal, stdout, stderr });
     });
   });
 }
@@ -254,13 +255,21 @@ async function runInvariantMutationCheck(model, config, invariant) {
       { capture: true }
     );
     const output = `${result.stdout ?? ""}${result.stderr ?? ""}`;
-    const expectedViolation = `Invariant ${invariant} is violated.`;
-    if (result.status === 0 || !output.includes(expectedViolation)) {
+    if (
+      !formalMutationProcessProvesInvariantRejection({
+        status: result.status,
+        signal: result.signal,
+        output,
+        invariant,
+      })
+    ) {
       process.stderr.write(output);
       console.error(
-        `TLC mutation '${config}' did not reject '${invariant}'. Metadata remains at ${modelMetadataDirectory}.`
+        `TLC mutation '${config}' did not complete with the expected '${invariant}' safety violation. Metadata remains at ${modelMetadataDirectory}.`
       );
-      return result.status === 0 ? 1 : result.status ?? 1;
+      return typeof result.status === "number" && result.status !== 0
+        ? result.status
+        : 1;
     }
     mutationRejected = true;
     console.log(`TLC rejected '${config}' through '${invariant}'.`);

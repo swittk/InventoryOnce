@@ -11,6 +11,10 @@ import { dirname, join, relative, resolve } from "node:path";
 
 /** Bump only when the semantic proof invocation contract itself changes. */
 export const FORMAL_PROOF_CACHE_SCHEMA_VERSION = 1;
+/** Pinned TLC 1.7.4 process exit for a completed safety-invariant violation. */
+export const TLC_INVARIANT_VIOLATION_EXIT_CODE = 12;
+/** Bump when mutation-child completion/witness acceptance becomes stricter. */
+export const FORMAL_MUTATION_PROCESS_CONTRACT_VERSION = 2;
 
 /** Compare paths deterministically without locale-sensitive ordering. */
 function compareCodeUnits(left, right) {
@@ -109,9 +113,26 @@ export function formalProofDescriptor({
     config,
     outcome,
     invariant,
+    ...(outcome === "mutation-rejected"
+      ? { mutationProcessContractVersion: FORMAL_MUTATION_PROCESS_CONTRACT_VERSION }
+      : {}),
     tlaToolsSha256,
     inputs,
   };
+}
+
+/** Return whether one completed TLC child proves the named mutation invariant was violated. */
+export function formalMutationProcessProvesInvariantRejection({
+  status,
+  signal,
+  output,
+  invariant,
+}) {
+  return (
+    signal === null &&
+    status === TLC_INVARIANT_VIOLATION_EXIT_CODE &&
+    output.includes(`Invariant ${invariant} is violated.`)
+  );
 }
 
 /** Return the stable content address of one exact proof descriptor. */
