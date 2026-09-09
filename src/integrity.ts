@@ -24,6 +24,7 @@ import {
 } from "./reservations.js";
 import { inventoryStockSelectorIsSubset } from "./selectors.js";
 import type { InventoryWorldState } from "./world.js";
+import { inventorySparseRecordValue } from "./sparse-record.js";
 
 /** One append-only reservation row/operation change frozen in a compact durable plan. */
 export interface InventoryReservationBookDelta {
@@ -161,13 +162,13 @@ export function createInventoryReservationBookDelta(
       "Inventory reservation planner must append exactly its own lifecycle operation."
     );
   }
-  const operation = next.operations[operationId];
+  const operation = inventorySparseRecordValue(next.operations, operationId);
   if (operation === undefined || operation.reservationId !== reservationId) {
     throw new Error(
       "Inventory reservation receipt must name the row changed by its lifecycle operation."
     );
   }
-  const reservation = next.reservations[operation.reservationId];
+  const reservation = inventorySparseRecordValue(next.reservations, operation.reservationId);
   if (reservation === undefined) {
     throw new Error(
       "Inventory reservation lifecycle operation references a missing row."
@@ -175,7 +176,7 @@ export function createInventoryReservationBookDelta(
   }
   retainUnchangedReservationRows(base, next, operation.reservationId);
   assertAllowedReservationTransition(
-    base.reservations[operation.reservationId],
+    inventorySparseRecordValue(base.reservations, operation.reservationId),
     reservation,
     operation
   );
@@ -229,20 +230,20 @@ export function createInventoryCountBookDelta(
       "Inventory count planner must append exactly its own lifecycle operation."
     );
   }
-  const operation = next.operations[operationId];
+  const operation = inventorySparseRecordValue(next.operations, operationId);
   if (operation === undefined || operation.countId !== countId) {
     throw new Error(
       "Inventory count receipt must name the row changed by its lifecycle operation."
     );
   }
-  const count = next.counts[operation.countId];
+  const count = inventorySparseRecordValue(next.counts, operation.countId);
   if (count === undefined)
     throw new Error(
       "Inventory count lifecycle operation references a missing row."
     );
   retainUnchangedCountRows(base, next, operation.countId);
   assertAllowedCountTransition(
-    base.counts[operation.countId],
+    inventorySparseRecordValue(base.counts, operation.countId),
     count,
     operation
   );
@@ -351,7 +352,7 @@ function retainEveryReservationOperation(
   next: InventoryReservationBook
 ): void {
   for (const [operationId, operation] of Object.entries(base.operations)) {
-    if (!sameJson(operation, next.operations[operationId])) {
+    if (!sameJson(operation, inventorySparseRecordValue(next.operations, operationId))) {
       throw new Error(
         "Inventory reservation planner deleted or changed append-only operation evidence."
       );
@@ -369,7 +370,7 @@ function retainUnchangedReservationRows(
     base.reservations
   )) {
     if (reservationId === changedReservationId) continue;
-    if (!sameJson(reservation, next.reservations[reservationId])) {
+    if (!sameJson(reservation, inventorySparseRecordValue(next.reservations, reservationId))) {
       throw new Error(
         "Inventory reservation planner changed or deleted an unrelated row."
       );
@@ -378,7 +379,7 @@ function retainUnchangedReservationRows(
   for (const reservationId of Object.keys(next.reservations)) {
     if (
       reservationId !== changedReservationId &&
-      base.reservations[reservationId] === undefined
+      inventorySparseRecordValue(base.reservations, reservationId) === undefined
     ) {
       throw new Error(
         "Inventory reservation planner added a row not named by its lifecycle operation."
@@ -508,7 +509,7 @@ function retainEveryCountOperation(
   next: InventoryCountBook
 ): void {
   for (const [operationId, operation] of Object.entries(base.operations)) {
-    if (!sameJson(operation, next.operations[operationId])) {
+    if (!sameJson(operation, inventorySparseRecordValue(next.operations, operationId))) {
       throw new Error(
         "Inventory count planner deleted or changed append-only operation evidence."
       );
@@ -524,14 +525,14 @@ function retainUnchangedCountRows(
 ): void {
   for (const [countId, count] of Object.entries(base.counts)) {
     if (countId === changedCountId) continue;
-    if (!sameJson(count, next.counts[countId])) {
+    if (!sameJson(count, inventorySparseRecordValue(next.counts, countId))) {
       throw new Error(
         "Inventory count planner changed or deleted an unrelated row."
       );
     }
   }
   for (const countId of Object.keys(next.counts)) {
-    if (countId !== changedCountId && base.counts[countId] === undefined) {
+    if (countId !== changedCountId && inventorySparseRecordValue(base.counts, countId) === undefined) {
       throw new Error(
         "Inventory count planner added a row not named by its lifecycle operation."
       );
@@ -638,7 +639,7 @@ function addedRecordKeys<T>(
 ): string[] {
   const added: string[] = [];
   for (const key of Object.keys(next)) {
-    if (base[key] === undefined) added.push(key);
+    if (inventorySparseRecordValue(base, key) === undefined) added.push(key);
   }
   added.sort();
   return added;

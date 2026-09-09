@@ -1,4 +1,10 @@
 import { compareInventoryIdentityText } from "./ordering.js";
+import {
+  cloneInventorySparseRecord,
+  createInventorySparseRecord,
+  inventorySparseRecordValue,
+  setInventorySparseRecordValue,
+} from "./sparse-record.js";
 import { inventoryMetadataFingerprint } from "./canonical.js";
 import type { InventoryCatalog } from "./catalog.js";
 import {
@@ -162,21 +168,21 @@ export interface ProjectInventoryEventsInput {
 export function emptyInventoryProjectionState(): InventoryProjectionState {
   return {
     positions: {},
-    positionIdsByItemId: {},
-    positionIdsByItemRevisionId: {},
+    positionIdsByItemId: createInventorySparseRecord(),
+    positionIdsByItemRevisionId: createInventorySparseRecord(),
     positionIdsByContainerIdentity: {},
     positiveLayerStartedAtByPositionId: {},
     positivePositionIdBySerialIdentity: {},
     containers: {},
     containerRootEventIdByIdentity: {},
     lots: {},
-    lotIdentitiesByItemId: {},
+    lotIdentitiesByItemId: createInventorySparseRecord(),
     lotRootEventIdByIdentity: {},
-    transfers: {},
-    events: {},
+    transfers: createInventorySparseRecord(),
+    events: createInventorySparseRecord(),
     eventIdsBySequence: {},
-    eventIdByOperationId: {},
-    correctionEventIdByCorrectedEventId: {},
+    eventIdByOperationId: createInventorySparseRecord(),
+    correctionEventIdByCorrectedEventId: createInventorySparseRecord(),
     traceability: emptyInventoryTraceabilityState(),
     lastRecordSequence: 0,
   };
@@ -204,10 +210,12 @@ function applyInventoryCommittedEventInternal(
     event.recordedAt,
     event.recordSequence
   );
-  const earlierEventId =
-    state.eventIdByOperationId[normalizedEvent.operationId];
+  const earlierEventId = inventorySparseRecordValue(
+    state.eventIdByOperationId,
+    normalizedEvent.operationId
+  );
   if (earlierEventId !== undefined) {
-    const earlier = state.events[earlierEventId];
+    const earlier = inventorySparseRecordValue(state.events, earlierEventId);
     if (earlier === undefined) {
       throw new Error("Inventory operation index references a missing event.");
     }
@@ -219,7 +227,10 @@ function applyInventoryCommittedEventInternal(
     }
     return { state, event: earlier, replayed: true };
   }
-  const sameEventId = state.events[normalizedEvent.eventId];
+  const sameEventId = inventorySparseRecordValue(
+    state.events,
+    normalizedEvent.eventId
+  );
   if (sameEventId !== undefined) {
     if (
       inventoryEventIntentFingerprint(sameEventId) !==
@@ -249,10 +260,13 @@ function applyInventoryCommittedEventInternal(
   const correctionEventIdByCorrectedEventId: Record<string, string> =
     mutateProjection
       ? (state.correctionEventIdByCorrectedEventId as Record<string, string>)
-      : { ...state.correctionEventIdByCorrectedEventId };
+      : cloneInventorySparseRecord(state.correctionEventIdByCorrectedEventId);
   if (normalizedEvent.correction !== undefined) {
     const correctedEventId = normalizedEvent.correction.correctsEventId;
-    const correctedEvent = state.events[correctedEventId];
+    const correctedEvent = inventorySparseRecordValue(
+      state.events,
+      correctedEventId
+    );
     if (correctedEvent === undefined) {
       throw new Error(
         `Correction target event '${correctedEventId}' does not exist.`
@@ -263,8 +277,10 @@ function applyInventoryCommittedEventInternal(
         "Correction must name the retained root event, not a correction event."
       );
     }
-    const currentCorrectionEventId =
-      correctionEventIdByCorrectedEventId[correctedEventId];
+    const currentCorrectionEventId = inventorySparseRecordValue(
+      correctionEventIdByCorrectedEventId,
+      correctedEventId
+    );
     const supersedesCorrectionEventId =
       normalizedEvent.correction.supersedesCorrectionEventId;
     if (currentCorrectionEventId === undefined) {
@@ -278,8 +294,11 @@ function applyInventoryCommittedEventInternal(
         `Correction must supersede current correction '${currentCorrectionEventId}'.`
       );
     }
-    correctionEventIdByCorrectedEventId[correctedEventId] =
-      normalizedEvent.eventId;
+    setInventorySparseRecordValue(
+      correctionEventIdByCorrectedEventId,
+      correctedEventId,
+      normalizedEvent.eventId
+    );
   }
 
   /** Copy used while deriving the next all-or-nothing container-metadata projection. */
@@ -368,7 +387,7 @@ function applyInventoryCommittedEventInternal(
   const lotIdentitiesByItemId: Record<string, readonly string[]> =
     mutateProjection
       ? (state.lotIdentitiesByItemId as Record<string, readonly string[]>)
-      : { ...state.lotIdentitiesByItemId };
+      : cloneInventorySparseRecord(state.lotIdentitiesByItemId);
   /** One desired final membership per touched item lot-index row. */
   const lotIndexMutations = new Map<string, Map<string, boolean>>();
   /** Retained root ownership survives even when one correction temporarily omits the lot master. */
@@ -472,12 +491,12 @@ function applyInventoryCommittedEventInternal(
   const positionIdsByItemId: Record<string, readonly string[]> =
     mutateProjection
       ? (state.positionIdsByItemId as Record<string, readonly string[]>)
-      : { ...state.positionIdsByItemId };
+      : cloneInventorySparseRecord(state.positionIdsByItemId);
   /** Copy-on-write revision indexes support revisioned collections and summaries. */
   const positionIdsByItemRevisionId: Record<string, readonly string[]> =
     mutateProjection
       ? (state.positionIdsByItemRevisionId as Record<string, readonly string[]>)
-      : { ...state.positionIdsByItemRevisionId };
+      : cloneInventorySparseRecord(state.positionIdsByItemRevisionId);
   /** Copy-on-write handling-unit index supports whole-container operations across item types. */
   const positionIdsByContainerIdentity: Record<string, readonly string[]> =
     mutateProjection
@@ -645,17 +664,25 @@ function applyInventoryCommittedEventInternal(
     : state.traceability;
   const events: Record<string, InventoryCommittedEvent> = mutateProjection
     ? (state.events as Record<string, InventoryCommittedEvent>)
-    : { ...state.events };
+    : cloneInventorySparseRecord(state.events);
   const eventIdsBySequence: Record<string, string> = mutateProjection
     ? (state.eventIdsBySequence as Record<string, string>)
     : { ...state.eventIdsBySequence };
   const eventIdByOperationId: Record<string, string> = mutateProjection
     ? (state.eventIdByOperationId as Record<string, string>)
-    : { ...state.eventIdByOperationId };
-  events[normalizedEvent.eventId] = normalizedEvent;
+    : cloneInventorySparseRecord(state.eventIdByOperationId);
+  setInventorySparseRecordValue(
+    events,
+    normalizedEvent.eventId,
+    normalizedEvent
+  );
   eventIdsBySequence[String(normalizedEvent.recordSequence)] =
     normalizedEvent.eventId;
-  eventIdByOperationId[normalizedEvent.operationId] = normalizedEvent.eventId;
+  setInventorySparseRecordValue(
+    eventIdByOperationId,
+    normalizedEvent.operationId,
+    normalizedEvent.eventId
+  );
 
   return {
     event: normalizedEvent,
@@ -806,18 +833,27 @@ function candidatePositionIds(
 ): readonly string[] {
   const revisionIds = selector.itemRevisionIds;
   if (revisionIds === undefined) {
-    return state.positionIdsByItemId[selector.itemId] ?? [];
+    return inventorySparseRecordValue(
+      state.positionIdsByItemId,
+      selector.itemId
+    ) ?? [];
   }
   if (revisionIds.length === 1) {
     const revisionId = revisionIds[0];
     return revisionId === undefined
       ? []
-      : state.positionIdsByItemRevisionId[revisionId] ?? [];
+      : inventorySparseRecordValue(
+          state.positionIdsByItemRevisionId,
+          revisionId
+        ) ?? [];
   }
   const candidates = new Set<string>();
   for (const revisionId of revisionIds) {
-    for (const positionId of state.positionIdsByItemRevisionId[revisionId] ??
-      []) {
+    for (const positionId of
+      inventorySparseRecordValue(
+        state.positionIdsByItemRevisionId,
+        revisionId
+      ) ?? []) {
       candidates.add(positionId);
     }
   }
@@ -881,7 +917,9 @@ function applyIndexedIdentityMutations(
   mutations: ReadonlyMap<string, ReadonlyMap<string, boolean>>
 ): void {
   for (const [groupId, desiredMembership] of mutations) {
-    const next = new Set(index[groupId] ?? []);
+    const next = new Set(
+      inventorySparseRecordValue(index, groupId) ?? []
+    );
     for (const [positionId, present] of desiredMembership) {
       if (present) next.add(positionId);
       else next.delete(positionId);
@@ -892,7 +930,7 @@ function applyIndexedIdentityMutations(
     }
     const ordered = [...next];
     ordered.sort();
-    index[groupId] = ordered;
+    setInventorySparseRecordValue(index, groupId, ordered);
   }
 }
 

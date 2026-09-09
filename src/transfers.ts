@@ -39,6 +39,7 @@ import {
   type InventoryMeasurementVector,
 } from "./measurements.js";
 import { compareInventoryIdentityText } from "./ordering.js";
+import { inventorySparseRecordValue } from "./sparse-record.js";
 import {
   assertInventoryIdentity,
   inventoryStockPositionIdentity,
@@ -154,7 +155,7 @@ export function applyInventoryTransferLifecycleEvent(
     positions,
     event.stockEffects
   );
-  const existing = current[change.transferId];
+  const existing = inventorySparseRecordValue(current, change.transferId);
   if (change.action === InventoryTransferLifecycleAction.Prepare) {
     if (existing !== undefined)
       throw new Error(

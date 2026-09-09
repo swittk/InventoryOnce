@@ -35,6 +35,7 @@ import {
 import { inventoryMeasurementAt } from "./measurements.js";
 import { inventoryStockPositionIdentity } from "./model.js";
 import { compareQuantity, negateQuantity, quantityEq } from "./quantity.js";
+import { inventorySparseRecordValue } from "./sparse-record.js";
 import {
   InventoryApplyingOperationConflictError,
   InventoryDurableOperationState,
@@ -213,7 +214,10 @@ function completedInventoryOperationEvent(
   world: InventoryWorldState
 ): InventoryCommittedEvent | undefined {
   if (receipt.eventId === undefined) return undefined;
-  const event = world.projection.events[receipt.eventId];
+  const event = inventorySparseRecordValue(
+    world.projection.events,
+    receipt.eventId
+  );
   if (event === undefined) {
     throw new Error(
       `Completed inventory operation receipt references missing event '${receipt.eventId}'.`
@@ -417,7 +421,10 @@ function assertReservationConsumptionMatchesIssue({
   operationId,
 }: AssertReservationConsumptionMatchesIssueInput): void {
   const consumed = reservationDelta.reservation;
-  const baseReservation = baseBook.reservations[consumed.reservationId];
+  const baseReservation = inventorySparseRecordValue(
+    baseBook.reservations,
+    consumed.reservationId
+  );
   if (
     baseReservation === undefined ||
     baseReservation.allocations.length === 0 ||

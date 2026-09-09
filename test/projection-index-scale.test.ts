@@ -542,7 +542,9 @@ describe("projection index real-world scale", () => {
     );
     expect(facade).toContain("applyPolicyAllocationToPlanningPositions(");
     expect(facade).not.toContain("inventoryWorldAfterPolicyAllocation(");
-    expect(facade).toContain("projection.lotIdentitiesByItemId[itemId]");
+    expect(facade).toContain(
+      "inventorySparseRecordValue(projection.lotIdentitiesByItemId, itemId)"
+    );
     expect(facade).not.toContain(
       "for (const projected of Object.values(world.projection.lots))"
     );

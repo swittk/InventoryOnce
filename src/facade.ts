@@ -187,6 +187,11 @@ import {
   type ListInventoryPackagingRevisionsInput,
 } from "./read-model.js";
 import {
+  createInventorySparseRecord,
+  inventorySparseRecordValue,
+  setInventorySparseRecordValue,
+} from "./sparse-record.js";
+import {
   inventoryAmountForPrimaryAllocation,
   planInventoryAllocation,
   type InventoryAllocationPolicyRequest,
@@ -1863,7 +1868,7 @@ function createInventoryOnceEventResult(
   const eventId = result.receipt.eventId;
   if (eventId === undefined)
     throw new Error("Inventory event command completed without eventId.");
-  const event = result.world.projection.events[eventId];
+  const event = inventorySparseRecordValue(result.world.projection.events, eventId);
   if (event === undefined)
     throw new Error("Inventory event receipt references missing event.");
   return { receipt: result.receipt, event, replayed: result.replayed };
@@ -1924,7 +1929,7 @@ async function commitInventoryTransferOperation(
   const event = result.event;
   if (event === undefined)
     throw new Error("Inventory transfer operation completed without an event.");
-  const transfer = result.world.projection.transfers?.[transferId];
+  const transfer = inventorySparseRecordValue(result.world.projection.transfers, transferId);
   if (transfer === undefined)
     throw new Error(
       `Inventory transfer '${transferId}' is missing after publication.`
@@ -1942,7 +1947,7 @@ function requirePublishedInventoryTransfer(
   world: InventoryWorldState,
   transferId: string
 ): InventoryTransfer {
-  const transfer = world.projection.transfers?.[transferId];
+  const transfer = inventorySparseRecordValue(world.projection.transfers, transferId);
   if (transfer === undefined)
     throw new Error(`Unknown inventory transfer '${transferId}'.`);
   return transfer;
@@ -1958,7 +1963,7 @@ function createInventoryOnceReservationResult(
       "Inventory reservation command completed without reservationId."
     );
   }
-  const reservation = result.world.reservations.reservations[reservationId];
+  const reservation = inventorySparseRecordValue(result.world.reservations.reservations, reservationId);
   if (reservation === undefined) {
     throw new Error(
       "Inventory reservation receipt references missing reservation."
@@ -1967,7 +1972,10 @@ function createInventoryOnceReservationResult(
   const event =
     result.receipt.eventId === undefined
       ? undefined
-      : result.world.projection.events[result.receipt.eventId];
+      : inventorySparseRecordValue(
+          result.world.projection.events,
+          result.receipt.eventId
+        );
   return {
     receipt: result.receipt,
     reservation,
@@ -1984,13 +1992,16 @@ function createInventoryOnceCountResult(
   if (countId === undefined) {
     throw new Error("Inventory count command completed without countId.");
   }
-  const count = result.world.counts.counts[countId];
+  const count = inventorySparseRecordValue(result.world.counts.counts, countId);
   if (count === undefined)
     throw new Error("Inventory count receipt references missing count.");
   const event =
     result.receipt.eventId === undefined
       ? undefined
-      : result.world.projection.events[result.receipt.eventId];
+      : inventorySparseRecordValue(
+          result.world.projection.events,
+          result.receipt.eventId
+        );
   return {
     receipt: result.receipt,
     count,
@@ -2252,7 +2263,9 @@ class InventoryOnceTransformationsImplementation
     let applicable = true;
     for (const line of definition.inputs) {
       const item = catalog.itemRevision(line.itemRevisionId);
-      const requested = input.selectorsByInputLine?.[line.lineId];
+      const requested = input.selectorsByInputLine === undefined
+        ? undefined
+        : inventorySparseRecordValue(input.selectorsByInputLine, line.lineId);
       if (requested !== undefined && requested.itemId !== item.itemId)
         throw new Error(
           `Transformation input '${line.lineId}' selector belongs to another item.`
@@ -3357,14 +3370,16 @@ async function commitInventoryPolicyBatch(
       const planningPositions: Record<string, InventoryStockPosition> = {
         ...world.projection.positions,
       };
-      const planningPositionIdsByItemRevisionId: Record<
-        string,
-        readonly string[]
-      > = {};
+      const planningPositionIdsByItemRevisionId =
+        createInventorySparseRecord<readonly string[]>();
       for (const [revisionId, positionIds] of Object.entries(
         world.projection.positionIdsByItemRevisionId
       )) {
-        planningPositionIdsByItemRevisionId[revisionId] = [...positionIds];
+        setInventorySparseRecordValue(
+          planningPositionIdsByItemRevisionId,
+          revisionId,
+          [...positionIds]
+        );
       }
       const planningWorld: InventoryWorldState = {
         ...world,
@@ -3679,11 +3694,16 @@ function applyPolicyDeficitToPlanningProjection(
             resolved.measurements
           ),
         };
-  const indexed = positionIdsByItemRevisionId[item.revisionId] ?? [];
+  const indexed =
+    inventorySparseRecordValue(positionIdsByItemRevisionId, item.revisionId) ?? [];
   if (!indexed.includes(identity)) {
     const next = [...indexed, identity];
     next.sort();
-    positionIdsByItemRevisionId[item.revisionId] = next;
+    setInventorySparseRecordValue(
+      positionIdsByItemRevisionId,
+      item.revisionId,
+      next
+    );
   }
 }
 
@@ -5652,7 +5672,10 @@ class InventoryOnceContainersImplementation
             `Inventory container ${identity} has no retained metadata assertion to correct.`
           );
         }
-        const root = world.projection.events[rootEventId];
+        const root = inventorySparseRecordValue(
+          world.projection.events,
+          rootEventId
+        );
         if (root === undefined) {
           throw new Error(
             "Inventory container metadata points to a missing retained root event."
@@ -6142,7 +6165,10 @@ class InventoryOnceLotsImplementation implements InventoryOnceLotsApi {
             `Inventory lot ${identity} has no retained metadata assertion to correct.`
           );
         }
-        const root = world.projection.events[rootEventId];
+        const root = inventorySparseRecordValue(
+          world.projection.events,
+          rootEventId
+        );
         if (root === undefined) {
           throw new Error(
             "Inventory lot metadata points to a missing retained root event."
@@ -6315,7 +6341,7 @@ class InventoryOnceTransfersImplementation
   ): Promise<InventoryTransfer | undefined> {
     const internals = requireInventoryOnceInternals(this.owner);
     const world = await internals.storage.readWorld();
-    return world.projection.transfers?.[input.transferId];
+    return inventorySparseRecordValue(world.projection.transfers, input.transferId);
   }
 }
 
@@ -6480,7 +6506,10 @@ class InventoryOnceReservationsImplementation
           "reservation policy allocation"
         );
         const reservation =
-          world.reservations.reservations[input.reservationId];
+          inventorySparseRecordValue(
+          world.reservations.reservations,
+          input.reservationId
+        );
         if (reservation === undefined)
           throw new Error("Unknown inventory reservation.");
         const item = internals.catalog.itemRevision(reservation.itemRevisionId);
@@ -6586,7 +6615,10 @@ class InventoryOnceReservationsImplementation
           "reservation consumption"
         );
         const reservation =
-          world.reservations.reservations[input.reservationId];
+          inventorySparseRecordValue(
+          world.reservations.reservations,
+          input.reservationId
+        );
         if (reservation === undefined)
           throw new Error("Unknown inventory reservation.");
         const event = createReservationConsumptionEvent(
@@ -6643,7 +6675,10 @@ class InventoryOnceReservationsImplementation
           "reservation allocated consumption"
         );
         const reservation =
-          world.reservations.reservations[input.reservationId];
+          inventorySparseRecordValue(
+          world.reservations.reservations,
+          input.reservationId
+        );
         if (reservation === undefined)
           throw new Error("Unknown inventory reservation.");
         const fulfillment = createAllocatedReservationFulfillment(
@@ -7719,7 +7754,7 @@ function inventoryCommittedEventsInSequence(
         `Inventory event sequence index is missing recordSequence ${sequence}.`
       );
     }
-    const event = projection.events[eventId];
+    const event = inventorySparseRecordValue(projection.events, eventId);
     if (event === undefined || event.recordSequence !== sequence) {
       throw new Error(
         `Inventory event sequence index disagrees at recordSequence ${sequence}.`
@@ -8341,17 +8376,17 @@ class InventoryOnceReadSnapshotImplementation
 
   /** Read one committed event by identity. */
   event(eventId: string): InventoryCommittedEvent | undefined {
-    return this.world.projection.events[eventId];
+    return inventorySparseRecordValue(this.world.projection.events, eventId);
   }
 
   /** Read one current reservation by identity. */
   reservation(reservationId: string): InventoryReservation | undefined {
-    return this.world.reservations.reservations[reservationId];
+    return inventorySparseRecordValue(this.world.reservations.reservations, reservationId);
   }
 
   /** Read one current physical count by identity. */
   count(countId: string): InventoryCount | undefined {
-    return this.world.counts.counts[countId];
+    return inventorySparseRecordValue(this.world.counts.counts, countId);
   }
 
   /** Check current physical stock against claims at one lifecycle time. */
@@ -8514,7 +8549,7 @@ class InventoryOnceReadImplementation implements InventoryOnceReadApi {
   /** Read one committed event by identity. */
   async event(eventId: string): Promise<InventoryCommittedEvent | undefined> {
     const world = await this.world();
-    return world.projection.events[eventId];
+    return inventorySparseRecordValue(world.projection.events, eventId);
   }
 
   /** Read one current reservation by identity. */
@@ -8522,13 +8557,13 @@ class InventoryOnceReadImplementation implements InventoryOnceReadApi {
     reservationId: string
   ): Promise<InventoryReservation | undefined> {
     const world = await this.world();
-    return world.reservations.reservations[reservationId];
+    return inventorySparseRecordValue(world.reservations.reservations, reservationId);
   }
 
   /** Read one current physical count by identity. */
   async count(countId: string): Promise<InventoryCount | undefined> {
     const world = await this.world();
-    return world.counts.counts[countId];
+    return inventorySparseRecordValue(world.counts.counts, countId);
   }
   /** Check current physical stock against claims active now or at one supplied lifecycle time. */
   async reservationFeasibility(
@@ -8579,7 +8614,7 @@ function inventoryProjectedLots(
   const identities =
     itemId === undefined
       ? Object.keys(projection.lots)
-      : projection.lotIdentitiesByItemId[itemId] ?? [];
+      : inventorySparseRecordValue(projection.lotIdentitiesByItemId, itemId) ?? [];
   const result: InventoryProjectedLotDefinition[] = [];
   for (const identity of identities) {
     const projected = projection.lots[identity];

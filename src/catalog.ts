@@ -30,6 +30,10 @@ import {
   type Quantity,
   type UnitCode,
 } from "./quantity.js";
+import {
+  createInventorySparseRecord,
+  setInventorySparseRecordValue,
+} from "./sparse-record.js";
 
 /** Whether one measurement axis is the stock authority or measured independently. */
 export enum InventoryMeasurementAxisRole {
@@ -1855,16 +1859,16 @@ export function emptyInventoryCatalogSnapshot(): InventoryCatalogSnapshot {
   return {
     digest: inventoryCatalogDigest(input),
     itemRevisions: [],
-    activeItemRevisionIds: {},
+    activeItemRevisionIds: createInventorySparseRecord(),
     packagingRevisions: [],
     compositionRevisions: [],
-    activeCompositionRevisionIds: {},
+    activeCompositionRevisionIds: createInventorySparseRecord(),
     transformationRevisions: [],
-    activeTransformationRevisionIds: {},
+    activeTransformationRevisionIds: createInventorySparseRecord(),
     collectionRevisions: [],
-    activeCollectionRevisionIds: {},
+    activeCollectionRevisionIds: createInventorySparseRecord(),
     fungibilityRevisions: [],
-    activeFungibilityRevisionIds: {},
+    activeFungibilityRevisionIds: createInventorySparseRecord(),
   };
 }
 
@@ -2001,7 +2005,7 @@ function createInventoryCatalogParts(
   itemRevisions.sort(compareItemRevision);
 
   const activeItemById = new Map<ItemId, InventoryItemDefinitionRevision>();
-  const activeItemRevisionIds: Record<string, ItemRevisionId> = {};
+  const activeItemRevisionIds = createInventorySparseRecord<ItemRevisionId>();
   const activeItemEntries = Object.entries(input.activeItemRevisionIds);
   for (const [itemId, revisionId] of activeItemEntries) {
     const item = itemByRevisionId.get(revisionId);
@@ -2016,12 +2020,7 @@ function createInventoryCatalogParts(
       );
     }
     activeItemById.set(itemId, item);
-    Object.defineProperty(activeItemRevisionIds, itemId, {
-      value: revisionId,
-      enumerable: true,
-      configurable: true,
-      writable: true,
-    });
+    setInventorySparseRecordValue(activeItemRevisionIds, itemId, revisionId);
   }
   const retainedItemIds = new Set<ItemId>();
   for (const item of itemRevisions) retainedItemIds.add(item.itemId);
@@ -2102,10 +2101,7 @@ function createInventoryCatalogParts(
     InventoryCompositionId,
     InventoryCompositionDefinitionRevision
   >();
-  const activeCompositionRevisionIds: Record<
-    string,
-    InventoryCompositionRevisionId
-  > = {};
+  const activeCompositionRevisionIds = createInventorySparseRecord<InventoryCompositionRevisionId>();
   for (const [compositionId, revisionId] of Object.entries(
     input.activeCompositionRevisionIds ?? {}
   )) {
@@ -2121,7 +2117,7 @@ function createInventoryCatalogParts(
       );
     }
     activeCompositionById.set(compositionId, composition);
-    activeCompositionRevisionIds[compositionId] = revisionId;
+    setInventorySparseRecordValue(activeCompositionRevisionIds, compositionId, revisionId);
   }
   const retainedCompositionIds = new Set<InventoryCompositionId>();
   for (const composition of compositionRevisions) {
@@ -2160,10 +2156,7 @@ function createInventoryCatalogParts(
     InventoryTransformationId,
     InventoryTransformationDefinitionRevision
   >();
-  const activeTransformationRevisionIds: Record<
-    string,
-    InventoryTransformationRevisionId
-  > = {};
+  const activeTransformationRevisionIds = createInventorySparseRecord<InventoryTransformationRevisionId>();
   for (const [transformationId, revisionId] of Object.entries(
     input.activeTransformationRevisionIds ?? {}
   )) {
@@ -2179,7 +2172,7 @@ function createInventoryCatalogParts(
       );
     }
     activeTransformationById.set(transformationId, transformation);
-    activeTransformationRevisionIds[transformationId] = revisionId;
+    setInventorySparseRecordValue(activeTransformationRevisionIds, transformationId, revisionId);
   }
   const retainedTransformationIds = new Set<InventoryTransformationId>();
   for (const transformation of transformationRevisions) {
@@ -2205,10 +2198,7 @@ function createInventoryCatalogParts(
     InventoryCollectionId,
     InventoryCollectionDefinitionRevision
   >();
-  const activeCollectionRevisionIds: Record<
-    string,
-    InventoryCollectionRevisionId
-  > = {};
+  const activeCollectionRevisionIds = createInventorySparseRecord<InventoryCollectionRevisionId>();
   for (const [collectionId, revisionId] of Object.entries(
     input.activeCollectionRevisionIds ?? {}
   )) {
@@ -2224,7 +2214,7 @@ function createInventoryCatalogParts(
       );
     }
     activeCollectionById.set(collectionId, collection);
-    activeCollectionRevisionIds[collectionId] = revisionId;
+    setInventorySparseRecordValue(activeCollectionRevisionIds, collectionId, revisionId);
   }
   const retainedCollectionIds = new Set<InventoryCollectionId>();
   for (const collection of collectionRevisions) {
@@ -2262,10 +2252,7 @@ function createInventoryCatalogParts(
     InventoryFungibilityPoolId,
     InventoryFungibilityPoolDefinitionRevision
   >();
-  const activeFungibilityRevisionIds: Record<
-    string,
-    InventoryFungibilityRevisionId
-  > = {};
+  const activeFungibilityRevisionIds = createInventorySparseRecord<InventoryFungibilityRevisionId>();
   const activePoolEntries = Object.entries(
     input.activeFungibilityRevisionIds ?? {}
   );
@@ -2282,7 +2269,7 @@ function createInventoryCatalogParts(
       );
     }
     activeFungibilityById.set(poolId, pool);
-    activeFungibilityRevisionIds[poolId] = revisionId;
+    setInventorySparseRecordValue(activeFungibilityRevisionIds, poolId, revisionId);
   }
   const retainedPoolIds = new Set<InventoryFungibilityPoolId>();
   for (const pool of fungibilityRevisions) retainedPoolIds.add(pool.poolId);
@@ -2849,14 +2836,13 @@ function cloneAndFreezeInventoryMetadata(
   metadata: InventoryMetadata | undefined
 ): InventoryMetadata | undefined {
   if (metadata === undefined) return undefined;
-  const result: Record<string, InventoryMetadataValue> = {};
+  const result = createInventorySparseRecord<InventoryMetadataValue>();
   for (const [key, value] of Object.entries(metadata)) {
-    Object.defineProperty(result, key, {
-      value: cloneAndFreezeInventoryMetadataValue(value),
-      enumerable: true,
-      configurable: true,
-      writable: true,
-    });
+    setInventorySparseRecordValue(
+      result,
+      key,
+      cloneAndFreezeInventoryMetadataValue(value)
+    );
   }
   return Object.freeze(result);
 }
@@ -2880,14 +2866,13 @@ function cloneAndFreezeInventoryMetadataValue(
   if (Array.isArray(value)) {
     return Object.freeze(value.map(cloneAndFreezeInventoryMetadataValue));
   }
-  const result: Record<string, InventoryMetadataValue> = {};
+  const result = createInventorySparseRecord<InventoryMetadataValue>();
   for (const [key, child] of Object.entries(value)) {
-    Object.defineProperty(result, key, {
-      value: cloneAndFreezeInventoryMetadataValue(child),
-      enumerable: true,
-      configurable: true,
-      writable: true,
-    });
+    setInventorySparseRecordValue(
+      result,
+      key,
+      cloneAndFreezeInventoryMetadataValue(child)
+    );
   }
   return Object.freeze(result);
 }

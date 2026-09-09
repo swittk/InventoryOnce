@@ -25,6 +25,7 @@ import {
   type InventoryTransformationLine,
 } from "./commands.js";
 import type { InventoryEventDraft } from "./events.js";
+import { inventorySparseRecordValue } from "./sparse-record.js";
 import {
   inventoryMeasurementsFingerprint,
   multiplyInventoryMeasurementsByWholeNumber,
@@ -224,7 +225,9 @@ export function createInventoryCompositionOpenEvent(
   };
   const produce: InventoryTransformationLine[] = [];
   for (const output of composition.outputs) {
-    const placement = input.outputPlacements?.[output.outputId];
+    const placement = input.outputPlacements === undefined
+      ? undefined
+      : inventorySparseRecordValue(input.outputPlacements, output.outputId);
     produce.push(
       createCompositionOutputLine({
         input,

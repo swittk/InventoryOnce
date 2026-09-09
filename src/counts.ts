@@ -1,5 +1,9 @@
 import { compareInventoryIdentityText } from "./ordering.js";
 import {
+  createInventorySparseRecord,
+  inventorySparseRecordValue,
+} from "./sparse-record.js";
+import {
   assertMeasurementsMatchItem,
   assertPositionMatchesItem,
   type InventoryCatalog,
@@ -143,7 +147,10 @@ export interface InventoryCountBookResult {
 
 /** Create an empty physical-count book. */
 export function emptyInventoryCountBook(): InventoryCountBook {
-  return { counts: {}, operations: {} };
+  return {
+    counts: createInventorySparseRecord(),
+    operations: createInventorySparseRecord(),
+  };
 }
 
 /** Inputs for opening one physical-count snapshot. */
@@ -215,7 +222,7 @@ export function startInventoryCount(
     fingerprint
   );
   if (replay !== undefined) return replay;
-  if (input.book.counts[input.countId] !== undefined) {
+  if (inventorySparseRecordValue(input.book.counts, input.countId) !== undefined) {
     throw new Error(`Inventory count '${input.countId}' already exists.`);
   }
   const count: InventoryCount = {
@@ -265,7 +272,7 @@ export function observeInventoryCount(
   input: ObserveInventoryCountInput
 ): InventoryCountBookResult {
   assertCanonicalInventoryTime(input.observedAt, "count observedAt");
-  const count = input.book.counts[input.countId];
+  const count = inventorySparseRecordValue(input.book.counts, input.countId);
   if (count === undefined) throw new Error("Unknown inventory count.");
   const observations = normalizeCountObservations(
     input.catalog,
@@ -355,7 +362,7 @@ export function createInventoryCountReconciliationPlan(
   input: CreateInventoryCountReconciliationPlanInput
 ): InventoryCountReconciliationPlan {
   assertCanonicalInventoryTime(input.completedAt, "count completedAt");
-  const count = input.book.counts[input.countId];
+  const count = inventorySparseRecordValue(input.book.counts, input.countId);
   if (count === undefined) throw new Error("Unknown inventory count.");
   const fingerprint = countCompletionFingerprint(input, count);
   const replay = findCountOperationReplay(
@@ -556,7 +563,7 @@ export function completeInventoryCount(
     input.intentFingerprint
   );
   if (replay !== undefined) return replay;
-  const count = input.book.counts[input.countId];
+  const count = inventorySparseRecordValue(input.book.counts, input.countId);
   if (count === undefined) throw new Error("Unknown inventory count.");
   if (count.status !== InventoryCountStatus.Observed) {
     throw new Error("Only an observed inventory count can complete.");
@@ -615,7 +622,7 @@ export function abandonInventoryCount(
     fingerprint
   );
   if (replay !== undefined) return replay;
-  const count = input.book.counts[input.countId];
+  const count = inventorySparseRecordValue(input.book.counts, input.countId);
   if (count === undefined) throw new Error("Unknown inventory count.");
   if (
     count.status === InventoryCountStatus.Completed ||
@@ -745,7 +752,7 @@ function findCountOperationReplay(
   countId: string,
   fingerprint: string
 ): InventoryCountBookResult | undefined {
-  const earlier = book.operations[operationId];
+  const earlier = inventorySparseRecordValue(book.operations, operationId);
   if (earlier === undefined) return undefined;
   if (
     earlier.kind !== kind ||
@@ -754,7 +761,7 @@ function findCountOperationReplay(
   ) {
     throw new Error("Count operationId was retried with changed intent.");
   }
-  const count = book.counts[countId];
+  const count = inventorySparseRecordValue(book.counts, countId);
   if (count === undefined)
     throw new Error("Count operation references a missing count.");
   return { book, count, replayed: true };
@@ -766,7 +773,7 @@ function replaceCountWithOperation(
   count: InventoryCount,
   operation: InventoryCountOperation
 ): InventoryCountBook {
-  if (book.operations[operation.operationId] !== undefined) {
+  if (inventorySparseRecordValue(book.operations, operation.operationId) !== undefined) {
     throw new Error(
       `Count operation '${operation.operationId}' already exists.`
     );

@@ -16,6 +16,7 @@ import {
   type InventoryCatalog,
   type InventoryCompositionDefinitionRevision,
   type InventoryItemDefinitionRevision,
+  type InventoryMetadata,
   type InventoryPackagingDefinitionRevision,
 } from "../src/index.js";
 import { createInMemoryInventoryDurableStorage } from "../src/storage-api.js";
@@ -654,6 +655,9 @@ describe("revision-frozen heterogeneous package composition", () => {
       })
     ).rejects.toThrow("unsupported field 'locationId'");
 
+    const inheritedPlacements = Object.create({
+      "active-a": hiddenRelocation,
+    }) as Record<string, { readonly metadata?: InventoryMetadata }>;
     await inventory.compositions.open({
       operationId: "open-placement-guard-pack",
       occurredAt: time2,
@@ -668,6 +672,7 @@ describe("revision-frozen heterogeneous package composition", () => {
         dispositionAuthorityId: "clinic-authority",
       },
       packageCount: 1,
+      outputPlacements: inheritedPlacements,
     });
     const outputs = await inventory.read.positions({
       itemId: "active-a",

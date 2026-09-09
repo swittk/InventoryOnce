@@ -27,6 +27,7 @@ import {
   normalizeInventoryStockSelector,
   type InventoryStockSelector,
 } from "./selectors.js";
+import { inventorySparseRecordValue } from "./sparse-record.js";
 
 /** One exact aggregation bucket for an optional stock-position identity. */
 export interface InventoryStockDimensionBucket {
@@ -106,9 +107,12 @@ export function findInventoryEventByOperationId(
   if (operationId.trim().length === 0) {
     throw new Error("Inventory operationId must not be empty.");
   }
-  const eventId = projection.eventIdByOperationId[operationId];
+  const eventId = inventorySparseRecordValue(
+    projection.eventIdByOperationId,
+    operationId
+  );
   if (eventId === undefined) return undefined;
-  const event = projection.events[eventId];
+  const event = inventorySparseRecordValue(projection.events, eventId);
   if (event === undefined) {
     throw new Error(
       `Inventory operation '${operationId}' references missing event '${eventId}'.`

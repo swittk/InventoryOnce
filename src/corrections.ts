@@ -35,6 +35,7 @@ import {
   inventoryTraceabilityRelationIdentity,
   type InventoryTraceabilityRelation,
 } from "./traceability.js";
+import { inventorySparseRecordValue } from "./sparse-record.js";
 
 /** Inputs for replacing one retained event assertion without deleting/revising history. */
 export interface CreateInventoryCorrectionInput extends InventoryCommandHeader {
@@ -60,7 +61,7 @@ export function createInventoryCorrectionEvent(
   if (correctionReason === undefined || correctionReason.trim().length === 0) {
     throw new Error("Inventory correction needs an explicit reason.");
   }
-  const original = input.projection.events[input.correctsEventId];
+  const original = inventorySparseRecordValue(input.projection.events, input.correctsEventId);
   if (original === undefined) {
     throw new Error(
       `Correction target event '${input.correctsEventId}' does not exist.`
@@ -87,7 +88,10 @@ export function createInventoryCorrectionEvent(
     );
   }
   const currentCorrectionEventId =
-    input.projection.correctionEventIdByCorrectedEventId[input.correctsEventId];
+    inventorySparseRecordValue(
+    input.projection.correctionEventIdByCorrectedEventId,
+    input.correctsEventId
+  );
   if (input.replacement?.kind === InventoryEventKind.Correction) {
     throw new Error(
       "Correction replacement must be a normal event assertion, not another correction."
@@ -188,7 +192,7 @@ function projectHistoryWithReplacement(
   replacement: InventoryEventDraft | undefined,
   deficitPolicy: InventoryDeficitPolicy
 ): InventoryProjectionState {
-  const root = projection.events[rootEventId];
+  const root = inventorySparseRecordValue(projection.events, rootEventId);
   if (root === undefined)
     throw new Error("Correction root event disappeared during planning.");
   const replacementAtRoot =
@@ -217,7 +221,7 @@ function projectHistoryWithReplacement(
         `Correction history is missing recordSequence ${recordSequence}.`
       );
     }
-    const event = projection.events[eventId];
+    const event = inventorySparseRecordValue(projection.events, eventId);
     if (event === undefined || event.recordSequence !== recordSequence) {
       throw new Error(
         `Correction history index disagrees at recordSequence ${recordSequence}.`
@@ -227,7 +231,10 @@ function projectHistoryWithReplacement(
     const correctedEvent =
       event.correction === undefined
         ? undefined
-        : projection.events[event.correction.correctsEventId];
+        : inventorySparseRecordValue(
+            projection.events,
+            event.correction.correctsEventId
+          );
     if (
       (event.correction !== undefined &&
         droppedTraceabilityEventIds.has(event.correction.correctsEventId)) ||

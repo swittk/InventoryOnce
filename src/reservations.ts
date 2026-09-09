@@ -1,5 +1,9 @@
 import { compareInventoryIdentityText } from "./ordering.js";
 import {
+  createInventorySparseRecord,
+  inventorySparseRecordValue,
+} from "./sparse-record.js";
+import {
   inventoryIntentFingerprint,
   inventoryMetadataFingerprint,
 } from "./canonical.js";
@@ -201,7 +205,10 @@ export interface CreateInventoryReservationInput {
 
 /** Create an empty reservation book. */
 export function emptyInventoryReservationBook(): InventoryReservationBook {
-  return { reservations: {}, operations: {} };
+  return {
+    reservations: createInventorySparseRecord(),
+    operations: createInventorySparseRecord(),
+  };
 }
 
 /** Create one broad/exact claim only when every active claim remains globally feasible. */
@@ -264,7 +271,7 @@ export function createInventoryReservation({
     fingerprint
   );
   if (replay !== undefined) return replay;
-  if (book.reservations[reservation.reservationId] !== undefined) {
+  if (inventorySparseRecordValue(book.reservations, reservation.reservationId) !== undefined) {
     throw new Error(
       `Inventory reservation '${reservation.reservationId}' already exists.`
     );
@@ -692,7 +699,7 @@ export function expireInventoryReservation(
     fingerprint
   );
   if (replay !== undefined) return replay;
-  const reservation = input.book.reservations[input.reservationId];
+  const reservation = inventorySparseRecordValue(input.book.reservations, input.reservationId);
   if (reservation === undefined)
     throw new Error("Unknown inventory reservation.");
   if (reservation.status !== InventoryReservationStatus.Active) {
@@ -1063,9 +1070,10 @@ function reservationGroupFeasibility(
     }
   }
   if (broadReservations.length > 0) {
-    for (const identity of projection.positionIdsByItemRevisionId[
+    for (const identity of inventorySparseRecordValue(
+      projection.positionIdsByItemRevisionId,
       first.itemRevisionId
-    ] ?? []) {
+    ) ?? []) {
       const position = projection.positions[identity];
       if (position === undefined) {
         throw new Error(
@@ -1501,9 +1509,10 @@ function reservationFeasibilityLocationIds(
     }
   }
   if (includeEveryLocation) {
-    for (const positionIdentity of projection.positionIdsByItemRevisionId[
+    for (const positionIdentity of inventorySparseRecordValue(
+      projection.positionIdsByItemRevisionId,
       revisionId
-    ] ?? []) {
+    ) ?? []) {
       const position = projection.positions[positionIdentity];
       if (position === undefined) {
         throw new Error(
@@ -1913,7 +1922,7 @@ function findReservationOperationReplay(
   reservationId: string,
   fingerprint: string
 ): InventoryReservationBookResult | undefined {
-  const earlier = book.operations[operationId];
+  const earlier = inventorySparseRecordValue(book.operations, operationId);
   if (earlier === undefined) return undefined;
   if (
     earlier.kind !== kind ||
@@ -1922,7 +1931,7 @@ function findReservationOperationReplay(
   ) {
     throw new Error("Reservation operationId was retried with changed intent.");
   }
-  if (book.reservations[reservationId] === undefined) {
+  if (inventorySparseRecordValue(book.reservations, reservationId) === undefined) {
     throw new Error("Reservation operation references a missing reservation.");
   }
   return { book, reservation: earlier.reservationAfter, replayed: true };
@@ -1934,7 +1943,7 @@ function addReservationOperation(
   reservation: InventoryReservation,
   operation: NewInventoryReservationOperation
 ): InventoryReservationBook {
-  if (book.operations[operation.operationId] !== undefined) {
+  if (inventorySparseRecordValue(book.operations, operation.operationId) !== undefined) {
     throw new Error(
       `Reservation operation '${operation.operationId}' already exists.`
     );
@@ -1985,7 +1994,7 @@ function requireActiveReservation(
   reservationId: string,
   at: string
 ): InventoryReservation {
-  const reservation = book.reservations[reservationId];
+  const reservation = inventorySparseRecordValue(book.reservations, reservationId);
   if (reservation === undefined)
     throw new Error("Unknown inventory reservation.");
   if (reservation.status !== InventoryReservationStatus.Active) {

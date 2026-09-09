@@ -29,6 +29,43 @@ import {
   type InventoryMigrationSourceDisposition,
 } from "./migration-evidence.js";
 import { emptyInventoryWorldState, type InventoryWorldState } from "./world.js";
+import { cloneInventorySparseRecord } from "./sparse-record.js";
+
+/** Clone one published world while restoring own-only semantics for application-id dictionaries. */
+function cloneInventoryPublishedWorld(world: InventoryWorldState): InventoryWorldState {
+  const cloned = structuredClone(world);
+  return {
+    ...cloned,
+    catalog: {
+      ...cloned.catalog,
+      activeItemRevisionIds: cloneInventorySparseRecord(cloned.catalog.activeItemRevisionIds),
+      activeCompositionRevisionIds: cloneInventorySparseRecord(cloned.catalog.activeCompositionRevisionIds),
+      activeTransformationRevisionIds: cloneInventorySparseRecord(cloned.catalog.activeTransformationRevisionIds),
+      activeCollectionRevisionIds: cloneInventorySparseRecord(cloned.catalog.activeCollectionRevisionIds),
+      activeFungibilityRevisionIds: cloneInventorySparseRecord(cloned.catalog.activeFungibilityRevisionIds),
+    },
+    projection: {
+      ...cloned.projection,
+      positionIdsByItemId: cloneInventorySparseRecord(cloned.projection.positionIdsByItemId),
+      positionIdsByItemRevisionId: cloneInventorySparseRecord(cloned.projection.positionIdsByItemRevisionId),
+      lotIdentitiesByItemId: cloneInventorySparseRecord(cloned.projection.lotIdentitiesByItemId),
+      transfers: cloneInventorySparseRecord(cloned.projection.transfers),
+      events: cloneInventorySparseRecord(cloned.projection.events),
+      eventIdByOperationId: cloneInventorySparseRecord(cloned.projection.eventIdByOperationId),
+      correctionEventIdByCorrectedEventId: cloneInventorySparseRecord(
+        cloned.projection.correctionEventIdByCorrectedEventId
+      ),
+    },
+    reservations: {
+      reservations: cloneInventorySparseRecord(cloned.reservations.reservations),
+      operations: cloneInventorySparseRecord(cloned.reservations.operations),
+    },
+    counts: {
+      counts: cloneInventorySparseRecord(cloned.counts.counts),
+      operations: cloneInventorySparseRecord(cloned.counts.operations),
+    },
+  };
+}
 
 /** Async execution context used only to reject same-adapter mutation re-entry from failpoints. */
 const inventoryStorageFailpointExecution = new AsyncLocalStorage<object>();
@@ -422,7 +459,7 @@ export class InMemoryInventoryDurableStorage
   constructor(input: InMemoryInventoryDurableStorageInput = {}) {
     this.guarantee =
       input.guarantee ?? InventoryStorageGuarantee.OptimisticRepairable;
-    this.world = structuredClone(
+    this.world = cloneInventoryPublishedWorld(
       input.initialWorld ?? emptyInventoryWorldState()
     );
     validatePublishedInventoryWorld(this.world);
@@ -431,7 +468,7 @@ export class InMemoryInventoryDurableStorage
 
   /** Read only the latest fully published world. */
   async readWorld(): Promise<InventoryWorldState> {
-    return structuredClone(this.world);
+    return cloneInventoryPublishedWorld(this.world);
   }
 
   /** Read one public operation row without exposing private staged snapshots. */
@@ -615,7 +652,7 @@ export class InMemoryInventoryDurableStorage
         ...manifest,
         worldPublished: true,
       };
-      this.world = structuredClone(nextWorld);
+      this.world = cloneInventoryPublishedWorld(nextWorld);
       this.migrationManifests.set(migrationId, published);
       await this.fire(
         InventoryStorageWriteStage.MigrationPublishWorld,
@@ -1002,7 +1039,7 @@ export class InMemoryInventoryDurableStorage
         ...stored.value,
         worldPublished: true,
       };
-      this.world = structuredClone(nextWorld);
+      this.world = cloneInventoryPublishedWorld(nextWorld);
       this.operations.set(operationId, { value: publishedValue });
       await this.fire(
         InventoryStorageWriteStage.PublishWorld,

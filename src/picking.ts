@@ -36,6 +36,7 @@ import {
   type ItemRevisionId,
 } from "./model.js";
 import type { InventoryProjectionState } from "./projection.js";
+import { inventorySparseRecordValue } from "./sparse-record.js";
 import {
   addQuantity,
   compareQuantity,
@@ -439,9 +440,10 @@ function selectedPolicyLocationIds(
 ): readonly string[] {
   if (selector.locationIds !== undefined) return selector.locationIds;
   const locationIds = new Set<string>();
-  for (const positionIdentity of projection.positionIdsByItemRevisionId[
+  for (const positionIdentity of inventorySparseRecordValue(
+    projection.positionIdsByItemRevisionId,
     itemRevisionId
-  ] ?? []) {
+  ) ?? []) {
     const position = projection.positions[positionIdentity];
     if (position === undefined) {
       throw new Error(
@@ -593,9 +595,10 @@ function createPolicyAllocationCandidates({
     allowAllocatedStock,
   });
 
-  for (const positionIdentity of projection.positionIdsByItemRevisionId[
+  for (const positionIdentity of inventorySparseRecordValue(
+    projection.positionIdsByItemRevisionId,
     item.revisionId
-  ] ?? []) {
+  ) ?? []) {
     const position = projection.positions[positionIdentity];
     if (position === undefined) {
       throw new Error(

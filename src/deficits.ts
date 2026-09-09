@@ -10,6 +10,7 @@ import {
   type ItemRevisionId,
 } from "./model.js";
 import type { InventoryProjectionState } from "./projection.js";
+import { inventorySparseRecordValue } from "./sparse-record.js";
 import {
   inventoryStockSelector,
   type InventoryStockSelector,
@@ -202,9 +203,10 @@ function recordedDeficitByLocation(
   selectedLocations: ReadonlySet<string>
 ): ReadonlyMap<string, Quantity> {
   const result = new Map<string, Quantity>();
-  for (const positionIdentity of projection.positionIdsByItemRevisionId[
+  for (const positionIdentity of inventorySparseRecordValue(
+    projection.positionIdsByItemRevisionId,
     itemRevisionId
-  ] ?? []) {
+  ) ?? []) {
     const position = projection.positions[positionIdentity];
     if (position === undefined) {
       throw new Error(

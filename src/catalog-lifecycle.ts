@@ -16,6 +16,7 @@ import {
 } from "./quantity.js";
 import type { InventoryDurableStorage } from "./storage.js";
 import type { InventoryWorldState } from "./world.js";
+import { inventorySparseRecordValue } from "./sparse-record.js";
 
 /** One exact package unit expressed as a quantity of the scalar item's primary unit. */
 export interface InventoryScalarPackageLevel {
@@ -122,7 +123,10 @@ export async function ensureInventoryScalarCatalogRevision({
   const catalog = inventoryCatalogFromSnapshot(world.catalog);
   const normalizedItemId = requireCatalogIdentity(itemId, "itemId");
   const normalizedRequestedUnit = normalizeCatalogUnit(requestedUnit);
-  const activeRevisionId = catalog.activeItemRevisionIds[normalizedItemId];
+  const activeRevisionId = inventorySparseRecordValue(
+    catalog.activeItemRevisionIds,
+    normalizedItemId
+  );
   const activeItem =
     activeRevisionId === undefined
       ? undefined

@@ -34,6 +34,12 @@ import {
   type ItemRevisionId,
 } from "./model.js";
 import {
+  createInventorySparseRecord,
+  inventorySparseRecordHas,
+  inventorySparseRecordValue,
+  setInventorySparseRecordValue,
+} from "./sparse-record.js";
+import {
   inventoryAmountForPrimaryAllocation,
   planInventoryAllocation,
   type InventoryPolicyAllocationLine,
@@ -666,11 +672,34 @@ function createFungibilitySparseRecordOverlay<T>(
   base: Readonly<Record<string, T>>
 ): Record<string, T> {
   const overrides = new Map<string, T | undefined>();
-  return new Proxy({} as Record<string, T>, {
+  return new Proxy(createInventorySparseRecord<T>(), {
     /** Read an overridden/tombstoned value or fall through to the immutable base record. */
     get(_target, property): T | undefined {
       if (typeof property !== "string") return undefined;
-      return overrides.has(property) ? overrides.get(property) : base[property];
+      return overrides.has(property)
+        ? overrides.get(property)
+        : inventorySparseRecordValue(base, property);
+    },
+    /** Expose virtual base/override rows as own properties to sparse-record helpers. */
+    getOwnPropertyDescriptor(_target, property): PropertyDescriptor | undefined {
+      if (typeof property !== "string") return undefined;
+      const value = overrides.has(property)
+        ? overrides.get(property)
+        : inventorySparseRecordValue(base, property);
+      return value === undefined
+        ? undefined
+        : {
+            value,
+            enumerable: true,
+            configurable: true,
+            writable: true,
+          };
+    },
+    /** Retain one safe data-property write made through the sparse-record setter. */
+    defineProperty(_target, property, descriptor): boolean {
+      if (typeof property !== "string" || !("value" in descriptor)) return false;
+      overrides.set(property, descriptor.value as T);
+      return true;
     },
     /** Retain only the changed what-if row. */
     set(_target, property, value): boolean {
@@ -689,7 +718,7 @@ function createFungibilitySparseRecordOverlay<T>(
       if (typeof property !== "string") return false;
       return overrides.has(property)
         ? overrides.get(property) !== undefined
-        : property in base;
+        : inventorySparseRecordHas(base, property);
     },
   });
 }
@@ -700,11 +729,11 @@ function addFungibilitySimulationIndex(
   groupId: string,
   positionId: string
 ): void {
-  const current = index[groupId] ?? [];
+  const current = inventorySparseRecordValue(index, groupId) ?? [];
   if (current.includes(positionId)) return;
   const next = [...current, positionId];
   next.sort();
-  index[groupId] = next;
+  setInventorySparseRecordValue(index, groupId, next);
 }
 
 /** Remove one exact what-if position identity from a sparse index overlay. */
@@ -713,14 +742,14 @@ function removeFungibilitySimulationIndex(
   groupId: string,
   positionId: string
 ): void {
-  const current = index[groupId];
+  const current = inventorySparseRecordValue(index, groupId);
   if (current === undefined) return;
   const next = current.filter(
     /** Keep every other exact what-if position in the group. */
     (candidate) => candidate !== positionId
   );
   if (next.length === 0) delete index[groupId];
-  else index[groupId] = next;
+  else setInventorySparseRecordValue(index, groupId, next);
 }
 
 /** Inputs for registering one exact member candidate in common-basis units. */
