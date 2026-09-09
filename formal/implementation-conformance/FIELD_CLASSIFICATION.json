@@ -13056,7 +13056,7 @@
       "callSignatures": [],
       "callable": false,
       "classification": "abstract-semantic",
-      "declaration": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2022.error.d.ts",
+      "declaration": "../InventoryOnce-pr-projection-r109/node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2022.error.d.ts",
       "directions": [
         "output"
       ],
@@ -13079,7 +13079,7 @@
       "callSignatures": [],
       "callable": false,
       "classification": "application decoration",
-      "declaration": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
+      "declaration": "../InventoryOnce-pr-projection-r109/node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
       "directions": [
         "output"
       ],
@@ -13104,7 +13104,7 @@
       "callSignatures": [],
       "callable": false,
       "classification": "abstract-semantic",
-      "declaration": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
+      "declaration": "../InventoryOnce-pr-projection-r109/node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
       "directions": [
         "output"
       ],
@@ -13127,7 +13127,7 @@
       "callSignatures": [],
       "callable": false,
       "classification": "abstract-semantic",
-      "declaration": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
+      "declaration": "../InventoryOnce-pr-projection-r109/node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
       "directions": [
         "output"
       ],
@@ -47910,7 +47910,7 @@
       "callSignatures": [],
       "callable": false,
       "classification": "abstract-semantic",
-      "declaration": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
+      "declaration": "../InventoryOnce-pr-projection-r109/node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
       "directions": [
         "callback-argument"
       ],
@@ -49902,7 +49902,7 @@
       "callSignatures": [],
       "callable": false,
       "classification": "abstract-semantic",
-      "declaration": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2022.error.d.ts",
+      "declaration": "../InventoryOnce-pr-projection-r109/node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2022.error.d.ts",
       "directions": [
         "output"
       ],
@@ -49949,7 +49949,7 @@
       "callSignatures": [],
       "callable": false,
       "classification": "application decoration",
-      "declaration": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
+      "declaration": "../InventoryOnce-pr-projection-r109/node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
       "directions": [
         "output"
       ],
@@ -49974,7 +49974,7 @@
       "callSignatures": [],
       "callable": false,
       "classification": "abstract-semantic",
-      "declaration": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
+      "declaration": "../InventoryOnce-pr-projection-r109/node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
       "directions": [
         "output"
       ],
@@ -49997,7 +49997,7 @@
       "callSignatures": [],
       "callable": false,
       "classification": "abstract-semantic",
-      "declaration": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
+      "declaration": "../InventoryOnce-pr-projection-r109/node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
       "directions": [
         "output"
       ],
@@ -53337,7 +53337,7 @@
       "callSignatures": [],
       "callable": false,
       "classification": "abstract-semantic",
-      "declaration": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
+      "declaration": "../InventoryOnce-pr-projection-r109/node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
       "directions": [
         "callback-argument",
         "callback-result",
@@ -53357,7 +53357,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/catalog.ts:3067:13.lotId": {
+    "anonymous@src/catalog.ts:3052:13.lotId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -53380,7 +53380,7 @@
       "optional": true,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/catalog.ts:3067:13.qualifiedDimensions": {
+    "anonymous@src/catalog.ts:3052:13.qualifiedDimensions": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -53403,7 +53403,7 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/catalog.ts:3067:13.serialId": {
+    "anonymous@src/catalog.ts:3052:13.serialId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -53426,7 +53426,7 @@
       "optional": true,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/catalog.ts:3073:45.dimensionId": {
+    "anonymous@src/catalog.ts:3058:45.dimensionId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -53449,7 +53449,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/catalog.ts:3073:45.valueId": {
+    "anonymous@src/catalog.ts:3058:45.valueId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -53610,7 +53610,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/composition.ts:53:33.packagingRevisionId": {
+    "anonymous@src/composition.ts:54:33.packagingRevisionId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -54023,7 +54023,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/facade.ts:674:5.deficitPosition": {
+    "anonymous@src/facade.ts:679:5.deficitPosition": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -54048,7 +54048,7 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/facade.ts:674:5.groupId": {
+    "anonymous@src/facade.ts:679:5.groupId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -54072,7 +54072,7 @@
       "optional": true,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/facade.ts:674:5.requestId": {
+    "anonymous@src/facade.ts:679:5.requestId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -54096,7 +54096,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/integrity.ts:275:51.baseWorldRoot": {
+    "anonymous@src/integrity.ts:276:51.baseWorldRoot": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -54120,7 +54120,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/integrity.ts:275:51.catalogRoot": {
+    "anonymous@src/integrity.ts:276:51.catalogRoot": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -54144,7 +54144,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/integrity.ts:275:51.countDelta": {
+    "anonymous@src/integrity.ts:276:51.countDelta": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -54168,7 +54168,7 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/integrity.ts:275:51.deficitPolicy": {
+    "anonymous@src/integrity.ts:276:51.deficitPolicy": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -54192,7 +54192,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/integrity.ts:275:51.event": {
+    "anonymous@src/integrity.ts:276:51.event": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -54216,7 +54216,7 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/integrity.ts:275:51.nextRoots": {
+    "anonymous@src/integrity.ts:276:51.nextRoots": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -54240,7 +54240,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/integrity.ts:275:51.receipt": {
+    "anonymous@src/integrity.ts:276:51.receipt": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -54264,7 +54264,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/integrity.ts:275:51.reservationDelta": {
+    "anonymous@src/integrity.ts:276:51.reservationDelta": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -54288,7 +54288,7 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/integrity.ts:289:21.countId": {
+    "anonymous@src/integrity.ts:290:21.countId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -54312,7 +54312,7 @@
       "optional": true,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/integrity.ts:289:21.eventId": {
+    "anonymous@src/integrity.ts:290:21.eventId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -54336,7 +54336,7 @@
       "optional": true,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/integrity.ts:289:21.operationId": {
+    "anonymous@src/integrity.ts:290:21.operationId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -54360,7 +54360,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/integrity.ts:289:21.recordedAt": {
+    "anonymous@src/integrity.ts:290:21.recordedAt": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -54384,7 +54384,7 @@
       "optional": false,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "anonymous@src/integrity.ts:289:21.reservationId": {
+    "anonymous@src/integrity.ts:290:21.reservationId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -54408,7 +54408,7 @@
       "optional": true,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/integrity.ts:289:21.worldRevision": {
+    "anonymous@src/integrity.ts:290:21.worldRevision": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -54432,7 +54432,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/integrity.ts:321:60.baseWorldRoot": {
+    "anonymous@src/integrity.ts:322:60.baseWorldRoot": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -54456,7 +54456,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/integrity.ts:321:60.catalogRoot": {
+    "anonymous@src/integrity.ts:322:60.catalogRoot": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -54480,7 +54480,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/integrity.ts:321:60.deficitPolicy": {
+    "anonymous@src/integrity.ts:322:60.deficitPolicy": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -54504,7 +54504,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/integrity.ts:321:60.events": {
+    "anonymous@src/integrity.ts:322:60.events": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -54528,7 +54528,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/integrity.ts:321:60.nextRoots": {
+    "anonymous@src/integrity.ts:322:60.nextRoots": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -54552,7 +54552,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/integrity.ts:321:60.sourceDispositions": {
+    "anonymous@src/integrity.ts:322:60.sourceDispositions": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -54735,5 +54735,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "c2f5a985423784548e70bbf85675f1f7473727ddcb5fbaa99ff6753b33ecfd78"
+  "surfaceSha256": "6d415d1f958255a4d4128beca9e6f65c5bbef772356fc1b6a3e08c7249e3b8e8"
 }
