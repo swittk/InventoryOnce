@@ -121,6 +121,11 @@ export const formalInvariantMutationChecks = Object.freeze([
     "UseByReservationExpiredConsumptionMutation",
     "OrdinaryConsumptionWasUsable",
   ],
+  [
+    "TraceabilityGraph",
+    "TraceabilityGraphDuplicateProductionMutation",
+    "ProducedIdentityWasCreatedOnce",
+  ],
 ]);
 
 /** Require every *Mutation.cfg file to have exactly one registered expected rejection. */

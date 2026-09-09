@@ -7,9 +7,9 @@ NoParent == "none"
 ParentDomain == Objects \cup {NoParent}
 InputObjects == {"C1", "C2"}
 
-VARIABLES active, parent, association, everConsumed, everProduced, genealogy
+VARIABLES active, parent, association, everConsumed, everProduced, genealogy, productionCount
 
-vars == <<active, parent, association, everConsumed, everProduced, genealogy>>
+vars == <<active, parent, association, everConsumed, everProduced, genealogy, productionCount>>
 
 ParentChainTerminates(p, o) ==
   \/ p[o] = NoParent
@@ -28,6 +28,7 @@ Init ==
   /\ everConsumed = {}
   /\ everProduced = {}
   /\ genealogy = {}
+  /\ productionCount = 0
 
 Aggregate(child, container) ==
   /\ child \in active
@@ -36,13 +37,13 @@ Aggregate(child, container) ==
   /\ parent[child] = NoParent
   /\ ParentChainsAreAcyclic([parent EXCEPT ![child] = container])
   /\ parent' = [parent EXCEPT ![child] = container]
-  /\ UNCHANGED <<active, association, everConsumed, everProduced, genealogy>>
+  /\ UNCHANGED <<active, association, everConsumed, everProduced, genealogy, productionCount>>
 
 Disaggregate(child) ==
   /\ child \in active
   /\ parent[child] # NoParent
   /\ parent' = [parent EXCEPT ![child] = NoParent]
-  /\ UNCHANGED <<active, association, everConsumed, everProduced, genealogy>>
+  /\ UNCHANGED <<active, association, everConsumed, everProduced, genealogy, productionCount>>
 
 Associate(child, durableParent) ==
   /\ child \in active
@@ -50,12 +51,12 @@ Associate(child, durableParent) ==
   /\ child # durableParent
   /\ <<child, durableParent>> \notin association
   /\ association' = association \cup {<<child, durableParent>>}
-  /\ UNCHANGED <<active, parent, everConsumed, everProduced, genealogy>>
+  /\ UNCHANGED <<active, parent, everConsumed, everProduced, genealogy, productionCount>>
 
 Disassociate(child, durableParent) ==
   /\ <<child, durableParent>> \in association
   /\ association' = association \ {<<child, durableParent>>}
-  /\ UNCHANGED <<active, parent, everConsumed, everProduced, genealogy>>
+  /\ UNCHANGED <<active, parent, everConsumed, everProduced, genealogy, productionCount>>
 
 \* Transformation records irreversible genealogy only; containment/association are explicit relations.
 Transform ==
@@ -69,6 +70,7 @@ Transform ==
   /\ everConsumed' = everConsumed \cup InputObjects
   /\ everProduced' = everProduced \cup {"O"}
   /\ genealogy' = genealogy \cup {<<"C1", "O">>, <<"C2", "O">>}
+  /\ productionCount' = productionCount + 1
   /\ UNCHANGED <<parent, association>>
 
 Next ==
@@ -87,12 +89,15 @@ TypeOK ==
   /\ everConsumed \subseteq Objects
   /\ everProduced \subseteq Objects
   /\ genealogy \subseteq Objects \X Objects
+  /\ productionCount \in 0..1
 
 ContainmentIsAcyclic == ParentChainsAreAcyclic(parent)
 
 ConsumedIdentityIsNotStillActive == everConsumed \cap active = {}
 
-ProducedIdentityWasCreatedOnce == everProduced \subseteq active \cup everConsumed
+ProducedIdentityWasCreatedOnce ==
+  /\ productionCount <= 1
+  /\ everProduced \subseteq active \cup everConsumed
 
 GenealogyOnlyPointsFromConsumedToProduced ==
   \A edge \in genealogy:    edge[1] \in everConsumed /\ edge[2] \in everProduced
@@ -105,5 +110,16 @@ AssociationEndpointsRemainKnown ==
 AggregationNeverConsumesIdentity ==
   \A o \in Objects:
     parent[o] # NoParent => o \in active /\ o \notin everConsumed
+
+
+\* Deliberate negative control: record the same produced identity a second time.
+\* This ghost counter makes the uniqueness claim falsifiable even though everProduced is a set.
+DuplicateProductionMutation ==
+  /\ "O" \in everProduced
+  /\ productionCount' = productionCount + 1
+  /\ UNCHANGED <<active, parent, association, everConsumed, everProduced, genealogy>>
+
+DuplicateProductionMutationNext == Next \/ DuplicateProductionMutation
+DuplicateProductionMutationSpec == Init /\ [][DuplicateProductionMutationNext]_vars
 
 =============================================================================

@@ -98,13 +98,14 @@ The exact seed/fingerprint values vary by run. The latest complete run explored:
 
 All reachable states in those finite configurations were checked by TLC.
 
-The normal safe-model rows above stay the positive system runs. Ten extra mutation configs cover four
+The normal safe-model rows above stay the positive system runs. Eleven extra mutation configs cover four
 snapshot-supersession violations (resume after disposition, physical disposition event, guessed completed
 outcome, and source movement after capture), one cross-transfer receive that violates transfer isolation, one
-correction-history erasure, one split durable-transfer projection, and three use-by controls: a stale shortage
-report after time advances, an ordinary allocation after expiry, and an ordinary consumption after expiry.
-Those runs pass only when TLC finds the exact expected invariant violation; they are not folded into the safe
-models' state counts.
+correction-history erasure, one split durable-transfer projection, three use-by controls (stale shortage report,
+expired ordinary allocation, and expired ordinary consumption), and one duplicate traceability production. The
+traceability control uses a ghost production counter so a second production of the same set-valued identity is
+observable and must violate `ProducedIdentityWasCreatedOnce`. Those runs pass only when TLC finds the exact
+expected invariant violation; they are not folded into the safe models' state counts.
 
 ## What the claims mean
 
