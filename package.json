@@ -34,7 +34,7 @@
     "build": "pnpm run clean && tsc -p tsconfig.json",
     "prepack": "pnpm run build",
     "check": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.test.json && pnpm assurance",
-    "test": "vitest run",
+    "test": "node --test scripts/formal-proof-cache.selftest.mjs && vitest run",
     "formal": "node scripts/run-formal.mjs",
     "assurance": "node scripts/audit-formal-implementation-conformance.mjs",
     "assurance:write": "pnpm run assurance:generate && node scripts/audit-formal-implementation-conformance.mjs --write-report",

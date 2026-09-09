@@ -1,7 +1,7 @@
 {
   "counts": {
-    "callables": 2401,
-    "edges": 6492,
+    "callables": 2402,
+    "edges": 6504,
     "publicEntries": 510,
     "publicEntriesWithTargets": 510,
     "publicEntriesWithWitnesses": 510,
@@ -5284,10 +5284,10 @@
                 "column": 93,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:16478:<anonymous@454>",
+                "id": "test/authority.test.ts:17839:<anonymous@491>",
                 "kind": "ArrowFunction",
-                "line": 454,
-                "name": "<anonymous@454>",
+                "line": 491,
+                "name": "<anonymous@491>",
                 "reason": "test-callback"
               },
               {
@@ -7980,10 +7980,10 @@
                 "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:11592:<anonymous@327>",
+                "id": "test/authority.test.ts:12953:<anonymous@364>",
                 "kind": "ArrowFunction",
-                "line": 327,
-                "name": "<anonymous@327>",
+                "line": 364,
+                "name": "<anonymous@364>",
                 "reason": "test-callback"
               },
               {
@@ -12046,10 +12046,10 @@
                 "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:11592:<anonymous@327>",
+                "id": "test/authority.test.ts:12953:<anonymous@364>",
                 "kind": "ArrowFunction",
-                "line": 327,
-                "name": "<anonymous@327>",
+                "line": 364,
+                "name": "<anonymous@364>",
                 "reason": "test-callback"
               },
               {
@@ -18295,10 +18295,10 @@
                 "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:11592:<anonymous@327>",
+                "id": "test/authority.test.ts:12953:<anonymous@364>",
                 "kind": "ArrowFunction",
-                "line": 327,
-                "name": "<anonymous@327>",
+                "line": 364,
+                "name": "<anonymous@364>",
                 "reason": "test-callback"
               },
               {
@@ -19512,10 +19512,10 @@
                 "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:11592:<anonymous@327>",
+                "id": "test/authority.test.ts:12953:<anonymous@364>",
                 "kind": "ArrowFunction",
-                "line": 327,
-                "name": "<anonymous@327>",
+                "line": 364,
+                "name": "<anonymous@364>",
                 "reason": "test-callback"
               },
               {
@@ -24125,9 +24125,9 @@
           "column": 1,
           "file": "src/authority.ts",
           "hasBody": true,
-          "id": "src/authority.ts:72981:requireInventoryAuthorityMode",
+          "id": "src/authority.ts:73005:requireInventoryAuthorityMode",
           "kind": "FunctionDeclaration",
-          "line": 2024,
+          "line": 2026,
           "name": "requireInventoryAuthorityMode"
         }
       ],
@@ -24138,9 +24138,9 @@
             "column": 1,
             "file": "src/authority.ts",
             "hasBody": true,
-            "id": "src/authority.ts:72981:requireInventoryAuthorityMode",
+            "id": "src/authority.ts:73005:requireInventoryAuthorityMode",
             "kind": "FunctionDeclaration",
-            "line": 2024,
+            "line": 2026,
             "name": "requireInventoryAuthorityMode"
           },
           "witness": {
@@ -24158,19 +24158,19 @@
                 "column": 66,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:23751:<anonymous@648>",
+                "id": "test/authority.test.ts:25112:<anonymous@685>",
                 "kind": "ArrowFunction",
-                "line": 648,
-                "name": "<anonymous@648>",
+                "line": 685,
+                "name": "<anonymous@685>",
                 "reason": "test-callback"
               },
               {
                 "column": 1,
                 "file": "src/authority.ts",
                 "hasBody": true,
-                "id": "src/authority.ts:72981:requireInventoryAuthorityMode",
+                "id": "src/authority.ts:73005:requireInventoryAuthorityMode",
                 "kind": "FunctionDeclaration",
-                "line": 2024,
+                "line": 2026,
                 "name": "requireInventoryAuthorityMode",
                 "reason": "resolved-call"
               }
@@ -27077,10 +27077,10 @@
                 "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:11592:<anonymous@327>",
+                "id": "test/authority.test.ts:12953:<anonymous@364>",
                 "kind": "ArrowFunction",
-                "line": 327,
-                "name": "<anonymous@327>",
+                "line": 364,
+                "name": "<anonymous@364>",
                 "reason": "test-callback"
               },
               {
@@ -36099,10 +36099,10 @@
                 "column": 93,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:16478:<anonymous@454>",
+                "id": "test/authority.test.ts:17839:<anonymous@491>",
                 "kind": "ArrowFunction",
-                "line": 454,
-                "name": "<anonymous@454>",
+                "line": 491,
+                "name": "<anonymous@491>",
                 "reason": "test-callback"
               },
               {
@@ -36781,5 +36781,5 @@
     }
   },
   "schemaVersion": 1,
-  "surfaceSha256": "1feb72c84a827b35ae5c9b85f97c9f43c7f753008a2d47deed2ee16b708af14f"
+  "surfaceSha256": "a19eac71a69c573820a347ad5b71d82ad4102305c6a2479a00d61470d5d09953"
 }

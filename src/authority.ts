@@ -1155,7 +1155,9 @@ export class InventoryAuthorityControl
     const error = requireText(
       input.error,
       "compatibility projection error"
-    ).slice(0, 2000);
+    )
+      .slice(0, 2000)
+      .trimEnd();
     return this.updateProjectionState({
       compatibilityProjectionWorldRevision: input.worldRevision,
       compatibilityProjectionStatus:

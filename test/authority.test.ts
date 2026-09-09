@@ -228,6 +228,43 @@ describe("portable InventoryOnce authority controller", () => {
     );
   });
 
+  it("keeps truncated compatibility projection failures canonical and readable", async () => {
+    const authority = createInventoryAuthorityControl({
+      store: new TestAuthorityStore(),
+      namespaceId: "projection-failure:primary",
+    });
+    await enterDualRun(authority);
+    await authority.authorizeCutover({ authorizationId: "projection-failure-cutover" });
+    await authority.claimFence({
+      fenceToken: "projection-failure-fence",
+      startedAt: time1,
+      sourceRoot: "source-root-1",
+      sourceRevision: 1,
+    });
+    await authority.activate({
+      fenceToken: "projection-failure-fence",
+      sourcePlanDigest: "source-plan-1",
+      sourceCatalogDigest: "source-catalog-1",
+      sourceRoot: "source-root-1",
+      targetWorldRoot: "world-root-projection-failure",
+      targetWorldRevision: 1,
+      activatedAt: time2,
+    });
+
+    const failed = await authority.markCompatibilityProjectionFailed({
+      worldRevision: 1,
+      error: `${"x".repeat(1999)} y`,
+    });
+    expect(failed.compatibilityProjectionError).toBe("x".repeat(1999));
+    await expect(authority.read()).resolves.toEqual(failed);
+    await expect(
+      authority.markCompatibilityProjectionApplied({ worldRevision: 1 })
+    ).resolves.toMatchObject({
+      compatibilityProjectionWorldRevision: 1,
+      compatibilityProjectionError: "",
+    });
+  });
+
   it("retains mismatch evidence and refuses to fence past it", async () => {
     const authority = createInventoryAuthorityControl({
       store: new TestAuthorityStore(),

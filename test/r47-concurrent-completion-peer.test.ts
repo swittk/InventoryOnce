@@ -169,5 +169,4 @@ test("R49 exhausts concrete same-request and foreign completion checkpoints", as
   for (const phase of ["cert", "auth", "shadow", "dual"] as const)
     rows.push(await legacyCase(phase, true));
   assert.equal(rows.length, 11);
-  console.log(JSON.stringify({ passed: true, cases: rows.length, rows }, null, 2));
 });

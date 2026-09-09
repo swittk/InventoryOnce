@@ -140,6 +140,14 @@ describe("independent physical count reconciliation", () => {
     });
 
     expect(adjusted.event?.kind).toBe(InventoryEventKind.CountAdjustment);
+    expect(
+      inventoryMeasurementAt(
+        adjusted.event?.stockEffects[0]?.measurementsDelta ?? measuredVector("0", "0"),
+        "weight",
+        unitCode("kg"),
+      ).amountMinor,
+    ).toBe(1);
+    expect(adjusted.event?.stockEffects[0]?.measurementsDelta.primary.quantity.amountMinor).toBe(0);
   });
 
   it("rejects changing an independent axis that is part of fixed package contents", async () => {

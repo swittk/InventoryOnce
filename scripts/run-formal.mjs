@@ -107,7 +107,7 @@ async function ensureTlaTools() {
 
 
 /** Run one Java child to completion without blocking the scheduler. */
-function runJava(args, { capture = false, maxBytes = 64 * 1024 * 1024 } = {}) {
+function runJava(args, { capture = true, maxBytes = 64 * 1024 * 1024 } = {}) {
   return new Promise((resolvePromise, rejectPromise) => {
     const child = spawn("java", args, {
       stdio: capture ? ["ignore", "pipe", "pipe"] : "inherit",
@@ -146,13 +146,15 @@ function runJava(args, { capture = false, maxBytes = 64 * 1024 * 1024 } = {}) {
 async function runBoundedPool(items, runItem) {
   let nextIndex = 0;
   let firstFailure = 0;
+  const results = new Array(items.length);
   async function worker() {
     while (firstFailure === 0) {
       const index = nextIndex;
       nextIndex += 1;
       if (index >= items.length) return;
-      const status = await runItem(items[index]);
-      if (status !== 0 && firstFailure === 0) firstFailure = status;
+      const result = await runItem(items[index]);
+      results[index] = result;
+      if (result.status !== 0 && firstFailure === 0) firstFailure = result.status;
     }
   }
   const workers = Array.from(
@@ -160,7 +162,15 @@ async function runBoundedPool(items, runItem) {
     () => worker()
   );
   await Promise.all(workers);
-  return firstFailure;
+  return { status: firstFailure, results };
+}
+
+/** Emit one completed proof section with no output interleaving from parallel TLC children. */
+function emitProofSection(header, result) {
+  console.log(`\n${header}`);
+  if (result.output.length !== 0) {
+    process.stdout.write(result.output.endsWith("\n") ? result.output : `${result.output}\n`);
+  }
 }
 
 /** Run one model in its own collision-safe TLC metadata folder. */
@@ -174,8 +184,10 @@ async function runModel(model) {
   });
   const hit = cachedProof(descriptor);
   if (hit !== undefined) {
-    console.log(`TLC proof cache hit for '${model}' (${hit.key.slice(0, 12)}).`);
-    return 0;
+    return {
+      status: 0,
+      output: `TLC proof cache hit for '${model}' (${hit.key.slice(0, 12)}).\n`,
+    };
   }
 
   // TLC's default metadata folder only has second-level time precision, so concurrent gates collide.
@@ -185,30 +197,35 @@ async function runModel(model) {
   );
   let modelPassed = false;
   try {
-    const result = await runJava([
-      "-XX:+UseParallelGC",
-      "-jar",
-      jarPath,
-      "-workers",
-      requestedWorkers,
-      "-metadir",
-      modelMetadataDirectory,
-      "-config",
-      `formal/${model}.cfg`,
-      `formal/${model}.tla`,
-    ]);
-    if (result.status !== 0) {
-      console.error(
-        `TLC failure metadata remains at ${modelMetadataDirectory}.`
-      );
-      return result.status ?? 1;
+    const result = await runJava(
+      [
+        "-XX:+UseParallelGC",
+        "-jar",
+        jarPath,
+        "-workers",
+        requestedWorkers,
+        "-metadir",
+        modelMetadataDirectory,
+        "-config",
+        `formal/${model}.cfg`,
+        `formal/${model}.tla`,
+      ],
+      { capture: true }
+    );
+    let output = `${result.stdout ?? ""}${result.stderr ?? ""}`;
+    if (result.signal !== null || result.status !== 0) {
+      output += `TLC failure metadata remains at ${modelMetadataDirectory}.\n`;
+      return {
+        status: typeof result.status === "number" && result.status !== 0 ? result.status : 1,
+        output,
+      };
     }
     modelPassed = true;
     const written = cacheVerifiedProof(descriptor);
     if (written !== undefined) {
-      console.log(`Cached verified TLC proof for '${model}' (${written.key.slice(0, 12)}).`);
+      output += `Cached verified TLC proof for '${model}' (${written.key.slice(0, 12)}).\n`;
     }
-    return 0;
+    return { status: 0, output };
   } finally {
     if (modelPassed) {
       rmSync(modelMetadataDirectory, { recursive: true, force: true });
@@ -228,10 +245,10 @@ async function runInvariantMutationCheck(model, config, invariant) {
   });
   const hit = cachedProof(descriptor);
   if (hit !== undefined) {
-    console.log(
-      `TLC mutation proof cache hit for '${config}'/'${invariant}' (${hit.key.slice(0, 12)}).`
-    );
-    return 0;
+    return {
+      status: 0,
+      output: `TLC mutation proof cache hit for '${config}'/'${invariant}' (${hit.key.slice(0, 12)}).\n`,
+    };
   }
 
   // Keep each expected counterexample separate so one invariant cannot hide another.
@@ -265,23 +282,24 @@ async function runInvariantMutationCheck(model, config, invariant) {
         invariant,
       })
     ) {
-      process.stderr.write(output);
-      console.error(
-        `TLC mutation '${config}' did not complete with the expected '${invariant}' safety violation. Metadata remains at ${modelMetadataDirectory}.`
-      );
-      return typeof result.status === "number" && result.status !== 0
-        ? result.status
-        : 1;
+      const failureOutput =
+        `${output}TLC mutation '${config}' did not complete with the expected ` +
+        `'${invariant}' safety violation. Metadata remains at ${modelMetadataDirectory}.\n`;
+      return {
+        status: typeof result.status === "number" && result.status !== 0
+          ? result.status
+          : 1,
+        output: failureOutput,
+      };
     }
     mutationRejected = true;
-    console.log(`TLC rejected '${config}' through '${invariant}'.`);
+    let successOutput = `${output}TLC rejected '${config}' through '${invariant}'.\n`;
     const written = cacheVerifiedProof(descriptor);
     if (written !== undefined) {
-      console.log(
-        `Cached verified TLC mutation proof for '${config}' (${written.key.slice(0, 12)}).`
-      );
+      successOutput +=
+        `Cached verified TLC mutation proof for '${config}' (${written.key.slice(0, 12)}).\n`;
     }
-    return 0;
+    return { status: 0, output: successOutput };
   } finally {
     if (mutationRejected) {
       rmSync(modelMetadataDirectory, { recursive: true, force: true });
@@ -296,20 +314,28 @@ await ensureTlaTools();
 console.log(
   `InventoryOnce formal mode: ${coldFormalRun ? "cold/full (cache bypassed)" : "content-addressed proof cache enabled"}; TLC jobs=${requestedJobs}; workers/job=${requestedWorkers}.`
 );
-const modelStatus = await runBoundedPool(formalModels, async (model) => {
-  console.log(`\n=== TLC: ${model} ===`);
-  return runModel(model);
-});
-if (modelStatus !== 0) process.exit(modelStatus);
-
-const mutationStatus = await runBoundedPool(
-  formalInvariantMutationChecks,
-  async ([model, config, invariant]) => {
-    console.log(`\n=== TLC expected rejection: ${config} ===`);
-    return runInvariantMutationCheck(model, config, invariant);
+const modelRun = await runBoundedPool(formalModels, (model) => runModel(model));
+for (let index = 0; index < modelRun.results.length; index += 1) {
+  const result = modelRun.results[index];
+  const model = formalModels[index];
+  if (result !== undefined && model !== undefined) {
+    emitProofSection(`=== TLC: ${model} ===`, result);
   }
+}
+if (modelRun.status !== 0) process.exit(modelRun.status);
+
+const mutationRun = await runBoundedPool(
+  formalInvariantMutationChecks,
+  ([model, config, invariant]) => runInvariantMutationCheck(model, config, invariant)
 );
-if (mutationStatus !== 0) process.exit(mutationStatus);
+for (let index = 0; index < mutationRun.results.length; index += 1) {
+  const result = mutationRun.results[index];
+  const row = formalInvariantMutationChecks[index];
+  if (result !== undefined && row !== undefined) {
+    emitProofSection(`=== TLC expected rejection: ${row[1]} ===`, result);
+  }
+}
+if (mutationRun.status !== 0) process.exit(mutationRun.status);
 
 console.log(
   "\nAll InventoryOnce TLA+ models passed, and every registered forbidden transition was rejected by its safety invariant."
