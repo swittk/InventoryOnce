@@ -23,6 +23,7 @@ const occurredAt = "2030-01-01T00:00:00.000Z";
 const itemId = "measured-count-item";
 const itemRevisionId = "measured-count-item-v1";
 
+/** Define the shared item with primary piece count and independent weight axes. */
 function measuredItem() {
   return defineInventoryItem({
     itemId,
@@ -48,6 +49,7 @@ function measuredItem() {
   });
 }
 
+/** Build one normalized piece/weight measurement vector for count fixtures. */
 function measuredVector(pieces: string, weight: string) {
   return inventoryMeasurementVector(
     { axisId: "pieces", quantity: parseQuantity(pieces, "piece") },
@@ -55,6 +57,7 @@ function measuredVector(pieces: string, weight: string) {
   );
 }
 
+/** Create one in-memory InventoryOnce instance with the measured item and optional packaging. */
 function inventoryFor(packagingRevisions: ReturnType<typeof defineInventoryPackaging>[] = []) {
   const item = measuredItem();
   const catalog = defineInventoryCatalog({

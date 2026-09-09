@@ -9,6 +9,8 @@ import {
   InventoryAuthorityMode,
   InventoryCompatibilityProjectionStatus,
   createInventoryAuthorityControl,
+  type ActivateInventoryAuthorityInput,
+  type InventoryAuthorityControlPort,
   type InventoryAuthorityDocument,
   type InventoryAuthorityState,
   type InventoryAuthorityStateStore,
@@ -67,14 +69,21 @@ function compiled(migrationId = "m", cutoverAt = time) {
     }),
   };
 }
+/** Full authority-control fake used to inject malformed cutover results without weakening port typing. */
+type CutoverTestPort = InventoryAuthorityControlPort & {
+  /** Compile the fixed source plan used by these cutover assertions. */
+  compile(): ReturnType<typeof compiled>;
+};
+
+/** Build a complete typed authority-control fake with configurable fence/activation lies. */
 function cutoverPort(
   claimMode: InventoryAuthorityMode = InventoryAuthorityMode.Fencing,
   honestActivate = false,
-) {
+): CutoverTestPort {
   const first = compiled();
   const sourceRoot = `${first.catalog.digest}:${first.plan.planDigest}`;
   let state = baseState();
-  return {
+  const port: CutoverTestPort = {
     read: async () => structuredClone(state),
     certifyAdapter: async () =>
       structuredClone(
@@ -109,6 +118,13 @@ function cutoverPort(
           dualRunStartedAt: time,
         }),
       ),
+    recordDualRunMismatch: async () => structuredClone(state),
+    admitLegacyWriter: async () => ({
+      mode: state.mode,
+      admittedLegacyWriter: false,
+      state: structuredClone(state),
+    }),
+    releaseLegacyWriter: async () => structuredClone(state),
     claimFence: async () =>
       structuredClone(
         (state = {
@@ -120,7 +136,7 @@ function cutoverPort(
             claimMode === InventoryAuthorityMode.Fencing ? time : "",
         }),
       ),
-    activate: async (input: any) => {
+    activate: async (input: ActivateInventoryAuthorityInput) => {
       if (!honestActivate)
         return baseState({
           revision: 999,
@@ -146,9 +162,13 @@ function cutoverPort(
       };
       return structuredClone(state);
     },
+    activateGreenfield: async () => structuredClone(state),
     releaseFence: async () => structuredClone(state),
+    markCompatibilityProjectionApplied: async () => structuredClone(state),
+    markCompatibilityProjectionFailed: async () => structuredClone(state),
     compile: () => compiled(),
-  } as any;
+  };
+  return port;
 }
 
 function createHookedAuthorityStore(): {
@@ -167,7 +187,7 @@ function createHookedAuthorityStore(): {
   const store: InventoryAuthorityStateStore = {
     ensure: async () => {},
     read: async () =>
-      row === undefined ? undefined : (structuredClone(row) as any),
+      row === undefined ? undefined : (structuredClone(row) as InventoryAuthorityDocument),
     create: async (document) => {
       if (row !== undefined) return InventoryAuthorityCreateResult.Existing;
       row = structuredClone(document);
@@ -336,7 +356,8 @@ describe("authority orchestration rejects arbitrary port lies", () => {
       targetWorldRoot: "FAKE-HISTORICAL-TARGET",
     };
     let compileCalls = 0;
-    const maliciousRetry = { read: async () => structuredClone(fake) } as any;
+    const maliciousRetry = cutoverPort();
+    maliciousRetry.read = async () => structuredClone(fake);
     await expect(
       cutoverInventoryAuthority({
         authority: maliciousRetry,
@@ -372,15 +393,18 @@ describe("authority orchestration rejects arbitrary port lies", () => {
       activatedAt: time,
       compatibilityProjectionStatus: InventoryCompatibilityProjectionStatus.Current,
     });
+    const authority = cutoverPort();
+    authority.read = async () => structuredClone(fake);
+    const storage = createInMemoryInventoryDurableStorage();
+    const readWorld = storage.readWorld.bind(storage);
+    storage.readWorld = async () => {
+      storageCalls += 1;
+      return readWorld();
+    };
     await expect(
       bootstrapGreenfieldInventoryAuthority({
-        authority: { read: async () => fake } as any,
-        storage: {
-          readWorld: async () => {
-            storageCalls += 1;
-            return emptyInventoryWorldState();
-          },
-        } as any,
+        authority,
+        storage,
         adapterCertificationDigest: "cert",
         authorizationId: "green",
         clock: { now: () => time },
@@ -404,19 +428,18 @@ describe("authority orchestration rejects arbitrary port lies", () => {
       activatedAt: time,
       compatibilityProjectionStatus: InventoryCompatibilityProjectionStatus.Current,
     });
-    const authority = {
-      read: async () => structuredClone(state),
-      certifyAdapter: async () =>
-        structuredClone(
-          (state = {
-            ...state,
-            revision: 1,
-            adapterCertificationDigest: "cert",
-            adapterCertifiedAt: time,
-          }),
-        ),
-      activateGreenfield: async () => structuredClone(fake),
-    } as any;
+    const authority = cutoverPort();
+    authority.read = async () => structuredClone(state);
+    authority.certifyAdapter = async () =>
+      structuredClone(
+        (state = {
+          ...state,
+          revision: 1,
+          adapterCertificationDigest: "cert",
+          adapterCertifiedAt: time,
+        }),
+      );
+    authority.activateGreenfield = async () => structuredClone(fake);
     await expect(
       bootstrapGreenfieldInventoryAuthority({
         authority,
@@ -431,7 +454,7 @@ describe("authority orchestration rejects arbitrary port lies", () => {
   it("rejects an authority namespace switch after certification", async () => {
     const authority = cutoverPort();
     const certifyAdapter = authority.certifyAdapter;
-    authority.certifyAdapter = async (input: any) => ({
+    authority.certifyAdapter = async (input) => ({
       ...(await certifyAdapter(input)),
       namespaceId: "other-ns",
     });
@@ -454,7 +477,7 @@ describe("authority orchestration rejects arbitrary port lies", () => {
   it("rejects an authority revision rewind after authorization", async () => {
     const authority = cutoverPort();
     const authorizeCutover = authority.authorizeCutover;
-    authority.authorizeCutover = async (input: any) => ({
+    authority.authorizeCutover = async (input) => ({
       ...(await authorizeCutover(input)),
       revision: 0,
     });
@@ -477,7 +500,7 @@ describe("authority orchestration rejects arbitrary port lies", () => {
   it("rejects malformed pre-authority compatibility progress", async () => {
     const authority = cutoverPort();
     const claimFence = authority.claimFence;
-    authority.claimFence = async (input: any) => ({
+    authority.claimFence = async (input) => ({
       ...(await claimFence(input)),
       compatibilityProjectionStatus: InventoryCompatibilityProjectionStatus.Current,
       compatibilityProjectionWorldRevision: 1,

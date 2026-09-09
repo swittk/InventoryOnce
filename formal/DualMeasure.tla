@@ -84,6 +84,7 @@ PrimaryQuantityConserved == piecesA + piecesB = 2
 SecondaryMeasureHasExplicitCause ==
   weightA + weightB = 20 + weightAdjustment
 
+\* Guard-enforced regression check: every writing action applies ValidPosition; this is not independent evidence.
 CatchWeightToleranceHeld ==
   /\ ValidPosition(piecesA, weightA)
   /\ ValidPosition(piecesB, weightB)

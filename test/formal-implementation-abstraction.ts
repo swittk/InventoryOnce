@@ -344,8 +344,8 @@ function abstractEvent(event: InventoryCommittedEvent): AbstractInventoryEvent {
     traceabilityChanges: event.traceabilityChanges.map((change) => ({
       action: change.action,
       kind: change.kind,
-      from: `${change.from.kind}:${change.from.id}`,
-      to: `${change.to.kind}:${change.to.id}`,
+      from: [change.from.kind, change.from.id] as const,
+      to: [change.to.kind, change.to.id] as const,
     })),
     ...(event.correction === undefined
       ? {}

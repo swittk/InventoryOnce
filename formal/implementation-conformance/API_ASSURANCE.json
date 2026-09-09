@@ -3,8 +3,8 @@
     "authorityMethods": 14,
     "callAndConstructSignatures": 510,
     "classMethods": 71,
-    "compilerCallGraphCallables": 2449,
-    "compilerCallGraphEdges": 6717,
+    "compilerCallGraphCallables": 2456,
+    "compilerCallGraphEdges": 6732,
     "compilerCallGraphTestRoots": 44,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 510,
@@ -1389,10 +1389,10 @@
               "column": 106,
               "file": "test/authority-arbitrary-port.test.ts",
               "hasBody": true,
-              "id": "test/authority-arbitrary-port.test.ts:17092:<anonymous@501>",
+              "id": "test/authority-arbitrary-port.test.ts:18266:<anonymous@524>",
               "kind": "ArrowFunction",
-              "line": 501,
-              "name": "<anonymous@501>",
+              "line": 524,
+              "name": "<anonymous@524>",
               "reason": "test-callback"
             },
             {
@@ -6331,10 +6331,10 @@
               "column": 106,
               "file": "test/authority-arbitrary-port.test.ts",
               "hasBody": true,
-              "id": "test/authority-arbitrary-port.test.ts:17092:<anonymous@501>",
+              "id": "test/authority-arbitrary-port.test.ts:18266:<anonymous@524>",
               "kind": "ArrowFunction",
-              "line": 501,
-              "name": "<anonymous@501>",
+              "line": 524,
+              "name": "<anonymous@524>",
               "reason": "test-callback"
             },
             {
@@ -14572,7 +14572,7 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:28635:projectInventoryEvents",
+              "id": "src/projection.ts:28671:projectInventoryEvents",
               "kind": "FunctionDeclaration",
               "line": 741,
               "name": "projectInventoryEvents",
@@ -14835,10 +14835,10 @@
               "column": 92,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:4217:<anonymous@124>",
+              "id": "test/dual-measure-counts.test.ts:4479:<anonymous@127>",
               "kind": "ArrowFunction",
-              "line": 124,
-              "name": "<anonymous@124>",
+              "line": 127,
+              "name": "<anonymous@127>",
               "reason": "test-callback"
             },
             {
@@ -15844,7 +15844,7 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:28635:projectInventoryEvents",
+              "id": "src/projection.ts:28671:projectInventoryEvents",
               "kind": "FunctionDeclaration",
               "line": 741,
               "name": "projectInventoryEvents",
@@ -15854,7 +15854,7 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:29781:inventoryEventsInRecordSequence",
+              "id": "src/projection.ts:29817:inventoryEventsInRecordSequence",
               "kind": "FunctionDeclaration",
               "line": 776,
               "name": "inventoryEventsInRecordSequence",
@@ -15864,7 +15864,7 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:37747:compareCommittedEventSequence",
+              "id": "src/projection.ts:37783:compareCommittedEventSequence",
               "kind": "FunctionDeclaration",
               "line": 1011,
               "name": "compareCommittedEventSequence",
@@ -15875,7 +15875,7 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:37747:compareCommittedEventSequence",
+            "id": "src/projection.ts:37783:compareCommittedEventSequence",
             "kind": "FunctionDeclaration",
             "line": 1011,
             "name": "compareCommittedEventSequence"
@@ -15898,7 +15898,7 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:37747:compareCommittedEventSequence",
+          "id": "src/projection.ts:37783:compareCommittedEventSequence",
           "kind": "FunctionDeclaration",
           "line": 1011,
           "name": "compareCommittedEventSequence"
@@ -21215,10 +21215,10 @@
               "column": 92,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:4217:<anonymous@124>",
+              "id": "test/dual-measure-counts.test.ts:4479:<anonymous@127>",
               "kind": "ArrowFunction",
-              "line": 124,
-              "name": "<anonymous@124>",
+              "line": 127,
+              "name": "<anonymous@127>",
               "reason": "test-callback"
             },
             {
@@ -22969,7 +22969,7 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:30259:findInventoryPositions",
+              "id": "src/projection.ts:30295:findInventoryPositions",
               "kind": "FunctionDeclaration",
               "line": 792,
               "name": "findInventoryPositions",
@@ -22980,7 +22980,7 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:30259:findInventoryPositions",
+            "id": "src/projection.ts:30295:findInventoryPositions",
             "kind": "FunctionDeclaration",
             "line": 792,
             "name": "findInventoryPositions"
@@ -23007,7 +23007,7 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:30259:findInventoryPositions",
+          "id": "src/projection.ts:30295:findInventoryPositions",
           "kind": "FunctionDeclaration",
           "line": 792,
           "name": "findInventoryPositions"
@@ -24093,7 +24093,7 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:28635:projectInventoryEvents",
+              "id": "src/projection.ts:28671:projectInventoryEvents",
               "kind": "FunctionDeclaration",
               "line": 741,
               "name": "projectInventoryEvents",
@@ -24264,9 +24264,9 @@
               "column": 1,
               "file": "src/transfers.ts",
               "hasBody": true,
-              "id": "src/transfers.ts:38911:transferLifecycleEvent",
+              "id": "src/transfers.ts:38946:transferLifecycleEvent",
               "kind": "FunctionDeclaration",
-              "line": 996,
+              "line": 1004,
               "name": "transferLifecycleEvent",
               "reason": "resolved-call"
             },
@@ -24545,7 +24545,7 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:28635:projectInventoryEvents",
+              "id": "src/projection.ts:28671:projectInventoryEvents",
               "kind": "FunctionDeclaration",
               "line": 741,
               "name": "projectInventoryEvents",
@@ -24555,7 +24555,7 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:29781:inventoryEventsInRecordSequence",
+              "id": "src/projection.ts:29817:inventoryEventsInRecordSequence",
               "kind": "FunctionDeclaration",
               "line": 776,
               "name": "inventoryEventsInRecordSequence",
@@ -24566,7 +24566,7 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:29781:inventoryEventsInRecordSequence",
+            "id": "src/projection.ts:29817:inventoryEventsInRecordSequence",
             "kind": "FunctionDeclaration",
             "line": 776,
             "name": "inventoryEventsInRecordSequence"
@@ -24589,7 +24589,7 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:29781:inventoryEventsInRecordSequence",
+          "id": "src/projection.ts:29817:inventoryEventsInRecordSequence",
           "kind": "FunctionDeclaration",
           "line": 776,
           "name": "inventoryEventsInRecordSequence"
@@ -25502,10 +25502,10 @@
               "column": 72,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:2731:<anonymous@85>",
+              "id": "test/dual-measure-counts.test.ts:2993:<anonymous@88>",
               "kind": "ArrowFunction",
-              "line": 85,
-              "name": "<anonymous@85>",
+              "line": 88,
+              "name": "<anonymous@88>",
               "reason": "test-callback"
             },
             {
@@ -25803,7 +25803,7 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:28635:projectInventoryEvents",
+              "id": "src/projection.ts:28671:projectInventoryEvents",
               "kind": "FunctionDeclaration",
               "line": 741,
               "name": "projectInventoryEvents",
@@ -27540,7 +27540,7 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:30259:findInventoryPositions",
+              "id": "src/projection.ts:30295:findInventoryPositions",
               "kind": "FunctionDeclaration",
               "line": 792,
               "name": "findInventoryPositions",
@@ -29916,7 +29916,7 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:28635:projectInventoryEvents",
+              "id": "src/projection.ts:28671:projectInventoryEvents",
               "kind": "FunctionDeclaration",
               "line": 741,
               "name": "projectInventoryEvents",
@@ -31200,10 +31200,10 @@
               "column": 92,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:4217:<anonymous@124>",
+              "id": "test/dual-measure-counts.test.ts:4479:<anonymous@127>",
               "kind": "ArrowFunction",
-              "line": 124,
-              "name": "<anonymous@124>",
+              "line": 127,
+              "name": "<anonymous@127>",
               "reason": "test-callback"
             },
             {
@@ -31501,7 +31501,7 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:28635:projectInventoryEvents",
+              "id": "src/projection.ts:28671:projectInventoryEvents",
               "kind": "FunctionDeclaration",
               "line": 741,
               "name": "projectInventoryEvents",
@@ -31512,7 +31512,7 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:28635:projectInventoryEvents",
+            "id": "src/projection.ts:28671:projectInventoryEvents",
             "kind": "FunctionDeclaration",
             "line": 741,
             "name": "projectInventoryEvents"
@@ -31539,7 +31539,7 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:28635:projectInventoryEvents",
+          "id": "src/projection.ts:28671:projectInventoryEvents",
           "kind": "FunctionDeclaration",
           "line": 741,
           "name": "projectInventoryEvents"
@@ -31766,7 +31766,7 @@
           "path": "src/reservations.ts"
         },
         {
-          "occurrences": 3,
+          "occurrences": 5,
           "path": "src/transfers.ts"
         }
       ],
@@ -32265,7 +32265,7 @@
               "column": 1,
               "file": "test/formal-implementation-abstraction.ts",
               "hasBody": true,
-              "id": "test/formal-implementation-abstraction.ts:41115:abstractPrimaryBalance",
+              "id": "test/formal-implementation-abstraction.ts:41123:abstractPrimaryBalance",
               "kind": "FunctionDeclaration",
               "line": 1104,
               "name": "abstractPrimaryBalance",
@@ -36580,10 +36580,10 @@
               "column": 106,
               "file": "test/authority-arbitrary-port.test.ts",
               "hasBody": true,
-              "id": "test/authority-arbitrary-port.test.ts:17092:<anonymous@501>",
+              "id": "test/authority-arbitrary-port.test.ts:18266:<anonymous@524>",
               "kind": "ArrowFunction",
-              "line": 501,
-              "name": "<anonymous@501>",
+              "line": 524,
+              "name": "<anonymous@524>",
               "reason": "test-callback"
             },
             {
@@ -37709,7 +37709,7 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:28635:projectInventoryEvents",
+              "id": "src/projection.ts:28671:projectInventoryEvents",
               "kind": "FunctionDeclaration",
               "line": 741,
               "name": "projectInventoryEvents",
@@ -37836,10 +37836,10 @@
               "column": 92,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:4217:<anonymous@124>",
+              "id": "test/dual-measure-counts.test.ts:4479:<anonymous@127>",
               "kind": "ArrowFunction",
-              "line": 124,
-              "name": "<anonymous@124>",
+              "line": 127,
+              "name": "<anonymous@127>",
               "reason": "test-callback"
             },
             {
@@ -38421,10 +38421,10 @@
               "column": 75,
               "file": "test/authority-arbitrary-port.test.ts",
               "hasBody": true,
-              "id": "test/authority-arbitrary-port.test.ts:12083:<anonymous@360>",
+              "id": "test/authority-arbitrary-port.test.ts:13138:<anonymous@381>",
               "kind": "ArrowFunction",
-              "line": 360,
-              "name": "<anonymous@360>",
+              "line": 381,
+              "name": "<anonymous@381>",
               "reason": "test-callback"
             },
             {
@@ -39213,10 +39213,10 @@
               "column": 106,
               "file": "test/authority-arbitrary-port.test.ts",
               "hasBody": true,
-              "id": "test/authority-arbitrary-port.test.ts:17092:<anonymous@501>",
+              "id": "test/authority-arbitrary-port.test.ts:18266:<anonymous@524>",
               "kind": "ArrowFunction",
-              "line": 501,
-              "name": "<anonymous@501>",
+              "line": 524,
+              "name": "<anonymous@524>",
               "reason": "test-callback"
             },
             {
@@ -39454,10 +39454,10 @@
               "column": 60,
               "file": "test/authority-arbitrary-port.test.ts",
               "hasBody": true,
-              "id": "test/authority-arbitrary-port.test.ts:6745:<anonymous@212>",
+              "id": "test/authority-arbitrary-port.test.ts:7776:<anonymous@232>",
               "kind": "ArrowFunction",
-              "line": 212,
-              "name": "<anonymous@212>",
+              "line": 232,
+              "name": "<anonymous@232>",
               "reason": "test-callback"
             },
             {
@@ -40353,10 +40353,10 @@
               "column": 92,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:4217:<anonymous@124>",
+              "id": "test/dual-measure-counts.test.ts:4479:<anonymous@127>",
               "kind": "ArrowFunction",
-              "line": 124,
-              "name": "<anonymous@124>",
+              "line": 127,
+              "name": "<anonymous@127>",
               "reason": "test-callback"
             },
             {
@@ -42110,10 +42110,10 @@
               "column": 60,
               "file": "test/authority-arbitrary-port.test.ts",
               "hasBody": true,
-              "id": "test/authority-arbitrary-port.test.ts:6745:<anonymous@212>",
+              "id": "test/authority-arbitrary-port.test.ts:7776:<anonymous@232>",
               "kind": "ArrowFunction",
-              "line": 212,
-              "name": "<anonymous@212>",
+              "line": 232,
+              "name": "<anonymous@232>",
               "reason": "test-callback"
             },
             {
@@ -42253,10 +42253,10 @@
               "column": 75,
               "file": "test/authority-arbitrary-port.test.ts",
               "hasBody": true,
-              "id": "test/authority-arbitrary-port.test.ts:12083:<anonymous@360>",
+              "id": "test/authority-arbitrary-port.test.ts:13138:<anonymous@381>",
               "kind": "ArrowFunction",
-              "line": 360,
-              "name": "<anonymous@360>",
+              "line": 381,
+              "name": "<anonymous@381>",
               "reason": "test-callback"
             },
             {
@@ -42678,7 +42678,7 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:28635:projectInventoryEvents",
+              "id": "src/projection.ts:28671:projectInventoryEvents",
               "kind": "FunctionDeclaration",
               "line": 741,
               "name": "projectInventoryEvents",
@@ -43378,10 +43378,10 @@
               "column": 72,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:2731:<anonymous@85>",
+              "id": "test/dual-measure-counts.test.ts:2993:<anonymous@88>",
               "kind": "ArrowFunction",
-              "line": 85,
-              "name": "<anonymous@85>",
+              "line": 88,
+              "name": "<anonymous@88>",
               "reason": "test-callback"
             },
             {
@@ -43679,7 +43679,7 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:28635:projectInventoryEvents",
+              "id": "src/projection.ts:28671:projectInventoryEvents",
               "kind": "FunctionDeclaration",
               "line": 741,
               "name": "projectInventoryEvents",
@@ -45854,7 +45854,7 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:28635:projectInventoryEvents",
+              "id": "src/projection.ts:28671:projectInventoryEvents",
               "kind": "FunctionDeclaration",
               "line": 741,
               "name": "projectInventoryEvents",
@@ -46689,10 +46689,10 @@
               "column": 92,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:4217:<anonymous@124>",
+              "id": "test/dual-measure-counts.test.ts:4479:<anonymous@127>",
               "kind": "ArrowFunction",
-              "line": 124,
-              "name": "<anonymous@124>",
+              "line": 127,
+              "name": "<anonymous@127>",
               "reason": "test-callback"
             },
             {
@@ -47376,7 +47376,7 @@
           "path": "src/reservations.ts"
         },
         {
-          "occurrences": 3,
+          "occurrences": 5,
           "path": "src/transfers.ts"
         }
       ],
@@ -47875,7 +47875,7 @@
               "column": 1,
               "file": "test/formal-implementation-abstraction.ts",
               "hasBody": true,
-              "id": "test/formal-implementation-abstraction.ts:41115:abstractPrimaryBalance",
+              "id": "test/formal-implementation-abstraction.ts:41123:abstractPrimaryBalance",
               "kind": "FunctionDeclaration",
               "line": 1104,
               "name": "abstractPrimaryBalance",
@@ -51153,10 +51153,10 @@
               "column": 60,
               "file": "test/authority-arbitrary-port.test.ts",
               "hasBody": true,
-              "id": "test/authority-arbitrary-port.test.ts:6745:<anonymous@212>",
+              "id": "test/authority-arbitrary-port.test.ts:7776:<anonymous@232>",
               "kind": "ArrowFunction",
-              "line": 212,
-              "name": "<anonymous@212>",
+              "line": 232,
+              "name": "<anonymous@232>",
               "reason": "test-callback"
             },
             {
@@ -51700,10 +51700,10 @@
               "column": 60,
               "file": "test/authority-arbitrary-port.test.ts",
               "hasBody": true,
-              "id": "test/authority-arbitrary-port.test.ts:6745:<anonymous@212>",
+              "id": "test/authority-arbitrary-port.test.ts:7776:<anonymous@232>",
               "kind": "ArrowFunction",
-              "line": 212,
-              "name": "<anonymous@212>",
+              "line": 232,
+              "name": "<anonymous@232>",
               "reason": "test-callback"
             },
             {
@@ -51837,10 +51837,10 @@
               "column": 60,
               "file": "test/authority-arbitrary-port.test.ts",
               "hasBody": true,
-              "id": "test/authority-arbitrary-port.test.ts:6745:<anonymous@212>",
+              "id": "test/authority-arbitrary-port.test.ts:7776:<anonymous@232>",
               "kind": "ArrowFunction",
-              "line": 212,
-              "name": "<anonymous@212>",
+              "line": 232,
+              "name": "<anonymous@232>",
               "reason": "test-callback"
             },
             {
@@ -52240,10 +52240,10 @@
               "column": 60,
               "file": "test/authority-arbitrary-port.test.ts",
               "hasBody": true,
-              "id": "test/authority-arbitrary-port.test.ts:6745:<anonymous@212>",
+              "id": "test/authority-arbitrary-port.test.ts:7776:<anonymous@232>",
               "kind": "ArrowFunction",
-              "line": 212,
-              "name": "<anonymous@212>",
+              "line": 232,
+              "name": "<anonymous@232>",
               "reason": "test-callback"
             },
             {
@@ -52377,10 +52377,10 @@
               "column": 60,
               "file": "test/authority-arbitrary-port.test.ts",
               "hasBody": true,
-              "id": "test/authority-arbitrary-port.test.ts:6745:<anonymous@212>",
+              "id": "test/authority-arbitrary-port.test.ts:7776:<anonymous@232>",
               "kind": "ArrowFunction",
-              "line": 212,
-              "name": "<anonymous@212>",
+              "line": 232,
+              "name": "<anonymous@232>",
               "reason": "test-callback"
             },
             {
@@ -52514,10 +52514,10 @@
               "column": 60,
               "file": "test/authority-arbitrary-port.test.ts",
               "hasBody": true,
-              "id": "test/authority-arbitrary-port.test.ts:6745:<anonymous@212>",
+              "id": "test/authority-arbitrary-port.test.ts:7776:<anonymous@232>",
               "kind": "ArrowFunction",
-              "line": 212,
-              "name": "<anonymous@212>",
+              "line": 232,
+              "name": "<anonymous@232>",
               "reason": "test-callback"
             },
             {
@@ -56307,7 +56307,7 @@
           "path": "src/reservations.ts"
         },
         {
-          "occurrences": 132,
+          "occurrences": 130,
           "path": "src/transfers.ts"
         }
       ],
@@ -56812,10 +56812,10 @@
               "column": 72,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:2731:<anonymous@85>",
+              "id": "test/dual-measure-counts.test.ts:2993:<anonymous@88>",
               "kind": "ArrowFunction",
-              "line": 85,
-              "name": "<anonymous@85>",
+              "line": 88,
+              "name": "<anonymous@88>",
               "reason": "test-callback"
             },
             {
@@ -58246,7 +58246,7 @@
           "path": "src/reservations.ts"
         },
         {
-          "occurrences": 132,
+          "occurrences": 130,
           "path": "src/transfers.ts"
         }
       ],
@@ -59271,7 +59271,7 @@
           "path": "src/storage.ts"
         },
         {
-          "occurrences": 1,
+          "occurrences": 2,
           "path": "src/transfers.ts"
         },
         {
@@ -63442,7 +63442,7 @@
           "path": "src/storage.ts"
         },
         {
-          "occurrences": 1,
+          "occurrences": 2,
           "path": "src/transfers.ts"
         },
         {
@@ -67822,7 +67822,7 @@
           "path": "src/integrity.ts"
         },
         {
-          "occurrences": 7,
+          "occurrences": 10,
           "path": "src/transfers.ts"
         }
       ],
@@ -68867,7 +68867,7 @@
           "path": "src/reservations.ts"
         },
         {
-          "occurrences": 132,
+          "occurrences": 130,
           "path": "src/transfers.ts"
         }
       ],
@@ -70816,7 +70816,7 @@
           "path": "src/integrity.ts"
         },
         {
-          "occurrences": 7,
+          "occurrences": 10,
           "path": "src/transfers.ts"
         }
       ],

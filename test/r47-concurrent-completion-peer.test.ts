@@ -18,6 +18,7 @@ import { createInMemoryInventoryDurableStorage } from "../src/storage.js";
 import { emptyInventoryWorldState } from "../src/world.js";
 
 const time = "2030-01-01T00:00:00.000Z";
+/** Compile the fixed empty migration source used by each authority race case. */
 function compiled(migrationId = "m", cutoverAt = time) {
   const catalog = inventoryCatalogFromSnapshot(emptyInventoryWorldState().catalog);
   return {
@@ -28,10 +29,15 @@ function compiled(migrationId = "m", cutoverAt = time) {
     }),
   };
 }
+/** Create a CAS store that injects one peer completion at a selected transition. */
 function hookedStore() {
+  /** Current durable authority row shared by both competing controls. */
   let row: Record<string, unknown> | undefined;
+  /** Predicate selecting the replacement that fires the peer hook. */
   let predicate: ((row: InventoryAuthorityDocument) => boolean) | undefined;
+  /** One peer action injected when the selected replacement is observed. */
   let hook: (() => Promise<void>) | undefined;
+  /** Reentrancy guard preventing the injected peer transition from recursively firing itself. */
   let inside = false;
   const store: InventoryAuthorityStateStore = {
     ensure: async () => {},
@@ -61,7 +67,9 @@ function hookedStore() {
   };
 }
 
+/** Legacy cutover checkpoint where the peer completion is injected. */
 type Phase = "cert" | "auth" | "shadow" | "dual" | "fence";
+/** Durable-row predicate corresponding to each injectable legacy cutover checkpoint. */
 const phasePredicate: Record<Phase, (r: InventoryAuthorityDocument) => boolean> = {
   cert: r => r.mode === InventoryAuthorityMode.Legacy && r.revision === 1 && r.adapterCertificationDigest === "cert",
   auth: r => r.mode === InventoryAuthorityMode.Legacy && r.revision === 2 && r.cutoverAuthorizationId === "auth",
@@ -70,12 +78,14 @@ const phasePredicate: Record<Phase, (r: InventoryAuthorityDocument) => boolean> 
   fence: r => r.mode === InventoryAuthorityMode.Fencing && r.revision === 5 && r.fenceToken === "f",
 };
 
+/** Run one legacy cutover race with either matching or foreign peer evidence. */
 async function legacyCase(phase: Phase, foreign: boolean) {
   const shared = hookedStore();
   const primary = createInventoryAuthorityControl({ store: shared.store, namespaceId: "ns" });
   const secondary = createInventoryAuthorityControl({ store: shared.store, namespaceId: "ns" });
   await primary.read(); await secondary.read();
   const storage = createInMemoryInventoryDurableStorage();
+  /** Number of peer hooks attempted; only the first may execute the injected cutover. */
   let injected = 0;
   shared.on(phasePredicate[phase], async () => {
     if (injected++) return;
@@ -123,11 +133,13 @@ async function legacyCase(phase: Phase, foreign: boolean) {
   return { phase, foreign, outcome: "joined", revision: result.authority.revision };
 }
 
+/** Run one greenfield bootstrap race with either matching or foreign peer evidence. */
 async function greenfieldCase(foreign: boolean) {
   const shared = hookedStore();
   const primary = createInventoryAuthorityControl({ store: shared.store, namespaceId: "ns" });
   const secondary = createInventoryAuthorityControl({ store: shared.store, namespaceId: "ns" });
   await primary.read(); await secondary.read();
+  /** Number of peer hooks attempted; only the first may execute the injected activation. */
   let injected = 0;
   shared.on(phasePredicate.cert, async () => {
     if (injected++) return;

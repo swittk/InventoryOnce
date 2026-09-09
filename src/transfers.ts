@@ -796,10 +796,14 @@ interface ResolvedTransferPrepareLine {
   /** Amount resolved into canonical measurements and optional package evidence. */
   readonly amount: ResolvedInventoryAmount;
 }
-/** ResolvedTransferReceiveLine shape used by exact transfer-lifecycle semantics. */ interface ResolvedTransferReceiveLine {
-  /** Transfer-lifecycle lineId value retained or supplied by this record. */ readonly lineId: string;
-  /** Transfer-lifecycle receivedMeasurements value retained or supplied by this record. */ readonly receivedMeasurements: InventoryMeasurementVector;
-  /** Transfer-lifecycle resolvedAmount value retained or supplied by this record. */ readonly resolvedAmount?: ResolvedInventoryAmount;
+/** Canonical receive-line result after resolving caller amount and remaining transfer quantity. */
+interface ResolvedTransferReceiveLine {
+  /** Stable transfer line identity selected for receipt. */
+  readonly lineId: string;
+  /** Canonical measurements received for this line. */
+  readonly receivedMeasurements: InventoryMeasurementVector;
+  /** Resolved caller amount when the receipt explicitly supplied one. */
+  readonly resolvedAmount?: ResolvedInventoryAmount;
 }
 
 /** Resolve one prepare request to its exact item revision, package identity, and measurements. */
@@ -833,7 +837,8 @@ function fullRemainingReceiptLines(
   return result;
 }
 
-/** resolveRequestedReceiptLines helper for exact transfer-lifecycle semantics. */ function resolveRequestedReceiptLines(
+/** Resolve caller-named receive lines and reject duplicates or amounts above the remaining quantity. */
+function resolveRequestedReceiptLines(
   catalog: InventoryCatalog,
   transfer: InventoryTransfer,
   requested: readonly InventoryTransferReceiveLineInput[]
@@ -932,7 +937,8 @@ function transferPositionWithPackaging(
   });
 }
 
-/** assertReceiptPackaging helper for exact transfer-lifecycle semantics. */ function assertReceiptPackaging(
+/** Require a receive amount to name the same exact package revision as the transfer line. */
+function assertReceiptPackaging(
   position: InventoryStockPositionKey,
   amount: ResolvedInventoryAmount
 ): void {
@@ -949,7 +955,8 @@ function transferPositionWithPackaging(
     );
 }
 
-/** requireTransferLine helper for exact transfer-lifecycle semantics. */ function requireTransferLine(
+/** Return the retained transfer line for one lineId, or fail closed when it does not exist. */
+function requireTransferLine(
   transfer: InventoryTransfer,
   lineId: string
 ): InventoryTransferLine {
@@ -978,7 +985,8 @@ function transferEffect(
   };
 }
 
-/** transferAmountEvidence helper for exact transfer-lifecycle semantics. */ function transferAmountEvidence(
+/** Retain transacted measurements plus exact package revision/count evidence when present. */
+function transferAmountEvidence(
   amount: ResolvedInventoryAmount
 ): InventoryMeasurementEvidence {
   return {
@@ -1104,7 +1112,8 @@ function inventoryTransferActionIntentFingerprint(
   ]);
 }
 
-/** inventoryTransferAmountIntentValue helper for exact transfer-lifecycle semantics. */ function inventoryTransferAmountIntentValue(
+/** Encode one caller amount into stable fingerprint parts with independent axes sorted. */
+function inventoryTransferAmountIntentValue(
   amount: InventoryAmount
 ): InventoryIntentFingerprintValue {
   const orderedIndependent = [...amount.independent];

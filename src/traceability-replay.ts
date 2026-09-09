@@ -111,13 +111,13 @@ export function projectInventoryTraceabilityEvents(
 
 /** Prove one new structural edge preserves forest/DAG invariants, then index it. */
 function validateAndIndexAddition(
-  change: Pick<InventoryTraceabilityRelationChange, "kind" | "from" | "to">,
+  relation: Pick<InventoryTraceabilityRelationChange, "kind" | "from" | "to">,
   containmentParentByChild: Map<string, string>,
   genealogyOutputsByInput: Map<string, Set<string>>
 ): void {
-  const fromIdentity = inventoryTraceabilityNodeIdentity(change.from);
-  const toIdentity = inventoryTraceabilityNodeIdentity(change.to);
-  if (change.kind === InventoryTraceabilityRelationKind.Containment) {
+  const fromIdentity = inventoryTraceabilityNodeIdentity(relation.from);
+  const toIdentity = inventoryTraceabilityNodeIdentity(relation.to);
+  if (relation.kind === InventoryTraceabilityRelationKind.Containment) {
     const earlierParent = containmentParentByChild.get(fromIdentity);
     if (earlierParent !== undefined && earlierParent !== toIdentity) {
       throw new Error(
@@ -125,6 +125,7 @@ function validateAndIndexAddition(
       );
     }
     let current: string | undefined = toIdentity;
+    /** Ancestors already inspected while checking the proposed containment parent chain. */
     const visited = new Set<string>();
     while (current !== undefined) {
       if (current === fromIdentity || visited.has(current)) {
@@ -136,7 +137,7 @@ function validateAndIndexAddition(
     containmentParentByChild.set(fromIdentity, toIdentity);
     return;
   }
-  if (change.kind !== InventoryTraceabilityRelationKind.Genealogy) return;
+  if (relation.kind !== InventoryTraceabilityRelationKind.Genealogy) return;
   assertNoGenealogyPath(genealogyOutputsByInput, toIdentity, fromIdentity);
   const outputs =
     genealogyOutputsByInput.get(fromIdentity) ?? new Set<string>();
@@ -168,7 +169,9 @@ function assertNoGenealogyPath(
   start: string,
   target: string
 ): void {
+  /** Genealogy nodes still awaiting traversal from the proposed output. */
   const pending = [start];
+  /** Genealogy nodes already inspected while searching for a path back to the input. */
   const visited = new Set<string>();
   while (pending.length > 0) {
     const current = pending.pop();

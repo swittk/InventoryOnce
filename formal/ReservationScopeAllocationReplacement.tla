@@ -1,7 +1,7 @@
 ---------------- MODULE ReservationScopeAllocationReplacement ----------------
 EXTENDS FiniteSets
 
-\* This unregistered candidate retains the complete ReservationScope state and action domain.
+\* This registered replacement model retains the complete ReservationScope state/action domain and adds ReplaceAllocation.
 Tokens == {"u1", "u2"}
 Claims == {"c1", "c2"}
 NoToken == "none"

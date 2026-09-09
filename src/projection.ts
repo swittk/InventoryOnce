@@ -227,13 +227,13 @@ function applyInventoryCommittedEventInternal(
     }
     return { state, event: earlier, replayed: true };
   }
-  const sameEventId = inventorySparseRecordValue(
+  const existingEventWithSameId = inventorySparseRecordValue(
     state.events,
     normalizedEvent.eventId
   );
-  if (sameEventId !== undefined) {
+  if (existingEventWithSameId !== undefined) {
     if (
-      inventoryEventIntentFingerprint(sameEventId) !==
+      inventoryEventIntentFingerprint(existingEventWithSameId) !==
       inventoryEventIntentFingerprint(normalizedEvent)
     ) {
       throw new Error("Inventory eventId was reused with changed intent.");

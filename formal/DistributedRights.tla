@@ -108,7 +108,7 @@ RightsExactlyBackRemainingStock ==
 
 PhysicalQuantityAccounting == stock + consumed = 4
 
-NoOversell == consumed <= 4
+\* PhysicalQuantityAccounting plus nonnegative stock already forbids oversell; do not duplicate it as separate evidence.
 
 HeldRightsRemainPhysicallyBacked ==
   heldA + heldB <= stock
