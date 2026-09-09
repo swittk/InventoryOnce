@@ -10,7 +10,7 @@ import {
 import { dirname, join, relative, resolve } from "node:path";
 
 /** Bump only when the semantic proof invocation contract itself changes. */
-export const FORMAL_PROOF_CACHE_SCHEMA_VERSION = 1;
+export const FORMAL_PROOF_CACHE_SCHEMA_VERSION = 2;
 /** Pinned TLC 1.7.4 process exit for a completed safety-invariant violation. */
 export const TLC_INVARIANT_VIOLATION_EXIT_CODE = 12;
 /** Bump when mutation-child completion/witness acceptance becomes stricter. */
@@ -85,6 +85,7 @@ export function formalProofDescriptor({
   outcome,
   invariant = null,
   tlaToolsSha256,
+  tlcWorkers,
 }) {
   const absoluteRoot = resolve(repositoryRoot);
   if (outcome !== "model-passed" && outcome !== "mutation-rejected") {
@@ -92,6 +93,9 @@ export function formalProofDescriptor({
   }
   if (outcome === "mutation-rejected" && (typeof invariant !== "string" || invariant.length === 0)) {
     throw new Error("Mutation proof cache entries require an invariant identity.");
+  }
+  if (typeof tlcWorkers !== "string" || !/^(?:auto|[1-9][0-9]*)$/u.test(tlcWorkers)) {
+    throw new Error("Formal proof cache entries require the exact TLC worker setting.");
   }
   const files = [
     ...transitiveLocalTlaFiles(absoluteRoot, model),
@@ -117,6 +121,7 @@ export function formalProofDescriptor({
       ? { mutationProcessContractVersion: FORMAL_MUTATION_PROCESS_CONTRACT_VERSION }
       : {}),
     tlaToolsSha256,
+    tlcWorkers,
     inputs,
   };
 }

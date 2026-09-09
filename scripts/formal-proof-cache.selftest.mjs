@@ -32,6 +32,7 @@ test("transitive local module bytes participate in the proof key", () => {
     config: "Model",
     outcome: "model-passed",
     tlaToolsSha256: "a".repeat(64),
+    tlcWorkers: "4",
   });
   writeFileSync(join(root, "formal", "Child.tla"), "---- MODULE Child ----\nX == 1\n====\n");
   const second = formalProofDescriptor({
@@ -40,8 +41,33 @@ test("transitive local module bytes participate in the proof key", () => {
     config: "Model",
     outcome: "model-passed",
     tlaToolsSha256: "a".repeat(64),
+    tlcWorkers: "4",
   });
   assert.notEqual(formalProofCacheKey(first), formalProofCacheKey(second));
+});
+
+test("exact TLC worker setting participates in the proof key", () => {
+  const root = mkdtempSync(join(tmpdir(), "inventoryonce-formal-cache-"));
+  mkdirSync(join(root, "formal"));
+  writeFileSync(join(root, "formal", "Model.tla"), "---- MODULE Model ----\n====\n");
+  writeFileSync(join(root, "formal", "Model.cfg"), "SPECIFICATION Spec\n");
+  const common = {
+    repositoryRoot: root,
+    model: "Model",
+    config: "Model",
+    outcome: "model-passed",
+    tlaToolsSha256: "c".repeat(64),
+  };
+  const one = formalProofDescriptor({ ...common, tlcWorkers: "1" });
+  const sixteen = formalProofDescriptor({ ...common, tlcWorkers: "16" });
+  const automatic = formalProofDescriptor({ ...common, tlcWorkers: "auto" });
+  assert.equal(one.tlcWorkers, "1");
+  assert.notEqual(formalProofCacheKey(one), formalProofCacheKey(sixteen));
+  assert.notEqual(formalProofCacheKey(sixteen), formalProofCacheKey(automatic));
+  assert.throws(
+    () => formalProofDescriptor({ ...common, tlcWorkers: "0" }),
+    /exact TLC worker setting/u,
+  );
 });
 
 test("cache records require exact descriptor identity and verified status", () => {
@@ -56,6 +82,7 @@ test("cache records require exact descriptor identity and verified status", () =
     outcome: "mutation-rejected",
     invariant: "Forbidden",
     tlaToolsSha256: "b".repeat(64),
+    tlcWorkers: "4",
   });
   assert.equal(descriptor.mutationProcessContractVersion, 2);
   const cache = join(root, "cache");

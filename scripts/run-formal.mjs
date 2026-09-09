@@ -181,6 +181,7 @@ async function runModel(model) {
     config: model,
     outcome: "model-passed",
     tlaToolsSha256: TLA_SHA256,
+    tlcWorkers: requestedWorkers,
   });
   const hit = cachedProof(descriptor);
   if (hit !== undefined) {
@@ -242,6 +243,7 @@ async function runInvariantMutationCheck(model, config, invariant) {
     outcome: "mutation-rejected",
     invariant,
     tlaToolsSha256: TLA_SHA256,
+    tlcWorkers: requestedWorkers,
   });
   const hit = cachedProof(descriptor);
   if (hit !== undefined) {
