@@ -9,6 +9,7 @@ import {
   defineInventoryCatalog,
   defineInventoryItem,
   defineInventoryPackaging,
+  inventoryMeasurement,
   inventoryMeasurementAt,
   inventoryMeasurementVector,
   measuredStockAmount,
@@ -67,6 +68,18 @@ function inventoryFor(packagingRevisions: ReturnType<typeof defineInventoryPacka
     clock: { now: () => occurredAt },
   });
 }
+
+describe("measurement axis identity", () => {
+  it("rejects surrounding whitespace instead of creating a second logical axis identity", () => {
+    expect(() => inventoryMeasurement("weight ", parseQuantity("5", "kg"))).toThrow(
+      "Measurement axisId must not contain surrounding whitespace",
+    );
+    expect(() => inventoryMeasurementVector(
+      { axisId: "pieces", quantity: parseQuantity("1", "piece") },
+      [{ axisId: " weight", quantity: parseQuantity("5", "kg") }],
+    )).toThrow("Measurement axisId must not contain surrounding whitespace");
+  });
+});
 
 describe("independent physical count reconciliation", () => {
   it("adjusts measured weight while primary piece stock is unchanged", async () => {

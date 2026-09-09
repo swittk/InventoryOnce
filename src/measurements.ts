@@ -52,7 +52,11 @@ export function inventoryMeasurement(
   axisId: InventoryMeasurementAxisId,
   measuredQuantity: Quantity,
 ): InventoryMeasurement {
-  if (axisId.trim().length === 0) throw new Error("Measurement axisId must not be empty.");
+  const trimmedAxisId = axisId.trim();
+  if (trimmedAxisId.length === 0) throw new Error("Measurement axisId must not be empty.");
+  if (trimmedAxisId !== axisId) {
+    throw new Error("Measurement axisId must not contain surrounding whitespace.");
+  }
   return { axisId, quantity: measuredQuantity };
 }
 
