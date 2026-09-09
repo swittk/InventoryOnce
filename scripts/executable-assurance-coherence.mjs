@@ -2,12 +2,12 @@
  * @typedef {object} ApiAssuranceManifest
  * @property {string} surfaceSha256 Exact current public-surface digest shared by all same-run artifacts.
  * @property {Record<string, unknown>} entries Public API entries whose key cardinality is summarized.
- * @property {{callAndConstructSignatures:number,directExecutableApis:number,indirectCallChainApis:number,explicitGapApis:number,unreferencedPublicApis:number}} counts API execution/gap counters consumed by the executable report.
+ * @property {{callAndConstructSignatures:number,directExecutableApis:number,indirectCallChainApis:number,explicitGapApis:number,unreferencedPublicApis:number,maximumTypeDepth:number}} counts API execution/gap/type-depth counters consumed by assurance/reporting.
  */
 /**
  * @typedef {object} FieldClassificationManifest
  * @property {Record<string, unknown>} entries Classified reachable public fields whose key cardinality is summarized.
- * @property {{inputFields:number,outputFields:number,recursiveTypeReferences:number,truncatedTypes:number}} counts Reachability/truncation counters consumed by the executable report.
+ * @property {{types:number,fields:number,inputFields:number,outputFields:number,optionalFields:number,callableFields:number,recursiveTypeReferences:number,truncatedTypes:number}} counts Reachability/cardinality/truncation counters consumed by assurance/reporting.
  */
 /**
  * @typedef {object} CallChainManifest
@@ -103,10 +103,53 @@ export function executableAssuranceSummary(
   };
 }
 
+/** Require every named manifest counter to exist as a non-negative safe integer. */
+function assertManifestCounters(label, counts, keys) {
+  if (typeof counts !== "object" || counts === null) {
+    throw new Error(`${label} assurance manifest is missing its counts object.`);
+  }
+  for (const key of keys) {
+    if (
+      !Object.hasOwn(counts, key) ||
+      !Number.isSafeInteger(counts[key]) ||
+      counts[key] < 0
+    ) {
+      throw new Error(
+        `${label} assurance manifest counter '${key}' must be a present non-negative safe integer.`,
+      );
+    }
+  }
+}
+
 /** Reject a report assembled from a different manifest generation than the current inputs. */
 export function assertExecutableAssuranceMatchesManifests(
   /** @type {ExecutableAssuranceInput} */ input,
 ) {
+  assertManifestCounters("API", input.api.counts, [
+    "callAndConstructSignatures",
+    "directExecutableApis",
+    "indirectCallChainApis",
+    "explicitGapApis",
+    "unreferencedPublicApis",
+    "maximumTypeDepth",
+  ]);
+  assertManifestCounters("Field classification", input.fields.counts, [
+    "types",
+    "fields",
+    "inputFields",
+    "outputFields",
+    "optionalFields",
+    "callableFields",
+    "recursiveTypeReferences",
+    "truncatedTypes",
+  ]);
+  assertManifestCounters("Call-chain", input.callChains.counts, [
+    "callables",
+    "edges",
+    "testRoots",
+    "publicEntriesWithWitnesses",
+    "unresolvedPublicEntries",
+  ]);
   const expected = executableAssuranceSummary(input);
   const mismatches = [];
   for (const [key, value] of Object.entries(expected)) {

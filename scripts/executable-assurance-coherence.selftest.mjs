@@ -16,11 +16,21 @@ function fixtures() {
       indirectCallChainApis: 1,
       explicitGapApis: 0,
       unreferencedPublicApis: 0,
+      maximumTypeDepth: 4,
     },
   };
   const fields = {
     entries: { a: {}, b: {}, c: {} },
-    counts: { inputFields: 2, outputFields: 2, recursiveTypeReferences: 1, truncatedTypes: 0 },
+    counts: {
+      types: 2,
+      fields: 3,
+      inputFields: 2,
+      outputFields: 2,
+      optionalFields: 1,
+      callableFields: 0,
+      recursiveTypeReferences: 1,
+      truncatedTypes: 0,
+    },
   };
   const callChains = {
     counts: { callables: 4, edges: 5, testRoots: 2, publicEntriesWithWitnesses: 2, unresolvedPublicEntries: 0 },
@@ -50,5 +60,21 @@ test("one stale manifest-derived field rejects the executable report", () => {
   assert.throws(
     () => assertExecutableAssuranceMatchesManifests({ ...input, executable }),
     /compilerCallGraphEdges/u,
+  );
+});
+test("report-only manifest counters fail closed when missing or invalid", () => {
+  const input = fixtures();
+  const executable = executableAssuranceSummary(input);
+  const missingTypes = structuredClone(input);
+  delete missingTypes.fields.counts.types;
+  assert.throws(
+    () => assertExecutableAssuranceMatchesManifests({ ...missingTypes, executable }),
+    /counter 'types'/u,
+  );
+  const invalidDepth = structuredClone(input);
+  invalidDepth.api.counts.maximumTypeDepth = -1;
+  assert.throws(
+    () => assertExecutableAssuranceMatchesManifests({ ...invalidDepth, executable }),
+    /counter 'maximumTypeDepth'/u,
   );
 });

@@ -111,6 +111,14 @@ interface CompletedInventoryCutoverValidationInput {
   readonly compileSource: CutoverInventoryAuthorityInput["compileSource"];
 }
 
+/** Durable target evidence retained by a completed migration manifest. */
+interface CompletedInventoryCutoverTargetEvidence {
+  /** Exact content root of the migration world that became visible. */
+  readonly targetWorldRoot: string;
+  /** Exact revision of the migration world that became visible. */
+  readonly targetWorldRevision: number;
+}
+
 /** Join only an already-authoritative state that independently proves this exact cutover request. */
 async function completedInventoryCutoverResult(
   input: CompletedInventoryCutoverValidationInput,
@@ -170,7 +178,7 @@ async function completedInventoryCutoverResult(
     targetWorld: emptyInventoryWorldState(),
   });
   const manifest = await input.storage.readMigrationManifest(input.migrationId);
-  assertCompletedInventoryCutoverManifest(
+  const durableTarget = assertCompletedInventoryCutoverManifest(
     manifest,
     compiled,
     dryRun,
@@ -186,8 +194,8 @@ async function completedInventoryCutoverResult(
     sourceRoot,
     sourcePlanDigest: compiled.plan.planDigest,
     sourceCatalogDigest: compiled.catalog.digest,
-    targetWorldRoot: inventoryWorldContentRoots(dryRun.resultWorld).world,
-    targetWorldRevision: dryRun.resultWorld.revision,
+    targetWorldRoot: durableTarget.targetWorldRoot,
+    targetWorldRevision: durableTarget.targetWorldRevision,
   });
   return retained;
 }
@@ -453,7 +461,7 @@ export async function cutoverInventoryAuthority({
       plan: first.plan,
       targetWorld: emptyInventoryWorldState(),
     });
-    assertCompletedInventoryCutoverManifest(
+    const durableTarget = assertCompletedInventoryCutoverManifest(
       manifest,
       first,
       dryRun,
@@ -469,8 +477,8 @@ export async function cutoverInventoryAuthority({
       sourceRoot,
       sourcePlanDigest: first.plan.planDigest,
       sourceCatalogDigest: first.catalog.digest,
-      targetWorldRoot: inventoryWorldContentRoots(dryRun.resultWorld).world,
-      targetWorldRevision: dryRun.resultWorld.revision,
+      targetWorldRoot: durableTarget.targetWorldRoot,
+      targetWorldRevision: durableTarget.targetWorldRevision,
     });
     return retained;
   }
@@ -612,7 +620,7 @@ function assertCompletedInventoryCutoverManifest(
   compiled: InventoryMigrationSourcePlan,
   dryRun: ReturnType<typeof dryRunInventoryMigration>,
   migrationId: string,
-): void {
+): CompletedInventoryCutoverTargetEvidence {
   if (
     manifest === undefined ||
     manifest.state !== InventoryMigrationManifestState.Completed ||
@@ -624,6 +632,11 @@ function assertCompletedInventoryCutoverManifest(
       JSON.stringify(compiled.plan.sourceDispositions) ||
     !manifest.worldWritten ||
     !manifest.worldPublished ||
+    typeof manifest.targetWorldRoot !== "string" ||
+    manifest.targetWorldRoot.length === 0 ||
+    manifest.targetWorldRoot.trim() !== manifest.targetWorldRoot ||
+    !Number.isSafeInteger(manifest.targetWorldRevision) ||
+    manifest.targetWorldRevision !== manifest.baseRevision + 1 ||
     manifest.operationIds.length !== compiled.plan.events.length
   ) {
     throw new Error(
@@ -641,6 +654,10 @@ function assertCompletedInventoryCutoverManifest(
       );
     }
   }
+  return {
+    targetWorldRoot: manifest.targetWorldRoot,
+    targetWorldRevision: manifest.targetWorldRevision,
+  };
 }
 
 /** Reject a blocked source compilation before any target write. */

@@ -4,11 +4,11 @@
     "callableFields": 10,
     "callbackArgumentFields": 342,
     "callbackResultFields": 401,
-    "fields": 2289,
+    "fields": 2291,
     "inputFields": 1971,
     "nullableFields": 0,
-    "optionalFields": 904,
-    "outputFields": 847,
+    "optionalFields": 906,
+    "outputFields": 849,
     "recursiveTypeReferences": 3,
     "truncatedTypes": 0,
     "types": 378,
@@ -13056,7 +13056,7 @@
       "callSignatures": [],
       "callable": false,
       "classification": "abstract-semantic",
-      "declaration": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2022.error.d.ts",
+      "declaration": "../InventoryOnce-r143-rabbit-maintenance/node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2022.error.d.ts",
       "directions": [
         "output"
       ],
@@ -13079,7 +13079,7 @@
       "callSignatures": [],
       "callable": false,
       "classification": "application decoration",
-      "declaration": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
+      "declaration": "../InventoryOnce-r143-rabbit-maintenance/node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
       "directions": [
         "output"
       ],
@@ -13104,7 +13104,7 @@
       "callSignatures": [],
       "callable": false,
       "classification": "abstract-semantic",
-      "declaration": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
+      "declaration": "../InventoryOnce-r143-rabbit-maintenance/node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
       "directions": [
         "output"
       ],
@@ -13127,7 +13127,7 @@
       "callSignatures": [],
       "callable": false,
       "classification": "abstract-semantic",
-      "declaration": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
+      "declaration": "../InventoryOnce-r143-rabbit-maintenance/node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
       "directions": [
         "output"
       ],
@@ -25387,6 +25387,54 @@
       "gaps": [],
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryMigrationManifest.targetWorldRevision": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/storage.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-storage-refinement.test.ts",
+        "test/storage-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS",
+        "RepairLiveness"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryMigrationManifest.targetWorldRoot": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/storage.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-storage-refinement.test.ts",
+        "test/storage-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS",
+        "RepairLiveness"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
     "InventoryMigrationManifest.worldPublished": {
       "allowsNull": false,
@@ -47910,7 +47958,7 @@
       "callSignatures": [],
       "callable": false,
       "classification": "abstract-semantic",
-      "declaration": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
+      "declaration": "../InventoryOnce-r143-rabbit-maintenance/node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
       "directions": [
         "callback-argument"
       ],
@@ -49902,7 +49950,7 @@
       "callSignatures": [],
       "callable": false,
       "classification": "abstract-semantic",
-      "declaration": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2022.error.d.ts",
+      "declaration": "../InventoryOnce-r143-rabbit-maintenance/node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2022.error.d.ts",
       "directions": [
         "output"
       ],
@@ -49949,7 +49997,7 @@
       "callSignatures": [],
       "callable": false,
       "classification": "application decoration",
-      "declaration": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
+      "declaration": "../InventoryOnce-r143-rabbit-maintenance/node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
       "directions": [
         "output"
       ],
@@ -49974,7 +50022,7 @@
       "callSignatures": [],
       "callable": false,
       "classification": "abstract-semantic",
-      "declaration": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
+      "declaration": "../InventoryOnce-r143-rabbit-maintenance/node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
       "directions": [
         "output"
       ],
@@ -49997,7 +50045,7 @@
       "callSignatures": [],
       "callable": false,
       "classification": "abstract-semantic",
-      "declaration": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
+      "declaration": "../InventoryOnce-r143-rabbit-maintenance/node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
       "directions": [
         "output"
       ],
@@ -53337,7 +53385,7 @@
       "callSignatures": [],
       "callable": false,
       "classification": "abstract-semantic",
-      "declaration": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
+      "declaration": "../InventoryOnce-r143-rabbit-maintenance/node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
       "directions": [
         "callback-argument",
         "callback-result",
@@ -54735,5 +54783,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "ce84a89b9ef0d346f8440e7624db8982c0e6cade7391bda6eb2ffbb08834ec53"
+  "surfaceSha256": "038148aff0911f3610c74d440fde4bff8f7ebbe0026b2d6cfe91604c7d33f5c5"
 }

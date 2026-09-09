@@ -294,6 +294,10 @@ export interface InventoryMigrationManifest {
   readonly worldWritten: boolean;
   /** Whether the batch world is visible even if manifest compaction still needs repair. */
   readonly worldPublished: boolean;
+  /** Exact published target-world content root, present once `worldPublished` is true. */
+  readonly targetWorldRoot?: string;
+  /** Exact published target-world revision, present once `worldPublished` is true. */
+  readonly targetWorldRevision?: number;
   /** Applying, completed, or explicitly aborted. */
   readonly state: InventoryMigrationManifestState;
 }
@@ -623,6 +627,7 @@ export class InMemoryInventoryDurableStorage
   ): Promise<InventoryMigrationManifest> {
     const manifest = this.requireMigrationManifest(migrationId);
     if (manifest.state === InventoryMigrationManifestState.Completed) {
+      assertPublishedInventoryMigrationTarget(manifest);
       return structuredClone(manifest);
     }
     if (manifest.state === InventoryMigrationManifestState.Aborted) {
@@ -651,6 +656,8 @@ export class InMemoryInventoryDurableStorage
       const published: InventoryMigrationManifest = {
         ...manifest,
         worldPublished: true,
+        targetWorldRoot: inventoryWorldContentRoots(nextWorld).world,
+        targetWorldRevision: nextWorld.revision,
       };
       this.world = cloneInventoryPublishedWorld(nextWorld);
       this.migrationManifests.set(migrationId, published);
@@ -659,13 +666,17 @@ export class InMemoryInventoryDurableStorage
         "after",
         migrationId
       );
-    } else if (
-      inventoryWorldContentRoots(this.world).world !==
-      manifest.plan.nextRoots.world
-    ) {
-      throw new Error(
-        "Published migration world no longer matches its applying batch plan."
-      );
+    } else {
+      const publishedWorldRoot = inventoryWorldContentRoots(this.world).world;
+      if (
+        publishedWorldRoot !== manifest.plan.nextRoots.world ||
+        manifest.targetWorldRoot !== publishedWorldRoot ||
+        manifest.targetWorldRevision !== this.world.revision
+      ) {
+        throw new Error(
+          "Published migration world no longer matches its applying batch plan."
+        );
+      }
     }
     await this.fire(
       InventoryStorageWriteStage.MigrationCompactManifest,
@@ -673,6 +684,7 @@ export class InMemoryInventoryDurableStorage
       migrationId
     );
     const latestManifest = this.requireMigrationManifest(migrationId);
+    assertPublishedInventoryMigrationTarget(latestManifest);
     const { plan: completedPlan, ...manifestWithoutPlan } = latestManifest;
     if (completedPlan === undefined) {
       throw new Error(
@@ -1500,6 +1512,24 @@ function validateBeginInventoryMigrationManifest(
   ) {
     throw new Error(
       "Inventory migration manifest source dispositions differ from its frozen batch."
+    );
+  }
+}
+
+/** Require exact target evidence after a migration batch becomes visible. */
+function assertPublishedInventoryMigrationTarget(
+  manifest: InventoryMigrationManifest
+): void {
+  if (
+    !manifest.worldPublished ||
+    typeof manifest.targetWorldRoot !== "string" ||
+    manifest.targetWorldRoot.length === 0 ||
+    manifest.targetWorldRoot.trim() !== manifest.targetWorldRoot ||
+    !Number.isSafeInteger(manifest.targetWorldRevision) ||
+    manifest.targetWorldRevision !== manifest.baseRevision + 1
+  ) {
+    throw new Error(
+      "Published inventory migration manifest is missing exact target-world evidence."
     );
   }
 }

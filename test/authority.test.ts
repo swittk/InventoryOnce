@@ -791,6 +791,12 @@ describe("portable InventoryOnce authority controller", () => {
       "cutover-time-retry-authorization"
     );
     expect(retried.authority.dualRunStartedAt).toBe(time1);
+    const completedManifest = await storage.readMigrationManifest(common.migrationId);
+    expect(completedManifest?.targetWorldRoot).toBe(retried.targetWorldRoot);
+    expect(completedManifest?.targetWorldRevision).toBe(retried.targetWorldRevision);
+    const completedReplay = await cutoverInventoryAuthority(common);
+    expect(completedReplay.targetWorldRoot).toBe(retried.targetWorldRoot);
+    expect(completedReplay.targetWorldRevision).toBe(retried.targetWorldRevision);
     await expect(
       cutoverInventoryAuthority({
         ...common,

@@ -238,6 +238,23 @@ runInventoryDurableStorageConformanceSuite(
   (input) => createInMemoryInventoryDurableStorage(input)
 );
 
+/** Prove one named plan shape is valid before a deliberate hidden-part read breaks it. */
+function expectHiddenPublishedPartDetected(
+  shapeName: string,
+  visibleWorld: InventoryWorldState,
+  hiddenWorld: InventoryWorldState,
+  hiddenPart: HidableInventoryPart
+): void {
+  expect(
+    () => assertInventoryStoragePlanShapePublished(shapeName, visibleWorld),
+    `baseline shape '${shapeName}' must be valid before hiding '${hiddenPart}'`
+  ).not.toThrow();
+  expect(
+    () => assertInventoryStoragePlanShapePublished(shapeName, hiddenWorld),
+    `hidden part '${hiddenPart}' must break valid shape '${shapeName}'`
+  ).toThrow();
+}
+
 it("the reusable component assertions reject adapters that lose reservation or count books", async () => {
   const reservationStorage = new HidingPublishedInventoryPartStorage();
   const reservationInventory = createTestInventory(reservationStorage);
@@ -255,14 +272,15 @@ it("the reusable component assertions reject adapters that lose reservation or c
     requested: parseQuantity("1", "piece"),
     createdAt: time0,
   });
+  const visibleReservationWorld = await reservationStorage.readWorld();
   reservationStorage.hide("reservations");
   const reservationWorld = await reservationStorage.readWorld();
-  expect(() =>
-    assertInventoryStoragePlanShapePublished(
-      "reservation-only",
-      reservationWorld
-    )
-  ).toThrow();
+  expectHiddenPublishedPartDetected(
+    "reservation-only",
+    visibleReservationWorld,
+    reservationWorld,
+    "reservations"
+  );
 
   const countStorage = new HidingPublishedInventoryPartStorage();
   const countInventory = createTestInventory(countStorage);
@@ -272,11 +290,15 @@ it("the reusable component assertions reject adapters that lose reservation or c
     selector: { itemId: "item-a" },
     startedAt: time0,
   });
+  const visibleCountWorld = await countStorage.readWorld();
   countStorage.hide("counts");
   const countWorld = await countStorage.readWorld();
-  expect(() =>
-    assertInventoryStoragePlanShapePublished("count-only", countWorld)
-  ).toThrow();
+  expectHiddenPublishedPartDetected(
+    "count-only",
+    visibleCountWorld,
+    countWorld,
+    "counts"
+  );
 });
 
 it("the reusable shapes reject dropped catalogue, stock, lot, container, traceability, and event indexes", async () => {
@@ -286,11 +308,15 @@ it("the reusable shapes reject dropped catalogue, stock, lot, container, traceab
     operationId: "shape-catalog",
     occurredAt: time0,
   });
+  const visibleCatalogWorld = await catalogStorage.readWorld();
   catalogStorage.hide("catalog");
   const hiddenCatalogWorld = await catalogStorage.readWorld();
-  expect(() =>
-    assertInventoryStoragePlanShapePublished("catalog-only", hiddenCatalogWorld)
-  ).toThrow();
+  expectHiddenPublishedPartDetected(
+    "catalog-only",
+    visibleCatalogWorld,
+    hiddenCatalogWorld,
+    "catalog"
+  );
 
   for (const hiddenPart of droppedStockParts) {
     const stockStorage = new HidingPublishedInventoryPartStorage();
@@ -304,14 +330,15 @@ it("the reusable shapes reject dropped catalogue, stock, lot, container, traceab
       }),
       amount: stockAmount("1", "piece"),
     });
+    const visiblePositionWorld = await stockStorage.readWorld();
     stockStorage.hide(hiddenPart);
     const hiddenPositionWorld = await stockStorage.readWorld();
-    expect(() =>
-      assertInventoryStoragePlanShapePublished(
-        "stock-only",
-        hiddenPositionWorld
-      )
-    ).toThrow();
+    expectHiddenPublishedPartDetected(
+      "stock-only",
+      visiblePositionWorld,
+      hiddenPositionWorld,
+      hiddenPart
+    );
   }
 
   for (const hiddenPart of droppedLotParts) {
@@ -328,14 +355,15 @@ it("the reusable shapes reject dropped catalogue, stock, lot, container, traceab
         metadata: { source: "conformance" },
       },
     });
+    const visibleLotWorld = await lotStorage.readWorld();
     lotStorage.hide(hiddenPart);
     const hiddenLotWorld = await lotStorage.readWorld();
-    expect(() =>
-      assertInventoryStoragePlanShapePublished(
-        "lot-master-only",
-        hiddenLotWorld
-      )
-    ).toThrow();
+    expectHiddenPublishedPartDetected(
+      "lot-master-only",
+      visibleLotWorld,
+      hiddenLotWorld,
+      hiddenPart
+    );
   }
 
   for (const hiddenPart of droppedContainerParts) {
@@ -350,14 +378,15 @@ it("the reusable shapes reject dropped catalogue, stock, lot, container, traceab
         identifiers: { barcode: "SHAPE-001" },
       },
     });
+    const visibleContainerWorld = await containerStorage.readWorld();
     containerStorage.hide(hiddenPart);
     const hiddenContainerWorld = await containerStorage.readWorld();
-    expect(() =>
-      assertInventoryStoragePlanShapePublished(
-        "container-master-only",
-        hiddenContainerWorld
-      )
-    ).toThrow();
+    expectHiddenPublishedPartDetected(
+      "container-master-only",
+      visibleContainerWorld,
+      hiddenContainerWorld,
+      hiddenPart
+    );
   }
 
   for (const hiddenPart of droppedTraceabilityParts) {
@@ -372,15 +401,14 @@ it("the reusable shapes reject dropped catalogue, stock, lot, container, traceab
       },
       to: { kind: InventoryTraceabilityNodeKind.Container, id: "SHAPE-PARENT" },
     });
+    const visibleTraceabilityWorld = await traceStorage.readWorld();
     traceStorage.hide(hiddenPart);
     const hiddenTraceabilityWorld = await traceStorage.readWorld();
-    expect(
-      () =>
-        assertInventoryStoragePlanShapePublished(
-          "traceability-only",
-          hiddenTraceabilityWorld
-        ),
-      `hidden traceability part '${hiddenPart}' must change the published root`
-    ).toThrow();
+    expectHiddenPublishedPartDetected(
+      "traceability-only",
+      visibleTraceabilityWorld,
+      hiddenTraceabilityWorld,
+      hiddenPart
+    );
   }
 });

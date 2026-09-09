@@ -1102,6 +1102,10 @@ export function runInventoryDurableStorageConformanceSuite(
         expect(completedManifest?.sourceDispositions).toEqual(
           plan.sourceDispositions
         );
+        expect(completedManifest?.targetWorldRoot).toBe(
+          inventoryWorldContentRoots(published).world
+        );
+        expect(completedManifest?.targetWorldRevision).toBe(published.revision);
         expect(JSON.stringify(published.projection.events)).not.toContain(
           "migration-pending-row"
         );
