@@ -9,6 +9,7 @@ import {
   statefulOperationFamilyIds,
 } from "./formal-models.mjs";
 import { repositoryAssuranceStateSha256 } from "./repository-assurance-state.mjs";
+import { assertExecutableAssuranceMatchesManifests } from "./executable-assurance-coherence.mjs";
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repositoryRoot = packageRoot;
@@ -187,6 +188,14 @@ if (
 if (!executable.fullFormal) {
   throw new Error("Executable report was not produced by --full-formal.");
 }
+assertExecutableAssuranceMatchesManifests({
+  executable,
+  api,
+  fields,
+  callChains,
+  traces,
+  gaps,
+});
 if (
   !log.includes(
     "Formal implementation conformance production assurance passed."
