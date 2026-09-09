@@ -106,6 +106,21 @@ export const formalInvariantMutationChecks = Object.freeze([
     "DurableTransferRefinementSplitProjectionMutation",
     "ProjectionWriteIsAtomic",
   ],
+  [
+    "UseByReservation",
+    "UseByReservationStaleReportMutation",
+    "ReportMatchesCurrentTruth",
+  ],
+  [
+    "UseByReservation",
+    "UseByReservationExpiredAllocationMutation",
+    "OrdinaryAllocationWasUsable",
+  ],
+  [
+    "UseByReservation",
+    "UseByReservationExpiredConsumptionMutation",
+    "OrdinaryConsumptionWasUsable",
+  ],
 ]);
 
 /** Require every *Mutation.cfg file to have exactly one registered expected rejection. */

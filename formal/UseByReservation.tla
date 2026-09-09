@@ -168,4 +168,52 @@ ConsumedClaimHasEvidence ==
     /\ consumedResource \in Resources
     /\ consumedAt \in 0..MaxTime
 
+
+\* Deliberate negative control: advance the clock while retaining the old report.
+AdvanceTimeStaleReportMutation ==
+  /\ now < MaxTime
+  /\ now' = now + 1
+  /\ UNCHANGED <<stock, claimState, allowExpired, allocation,
+                  allocatedAt, consumedResource, consumedAt, shortageReport>>
+
+\* Deliberate negative control: bind an ordinary claim to a resource that is already expired.
+AllocateExpiredMutation(resource) ==
+  /\ claimState = "active"
+  /\ resource \in stock
+  /\ ~allowExpired
+  /\ now >= UseBy(resource)
+  /\ allocation' = resource
+  /\ allocatedAt' = now
+  /\ UNCHANGED <<now, stock, claimState, allowExpired,
+                  consumedResource, consumedAt>>
+  /\ shortageReport' =
+       ShortageFor(stock', now', claimState', allowExpired', allocation')
+
+\* Deliberate negative control: consume an ordinary allocation after its use-by boundary.
+ConsumeExpiredMutation ==
+  /\ claimState = "active"
+  /\ allocation # NoResource
+  /\ allocation \in stock
+  /\ ~allowExpired
+  /\ now >= UseBy(allocation)
+  /\ stock' = stock \ {allocation}
+  /\ claimState' = "consumed"
+  /\ consumedResource' = allocation
+  /\ consumedAt' = now
+  /\ allocation' = NoResource
+  /\ allocatedAt' = NoTime
+  /\ UNCHANGED <<now, allowExpired>>
+  /\ shortageReport' =
+       ShortageFor(stock', now', claimState', allowExpired', allocation')
+
+StaleReportMutationNext == Next \/ AdvanceTimeStaleReportMutation
+StaleReportMutationSpec == Init /\ [][StaleReportMutationNext]_vars
+
+ExpiredAllocationMutationNext ==
+  Next \/ \E resource \in Resources: AllocateExpiredMutation(resource)
+ExpiredAllocationMutationSpec == Init /\ [][ExpiredAllocationMutationNext]_vars
+
+ExpiredConsumptionMutationNext == Next \/ ConsumeExpiredMutation
+ExpiredConsumptionMutationSpec == Init /\ [][ExpiredConsumptionMutationNext]_vars
+
 =============================================================================
