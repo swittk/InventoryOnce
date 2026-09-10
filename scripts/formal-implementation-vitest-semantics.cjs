@@ -44,14 +44,15 @@ function staticBooleanValue(ts, valueNode) {
 }
 
 /** Return one readable static object-property name, or undefined when the key requires runtime evaluation. */
-function staticObjectPropertyName(ts, property, sourceFile) {
+function staticObjectPropertyName(ts, property) {
   if (
     (!ts.isPropertyAssignment(property) && !ts.isShorthandPropertyAssignment(property)) ||
     ts.isComputedPropertyName(property.name)
   ) {
     return undefined;
   }
-  return property.name.getText(sourceFile).replace(/^['"]|['"]$/gu, "");
+  const decodedName = property.name.text;
+  return typeof decodedName === "string" ? decodedName : undefined;
 }
 
 /** Read statically known boolean skip/todo options and fail closed on unreadable keys or spreads. */
@@ -64,7 +65,7 @@ function vitestObjectBooleanOptions(ts, object) {
       todo = undefined;
       continue;
     }
-    const name = staticObjectPropertyName(ts, property, object.getSourceFile());
+    const name = staticObjectPropertyName(ts, property);
     if (name === undefined) {
       skip = undefined;
       todo = undefined;
@@ -87,7 +88,7 @@ function vitestFocusedRegistrationNode(ts, node) {
     if (!ts.isObjectLiteralExpression(argument)) continue;
     for (const property of argument.properties) {
       if (ts.isSpreadAssignment(property)) return property;
-      const name = staticObjectPropertyName(ts, property, node.getSourceFile());
+      const name = staticObjectPropertyName(ts, property);
       if (name === undefined) return property;
       if (name !== "only") continue;
       const value = ts.isPropertyAssignment(property)
