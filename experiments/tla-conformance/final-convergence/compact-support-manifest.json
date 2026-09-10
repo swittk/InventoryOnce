@@ -3,7 +3,7 @@
   "archive": {
     "file": "experiments/tla-conformance/final-convergence/compact-support.tar.gz",
     "sha256": "a5a8e79258d91ff1b6def0849b2fd5a5169fd4f7444d1747d0254fae12a3f4cb",
-    "runtimeClosureHead": "eb42fcdd1a7b73fad2df77c7bed6678b25057932",
+    "runtimeClosureHead": "02c2c289c75e4342b22c2805cc556789b353ecea",
     "files": [
       {
         "file": "experiments/tla-conformance/astra-authority-control-r8/family.mjs",
@@ -419,14 +419,14 @@
       {
         "mode": "verify",
         "file": "experiments/tla-conformance/final-convergence/compact-final-verify.mjs",
-        "sha256": "af1b10635c0f48534d6d7f3efd9ecbd1cb7e178ba78fb743c54bad4879505ef3",
-        "bytes": 747259
+        "sha256": "9be29be7f95154aa6c5f586afc2abd29cec17b0d9afa137711a5d77339a9eff1",
+        "bytes": 747434
       },
       {
         "mode": "selftest",
         "file": "experiments/tla-conformance/final-convergence/compact-final-selftest.mjs",
-        "sha256": "9480dfe52d7ea8fb440a6c6954a5e03ecb7792bd7eb808ce3836fc9eee62f10d",
-        "bytes": 735916
+        "sha256": "542ea5c99392e8ff86eb56bf56848f382f5632cc2467bb2f696842de0caa2d63",
+        "bytes": 736091
       },
       {
         "mode": "registry",
@@ -523,8 +523,8 @@
       },
       {
         "file": "experiments/tla-conformance/final-convergence/r168-assurance-transport.mjs",
-        "sha256": "7a05b512a076e961684429d8ea0312115f99fac0ef755127f45588c6323f63b1",
-        "bytes": 9581
+        "sha256": "78ca6a2c0a5bc9786fcbd5979db188ffb785ce2131433fecd9c05c38432ec4d6",
+        "bytes": 9756
       },
       {
         "file": "experiments/tla-conformance/final-convergence/r169-assurance-transport.mjs",

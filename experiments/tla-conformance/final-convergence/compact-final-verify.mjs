@@ -2344,8 +2344,13 @@ if (process.argv[1] !== void 0 && false) {
   const root3 = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
   const artifact = buildR168AssuranceTransport({ repositoryRoot: root3 });
   const target = path.resolve(root3, "experiments/tla-conformance/final-convergence/r168-assurance-transport.json");
-  fs.writeFileSync(target, `${JSON.stringify(artifact, null, 2)}
-`);
+  const text = `${JSON.stringify(artifact, null, 2)}
+`;
+  if (process.argv.includes("--check")) {
+    assert.equal(fs.readFileSync(target, "utf8"), text, "R168 assurance transport is stale.");
+  } else {
+    fs.writeFileSync(target, text);
+  }
   console.log(JSON.stringify({ status: artifact.status, contentSha256: artifact.contentSha256, affectedStrictRows: artifact.affectedStrictRows }, null, 2));
 }
 
