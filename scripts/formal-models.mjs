@@ -178,5 +178,11 @@ export function assertFormalMutationRegistrationConsistency(
         `Formal mutation '${config}' expects undeclared invariant '${invariant}'.`,
       );
     }
+    const parentChecks = formalConfigCheckNames(readConfig(model));
+    if (!parentChecks.includes(invariant)) {
+      throw new Error(
+        `Formal mutation '${config}' targets invariant '${invariant}' that the parent model '${model}' does not check.`,
+      );
+    }
   }
 }

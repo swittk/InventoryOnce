@@ -1,9 +1,18 @@
-import { execFileSync } from "node:child_process";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { createRequire } from "node:module";
 import { describe, expect, it } from "vitest";
 
-const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const require = createRequire(import.meta.url);
+const typescript = require("typescript") as typeof import("typescript");
+const vitestSemantics = require(
+  "../scripts/formal-implementation-vitest-semantics.cjs",
+) as {
+  readonly vitestCallbackExecutes: (metadata: VitestExecutionMetadata) => boolean;
+  readonly vitestSuiteChildrenExecute: (metadata: VitestExecutionMetadata) => boolean;
+  readonly vitestFocusedRegistrationNode: (
+    ts: typeof import("typescript"),
+    node: import("typescript").CallExpression,
+  ) => unknown;
+};
 
 /** Static facts used to decide whether one Vitest registration callback executes. */
 interface VitestExecutionMetadata {
@@ -28,16 +37,7 @@ function semanticsDecision(
   helperName: "vitestCallbackExecutes" | "vitestSuiteChildrenExecute",
   metadata: VitestExecutionMetadata,
 ): boolean {
-  const script = [
-    `const { ${helperName} } = require("./scripts/formal-implementation-vitest-semantics.cjs");`,
-    `process.stdout.write(JSON.stringify(${helperName}(JSON.parse(process.argv[1]))));`,
-  ].join("\n");
-  const decoded: unknown = JSON.parse(
-    execFileSync(process.execPath, ["-e", script, JSON.stringify(metadata)], {
-      cwd: repositoryRoot,
-      encoding: "utf8",
-    }),
-  );
+  const decoded = vitestSemantics[helperName](metadata);
   if (typeof decoded !== "boolean") {
     throw new Error(`${helperName} returned a non-boolean decision.`);
   }
@@ -51,38 +51,31 @@ function callbackExecutes(metadata: VitestExecutionMetadata): boolean {
 
 /** Ask the exact call-graph detector whether each source contains a focused Vitest registration. */
 function focusedRegistrationDecisions(sources: readonly string[]): readonly boolean[] {
-  const script = [
-    'const ts = require("typescript");',
-    'const { vitestFocusedRegistrationNode } = require("./scripts/formal-implementation-vitest-semantics.cjs");',
-    'const sources = JSON.parse(process.argv[1]);',
-    'const decisions = sources.map((text, index) => {',
-    '  const source = ts.createSourceFile(`focus-${index}.ts`, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);',
-    '  let focused = false;',
-    '  const visit = (node) => {',
-    '    if (focused) return;',
-    '    if (ts.isCallExpression(node) && vitestFocusedRegistrationNode(ts, node) !== undefined) focused = true;',
-    '    ts.forEachChild(node, visit);',
-    '  };',
-    '  ts.forEachChild(source, visit);',
-    '  return focused;',
-    '});',
-    'process.stdout.write(JSON.stringify(decisions));',
-  ].join("\n");
-  const decoded: unknown = JSON.parse(
-    execFileSync(process.execPath, ["-e", script, JSON.stringify(sources)], {
-      cwd: repositoryRoot,
-      encoding: "utf8",
-    }),
-  );
-  if (!Array.isArray(decoded)) {
-    throw new Error("Focused-registration detector returned a non-boolean decision list.");
-  }
   const decisions: boolean[] = [];
-  for (const value of decoded) {
-    if (typeof value !== "boolean") {
-      throw new Error("Focused-registration detector returned a non-boolean decision list.");
-    }
-    decisions.push(value);
+  for (let index = 0; index < sources.length; index += 1) {
+    const text = sources[index];
+    if (text === undefined) continue;
+    const source = typescript.createSourceFile(
+      `focus-${index}.ts`,
+      text,
+      typescript.ScriptTarget.Latest,
+      true,
+      typescript.ScriptKind.TS,
+    );
+    let focused = false;
+    const visit = (node: import("typescript").Node): void => {
+      if (focused) return;
+      if (
+        typescript.isCallExpression(node) &&
+        vitestSemantics.vitestFocusedRegistrationNode(typescript, node) !== undefined
+      ) {
+        focused = true;
+        return;
+      }
+      typescript.forEachChild(node, visit);
+    };
+    typescript.forEachChild(source, visit);
+    decisions.push(focused);
   }
   return decisions;
 }

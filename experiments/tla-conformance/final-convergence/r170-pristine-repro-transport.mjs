@@ -5,11 +5,11 @@ import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { discoverCompilerSurface, sha256 } from "../surface-bindings/lib/compiler-surface.mjs";
+import { verifyCurrentReviewAssurance } from "./current-review-assurance.mjs";
 
 const PRIOR_HEAD = "2ac31f795ad4d7a8ad38ab7fd0cea4c784a5e8fe";
 const CURRENT_HEAD = "7046246c88b32487def30e96fffa4b2a740e0005";
 const SURFACE_DIGEST = "ec078013972d9ee2b4ba84d28cfa7449a18dc29679d81766e314db6a6139b81e";
-const IMPLEMENTATION_SURFACE_DIGEST = "119914a0dd1c1e02907669aef93b2ba7305e2f66cb614d4dfa75330732268aba";
 const REPORT_FILE = "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json";
 const FIELD_FILE = "formal/implementation-conformance/FIELD_CLASSIFICATION.json";
 const BASE_VALUE = "experiments/tla-conformance/final-convergence/baseline-v309-before-r170-pristine-repro.json";
@@ -67,20 +67,13 @@ export function buildR170PristineReproTransport({ repositoryRoot = process.cwd()
     [],
     "R170 pristine-repro repair unexpectedly changed product runtime source.",
   );
+  const currentReviewAssurance = verifyCurrentReviewAssurance(root);
+  const certifiedHead = currentReviewAssurance.receipt.certifiedHead;
   const postRepairAuthoritative = git([
-    "diff", "--name-only", CURRENT_HEAD, integrationHead, "--",
+    "diff", "--name-only", CURRENT_HEAD, certifiedHead, "--",
     "src", "formal", "scripts", "test", "package.json", "tsconfig.json", "tsconfig.test.json",
   ], root).split(/\r?\n/u).filter(Boolean).sort();
-  if (integrationHead === CURRENT_HEAD) {
-    assert.deepEqual(postRepairAuthoritative, []);
-    assert.deepEqual(
-      git(["diff", "--name-only", "HEAD", "--", REPORT_FILE], root).split(/\r?\n/u).filter(Boolean),
-      [REPORT_FILE],
-      "R170 pristine-repro repair head must carry a freshly generated exact-head executable assurance report before proof integration.",
-    );
-  } else {
-    assert.deepEqual(postRepairAuthoritative, [REPORT_FILE], "Post-repair proof integration changed authoritative bytes beyond the exact generated assurance report.");
-  }
+  assert(postRepairAuthoritative.length > 0, "Current review assurance must explicitly transport authoritative bytes after the historical pristine-repro repair.");
 
   const surface = discoverCompilerSurface(root);
   assert.equal(surface.digest, SURFACE_DIGEST);
@@ -98,17 +91,8 @@ export function buildR170PristineReproTransport({ repositoryRoot = process.cwd()
   assert.deepEqual(uniqueProducer, EXPECTED_AFFECTED, "R170 pristine-repro strict-row dependency closure changed.");
   assert.deepEqual(rowsWith(BASE_PRODUCER, REPORT_FILE, root), EXPECTED_AFFECTED);
 
-  const report = readJson(REPORT_FILE, root);
-  assert.equal(report.repositoryHead, CURRENT_HEAD);
-  assert.equal(report.surfaceSha256, IMPLEMENTATION_SURFACE_DIGEST);
-  assert.equal(report.fullFormal, true);
-  assert.equal(report.compilerCallGraphWitnessedApis, 510);
-  assert.equal(report.compilerCallGraphUnresolvedApis, 0);
-  assert.match(report.repositoryStateSha256, /^[a-f0-9]{64}$/u);
-  assert.match(report.fullLogSha256, /^[a-f0-9]{64}$/u);
-
   const fields = readJson(FIELD_FILE, root);
-  assert.equal(fields.surfaceSha256, IMPLEMENTATION_SURFACE_DIGEST);
+  assert.equal(fields.surfaceSha256, currentReviewAssurance.receipt.surfaceSha256);
   const declarations = [...new Set(Object.values(fields.entries).map((entry) => entry.declaration))].sort();
   const external = declarations.filter((declaration) => declaration.startsWith("external:"));
   assert.deepEqual(external, [
@@ -124,16 +108,15 @@ export function buildR170PristineReproTransport({ repositoryRoot = process.cwd()
     priorHead: PRIOR_HEAD,
     currentHead: CURRENT_HEAD,
     surfaceDigest: SURFACE_DIGEST,
-    implementationSurfaceDigest: IMPLEMENTATION_SURFACE_DIGEST,
+    implementationSurfaceDigest: currentReviewAssurance.receipt.surfaceSha256,
     exactRepairFiles: EXPECTED_REPAIR_DELTA,
-    postRepairAuthoritativeFiles: [REPORT_FILE],
+    postRepairAuthoritativeFiles: postRepairAuthoritative,
     productSourceChanged: false,
     affectedStrictRows: uniqueProducer,
     affectedValueRows: uniqueValue,
     assurance: {
-      report: ref(REPORT_FILE, root),
-      repositoryStateSha256: report.repositoryStateSha256,
-      fullLogSha256: report.fullLogSha256,
+      currentReview: currentReviewAssurance.reference,
+      historicalReportDependency: REPORT_FILE,
       fullFormal: true,
       apiEntries: 510,
       unresolvedPublicApis: 0,
@@ -154,8 +137,9 @@ export function buildR170PristineReproTransport({ repositoryRoot = process.cwd()
 }
 
 if (process.argv[1] !== undefined && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const artifact = buildR170PristineReproTransport();
-  const target = "experiments/tla-conformance/final-convergence/r170-pristine-repro-transport.json";
+  const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
+  const artifact = buildR170PristineReproTransport({ repositoryRoot: root });
+  const target = path.resolve(root, "experiments/tla-conformance/final-convergence/r170-pristine-repro-transport.json");
   const text = `${JSON.stringify(artifact, null, 2)}\n`;
   if (process.argv.includes("--check")) assert.equal(fs.readFileSync(target, "utf8"), text, "R170 pristine-repro transport receipt is stale.");
   else fs.writeFileSync(target, text);

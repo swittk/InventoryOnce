@@ -9,7 +9,7 @@ There are no remaining per-family completion lanes. The final strict public surf
 
 `final-surface-bindings.json` preserves the 47 genuine external `HARD_RED` rows and their honest-488 reasons. `final-binder-report.json` records the unchanged central binder result: 535 callables, exactly 47 `EXPLICIT_HARD_RED`, zero unexpected diagnostics.
 
-`final-head-transport.json` is the single product moving-target bridge from the last broad currentization source to the current PR product source. `r165-assurance-transport.json` covers the later assurance-only formal-registry maintenance commit and affects exactly one A row (`reclassifyMany`) without changing product source, V membership, formal model membership, mutation tuples, or cfg semantics.
+`final-head-transport.json` is the single product moving-target bridge from the last broad currentization source to the current PR product source. `r165-assurance-transport.json` covers the later assurance-only formal-registry maintenance commit and affects exactly two A rows (`cutoverInventoryAuthority` and `reclassifyMany`) without changing product source, V membership, formal model membership, mutation tuples, or cfg semantics.
 
 `product-assurance-receipt.json` binds the isolated exact-head package gate: 44/44 Vitest files, 532/532 tests, 10 node selftests, production build, all 27 TLC models, all 11 registered mutation rejections, final conformance report, and `pnpm check`.
 

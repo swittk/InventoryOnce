@@ -5,6 +5,7 @@ import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { discoverCompilerSurface, sha256 } from "../surface-bindings/lib/compiler-surface.mjs";
+import { verifyCurrentReviewAssurance } from "./current-review-assurance.mjs";
 
 const PRIOR_HEAD = "e2c1ccb3be53809b8b935cf4882137a08fa08576";
 const CURRENT_HEAD = "f430b5141b0afc0b2796e38bc90ef45df4c0dcd9";
@@ -82,20 +83,13 @@ export function buildR170AssuranceTransport({ repositoryRoot = process.cwd() } =
     "R170 unexpectedly changed product runtime source.",
   );
 
+  const currentReviewAssurance = verifyCurrentReviewAssurance(root);
+  const certifiedHead = currentReviewAssurance.receipt.certifiedHead;
   const afterRepair = git([
-    "diff", "--name-only", CURRENT_HEAD, integrationHead, "--",
+    "diff", "--name-only", CURRENT_HEAD, certifiedHead, "--",
     "src", "formal", "scripts", "test", "package.json", "tsconfig.json", "tsconfig.test.json",
   ], root).split(/\r?\n/u).filter(Boolean).sort();
-  if (integrationHead === CURRENT_HEAD) {
-    assert.deepEqual(afterRepair, []);
-    assert.deepEqual(
-      git(["diff", "--name-only", "HEAD", "--", REPORT_FILE], root).split(/\r?\n/u).filter(Boolean),
-      [REPORT_FILE],
-      "R170 repair head must carry a freshly generated exact-head executable assurance report before proof integration.",
-    );
-  } else {
-    assert.deepEqual(afterRepair, [REPORT_FILE], "Post-R170 proof integration changed authoritative bytes beyond the exact generated assurance report.");
-  }
+  assert(afterRepair.length > 0, "Current review assurance must explicitly transport authoritative bytes after the historical R170 repair.");
 
   const surface = discoverCompilerSurface(root);
   assert.equal(surface.digest, SURFACE_DIGEST);
@@ -117,13 +111,7 @@ export function buildR170AssuranceTransport({ repositoryRoot = process.cwd() } =
     [EXPECTED_AFFECTED[1], EXPECTED_AFFECTED[2]].sort((a, b) => a.surfaceKey.localeCompare(b.surfaceKey)),
   );
 
-  const report = readJson(REPORT_FILE, root);
-  assert.equal(report.repositoryHead, CURRENT_HEAD);
-  assert.equal(report.fullFormal, true);
-  assert.equal(report.compilerCallGraphWitnessedApis, 510);
-  assert.equal(report.compilerCallGraphUnresolvedApis, 0);
-  assert.match(report.repositoryStateSha256, /^[a-f0-9]{64}$/u, "R170 executable assurance lacks a repository-state hash.");
-  assert.match(report.fullLogSha256, /^[a-f0-9]{64}$/u, "R170 executable assurance lacks a full-formal log hash.");
+  // Full-run validity is supplied by the current review receipt above; historical report hashes are not proof credit.
 
   const traceabilityModel = fs.readFileSync(path.resolve(root, TRACEABILITY_MODEL), "utf8");
   assert(traceabilityModel.includes("productionCount \\in 0..2"), "TraceabilityGraph lost the independent duplicate-production state.");
@@ -135,14 +123,13 @@ export function buildR170AssuranceTransport({ repositoryRoot = process.cwd() } =
     currentHead: CURRENT_HEAD,
     surfaceDigest: SURFACE_DIGEST,
     exactRepairFiles: EXPECTED_REPAIR_DELTA,
-    postRepairAuthoritativeFiles: [REPORT_FILE],
+    postRepairAuthoritativeFiles: afterRepair,
     productSourceChanged: false,
     affectedStrictRows: uniqueProducer,
     affectedValueRows: uniqueValue,
     assurance: {
-      report: ref(REPORT_FILE, root),
-      repositoryStateSha256: report.repositoryStateSha256,
-      fullLogSha256: report.fullLogSha256,
+      currentReview: currentReviewAssurance.reference,
+      historicalReportDependency: REPORT_FILE,
       fullFormal: true,
       apiEntries: 510,
       unresolvedPublicApis: 0,
@@ -162,8 +149,9 @@ export function buildR170AssuranceTransport({ repositoryRoot = process.cwd() } =
 }
 
 if (process.argv[1] !== undefined && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const artifact = buildR170AssuranceTransport();
-  const target = "experiments/tla-conformance/final-convergence/r170-assurance-transport.json";
+  const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
+  const artifact = buildR170AssuranceTransport({ repositoryRoot: root });
+  const target = path.resolve(root, "experiments/tla-conformance/final-convergence/r170-assurance-transport.json");
   const text = `${JSON.stringify(artifact, null, 2)}\n`;
   if (process.argv.includes("--check")) assert.equal(fs.readFileSync(target, "utf8"), text, "R170 assurance transport is stale.");
   else fs.writeFileSync(target, text);

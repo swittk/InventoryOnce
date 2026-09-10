@@ -2,9 +2,9 @@
 
 This file is generated from the exact TypeScript surface plus the checked API, field, and gap manifests.
 
-Use the repository `.nvmrc` when one exists; otherwise run the assurance command with a Node version permitted by `package.json#engines`. Then edit the manifests and executable evidence and run `pnpm assurance --write-report`.
+Use the repository `.nvmrc` when one exists; otherwise run the assurance command with a Node version permitted by `package.json#engines`. Edit only checked source/manifests, run `pnpm assurance:generate` when generated evidence must change, then run `pnpm assurance --write-report`.
 
-Surface SHA-256: `119914a0dd1c1e02907669aef93b2ba7305e2f66cb614d4dfa75330732268aba`
+Surface SHA-256: `03baa3c20d088f813397b4bac1a673eca726f18b845e10e8523af8bb47374e5f`
 
 ## Mechanically covered surface
 

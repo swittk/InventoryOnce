@@ -185,7 +185,9 @@ test("mutation proof acceptance requires one completed TLC safety-violation proc
 
 test("mutation registry rejects invalid model and invariant tuple content before TLC", () => {
   const configs = new Map([
+    ["Alpha", "INVARIANT AlphaInvariant\n"],
     ["AlphaMutation", "INVARIANT AlphaInvariant\n"],
+    ["Beta", "INVARIANT BetaInvariant\n"],
     ["BetaMutation", "INVARIANT BetaInvariant\n"],
   ]);
   const readConfig = (config) => {
@@ -215,6 +217,20 @@ test("mutation registry rejects invalid model and invariant tuple content before
       ["Alpha", "Beta"],
     ),
     /expects undeclared invariant 'WrongInvariant'/u,
+  );
+  const mutationOnlyInvariant = new Map(configs);
+  mutationOnlyInvariant.set("Alpha", "INVARIANT DifferentInvariant\n");
+  assert.throws(
+    () => assertFormalMutationRegistrationConsistency(
+      (config) => {
+        const value = mutationOnlyInvariant.get(config);
+        if (value === undefined) throw new Error(`Missing synthetic config '${config}'.`);
+        return value;
+      },
+      [["Alpha", "AlphaMutation", "AlphaInvariant"]],
+      ["Alpha", "Beta"],
+    ),
+    /parent model 'Alpha' does not check/u,
   );
 });
 

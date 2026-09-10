@@ -13,7 +13,11 @@ import {
   type InventoryAuthorityFields,
   type InventoryAuthorityStateStore,
 } from "../src/index.js";
-import { defineInventoryMigration } from "../src/migrations-api.js";
+import {
+  InventoryMigrationSourceDispositionKind,
+  defineInventoryMigration,
+} from "../src/migrations-api.js";
+import { InMemoryInventoryDurableStorage } from "../src/storage.js";
 import {
   InventoryStorageWriteStage,
   createInMemoryInventoryDurableStorage,
@@ -41,6 +45,34 @@ class TestAuthorityDatabase {
   fields: InventoryAuthorityFields | undefined;
   /** Current flat authority document. */
   document: InventoryAuthorityDocument | undefined;
+}
+
+/** Adapter fixture that preserves migration meaning while reordering plain-object keys on read. */
+class ReorderedMigrationManifestStorage extends InMemoryInventoryDurableStorage {
+  /** Return the same typed source dispositions with deliberately different object insertion order. */
+  override async readMigrationManifest(migrationId: string) {
+    const manifest = await super.readMigrationManifest(migrationId);
+    if (manifest === undefined) return undefined;
+    return {
+      ...manifest,
+      sourceDispositions: manifest.sourceDispositions.map((disposition) => ({
+        reason: disposition.reason,
+        snapshotAt: disposition.snapshotAt,
+        source: {
+          sourceId: disposition.source.sourceId,
+          sourceType: disposition.source.sourceType,
+          ...(disposition.source.note === undefined
+            ? {}
+            : { note: disposition.source.note }),
+        },
+        kind: disposition.kind,
+        dispositionId: disposition.dispositionId,
+        ...(disposition.evidence === undefined
+          ? {}
+          : { evidence: disposition.evidence }),
+      })),
+    };
+  }
 }
 
 /** Deterministic row-scoped compare-and-set store for authority tests. */
@@ -803,6 +835,72 @@ describe("portable InventoryOnce authority controller", () => {
         authorizationId: "changed-cutover-authorization",
       })
     ).rejects.toThrow("authorization differs from this retry");
+  });
+
+  it("accepts semantically identical migration dispositions from adapters with different object key order", async () => {
+    const authority = createInventoryAuthorityControl({
+      store: new TestAuthorityStore(),
+      namespaceId: "cutover-disposition-order:primary",
+    });
+    const storage = new ReorderedMigrationManifestStorage();
+    const migrationId = "cutover-disposition-order-migration";
+    const compileSource = async (cutoverAt: string) => {
+      const catalog = createTabletCatalog();
+      return {
+        catalog,
+        plan: defineInventoryMigration({
+          catalog,
+          declaration: {
+            migrationId,
+            sourceSystem: "cutover-disposition-order-source",
+            cutoverAt,
+            openingStock: [],
+            sourceDispositions: [
+              {
+                dispositionId: "pending-legacy-row",
+                kind: InventoryMigrationSourceDispositionKind.SnapshotSupersededDoNotReplay,
+                source: {
+                  sourceType: "legacy-pending",
+                  sourceId: "pending-1",
+                  note: "snapshot authority",
+                },
+                snapshotAt: cutoverAt,
+                reason: "opening snapshot supersedes pending legacy intent",
+                evidence: { sourceRevision: 7, provider: "legacy" },
+              },
+            ],
+          },
+        }),
+      };
+    };
+
+    const result = await cutoverInventoryAuthority({
+      authority,
+      storage,
+      migrationId,
+      fenceToken: "cutover-disposition-order-fence",
+      authorizationId: "cutover-disposition-order-authorization",
+      adapterCertificationDigest: "adapter-v1",
+      cutoverAt: time1,
+      sourceRevision: 7,
+      compileSource,
+      drainLegacyWriters: async () => {},
+      clock: { now: (): string => time2 },
+    });
+    expect(result.authority.mode).toBe(InventoryAuthorityMode.Authoritative);
+    const replay = await cutoverInventoryAuthority({
+      authority,
+      storage,
+      migrationId,
+      fenceToken: "cutover-disposition-order-fence",
+      authorizationId: "cutover-disposition-order-authorization",
+      adapterCertificationDigest: "adapter-v1",
+      sourceRevision: 7,
+      compileSource,
+      drainLegacyWriters: async () => {},
+      clock: { now: (): string => time2 },
+    });
+    expect(replay.targetWorldRoot).toBe(result.targetWorldRoot);
   });
 
   it("gates application operations on one exact persisted mode", () => {

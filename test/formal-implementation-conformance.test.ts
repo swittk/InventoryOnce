@@ -138,6 +138,45 @@ describe("formal implementation conformance manifest", () => {
     }
   });
 
+  it("recomputes a clean committed assurance tree with the same framing", () => {
+    const root = mkdtempSync(path.join(tmpdir(), "inventoryonce-assurance-commit-"));
+    try {
+      execFileSync("git", ["init", "-q"], { cwd: root });
+      writeFileSync(path.join(root, "a"), "one");
+      execFileSync("git", ["add", "a"], { cwd: root });
+      execFileSync(
+        "git",
+        ["-c", "user.name=InventoryOnce", "-c", "user.email=inventoryonce@example.invalid", "commit", "-q", "-m", "fixture"],
+        { cwd: root }
+      );
+      const script = [
+        'import { repositoryAssuranceCommittedStateSha256, repositoryAssuranceStateSha256 } from "./scripts/repository-assurance-state.mjs";',
+        "const root = process.argv[1];",
+        "const head = process.argv[2];",
+        "process.stdout.write(JSON.stringify([repositoryAssuranceStateSha256(root), repositoryAssuranceCommittedStateSha256(root, head)]));",
+      ].join("\n");
+      const head = execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
+      const output = execFileSync(
+        process.execPath,
+        ["--input-type=module", "--eval", script, root, head],
+        { cwd: packageRoot, encoding: "utf8" }
+      );
+      const [live, committed] = JSON.parse(output) as readonly [string, string];
+      expect(committed).toBe(live);
+      writeFileSync(path.join(root, "a"), "two");
+      const changedOutput = execFileSync(
+        process.execPath,
+        ["--input-type=module", "--eval", script, root, head],
+        { cwd: packageRoot, encoding: "utf8" }
+      );
+      const [changedLive, unchangedCommit] = JSON.parse(changedOutput) as readonly [string, string];
+      expect(changedLive).not.toBe(unchangedCommit);
+      expect(unchangedCommit).toBe(committed);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it("matches every public callable and reachable field to checked formal obligations", () => {
     const output = execFileSync(
       process.execPath,

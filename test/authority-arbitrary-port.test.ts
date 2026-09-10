@@ -51,7 +51,7 @@ function baseState(
     compatibilityProjectionStatus: InventoryCompatibilityProjectionStatus.Lagging,
     compatibilityProjectionError: "",
     ...overrides,
-  } as InventoryAuthorityState;
+  };
 }
 /** Compile the fixed empty migration source used by authority-port rejection cases. */
 function compiled(migrationId = "m", cutoverAt = time) {

@@ -509,11 +509,12 @@ export function dryRunInventoryMigration({
     throw new Error("Blocked inventory migration cannot be dry-run/applied.");
   }
   assertInventoryCatalogRetainsSnapshot(catalog, targetWorld.catalog);
+  const catalogSnapshot = inventoryCatalogSnapshot(catalog);
   /** Reviewed result starts at the same single publication cut used by durable apply. */
   let world: InventoryWorldState = {
     ...targetWorld,
     revision: targetWorld.revision + 1,
-    catalog: inventoryCatalogSnapshot(catalog),
+    catalog: catalogSnapshot,
   };
   for (const draft of plan.events) {
     const committed = commitInventoryEvent(
@@ -529,7 +530,7 @@ export function dryRunInventoryMigration({
     }).state;
     world = {
       revision: targetWorld.revision + 1,
-      catalog: inventoryCatalogSnapshot(catalog),
+      catalog: catalogSnapshot,
       projection,
       reservations: world.reservations,
       counts: world.counts,
@@ -931,6 +932,7 @@ function createDurableInventoryMigrationPlan(
 ): InventoryDurableMigrationPlan {
   let world = baseWorld;
   assertInventoryCatalogRetainsSnapshot(catalog, world.catalog);
+  const catalogSnapshot = inventoryCatalogSnapshot(catalog);
   /** Complete committed event batch retained for restart repair. */
   const committedEvents: InventoryCommittedEvent[] = [];
   for (const event of plan.events) {
@@ -950,7 +952,7 @@ function createDurableInventoryMigrationPlan(
       world = {
         // The event stream advances inside one unpublished batch; the world revision advances once.
         revision: baseWorld.revision + 1,
-        catalog: inventoryCatalogSnapshot(catalog),
+        catalog: catalogSnapshot,
         projection,
         reservations: world.reservations,
         counts: world.counts,
@@ -962,7 +964,6 @@ function createDurableInventoryMigrationPlan(
       );
     }
   }
-  const catalogSnapshot = inventoryCatalogSnapshot(catalog);
   const baseWorldRoot = inventoryWorldContentRoots(baseWorld).world;
   const nextWorld: InventoryWorldState = {
     ...world,

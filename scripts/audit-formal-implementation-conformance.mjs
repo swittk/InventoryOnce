@@ -749,7 +749,7 @@ function coverageReport(apiManifest, fieldManifest, gaps) {
     "",
     "This file is generated from the exact TypeScript surface plus the checked API, field, and gap manifests.",
     "",
-    "Use the repository `.nvmrc` when one exists; otherwise run the assurance command with a Node version permitted by `package.json#engines`. Then edit the manifests and executable evidence and run `pnpm assurance --write-report`.",
+    "Use the repository `.nvmrc` when one exists; otherwise run the assurance command with a Node version permitted by `package.json#engines`. Edit only checked source/manifests, run `pnpm assurance:generate` when generated evidence must change, then run `pnpm assurance --write-report`.",
     "",
     `Surface SHA-256: \`${apiManifest.surfaceSha256}\``,
     "",
@@ -1109,9 +1109,10 @@ try {
     },
     "DistributedRights",
   );
-} catch {
+} catch (error) {
   throw new Error(
-    "Current APIs, fields, and traces must not claim DistributedRights implementation refinement before code exists."
+    "Current APIs, fields, and traces must not claim DistributedRights implementation refinement before code exists.",
+    { cause: error },
   );
 }
 

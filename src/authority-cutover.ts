@@ -5,8 +5,10 @@ import {
   type InventoryAuthorityControlPort,
   type InventoryAuthorityState,
 } from "./authority.js";
+import { inventoryIntentFingerprint } from "./canonical.js";
 import type { InventoryClock } from "./coordinator.js";
 import { inventoryWorldContentRoots } from "./integrity.js";
+import { inventoryMigrationSourceDispositionFingerprint } from "./migration-evidence.js";
 import type { InventoryMigrationSourcePlan } from "./migration-plugin.js";
 import {
   InventoryMigrationPlanStatus,
@@ -628,8 +630,16 @@ function assertCompletedInventoryCutoverManifest(
     manifest.planDigest !== compiled.plan.planDigest ||
     manifest.baseRevision !== dryRun.baseRevision ||
     manifest.baseWorldRoot !== dryRun.baseWorldRoot ||
-    JSON.stringify(manifest.sourceDispositions) !==
-      JSON.stringify(compiled.plan.sourceDispositions) ||
+    inventoryIntentFingerprint(
+      manifest.sourceDispositions.map(
+        inventoryMigrationSourceDispositionFingerprint,
+      ),
+    ) !==
+      inventoryIntentFingerprint(
+        compiled.plan.sourceDispositions.map(
+          inventoryMigrationSourceDispositionFingerprint,
+        ),
+      ) ||
     !manifest.worldWritten ||
     !manifest.worldPublished ||
     typeof manifest.targetWorldRoot !== "string" ||

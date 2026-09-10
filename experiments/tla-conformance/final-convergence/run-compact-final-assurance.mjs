@@ -4,11 +4,18 @@ import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { verifyCurrentReviewAssurance } from "./current-review-assurance.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "../../..");
 const manifest = JSON.parse(fs.readFileSync(path.join(here, "compact-support-manifest.json"), "utf8"));
 const sha256 = (file) => crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex");
+/** Require proof input bytes to be an ordinary file so hashing never follows a symbolic link. */
+function assertRegularFile(file, label) {
+  const stat = fs.lstatSync(file);
+  assert.equal(stat.isFile(), true, `${label} is not a regular file.`);
+  return stat;
+}
 /** Resolve one manifest path and reject any attempt to escape the repository root. */
 function repositoryPath(file) {
   const target = path.resolve(root, file);
@@ -42,7 +49,8 @@ try {
   execFileSync("tar", ["-xzf", archiveFile, "-C", root], { stdio: "inherit" });
   for (const row of manifest.archive.files) {
     const target = path.join(root, row.file);
-    assert.equal(fs.statSync(target).size, row.bytes, `Archived support size mismatch: ${row.file}`);
+    const targetStat = assertRegularFile(target, `Archived support member '${row.file}'`);
+    assert.equal(targetStat.size, row.bytes, `Archived support size mismatch: ${row.file}`);
     assert.equal(sha256(target), row.sha256, `Archived support hash mismatch: ${row.file}`);
   }
   const liveClosure = JSON.parse(fs.readFileSync(path.join(here, "authority-reference-manifest.json"), "utf8"));
@@ -50,11 +58,24 @@ try {
   let liveBytes = 0;
   for (const row of liveClosure.rows) {
     const target = repositoryPath(row.file);
-    assert.equal(fs.statSync(target).size, row.sizeBytes, `Live-input closure size mismatch: ${row.file}`);
+    const targetStat = assertRegularFile(target, `Live-input closure member '${row.file}'`);
+    assert.equal(targetStat.size, row.sizeBytes, `Live-input closure size mismatch: ${row.file}`);
     assert.equal(sha256(target), row.sha256, `Live-input closure hash mismatch: ${row.file}`);
     liveBytes += row.sizeBytes;
   }
   assert.equal(liveBytes, liveClosure.totalBytes, "Live-input closure byte count is stale.");
+  verifyCurrentReviewAssurance(root);
+  if (mode === "selftest") {
+    const selftestDir = path.join(root, ".chatgpt", "compact-file-kind-selftest");
+    fs.rmSync(selftestDir, { recursive: true, force: true });
+    fs.mkdirSync(selftestDir, { recursive: true });
+    const ordinary = path.join(selftestDir, "ordinary");
+    const symbolic = path.join(selftestDir, "symbolic");
+    fs.writeFileSync(ordinary, "proof-input");
+    fs.symlinkSync(ordinary, symbolic);
+    assert.throws(() => assertRegularFile(symbolic, "Synthetic proof input"), /not a regular file/u);
+    fs.rmSync(selftestDir, { recursive: true, force: true });
+  }
   execFileSync(process.execPath, [bundleFile, ...process.argv.slice(3)], { cwd: root, stdio: "inherit" });
 } finally {
   if (materialized) for (const row of [...manifest.archive.files].reverse()) fs.rmSync(path.join(root, row.file), { force: true });

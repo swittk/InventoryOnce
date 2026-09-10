@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
 import { canonicalJson, discoverCompilerSurface, sha256 } from "../surface-bindings/lib/compiler-surface.mjs";
 
@@ -34,11 +36,11 @@ const EXPECTED_AFFECTED = Object.freeze([
   Object.freeze({ surfaceKey: "type:src/authority.ts#InventoryAuthorityControl.read::call[0]", mode: "B" }),
 ]);
 
-function git(args) { return execFileSync("git", args, { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }).trim(); }
-function readJson(file) { return JSON.parse(fs.readFileSync(file, "utf8")); }
-function ref(file) { const bytes = fs.readFileSync(file); return { file, sha256: sha256(bytes) }; }
-function rowsWith(artifactFile, file) {
-  const artifact = readJson(artifactFile);
+function git(args, repositoryRoot) { return execFileSync("git", args, { cwd: repositoryRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }).trim(); }
+function readJson(file, repositoryRoot) { return JSON.parse(fs.readFileSync(path.resolve(repositoryRoot, file), "utf8")); }
+function ref(file, repositoryRoot) { const bytes = fs.readFileSync(path.resolve(repositoryRoot, file)); return { file, sha256: sha256(bytes) }; }
+function rowsWith(artifactFile, file, repositoryRoot) {
+  const artifact = readJson(artifactFile, repositoryRoot);
   return artifact.proofs
     .filter((proof) => JSON.stringify(proof).includes(file))
     .map((proof) => ({ surfaceKey: proof.surfaceKey, mode: proof.mode ?? "V" }))
@@ -49,37 +51,38 @@ function stripTlaLineComments(text) {
 }
 
 export function buildR168AssuranceTransport({ repositoryRoot = process.cwd() } = {}) {
-  const integrationHead = git(["rev-parse", "HEAD"]);
+  const root = path.resolve(repositoryRoot);
+  const integrationHead = git(["rev-parse", "HEAD"], root);
   const reviewedDelta = git([
     "diff", "--name-only", PRIOR_HEAD, CURRENT_HEAD, "--",
     "src", "formal", "scripts", "test", "package.json", "tsconfig.json", "tsconfig.test.json",
-  ]).split(/\r?\n/u).filter(Boolean).sort();
+  ], root).split(/\r?\n/u).filter(Boolean).sort();
   assert.deepEqual(reviewedDelta, [...EXPECTED_DELTA].sort(), "R168 reviewed product/assurance delta widened.");
   const integratedDelta = git([
     "diff", "--name-only", CURRENT_HEAD, integrationHead, "--",
     "src", "formal", "scripts", "test", "package.json", "tsconfig.json", "tsconfig.test.json",
-  ]).split(/\r?\n/u).filter(Boolean).sort();
+  ], root).split(/\r?\n/u).filter(Boolean).sort();
   assert.deepEqual(integratedDelta, [], "Integrated proof tree changed reviewed product/assurance bytes after R168.");
   assert.deepEqual(
-    git(["diff", "--name-only", PRIOR_HEAD, CURRENT_HEAD, "--", "src"]).split(/\r?\n/u).filter(Boolean),
+    git(["diff", "--name-only", PRIOR_HEAD, CURRENT_HEAD, "--", "src"], root).split(/\r?\n/u).filter(Boolean),
     [],
     "R168 unexpectedly changed product runtime source.",
   );
-  const surface = discoverCompilerSurface(repositoryRoot);
+  const surface = discoverCompilerSurface(root);
   assert.equal(surface.digest, SURFACE_DIGEST);
   assert.equal(surface.callables.length, 535);
 
-  const priorTransport = readJson(PRIOR_TRANSPORT);
+  const priorTransport = readJson(PRIOR_TRANSPORT, root);
   assert.equal(priorTransport.status, "R165_PLUS_R167_ASSURANCE_TRANSPORT_PROVED");
   assert.equal(priorTransport.postR165ReviewedDelta.head, PRIOR_HEAD);
-  const priorProducer = readJson(BASE_PRODUCER);
+  const priorProducer = readJson(BASE_PRODUCER, root);
   for (const row of priorTransport.affectedStrictRows) {
     const proof = priorProducer.proofs.find((candidate) => candidate.surfaceKey === row.surfaceKey && candidate.mode === row.mode);
     assert(proof !== undefined, `Prior d947 strict row missing ${row.surfaceKey}`);
     assert.deepEqual(
       proof.semantics.currentHeadAssuranceTransport,
       {
-        ...ref(PRIOR_TRANSPORT),
+        ...ref(PRIOR_TRANSPORT, root),
         contentSha256: priorTransport.contentSha256,
         affectedStrictRows: priorTransport.affectedStrictRows,
         affectedValueRows: priorTransport.affectedValueRows,
@@ -91,34 +94,34 @@ export function buildR168AssuranceTransport({ repositoryRoot = process.cwd() } =
   const valueAffected = [];
   const producerAffected = [];
   for (const file of EXPECTED_DELTA) {
-    valueAffected.push(...rowsWith(BASE_VALUE, file));
-    producerAffected.push(...rowsWith(BASE_PRODUCER, file));
+    valueAffected.push(...rowsWith(BASE_VALUE, file, root));
+    producerAffected.push(...rowsWith(BASE_PRODUCER, file, root));
   }
   const uniqueValue = [...new Map(valueAffected.map((row) => [row.surfaceKey, row])).values()].sort((a,b)=>a.surfaceKey.localeCompare(b.surfaceKey));
   const uniqueProducer = [...new Map(producerAffected.map((row) => [row.surfaceKey, row])).values()].sort((a,b)=>a.surfaceKey.localeCompare(b.surfaceKey));
   assert.deepEqual(uniqueValue, []);
   assert.deepEqual(uniqueProducer, EXPECTED_AFFECTED);
-  assert.deepEqual(rowsWith(BASE_PRODUCER, REPORT_FILE), [EXPECTED_AFFECTED[0]]);
-  assert.deepEqual(rowsWith(BASE_PRODUCER, AUTHORITY_CENSUS), [EXPECTED_AFFECTED[1]]);
+  assert.deepEqual(rowsWith(BASE_PRODUCER, REPORT_FILE, root), [EXPECTED_AFFECTED[0]]);
+  assert.deepEqual(rowsWith(BASE_PRODUCER, AUTHORITY_CENSUS, root), [EXPECTED_AFFECTED[1]]);
   for (const file of EXPECTED_DELTA.filter((file) => ![REPORT_FILE, AUTHORITY_CENSUS].includes(file))) {
-    assert.deepEqual(rowsWith(BASE_PRODUCER, file), [], `A/B unexpectedly consumes R168 file ${file}`);
+    assert.deepEqual(rowsWith(BASE_PRODUCER, file, root), [], `A/B unexpectedly consumes R168 file ${file}`);
   }
 
-  const beforeResource = execFileSync("git", ["show", `${PRIOR_HEAD}:${RESOURCE_DIMENSIONS}`], { encoding: "utf8" });
-  const afterResource = fs.readFileSync(RESOURCE_DIMENSIONS, "utf8");
+  const beforeResource = execFileSync("git", ["show", `${PRIOR_HEAD}:${RESOURCE_DIMENSIONS}`], { cwd: root, encoding: "utf8" });
+  const afterResource = fs.readFileSync(path.resolve(root, RESOURCE_DIMENSIONS), "utf8");
   assert.equal(
     stripTlaLineComments(beforeResource),
     stripTlaLineComments(afterResource),
     "ResourceDimensions R168 delta exceeded line-comment documentation.",
   );
 
-  const receipt = readJson(ASSURANCE_RECEIPT);
-  const report = readJson(REPORT_FILE);
+  const receipt = readJson(ASSURANCE_RECEIPT, root);
+  const report = readJson(REPORT_FILE, root);
   assert.equal(receipt.status, "E175_EXACT_PRODUCT_ASSURANCE_VERIFIED");
   assert.equal(receipt.reviewedHead, CURRENT_HEAD);
   assert.equal(receipt.parentHead, PRIOR_HEAD);
-  assert.equal(receipt.report.sha256, ref(REPORT_FILE).sha256);
-  assert.equal(receipt.fullLog.sha256, ref(ASSURANCE_LOG).sha256);
+  assert.equal(receipt.report.sha256, ref(REPORT_FILE, root).sha256);
+  assert.equal(receipt.fullLog.sha256, ref(ASSURANCE_LOG, root).sha256);
   assert.equal(report.repositoryHead, PRIOR_HEAD);
   assert.equal(report.repositoryStateSha256, receipt.observedRepositoryStateSha256);
   assert.equal(report.fullLogSha256, receipt.fullLog.sha256);
@@ -139,31 +142,32 @@ export function buildR168AssuranceTransport({ repositoryRoot = process.cwd() } =
     resourceDimensions: {
       file: RESOURCE_DIMENSIONS,
       beforeSha256: sha256(Buffer.from(beforeResource)),
-      after: ref(RESOURCE_DIMENSIONS),
+      after: ref(RESOURCE_DIMENSIONS, root),
       semanticDelta: "LINE_COMMENTS_ONLY",
     },
     assurance: {
-      receipt: ref(ASSURANCE_RECEIPT),
-      fullLog: ref(ASSURANCE_LOG),
-      report: ref(REPORT_FILE),
+      receipt: ref(ASSURANCE_RECEIPT, root),
+      fullLog: ref(ASSURANCE_LOG, root),
+      report: ref(REPORT_FILE, root),
       repositoryStateSha256: receipt.observedRepositoryStateSha256,
       fullFormal: true,
       apiEntries: 510,
       unresolvedPublicApis: 0,
     },
-    priorMaintenanceTransport: ref(PRIOR_TRANSPORT),
+    priorMaintenanceTransport: ref(PRIOR_TRANSPORT, root),
     producerGraphRuns: 0,
     producerReplayRuns: 0,
     reverseReruns: 0,
     creditExpansion: false,
-    baselineArtifacts: [ref(BASE_VALUE), ref(BASE_PRODUCER)],
+    baselineArtifacts: [ref(BASE_VALUE, root), ref(BASE_PRODUCER, root)],
   };
   return { ...core, contentSha256: sha256(canonicalJson(core)) };
 }
 
-if (process.argv[1]?.endsWith("r168-assurance-transport.mjs")) {
-  const artifact = buildR168AssuranceTransport();
-  const target = "experiments/tla-conformance/final-convergence/r168-assurance-transport.json";
+if (process.argv[1] !== undefined && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
+  const artifact = buildR168AssuranceTransport({ repositoryRoot: root });
+  const target = path.resolve(root, "experiments/tla-conformance/final-convergence/r168-assurance-transport.json");
   fs.writeFileSync(target, `${JSON.stringify(artifact, null, 2)}\n`);
   console.log(JSON.stringify({ status: artifact.status, contentSha256: artifact.contentSha256, affectedStrictRows: artifact.affectedStrictRows }, null, 2));
 }

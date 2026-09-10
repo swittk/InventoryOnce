@@ -94,6 +94,24 @@ test("report-only manifest counters fail closed when missing or invalid", () => 
 });
 
 
+test("missing or malformed trace apiEntries fail closed", () => {
+  for (const invalid of [undefined, "one", ["one", 2]]) {
+    const input = fixtures();
+    if (invalid === undefined) delete input.traces.entries.a.apiEntries;
+    else input.traces.entries.a.apiEntries = invalid;
+    assert.throws(
+      () => executableAssuranceSummary(input),
+      /trace apiEntries must be a present array of strings/u,
+    );
+  }
+  const nullEntry = fixtures();
+  nullEntry.traces.entries.a = null;
+  assert.throws(
+    () => executableAssuranceSummary(nullEntry),
+    /trace apiEntries must be a present array of strings/u,
+  );
+});
+
 test("unknown executable trace refinement modes fail closed", () => {
   const input = fixtures();
   input.traces.entries.a.refinementMode = "future-mode";

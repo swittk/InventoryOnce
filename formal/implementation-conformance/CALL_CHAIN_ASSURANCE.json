@@ -1,7 +1,7 @@
 {
   "counts": {
-    "callables": 2460,
-    "edges": 6751,
+    "callables": 2470,
+    "edges": 6765,
     "publicEntries": 510,
     "publicEntriesWithTargets": 510,
     "publicEntriesWithWitnesses": 510,
@@ -658,7 +658,7 @@
                 "column": 106,
                 "file": "test/authority-arbitrary-port.test.ts",
                 "hasBody": true,
-                "id": "test/authority-arbitrary-port.test.ts:18885:<anonymous@531>",
+                "id": "test/authority-arbitrary-port.test.ts:18858:<anonymous@531>",
                 "kind": "ArrowFunction",
                 "line": 531,
                 "name": "<anonymous@531>",
@@ -2942,7 +2942,7 @@
                 "column": 106,
                 "file": "test/authority-arbitrary-port.test.ts",
                 "hasBody": true,
-                "id": "test/authority-arbitrary-port.test.ts:18885:<anonymous@531>",
+                "id": "test/authority-arbitrary-port.test.ts:18858:<anonymous@531>",
                 "kind": "ArrowFunction",
                 "line": 531,
                 "name": "<anonymous@531>",
@@ -4859,9 +4859,9 @@
                 "column": 1,
                 "file": "src/migrations.ts",
                 "hasBody": true,
-                "id": "src/migrations.ts:22649:applyInventoryMigrationPlan",
+                "id": "src/migrations.ts:22674:applyInventoryMigrationPlan",
                 "kind": "FunctionDeclaration",
-                "line": 595,
+                "line": 596,
                 "name": "applyInventoryMigrationPlan",
                 "reason": "resolved-call"
               },
@@ -5031,9 +5031,9 @@
                 "column": 1,
                 "file": "src/migrations.ts",
                 "hasBody": true,
-                "id": "src/migrations.ts:25371:resumeInventoryMigrationManifest",
+                "id": "src/migrations.ts:25396:resumeInventoryMigrationManifest",
                 "kind": "FunctionDeclaration",
-                "line": 674,
+                "line": 675,
                 "name": "resumeInventoryMigrationManifest",
                 "reason": "resolved-call"
               },
@@ -5112,9 +5112,9 @@
                 "column": 1,
                 "file": "src/migrations.ts",
                 "hasBody": true,
-                "id": "src/migrations.ts:26549:repairInventoryMigrationManifests",
+                "id": "src/migrations.ts:26574:repairInventoryMigrationManifests",
                 "kind": "FunctionDeclaration",
-                "line": 702,
+                "line": 703,
                 "name": "repairInventoryMigrationManifests",
                 "reason": "resolved-call"
               },
@@ -5284,10 +5284,10 @@
                 "column": 93,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:17839:<anonymous@491>",
+                "id": "test/authority.test.ts:19078:<anonymous@523>",
                 "kind": "ArrowFunction",
-                "line": 491,
-                "name": "<anonymous@491>",
+                "line": 523,
+                "name": "<anonymous@523>",
                 "reason": "test-callback"
               },
               {
@@ -5659,9 +5659,9 @@
                 "column": 1,
                 "file": "src/migrations.ts",
                 "hasBody": true,
-                "id": "src/migrations.ts:25371:resumeInventoryMigrationManifest",
+                "id": "src/migrations.ts:25396:resumeInventoryMigrationManifest",
                 "kind": "FunctionDeclaration",
-                "line": 674,
+                "line": 675,
                 "name": "resumeInventoryMigrationManifest",
                 "reason": "resolved-call"
               },
@@ -7980,10 +7980,10 @@
                 "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:12953:<anonymous@364>",
+                "id": "test/authority.test.ts:14192:<anonymous@396>",
                 "kind": "ArrowFunction",
-                "line": 364,
-                "name": "<anonymous@364>",
+                "line": 396,
+                "name": "<anonymous@396>",
                 "reason": "test-callback"
               },
               {
@@ -11986,10 +11986,10 @@
                 "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:12953:<anonymous@364>",
+                "id": "test/authority.test.ts:14192:<anonymous@396>",
                 "kind": "ArrowFunction",
-                "line": 364,
-                "name": "<anonymous@364>",
+                "line": 396,
+                "name": "<anonymous@396>",
                 "reason": "test-callback"
               },
               {
@@ -12747,9 +12747,9 @@
                 "column": 1,
                 "file": "src/migrations.ts",
                 "hasBody": true,
-                "id": "src/migrations.ts:21349:inventoryMigrationPositionsMatch",
+                "id": "src/migrations.ts:21374:inventoryMigrationPositionsMatch",
                 "kind": "FunctionDeclaration",
-                "line": 555,
+                "line": 556,
                 "name": "inventoryMigrationPositionsMatch",
                 "reason": "resolved-call"
               },
@@ -15677,9 +15677,9 @@
                 "column": 1,
                 "file": "src/migrations.ts",
                 "hasBody": true,
-                "id": "src/migrations.ts:21349:inventoryMigrationPositionsMatch",
+                "id": "src/migrations.ts:21374:inventoryMigrationPositionsMatch",
                 "kind": "FunctionDeclaration",
-                "line": 555,
+                "line": 556,
                 "name": "inventoryMigrationPositionsMatch",
                 "reason": "resolved-call"
               },
@@ -17135,9 +17135,9 @@
           "column": 1,
           "file": "src/migrations.ts",
           "hasBody": true,
-          "id": "src/migrations.ts:22649:applyInventoryMigrationPlan",
+          "id": "src/migrations.ts:22674:applyInventoryMigrationPlan",
           "kind": "FunctionDeclaration",
-          "line": 595,
+          "line": 596,
           "name": "applyInventoryMigrationPlan"
         }
       ],
@@ -17148,9 +17148,9 @@
             "column": 1,
             "file": "src/migrations.ts",
             "hasBody": true,
-            "id": "src/migrations.ts:22649:applyInventoryMigrationPlan",
+            "id": "src/migrations.ts:22674:applyInventoryMigrationPlan",
             "kind": "FunctionDeclaration",
-            "line": 595,
+            "line": 596,
             "name": "applyInventoryMigrationPlan"
           },
           "witness": {
@@ -17178,9 +17178,9 @@
                 "column": 1,
                 "file": "src/migrations.ts",
                 "hasBody": true,
-                "id": "src/migrations.ts:22649:applyInventoryMigrationPlan",
+                "id": "src/migrations.ts:22674:applyInventoryMigrationPlan",
                 "kind": "FunctionDeclaration",
-                "line": 595,
+                "line": 596,
                 "name": "applyInventoryMigrationPlan",
                 "reason": "resolved-call"
               }
@@ -17684,9 +17684,9 @@
           "column": 1,
           "file": "src/migrations.ts",
           "hasBody": true,
-          "id": "src/migrations.ts:21349:inventoryMigrationPositionsMatch",
+          "id": "src/migrations.ts:21374:inventoryMigrationPositionsMatch",
           "kind": "FunctionDeclaration",
-          "line": 555,
+          "line": 556,
           "name": "inventoryMigrationPositionsMatch"
         }
       ],
@@ -17697,9 +17697,9 @@
             "column": 1,
             "file": "src/migrations.ts",
             "hasBody": true,
-            "id": "src/migrations.ts:21349:inventoryMigrationPositionsMatch",
+            "id": "src/migrations.ts:21374:inventoryMigrationPositionsMatch",
             "kind": "FunctionDeclaration",
-            "line": 555,
+            "line": 556,
             "name": "inventoryMigrationPositionsMatch"
           },
           "witness": {
@@ -17727,9 +17727,9 @@
                 "column": 1,
                 "file": "src/migrations.ts",
                 "hasBody": true,
-                "id": "src/migrations.ts:21349:inventoryMigrationPositionsMatch",
+                "id": "src/migrations.ts:21374:inventoryMigrationPositionsMatch",
                 "kind": "FunctionDeclaration",
-                "line": 555,
+                "line": 556,
                 "name": "inventoryMigrationPositionsMatch",
                 "reason": "resolved-call"
               }
@@ -17928,9 +17928,9 @@
           "column": 1,
           "file": "src/migrations.ts",
           "hasBody": true,
-          "id": "src/migrations.ts:26549:repairInventoryMigrationManifests",
+          "id": "src/migrations.ts:26574:repairInventoryMigrationManifests",
           "kind": "FunctionDeclaration",
-          "line": 702,
+          "line": 703,
           "name": "repairInventoryMigrationManifests"
         }
       ],
@@ -17941,9 +17941,9 @@
             "column": 1,
             "file": "src/migrations.ts",
             "hasBody": true,
-            "id": "src/migrations.ts:26549:repairInventoryMigrationManifests",
+            "id": "src/migrations.ts:26574:repairInventoryMigrationManifests",
             "kind": "FunctionDeclaration",
-            "line": 702,
+            "line": 703,
             "name": "repairInventoryMigrationManifests"
           },
           "witness": {
@@ -17971,9 +17971,9 @@
                 "column": 1,
                 "file": "src/migrations.ts",
                 "hasBody": true,
-                "id": "src/migrations.ts:26549:repairInventoryMigrationManifests",
+                "id": "src/migrations.ts:26574:repairInventoryMigrationManifests",
                 "kind": "FunctionDeclaration",
-                "line": 702,
+                "line": 703,
                 "name": "repairInventoryMigrationManifests",
                 "reason": "resolved-call"
               }
@@ -17989,9 +17989,9 @@
           "column": 1,
           "file": "src/migrations.ts",
           "hasBody": true,
-          "id": "src/migrations.ts:25371:resumeInventoryMigrationManifest",
+          "id": "src/migrations.ts:25396:resumeInventoryMigrationManifest",
           "kind": "FunctionDeclaration",
-          "line": 674,
+          "line": 675,
           "name": "resumeInventoryMigrationManifest"
         }
       ],
@@ -18002,9 +18002,9 @@
             "column": 1,
             "file": "src/migrations.ts",
             "hasBody": true,
-            "id": "src/migrations.ts:25371:resumeInventoryMigrationManifest",
+            "id": "src/migrations.ts:25396:resumeInventoryMigrationManifest",
             "kind": "FunctionDeclaration",
-            "line": 674,
+            "line": 675,
             "name": "resumeInventoryMigrationManifest"
           },
           "witness": {
@@ -18032,9 +18032,9 @@
                 "column": 1,
                 "file": "src/migrations.ts",
                 "hasBody": true,
-                "id": "src/migrations.ts:25371:resumeInventoryMigrationManifest",
+                "id": "src/migrations.ts:25396:resumeInventoryMigrationManifest",
                 "kind": "FunctionDeclaration",
-                "line": 674,
+                "line": 675,
                 "name": "resumeInventoryMigrationManifest",
                 "reason": "resolved-call"
               }
@@ -18083,7 +18083,7 @@
                 "column": 106,
                 "file": "test/authority-arbitrary-port.test.ts",
                 "hasBody": true,
-                "id": "test/authority-arbitrary-port.test.ts:18885:<anonymous@531>",
+                "id": "test/authority-arbitrary-port.test.ts:18858:<anonymous@531>",
                 "kind": "ArrowFunction",
                 "line": 531,
                 "name": "<anonymous@531>",
@@ -18235,10 +18235,10 @@
                 "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:12953:<anonymous@364>",
+                "id": "test/authority.test.ts:14192:<anonymous@396>",
                 "kind": "ArrowFunction",
-                "line": 364,
-                "name": "<anonymous@364>",
+                "line": 396,
+                "name": "<anonymous@396>",
                 "reason": "test-callback"
               },
               {
@@ -18952,9 +18952,9 @@
           "column": 1,
           "file": "src/authority-cutover.ts",
           "hasBody": true,
-          "id": "src/authority-cutover.ts:9053:bootstrapGreenfieldInventoryAuthority",
+          "id": "src/authority-cutover.ts:9204:bootstrapGreenfieldInventoryAuthority",
           "kind": "FunctionDeclaration",
-          "line": 224,
+          "line": 226,
           "name": "bootstrapGreenfieldInventoryAuthority"
         }
       ],
@@ -18965,9 +18965,9 @@
             "column": 1,
             "file": "src/authority-cutover.ts",
             "hasBody": true,
-            "id": "src/authority-cutover.ts:9053:bootstrapGreenfieldInventoryAuthority",
+            "id": "src/authority-cutover.ts:9204:bootstrapGreenfieldInventoryAuthority",
             "kind": "FunctionDeclaration",
-            "line": 224,
+            "line": 226,
             "name": "bootstrapGreenfieldInventoryAuthority"
           },
           "witness": {
@@ -18985,7 +18985,7 @@
                 "column": 75,
                 "file": "test/authority-arbitrary-port.test.ts",
                 "hasBody": true,
-                "id": "test/authority-arbitrary-port.test.ts:13757:<anonymous@388>",
+                "id": "test/authority-arbitrary-port.test.ts:13730:<anonymous@388>",
                 "kind": "ArrowFunction",
                 "line": 388,
                 "name": "<anonymous@388>",
@@ -18995,9 +18995,9 @@
                 "column": 1,
                 "file": "src/authority-cutover.ts",
                 "hasBody": true,
-                "id": "src/authority-cutover.ts:9053:bootstrapGreenfieldInventoryAuthority",
+                "id": "src/authority-cutover.ts:9204:bootstrapGreenfieldInventoryAuthority",
                 "kind": "FunctionDeclaration",
-                "line": 224,
+                "line": 226,
                 "name": "bootstrapGreenfieldInventoryAuthority",
                 "reason": "resolved-call"
               }
@@ -19391,7 +19391,7 @@
                 "column": 106,
                 "file": "test/authority-arbitrary-port.test.ts",
                 "hasBody": true,
-                "id": "test/authority-arbitrary-port.test.ts:18885:<anonymous@531>",
+                "id": "test/authority-arbitrary-port.test.ts:18858:<anonymous@531>",
                 "kind": "ArrowFunction",
                 "line": 531,
                 "name": "<anonymous@531>",
@@ -19452,10 +19452,10 @@
                 "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:12953:<anonymous@364>",
+                "id": "test/authority.test.ts:14192:<anonymous@396>",
                 "kind": "ArrowFunction",
-                "line": 364,
-                "name": "<anonymous@364>",
+                "line": 396,
+                "name": "<anonymous@396>",
                 "reason": "test-callback"
               },
               {
@@ -19480,9 +19480,9 @@
           "column": 1,
           "file": "src/authority-cutover.ts",
           "hasBody": true,
-          "id": "src/authority-cutover.ts:11649:cutoverInventoryAuthority",
+          "id": "src/authority-cutover.ts:11800:cutoverInventoryAuthority",
           "kind": "FunctionDeclaration",
-          "line": 303,
+          "line": 305,
           "name": "cutoverInventoryAuthority"
         }
       ],
@@ -19493,9 +19493,9 @@
             "column": 1,
             "file": "src/authority-cutover.ts",
             "hasBody": true,
-            "id": "src/authority-cutover.ts:11649:cutoverInventoryAuthority",
+            "id": "src/authority-cutover.ts:11800:cutoverInventoryAuthority",
             "kind": "FunctionDeclaration",
-            "line": 303,
+            "line": 305,
             "name": "cutoverInventoryAuthority"
           },
           "witness": {
@@ -19513,7 +19513,7 @@
                 "column": 60,
                 "file": "test/authority-arbitrary-port.test.ts",
                 "hasBody": true,
-                "id": "test/authority-arbitrary-port.test.ts:8395:<anonymous@239>",
+                "id": "test/authority-arbitrary-port.test.ts:8368:<anonymous@239>",
                 "kind": "ArrowFunction",
                 "line": 239,
                 "name": "<anonymous@239>",
@@ -19523,9 +19523,9 @@
                 "column": 1,
                 "file": "src/authority-cutover.ts",
                 "hasBody": true,
-                "id": "src/authority-cutover.ts:11649:cutoverInventoryAuthority",
+                "id": "src/authority-cutover.ts:11800:cutoverInventoryAuthority",
                 "kind": "FunctionDeclaration",
-                "line": 303,
+                "line": 305,
                 "name": "cutoverInventoryAuthority",
                 "reason": "resolved-call"
               }
@@ -20841,9 +20841,9 @@
           "column": 1,
           "file": "src/authority-cutover.ts",
           "hasBody": true,
-          "id": "src/authority-cutover.ts:35290:inventoryAuthorityCutoverResult",
+          "id": "src/authority-cutover.ts:35637:inventoryAuthorityCutoverResult",
           "kind": "FunctionDeclaration",
-          "line": 937,
+          "line": 947,
           "name": "inventoryAuthorityCutoverResult"
         }
       ],
@@ -20854,9 +20854,9 @@
             "column": 1,
             "file": "src/authority-cutover.ts",
             "hasBody": true,
-            "id": "src/authority-cutover.ts:35290:inventoryAuthorityCutoverResult",
+            "id": "src/authority-cutover.ts:35637:inventoryAuthorityCutoverResult",
             "kind": "FunctionDeclaration",
-            "line": 937,
+            "line": 947,
             "name": "inventoryAuthorityCutoverResult"
           },
           "witness": {
@@ -20874,7 +20874,7 @@
                 "column": 60,
                 "file": "test/authority-arbitrary-port.test.ts",
                 "hasBody": true,
-                "id": "test/authority-arbitrary-port.test.ts:8395:<anonymous@239>",
+                "id": "test/authority-arbitrary-port.test.ts:8368:<anonymous@239>",
                 "kind": "ArrowFunction",
                 "line": 239,
                 "name": "<anonymous@239>",
@@ -20884,9 +20884,9 @@
                 "column": 1,
                 "file": "src/authority-cutover.ts",
                 "hasBody": true,
-                "id": "src/authority-cutover.ts:11649:cutoverInventoryAuthority",
+                "id": "src/authority-cutover.ts:11800:cutoverInventoryAuthority",
                 "kind": "FunctionDeclaration",
-                "line": 303,
+                "line": 305,
                 "name": "cutoverInventoryAuthority",
                 "reason": "resolved-call"
               },
@@ -20894,9 +20894,9 @@
                 "column": 1,
                 "file": "src/authority-cutover.ts",
                 "hasBody": true,
-                "id": "src/authority-cutover.ts:35290:inventoryAuthorityCutoverResult",
+                "id": "src/authority-cutover.ts:35637:inventoryAuthorityCutoverResult",
                 "kind": "FunctionDeclaration",
-                "line": 937,
+                "line": 947,
                 "name": "inventoryAuthorityCutoverResult",
                 "reason": "resolved-call"
               }
@@ -20912,9 +20912,9 @@
           "column": 1,
           "file": "src/authority-cutover.ts",
           "hasBody": true,
-          "id": "src/authority-cutover.ts:41724:inventoryAuthorityGreenfieldResult",
+          "id": "src/authority-cutover.ts:42071:inventoryAuthorityGreenfieldResult",
           "kind": "FunctionDeclaration",
-          "line": 1097,
+          "line": 1107,
           "name": "inventoryAuthorityGreenfieldResult"
         }
       ],
@@ -20925,9 +20925,9 @@
             "column": 1,
             "file": "src/authority-cutover.ts",
             "hasBody": true,
-            "id": "src/authority-cutover.ts:41724:inventoryAuthorityGreenfieldResult",
+            "id": "src/authority-cutover.ts:42071:inventoryAuthorityGreenfieldResult",
             "kind": "FunctionDeclaration",
-            "line": 1097,
+            "line": 1107,
             "name": "inventoryAuthorityGreenfieldResult"
           },
           "witness": {
@@ -20945,7 +20945,7 @@
                 "column": 75,
                 "file": "test/authority-arbitrary-port.test.ts",
                 "hasBody": true,
-                "id": "test/authority-arbitrary-port.test.ts:13757:<anonymous@388>",
+                "id": "test/authority-arbitrary-port.test.ts:13730:<anonymous@388>",
                 "kind": "ArrowFunction",
                 "line": 388,
                 "name": "<anonymous@388>",
@@ -20955,9 +20955,9 @@
                 "column": 1,
                 "file": "src/authority-cutover.ts",
                 "hasBody": true,
-                "id": "src/authority-cutover.ts:9053:bootstrapGreenfieldInventoryAuthority",
+                "id": "src/authority-cutover.ts:9204:bootstrapGreenfieldInventoryAuthority",
                 "kind": "FunctionDeclaration",
-                "line": 224,
+                "line": 226,
                 "name": "bootstrapGreenfieldInventoryAuthority",
                 "reason": "resolved-call"
               },
@@ -20965,9 +20965,9 @@
                 "column": 1,
                 "file": "src/authority-cutover.ts",
                 "hasBody": true,
-                "id": "src/authority-cutover.ts:41724:inventoryAuthorityGreenfieldResult",
+                "id": "src/authority-cutover.ts:42071:inventoryAuthorityGreenfieldResult",
                 "kind": "FunctionDeclaration",
-                "line": 1097,
+                "line": 1107,
                 "name": "inventoryAuthorityGreenfieldResult",
                 "reason": "resolved-call"
               }
@@ -21716,9 +21716,9 @@
                 "column": 1,
                 "file": "src/migrations.ts",
                 "hasBody": true,
-                "id": "src/migrations.ts:21349:inventoryMigrationPositionsMatch",
+                "id": "src/migrations.ts:21374:inventoryMigrationPositionsMatch",
                 "kind": "FunctionDeclaration",
-                "line": 555,
+                "line": 556,
                 "name": "inventoryMigrationPositionsMatch",
                 "reason": "resolved-call"
               },
@@ -23581,9 +23581,9 @@
                 "column": 1,
                 "file": "src/migrations.ts",
                 "hasBody": true,
-                "id": "src/migrations.ts:21349:inventoryMigrationPositionsMatch",
+                "id": "src/migrations.ts:21374:inventoryMigrationPositionsMatch",
                 "kind": "FunctionDeclaration",
-                "line": 555,
+                "line": 556,
                 "name": "inventoryMigrationPositionsMatch",
                 "reason": "resolved-call"
               },
@@ -24068,10 +24068,10 @@
                 "column": 66,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:29960:<anonymous@808>",
+                "id": "test/authority.test.ts:33592:<anonymous@906>",
                 "kind": "ArrowFunction",
-                "line": 808,
-                "name": "<anonymous@808>",
+                "line": 906,
+                "name": "<anonymous@906>",
                 "reason": "test-callback"
               },
               {
@@ -24960,21 +24960,21 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/storage-conformance.test.ts",
+                "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/storage-conformance.test.ts",
+                "id": "test-root:test/authority.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/storage-conformance.test.ts"
+                "name": "test/authority.test.ts"
               },
               {
-                "column": 94,
-                "file": "test/storage-conformance.test.ts",
+                "column": 109,
+                "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/storage-conformance.test.ts:7866:<anonymous@258>",
+                "id": "test/authority.test.ts:31242:<anonymous@840>",
                 "kind": "ArrowFunction",
-                "line": 258,
-                "name": "<anonymous@258>",
+                "line": 840,
+                "name": "<anonymous@840>",
                 "reason": "test-callback"
               },
               {
@@ -24988,7 +24988,7 @@
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/storage-conformance.test.ts"
+            "test": "test/authority.test.ts"
           }
         }
       ]
@@ -25497,7 +25497,7 @@
                 "column": 60,
                 "file": "test/authority-arbitrary-port.test.ts",
                 "hasBody": true,
-                "id": "test/authority-arbitrary-port.test.ts:8395:<anonymous@239>",
+                "id": "test/authority-arbitrary-port.test.ts:8368:<anonymous@239>",
                 "kind": "ArrowFunction",
                 "line": 239,
                 "name": "<anonymous@239>",
@@ -25761,7 +25761,7 @@
                 "column": 60,
                 "file": "test/authority-arbitrary-port.test.ts",
                 "hasBody": true,
-                "id": "test/authority-arbitrary-port.test.ts:8395:<anonymous@239>",
+                "id": "test/authority-arbitrary-port.test.ts:8368:<anonymous@239>",
                 "kind": "ArrowFunction",
                 "line": 239,
                 "name": "<anonymous@239>",
@@ -25771,9 +25771,9 @@
                 "column": 1,
                 "file": "src/authority-cutover.ts",
                 "hasBody": true,
-                "id": "src/authority-cutover.ts:11649:cutoverInventoryAuthority",
+                "id": "src/authority-cutover.ts:11800:cutoverInventoryAuthority",
                 "kind": "FunctionDeclaration",
-                "line": 303,
+                "line": 305,
                 "name": "cutoverInventoryAuthority",
                 "reason": "resolved-call"
               },
@@ -25842,7 +25842,7 @@
                 "column": 60,
                 "file": "test/authority-arbitrary-port.test.ts",
                 "hasBody": true,
-                "id": "test/authority-arbitrary-port.test.ts:8395:<anonymous@239>",
+                "id": "test/authority-arbitrary-port.test.ts:8368:<anonymous@239>",
                 "kind": "ArrowFunction",
                 "line": 239,
                 "name": "<anonymous@239>",
@@ -25852,9 +25852,9 @@
                 "column": 1,
                 "file": "src/authority-cutover.ts",
                 "hasBody": true,
-                "id": "src/authority-cutover.ts:11649:cutoverInventoryAuthority",
+                "id": "src/authority-cutover.ts:11800:cutoverInventoryAuthority",
                 "kind": "FunctionDeclaration",
-                "line": 303,
+                "line": 305,
                 "name": "cutoverInventoryAuthority",
                 "reason": "resolved-call"
               },
@@ -25933,9 +25933,9 @@
                 "column": 1,
                 "file": "src/migrations.ts",
                 "hasBody": true,
-                "id": "src/migrations.ts:22649:applyInventoryMigrationPlan",
+                "id": "src/migrations.ts:22674:applyInventoryMigrationPlan",
                 "kind": "FunctionDeclaration",
-                "line": 595,
+                "line": 596,
                 "name": "applyInventoryMigrationPlan",
                 "reason": "resolved-call"
               },
@@ -25943,9 +25943,9 @@
                 "column": 1,
                 "file": "src/migrations.ts",
                 "hasBody": true,
-                "id": "src/migrations.ts:33870:createDurableInventoryMigrationPlan",
+                "id": "src/migrations.ts:33895:createDurableInventoryMigrationPlan",
                 "kind": "FunctionDeclaration",
-                "line": 926,
+                "line": 927,
                 "name": "createDurableInventoryMigrationPlan",
                 "reason": "resolved-call"
               },
@@ -26065,7 +26065,7 @@
                 "column": 60,
                 "file": "test/authority-arbitrary-port.test.ts",
                 "hasBody": true,
-                "id": "test/authority-arbitrary-port.test.ts:8395:<anonymous@239>",
+                "id": "test/authority-arbitrary-port.test.ts:8368:<anonymous@239>",
                 "kind": "ArrowFunction",
                 "line": 239,
                 "name": "<anonymous@239>",
@@ -26075,9 +26075,9 @@
                 "column": 1,
                 "file": "src/authority-cutover.ts",
                 "hasBody": true,
-                "id": "src/authority-cutover.ts:11649:cutoverInventoryAuthority",
+                "id": "src/authority-cutover.ts:11800:cutoverInventoryAuthority",
                 "kind": "FunctionDeclaration",
-                "line": 303,
+                "line": 305,
                 "name": "cutoverInventoryAuthority",
                 "reason": "resolved-call"
               },
@@ -26146,7 +26146,7 @@
                 "column": 60,
                 "file": "test/authority-arbitrary-port.test.ts",
                 "hasBody": true,
-                "id": "test/authority-arbitrary-port.test.ts:8395:<anonymous@239>",
+                "id": "test/authority-arbitrary-port.test.ts:8368:<anonymous@239>",
                 "kind": "ArrowFunction",
                 "line": 239,
                 "name": "<anonymous@239>",
@@ -26156,9 +26156,9 @@
                 "column": 1,
                 "file": "src/authority-cutover.ts",
                 "hasBody": true,
-                "id": "src/authority-cutover.ts:11649:cutoverInventoryAuthority",
+                "id": "src/authority-cutover.ts:11800:cutoverInventoryAuthority",
                 "kind": "FunctionDeclaration",
-                "line": 303,
+                "line": 305,
                 "name": "cutoverInventoryAuthority",
                 "reason": "resolved-call"
               },
@@ -26227,7 +26227,7 @@
                 "column": 60,
                 "file": "test/authority-arbitrary-port.test.ts",
                 "hasBody": true,
-                "id": "test/authority-arbitrary-port.test.ts:8395:<anonymous@239>",
+                "id": "test/authority-arbitrary-port.test.ts:8368:<anonymous@239>",
                 "kind": "ArrowFunction",
                 "line": 239,
                 "name": "<anonymous@239>",
@@ -26237,9 +26237,9 @@
                 "column": 1,
                 "file": "src/authority-cutover.ts",
                 "hasBody": true,
-                "id": "src/authority-cutover.ts:11649:cutoverInventoryAuthority",
+                "id": "src/authority-cutover.ts:11800:cutoverInventoryAuthority",
                 "kind": "FunctionDeclaration",
-                "line": 303,
+                "line": 305,
                 "name": "cutoverInventoryAuthority",
                 "reason": "resolved-call"
               },
@@ -26987,10 +26987,10 @@
                 "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:12953:<anonymous@364>",
+                "id": "test/authority.test.ts:14192:<anonymous@396>",
                 "kind": "ArrowFunction",
-                "line": 364,
-                "name": "<anonymous@364>",
+                "line": 396,
+                "name": "<anonymous@396>",
                 "reason": "test-callback"
               },
               {
@@ -35584,9 +35584,9 @@
                 "column": 1,
                 "file": "src/migrations.ts",
                 "hasBody": true,
-                "id": "src/migrations.ts:22649:applyInventoryMigrationPlan",
+                "id": "src/migrations.ts:22674:applyInventoryMigrationPlan",
                 "kind": "FunctionDeclaration",
-                "line": 595,
+                "line": 596,
                 "name": "applyInventoryMigrationPlan",
                 "reason": "resolved-call"
               },
@@ -35756,9 +35756,9 @@
                 "column": 1,
                 "file": "src/migrations.ts",
                 "hasBody": true,
-                "id": "src/migrations.ts:25371:resumeInventoryMigrationManifest",
+                "id": "src/migrations.ts:25396:resumeInventoryMigrationManifest",
                 "kind": "FunctionDeclaration",
-                "line": 674,
+                "line": 675,
                 "name": "resumeInventoryMigrationManifest",
                 "reason": "resolved-call"
               },
@@ -35837,9 +35837,9 @@
                 "column": 1,
                 "file": "src/migrations.ts",
                 "hasBody": true,
-                "id": "src/migrations.ts:26549:repairInventoryMigrationManifests",
+                "id": "src/migrations.ts:26574:repairInventoryMigrationManifests",
                 "kind": "FunctionDeclaration",
-                "line": 702,
+                "line": 703,
                 "name": "repairInventoryMigrationManifests",
                 "reason": "resolved-call"
               },
@@ -36009,10 +36009,10 @@
                 "column": 93,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:17839:<anonymous@491>",
+                "id": "test/authority.test.ts:19078:<anonymous@523>",
                 "kind": "ArrowFunction",
-                "line": 491,
-                "name": "<anonymous@491>",
+                "line": 523,
+                "name": "<anonymous@523>",
                 "reason": "test-callback"
               },
               {
@@ -36384,9 +36384,9 @@
                 "column": 1,
                 "file": "src/migrations.ts",
                 "hasBody": true,
-                "id": "src/migrations.ts:25371:resumeInventoryMigrationManifest",
+                "id": "src/migrations.ts:25396:resumeInventoryMigrationManifest",
                 "kind": "FunctionDeclaration",
-                "line": 674,
+                "line": 675,
                 "name": "resumeInventoryMigrationManifest",
                 "reason": "resolved-call"
               },
@@ -36691,5 +36691,5 @@
     }
   },
   "schemaVersion": 1,
-  "surfaceSha256": "119914a0dd1c1e02907669aef93b2ba7305e2f66cb614d4dfa75330732268aba"
+  "surfaceSha256": "03baa3c20d088f813397b4bac1a673eca726f18b845e10e8523af8bb47374e5f"
 }

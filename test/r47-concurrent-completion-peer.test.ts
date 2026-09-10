@@ -166,6 +166,10 @@ async function greenfieldCase(foreign: boolean) {
   assert.equal(injected > 0, true);
   if (foreign) {
     assert(error, "foreign greenfield completion unexpectedly joined");
+    assert.equal(
+      error.message,
+      "InventoryOnce authoritative state does not match this greenfield bootstrap.",
+    );
     return { phase: "green-cert", foreign, outcome: "rejected", error: error.message };
   }
   assert.ifError(error); assert(result);

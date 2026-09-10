@@ -83,6 +83,22 @@ function assertKnownTraceModes(traceEntries) {
   }
 }
 
+/** Require every executable trace row to name an explicit array of string API identities. */
+function assertTraceApiEntries(traceEntries) {
+  for (const entry of traceEntries) {
+    if (
+      typeof entry !== "object" ||
+      entry === null ||
+      !Array.isArray(entry.apiEntries) ||
+      entry.apiEntries.some((apiEntry) => typeof apiEntry !== "string")
+    ) {
+      throw new Error(
+        "Executable assurance trace apiEntries must be a present array of strings.",
+      );
+    }
+  }
+}
+
 /** Reject implementation-model claims from any registered API, field, or trace manifest. */
 export function assertNoManifestImplementationModelClaim(
   { apiEntries, fieldEntries, traceEntries },
@@ -104,6 +120,7 @@ export function executableAssuranceSummary(
   /** @type {ExecutableAssuranceManifests} */ { api, fields, callChains, traces, gaps },
 ) {
   const traceEntries = Object.values(traces.entries);
+  assertTraceApiEntries(traceEntries);
   assertKnownTraceModes(traceEntries);
   return {
     surfaceSha256: api.surfaceSha256,
