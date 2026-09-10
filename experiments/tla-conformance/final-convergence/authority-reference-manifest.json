@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "status": "FINAL_LIVE_INPUT_CLOSURE",
-  "head": "5584d6e84fd5737a3a24f73daa57115602c3460d",
+  "head": "f430b5141b0afc0b2796e38bc90ef45df4c0dcd9",
   "surfaceDigest": "ec078013972d9ee2b4ba84d28cfa7449a18dc29679d81766e314db6a6139b81e",
-  "inputs": 58,
-  "totalBytes": 14564321,
+  "inputs": 62,
+  "totalBytes": 18202459,
   "untrackedProofInputs": 0,
   "rows": [
     {
       "file": "experiments/tla-conformance/final-convergence/authority-producer17.json",
-      "sha256": "d8b6b7dca7910f053479b5471ad4de3e770ec9f024d992f513a58ddd87755b91",
+      "sha256": "aee078cd20e8d0464aded93168f261475323add19cb2f49b6b4e19caf3b0f3f8",
       "sizeBytes": 160740,
       "tracked": true,
       "nodeModules": false
     },
     {
       "file": "experiments/tla-conformance/final-convergence/authority-value3.json",
-      "sha256": "e0a53b0e3eef82351f0ee21b309f96ad3acb3f4e53324a045ed83105b4a27bd1",
+      "sha256": "bdc69b7e7becebf866bd10639b581bddd9503928effb15597e5fb5e7416a0ac8",
       "sizeBytes": 20871,
       "tracked": true,
       "nodeModules": false
@@ -36,6 +36,13 @@
       "nodeModules": false
     },
     {
+      "file": "experiments/tla-conformance/final-convergence/baseline-a121-b58-before-r170-transport.json",
+      "sha256": "68653caf96ed3964b70efdf0b46c73c265240d7a1d938bd459188f56471f48d5",
+      "sizeBytes": 1640014,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
       "file": "experiments/tla-conformance/final-convergence/baseline-v309-before-r169-transport.json",
       "sha256": "5df0a96e931dc7e50305bdbc2220fb618cebbe8a89f395114a2ea27d5ae73f1b",
       "sizeBytes": 1990423,
@@ -43,9 +50,16 @@
       "nodeModules": false
     },
     {
+      "file": "experiments/tla-conformance/final-convergence/baseline-v309-before-r170-transport.json",
+      "sha256": "fbd998dc0bf00f87db438be07ba7869e2aefb7514b7e453309edec99e33e5631",
+      "sizeBytes": 1990423,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
       "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-      "sha256": "e8c0a083963eb6c5f8727248c40ea8a893cbbdd9f3de2c641521fb5614fd95e0",
-      "sizeBytes": 4340,
+      "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
+      "sizeBytes": 4477,
       "tracked": true,
       "nodeModules": false
     },
@@ -65,7 +79,7 @@
     },
     {
       "file": "experiments/tla-conformance/final-convergence/r137-v15.json",
-      "sha256": "5acd8bf2a76df95bc84b95587b43287a8f04a77d0a698e7cfde854b1df401536",
+      "sha256": "d5418b17bd981815451052632afa54007567e1bffb75f36b24901d24198ca151",
       "sizeBytes": 215822,
       "tracked": true,
       "nodeModules": false
@@ -92,15 +106,22 @@
       "nodeModules": false
     },
     {
+      "file": "experiments/tla-conformance/final-convergence/r170-assurance-transport.json",
+      "sha256": "2a5637b24fdaf925399d5311fbf17922726c8f81f207fe4d7e673fa6613c6ec8",
+      "sizeBytes": 2867,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
       "file": "experiments/tla-conformance/final-convergence/readworld-producer24.json",
-      "sha256": "17cd7af3d05bf93fda179d9f7f47d5b038ed4bf651342a71ae416c0dd1172e0a",
+      "sha256": "1b944e76dd3e9c68fe63c91a63cb3788bf41466ef5fb09b7746b210da6d10200",
       "sizeBytes": 394121,
       "tracked": true,
       "nodeModules": false
     },
     {
       "file": "experiments/tla-conformance/final-convergence/wrapper-producer11.json",
-      "sha256": "f46d21c350608aa68ec535a4655546c3bc1f3eee39650f0354096ef080b9b527",
+      "sha256": "33e349ece2b14ae352e6aa77923b0a0939cc13d90b15ddff150f940465945f00",
       "sizeBytes": 190825,
       "tracked": true,
       "nodeModules": false
@@ -400,8 +421,15 @@
       "nodeModules": false
     },
     {
+      "file": "formal/TraceabilityGraph.tla",
+      "sha256": "afdccc9ae62b81545bc751c6fc70e54b5c9621c916a6f55be26399ef7a528e98",
+      "sizeBytes": 4697,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
       "file": "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
-      "sha256": "cecb9ab157d66d7de23e435341dc79650757c05eab7ac10b9f27c391864c784b",
+      "sha256": "24e3fdead4255e780da4323d250314141fe65f42c716099dbeabc6c6b77f9e28",
       "sizeBytes": 2459,
       "tracked": true,
       "nodeModules": false

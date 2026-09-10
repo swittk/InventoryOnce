@@ -96,21 +96,25 @@
     ]
   },
   "currentReviewAssuranceTransport": {
-    "file": "experiments/tla-conformance/final-convergence/r169-assurance-transport.json",
-    "sha256": "e170cd7c5118286f7da86438ad10847319c6c1fcaa6ec0b4b1210de9348ba6a2",
-    "contentSha256": "716c66bcd67940045d12ee6f636608573be9d7bfc38eadceb0f74e51194de378",
+    "file": "experiments/tla-conformance/final-convergence/r170-assurance-transport.json",
+    "sha256": "2a5637b24fdaf925399d5311fbf17922726c8f81f207fe4d7e673fa6613c6ec8",
+    "contentSha256": "cd6fb0cbbe49f974582a427f93536b3ebedcbc42bc1df784ef897fcfae24d5ac",
     "affectedStrictRows": [
       {
         "surfaceKey": "export:.#cutoverInventoryAuthority::call[0]",
         "mode": "A"
       },
       {
-        "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.reclassifyMany::call[0]",
+        "surfaceKey": "type:src/facade.ts#InventoryOnceTraceabilityApi.disaggregate::call[0]",
+        "mode": "A"
+      },
+      {
+        "surfaceKey": "type:src/facade.ts#InventoryOnceTraceabilityApi.disassociate::call[0]",
         "mode": "A"
       }
     ],
     "affectedValueRows": []
   },
   "creditExpansion": false,
-  "contentSha256": "d9dbd2c69cddc3a1a7609304a2a2679b622c62f085a2212f196ac5fa5eb568f4"
+  "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
 }

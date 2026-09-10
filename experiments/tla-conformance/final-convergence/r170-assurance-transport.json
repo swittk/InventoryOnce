@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "status": "R170_CURRENT_HEAD_ASSURANCE_TRANSPORT_PROVED",
+  "priorHead": "e2c1ccb3be53809b8b935cf4882137a08fa08576",
+  "currentHead": "f430b5141b0afc0b2796e38bc90ef45df4c0dcd9",
+  "surfaceDigest": "ec078013972d9ee2b4ba84d28cfa7449a18dc29679d81766e314db6a6139b81e",
+  "exactRepairFiles": [
+    "AGENT_DIARY.md",
+    "experiments/tla-conformance/final-convergence/build-base-authority-index.mjs",
+    "experiments/tla-conformance/final-convergence/r169-assurance-transport.mjs",
+    "experiments/tla-conformance/final-convergence/run-compact-final-assurance.mjs",
+    "formal/TraceabilityGraph.tla",
+    "formal/implementation-conformance/API_ASSURANCE.json",
+    "formal/implementation-conformance/IMPLEMENTATION_CONFORMANCE.md",
+    "formal/implementation-conformance/TRACE_REPLAY_ASSURANCE.json",
+    "scripts/generate-formal-implementation-assurance.py",
+    "test/r47-concurrent-completion-peer.test.ts"
+  ],
+  "postRepairAuthoritativeFiles": [
+    "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json"
+  ],
+  "productSourceChanged": false,
+  "affectedStrictRows": [
+    {
+      "surfaceKey": "export:.#cutoverInventoryAuthority::call[0]",
+      "mode": "A"
+    },
+    {
+      "surfaceKey": "type:src/facade.ts#InventoryOnceTraceabilityApi.disaggregate::call[0]",
+      "mode": "A"
+    },
+    {
+      "surfaceKey": "type:src/facade.ts#InventoryOnceTraceabilityApi.disassociate::call[0]",
+      "mode": "A"
+    }
+  ],
+  "affectedValueRows": [],
+  "assurance": {
+    "report": {
+      "file": "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
+      "sha256": "24e3fdead4255e780da4323d250314141fe65f42c716099dbeabc6c6b77f9e28"
+    },
+    "repositoryStateSha256": "6c285e6dcbffe78c283f0243a2c2ff988f746f61b8af34ebfeab6686b9834f7b",
+    "fullLogSha256": "8a1fdeb77acb7c0be7c93bd46cf74f71c2f04d774140168cc96e35069e226ff9",
+    "fullFormal": true,
+    "apiEntries": 510,
+    "unresolvedPublicApis": 0
+  },
+  "traceabilityUniqueness": {
+    "file": "formal/TraceabilityGraph.tla",
+    "evidence": {
+      "file": "formal/TraceabilityGraph.tla",
+      "sha256": "afdccc9ae62b81545bc751c6fc70e54b5c9621c916a6f55be26399ef7a528e98"
+    },
+    "duplicateStateReachableUnderTypeOK": true
+  },
+  "baselineArtifacts": [
+    {
+      "file": "experiments/tla-conformance/final-convergence/baseline-v309-before-r170-transport.json",
+      "sha256": "fbd998dc0bf00f87db438be07ba7869e2aefb7514b7e453309edec99e33e5631"
+    },
+    {
+      "file": "experiments/tla-conformance/final-convergence/baseline-a121-b58-before-r170-transport.json",
+      "sha256": "68653caf96ed3964b70efdf0b46c73c265240d7a1d938bd459188f56471f48d5"
+    }
+  ],
+  "producerGraphRuns": 0,
+  "producerReplayRuns": 0,
+  "reverseReruns": 0,
+  "creditExpansion": false,
+  "contentSha256": "cd6fb0cbbe49f974582a427f93536b3ebedcbc42bc1df784ef897fcfae24d5ac"
+}
