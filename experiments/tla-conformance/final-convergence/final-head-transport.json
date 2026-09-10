@@ -117,8 +117,8 @@
   },
   "currentReviewPristineReproTransport": {
     "file": "experiments/tla-conformance/final-convergence/r170-pristine-repro-transport.json",
-    "sha256": "454c2d79b07677ccee6a5f70a6733967da803e497fd19506c2a091511c789627",
-    "contentSha256": "4b222957dc278aab6554afb8f3ab690d90d5983536137c2fc10403a47881393a",
+    "sha256": "3f86782637e15a0cb24646e76c2f5af6230f84f8e0345548d567afbd6f21619e",
+    "contentSha256": "3e780993359a830e5b21e6b8a7d3ae9e77098b632eae902d22d4c51d54b700d3",
     "affectedStrictRows": [
       {
         "surfaceKey": "export:.#cutoverInventoryAuthority::call[0]",
@@ -128,5 +128,5 @@
     "affectedValueRows": []
   },
   "creditExpansion": false,
-  "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
+  "contentSha256": "195da88c26d3beae0ddcc5652a114949d3b8cb5f7c182e49b31e9407eae8683e"
 }
