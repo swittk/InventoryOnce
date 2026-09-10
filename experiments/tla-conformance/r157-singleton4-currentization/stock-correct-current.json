@@ -49,6 +49,10 @@
     {
       "file": "formal/CorrectionHistory.tla",
       "sha256": "ec3a4fd3ed53d9ca7988f0f751b3b568a5e731164839f292d48ac0a03ac467f4"
+    },
+    {
+      "file": "src/facade.ts",
+      "sha256": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d"
     }
   ],
   "proofs": [

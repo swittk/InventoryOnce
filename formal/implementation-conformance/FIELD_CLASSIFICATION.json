@@ -4,14 +4,14 @@
     "callableFields": 10,
     "callbackArgumentFields": 342,
     "callbackResultFields": 401,
-    "fields": 2291,
-    "inputFields": 1971,
+    "fields": 2288,
+    "inputFields": 1964,
     "nullableFields": 0,
     "optionalFields": 906,
     "outputFields": 849,
     "recursiveTypeReferences": 3,
     "truncatedTypes": 0,
-    "types": 378,
+    "types": 377,
     "undefinedFields": 2
   },
   "entries": {
@@ -48941,7 +48941,6 @@
       "declaration": "src/transfers.ts",
       "directions": [
         "callback-argument",
-        "input",
         "output"
       ],
       "discoveredType": "string",
@@ -48993,7 +48992,6 @@
       "declaration": "src/transfers.ts",
       "directions": [
         "callback-argument",
-        "input",
         "output"
       ],
       "discoveredType": "InventoryMeasurementVector",
@@ -49020,7 +49018,6 @@
       "declaration": "src/transfers.ts",
       "directions": [
         "callback-argument",
-        "input",
         "output"
       ],
       "discoveredType": "InventoryMeasurementVector",
@@ -49047,7 +49044,6 @@
       "declaration": "src/transfers.ts",
       "directions": [
         "callback-argument",
-        "input",
         "output"
       ],
       "discoveredType": "InventoryStockPositionKey",
@@ -53589,75 +53585,6 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/commands.ts:326:35.axisId": {
-      "allowsNull": false,
-      "allowsUndefined": false,
-      "callSignatures": [],
-      "callable": false,
-      "classification": "identity/retry-semantic",
-      "declaration": "src/commands.ts",
-      "directions": [
-        "input"
-      ],
-      "discoveredType": "string",
-      "executableEvidence": [
-        "test/formal-implementation-refinement.test.ts",
-        "test/formal-implementation-conformance.test.ts"
-      ],
-      "formalModels": [
-        "InventoryOperation",
-        "PublishedHeadCAS"
-      ],
-      "gaps": [],
-      "optional": false,
-      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
-    },
-    "anonymous@src/commands.ts:326:35.unit": {
-      "allowsNull": false,
-      "allowsUndefined": false,
-      "callSignatures": [],
-      "callable": false,
-      "classification": "abstract-semantic",
-      "declaration": "src/commands.ts",
-      "directions": [
-        "input"
-      ],
-      "discoveredType": "string",
-      "executableEvidence": [
-        "test/formal-implementation-refinement.test.ts",
-        "test/formal-implementation-conformance.test.ts"
-      ],
-      "formalModels": [
-        "InventoryOperation",
-        "PublishedHeadCAS"
-      ],
-      "gaps": [],
-      "optional": false,
-      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
-    },
-    "anonymous@src/commands.ts:326:35.value": {
-      "allowsNull": false,
-      "allowsUndefined": false,
-      "callSignatures": [],
-      "callable": false,
-      "classification": "abstract-semantic",
-      "declaration": "src/commands.ts",
-      "directions": [
-        "input"
-      ],
-      "discoveredType": "string",
-      "executableEvidence": [
-        "test/formal-implementation-refinement.test.ts",
-        "test/formal-implementation-conformance.test.ts"
-      ],
-      "formalModels": [
-        "InventoryOperation",
-        "PublishedHeadCAS"
-      ],
-      "gaps": [],
-      "optional": false,
-      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
-    },
     "anonymous@src/composition.ts:54:33.packagingRevisionId": {
       "allowsNull": false,
       "allowsUndefined": false,
@@ -54779,9 +54706,9 @@
     "recursiveTypeReferences": [
       "InventoryIntentFingerprintValue|src/canonical.ts|81|409e33b74f02",
       "InventoryMetadataValue|src/model.ts|1143|5d09d8b2fba1",
-      "external:1"
+      "external:cce81cd429ac"
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "038148aff0911f3610c74d440fde4bff8f7ebbe0026b2d6cfe91604c7d33f5c5"
+  "surfaceSha256": "c969e4a6f40f9adc385c466564e4a260965079e5b6539c77a17dd427dc4d4028"
 }

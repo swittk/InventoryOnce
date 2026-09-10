@@ -206,6 +206,8 @@ IssueConsumesOnlyAvailableCapacity ==
   ~(lastOutcome \in {"record-full", "record-shortage", "reject-full"}) \/
     beforePhysical - physical <= Available(beforePhysical, beforeDeficit)
 
+\* Scope: Seen(op) is defined by intentByOperation[op] # NoIntent; the first
+\* conjunct below records that representation invariant rather than adding a new transition check.
 SeenIntentAndResultAreDurable ==
   \A op \in OperationIds:
     /\ Seen(op) <=> (intentByOperation[op] # NoIntent)

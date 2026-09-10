@@ -314,14 +314,17 @@ const visitedDirections = new Map();
 const recursiveTypeReferences = new Set();
 const truncatedTypes = new Set();
 const externalTypeIdentities = new WeakMap();
-let nextExternalTypeIdentity = 0;
 let maximumTypeDepth = 0;
-/** Return one stable traversal identity for a compiler type outside this package. */
-function externalTypeIdentity(type) {
+/** Return one traversal-order-independent identity for a compiler type outside this package. */
+function externalTypeIdentity(type, renderedType) {
   const existing = externalTypeIdentities.get(type);
   if (existing !== undefined) return existing;
-  nextExternalTypeIdentity += 1;
-  const identity = `external:${nextExternalTypeIdentity}`;
+  const symbol = type.aliasSymbol ?? type.getSymbol?.();
+  const declaration = symbol?.declarations?.[0];
+  const declarationAnchor = declaration === undefined
+    ? "no-declaration"
+    : `${path.relative(root, declaration.getSourceFile().fileName)}:${declaration.pos}:${declaration.end}`;
+  const identity = `external:${shortHash(`${type.flags}|${type.objectFlags ?? 0}|${declarationAnchor}|${renderedType}`)}`;
   externalTypeIdentities.set(type, identity);
   return identity;
 }
@@ -351,7 +354,7 @@ function visitType(type, direction, lineage = new Set(), depth = 0) {
   if (/\.\.\. [0-9]+ more \.\.\./u.test(renderedType)) {
     truncatedTypes.add(owned?.identity ?? renderedType);
   }
-  const traversalIdentity = owned?.identity ?? externalTypeIdentity(type);
+  const traversalIdentity = owned?.identity ?? externalTypeIdentity(type, renderedType);
   if (lineage.has(traversalIdentity)) {
     recursiveTypeReferences.add(traversalIdentity);
     return;

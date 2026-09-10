@@ -3,8 +3,8 @@
     "authorityMethods": 14,
     "callAndConstructSignatures": 510,
     "classMethods": 71,
-    "compilerCallGraphCallables": 2458,
-    "compilerCallGraphEdges": 6748,
+    "compilerCallGraphCallables": 2460,
+    "compilerCallGraphEdges": 6751,
     "compilerCallGraphTestRoots": 44,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 510,
@@ -15,8 +15,8 @@
     "kernelCallables": 155,
     "maximumTypeDepth": 12,
     "migrationCallables": 15,
-    "reachableFields": 2291,
-    "reachableTypes": 378,
+    "reachableFields": 2288,
+    "reachableTypes": 377,
     "recursiveTypeReferences": 3,
     "rootCallables": 98,
     "storageCallables": 23,
@@ -76358,9 +76358,9 @@
     "recursiveTypeReferences": [
       "InventoryIntentFingerprintValue|src/canonical.ts|81|409e33b74f02",
       "InventoryMetadataValue|src/model.ts|1143|5d09d8b2fba1",
-      "external:1"
+      "external:cce81cd429ac"
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "038148aff0911f3610c74d440fde4bff8f7ebbe0026b2d6cfe91604c7d33f5c5"
+  "surfaceSha256": "c969e4a6f40f9adc385c466564e4a260965079e5b6539c77a17dd427dc4d4028"
 }

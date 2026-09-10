@@ -303,7 +303,7 @@ function validateTraceAssurance(traceManifest, apiManifest, vocabulary) {
       }
     }
     for (const family of entry.operationFamilies) {
-      if (!(family in apiManifest.families)) {
+      if (!Object.hasOwn(apiManifest.families, family)) {
         throw new Error(
           `${traceId} names unknown operation family '${family}'.`
         );
@@ -426,7 +426,7 @@ function validateApiEntry(
     );
   }
   for (const property of requiredAssuranceProperties) {
-    if (!(property in entry)) throw new Error(`${key} lacks '${property}'.`);
+    if (!Object.hasOwn(entry, property)) throw new Error(`${key} lacks '${property}'.`);
   }
   if (typeof entry.family !== "string" || entry.family.length === 0) {
     throw new Error(`${key} lacks an assurance family.`);
@@ -499,7 +499,7 @@ function validateApiEntry(
   }
   if (!Array.isArray(entry.gaps)) throw new Error(`${key} has malformed gaps.`);
   for (const gap of entry.gaps) {
-    if (!(gap in gaps)) throw new Error(`${key} cites unknown gap '${gap}'.`);
+    if (!Object.hasOwn(gaps, gap)) throw new Error(`${key} cites unknown gap '${gap}'.`);
   }
   if (entry.status === "explicit-gap" && entry.gaps.length === 0) {
     throw new Error(`${key} is marked explicit-gap without a checked gap ID.`);
@@ -719,7 +719,7 @@ function validateFieldEntry(key, entry, discovered, vocabulary, gaps) {
   }
   if (!Array.isArray(entry.gaps)) throw new Error(`${key} has malformed gaps.`);
   for (const gap of entry.gaps) {
-    if (!(gap in gaps)) throw new Error(`${key} cites unknown gap '${gap}'.`);
+    if (!Object.hasOwn(gaps, gap)) throw new Error(`${key} cites unknown gap '${gap}'.`);
   }
   if (
     entry.classification === "unsupported/unmodelled" &&
@@ -1090,12 +1090,12 @@ for (const key of kernelReferenceCalls) {
   }
 }
 
-if (!("GAP-DISTRIBUTED-RIGHTS-NOT-IMPLEMENTED" in gaps)) {
+if (!Object.hasOwn(gaps, "GAP-DISTRIBUTED-RIGHTS-NOT-IMPLEMENTED")) {
   throw new Error(
     "DistributedRights implementation gap disappeared from the checked report."
   );
 }
-if (!("GAP-LEGACY-SOURCE-INTERPRETATION" in gaps)) {
+if (!Object.hasOwn(gaps, "GAP-LEGACY-SOURCE-INTERPRETATION")) {
   throw new Error(
     "Legacy migration interpretation gap disappeared from the checked report."
   );

@@ -160,6 +160,9 @@ function assertManifestCounters(label, counts, keys) {
 export function assertExecutableAssuranceMatchesManifests(
   /** @type {ExecutableAssuranceInput} */ input,
 ) {
+  if (typeof input.api.surfaceSha256 !== "string" || input.api.surfaceSha256.length === 0) {
+    throw new Error("API assurance manifest surfaceSha256 must be a present non-empty string.");
+  }
   assertManifestCounters("API", input.api.counts, [
     "callAndConstructSignatures",
     "directExecutableApis",

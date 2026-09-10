@@ -48,6 +48,13 @@ interface FormalImplementationConformanceSummary {
 }
 
 describe("formal implementation conformance manifest", () => {
+  it("uses content-derived identities for external recursive references", () => {
+    const api = JSON.parse(readFileSync(path.join(packageRoot, "formal/implementation-conformance/API_ASSURANCE.json"), "utf8")) as { readonly surfaceDiagnostics: { readonly recursiveTypeReferences: readonly string[] } };
+    const external = api.surfaceDiagnostics.recursiveTypeReferences.filter((value) => value.startsWith("external:"));
+    expect(external.length).toBeGreaterThan(0);
+    for (const identity of external) expect(identity).toMatch(/^external:[0-9a-f]{12}$/u);
+  });
+
   it("does not count TLC section keywords as configured checks", () => {
     const output = execFileSync(
       process.execPath,

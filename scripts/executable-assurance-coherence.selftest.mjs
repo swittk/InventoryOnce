@@ -55,6 +55,19 @@ test("same-run executable summary matches every manifest-derived field", () => {
   assert.deepEqual(assertExecutableAssuranceMatchesManifests({ ...input, executable }), executable);
 });
 
+test("missing or empty API surface digests fail closed", () => {
+  for (const invalid of [undefined, ""]) {
+    const input = fixtures();
+    if (invalid === undefined) delete input.api.surfaceSha256;
+    else input.api.surfaceSha256 = invalid;
+    const executable = executableAssuranceSummary(input);
+    assert.throws(
+      () => assertExecutableAssuranceMatchesManifests({ ...input, executable }),
+      /surfaceSha256 must be a present non-empty string/u,
+    );
+  }
+});
+
 test("one stale manifest-derived field rejects the executable report", () => {
   const input = fixtures();
   const executable = { ...executableAssuranceSummary(input), compilerCallGraphEdges: 4 };

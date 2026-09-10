@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import { canonicalJson, discoverCompilerSurface, sha256 } from "../surface-bindings/lib/compiler-surface.mjs";
 import * as before from "./formal-models-428f50a.mjs";
 import * as current from "../../../scripts/formal-models.mjs";
@@ -100,7 +101,7 @@ export function buildR165AssuranceTransport(){
   const core={schemaVersion:1,status:"R165_PLUS_R167_ASSURANCE_TRANSPORT_PROVED",priorHead:PRIOR_HEAD,currentHead:CURRENT_HEAD,surfaceDigest:SURFACE_DIGEST,exactChangedFiles:EXPECTED_DELTA,productSourceChanged:false,formalRegistry:{before:ref(PRIOR_FORMAL),after:ref(CURRENT_FORMAL),priorBytesAreExactPrefix:true,formalModels:structuredClone(current.formalModels),formalInvariantMutationChecks:structuredClone(current.formalInvariantMutationChecks),statefulOperationFamilyIds:structuredClone(current.statefulOperationFamilyIds),formalConfigCheckNamesAcrossCfgs:cfgSemantics(current),rule:"R165 appends only fail-fast mutation tuple consistency validation; registered models, mutation tuples, stateful families, and cfg check parsing remain identical."},affectedStrictRows,affectedValueRows:valueAffected,otherR165ProofInputs:[],postR165ReviewedDelta:{head:POST_R165_REVIEW_HEAD,trackedFiles:POST_R165_TRACKED_DELTA,assuranceFilesWithStrictProofInputs:[{file:REPORT_FILE,rows:reportAffectedProducer,evidence:ref(R167_ASSURANCE_RECEIPT),fullLog:ref(R167_ASSURANCE_LOG)}],productSourceFileHandledByFinalHeadTransport:"src/deficits.ts"},producerGraphRuns:0,producerReplayRuns:0,reverseReruns:0,tlcRuns:0,creditExpansion:false,baselineArtifacts:[ref(BASE_VALUE),ref(BASE_PRODUCER),ref(R167_ASSURANCE_RECEIPT),ref(R167_ASSURANCE_LOG)]};
   return{...core,contentSha256:sha256(canonicalJson(core))};
 }
-if(process.argv[1]!==undefined&&path.resolve(process.argv[1])===path.resolve("experiments/tla-conformance/final-convergence/r165-assurance-transport.mjs")){
+if(process.argv[1]!==undefined&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
   const a=buildR165AssuranceTransport(),file="experiments/tla-conformance/final-convergence/r165-assurance-transport.json",text=`${JSON.stringify(a,null,2)}\n`;
   if(process.argv.includes("--check"))assert.equal(fs.readFileSync(file,"utf8"),text,"R165 assurance transport is stale.");else fs.writeFileSync(file,text);
   console.log(JSON.stringify({status:a.status,contentSha256:a.contentSha256,affectedStrictRows:a.affectedStrictRows,affectedValueRows:a.affectedValueRows},null,2));

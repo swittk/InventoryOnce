@@ -178,7 +178,7 @@ test("R47 exhausts concrete same-request and foreign completion checkpoints", as
   rows.push(await greenfieldCase(true));
   for (const phase of ["cert", "auth", "shadow", "dual", "fence"] as const)
     rows.push(await legacyCase(phase, false));
-  for (const phase of ["cert", "auth", "shadow", "dual"] as const)
+  for (const phase of ["cert", "auth", "shadow", "dual", "fence"] as const)
     rows.push(await legacyCase(phase, true));
-  assert.equal(rows.length, 11);
+  assert.equal(rows.length, 12);
 });
