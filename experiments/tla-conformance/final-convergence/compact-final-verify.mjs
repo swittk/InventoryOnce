@@ -1931,7 +1931,7 @@ function repositoryAssuranceCommittedStateSha256(repositoryRoot, commit) {
 var CURRENT_REVIEW_ASSURANCE_RECEIPT = "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json";
 var CURRENT_REVIEW_ASSURANCE_REPORT = "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json";
 var CURRENT_REVIEW_ASSURANCE_FULL_LOG = "experiments/tla-conformance/final-convergence/current-pr-review-full.log";
-var CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "f104a5727890e3fe307c35968c9854e960ce3350";
+var CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "37854f64e4af7e1957fae102ea6296f7dcde2908";
 var AUTHORITATIVE_PATHS = Object.freeze(["src", "formal", "scripts", "test", "package.json", "tsconfig.json", "tsconfig.test.json"]);
 function sha2562(file) {
   return crypto2.createHash("sha256").update(fs5.readFileSync(file)).digest("hex");
@@ -2060,18 +2060,14 @@ function verifyCurrentReviewAssurance(repositoryRoot) {
 
 // experiments/tla-conformance/final-convergence/final-head-transport.mjs
 var OLD_SOURCE_HEAD = "6cafd49ff4b3729f80ae35d9fc0220f7a8a4b55a";
-var FINAL_SOURCE_HEAD = "d04b9da16c5a15248984b50086a0e367772fc746";
+var FINAL_SOURCE_HEAD = "0e9214af91ecf326e94ec77b1e9727087be78eb9";
 var OLD_SURFACE_DIGEST = "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a";
-var FINAL_SURFACE_DIGEST = "10e90dfc4e5e2a7e203ff93d27af4e98cb3bd53a25d5b7f4c06780d6a76d15a8";
+var FINAL_SURFACE_DIGEST = "9cdd7329e0fcd9b0683315c8813c82e41f5ba3373dca8ef0f6e6b6c2a286cdcb";
 var OLD_SURFACE_FILE = "experiments/tla-conformance/final-convergence/old-surface-cc97e.json";
 var R170_TRANSPORT = "experiments/tla-conformance/final-convergence/r170-assurance-transport.json";
 var R170_PRISTINE_TRANSPORT = "experiments/tla-conformance/final-convergence/r170-pristine-repro-transport.json";
 var POST_CERTIFICATE_AUTHORITATIVE_FILES = Object.freeze([
-  "formal/implementation-conformance/API_ASSURANCE.json",
-  "formal/implementation-conformance/CALL_CHAIN_ASSURANCE.json",
-  "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
-  "scripts/formal-implementation-vitest-semantics.cjs",
-  "test/formal-callgraph-semantics.test.ts"
+  "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json"
 ]);
 var CHANGED_SOURCE_FILES = Object.freeze([
   "src/authority-cutover.ts",
@@ -2081,6 +2077,7 @@ var CHANGED_SOURCE_FILES = Object.freeze([
   "src/integrity.ts",
   "src/migrations.ts",
   "src/projection.ts",
+  "src/quantity.ts",
   "src/storage.ts",
   "src/traceability-replay.ts",
   "src/transfers.ts"
@@ -2116,6 +2113,9 @@ var INTEGRITY_CHANGED_RUNTIME = Object.freeze([
   "fn:normalizedJsonObjectKeys",
   "fn:sameJson",
   "fn:sameNormalizedJsonValue"
+]);
+var QUANTITY_CHANGED_RUNTIME = Object.freeze([
+  "fn:parseQuantity"
 ]);
 function git(args, encoding = "utf8") {
   return execFileSync2("git", args, { cwd: process.cwd(), encoding, maxBuffer: 64 * 1024 * 1024 });
@@ -2235,7 +2235,12 @@ function buildFinalHeadTransport({ repositoryRoot = process.cwd() } = {}) {
     if (previous.declaration.astHash !== current.declaration.astHash) astChanges.push(current.key);
   }
   assert5.deepEqual(signatureChanges, [], "A public signature changed after the cc97e assurance freeze.");
-  assert5.deepEqual(astChanges, ["export:.#cutoverInventoryAuthority::call[0]", "export:./migrations#dryRunInventoryMigration::call[0]"], "Unexpected public callable AST changed after cc97e.");
+  assert5.deepEqual(astChanges, [
+    "export:.#cutoverInventoryAuthority::call[0]",
+    "export:.#parseQuantity::call[0]",
+    "export:./kernel#parseQuantity::call[0]",
+    "export:./migrations#dryRunInventoryMigration::call[0]"
+  ], "Unexpected public callable AST changed after cc97e.");
   assertProjectionAlphaRename();
   assertTraceabilityAlphaRename();
   assertTransfersDocumentationOnly();
@@ -2246,6 +2251,7 @@ function buildFinalHeadTransport({ repositoryRoot = process.cwd() } = {}) {
   assert5.deepEqual(changedRuntime("src/coordinator.ts"), COORDINATOR_CHANGED_RUNTIME);
   assert5.deepEqual(changedRuntime("src/integrity.ts"), INTEGRITY_CHANGED_RUNTIME);
   assert5.deepEqual(changedRuntime("src/migrations.ts"), MIGRATION_CHANGED_RUNTIME);
+  assert5.deepEqual(changedRuntime("src/quantity.ts"), QUANTITY_CHANGED_RUNTIME);
   const deficitTest = currentText("test/review-hardening.test.ts");
   assert5(deficitTest.includes("treats an empty recorded-deficit location selection as all locations"));
   assert5(deficitTest.includes("locationIds: []"));
@@ -2279,7 +2285,8 @@ function buildFinalHeadTransport({ repositoryRoot = process.cwd() } = {}) {
       fungibility: { changedRuntime: FUNGIBILITY_CHANGED_RUNTIME, rule: "Current review repair aligns fungibility allocation with ordinary picking: independent measurement axes fixed by intact packaging do not make the package unsplittable, while serial and genuinely unfixed measured contents retain whole-position allocation semantics." },
       reservationConsumption: { changedRuntime: COORDINATOR_CHANGED_RUNTIME, rule: "Consume validation compares the full normalized reservation lifecycle through a canonical field-complete fingerprint, so equivalent independently materialized object-key order is accepted while allocation order and every semantic field remain exact." },
       integrityTransitions: { changedRuntime: INTEGRITY_CHANGED_RUNTIME, rule: "Integrity comparisons are recursively order-insensitive for object keys but preserve arrays exactly, and reconciliation event identity is admitted only by count completion." },
-      migrationReplay: { changedRuntime: MIGRATION_CHANGED_RUNTIME, rule: "Migration planning reuses one immutable catalog snapshot per run; the snapshot value is unchanged and existing migration replay/plan assertions remain green." }
+      migrationReplay: { changedRuntime: MIGRATION_CHANGED_RUNTIME, rule: "Migration planning reuses one immutable catalog snapshot per run; the snapshot value is unchanged and existing migration replay/plan assertions remain green." },
+      quantityParsing: { changedRuntime: QUANTITY_CHANGED_RUNTIME, rule: "Decimal quantity parsing rejects impossible safe-integer magnitudes before BigInt construction while preserving exact accepted values, leading zeros, decimal scale, and the existing safe-integer validation." }
     },
     evidence: {
       oldSurface: { file: OLD_SURFACE_FILE, sha256: sha256(oldSurfaceBytes) },
@@ -2350,7 +2357,7 @@ import path8 from "node:path";
 import { execFileSync as execFileSync3 } from "node:child_process";
 var PRIOR_HEAD = "6fb8465f29d1929a13c7d948f85d2c8bce2d5d84";
 var CURRENT_HEAD = "5584d6e84fd5737a3a24f73daa57115602c3460d";
-var SURFACE_DIGEST = "10e90dfc4e5e2a7e203ff93d27af4e98cb3bd53a25d5b7f4c06780d6a76d15a8";
+var SURFACE_DIGEST = "9cdd7329e0fcd9b0683315c8813c82e41f5ba3373dca8ef0f6e6b6c2a286cdcb";
 var BASE_VALUE = "experiments/tla-conformance/final-convergence/baseline-v309-before-r169-transport.json";
 var BASE_PRODUCER = "experiments/tla-conformance/final-convergence/baseline-a121-b58-before-r169-transport.json";
 var REPORT_FILE = "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json";
@@ -2454,7 +2461,7 @@ import path9 from "node:path";
 import { execFileSync as execFileSync4 } from "node:child_process";
 var PRIOR_HEAD2 = "e2c1ccb3be53809b8b935cf4882137a08fa08576";
 var CURRENT_HEAD2 = "f430b5141b0afc0b2796e38bc90ef45df4c0dcd9";
-var SURFACE_DIGEST2 = "10e90dfc4e5e2a7e203ff93d27af4e98cb3bd53a25d5b7f4c06780d6a76d15a8";
+var SURFACE_DIGEST2 = "9cdd7329e0fcd9b0683315c8813c82e41f5ba3373dca8ef0f6e6b6c2a286cdcb";
 var REPORT_FILE2 = "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json";
 var BASE_VALUE2 = "experiments/tla-conformance/final-convergence/baseline-v309-before-r170-transport.json";
 var BASE_PRODUCER2 = "experiments/tla-conformance/final-convergence/baseline-a121-b58-before-r170-transport.json";
@@ -2607,8 +2614,8 @@ import { execFileSync as execFileSync5 } from "node:child_process";
 var PRIOR_HEAD3 = "2ac31f795ad4d7a8ad38ab7fd0cea4c784a5e8fe";
 var CURRENT_HEAD3 = "7046246c88b32487def30e96fffa4b2a740e0005";
 var SURFACE_DIGEST3 = "ef19f57e568927046de8ae5560321ded947c70e0d921b09cd6fc72e0f5a069c0";
-var CURRENT_PRODUCT_HEAD = "d04b9da16c5a15248984b50086a0e367772fc746";
-var CURRENT_INTEGRATED_SURFACE_DIGEST = "10e90dfc4e5e2a7e203ff93d27af4e98cb3bd53a25d5b7f4c06780d6a76d15a8";
+var CURRENT_PRODUCT_HEAD = "0e9214af91ecf326e94ec77b1e9727087be78eb9";
+var CURRENT_INTEGRATED_SURFACE_DIGEST = "9cdd7329e0fcd9b0683315c8813c82e41f5ba3373dca8ef0f6e6b6c2a286cdcb";
 var REPORT_FILE3 = "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json";
 var FIELD_FILE = "formal/implementation-conformance/FIELD_CLASSIFICATION.json";
 var BASE_VALUE3 = "experiments/tla-conformance/final-convergence/baseline-v309-before-r170-pristine-repro.json";
@@ -2770,6 +2777,10 @@ var R169_TRANSPORT = "experiments/tla-conformance/final-convergence/r169-assuran
 var R170_TRANSPORT2 = "experiments/tla-conformance/final-convergence/r170-assurance-transport.json";
 var R170_PRISTINE_TRANSPORT2 = "experiments/tla-conformance/final-convergence/r170-pristine-repro-transport.json";
 var DIRECT35_TRANSPORT = "experiments/tla-conformance/r158-direct35-clean-handoff/direct35-current-source-transport.json";
+var FINAL_TRANSPORTED_BASE_AST_KEYS = /* @__PURE__ */ new Set([
+  "export:.#parseQuantity::call[0]",
+  "export:./kernel#parseQuantity::call[0]"
+]);
 var RECORDED = Object.freeze({
   authorityProducer: "experiments/tla-conformance/final-convergence/authority-producer17.json",
   authorityValue: "experiments/tla-conformance/final-convergence/authority-value3.json",
@@ -2859,7 +2870,8 @@ function verifySelectedAuthority(row, surface2, inputs3, transport) {
   }
   const c = live(surface2, row.surfaceKey);
   if (recorded?.signatureHash !== void 0) assert9.equal(recorded.signatureHash, c.signatureHash);
-  if (recorded?.declaration?.astHash !== void 0) assert9.equal(recorded.declaration.astHash, c.declaration.astHash, `Selected base public AST drifted: ${row.surfaceKey}`);
+  if (recorded?.declaration?.astHash !== void 0 && !FINAL_TRANSPORTED_BASE_AST_KEYS.has(row.surfaceKey)) assert9.equal(recorded.declaration.astHash, c.declaration.astHash, `Selected base public AST drifted: ${row.surfaceKey}`);
+  if (FINAL_TRANSPORTED_BASE_AST_KEYS.has(row.surfaceKey)) assert9.equal(transport.file, TRANSPORT, `Transported base AST row lost final-head transport: ${row.surfaceKey}`);
   assert9(["cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a", PREVIOUS_FINAL_SURFACE_DIGEST, FINAL_SURFACE_DIGEST, null].includes(a.surfaceDigest ?? null), `Unexpected selected authority surface for ${row.surfaceKey}`);
   return { surfaceKey: row.surfaceKey, mode: row.mode, signatureHash: c.signatureHash, declaration: c.declaration, semantics: { kind: "FINAL_CONSOLIDATED_BASE_AUTHORITY", baseAuthority: a, baseSemantics, finalHeadTransport: transport, creditExpansion: false } };
 }

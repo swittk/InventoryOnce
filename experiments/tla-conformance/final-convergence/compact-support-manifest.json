@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "archive": {
     "file": "experiments/tla-conformance/final-convergence/compact-support.tar.gz",
-    "sha256": "c735a5616878141ee0d107eb1d05e5f37d942b5f07a51e3de7b212d05ca7c8b5",
-    "runtimeClosureHead": "26917cd76aec2d2b66aa0decd19f7ac6fff18056",
+    "sha256": "a5a8e79258d91ff1b6def0849b2fd5a5169fd4f7444d1747d0254fae12a3f4cb",
+    "runtimeClosureHead": "c1374fac961b4a231b586ee733e9d205c216bb73",
     "files": [
       {
         "file": "experiments/tla-conformance/astra-authority-control-r8/family.mjs",
@@ -97,13 +97,13 @@
       },
       {
         "file": "experiments/tla-conformance/final-convergence/final-families.mjs",
-        "sha256": "2f1ab7ca19827b8e5779e8c136bf54001fccf71445a08d37152e4fb68efc6cfb",
-        "bytes": 16078
+        "sha256": "cbcedeb212e66a9642e0c4533619ac5664d051cfe30d8687346ffd0a0c679e37",
+        "bytes": 16433
       },
       {
         "file": "experiments/tla-conformance/final-convergence/final-head-transport.mjs",
-        "sha256": "08a85d13c33c424e5024b9d792c9e2397d044c8c498aa595f891e610795ec8de",
-        "bytes": 15648
+        "sha256": "9d9c36e685c2b94db12f806dd09b3ef438d327efa1094eaa33a1510b8d1fcb6f",
+        "bytes": 15984
       },
       {
         "file": "experiments/tla-conformance/final-convergence/final-selftest.mjs",
@@ -419,14 +419,14 @@
       {
         "mode": "verify",
         "file": "experiments/tla-conformance/final-convergence/compact-final-verify.mjs",
-        "sha256": "c07f2c5530d1aaa8b1dbcfad58a1a2d71cbf1bb98ed0883df29e298bdb8aa2b0",
-        "bytes": 746548
+        "sha256": "af1b10635c0f48534d6d7f3efd9ecbd1cb7e178ba78fb743c54bad4879505ef3",
+        "bytes": 747259
       },
       {
         "mode": "selftest",
         "file": "experiments/tla-conformance/final-convergence/compact-final-selftest.mjs",
-        "sha256": "a4b3f769af481edd7bb88c4264104b615a42eba8e2013445ef95beaf4c61d751",
-        "bytes": 735205
+        "sha256": "9480dfe52d7ea8fb440a6c6954a5e03ecb7792bd7eb808ce3836fc9eee62f10d",
+        "bytes": 735916
       },
       {
         "mode": "registry",
@@ -503,18 +503,18 @@
       },
       {
         "file": "experiments/tla-conformance/final-convergence/current-review-assurance.mjs",
-        "sha256": "65ed4f23a3fa918743512025baa3788e1bc8a4d012cc77c8aa0ed943c0c442c5",
+        "sha256": "22cd0063d6741471b37806aec86d0b9f1c1023d852403dd8c80eedfe5e769b4a",
         "bytes": 8530
       },
       {
         "file": "experiments/tla-conformance/final-convergence/final-families.mjs",
-        "sha256": "2f1ab7ca19827b8e5779e8c136bf54001fccf71445a08d37152e4fb68efc6cfb",
-        "bytes": 16078
+        "sha256": "cbcedeb212e66a9642e0c4533619ac5664d051cfe30d8687346ffd0a0c679e37",
+        "bytes": 16433
       },
       {
         "file": "experiments/tla-conformance/final-convergence/final-head-transport.mjs",
-        "sha256": "08a85d13c33c424e5024b9d792c9e2397d044c8c498aa595f891e610795ec8de",
-        "bytes": 15648
+        "sha256": "9d9c36e685c2b94db12f806dd09b3ef438d327efa1094eaa33a1510b8d1fcb6f",
+        "bytes": 15984
       },
       {
         "file": "experiments/tla-conformance/final-convergence/final-selftest.mjs",
@@ -528,17 +528,17 @@
       },
       {
         "file": "experiments/tla-conformance/final-convergence/r169-assurance-transport.mjs",
-        "sha256": "eb6dcac9505af747f587b16491be1ea83636e44a74f292d2d3207012ef2a2edd",
+        "sha256": "7842a763b6627832bcfa2fc9b6f1e4d02708036a70f99de78fce8fdccec17d1b",
         "bytes": 7938
       },
       {
         "file": "experiments/tla-conformance/final-convergence/r170-assurance-transport.mjs",
-        "sha256": "b3d1761e4d3dc32710e03d2a764d2f2216e6ecedb8a0e004cf3b96b6fa94c6e0",
+        "sha256": "e8413eaa269c788dd812b264ff63d9931f326bae43d78c3a5e8e3e771759a0fe",
         "bytes": 8632
       },
       {
         "file": "experiments/tla-conformance/final-convergence/r170-pristine-repro-transport.mjs",
-        "sha256": "33c5294fa73af1095b12309f794a7aaab82a830d4cddc931bd05f49c7a9cae7c",
+        "sha256": "e00732e97dec0ed39334a068aea004b9d4c6890820abfd337648150e320e3dfb",
         "bytes": 8615
       },
       {
