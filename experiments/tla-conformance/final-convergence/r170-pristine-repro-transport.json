@@ -55,11 +55,11 @@
   "assurance": {
     "currentReview": {
       "file": "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json",
-      "sha256": "05a2a56c5d3f8380eea654d346f605850a85c475e67dabb32b33b4a774c9eed6",
-      "evidenceHead": "7b90543bf15299a5485c773d2ed90d361bbafe22",
-      "certifiedHead": "d04b9da16c5a15248984b50086a0e367772fc746",
-      "repositoryStateSha256": "7e2d723ea18c0455acb425f9f7fb87792e04e473f9eed0119f773056b9be53d7",
-      "fullLogSha256": "a00e8741b66dfe4acdde09ff87d69f32d32dfa2a7659f8f5eccde81e29c58c1d",
+      "sha256": "41d4eab2a1543436fa7a362a583aa08e8f5a33de0fc338e9cf681f793c189233",
+      "evidenceHead": "f104a5727890e3fe307c35968c9854e960ce3350",
+      "certifiedHead": "891df4affa61afae3e6a15c0bba9a1bf01eb5412",
+      "repositoryStateSha256": "00e7a97c1ebd8a08544ac09168563226a2c786d7ae3f3b9953e5975a4aab9035",
+      "fullLogSha256": "71d0b7cc6bda9099e55d4c601407b57d4b4380581d2fe06b3abe4314fceee7d0",
       "surfaceSha256": "dec827da4c576f7638a0f6f9777217b7f024beab7b9ec08cf0a26e8a45733964"
     },
     "historicalReportDependency": "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
@@ -93,5 +93,5 @@
   "producerReplayRuns": 0,
   "reverseReruns": 0,
   "creditExpansion": false,
-  "contentSha256": "e1144241495df7c173d45d86991197a2eeaaff36a5e8f812d74adb71b47df8fb"
+  "contentSha256": "d64ef5ae1e1af4054165e1f8c0bf110194ccb4d9e140d67f4fb6d80c4bdf4554"
 }

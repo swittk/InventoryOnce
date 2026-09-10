@@ -159,14 +159,14 @@
       },
       {
         "file": "test/formal-callgraph-semantics.test.ts",
-        "sha256": "e4ff2a716d46eee36491ec2b905afc34284a811b0e39791befaba3cdf6b55800"
+        "sha256": "f5273dc9ecc83103394896bcd3db4e00451775aefc68488a0f9463666145e8a8"
       }
     ]
   },
   "currentReviewAssuranceTransport": {
     "file": "experiments/tla-conformance/final-convergence/r170-assurance-transport.json",
-    "sha256": "df04e28f0d59ad9b248548db7d77f3360ee29c514b21637d5c118ea2a45a0cfd",
-    "contentSha256": "55b6a16fcaa830092180e5da1c1166320c4144f85ed539b3ff9fa36845626355",
+    "sha256": "973a990cce63990b53773ed1c0c5d331ac5db078fe50d7ce4aa2b6e901c38f85",
+    "contentSha256": "bba3a1080cbd203b641d72c8dc88de00b6b358a14742506d090ff231714abd5d",
     "affectedStrictRows": [
       {
         "surfaceKey": "export:.#cutoverInventoryAuthority::call[0]",
@@ -185,8 +185,8 @@
   },
   "currentReviewPristineReproTransport": {
     "file": "experiments/tla-conformance/final-convergence/r170-pristine-repro-transport.json",
-    "sha256": "9ee590943cea39f09d0994a0284287a1bf93e25c095e822c4d8af408a75924e4",
-    "contentSha256": "e1144241495df7c173d45d86991197a2eeaaff36a5e8f812d74adb71b47df8fb",
+    "sha256": "7a002b761da8f8470aba45550490c8af5daada1179b28db849cdc9ceb4e20c19",
+    "contentSha256": "d64ef5ae1e1af4054165e1f8c0bf110194ccb4d9e140d67f4fb6d80c4bdf4554",
     "affectedStrictRows": [
       {
         "surfaceKey": "export:.#cutoverInventoryAuthority::call[0]",
@@ -197,13 +197,13 @@
   },
   "currentReviewAssurance": {
     "file": "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json",
-    "sha256": "05a2a56c5d3f8380eea654d346f605850a85c475e67dabb32b33b4a774c9eed6",
-    "evidenceHead": "7b90543bf15299a5485c773d2ed90d361bbafe22",
-    "certifiedHead": "d04b9da16c5a15248984b50086a0e367772fc746",
-    "repositoryStateSha256": "7e2d723ea18c0455acb425f9f7fb87792e04e473f9eed0119f773056b9be53d7",
-    "fullLogSha256": "a00e8741b66dfe4acdde09ff87d69f32d32dfa2a7659f8f5eccde81e29c58c1d",
+    "sha256": "41d4eab2a1543436fa7a362a583aa08e8f5a33de0fc338e9cf681f793c189233",
+    "evidenceHead": "f104a5727890e3fe307c35968c9854e960ce3350",
+    "certifiedHead": "891df4affa61afae3e6a15c0bba9a1bf01eb5412",
+    "repositoryStateSha256": "00e7a97c1ebd8a08544ac09168563226a2c786d7ae3f3b9953e5975a4aab9035",
+    "fullLogSha256": "71d0b7cc6bda9099e55d4c601407b57d4b4380581d2fe06b3abe4314fceee7d0",
     "surfaceSha256": "dec827da4c576f7638a0f6f9777217b7f024beab7b9ec08cf0a26e8a45733964"
   },
   "creditExpansion": false,
-  "contentSha256": "f8c1bc643139f727d3190341fbc3dbafe653e875fdcfa82dc95cba90bd0a7575"
+  "contentSha256": "580013d67c7515b7195ef4b243a6fa9eacdbcba5bef8f5bf9681d5f729e52241"
 }

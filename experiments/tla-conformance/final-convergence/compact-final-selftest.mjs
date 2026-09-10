@@ -1931,7 +1931,7 @@ function repositoryAssuranceCommittedStateSha256(repositoryRoot, commit) {
 var CURRENT_REVIEW_ASSURANCE_RECEIPT = "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json";
 var CURRENT_REVIEW_ASSURANCE_REPORT = "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json";
 var CURRENT_REVIEW_ASSURANCE_FULL_LOG = "experiments/tla-conformance/final-convergence/current-pr-review-full.log";
-var CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "7b90543bf15299a5485c773d2ed90d361bbafe22";
+var CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "f104a5727890e3fe307c35968c9854e960ce3350";
 var AUTHORITATIVE_PATHS = Object.freeze(["src", "formal", "scripts", "test", "package.json", "tsconfig.json", "tsconfig.test.json"]);
 function sha2562(file) {
   return crypto2.createHash("sha256").update(fs5.readFileSync(file)).digest("hex");
@@ -2067,7 +2067,11 @@ var OLD_SURFACE_FILE = "experiments/tla-conformance/final-convergence/old-surfac
 var R170_TRANSPORT = "experiments/tla-conformance/final-convergence/r170-assurance-transport.json";
 var R170_PRISTINE_TRANSPORT = "experiments/tla-conformance/final-convergence/r170-pristine-repro-transport.json";
 var POST_CERTIFICATE_AUTHORITATIVE_FILES = Object.freeze([
-  "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json"
+  "formal/implementation-conformance/API_ASSURANCE.json",
+  "formal/implementation-conformance/CALL_CHAIN_ASSURANCE.json",
+  "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
+  "scripts/formal-implementation-vitest-semantics.cjs",
+  "test/formal-callgraph-semantics.test.ts"
 ]);
 var CHANGED_SOURCE_FILES = Object.freeze([
   "src/authority-cutover.ts",
