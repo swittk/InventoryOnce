@@ -95,6 +95,22 @@
       }
     ]
   },
+  "currentReviewAssuranceTransport": {
+    "file": "experiments/tla-conformance/final-convergence/r169-assurance-transport.json",
+    "sha256": "e170cd7c5118286f7da86438ad10847319c6c1fcaa6ec0b4b1210de9348ba6a2",
+    "contentSha256": "716c66bcd67940045d12ee6f636608573be9d7bfc38eadceb0f74e51194de378",
+    "affectedStrictRows": [
+      {
+        "surfaceKey": "export:.#cutoverInventoryAuthority::call[0]",
+        "mode": "A"
+      },
+      {
+        "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.reclassifyMany::call[0]",
+        "mode": "A"
+      }
+    ],
+    "affectedValueRows": []
+  },
   "creditExpansion": false,
-  "contentSha256": "92cb7ca67a3d47272713de8171fdb42832b591f3d25dfff63b07cfc713df726f"
+  "contentSha256": "d9dbd2c69cddc3a1a7609304a2a2679b622c62f085a2212f196ac5fa5eb568f4"
 }

@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "status": "R169_CURRENT_HEAD_ASSURANCE_TRANSPORT_PROVED",
+  "priorHead": "6fb8465f29d1929a13c7d948f85d2c8bce2d5d84",
+  "currentHead": "5584d6e84fd5737a3a24f73daa57115602c3460d",
+  "surfaceDigest": "ec078013972d9ee2b4ba84d28cfa7449a18dc29679d81766e314db6a6139b81e",
+  "exactRepairFiles": [
+    "formal/PackagingIdentity.tla",
+    "formal/README.md",
+    "formal/RecordedDeficit.tla",
+    "formal/implementation-conformance/API_ASSURANCE.json",
+    "formal/implementation-conformance/CALL_CHAIN_ASSURANCE.json",
+    "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
+    "formal/implementation-conformance/FIELD_CLASSIFICATION.json",
+    "formal/implementation-conformance/IMPLEMENTATION_CONFORMANCE.md",
+    "scripts/audit-formal-implementation-conformance.mjs",
+    "scripts/executable-assurance-coherence.mjs",
+    "scripts/executable-assurance-coherence.selftest.mjs",
+    "scripts/formal-implementation-surface.cjs",
+    "test/formal-implementation-conformance.test.ts",
+    "test/r47-concurrent-completion-peer.test.ts"
+  ],
+  "postRepairAuthoritativeFiles": [
+    "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json"
+  ],
+  "productSourceChanged": false,
+  "affectedStrictRows": [
+    {
+      "surfaceKey": "export:.#cutoverInventoryAuthority::call[0]",
+      "mode": "A"
+    },
+    {
+      "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.reclassifyMany::call[0]",
+      "mode": "A"
+    }
+  ],
+  "affectedValueRows": [],
+  "assurance": {
+    "report": {
+      "file": "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
+      "sha256": "cecb9ab157d66d7de23e435341dc79650757c05eab7ac10b9f27c391864c784b"
+    },
+    "repositoryStateSha256": "2866d0bdf6b9a693b4f2371006d7a9ff57525914d424542a8b577fc6a0f6f6fb",
+    "fullLogSha256": "eb438cd8bed57e45f6c02da5f8c6eb61286ded54f7dd2b241b051553e516d42c",
+    "fullFormal": true,
+    "apiEntries": 510,
+    "unresolvedPublicApis": 0
+  },
+  "packagingIdentity": {
+    "file": "formal/PackagingIdentity.tla",
+    "evidence": {
+      "file": "formal/PackagingIdentity.tla",
+      "sha256": "91a01685f9dbeebb67f3f568218ada83a0bc027da76619b33c15535eee66d629"
+    },
+    "distinctEqualCountRevisions": true
+  },
+  "baselineArtifacts": [
+    {
+      "file": "experiments/tla-conformance/final-convergence/baseline-v309-before-r169-transport.json",
+      "sha256": "5df0a96e931dc7e50305bdbc2220fb618cebbe8a89f395114a2ea27d5ae73f1b"
+    },
+    {
+      "file": "experiments/tla-conformance/final-convergence/baseline-a121-b58-before-r169-transport.json",
+      "sha256": "a3ada8c2251b55a0801c021ebe97017fa57f9287d0dcbb217badabeabf1ff134"
+    }
+  ],
+  "producerGraphRuns": 0,
+  "producerReplayRuns": 0,
+  "reverseReruns": 0,
+  "creditExpansion": false,
+  "contentSha256": "716c66bcd67940045d12ee6f636608573be9d7bfc38eadceb0f74e51194de378"
+}

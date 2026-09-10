@@ -6011,7 +6011,7 @@
         "surfaceDigest": "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a",
         "evidence": {
           "file": "experiments/tla-conformance/r157-singleton4-currentization/stock-correct-current.json",
-          "sha256": "57403db7a530b237fdd6939f81378d2be9fcc8d02cd061ef242635c925b5fd6c"
+          "sha256": "cea95026b1c4c36afed601adaf118c3a6dff48b50ce33f0014ef6d04bb8eb14c"
         },
         "proofIndex": 0,
         "proofSemanticSha256": "e7678a1ca031f4babb9cd0a13b160956fbca84b9440b11206f111ef093f32ee9"
