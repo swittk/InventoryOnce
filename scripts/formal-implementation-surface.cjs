@@ -52,6 +52,29 @@ function compareExact(left, right) {
   return left < right ? -1 : left > right ? 1 : 0;
 }
 
+/** Return one repository-independent declaration source identity while binding external compiler bytes. */
+function stableDeclarationSource(source) {
+  const resolved = path.resolve(source.fileName);
+  const normalized = resolved.split(path.sep).join("/");
+  const nodeModulesMarker = "/node_modules/";
+  const nodeModulesIndex = normalized.lastIndexOf(nodeModulesMarker);
+  if (nodeModulesIndex >= 0) {
+    const externalPath = normalized.slice(
+      nodeModulesIndex + nodeModulesMarker.length
+    );
+    return `external:${externalPath}#${shortHash(source.text)}`;
+  }
+  const relative = path.relative(root, resolved);
+  if (
+    relative !== ".." &&
+    !relative.startsWith(`..${path.sep}`) &&
+    !path.isAbsolute(relative)
+  ) {
+    return relative.split(path.sep).join("/");
+  }
+  return `external-file:${path.basename(resolved)}#${shortHash(source.text)}`;
+}
+
 /** Grouped public APIs and package entrypoint modules. */
 const facadeInterfaces = [
   ["InventoryOnceCatalogApi", "catalog"],
@@ -170,7 +193,7 @@ function moduleExports(relativePath) {
       continue;
     rows.push({
       name: exported.name,
-      declaration: path.relative(root, declaration.getSourceFile().fileName),
+      declaration: stableDeclarationSource(declaration.getSourceFile()),
       callable: callSignatures.length > 0,
       constructable: constructSignatures.length > 0,
       callSignatures,
@@ -248,10 +271,7 @@ function classMethods(relativePath, entrypoint) {
         key: `${entrypoint}.${exported.name}.${member.name}`,
         className: exported.name,
         method: member.name,
-        declaration: path.relative(
-          root,
-          memberDeclaration.getSourceFile().fileName
-        ),
+        declaration: stableDeclarationSource(memberDeclaration.getSourceFile()),
         signatures,
         parameters: signatures[0].parameters,
         result: signatures[0].result,
@@ -287,7 +307,7 @@ function packageTypeIdentity(type) {
   );
   if (declarations.length === 0) return undefined;
   const declaration = declarations[0];
-  const file = path.relative(root, declaration.getSourceFile().fileName);
+  const file = stableDeclarationSource(declaration.getSourceFile());
   const location = declaration
     .getSourceFile()
     .getLineAndCharacterOfPosition(declaration.getStart());
@@ -323,7 +343,7 @@ function externalTypeIdentity(type, renderedType) {
   const declaration = symbol?.declarations?.[0];
   const declarationAnchor = declaration === undefined
     ? "no-declaration"
-    : `${path.relative(root, declaration.getSourceFile().fileName)}:${declaration.pos}:${declaration.end}`;
+    : `${stableDeclarationSource(declaration.getSourceFile())}:${declaration.pos}:${declaration.end}`;
   const identity = `external:${shortHash(`${type.flags}|${type.objectFlags ?? 0}|${declarationAnchor}|${renderedType}`)}`;
   externalTypeIdentities.set(type, identity);
   return identity;
@@ -413,7 +433,7 @@ function visitType(type, direction, lineage = new Set(), depth = 0) {
     record = {
       name: owned.name,
       identity: owned.identity,
-      source: path.relative(root, owned.declaration.getSourceFile().fileName),
+      source: stableDeclarationSource(owned.declaration.getSourceFile()),
       directions: [],
       fields: [],
     };
@@ -449,7 +469,7 @@ function visitType(type, direction, lineage = new Set(), depth = 0) {
         callSignatures: checker
           .getSignaturesOfType(propertyType, ts.SignatureKind.Call)
           .map((signature) => signatureShape(signature, declaration)),
-        source: path.relative(root, declaration.getSourceFile().fileName),
+        source: stableDeclarationSource(declaration.getSourceFile()),
         directions: [],
       };
       record.fields.push(field);
