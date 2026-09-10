@@ -2,17 +2,19 @@
   "schemaVersion": 1,
   "status": "FINAL_HEAD_TRANSPORT_PROVED",
   "oldSourceHead": "6cafd49ff4b3729f80ae35d9fc0220f7a8a4b55a",
-  "finalSourceHead": "e1759f756a9e7de5d67e7c03d563f6f574892e26",
+  "finalSourceHead": "8626522ad980b34b7939a5ac278d35e2c6f9a832",
   "oldSurfaceDigest": "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a",
-  "finalSurfaceDigest": "ec078013972d9ee2b4ba84d28cfa7449a18dc29679d81766e314db6a6139b81e",
+  "finalSurfaceDigest": "ef19f57e568927046de8ae5560321ded947c70e0d921b09cd6fc72e0f5a069c0",
   "callables": 535,
   "publicSignatureChanges": 0,
   "publicAstChanges": [
-    "export:.#cutoverInventoryAuthority::call[0]"
+    "export:.#cutoverInventoryAuthority::call[0]",
+    "export:./migrations#dryRunInventoryMigration::call[0]"
   ],
   "exactSourceDelta": [
     "src/authority-cutover.ts",
     "src/deficits.ts",
+    "src/migrations.ts",
     "src/projection.ts",
     "src/storage.ts",
     "src/traceability-replay.ts",
@@ -28,7 +30,7 @@
         "fn:completedInventoryCutoverResult",
         "fn:cutoverInventoryAuthority"
       ],
-      "rule": "R144 durable target evidence strengthens completed-cutover replay and fixes stale dry-run target identity."
+      "rule": "Completed-cutover replay retains durable target evidence and compares source dispositions through their canonical migration fingerprint, making equivalent adapter key-order round trips replay-safe."
     },
     "storage": {
       "changedRuntime": [
@@ -43,6 +45,13 @@
         "fn:recordedDeficitByLocation"
       ],
       "rule": "R167 makes empty locationIds select every location for recorded-deficit burdening while preserving strict non-empty filtering and independent per-location deficit accounting."
+    },
+    "migrationReplay": {
+      "changedRuntime": [
+        "fn:createDurableInventoryMigrationPlan",
+        "fn:dryRunInventoryMigration"
+      ],
+      "rule": "Migration planning reuses one immutable catalog snapshot per run; the snapshot value is unchanged and existing migration replay/plan assertions remain green."
     }
   },
   "evidence": {
@@ -53,11 +62,15 @@
     "currentProductFiles": [
       {
         "file": "src/authority-cutover.ts",
-        "sha256": "38244b4a8c937ae6b3c84f78412704ffb485afe757eeca84463dd8e2990bc2b8"
+        "sha256": "d0f33f945f2997a22b99e94d973241ee6b21e49f27c42967c5de204d20307a86"
       },
       {
         "file": "src/deficits.ts",
         "sha256": "5f6b4781b0f8764f571ec37fee734bb3e1e572ffcb9c7d5917f8dbda79c64ec6"
+      },
+      {
+        "file": "src/migrations.ts",
+        "sha256": "da6ae27847698112ab23af8f22937914da852e61ff501a5dc2f3153f4446c478"
       },
       {
         "file": "src/projection.ts",
@@ -79,7 +92,11 @@
     "currentRegressionTests": [
       {
         "file": "test/authority.test.ts",
-        "sha256": "eda26579f5b484e6082f536de48f4d96b07fdf736daeb0e6dc0a8486dab28eaf"
+        "sha256": "ee481f59d78e30fa63b6b8c28edff121db01c25799fc0d2b545100b2db0d3ad1"
+      },
+      {
+        "file": "test/migrations.test.ts",
+        "sha256": "af9602c48f2bc303a90ec5c93320c78a4971484b6e73bc168ecac4c4137b07ea"
       },
       {
         "file": "test/storage-conformance-suite.ts",
@@ -97,8 +114,8 @@
   },
   "currentReviewAssuranceTransport": {
     "file": "experiments/tla-conformance/final-convergence/r170-assurance-transport.json",
-    "sha256": "2a5637b24fdaf925399d5311fbf17922726c8f81f207fe4d7e673fa6613c6ec8",
-    "contentSha256": "cd6fb0cbbe49f974582a427f93536b3ebedcbc42bc1df784ef897fcfae24d5ac",
+    "sha256": "c5b5e8208fec19870833076999e4ded2812261bef9dfc636476e67113dc480f5",
+    "contentSha256": "4648c8d3d15989c187773411f5e79a54f6e3294727c2840892c89ca1726a4ca4",
     "affectedStrictRows": [
       {
         "surfaceKey": "export:.#cutoverInventoryAuthority::call[0]",
@@ -117,8 +134,8 @@
   },
   "currentReviewPristineReproTransport": {
     "file": "experiments/tla-conformance/final-convergence/r170-pristine-repro-transport.json",
-    "sha256": "3f86782637e15a0cb24646e76c2f5af6230f84f8e0345548d567afbd6f21619e",
-    "contentSha256": "3e780993359a830e5b21e6b8a7d3ae9e77098b632eae902d22d4c51d54b700d3",
+    "sha256": "7e3f33cc53f058c8de18d76c0a3de942af59043b1a0c52f74d92f7ab51aa4388",
+    "contentSha256": "d53e5ac034f1476cdcb61030b7221095199b5ea218e2730b59d1158921fabe5e",
     "affectedStrictRows": [
       {
         "surfaceKey": "export:.#cutoverInventoryAuthority::call[0]",
@@ -127,6 +144,14 @@
     ],
     "affectedValueRows": []
   },
+  "currentReviewAssurance": {
+    "file": "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json",
+    "sha256": "1b4ffbb15bb7959baf9881ad52f30caf4d216b708a6290068e2129f9c7082654",
+    "certifiedHead": "8626522ad980b34b7939a5ac278d35e2c6f9a832",
+    "repositoryStateSha256": "23f7a5d9e0f5eb4f2ca6ac4e6518d4f8ba72c0691a0abad6e943820af0785560",
+    "fullLogSha256": "0e6dcac14c1f1f29db6372bbdfe76a6c03bb3b132313b5da24901c5fac1b8826",
+    "surfaceSha256": "03baa3c20d088f813397b4bac1a673eca726f18b845e10e8523af8bb47374e5f"
+  },
   "creditExpansion": false,
-  "contentSha256": "195da88c26d3beae0ddcc5652a114949d3b8cb5f7c182e49b31e9407eae8683e"
+  "contentSha256": "498d589782d8c9e2d543edb5b6998a8948ad1b265c7560eb7133e71339efcfdf"
 }

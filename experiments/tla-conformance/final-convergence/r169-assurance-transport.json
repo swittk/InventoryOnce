@@ -3,7 +3,7 @@
   "status": "R169_CURRENT_HEAD_ASSURANCE_TRANSPORT_PROVED",
   "priorHead": "6fb8465f29d1929a13c7d948f85d2c8bce2d5d84",
   "currentHead": "5584d6e84fd5737a3a24f73daa57115602c3460d",
-  "surfaceDigest": "ec078013972d9ee2b4ba84d28cfa7449a18dc29679d81766e314db6a6139b81e",
+  "surfaceDigest": "ef19f57e568927046de8ae5560321ded947c70e0d921b09cd6fc72e0f5a069c0",
   "exactRepairFiles": [
     "formal/PackagingIdentity.tla",
     "formal/README.md",
@@ -21,7 +21,28 @@
     "test/r47-concurrent-completion-peer.test.ts"
   ],
   "postRepairAuthoritativeFiles": [
-    "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json"
+    "formal/TraceabilityGraph.tla",
+    "formal/implementation-conformance/API_ASSURANCE.json",
+    "formal/implementation-conformance/CALL_CHAIN_ASSURANCE.json",
+    "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
+    "formal/implementation-conformance/FIELD_CLASSIFICATION.json",
+    "formal/implementation-conformance/IMPLEMENTATION_CONFORMANCE.md",
+    "formal/implementation-conformance/TRACE_REPLAY_ASSURANCE.json",
+    "scripts/audit-formal-implementation-conformance.mjs",
+    "scripts/executable-assurance-coherence.mjs",
+    "scripts/executable-assurance-coherence.selftest.mjs",
+    "scripts/formal-implementation-surface.cjs",
+    "scripts/formal-models.mjs",
+    "scripts/formal-proof-cache.selftest.mjs",
+    "scripts/generate-formal-implementation-assurance.py",
+    "scripts/repository-assurance-state.mjs",
+    "src/authority-cutover.ts",
+    "src/migrations.ts",
+    "test/authority-arbitrary-port.test.ts",
+    "test/authority.test.ts",
+    "test/formal-callgraph-semantics.test.ts",
+    "test/formal-implementation-conformance.test.ts",
+    "test/r47-concurrent-completion-peer.test.ts"
   ],
   "productSourceChanged": false,
   "affectedStrictRows": [
@@ -36,12 +57,15 @@
   ],
   "affectedValueRows": [],
   "assurance": {
-    "report": {
-      "file": "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
-      "sha256": "cecb9ab157d66d7de23e435341dc79650757c05eab7ac10b9f27c391864c784b"
+    "currentReview": {
+      "file": "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json",
+      "sha256": "1b4ffbb15bb7959baf9881ad52f30caf4d216b708a6290068e2129f9c7082654",
+      "certifiedHead": "8626522ad980b34b7939a5ac278d35e2c6f9a832",
+      "repositoryStateSha256": "23f7a5d9e0f5eb4f2ca6ac4e6518d4f8ba72c0691a0abad6e943820af0785560",
+      "fullLogSha256": "0e6dcac14c1f1f29db6372bbdfe76a6c03bb3b132313b5da24901c5fac1b8826",
+      "surfaceSha256": "03baa3c20d088f813397b4bac1a673eca726f18b845e10e8523af8bb47374e5f"
     },
-    "repositoryStateSha256": "2866d0bdf6b9a693b4f2371006d7a9ff57525914d424542a8b577fc6a0f6f6fb",
-    "fullLogSha256": "eb438cd8bed57e45f6c02da5f8c6eb61286ded54f7dd2b241b051553e516d42c",
+    "historicalReportDependency": "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
     "fullFormal": true,
     "apiEntries": 510,
     "unresolvedPublicApis": 0
@@ -68,5 +92,5 @@
   "producerReplayRuns": 0,
   "reverseReruns": 0,
   "creditExpansion": false,
-  "contentSha256": "716c66bcd67940045d12ee6f636608573be9d7bfc38eadceb0f74e51194de378"
+  "contentSha256": "fa4cb4ddcee5f33bc31ecd57a8c57b6694522465d31ab8a162d7cf916519b037"
 }

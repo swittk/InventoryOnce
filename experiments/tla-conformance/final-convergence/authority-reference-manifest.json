@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
   "status": "FINAL_LIVE_INPUT_CLOSURE",
-  "head": "b7b9c67c0ab59e44a722369d933277acedaa8e5a",
-  "surfaceDigest": "ec078013972d9ee2b4ba84d28cfa7449a18dc29679d81766e314db6a6139b81e",
-  "inputs": 66,
-  "totalBytes": 23708338,
+  "head": "4767ea6826856dc81ee870dbfa816f63a8482660",
+  "surfaceDigest": "ef19f57e568927046de8ae5560321ded947c70e0d921b09cd6fc72e0f5a069c0",
+  "inputs": 123,
+  "totalBytes": 29099982,
   "untrackedProofInputs": 0,
   "rows": [
     {
@@ -71,9 +71,44 @@
       "nodeModules": false
     },
     {
+      "file": "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json",
+      "sha256": "1b4ffbb15bb7959baf9881ad52f30caf4d216b708a6290068e2129f9c7082654",
+      "sizeBytes": 698,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "experiments/tla-conformance/final-convergence/current-pr-review-full.log",
+      "sha256": "0e6dcac14c1f1f29db6372bbdfe76a6c03bb3b132313b5da24901c5fac1b8826",
+      "sizeBytes": 28762,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "experiments/tla-conformance/final-convergence/final-a121-b58.json",
+      "sha256": "6cc4710f7559e24c6b14e76a0939fa9dd3209106ac0a5603808f64c8316fb0ff",
+      "sizeBytes": 1650786,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
       "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-      "sha256": "4f97bb139e09506a9875a579f4547676df0f3ee4a8efeb8b187aca76b813b0bb",
-      "sizeBytes": 4960,
+      "sha256": "d999bb9ac350b671049dcd74491e8fe52bd825e5745e4830e91ca5c68d3cd1f6",
+      "sizeBytes": 6308,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "experiments/tla-conformance/final-convergence/final-surface-bindings.json",
+      "sha256": "8de3b77cda69d5ae0a5bc72cf51bd465720980057cc9b39d4cfffc94c39ba477",
+      "sizeBytes": 165524,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "experiments/tla-conformance/final-convergence/final-v309.json",
+      "sha256": "b5b48a28db96fd108c44ef8548e8cd2057a65e8d983fe2311dd262ee6967aa50",
+      "sizeBytes": 1992077,
       "tracked": true,
       "nodeModules": false
     },
@@ -114,22 +149,22 @@
     },
     {
       "file": "experiments/tla-conformance/final-convergence/r169-assurance-transport.json",
-      "sha256": "e170cd7c5118286f7da86438ad10847319c6c1fcaa6ec0b4b1210de9348ba6a2",
-      "sizeBytes": 2862,
+      "sha256": "87cc45a03f879cb99be24731bdf1280135ea5bf135fd14b2387b876d3720d38d",
+      "sizeBytes": 4211,
       "tracked": true,
       "nodeModules": false
     },
     {
       "file": "experiments/tla-conformance/final-convergence/r170-assurance-transport.json",
-      "sha256": "2a5637b24fdaf925399d5311fbf17922726c8f81f207fe4d7e673fa6613c6ec8",
-      "sizeBytes": 2867,
+      "sha256": "c5b5e8208fec19870833076999e4ded2812261bef9dfc636476e67113dc480f5",
+      "sizeBytes": 4052,
       "tracked": true,
       "nodeModules": false
     },
     {
       "file": "experiments/tla-conformance/final-convergence/r170-pristine-repro-transport.json",
-      "sha256": "3f86782637e15a0cb24646e76c2f5af6230f84f8e0345548d567afbd6f21619e",
-      "sizeBytes": 2620,
+      "sha256": "7e3f33cc53f058c8de18d76c0a3de942af59043b1a0c52f74d92f7ab51aa4388",
+      "sizeBytes": 3756,
       "tracked": true,
       "nodeModules": false
     },
@@ -450,22 +485,386 @@
     },
     {
       "file": "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
-      "sha256": "6d763a8a4b1f4bd0ab6bbed5e6e052107b6fa4e5c348cb177dd4c4ba48ace609",
+      "sha256": "293e9d99e1be95d0a53762ee0b7766dc6d2d3b1bdc365cd151b6df3a0a0ff662",
       "sizeBytes": 2459,
       "tracked": true,
       "nodeModules": false
     },
     {
       "file": "formal/implementation-conformance/FIELD_CLASSIFICATION.json",
-      "sha256": "e9e0dfa2bec3200ac8e739e9ad40d0f1f4f992971bc3054d00b2d81789bba297",
+      "sha256": "33b1c2905e931a60778fc08d31ea6715452c6d971c1cbd9f4e8e3debea82b826",
       "sizeBytes": 1869555,
       "tracked": true,
       "nodeModules": false
     },
     {
+      "file": "package.json",
+      "sha256": "f068ac4f83c2984a38d439b90159e48b7fdf42ee4792f7ccde56230c7ecf1a7c",
+      "sizeBytes": 2374,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
       "file": "scripts/formal-models.mjs",
-      "sha256": "ada8bf88a50668d04006a5c174178cea8bb52efdfd460fa41f4972e8d94e2fa0",
-      "sizeBytes": 6056,
+      "sha256": "aa543f5f458b3a5570b73b121fed4d63af43e330ace7f4d8daebf9319bc2048d",
+      "sizeBytes": 6328,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/allocation.ts",
+      "sha256": "2721b6f412aa3abb55ffa9d929eaefc2d8982973c4ee862479b3af9988d3112d",
+      "sizeBytes": 16260,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/amounts.ts",
+      "sha256": "98ddc0fa8d80b2ca244a207f4eb8b55d86131c2ccfd77620da5c85248d03ef57",
+      "sizeBytes": 13045,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/authority-cutover.ts",
+      "sha256": "d0f33f945f2997a22b99e94d973241ee6b21e49f27c42967c5de204d20307a86",
+      "sizeBytes": 45660,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/authority.ts",
+      "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+      "sizeBytes": 73308,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/availability.ts",
+      "sha256": "b029f2b17c1c0f8a3923969e2cd30b57b0af3a185d1391fdb8aa3895c3de83c8",
+      "sizeBytes": 31721,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/canonical.ts",
+      "sha256": "eb2981c629182525c6742d2a67f513f0daec88507e5861f475d5de04984a2d56",
+      "sizeBytes": 2904,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/catalog-lifecycle.ts",
+      "sha256": "8a97eb13db1d8dfb9503a60c6075984e93792ace1abb473a70ac8221809c5096",
+      "sizeBytes": 23453,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/catalog.ts",
+      "sha256": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+      "sizeBytes": 131982,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/collections.ts",
+      "sha256": "c18dd56e7167b25239fb825319ce2ae2d736f8d9cbe70296201ab675228daf37",
+      "sizeBytes": 10905,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/commands.ts",
+      "sha256": "c40c66fc3e5d3e60022534a561d44280cda205f3cc10be759f8efdc97038a98b",
+      "sizeBytes": 59270,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/composition.ts",
+      "sha256": "87d7e004cc2432587c82a238cd2fd9976a3d1f8850771365168e5d33ba6cb24c",
+      "sizeBytes": 22019,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/coordinator.ts",
+      "sha256": "4bc44f2c38578991a137d9e363b7677c23a788dd9cc5c4129074f1a95a14e3a2",
+      "sizeBytes": 25598,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/corrections.ts",
+      "sha256": "0c3e11dc88a035aa89598cffb54d538b1c6cc4280ed5d27bd7bf67e9d5757183",
+      "sizeBytes": 18360,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/counts.ts",
+      "sha256": "5db9ad8d5a6f1a82c594562b66f4be7c677d17bd31d9d10afb11eae781d78f13",
+      "sizeBytes": 28943,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/deficits.ts",
+      "sha256": "5f6b4781b0f8764f571ec37fee734bb3e1e572ffcb9c7d5917f8dbda79c64ec6",
+      "sizeBytes": 11866,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/digest.ts",
+      "sha256": "5fa667c59dd65a667d8cceddd9bf8c25eb46d3787a22ad7db797fd3722d5f833",
+      "sizeBytes": 4265,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/events.ts",
+      "sha256": "8d076ee8f426c011d7df3f205dd014f0e835f71798b3684ca56844b691ba2370",
+      "sizeBytes": 55556,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/facade.ts",
+      "sha256": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+      "sizeBytes": 313770,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/fungibility.ts",
+      "sha256": "483741a2e0f8e3cdf38e358929cce5f8b29ffb41494b1268cafa1d38a2197344",
+      "sizeBytes": 34143,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/index.ts",
+      "sha256": "2e0587666ff20d57a757c0576fddf8badf36c2901735db7225a0cebda829b555",
+      "sizeBytes": 4665,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/integrity.ts",
+      "sha256": "238ccd616e791b60b523b89517479585f2d9aabe83198464a44f654cd7058037",
+      "sizeBytes": 22488,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/kernel.ts",
+      "sha256": "f336d22a07d6018dc5528bd2a13a33c5aa9f1a72b0c0ed048cb73219b9b0c06c",
+      "sizeBytes": 2489,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/measurement-schema.ts",
+      "sha256": "747f064996c12b3a9b324779bd748362b49b2563e303b2599243bc8a630d144e",
+      "sizeBytes": 889,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/measurements.ts",
+      "sha256": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5",
+      "sizeBytes": 14429,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/migration-evidence.ts",
+      "sha256": "8d8f6dd0b6a83546633e5c360a1769e9a49ff8708f3737e14a79fa965604d037",
+      "sizeBytes": 2085,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/migration-plugin.ts",
+      "sha256": "4b271d6398ba1b0eeb4a5b1cb48523a062f9bcf1c5b427755ec5e1f0fdebe5e6",
+      "sizeBytes": 9247,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/migrations-api.ts",
+      "sha256": "0d1358ee90d4b39d3b59da0d27dcb9798e5699e02bbba325132f734c1322fed1",
+      "sizeBytes": 252,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/migrations.ts",
+      "sha256": "da6ae27847698112ab23af8f22937914da852e61ff501a5dc2f3153f4446c478",
+      "sizeBytes": 40000,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/model.ts",
+      "sha256": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
+      "sizeBytes": 11186,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/ordering.ts",
+      "sha256": "e72ac94e99b1b4914f3f6dec55583e401484a41ecadd051be788724c88f24cb9",
+      "sizeBytes": 226,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/picking.ts",
+      "sha256": "172dc19f4987ad392106a1b9cf32400e73f5bed0fb6b9344aa5eb1319afc5006",
+      "sizeBytes": 36040,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/projection.ts",
+      "sha256": "3710cbc322d4bc3e495e3023a7146e72996a95cc21e92c7a0a6a8f1e20bfc0da",
+      "sizeBytes": 37963,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/quantity.ts",
+      "sha256": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+      "sizeBytes": 14289,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/read-model.ts",
+      "sha256": "8b1db302ecf22895f1d6458a8be27ec606066e88fd77ebba0cfadbd0452a97f4",
+      "sizeBytes": 15547,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/reservations.ts",
+      "sha256": "fd0bfe707583a7952e4301cafd9ab5d702059b9174f18b5c5e30ae0d6cf85113",
+      "sizeBytes": 72820,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/selectors.ts",
+      "sha256": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957",
+      "sizeBytes": 19802,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/sparse-record.ts",
+      "sha256": "272a1f63afe9ed4c84cd76a4ce051b210b52e6e0a54cf47ec4f11a29979ada71",
+      "sizeBytes": 1467,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/storage-api.ts",
+      "sha256": "9d135bd7c1925f3b7ab533a45958e57287383f4016e7077e8ede2c35144202b1",
+      "sizeBytes": 455,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/storage.ts",
+      "sha256": "abf1cd6af9898121e5841ff9f79af36682e9c0187b64db8de8f7d3f3da030ee1",
+      "sizeBytes": 67726,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/traceability-replay.ts",
+      "sha256": "b7d8ebf3f50317b2e9229adb0235e486ef1e192ea8a4127316ec3c786e485b2a",
+      "sizeBytes": 7014,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/traceability.ts",
+      "sha256": "7db0c39cb3262339e76790a7ba10569d67d205ab84f1adb078b6b6d95e93a59c",
+      "sizeBytes": 11914,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/transfers.ts",
+      "sha256": "e1f88a6479b80cf80d5651909965e8d453701db3623617a8f4716645cd7722d3",
+      "sizeBytes": 43350,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/usability.ts",
+      "sha256": "bb4cf272fd01be5c4866b388f2af63e9fdd7286c208600fb635ca10d30f0ad51",
+      "sizeBytes": 1354,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "src/world.ts",
+      "sha256": "2f1bd43c85fcdda332ad16ebdb73d367b0ed502a7145c085c7a7433ff26063c1",
+      "sizeBytes": 1448,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "test/authority.test.ts",
+      "sha256": "ee481f59d78e30fa63b6b8c28edff121db01c25799fc0d2b545100b2db0d3ad1",
+      "sizeBytes": 33998,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "test/migrations.test.ts",
+      "sha256": "af9602c48f2bc303a90ec5c93320c78a4971484b6e73bc168ecac4c4137b07ea",
+      "sizeBytes": 38763,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "test/review-hardening.test.ts",
+      "sha256": "b5bc72eaf9189fed0c26b68f8895849188e14d45cd34951e414dfe2a7a9a3e9e",
+      "sizeBytes": 44841,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "test/storage-conformance-suite.ts",
+      "sha256": "9b9d3beb9a80cbc04d1958b54caae1b2e168cb86b5b6e4203a2e5c6fd5f080b7",
+      "sizeBytes": 52529,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "test/storage-conformance.test.ts",
+      "sha256": "961f0b128a0700c63ea818ff073e8491af253e3e41daa6431875bd11cb1071b0",
+      "sizeBytes": 13166,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "tsconfig.json",
+      "sha256": "b46c6324e4819ea54c9824d2e0f4c28f9304aa54e39d7f8afbac65f744eed464",
+      "sizeBytes": 396,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "tsconfig.test.json",
+      "sha256": "b7c60098d7ff0c408ba5ae328cc6db8405a8fcffbf15bd0a1e28f5daa6a32061",
+      "sizeBytes": 267,
       "tracked": true,
       "nodeModules": false
     }
