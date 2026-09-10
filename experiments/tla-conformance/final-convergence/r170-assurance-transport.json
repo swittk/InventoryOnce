@@ -3,7 +3,7 @@
   "status": "R170_CURRENT_HEAD_ASSURANCE_TRANSPORT_PROVED",
   "priorHead": "e2c1ccb3be53809b8b935cf4882137a08fa08576",
   "currentHead": "f430b5141b0afc0b2796e38bc90ef45df4c0dcd9",
-  "surfaceDigest": "10e90dfc4e5e2a7e203ff93d27af4e98cb3bd53a25d5b7f4c06780d6a76d15a8",
+  "surfaceDigest": "9cdd7329e0fcd9b0683315c8813c82e41f5ba3373dca8ef0f6e6b6c2a286cdcb",
   "exactRepairFiles": [
     "AGENT_DIARY.md",
     "experiments/tla-conformance/final-convergence/build-base-authority-index.mjs",
@@ -37,6 +37,7 @@
     "src/fungibility.ts",
     "src/integrity.ts",
     "src/migrations.ts",
+    "src/quantity.ts",
     "test/authority-arbitrary-port.test.ts",
     "test/authority.test.ts",
     "test/formal-callgraph-semantics.test.ts",
@@ -66,11 +67,11 @@
   "assurance": {
     "currentReview": {
       "file": "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json",
-      "sha256": "41d4eab2a1543436fa7a362a583aa08e8f5a33de0fc338e9cf681f793c189233",
-      "evidenceHead": "f104a5727890e3fe307c35968c9854e960ce3350",
-      "certifiedHead": "891df4affa61afae3e6a15c0bba9a1bf01eb5412",
-      "repositoryStateSha256": "00e7a97c1ebd8a08544ac09168563226a2c786d7ae3f3b9953e5975a4aab9035",
-      "fullLogSha256": "71d0b7cc6bda9099e55d4c601407b57d4b4380581d2fe06b3abe4314fceee7d0",
+      "sha256": "0bcce5f7584803bc99f708ac0260c30d4b208541c9c2274aba6ff895ca78f21e",
+      "evidenceHead": "37854f64e4af7e1957fae102ea6296f7dcde2908",
+      "certifiedHead": "0e9214af91ecf326e94ec77b1e9727087be78eb9",
+      "repositoryStateSha256": "1a9fd267a015f6f2c96348ce9be3cfd9d9444387c6e454b9b4718b5f139903b2",
+      "fullLogSha256": "1e1c65eae24ae399fe496cd8c9fb291d526671882066ab8a4573b12736a5afe1",
       "surfaceSha256": "dec827da4c576f7638a0f6f9777217b7f024beab7b9ec08cf0a26e8a45733964"
     },
     "historicalReportDependency": "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
@@ -100,5 +101,5 @@
   "producerReplayRuns": 0,
   "reverseReruns": 0,
   "creditExpansion": false,
-  "contentSha256": "bba3a1080cbd203b641d72c8dc88de00b6b358a14742506d090ff231714abd5d"
+  "contentSha256": "dbf88293caff4960240b8bf370ace588aed6139f4d11fbb497528f42d6c0f116"
 }

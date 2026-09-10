@@ -2,13 +2,15 @@
   "schemaVersion": 1,
   "status": "FINAL_HEAD_TRANSPORT_PROVED",
   "oldSourceHead": "6cafd49ff4b3729f80ae35d9fc0220f7a8a4b55a",
-  "finalSourceHead": "d04b9da16c5a15248984b50086a0e367772fc746",
+  "finalSourceHead": "0e9214af91ecf326e94ec77b1e9727087be78eb9",
   "oldSurfaceDigest": "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a",
-  "finalSurfaceDigest": "10e90dfc4e5e2a7e203ff93d27af4e98cb3bd53a25d5b7f4c06780d6a76d15a8",
+  "finalSurfaceDigest": "9cdd7329e0fcd9b0683315c8813c82e41f5ba3373dca8ef0f6e6b6c2a286cdcb",
   "callables": 535,
   "publicSignatureChanges": 0,
   "publicAstChanges": [
     "export:.#cutoverInventoryAuthority::call[0]",
+    "export:.#parseQuantity::call[0]",
+    "export:./kernel#parseQuantity::call[0]",
     "export:./migrations#dryRunInventoryMigration::call[0]"
   ],
   "exactSourceDelta": [
@@ -19,6 +21,7 @@
     "src/integrity.ts",
     "src/migrations.ts",
     "src/projection.ts",
+    "src/quantity.ts",
     "src/storage.ts",
     "src/traceability-replay.ts",
     "src/transfers.ts"
@@ -79,6 +82,12 @@
         "fn:dryRunInventoryMigration"
       ],
       "rule": "Migration planning reuses one immutable catalog snapshot per run; the snapshot value is unchanged and existing migration replay/plan assertions remain green."
+    },
+    "quantityParsing": {
+      "changedRuntime": [
+        "fn:parseQuantity"
+      ],
+      "rule": "Decimal quantity parsing rejects impossible safe-integer magnitudes before BigInt construction while preserving exact accepted values, leading zeros, decimal scale, and the existing safe-integer validation."
     }
   },
   "evidence": {
@@ -116,6 +125,10 @@
         "sha256": "3710cbc322d4bc3e495e3023a7146e72996a95cc21e92c7a0a6a8f1e20bfc0da"
       },
       {
+        "file": "src/quantity.ts",
+        "sha256": "34b35abdb08602952d68f1026ff960cfd306d133c787fed188f1c2e229ac0f35"
+      },
+      {
         "file": "src/storage.ts",
         "sha256": "abf1cd6af9898121e5841ff9f79af36682e9c0187b64db8de8f7d3f3da030ee1"
       },
@@ -147,7 +160,7 @@
       },
       {
         "file": "test/review-hardening.test.ts",
-        "sha256": "dad9ebc74e88eccdd7104e51a6da0a473ba5ae3c68e0564381871fe9595859df"
+        "sha256": "c25477fe56e3fc833216b3f497eefdc0c54149e4b16b598303fc79de76aea49c"
       },
       {
         "file": "test/fungibility.test.ts",
@@ -159,14 +172,14 @@
       },
       {
         "file": "test/formal-callgraph-semantics.test.ts",
-        "sha256": "f5273dc9ecc83103394896bcd3db4e00451775aefc68488a0f9463666145e8a8"
+        "sha256": "302203b91ac9f2630f6273f5586fc720a3844ce08637cd93fbbb2c892feca71a"
       }
     ]
   },
   "currentReviewAssuranceTransport": {
     "file": "experiments/tla-conformance/final-convergence/r170-assurance-transport.json",
-    "sha256": "973a990cce63990b53773ed1c0c5d331ac5db078fe50d7ce4aa2b6e901c38f85",
-    "contentSha256": "bba3a1080cbd203b641d72c8dc88de00b6b358a14742506d090ff231714abd5d",
+    "sha256": "57676919220a7bf198dd622a9a957efb386969826e715515081bb1cae9d1cfca",
+    "contentSha256": "dbf88293caff4960240b8bf370ace588aed6139f4d11fbb497528f42d6c0f116",
     "affectedStrictRows": [
       {
         "surfaceKey": "export:.#cutoverInventoryAuthority::call[0]",
@@ -185,8 +198,8 @@
   },
   "currentReviewPristineReproTransport": {
     "file": "experiments/tla-conformance/final-convergence/r170-pristine-repro-transport.json",
-    "sha256": "7a002b761da8f8470aba45550490c8af5daada1179b28db849cdc9ceb4e20c19",
-    "contentSha256": "d64ef5ae1e1af4054165e1f8c0bf110194ccb4d9e140d67f4fb6d80c4bdf4554",
+    "sha256": "d5ce8887d5cc6aa2a4a78eb0be3c093dcbbcf1134073af46b01387de14f145c8",
+    "contentSha256": "26ec1e50b8b24943cadcda22d76bc4098b603c657fc066708a2351c029bda34b",
     "affectedStrictRows": [
       {
         "surfaceKey": "export:.#cutoverInventoryAuthority::call[0]",
@@ -197,13 +210,13 @@
   },
   "currentReviewAssurance": {
     "file": "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json",
-    "sha256": "41d4eab2a1543436fa7a362a583aa08e8f5a33de0fc338e9cf681f793c189233",
-    "evidenceHead": "f104a5727890e3fe307c35968c9854e960ce3350",
-    "certifiedHead": "891df4affa61afae3e6a15c0bba9a1bf01eb5412",
-    "repositoryStateSha256": "00e7a97c1ebd8a08544ac09168563226a2c786d7ae3f3b9953e5975a4aab9035",
-    "fullLogSha256": "71d0b7cc6bda9099e55d4c601407b57d4b4380581d2fe06b3abe4314fceee7d0",
+    "sha256": "0bcce5f7584803bc99f708ac0260c30d4b208541c9c2274aba6ff895ca78f21e",
+    "evidenceHead": "37854f64e4af7e1957fae102ea6296f7dcde2908",
+    "certifiedHead": "0e9214af91ecf326e94ec77b1e9727087be78eb9",
+    "repositoryStateSha256": "1a9fd267a015f6f2c96348ce9be3cfd9d9444387c6e454b9b4718b5f139903b2",
+    "fullLogSha256": "1e1c65eae24ae399fe496cd8c9fb291d526671882066ab8a4573b12736a5afe1",
     "surfaceSha256": "dec827da4c576f7638a0f6f9777217b7f024beab7b9ec08cf0a26e8a45733964"
   },
   "creditExpansion": false,
-  "contentSha256": "580013d67c7515b7195ef4b243a6fa9eacdbcba5bef8f5bf9681d5f729e52241"
+  "contentSha256": "2a05def1727439b112bc01f062fabecc5ef38f05ad4fa4b5d009f4de8f3e4ab0"
 }
