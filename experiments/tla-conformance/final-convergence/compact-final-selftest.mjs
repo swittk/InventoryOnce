@@ -1700,7 +1700,7 @@ function buildCatalogFamilyArtifact({ repositoryRoot, context: context2, surface
   if (sourceOverrides.size === 0) {
     const helpers = /* @__PURE__ */ new Map();
     for (const [key, row] of certified) {
-      let inspect2 = function(node) {
+      let inspect = function(node) {
         let symbol = ts.isIdentifier(node) || ts.isPropertyAccessExpression(node) ? context2.checker.getSymbolAtLocation(ts.isPropertyAccessExpression(node) ? node.name : node) : void 0;
         if (symbol !== void 0 && (symbol.flags & ts.SymbolFlags.Alias) !== 0) symbol = context2.checker.getAliasedSymbol(symbol);
         for (const dependency2 of symbol?.declarations ?? []) {
@@ -1722,12 +1722,11 @@ function buildCatalogFamilyArtifact({ repositoryRoot, context: context2, surface
             assert2(ts.isArrowFunction(target), "Unproved dynamic callback.");
           }
         }
-        ts.forEachChild(node, inspect2);
+        ts.forEachChild(node, inspect);
       };
-      var inspect = inspect2;
       const dependencies = /* @__PURE__ */ new Set();
       const declaration = row.declaration;
-      inspect2(declaration.body);
+      inspect(declaration.body);
       helpers.set(key, [...dependencies].sort());
     }
     for (const proof of proofs) proof.dependencies = helpers.get(`${proof.implementation.file}#${catalogContracts.find((contract) => contract.surfaceKey === proof.surfaceKey).className}.${catalogContracts.find((contract) => contract.surfaceKey === proof.surfaceKey).methodName}`);
@@ -1930,6 +1929,9 @@ function repositoryAssuranceCommittedStateSha256(repositoryRoot, commit) {
 
 // experiments/tla-conformance/final-convergence/current-review-assurance.mjs
 var CURRENT_REVIEW_ASSURANCE_RECEIPT = "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json";
+var CURRENT_REVIEW_ASSURANCE_REPORT = "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json";
+var CURRENT_REVIEW_ASSURANCE_FULL_LOG = "experiments/tla-conformance/final-convergence/current-pr-review-full.log";
+var AUTHORITATIVE_PATHS = Object.freeze(["src", "formal", "scripts", "test", "package.json", "tsconfig.json", "tsconfig.test.json"]);
 function sha2562(file) {
   return crypto2.createHash("sha256").update(fs5.readFileSync(file)).digest("hex");
 }
@@ -1969,8 +1971,10 @@ function verifyCurrentReviewAssurance(repositoryRoot) {
   assert4.equal(receipt.status, "CURRENT_PR_REVIEW_FULL_ASSURANCE_VERIFIED", "Current review assurance receipt status is invalid.");
   assert4.match(receipt.certifiedHead, /^[a-f0-9]{40}$/u, "Current review assurance certified head is invalid.");
   execFileSync("git", ["merge-base", "--is-ancestor", receipt.certifiedHead, "HEAD"], { cwd: root3, stdio: "ignore" });
-  const reportPath = regularFile(root3, receipt.report.file, "Current review assurance report");
-  const logPath = regularFile(root3, receipt.fullLog.file, "Current review assurance full log");
+  assert4.equal(receipt.report.file, CURRENT_REVIEW_ASSURANCE_REPORT, "Current review assurance report path is not package-owned.");
+  assert4.equal(receipt.fullLog.file, CURRENT_REVIEW_ASSURANCE_FULL_LOG, "Current review assurance full-log path is not package-owned.");
+  const reportPath = regularFile(root3, CURRENT_REVIEW_ASSURANCE_REPORT, "Current review assurance report");
+  const logPath = regularFile(root3, CURRENT_REVIEW_ASSURANCE_FULL_LOG, "Current review assurance full log");
   assert4.equal(sha2562(reportPath), receipt.report.sha256, "Current review assurance report bytes changed.");
   assert4.equal(sha2562(logPath), receipt.fullLog.sha256, "Current review assurance full-log bytes changed.");
   const report = JSON.parse(fs5.readFileSync(reportPath, "utf8"));
@@ -1990,14 +1994,24 @@ function verifyCurrentReviewAssurance(repositoryRoot) {
     "Current review assurance was not produced from the exact clean committed evidence state."
   );
   assert4.equal(report.fullLogSha256, receipt.fullLog.sha256, "Current review assurance report is not bound to the tracked full log.");
+  const dirtyAuthoritativePaths = execFileSync(
+    "git",
+    ["status", "--porcelain=v1", "--untracked-files=all", "--", ...AUTHORITATIVE_PATHS],
+    { cwd: root3, encoding: "utf8" }
+  ).trim();
+  assert4.equal(
+    dirtyAuthoritativePaths,
+    "",
+    "Current review assurance requires a clean authoritative worktree."
+  );
   const authoritativeDelta = execFileSync(
     "git",
-    ["diff", "--name-only", receipt.certifiedHead, "HEAD", "--", "src", "formal", "scripts", "test", "package.json", "tsconfig.json", "tsconfig.test.json"],
+    ["diff", "--name-only", receipt.certifiedHead, "HEAD", "--", ...AUTHORITATIVE_PATHS],
     { cwd: root3, encoding: "utf8" }
   ).split(/\r?\n/u).filter(Boolean).sort();
   assert4.deepEqual(
     authoritativeDelta,
-    [receipt.report.file],
+    [CURRENT_REVIEW_ASSURANCE_REPORT],
     "Proof integration changed authoritative product/assurance bytes after the certified full run."
   );
   return {
@@ -2022,7 +2036,15 @@ var OLD_SURFACE_FILE = "experiments/tla-conformance/final-convergence/old-surfac
 var R170_TRANSPORT = "experiments/tla-conformance/final-convergence/r170-assurance-transport.json";
 var R170_PRISTINE_TRANSPORT = "experiments/tla-conformance/final-convergence/r170-pristine-repro-transport.json";
 var POST_CERTIFICATE_AUTHORITATIVE_FILES = Object.freeze([
-  "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json"
+  "formal/implementation-conformance/API_ASSURANCE.json",
+  "formal/implementation-conformance/CALL_CHAIN_ASSURANCE.json",
+  "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
+  "scripts/formal-implementation-callgraph.cjs",
+  "scripts/formal-implementation-vitest-semantics.cjs",
+  "scripts/run-formal-implementation-conformance.mjs",
+  "test/formal-callgraph-semantics.test.ts",
+  "test/malformed-input-conformance.test.ts",
+  "test/review-hardening.test.ts"
 ]);
 var CHANGED_SOURCE_FILES = Object.freeze([
   "src/authority-cutover.ts",
@@ -2342,7 +2364,16 @@ function buildR170PristineReproTransport({ repositoryRoot = process.cwd() } = {}
   );
   const currentReviewAssurance = verifyCurrentReviewAssurance(root3);
   const certifiedHead = currentReviewAssurance.receipt.certifiedHead;
-  assert6.equal(certifiedHead, CURRENT_PRODUCT_HEAD, "Current review assurance no longer certifies the reviewed product repair head.");
+  try {
+    git2(["merge-base", "--is-ancestor", CURRENT_PRODUCT_HEAD, certifiedHead], root3);
+  } catch {
+    throw new Error("Current review assurance no longer descends from the reviewed product repair head.");
+  }
+  assert6.deepEqual(
+    git2(["diff", "--name-only", CURRENT_PRODUCT_HEAD, certifiedHead, "--", "src"], root3).split(/\r?\n/u).filter(Boolean),
+    [],
+    "Current review assurance certified product runtime bytes beyond the reviewed product repair head."
+  );
   const postRepairAuthoritative = git2([
     "diff",
     "--name-only",
@@ -4624,13 +4655,13 @@ function verifyDependencyClosure({ repositoryRoot, context: context2, certified,
     return targetLibraryFile;
   }
   for (const [key, declaration] of declarations) {
-    let resolvedSymbol4 = function(node) {
+    let resolvedSymbol3 = function(node) {
       let symbol = context2.checker.getSymbolAtLocation(node);
       if (symbol !== void 0 && (symbol.flags & ts.SymbolFlags.Alias) !== 0) {
         symbol = context2.checker.getAliasedSymbol(symbol);
       }
       return symbol;
-    }, inspectCall2 = function(node) {
+    }, inspectCall = function(node) {
       const target = context2.checker.getResolvedSignature(node)?.declaration;
       assert11(target !== void 0, `Unresolved call '${node.getText()}'.`);
       if (target.getSourceFile().isDeclarationFile) {
@@ -4652,10 +4683,10 @@ function verifyDependencyClosure({ repositoryRoot, context: context2, certified,
       const targetKey = declarationKey3(repositoryRoot, target);
       assert11(certified.has(targetKey), `Unproved source call '${targetKey}'.`);
       if (targetKey !== key) dependencyNames.add(targetKey);
-    }, visit2 = function(node) {
-      if (ts.isCallExpression(node) || ts.isNewExpression(node)) inspectCall2(node);
+    }, visit = function(node) {
+      if (ts.isCallExpression(node) || ts.isNewExpression(node)) inspectCall(node);
       if (ts.isIdentifier(node)) {
-        const symbol = resolvedSymbol4(node);
+        const symbol = resolvedSymbol3(node);
         for (const sourceDeclaration of symbol?.declarations ?? []) {
           if (ts.isFunctionDeclaration(sourceDeclaration) && sourceDeclaration.body !== void 0) {
             const targetKey = declarationKey3(repositoryRoot, sourceDeclaration);
@@ -4692,11 +4723,10 @@ function verifyDependencyClosure({ repositoryRoot, context: context2, certified,
           }
         }
       }
-      ts.forEachChild(node, visit2);
+      ts.forEachChild(node, visit);
     };
-    var resolvedSymbol3 = resolvedSymbol4, inspectCall = inspectCall2, visit = visit2;
     const dependencyNames = /* @__PURE__ */ new Set();
-    visit2(declaration.body);
+    visit(declaration.body);
     dependencyNamesByKey.set(key, [...dependencyNames].sort(compareCodeUnits));
   }
   return {
@@ -6903,7 +6933,7 @@ function verifyDependencyClosure2({ repositoryRoot, context: context2, roots }) 
     throw new Error(`Unproved transitive source callable '${id}'.`);
   }
   while (pending.length > 0) {
-    let inspect2 = function(node) {
+    let inspect = function(node) {
       if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
         const target = context2.checker.getResolvedSignature(node)?.declaration;
         assert14(target !== void 0, `Unresolved call '${node.getText()}'.`);
@@ -6958,16 +6988,15 @@ function verifyDependencyClosure2({ repositoryRoot, context: context2, roots }) 
           }
         }
       }
-      ts.forEachChild(node, inspect2);
+      ts.forEachChild(node, inspect);
     };
-    var inspect = inspect2;
     const declaration = pending.shift();
     const id = declarationId(repositoryRoot, declaration);
     if (declarations.has(id)) continue;
     validateCallableSyntax2(declaration);
     declarations.set(id, declaration);
     const dependencies = /* @__PURE__ */ new Set();
-    inspect2(declaration.body);
+    inspect(declaration.body);
     dependencies.delete(id);
     dependenciesById.set(id, [...dependencies].sort(compareCodeUnits));
   }
@@ -8650,7 +8679,7 @@ function inspectClosure({
   const pendingSupporting = /* @__PURE__ */ new Map();
   const unresolved = /* @__PURE__ */ new Set();
   while (pendingDeclarations.length > 0) {
-    let visit2 = function(node) {
+    let visit = function(node) {
       if (ts.isTypeNode(node)) return;
       if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
         const signature = context2.checker.getResolvedSignature(node)?.declaration;
@@ -8698,9 +8727,8 @@ function inspectClosure({
           (dependencyValue.registered ? reusedSupporting : pendingSupporting).set(valueId, dependencyValue);
         }
       }
-      ts.forEachChild(node, visit2);
+      ts.forEachChild(node, visit);
     };
-    var visit = visit2;
     const declaration = pendingDeclarations.shift();
     const id = declarationId2(repositoryRoot, declaration);
     if (checkedLocal.has(id) || reused.has(id) || pendingDependencies.has(id)) continue;
@@ -8721,7 +8749,7 @@ function inspectClosure({
       continue;
     }
     checkedLocal.add(id);
-    visit2(declaration.body);
+    visit(declaration.body);
   }
   assert18.equal(
     unresolved.size,
@@ -10145,16 +10173,15 @@ function helperGraph(actualByFile) {
   const selected = new Set(equationSpecs.map(([, name]) => name));
   const edges = [];
   for (const [file, name] of equationSpecs) {
-    let walk2 = function(node) {
+    let walk = function(node) {
       if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && selected.has(node.expression.text)) calls.add(node.expression.text);
-      ts.forEachChild(node, walk2);
+      ts.forEachChild(node, walk);
     };
-    var walk = walk2;
     const source7 = actualByFile.get(file);
     const fn2 = functions(source7).get(name);
     assert27(fn2?.body);
     const calls = /* @__PURE__ */ new Set();
-    walk2(fn2.body);
+    walk(fn2.body);
     for (const target of calls) edges.push(`${name}->${target}`);
   }
   edges.sort(compareCodeUnits);
@@ -10372,7 +10399,7 @@ function checkBindingsAndEnums(repositoryRoot, context2, independent) {
   }
   const visited = /* @__PURE__ */ new Set();
   for (const row of [...independent.proofs, ...independent.localLaws]) {
-    let inspect2 = function(node) {
+    let inspect = function(node) {
       if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
         const target = context2.checker.getResolvedSignature(node)?.declaration;
         assert28(target !== void 0, `Unresolved semantic call: ${node.getText()}`);
@@ -10386,16 +10413,15 @@ function checkBindingsAndEnums(repositoryRoot, context2, independent) {
         const symbol = context2.checker.getSymbolAtLocation(node.name);
         assert28(!(symbol?.declarations ?? []).some((candidate) => ts.isGetAccessorDeclaration(candidate) || ts.isSetAccessorDeclaration(candidate)), "Accessor-bearing data requires an explicit effect proof.");
       }
-      ts.forEachChild(node, inspect2);
+      ts.forEachChild(node, inspect);
     };
-    var inspect = inspect2;
     const span = row.completeExpectedTerm.implementation;
     const source8 = context2.program.getSourceFile(path29.resolve(repositoryRoot, span.file));
     const declaration = nodeAtExactSpan(source8, span.start.offset, span.end.offset);
     assert28(declaration !== void 0 && ts.isFunctionDeclaration(declaration));
     if (visited.has(declaration)) continue;
     visited.add(declaration);
-    inspect2(declaration.body);
+    inspect(declaration.body);
   }
 }
 function buildFamilyArtifact17({ repositoryRoot, context: context2, surface: surface2 }) {

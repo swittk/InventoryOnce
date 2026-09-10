@@ -23,9 +23,12 @@
     "scripts/audit-formal-implementation-conformance.mjs",
     "scripts/executable-assurance-coherence.mjs",
     "scripts/executable-assurance-coherence.selftest.mjs",
+    "scripts/formal-implementation-callgraph.cjs",
+    "scripts/formal-implementation-vitest-semantics.cjs",
     "scripts/formal-models.mjs",
     "scripts/formal-proof-cache.selftest.mjs",
     "scripts/repository-assurance-state.mjs",
+    "scripts/run-formal-implementation-conformance.mjs",
     "src/authority-cutover.ts",
     "src/fungibility.ts",
     "src/migrations.ts",
@@ -34,7 +37,9 @@
     "test/formal-callgraph-semantics.test.ts",
     "test/formal-implementation-conformance.test.ts",
     "test/fungibility.test.ts",
-    "test/r47-concurrent-completion-peer.test.ts"
+    "test/malformed-input-conformance.test.ts",
+    "test/r47-concurrent-completion-peer.test.ts",
+    "test/review-hardening.test.ts"
   ],
   "productSourceChanged": false,
   "affectedStrictRows": [
@@ -47,10 +52,10 @@
   "assurance": {
     "currentReview": {
       "file": "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json",
-      "sha256": "701fce20b35110a696fb58471b36a9d801a87be2c9da37dcf6d455f958082220",
-      "certifiedHead": "4d9af05917d681630cc697bf2abb367c23de12ca",
-      "repositoryStateSha256": "978a2130b4b1e974fcaaa0a7b9807d41ba247ad8f4a373e106b7ff1546ee850c",
-      "fullLogSha256": "7a82fa394c569985c51bfab5e2f2c752c454a3c0405048384f898689dd67a40d",
+      "sha256": "3f0c3d555733960a31c6922bda7a13b523445b39034beae03c36b18f7bdea2dc",
+      "certifiedHead": "3cee9da35d9450f64d46ef6e185a740e60925841",
+      "repositoryStateSha256": "782254d766e5cb713a6541d4ebb4cf343ef67609354d4651a6b7e5cd160ef306",
+      "fullLogSha256": "2cde61fdf5f9d298f1696176ea0a58811db6370ba0bb326cf51f8214ec02d9ac",
       "surfaceSha256": "03baa3c20d088f813397b4bac1a673eca726f18b845e10e8523af8bb47374e5f"
     },
     "historicalReportDependency": "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
@@ -84,5 +89,5 @@
   "producerReplayRuns": 0,
   "reverseReruns": 0,
   "creditExpansion": false,
-  "contentSha256": "da85b05b62b0a8696f329c3e501acd5f3bc933d0dd22a9232dc31ef1c93388a7"
+  "contentSha256": "6781f4c5a1ba901d29072a545977136bbe6309b2a49fc1374ef7845af2505cc5"
 }

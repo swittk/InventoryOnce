@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "archive": {
     "file": "experiments/tla-conformance/final-convergence/compact-support.tar.gz",
-    "sha256": "1e80b7629dfc91f3ca55ff7b316eddd9d6e688bfd7d72a5e0b7ec24cdc88c1d6",
+    "sha256": "ffd6d154878e58a4f04caf61e209e1fe887554ed83a394caa93118dfa6fe5d67",
     "runtimeClosureHead": "2327c0de92e618a906714f4c9060ab7c0a28b8d1",
     "files": [
       {
@@ -102,8 +102,8 @@
       },
       {
         "file": "experiments/tla-conformance/final-convergence/final-head-transport.mjs",
-        "sha256": "3640937b6bd2c3186ce77558eb3de9278ac0d52198c6afc33784413260901649",
-        "bytes": 14199
+        "sha256": "36b952cc0ad96e3ba36914be5427e7f8790d30b57754ccc9beae434cb83880a4",
+        "bytes": 14608
       },
       {
         "file": "experiments/tla-conformance/final-convergence/final-selftest.mjs",
@@ -419,14 +419,14 @@
       {
         "mode": "verify",
         "file": "experiments/tla-conformance/final-convergence/compact-final-verify.mjs",
-        "sha256": "b4157c43156d9dc2a304a404d17dde0f2b3d46e586e9eb6358d9202ac4cf21c4",
-        "bytes": 726069
+        "sha256": "de15212f504e405c536228b8b0b012f552fb3db843010963ca3f889791afb7d0",
+        "bytes": 727510
       },
       {
         "mode": "selftest",
         "file": "experiments/tla-conformance/final-convergence/compact-final-selftest.mjs",
-        "sha256": "a1f2269d6496208ea61fa430fdcf5d0bb25b51f62166161dcc40f20e5e59541b",
-        "bytes": 727466
+        "sha256": "f3eb87e84c9cdde411d23296b0b69e1d6a310cceb2d4eb5899a32c6c6ec863eb",
+        "bytes": 728907
       },
       {
         "mode": "registry",
@@ -503,8 +503,8 @@
       },
       {
         "file": "experiments/tla-conformance/final-convergence/current-review-assurance.mjs",
-        "sha256": "ed8e0a52c27c3bbeef22ff92e156d957e5e0302cef102d3d280ac33f74cf43ac",
-        "bytes": 5975
+        "sha256": "bbdbcf7377c42b048301313e901b2e2fc746b18e3e301d407969da44232166d9",
+        "bytes": 6906
       },
       {
         "file": "experiments/tla-conformance/final-convergence/final-families.mjs",
@@ -513,8 +513,8 @@
       },
       {
         "file": "experiments/tla-conformance/final-convergence/final-head-transport.mjs",
-        "sha256": "3640937b6bd2c3186ce77558eb3de9278ac0d52198c6afc33784413260901649",
-        "bytes": 14199
+        "sha256": "36b952cc0ad96e3ba36914be5427e7f8790d30b57754ccc9beae434cb83880a4",
+        "bytes": 14608
       },
       {
         "file": "experiments/tla-conformance/final-convergence/final-selftest.mjs",
@@ -523,13 +523,13 @@
       },
       {
         "file": "experiments/tla-conformance/final-convergence/r168-assurance-transport.mjs",
-        "sha256": "571d1822c92fa386fa919f29b2d9848fc2a737fbb3bfdfb0c023158f327ca252",
-        "bytes": 9382
+        "sha256": "7a05b512a076e961684429d8ea0312115f99fac0ef755127f45588c6323f63b1",
+        "bytes": 9581
       },
       {
         "file": "experiments/tla-conformance/final-convergence/r170-pristine-repro-transport.mjs",
-        "sha256": "d90a69b8e668ac09266d1bf2bc88b85d351cb9ca529edba79b19c67ad0aab945",
-        "bytes": 8274
+        "sha256": "96d62ada2e6323e220b9c66d34304cf70f77b0df598f6a9b7f4fd5c77c369469",
+        "bytes": 8615
       },
       {
         "file": "experiments/tla-conformance/final-convergence/run-final-verifier.mjs",

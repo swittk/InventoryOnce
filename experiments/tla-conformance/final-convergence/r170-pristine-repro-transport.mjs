@@ -71,7 +71,16 @@ export function buildR170PristineReproTransport({ repositoryRoot = process.cwd()
   );
   const currentReviewAssurance = verifyCurrentReviewAssurance(root);
   const certifiedHead = currentReviewAssurance.receipt.certifiedHead;
-  assert.equal(certifiedHead, CURRENT_PRODUCT_HEAD, "Current review assurance no longer certifies the reviewed product repair head.");
+  try {
+    git(["merge-base", "--is-ancestor", CURRENT_PRODUCT_HEAD, certifiedHead], root);
+  } catch {
+    throw new Error("Current review assurance no longer descends from the reviewed product repair head.");
+  }
+  assert.deepEqual(
+    git(["diff", "--name-only", CURRENT_PRODUCT_HEAD, certifiedHead, "--", "src"], root).split(/\r?\n/u).filter(Boolean),
+    [],
+    "Current review assurance certified product runtime bytes beyond the reviewed product repair head.",
+  );
   const postRepairAuthoritative = git([
     "diff", "--name-only", CURRENT_HEAD, certifiedHead, "--",
     "src", "formal", "scripts", "test", "package.json", "tsconfig.json", "tsconfig.test.json",
