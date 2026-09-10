@@ -41,8 +41,8 @@ Any added/removed method, callable export, class method, type field, field type,
 | Family | API entries | Formal models | Status | Gaps |
 |---|---:|---|---|---|
 | allocation-helper | 6 | ReservationScope, ReservationSafety, UseByReservation, PackagingIdentity, FungibilityPool | covered | — |
-| authority-control | 33 | AuthorityWriterFence | covered | — |
-| authority-cutover | 2 | AuthorityWriterFence, CatalogPublication, PublishedHeadCAS, RepairLiveness, SnapshotSupersededWorkflow | covered | GAP-LEGACY-SOURCE-INTERPRETATION |
+| authority-control | 31 | AuthorityWriterFence | covered | — |
+| authority-cutover | 4 | AuthorityWriterFence, CatalogPublication, PublishedHeadCAS, RepairLiveness, SnapshotSupersededWorkflow | covered | GAP-LEGACY-SOURCE-INTERPRETATION |
 | catalog-definition | 76 | CatalogPublication, PackagingIdentity, CompositionRevision, CollectionView, FungibilityPool | covered | GAP-HASH-COLLISION-ASSUMPTION |
 | catalog-publication | 7 | CatalogPublication, InventoryOperation, PublishedHeadCAS, RepairLiveness | covered | GAP-HASH-COLLISION-ASSUMPTION, GAP-DB-IMPLEMENTATION-UNBOUNDED |
 | collection-read | 4 | CollectionView | covered | — |

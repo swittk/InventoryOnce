@@ -38420,6 +38420,7 @@
     "entrypoint.root.bootstrapGreenfieldInventoryAuthority": {
       "adapterCoverage": [
         "memory",
+        "migration-failpoints",
         "authority-race-tests",
         "greenfield-empty-world-tests"
       ],
@@ -38477,10 +38478,13 @@
       "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
-        "test/authority.test.ts"
+        "test/authority.test.ts",
+        "test/migrations.test.ts"
       ],
-      "family": "authority-control",
-      "gaps": [],
+      "family": "authority-cutover",
+      "gaps": [
+        "GAP-LEGACY-SOURCE-INTERPRETATION"
+      ],
       "implementationTargets": [
         {
           "column": 1,
@@ -38492,27 +38496,34 @@
           "name": "bootstrapGreenfieldInventoryAuthority"
         }
       ],
-      "inputMapping": "Authority mode, activation provenance, certification, mutually exclusive deployment authorization, writer/fence tokens, source/target roots, mismatch, and projection evidence map directly to the writer-fence state machine.",
+      "inputMapping": "Certification plus exactly one explicit authorization mode maps either to stable-source fence/migration activation or to certified canonical revision-zero greenfield activation.",
       "internalReferences": [],
       "invariants": [
-        "ModeMatchesMonotonicPhase",
-        "CertificationPrecedesCutover",
-        "AdmissionOwnership",
-        "FenceExcludesLegacyWriters",
-        "NoLegacyPhysicalWriteAfterFence",
-        "MismatchCannotBeBypassed",
+        "FencedReadsAreStable",
+        "PublishedTargetMatchesStableSource",
         "AuthorityRequiresAllEvidence",
         "ActivationProvenanceIsExact",
         "GreenfieldCannotFabricateLegacyEvidence",
-        "AuthorityIsIrreversible",
-        "ProjectionCannotMutateAuthoritativeTruth"
+        "CrashBeforePublicationIsInvisible",
+        "CrashStateIsExplicitlyRepairable",
+        "PublishedActivationLiveness",
+        "GreenfieldActivationRaceResolution",
+        "DispositionRequiresFencedSnapshot",
+        "SupersededRowsNeverResume",
+        "UnknownOutcomeNeverGuessed",
+        "PublishedRetainsAllDispositions",
+        "FencedSnapshotEventuallyPublishes"
       ],
       "models": [
-        "AuthorityWriterFence"
+        "AuthorityWriterFence",
+        "CatalogPublication",
+        "PublishedHeadCAS",
+        "RepairLiveness",
+        "SnapshotSupersededWorkflow"
       ],
-      "rejectionRelation": "Missing prerequisites, active writers, mixed authorization modes, nonempty greenfield target, mismatch, source drift, downgrade, or competing CAS rejects.",
-      "resultMapping": "Result maps to one monotonic authority document revision and exact retained legacy-cutover or greenfield evidence.",
-      "retryRelation": "Exact CAS intent is idempotent; conflicting token/evidence/authorization or stale document rejects.",
+      "rejectionRelation": "Source drift, active writer, blocked migration, nonempty greenfield target, mixed authorization modes, adapter uncertified, mismatch, or failed publication blocks activation.",
+      "resultMapping": "Result maps to authoritative state with disjoint legacy-cutover or greenfield provenance and exact target revision/root.",
+      "retryRelation": "Exact activation retry resumes retained evidence; changed source/fence/migration/greenfield authorization or target evidence rejects.",
       "signature": {
         "callSignatures": [
           {
@@ -38533,7 +38544,9 @@
         "name": "bootstrapGreenfieldInventoryAuthority"
       },
       "stateProjection": [
-        "abstractAuthorityState"
+        "abstractAuthorityState",
+        "abstractInventoryState",
+        "abstractMigrationState"
       ],
       "status": "covered"
     },
@@ -42252,6 +42265,7 @@
     "entrypoint.root.inventoryAuthorityGreenfieldResult": {
       "adapterCoverage": [
         "memory",
+        "migration-failpoints",
         "authority-race-tests",
         "greenfield-empty-world-tests"
       ],
@@ -42315,10 +42329,13 @@
       "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
-        "test/authority.test.ts"
+        "test/authority.test.ts",
+        "test/migrations.test.ts"
       ],
-      "family": "authority-control",
-      "gaps": [],
+      "family": "authority-cutover",
+      "gaps": [
+        "GAP-LEGACY-SOURCE-INTERPRETATION"
+      ],
       "implementationTargets": [
         {
           "column": 1,
@@ -42330,7 +42347,7 @@
           "name": "inventoryAuthorityGreenfieldResult"
         }
       ],
-      "inputMapping": "Authority mode, activation provenance, certification, mutually exclusive deployment authorization, writer/fence tokens, source/target roots, mismatch, and projection evidence map directly to the writer-fence state machine.",
+      "inputMapping": "Certification plus exactly one explicit authorization mode maps either to stable-source fence/migration activation or to certified canonical revision-zero greenfield activation.",
       "internalReferences": [
         {
           "occurrences": 3,
@@ -42338,24 +42355,31 @@
         }
       ],
       "invariants": [
-        "ModeMatchesMonotonicPhase",
-        "CertificationPrecedesCutover",
-        "AdmissionOwnership",
-        "FenceExcludesLegacyWriters",
-        "NoLegacyPhysicalWriteAfterFence",
-        "MismatchCannotBeBypassed",
+        "FencedReadsAreStable",
+        "PublishedTargetMatchesStableSource",
         "AuthorityRequiresAllEvidence",
         "ActivationProvenanceIsExact",
         "GreenfieldCannotFabricateLegacyEvidence",
-        "AuthorityIsIrreversible",
-        "ProjectionCannotMutateAuthoritativeTruth"
+        "CrashBeforePublicationIsInvisible",
+        "CrashStateIsExplicitlyRepairable",
+        "PublishedActivationLiveness",
+        "GreenfieldActivationRaceResolution",
+        "DispositionRequiresFencedSnapshot",
+        "SupersededRowsNeverResume",
+        "UnknownOutcomeNeverGuessed",
+        "PublishedRetainsAllDispositions",
+        "FencedSnapshotEventuallyPublishes"
       ],
       "models": [
-        "AuthorityWriterFence"
+        "AuthorityWriterFence",
+        "CatalogPublication",
+        "PublishedHeadCAS",
+        "RepairLiveness",
+        "SnapshotSupersededWorkflow"
       ],
-      "rejectionRelation": "Missing prerequisites, active writers, mixed authorization modes, nonempty greenfield target, mismatch, source drift, downgrade, or competing CAS rejects.",
-      "resultMapping": "Result maps to one monotonic authority document revision and exact retained legacy-cutover or greenfield evidence.",
-      "retryRelation": "Exact CAS intent is idempotent; conflicting token/evidence/authorization or stale document rejects.",
+      "rejectionRelation": "Source drift, active writer, blocked migration, nonempty greenfield target, mixed authorization modes, adapter uncertified, mismatch, or failed publication blocks activation.",
+      "resultMapping": "Result maps to authoritative state with disjoint legacy-cutover or greenfield provenance and exact target revision/root.",
+      "retryRelation": "Exact activation retry resumes retained evidence; changed source/fence/migration/greenfield authorization or target evidence rejects.",
       "signature": {
         "callSignatures": [
           {
@@ -42376,7 +42400,9 @@
         "name": "inventoryAuthorityGreenfieldResult"
       },
       "stateProjection": [
-        "abstractAuthorityState"
+        "abstractAuthorityState",
+        "abstractInventoryState",
+        "abstractMigrationState"
       ],
       "status": "covered"
     },

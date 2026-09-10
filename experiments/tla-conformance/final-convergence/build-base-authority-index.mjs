@@ -42,13 +42,15 @@ const matrixFiles = [
 ];
 
 const candidates = new Map();
-function add(surfaceKey, candidate) {
+const candidatePriority = new WeakMap();
+function add(surfaceKey, candidate, rootPriority) {
   if (!strict.has(surfaceKey)) return;
   const rows = candidates.get(surfaceKey) ?? [];
   rows.push(candidate);
+  candidatePriority.set(candidate, rootPriority);
   candidates.set(surfaceKey, rows);
 }
-function inspect(file) {
+function inspect(file, rootPriority) {
   let document;
   const bytes = read(file);
   try { document = JSON.parse(bytes.toString("utf8")); } catch { return; }
@@ -64,7 +66,7 @@ function inspect(file) {
         evidence,
         proofIndex: index,
         proofSemanticSha256: sha256(Buffer.from(canonical(proof.semantics ?? proof.semantic ?? proof))),
-      });
+      }, rootPriority);
     }
   }
   if (document && Array.isArray(document.bindings)) {
@@ -77,7 +79,7 @@ function inspect(file) {
         evidence,
         bindingIndex: index,
         bindingSha256: sha256(Buffer.from(canonical(binding))),
-      });
+      }, rootPriority);
     }
   }
   if (document && Array.isArray(document.rows)) {
@@ -90,20 +92,20 @@ function inspect(file) {
         evidence,
         rowIndex: index,
         bindingSha256: sha256(Buffer.from(canonical(binding))),
-      });
+      }, rootPriority);
     }
   }
 }
-function walk(directory) {
+function walk(directory, rootPriority) {
   if (!fs.existsSync(path.resolve(ROOT, directory))) return;
   for (const entry of fs.readdirSync(path.resolve(ROOT, directory), { withFileTypes: true })) {
     const file = path.posix.join(directory, entry.name);
-    if (entry.isDirectory()) walk(file);
-    else if (entry.name.endsWith(".json")) inspect(file);
+    if (entry.isDirectory()) walk(file, rootPriority);
+    else if (entry.name.endsWith(".json")) inspect(file, rootPriority);
   }
 }
-for (const root of roots) walk(root);
-for (const file of matrixFiles) inspect(file);
+for (let index = 0; index < roots.length; index += 1) walk(roots[index], index);
+for (const file of matrixFiles) inspect(file, roots.length);
 
 const selected = [];
 const missing = [];
@@ -114,6 +116,8 @@ for (const [surfaceKey, mode] of strict) {
     const kindRank = { PROOF_ARTIFACT: 0, BINDING_REGISTRY: 1, ROW_BINDING_REGISTRY: 2 };
     const rank = kindRank[left.kind] - kindRank[right.kind];
     if (rank !== 0) return rank;
+    const priority = candidatePriority.get(left) - candidatePriority.get(right);
+    if (priority !== 0) return priority;
     return left.evidence.file.localeCompare(right.evidence.file);
   });
   const candidate = rows[0];

@@ -89,7 +89,8 @@ TypeOK ==
   /\ everConsumed \subseteq Objects
   /\ everProduced \subseteq Objects
   /\ genealogy \subseteq Objects \X Objects
-  /\ productionCount \in 0..1
+  \* Permit the ghost counter to reach the duplicate state so uniqueness remains an independent invariant.
+  /\ productionCount \in 0..2
 
 ContainmentIsAcyclic == ParentChainsAreAcyclic(parent)
 

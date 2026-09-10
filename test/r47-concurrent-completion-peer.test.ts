@@ -123,6 +123,7 @@ async function legacyCase(phase: Phase, foreign: boolean) {
   assert.equal(injected > 0, true, `${phase}/${foreign}: hook did not fire`);
   if (foreign) {
     assert(error, `${phase}: foreign completion unexpectedly joined`);
+    assert.match(error.message, /another fence token|authorization differs|retained fence ownership belongs to another cutover request/u);
     return { phase, foreign, outcome: "rejected", error: error.message };
   }
   assert.ifError(error);

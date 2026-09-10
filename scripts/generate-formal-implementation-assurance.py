@@ -110,7 +110,8 @@ def facade_family(key):
 # Map one root export to the formal assurance family that owns its behavior.
 def root_family(name,decl):
  if name in {'InventoryOnce','createInventoryOnce'}: return 'facade-construction'
- if 'Authority' in name or 'authority' in name: return 'authority-cutover' if 'cutover' in name.lower() else 'authority-control'
+ if decl == 'src/authority-cutover.ts': return 'authority-cutover'
+ if 'Authority' in name or 'authority' in name: return 'authority-control'
  if name == 'readPublishedInventorySnapshot': return 'read-snapshot'
  if name in {'readPublishedInventoryCatalog','findInventoryEventByOperationId'}: return 'read-current'
  if name.startswith(('publishInventoryCatalog','ensureInventoryScalarCatalogRevision')): return 'catalog-publication'

@@ -733,3 +733,23 @@ The R105 portable-current-input authority and final publication both continue to
 - Historical R165/R168 receipts remain frozen historical evidence; the final-head theorem is extended by the hash-pinned R169 transport rather than rerunning old historical transports against a descendant they intentionally reject. The compact final families bind R169 onto exactly those two affected A rows.
 - Final residual families were rederived against the updated final-head transport. Registry remains exactly A121/V309/B58/HARD_RED47. Compact support remains 81 deterministic archive members; archive membership is checked before extraction. Bundled submodule CLI guards are mechanically disabled exactly as declared by the compact manifest. Live input closure is now 58 tracked inputs, zero node_modules, zero untracked proof inputs, including the R169 baselines and dynamic assurance/model inputs.
 - Pre-commit compact adversarial selftest passed and compact registered verifier passed after this currentization; compact registry reports A121/V309/B58/HARD_RED47. Next step is one proof-integration commit, exact-head compact revalidation, <=299 file-cap push, Rabbit replies/streak persistence, then exactly one new Full Review request.
+
+## 2026-09-10 — R170 current-head CodeRabbit assurance adjudication
+
+- Current explicitly requested proof-integrated Full Review `5162578890` on `e2c1ccb3be53809b8b935cf4882137a08fa08576` was independently adjudicated as **product/runtime semantic clean** and **assurance/proof/test not clean**. No `src/**` product-runtime byte is changed by this repair.
+- Valid assurance defects repaired in this slice:
+  - final-convergence base-authority selection now preserves the declared root priority internally; an independent census found **0 current selected-row differences**, so this closes a latent authority-selection bug without changing current proof credit;
+  - `r169-assurance-transport.mjs` now honors explicit `repositoryRoot` for every Git/read/hash operation and rejects missing `repositoryStateSha256` / `fullLogSha256`; root-independent execution from `/tmp` passed and a missing-hash mutation rejected;
+  - `run-compact-final-assurance.mjs` arms cleanup before archive extraction and rejects live-closure paths outside repository root; injected `../InventoryOnce/AGENTS.md` live-closure row rejected before hashing;
+  - `TraceabilityGraph.TypeOK` now permits ghost `productionCount=2`, so `ProducedIdentityWasCreatedOnce` is independently falsifiable; full formal reran positive model and duplicate-production mutation rejected specifically through that invariant;
+  - root public exports declared by `src/authority-cutover.ts` are classified consistently as `authority-cutover`; generated API/trace assurance was refreshed;
+  - R47 foreign-completion race evidence now requires reviewed conflict errors instead of accepting an unrelated exception. The proposed fixed durable-winner assertion was rejected because the legitimate winner differs by checkpoint/interleaving.
+- Review findings rejected as non-current-defects:
+  - the r157 abort-current nested declaration/source metadata is retained as historical base-proof provenance; the final consolidated row has the exact current declaration and current final-head transport, so it cannot grant stale current-source credit;
+  - traceability-replay relation identities always begin with `[` because they are `JSON.stringify` tuple keys, so they cannot collide with Object prototype property names;
+  - the counts suggestion is performance-only with no demonstrated regression or semantic failure;
+  - the broad conformance catch affects diagnostic specificity but still fails closed;
+  - R148 extra shared provenance does not replace each row's exact `completeExpectedTerm` / declaration or expand proof credit;
+  - remaining requests are documentation/style/maintainability only.
+- Local repair validation before commit: targeted R47 green; `pnpm assurance:generate`; `pnpm assurance --write-report`; `pnpm check` green; `pnpm formal` green with fresh TraceabilityGraph and duplicate-production mutation; full `pnpm test` green (`535/535`); `pnpm build` green. Compact path-escape negative control rejected as intended.
+- Streak classification for review `5162578890`: product `cleanStreak` earns the second consecutive clean product cycle (`2/3`); assurance `assuranceCleanStreak` remains/reset at `0/3`. Persist counters to the hub only after the exact repair + compact-currentization head is pushed.

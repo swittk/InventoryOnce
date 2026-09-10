@@ -9,6 +9,13 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "../../..");
 const manifest = JSON.parse(fs.readFileSync(path.join(here, "compact-support-manifest.json"), "utf8"));
 const sha256 = (file) => crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex");
+/** Resolve one manifest path and reject any attempt to escape the repository root. */
+function repositoryPath(file) {
+  const target = path.resolve(root, file);
+  const relative = path.relative(root, target);
+  assert(relative !== ".." && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative), `Compact assurance path escapes repository root: ${file}`);
+  return target;
+}
 const mode = process.argv[2] ?? "verify";
 const bundle = manifest.bundles.entries.find((row) => row.mode === mode);
 assert(bundle !== undefined, `Unknown compact final-assurance mode: ${mode}`);
@@ -30,8 +37,9 @@ for (const row of manifest.archive.files) {
 }
 let materialized = false;
 try {
-  execFileSync("tar", ["-xzf", archiveFile, "-C", root], { stdio: "inherit" });
+  // Cleanup must be armed before tar can leave any partially extracted member behind.
   materialized = true;
+  execFileSync("tar", ["-xzf", archiveFile, "-C", root], { stdio: "inherit" });
   for (const row of manifest.archive.files) {
     const target = path.join(root, row.file);
     assert.equal(fs.statSync(target).size, row.bytes, `Archived support size mismatch: ${row.file}`);
@@ -41,7 +49,7 @@ try {
   assert.equal(liveClosure.rows.length, liveClosure.inputs, "Live-input closure row count is stale.");
   let liveBytes = 0;
   for (const row of liveClosure.rows) {
-    const target = path.join(root, row.file);
+    const target = repositoryPath(row.file);
     assert.equal(fs.statSync(target).size, row.sizeBytes, `Live-input closure size mismatch: ${row.file}`);
     assert.equal(sha256(target), row.sha256, `Live-input closure hash mismatch: ${row.file}`);
     liveBytes += row.sizeBytes;
