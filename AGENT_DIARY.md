@@ -914,3 +914,11 @@ The R105 portable-current-input authority and final publication both continue to
 - The compact selftest runner now accepts either the immutable-evidence failure or the independent-source-digest failure for its deliberately self-consistent forged surface-digest control, because the strengthened immutable evidence binding may reject the tamper earlier. This broadens only the expected fail-closed error ordering, not accepted proof behavior.
 - The corrected compact package was rebuilt with esbuild 0.27.7 and deterministic support archive SHA-256 `f6b600b54079aa3f8144eef5127d924292bd81145016c6af9492308f2d5df85e`. Sequential reduced-tree validation passed: registered verifier 309/309 V + 179/179 A/B = 488/488 strict with HARD_RED47/unexpected0; adversarial selftest green; registry A121/B58/V309/HARD_RED47; materialized support cleanup returned to zero; projected PR file count remains 288 <=299.
 - Commit these exact compact-package bytes plus this diary entry, then re-run verify/selftest/registry from isolated pristine checkouts of that exact commit before push/reconciliation.
+
+### Review 5169716499 exact compact certification
+
+- Exact compact-package commit `f50ad18f06b3a4aa10da713e8f025937f55a5a32` was validated in three isolated pristine detached worktrees so archive materialization could not race. All three began from tracked-clean exact commit state after frozen offline install.
+- `verify` passed with surface `10e90dfc4e5e2a7e203ff93d27af4e98cb3bd53a25d5b7f4c06780d6a76d15a8`, 309/309 V + 179/179 A/B = 488/488 strict, exactly 47 HARD_RED, and zero unexpected diagnostics.
+- `selftest` passed every adversarial control: honest value and A/B evidence accepted, wrong-mode evidence rejected, and re-signed/tampered value and producer evidence rejected.
+- `registry` passed exact A121 / B58 / V309 / HARD_RED47 with the same final V309 and A121/B58 evidence hashes. No tracked mutation remained in any validation checkout.
+- This diary-only descendant does not change product/formal/test/proof semantics. Before push, recheck remote/PR still point at reviewed head `614c7c3...`, prospective changed_files remains <=299, then push the final descendant and reconcile all six review threads plus three review-body findings.
