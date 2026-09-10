@@ -9,7 +9,7 @@ import { verifyCurrentReviewAssurance } from "./current-review-assurance.mjs";
 
 const PRIOR_HEAD = "e2c1ccb3be53809b8b935cf4882137a08fa08576";
 const CURRENT_HEAD = "f430b5141b0afc0b2796e38bc90ef45df4c0dcd9";
-const SURFACE_DIGEST = "ef19f57e568927046de8ae5560321ded947c70e0d921b09cd6fc72e0f5a069c0";
+const SURFACE_DIGEST = "10e90dfc4e5e2a7e203ff93d27af4e98cb3bd53a25d5b7f4c06780d6a76d15a8";
 const REPORT_FILE = "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json";
 const BASE_VALUE = "experiments/tla-conformance/final-convergence/baseline-v309-before-r170-transport.json";
 const BASE_PRODUCER = "experiments/tla-conformance/final-convergence/baseline-a121-b58-before-r170-transport.json";
