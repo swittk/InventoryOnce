@@ -1933,6 +1933,21 @@ var CURRENT_REVIEW_ASSURANCE_RECEIPT = "experiments/tla-conformance/final-conver
 function sha2562(file) {
   return crypto2.createHash("sha256").update(fs5.readFileSync(file)).digest("hex");
 }
+function canonicalJson2(value) {
+  if (Array.isArray(value)) return `[${value.map(canonicalJson2).join(",")}]`;
+  if (value !== null && typeof value === "object") {
+    return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonicalJson2(value[key])}`).join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+function currentSurfaceSha256(repositoryRoot) {
+  const output = execFileSync(
+    process.execPath,
+    [path6.join(repositoryRoot, "scripts/formal-implementation-surface.cjs")],
+    { cwd: repositoryRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }
+  );
+  return crypto2.createHash("sha256").update(canonicalJson2(JSON.parse(output))).digest("hex");
+}
 function repositoryPath(repositoryRoot, file) {
   const root3 = path6.resolve(repositoryRoot);
   const target = path6.resolve(root3, file);
@@ -1961,7 +1976,11 @@ function verifyCurrentReviewAssurance(repositoryRoot) {
   const report = JSON.parse(fs5.readFileSync(reportPath, "utf8"));
   assert4.equal(report.repositoryHead, receipt.certifiedHead, "Current review assurance report certifies the wrong commit.");
   assert4.equal(report.fullFormal, true, "Current review assurance report is not a full-formal run.");
-  assert4.equal(report.surfaceSha256, receipt.surfaceSha256, "Current review assurance surface digest disagrees with the receipt.");
+  assert4.match(report.surfaceSha256, /^[a-f0-9]{64}$/u, "Current review assurance report surface digest is invalid.");
+  assert4.match(receipt.surfaceSha256, /^[a-f0-9]{64}$/u, "Current review assurance receipt surface digest is invalid.");
+  const independentlyDerivedSurfaceSha256 = currentSurfaceSha256(root3);
+  assert4.equal(report.surfaceSha256, independentlyDerivedSurfaceSha256, "Current review assurance report surface digest is not independently source-derived.");
+  assert4.equal(receipt.surfaceSha256, independentlyDerivedSurfaceSha256, "Current review assurance receipt surface digest is not independently source-derived.");
   assert4.equal(report.apiEntries, 510, "Current review assurance API census changed.");
   assert4.equal(report.compilerCallGraphUnresolvedApis, 0, "Current review assurance has unresolved public APIs.");
   assert4.equal(report.repositoryStateSha256, receipt.repositoryStateSha256, "Current review assurance state receipt disagrees with the report.");
@@ -1996,9 +2015,9 @@ function verifyCurrentReviewAssurance(repositoryRoot) {
 
 // experiments/tla-conformance/final-convergence/final-head-transport.mjs
 var OLD_SOURCE_HEAD = "6cafd49ff4b3729f80ae35d9fc0220f7a8a4b55a";
-var FINAL_SOURCE_HEAD = "8626522ad980b34b7939a5ac278d35e2c6f9a832";
+var FINAL_SOURCE_HEAD = "4d9af05917d681630cc697bf2abb367c23de12ca";
 var OLD_SURFACE_DIGEST = "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a";
-var FINAL_SURFACE_DIGEST = "ef19f57e568927046de8ae5560321ded947c70e0d921b09cd6fc72e0f5a069c0";
+var FINAL_SURFACE_DIGEST = "df3e798fd72cdf07ac5c088b706aa48068e84de0781b5e465b8b3c17e751c92d";
 var OLD_SURFACE_FILE = "experiments/tla-conformance/final-convergence/old-surface-cc97e.json";
 var R170_TRANSPORT = "experiments/tla-conformance/final-convergence/r170-assurance-transport.json";
 var R170_PRISTINE_TRANSPORT = "experiments/tla-conformance/final-convergence/r170-pristine-repro-transport.json";
@@ -2008,6 +2027,7 @@ var POST_CERTIFICATE_AUTHORITATIVE_FILES = Object.freeze([
 var CHANGED_SOURCE_FILES = Object.freeze([
   "src/authority-cutover.ts",
   "src/deficits.ts",
+  "src/fungibility.ts",
   "src/migrations.ts",
   "src/projection.ts",
   "src/storage.ts",
@@ -2030,6 +2050,11 @@ var DEFICIT_CHANGED_RUNTIME = Object.freeze([
 var MIGRATION_CHANGED_RUNTIME = Object.freeze([
   "fn:createDurableInventoryMigrationPlan",
   "fn:dryRunInventoryMigration"
+]);
+var FUNGIBILITY_CHANGED_RUNTIME = Object.freeze([
+  "fn:fungibilityAllocationIncrement",
+  "fn:positionHasIndependentMeasuredContents",
+  "fn:positionHasUnfixedIndependentMeasuredContents"
 ]);
 function git(args, encoding = "utf8") {
   return execFileSync2("git", args, { cwd: process.cwd(), encoding, maxBuffer: 64 * 1024 * 1024 });
@@ -2156,6 +2181,7 @@ function buildFinalHeadTransport({ repositoryRoot = process.cwd() } = {}) {
   assert5.deepEqual(changedRuntime("src/authority-cutover.ts"), AUTHORITY_CHANGED_RUNTIME);
   assert5.deepEqual(changedRuntime("src/storage.ts"), STORAGE_CHANGED_RUNTIME);
   assert5.deepEqual(changedRuntime("src/deficits.ts"), DEFICIT_CHANGED_RUNTIME);
+  assert5.deepEqual(changedRuntime("src/fungibility.ts"), FUNGIBILITY_CHANGED_RUNTIME);
   assert5.deepEqual(changedRuntime("src/migrations.ts"), MIGRATION_CHANGED_RUNTIME);
   const deficitTest = currentText("test/review-hardening.test.ts");
   assert5(deficitTest.includes("treats an empty recorded-deficit location selection as all locations"));
@@ -2187,12 +2213,13 @@ function buildFinalHeadTransport({ repositoryRoot = process.cwd() } = {}) {
       authorityCutover: { changedRuntime: AUTHORITY_CHANGED_RUNTIME, rule: "Completed-cutover replay retains durable target evidence and compares source dispositions through their canonical migration fingerprint, making equivalent adapter key-order round trips replay-safe." },
       storage: { changedRuntime: STORAGE_CHANGED_RUNTIME, rule: "R144 records and validates exact published migration target root/revision; other storage runtime declarations are unchanged." },
       recordedDeficit: { changedRuntime: DEFICIT_CHANGED_RUNTIME, rule: "R167 makes empty locationIds select every location for recorded-deficit burdening while preserving strict non-empty filtering and independent per-location deficit accounting." },
+      fungibility: { changedRuntime: FUNGIBILITY_CHANGED_RUNTIME, rule: "Current review repair aligns fungibility allocation with ordinary picking: independent measurement axes fixed by intact packaging do not make the package unsplittable, while serial and genuinely unfixed measured contents retain whole-position allocation semantics." },
       migrationReplay: { changedRuntime: MIGRATION_CHANGED_RUNTIME, rule: "Migration planning reuses one immutable catalog snapshot per run; the snapshot value is unchanged and existing migration replay/plan assertions remain green." }
     },
     evidence: {
       oldSurface: { file: OLD_SURFACE_FILE, sha256: sha256(oldSurfaceBytes) },
       currentProductFiles: CHANGED_SOURCE_FILES.map((file) => ({ file, sha256: sha256(fs6.readFileSync(file)) })),
-      currentRegressionTests: ["test/authority.test.ts", "test/migrations.test.ts", "test/storage-conformance-suite.ts", "test/storage-conformance.test.ts", "test/review-hardening.test.ts"].map((file) => ({ file, sha256: sha256(fs6.readFileSync(file)) }))
+      currentRegressionTests: ["test/authority.test.ts", "test/migrations.test.ts", "test/storage-conformance-suite.ts", "test/storage-conformance.test.ts", "test/review-hardening.test.ts", "test/fungibility.test.ts"].map((file) => ({ file, sha256: sha256(fs6.readFileSync(file)) }))
     },
     currentReviewAssuranceTransport: (() => {
       const recorded = JSON.parse(fs6.readFileSync(R170_TRANSPORT, "utf8"));
@@ -2259,6 +2286,8 @@ import { execFileSync as execFileSync3 } from "node:child_process";
 var PRIOR_HEAD = "2ac31f795ad4d7a8ad38ab7fd0cea4c784a5e8fe";
 var CURRENT_HEAD = "7046246c88b32487def30e96fffa4b2a740e0005";
 var SURFACE_DIGEST = "ef19f57e568927046de8ae5560321ded947c70e0d921b09cd6fc72e0f5a069c0";
+var CURRENT_PRODUCT_HEAD = "4d9af05917d681630cc697bf2abb367c23de12ca";
+var CURRENT_INTEGRATED_SURFACE_DIGEST = "df3e798fd72cdf07ac5c088b706aa48068e84de0781b5e465b8b3c17e751c92d";
 var REPORT_FILE = "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json";
 var FIELD_FILE = "formal/implementation-conformance/FIELD_CLASSIFICATION.json";
 var BASE_VALUE = "experiments/tla-conformance/final-convergence/baseline-v309-before-r170-pristine-repro.json";
@@ -2313,6 +2342,7 @@ function buildR170PristineReproTransport({ repositoryRoot = process.cwd() } = {}
   );
   const currentReviewAssurance = verifyCurrentReviewAssurance(root3);
   const certifiedHead = currentReviewAssurance.receipt.certifiedHead;
+  assert6.equal(certifiedHead, CURRENT_PRODUCT_HEAD, "Current review assurance no longer certifies the reviewed product repair head.");
   const postRepairAuthoritative = git2([
     "diff",
     "--name-only",
@@ -2329,7 +2359,7 @@ function buildR170PristineReproTransport({ repositoryRoot = process.cwd() } = {}
   ], root3).split(/\r?\n/u).filter(Boolean).sort();
   assert6(postRepairAuthoritative.length > 0, "Current review assurance must explicitly transport authoritative bytes after the historical pristine-repro repair.");
   const surface2 = discoverCompilerSurface(root3);
-  assert6.equal(surface2.digest, SURFACE_DIGEST);
+  assert6.equal(surface2.digest, CURRENT_INTEGRATED_SURFACE_DIGEST, "Integrated 535-callable surface no longer matches the current reviewed product head.");
   assert6.equal(surface2.callables.length, 535);
   const valueAffected = [];
   const producerAffected = [];
@@ -2358,6 +2388,7 @@ function buildR170PristineReproTransport({ repositoryRoot = process.cwd() } = {}
     priorHead: PRIOR_HEAD,
     currentHead: CURRENT_HEAD,
     surfaceDigest: SURFACE_DIGEST,
+    currentSurfaceDigest: surface2.digest,
     implementationSurfaceDigest: currentReviewAssurance.receipt.surfaceSha256,
     exactRepairFiles: EXPECTED_REPAIR_DELTA,
     postRepairAuthoritativeFiles: postRepairAuthoritative,
