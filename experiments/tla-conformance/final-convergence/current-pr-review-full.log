@@ -1,7 +1,7 @@
 
 === generate-current-surface ===
 
-> @inventoryonce/core@0.1.0 assurance:generate /tmp/inventoryonce-pristine-review5169716499-final
+> @inventoryonce/core@0.1.0 assurance:generate /tmp/inventoryonce-pristine-escaped-vitest-891df4a
 > python3 scripts/generate-formal-implementation-assurance.py
 
 {
@@ -20,7 +20,7 @@
 
 === audit-api-field-trace-gap-correspondence ===
 
-> @inventoryonce/core@0.1.0 assurance /tmp/inventoryonce-pristine-review5169716499-final
+> @inventoryonce/core@0.1.0 assurance /tmp/inventoryonce-pristine-escaped-vitest-891df4a
 > node scripts/audit-formal-implementation-conformance.mjs --write-report
 
 {
@@ -40,8 +40,8 @@
   "indirectCallChainApis": 313,
   "explicitGapApis": 4,
   "unreferencedPublicApis": 0,
-  "compilerCallGraphCallables": 2489,
-  "compilerCallGraphEdges": 6815,
+  "compilerCallGraphCallables": 2490,
+  "compilerCallGraphEdges": 6817,
   "compilerCallGraphTestRoots": 44,
   "compilerCallGraphWitnessedApis": 510,
   "compilerCallGraphUnresolvedApis": 0,
@@ -69,11 +69,11 @@
 
 === package-strict-types ===
 
-> @inventoryonce/core@0.1.0 check /tmp/inventoryonce-pristine-review5169716499-final
+> @inventoryonce/core@0.1.0 check /tmp/inventoryonce-pristine-escaped-vitest-891df4a
 > tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.test.json && pnpm assurance
 
 
-> @inventoryonce/core@0.1.0 assurance /tmp/inventoryonce-pristine-review5169716499-final
+> @inventoryonce/core@0.1.0 assurance /tmp/inventoryonce-pristine-escaped-vitest-891df4a
 > node scripts/audit-formal-implementation-conformance.mjs
 
 {
@@ -93,8 +93,8 @@
   "indirectCallChainApis": 313,
   "explicitGapApis": 4,
   "unreferencedPublicApis": 0,
-  "compilerCallGraphCallables": 2489,
-  "compilerCallGraphEdges": 6815,
+  "compilerCallGraphCallables": 2490,
+  "compilerCallGraphEdges": 6817,
   "compilerCallGraphTestRoots": 44,
   "compilerCallGraphWitnessedApis": 510,
   "compilerCallGraphUnresolvedApis": 0,
@@ -122,154 +122,154 @@
 
 === memory-trace-property-and-authority-evidence ===
 
-[1m[46m RUN [49m[22m [36mv4.0.5 [39m[90m/tmp/inventoryonce-pristine-review5169716499-final[39m
+[1m[46m RUN [49m[22m [36mv4.0.5 [39m[90m/tmp/inventoryonce-pristine-escaped-vitest-891df4a[39m
 
-file:///tmp/inventoryonce-pristine-review5169716499-final/scripts/formal-models.mjs:65
+file:///tmp/inventoryonce-pristine-escaped-vitest-891df4a/scripts/formal-models.mjs:65
       throw new Error(`Unsupported TLC check list entry '${line}'.`);
             ^
 
 Error: Unsupported TLC check list entry 'TypeOK, ReportMatchesCurrentTruth'.
-    at formalConfigCheckNames (file:///tmp/inventoryonce-pristine-review5169716499-final/scripts/formal-models.mjs:65:13)
-    at file:///tmp/inventoryonce-pristine-review5169716499-final/[eval1]:1:71
+    at formalConfigCheckNames (file:///tmp/inventoryonce-pristine-escaped-vitest-891df4a/scripts/formal-models.mjs:65:13)
+    at file:///tmp/inventoryonce-pristine-escaped-vitest-891df4a/[eval1]:1:71
     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:272:26)
     at async ModuleLoader.executeModuleJob (node:internal/modules/esm/loader:268:20)
     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
 
 Node.js v22.22.1
- [32m✓[39m test/formal-public-surface-direct.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 38[2mms[22m[39m
- [32m✓[39m test/transformations.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 72[2mms[22m[39m
- [32m✓[39m test/formal-public-surface-completion.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 83[2mms[22m[39m
- [32m✓[39m test/read-snapshot.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 114[2mms[22m[39m
- [32m✓[39m test/reclassification.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 171[2mms[22m[39m
- [32m✓[39m test/authority.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 157[2mms[22m[39m
- [32m✓[39m test/lots.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 158[2mms[22m[39m
- [32m✓[39m test/migrations.test.ts [2m([22m[2m22 tests[22m[2m)[22m[32m 180[2mms[22m[39m
- [32m✓[39m test/collections.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 187[2mms[22m[39m
- [32m✓[39m test/composition.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 268[2mms[22m[39m
- [32m✓[39m test/catalog-publication.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 252[2mms[22m[39m
- [32m✓[39m test/containers.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 341[2mms[22m[39m
- [32m✓[39m test/transfer-lifecycle.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 310[2mms[22m[39m
- [32m✓[39m test/formal-implementation-refinement.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 327[2mms[22m[39m
- [32m✓[39m test/fungibility.test.ts [2m([22m[2m15 tests[22m[2m)[22m[33m 348[2mms[22m[39m
- [32m✓[39m test/formal-storage-refinement.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 425[2mms[22m[39m
- [32m✓[39m test/reservations-counts.test.ts [2m([22m[2m13 tests[22m[2m)[22m[33m 475[2mms[22m[39m
- [32m✓[39m test/traceability-corrections.test.ts [2m([22m[2m15 tests[22m[2m)[22m[33m 501[2mms[22m[39m
+ [32m✓[39m test/formal-public-surface-direct.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m test/transformations.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 58[2mms[22m[39m
+ [32m✓[39m test/read-snapshot.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 115[2mms[22m[39m
+ [32m✓[39m test/formal-public-surface-completion.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 79[2mms[22m[39m
+ [32m✓[39m test/reclassification.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 149[2mms[22m[39m
+ [32m✓[39m test/authority.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 163[2mms[22m[39m
+ [32m✓[39m test/lots.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 155[2mms[22m[39m
+ [32m✓[39m test/collections.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 179[2mms[22m[39m
+ [32m✓[39m test/migrations.test.ts [2m([22m[2m22 tests[22m[2m)[22m[32m 175[2mms[22m[39m
+ [32m✓[39m test/catalog-publication.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 189[2mms[22m[39m
+ [32m✓[39m test/formal-implementation-refinement.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 245[2mms[22m[39m
+ [32m✓[39m test/composition.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 302[2mms[22m[39m
+ [32m✓[39m test/transfer-lifecycle.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 309[2mms[22m[39m
+ [32m✓[39m test/containers.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 360[2mms[22m[39m
+ [32m✓[39m test/reservations-counts.test.ts [2m([22m[2m13 tests[22m[2m)[22m[33m 430[2mms[22m[39m
+ [32m✓[39m test/fungibility.test.ts [2m([22m[2m15 tests[22m[2m)[22m[33m 435[2mms[22m[39m
+ [32m✓[39m test/formal-storage-refinement.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 406[2mms[22m[39m
+ [32m✓[39m test/traceability-corrections.test.ts [2m([22m[2m15 tests[22m[2m)[22m[33m 631[2mms[22m[39m
 [90mstdout[2m | test/projection-index-scale.test.ts[2m > [22m[2mprojection index real-world scale[2m > [22m[2mkeeps a 5,000-lot batch near-linear and fully rebuildable
-[22m[39m{"adapter":"memory","baselinePositions":1000,"scaledPositions":5000,"baselinePublishMs":431.07697199999984,"scaledPublishMs":1452.8234250000003,"scaledReadMs":59.92511799999966,"scaledPlanMs":142.39392899999984}
+[22m[39m{"adapter":"memory","baselinePositions":1000,"scaledPositions":5000,"baselinePublishMs":443.88154699999996,"scaledPublishMs":1438.8360249999998,"scaledReadMs":62.10987100000011,"scaledPlanMs":139.7031420000003}
 
 [90mstdout[2m | test/projection-index-scale.test.ts[2m > [22m[2mprojection index real-world scale[2m > [22m[2mrebuilds retained event history near-linearly without cloning growing indexes
-[22m[39m{"adapter":"memory-history-replay","baselineEvents":500,"scaledEvents":2000,"baselineReplayMs":13.191735000000335,"scaledReplayMs":38.70089800000005}
+[22m[39m{"adapter":"memory-history-replay","baselineEvents":500,"scaledEvents":2000,"baselineReplayMs":13.502031999999872,"scaledReplayMs":31.65330800000038}
 
 [90mstdout[2m | test/projection-index-scale.test.ts[2m > [22m[2mprojection index real-world scale[2m > [22m[2mrebuilds containment history near-linearly through the private graph builder
-[22m[39m{"adapter":"memory-traceability-replay","kind":"containment","baselineRelations":250,"scaledRelations":1000,"baselineReplayMs":4.649464999999964,"scaledReplayMs":18.607902999999624}
+[22m[39m{"adapter":"memory-traceability-replay","kind":"containment","baselineRelations":250,"scaledRelations":1000,"baselineReplayMs":11.986336999999821,"scaledReplayMs":16.409338999999818}
 
 [90mstdout[2m | test/projection-index-scale.test.ts[2m > [22m[2mprojection index real-world scale[2m > [22m[2mrebuilds genealogy history near-linearly through the private graph builder
-[22m[39m{"adapter":"memory-traceability-replay","kind":"genealogy","baselineRelations":250,"scaledRelations":1000,"baselineReplayMs":4.067833999999948,"scaledReplayMs":18.66901000000007}
+[22m[39m{"adapter":"memory-traceability-replay","kind":"genealogy","baselineRelations":250,"scaledRelations":1000,"baselineReplayMs":4.363770999999815,"scaledReplayMs":15.603919000000133}
 
 [90mstdout[2m | test/projection-index-scale.test.ts[2m > [22m[2mprojection index real-world scale[2m > [22m[2mplans a 100-request policy batch over 1,000 positions from one private snapshot
-[22m[39m{"adapter":"memory-policy-batch","positions":1000,"requests":100,"elapsedMs":912.2269489999999}
+[22m[39m{"adapter":"memory-policy-batch","positions":1000,"requests":100,"elapsedMs":818.0455459999994}
 
- [32m✓[39m test/projection-index-scale.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 3835[2mms[22m[39m
-     [33m[2m✓[22m[39m keeps a 5,000-lot batch near-linear and fully rebuildable [33m 2279[2mms[22m[39m
-     [33m[2m✓[22m[39m plans a 100-request policy batch over 1,000 positions from one private snapshot [33m 1221[2mms[22m[39m
- [32m✓[39m test/formal-implementation-conformance.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 13503[2mms[22m[39m
-     [33m[2m✓[22m[39m matches every public callable and reachable field to checked formal obligations [33m 12988[2mms[22m[39m
+ [32m✓[39m test/projection-index-scale.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 3716[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps a 5,000-lot batch near-linear and fully rebuildable [33m 2271[2mms[22m[39m
+     [33m[2m✓[22m[39m plans a 100-request policy batch over 1,000 positions from one private snapshot [33m 1120[2mms[22m[39m
+ [32m✓[39m test/formal-implementation-conformance.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 13377[2mms[22m[39m
+     [33m[2m✓[22m[39m matches every public callable and reachable field to checked formal obligations [33m 12881[2mms[22m[39m
 
 [2m Test Files [22m [1m[32m20 passed[39m[22m[90m (20)[39m
 [2m      Tests [22m [1m[32m171 passed[39m[22m[90m (171)[39m
-[2m   Start at [22m 00:12:14
-[2m   Duration [22m 14.04s[2m (transform 10.11s, setup 0ms, collect 22.09s, tests 21.75s, environment 6ms, prepare 219ms)[22m
+[2m   Start at [22m 01:20:56
+[2m   Duration [22m 13.93s[2m (transform 11.22s, setup 0ms, collect 23.85s, tests 21.50s, environment 6ms, prepare 205ms)[22m
 
 
 === complete-package-tests ===
 
-> @inventoryonce/core@0.1.0 test /tmp/inventoryonce-pristine-review5169716499-final
+> @inventoryonce/core@0.1.0 test /tmp/inventoryonce-pristine-escaped-vitest-891df4a
 > node --test scripts/formal-proof-cache.selftest.mjs scripts/executable-assurance-coherence.selftest.mjs && vitest run
 
 TAP version 13
 # Subtest: same-run executable summary matches every manifest-derived field
 ok 1 - same-run executable summary matches every manifest-derived field
   ---
-  duration_ms: 1.567025
+  duration_ms: 1.553875
   type: 'test'
   ...
 # Subtest: missing or empty API surface digests fail closed
 ok 2 - missing or empty API surface digests fail closed
   ---
-  duration_ms: 0.558841
+  duration_ms: 0.602185
   type: 'test'
   ...
 # Subtest: one stale manifest-derived field rejects the executable report
 ok 3 - one stale manifest-derived field rejects the executable report
   ---
-  duration_ms: 1.31725
+  duration_ms: 1.277621
   type: 'test'
   ...
 # Subtest: report-only manifest counters fail closed when missing or invalid
 ok 4 - report-only manifest counters fail closed when missing or invalid
   ---
-  duration_ms: 0.37197
+  duration_ms: 0.347765
   type: 'test'
   ...
 # Subtest: missing or malformed trace apiEntries fail closed
 ok 5 - missing or malformed trace apiEntries fail closed
   ---
-  duration_ms: 0.334889
+  duration_ms: 0.410123
   type: 'test'
   ...
 # Subtest: unknown executable trace refinement modes fail closed
 ok 6 - unknown executable trace refinement modes fail closed
   ---
-  duration_ms: 0.181197
+  duration_ms: 0.206901
   type: 'test'
   ...
 # Subtest: implementation model non-claims cover API, field, and trace manifests
 ok 7 - implementation model non-claims cover API, field, and trace manifests
   ---
-  duration_ms: 0.425057
+  duration_ms: 0.488796
   type: 'test'
   ...
 # Subtest: transitive local module bytes participate in the proof key
 ok 8 - transitive local module bytes participate in the proof key
   ---
-  duration_ms: 4.21032
+  duration_ms: 4.180556
   type: 'test'
   ...
 # Subtest: exact TLC worker setting participates in the proof key
 ok 9 - exact TLC worker setting participates in the proof key
   ---
-  duration_ms: 1.458766
+  duration_ms: 1.389971
   type: 'test'
   ...
 # Subtest: positive cache records persist exact terminal TLC state/depth evidence
 ok 10 - positive cache records persist exact terminal TLC state/depth evidence
   ---
-  duration_ms: 1.803482
+  duration_ms: 2.622074
   type: 'test'
   ...
 # Subtest: cache records require exact descriptor identity and verified status
 ok 11 - cache records require exact descriptor identity and verified status
   ---
-  duration_ms: 3.537677
+  duration_ms: 2.074727
   type: 'test'
   ...
 # Subtest: mutation proof acceptance requires one completed TLC safety-violation process
 ok 12 - mutation proof acceptance requires one completed TLC safety-violation process
   ---
-  duration_ms: 0.21492
+  duration_ms: 0.200662
   type: 'test'
   ...
 # Subtest: mutation registry rejects invalid model and invariant tuple content before TLC
 ok 13 - mutation registry rejects invalid model and invariant tuple content before TLC
   ---
-  duration_ms: 0.954992
+  duration_ms: 0.807191
   type: 'test'
   ...
 # Subtest: mutation registry rejects missing, duplicate, and extra configs
 ok 14 - mutation registry rejects missing, duplicate, and extra configs
   ---
-  duration_ms: 0.403095
+  duration_ms: 0.370239
   type: 'test'
   ...
 1..14
@@ -280,110 +280,109 @@ ok 14 - mutation registry rejects missing, duplicate, and extra configs
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 94.384216
+# duration_ms 95.765964
 
-[1m[46m RUN [49m[22m [36mv4.0.5 [39m[90m/tmp/inventoryonce-pristine-review5169716499-final[39m
+[1m[46m RUN [49m[22m [36mv4.0.5 [39m[90m/tmp/inventoryonce-pristine-escaped-vitest-891df4a[39m
 
-file:///tmp/inventoryonce-pristine-review5169716499-final/scripts/formal-models.mjs:65
+file:///tmp/inventoryonce-pristine-escaped-vitest-891df4a/scripts/formal-models.mjs:65
       throw new Error(`Unsupported TLC check list entry '${line}'.`);
             ^
 
 Error: Unsupported TLC check list entry 'TypeOK, ReportMatchesCurrentTruth'.
-    at formalConfigCheckNames (file:///tmp/inventoryonce-pristine-review5169716499-final/scripts/formal-models.mjs:65:13)
-    at file:///tmp/inventoryonce-pristine-review5169716499-final/[eval1]:1:71
+    at formalConfigCheckNames (file:///tmp/inventoryonce-pristine-escaped-vitest-891df4a/scripts/formal-models.mjs:65:13)
+    at file:///tmp/inventoryonce-pristine-escaped-vitest-891df4a/[eval1]:1:71
     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:272:26)
     at async ModuleLoader.executeModuleJob (node:internal/modules/esm/loader:268:20)
     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
 
 Node.js v22.22.1
- [32m✓[39m test/formal-callgraph-semantics.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 22[2mms[22m[39m
- [32m✓[39m test/authority-durable-shape.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 553[2mms[22m[39m
-     [33m[2m✓[22m[39m accepts exactly the phase-consistent semantic classes in the complete finite shape census [33m 544[2mms[22m[39m
+ [32m✓[39m test/formal-callgraph-semantics.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32m✓[39m test/authority-durable-shape.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 547[2mms[22m[39m
+     [33m[2m✓[22m[39m accepts exactly the phase-consistent semantic classes in the complete finite shape census [33m 533[2mms[22m[39m
  [32m✓[39m test/authority-arbitrary-port.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 84[2mms[22m[39m
- [32m✓[39m test/r47-concurrent-completion-peer.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 88[2mms[22m[39m
- [32m✓[39m test/transformations.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 69[2mms[22m[39m
- [32m✓[39m test/read-model.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 124[2mms[22m[39m
- [32m✓[39m test/dual-measure-counts.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 147[2mms[22m[39m
- [32m✓[39m test/catalog-lifecycle.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 136[2mms[22m[39m
- [32m✓[39m test/reclassification.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 168[2mms[22m[39m
- [32m✓[39m test/catalog-composition-publication.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 180[2mms[22m[39m
- [32m✓[39m test/authority.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 164[2mms[22m[39m
- [32m✓[39m test/formal-public-surface-completion.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 112[2mms[22m[39m
- [32m✓[39m test/record-key-domain.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 173[2mms[22m[39m
- [32m✓[39m test/availability.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 256[2mms[22m[39m
- [32m✓[39m test/lots.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 193[2mms[22m[39m
- [32m✓[39m test/catalog-stock.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 292[2mms[22m[39m
- [32m✓[39m test/collections.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 226[2mms[22m[39m
- [32m✓[39m test/migrations.test.ts [2m([22m[2m22 tests[22m[2m)[22m[32m 270[2mms[22m[39m
+ [32m✓[39m test/r47-concurrent-completion-peer.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 99[2mms[22m[39m
+ [32m✓[39m test/transformations.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 73[2mms[22m[39m
+ [32m✓[39m test/read-model.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 129[2mms[22m[39m
+ [32m✓[39m test/catalog-lifecycle.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 140[2mms[22m[39m
+ [32m✓[39m test/dual-measure-counts.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 151[2mms[22m[39m
+ [32m✓[39m test/record-key-domain.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 148[2mms[22m[39m
+ [32m✓[39m test/catalog-composition-publication.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 184[2mms[22m[39m
+ [32m✓[39m test/formal-public-surface-completion.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 95[2mms[22m[39m
+ [32m✓[39m test/reclassification.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 189[2mms[22m[39m
+ [32m✓[39m test/collections.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 196[2mms[22m[39m
+ [32m✓[39m test/availability.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 261[2mms[22m[39m
+ [32m✓[39m test/authority.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 202[2mms[22m[39m
+ [32m✓[39m test/catalog-stock.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 275[2mms[22m[39m
+ [32m✓[39m test/lots.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 198[2mms[22m[39m
+ [32m✓[39m test/composition.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 372[2mms[22m[39m
+ [32m✓[39m test/migrations.test.ts [2m([22m[2m22 tests[22m[2m)[22m[32m 263[2mms[22m[39m
  [32m✓[39m test/catalog-publication.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 288[2mms[22m[39m
- [32m✓[39m test/composition.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 374[2mms[22m[39m
- [32m✓[39m test/malformed-input-conformance.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 10[2mms[22m[39m
- [32m✓[39m test/containers.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 405[2mms[22m[39m
- [32m✓[39m test/digest.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 9[2mms[22m[39m
- [32m✓[39m test/allocation.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 199[2mms[22m[39m
- [32m✓[39m test/reservation-closure-shortage.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 365[2mms[22m[39m
+ [32m✓[39m test/malformed-input-conformance.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m test/allocation.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 192[2mms[22m[39m
+ [32m✓[39m test/digest.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m test/catalog-extension.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 172[2mms[22m[39m
  [32m✓[39m test/formal-public-surface-direct.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 25[2mms[22m[39m
- [32m✓[39m test/fungibility.test.ts [2m([22m[2m15 tests[22m[2m)[22m[33m 477[2mms[22m[39m
- [32m✓[39m test/formal-implementation-refinement.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 387[2mms[22m[39m
-     [33m[2m✓[22m[39m replays every bounded receive/issue/transfer trace against arithmetic invariants [33m 302[2mms[22m[39m
- [32m✓[39m test/catalog-extension.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 173[2mms[22m[39m
- [32m✓[39m test/policy-operations.test.ts [2m([22m[2m19 tests[22m[2m)[22m[33m 506[2mms[22m[39m
- [32m✓[39m test/reservations-counts.test.ts [2m([22m[2m13 tests[22m[2m)[22m[33m 525[2mms[22m[39m
- [32m✓[39m test/transfer-lifecycle.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 379[2mms[22m[39m
- [32m✓[39m test/read-snapshot.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 99[2mms[22m[39m
- [32m✓[39m test/public-api.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 7[2mms[22m[39m
- [32m✓[39m test/allocation-results.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 11[2mms[22m[39m
- [32m✓[39m test/reservation-consume-shortage.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 584[2mms[22m[39m
- [32m✓[39m test/traceability-corrections.test.ts [2m([22m[2m15 tests[22m[2m)[22m[33m 667[2mms[22m[39m
- [32m✓[39m test/review-hardening.test.ts [2m([22m[2m27 tests[22m[2m)[22m[33m 755[2mms[22m[39m
-     [33m[2m✓[22m[39m solves competing broad package claims well above twenty pieces exactly [33m 368[2mms[22m[39m
- [32m✓[39m test/projection-indexes.test.ts [2m([22m[2m11 tests[22m[2m)[22m[33m 853[2mms[22m[39m
-     [33m[2m✓[22m[39m keeps reset, transfer, backdated correction, and rebuild provenance exact at a fixed candidate count [33m 545[2mms[22m[39m
+ [32m✓[39m test/containers.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 369[2mms[22m[39m
+ [32m✓[39m test/reservation-closure-shortage.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 330[2mms[22m[39m
+ [32m✓[39m test/fungibility.test.ts [2m([22m[2m15 tests[22m[2m)[22m[33m 460[2mms[22m[39m
+ [32m✓[39m test/read-snapshot.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 85[2mms[22m[39m
+ [32m✓[39m test/formal-implementation-refinement.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 375[2mms[22m[39m
+ [32m✓[39m test/transfer-lifecycle.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 398[2mms[22m[39m
+ [32m✓[39m test/policy-operations.test.ts [2m([22m[2m19 tests[22m[2m)[22m[33m 496[2mms[22m[39m
+ [32m✓[39m test/public-api.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m test/reservations-counts.test.ts [2m([22m[2m13 tests[22m[2m)[22m[33m 544[2mms[22m[39m
+ [32m✓[39m test/allocation-results.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m test/reservation-consume-shortage.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 617[2mms[22m[39m
+ [32m✓[39m test/traceability-corrections.test.ts [2m([22m[2m15 tests[22m[2m)[22m[33m 674[2mms[22m[39m
+ [32m✓[39m test/projection-indexes.test.ts [2m([22m[2m11 tests[22m[2m)[22m[33m 788[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps reset, transfer, backdated correction, and rebuild provenance exact at a fixed candidate count [33m 501[2mms[22m[39m
+ [32m✓[39m test/review-hardening.test.ts [2m([22m[2m27 tests[22m[2m)[22m[33m 763[2mms[22m[39m
+     [33m[2m✓[22m[39m solves competing broad package claims well above twenty pieces exactly [33m 355[2mms[22m[39m
  [32m✓[39m test/formal-storage-refinement.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 389[2mms[22m[39m
- [32m✓[39m test/documentation.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 991[2mms[22m[39m
-   [33m[2m✓[22m[39m every declared type, field, enum value, function, and method has purpose JSDoc [33m 932[2mms[22m[39m
- [32m✓[39m test/storage-conformance.test.ts [2m([22m[2m200 tests[22m[2m)[22m[33m 1697[2mms[22m[39m
+ [32m✓[39m test/documentation.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 1127[2mms[22m[39m
+   [33m[2m✓[22m[39m every declared type, field, enum value, function, and method has purpose JSDoc [33m 1070[2mms[22m[39m
+ [32m✓[39m test/storage-conformance.test.ts [2m([22m[2m200 tests[22m[2m)[22m[33m 1654[2mms[22m[39m
 [90mstdout[2m | test/projection-index-scale.test.ts[2m > [22m[2mprojection index real-world scale[2m > [22m[2mkeeps a 5,000-lot batch near-linear and fully rebuildable
-[22m[39m{"adapter":"memory","baselinePositions":1000,"scaledPositions":5000,"baselinePublishMs":572.6615800000002,"scaledPublishMs":1517.240288,"scaledReadMs":65.08989299999939,"scaledPlanMs":149.74635300000045}
+[22m[39m{"adapter":"memory","baselinePositions":1000,"scaledPositions":5000,"baselinePublishMs":609.283169,"scaledPublishMs":1504.4932,"scaledReadMs":62.36443499999996,"scaledPlanMs":141.9689440000002}
 
 [90mstdout[2m | test/projection-index-scale.test.ts[2m > [22m[2mprojection index real-world scale[2m > [22m[2mrebuilds retained event history near-linearly without cloning growing indexes
-[22m[39m{"adapter":"memory-history-replay","baselineEvents":500,"scaledEvents":2000,"baselineReplayMs":16.69081499999993,"scaledReplayMs":30.26531100000011}
+[22m[39m{"adapter":"memory-history-replay","baselineEvents":500,"scaledEvents":2000,"baselineReplayMs":14.776268000000528,"scaledReplayMs":32.614847999999256}
 
 [90mstdout[2m | test/projection-index-scale.test.ts[2m > [22m[2mprojection index real-world scale[2m > [22m[2mrebuilds containment history near-linearly through the private graph builder
-[22m[39m{"adapter":"memory-traceability-replay","kind":"containment","baselineRelations":250,"scaledRelations":1000,"baselineReplayMs":5.042519000000539,"scaledReplayMs":26.01877400000012}
+[22m[39m{"adapter":"memory-traceability-replay","kind":"containment","baselineRelations":250,"scaledRelations":1000,"baselineReplayMs":4.672199999999975,"scaledReplayMs":17.946420999999646}
 
 [90mstdout[2m | test/projection-index-scale.test.ts[2m > [22m[2mprojection index real-world scale[2m > [22m[2mrebuilds genealogy history near-linearly through the private graph builder
-[22m[39m{"adapter":"memory-traceability-replay","kind":"genealogy","baselineRelations":250,"scaledRelations":1000,"baselineReplayMs":4.074006999999256,"scaledReplayMs":19.400676000000203}
+[22m[39m{"adapter":"memory-traceability-replay","kind":"genealogy","baselineRelations":250,"scaledRelations":1000,"baselineReplayMs":3.6421390000004976,"scaledReplayMs":16.243751999999404}
 
 [90mstdout[2m | test/projection-index-scale.test.ts[2m > [22m[2mprojection index real-world scale[2m > [22m[2mplans a 100-request policy batch over 1,000 positions from one private snapshot
-[22m[39m{"adapter":"memory-policy-batch","positions":1000,"requests":100,"elapsedMs":842.7970380000006}
+[22m[39m{"adapter":"memory-policy-batch","positions":1000,"requests":100,"elapsedMs":805.4826569999996}
 
- [32m✓[39m test/projection-index-scale.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 3996[2mms[22m[39m
-     [33m[2m✓[22m[39m keeps a 5,000-lot batch near-linear and fully rebuildable [33m 2507[2mms[22m[39m
-     [33m[2m✓[22m[39m plans a 100-request policy batch over 1,000 positions from one private snapshot [33m 1149[2mms[22m[39m
- [32m✓[39m test/formal-implementation-conformance.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 14008[2mms[22m[39m
-     [33m[2m✓[22m[39m matches every public callable and reachable field to checked formal obligations [33m 13479[2mms[22m[39m
+ [32m✓[39m test/projection-index-scale.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 3965[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps a 5,000-lot batch near-linear and fully rebuildable [33m 2531[2mms[22m[39m
+     [33m[2m✓[22m[39m plans a 100-request policy batch over 1,000 positions from one private snapshot [33m 1112[2mms[22m[39m
+ [32m✓[39m test/formal-implementation-conformance.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 13896[2mms[22m[39m
+     [33m[2m✓[22m[39m matches every public callable and reachable field to checked formal obligations [33m 13377[2mms[22m[39m
 
 [2m Test Files [22m [1m[32m44 passed[39m[22m[90m (44)[39m
-[2m      Tests [22m [1m[32m543 passed[39m[22m[90m (543)[39m
-[2m   Start at [22m 00:12:29
-[2m   Duration [22m 14.72s[2m (transform 21.66s, setup 0ms, collect 56.66s, tests 31.44s, environment 18ms, prepare 499ms)[22m
+[2m      Tests [22m [1m[32m544 passed[39m[22m[90m (544)[39m
+[2m   Start at [22m 01:21:10
+[2m   Duration [22m 14.60s[2m (transform 20.94s, setup 0ms, collect 55.75s, tests 31.28s, environment 17ms, prepare 510ms)[22m
 
 
 === package-production-build ===
 
-> @inventoryonce/core@0.1.0 build /tmp/inventoryonce-pristine-review5169716499-final
+> @inventoryonce/core@0.1.0 build /tmp/inventoryonce-pristine-escaped-vitest-891df4a
 > pnpm run clean && tsc -p tsconfig.json
 
 
-> @inventoryonce/core@0.1.0 clean /tmp/inventoryonce-pristine-review5169716499-final
+> @inventoryonce/core@0.1.0 clean /tmp/inventoryonce-pristine-escaped-vitest-891df4a
 > rm -rf dist
 
 
 === registered-tlc-model-suite ===
 
-> @inventoryonce/core@0.1.0 formal /tmp/inventoryonce-pristine-review5169716499-final
+> @inventoryonce/core@0.1.0 formal /tmp/inventoryonce-pristine-escaped-vitest-891df4a
 > node scripts/run-formal.mjs
 
 InventoryOnce formal mode: content-addressed proof cache enabled; TLC jobs=2; workers/job=16.
