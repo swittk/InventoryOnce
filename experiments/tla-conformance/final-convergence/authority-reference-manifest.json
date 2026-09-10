@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "status": "FINAL_LIVE_INPUT_CLOSURE",
-  "head": "f430b5141b0afc0b2796e38bc90ef45df4c0dcd9",
+  "head": "7046246c88b32487def30e96fffa4b2a740e0005",
   "surfaceDigest": "ec078013972d9ee2b4ba84d28cfa7449a18dc29679d81766e314db6a6139b81e",
-  "inputs": 62,
-  "totalBytes": 18202459,
+  "inputs": 66,
+  "totalBytes": 23708338,
   "untrackedProofInputs": 0,
   "rows": [
     {
       "file": "experiments/tla-conformance/final-convergence/authority-producer17.json",
-      "sha256": "aee078cd20e8d0464aded93168f261475323add19cb2f49b6b4e19caf3b0f3f8",
+      "sha256": "e6c67953510c5cad22dbef73336cb9437b280aa2d78411a49759802de9588890",
       "sizeBytes": 160740,
       "tracked": true,
       "nodeModules": false
     },
     {
       "file": "experiments/tla-conformance/final-convergence/authority-value3.json",
-      "sha256": "bdc69b7e7becebf866bd10639b581bddd9503928effb15597e5fb5e7416a0ac8",
+      "sha256": "2c4a2f7bc9c4c5e12b50786b92e7d1170c19cdbd749382efb847db869509492c",
       "sizeBytes": 20871,
       "tracked": true,
       "nodeModules": false
@@ -36,6 +36,13 @@
       "nodeModules": false
     },
     {
+      "file": "experiments/tla-conformance/final-convergence/baseline-a121-b58-before-r170-pristine-repro.json",
+      "sha256": "7a5f1a2e82fce15a0e4854286f4df2facc61801be5effdb4b2c8dd1219be51d9",
+      "sizeBytes": 1642798,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
       "file": "experiments/tla-conformance/final-convergence/baseline-a121-b58-before-r170-transport.json",
       "sha256": "68653caf96ed3964b70efdf0b46c73c265240d7a1d938bd459188f56471f48d5",
       "sizeBytes": 1640014,
@@ -50,6 +57,13 @@
       "nodeModules": false
     },
     {
+      "file": "experiments/tla-conformance/final-convergence/baseline-v309-before-r170-pristine-repro.json",
+      "sha256": "27746b0b48fa1f5da958c29a4eeaf0f52c4ba96c6a25decfe5176cdd9d456d06",
+      "sizeBytes": 1990423,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
       "file": "experiments/tla-conformance/final-convergence/baseline-v309-before-r170-transport.json",
       "sha256": "fbd998dc0bf00f87db438be07ba7869e2aefb7514b7e453309edec99e33e5631",
       "sizeBytes": 1990423,
@@ -58,8 +72,8 @@
     },
     {
       "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-      "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-      "sizeBytes": 4477,
+      "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+      "sizeBytes": 4960,
       "tracked": true,
       "nodeModules": false
     },
@@ -79,7 +93,7 @@
     },
     {
       "file": "experiments/tla-conformance/final-convergence/r137-v15.json",
-      "sha256": "d5418b17bd981815451052632afa54007567e1bffb75f36b24901d24198ca151",
+      "sha256": "00f048b95b403f1067cbb13192d90cfd35066de5328ae653a2f35f7c68705e8c",
       "sizeBytes": 215822,
       "tracked": true,
       "nodeModules": false
@@ -113,15 +127,22 @@
       "nodeModules": false
     },
     {
+      "file": "experiments/tla-conformance/final-convergence/r170-pristine-repro-transport.json",
+      "sha256": "454c2d79b07677ccee6a5f70a6733967da803e497fd19506c2a091511c789627",
+      "sizeBytes": 2620,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
       "file": "experiments/tla-conformance/final-convergence/readworld-producer24.json",
-      "sha256": "1b944e76dd3e9c68fe63c91a63cb3788bf41466ef5fb09b7746b210da6d10200",
+      "sha256": "2c2807410518b872886b55f9a4d314be0f8fcc11c8d115e2631ae06827669501",
       "sizeBytes": 394121,
       "tracked": true,
       "nodeModules": false
     },
     {
       "file": "experiments/tla-conformance/final-convergence/wrapper-producer11.json",
-      "sha256": "33e349ece2b14ae352e6aa77923b0a0939cc13d90b15ddff150f940465945f00",
+      "sha256": "c480b83371912573c4ee51dda4544b68022de97f609761e00cf3c329fee3604d",
       "sizeBytes": 190825,
       "tracked": true,
       "nodeModules": false
@@ -429,8 +450,15 @@
     },
     {
       "file": "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
-      "sha256": "24e3fdead4255e780da4323d250314141fe65f42c716099dbeabc6c6b77f9e28",
+      "sha256": "c72a4df713c27eff02fbf058f9ce541f4711574101cf40e93ede780d119f8cb5",
       "sizeBytes": 2459,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "formal/implementation-conformance/FIELD_CLASSIFICATION.json",
+      "sha256": "e9e0dfa2bec3200ac8e739e9ad40d0f1f4f992971bc3054d00b2d81789bba297",
+      "sizeBytes": 1869555,
       "tracked": true,
       "nodeModules": false
     },

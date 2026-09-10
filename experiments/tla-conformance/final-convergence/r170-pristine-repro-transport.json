@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "status": "R170_PRISTINE_REPRO_ASSURANCE_TRANSPORT_PROVED",
+  "priorHead": "2ac31f795ad4d7a8ad38ab7fd0cea4c784a5e8fe",
+  "currentHead": "7046246c88b32487def30e96fffa4b2a740e0005",
+  "surfaceDigest": "ec078013972d9ee2b4ba84d28cfa7449a18dc29679d81766e314db6a6139b81e",
+  "implementationSurfaceDigest": "119914a0dd1c1e02907669aef93b2ba7305e2f66cb614d4dfa75330732268aba",
+  "exactRepairFiles": [
+    "AGENT_DIARY.md",
+    "formal/implementation-conformance/API_ASSURANCE.json",
+    "formal/implementation-conformance/CALL_CHAIN_ASSURANCE.json",
+    "formal/implementation-conformance/FIELD_CLASSIFICATION.json",
+    "formal/implementation-conformance/IMPLEMENTATION_CONFORMANCE.md",
+    "scripts/formal-implementation-surface.cjs"
+  ],
+  "postRepairAuthoritativeFiles": [
+    "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json"
+  ],
+  "productSourceChanged": false,
+  "affectedStrictRows": [
+    {
+      "surfaceKey": "export:.#cutoverInventoryAuthority::call[0]",
+      "mode": "A"
+    }
+  ],
+  "affectedValueRows": [],
+  "assurance": {
+    "report": {
+      "file": "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
+      "sha256": "c72a4df713c27eff02fbf058f9ce541f4711574101cf40e93ede780d119f8cb5"
+    },
+    "repositoryStateSha256": "4391d16d27e8860b10a8d446f00de62e7afb585cffc3539e3bd1c4e2bce1809a",
+    "fullLogSha256": "6e5c25198874458a39a188530a5e8cd2ded896575b7d470161c54642952a2caa",
+    "fullFormal": true,
+    "apiEntries": 510,
+    "unresolvedPublicApis": 0
+  },
+  "externalDeclarationProvenance": {
+    "fieldManifest": {
+      "file": "formal/implementation-conformance/FIELD_CLASSIFICATION.json",
+      "sha256": "e9e0dfa2bec3200ac8e739e9ad40d0f1f4f992971bc3054d00b2d81789bba297"
+    },
+    "declarations": [
+      "external:typescript/lib/lib.es2022.error.d.ts#0a3d63ef2b85",
+      "external:typescript/lib/lib.es5.d.ts#c430d4466628"
+    ],
+    "worktreeIndependent": true,
+    "externalBytesBound": true
+  },
+  "baselineArtifacts": [
+    {
+      "file": "experiments/tla-conformance/final-convergence/baseline-v309-before-r170-pristine-repro.json",
+      "sha256": "27746b0b48fa1f5da958c29a4eeaf0f52c4ba96c6a25decfe5176cdd9d456d06"
+    },
+    {
+      "file": "experiments/tla-conformance/final-convergence/baseline-a121-b58-before-r170-pristine-repro.json",
+      "sha256": "7a5f1a2e82fce15a0e4854286f4df2facc61801be5effdb4b2c8dd1219be51d9"
+    }
+  ],
+  "producerGraphRuns": 0,
+  "producerReplayRuns": 0,
+  "reverseReruns": 0,
+  "creditExpansion": false,
+  "contentSha256": "4b222957dc278aab6554afb8f3ab690d90d5983536137c2fc10403a47881393a"
+}

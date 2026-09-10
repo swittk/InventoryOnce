@@ -22,7 +22,7 @@
     },
     {
       "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-      "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444"
+      "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b"
     },
     {
       "file": "experiments/tla-conformance/r114-final-rabbit-currentization/compact-evidence.json",
@@ -34,7 +34,7 @@
     },
     {
       "file": "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
-      "sha256": "24e3fdead4255e780da4323d250314141fe65f42c716099dbeabc6c6b77f9e28"
+      "sha256": "c72a4df713c27eff02fbf058f9ce541f4711574101cf40e93ede780d119f8cb5"
     },
     {
       "file": "src/authority-cutover.ts",
@@ -148,8 +148,8 @@
         },
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         }
       }
     },
@@ -235,8 +235,8 @@
         },
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         },
         "currentSource": {
           "file": "src/authority-cutover.ts",
@@ -258,7 +258,7 @@
         ],
         "assurance": {
           "file": "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
-          "sha256": "24e3fdead4255e780da4323d250314141fe65f42c716099dbeabc6c6b77f9e28"
+          "sha256": "c72a4df713c27eff02fbf058f9ce541f4711574101cf40e93ede780d119f8cb5"
         }
       }
     },
@@ -534,8 +534,8 @@
         },
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         }
       }
     },
@@ -756,8 +756,8 @@
         },
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         }
       }
     },
@@ -979,8 +979,8 @@
         },
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         }
       }
     },
@@ -1201,8 +1201,8 @@
         },
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         }
       }
     },
@@ -1423,8 +1423,8 @@
         },
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         }
       }
     },
@@ -1645,8 +1645,8 @@
         },
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         }
       }
     },
@@ -1868,8 +1868,8 @@
         },
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         }
       }
     },
@@ -2090,8 +2090,8 @@
         },
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         }
       }
     },
@@ -2312,8 +2312,8 @@
         },
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         }
       }
     },
@@ -2534,8 +2534,8 @@
         },
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         }
       }
     },
@@ -2777,8 +2777,8 @@
         },
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         }
       }
     },
@@ -2999,8 +2999,8 @@
         },
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         }
       }
     },
@@ -3221,8 +3221,8 @@
         },
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         }
       }
     },
@@ -3443,8 +3443,8 @@
         },
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         }
       }
     }

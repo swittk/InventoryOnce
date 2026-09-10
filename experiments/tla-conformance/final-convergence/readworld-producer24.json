@@ -23,7 +23,7 @@
     },
     {
       "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-      "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444"
+      "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b"
     },
     {
       "file": "experiments/tla-conformance/r105-layered-6dfc-currentization/surface-bindings-6dfc.json",
@@ -215,8 +215,8 @@
             "finalDeclarationAstHash": "43876e35741f3cbf6c0ef208c2ddd7c9a93f526c5e4672ad8754bc4fa77b99d5",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -237,8 +237,8 @@
             "finalDeclarationAstHash": "2965df30177670ad9fa9dfd4e10f2c7b880b307d217d86af8200f333e221061c",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -259,15 +259,15 @@
             "finalDeclarationAstHash": "91d0c30b9871c820278a00cb1fb9077c0a2d445cfebc7555d4902f621b8d07ae",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           }
         ],
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         },
         "environmentBoundaryRule": "Historical readWorld/Clock surface receipts were already replaced by explicit no-surface-credit environment contracts; no HARD_RED external callable receives strict credit."
       }
@@ -463,8 +463,8 @@
             "finalDeclarationAstHash": "43876e35741f3cbf6c0ef208c2ddd7c9a93f526c5e4672ad8754bc4fa77b99d5",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -485,8 +485,8 @@
             "finalDeclarationAstHash": "2965df30177670ad9fa9dfd4e10f2c7b880b307d217d86af8200f333e221061c",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -507,8 +507,8 @@
             "finalDeclarationAstHash": "91d0c30b9871c820278a00cb1fb9077c0a2d445cfebc7555d4902f621b8d07ae",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -529,15 +529,15 @@
             "finalDeclarationAstHash": "15d65735a6df7ace7a6d8f027571fa7535370c10540502d45fef446a7a85b69e",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           }
         ],
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         },
         "environmentBoundaryRule": "Historical readWorld/Clock surface receipts were already replaced by explicit no-surface-credit environment contracts; no HARD_RED external callable receives strict credit."
       }
@@ -633,8 +633,8 @@
             "finalDeclarationAstHash": "91d0c30b9871c820278a00cb1fb9077c0a2d445cfebc7555d4902f621b8d07ae",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -645,8 +645,8 @@
         ],
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         },
         "environmentBoundaryRule": "Historical readWorld/Clock surface receipts were already replaced by explicit no-surface-credit environment contracts; no HARD_RED external callable receives strict credit."
       }
@@ -743,8 +743,8 @@
             "finalDeclarationAstHash": "91d0c30b9871c820278a00cb1fb9077c0a2d445cfebc7555d4902f621b8d07ae",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -755,8 +755,8 @@
         ],
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         },
         "environmentBoundaryRule": "Historical readWorld/Clock surface receipts were already replaced by explicit no-surface-credit environment contracts; no HARD_RED external callable receives strict credit."
       }
@@ -869,15 +869,15 @@
             "finalDeclarationAstHash": "74eb782e7efc2c248811c568a216a34a49214805bf532cdc5bbcef6ca2468b6d",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           }
         ],
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         },
         "environmentBoundaryRule": "Historical readWorld/Clock surface receipts were already replaced by explicit no-surface-credit environment contracts; no HARD_RED external callable receives strict credit."
       }
@@ -990,15 +990,15 @@
             "finalDeclarationAstHash": "ed486f2e0f9444fa04e761884a3ad98049e510f5c155279e93f0eb0def14f13b",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           }
         ],
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         },
         "environmentBoundaryRule": "Historical readWorld/Clock surface receipts were already replaced by explicit no-surface-credit environment contracts; no HARD_RED external callable receives strict credit."
       }
@@ -1111,15 +1111,15 @@
             "finalDeclarationAstHash": "4c86658a5d60b0dba97d5b55919de528432cc2768ff8f6b832bd97ad63850b7f",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           }
         ],
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         },
         "environmentBoundaryRule": "Historical readWorld/Clock surface receipts were already replaced by explicit no-surface-credit environment contracts; no HARD_RED external callable receives strict credit."
       }
@@ -1239,8 +1239,8 @@
             "finalDeclarationAstHash": "91d0c30b9871c820278a00cb1fb9077c0a2d445cfebc7555d4902f621b8d07ae",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -1261,8 +1261,8 @@
             "finalDeclarationAstHash": "f614e7eaf7e5260852361cb886b6db86544cb24749e1462b09416c3dcf527126",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -1283,15 +1283,15 @@
             "finalDeclarationAstHash": "96ab5a48ab62a2864ad1ecc5ce0c5b73617299e75f1b7f7ca6594bf431aa58ca",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           }
         ],
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         },
         "environmentBoundaryRule": "Historical readWorld/Clock surface receipts were already replaced by explicit no-surface-credit environment contracts; no HARD_RED external callable receives strict credit."
       }
@@ -1411,8 +1411,8 @@
             "finalDeclarationAstHash": "91d0c30b9871c820278a00cb1fb9077c0a2d445cfebc7555d4902f621b8d07ae",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -1433,8 +1433,8 @@
             "finalDeclarationAstHash": "f614e7eaf7e5260852361cb886b6db86544cb24749e1462b09416c3dcf527126",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -1455,15 +1455,15 @@
             "finalDeclarationAstHash": "96ab5a48ab62a2864ad1ecc5ce0c5b73617299e75f1b7f7ca6594bf431aa58ca",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           }
         ],
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         },
         "environmentBoundaryRule": "Historical readWorld/Clock surface receipts were already replaced by explicit no-surface-credit environment contracts; no HARD_RED external callable receives strict credit."
       }
@@ -1587,8 +1587,8 @@
             "finalDeclarationAstHash": "91d0c30b9871c820278a00cb1fb9077c0a2d445cfebc7555d4902f621b8d07ae",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -1609,8 +1609,8 @@
             "finalDeclarationAstHash": "79661031a912e9fc37aa56f1feb378cf8c8dffb9429d00065ea1683f521341ec",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -1631,8 +1631,8 @@
             "finalDeclarationAstHash": "f614e7eaf7e5260852361cb886b6db86544cb24749e1462b09416c3dcf527126",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -1653,15 +1653,15 @@
             "finalDeclarationAstHash": "96ab5a48ab62a2864ad1ecc5ce0c5b73617299e75f1b7f7ca6594bf431aa58ca",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           }
         ],
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         },
         "environmentBoundaryRule": "Historical readWorld/Clock surface receipts were already replaced by explicit no-surface-credit environment contracts; no HARD_RED external callable receives strict credit."
       }
@@ -1791,8 +1791,8 @@
             "finalDeclarationAstHash": "91d0c30b9871c820278a00cb1fb9077c0a2d445cfebc7555d4902f621b8d07ae",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -1813,8 +1813,8 @@
             "finalDeclarationAstHash": "a567160c7347fd0c5285909e89b15eed973cbe2a2b62e0c6fb3bf60c65ffebd8",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -1835,8 +1835,8 @@
             "finalDeclarationAstHash": "f614e7eaf7e5260852361cb886b6db86544cb24749e1462b09416c3dcf527126",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -1857,15 +1857,15 @@
             "finalDeclarationAstHash": "96ab5a48ab62a2864ad1ecc5ce0c5b73617299e75f1b7f7ca6594bf431aa58ca",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           }
         ],
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         },
         "environmentBoundaryRule": "Historical readWorld/Clock surface receipts were already replaced by explicit no-surface-credit environment contracts; no HARD_RED external callable receives strict credit."
       }
@@ -2297,8 +2297,8 @@
             "finalDeclarationAstHash": "dcd2dba5ce9482b5608580ca065203ed79019d27fd967d3b2c281f126710d51d",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -2319,8 +2319,8 @@
             "finalDeclarationAstHash": "43876e35741f3cbf6c0ef208c2ddd7c9a93f526c5e4672ad8754bc4fa77b99d5",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -2341,8 +2341,8 @@
             "finalDeclarationAstHash": "1db799552387f77a3ce886fe98189cbc57657d19dcfc522167d792851cd6af4d",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -2363,8 +2363,8 @@
             "finalDeclarationAstHash": "f3d43a472158b958941b74b56255f7263748ec3b07cfd88f38847c12d0d6f9ef",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -2385,8 +2385,8 @@
             "finalDeclarationAstHash": "3e083a0793e9395ad0b5a8cd5c78fefca235c821d493156ddef1f9c01f0fc6d2",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -2407,8 +2407,8 @@
             "finalDeclarationAstHash": "8a89acef89e02b25eb172b43b2fc35c9a0fa0759cd09c1e9676b72f408f30e91",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -2429,8 +2429,8 @@
             "finalDeclarationAstHash": "fce7f51c813d0efa833180d55fd44e54bb731b854febecafac5ae937319977a7",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -2451,8 +2451,8 @@
             "finalDeclarationAstHash": "90198be5327afb1a881d93183b9180068a4773e2322a9d86cc7d7bd8b2c31ef1",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -2473,8 +2473,8 @@
             "finalDeclarationAstHash": "112b6c2a5469bd96f2b7fc9d34364be1661ef8f5d60ebdc8ed8343f280e57ff5",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -2495,8 +2495,8 @@
             "finalDeclarationAstHash": "63389c2c1a526fdf2a06ef1077ea6ec52fa00d76c788e8192e70c8375c854546",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -2517,8 +2517,8 @@
             "finalDeclarationAstHash": "799ab6145e82ab948f63276455ec76e0621271d245e176f2dd1e4529d1d9de6b",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -2539,8 +2539,8 @@
             "finalDeclarationAstHash": "ed486f2e0f9444fa04e761884a3ad98049e510f5c155279e93f0eb0def14f13b",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -2561,8 +2561,8 @@
             "finalDeclarationAstHash": "7a7c2bba43e5da650d3988ff10660bfb1e0ae8606deb6bf2a76c8942b5a55478",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -2573,8 +2573,8 @@
         ],
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         },
         "environmentBoundaryRule": "Historical readWorld/Clock surface receipts were already replaced by explicit no-surface-credit environment contracts; no HARD_RED external callable receives strict credit."
       }
@@ -2997,8 +2997,8 @@
             "finalDeclarationAstHash": "dcd2dba5ce9482b5608580ca065203ed79019d27fd967d3b2c281f126710d51d",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -3019,8 +3019,8 @@
             "finalDeclarationAstHash": "43876e35741f3cbf6c0ef208c2ddd7c9a93f526c5e4672ad8754bc4fa77b99d5",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -3041,8 +3041,8 @@
             "finalDeclarationAstHash": "1db799552387f77a3ce886fe98189cbc57657d19dcfc522167d792851cd6af4d",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -3063,8 +3063,8 @@
             "finalDeclarationAstHash": "f3d43a472158b958941b74b56255f7263748ec3b07cfd88f38847c12d0d6f9ef",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -3085,8 +3085,8 @@
             "finalDeclarationAstHash": "3e083a0793e9395ad0b5a8cd5c78fefca235c821d493156ddef1f9c01f0fc6d2",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -3107,8 +3107,8 @@
             "finalDeclarationAstHash": "8a89acef89e02b25eb172b43b2fc35c9a0fa0759cd09c1e9676b72f408f30e91",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -3129,8 +3129,8 @@
             "finalDeclarationAstHash": "fce7f51c813d0efa833180d55fd44e54bb731b854febecafac5ae937319977a7",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -3151,8 +3151,8 @@
             "finalDeclarationAstHash": "90198be5327afb1a881d93183b9180068a4773e2322a9d86cc7d7bd8b2c31ef1",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -3173,8 +3173,8 @@
             "finalDeclarationAstHash": "112b6c2a5469bd96f2b7fc9d34364be1661ef8f5d60ebdc8ed8343f280e57ff5",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -3195,8 +3195,8 @@
             "finalDeclarationAstHash": "63389c2c1a526fdf2a06ef1077ea6ec52fa00d76c788e8192e70c8375c854546",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -3217,8 +3217,8 @@
             "finalDeclarationAstHash": "799ab6145e82ab948f63276455ec76e0621271d245e176f2dd1e4529d1d9de6b",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -3239,8 +3239,8 @@
             "finalDeclarationAstHash": "ed486f2e0f9444fa04e761884a3ad98049e510f5c155279e93f0eb0def14f13b",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -3261,8 +3261,8 @@
             "finalDeclarationAstHash": "7a7c2bba43e5da650d3988ff10660bfb1e0ae8606deb6bf2a76c8942b5a55478",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -3273,8 +3273,8 @@
         ],
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         },
         "environmentBoundaryRule": "Historical readWorld/Clock surface receipts were already replaced by explicit no-surface-credit environment contracts; no HARD_RED external callable receives strict credit."
       }
@@ -3697,8 +3697,8 @@
             "finalDeclarationAstHash": "dcd2dba5ce9482b5608580ca065203ed79019d27fd967d3b2c281f126710d51d",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -3719,8 +3719,8 @@
             "finalDeclarationAstHash": "43876e35741f3cbf6c0ef208c2ddd7c9a93f526c5e4672ad8754bc4fa77b99d5",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -3741,8 +3741,8 @@
             "finalDeclarationAstHash": "1db799552387f77a3ce886fe98189cbc57657d19dcfc522167d792851cd6af4d",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -3763,8 +3763,8 @@
             "finalDeclarationAstHash": "f3d43a472158b958941b74b56255f7263748ec3b07cfd88f38847c12d0d6f9ef",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -3785,8 +3785,8 @@
             "finalDeclarationAstHash": "3e083a0793e9395ad0b5a8cd5c78fefca235c821d493156ddef1f9c01f0fc6d2",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -3807,8 +3807,8 @@
             "finalDeclarationAstHash": "8a89acef89e02b25eb172b43b2fc35c9a0fa0759cd09c1e9676b72f408f30e91",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -3829,8 +3829,8 @@
             "finalDeclarationAstHash": "fce7f51c813d0efa833180d55fd44e54bb731b854febecafac5ae937319977a7",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -3851,8 +3851,8 @@
             "finalDeclarationAstHash": "90198be5327afb1a881d93183b9180068a4773e2322a9d86cc7d7bd8b2c31ef1",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -3873,8 +3873,8 @@
             "finalDeclarationAstHash": "112b6c2a5469bd96f2b7fc9d34364be1661ef8f5d60ebdc8ed8343f280e57ff5",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -3895,8 +3895,8 @@
             "finalDeclarationAstHash": "63389c2c1a526fdf2a06ef1077ea6ec52fa00d76c788e8192e70c8375c854546",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -3917,8 +3917,8 @@
             "finalDeclarationAstHash": "799ab6145e82ab948f63276455ec76e0621271d245e176f2dd1e4529d1d9de6b",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -3939,8 +3939,8 @@
             "finalDeclarationAstHash": "ed486f2e0f9444fa04e761884a3ad98049e510f5c155279e93f0eb0def14f13b",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -3961,8 +3961,8 @@
             "finalDeclarationAstHash": "7a7c2bba43e5da650d3988ff10660bfb1e0ae8606deb6bf2a76c8942b5a55478",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -3973,8 +3973,8 @@
         ],
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         },
         "environmentBoundaryRule": "Historical readWorld/Clock surface receipts were already replaced by explicit no-surface-credit environment contracts; no HARD_RED external callable receives strict credit."
       }
@@ -4397,8 +4397,8 @@
             "finalDeclarationAstHash": "dcd2dba5ce9482b5608580ca065203ed79019d27fd967d3b2c281f126710d51d",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -4419,8 +4419,8 @@
             "finalDeclarationAstHash": "43876e35741f3cbf6c0ef208c2ddd7c9a93f526c5e4672ad8754bc4fa77b99d5",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -4441,8 +4441,8 @@
             "finalDeclarationAstHash": "1db799552387f77a3ce886fe98189cbc57657d19dcfc522167d792851cd6af4d",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -4463,8 +4463,8 @@
             "finalDeclarationAstHash": "f3d43a472158b958941b74b56255f7263748ec3b07cfd88f38847c12d0d6f9ef",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -4485,8 +4485,8 @@
             "finalDeclarationAstHash": "3e083a0793e9395ad0b5a8cd5c78fefca235c821d493156ddef1f9c01f0fc6d2",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -4507,8 +4507,8 @@
             "finalDeclarationAstHash": "8a89acef89e02b25eb172b43b2fc35c9a0fa0759cd09c1e9676b72f408f30e91",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -4529,8 +4529,8 @@
             "finalDeclarationAstHash": "fce7f51c813d0efa833180d55fd44e54bb731b854febecafac5ae937319977a7",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -4551,8 +4551,8 @@
             "finalDeclarationAstHash": "90198be5327afb1a881d93183b9180068a4773e2322a9d86cc7d7bd8b2c31ef1",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -4573,8 +4573,8 @@
             "finalDeclarationAstHash": "112b6c2a5469bd96f2b7fc9d34364be1661ef8f5d60ebdc8ed8343f280e57ff5",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -4595,8 +4595,8 @@
             "finalDeclarationAstHash": "63389c2c1a526fdf2a06ef1077ea6ec52fa00d76c788e8192e70c8375c854546",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -4617,8 +4617,8 @@
             "finalDeclarationAstHash": "799ab6145e82ab948f63276455ec76e0621271d245e176f2dd1e4529d1d9de6b",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -4639,8 +4639,8 @@
             "finalDeclarationAstHash": "ed486f2e0f9444fa04e761884a3ad98049e510f5c155279e93f0eb0def14f13b",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -4661,8 +4661,8 @@
             "finalDeclarationAstHash": "7a7c2bba43e5da650d3988ff10660bfb1e0ae8606deb6bf2a76c8942b5a55478",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -4673,8 +4673,8 @@
         ],
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         },
         "environmentBoundaryRule": "Historical readWorld/Clock surface receipts were already replaced by explicit no-surface-credit environment contracts; no HARD_RED external callable receives strict credit."
       }
@@ -5097,8 +5097,8 @@
             "finalDeclarationAstHash": "dcd2dba5ce9482b5608580ca065203ed79019d27fd967d3b2c281f126710d51d",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -5119,8 +5119,8 @@
             "finalDeclarationAstHash": "43876e35741f3cbf6c0ef208c2ddd7c9a93f526c5e4672ad8754bc4fa77b99d5",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -5141,8 +5141,8 @@
             "finalDeclarationAstHash": "1db799552387f77a3ce886fe98189cbc57657d19dcfc522167d792851cd6af4d",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -5163,8 +5163,8 @@
             "finalDeclarationAstHash": "f3d43a472158b958941b74b56255f7263748ec3b07cfd88f38847c12d0d6f9ef",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -5185,8 +5185,8 @@
             "finalDeclarationAstHash": "3e083a0793e9395ad0b5a8cd5c78fefca235c821d493156ddef1f9c01f0fc6d2",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -5207,8 +5207,8 @@
             "finalDeclarationAstHash": "8a89acef89e02b25eb172b43b2fc35c9a0fa0759cd09c1e9676b72f408f30e91",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -5229,8 +5229,8 @@
             "finalDeclarationAstHash": "fce7f51c813d0efa833180d55fd44e54bb731b854febecafac5ae937319977a7",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -5251,8 +5251,8 @@
             "finalDeclarationAstHash": "90198be5327afb1a881d93183b9180068a4773e2322a9d86cc7d7bd8b2c31ef1",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -5273,8 +5273,8 @@
             "finalDeclarationAstHash": "112b6c2a5469bd96f2b7fc9d34364be1661ef8f5d60ebdc8ed8343f280e57ff5",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -5295,8 +5295,8 @@
             "finalDeclarationAstHash": "63389c2c1a526fdf2a06ef1077ea6ec52fa00d76c788e8192e70c8375c854546",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -5317,8 +5317,8 @@
             "finalDeclarationAstHash": "799ab6145e82ab948f63276455ec76e0621271d245e176f2dd1e4529d1d9de6b",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -5339,8 +5339,8 @@
             "finalDeclarationAstHash": "ed486f2e0f9444fa04e761884a3ad98049e510f5c155279e93f0eb0def14f13b",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -5361,8 +5361,8 @@
             "finalDeclarationAstHash": "7a7c2bba43e5da650d3988ff10660bfb1e0ae8606deb6bf2a76c8942b5a55478",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -5373,8 +5373,8 @@
         ],
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         },
         "environmentBoundaryRule": "Historical readWorld/Clock surface receipts were already replaced by explicit no-surface-credit environment contracts; no HARD_RED external callable receives strict credit."
       }
@@ -5797,8 +5797,8 @@
             "finalDeclarationAstHash": "dcd2dba5ce9482b5608580ca065203ed79019d27fd967d3b2c281f126710d51d",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -5819,8 +5819,8 @@
             "finalDeclarationAstHash": "43876e35741f3cbf6c0ef208c2ddd7c9a93f526c5e4672ad8754bc4fa77b99d5",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -5841,8 +5841,8 @@
             "finalDeclarationAstHash": "1db799552387f77a3ce886fe98189cbc57657d19dcfc522167d792851cd6af4d",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -5863,8 +5863,8 @@
             "finalDeclarationAstHash": "f3d43a472158b958941b74b56255f7263748ec3b07cfd88f38847c12d0d6f9ef",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -5885,8 +5885,8 @@
             "finalDeclarationAstHash": "3e083a0793e9395ad0b5a8cd5c78fefca235c821d493156ddef1f9c01f0fc6d2",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -5907,8 +5907,8 @@
             "finalDeclarationAstHash": "8a89acef89e02b25eb172b43b2fc35c9a0fa0759cd09c1e9676b72f408f30e91",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -5929,8 +5929,8 @@
             "finalDeclarationAstHash": "fce7f51c813d0efa833180d55fd44e54bb731b854febecafac5ae937319977a7",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -5951,8 +5951,8 @@
             "finalDeclarationAstHash": "90198be5327afb1a881d93183b9180068a4773e2322a9d86cc7d7bd8b2c31ef1",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -5973,8 +5973,8 @@
             "finalDeclarationAstHash": "112b6c2a5469bd96f2b7fc9d34364be1661ef8f5d60ebdc8ed8343f280e57ff5",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -5995,8 +5995,8 @@
             "finalDeclarationAstHash": "63389c2c1a526fdf2a06ef1077ea6ec52fa00d76c788e8192e70c8375c854546",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -6017,8 +6017,8 @@
             "finalDeclarationAstHash": "799ab6145e82ab948f63276455ec76e0621271d245e176f2dd1e4529d1d9de6b",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -6039,8 +6039,8 @@
             "finalDeclarationAstHash": "ed486f2e0f9444fa04e761884a3ad98049e510f5c155279e93f0eb0def14f13b",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -6061,8 +6061,8 @@
             "finalDeclarationAstHash": "7a7c2bba43e5da650d3988ff10660bfb1e0ae8606deb6bf2a76c8942b5a55478",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -6073,8 +6073,8 @@
         ],
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         },
         "environmentBoundaryRule": "Historical readWorld/Clock surface receipts were already replaced by explicit no-surface-credit environment contracts; no HARD_RED external callable receives strict credit."
       }
@@ -6230,8 +6230,8 @@
             "finalDeclarationAstHash": "b99ea0f56a26c5eefcec765399245dd92bfd06724a22820a62a91a68bf4c02e1",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -6242,8 +6242,8 @@
         ],
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         },
         "environmentBoundaryRule": "Historical readWorld/Clock surface receipts were already replaced by explicit no-surface-credit environment contracts; no HARD_RED external callable receives strict credit."
       }
@@ -6399,8 +6399,8 @@
             "finalDeclarationAstHash": "1a081ea378497d39b38cf014d0a7bc0b0e49ec6a5e6878c1a9acbfd1e7679278",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -6411,8 +6411,8 @@
         ],
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         },
         "environmentBoundaryRule": "Historical readWorld/Clock surface receipts were already replaced by explicit no-surface-credit environment contracts; no HARD_RED external callable receives strict credit."
       }
@@ -6568,8 +6568,8 @@
             "finalDeclarationAstHash": "7a7c2bba43e5da650d3988ff10660bfb1e0ae8606deb6bf2a76c8942b5a55478",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -6580,8 +6580,8 @@
         ],
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         },
         "environmentBoundaryRule": "Historical readWorld/Clock surface receipts were already replaced by explicit no-surface-credit environment contracts; no HARD_RED external callable receives strict credit."
       }
@@ -6737,8 +6737,8 @@
             "finalDeclarationAstHash": "67a0ea83d3ebba02e67e52b9aae82a2309d308c87867efc3f696af29aaef9b6f",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -6749,8 +6749,8 @@
         ],
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         },
         "environmentBoundaryRule": "Historical readWorld/Clock surface receipts were already replaced by explicit no-surface-credit environment contracts; no HARD_RED external callable receives strict credit."
       }
@@ -6906,8 +6906,8 @@
             "finalDeclarationAstHash": "d61375666c34f3956ea056bf595c61e960aabc40cca7c8bc455500b96a7aeeac",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -6918,8 +6918,8 @@
         ],
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         },
         "environmentBoundaryRule": "Historical readWorld/Clock surface receipts were already replaced by explicit no-surface-credit environment contracts; no HARD_RED external callable receives strict credit."
       }
@@ -7342,8 +7342,8 @@
             "finalDeclarationAstHash": "dcd2dba5ce9482b5608580ca065203ed79019d27fd967d3b2c281f126710d51d",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -7364,8 +7364,8 @@
             "finalDeclarationAstHash": "43876e35741f3cbf6c0ef208c2ddd7c9a93f526c5e4672ad8754bc4fa77b99d5",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -7386,8 +7386,8 @@
             "finalDeclarationAstHash": "1db799552387f77a3ce886fe98189cbc57657d19dcfc522167d792851cd6af4d",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -7408,8 +7408,8 @@
             "finalDeclarationAstHash": "f3d43a472158b958941b74b56255f7263748ec3b07cfd88f38847c12d0d6f9ef",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -7430,8 +7430,8 @@
             "finalDeclarationAstHash": "3e083a0793e9395ad0b5a8cd5c78fefca235c821d493156ddef1f9c01f0fc6d2",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -7452,8 +7452,8 @@
             "finalDeclarationAstHash": "8a89acef89e02b25eb172b43b2fc35c9a0fa0759cd09c1e9676b72f408f30e91",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -7474,8 +7474,8 @@
             "finalDeclarationAstHash": "fce7f51c813d0efa833180d55fd44e54bb731b854febecafac5ae937319977a7",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -7496,8 +7496,8 @@
             "finalDeclarationAstHash": "90198be5327afb1a881d93183b9180068a4773e2322a9d86cc7d7bd8b2c31ef1",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -7518,8 +7518,8 @@
             "finalDeclarationAstHash": "112b6c2a5469bd96f2b7fc9d34364be1661ef8f5d60ebdc8ed8343f280e57ff5",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -7540,8 +7540,8 @@
             "finalDeclarationAstHash": "63389c2c1a526fdf2a06ef1077ea6ec52fa00d76c788e8192e70c8375c854546",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -7562,8 +7562,8 @@
             "finalDeclarationAstHash": "799ab6145e82ab948f63276455ec76e0621271d245e176f2dd1e4529d1d9de6b",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -7584,8 +7584,8 @@
             "finalDeclarationAstHash": "ed486f2e0f9444fa04e761884a3ad98049e510f5c155279e93f0eb0def14f13b",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -7606,8 +7606,8 @@
             "finalDeclarationAstHash": "7a7c2bba43e5da650d3988ff10660bfb1e0ae8606deb6bf2a76c8942b5a55478",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -7618,8 +7618,8 @@
         ],
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         },
         "environmentBoundaryRule": "Historical readWorld/Clock surface receipts were already replaced by explicit no-surface-credit environment contracts; no HARD_RED external callable receives strict credit."
       }
@@ -7775,8 +7775,8 @@
             "finalDeclarationAstHash": "8ae86e6037074bef0cee787762fbd0abbd021c4da81195e663b63d4e68c443d3",
             "finalHeadTransport": {
               "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-              "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-              "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+              "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+              "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
             }
           },
           {
@@ -7787,8 +7787,8 @@
         ],
         "finalHeadTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "bcb974ee7b5bc6d3ea20bb9dc95ea81084eab4bae3f85f0ef12e6c308268a444",
-          "contentSha256": "a082ad6c51575132358462c6590b193665c969a3753ecd58914abfc3db65f96e"
+          "sha256": "369c3af3077c76151919c26f1610a22aa45d0255d21d5b06a832da9cd060122b",
+          "contentSha256": "d042696f605a8b3307f897b4a7ad5e7dfb1d4b26343fbdf785be581195e35af3"
         },
         "environmentBoundaryRule": "Historical readWorld/Clock surface receipts were already replaced by explicit no-surface-credit environment contracts; no HARD_RED external callable receives strict credit."
       }
