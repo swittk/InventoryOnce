@@ -3,12 +3,12 @@ EXTENDS Naturals, Integers, FiniteSets, TLC
 
 CONSTANTS MaxQuantity, OperationIds
 
-VARIABLES source, destination, seen, intentByOperation,
-          lastKind, lastReplay, lastRejected, lastQuantity,
+VARIABLES source, destination, previousSource, previousDestination,
+          seen, intentByOperation, lastKind, lastReplay, lastRejected, lastQuantity,
           lastSourceDelta, lastDestinationDelta
 
-vars == <<source, destination, seen, intentByOperation,
-          lastKind, lastReplay, lastRejected, lastQuantity,
+vars == <<source, destination, previousSource, previousDestination,
+          seen, intentByOperation, lastKind, lastReplay, lastRejected, lastQuantity,
           lastSourceDelta, lastDestinationDelta>>
 
 Quantities == 0..MaxQuantity
@@ -30,6 +30,8 @@ Intent(kind, quantity) == <<kind, quantity>>
 Init ==
   /\ source = 0
   /\ destination = 0
+  /\ previousSource = 0
+  /\ previousDestination = 0
   /\ seen = {}
   /\ intentByOperation = [op \in OperationIds |-> <<"None", 0>>]
   /\ lastKind = "None"
@@ -50,6 +52,8 @@ ReceiveMany(op, quantity) ==
   /\ quantity \in PositiveQuantities
   /\ source' = source + quantity
   /\ destination' = destination
+  /\ previousSource' = source
+  /\ previousDestination' = destination
   /\ seen' = seen \cup {op}
   /\ intentByOperation' = [intentByOperation EXCEPT ![op] = Intent("ReceiveMany", quantity)]
   /\ lastKind' = "ReceiveMany"
@@ -65,6 +69,8 @@ IssueManyByPolicy(op, quantity) ==
   /\ quantity <= source
   /\ source' = source - quantity
   /\ destination' = destination
+  /\ previousSource' = source
+  /\ previousDestination' = destination
   /\ seen' = seen \cup {op}
   /\ intentByOperation' = [intentByOperation EXCEPT ![op] = Intent("IssueManyByPolicy", quantity)]
   /\ lastKind' = "IssueManyByPolicy"
@@ -80,6 +86,8 @@ TransferManyByPolicy(op, quantity) ==
   /\ quantity <= source
   /\ source' = source - quantity
   /\ destination' = destination + quantity
+  /\ previousSource' = source
+  /\ previousDestination' = destination
   /\ seen' = seen \cup {op}
   /\ intentByOperation' = [intentByOperation EXCEPT ![op] = Intent("TransferManyByPolicy", quantity)]
   /\ lastKind' = "TransferManyByPolicy"
@@ -94,6 +102,8 @@ ReplaceAbsolute(op, quantity) ==
   /\ quantity \in Quantities
   /\ source' = quantity
   /\ destination' = destination
+  /\ previousSource' = source
+  /\ previousDestination' = destination
   /\ seen' = seen \cup {op}
   /\ intentByOperation' = [intentByOperation EXCEPT ![op] = Intent("ReplaceAbsolute", quantity)]
   /\ lastKind' = "ReplaceAbsolute"
@@ -103,10 +113,36 @@ ReplaceAbsolute(op, quantity) ==
   /\ lastSourceDelta' = quantity - source
   /\ lastDestinationDelta' = 0
 
+\* Deliberately reports a zero source delta so the generic state/result delta invariant must reject it.
+ReplaceAbsoluteDeltaMutation(op, quantity) ==
+  /\ Fresh(op)
+  /\ quantity \in Quantities
+  /\ source' = quantity
+  /\ destination' = destination
+  /\ previousSource' = source
+  /\ previousDestination' = destination
+  /\ seen' = seen \cup {op}
+  /\ intentByOperation' = [intentByOperation EXCEPT ![op] = Intent("ReplaceAbsolute", quantity)]
+  /\ lastKind' = "ReplaceAbsolute"
+  /\ lastReplay' = FALSE
+  /\ lastRejected' = FALSE
+  /\ lastQuantity' = quantity
+  /\ lastSourceDelta' = 0
+  /\ lastDestinationDelta' = 0
+
+\* Drives only the deliberately wrong replacement transition for mutation checking.
+ReplaceAbsoluteDeltaMutationNext ==
+  \/ \E op \in OperationIds, quantity \in Quantities : ReplaceAbsoluteDeltaMutation(op, quantity)
+
+\* Runs the forbidden replacement-delta transition under normal stuttering semantics.
+ReplaceAbsoluteDeltaMutationSpec == Init /\ [][ReplaceAbsoluteDeltaMutationNext]_vars
+
 Replay(op, kind, quantity) ==
   /\ ValidBusinessIntent(kind, quantity)
   /\ SameIntent(op, kind, quantity)
   /\ UNCHANGED <<source, destination, seen, intentByOperation>>
+  /\ previousSource' = source
+  /\ previousDestination' = destination
   /\ lastKind' = "Replay"
   /\ lastReplay' = TRUE
   /\ lastRejected' = FALSE
@@ -118,6 +154,8 @@ RejectChangedIntent(op, kind, quantity) ==
   /\ ValidBusinessIntent(kind, quantity)
   /\ ChangedIntent(op, kind, quantity)
   /\ UNCHANGED <<source, destination, seen, intentByOperation>>
+  /\ previousSource' = source
+  /\ previousDestination' = destination
   /\ lastKind' = "RejectChangedIntent"
   /\ lastReplay' = FALSE
   /\ lastRejected' = TRUE
@@ -138,6 +176,8 @@ Spec == Init /\ [][Next]_vars
 TypeOK ==
   /\ source \in Nat
   /\ destination \in Nat
+  /\ previousSource \in Nat
+  /\ previousDestination \in Nat
   /\ seen \subseteq OperationIds
   /\ intentByOperation \in [OperationIds -> IntentKinds \X Quantities]
   /\ lastKind \in Kinds
@@ -148,6 +188,10 @@ TypeOK ==
   /\ lastDestinationDelta \in Int
 
 NonNegative == source >= 0 /\ destination >= 0
+\* Every reported source/destination delta equals the actual transition from its recorded pre-state.
+ResultDeltasMatchStateTransition ==
+  /\ lastSourceDelta = source - previousSource
+  /\ lastDestinationDelta = destination - previousDestination
 ReplayIsStuttering == lastKind = "Replay" => lastSourceDelta = 0 /\ lastDestinationDelta = 0
 ChangedIntentIsStuttering == lastKind = "RejectChangedIntent" => lastSourceDelta = 0 /\ lastDestinationDelta = 0
 TransferConserves == lastKind = "TransferManyByPolicy" =>
@@ -161,6 +205,7 @@ IssueResultAgrees == lastKind = "IssueManyByPolicy" =>
   /\ lastDestinationDelta = 0
 ReplaceResultAgrees == lastKind = "ReplaceAbsolute" =>
   /\ source = lastQuantity
+  /\ lastSourceDelta = lastQuantity - previousSource
   /\ lastDestinationDelta = 0
 SeenIntentConsistent == \A op \in OperationIds :
   (op \in seen) <=> (intentByOperation[op] # <<"None", 0>>)

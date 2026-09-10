@@ -126,6 +126,11 @@ export const formalInvariantMutationChecks = Object.freeze([
     "TraceabilityGraphDuplicateProductionMutation",
     "ProducedIdentityWasCreatedOnce",
   ],
+  [
+    "ImplementationConformance",
+    "ImplementationConformanceReplaceDeltaMutation",
+    "ResultDeltasMatchStateTransition",
+  ],
 ]);
 
 /** Require every *Mutation.cfg file to have exactly one registered expected rejection. */

@@ -1,8 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
 import { createHash } from "node:crypto";
+import {
+  finalConvergenceRepositoryPath,
+  finalConvergenceRepositoryRoot,
+} from "./repository-root.mjs";
 
-const ROOT = process.cwd();
+const ROOT = finalConvergenceRepositoryRoot(import.meta.url);
 const LAB = "experiments/tla-conformance";
 const OFFICIAL = `${LAB}/r105-layered-6dfc-currentization/surface-bindings-6dfc.json`;
 const MATRIX = `${LAB}/r131-current-source-family-rederive/builder-matrix.json`;
@@ -139,5 +143,13 @@ const output = {
   selected,
   missing,
 };
-fs.writeFileSync(OUTPUT, `${JSON.stringify(output, null, 2)}\n`);
+const outputText = `${JSON.stringify(output, null, 2)}\n`;
+const outputPath = finalConvergenceRepositoryPath(ROOT, OUTPUT);
+if (process.argv.includes("--check")) {
+  if (fs.readFileSync(outputPath, "utf8") !== outputText) {
+    throw new Error("Base authority index is stale.");
+  }
+} else {
+  fs.writeFileSync(outputPath, outputText);
+}
 console.log(JSON.stringify({ selected: selected.length, missing: missing.length, surfaceCounts, missingRows: missing }, null, 2));

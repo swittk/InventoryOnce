@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { tmpdir } from "node:os";
 import {
   CURRENT_REVIEW_ASSURANCE_RECEIPT,
   verifyCurrentReviewAssurance,
@@ -71,6 +72,20 @@ try {
   assert.equal(liveBytes, liveClosure.totalBytes, "Live-input closure byte count is stale.");
   verifyCurrentReviewAssurance(root);
   if (mode === "selftest") {
+    const foreignCwd = fs.mkdtempSync(path.join(tmpdir(), "inventoryonce-final-cwd-"));
+    try {
+      for (const script of [
+        "experiments/tla-conformance/final-convergence/build-base-authority-index.mjs",
+        "experiments/tla-conformance/final-convergence/build-final-registry.mjs",
+      ]) {
+        execFileSync(process.execPath, [repositoryPath(script), "--check"], {
+          cwd: foreignCwd,
+          stdio: "pipe",
+        });
+      }
+    } finally {
+      fs.rmSync(foreignCwd, { recursive: true, force: true });
+    }
     const selftestDir = path.join(root, ".chatgpt", "compact-file-kind-selftest");
     fs.rmSync(selftestDir, { recursive: true, force: true });
     fs.mkdirSync(selftestDir, { recursive: true });
