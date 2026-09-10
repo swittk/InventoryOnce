@@ -1,0 +1,754 @@
+{
+  "schemaVersion": 1,
+  "proofKind": "migration-plugin-helper-independent-source-closed-values-v3",
+  "surfaceDigest": "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a",
+  "allAdmittedInputs": true,
+  "sampledInputs": 0,
+  "domain": "Declared immutable plain TypeScript inputs and unmodified built-ins. Six pure identity/diagnostic/digest/manifest-validation functions; callback reads, arbitrary migration execution, storage publication, and world materialization are excluded.",
+  "inputs": [
+    {
+      "file": "experiments/tla-conformance/admission-audit/bank-current/canonical-535.json",
+      "sha256": "b745d1746bd1d4c436b1bd6c84c96e567b015adeaff8167ddb9471d15dac76d1"
+    },
+    {
+      "file": "experiments/tla-conformance/migration-helper-causal-r7/artifacts/runtime-causal.json",
+      "sha256": "db76e559e9019216bf38f2b284c20a14faf878b216132a9f504d03e75624a263"
+    },
+    {
+      "file": "experiments/tla-conformance/migration-helper-causal-r7/import-source-receipt.json",
+      "sha256": "1e4e014e7efa4afc763e2c9a35f729ae7bdf8c8260ca4ab85713dfefdd021913"
+    },
+    {
+      "file": "experiments/tla-conformance/migration-helper-causal-r7/independent-v9-laws.mjs",
+      "sha256": "1d2fd4ab4a9994986a9323464fd9ba2269c69ec7a036dfeec7654c9b3c453d14"
+    },
+    {
+      "file": "experiments/tla-conformance/migration-helper-causal-r7/registered-value-family.mjs",
+      "sha256": "2740e8daa4881b604e551607bcb202229b366169c05e8cac830d4e2ba34729d4"
+    },
+    {
+      "file": "experiments/tla-conformance/migration-helper-causal-r7/v9.expected.ts.txt",
+      "sha256": "fb93d6b0cad4c29156d438b5c8c180bac0aae26730d652859a9a7f372dabf097"
+    },
+    {
+      "file": "experiments/tla-conformance/throughput-r7/registered-value-family.mjs",
+      "sha256": "1926bfc82e8cc608904d8a2785c2ae6775d2905186b4d9fb8b137a0696b821b3"
+    },
+    {
+      "file": "experiments/tla-conformance/value-contracts/surface-binding.mjs",
+      "sha256": "619b37fe3a9bc9be22e8a0c2167187cfce987c7856280c6df0c36c5a230c3618"
+    },
+    {
+      "file": "src/allocation.ts",
+      "sha256": "2721b6f412aa3abb55ffa9d929eaefc2d8982973c4ee862479b3af9988d3112d"
+    },
+    {
+      "file": "src/amounts.ts",
+      "sha256": "98ddc0fa8d80b2ca244a207f4eb8b55d86131c2ccfd77620da5c85248d03ef57"
+    },
+    {
+      "file": "src/authority-cutover.ts",
+      "sha256": "009c9a609221b5a276fe494a9fb6c059e02c2634d3a4a5e1cd997047b3b4b1c1"
+    },
+    {
+      "file": "src/authority.ts",
+      "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+    },
+    {
+      "file": "src/availability.ts",
+      "sha256": "b029f2b17c1c0f8a3923969e2cd30b57b0af3a185d1391fdb8aa3895c3de83c8"
+    },
+    {
+      "file": "src/canonical.ts",
+      "sha256": "eb2981c629182525c6742d2a67f513f0daec88507e5861f475d5de04984a2d56"
+    },
+    {
+      "file": "src/catalog-lifecycle.ts",
+      "sha256": "8a97eb13db1d8dfb9503a60c6075984e93792ace1abb473a70ac8221809c5096"
+    },
+    {
+      "file": "src/catalog.ts",
+      "sha256": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56"
+    },
+    {
+      "file": "src/collections.ts",
+      "sha256": "c18dd56e7167b25239fb825319ce2ae2d736f8d9cbe70296201ab675228daf37"
+    },
+    {
+      "file": "src/commands.ts",
+      "sha256": "c40c66fc3e5d3e60022534a561d44280cda205f3cc10be759f8efdc97038a98b"
+    },
+    {
+      "file": "src/composition.ts",
+      "sha256": "87d7e004cc2432587c82a238cd2fd9976a3d1f8850771365168e5d33ba6cb24c"
+    },
+    {
+      "file": "src/coordinator.ts",
+      "sha256": "4bc44f2c38578991a137d9e363b7677c23a788dd9cc5c4129074f1a95a14e3a2"
+    },
+    {
+      "file": "src/corrections.ts",
+      "sha256": "0c3e11dc88a035aa89598cffb54d538b1c6cc4280ed5d27bd7bf67e9d5757183"
+    },
+    {
+      "file": "src/counts.ts",
+      "sha256": "5db9ad8d5a6f1a82c594562b66f4be7c677d17bd31d9d10afb11eae781d78f13"
+    },
+    {
+      "file": "src/deficits.ts",
+      "sha256": "6dee9447ad000ae2f9576aed35f80d1ad1bdae753f4802c4104db2f2712d2819"
+    },
+    {
+      "file": "src/digest.ts",
+      "sha256": "5fa667c59dd65a667d8cceddd9bf8c25eb46d3787a22ad7db797fd3722d5f833"
+    },
+    {
+      "file": "src/events.ts",
+      "sha256": "8d076ee8f426c011d7df3f205dd014f0e835f71798b3684ca56844b691ba2370"
+    },
+    {
+      "file": "src/facade.ts",
+      "sha256": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d"
+    },
+    {
+      "file": "src/fungibility.ts",
+      "sha256": "483741a2e0f8e3cdf38e358929cce5f8b29ffb41494b1268cafa1d38a2197344"
+    },
+    {
+      "file": "src/index.ts",
+      "sha256": "2e0587666ff20d57a757c0576fddf8badf36c2901735db7225a0cebda829b555"
+    },
+    {
+      "file": "src/integrity.ts",
+      "sha256": "238ccd616e791b60b523b89517479585f2d9aabe83198464a44f654cd7058037"
+    },
+    {
+      "file": "src/kernel.ts",
+      "sha256": "f336d22a07d6018dc5528bd2a13a33c5aa9f1a72b0c0ed048cb73219b9b0c06c"
+    },
+    {
+      "file": "src/measurement-schema.ts",
+      "sha256": "747f064996c12b3a9b324779bd748362b49b2563e303b2599243bc8a630d144e"
+    },
+    {
+      "file": "src/measurements.ts",
+      "sha256": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5"
+    },
+    {
+      "file": "src/migration-evidence.ts",
+      "sha256": "8d8f6dd0b6a83546633e5c360a1769e9a49ff8708f3737e14a79fa965604d037"
+    },
+    {
+      "file": "src/migration-plugin.ts",
+      "sha256": "4b271d6398ba1b0eeb4a5b1cb48523a062f9bcf1c5b427755ec5e1f0fdebe5e6"
+    },
+    {
+      "file": "src/migrations-api.ts",
+      "sha256": "0d1358ee90d4b39d3b59da0d27dcb9798e5699e02bbba325132f734c1322fed1"
+    },
+    {
+      "file": "src/migrations.ts",
+      "sha256": "0e837a12fa171f3029b3931f0c2c0d12d83edbd4b12d86e9ec810ec7ede77384"
+    },
+    {
+      "file": "src/model.ts",
+      "sha256": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122"
+    },
+    {
+      "file": "src/ordering.ts",
+      "sha256": "e72ac94e99b1b4914f3f6dec55583e401484a41ecadd051be788724c88f24cb9"
+    },
+    {
+      "file": "src/picking.ts",
+      "sha256": "172dc19f4987ad392106a1b9cf32400e73f5bed0fb6b9344aa5eb1319afc5006"
+    },
+    {
+      "file": "src/projection.ts",
+      "sha256": "f2a9747cfc7c63615347c48383ae7f58ee7df007411cc8de3dd5bb6afaca21d5"
+    },
+    {
+      "file": "src/quantity.ts",
+      "sha256": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6"
+    },
+    {
+      "file": "src/read-model.ts",
+      "sha256": "8b1db302ecf22895f1d6458a8be27ec606066e88fd77ebba0cfadbd0452a97f4"
+    },
+    {
+      "file": "src/reservations.ts",
+      "sha256": "fd0bfe707583a7952e4301cafd9ab5d702059b9174f18b5c5e30ae0d6cf85113"
+    },
+    {
+      "file": "src/selectors.ts",
+      "sha256": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957"
+    },
+    {
+      "file": "src/sparse-record.ts",
+      "sha256": "272a1f63afe9ed4c84cd76a4ce051b210b52e6e0a54cf47ec4f11a29979ada71"
+    },
+    {
+      "file": "src/storage-api.ts",
+      "sha256": "9d135bd7c1925f3b7ab533a45958e57287383f4016e7077e8ede2c35144202b1"
+    },
+    {
+      "file": "src/storage.ts",
+      "sha256": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d"
+    },
+    {
+      "file": "src/traceability-replay.ts",
+      "sha256": "3bef97ca89c6530721b2552089e124c3a8943b5a0ceea8b799aaccd79c629c0b"
+    },
+    {
+      "file": "src/traceability.ts",
+      "sha256": "7db0c39cb3262339e76790a7ba10569d67d205ab84f1adb078b6b6d95e93a59c"
+    },
+    {
+      "file": "src/transfers.ts",
+      "sha256": "2dc34bdb44557cbe45d0b88091c7f4d0e4f6bcd44bbbe8430b61d51e43910833"
+    },
+    {
+      "file": "src/usability.ts",
+      "sha256": "bb4cf272fd01be5c4866b388f2af63e9fdd7286c208600fb635ca10d30f0ad51"
+    },
+    {
+      "file": "src/world.ts",
+      "sha256": "2f1bd43c85fcdda332ad16ebdb73d367b0ed502a7145c085c7a7433ff26063c1"
+    }
+  ],
+  "independentSpecification": {
+    "file": "experiments/tla-conformance/migration-helper-causal-r7/v9.expected.ts.txt",
+    "sha256": "fb93d6b0cad4c29156d438b5c8c180bac0aae26730d652859a9a7f372dabf097"
+  },
+  "independentDependencies": {
+    "quantity": {
+      "commit": "R131_CURRENT_SOURCE",
+      "artifactSha256": "09c350ecad0b7c171545f76d99e8e725a574be85a90c36aab45096c9423f0ac9",
+      "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1"
+    },
+    "identity": {
+      "commit": "R131_CURRENT_SOURCE",
+      "artifactSha256": "d159ad45dc98572e44f84adc08a2d93bff009f24ae8b08673cfa18a418ab18c4",
+      "proofKind": "independent-identity-values-closed-equations-v1"
+    }
+  },
+  "localLaws": [
+    {
+      "id": "src/digest.ts#inventorySha256",
+      "completeExpectedTerm": {
+        "termSha256": "19739697c78bb0ce71256c194550b9d76da053f24def67e7c7ffa4ff91fe8880",
+        "implementation": {
+          "file": "src/digest.ts",
+          "start": {
+            "offset": 95,
+            "line": 2,
+            "column": 1
+          },
+          "end": {
+            "offset": 2974,
+            "line": 82,
+            "column": 2
+          },
+          "sourceHash": "5fa667c59dd65a667d8cceddd9bf8c25eb46d3787a22ad7db797fd3722d5f833",
+          "astHash": "ef4a1d26af134b5c768fd9126d76a5489dbf1696aa2f7cbd0f7a891812866a29"
+        }
+      },
+      "dependencies": [
+        {
+          "kind": "INDEPENDENT_LOCAL_EXPECTED_TERM",
+          "id": "src/digest.ts#rotateRight"
+        }
+      ],
+      "gaps": []
+    },
+    {
+      "id": "src/digest.ts#rotateRight",
+      "completeExpectedTerm": {
+        "termSha256": "c05c2ed0b8441e15b0ea4aba7888b7d896d7fc9893cb2801b10df7da3d15b0aa",
+        "implementation": {
+          "file": "src/digest.ts",
+          "start": {
+            "offset": 3043,
+            "line": 85,
+            "column": 1
+          },
+          "end": {
+            "offset": 3156,
+            "line": 87,
+            "column": 2
+          },
+          "sourceHash": "5fa667c59dd65a667d8cceddd9bf8c25eb46d3787a22ad7db797fd3722d5f833",
+          "astHash": "aece1fb793340630143ee31715d3a7a90ffe0744d8db87c0eb7c71205feec5ee"
+        }
+      },
+      "dependencies": [],
+      "gaps": []
+    },
+    {
+      "id": "src/storage.ts#validateBeginInventoryMigrationManifest",
+      "completeExpectedTerm": {
+        "termSha256": "a0a87749af9e4bbb6f8693562bcd8c7cb765d912ec809a5ea54303119bbfec4a",
+        "implementation": {
+          "file": "src/storage.ts",
+          "start": {
+            "offset": 58397,
+            "line": 1440,
+            "column": 1
+          },
+          "end": {
+            "offset": 60551,
+            "line": 1505,
+            "column": 2
+          },
+          "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+          "astHash": "8d0d362e4042ce006363c0a20155004621515fb2b987854cdb60a73a165f380c"
+        }
+      },
+      "dependencies": [
+        {
+          "kind": "INDEPENDENT_LOCAL_EXPECTED_TERM",
+          "id": "src/storage.ts#migrationSourceDispositionsEqual"
+        }
+      ],
+      "gaps": []
+    },
+    {
+      "id": "src/storage.ts#migrationSourceDispositionsEqual",
+      "completeExpectedTerm": {
+        "termSha256": "d9662a6fb8aa2994a0701d2abee9c53a458cc2598a35f762d550e09e0cdd4def",
+        "implementation": {
+          "file": "src/storage.ts",
+          "start": {
+            "offset": 63936,
+            "line": 1610,
+            "column": 1
+          },
+          "end": {
+            "offset": 64328,
+            "line": 1622,
+            "column": 2
+          },
+          "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+          "astHash": "1d3b994d8ef0abbaf3102ee42c8b45d3379daeb1635497e8b10bf78d60721098"
+        }
+      },
+      "dependencies": [
+        {
+          "kind": "INDEPENDENT_QUANTITY_EQUATION",
+          "id": "src/canonical.ts#inventoryIntentFingerprint",
+          "certificateCommit": "R131_CURRENT_SOURCE",
+          "certificateSha256": "09c350ecad0b7c171545f76d99e8e725a574be85a90c36aab45096c9423f0ac9",
+          "equationSha256": "938bacd50aee2a638b159466f9bf16b26955b65c44351ed1b1f9fb71475c5d8a"
+        },
+        {
+          "kind": "INDEPENDENT_LOCAL_EXPECTED_TERM",
+          "id": "src/migration-evidence.ts#inventoryMigrationSourceDispositionFingerprint"
+        }
+      ],
+      "gaps": []
+    },
+    {
+      "id": "src/migration-evidence.ts#inventoryMigrationSourceDispositionFingerprint",
+      "completeExpectedTerm": {
+        "termSha256": "eb3a6db327659ebaac803105801bf97c19797d86f2003bf45e7ff4b3600bfa9e",
+        "implementation": {
+          "file": "src/migration-evidence.ts",
+          "start": {
+            "offset": 1637,
+            "line": 41,
+            "column": 1
+          },
+          "end": {
+            "offset": 2084,
+            "line": 54,
+            "column": 2
+          },
+          "sourceHash": "8d8f6dd0b6a83546633e5c360a1769e9a49ff8708f3737e14a79fa965604d037",
+          "astHash": "99d24498828764cbb7407f4799a0966798eb69fba5657fbb0018aa3c436c65f0"
+        }
+      },
+      "dependencies": [
+        {
+          "kind": "INDEPENDENT_IDENTITY_EQUATION",
+          "id": "src/canonical.ts#inventoryMetadataFingerprint",
+          "certificateCommit": "R131_CURRENT_SOURCE",
+          "certificateSha256": "d159ad45dc98572e44f84adc08a2d93bff009f24ae8b08673cfa18a418ab18c4",
+          "lawId": "canonical-fingerprint-v1"
+        }
+      ],
+      "gaps": []
+    },
+    {
+      "id": "src/storage.ts#validateInventoryDurableMigrationPlanAgainstBase",
+      "completeExpectedTerm": {
+        "termSha256": "a63cba18a783425b885ac3d301413f6562a67ed4184fc26f557766338c658b86",
+        "implementation": {
+          "file": "src/storage.ts",
+          "start": {
+            "offset": 62071,
+            "line": 1553,
+            "column": 1
+          },
+          "end": {
+            "offset": 63848,
+            "line": 1607,
+            "column": 2
+          },
+          "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+          "astHash": "8714d0513d30a546220aa3c0790496cfc5d78e776c5e3870cc7bf86ff17cb148"
+        }
+      },
+      "dependencies": [
+        {
+          "kind": "NAMED_GAP",
+          "id": "AUTHORITY_COMPLETE_CATALOG_RETENTION_LAW_PENDING",
+          "dependency": "src/catalog.ts#assertInventoryCatalogRetainsSnapshot"
+        },
+        {
+          "kind": "NAMED_GAP",
+          "id": "AUTHORITY_COMPLETE_CATALOG_REHYDRATION_LAW_PENDING",
+          "dependency": "src/catalog.ts#inventoryCatalogFromSnapshot"
+        },
+        {
+          "kind": "SAME_V9_COMPLETE_EXPECTED_TERM",
+          "id": "src/integrity.ts#inventoryDurableMigrationPlanDigest"
+        },
+        {
+          "kind": "NAMED_GAP",
+          "id": "AUTHORITY_COMPLETE_WORLD_ROOT_LAW_PENDING",
+          "dependency": "src/integrity.ts#inventoryWorldContentRoots"
+        },
+        {
+          "kind": "NAMED_GAP",
+          "id": "COMPLETE_MIGRATION_EVENT_PROJECTION_LAW_PENDING",
+          "dependency": "src/projection.ts#applyInventoryCommittedEvent"
+        },
+        {
+          "kind": "INDEPENDENT_LOCAL_EXPECTED_TERM",
+          "id": "src/storage.ts#inventoryWorldContentRootsEqual"
+        }
+      ],
+      "gaps": [
+        {
+          "kind": "NAMED_GAP",
+          "id": "AUTHORITY_COMPLETE_CATALOG_REHYDRATION_LAW_PENDING",
+          "dependency": "src/catalog.ts#inventoryCatalogFromSnapshot"
+        },
+        {
+          "kind": "NAMED_GAP",
+          "id": "AUTHORITY_COMPLETE_CATALOG_RETENTION_LAW_PENDING",
+          "dependency": "src/catalog.ts#assertInventoryCatalogRetainsSnapshot"
+        },
+        {
+          "kind": "NAMED_GAP",
+          "id": "AUTHORITY_COMPLETE_WORLD_ROOT_LAW_PENDING",
+          "dependency": "src/integrity.ts#inventoryWorldContentRoots"
+        },
+        {
+          "kind": "NAMED_GAP",
+          "id": "COMPLETE_MIGRATION_EVENT_PROJECTION_LAW_PENDING",
+          "dependency": "src/projection.ts#applyInventoryCommittedEvent"
+        }
+      ]
+    },
+    {
+      "id": "src/storage.ts#inventoryWorldContentRootsEqual",
+      "completeExpectedTerm": {
+        "termSha256": "3a30b6addeecaf9768c04d47771df8b26f57bc768d15794bedcf9075e83c5659",
+        "implementation": {
+          "file": "src/storage.ts",
+          "start": {
+            "offset": 57161,
+            "line": 1407,
+            "column": 1
+          },
+          "end": {
+            "offset": 57502,
+            "line": 1418,
+            "column": 2
+          },
+          "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+          "astHash": "9e21cdf971d1c920fbb6ce3e4bf7f75baef0b20d4eb5450a3213536ed99de9d4"
+        }
+      },
+      "dependencies": [],
+      "gaps": []
+    }
+  ],
+  "supportingValues": [
+    {
+      "name": "SHA256_INITIAL_HASH",
+      "termSha256": "604efea275577469be5831e192f2f503c1386c5ee8b0f7e04d8c521372f6afcb"
+    },
+    {
+      "name": "SHA256_ROUND_CONSTANTS",
+      "termSha256": "f18ef59e263101803c76ffba14e2c237b50ee4960c4e55aae6dd452334f29de2"
+    }
+  ],
+  "excluded": [
+    {
+      "surfaceKey": "export:./storage#materializeInventoryDurableMigrationWorld::call[0]",
+      "gaps": [
+        {
+          "kind": "NAMED_GAP",
+          "id": "AUTHORITY_COMPLETE_CATALOG_REHYDRATION_LAW_PENDING",
+          "dependency": "src/catalog.ts#inventoryCatalogFromSnapshot"
+        },
+        {
+          "kind": "NAMED_GAP",
+          "id": "AUTHORITY_COMPLETE_CATALOG_RETENTION_LAW_PENDING",
+          "dependency": "src/catalog.ts#assertInventoryCatalogRetainsSnapshot"
+        },
+        {
+          "kind": "NAMED_GAP",
+          "id": "AUTHORITY_COMPLETE_WORLD_ROOT_LAW_PENDING",
+          "dependency": "src/integrity.ts#inventoryWorldContentRoots"
+        },
+        {
+          "kind": "NAMED_GAP",
+          "id": "COMPLETE_MIGRATION_EVENT_PROJECTION_LAW_PENDING",
+          "dependency": "src/projection.ts#applyInventoryCommittedEvent"
+        }
+      ]
+    }
+  ],
+  "proofs": [
+    {
+      "surfaceKey": "export:./migrations#defineInventoryLegacyQuery::call[0]",
+      "signatureHash": "adbbef55701d703decdd7c54ee5224fa554692c221a24ff3b865db30c1638f0d",
+      "declaration": {
+        "file": "src/migration-plugin.ts",
+        "start": {
+          "offset": 4618,
+          "line": 113,
+          "column": 1
+        },
+        "end": {
+          "offset": 4881,
+          "line": 120,
+          "column": 2
+        },
+        "sourceHash": "4b271d6398ba1b0eeb4a5b1cb48523a062f9bcf1c5b427755ec5e1f0fdebe5e6",
+        "astHash": "51749832fa18e8bd1b4c7c628abe77fd3859e4a84467ab122fd0619cebcb5bed"
+      },
+      "completeExpectedTerm": {
+        "termSha256": "fc0b3470343456211aab92389fc37c027ae6a44aed9f4cec4d5fb75695ac4e8b",
+        "implementation": {
+          "file": "src/migration-plugin.ts",
+          "start": {
+            "offset": 4618,
+            "line": 113,
+            "column": 1
+          },
+          "end": {
+            "offset": 4881,
+            "line": 120,
+            "column": 2
+          },
+          "sourceHash": "4b271d6398ba1b0eeb4a5b1cb48523a062f9bcf1c5b427755ec5e1f0fdebe5e6",
+          "astHash": "51749832fa18e8bd1b4c7c628abe77fd3859e4a84467ab122fd0619cebcb5bed"
+        }
+      },
+      "dependencies": []
+    },
+    {
+      "surfaceKey": "export:./migrations#defineInventoryMigrationPlugin::call[0]",
+      "signatureHash": "027d86be70170e394b2101d7f8cf204c48d0513410e58338252bc2d529290ba5",
+      "declaration": {
+        "file": "src/migration-plugin.ts",
+        "start": {
+          "offset": 5326,
+          "line": 133,
+          "column": 1
+        },
+        "end": {
+          "offset": 5579,
+          "line": 140,
+          "column": 2
+        },
+        "sourceHash": "4b271d6398ba1b0eeb4a5b1cb48523a062f9bcf1c5b427755ec5e1f0fdebe5e6",
+        "astHash": "342762106775cadde5fcfce7e7d10ebc63e5505e939283c93c1a553862cad7f3"
+      },
+      "completeExpectedTerm": {
+        "termSha256": "bbd3467b750d53bfc082e33504107a91791f8285f4e1b76187f031ee09121d81",
+        "implementation": {
+          "file": "src/migration-plugin.ts",
+          "start": {
+            "offset": 5326,
+            "line": 133,
+            "column": 1
+          },
+          "end": {
+            "offset": 5579,
+            "line": 140,
+            "column": 2
+          },
+          "sourceHash": "4b271d6398ba1b0eeb4a5b1cb48523a062f9bcf1c5b427755ec5e1f0fdebe5e6",
+          "astHash": "342762106775cadde5fcfce7e7d10ebc63e5505e939283c93c1a553862cad7f3"
+        }
+      },
+      "dependencies": []
+    },
+    {
+      "surfaceKey": "export:./migrations#defineInventoryMigrationSourcePlugin::call[0]",
+      "signatureHash": "5e113f7e6b04f3efa7fb995bde154f7a7cc369a8927847f7efddd12842a99ef5",
+      "declaration": {
+        "file": "src/migration-plugin.ts",
+        "start": {
+          "offset": 4971,
+          "line": 123,
+          "column": 1
+        },
+        "end": {
+          "offset": 5249,
+          "line": 130,
+          "column": 2
+        },
+        "sourceHash": "4b271d6398ba1b0eeb4a5b1cb48523a062f9bcf1c5b427755ec5e1f0fdebe5e6",
+        "astHash": "591590c86e301b6e65b83dc8c106d6cd9654f08ed717dc007104f2c70fc0c2d6"
+      },
+      "completeExpectedTerm": {
+        "termSha256": "310928825dd4c759353e3cd6abefde4b2efde437b17dc305b12f805d375699ef",
+        "implementation": {
+          "file": "src/migration-plugin.ts",
+          "start": {
+            "offset": 4971,
+            "line": 123,
+            "column": 1
+          },
+          "end": {
+            "offset": 5249,
+            "line": 130,
+            "column": 2
+          },
+          "sourceHash": "4b271d6398ba1b0eeb4a5b1cb48523a062f9bcf1c5b427755ec5e1f0fdebe5e6",
+          "astHash": "591590c86e301b6e65b83dc8c106d6cd9654f08ed717dc007104f2c70fc0c2d6"
+        }
+      },
+      "dependencies": []
+    },
+    {
+      "surfaceKey": "export:./migrations#inventoryMigrationProblem::call[0]",
+      "signatureHash": "2eaa77709ae766823b12a418046aef043d16acc2dbdc14b1de0afc802f12432c",
+      "declaration": {
+        "file": "src/migrations.ts",
+        "start": {
+          "offset": 10845,
+          "line": 254,
+          "column": 1
+        },
+        "end": {
+          "offset": 11270,
+          "line": 266,
+          "column": 2
+        },
+        "sourceHash": "0e837a12fa171f3029b3931f0c2c0d12d83edbd4b12d86e9ec810ec7ede77384",
+        "astHash": "dcfbad41582af4af97d6f2cd55fd03ce6feed6d68eac9c1f2dba1033051dd453"
+      },
+      "completeExpectedTerm": {
+        "termSha256": "26e82d15667678a5a507217207b41e995403664c83fe81c98edd1d151a4b1486",
+        "implementation": {
+          "file": "src/migrations.ts",
+          "start": {
+            "offset": 10845,
+            "line": 254,
+            "column": 1
+          },
+          "end": {
+            "offset": 11270,
+            "line": 266,
+            "column": 2
+          },
+          "sourceHash": "0e837a12fa171f3029b3931f0c2c0d12d83edbd4b12d86e9ec810ec7ede77384",
+          "astHash": "dcfbad41582af4af97d6f2cd55fd03ce6feed6d68eac9c1f2dba1033051dd453"
+        }
+      },
+      "dependencies": []
+    },
+    {
+      "surfaceKey": "export:./storage#inventoryDurableMigrationPlanDigest::call[0]",
+      "signatureHash": "9dc118b59b63f4ec4ba1a7255393246fe17504860ce5ad60a7dfe95dc84eb3c8",
+      "declaration": {
+        "file": "src/integrity.ts",
+        "start": {
+          "offset": 11451,
+          "line": 322,
+          "column": 1
+        },
+        "end": {
+          "offset": 12525,
+          "line": 347,
+          "column": 2
+        },
+        "sourceHash": "238ccd616e791b60b523b89517479585f2d9aabe83198464a44f654cd7058037",
+        "astHash": "36dcb53414039741f4fe277005caaf524f44cab41ac0faa7ff0c7b33cef8c6b3"
+      },
+      "completeExpectedTerm": {
+        "termSha256": "72964d804bdb2a1081604127173d18e6ce6033a24871378c919d43704170235e",
+        "implementation": {
+          "file": "src/integrity.ts",
+          "start": {
+            "offset": 11451,
+            "line": 322,
+            "column": 1
+          },
+          "end": {
+            "offset": 12525,
+            "line": 347,
+            "column": 2
+          },
+          "sourceHash": "238ccd616e791b60b523b89517479585f2d9aabe83198464a44f654cd7058037",
+          "astHash": "36dcb53414039741f4fe277005caaf524f44cab41ac0faa7ff0c7b33cef8c6b3"
+        }
+      },
+      "dependencies": [
+        {
+          "kind": "INDEPENDENT_LOCAL_EXPECTED_TERM",
+          "id": "src/digest.ts#inventorySha256"
+        }
+      ]
+    },
+    {
+      "surfaceKey": "export:./storage#validateInventoryMigrationManifestBeginInput::call[0]",
+      "signatureHash": "71e8962399a9cebeda1cb963c55ac53313c2feb207b9fee8c2386c4dee7785ac",
+      "declaration": {
+        "file": "src/storage.ts",
+        "start": {
+          "offset": 51203,
+          "line": 1228,
+          "column": 1
+        },
+        "end": {
+          "offset": 51372,
+          "line": 1232,
+          "column": 2
+        },
+        "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+        "astHash": "1b310a17abf9b05308f1745c5dc82352fa851727097016b28d5b3d58e1e8d919"
+      },
+      "completeExpectedTerm": {
+        "termSha256": "be47a2e229fae1508c7b898b97c7a8fb408a0ff058e90c47f0ed102f4a8f817f",
+        "implementation": {
+          "file": "src/storage.ts",
+          "start": {
+            "offset": 51203,
+            "line": 1228,
+            "column": 1
+          },
+          "end": {
+            "offset": 51372,
+            "line": 1232,
+            "column": 2
+          },
+          "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+          "astHash": "1b310a17abf9b05308f1745c5dc82352fa851727097016b28d5b3d58e1e8d919"
+        }
+      },
+      "dependencies": [
+        {
+          "kind": "INDEPENDENT_LOCAL_EXPECTED_TERM",
+          "id": "src/storage.ts#validateBeginInventoryMigrationManifest"
+        }
+      ]
+    }
+  ]
+}

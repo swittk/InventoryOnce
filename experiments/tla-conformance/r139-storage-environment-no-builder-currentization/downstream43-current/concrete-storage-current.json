@@ -1,0 +1,1086 @@
+{
+  "schemaVersion": 1,
+  "proofKind": "concrete-inmemory-storage-subset-a11-b3-current-r139-v1",
+  "route": "REGISTERED_CERTIFIED_PRODUCER",
+  "family": "ConcreteInMemoryStorageSubsetCurrentR139",
+  "surfaceDigest": "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a",
+  "domain": "Exactly fourteen package-owned InMemoryInventoryDurableStorage methods: eleven operation-protocol methods from the current R139 Storage26 replay authority plus begin/write/complete migration-manifest methods from the current content-addressed R139 Snapshot publication certificate. No InventoryDurableStorage interface identity or arbitrary adapter implementation receives new credit.",
+  "allAdmittedInputs": true,
+  "sampledInputs": 0,
+  "producerGraphRuns": 0,
+  "producerReplayRuns": 0,
+  "currentization": {
+    "storageImplementationReplayRuns": 1,
+    "migrationProducerReruns": 0,
+    "graphExportRuns": 0,
+    "tlcRuns": 0
+  },
+  "proofs": [
+    {
+      "surfaceKey": "type:src/storage.ts#InMemoryInventoryDurableStorage.abort::call[0]",
+      "mode": "A",
+      "signatureHash": "aaaf5c4ec849114d34ddf83a66f9847cb7bd4674170215e79afcb2d268d573ae",
+      "declaration": {
+        "file": "src/storage.ts",
+        "start": {
+          "offset": 45591,
+          "line": 1083,
+          "column": 3
+        },
+        "end": {
+          "offset": 45903,
+          "line": 1088,
+          "column": 4
+        },
+        "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+        "astHash": "e293ccc6fbb99a7d090bb4632fd26bafd894beb15a31d4dea1f0fcebafdc5b6e"
+      },
+      "layeredAuthority": {
+        "kind": "R139_STORAGE26_CURRENT_REPLAY",
+        "formal": {
+          "model": "InventoryOperation",
+          "source": "formal/InventoryOperation.tla",
+          "sourceHash": "f8e1901d7631f3113309b58e73f18dd9e9f2cc564b7c24a6b64755f8c45982ad",
+          "variables": [
+            "state",
+            "frozenIntent",
+            "firstIntent",
+            "retryIntent",
+            "retryOutcome",
+            "planFrozen",
+            "planRetained",
+            "worldPublished",
+            "hasEvent",
+            "plannedSource",
+            "plannedDestination",
+            "plannedCatalog",
+            "plannedLots",
+            "plannedContainers",
+            "plannedTraceability",
+            "plannedReservations",
+            "plannedCounts",
+            "eventWritten",
+            "projectionWritten",
+            "reservationsWritten",
+            "countsWritten",
+            "receiptWritten",
+            "visibleSource",
+            "visibleDestination",
+            "visibleCatalog",
+            "visibleLots",
+            "visibleContainers",
+            "visibleTraceability",
+            "visibleReservations",
+            "visibleCounts"
+          ],
+          "action": "Abort"
+        },
+        "execution": {
+          "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/surface-execution-v2.json",
+          "sha256": "5a0e02945de1f5b5dc1b82666fad9e1dd8f0bbf5db0f65bfe0212f385a36b698"
+        }
+      }
+    },
+    {
+      "surfaceKey": "type:src/storage.ts#InMemoryInventoryDurableStorage.begin::call[0]",
+      "mode": "A",
+      "signatureHash": "5493ea19a6466de67a5434f1e8025ce5aeb5c42a1f34a034065f3575feb3e83c",
+      "declaration": {
+        "file": "src/storage.ts",
+        "start": {
+          "offset": 33924,
+          "line": 794,
+          "column": 3
+        },
+        "end": {
+          "offset": 34321,
+          "line": 801,
+          "column": 4
+        },
+        "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+        "astHash": "e86ac8ae492d46d7174469a4e02a58fb94ed3ea356814bdff1e0a06006de8589"
+      },
+      "layeredAuthority": {
+        "kind": "R139_STORAGE26_CURRENT_REPLAY",
+        "formal": {
+          "model": "InventoryOperation",
+          "source": "formal/InventoryOperation.tla",
+          "sourceHash": "f8e1901d7631f3113309b58e73f18dd9e9f2cc564b7c24a6b64755f8c45982ad",
+          "variables": [
+            "state",
+            "frozenIntent",
+            "firstIntent",
+            "retryIntent",
+            "retryOutcome",
+            "planFrozen",
+            "planRetained",
+            "worldPublished",
+            "hasEvent",
+            "plannedSource",
+            "plannedDestination",
+            "plannedCatalog",
+            "plannedLots",
+            "plannedContainers",
+            "plannedTraceability",
+            "plannedReservations",
+            "plannedCounts",
+            "eventWritten",
+            "projectionWritten",
+            "reservationsWritten",
+            "countsWritten",
+            "receiptWritten",
+            "visibleSource",
+            "visibleDestination",
+            "visibleCatalog",
+            "visibleLots",
+            "visibleContainers",
+            "visibleTraceability",
+            "visibleReservations",
+            "visibleCounts"
+          ],
+          "actions": [
+            "Begin",
+            "Retry"
+          ]
+        },
+        "execution": {
+          "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/surface-execution-v2.json",
+          "sha256": "5a0e02945de1f5b5dc1b82666fad9e1dd8f0bbf5db0f65bfe0212f385a36b698"
+        }
+      }
+    },
+    {
+      "surfaceKey": "type:src/storage.ts#InMemoryInventoryDurableStorage.complete::call[0]",
+      "mode": "A",
+      "signatureHash": "0dd7063a6610bce3d349954ab7a91a404227a2e09593495ec11517685506baf2",
+      "declaration": {
+        "file": "src/storage.ts",
+        "start": {
+          "offset": 42686,
+          "line": 1007,
+          "column": 3
+        },
+        "end": {
+          "offset": 43026,
+          "line": 1012,
+          "column": 4
+        },
+        "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+        "astHash": "c7a0c418a9a79e58f8dfd8c904fe9dc2d652e2a11415c824fc48b6bb02edbcd3"
+      },
+      "layeredAuthority": {
+        "kind": "R139_STORAGE26_CURRENT_REPLAY",
+        "formal": {
+          "model": "InventoryOperation",
+          "source": "formal/InventoryOperation.tla",
+          "sourceHash": "f8e1901d7631f3113309b58e73f18dd9e9f2cc564b7c24a6b64755f8c45982ad",
+          "variables": [
+            "state",
+            "frozenIntent",
+            "firstIntent",
+            "retryIntent",
+            "retryOutcome",
+            "planFrozen",
+            "planRetained",
+            "worldPublished",
+            "hasEvent",
+            "plannedSource",
+            "plannedDestination",
+            "plannedCatalog",
+            "plannedLots",
+            "plannedContainers",
+            "plannedTraceability",
+            "plannedReservations",
+            "plannedCounts",
+            "eventWritten",
+            "projectionWritten",
+            "reservationsWritten",
+            "countsWritten",
+            "receiptWritten",
+            "visibleSource",
+            "visibleDestination",
+            "visibleCatalog",
+            "visibleLots",
+            "visibleContainers",
+            "visibleTraceability",
+            "visibleReservations",
+            "visibleCounts"
+          ],
+          "action": "CompactOperation"
+        },
+        "execution": {
+          "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/surface-execution-v2.json",
+          "sha256": "5a0e02945de1f5b5dc1b82666fad9e1dd8f0bbf5db0f65bfe0212f385a36b698"
+        }
+      }
+    },
+    {
+      "surfaceKey": "type:src/storage.ts#InMemoryInventoryDurableStorage.listApplyingOperations::call[0]",
+      "mode": "B",
+      "signatureHash": "42810709dbe2dc55c7dc0138002384eaa03aef51c66a791f834e5148eb132905",
+      "declaration": {
+        "file": "src/storage.ts",
+        "start": {
+          "offset": 32667,
+          "line": 760,
+          "column": 3
+        },
+        "end": {
+          "offset": 33201,
+          "line": 774,
+          "column": 4
+        },
+        "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+        "astHash": "89c6ccaaafc5933035e6634a1f1c921f469adaa82f5f68b72d61a330b2420449"
+      },
+      "layeredAuthority": {
+        "kind": "R139_STORAGE26_CURRENT_REPLAY",
+        "formal": {
+          "model": "InventoryOperation",
+          "source": "formal/InventoryOperation.tla",
+          "sourceHash": "f8e1901d7631f3113309b58e73f18dd9e9f2cc564b7c24a6b64755f8c45982ad",
+          "variables": [
+            "state",
+            "frozenIntent",
+            "firstIntent",
+            "retryIntent",
+            "retryOutcome",
+            "planFrozen",
+            "planRetained",
+            "worldPublished",
+            "hasEvent",
+            "plannedSource",
+            "plannedDestination",
+            "plannedCatalog",
+            "plannedLots",
+            "plannedContainers",
+            "plannedTraceability",
+            "plannedReservations",
+            "plannedCounts",
+            "eventWritten",
+            "projectionWritten",
+            "reservationsWritten",
+            "countsWritten",
+            "receiptWritten",
+            "visibleSource",
+            "visibleDestination",
+            "visibleCatalog",
+            "visibleLots",
+            "visibleContainers",
+            "visibleTraceability",
+            "visibleReservations",
+            "visibleCounts"
+          ]
+        },
+        "execution": {
+          "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/surface-execution-v2.json",
+          "sha256": "5a0e02945de1f5b5dc1b82666fad9e1dd8f0bbf5db0f65bfe0212f385a36b698"
+        }
+      }
+    },
+    {
+      "surfaceKey": "type:src/storage.ts#InMemoryInventoryDurableStorage.readOperation::call[0]",
+      "mode": "B",
+      "signatureHash": "1201765e5da71ff800264ffc0d4f1f09c52121653c9876745b77e1916911317c",
+      "declaration": {
+        "file": "src/storage.ts",
+        "start": {
+          "offset": 22334,
+          "line": 475,
+          "column": 3
+        },
+        "end": {
+          "offset": 22566,
+          "line": 480,
+          "column": 4
+        },
+        "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+        "astHash": "a633076d3e688f4f9198e6b436953af50642704071ce28ff978cbf59663b8ec0"
+      },
+      "layeredAuthority": {
+        "kind": "R139_STORAGE26_CURRENT_REPLAY",
+        "formal": {
+          "model": "InventoryOperation",
+          "source": "formal/InventoryOperation.tla",
+          "sourceHash": "f8e1901d7631f3113309b58e73f18dd9e9f2cc564b7c24a6b64755f8c45982ad",
+          "variables": [
+            "state",
+            "frozenIntent",
+            "firstIntent",
+            "retryIntent",
+            "retryOutcome",
+            "planFrozen",
+            "planRetained",
+            "worldPublished",
+            "hasEvent",
+            "plannedSource",
+            "plannedDestination",
+            "plannedCatalog",
+            "plannedLots",
+            "plannedContainers",
+            "plannedTraceability",
+            "plannedReservations",
+            "plannedCounts",
+            "eventWritten",
+            "projectionWritten",
+            "reservationsWritten",
+            "countsWritten",
+            "receiptWritten",
+            "visibleSource",
+            "visibleDestination",
+            "visibleCatalog",
+            "visibleLots",
+            "visibleContainers",
+            "visibleTraceability",
+            "visibleReservations",
+            "visibleCounts"
+          ]
+        },
+        "execution": {
+          "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/surface-execution-v2.json",
+          "sha256": "5a0e02945de1f5b5dc1b82666fad9e1dd8f0bbf5db0f65bfe0212f385a36b698"
+        }
+      }
+    },
+    {
+      "surfaceKey": "type:src/storage.ts#InMemoryInventoryDurableStorage.readWorld::call[0]",
+      "mode": "B",
+      "signatureHash": "32ab938fbb7882f23d4589226b4c2c732661907aa39382613480e19b8a55ffe9",
+      "declaration": {
+        "file": "src/storage.ts",
+        "start": {
+          "offset": 22142,
+          "line": 470,
+          "column": 3
+        },
+        "end": {
+          "offset": 22248,
+          "line": 472,
+          "column": 4
+        },
+        "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+        "astHash": "ab9cc903279f072f9dae287fc23e8cf491a4097af303cddc9a56fc3fb1e8b5b8"
+      },
+      "layeredAuthority": {
+        "kind": "R139_STORAGE26_CURRENT_REPLAY",
+        "formal": {
+          "model": "InventoryOperation",
+          "source": "formal/InventoryOperation.tla",
+          "sourceHash": "f8e1901d7631f3113309b58e73f18dd9e9f2cc564b7c24a6b64755f8c45982ad",
+          "variables": [
+            "state",
+            "frozenIntent",
+            "firstIntent",
+            "retryIntent",
+            "retryOutcome",
+            "planFrozen",
+            "planRetained",
+            "worldPublished",
+            "hasEvent",
+            "plannedSource",
+            "plannedDestination",
+            "plannedCatalog",
+            "plannedLots",
+            "plannedContainers",
+            "plannedTraceability",
+            "plannedReservations",
+            "plannedCounts",
+            "eventWritten",
+            "projectionWritten",
+            "reservationsWritten",
+            "countsWritten",
+            "receiptWritten",
+            "visibleSource",
+            "visibleDestination",
+            "visibleCatalog",
+            "visibleLots",
+            "visibleContainers",
+            "visibleTraceability",
+            "visibleReservations",
+            "visibleCounts"
+          ]
+        },
+        "execution": {
+          "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/surface-execution-v2.json",
+          "sha256": "5a0e02945de1f5b5dc1b82666fad9e1dd8f0bbf5db0f65bfe0212f385a36b698"
+        }
+      }
+    },
+    {
+      "surfaceKey": "type:src/storage.ts#InMemoryInventoryDurableStorage.writeCounts::call[0]",
+      "mode": "A",
+      "signatureHash": "aaaf5c4ec849114d34ddf83a66f9847cb7bd4674170215e79afcb2d268d573ae",
+      "declaration": {
+        "file": "src/storage.ts",
+        "start": {
+          "offset": 40462,
+          "line": 963,
+          "column": 3
+        },
+        "end": {
+          "offset": 40800,
+          "line": 968,
+          "column": 4
+        },
+        "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+        "astHash": "8bdeb1535ad126c0f78250fac1d2200e5b65f5175359aa1899c51ff8dd5e84c0"
+      },
+      "layeredAuthority": {
+        "kind": "R139_STORAGE26_CURRENT_REPLAY",
+        "formal": {
+          "model": "InventoryOperation",
+          "source": "formal/InventoryOperation.tla",
+          "sourceHash": "f8e1901d7631f3113309b58e73f18dd9e9f2cc564b7c24a6b64755f8c45982ad",
+          "variables": [
+            "state",
+            "frozenIntent",
+            "firstIntent",
+            "retryIntent",
+            "retryOutcome",
+            "planFrozen",
+            "planRetained",
+            "worldPublished",
+            "hasEvent",
+            "plannedSource",
+            "plannedDestination",
+            "plannedCatalog",
+            "plannedLots",
+            "plannedContainers",
+            "plannedTraceability",
+            "plannedReservations",
+            "plannedCounts",
+            "eventWritten",
+            "projectionWritten",
+            "reservationsWritten",
+            "countsWritten",
+            "receiptWritten",
+            "visibleSource",
+            "visibleDestination",
+            "visibleCatalog",
+            "visibleLots",
+            "visibleContainers",
+            "visibleTraceability",
+            "visibleReservations",
+            "visibleCounts"
+          ],
+          "action": "WriteCounts"
+        },
+        "execution": {
+          "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/surface-execution-v2.json",
+          "sha256": "5a0e02945de1f5b5dc1b82666fad9e1dd8f0bbf5db0f65bfe0212f385a36b698"
+        }
+      }
+    },
+    {
+      "surfaceKey": "type:src/storage.ts#InMemoryInventoryDurableStorage.writeEvent::call[0]",
+      "mode": "A",
+      "signatureHash": "aaaf5c4ec849114d34ddf83a66f9847cb7bd4674170215e79afcb2d268d573ae",
+      "declaration": {
+        "file": "src/storage.ts",
+        "start": {
+          "offset": 36658,
+          "line": 869,
+          "column": 3
+        },
+        "end": {
+          "offset": 36994,
+          "line": 874,
+          "column": 4
+        },
+        "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+        "astHash": "b81643c8fc3e3ab3c88c1f2ee1f985ec72573b93e9e5416c4b14cc2889186cf5"
+      },
+      "layeredAuthority": {
+        "kind": "R139_STORAGE26_CURRENT_REPLAY",
+        "formal": {
+          "model": "InventoryOperation",
+          "source": "formal/InventoryOperation.tla",
+          "sourceHash": "f8e1901d7631f3113309b58e73f18dd9e9f2cc564b7c24a6b64755f8c45982ad",
+          "variables": [
+            "state",
+            "frozenIntent",
+            "firstIntent",
+            "retryIntent",
+            "retryOutcome",
+            "planFrozen",
+            "planRetained",
+            "worldPublished",
+            "hasEvent",
+            "plannedSource",
+            "plannedDestination",
+            "plannedCatalog",
+            "plannedLots",
+            "plannedContainers",
+            "plannedTraceability",
+            "plannedReservations",
+            "plannedCounts",
+            "eventWritten",
+            "projectionWritten",
+            "reservationsWritten",
+            "countsWritten",
+            "receiptWritten",
+            "visibleSource",
+            "visibleDestination",
+            "visibleCatalog",
+            "visibleLots",
+            "visibleContainers",
+            "visibleTraceability",
+            "visibleReservations",
+            "visibleCounts"
+          ],
+          "action": "WriteEvent"
+        },
+        "execution": {
+          "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/surface-execution-v2.json",
+          "sha256": "5a0e02945de1f5b5dc1b82666fad9e1dd8f0bbf5db0f65bfe0212f385a36b698"
+        }
+      }
+    },
+    {
+      "surfaceKey": "type:src/storage.ts#InMemoryInventoryDurableStorage.writeProjection::call[0]",
+      "mode": "A",
+      "signatureHash": "aaaf5c4ec849114d34ddf83a66f9847cb7bd4674170215e79afcb2d268d573ae",
+      "declaration": {
+        "file": "src/storage.ts",
+        "start": {
+          "offset": 37898,
+          "line": 894,
+          "column": 3
+        },
+        "end": {
+          "offset": 38257,
+          "line": 901,
+          "column": 4
+        },
+        "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+        "astHash": "b8bf4dbd2842a2b98e75e500268ee41ba41ebc46af8513a4e193ab285f221e82"
+      },
+      "layeredAuthority": {
+        "kind": "R139_STORAGE26_CURRENT_REPLAY",
+        "formal": {
+          "model": "InventoryOperation",
+          "source": "formal/InventoryOperation.tla",
+          "sourceHash": "f8e1901d7631f3113309b58e73f18dd9e9f2cc564b7c24a6b64755f8c45982ad",
+          "variables": [
+            "state",
+            "frozenIntent",
+            "firstIntent",
+            "retryIntent",
+            "retryOutcome",
+            "planFrozen",
+            "planRetained",
+            "worldPublished",
+            "hasEvent",
+            "plannedSource",
+            "plannedDestination",
+            "plannedCatalog",
+            "plannedLots",
+            "plannedContainers",
+            "plannedTraceability",
+            "plannedReservations",
+            "plannedCounts",
+            "eventWritten",
+            "projectionWritten",
+            "reservationsWritten",
+            "countsWritten",
+            "receiptWritten",
+            "visibleSource",
+            "visibleDestination",
+            "visibleCatalog",
+            "visibleLots",
+            "visibleContainers",
+            "visibleTraceability",
+            "visibleReservations",
+            "visibleCounts"
+          ],
+          "action": "WriteProjection"
+        },
+        "execution": {
+          "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/surface-execution-v2.json",
+          "sha256": "5a0e02945de1f5b5dc1b82666fad9e1dd8f0bbf5db0f65bfe0212f385a36b698"
+        }
+      }
+    },
+    {
+      "surfaceKey": "type:src/storage.ts#InMemoryInventoryDurableStorage.writeReceipt::call[0]",
+      "mode": "A",
+      "signatureHash": "aaaf5c4ec849114d34ddf83a66f9847cb7bd4674170215e79afcb2d268d573ae",
+      "declaration": {
+        "file": "src/storage.ts",
+        "start": {
+          "offset": 41551,
+          "line": 985,
+          "column": 3
+        },
+        "end": {
+          "offset": 41893,
+          "line": 990,
+          "column": 4
+        },
+        "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+        "astHash": "5e1ef476a97b787179a56c1ffedde204b99e4a237a169890f72f9c8c23246c64"
+      },
+      "layeredAuthority": {
+        "kind": "R139_STORAGE26_CURRENT_REPLAY",
+        "formal": {
+          "model": "InventoryOperation",
+          "source": "formal/InventoryOperation.tla",
+          "sourceHash": "f8e1901d7631f3113309b58e73f18dd9e9f2cc564b7c24a6b64755f8c45982ad",
+          "variables": [
+            "state",
+            "frozenIntent",
+            "firstIntent",
+            "retryIntent",
+            "retryOutcome",
+            "planFrozen",
+            "planRetained",
+            "worldPublished",
+            "hasEvent",
+            "plannedSource",
+            "plannedDestination",
+            "plannedCatalog",
+            "plannedLots",
+            "plannedContainers",
+            "plannedTraceability",
+            "plannedReservations",
+            "plannedCounts",
+            "eventWritten",
+            "projectionWritten",
+            "reservationsWritten",
+            "countsWritten",
+            "receiptWritten",
+            "visibleSource",
+            "visibleDestination",
+            "visibleCatalog",
+            "visibleLots",
+            "visibleContainers",
+            "visibleTraceability",
+            "visibleReservations",
+            "visibleCounts"
+          ],
+          "action": "WriteReceipt"
+        },
+        "execution": {
+          "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/surface-execution-v2.json",
+          "sha256": "5a0e02945de1f5b5dc1b82666fad9e1dd8f0bbf5db0f65bfe0212f385a36b698"
+        }
+      }
+    },
+    {
+      "surfaceKey": "type:src/storage.ts#InMemoryInventoryDurableStorage.writeReservations::call[0]",
+      "mode": "A",
+      "signatureHash": "aaaf5c4ec849114d34ddf83a66f9847cb7bd4674170215e79afcb2d268d573ae",
+      "declaration": {
+        "file": "src/storage.ts",
+        "start": {
+          "offset": 39254,
+          "line": 931,
+          "column": 3
+        },
+        "end": {
+          "offset": 39618,
+          "line": 938,
+          "column": 4
+        },
+        "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+        "astHash": "622bd3c27e74a8da42263e2ee7a5617a0da3d29e379c9558769971edd719ef90"
+      },
+      "layeredAuthority": {
+        "kind": "R139_STORAGE26_CURRENT_REPLAY",
+        "formal": {
+          "model": "InventoryOperation",
+          "source": "formal/InventoryOperation.tla",
+          "sourceHash": "f8e1901d7631f3113309b58e73f18dd9e9f2cc564b7c24a6b64755f8c45982ad",
+          "variables": [
+            "state",
+            "frozenIntent",
+            "firstIntent",
+            "retryIntent",
+            "retryOutcome",
+            "planFrozen",
+            "planRetained",
+            "worldPublished",
+            "hasEvent",
+            "plannedSource",
+            "plannedDestination",
+            "plannedCatalog",
+            "plannedLots",
+            "plannedContainers",
+            "plannedTraceability",
+            "plannedReservations",
+            "plannedCounts",
+            "eventWritten",
+            "projectionWritten",
+            "reservationsWritten",
+            "countsWritten",
+            "receiptWritten",
+            "visibleSource",
+            "visibleDestination",
+            "visibleCatalog",
+            "visibleLots",
+            "visibleContainers",
+            "visibleTraceability",
+            "visibleReservations",
+            "visibleCounts"
+          ],
+          "action": "WriteReservations"
+        },
+        "execution": {
+          "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/surface-execution-v2.json",
+          "sha256": "5a0e02945de1f5b5dc1b82666fad9e1dd8f0bbf5db0f65bfe0212f385a36b698"
+        }
+      }
+    },
+    {
+      "surfaceKey": "type:src/storage.ts#InMemoryInventoryDurableStorage.beginMigrationManifest::call[0]",
+      "mode": "A",
+      "signatureHash": "b884123a1150a64603b7cb58a9bc4332ce67d5f4a310c22216b93f521f4c2d7d",
+      "declaration": {
+        "file": "src/storage.ts",
+        "start": {
+          "offset": 22995,
+          "line": 491,
+          "column": 3
+        },
+        "end": {
+          "offset": 23429,
+          "line": 498,
+          "column": 4
+        },
+        "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+        "astHash": "bdd2f396b91ed08a61f0f1a2f2f196fd6fb45a6bc9e0a0fb1ef324ca834c8e1a"
+      },
+      "layeredAuthority": {
+        "kind": "R139_MIGRATION_MANIFEST_CURRENT_CERTIFICATE",
+        "certificateId": "sha256:d9d5811ef665a35246388b8a639743965f9825798a5373ae7b9d44ee9e87fda9",
+        "originalAction": "PublishOpeningSnapshot",
+        "originalOccurrences": 4,
+        "physicalStage": "migration-begin"
+      }
+    },
+    {
+      "surfaceKey": "type:src/storage.ts#InMemoryInventoryDurableStorage.completeMigrationManifest::call[0]",
+      "mode": "A",
+      "signatureHash": "6182ee08d3bdadf06af4f5e787fad1abecfc544d25374a06e59f5f03a380c964",
+      "declaration": {
+        "file": "src/storage.ts",
+        "start": {
+          "offset": 27541,
+          "line": 611,
+          "column": 3
+        },
+        "end": {
+          "offset": 27919,
+          "line": 618,
+          "column": 4
+        },
+        "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+        "astHash": "776e084ca147528e07eb245a1c4202a9ad5a4cedf91ab0275fe069f642526322"
+      },
+      "layeredAuthority": {
+        "kind": "R139_MIGRATION_MANIFEST_CURRENT_CERTIFICATE",
+        "certificateId": "sha256:d9d5811ef665a35246388b8a639743965f9825798a5373ae7b9d44ee9e87fda9",
+        "originalAction": "PublishOpeningSnapshot",
+        "originalOccurrences": 4,
+        "physicalStage": "migration-complete"
+      }
+    },
+    {
+      "surfaceKey": "type:src/storage.ts#InMemoryInventoryDurableStorage.writeMigrationWorld::call[0]",
+      "mode": "A",
+      "signatureHash": "6182ee08d3bdadf06af4f5e787fad1abecfc544d25374a06e59f5f03a380c964",
+      "declaration": {
+        "file": "src/storage.ts",
+        "start": {
+          "offset": 25922,
+          "line": 567,
+          "column": 3
+        },
+        "end": {
+          "offset": 26289,
+          "line": 574,
+          "column": 4
+        },
+        "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+        "astHash": "3a2491f840567c313fb87916ad308aafe89e554d58df470e6d16f3f2fa2084cf"
+      },
+      "layeredAuthority": {
+        "kind": "R139_MIGRATION_MANIFEST_CURRENT_CERTIFICATE",
+        "certificateId": "sha256:d9d5811ef665a35246388b8a639743965f9825798a5373ae7b9d44ee9e87fda9",
+        "originalAction": "PublishOpeningSnapshot",
+        "originalOccurrences": 4,
+        "physicalStage": "migration-world"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "file": "experiments/tla-conformance/migration-r5/migration-manifest-storage-protocol-proof-r139.ts",
+      "sha256": "49a27b7dae5f734f8e4a839d0fb6f0784c279a309fb0418c21c7bd6488c2f7ec"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/downstream43-current/concrete-storage-current.mjs",
+      "sha256": "a0fab881930c20d48246308e9ec8e6b32dfc6b02b5d1e2699219209b60b0684b"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/downstream43-current/current-authorities.mjs",
+      "sha256": "490915f73e470e54a8b4c3893dcc1cbbd236803b895e6efb7da1874c95b03be3"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/migration-manifest-current/producer-certificate.json",
+      "sha256": "8b54513e42135866516381b03aaa6f4a5bb21070e591845c5aaedfa2404c637b"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/migration-manifest-current/protocol-observations.ndjson",
+      "sha256": "55b2fea31c2832943b31b209705faec5da408754f80aaf486807f56177a6e424"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/migration-manifest-current/publish-bridge-observations.ndjson",
+      "sha256": "e7130adf140dce404cda8977b17d94abb91139c864cffa10d54c6d68a1f31c15"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-evidence.mjs",
+      "sha256": "cfb59838895c41ce731b8e2c479558f37eaf9d3dc02c09faa561b3fad2a102d5"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/checkpoint-equivalence.json",
+      "sha256": "32a2ecd9b082205521d74a7f8931a88a8a2458affae9213d9fe5d1cf72334aa3"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/material-observations.json",
+      "sha256": "6ecd0681b5331b3a25e56f223c86dbb776ab2e73775be1c2a1ff75ecf2cf6abe"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/original-next-reverse-report.json",
+      "sha256": "bba580102780bd342e4a95abfd161d11e174364300dbb2f01049e42f0034ab58"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/replay.json",
+      "sha256": "57e449b000a8bf54f24cb82c7794b4fd2da64db625ad87035cde8dd12bc3c066"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/surface-execution-v2.json",
+      "sha256": "5a0e02945de1f5b5dc1b82666fad9e1dd8f0bbf5db0f65bfe0212f385a36b698"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage26-current-bindings.json",
+      "sha256": "5764246f696787790bf3905cea6c492bf19f7b9c48e1d24f422a4ab603388793"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage26-current-receipt.json",
+      "sha256": "45f48215595cf127cdd829d53665d781a40819563edd78e45d23f6d1c0240fb6"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage26-portable-execution.json",
+      "sha256": "fb219eec761e6ea84cb51e29cac8558f22e7e38aff3d9e8202ae8ff864889c9b"
+    },
+    {
+      "file": "experiments/tla-conformance/storage-protocol-r7/export-original-graph.py",
+      "sha256": "4d0c333a156fd69961b541e02ed7e4debdbf73a89f57f54bd4ecdb4999175ff7"
+    },
+    {
+      "file": "experiments/tla-conformance/storage-protocol-r7/protocol-driver.ts",
+      "sha256": "98994791a982f916066b14e1e3b8658f2f05217c9d91ff056bdb0f6f116c2f32"
+    },
+    {
+      "file": "experiments/tla-conformance/storage-protocol-r7/replay.ts",
+      "sha256": "dc281134934bd249e41a3c2c5ad163771ef1f006141e8d0ca6cbd953e2351cf8"
+    },
+    {
+      "file": "experiments/tla-conformance/storage-protocol-r7/reverse-next.mjs",
+      "sha256": "d13d61fae13b63025195c3bd55d847b0229eb1417070f909843d02e0ab0b0b90"
+    },
+    {
+      "file": "formal/InventoryOperation.cfg",
+      "sha256": "1b13f2a1df74c2c011462769e81796de8d9afd105fa1c39fb0a1ee85725c9718"
+    },
+    {
+      "file": "formal/InventoryOperation.tla",
+      "sha256": "f8e1901d7631f3113309b58e73f18dd9e9f2cc564b7c24a6b64755f8c45982ad"
+    },
+    {
+      "file": "formal/SnapshotSupersededWorkflow.cfg",
+      "sha256": "2ba66c115dfd39ea799e2f7f684bce866530bdb948b6d2aeda6fbfbf02add2b5"
+    },
+    {
+      "file": "formal/SnapshotSupersededWorkflow.tla",
+      "sha256": "f8df9e18844ebcbb23fa851a38ce48bd089157864d17c9533583de584e292aa2"
+    },
+    {
+      "file": "src/allocation.ts",
+      "sha256": "2721b6f412aa3abb55ffa9d929eaefc2d8982973c4ee862479b3af9988d3112d"
+    },
+    {
+      "file": "src/amounts.ts",
+      "sha256": "98ddc0fa8d80b2ca244a207f4eb8b55d86131c2ccfd77620da5c85248d03ef57"
+    },
+    {
+      "file": "src/authority-cutover.ts",
+      "sha256": "009c9a609221b5a276fe494a9fb6c059e02c2634d3a4a5e1cd997047b3b4b1c1"
+    },
+    {
+      "file": "src/authority.ts",
+      "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+    },
+    {
+      "file": "src/availability.ts",
+      "sha256": "b029f2b17c1c0f8a3923969e2cd30b57b0af3a185d1391fdb8aa3895c3de83c8"
+    },
+    {
+      "file": "src/canonical.ts",
+      "sha256": "eb2981c629182525c6742d2a67f513f0daec88507e5861f475d5de04984a2d56"
+    },
+    {
+      "file": "src/catalog-lifecycle.ts",
+      "sha256": "8a97eb13db1d8dfb9503a60c6075984e93792ace1abb473a70ac8221809c5096"
+    },
+    {
+      "file": "src/catalog.ts",
+      "sha256": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56"
+    },
+    {
+      "file": "src/collections.ts",
+      "sha256": "c18dd56e7167b25239fb825319ce2ae2d736f8d9cbe70296201ab675228daf37"
+    },
+    {
+      "file": "src/commands.ts",
+      "sha256": "c40c66fc3e5d3e60022534a561d44280cda205f3cc10be759f8efdc97038a98b"
+    },
+    {
+      "file": "src/composition.ts",
+      "sha256": "87d7e004cc2432587c82a238cd2fd9976a3d1f8850771365168e5d33ba6cb24c"
+    },
+    {
+      "file": "src/coordinator.ts",
+      "sha256": "4bc44f2c38578991a137d9e363b7677c23a788dd9cc5c4129074f1a95a14e3a2"
+    },
+    {
+      "file": "src/corrections.ts",
+      "sha256": "0c3e11dc88a035aa89598cffb54d538b1c6cc4280ed5d27bd7bf67e9d5757183"
+    },
+    {
+      "file": "src/counts.ts",
+      "sha256": "5db9ad8d5a6f1a82c594562b66f4be7c677d17bd31d9d10afb11eae781d78f13"
+    },
+    {
+      "file": "src/deficits.ts",
+      "sha256": "6dee9447ad000ae2f9576aed35f80d1ad1bdae753f4802c4104db2f2712d2819"
+    },
+    {
+      "file": "src/digest.ts",
+      "sha256": "5fa667c59dd65a667d8cceddd9bf8c25eb46d3787a22ad7db797fd3722d5f833"
+    },
+    {
+      "file": "src/events.ts",
+      "sha256": "8d076ee8f426c011d7df3f205dd014f0e835f71798b3684ca56844b691ba2370"
+    },
+    {
+      "file": "src/facade.ts",
+      "sha256": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d"
+    },
+    {
+      "file": "src/fungibility.ts",
+      "sha256": "483741a2e0f8e3cdf38e358929cce5f8b29ffb41494b1268cafa1d38a2197344"
+    },
+    {
+      "file": "src/index.ts",
+      "sha256": "2e0587666ff20d57a757c0576fddf8badf36c2901735db7225a0cebda829b555"
+    },
+    {
+      "file": "src/integrity.ts",
+      "sha256": "238ccd616e791b60b523b89517479585f2d9aabe83198464a44f654cd7058037"
+    },
+    {
+      "file": "src/kernel.ts",
+      "sha256": "f336d22a07d6018dc5528bd2a13a33c5aa9f1a72b0c0ed048cb73219b9b0c06c"
+    },
+    {
+      "file": "src/measurement-schema.ts",
+      "sha256": "747f064996c12b3a9b324779bd748362b49b2563e303b2599243bc8a630d144e"
+    },
+    {
+      "file": "src/measurements.ts",
+      "sha256": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5"
+    },
+    {
+      "file": "src/migration-evidence.ts",
+      "sha256": "8d8f6dd0b6a83546633e5c360a1769e9a49ff8708f3737e14a79fa965604d037"
+    },
+    {
+      "file": "src/migration-plugin.ts",
+      "sha256": "4b271d6398ba1b0eeb4a5b1cb48523a062f9bcf1c5b427755ec5e1f0fdebe5e6"
+    },
+    {
+      "file": "src/migrations-api.ts",
+      "sha256": "0d1358ee90d4b39d3b59da0d27dcb9798e5699e02bbba325132f734c1322fed1"
+    },
+    {
+      "file": "src/migrations.ts",
+      "sha256": "0e837a12fa171f3029b3931f0c2c0d12d83edbd4b12d86e9ec810ec7ede77384"
+    },
+    {
+      "file": "src/model.ts",
+      "sha256": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122"
+    },
+    {
+      "file": "src/ordering.ts",
+      "sha256": "e72ac94e99b1b4914f3f6dec55583e401484a41ecadd051be788724c88f24cb9"
+    },
+    {
+      "file": "src/picking.ts",
+      "sha256": "172dc19f4987ad392106a1b9cf32400e73f5bed0fb6b9344aa5eb1319afc5006"
+    },
+    {
+      "file": "src/projection.ts",
+      "sha256": "f2a9747cfc7c63615347c48383ae7f58ee7df007411cc8de3dd5bb6afaca21d5"
+    },
+    {
+      "file": "src/quantity.ts",
+      "sha256": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6"
+    },
+    {
+      "file": "src/read-model.ts",
+      "sha256": "8b1db302ecf22895f1d6458a8be27ec606066e88fd77ebba0cfadbd0452a97f4"
+    },
+    {
+      "file": "src/reservations.ts",
+      "sha256": "fd0bfe707583a7952e4301cafd9ab5d702059b9174f18b5c5e30ae0d6cf85113"
+    },
+    {
+      "file": "src/selectors.ts",
+      "sha256": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957"
+    },
+    {
+      "file": "src/sparse-record.ts",
+      "sha256": "272a1f63afe9ed4c84cd76a4ce051b210b52e6e0a54cf47ec4f11a29979ada71"
+    },
+    {
+      "file": "src/storage-api.ts",
+      "sha256": "9d135bd7c1925f3b7ab533a45958e57287383f4016e7077e8ede2c35144202b1"
+    },
+    {
+      "file": "src/storage.ts",
+      "sha256": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d"
+    },
+    {
+      "file": "src/traceability-replay.ts",
+      "sha256": "3bef97ca89c6530721b2552089e124c3a8943b5a0ceea8b799aaccd79c629c0b"
+    },
+    {
+      "file": "src/traceability.ts",
+      "sha256": "7db0c39cb3262339e76790a7ba10569d67d205ab84f1adb078b6b6d95e93a59c"
+    },
+    {
+      "file": "src/transfers.ts",
+      "sha256": "2dc34bdb44557cbe45d0b88091c7f4d0e4f6bcd44bbbe8430b61d51e43910833"
+    },
+    {
+      "file": "src/usability.ts",
+      "sha256": "bb4cf272fd01be5c4866b388f2af63e9fdd7286c208600fb635ca10d30f0ad51"
+    },
+    {
+      "file": "src/world.ts",
+      "sha256": "2f1bd43c85fcdda332ad16ebdb73d367b0ed502a7145c085c7a7433ff26063c1"
+    }
+  ]
+}

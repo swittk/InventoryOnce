@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "proofKind": "retained-correction-history-registered-producer-a1-v1",
+  "route": "REGISTERED_CERTIFIED_PRODUCER",
+  "family": "StockCorrectCorrectionHistoryA1Current",
+  "surfaceDigest": "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a",
+  "domain": "Every retained complete finite representative CorrectionHistory transition, with current StockApi.correct bound to StartCorrection and the current strict checker independently revalidating action, state, result, enabledness and original-Next reverse evidence.",
+  "allAdmittedInputs": true,
+  "sampledInputs": 0,
+  "producerGraphRuns": 0,
+  "producerReplayRuns": 0,
+  "inputs": [
+    {
+      "file": "experiments/tla-conformance/r157-singleton4-currentization/stock-correct-current.mjs",
+      "sha256": "49e398fa1593ffc4b5075a3e232b0af5d70b5e45b877289497cbfea81f439c47"
+    },
+    {
+      "file": "experiments/tla-conformance/stateful-facade25-r9/stock-correct-a1.json",
+      "sha256": "97204c27a76b4ec0369a872f6a70435876813902e7282488627d4eb755d347a8"
+    },
+    {
+      "file": "experiments/tla-conformance/stateful-facade25-r9/stock-correct-a1.mjs",
+      "sha256": "ce9ec77caf21b3b0f48d6377407a2c2db28df4a669a00cbb1ef47fc0ef83ed87"
+    },
+    {
+      "file": "experiments/tla-conformance/surface-bindings/lib/binding-checker.mjs",
+      "sha256": "4dd6bbf135ebb5a5da86b714e0d9b9d3550547a7df7b39aec1a471bf1ef3f88e"
+    },
+    {
+      "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+      "sha256": "8d8854032e38a0df1044e5596c66d9a2b672277f357e361102b0b12c3d6952a0"
+    },
+    {
+      "file": "experiments/tla-conformance/throughput-r7/registered-producer-family.mjs",
+      "sha256": "e8c9fcbbf669de7a68a76984da27d179b81b49ccba4fe645faf50790405dd655"
+    },
+    {
+      "file": "experiments/tla-conformance/transfer-surface-r6/artifacts/CorrectionHistory/surface-execution-v2.json",
+      "sha256": "5f04b2b2a7de7ff0e1a6f3068a271c7a2575b1a614fd8ddc41fc6ff5f7098ac6"
+    },
+    {
+      "file": "experiments/tla-conformance/transfer-surface-r6/small-model-handoff-bindings.json",
+      "sha256": "4c930dc0d46cbaef05411ab5b1cab00f935af1c5c5833006fe2f456265c5e117"
+    },
+    {
+      "file": "experiments/tla-conformance/transfer-surface-r6/small-model-surface.ts",
+      "sha256": "479fd9bbf81461c2b6d36836bbd4168461b7f92e6f5651b22983e4782a3e6563"
+    },
+    {
+      "file": "formal/CorrectionHistory.tla",
+      "sha256": "ec3a4fd3ed53d9ca7988f0f751b3b568a5e731164839f292d48ac0a03ac467f4"
+    }
+  ],
+  "proofs": [
+    {
+      "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.correct::call[0]",
+      "mode": "A",
+      "signatureHash": "026f03d18cf9605e28a795c146bba797098611b2f75c65195b1aa0be4f1c1b6f",
+      "declaration": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 61801,
+          "line": 1515,
+          "column": 3
+        },
+        "end": {
+          "offset": 61878,
+          "line": 1515,
+          "column": 80
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "8d2c114f9aa5de85f3ce9a187b091aa7b4a94f345b8a66973ccfed02642970e9"
+      },
+      "strictBindingCanonicalSha256": "83f329c25d726a79145aafd2cf56a50e191bd85a752e328e5e1785fc0f11ea7b",
+      "formal": {
+        "model": "CorrectionHistory",
+        "source": "formal/CorrectionHistory.tla",
+        "sourceHash": "ec3a4fd3ed53d9ca7988f0f751b3b568a5e731164839f292d48ac0a03ac467f4",
+        "variables": [
+          "phase",
+          "originalRecorded",
+          "errorDeclarationWritten",
+          "correctedEventWritten",
+          "visibleQuantity",
+          "recordVersion"
+        ],
+        "action": "StartCorrection"
+      },
+      "execution": {
+        "file": "experiments/tla-conformance/transfer-surface-r6/artifacts/CorrectionHistory/surface-execution-v2.json",
+        "sha256": "5f04b2b2a7de7ff0e1a6f3068a271c7a2575b1a614fd8ddc41fc6ff5f7098ac6"
+      },
+      "currentStrictDiagnostics": 0
+    }
+  ],
+  "currentReceipt": {
+    "proofKind": "retained-correction-history-current-strict-a1-v1",
+    "canonicalSha256": "49e789ceb97f356e5d2ace9d691ab98baabba06a2190cb7befd0432915b12d55",
+    "surfaceDigest": "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a",
+    "currentStrictDiagnostics": 0
+  },
+  "historicalReceipt": {
+    "file": "experiments/tla-conformance/stateful-facade25-r9/stock-correct-a1.json",
+    "sha256": "97204c27a76b4ec0369a872f6a70435876813902e7282488627d4eb755d347a8",
+    "metadataOnly": true
+  }
+}

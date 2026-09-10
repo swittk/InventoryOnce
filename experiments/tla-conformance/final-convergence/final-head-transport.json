@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "status": "FINAL_HEAD_TRANSPORT_PROVED",
+  "oldSourceHead": "6cafd49ff4b3729f80ae35d9fc0220f7a8a4b55a",
+  "finalSourceHead": "e1759f756a9e7de5d67e7c03d563f6f574892e26",
+  "oldSurfaceDigest": "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a",
+  "finalSurfaceDigest": "ec078013972d9ee2b4ba84d28cfa7449a18dc29679d81766e314db6a6139b81e",
+  "callables": 535,
+  "publicSignatureChanges": 0,
+  "publicAstChanges": [
+    "export:.#cutoverInventoryAuthority::call[0]"
+  ],
+  "exactSourceDelta": [
+    "src/authority-cutover.ts",
+    "src/deficits.ts",
+    "src/projection.ts",
+    "src/storage.ts",
+    "src/traceability-replay.ts",
+    "src/transfers.ts"
+  ],
+  "semantics": {
+    "projection": "ALPHA_RENAME_ONLY",
+    "traceabilityReplay": "ALPHA_RENAME_ONLY_PLUS_COMMENTS",
+    "transfers": "COMMENT_ONLY_RUNTIME_EMIT_IDENTICAL",
+    "authorityCutover": {
+      "changedRuntime": [
+        "fn:assertCompletedInventoryCutoverManifest",
+        "fn:completedInventoryCutoverResult",
+        "fn:cutoverInventoryAuthority"
+      ],
+      "rule": "R144 durable target evidence strengthens completed-cutover replay and fixes stale dry-run target identity."
+    },
+    "storage": {
+      "changedRuntime": [
+        "fn:assertPublishedInventoryMigrationTarget",
+        "method:InMemoryInventoryDurableStorage.completeMigrationManifestUnlocked"
+      ],
+      "rule": "R144 records and validates exact published migration target root/revision; other storage runtime declarations are unchanged."
+    },
+    "recordedDeficit": {
+      "changedRuntime": [
+        "fn:applyInventoryRecordedDeficitBurden",
+        "fn:recordedDeficitByLocation"
+      ],
+      "rule": "R167 makes empty locationIds select every location for recorded-deficit burdening while preserving strict non-empty filtering and independent per-location deficit accounting."
+    }
+  },
+  "evidence": {
+    "oldSurface": {
+      "file": "experiments/tla-conformance/final-convergence/old-surface-cc97e.json",
+      "sha256": "10f166473989fb8c4816fffb8d32d7fb3d66bfa4e430fa0dc6c1102548e2f22a"
+    },
+    "currentProductFiles": [
+      {
+        "file": "src/authority-cutover.ts",
+        "sha256": "38244b4a8c937ae6b3c84f78412704ffb485afe757eeca84463dd8e2990bc2b8"
+      },
+      {
+        "file": "src/deficits.ts",
+        "sha256": "5f6b4781b0f8764f571ec37fee734bb3e1e572ffcb9c7d5917f8dbda79c64ec6"
+      },
+      {
+        "file": "src/projection.ts",
+        "sha256": "3710cbc322d4bc3e495e3023a7146e72996a95cc21e92c7a0a6a8f1e20bfc0da"
+      },
+      {
+        "file": "src/storage.ts",
+        "sha256": "abf1cd6af9898121e5841ff9f79af36682e9c0187b64db8de8f7d3f3da030ee1"
+      },
+      {
+        "file": "src/traceability-replay.ts",
+        "sha256": "b7d8ebf3f50317b2e9229adb0235e486ef1e192ea8a4127316ec3c786e485b2a"
+      },
+      {
+        "file": "src/transfers.ts",
+        "sha256": "e1f88a6479b80cf80d5651909965e8d453701db3623617a8f4716645cd7722d3"
+      }
+    ],
+    "currentRegressionTests": [
+      {
+        "file": "test/authority.test.ts",
+        "sha256": "eda26579f5b484e6082f536de48f4d96b07fdf736daeb0e6dc0a8486dab28eaf"
+      },
+      {
+        "file": "test/storage-conformance-suite.ts",
+        "sha256": "9b9d3beb9a80cbc04d1958b54caae1b2e168cb86b5b6e4203a2e5c6fd5f080b7"
+      },
+      {
+        "file": "test/storage-conformance.test.ts",
+        "sha256": "961f0b128a0700c63ea818ff073e8491af253e3e41daa6431875bd11cb1071b0"
+      },
+      {
+        "file": "test/review-hardening.test.ts",
+        "sha256": "b5bc72eaf9189fed0c26b68f8895849188e14d45cd34951e414dfe2a7a9a3e9e"
+      }
+    ]
+  },
+  "creditExpansion": false,
+  "contentSha256": "92cb7ca67a3d47272713de8171fdb42832b591f3d25dfff63b07cfc713df726f"
+}

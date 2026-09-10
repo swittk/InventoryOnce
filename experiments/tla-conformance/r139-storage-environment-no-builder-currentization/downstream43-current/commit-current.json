@@ -1,0 +1,412 @@
+{
+  "schemaVersion": 1,
+  "route": "REGISTERED_CERTIFIED_PRODUCER",
+  "proofKind": "commit-inventory-operation-environment-contract-a1-current-r139-v1",
+  "family": "CommitInventoryOperationEnvironmentContractCurrentR139",
+  "surfaceDigest": "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a",
+  "domain": "Every typed commitInventoryOperation call on current source, retaining exact R139 InventoryOperation whole-producer execution and current source ordering, with storage/clock external behavior isolated as explicit no-new-credit contracts and current package Resume/canonical-time dependencies bound without claiming arbitrary callback semantics.",
+  "allAdmittedInputs": true,
+  "sampledInputs": 0,
+  "producerGraphRuns": 0,
+  "producerReplayRuns": 0,
+  "clockBoundaryRuntimeRuns": 0,
+  "currentization": {
+    "newReplayRuns": 0,
+    "graphExportRuns": 0,
+    "tlcRuns": 0
+  },
+  "externalSurfaceCreditGranted": false,
+  "environmentalAssumptions": [
+    {
+      "kind": "ASSUMED_ENVIRONMENT_CONTRACT",
+      "contractName": "InventoryDurableStorage.v1/current-r139",
+      "contractId": "sha256:8c71cc21f45b7e5ede39a2ac1fa4dbcc428ca704c2a487fd8eb8465a4ab8cb4c",
+      "surfaceCreditGranted": false,
+      "requirements": [
+        {
+          "method": "readOperation",
+          "lawId": "durable-operation-read",
+          "guaranteeSha256": "6a7c4d48822aadb6373dbf1a197b1bb22d0a164e02c4d4ab81cc0ef8957edc81",
+          "externalSurfaceKey": "type:src/storage.ts#InventoryDurableStorage.readOperation::call[0]",
+          "externalSignatureHash": "1201765e5da71ff800264ffc0d4f1f09c52121653c9876745b77e1916911317c",
+          "certifiedPackageReference": {
+            "surfaceKey": "type:src/storage.ts#InMemoryInventoryDurableStorage.readOperation::call[0]",
+            "mode": "B",
+            "signatureHash": "1201765e5da71ff800264ffc0d4f1f09c52121653c9876745b77e1916911317c"
+          }
+        },
+        {
+          "method": "readWorld",
+          "lawId": "published-world-read",
+          "guaranteeSha256": "c8ab5192eb9a81e35009d91940c1f26b12407d17557abb46878204a42c83ff36",
+          "externalSurfaceKey": "type:src/storage.ts#InventoryDurableStorage.readWorld::call[0]",
+          "externalSignatureHash": "32ab938fbb7882f23d4589226b4c2c732661907aa39382613480e19b8a55ffe9",
+          "certifiedPackageReference": {
+            "surfaceKey": "type:src/storage.ts#InMemoryInventoryDurableStorage.readWorld::call[0]",
+            "mode": "B",
+            "signatureHash": "32ab938fbb7882f23d4589226b4c2c732661907aa39382613480e19b8a55ffe9"
+          }
+        },
+        {
+          "method": "begin",
+          "lawId": "operation-begin",
+          "guaranteeSha256": "17d6f38e7525481cd823dc4429c2f78a014f89b286e6334d0eb9ecf0346fc4fb",
+          "externalSurfaceKey": "type:src/storage.ts#InventoryDurableStorage.begin::call[0]",
+          "externalSignatureHash": "5493ea19a6466de67a5434f1e8025ce5aeb5c42a1f34a034065f3575feb3e83c",
+          "certifiedPackageReference": {
+            "surfaceKey": "type:src/storage.ts#InMemoryInventoryDurableStorage.begin::call[0]",
+            "mode": "A",
+            "signatureHash": "5493ea19a6466de67a5434f1e8025ce5aeb5c42a1f34a034065f3575feb3e83c"
+          }
+        }
+      ],
+      "authority": {
+        "receipt": {
+          "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage26-current-receipt.json",
+          "sha256": "45f48215595cf127cdd829d53665d781a40819563edd78e45d23f6d1c0240fb6"
+        },
+        "bindings": {
+          "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage26-current-bindings.json",
+          "sha256": "5764246f696787790bf3905cea6c492bf19f7b9c48e1d24f422a4ab603388793"
+        },
+        "portable": {
+          "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage26-portable-execution.json",
+          "sha256": "fb219eec761e6ea84cb51e29cac8558f22e7e38aff3d9e8202ae8ff864889c9b"
+        }
+      }
+    },
+    {
+      "kind": "ASSUMED_ENVIRONMENT_CONTRACT",
+      "contractName": "InventoryClock.v1",
+      "contractId": "sha256:3646d6d36945111e8132e87f087003467fe950ea401cc397dac72a17bc4dce54",
+      "surfaceCreditGranted": false,
+      "lawId": "canonical-durable-record-time",
+      "guaranteeSha256": "604d04d158d1ac96daba817547c1b7d741e1cfbefdb8eab8acadb7efc9b59cfe",
+      "externalSurfaceKey": "type:src/coordinator.ts#InventoryClock.now::call[0]",
+      "externalSignatureHash": "83e3c94b43bdae54374e0bd1e578990403cc812556f1c5a8a377fcba96fb9dde"
+    }
+  ],
+  "proofs": [
+    {
+      "surfaceKey": "export:./storage#commitInventoryOperation::call[0]",
+      "mode": "A",
+      "signatureHash": "9432d462d6d2ad3a7319f9c32a00be9cd205dffe0c6be8f5e2169daade828b95",
+      "declaration": {
+        "file": "src/coordinator.ts",
+        "start": {
+          "offset": 5078,
+          "line": 129,
+          "column": 1
+        },
+        "end": {
+          "offset": 7774,
+          "line": 209,
+          "column": 2
+        },
+        "sourceHash": "4bc44f2c38578991a137d9e363b7677c23a788dd9cc5c4129074f1a95a14e3a2",
+        "astHash": "bfa1d812b329bec33bff4bbef5c8ec0483a9514ec41c6091902529d2daf6a963"
+      },
+      "semantics": {
+        "retainedFormal": {
+          "model": "InventoryOperation",
+          "source": "formal/InventoryOperation.tla",
+          "sourceHash": "f8e1901d7631f3113309b58e73f18dd9e9f2cc564b7c24a6b64755f8c45982ad",
+          "variables": [
+            "state",
+            "frozenIntent",
+            "firstIntent",
+            "retryIntent",
+            "retryOutcome",
+            "planFrozen",
+            "planRetained",
+            "worldPublished",
+            "hasEvent",
+            "plannedSource",
+            "plannedDestination",
+            "plannedCatalog",
+            "plannedLots",
+            "plannedContainers",
+            "plannedTraceability",
+            "plannedReservations",
+            "plannedCounts",
+            "eventWritten",
+            "projectionWritten",
+            "reservationsWritten",
+            "countsWritten",
+            "receiptWritten",
+            "visibleSource",
+            "visibleDestination",
+            "visibleCatalog",
+            "visibleLots",
+            "visibleContainers",
+            "visibleTraceability",
+            "visibleReservations",
+            "visibleCounts"
+          ],
+          "action": "CompactOperation"
+        },
+        "retainedWholeProducerExecution": {
+          "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/surface-execution-v2.json",
+          "sha256": "5a0e02945de1f5b5dc1b82666fad9e1dd8f0bbf5db0f65bfe0212f385a36b698"
+        },
+        "clockBoundary": {
+          "environmentContract": {
+            "kind": "ASSUMED_ENVIRONMENT_CONTRACT",
+            "contractName": "InventoryClock.v1",
+            "contractId": "sha256:3646d6d36945111e8132e87f087003467fe950ea401cc397dac72a17bc4dce54",
+            "surfaceCreditGranted": false,
+            "lawId": "canonical-durable-record-time",
+            "guaranteeSha256": "604d04d158d1ac96daba817547c1b7d741e1cfbefdb8eab8acadb7efc9b59cfe",
+            "externalSurfaceKey": "type:src/coordinator.ts#InventoryClock.now::call[0]",
+            "externalSignatureHash": "83e3c94b43bdae54374e0bd1e578990403cc812556f1c5a8a377fcba96fb9dde"
+          },
+          "source": {
+            "sourceFile": "src/coordinator.ts",
+            "sourceSha256": "4bc44f2c38578991a137d9e363b7677c23a788dd9cc5c4129074f1a95a14e3a2",
+            "normalizedBoundarySha256": "647213bc64416af66587b394c9c3a9480e7360d60f54c137d4d567a5f729f8d1",
+            "sequence": [
+              "clock.now",
+              "assertCanonicalInventoryTime",
+              "plan"
+            ]
+          },
+          "runtime": {
+            "file": "experiments/tla-conformance/clock-environment-contract-r32/runtime-evidence.json",
+            "sha256": "b7145e7938d7967bae336f96db03abd939f01bd3002f9976d9c3f7c2192ef00d",
+            "cases": 6,
+            "claims": {
+              "canonicalReturnFrozenExactly": true,
+              "invalidClockReturnRejectsBeforePlanner": true,
+              "clockThrowRejectsBeforePlanner": true,
+              "invalidOrThrowMutatingStorageCalls": 0,
+              "validPlannerFailureMutatingStorageCalls": 0,
+              "externalClockSurfaceCreditGranted": false
+            }
+          }
+        },
+        "storageEnvironment": {
+          "kind": "ASSUMED_ENVIRONMENT_CONTRACT",
+          "contractName": "InventoryDurableStorage.v1/current-r139",
+          "contractId": "sha256:8c71cc21f45b7e5ede39a2ac1fa4dbcc428ca704c2a487fd8eb8465a4ab8cb4c",
+          "surfaceCreditGranted": false,
+          "requirements": [
+            {
+              "method": "readOperation",
+              "lawId": "durable-operation-read",
+              "guaranteeSha256": "6a7c4d48822aadb6373dbf1a197b1bb22d0a164e02c4d4ab81cc0ef8957edc81",
+              "externalSurfaceKey": "type:src/storage.ts#InventoryDurableStorage.readOperation::call[0]",
+              "externalSignatureHash": "1201765e5da71ff800264ffc0d4f1f09c52121653c9876745b77e1916911317c",
+              "certifiedPackageReference": {
+                "surfaceKey": "type:src/storage.ts#InMemoryInventoryDurableStorage.readOperation::call[0]",
+                "mode": "B",
+                "signatureHash": "1201765e5da71ff800264ffc0d4f1f09c52121653c9876745b77e1916911317c"
+              }
+            },
+            {
+              "method": "readWorld",
+              "lawId": "published-world-read",
+              "guaranteeSha256": "c8ab5192eb9a81e35009d91940c1f26b12407d17557abb46878204a42c83ff36",
+              "externalSurfaceKey": "type:src/storage.ts#InventoryDurableStorage.readWorld::call[0]",
+              "externalSignatureHash": "32ab938fbb7882f23d4589226b4c2c732661907aa39382613480e19b8a55ffe9",
+              "certifiedPackageReference": {
+                "surfaceKey": "type:src/storage.ts#InMemoryInventoryDurableStorage.readWorld::call[0]",
+                "mode": "B",
+                "signatureHash": "32ab938fbb7882f23d4589226b4c2c732661907aa39382613480e19b8a55ffe9"
+              }
+            },
+            {
+              "method": "begin",
+              "lawId": "operation-begin",
+              "guaranteeSha256": "17d6f38e7525481cd823dc4429c2f78a014f89b286e6334d0eb9ecf0346fc4fb",
+              "externalSurfaceKey": "type:src/storage.ts#InventoryDurableStorage.begin::call[0]",
+              "externalSignatureHash": "5493ea19a6466de67a5434f1e8025ce5aeb5c42a1f34a034065f3575feb3e83c",
+              "certifiedPackageReference": {
+                "surfaceKey": "type:src/storage.ts#InMemoryInventoryDurableStorage.begin::call[0]",
+                "mode": "A",
+                "signatureHash": "5493ea19a6466de67a5434f1e8025ce5aeb5c42a1f34a034065f3575feb3e83c"
+              }
+            }
+          ],
+          "authority": {
+            "receipt": {
+              "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage26-current-receipt.json",
+              "sha256": "45f48215595cf127cdd829d53665d781a40819563edd78e45d23f6d1c0240fb6"
+            },
+            "bindings": {
+              "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage26-current-bindings.json",
+              "sha256": "5764246f696787790bf3905cea6c492bf19f7b9c48e1d24f422a4ab603388793"
+            },
+            "portable": {
+              "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage26-portable-execution.json",
+              "sha256": "fb219eec761e6ea84cb51e29cac8558f22e7e38aff3d9e8202ae8ff864889c9b"
+            }
+          }
+        },
+        "packageDependencies": {
+          "resumeInventoryDurableOperation": {
+            "proofKind": "durable-resume-repair-environment-contract-a2-current-r139-v1",
+            "surfaceKey": "export:./storage#resumeInventoryDurableOperation::call[0]",
+            "mode": "A",
+            "signatureHash": "c4bbaa30b9dadca2adeed9e79617200fe2802373ce601bb19574327775689fbc",
+            "declaration": {
+              "file": "src/coordinator.ts",
+              "start": {
+                "offset": 22209,
+                "line": 613,
+                "column": 1
+              },
+              "end": {
+                "offset": 23117,
+                "line": 635,
+                "column": 2
+              },
+              "sourceHash": "4bc44f2c38578991a137d9e363b7677c23a788dd9cc5c4129074f1a95a14e3a2",
+              "astHash": "19bbc2b3361d4789ba4bab488565b5302413459a0b35f3b767b383cef2bba69a"
+            }
+          },
+          "assertCanonicalInventoryTime": {
+            "kind": "CURRENT_PACKAGE_SOURCE_EQUATION_NO_ADDITIONAL_SURFACE_CREDIT",
+            "surfaceKey": "export:./kernel#assertCanonicalInventoryTime::call[0]",
+            "signatureHash": "7b0a763805f0e4c89320f7d8129343f1ebdab640dc88b99d9e1ceeffd79ead4e",
+            "declaration": {
+              "file": "src/events.ts",
+              "start": {
+                "offset": 55239,
+                "line": 1482,
+                "column": 1
+              },
+              "end": {
+                "offset": 55555,
+                "line": 1492,
+                "column": 2
+              },
+              "sourceHash": "8d076ee8f426c011d7df3f205dd014f0e835f71798b3684ca56844b691ba2370",
+              "astHash": "fe87b7059662a9421c224d2b56fce2cb004d97be93b476bb170e75aee3901d04"
+            },
+            "source": {
+              "file": "src/events.ts",
+              "sha256": "8d076ee8f426c011d7df3f205dd014f0e835f71798b3684ca56844b691ba2370",
+              "functionAstSha256": "d52c5994eed7ab48933509a698a57b834e71fa28bb0989a4211b798284bcb4f3"
+            },
+            "law": "Reject noncanonical inventory times before planner/storage mutation; accepted value is the exact canonical UTC timestamp string."
+          }
+        },
+        "planCallbackBoundary": {
+          "surfaceKey": "type:src/coordinator.ts#CommitInventoryOperationInput.plan::call[0]",
+          "surfaceCreditGranted": false,
+          "rule": "Arbitrary caller result/error is consumed only through package planner validation/freeze semantics; this family does not certify caller callback code."
+        }
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "file": "experiments/tla-conformance/clock-environment-contract-r32/clock-boundary.expected.ts.txt",
+      "sha256": "0a728ff2a722e271a4d87d6ddaf3ac5e37af09298efb7daf3d9d6736778bf68c"
+    },
+    {
+      "file": "experiments/tla-conformance/clock-environment-contract-r32/contract.mjs",
+      "sha256": "cfa9fb1e158f977c0be79a5db619fd974f0864230b2b9652a9afeaa5691d417d"
+    },
+    {
+      "file": "experiments/tla-conformance/clock-environment-contract-r32/runtime-evidence.json",
+      "sha256": "b7145e7938d7967bae336f96db03abd939f01bd3002f9976d9c3f7c2192ef00d"
+    },
+    {
+      "file": "experiments/tla-conformance/external-membership-rehearsal-r35/durable-helpers.expected.ts.txt",
+      "sha256": "8f5230bc5d1fdef45424ca86c506c881d46137045323d67c32449b11c1df940c"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/downstream43-current/commit-current.mjs",
+      "sha256": "07b32bae8f3818255dbfc4838e846c9aa0bf90d7f36630ec2a7159a474ea6277"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/downstream43-current/current-authorities.mjs",
+      "sha256": "490915f73e470e54a8b4c3893dcc1cbbd236803b895e6efb7da1874c95b03be3"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/downstream43-current/durable-helpers-current.json",
+      "sha256": "7a8cbc027f90433377ef57b1c96314026bc8cf293bfb3f04821b555724cc4339"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/downstream43-current/durable-helpers-current.mjs",
+      "sha256": "7b08dc1eb39a9e09cd322bb45b72f7092c2802c33b684195195bf07753194e9d"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-evidence.mjs",
+      "sha256": "cfb59838895c41ce731b8e2c479558f37eaf9d3dc02c09faa561b3fad2a102d5"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/checkpoint-equivalence.json",
+      "sha256": "32a2ecd9b082205521d74a7f8931a88a8a2458affae9213d9fe5d1cf72334aa3"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/material-observations.json",
+      "sha256": "6ecd0681b5331b3a25e56f223c86dbb776ab2e73775be1c2a1ff75ecf2cf6abe"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/original-next-reverse-report.json",
+      "sha256": "bba580102780bd342e4a95abfd161d11e174364300dbb2f01049e42f0034ab58"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/replay.json",
+      "sha256": "57e449b000a8bf54f24cb82c7794b4fd2da64db625ad87035cde8dd12bc3c066"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/surface-execution-v2.json",
+      "sha256": "5a0e02945de1f5b5dc1b82666fad9e1dd8f0bbf5db0f65bfe0212f385a36b698"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage26-current-bindings.json",
+      "sha256": "5764246f696787790bf3905cea6c492bf19f7b9c48e1d24f422a4ab603388793"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage26-current-receipt.json",
+      "sha256": "45f48215595cf127cdd829d53665d781a40819563edd78e45d23f6d1c0240fb6"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage26-portable-execution.json",
+      "sha256": "fb219eec761e6ea84cb51e29cac8558f22e7e38aff3d9e8202ae8ff864889c9b"
+    },
+    {
+      "file": "experiments/tla-conformance/storage-protocol-r7/export-original-graph.py",
+      "sha256": "4d0c333a156fd69961b541e02ed7e4debdbf73a89f57f54bd4ecdb4999175ff7"
+    },
+    {
+      "file": "experiments/tla-conformance/storage-protocol-r7/protocol-driver.ts",
+      "sha256": "98994791a982f916066b14e1e3b8658f2f05217c9d91ff056bdb0f6f116c2f32"
+    },
+    {
+      "file": "experiments/tla-conformance/storage-protocol-r7/replay.ts",
+      "sha256": "dc281134934bd249e41a3c2c5ad163771ef1f006141e8d0ca6cbd953e2351cf8"
+    },
+    {
+      "file": "experiments/tla-conformance/storage-protocol-r7/reverse-next.mjs",
+      "sha256": "d13d61fae13b63025195c3bd55d847b0229eb1417070f909843d02e0ab0b0b90"
+    },
+    {
+      "file": "formal/InventoryOperation.cfg",
+      "sha256": "1b13f2a1df74c2c011462769e81796de8d9afd105fa1c39fb0a1ee85725c9718"
+    },
+    {
+      "file": "formal/InventoryOperation.tla",
+      "sha256": "f8e1901d7631f3113309b58e73f18dd9e9f2cc564b7c24a6b64755f8c45982ad"
+    },
+    {
+      "file": "src/coordinator.ts",
+      "sha256": "4bc44f2c38578991a137d9e363b7677c23a788dd9cc5c4129074f1a95a14e3a2"
+    },
+    {
+      "file": "src/events.ts",
+      "sha256": "8d076ee8f426c011d7df3f205dd014f0e835f71798b3684ca56844b691ba2370"
+    },
+    {
+      "file": "src/integrity.ts",
+      "sha256": "238ccd616e791b60b523b89517479585f2d9aabe83198464a44f654cd7058037"
+    },
+    {
+      "file": "src/storage.ts",
+      "sha256": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d"
+    }
+  ]
+}

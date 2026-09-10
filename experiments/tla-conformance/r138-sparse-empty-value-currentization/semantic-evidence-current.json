@@ -1,0 +1,491 @@
+{
+  "schemaVersion": 1,
+  "mode": "V",
+  "proofKind": "independent-closed-return-equations-v1",
+  "surfaceDigest": "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a",
+  "producers": [
+    {
+      "file": "experiments/tla-conformance/value-contracts/contracts.json",
+      "sha256": "e2f76cf32cbfb04fed4f64c402294cd9d30c04be411b4caff88708eb8afe7b2b"
+    },
+    {
+      "file": "experiments/tla-conformance/value-contracts/verify.mjs",
+      "sha256": "8a851ab3a5f532feb344674f69445797b3f873450e8c044ec7646505a308acad"
+    },
+    {
+      "file": "experiments/tla-conformance/value-contracts/surface-binding.mjs",
+      "sha256": "619b37fe3a9bc9be22e8a0c2167187cfce987c7856280c6df0c36c5a230c3618"
+    },
+    {
+      "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+      "sha256": "8d8854032e38a0df1044e5596c66d9a2b672277f357e361102b0b12c3d6952a0"
+    },
+    {
+      "file": "node_modules/typescript/package.json",
+      "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+    }
+  ],
+  "proofs": [
+    {
+      "surfaceKey": "export:.#inventoryCatalogSnapshot::call[0]",
+      "signatureHash": "2ff85b12b453d0d8b9716025713360b1f908a571da3782a759b7e33e2b9aeb6c",
+      "declaration": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 77828,
+          "line": 1876,
+          "column": 1
+        },
+        "end": {
+          "offset": 78645,
+          "line": 1893,
+          "column": 2
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "befb1cdc322c466ed941bdc8e9b130178e18b44d206891f3ab9217d53aee7227"
+      },
+      "semantics": {
+        "contractId": "inventoryCatalogSnapshot",
+        "domain": "DECLARED_IMMUTABLE_DATA_VALUES_V2",
+        "engine": "closed-return-term-identity-v2",
+        "allAdmittedInputs": true,
+        "sampledInputs": 0,
+        "independentContract": true,
+        "contractFile": "experiments/tla-conformance/value-contracts/contracts.json",
+        "contractSha256": "e2f76cf32cbfb04fed4f64c402294cd9d30c04be411b4caff88708eb8afe7b2b",
+        "verifierFile": "experiments/tla-conformance/value-contracts/verify.mjs",
+        "verifierSha256": "8a851ab3a5f532feb344674f69445797b3f873450e8c044ec7646505a308acad",
+        "equationSha256": "cba8df31808ae396730b45ae5aa9e079f87f79a522ccfe538ac4c8dc4093949e",
+        "dependencies": [
+          {
+            "file": "src/catalog.ts",
+            "start": {
+              "offset": 77828,
+              "line": 1876,
+              "column": 1
+            },
+            "end": {
+              "offset": 78645,
+              "line": 1893,
+              "column": 2
+            },
+            "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+            "astHash": "befb1cdc322c466ed941bdc8e9b130178e18b44d206891f3ab9217d53aee7227"
+          }
+        ],
+        "standardDependencies": []
+      }
+    },
+    {
+      "surfaceKey": "export:./kernel#compareCommittedEventSequence::call[0]",
+      "signatureHash": "1d771baefb1df7f1b5f5be3a812e6d53cbf24020c383d2a21f61265de1708659",
+      "declaration": {
+        "file": "src/projection.ts",
+        "start": {
+          "offset": 37747,
+          "line": 1011,
+          "column": 1
+        },
+        "end": {
+          "offset": 37926,
+          "line": 1016,
+          "column": 2
+        },
+        "sourceHash": "f2a9747cfc7c63615347c48383ae7f58ee7df007411cc8de3dd5bb6afaca21d5",
+        "astHash": "bf4bd8909879dc63bf09819c9a2e8700f62bb14a31688532215cb94bfabe3dad"
+      },
+      "semantics": {
+        "contractId": "compareCommittedEventSequence",
+        "domain": "DECLARED_IMMUTABLE_DATA_VALUES_V2",
+        "engine": "closed-return-term-identity-v2",
+        "allAdmittedInputs": true,
+        "sampledInputs": 0,
+        "independentContract": true,
+        "contractFile": "experiments/tla-conformance/value-contracts/contracts.json",
+        "contractSha256": "e2f76cf32cbfb04fed4f64c402294cd9d30c04be411b4caff88708eb8afe7b2b",
+        "verifierFile": "experiments/tla-conformance/value-contracts/verify.mjs",
+        "verifierSha256": "8a851ab3a5f532feb344674f69445797b3f873450e8c044ec7646505a308acad",
+        "equationSha256": "cad5f892915d039aeeb8a063d576117c216b22dc4f8ee9b9a8d62bffa12827dc",
+        "dependencies": [
+          {
+            "file": "src/projection.ts",
+            "start": {
+              "offset": 37747,
+              "line": 1011,
+              "column": 1
+            },
+            "end": {
+              "offset": 37926,
+              "line": 1016,
+              "column": 2
+            },
+            "sourceHash": "f2a9747cfc7c63615347c48383ae7f58ee7df007411cc8de3dd5bb6afaca21d5",
+            "astHash": "bf4bd8909879dc63bf09819c9a2e8700f62bb14a31688532215cb94bfabe3dad"
+          }
+        ],
+        "standardDependencies": []
+      }
+    },
+    {
+      "surfaceKey": "export:./kernel#emptyInventoryCountBook::call[0]",
+      "signatureHash": "99f1b523c387013f64fc46ada562928742bc0e1215c76ed6e0ffdfe71133e8c2",
+      "declaration": {
+        "file": "src/counts.ts",
+        "start": {
+          "offset": 5302,
+          "line": 149,
+          "column": 1
+        },
+        "end": {
+          "offset": 5473,
+          "line": 154,
+          "column": 2
+        },
+        "sourceHash": "5db9ad8d5a6f1a82c594562b66f4be7c677d17bd31d9d10afb11eae781d78f13",
+        "astHash": "f1b4d44fba49e2540db1d44f6270633e3e1612f993e6f03ab6ee5efcc618f910"
+      },
+      "semantics": {
+        "contractId": "emptyInventoryCountBook",
+        "domain": "DECLARED_IMMUTABLE_DATA_VALUES_V2",
+        "engine": "closed-return-term-identity-v2",
+        "allAdmittedInputs": true,
+        "sampledInputs": 0,
+        "independentContract": true,
+        "contractFile": "experiments/tla-conformance/value-contracts/contracts.json",
+        "contractSha256": "e2f76cf32cbfb04fed4f64c402294cd9d30c04be411b4caff88708eb8afe7b2b",
+        "verifierFile": "experiments/tla-conformance/value-contracts/verify.mjs",
+        "verifierSha256": "8a851ab3a5f532feb344674f69445797b3f873450e8c044ec7646505a308acad",
+        "equationSha256": "2e1c3446b8239c8a32095e3963a118662a727a632b0115ce6b61224778e71ef4",
+        "dependencies": [
+          {
+            "file": "src/counts.ts",
+            "start": {
+              "offset": 5302,
+              "line": 149,
+              "column": 1
+            },
+            "end": {
+              "offset": 5473,
+              "line": 154,
+              "column": 2
+            },
+            "sourceHash": "5db9ad8d5a6f1a82c594562b66f4be7c677d17bd31d9d10afb11eae781d78f13",
+            "astHash": "f1b4d44fba49e2540db1d44f6270633e3e1612f993e6f03ab6ee5efcc618f910"
+          },
+          {
+            "file": "src/sparse-record.ts",
+            "start": {
+              "offset": 94,
+              "line": 2,
+              "column": 1
+            },
+            "end": {
+              "offset": 216,
+              "line": 4,
+              "column": 2
+            },
+            "sourceHash": "272a1f63afe9ed4c84cd76a4ce051b210b52e6e0a54cf47ec4f11a29979ada71",
+            "astHash": "6019d1193f9b0133c9e9594ed624eaad2805d7d29da056f0c3efbd61faa15752"
+          }
+        ],
+        "standardDependencies": [
+          {
+            "operation": "Object.create",
+            "file": "typescript/lib/lib.es5.d.ts",
+            "start": {
+              "offset": 6305,
+              "line": 188,
+              "column": 5
+            },
+            "end": {
+              "offset": 6335,
+              "line": 188,
+              "column": 35
+            },
+            "sourceHash": "c430d44666289dae81f30fa7b2edebf186ecc91a2d4c71266ea6ae76388792e1",
+            "astHash": "884078ea95e05a69c63ff33b4893791f7942de6d652d47404de026ab2c3550cd"
+          }
+        ]
+      }
+    },
+    {
+      "surfaceKey": "export:./kernel#emptyInventoryProjectionState::call[0]",
+      "signatureHash": "2fa0f92e7581ab66c8d0b4e1fec8d2478eb608d7785db5e753fcf875be02860f",
+      "declaration": {
+        "file": "src/projection.ts",
+        "start": {
+          "offset": 7309,
+          "line": 168,
+          "column": 1
+        },
+        "end": {
+          "offset": 8161,
+          "line": 189,
+          "column": 2
+        },
+        "sourceHash": "f2a9747cfc7c63615347c48383ae7f58ee7df007411cc8de3dd5bb6afaca21d5",
+        "astHash": "fd1db6e1d083948f21b0bc974891ca046852695fd58c784ca17f0087e387cfff"
+      },
+      "semantics": {
+        "contractId": "emptyInventoryProjectionState",
+        "domain": "DECLARED_IMMUTABLE_DATA_VALUES_V2",
+        "engine": "closed-return-term-identity-v2",
+        "allAdmittedInputs": true,
+        "sampledInputs": 0,
+        "independentContract": true,
+        "contractFile": "experiments/tla-conformance/value-contracts/contracts.json",
+        "contractSha256": "e2f76cf32cbfb04fed4f64c402294cd9d30c04be411b4caff88708eb8afe7b2b",
+        "verifierFile": "experiments/tla-conformance/value-contracts/verify.mjs",
+        "verifierSha256": "8a851ab3a5f532feb344674f69445797b3f873450e8c044ec7646505a308acad",
+        "equationSha256": "ec66e736616f3c98e155018bfb768e6f65f54d7ed89536dfc32ba3e33a1d0023",
+        "dependencies": [
+          {
+            "file": "src/projection.ts",
+            "start": {
+              "offset": 7309,
+              "line": 168,
+              "column": 1
+            },
+            "end": {
+              "offset": 8161,
+              "line": 189,
+              "column": 2
+            },
+            "sourceHash": "f2a9747cfc7c63615347c48383ae7f58ee7df007411cc8de3dd5bb6afaca21d5",
+            "astHash": "fd1db6e1d083948f21b0bc974891ca046852695fd58c784ca17f0087e387cfff"
+          },
+          {
+            "file": "src/sparse-record.ts",
+            "start": {
+              "offset": 94,
+              "line": 2,
+              "column": 1
+            },
+            "end": {
+              "offset": 216,
+              "line": 4,
+              "column": 2
+            },
+            "sourceHash": "272a1f63afe9ed4c84cd76a4ce051b210b52e6e0a54cf47ec4f11a29979ada71",
+            "astHash": "6019d1193f9b0133c9e9594ed624eaad2805d7d29da056f0c3efbd61faa15752"
+          },
+          {
+            "file": "src/traceability.ts",
+            "start": {
+              "offset": 1764,
+              "line": 46,
+              "column": 1
+            },
+            "end": {
+              "offset": 1938,
+              "line": 51,
+              "column": 2
+            },
+            "sourceHash": "7db0c39cb3262339e76790a7ba10569d67d205ab84f1adb078b6b6d95e93a59c",
+            "astHash": "7b7e068339d3de4a82a449495bb8ce5d312ce65f8213101ef727272fc5b5daf8"
+          }
+        ],
+        "standardDependencies": [
+          {
+            "operation": "Object.create",
+            "file": "typescript/lib/lib.es5.d.ts",
+            "start": {
+              "offset": 6305,
+              "line": 188,
+              "column": 5
+            },
+            "end": {
+              "offset": 6335,
+              "line": 188,
+              "column": 35
+            },
+            "sourceHash": "c430d44666289dae81f30fa7b2edebf186ecc91a2d4c71266ea6ae76388792e1",
+            "astHash": "884078ea95e05a69c63ff33b4893791f7942de6d652d47404de026ab2c3550cd"
+          }
+        ]
+      }
+    },
+    {
+      "surfaceKey": "export:./kernel#emptyInventoryReservationBook::call[0]",
+      "signatureHash": "4540ec16de73e78f455137d90b8d2a635ac819eccba99fb95967621fdad37052",
+      "declaration": {
+        "file": "src/reservations.ts",
+        "start": {
+          "offset": 8349,
+          "line": 207,
+          "column": 1
+        },
+        "end": {
+          "offset": 8538,
+          "line": 212,
+          "column": 2
+        },
+        "sourceHash": "fd0bfe707583a7952e4301cafd9ab5d702059b9174f18b5c5e30ae0d6cf85113",
+        "astHash": "a3124babbfaf6039b4b4ea0cfbc98b3a2cc3249b8d2641cf52146ef54826b448"
+      },
+      "semantics": {
+        "contractId": "emptyInventoryReservationBook",
+        "domain": "DECLARED_IMMUTABLE_DATA_VALUES_V2",
+        "engine": "closed-return-term-identity-v2",
+        "allAdmittedInputs": true,
+        "sampledInputs": 0,
+        "independentContract": true,
+        "contractFile": "experiments/tla-conformance/value-contracts/contracts.json",
+        "contractSha256": "e2f76cf32cbfb04fed4f64c402294cd9d30c04be411b4caff88708eb8afe7b2b",
+        "verifierFile": "experiments/tla-conformance/value-contracts/verify.mjs",
+        "verifierSha256": "8a851ab3a5f532feb344674f69445797b3f873450e8c044ec7646505a308acad",
+        "equationSha256": "69d7bdf7fd3463e3ef9349932f9b4fa04d92081f5647e63681689a41cebf34f4",
+        "dependencies": [
+          {
+            "file": "src/reservations.ts",
+            "start": {
+              "offset": 8349,
+              "line": 207,
+              "column": 1
+            },
+            "end": {
+              "offset": 8538,
+              "line": 212,
+              "column": 2
+            },
+            "sourceHash": "fd0bfe707583a7952e4301cafd9ab5d702059b9174f18b5c5e30ae0d6cf85113",
+            "astHash": "a3124babbfaf6039b4b4ea0cfbc98b3a2cc3249b8d2641cf52146ef54826b448"
+          },
+          {
+            "file": "src/sparse-record.ts",
+            "start": {
+              "offset": 94,
+              "line": 2,
+              "column": 1
+            },
+            "end": {
+              "offset": 216,
+              "line": 4,
+              "column": 2
+            },
+            "sourceHash": "272a1f63afe9ed4c84cd76a4ce051b210b52e6e0a54cf47ec4f11a29979ada71",
+            "astHash": "6019d1193f9b0133c9e9594ed624eaad2805d7d29da056f0c3efbd61faa15752"
+          }
+        ],
+        "standardDependencies": [
+          {
+            "operation": "Object.create",
+            "file": "typescript/lib/lib.es5.d.ts",
+            "start": {
+              "offset": 6305,
+              "line": 188,
+              "column": 5
+            },
+            "end": {
+              "offset": 6335,
+              "line": 188,
+              "column": 35
+            },
+            "sourceHash": "c430d44666289dae81f30fa7b2edebf186ecc91a2d4c71266ea6ae76388792e1",
+            "astHash": "884078ea95e05a69c63ff33b4893791f7942de6d652d47404de026ab2c3550cd"
+          }
+        ]
+      }
+    },
+    {
+      "surfaceKey": "export:./kernel#emptyInventoryTraceabilityState::call[0]",
+      "signatureHash": "de548dfb5d7740c674a2bb8ab32ac8cbc0abbb25336152c7442de691a944a041",
+      "declaration": {
+        "file": "src/traceability.ts",
+        "start": {
+          "offset": 1764,
+          "line": 46,
+          "column": 1
+        },
+        "end": {
+          "offset": 1938,
+          "line": 51,
+          "column": 2
+        },
+        "sourceHash": "7db0c39cb3262339e76790a7ba10569d67d205ab84f1adb078b6b6d95e93a59c",
+        "astHash": "7b7e068339d3de4a82a449495bb8ce5d312ce65f8213101ef727272fc5b5daf8"
+      },
+      "semantics": {
+        "contractId": "emptyInventoryTraceabilityState",
+        "domain": "DECLARED_IMMUTABLE_DATA_VALUES_V2",
+        "engine": "closed-return-term-identity-v2",
+        "allAdmittedInputs": true,
+        "sampledInputs": 0,
+        "independentContract": true,
+        "contractFile": "experiments/tla-conformance/value-contracts/contracts.json",
+        "contractSha256": "e2f76cf32cbfb04fed4f64c402294cd9d30c04be411b4caff88708eb8afe7b2b",
+        "verifierFile": "experiments/tla-conformance/value-contracts/verify.mjs",
+        "verifierSha256": "8a851ab3a5f532feb344674f69445797b3f873450e8c044ec7646505a308acad",
+        "equationSha256": "f2b1687ed016e859f0d19d024e38d0351ec8edf8982f3b83a8571ac9c6e66a72",
+        "dependencies": [
+          {
+            "file": "src/traceability.ts",
+            "start": {
+              "offset": 1764,
+              "line": 46,
+              "column": 1
+            },
+            "end": {
+              "offset": 1938,
+              "line": 51,
+              "column": 2
+            },
+            "sourceHash": "7db0c39cb3262339e76790a7ba10569d67d205ab84f1adb078b6b6d95e93a59c",
+            "astHash": "7b7e068339d3de4a82a449495bb8ce5d312ce65f8213101ef727272fc5b5daf8"
+          }
+        ],
+        "standardDependencies": []
+      }
+    },
+    {
+      "surfaceKey": "export:./kernel#inventoryCatalogSnapshot::call[0]",
+      "signatureHash": "2ff85b12b453d0d8b9716025713360b1f908a571da3782a759b7e33e2b9aeb6c",
+      "declaration": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 77828,
+          "line": 1876,
+          "column": 1
+        },
+        "end": {
+          "offset": 78645,
+          "line": 1893,
+          "column": 2
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "befb1cdc322c466ed941bdc8e9b130178e18b44d206891f3ab9217d53aee7227"
+      },
+      "semantics": {
+        "contractId": "inventoryCatalogSnapshot",
+        "domain": "DECLARED_IMMUTABLE_DATA_VALUES_V2",
+        "engine": "closed-return-term-identity-v2",
+        "allAdmittedInputs": true,
+        "sampledInputs": 0,
+        "independentContract": true,
+        "contractFile": "experiments/tla-conformance/value-contracts/contracts.json",
+        "contractSha256": "e2f76cf32cbfb04fed4f64c402294cd9d30c04be411b4caff88708eb8afe7b2b",
+        "verifierFile": "experiments/tla-conformance/value-contracts/verify.mjs",
+        "verifierSha256": "8a851ab3a5f532feb344674f69445797b3f873450e8c044ec7646505a308acad",
+        "equationSha256": "cba8df31808ae396730b45ae5aa9e079f87f79a522ccfe538ac4c8dc4093949e",
+        "dependencies": [
+          {
+            "file": "src/catalog.ts",
+            "start": {
+              "offset": 77828,
+              "line": 1876,
+              "column": 1
+            },
+            "end": {
+              "offset": 78645,
+              "line": 1893,
+              "column": 2
+            },
+            "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+            "astHash": "befb1cdc322c466ed941bdc8e9b130178e18b44d206891f3ab9217d53aee7227"
+          }
+        ],
+        "standardDependencies": []
+      }
+    }
+  ]
+}

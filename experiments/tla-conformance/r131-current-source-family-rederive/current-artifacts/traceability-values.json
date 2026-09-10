@@ -1,0 +1,517 @@
+{
+  "schemaVersion": 1,
+  "proofKind": "traceability-pure-relations-rebuild-independent-equations-v1",
+  "surfaceDigest": "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a",
+  "allAdmittedInputs": true,
+  "sampledInputs": 0,
+  "domain": "All immutable plain InventoryTraceabilityState/relation/event records admitted by the public TypeScript shapes, with native Array/Map/Set/Object/JSON sorting and iteration semantics. The complete guards, ordering, iterative ancestry traversal, relation indexing, and ordered event rebuild equations are included.",
+  "inputs": [
+    {
+      "file": "experiments/tla-conformance/migration-r5/artifacts/TraceabilityGraph/projection-value-certificate.json",
+      "sha256": "f319f0fc93f1e6dd1db8546b869572823f6e55f3d8d822b75a21240a1f9c9c15"
+    },
+    {
+      "file": "experiments/tla-conformance/migration-r5/artifacts/TraceabilityGraph/projection-value-observations.ndjson",
+      "sha256": "4153f5c71dcba3235f404d8ede910415a23ecfbc0f7bfee3b6fc515b250f9985"
+    },
+    {
+      "file": "experiments/tla-conformance/migration-r5/traceability-value-family.mjs",
+      "sha256": "aee9c793f692623d6f837d260d2534a75152846fe71e0401df1123d37fb9c1c8"
+    },
+    {
+      "file": "experiments/tla-conformance/migration-r5/traceability-values.expected.ts.txt",
+      "sha256": "6e699addd24a5ff02e111152fc9c75610381e0dc44105a56adb9b388449f153d"
+    },
+    {
+      "file": "experiments/tla-conformance/throughput-r7/registered-value-family.mjs",
+      "sha256": "1926bfc82e8cc608904d8a2785c2ae6775d2905186b4d9fb8b137a0696b821b3"
+    },
+    {
+      "file": "experiments/tla-conformance/value-contracts/surface-binding.mjs",
+      "sha256": "619b37fe3a9bc9be22e8a0c2167187cfce987c7856280c6df0c36c5a230c3618"
+    },
+    {
+      "file": "src/model.ts",
+      "sha256": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122"
+    },
+    {
+      "file": "src/ordering.ts",
+      "sha256": "e72ac94e99b1b4914f3f6dec55583e401484a41ecadd051be788724c88f24cb9"
+    },
+    {
+      "file": "src/traceability-replay.ts",
+      "sha256": "3bef97ca89c6530721b2552089e124c3a8943b5a0ceea8b799aaccd79c629c0b"
+    },
+    {
+      "file": "src/traceability.ts",
+      "sha256": "7db0c39cb3262339e76790a7ba10569d67d205ab84f1adb078b6b6d95e93a59c"
+    }
+  ],
+  "independentSpecification": {
+    "file": "experiments/tla-conformance/migration-r5/traceability-values.expected.ts.txt",
+    "sha256": "6e699addd24a5ff02e111152fc9c75610381e0dc44105a56adb9b388449f153d",
+    "executedProductionCode": false
+  },
+  "dependencyEquations": [
+    {
+      "id": "src/model.ts#assertInventoryIdentity",
+      "declaration": {
+        "file": "src/model.ts",
+        "start": {
+          "offset": 7257,
+          "line": 171,
+          "column": 1
+        },
+        "end": {
+          "offset": 7549,
+          "line": 177,
+          "column": 2
+        },
+        "sourceHash": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
+        "astHash": "49ee204a9b5196a95f60e0d297bc3591c673e47bcc7a463ecc8739b8b0e2c4b8"
+      },
+      "termSha256": "8513c050dc2f024b3fd303790b45e0f91cf51588ae23111d1821b84cc15cc1fd",
+      "publicCreditClaimed": false
+    },
+    {
+      "id": "src/model.ts#inventoryTraceabilityNodeIdentity",
+      "declaration": {
+        "file": "src/model.ts",
+        "start": {
+          "offset": 10486,
+          "line": 256,
+          "column": 1
+        },
+        "end": {
+          "offset": 11185,
+          "line": 271,
+          "column": 2
+        },
+        "sourceHash": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
+        "astHash": "64c3736fb3fd8cabb77f634e68296d13877a7b9046c0fc85e1bc7ec504df2020"
+      },
+      "termSha256": "a16923da91f687fd0edb366b086d7cbb56664b2989d65412f4a3cc9ee43bf99c",
+      "publicCreditClaimed": false
+    },
+    {
+      "id": "src/ordering.ts#compareInventoryIdentityText",
+      "declaration": {
+        "file": "src/ordering.ts",
+        "start": {
+          "offset": 89,
+          "line": 2,
+          "column": 1
+        },
+        "end": {
+          "offset": 225,
+          "line": 4,
+          "column": 2
+        },
+        "sourceHash": "e72ac94e99b1b4914f3f6dec55583e401484a41ecadd051be788724c88f24cb9",
+        "astHash": "039120ec7ddb7041a3b5cf7e9aada34a11c3822e591d42e95e1d8d2da6ed09a7"
+      },
+      "termSha256": "96d2d4530b3247f5456e52dae319223e0211abd109a64b1bc65601ce184ccc75",
+      "publicCreditClaimed": false
+    }
+  ],
+  "boundedControl": {
+    "certificate": {
+      "file": "experiments/tla-conformance/migration-r5/artifacts/TraceabilityGraph/projection-value-certificate.json",
+      "sha256": "f319f0fc93f1e6dd1db8546b869572823f6e55f3d8d822b75a21240a1f9c9c15"
+    },
+    "observations": {
+      "file": "experiments/tla-conformance/migration-r5/artifacts/TraceabilityGraph/projection-value-observations.ndjson",
+      "sha256": "4153f5c71dcba3235f404d8ede910415a23ecfbc0f7bfee3b6fc515b250f9985"
+    },
+    "helperCalls": 33024,
+    "universalCredit": false
+  },
+  "equations": [
+    {
+      "id": "src/traceability.ts#buildContainmentChildContainerIndex",
+      "implementation": {
+        "file": "src/traceability.ts",
+        "start": {
+          "offset": 4382,
+          "line": 123,
+          "column": 1
+        },
+        "end": {
+          "offset": 5402,
+          "line": 147,
+          "column": 2
+        },
+        "sourceHash": "7db0c39cb3262339e76790a7ba10569d67d205ab84f1adb078b6b6d95e93a59c",
+        "astHash": "f894d66ca3fd2b45e7d6d8af98aa32a2e138ddb3738d0e576d0d8893698fa538"
+      },
+      "independentExpectedFunction": "expected_buildContainmentChildContainerIndex",
+      "termSha256": "60cdd4dcff7075db814270f5d3a21aea82321182369a4f16afaace2414b66a3e",
+      "dependencies": [
+        "src/model.ts#inventoryTraceabilityNodeIdentity"
+      ]
+    },
+    {
+      "id": "src/traceability.ts#inventoryGenealogyAncestors",
+      "implementation": {
+        "file": "src/traceability.ts",
+        "start": {
+          "offset": 6331,
+          "line": 176,
+          "column": 1
+        },
+        "end": {
+          "offset": 7557,
+          "line": 204,
+          "column": 2
+        },
+        "sourceHash": "7db0c39cb3262339e76790a7ba10569d67d205ab84f1adb078b6b6d95e93a59c",
+        "astHash": "5cbddab349b112a8b535f04f037d76e74086f05ab36301b831f02173fbee0560"
+      },
+      "independentExpectedFunction": "expected_inventoryGenealogyAncestors",
+      "termSha256": "9ebd24d1d96f88787da03262a587718adf82c6113480cb8c23cae611ae9662e6",
+      "dependencies": [
+        "src/model.ts#inventoryTraceabilityNodeIdentity",
+        "src/traceability.ts#compareNode"
+      ]
+    },
+    {
+      "id": "src/traceability.ts#inventoryTraceabilityRelationIdentity",
+      "implementation": {
+        "file": "src/traceability.ts",
+        "start": {
+          "offset": 5474,
+          "line": 150,
+          "column": 1
+        },
+        "end": {
+          "offset": 5788,
+          "line": 160,
+          "column": 2
+        },
+        "sourceHash": "7db0c39cb3262339e76790a7ba10569d67d205ab84f1adb078b6b6d95e93a59c",
+        "astHash": "0d0a9587f5e8977f99a850ef5ea7bda2a2171a6f10ff9025cbd4dfadc4095abf"
+      },
+      "independentExpectedFunction": "expected_inventoryTraceabilityRelationIdentity",
+      "termSha256": "3f868499b9f6ae7a2660d36b6598b6ea707dcfec2919f2b42887f0792bdb41d4",
+      "dependencies": [
+        "src/model.ts#inventoryTraceabilityNodeIdentity"
+      ]
+    },
+    {
+      "id": "src/traceability.ts#inventoryTraceabilityRelationsOfKind",
+      "implementation": {
+        "file": "src/traceability.ts",
+        "start": {
+          "offset": 5852,
+          "line": 163,
+          "column": 1
+        },
+        "end": {
+          "offset": 6253,
+          "line": 173,
+          "column": 2
+        },
+        "sourceHash": "7db0c39cb3262339e76790a7ba10569d67d205ab84f1adb078b6b6d95e93a59c",
+        "astHash": "110cca987dcdf9fcfc1c7dd10631dd8ad7a514e807e1eae6fa1497f2f4958f3d"
+      },
+      "independentExpectedFunction": "expected_inventoryTraceabilityRelationsOfKind",
+      "termSha256": "fa5ce2951f27d31c74b3f0198b207181321350a5a439fefb121c73bd95b57081",
+      "dependencies": [
+        "src/traceability.ts#compareRelation"
+      ]
+    },
+    {
+      "id": "src/traceability.ts#compareRelation",
+      "implementation": {
+        "file": "src/traceability.ts",
+        "start": {
+          "offset": 11314,
+          "line": 304,
+          "column": 1
+        },
+        "end": {
+          "offset": 11629,
+          "line": 313,
+          "column": 2
+        },
+        "sourceHash": "7db0c39cb3262339e76790a7ba10569d67d205ab84f1adb078b6b6d95e93a59c",
+        "astHash": "5e5b5f1af2a5409ae2ff27ab61319a2199670157ab08a4d469f50adc7d6d8853"
+      },
+      "independentExpectedFunction": "expected_compareRelation",
+      "termSha256": "485c6836348bb3a9340e2345858b334663111c6582576c6ac5975e18a8358c32",
+      "dependencies": [
+        "src/ordering.ts#compareInventoryIdentityText",
+        "src/traceability.ts#inventoryTraceabilityRelationIdentity"
+      ]
+    },
+    {
+      "id": "src/traceability.ts#compareNode",
+      "implementation": {
+        "file": "src/traceability.ts",
+        "start": {
+          "offset": 11680,
+          "line": 316,
+          "column": 1
+        },
+        "end": {
+          "offset": 11913,
+          "line": 321,
+          "column": 2
+        },
+        "sourceHash": "7db0c39cb3262339e76790a7ba10569d67d205ab84f1adb078b6b6d95e93a59c",
+        "astHash": "a3941650f7e8fb020950d1495779cb2c14cf33b493211e5c2f5b2e17beede879"
+      },
+      "independentExpectedFunction": "expected_compareNode",
+      "termSha256": "36148ec56898a38fb9d21558bed14adf3b24ffa87c807d6cf45c91ddbc6f4439",
+      "dependencies": [
+        "src/model.ts#inventoryTraceabilityNodeIdentity",
+        "src/ordering.ts#compareInventoryIdentityText"
+      ]
+    },
+    {
+      "id": "src/traceability-replay.ts#projectInventoryTraceabilityEvents",
+      "implementation": {
+        "file": "src/traceability-replay.ts",
+        "start": {
+          "offset": 572,
+          "line": 19,
+          "column": 1
+        },
+        "end": {
+          "offset": 3792,
+          "line": 110,
+          "column": 2
+        },
+        "sourceHash": "3bef97ca89c6530721b2552089e124c3a8943b5a0ceea8b799aaccd79c629c0b",
+        "astHash": "10071e32ac5f4a6dbf9d3947d9437978d2661c88dc5cb42a87025613924f1677"
+      },
+      "independentExpectedFunction": "expected_projectInventoryTraceabilityEvents",
+      "termSha256": "ed8c7b7b4f4e9b35171935bddc6b012eea41c433e3135e784c708b56996ab3f9",
+      "dependencies": [
+        "src/traceability-replay.ts#removeIndexedRelation",
+        "src/traceability-replay.ts#validateAndIndexAddition",
+        "src/traceability.ts#buildContainmentChildContainerIndex",
+        "src/traceability.ts#inventoryTraceabilityRelationIdentity"
+      ]
+    },
+    {
+      "id": "src/traceability-replay.ts#validateAndIndexAddition",
+      "implementation": {
+        "file": "src/traceability-replay.ts",
+        "start": {
+          "offset": 3879,
+          "line": 113,
+          "column": 1
+        },
+        "end": {
+          "offset": 5317,
+          "line": 145,
+          "column": 2
+        },
+        "sourceHash": "3bef97ca89c6530721b2552089e124c3a8943b5a0ceea8b799aaccd79c629c0b",
+        "astHash": "865d3e22f9d3d37cd1e7cc9fae43e9cc5b0a83514fb94e3cfd206357f5891744"
+      },
+      "independentExpectedFunction": "expected_validateAndIndexAddition",
+      "termSha256": "bb35ab33e1db4eb7723aec417e957985893e72ee6d19ad9d598862d3d8f41205",
+      "dependencies": [
+        "src/model.ts#inventoryTraceabilityNodeIdentity",
+        "src/traceability-replay.ts#assertNoGenealogyPath"
+      ]
+    },
+    {
+      "id": "src/traceability-replay.ts#removeIndexedRelation",
+      "implementation": {
+        "file": "src/traceability-replay.ts",
+        "start": {
+          "offset": 5404,
+          "line": 148,
+          "column": 1
+        },
+        "end": {
+          "offset": 6115,
+          "line": 163,
+          "column": 2
+        },
+        "sourceHash": "3bef97ca89c6530721b2552089e124c3a8943b5a0ceea8b799aaccd79c629c0b",
+        "astHash": "57aea9a5a1d0dbf73a9f2cb3855c3d74435a28011cad879c81739fede8021798"
+      },
+      "independentExpectedFunction": "expected_removeIndexedRelation",
+      "termSha256": "b36f4a4959f3a43a9f06eb0eaff6c48c148df7297ba5c31b07e10c149c0cb47f",
+      "dependencies": [
+        "src/model.ts#inventoryTraceabilityNodeIdentity"
+      ]
+    },
+    {
+      "id": "src/traceability-replay.ts#assertNoGenealogyPath",
+      "implementation": {
+        "file": "src/traceability-replay.ts",
+        "start": {
+          "offset": 6200,
+          "line": 166,
+          "column": 1
+        },
+        "end": {
+          "offset": 6745,
+          "line": 183,
+          "column": 2
+        },
+        "sourceHash": "3bef97ca89c6530721b2552089e124c3a8943b5a0ceea8b799aaccd79c629c0b",
+        "astHash": "004769b5fae3df7b05ea77fb4e6c8bee4238c1e8d7ea4ab44582f40b4b5dcd5c"
+      },
+      "independentExpectedFunction": "expected_assertNoGenealogyPath",
+      "termSha256": "4b7d752cf4f19d373945533e2477c3343704cda7dc2898e0192279eaa3cbbccf",
+      "dependencies": []
+    },
+    {
+      "id": "src/model.ts#assertInventoryIdentity",
+      "implementation": {
+        "file": "src/model.ts",
+        "start": {
+          "offset": 7257,
+          "line": 171,
+          "column": 1
+        },
+        "end": {
+          "offset": 7549,
+          "line": 177,
+          "column": 2
+        },
+        "sourceHash": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
+        "astHash": "49ee204a9b5196a95f60e0d297bc3591c673e47bcc7a463ecc8739b8b0e2c4b8"
+      },
+      "independentExpectedFunction": "expected_assertInventoryIdentity",
+      "termSha256": "8513c050dc2f024b3fd303790b45e0f91cf51588ae23111d1821b84cc15cc1fd",
+      "dependencies": []
+    },
+    {
+      "id": "src/model.ts#inventoryTraceabilityNodeIdentity",
+      "implementation": {
+        "file": "src/model.ts",
+        "start": {
+          "offset": 10486,
+          "line": 256,
+          "column": 1
+        },
+        "end": {
+          "offset": 11185,
+          "line": 271,
+          "column": 2
+        },
+        "sourceHash": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
+        "astHash": "64c3736fb3fd8cabb77f634e68296d13877a7b9046c0fc85e1bc7ec504df2020"
+      },
+      "independentExpectedFunction": "expected_inventoryTraceabilityNodeIdentity",
+      "termSha256": "a16923da91f687fd0edb366b086d7cbb56664b2989d65412f4a3cc9ee43bf99c",
+      "dependencies": [
+        "src/model.ts#assertInventoryIdentity"
+      ]
+    },
+    {
+      "id": "src/ordering.ts#compareInventoryIdentityText",
+      "implementation": {
+        "file": "src/ordering.ts",
+        "start": {
+          "offset": 89,
+          "line": 2,
+          "column": 1
+        },
+        "end": {
+          "offset": 225,
+          "line": 4,
+          "column": 2
+        },
+        "sourceHash": "e72ac94e99b1b4914f3f6dec55583e401484a41ecadd051be788724c88f24cb9",
+        "astHash": "039120ec7ddb7041a3b5cf7e9aada34a11c3822e591d42e95e1d8d2da6ed09a7"
+      },
+      "independentExpectedFunction": "expected_compareInventoryIdentityText",
+      "termSha256": "96d2d4530b3247f5456e52dae319223e0211abd109a64b1bc65601ce184ccc75",
+      "dependencies": []
+    }
+  ],
+  "proofs": [
+    {
+      "surfaceKey": "export:./kernel#buildContainmentChildContainerIndex::call[0]",
+      "signatureHash": "a42a6ef08a0121ec6d6709a02637397b91ff23d7fdd4c12161e0ce29207875c0",
+      "declaration": {
+        "file": "src/traceability.ts",
+        "start": {
+          "offset": 4382,
+          "line": 123,
+          "column": 1
+        },
+        "end": {
+          "offset": 5402,
+          "line": 147,
+          "column": 2
+        },
+        "sourceHash": "7db0c39cb3262339e76790a7ba10569d67d205ab84f1adb078b6b6d95e93a59c",
+        "astHash": "f894d66ca3fd2b45e7d6d8af98aa32a2e138ddb3738d0e576d0d8893698fa538"
+      },
+      "equationId": "src/traceability.ts#buildContainmentChildContainerIndex",
+      "termSha256": "60cdd4dcff7075db814270f5d3a21aea82321182369a4f16afaace2414b66a3e"
+    },
+    {
+      "surfaceKey": "export:./kernel#inventoryGenealogyAncestors::call[0]",
+      "signatureHash": "06f6db671e141aa53bdf6a3848c31e0cc6286f3859c2c7d5e5830c82d9ea2b6b",
+      "declaration": {
+        "file": "src/traceability.ts",
+        "start": {
+          "offset": 6331,
+          "line": 176,
+          "column": 1
+        },
+        "end": {
+          "offset": 7557,
+          "line": 204,
+          "column": 2
+        },
+        "sourceHash": "7db0c39cb3262339e76790a7ba10569d67d205ab84f1adb078b6b6d95e93a59c",
+        "astHash": "5cbddab349b112a8b535f04f037d76e74086f05ab36301b831f02173fbee0560"
+      },
+      "equationId": "src/traceability.ts#inventoryGenealogyAncestors",
+      "termSha256": "9ebd24d1d96f88787da03262a587718adf82c6113480cb8c23cae611ae9662e6"
+    },
+    {
+      "surfaceKey": "export:./kernel#inventoryTraceabilityRelationIdentity::call[0]",
+      "signatureHash": "390c2ea7740da3dc68c5d59ea424b60ae37558502647e61c87ee7958b4be55b6",
+      "declaration": {
+        "file": "src/traceability.ts",
+        "start": {
+          "offset": 5474,
+          "line": 150,
+          "column": 1
+        },
+        "end": {
+          "offset": 5788,
+          "line": 160,
+          "column": 2
+        },
+        "sourceHash": "7db0c39cb3262339e76790a7ba10569d67d205ab84f1adb078b6b6d95e93a59c",
+        "astHash": "0d0a9587f5e8977f99a850ef5ea7bda2a2171a6f10ff9025cbd4dfadc4095abf"
+      },
+      "equationId": "src/traceability.ts#inventoryTraceabilityRelationIdentity",
+      "termSha256": "3f868499b9f6ae7a2660d36b6598b6ea707dcfec2919f2b42887f0792bdb41d4"
+    },
+    {
+      "surfaceKey": "export:./kernel#inventoryTraceabilityRelationsOfKind::call[0]",
+      "signatureHash": "caf4134e7ed3f09a6a8ab06745d5eabbe4c3668cf6f5aec400cefaf520a052b6",
+      "declaration": {
+        "file": "src/traceability.ts",
+        "start": {
+          "offset": 5852,
+          "line": 163,
+          "column": 1
+        },
+        "end": {
+          "offset": 6253,
+          "line": 173,
+          "column": 2
+        },
+        "sourceHash": "7db0c39cb3262339e76790a7ba10569d67d205ab84f1adb078b6b6d95e93a59c",
+        "astHash": "110cca987dcdf9fcfc1c7dd10631dd8ad7a514e807e1eae6fa1497f2f4958f3d"
+      },
+      "equationId": "src/traceability.ts#inventoryTraceabilityRelationsOfKind",
+      "termSha256": "fa5ce2951f27d31c74b3f0198b207181321350a5a439fefb121c73bd95b57081"
+    }
+  ]
+}

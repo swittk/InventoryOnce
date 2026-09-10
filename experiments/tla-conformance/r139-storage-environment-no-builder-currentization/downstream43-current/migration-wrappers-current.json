@@ -1,0 +1,484 @@
+{
+  "schemaVersion": 1,
+  "route": "REGISTERED_CERTIFIED_PRODUCER",
+  "proofKind": "migration-resume-repair-environment-contract-a2-current-r139-v1",
+  "family": "MigrationResumeRepairEnvironmentContractCurrentR139",
+  "surfaceDigest": "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a",
+  "domain": "Every typed resumeInventoryMigrationManifest and repairInventoryMigrationManifests call on current source. Resume composes the exact current wrapper equation with R139's content-addressed current Snapshot publication certificate and explicit no-new-credit migration-storage laws; repair composes exactly over current resume in contract order. No arbitrary adapter implementation or external interface identity receives credit.",
+  "allAdmittedInputs": true,
+  "sampledInputs": 0,
+  "producerGraphRuns": 0,
+  "producerReplayRuns": 0,
+  "currentization": {
+    "migrationProducerReruns": 0,
+    "graphExportRuns": 0,
+    "reverseReruns": 0,
+    "tlcRuns": 0
+  },
+  "externalSurfaceCreditGranted": false,
+  "environmentalAssumptions": [
+    {
+      "kind": "ASSUMED_ENVIRONMENT_CONTRACT",
+      "contractName": "InventoryDurableStorage.v1/migration-current-r139",
+      "contractId": "sha256:e027fd119c3f2992474424b009cc6dba9859b1e120b390328a07d059af923948",
+      "surfaceCreditGranted": false,
+      "requirements": [
+        {
+          "method": "readMigrationManifest",
+          "lawId": "migration-manifest-read",
+          "guaranteeSha256": "e5047b4c0efbe1336c7933c1aaf2f2cd8b9ea5ff226fb400cb294d0e1b221744",
+          "externalSurfaceKey": "type:src/storage.ts#InventoryDurableStorage.readMigrationManifest::call[0]",
+          "externalSignatureHash": "1e769b640aab117ae0754cc17ccf182305afb06f605832cf996caef23e98d08d",
+          "packageReferenceSurfaceKey": "type:src/storage.ts#InMemoryInventoryDurableStorage.readMigrationManifest::call[0]",
+          "packageReferenceSignatureHash": "1e769b640aab117ae0754cc17ccf182305afb06f605832cf996caef23e98d08d",
+          "currentSnapshotProducerCertificateBacked": false
+        },
+        {
+          "method": "writeMigrationWorld",
+          "lawId": "migration-stage-world",
+          "guaranteeSha256": "4557fb45e08a23f8487cdbcc4cc4ade92aacf0d1c4b9534e7b5e03b084904c1e",
+          "externalSurfaceKey": "type:src/storage.ts#InventoryDurableStorage.writeMigrationWorld::call[0]",
+          "externalSignatureHash": "6182ee08d3bdadf06af4f5e787fad1abecfc544d25374a06e59f5f03a380c964",
+          "packageReferenceSurfaceKey": "type:src/storage.ts#InMemoryInventoryDurableStorage.writeMigrationWorld::call[0]",
+          "packageReferenceSignatureHash": "6182ee08d3bdadf06af4f5e787fad1abecfc544d25374a06e59f5f03a380c964",
+          "currentSnapshotProducerCertificateBacked": true
+        },
+        {
+          "method": "completeMigrationManifest",
+          "lawId": "migration-complete",
+          "guaranteeSha256": "6cafbc1b2c882154e92d6725023da64ca652122206196048b0c61c52ab93e2cc",
+          "externalSurfaceKey": "type:src/storage.ts#InventoryDurableStorage.completeMigrationManifest::call[0]",
+          "externalSignatureHash": "6182ee08d3bdadf06af4f5e787fad1abecfc544d25374a06e59f5f03a380c964",
+          "packageReferenceSurfaceKey": "type:src/storage.ts#InMemoryInventoryDurableStorage.completeMigrationManifest::call[0]",
+          "packageReferenceSignatureHash": "6182ee08d3bdadf06af4f5e787fad1abecfc544d25374a06e59f5f03a380c964",
+          "currentSnapshotProducerCertificateBacked": true
+        }
+      ],
+      "migrationAuthority": {
+        "certificate": {
+          "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/migration-manifest-current/producer-certificate.json",
+          "sha256": "8b54513e42135866516381b03aaa6f4a5bb21070e591845c5aaedfa2404c637b"
+        },
+        "protocol": {
+          "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/migration-manifest-current/protocol-observations.ndjson",
+          "sha256": "55b2fea31c2832943b31b209705faec5da408754f80aaf486807f56177a6e424"
+        },
+        "bridge": {
+          "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/migration-manifest-current/publish-bridge-observations.ndjson",
+          "sha256": "e7130adf140dce404cda8977b17d94abb91139c864cffa10d54c6d68a1f31c15"
+        }
+      }
+    },
+    {
+      "kind": "ASSUMED_ENVIRONMENT_CONTRACT",
+      "contractName": "InventoryDurableStorage.v1/migration-current-r139",
+      "contractId": "sha256:8f8ac0df7b86c15bf77c9a7c6a58ebc10a4b8db05d48a89cda9e9b14663ff69b",
+      "surfaceCreditGranted": false,
+      "requirements": [
+        {
+          "method": "listApplyingMigrationManifests",
+          "lawId": "applying-migration-list",
+          "guaranteeSha256": "2b4fea77d3eec8ebcbc11f800952de483f4b35811c01de6a9c4ca82c06a75ebf",
+          "externalSurfaceKey": "type:src/storage.ts#InventoryDurableStorage.listApplyingMigrationManifests::call[0]",
+          "externalSignatureHash": "43ae5d5cc962cc976bce0ba12dc247ecd9a39a150ca47ef8861002646421f9b2",
+          "packageReferenceSurfaceKey": "type:src/storage.ts#InMemoryInventoryDurableStorage.listApplyingMigrationManifests::call[0]",
+          "packageReferenceSignatureHash": "5ac06723695a23fb644ca255f60684ead8ffafb645dd6a1c75546e7dd0b00533",
+          "currentSnapshotProducerCertificateBacked": false
+        }
+      ],
+      "migrationAuthority": {
+        "certificate": {
+          "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/migration-manifest-current/producer-certificate.json",
+          "sha256": "8b54513e42135866516381b03aaa6f4a5bb21070e591845c5aaedfa2404c637b"
+        },
+        "protocol": {
+          "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/migration-manifest-current/protocol-observations.ndjson",
+          "sha256": "55b2fea31c2832943b31b209705faec5da408754f80aaf486807f56177a6e424"
+        },
+        "bridge": {
+          "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/migration-manifest-current/publish-bridge-observations.ndjson",
+          "sha256": "e7130adf140dce404cda8977b17d94abb91139c864cffa10d54c6d68a1f31c15"
+        }
+      }
+    }
+  ],
+  "proofs": [
+    {
+      "surfaceKey": "export:./migrations#resumeInventoryMigrationManifest::call[0]",
+      "mode": "A",
+      "signatureHash": "1572d4e45281628e417c61cb97d8a6777480bfaffb870a465873bb8149577947",
+      "declaration": {
+        "file": "src/migrations.ts",
+        "start": {
+          "offset": 25371,
+          "line": 674,
+          "column": 1
+        },
+        "end": {
+          "offset": 26156,
+          "line": 691,
+          "column": 2
+        },
+        "sourceHash": "0e837a12fa171f3029b3931f0c2c0d12d83edbd4b12d86e9ec810ec7ede77384",
+        "astHash": "4f12e7cc6b4be0278f422f5616684b829928e20e6e9610cd3330e28bcb871e2c"
+      },
+      "directProducer": {
+        "kind": "CURRENT_SOURCE_COMPOSITION_WITH_R139_SNAPSHOT_PUBLICATION_CERTIFICATE",
+        "completeSourceEquationSha256": "bddd37a6e25fd23a0590e4b0581257e55eb88c0db7e92873b38cdf2ba28a93f3",
+        "migrationCertificateId": "sha256:d9d5811ef665a35246388b8a639743965f9825798a5373ae7b9d44ee9e87fda9",
+        "storageEnvironment": {
+          "kind": "ASSUMED_ENVIRONMENT_CONTRACT",
+          "contractName": "InventoryDurableStorage.v1/migration-current-r139",
+          "contractId": "sha256:e027fd119c3f2992474424b009cc6dba9859b1e120b390328a07d059af923948",
+          "surfaceCreditGranted": false,
+          "requirements": [
+            {
+              "method": "readMigrationManifest",
+              "lawId": "migration-manifest-read",
+              "guaranteeSha256": "e5047b4c0efbe1336c7933c1aaf2f2cd8b9ea5ff226fb400cb294d0e1b221744",
+              "externalSurfaceKey": "type:src/storage.ts#InventoryDurableStorage.readMigrationManifest::call[0]",
+              "externalSignatureHash": "1e769b640aab117ae0754cc17ccf182305afb06f605832cf996caef23e98d08d",
+              "packageReferenceSurfaceKey": "type:src/storage.ts#InMemoryInventoryDurableStorage.readMigrationManifest::call[0]",
+              "packageReferenceSignatureHash": "1e769b640aab117ae0754cc17ccf182305afb06f605832cf996caef23e98d08d",
+              "currentSnapshotProducerCertificateBacked": false
+            },
+            {
+              "method": "writeMigrationWorld",
+              "lawId": "migration-stage-world",
+              "guaranteeSha256": "4557fb45e08a23f8487cdbcc4cc4ade92aacf0d1c4b9534e7b5e03b084904c1e",
+              "externalSurfaceKey": "type:src/storage.ts#InventoryDurableStorage.writeMigrationWorld::call[0]",
+              "externalSignatureHash": "6182ee08d3bdadf06af4f5e787fad1abecfc544d25374a06e59f5f03a380c964",
+              "packageReferenceSurfaceKey": "type:src/storage.ts#InMemoryInventoryDurableStorage.writeMigrationWorld::call[0]",
+              "packageReferenceSignatureHash": "6182ee08d3bdadf06af4f5e787fad1abecfc544d25374a06e59f5f03a380c964",
+              "currentSnapshotProducerCertificateBacked": true
+            },
+            {
+              "method": "completeMigrationManifest",
+              "lawId": "migration-complete",
+              "guaranteeSha256": "6cafbc1b2c882154e92d6725023da64ca652122206196048b0c61c52ab93e2cc",
+              "externalSurfaceKey": "type:src/storage.ts#InventoryDurableStorage.completeMigrationManifest::call[0]",
+              "externalSignatureHash": "6182ee08d3bdadf06af4f5e787fad1abecfc544d25374a06e59f5f03a380c964",
+              "packageReferenceSurfaceKey": "type:src/storage.ts#InMemoryInventoryDurableStorage.completeMigrationManifest::call[0]",
+              "packageReferenceSignatureHash": "6182ee08d3bdadf06af4f5e787fad1abecfc544d25374a06e59f5f03a380c964",
+              "currentSnapshotProducerCertificateBacked": true
+            }
+          ],
+          "migrationAuthority": {
+            "certificate": {
+              "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/migration-manifest-current/producer-certificate.json",
+              "sha256": "8b54513e42135866516381b03aaa6f4a5bb21070e591845c5aaedfa2404c637b"
+            },
+            "protocol": {
+              "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/migration-manifest-current/protocol-observations.ndjson",
+              "sha256": "55b2fea31c2832943b31b209705faec5da408754f80aaf486807f56177a6e424"
+            },
+            "bridge": {
+              "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/migration-manifest-current/publish-bridge-observations.ndjson",
+              "sha256": "e7130adf140dce404cda8977b17d94abb91139c864cffa10d54c6d68a1f31c15"
+            }
+          }
+        },
+        "externalSurfaceCreditGranted": false,
+        "compositionLaw": "Read exactly one manifest under the explicit no-credit migration storage law; absent/Aborted/missing-plan reject, Completed returns unchanged; Applying invokes exactly writeMigrationWorld then completeMigrationManifest. The current R139 Snapshot producer certificate supplies the complete original PublishOpeningSnapshot physical stage authority for write/complete."
+      }
+    },
+    {
+      "surfaceKey": "export:./migrations#repairInventoryMigrationManifests::call[0]",
+      "mode": "A",
+      "signatureHash": "57fce5e34cb74a4e282eb14826166c315790007a35db7f48a05c49d665d886c2",
+      "declaration": {
+        "file": "src/migrations.ts",
+        "start": {
+          "offset": 26549,
+          "line": 702,
+          "column": 1
+        },
+        "end": {
+          "offset": 27183,
+          "line": 721,
+          "column": 2
+        },
+        "sourceHash": "0e837a12fa171f3029b3931f0c2c0d12d83edbd4b12d86e9ec810ec7ede77384",
+        "astHash": "0fe71b00339215d5f3b6a94b5ccdcc2521a817d05f48beb6ba2c789fafc85fd1"
+      },
+      "directProducer": {
+        "kind": "SEQUENTIAL_CURRENT_PACKAGE_COMPOSITION_UNDER_ENVIRONMENT_CONTRACT",
+        "completeSourceEquationSha256": "049f69c74699134c98f5a79a9614f9aad990c000de0e01f7fe2292748e9bdee0",
+        "storageEnvironment": {
+          "kind": "ASSUMED_ENVIRONMENT_CONTRACT",
+          "contractName": "InventoryDurableStorage.v1/migration-current-r139",
+          "contractId": "sha256:8f8ac0df7b86c15bf77c9a7c6a58ebc10a4b8db05d48a89cda9e9b14663ff69b",
+          "surfaceCreditGranted": false,
+          "requirements": [
+            {
+              "method": "listApplyingMigrationManifests",
+              "lawId": "applying-migration-list",
+              "guaranteeSha256": "2b4fea77d3eec8ebcbc11f800952de483f4b35811c01de6a9c4ca82c06a75ebf",
+              "externalSurfaceKey": "type:src/storage.ts#InventoryDurableStorage.listApplyingMigrationManifests::call[0]",
+              "externalSignatureHash": "43ae5d5cc962cc976bce0ba12dc247ecd9a39a150ca47ef8861002646421f9b2",
+              "packageReferenceSurfaceKey": "type:src/storage.ts#InMemoryInventoryDurableStorage.listApplyingMigrationManifests::call[0]",
+              "packageReferenceSignatureHash": "5ac06723695a23fb644ca255f60684ead8ffafb645dd6a1c75546e7dd0b00533",
+              "currentSnapshotProducerCertificateBacked": false
+            }
+          ],
+          "migrationAuthority": {
+            "certificate": {
+              "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/migration-manifest-current/producer-certificate.json",
+              "sha256": "8b54513e42135866516381b03aaa6f4a5bb21070e591845c5aaedfa2404c637b"
+            },
+            "protocol": {
+              "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/migration-manifest-current/protocol-observations.ndjson",
+              "sha256": "55b2fea31c2832943b31b209705faec5da408754f80aaf486807f56177a6e424"
+            },
+            "bridge": {
+              "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/migration-manifest-current/publish-bridge-observations.ndjson",
+              "sha256": "e7130adf140dce404cda8977b17d94abb91139c864cffa10d54c6d68a1f31c15"
+            }
+          }
+        },
+        "packageResumeDependency": {
+          "proofKind": "migration-resume-repair-environment-contract-a2-current-r139-v1",
+          "surfaceKey": "export:./migrations#resumeInventoryMigrationManifest::call[0]",
+          "mode": "A",
+          "signatureHash": "1572d4e45281628e417c61cb97d8a6777480bfaffb870a465873bb8149577947",
+          "declaration": {
+            "file": "src/migrations.ts",
+            "start": {
+              "offset": 25371,
+              "line": 674,
+              "column": 1
+            },
+            "end": {
+              "offset": 26156,
+              "line": 691,
+              "column": 2
+            },
+            "sourceHash": "0e837a12fa171f3029b3931f0c2c0d12d83edbd4b12d86e9ec810ec7ede77384",
+            "astHash": "4f12e7cc6b4be0278f422f5616684b829928e20e6e9610cd3330e28bcb871e2c"
+          }
+        },
+        "resultOrder": "exact contract-supplied Applying manifest order",
+        "failureSemantics": "first rejected environment list or package resume call rejects whole repair call; no wrapper-owned mutation",
+        "mutationOwnership": "all package-owned durable mutation occurs inside the same-family current resume proof; adapter effects remain explicit no-credit assumptions"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "file": "experiments/tla-conformance/external-membership-rehearsal-r35/migration-resume.expected.ts.txt",
+      "sha256": "9a6fbe608d6b248c78f0bb830d54917fcd8367956cfd7481bcd9735d43c0f8a7"
+    },
+    {
+      "file": "experiments/tla-conformance/migration-r5/migration-manifest-storage-protocol-proof-r139.ts",
+      "sha256": "49a27b7dae5f734f8e4a839d0fb6f0784c279a309fb0418c21c7bd6488c2f7ec"
+    },
+    {
+      "file": "experiments/tla-conformance/migration-recovery-r17/repair.expected.ts.txt",
+      "sha256": "86994859e0a1ff2caed46e307076fb27ab6297fe9f58cc0fb3e32349140e80b2"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/downstream43-current/current-authorities.mjs",
+      "sha256": "490915f73e470e54a8b4c3893dcc1cbbd236803b895e6efb7da1874c95b03be3"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/downstream43-current/migration-wrappers-current.mjs",
+      "sha256": "6a5095e0966df781bf896593b71ec6c4b98da81b10cbf6993c7509b9504ba198"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/migration-manifest-current/producer-certificate.json",
+      "sha256": "8b54513e42135866516381b03aaa6f4a5bb21070e591845c5aaedfa2404c637b"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/migration-manifest-current/protocol-observations.ndjson",
+      "sha256": "55b2fea31c2832943b31b209705faec5da408754f80aaf486807f56177a6e424"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/migration-manifest-current/publish-bridge-observations.ndjson",
+      "sha256": "e7130adf140dce404cda8977b17d94abb91139c864cffa10d54c6d68a1f31c15"
+    },
+    {
+      "file": "formal/SnapshotSupersededWorkflow.cfg",
+      "sha256": "2ba66c115dfd39ea799e2f7f684bce866530bdb948b6d2aeda6fbfbf02add2b5"
+    },
+    {
+      "file": "formal/SnapshotSupersededWorkflow.tla",
+      "sha256": "f8df9e18844ebcbb23fa851a38ce48bd089157864d17c9533583de584e292aa2"
+    },
+    {
+      "file": "src/allocation.ts",
+      "sha256": "2721b6f412aa3abb55ffa9d929eaefc2d8982973c4ee862479b3af9988d3112d"
+    },
+    {
+      "file": "src/amounts.ts",
+      "sha256": "98ddc0fa8d80b2ca244a207f4eb8b55d86131c2ccfd77620da5c85248d03ef57"
+    },
+    {
+      "file": "src/authority-cutover.ts",
+      "sha256": "009c9a609221b5a276fe494a9fb6c059e02c2634d3a4a5e1cd997047b3b4b1c1"
+    },
+    {
+      "file": "src/authority.ts",
+      "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+    },
+    {
+      "file": "src/availability.ts",
+      "sha256": "b029f2b17c1c0f8a3923969e2cd30b57b0af3a185d1391fdb8aa3895c3de83c8"
+    },
+    {
+      "file": "src/canonical.ts",
+      "sha256": "eb2981c629182525c6742d2a67f513f0daec88507e5861f475d5de04984a2d56"
+    },
+    {
+      "file": "src/catalog-lifecycle.ts",
+      "sha256": "8a97eb13db1d8dfb9503a60c6075984e93792ace1abb473a70ac8221809c5096"
+    },
+    {
+      "file": "src/catalog.ts",
+      "sha256": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56"
+    },
+    {
+      "file": "src/collections.ts",
+      "sha256": "c18dd56e7167b25239fb825319ce2ae2d736f8d9cbe70296201ab675228daf37"
+    },
+    {
+      "file": "src/commands.ts",
+      "sha256": "c40c66fc3e5d3e60022534a561d44280cda205f3cc10be759f8efdc97038a98b"
+    },
+    {
+      "file": "src/composition.ts",
+      "sha256": "87d7e004cc2432587c82a238cd2fd9976a3d1f8850771365168e5d33ba6cb24c"
+    },
+    {
+      "file": "src/coordinator.ts",
+      "sha256": "4bc44f2c38578991a137d9e363b7677c23a788dd9cc5c4129074f1a95a14e3a2"
+    },
+    {
+      "file": "src/corrections.ts",
+      "sha256": "0c3e11dc88a035aa89598cffb54d538b1c6cc4280ed5d27bd7bf67e9d5757183"
+    },
+    {
+      "file": "src/counts.ts",
+      "sha256": "5db9ad8d5a6f1a82c594562b66f4be7c677d17bd31d9d10afb11eae781d78f13"
+    },
+    {
+      "file": "src/deficits.ts",
+      "sha256": "6dee9447ad000ae2f9576aed35f80d1ad1bdae753f4802c4104db2f2712d2819"
+    },
+    {
+      "file": "src/digest.ts",
+      "sha256": "5fa667c59dd65a667d8cceddd9bf8c25eb46d3787a22ad7db797fd3722d5f833"
+    },
+    {
+      "file": "src/events.ts",
+      "sha256": "8d076ee8f426c011d7df3f205dd014f0e835f71798b3684ca56844b691ba2370"
+    },
+    {
+      "file": "src/facade.ts",
+      "sha256": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d"
+    },
+    {
+      "file": "src/fungibility.ts",
+      "sha256": "483741a2e0f8e3cdf38e358929cce5f8b29ffb41494b1268cafa1d38a2197344"
+    },
+    {
+      "file": "src/index.ts",
+      "sha256": "2e0587666ff20d57a757c0576fddf8badf36c2901735db7225a0cebda829b555"
+    },
+    {
+      "file": "src/integrity.ts",
+      "sha256": "238ccd616e791b60b523b89517479585f2d9aabe83198464a44f654cd7058037"
+    },
+    {
+      "file": "src/kernel.ts",
+      "sha256": "f336d22a07d6018dc5528bd2a13a33c5aa9f1a72b0c0ed048cb73219b9b0c06c"
+    },
+    {
+      "file": "src/measurement-schema.ts",
+      "sha256": "747f064996c12b3a9b324779bd748362b49b2563e303b2599243bc8a630d144e"
+    },
+    {
+      "file": "src/measurements.ts",
+      "sha256": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5"
+    },
+    {
+      "file": "src/migration-evidence.ts",
+      "sha256": "8d8f6dd0b6a83546633e5c360a1769e9a49ff8708f3737e14a79fa965604d037"
+    },
+    {
+      "file": "src/migration-plugin.ts",
+      "sha256": "4b271d6398ba1b0eeb4a5b1cb48523a062f9bcf1c5b427755ec5e1f0fdebe5e6"
+    },
+    {
+      "file": "src/migrations-api.ts",
+      "sha256": "0d1358ee90d4b39d3b59da0d27dcb9798e5699e02bbba325132f734c1322fed1"
+    },
+    {
+      "file": "src/migrations.ts",
+      "sha256": "0e837a12fa171f3029b3931f0c2c0d12d83edbd4b12d86e9ec810ec7ede77384"
+    },
+    {
+      "file": "src/model.ts",
+      "sha256": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122"
+    },
+    {
+      "file": "src/ordering.ts",
+      "sha256": "e72ac94e99b1b4914f3f6dec55583e401484a41ecadd051be788724c88f24cb9"
+    },
+    {
+      "file": "src/picking.ts",
+      "sha256": "172dc19f4987ad392106a1b9cf32400e73f5bed0fb6b9344aa5eb1319afc5006"
+    },
+    {
+      "file": "src/projection.ts",
+      "sha256": "f2a9747cfc7c63615347c48383ae7f58ee7df007411cc8de3dd5bb6afaca21d5"
+    },
+    {
+      "file": "src/quantity.ts",
+      "sha256": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6"
+    },
+    {
+      "file": "src/read-model.ts",
+      "sha256": "8b1db302ecf22895f1d6458a8be27ec606066e88fd77ebba0cfadbd0452a97f4"
+    },
+    {
+      "file": "src/reservations.ts",
+      "sha256": "fd0bfe707583a7952e4301cafd9ab5d702059b9174f18b5c5e30ae0d6cf85113"
+    },
+    {
+      "file": "src/selectors.ts",
+      "sha256": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957"
+    },
+    {
+      "file": "src/sparse-record.ts",
+      "sha256": "272a1f63afe9ed4c84cd76a4ce051b210b52e6e0a54cf47ec4f11a29979ada71"
+    },
+    {
+      "file": "src/storage-api.ts",
+      "sha256": "9d135bd7c1925f3b7ab533a45958e57287383f4016e7077e8ede2c35144202b1"
+    },
+    {
+      "file": "src/storage.ts",
+      "sha256": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d"
+    },
+    {
+      "file": "src/traceability-replay.ts",
+      "sha256": "3bef97ca89c6530721b2552089e124c3a8943b5a0ceea8b799aaccd79c629c0b"
+    },
+    {
+      "file": "src/traceability.ts",
+      "sha256": "7db0c39cb3262339e76790a7ba10569d67d205ab84f1adb078b6b6d95e93a59c"
+    },
+    {
+      "file": "src/transfers.ts",
+      "sha256": "2dc34bdb44557cbe45d0b88091c7f4d0e4f6bcd44bbbe8430b61d51e43910833"
+    },
+    {
+      "file": "src/usability.ts",
+      "sha256": "bb4cf272fd01be5c4866b388f2af63e9fdd7286c208600fb635ca10d30f0ad51"
+    },
+    {
+      "file": "src/world.ts",
+      "sha256": "2f1bd43c85fcdda332ad16ebdb73d367b0ed502a7145c085c7a7433ff26063c1"
+    }
+  ]
+}

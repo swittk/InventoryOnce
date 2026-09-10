@@ -1,0 +1,658 @@
+{
+  "schemaVersion": 1,
+  "proofKind": "surface-residual-composition-open-complete-value-v1",
+  "surfaceDigest": "ec078013972d9ee2b4ba84d28cfa7449a18dc29679d81766e314db6a6139b81e",
+  "domain": "Every input admitted by CreateInventoryCompositionOpenEventInput. Complete public control flow and all eleven private helper equations are independently frozen, including package-count rejection, source-package/item consistency, output placement validation, lot inheritance/explicit-lot rules, genealogy ambiguity, amount scaling, output placement and audit metadata. Exact external Catalog, Identity, Quantity and TransformationEvent semantics are rederived from their already-certified families; no sampled fixtures or bounded composition oracle are used.",
+  "allAdmittedInputs": true,
+  "sampledInputs": 0,
+  "producerGraphRuns": 0,
+  "producerReplayRuns": 0,
+  "inputs": [
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-published-source-contracts.mjs",
+      "sha256": "d05ecad078de891073c82f4c523090382b608204269281464ca9a325ca3208b2"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-published-source-equations.mjs",
+      "sha256": "243e06ade88446247ab26d1bcec53fb70cccab6c5929f2013dc2aa995ae73ce8"
+    },
+    {
+      "file": "experiments/tla-conformance/catalog-foundation-r7/contracts.mjs",
+      "sha256": "e6efabb603807c5728d958ced0a5ce671e41249e0342bf22db55494ea253b504"
+    },
+    {
+      "file": "experiments/tla-conformance/catalog-foundation-r7/equations.expected.ts.txt",
+      "sha256": "a880afa7fc5a707bff3052d07e0504f878acf4f463c6e760f33e558f33e81bb3"
+    },
+    {
+      "file": "experiments/tla-conformance/catalog-foundation-r7/family.mjs",
+      "sha256": "932cb060a2dff23d2866849c925ac1c5ce5e028533f875e8cc125fcfb2feee76"
+    },
+    {
+      "file": "experiments/tla-conformance/catalog-foundation-r7/normalize.mjs",
+      "sha256": "7675175f5f4cd88f853a3b49530bbb4e1e625112fd3bd45786ff81210a9fee26"
+    },
+    {
+      "file": "experiments/tla-conformance/identity-values-r7/contracts.mjs",
+      "sha256": "dea23f4b3f929ac1bcf9b50cd41517c1b3fc4e3d879904aa6c4d83263ba7b2ce"
+    },
+    {
+      "file": "experiments/tla-conformance/identity-values-r7/equations.ts.txt",
+      "sha256": "f4b3b7a3fa1dbf3338f295c3d97f73cf753cba7741d69f272e91db7fa5079844"
+    },
+    {
+      "file": "experiments/tla-conformance/identity-values-r7/family.mjs",
+      "sha256": "493486e43054dd4613091e973558f2c0463e96ff83347080a3f32e636dde6709"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/certificate.mjs",
+      "sha256": "8099926f527d391571e57c0828a27f24c57d4a7b59843684f9bda4c69f50cb26"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/contracts.mjs",
+      "sha256": "e45e82682ab647b80c0897e666b5b5b6b84f6cac990c785a925f307cabc7c239"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/equations.expected.ts.txt",
+      "sha256": "3e00aeaaeaf11b516fdf3418a8c227dbb053cce05038863d7d41addbd2c158d8"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/event-values/catalog-foundation-dependency-reference.json",
+      "sha256": "effc1d2115804978862d64cb155a44ef276515beb289e011809882641f7baf8d"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/event-values/certificate.mjs",
+      "sha256": "db0ad0a8e79777a6fe2b2e6fabfd550a87486d784aaf966b089f537dab505881"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/event-values/contracts.mjs",
+      "sha256": "acfd4139f5251ebf7a4aa85d5b464c70904c96fdf53964f7cb619a25d51f092c"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/event-values/equations.expected.ts.txt",
+      "sha256": "d2fcad75ea97d835a070a51367e7458bd596d098e56d82d639fdbcd318ef84e3"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/event-values/registered-family-adapter.mjs",
+      "sha256": "e9ab67e6ac85cccce060b1b047c890593270222bab6184c076ab1596588116d8"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/quantity-values-certificate.json",
+      "sha256": "446f80ae24e8b146839e27e31667d0a533db4d04cf202002354866cd6a2f7599"
+    },
+    {
+      "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/sparse-record-certificate.json",
+      "sha256": "408f9d834cb0f58153d6af9b0b3a7149163f45d6dca390a42b3d16f5c8c44d48"
+    },
+    {
+      "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/sparse-record-certificate.mjs",
+      "sha256": "87d1873ad8385aa4a2672500d083810bc6c7c877d1885471effb76309ea105b4"
+    },
+    {
+      "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/composition-core.mjs",
+      "sha256": "1aef38e779b282cda82722dc41936a05afdf4bbcd1b79c79c8495af36372e856"
+    },
+    {
+      "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/expected/composition-current.ts.txt",
+      "sha256": "1a7d58e1ad4b7dcf82b25f0efb0e86c6ab4801c106437ce0d4d2a8cef35276f5"
+    },
+    {
+      "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/transition.mjs",
+      "sha256": "5de47c3cdba5527995921bc571abbe52e147b8010b5d4bc48e1b7df582a8fbe1"
+    },
+    {
+      "file": "experiments/tla-conformance/r161-r149-full7-peer/family.mjs",
+      "sha256": "c006ee2f62e4221d529f561302c5154111e4f10b3138a994a16150d62f5b8a1e"
+    },
+    {
+      "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+      "sha256": "8d8854032e38a0df1044e5596c66d9a2b672277f357e361102b0b12c3d6952a0"
+    },
+    {
+      "file": "experiments/tla-conformance/surface-residual-r8/pure-residual5-r10/composition-open.expected.ts.txt",
+      "sha256": "bc20b28f291f36750fe7369b769702652fce7a7d1af93a8450eb76eb3c8674d2"
+    },
+    {
+      "file": "experiments/tla-conformance/throughput-r7/registered-value-family.mjs",
+      "sha256": "1926bfc82e8cc608904d8a2785c2ae6775d2905186b4d9fb8b137a0696b821b3"
+    },
+    {
+      "file": "experiments/tla-conformance/value-contracts/catalog-family.mjs",
+      "sha256": "32439d061232e266f53acd3b33025b97b172769ffe418964319177b8041cab9a"
+    },
+    {
+      "file": "experiments/tla-conformance/value-contracts/surface-binding.mjs",
+      "sha256": "619b37fe3a9bc9be22e8a0c2167187cfce987c7856280c6df0c36c5a230c3618"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2015.collection.d.ts",
+      "sha256": "dc2df20b1bcdc8c2d34af4926e2c3ab15ffe1160a63e58b7e09833f616efff44"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2015.core.d.ts",
+      "sha256": "c57796738e7f83dbc4b8e65132f11a377649c00dd3eee333f672b8f0a6bea671"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2015.iterable.d.ts",
+      "sha256": "0559b1f683ac7505ae451f9a96ce4c3c92bdc71411651ca6ddb0e88baaaad6a3"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2015.symbol.wellknown.d.ts",
+      "sha256": "fb0f136d372979348d59b3f5020b4cdb81b5504192b1cacff5d1fbba29378aa1"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2017.string.d.ts",
+      "sha256": "2f11ff796926e0832f9ae148008138ad583bd181899ab7dd768a2666700b1893"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2020.bigint.d.ts",
+      "sha256": "d6d7ae4d1f1f3772e2a3cde568ed08991a8ae34a080ff1151af28b7f798e22ca"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2022.error.d.ts",
+      "sha256": "0a3d63ef2b853447ec4f749d3f368ce642264246e02911fcb1590d8c161b8005"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
+      "sha256": "c430d44666289dae81f30fa7b2edebf186ecc91a2d4c71266ea6ae76388792e1"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2015.collection.d.ts",
+      "sha256": "dc2df20b1bcdc8c2d34af4926e2c3ab15ffe1160a63e58b7e09833f616efff44"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2015.core.d.ts",
+      "sha256": "c57796738e7f83dbc4b8e65132f11a377649c00dd3eee333f672b8f0a6bea671"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2015.iterable.d.ts",
+      "sha256": "0559b1f683ac7505ae451f9a96ce4c3c92bdc71411651ca6ddb0e88baaaad6a3"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2016.array.include.d.ts",
+      "sha256": "d15bea3d62cbbdb9797079416b8ac375ae99162a7fba5de2c6c505446486ac0a"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2017.string.d.ts",
+      "sha256": "2f11ff796926e0832f9ae148008138ad583bd181899ab7dd768a2666700b1893"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2020.bigint.d.ts",
+      "sha256": "d6d7ae4d1f1f3772e2a3cde568ed08991a8ae34a080ff1151af28b7f798e22ca"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2022.error.d.ts",
+      "sha256": "0a3d63ef2b853447ec4f749d3f368ce642264246e02911fcb1590d8c161b8005"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es5.d.ts",
+      "sha256": "c430d44666289dae81f30fa7b2edebf186ecc91a2d4c71266ea6ae76388792e1"
+    },
+    {
+      "file": "node_modules/typescript/package.json",
+      "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+    },
+    {
+      "file": "package.json",
+      "sha256": "f068ac4f83c2984a38d439b90159e48b7fdf42ee4792f7ccde56230c7ecf1a7c"
+    },
+    {
+      "file": "src/amounts.ts",
+      "sha256": "98ddc0fa8d80b2ca244a207f4eb8b55d86131c2ccfd77620da5c85248d03ef57"
+    },
+    {
+      "file": "src/canonical.ts",
+      "sha256": "eb2981c629182525c6742d2a67f513f0daec88507e5861f475d5de04984a2d56"
+    },
+    {
+      "file": "src/catalog.ts",
+      "sha256": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56"
+    },
+    {
+      "file": "src/commands.ts",
+      "sha256": "c40c66fc3e5d3e60022534a561d44280cda205f3cc10be759f8efdc97038a98b"
+    },
+    {
+      "file": "src/composition.ts",
+      "sha256": "87d7e004cc2432587c82a238cd2fd9976a3d1f8850771365168e5d33ba6cb24c"
+    },
+    {
+      "file": "src/digest.ts",
+      "sha256": "5fa667c59dd65a667d8cceddd9bf8c25eb46d3787a22ad7db797fd3722d5f833"
+    },
+    {
+      "file": "src/events.ts",
+      "sha256": "8d076ee8f426c011d7df3f205dd014f0e835f71798b3684ca56844b691ba2370"
+    },
+    {
+      "file": "src/facade.ts",
+      "sha256": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d"
+    },
+    {
+      "file": "src/index.ts",
+      "sha256": "2e0587666ff20d57a757c0576fddf8badf36c2901735db7225a0cebda829b555"
+    },
+    {
+      "file": "src/kernel.ts",
+      "sha256": "f336d22a07d6018dc5528bd2a13a33c5aa9f1a72b0c0ed048cb73219b9b0c06c"
+    },
+    {
+      "file": "src/measurements.ts",
+      "sha256": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5"
+    },
+    {
+      "file": "src/model.ts",
+      "sha256": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122"
+    },
+    {
+      "file": "src/ordering.ts",
+      "sha256": "e72ac94e99b1b4914f3f6dec55583e401484a41ecadd051be788724c88f24cb9"
+    },
+    {
+      "file": "src/projection.ts",
+      "sha256": "3710cbc322d4bc3e495e3023a7146e72996a95cc21e92c7a0a6a8f1e20bfc0da"
+    },
+    {
+      "file": "src/quantity.ts",
+      "sha256": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6"
+    },
+    {
+      "file": "src/selectors.ts",
+      "sha256": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957"
+    },
+    {
+      "file": "src/sparse-record.ts",
+      "sha256": "272a1f63afe9ed4c84cd76a4ce051b210b52e6e0a54cf47ec4f11a29979ada71"
+    },
+    {
+      "file": "src/usability.ts",
+      "sha256": "bb4cf272fd01be5c4866b388f2af63e9fdd7286c208600fb635ca10d30f0ad51"
+    },
+    {
+      "file": "tsconfig.json",
+      "sha256": "b46c6324e4819ea54c9824d2e0f4c28f9304aa54e39d7f8afbac65f744eed464"
+    }
+  ],
+  "proofs": [
+    {
+      "surfaceKey": "export:./kernel#createInventoryCompositionOpenEvent::call[0]",
+      "signatureHash": "6776e7a6e34b4e1293f5d3e758dc9f9dcba1b9a93d5556d349b5bb764e7c3621",
+      "declaration": {
+        "file": "src/composition.ts",
+        "start": {
+          "offset": 7372,
+          "line": 187,
+          "column": 1
+        },
+        "end": {
+          "offset": 10097,
+          "line": 264,
+          "column": 2
+        },
+        "sourceHash": "87d7e004cc2432587c82a238cd2fd9976a3d1f8850771365168e5d33ba6cb24c",
+        "astHash": "3a9675ba78483dfde4b47f66d959b8f78280fde2a3951fde4a7031e785008b68"
+      },
+      "semantics": {
+        "completeExpectedTerm": {
+          "label": "createInventoryCompositionOpenEvent",
+          "normalizedTermSha256": "f4d7152f5a9228058231d130bc4e4257b279fc308495b2b24382fcf28c7021c9",
+          "completeBranchesChecked": true,
+          "allValidatedInputs": true,
+          "sampledInputs": 0
+        },
+        "privateEquations": [
+          {
+            "label": "createCompositionOutputLine",
+            "normalizedTermSha256": "60a9eb982dddb3e3e3a27607116fdb14029e681d92eb7914ba7ca442cde5ef52",
+            "completeBranchesChecked": true,
+            "allValidatedInputs": true,
+            "sampledInputs": 0
+          },
+          {
+            "label": "compositionOutputAmount",
+            "normalizedTermSha256": "84dfd3bbd1a57cb44586897af4c9dec92bb755bd440e6777bf5cca0b166ecc2c",
+            "completeBranchesChecked": true,
+            "allValidatedInputs": true,
+            "sampledInputs": 0
+          },
+          {
+            "label": "compositionOutputPosition",
+            "normalizedTermSha256": "6ce2ce6d1235800738601e4efe3e347c7452ea9624546f53335f2b9ef88446b8",
+            "completeBranchesChecked": true,
+            "allValidatedInputs": true,
+            "sampledInputs": 0
+          },
+          {
+            "label": "compositionOutputLotId",
+            "normalizedTermSha256": "b04198c9eab66b2b381f83d44fe2666f1061b8b9c020c0b80b09d9b44b42cb24",
+            "completeBranchesChecked": true,
+            "allValidatedInputs": true,
+            "sampledInputs": 0
+          },
+          {
+            "label": "compositionOutputLotMetadata",
+            "normalizedTermSha256": "88d673c08cb0bf39d8261157c8aecfe8faf648f3dbcfe351632f987953fd03c4",
+            "completeBranchesChecked": true,
+            "allValidatedInputs": true,
+            "sampledInputs": 0
+          },
+          {
+            "label": "currentSourceLot",
+            "normalizedTermSha256": "ab738b6771745b1b0eb967ae322c916fdf3d078914b82e82c3a998fcd22dcaa6",
+            "completeBranchesChecked": true,
+            "allValidatedInputs": true,
+            "sampledInputs": 0
+          },
+          {
+            "label": "compositionTraceabilityNode",
+            "normalizedTermSha256": "96ad5b8ba97f0857d77de7e8bc960e436dc3efde4ff6a7b333169ce8280cc3aa",
+            "completeBranchesChecked": true,
+            "allValidatedInputs": true,
+            "sampledInputs": 0
+          },
+          {
+            "label": "assertKnownCompositionPlacements",
+            "normalizedTermSha256": "f065544e6d9f038d4b4d1006dc932efd244f1e904191cefe8c4270f3852ca99f",
+            "completeBranchesChecked": true,
+            "allValidatedInputs": true,
+            "sampledInputs": 0
+          },
+          {
+            "label": "assertCompositionPlacementFields",
+            "normalizedTermSha256": "d326ba7b8b3d8893bd7998e17da52e0aa2090320e86518ce77d13072f3b63039",
+            "completeBranchesChecked": true,
+            "allValidatedInputs": true,
+            "sampledInputs": 0
+          },
+          {
+            "label": "compositionEventMetadata",
+            "normalizedTermSha256": "261419c03e81523f3b1112595ef07c4371d94abb2833945c90e57b821a0641d7",
+            "completeBranchesChecked": true,
+            "allValidatedInputs": true,
+            "sampledInputs": 0
+          },
+          {
+            "label": "compositionOutputEvidence",
+            "normalizedTermSha256": "9585036812384d05311d5307191c4bba9c33434a66cfea028d6706807fbee56b",
+            "completeBranchesChecked": true,
+            "allValidatedInputs": true,
+            "sampledInputs": 0
+          }
+        ],
+        "supportingValues": {
+          "InventoryCompositionOutputAmountKind": {
+            "Measured": "measured",
+            "Package": "package"
+          },
+          "InventoryCompositionOutputLotPolicy": {
+            "None": "none",
+            "InheritSource": "inherit-source",
+            "InheritSourceWhenPresent": "inherit-source-when-present",
+            "Explicit": "explicit"
+          },
+          "InventoryTrackingRequirement": {
+            "Forbidden": "forbidden",
+            "Optional": "optional",
+            "Required": "required"
+          },
+          "InventoryTraceabilityNodeKind": {
+            "Serial": "serial",
+            "Container": "container",
+            "Lot": "lot",
+            "External": "external"
+          }
+        },
+        "dependencyReceipts": [
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:.#inventoryMeasuredAmountFromVector::call[0]",
+            "signatureHash": "17a68a837634243aa3fbb672349d0b570e3827450c33fae7fa782a8424ab1458",
+            "declaration": {
+              "file": "src/amounts.ts",
+              "start": {
+                "offset": 5781,
+                "line": 151,
+                "column": 1
+              },
+              "end": {
+                "offset": 6405,
+                "line": 168,
+                "column": 2
+              },
+              "sourceHash": "98ddc0fa8d80b2ca244a207f4eb8b55d86131c2ccfd77620da5c85248d03ef57",
+              "astHash": "507e71859006c4cb8ebb4edcdfab46ac243551ea9eb2b4ce36b96ba895b59d37"
+            },
+            "semanticIdentity": "src/amounts.ts#inventoryMeasuredAmountFromVector"
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:.#packageAmount::call[0]",
+            "signatureHash": "c6a06a3825c2c2ef5ce5514813abf3ca6addc6e09cf382dff3e2f5ddbeb6988e",
+            "declaration": {
+              "file": "src/amounts.ts",
+              "start": {
+                "offset": 6474,
+                "line": 171,
+                "column": 1
+              },
+              "end": {
+                "offset": 7074,
+                "line": 189,
+                "column": 2
+              },
+              "sourceHash": "98ddc0fa8d80b2ca244a207f4eb8b55d86131c2ccfd77620da5c85248d03ef57",
+              "astHash": "da39c4b97f5d379a1960e5e1f05f205e1ac6c0d16104a8ece26152b0ccda2d63"
+            },
+            "semanticIdentity": "src/amounts.ts#packageAmount"
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:.#inventoryLotIdentity::call[0]",
+            "signatureHash": "f3ddaa707fed15992f39320475d2ef995221a840c6151ec116c3b263905d9246",
+            "declaration": {
+              "file": "src/model.ts",
+              "start": {
+                "offset": 5064,
+                "line": 120,
+                "column": 1
+              },
+              "end": {
+                "offset": 5276,
+                "line": 124,
+                "column": 2
+              },
+              "sourceHash": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
+              "astHash": "8a89acef89e02b25eb172b43b2fc35c9a0fa0759cd09c1e9676b72f408f30e91"
+            },
+            "semanticIdentity": "src/model.ts#inventoryLotIdentity"
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#inventoryTraceabilityNodeIdentity::call[0]",
+            "signatureHash": "8f022d5a12dbe83d80447da3798fed75c1b76cdc5237fe4888eaef8d56d22d3a",
+            "declaration": {
+              "file": "src/model.ts",
+              "start": {
+                "offset": 10486,
+                "line": 256,
+                "column": 1
+              },
+              "end": {
+                "offset": 11185,
+                "line": 271,
+                "column": 2
+              },
+              "sourceHash": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
+              "astHash": "64c3736fb3fd8cabb77f634e68296d13877a7b9046c0fc85e1bc7ec504df2020"
+            },
+            "semanticIdentity": "src/model.ts#inventoryTraceabilityNodeIdentity"
+          },
+          {
+            "family": "quantity",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "surfaceKey": "export:.#inventoryMeasurementsFingerprint::call[0]",
+            "signatureHash": "db867a64ae65bc8796b02dc59514736a90f10789a835f45e29aaea0cf87dd6eb",
+            "declaration": {
+              "file": "src/measurements.ts",
+              "start": {
+                "offset": 12087,
+                "line": 329,
+                "column": 1
+              },
+              "end": {
+                "offset": 12325,
+                "line": 336,
+                "column": 2
+              },
+              "sourceHash": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5",
+              "astHash": "5830091c0d614f41e71bff542dd4fcc2113f89e5538fb2ffe58980401fd6ce91"
+            },
+            "semanticIdentity": null
+          },
+          {
+            "family": "quantity",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "surfaceKey": "export:.#multiplyInventoryMeasurementsByWholeNumber::call[0]",
+            "signatureHash": "fdb2f381cbeb15e03c7a755d71628c7ffdf5db7e3c05b210021e7f9abaa0474b",
+            "declaration": {
+              "file": "src/measurements.ts",
+              "start": {
+                "offset": 9896,
+                "line": 273,
+                "column": 1
+              },
+              "end": {
+                "offset": 10647,
+                "line": 292,
+                "column": 2
+              },
+              "sourceHash": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5",
+              "astHash": "14d7e8b21fe8f9f1dcfe73c6304c3e2c7da383885982a24f36f1556d9b83cb3b"
+            },
+            "semanticIdentity": null
+          },
+          {
+            "family": "catalog",
+            "proofKind": "independent-catalog-snapshot-closed-equations-v1",
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.itemRevision::call[0]",
+            "signatureHash": "d41fb26bbd9d81122bf2187a22667b2b5efd5813c20af70380d1b54c864966c5",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 66198,
+                "line": 1575,
+                "column": 3
+              },
+              "end": {
+                "offset": 66453,
+                "line": 1580,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "ed486f2e0f9444fa04e761884a3ad98049e510f5c155279e93f0eb0def14f13b"
+            },
+            "semanticIdentity": null
+          },
+          {
+            "family": "catalog",
+            "proofKind": "independent-catalog-snapshot-closed-equations-v1",
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.packagingRevision::call[0]",
+            "signatureHash": "5dd6711cbc44d5431b8fc99e9971742928de303eb3ffe2f67c58f31c716e2141",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 66918,
+                "line": 1594,
+                "column": 3
+              },
+              "end": {
+                "offset": 67208,
+                "line": 1600,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "252017c83dce2889e9e24724c8c34097c8134c07a9fe9cef02135c71d52caa4e"
+            },
+            "semanticIdentity": null
+          },
+          {
+            "family": "catalog",
+            "proofKind": "independent-catalog-snapshot-closed-equations-v1",
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.compositionForSourcePackagingRevision::call[0]",
+            "signatureHash": "328ee7f0ee40d8c49c9e0681bdb30040e0397062c2080c1e00b33f4c70f37053",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 68171,
+                "line": 1629,
+                "column": 3
+              },
+              "end": {
+                "offset": 68588,
+                "line": 1640,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "004a12c902aa876ea98c44565c0d41aa8ca6e3cc68b1eaa225a32582c076fa59"
+            },
+            "semanticIdentity": null
+          },
+          {
+            "family": "event",
+            "proofKind": "inventoryonce-event-replacement-complete-source-equations-v1",
+            "surfaceKey": "export:./kernel#createInventoryTransformationEvent::call[0]",
+            "signatureHash": "cf671e425803e6c3ff1471bb6be6728a9954e5c91a4ae741f0ceec8c9aecfde3",
+            "declaration": {
+              "file": "src/commands.ts",
+              "start": {
+                "offset": 36121,
+                "line": 946,
+                "column": 1
+              },
+              "end": {
+                "offset": 38826,
+                "line": 1020,
+                "column": 2
+              },
+              "sourceHash": "c40c66fc3e5d3e60022534a561d44280cda205f3cc10be759f8efdc97038a98b",
+              "astHash": "2351d98eb0f78d38561b1b870455193f47a4f5a56100f05be7339ad2c9605edb"
+            },
+            "semanticIdentity": "src/commands.ts#createInventoryTransformationEvent"
+          }
+        ],
+        "languagePrimitives": [
+          "Number.isSafeInteger",
+          "Object.keys",
+          "Object.entries",
+          "Set",
+          "encodeURIComponent"
+        ]
+      }
+    }
+  ],
+  "currentization": {
+    "schemaVersion": 1,
+    "group": "composition",
+    "sourceBase": "6cafd49ff4b3729f80ae35d9fc0220f7a8a4b55a",
+    "surfaceDigest": "ec078013972d9ee2b4ba84d28cfa7449a18dc29679d81766e314db6a6139b81e",
+    "changedDeclarations": [
+      {
+        "id": "src/composition.ts#createInventoryCompositionOpenEvent",
+        "oldTermSha256": "252166a6f3a73226b682af82886bf75259a3bc2ab09e0b04784e732b8e000e1f",
+        "currentTermSha256": "f4d7152f5a9228058231d130bc4e4257b279fc308495b2b24382fcf28c7021c9"
+      }
+    ],
+    "unchangedDeclarations": 11,
+    "sparseRecordCertificate": {
+      "contentSha256": "4355a5d36f3d8972055df7652b2ba7c2af2001dd1d63bd907f3790e1b91715ef",
+      "laws": [
+        "src/sparse-record.ts#inventorySparseRecordHas",
+        "src/sparse-record.ts#inventorySparseRecordValue"
+      ]
+    }
+  }
+}

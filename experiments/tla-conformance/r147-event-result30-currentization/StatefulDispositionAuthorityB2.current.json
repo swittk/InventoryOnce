@@ -1,0 +1,858 @@
+{
+  "schemaVersion": 1,
+  "route": "REGISTERED_CERTIFIED_PRODUCER",
+  "proofKind": "stateful-facade-disposition-authority-current-b2-v1",
+  "family": "R147StatefulDispositionAuthorityB2CurrentSource",
+  "surfaceDigest": "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a",
+  "domain": "All arguments admitted by the twelve public one-dimension stock reclassification signatures. Each public wrapper is a complete source equation into the same commitReclassification helper; that helper builds exactly one already-strict createInventoryReclassificationEvent value and commits it through the already-strict durable commitInventoryOperation producer with ProtectClaims and no reservationDelta.",
+  "allAdmittedInputs": true,
+  "sampledInputs": 0,
+  "producerGraphRuns": 0,
+  "producerReplayRuns": 0,
+  "currentization": {
+    "sourceBase": "6cafd49ff4b3729f80ae35d9fc0220f7a8a4b55a",
+    "creditExpansion": false,
+    "historicalWholeProducerPreserved": true,
+    "sharedTransitionProofKind": "r134-current-event-result-sparse-lookup-equation-v1"
+  },
+  "inputs": [
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-published-source-contracts.mjs",
+      "sha256": "d05ecad078de891073c82f4c523090382b608204269281464ca9a325ca3208b2"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-published-source-equations.mjs",
+      "sha256": "243e06ade88446247ab26d1bcec53fb70cccab6c5929f2013dc2aa995ae73ce8"
+    },
+    {
+      "file": "experiments/tla-conformance/catalog-foundation-r7/contracts.mjs",
+      "sha256": "e6efabb603807c5728d958ced0a5ce671e41249e0342bf22db55494ea253b504"
+    },
+    {
+      "file": "experiments/tla-conformance/catalog-foundation-r7/equations.expected.ts.txt",
+      "sha256": "a880afa7fc5a707bff3052d07e0504f878acf4f463c6e760f33e558f33e81bb3"
+    },
+    {
+      "file": "experiments/tla-conformance/catalog-foundation-r7/family.mjs",
+      "sha256": "932cb060a2dff23d2866849c925ac1c5ce5e028533f875e8cc125fcfb2feee76"
+    },
+    {
+      "file": "experiments/tla-conformance/catalog-foundation-r7/normalize.mjs",
+      "sha256": "7675175f5f4cd88f853a3b49530bbb4e1e625112fd3bd45786ff81210a9fee26"
+    },
+    {
+      "file": "experiments/tla-conformance/clock-environment-contract-r32/clock-boundary.expected.ts.txt",
+      "sha256": "0a728ff2a722e271a4d87d6ddaf3ac5e37af09298efb7daf3d9d6736778bf68c"
+    },
+    {
+      "file": "experiments/tla-conformance/clock-environment-contract-r32/contract.mjs",
+      "sha256": "cfa9fb1e158f977c0be79a5db619fd974f0864230b2b9652a9afeaa5691d417d"
+    },
+    {
+      "file": "experiments/tla-conformance/clock-environment-contract-r32/runtime-evidence.json",
+      "sha256": "b7145e7938d7967bae336f96db03abd939f01bd3002f9976d9c3f7c2192ef00d"
+    },
+    {
+      "file": "experiments/tla-conformance/external-membership-rehearsal-r35/durable-helpers.expected.ts.txt",
+      "sha256": "8f5230bc5d1fdef45424ca86c506c881d46137045323d67c32449b11c1df940c"
+    },
+    {
+      "file": "experiments/tla-conformance/identity-values-r7/contracts.mjs",
+      "sha256": "dea23f4b3f929ac1bcf9b50cd41517c1b3fc4e3d879904aa6c4d83263ba7b2ce"
+    },
+    {
+      "file": "experiments/tla-conformance/identity-values-r7/equations.ts.txt",
+      "sha256": "f4b3b7a3fa1dbf3338f295c3d97f73cf753cba7741d69f272e91db7fa5079844"
+    },
+    {
+      "file": "experiments/tla-conformance/identity-values-r7/family.mjs",
+      "sha256": "493486e43054dd4613091e973558f2c0463e96ff83347080a3f32e636dde6709"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/certificate.mjs",
+      "sha256": "8099926f527d391571e57c0828a27f24c57d4a7b59843684f9bda4c69f50cb26"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/contracts.mjs",
+      "sha256": "e45e82682ab647b80c0897e666b5b5b6b84f6cac990c785a925f307cabc7c239"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/equations.expected.ts.txt",
+      "sha256": "3e00aeaaeaf11b516fdf3418a8c227dbb053cce05038863d7d41addbd2c158d8"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/event-values/catalog-foundation-dependency-reference.json",
+      "sha256": "e435dcb656e450807eaf7b642889879de4f10dd20967ad7732515e1d9463333f"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/event-values/certificate.mjs",
+      "sha256": "db0ad0a8e79777a6fe2b2e6fabfd550a87486d784aaf966b089f537dab505881"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/event-values/contracts.mjs",
+      "sha256": "1609151cfa525cda65407af221122a1b8db04e81482713aef227c4c0784efbd9"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/event-values/equations.expected.ts.txt",
+      "sha256": "d2fcad75ea97d835a070a51367e7458bd596d098e56d82d639fdbcd318ef84e3"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/event-values/registered-family-adapter.mjs",
+      "sha256": "e9ab67e6ac85cccce060b1b047c890593270222bab6184c076ab1596588116d8"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/quantity-values-certificate.json",
+      "sha256": "446f80ae24e8b146839e27e31667d0a533db4d04cf202002354866cd6a2f7599"
+    },
+    {
+      "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/event-result-current.json",
+      "sha256": "2e693f359c16a93a9853da5653378c77523ae19aed5d63f76acdbd415347ae87"
+    },
+    {
+      "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/event-result-current.mjs",
+      "sha256": "c6f80004c3dac2e23c9a6087feb6082cb2fba2339fd2003fcb67e654c25a7299"
+    },
+    {
+      "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/sparse-record-certificate.json",
+      "sha256": "6ecd861755e963798a2cd077813cd3c412997121b16e6f1cdea337baa2fe7815"
+    },
+    {
+      "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/sparse-record-certificate.mjs",
+      "sha256": "5a1c4bb5dc41ff18939471d54f430601e456f603fa9ebdebb09ac0414bd35a95"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/downstream43-current/commit-current.json",
+      "sha256": "052ae807f0da4706e361f6128c0812e98031811d128ac26717f96ffe8702757e"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/downstream43-current/commit-current.mjs",
+      "sha256": "07b32bae8f3818255dbfc4838e846c9aa0bf90d7f36630ec2a7159a474ea6277"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/downstream43-current/current-authorities.mjs",
+      "sha256": "490915f73e470e54a8b4c3893dcc1cbbd236803b895e6efb7da1874c95b03be3"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/downstream43-current/durable-helpers-current.json",
+      "sha256": "7a8cbc027f90433377ef57b1c96314026bc8cf293bfb3f04821b555724cc4339"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/downstream43-current/durable-helpers-current.mjs",
+      "sha256": "7b08dc1eb39a9e09cd322bb45b72f7092c2802c33b684195195bf07753194e9d"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-evidence.mjs",
+      "sha256": "cfb59838895c41ce731b8e2c479558f37eaf9d3dc02c09faa561b3fad2a102d5"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/checkpoint-equivalence.json",
+      "sha256": "32a2ecd9b082205521d74a7f8931a88a8a2458affae9213d9fe5d1cf72334aa3"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/material-observations.json",
+      "sha256": "6ecd0681b5331b3a25e56f223c86dbb776ab2e73775be1c2a1ff75ecf2cf6abe"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/original-next-reverse-report.json",
+      "sha256": "bba580102780bd342e4a95abfd161d11e174364300dbb2f01049e42f0034ab58"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/replay.json",
+      "sha256": "57e449b000a8bf54f24cb82c7794b4fd2da64db625ad87035cde8dd12bc3c066"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/surface-execution-v2.json",
+      "sha256": "5a0e02945de1f5b5dc1b82666fad9e1dd8f0bbf5db0f65bfe0212f385a36b698"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage26-current-bindings.json",
+      "sha256": "5764246f696787790bf3905cea6c492bf19f7b9c48e1d24f422a4ab603388793"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage26-current-receipt.json",
+      "sha256": "45f48215595cf127cdd829d53665d781a40819563edd78e45d23f6d1c0240fb6"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage26-portable-execution.json",
+      "sha256": "fb219eec761e6ea84cb51e29cac8558f22e7e38aff3d9e8202ae8ff864889c9b"
+    },
+    {
+      "file": "experiments/tla-conformance/r147-event-result30-currentization/family.mjs",
+      "sha256": "5f34d231ce0b07d76eb7ff478083f3cee1573a0864a76732f67a79e5de29023c"
+    },
+    {
+      "file": "experiments/tla-conformance/stateful-facade25-r9/family.mjs",
+      "sha256": "9dab108c572a55feb3bb0f78af3a024163e5a2f22e1742c6f018db7e3ada393a"
+    },
+    {
+      "file": "experiments/tla-conformance/storage-protocol-r7/export-original-graph.py",
+      "sha256": "4d0c333a156fd69961b541e02ed7e4debdbf73a89f57f54bd4ecdb4999175ff7"
+    },
+    {
+      "file": "experiments/tla-conformance/storage-protocol-r7/protocol-driver.ts",
+      "sha256": "98994791a982f916066b14e1e3b8658f2f05217c9d91ff056bdb0f6f116c2f32"
+    },
+    {
+      "file": "experiments/tla-conformance/storage-protocol-r7/replay.ts",
+      "sha256": "dc281134934bd249e41a3c2c5ad163771ef1f006141e8d0ca6cbd953e2351cf8"
+    },
+    {
+      "file": "experiments/tla-conformance/storage-protocol-r7/reverse-next.mjs",
+      "sha256": "d13d61fae13b63025195c3bd55d847b0229eb1417070f909843d02e0ab0b0b90"
+    },
+    {
+      "file": "experiments/tla-conformance/surface-bindings/lib/binding-checker.mjs",
+      "sha256": "4dd6bbf135ebb5a5da86b714e0d9b9d3550547a7df7b39aec1a471bf1ef3f88e"
+    },
+    {
+      "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+      "sha256": "8d8854032e38a0df1044e5596c66d9a2b672277f357e361102b0b12c3d6952a0"
+    },
+    {
+      "file": "experiments/tla-conformance/throughput-r7/evidence/event-values.json",
+      "sha256": "0f3b2942b93bed09c08ac34d66ee3297859592f1862d7afc44937f2b83857ab8"
+    },
+    {
+      "file": "experiments/tla-conformance/throughput-r7/evidence/queue-stateful-unique-b2-producer.json",
+      "sha256": "b4293190767ddc08a3256ed0aae7d1e706f9f45d1526983e78d072dba623580e"
+    },
+    {
+      "file": "experiments/tla-conformance/throughput-r7/evidence/transfer-correction-values.json",
+      "sha256": "9da6a2ded5592c1d054666369320f88cf7e12cd1e4858a0719174d7fc7d47c1d"
+    },
+    {
+      "file": "experiments/tla-conformance/throughput-r7/registered-producer-family.mjs",
+      "sha256": "e8c9fcbbf669de7a68a76984da27d179b81b49ccba4fe645faf50790405dd655"
+    },
+    {
+      "file": "experiments/tla-conformance/throughput-r7/registered-value-family.mjs",
+      "sha256": "1926bfc82e8cc608904d8a2785c2ae6775d2905186b4d9fb8b137a0696b821b3"
+    },
+    {
+      "file": "experiments/tla-conformance/value-contracts/catalog-family.mjs",
+      "sha256": "32439d061232e266f53acd3b33025b97b172769ffe418964319177b8041cab9a"
+    },
+    {
+      "file": "experiments/tla-conformance/value-contracts/surface-binding.mjs",
+      "sha256": "619b37fe3a9bc9be22e8a0c2167187cfce987c7856280c6df0c36c5a230c3618"
+    },
+    {
+      "file": "formal/InventoryOperation.cfg",
+      "sha256": "1b13f2a1df74c2c011462769e81796de8d9afd105fa1c39fb0a1ee85725c9718"
+    },
+    {
+      "file": "formal/InventoryOperation.tla",
+      "sha256": "f8e1901d7631f3113309b58e73f18dd9e9f2cc564b7c24a6b64755f8c45982ad"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2015.collection.d.ts",
+      "sha256": "dc2df20b1bcdc8c2d34af4926e2c3ab15ffe1160a63e58b7e09833f616efff44"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2015.core.d.ts",
+      "sha256": "c57796738e7f83dbc4b8e65132f11a377649c00dd3eee333f672b8f0a6bea671"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2015.iterable.d.ts",
+      "sha256": "0559b1f683ac7505ae451f9a96ce4c3c92bdc71411651ca6ddb0e88baaaad6a3"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2015.symbol.wellknown.d.ts",
+      "sha256": "fb0f136d372979348d59b3f5020b4cdb81b5504192b1cacff5d1fbba29378aa1"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2017.string.d.ts",
+      "sha256": "2f11ff796926e0832f9ae148008138ad583bd181899ab7dd768a2666700b1893"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2020.bigint.d.ts",
+      "sha256": "d6d7ae4d1f1f3772e2a3cde568ed08991a8ae34a080ff1151af28b7f798e22ca"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2022.error.d.ts",
+      "sha256": "0a3d63ef2b853447ec4f749d3f368ce642264246e02911fcb1590d8c161b8005"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
+      "sha256": "c430d44666289dae81f30fa7b2edebf186ecc91a2d4c71266ea6ae76388792e1"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2015.collection.d.ts",
+      "sha256": "dc2df20b1bcdc8c2d34af4926e2c3ab15ffe1160a63e58b7e09833f616efff44"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2015.core.d.ts",
+      "sha256": "c57796738e7f83dbc4b8e65132f11a377649c00dd3eee333f672b8f0a6bea671"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2015.iterable.d.ts",
+      "sha256": "0559b1f683ac7505ae451f9a96ce4c3c92bdc71411651ca6ddb0e88baaaad6a3"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2016.array.include.d.ts",
+      "sha256": "d15bea3d62cbbdb9797079416b8ac375ae99162a7fba5de2c6c505446486ac0a"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2017.string.d.ts",
+      "sha256": "2f11ff796926e0832f9ae148008138ad583bd181899ab7dd768a2666700b1893"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2020.bigint.d.ts",
+      "sha256": "d6d7ae4d1f1f3772e2a3cde568ed08991a8ae34a080ff1151af28b7f798e22ca"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2022.error.d.ts",
+      "sha256": "0a3d63ef2b853447ec4f749d3f368ce642264246e02911fcb1590d8c161b8005"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es5.d.ts",
+      "sha256": "c430d44666289dae81f30fa7b2edebf186ecc91a2d4c71266ea6ae76388792e1"
+    },
+    {
+      "file": "node_modules/typescript/package.json",
+      "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+    },
+    {
+      "file": "package.json",
+      "sha256": "f068ac4f83c2984a38d439b90159e48b7fdf42ee4792f7ccde56230c7ecf1a7c"
+    },
+    {
+      "file": "src/amounts.ts",
+      "sha256": "98ddc0fa8d80b2ca244a207f4eb8b55d86131c2ccfd77620da5c85248d03ef57"
+    },
+    {
+      "file": "src/canonical.ts",
+      "sha256": "eb2981c629182525c6742d2a67f513f0daec88507e5861f475d5de04984a2d56"
+    },
+    {
+      "file": "src/catalog.ts",
+      "sha256": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56"
+    },
+    {
+      "file": "src/commands.ts",
+      "sha256": "c40c66fc3e5d3e60022534a561d44280cda205f3cc10be759f8efdc97038a98b"
+    },
+    {
+      "file": "src/coordinator.ts",
+      "sha256": "4bc44f2c38578991a137d9e363b7677c23a788dd9cc5c4129074f1a95a14e3a2"
+    },
+    {
+      "file": "src/digest.ts",
+      "sha256": "5fa667c59dd65a667d8cceddd9bf8c25eb46d3787a22ad7db797fd3722d5f833"
+    },
+    {
+      "file": "src/events.ts",
+      "sha256": "8d076ee8f426c011d7df3f205dd014f0e835f71798b3684ca56844b691ba2370"
+    },
+    {
+      "file": "src/facade.ts",
+      "sha256": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d"
+    },
+    {
+      "file": "src/index.ts",
+      "sha256": "2e0587666ff20d57a757c0576fddf8badf36c2901735db7225a0cebda829b555"
+    },
+    {
+      "file": "src/integrity.ts",
+      "sha256": "238ccd616e791b60b523b89517479585f2d9aabe83198464a44f654cd7058037"
+    },
+    {
+      "file": "src/kernel.ts",
+      "sha256": "f336d22a07d6018dc5528bd2a13a33c5aa9f1a72b0c0ed048cb73219b9b0c06c"
+    },
+    {
+      "file": "src/measurements.ts",
+      "sha256": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5"
+    },
+    {
+      "file": "src/model.ts",
+      "sha256": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122"
+    },
+    {
+      "file": "src/ordering.ts",
+      "sha256": "e72ac94e99b1b4914f3f6dec55583e401484a41ecadd051be788724c88f24cb9"
+    },
+    {
+      "file": "src/projection.ts",
+      "sha256": "f2a9747cfc7c63615347c48383ae7f58ee7df007411cc8de3dd5bb6afaca21d5"
+    },
+    {
+      "file": "src/quantity.ts",
+      "sha256": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6"
+    },
+    {
+      "file": "src/selectors.ts",
+      "sha256": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957"
+    },
+    {
+      "file": "src/sparse-record.ts",
+      "sha256": "272a1f63afe9ed4c84cd76a4ce051b210b52e6e0a54cf47ec4f11a29979ada71"
+    },
+    {
+      "file": "src/storage.ts",
+      "sha256": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d"
+    },
+    {
+      "file": "src/usability.ts",
+      "sha256": "bb4cf272fd01be5c4866b388f2af63e9fdd7286c208600fb635ca10d30f0ad51"
+    },
+    {
+      "file": "tsconfig.json",
+      "sha256": "b46c6324e4819ea54c9824d2e0f4c28f9304aa54e39d7f8afbac65f744eed464"
+    }
+  ],
+  "proofs": [
+    {
+      "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.changeDispositionAuthority::call[0]",
+      "mode": "B",
+      "signatureHash": "9f3e6368086889ba0bce0e61cdad8c621f7bb86fd10d716847571ca409e2d390",
+      "declaration": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 59593,
+          "line": 1469,
+          "column": 3
+        },
+        "end": {
+          "offset": 59716,
+          "line": 1471,
+          "column": 40
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "c6b525d952fb357fc16713360f3622163b91228fea13de11c3dffc312e8bce3b"
+      },
+      "semantics": {
+        "historicalWholeProducer": {
+          "file": "experiments/tla-conformance/throughput-r7/evidence/queue-stateful-unique-b2-producer.json",
+          "sha256": "b4293190767ddc08a3256ed0aae7d1e706f9f45d1526983e78d072dba623580e",
+          "memberSha256": "c806c50aee0a282272f59e86b8a58ebeb85a7e96d36f422529aa977722217409",
+          "historicalProofKind": "stateful-facade-disposition-authority-current-b2-v1"
+        },
+        "sourceTransition": {
+          "kind": "R147_STATEFUL_BODY_EQUATIONS_PLUS_R134_EVENT_RESULT",
+          "publicEquations": [
+            {
+              "methodName": "changeStatus",
+              "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.changeStatus::call[0]",
+              "normalizedBodySha256": "3d9eb632e5a33f8446b06f06a88c8cf9cbb4eae40f33ca78b60be16229a7ba6f"
+            },
+            {
+              "methodName": "clearStatus",
+              "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.clearStatus::call[0]",
+              "normalizedBodySha256": "6b4381794f81893d8d84cd0490642890e02cbf34f13dd49a6c0a9f52d985b805"
+            },
+            {
+              "methodName": "changeOwner",
+              "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.changeOwner::call[0]",
+              "normalizedBodySha256": "563705afc9952c11cddd01ae2bf4681d0659a1783c847d816db8ec36d02ecc8b"
+            },
+            {
+              "methodName": "clearOwner",
+              "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.clearOwner::call[0]",
+              "normalizedBodySha256": "0ff2fd788b77cf9825994b52da1e2439590ccd7d5e9412559de11e733cc64de5"
+            },
+            {
+              "methodName": "changeCustodian",
+              "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.changeCustodian::call[0]",
+              "normalizedBodySha256": "19a95c426fb7386f58965b6e1d6e2bed0f0c3ebc118e3f6b179f6b54abe0f652"
+            },
+            {
+              "methodName": "clearCustodian",
+              "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.clearCustodian::call[0]",
+              "normalizedBodySha256": "66bdc3347f3f3dd28450483e098d90a74653328a969fdc6e7339a1a7b3c433a2"
+            },
+            {
+              "methodName": "changeDispositionAuthority",
+              "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.changeDispositionAuthority::call[0]",
+              "normalizedBodySha256": "45d073eb81c7372779283bcbea8f879ac7493156ae9ad05776e601a0bb0285df"
+            },
+            {
+              "methodName": "clearDispositionAuthority",
+              "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.clearDispositionAuthority::call[0]",
+              "normalizedBodySha256": "bc4e098765938f71d5c5fb9595b0cbf443f84e4531920df5152d58dd0bfb907c"
+            },
+            {
+              "methodName": "placeInContainer",
+              "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.placeInContainer::call[0]",
+              "normalizedBodySha256": "28e5da774d94016b7d624f848a522bb25d8678ea84742404222a7605aa0b7c98"
+            },
+            {
+              "methodName": "removeFromContainer",
+              "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.removeFromContainer::call[0]",
+              "normalizedBodySha256": "dd0ed5a3b31b15386f40a1946a642ab1f36a14c9af460b6cb14b88c6e8c79a5c"
+            },
+            {
+              "methodName": "changeQualifiedDimension",
+              "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.changeQualifiedDimension::call[0]",
+              "normalizedBodySha256": "03ad64b1e776549b0a2733207ecfbea445a70b4f872d56aec62cafdf27afbdf5"
+            },
+            {
+              "methodName": "clearQualifiedDimension",
+              "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.clearQualifiedDimension::call[0]",
+              "normalizedBodySha256": "0b5b0e4d7a8f5bc8cf787e0d970cd1a475d02065e699ca9956cd4b6f5c1188e7"
+            }
+          ],
+          "unchangedPrivateEquations": [
+            {
+              "name": "commitReclassification",
+              "normalizedBodySha256": "879ec6526bcfb7f8ead7c2eed6f5a7bc2b80b57d7d1c04986d99dca95a82ff2d"
+            },
+            {
+              "name": "requireInventoryOnceInternals",
+              "normalizedBodySha256": "404a51b339e4a98bcb506900a1e2be8ac5b54ec170449c8fae6d6d64487bfdab"
+            },
+            {
+              "name": "commitInventoryEventDraft",
+              "normalizedBodySha256": "dab7529173c1dffe5b44ea85a7a5893faf0590360f9caa434310ea9ee09231b6"
+            },
+            {
+              "name": "requireChangedIdentity",
+              "normalizedBodySha256": "9939984830081e6ae69d7751382aca1b503252d535de4a1c0b1f769e55e7da9c"
+            },
+            {
+              "name": "requirePresentIdentity",
+              "normalizedBodySha256": "bf80161283ca7608da44570ca8ef3201dd88cf4fa16012c37e1fb9f384092b48"
+            },
+            {
+              "name": "createPositionWithChangedQualifiedDimension",
+              "normalizedBodySha256": "36c7298f2a201c47985cb8a3d2e1504c4f8be624af44c585cba6a055bb32cb73"
+            },
+            {
+              "name": "createPositionWithoutQualifiedDimension",
+              "normalizedBodySha256": "14797e2db3715b18f39194a5d3fea8488096d6c06148512b945ed312eb6e6c5c"
+            }
+          ],
+          "currentEventResult": {
+            "proofKind": "r134-current-event-result-sparse-lookup-equation-v1",
+            "equationId": "src/facade.ts#createInventoryOnceEventResult",
+            "normalizedTermSha256": "66a9e8c79a8faef8b1f2c65c17cceb93a4265d0d0ad6fd3ac18131f1d8ea107b",
+            "dependency": {
+              "key": "src/sparse-record.ts#inventorySparseRecordValue",
+              "termSha256": "80c4cf4ebb11ccea712a0252cede61d6b7dd69caf07ad7f4b6607298c0cc900f",
+              "evidence": {
+                "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/sparse-record-certificate.json",
+                "sha256": "6ecd861755e963798a2cd077813cd3c412997121b16e6f1cdea337baa2fe7815"
+              }
+            },
+            "evidence": {
+              "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/event-result-current.json",
+              "sha256": "2e693f359c16a93a9853da5653378c77523ae19aed5d63f76acdbd415347ae87"
+            }
+          },
+          "coordinatorBridgeChecks": {
+            "protectClaimsLiteral": true,
+            "reservationDeltaBridgePresent": true
+          }
+        },
+        "currentDependencies": [
+          {
+            "proofKind": "inventoryonce-transfer-correction-complete-source-equations-v2",
+            "surfaceKey": "export:./kernel#createInventoryReclassificationEvent::call[0]",
+            "mode": "V",
+            "signatureHash": "84d43190bfc7c3447b46227d345b979d4418be44a89154d7f5168cfee4d9ffc1",
+            "declaration": {
+              "file": "src/commands.ts",
+              "start": {
+                "offset": 29675,
+                "line": 752,
+                "column": 1
+              },
+              "end": {
+                "offset": 30698,
+                "line": 789,
+                "column": 2
+              },
+              "sourceHash": "c40c66fc3e5d3e60022534a561d44280cda205f3cc10be759f8efdc97038a98b",
+              "astHash": "6426fd9acfc5bf6db735d169340028bbaef7d3c3004fb8870d2dc717a2079472"
+            },
+            "equationId": "src/commands.ts#createInventoryReclassificationEvent",
+            "equationSha256": "6356c34d1d9b962c490ab5ef9a1c02eb839a777d71e7154ee917d77dc274b390",
+            "memberSha256": "3015e1a7a0e50c759aacb513fe6992f7f17a5ad2cab0bea135c9469f4455f993",
+            "sourceByteExact": true
+          },
+          {
+            "proofKind": "inventoryonce-event-replacement-complete-source-equations-v1",
+            "surfaceKey": "export:./kernel#inventoryEventIntentFingerprint::call[0]",
+            "mode": "V",
+            "signatureHash": "e525932aea75782aa8e8dd5b53848d5a1ac176cac39fdd2a60b945c4e6f3a90d",
+            "declaration": {
+              "file": "src/events.ts",
+              "start": {
+                "offset": 19495,
+                "line": 444,
+                "column": 1
+              },
+              "end": {
+                "offset": 21710,
+                "line": 504,
+                "column": 2
+              },
+              "sourceHash": "8d076ee8f426c011d7df3f205dd014f0e835f71798b3684ca56844b691ba2370",
+              "astHash": "721608fe9cb5d924b7ea827d0aceaec267e1298d0a94d864734b9632154dcc46"
+            },
+            "memberSha256": "70ea08c3ef7127ddf08d8329681987d30b87585b6ed33140abf2dad03ca37c7a"
+          },
+          {
+            "proofKind": "commit-inventory-operation-environment-contract-a1-current-r139-v1",
+            "surfaceKey": "export:./storage#commitInventoryOperation::call[0]",
+            "mode": "A",
+            "signatureHash": "9432d462d6d2ad3a7319f9c32a00be9cd205dffe0c6be8f5e2169daade828b95",
+            "declaration": {
+              "file": "src/coordinator.ts",
+              "start": {
+                "offset": 5078,
+                "line": 129,
+                "column": 1
+              },
+              "end": {
+                "offset": 7774,
+                "line": 209,
+                "column": 2
+              },
+              "sourceHash": "4bc44f2c38578991a137d9e363b7677c23a788dd9cc5c4129074f1a95a14e3a2",
+              "astHash": "bfa1d812b329bec33bff4bbef5c8ec0483a9514ec41c6091902529d2daf6a963"
+            },
+            "memberSha256": "39133544fe8192af2f3becddfbdddf46535cf632073910f313865fb3baff4843",
+            "authority": {
+              "artifact": {
+                "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/downstream43-current/commit-current.json",
+                "sha256": "052ae807f0da4706e361f6128c0812e98031811d128ac26717f96ffe8702757e"
+              },
+              "storage26Receipt": {
+                "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage26-current-receipt.json",
+                "sha256": "45f48215595cf127cdd829d53665d781a40819563edd78e45d23f6d1c0240fb6"
+              }
+            }
+          }
+        ],
+        "currentizationRule": "Preserve the reviewed whole-producer law and public member exactly; rederive current source closure, replace only the independently certified R134 event-result own-key transition, and bind every dependency to a current source/evidence authority."
+      }
+    },
+    {
+      "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.clearDispositionAuthority::call[0]",
+      "mode": "B",
+      "signatureHash": "ab5cb4121e6835b6cb115e7db1eb1f32b1adc47eb9a21dc5bf3ebd44a3795d2b",
+      "declaration": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 59762,
+          "line": 1473,
+          "column": 3
+        },
+        "end": {
+          "offset": 59883,
+          "line": 1475,
+          "column": 40
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "88506772ecee1aee50bd19fb624be5a633f0fa961c0c8dc9ce4ad956ee25b7ea"
+      },
+      "semantics": {
+        "historicalWholeProducer": {
+          "file": "experiments/tla-conformance/throughput-r7/evidence/queue-stateful-unique-b2-producer.json",
+          "sha256": "b4293190767ddc08a3256ed0aae7d1e706f9f45d1526983e78d072dba623580e",
+          "memberSha256": "5735bde5f23ec1af866ae46209a8c30b4e792ffd8ae6d0de92c5f9804c9255f5",
+          "historicalProofKind": "stateful-facade-disposition-authority-current-b2-v1"
+        },
+        "sourceTransition": {
+          "kind": "R147_STATEFUL_BODY_EQUATIONS_PLUS_R134_EVENT_RESULT",
+          "publicEquations": [
+            {
+              "methodName": "changeStatus",
+              "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.changeStatus::call[0]",
+              "normalizedBodySha256": "3d9eb632e5a33f8446b06f06a88c8cf9cbb4eae40f33ca78b60be16229a7ba6f"
+            },
+            {
+              "methodName": "clearStatus",
+              "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.clearStatus::call[0]",
+              "normalizedBodySha256": "6b4381794f81893d8d84cd0490642890e02cbf34f13dd49a6c0a9f52d985b805"
+            },
+            {
+              "methodName": "changeOwner",
+              "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.changeOwner::call[0]",
+              "normalizedBodySha256": "563705afc9952c11cddd01ae2bf4681d0659a1783c847d816db8ec36d02ecc8b"
+            },
+            {
+              "methodName": "clearOwner",
+              "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.clearOwner::call[0]",
+              "normalizedBodySha256": "0ff2fd788b77cf9825994b52da1e2439590ccd7d5e9412559de11e733cc64de5"
+            },
+            {
+              "methodName": "changeCustodian",
+              "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.changeCustodian::call[0]",
+              "normalizedBodySha256": "19a95c426fb7386f58965b6e1d6e2bed0f0c3ebc118e3f6b179f6b54abe0f652"
+            },
+            {
+              "methodName": "clearCustodian",
+              "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.clearCustodian::call[0]",
+              "normalizedBodySha256": "66bdc3347f3f3dd28450483e098d90a74653328a969fdc6e7339a1a7b3c433a2"
+            },
+            {
+              "methodName": "changeDispositionAuthority",
+              "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.changeDispositionAuthority::call[0]",
+              "normalizedBodySha256": "45d073eb81c7372779283bcbea8f879ac7493156ae9ad05776e601a0bb0285df"
+            },
+            {
+              "methodName": "clearDispositionAuthority",
+              "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.clearDispositionAuthority::call[0]",
+              "normalizedBodySha256": "bc4e098765938f71d5c5fb9595b0cbf443f84e4531920df5152d58dd0bfb907c"
+            },
+            {
+              "methodName": "placeInContainer",
+              "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.placeInContainer::call[0]",
+              "normalizedBodySha256": "28e5da774d94016b7d624f848a522bb25d8678ea84742404222a7605aa0b7c98"
+            },
+            {
+              "methodName": "removeFromContainer",
+              "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.removeFromContainer::call[0]",
+              "normalizedBodySha256": "dd0ed5a3b31b15386f40a1946a642ab1f36a14c9af460b6cb14b88c6e8c79a5c"
+            },
+            {
+              "methodName": "changeQualifiedDimension",
+              "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.changeQualifiedDimension::call[0]",
+              "normalizedBodySha256": "03ad64b1e776549b0a2733207ecfbea445a70b4f872d56aec62cafdf27afbdf5"
+            },
+            {
+              "methodName": "clearQualifiedDimension",
+              "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.clearQualifiedDimension::call[0]",
+              "normalizedBodySha256": "0b5b0e4d7a8f5bc8cf787e0d970cd1a475d02065e699ca9956cd4b6f5c1188e7"
+            }
+          ],
+          "unchangedPrivateEquations": [
+            {
+              "name": "commitReclassification",
+              "normalizedBodySha256": "879ec6526bcfb7f8ead7c2eed6f5a7bc2b80b57d7d1c04986d99dca95a82ff2d"
+            },
+            {
+              "name": "requireInventoryOnceInternals",
+              "normalizedBodySha256": "404a51b339e4a98bcb506900a1e2be8ac5b54ec170449c8fae6d6d64487bfdab"
+            },
+            {
+              "name": "commitInventoryEventDraft",
+              "normalizedBodySha256": "dab7529173c1dffe5b44ea85a7a5893faf0590360f9caa434310ea9ee09231b6"
+            },
+            {
+              "name": "requireChangedIdentity",
+              "normalizedBodySha256": "9939984830081e6ae69d7751382aca1b503252d535de4a1c0b1f769e55e7da9c"
+            },
+            {
+              "name": "requirePresentIdentity",
+              "normalizedBodySha256": "bf80161283ca7608da44570ca8ef3201dd88cf4fa16012c37e1fb9f384092b48"
+            },
+            {
+              "name": "createPositionWithChangedQualifiedDimension",
+              "normalizedBodySha256": "36c7298f2a201c47985cb8a3d2e1504c4f8be624af44c585cba6a055bb32cb73"
+            },
+            {
+              "name": "createPositionWithoutQualifiedDimension",
+              "normalizedBodySha256": "14797e2db3715b18f39194a5d3fea8488096d6c06148512b945ed312eb6e6c5c"
+            }
+          ],
+          "currentEventResult": {
+            "proofKind": "r134-current-event-result-sparse-lookup-equation-v1",
+            "equationId": "src/facade.ts#createInventoryOnceEventResult",
+            "normalizedTermSha256": "66a9e8c79a8faef8b1f2c65c17cceb93a4265d0d0ad6fd3ac18131f1d8ea107b",
+            "dependency": {
+              "key": "src/sparse-record.ts#inventorySparseRecordValue",
+              "termSha256": "80c4cf4ebb11ccea712a0252cede61d6b7dd69caf07ad7f4b6607298c0cc900f",
+              "evidence": {
+                "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/sparse-record-certificate.json",
+                "sha256": "6ecd861755e963798a2cd077813cd3c412997121b16e6f1cdea337baa2fe7815"
+              }
+            },
+            "evidence": {
+              "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/event-result-current.json",
+              "sha256": "2e693f359c16a93a9853da5653378c77523ae19aed5d63f76acdbd415347ae87"
+            }
+          },
+          "coordinatorBridgeChecks": {
+            "protectClaimsLiteral": true,
+            "reservationDeltaBridgePresent": true
+          }
+        },
+        "currentDependencies": [
+          {
+            "proofKind": "inventoryonce-transfer-correction-complete-source-equations-v2",
+            "surfaceKey": "export:./kernel#createInventoryReclassificationEvent::call[0]",
+            "mode": "V",
+            "signatureHash": "84d43190bfc7c3447b46227d345b979d4418be44a89154d7f5168cfee4d9ffc1",
+            "declaration": {
+              "file": "src/commands.ts",
+              "start": {
+                "offset": 29675,
+                "line": 752,
+                "column": 1
+              },
+              "end": {
+                "offset": 30698,
+                "line": 789,
+                "column": 2
+              },
+              "sourceHash": "c40c66fc3e5d3e60022534a561d44280cda205f3cc10be759f8efdc97038a98b",
+              "astHash": "6426fd9acfc5bf6db735d169340028bbaef7d3c3004fb8870d2dc717a2079472"
+            },
+            "equationId": "src/commands.ts#createInventoryReclassificationEvent",
+            "equationSha256": "6356c34d1d9b962c490ab5ef9a1c02eb839a777d71e7154ee917d77dc274b390",
+            "memberSha256": "3015e1a7a0e50c759aacb513fe6992f7f17a5ad2cab0bea135c9469f4455f993",
+            "sourceByteExact": true
+          },
+          {
+            "proofKind": "inventoryonce-event-replacement-complete-source-equations-v1",
+            "surfaceKey": "export:./kernel#inventoryEventIntentFingerprint::call[0]",
+            "mode": "V",
+            "signatureHash": "e525932aea75782aa8e8dd5b53848d5a1ac176cac39fdd2a60b945c4e6f3a90d",
+            "declaration": {
+              "file": "src/events.ts",
+              "start": {
+                "offset": 19495,
+                "line": 444,
+                "column": 1
+              },
+              "end": {
+                "offset": 21710,
+                "line": 504,
+                "column": 2
+              },
+              "sourceHash": "8d076ee8f426c011d7df3f205dd014f0e835f71798b3684ca56844b691ba2370",
+              "astHash": "721608fe9cb5d924b7ea827d0aceaec267e1298d0a94d864734b9632154dcc46"
+            },
+            "memberSha256": "70ea08c3ef7127ddf08d8329681987d30b87585b6ed33140abf2dad03ca37c7a"
+          },
+          {
+            "proofKind": "commit-inventory-operation-environment-contract-a1-current-r139-v1",
+            "surfaceKey": "export:./storage#commitInventoryOperation::call[0]",
+            "mode": "A",
+            "signatureHash": "9432d462d6d2ad3a7319f9c32a00be9cd205dffe0c6be8f5e2169daade828b95",
+            "declaration": {
+              "file": "src/coordinator.ts",
+              "start": {
+                "offset": 5078,
+                "line": 129,
+                "column": 1
+              },
+              "end": {
+                "offset": 7774,
+                "line": 209,
+                "column": 2
+              },
+              "sourceHash": "4bc44f2c38578991a137d9e363b7677c23a788dd9cc5c4129074f1a95a14e3a2",
+              "astHash": "bfa1d812b329bec33bff4bbef5c8ec0483a9514ec41c6091902529d2daf6a963"
+            },
+            "memberSha256": "39133544fe8192af2f3becddfbdddf46535cf632073910f313865fb3baff4843",
+            "authority": {
+              "artifact": {
+                "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/downstream43-current/commit-current.json",
+                "sha256": "052ae807f0da4706e361f6128c0812e98031811d128ac26717f96ffe8702757e"
+              },
+              "storage26Receipt": {
+                "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage26-current-receipt.json",
+                "sha256": "45f48215595cf127cdd829d53665d781a40819563edd78e45d23f6d1c0240fb6"
+              }
+            }
+          }
+        ],
+        "currentizationRule": "Preserve the reviewed whole-producer law and public member exactly; rederive current source closure, replace only the independently certified R134 event-result own-key transition, and bind every dependency to a current source/evidence authority."
+      }
+    }
+  ]
+}

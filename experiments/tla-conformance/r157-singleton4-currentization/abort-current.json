@@ -1,0 +1,171 @@
+{
+  "schemaVersion": 1,
+  "route": "REGISTERED_CERTIFIED_PRODUCER",
+  "proofKind": "migration-manifest-abort-concrete-a1-v1",
+  "family": "MigrationManifestAbortConcreteA1Current",
+  "surfaceDigest": "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a",
+  "domain": {
+    "receiver": "Concrete InMemoryInventoryDurableStorage only; arbitrary InventoryDurableStorage implementations remain excluded.",
+    "currentSource": "Exact six-equation final-source abort slice.",
+    "formal": "Byte-current independent MigrationManifestAbortContract ordinary semantics.",
+    "retainedNative": "Historical 18-call protocol is classified corroboration only and is not used as current src/storage identity.",
+    "enabled": "Applying, unpublished retained-plan manifest aborts and compacts the plan.",
+    "retry": "Aborted retry stutters and returns.",
+    "disabled": "Rejected cases do not fabricate an Abort edge.",
+    "postTransitionFailure": "Post-transition failpoints may throw after the durable Abort transition."
+  },
+  "allAdmittedInputs": true,
+  "sampledInputs": 0,
+  "producerGraphRuns": 0,
+  "producerReplayRuns": 0,
+  "nativeReplayRuns": 0,
+  "retainedNativeCalls": 18,
+  "inputs": [
+    {
+      "file": "experiments/tla-conformance/migration-r5/artifacts/MigrationManifestStorage/producer-certificate.json",
+      "sha256": "c3161e0a549e2c1fe53bfb934e81b60de3079bf47aef4fde1ff2b4479cb49e13"
+    },
+    {
+      "file": "experiments/tla-conformance/migration-r5/artifacts/MigrationManifestStorage/protocol-observations.ndjson",
+      "sha256": "55b2fea31c2832943b31b209705faec5da408754f80aaf486807f56177a6e424"
+    },
+    {
+      "file": "experiments/tla-conformance/migration-recovery-r17/abort-family.mjs",
+      "sha256": "06b8bdef0f3d73d851951e02f3ae5d39c9e9b6fb32a6b778b8fdeffa66230e36"
+    },
+    {
+      "file": "experiments/tla-conformance/migration-recovery-r17/abort-formal-evidence.json",
+      "sha256": "299400f673e014e1fbbccc48371f883e385b9439bffe6975d0bff65c96f22622"
+    },
+    {
+      "file": "experiments/tla-conformance/migration-recovery-r17/abort-public-call-bridge.json",
+      "sha256": "1c83519bf70cbbcbc7dd8976fabca01071794bc2bfc923b57ee6adda79150b7f"
+    },
+    {
+      "file": "experiments/tla-conformance/migration-recovery-r17/abort-source-equation.mjs",
+      "sha256": "d0b9e90e8b2b6b157c241c400328248d0c90b64311dc361b5cff0e3e1cb8af0d"
+    },
+    {
+      "file": "experiments/tla-conformance/migration-recovery-r17/abort.expected.ts.txt",
+      "sha256": "a080b2f4bac06c80d7e11835327542bd90302d914f469b7dda668f2ef2adf8e4"
+    },
+    {
+      "file": "experiments/tla-conformance/migration-recovery-r17/MigrationManifestAbortContract.cfg",
+      "sha256": "a7a56397bc7a711fd445447f27dc97ebc9d0fc3a47288491c435712d106ead82"
+    },
+    {
+      "file": "experiments/tla-conformance/migration-recovery-r17/MigrationManifestAbortContract.tla",
+      "sha256": "f2b5f386aca596454d864ec36bb9fc88c8d2413e4b1b4e6a17314ed8e2c6a884"
+    },
+    {
+      "file": "experiments/tla-conformance/r157-singleton4-currentization/abort-current.mjs",
+      "sha256": "613c64ce977460891bf9ab8f5c88e920afa28a496b9c34fba2dace3bad17f8a6"
+    },
+    {
+      "file": "experiments/tla-conformance/throughput-r7/registered-producer-family.mjs",
+      "sha256": "e8c9fcbbf669de7a68a76984da27d179b81b49ccba4fe645faf50790405dd655"
+    },
+    {
+      "file": "src/storage.ts",
+      "sha256": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d"
+    }
+  ],
+  "proofs": [
+    {
+      "surfaceKey": "type:src/storage.ts#InMemoryInventoryDurableStorage.abortMigrationManifest::call[0]",
+      "mode": "A",
+      "signatureHash": "6182ee08d3bdadf06af4f5e787fad1abecfc544d25374a06e59f5f03a380c964",
+      "declaration": {
+        "file": "src/storage.ts",
+        "start": {
+          "offset": 30618,
+          "line": 701,
+          "column": 3
+        },
+        "end": {
+          "offset": 30980,
+          "line": 708,
+          "column": 4
+        },
+        "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+        "astHash": "0bdde38fc58151aad07fdf98af808ec75dbd78acc1e5032fc168e25113daf7b8"
+      },
+      "directProducer": {
+        "formalAuthority": {
+          "model": "MigrationManifestAbortContract",
+          "states": 5,
+          "edgeOccurrences": 5,
+          "abortOccurrences": 1,
+          "retryAbortOccurrences": 1,
+          "evidence": {
+            "file": "experiments/tla-conformance/migration-recovery-r17/abort-formal-evidence.json",
+            "sha256": "299400f673e014e1fbbccc48371f883e385b9439bffe6975d0bff65c96f22622"
+          }
+        },
+        "completeCurrentSourceEquation": {
+          "schemaVersion": 1,
+          "status": "PASS",
+          "sourceFile": "src/storage.ts",
+          "sourceSha256": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+          "expectedFile": "experiments/tla-conformance/migration-recovery-r17/abort.expected.ts.txt",
+          "expectedSha256": "a080b2f4bac06c80d7e11835327542bd90302d914f469b7dda668f2ef2adf8e4",
+          "equations": [
+            {
+              "label": "storageMutationBarrier",
+              "termSha256": "2ee6c3ce67d1678ac43457e28a9cea1d1828cbb275ca9e91c70bd16183cd5c28"
+            },
+            {
+              "label": "abortMigrationManifest",
+              "termSha256": "1e8261a24997a2cfb5f183a885ce0264b8e1b58ffe7069265b6cef5d2995a52d"
+            },
+            {
+              "label": "abortMigrationManifestUnlocked",
+              "termSha256": "8c911f4d5d7a5d838c53744419617b6ccf64d60fb4405b80a7c5d3cb3b36a55f"
+            },
+            {
+              "label": "runStorageMutationAtomically",
+              "termSha256": "89dc9109e492091b8f06680cdfd9f0e88c06989d0670f68ff8204494b84df087"
+            },
+            {
+              "label": "requireMigrationManifest",
+              "termSha256": "3cbbd3fd03f7a715392c6beecf0e21865c05b4092f3033781ccae77acab9899f"
+            },
+            {
+              "label": "finishInventoryStorageMutationSection",
+              "termSha256": "52b3e71da926abd61646da3f47272de59766eb6c346a88c16848899a557eb46b"
+            }
+          ]
+        },
+        "retainedNativeCorroboration": {
+          "calls": 18,
+          "returned": 12,
+          "threw": 6,
+          "categories": {
+            "ABORT_RETURN": 4,
+            "ABORT_THEN_THROW": 3,
+            "REJECTED_STUTTER": 3,
+            "RETRY_ABORT_RETURN": 8
+          },
+          "protocolSha256": "55b2fea31c2832943b31b209705faec5da408754f80aaf486807f56177a6e424",
+          "evidence": {
+            "file": "experiments/tla-conformance/migration-recovery-r17/abort-public-call-bridge.json",
+            "sha256": "1c83519bf70cbbcbc7dd8976fabca01071794bc2bfc923b57ee6adda79150b7f"
+          },
+          "historicalSourceSha256": "cbe6eb529014619e4121f10a6f0c503930867c6732b236ffaa0ea26eb4f8cab0",
+          "currentSourceSha256": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d"
+        },
+        "resultSemantics": {
+          "returnedAbort": 4,
+          "postTransitionThrowAbort": 3,
+          "rejectedStutter": 3,
+          "retryAbortReturn": 8,
+          "throwDoesNotImplyStutter": true
+        },
+        "interfaceBoundaryExcluded": "type:src/storage.ts#InventoryDurableStorage.abortMigrationManifest::call[0]"
+      }
+    }
+  ],
+  "excludedRows": [
+    "type:src/storage.ts#InventoryDurableStorage.abortMigrationManifest::call[0]"
+  ]
+}

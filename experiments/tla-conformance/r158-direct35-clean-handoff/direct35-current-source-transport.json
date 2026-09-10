@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "status": "CURRENT_SOURCE_BOUND_DIRECT35",
+  "sourceBase": "6cafd49ff4b3729f80ae35d9fc0220f7a8a4b55a",
+  "surfaceDigest": "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a",
+  "rows": 35,
+  "modes": {
+    "A": 23,
+    "B": 12
+  },
+  "batches": {
+    "ReservationSafety23": {
+      "rows": 23,
+      "receipt": {
+        "file": "experiments/tla-conformance/r158-direct35-clean-handoff/reservation23-current-source-transport.json",
+        "contentSha256": "31ff31f294c6e06973ac277433f8cc3d8ab1076980b4d8c46f5aaf37a533c2ef"
+      }
+    },
+    "Direct12": {
+      "rows": 12,
+      "receipt": {
+        "file": "experiments/tla-conformance/r158-direct35-clean-handoff/direct12-current-source-transport.json",
+        "contentSha256": "9f667c5b681932a7c59f0fd02dc86478a3d4371c7a81b0c6c499263385f02aea"
+      }
+    }
+  },
+  "checker": {
+    "unchangedChecker": "experiments/tla-conformance/surface-bindings/lib/binding-checker.mjs",
+    "targetDiagnostics": 0,
+    "executionDiagnostics": 0,
+    "globalMissingDiagnosticsIgnoredForIsolatedRegistry": 500
+  },
+  "theorem": "All 35 direct formal/native/reverse rows are now tied to exact final source. ReservationSafety23 carries its sparse-record refinement/source-closure theorem; SnapshotSupersededWorkflow6, TransferLifecycle5, and DurableTransferRefinement1 carry complete transitive current implementation closures over the retained current R131 replay/checkpoint/reverse evidence. The unchanged direct binding checker and execution preflight accept every row without rerunning TLC graphs, native graph production, or reverse validation.",
+  "proofCreditGrantedByThisReceipt": 0,
+  "contentSha256": "77016e6ebb05c08aac7fdd9977458b397fe7f16a64b4004a9f7c83f83d1a3933"
+}

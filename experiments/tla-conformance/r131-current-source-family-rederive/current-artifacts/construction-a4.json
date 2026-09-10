@@ -1,0 +1,247 @@
+{
+  "schemaVersion": 1,
+  "route": "REGISTERED_CERTIFIED_PRODUCER",
+  "proofKind": "package-owned-construction-protocol-a4-v1",
+  "family": "PackageOwnedConstructionA4",
+  "surfaceDigest": "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a",
+  "domain": {
+    "facade": "Both public construction paths across default/explicit clock x default/explicit deficit policy; complete thirteen-child wiring and multi-instance storage isolation.",
+    "authority": "Both public construction paths across blank namespace, pending ensure, sync/async ensure rejection, create rejection, created row, existing matching row, existing missing row, and existing wrong-namespace row. Supplied store behavior is environment input and receives no strict credit.",
+    "formalAuthority": "Two orthogonal construction protocols; owner adoption required because legacy formal suite had no object-construction action."
+  },
+  "allAdmittedInputs": true,
+  "sampledInputs": 0,
+  "ownerAdoptionRequired": true,
+  "producerGraphRuns": 2,
+  "producerReplayRuns": 1,
+  "inputs": [
+    {
+      "file": "experiments/tla-conformance/construction-r18/AuthorityInitialization.cfg",
+      "sha256": "b5a3a1d4a27f9d899a8b9b1cf70f1ea0bc7bc85cc060483241340390db53be26"
+    },
+    {
+      "file": "experiments/tla-conformance/construction-r18/AuthorityInitialization.log",
+      "sha256": "071f915166509874e845119cf234acec231215fdb5a82f062c472fb67aae4b55"
+    },
+    {
+      "file": "experiments/tla-conformance/construction-r18/AuthorityInitialization.tla",
+      "sha256": "15c3b1324ad2403f8fb4e689ca74d82b9d331c4b224936f910a89c3aec276943"
+    },
+    {
+      "file": "experiments/tla-conformance/construction-r18/FacadeConstruction.cfg",
+      "sha256": "71603e169e2d36c472aa3f0c2bd48c2bcf5edb295b6613eb7347a11e60e469e0"
+    },
+    {
+      "file": "experiments/tla-conformance/construction-r18/FacadeConstruction.log",
+      "sha256": "17b56d235514e7cd3f581ff85121970c10a8c2787b69843b809ca1738eeb6d39"
+    },
+    {
+      "file": "experiments/tla-conformance/construction-r18/FacadeConstruction.tla",
+      "sha256": "1f43c9d4935a67ea0f1619e490897304d3616d6ef368dd1cb1adb700980db502"
+    },
+    {
+      "file": "experiments/tla-conformance/construction-r18/build-receipts.py",
+      "sha256": "7fc07e5969a8c48c2bb35712461e6450d1dac984d7852d406ba29e08604a0f5d"
+    },
+    {
+      "file": "experiments/tla-conformance/construction-r18/family.mjs",
+      "sha256": "7bba34e244f6a5f2fc34210628b827dd3b52ce065a8eddf6681a0daff9b1abba"
+    },
+    {
+      "file": "experiments/tla-conformance/construction-r18/runtime-evidence.json",
+      "sha256": "e05dc8973137a95dc0ee108c177d1954938e4e194e7e73d9db8d8a1f97c03c8d"
+    },
+    {
+      "file": "experiments/tla-conformance/construction-r18/runtime.ts",
+      "sha256": "59808958fdb2c726a80d1fd1d2a690bd89589e08b82f45f5c1ff0a12a5d09e4f"
+    },
+    {
+      "file": "experiments/tla-conformance/construction-r18/source-equations.mjs",
+      "sha256": "797eabf77b270057e9bc0ce060597e8b0c971a5cc1d888e783c592845e59e9ae"
+    },
+    {
+      "file": "experiments/tla-conformance/construction-r18/validation-receipt.json",
+      "sha256": "e1dc73248ab138ff7ab0cf6b9b6ddc55e2c40615185f110f2c0a3e15e0ccad1b"
+    },
+    {
+      "file": "experiments/tla-conformance/surface-bindings/lib/binding-checker.mjs",
+      "sha256": "4dd6bbf135ebb5a5da86b714e0d9b9d3550547a7df7b39aec1a471bf1ef3f88e"
+    },
+    {
+      "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+      "sha256": "8d8854032e38a0df1044e5596c66d9a2b672277f357e361102b0b12c3d6952a0"
+    },
+    {
+      "file": "experiments/tla-conformance/throughput-r7/registered-producer-family.mjs",
+      "sha256": "e8c9fcbbf669de7a68a76984da27d179b81b49ccba4fe645faf50790405dd655"
+    },
+    {
+      "file": "package.json",
+      "sha256": "f068ac4f83c2984a38d439b90159e48b7fdf42ee4792f7ccde56230c7ecf1a7c"
+    },
+    {
+      "file": "src/authority.ts",
+      "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+    },
+    {
+      "file": "src/catalog.ts",
+      "sha256": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56"
+    },
+    {
+      "file": "src/facade.ts",
+      "sha256": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d"
+    },
+    {
+      "file": "src/projection.ts",
+      "sha256": "f2a9747cfc7c63615347c48383ae7f58ee7df007411cc8de3dd5bb6afaca21d5"
+    },
+    {
+      "file": "src/world.ts",
+      "sha256": "2f1bd43c85fcdda332ad16ebdb73d367b0ed502a7145c085c7a7433ff26063c1"
+    }
+  ],
+  "proofs": [
+    {
+      "surfaceKey": "export:.#InventoryOnce::construct[0]",
+      "mode": "A",
+      "signatureHash": "28b066365902462d44e4bd9106a1b1f645c2992d72c093602bceff18754e7948",
+      "declaration": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 74792,
+          "line": 1800,
+          "column": 3
+        },
+        "end": {
+          "offset": 75973,
+          "line": 1820,
+          "column": 4
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "ba0bc7ab3fbd3fe821c99eb766bc7acc2dc96465cb5cb6be0fb5b6d6ad433e01"
+      },
+      "semantics": {
+        "model": "FacadeConstruction",
+        "modelStates": 9,
+        "completePathClasses": 4,
+        "runtimeCases": 4,
+        "sourceTerms": {
+          "constructor": "154bfad9a2765e6e63e5be669ab61e2a9a8fa6dda8600e3ac3f7f07881fe3164",
+          "factory": "abffa0ed1a39ecf1546617b8cdbb9bf7ee17e70bf57cd06185939b8a25644de6",
+          "internals": "d805e763fb35f23f6c19cda6d0c90f227dbb98ac7a0871dc0fa242b79efc8999",
+          "clock": "7b94b8a2aaef697e748e9150a2cb79ddaea98893a49f6b74fe974860a6266460"
+        },
+        "freshOwnerIsolation": true
+      }
+    },
+    {
+      "surfaceKey": "export:.#createInventoryOnce::call[0]",
+      "mode": "A",
+      "signatureHash": "28b066365902462d44e4bd9106a1b1f645c2992d72c093602bceff18754e7948",
+      "declaration": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 76039,
+          "line": 1824,
+          "column": 1
+        },
+        "end": {
+          "offset": 76165,
+          "line": 1828,
+          "column": 2
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "f453901dd9f6b6d49613dd77fdf731cb711ae9888725c34a1668a30df4f40cb2"
+      },
+      "semantics": {
+        "model": "FacadeConstruction",
+        "modelStates": 9,
+        "completePathClasses": 4,
+        "runtimeCases": 4,
+        "sourceTerms": {
+          "constructor": "154bfad9a2765e6e63e5be669ab61e2a9a8fa6dda8600e3ac3f7f07881fe3164",
+          "factory": "abffa0ed1a39ecf1546617b8cdbb9bf7ee17e70bf57cd06185939b8a25644de6",
+          "internals": "d805e763fb35f23f6c19cda6d0c90f227dbb98ac7a0871dc0fa242b79efc8999",
+          "clock": "7b94b8a2aaef697e748e9150a2cb79ddaea98893a49f6b74fe974860a6266460"
+        },
+        "freshOwnerIsolation": true
+      }
+    },
+    {
+      "surfaceKey": "export:.#InventoryAuthorityControl::construct[0]",
+      "mode": "A",
+      "signatureHash": "e83fbe7350c4e4430625c6dddcc9a9144b8c0e4d455d21267496b68ed516c08f",
+      "declaration": {
+        "file": "src/authority.ts",
+        "start": {
+          "offset": 14922,
+          "line": 353,
+          "column": 3
+        },
+        "end": {
+          "offset": 15361,
+          "line": 362,
+          "column": 4
+        },
+        "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+        "astHash": "113d4d1c9361075ad295cfa6a3ce5a64b84cb4f97ff6b7335c63af035e7b5819"
+      },
+      "semantics": {
+        "model": "AuthorityInitialization",
+        "modelStates": 19,
+        "completeEnvironmentClasses": 9,
+        "runtimeCases": 9,
+        "sourceTerms": {
+          "constructor": "aa4a762dcf434300c9050a469f2ebd57638f8762b7ede3481d15e84c446435b4",
+          "factory": "1c7b64780322cceb81acfb8213a37b3a52b0bc2d23497e8500999544c07ed801",
+          "initialize": "d17ec1d33b3826fc50592f075074f557da8abaae25845a638686c6fe15ca8f0e",
+          "stateDocument": "bf8e809378877bb980ed06ae9a8f0642180c5617d912afd53f0f6669bb04de61",
+          "requireText": "acadf23c0c75ac22a048655766ca0e075c49e31b8d6fd15489f057739a2edbd0"
+        },
+        "arbitraryStoreImplementationClaimed": false
+      }
+    },
+    {
+      "surfaceKey": "export:.#createInventoryAuthorityControl::call[0]",
+      "mode": "A",
+      "signatureHash": "375a6a993f03bcd86a077ebed7913a39d73185051f33d8cf6ef84fd63a39c24c",
+      "declaration": {
+        "file": "src/authority.ts",
+        "start": {
+          "offset": 14264,
+          "line": 335,
+          "column": 1
+        },
+        "end": {
+          "offset": 14463,
+          "line": 339,
+          "column": 2
+        },
+        "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+        "astHash": "a393a7a8dfead58810a1fe8e3816aa37df0e181915b5652803c1fd1de796979a"
+      },
+      "semantics": {
+        "model": "AuthorityInitialization",
+        "modelStates": 19,
+        "completeEnvironmentClasses": 9,
+        "runtimeCases": 9,
+        "sourceTerms": {
+          "constructor": "aa4a762dcf434300c9050a469f2ebd57638f8762b7ede3481d15e84c446435b4",
+          "factory": "1c7b64780322cceb81acfb8213a37b3a52b0bc2d23497e8500999544c07ed801",
+          "initialize": "d17ec1d33b3826fc50592f075074f557da8abaae25845a638686c6fe15ca8f0e",
+          "stateDocument": "bf8e809378877bb980ed06ae9a8f0642180c5617d912afd53f0f6669bb04de61",
+          "requireText": "acadf23c0c75ac22a048655766ca0e075c49e31b8d6fd15489f057739a2edbd0"
+        },
+        "arbitraryStoreImplementationClaimed": false
+      }
+    }
+  ],
+  "excludedFromThisFamily": [
+    "export:.#bootstrapGreenfieldInventoryAuthority::call[0]",
+    "export:.#cutoverInventoryAuthority::call[0]",
+    "type:src/authority.ts#InventoryAuthorityStateStore.ensure::call[0]",
+    "type:src/authority.ts#InventoryAuthorityStateStore.read::call[0]",
+    "type:src/authority.ts#InventoryAuthorityStateStore.create::call[0]",
+    "type:src/authority.ts#InventoryAuthorityStateStore.compareAndSet::call[0]"
+  ]
+}

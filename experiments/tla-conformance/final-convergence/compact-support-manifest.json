@@ -1,0 +1,742 @@
+{
+  "schemaVersion": 1,
+  "archive": {
+    "file": "experiments/tla-conformance/final-convergence/compact-support.tar.gz",
+    "sha256": "31f68ffc167e003c19fd852b763676a53db4f3002db2a48b733ebe4bb9bf4b7e",
+    "runtimeClosureHead": "e1759f756a9e7de5d67e7c03d563f6f574892e26",
+    "files": [
+      {
+        "file": "experiments/tla-conformance/astra-authority-control-r8/family.mjs",
+        "sha256": "a0aef894200eec0f3cc1002b8a230054d69b50421497fc39fbc73c5d61527352",
+        "bytes": 9302
+      },
+      {
+        "file": "experiments/tla-conformance/astra-authority-control-r8/laws.mjs",
+        "sha256": "eb12edbec96b25c5a82da23c89fb48a47d35c47d81caf50ff21b1aab7a158188",
+        "bytes": 3267
+      },
+      {
+        "file": "experiments/tla-conformance/authority-contract-composition-r113/evidence.json",
+        "sha256": "e3ab9476d94052307b4b0d0542a43c21a30ea9f9513d034b95014f66222f64c1",
+        "bytes": 154417
+      },
+      {
+        "file": "experiments/tla-conformance/authority-r5/catalog-published-source-contracts.mjs",
+        "sha256": "d05ecad078de891073c82f4c523090382b608204269281464ca9a325ca3208b2",
+        "bytes": 15253
+      },
+      {
+        "file": "experiments/tla-conformance/authority-r5/catalog-published-source-equations.json",
+        "sha256": "e767440999da004ef44d685d55c27fa1769d225e0539be990a379c283dfe597a",
+        "bytes": 285750
+      },
+      {
+        "file": "experiments/tla-conformance/authority-r5/catalog-published-source-equations.mjs",
+        "sha256": "243e06ade88446247ab26d1bcec53fb70cccab6c5929f2013dc2aa995ae73ce8",
+        "bytes": 42893
+      },
+      {
+        "file": "experiments/tla-conformance/authority-r5/catalog-read-dependency-closure-certificate.mjs",
+        "sha256": "43af8f930467cc8095cbb856487e7633d23ee2d0d9f9e28ae7615ed99e8d28d6",
+        "bytes": 70612
+      },
+      {
+        "file": "experiments/tla-conformance/authority-r5/catalog-read-dependency-closure-contracts.mjs",
+        "sha256": "5954cda55045d1bc447cc5a02e7ab1b85f067d065a56dcfb0d5cc94e1b9e6581",
+        "bytes": 17708
+      },
+      {
+        "file": "experiments/tla-conformance/authority-values-r40/family.mjs",
+        "sha256": "ff0c7243f5f2505057193b117dcbd03792faf96c9c6bef06d76dfeef4123915a",
+        "bytes": 16278
+      },
+      {
+        "file": "experiments/tla-conformance/boundary-adjudication-r18/family.mjs",
+        "sha256": "785ca23ec2e2fad59bc02c581f48b71fc9f0b5d1c0854363e434e3e33d723048",
+        "bytes": 3864
+      },
+      {
+        "file": "experiments/tla-conformance/catalog-foundation-r7/contracts.mjs",
+        "sha256": "e6efabb603807c5728d958ced0a5ce671e41249e0342bf22db55494ea253b504",
+        "bytes": 10567
+      },
+      {
+        "file": "experiments/tla-conformance/catalog-foundation-r7/family.mjs",
+        "sha256": "932cb060a2dff23d2866849c925ac1c5ce5e028533f875e8cc125fcfb2feee76",
+        "bytes": 43494
+      },
+      {
+        "file": "experiments/tla-conformance/catalog-foundation-r7/normalize.mjs",
+        "sha256": "7675175f5f4cd88f853a3b49530bbb4e1e625112fd3bd45786ff81210a9fee26",
+        "bytes": 14153
+      },
+      {
+        "file": "experiments/tla-conformance/catalog-public-lifecycle7-r9/publication-core-r10/value-family.mjs",
+        "sha256": "04af0af1f385abe7fcd5f18421f6f91ba681c440de752f0df0cf044f97402eec",
+        "bytes": 7087
+      },
+      {
+        "file": "experiments/tla-conformance/catalog-scalar-contract-r34/evidence.json",
+        "sha256": "d04b9221cbbeb9be770ff00a4bf884682a866b7082b3de7f8a29c92a7a6c5bc4",
+        "bytes": 15459
+      },
+      {
+        "file": "experiments/tla-conformance/external-membership-rehearsal-r35/readworld-contract-evidence.json",
+        "sha256": "3c637a14de5b8936dde3d37b51c5c3b9591e7f7bba57066ac73cd71016c1bb10",
+        "bytes": 241019
+      },
+      {
+        "file": "experiments/tla-conformance/final-convergence/authority-current.mjs",
+        "sha256": "ab8fd408746fcd416f35b3e89c69b956c70d99b93a74e165fea628e425dfae43",
+        "bytes": 10974
+      },
+      {
+        "file": "experiments/tla-conformance/final-convergence/build-final-registry.mjs",
+        "sha256": "bddf4ad8bb8c94c586f924efc4a9c031d44cb7585de53450d0e6584ce12564f9",
+        "bytes": 2738
+      },
+      {
+        "file": "experiments/tla-conformance/final-convergence/final-families.mjs",
+        "sha256": "dd3dd5b74ce189ae558cd59cc0f1ef1822116d1f68edc1f471977029db21a53d",
+        "bytes": 11264
+      },
+      {
+        "file": "experiments/tla-conformance/final-convergence/final-head-transport.mjs",
+        "sha256": "5aa31b3e633126332cce4225e78df401dbd65974706a4a6c071f9ea7330dc119",
+        "bytes": 11291
+      },
+      {
+        "file": "experiments/tla-conformance/final-convergence/final-selftest.mjs",
+        "sha256": "ed9e4758c88eecd591b4ca97f4f3f8fad73769e26cb8150f48048f3fb8c1d333",
+        "bytes": 4604
+      },
+      {
+        "file": "experiments/tla-conformance/final-convergence/r137-current.mjs",
+        "sha256": "ec103c0e6c7ce1cdea8dc6934580af88674ecfa010c31134bec78754f87f7ded",
+        "bytes": 7043
+      },
+      {
+        "file": "experiments/tla-conformance/final-convergence/readworld-current.mjs",
+        "sha256": "abcd6143bf86b66a1d05743051132be8c14779116f0f3b5c2eeef8dc14ad7269",
+        "bytes": 7504
+      },
+      {
+        "file": "experiments/tla-conformance/final-convergence/run-final-verifier.mjs",
+        "sha256": "7a4198e01e73dcf89b8970f55283c2fa418f5e7e723b45faba0ae4d7d51e96b7",
+        "bytes": 3278
+      },
+      {
+        "file": "experiments/tla-conformance/final-convergence/wrapper-current.mjs",
+        "sha256": "e2244f155912c5d0b826291d0d1d872139f7bcf5d62f9d9ae2c4662de6ab84bf",
+        "bytes": 8494
+      },
+      {
+        "file": "experiments/tla-conformance/fungibility-plan-r9/value-family.mjs",
+        "sha256": "eb3116cfea1c3d1311767f6a52d204894ef6d1785651c4240ea7c12973b08b9f",
+        "bytes": 12464
+      },
+      {
+        "file": "experiments/tla-conformance/fungibility-read-r9/summary-family.mjs",
+        "sha256": "c0da6a8677c30603a30f458f1b2411ff2b00f7e986d76332f340ff24f225e3a2",
+        "bytes": 13774
+      },
+      {
+        "file": "experiments/tla-conformance/fungibility-values5-r8/family.mjs",
+        "sha256": "5a79e3667f41b0bdbb99bb9b53ff16b50fb383126494037a45b4281479434ba4",
+        "bytes": 7269
+      },
+      {
+        "file": "experiments/tla-conformance/identity-values-r7/contracts.mjs",
+        "sha256": "dea23f4b3f929ac1bcf9b50cd41517c1b3fc4e3d879904aa6c4d83263ba7b2ce",
+        "bytes": 10705
+      },
+      {
+        "file": "experiments/tla-conformance/identity-values-r7/family.mjs",
+        "sha256": "493486e43054dd4613091e973558f2c0463e96ff83347080a3f32e636dde6709",
+        "bytes": 53766
+      },
+      {
+        "file": "experiments/tla-conformance/materialize1-r8/family.mjs",
+        "sha256": "dc42f9469113383d720bb669f842a38fcfb8a8974b8c0a910066e37efd7c62b9",
+        "bytes": 15036
+      },
+      {
+        "file": "experiments/tla-conformance/migration-helper-causal-r7/causal-runtime-verifier.mjs",
+        "sha256": "9ea9c57fbbbe973c27d621f14db11da443ff0076436f1bd47f65d506dadbd0e5",
+        "bytes": 2438
+      },
+      {
+        "file": "experiments/tla-conformance/migration-helper-causal-r7/independent-v9-laws.mjs",
+        "sha256": "1b8d045b8a12c6e04ce1ffc8864e437d050fa9ba06ea7dd2f888a0c221fd22d7",
+        "bytes": 26967
+      },
+      {
+        "file": "experiments/tla-conformance/migration-helper-causal-r7/registered-causal-b4-family.mjs",
+        "sha256": "bf374bdd2cbca5ad0c656b40778f4d8b3bb0e94a40494639af6d7895688911cc",
+        "bytes": 14154
+      },
+      {
+        "file": "experiments/tla-conformance/migration-helper-causal-r7/registered-frontier-v2-family.mjs",
+        "sha256": "5fc4397ee1c4cdd5711500d7f7bd041d2c8be9e45261556020a7f110e8a61326",
+        "bytes": 4105
+      },
+      {
+        "file": "experiments/tla-conformance/migration-helper-causal-r7/registered-value-family.mjs",
+        "sha256": "2740e8daa4881b604e551607bcb202229b366169c05e8cac830d4e2ba34729d4",
+        "bytes": 6661
+      },
+      {
+        "file": "experiments/tla-conformance/migration-r5/traceability-value-family.mjs",
+        "sha256": "aee9c793f692623d6f837d260d2534a75152846fe71e0401df1123d37fb9c1c8",
+        "bytes": 13883
+      },
+      {
+        "file": "experiments/tla-conformance/new-source-honest486-r43/pinned-irrelevance.mjs",
+        "sha256": "65200bf7ec49f2bb50565f5744611fa1d7172f366efc4b07a1094e3061c00bdf",
+        "bytes": 5232
+      },
+      {
+        "file": "experiments/tla-conformance/new-source-honest486-r43/source-irrelevance.json",
+        "sha256": "5497f5e926f011fe3404f46f7665619df7950b10529c000f07bbf40fc9baba5b",
+        "bytes": 997895
+      },
+      {
+        "file": "experiments/tla-conformance/new-source-honest486-r43/value-currentizer.mjs",
+        "sha256": "ab310a81502d831d347e7b8e2ad8bc998c4e93e9ad1ef0f73200ad19b316869d",
+        "bytes": 3766
+      },
+      {
+        "file": "experiments/tla-conformance/quantity-values-r7/certificate.mjs",
+        "sha256": "8099926f527d391571e57c0828a27f24c57d4a7b59843684f9bda4c69f50cb26",
+        "bytes": 36413
+      },
+      {
+        "file": "experiments/tla-conformance/quantity-values-r7/contracts.mjs",
+        "sha256": "e45e82682ab647b80c0897e666b5b5b6b84f6cac990c785a925f307cabc7c239",
+        "bytes": 15965
+      },
+      {
+        "file": "experiments/tla-conformance/quantity-values-r7/event-values/certificate.mjs",
+        "sha256": "db0ad0a8e79777a6fe2b2e6fabfd550a87486d784aaf966b089f537dab505881",
+        "bytes": 54829
+      },
+      {
+        "file": "experiments/tla-conformance/quantity-values-r7/event-values/contracts.mjs",
+        "sha256": "acfd4139f5251ebf7a4aa85d5b464c70904c96fdf53964f7cb619a25d51f092c",
+        "bytes": 20851
+      },
+      {
+        "file": "experiments/tla-conformance/quantity-values-r7/event-values/registered-family-adapter.mjs",
+        "sha256": "e9ab67e6ac85cccce060b1b047c890593270222bab6184c076ab1596588116d8",
+        "bytes": 655
+      },
+      {
+        "file": "experiments/tla-conformance/r114-final-rabbit-currentization/authority-values-evidence.json",
+        "sha256": "e77270218fbc1791fea5821fc335a44a267059dd48b3f75dc8e41fa0e4682f70",
+        "bytes": 39332
+      },
+      {
+        "file": "experiments/tla-conformance/r114-final-rabbit-currentization/compact-evidence.json",
+        "sha256": "f85ac0f97f90c613711d506e01a607ddbc99d8bb715a04f74cb90d6a46678093",
+        "bytes": 55423
+      },
+      {
+        "file": "experiments/tla-conformance/r131-current-source-family-rederive/symbol-stage-crosswalk.json",
+        "sha256": "742211d162e30ea2afe85435a7890550c6c0a9528f93594f0759c3f87fc71877",
+        "bytes": 48940
+      },
+      {
+        "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/sparse-record-certificate.json",
+        "sha256": "408f9d834cb0f58153d6af9b0b3a7149163f45d6dca390a42b3d16f5c8c44d48",
+        "bytes": 5187
+      },
+      {
+        "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/sparse-record-certificate.mjs",
+        "sha256": "87d1873ad8385aa4a2672500d083810bc6c7c877d1885471effb76309ea105b4",
+        "bytes": 6641
+      },
+      {
+        "file": "experiments/tla-conformance/r137-transfer-correction-r118-currentization/check-transition.mjs",
+        "sha256": "d373ab7948a7188a998de805dab5dbe0d0903f77798d65a2fc78d3497d09649a",
+        "bytes": 9054
+      },
+      {
+        "file": "experiments/tla-conformance/r137-transfer-correction-r118-currentization/transition-classification.json",
+        "sha256": "c224c27f77476f3ce9e621d5fa6d423613827003dd2cc7663f8a2e58deb9eaa0",
+        "bytes": 5292
+      },
+      {
+        "file": "experiments/tla-conformance/r163-r147-whole-trace-peer/receipt.json",
+        "sha256": "e61ef8764aa61e02814d59ce199db7443a648fc7d6a4c2be49ce97a7a4013988",
+        "bytes": 2251
+      },
+      {
+        "file": "experiments/tla-conformance/residual-core-v4-r10/family.mjs",
+        "sha256": "eedad8552a0cf54169b99f2fb63d1e681804a8e1f569eb38dc8b3d67e9bfa3da",
+        "bytes": 5615
+      },
+      {
+        "file": "experiments/tla-conformance/storage-protocol-r7/value-family.mjs",
+        "sha256": "77641c9ada40601c707dcc749134e34d28d92dbd079959b78d9270e819ebc574",
+        "bytes": 12525
+      },
+      {
+        "file": "experiments/tla-conformance/surface-bindings/lib/binding-checker.mjs",
+        "sha256": "4dd6bbf135ebb5a5da86b714e0d9b9d3550547a7df7b39aec1a471bf1ef3f88e",
+        "bytes": 57822
+      },
+      {
+        "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+        "sha256": "8d8854032e38a0df1044e5596c66d9a2b672277f357e361102b0b12c3d6952a0",
+        "bytes": 24128
+      },
+      {
+        "file": "experiments/tla-conformance/surface-residual-r8/direct-pure-v7/family.mjs",
+        "sha256": "09e00195e860663761ce0820058475ac4e087600a0733f96a082f8f038cf4352",
+        "bytes": 10408
+      },
+      {
+        "file": "experiments/tla-conformance/surface-residual-r8/final-unique8-r9/value-v2/family.mjs",
+        "sha256": "bf347b18208bd3f199e301e706b855cac0e82423097933ec66ccf97f38c9a4b1",
+        "bytes": 6566
+      },
+      {
+        "file": "experiments/tla-conformance/surface-residual-r8/pure-residual5-r10/composition-open-family.mjs",
+        "sha256": "ddc86319a13306798b17e79faf377b2fdb4ab977045be42368bf03daf6a9975b",
+        "bytes": 10370
+      },
+      {
+        "file": "experiments/tla-conformance/throughput-r7/evidence/queue-correction-composed-a2-producer.json",
+        "sha256": "52935a89c4cca22e5eba1050cd93db57bb00543929f1e2592d19fdcd2e32cd2f",
+        "bytes": 38227
+      },
+      {
+        "file": "experiments/tla-conformance/throughput-r7/evidence/queue-direct-transfer-a2-producer.json",
+        "sha256": "c69db7b552527a27d0f02e9abd0e898dca053f2914787f4bf120423e12d2ca97",
+        "bytes": 88740
+      },
+      {
+        "file": "experiments/tla-conformance/throughput-r7/evidence/queue-migration-materialize-v1-values.json",
+        "sha256": "933205610e2fe42e52f376191d41916ee1b7d73989f7c36900ea40f0b851c598",
+        "bytes": 27669
+      },
+      {
+        "file": "experiments/tla-conformance/throughput-r7/evidence/queue-reservation-replacement-a2-producer.json",
+        "sha256": "aea631ceadea94cd755b18605cda000d226effc167d6a91aa36daa213a710fed",
+        "bytes": 21283
+      },
+      {
+        "file": "experiments/tla-conformance/throughput-r7/evidence/queue-surface-count-abandon-a1-producer.json",
+        "sha256": "c624180c41f7e699da2f3ba61de5bc92eabf531ace5fb60808dbc8f4be57e1a7",
+        "bytes": 28031
+      },
+      {
+        "file": "experiments/tla-conformance/throughput-r7/evidence/queue-surface-final-v2-values.json",
+        "sha256": "f95fb7c1678a9acf20a99381958b18de20afbee36623e4ab2797fad95905268a",
+        "bytes": 89831
+      },
+      {
+        "file": "experiments/tla-conformance/throughput-r7/evidence/queue-trace-removal-a2-producer.json",
+        "sha256": "152a35c0cb520193ab19cc757bcf64d43d2432c3b318a10a57244ba20ee3a1fe",
+        "bytes": 13968
+      },
+      {
+        "file": "experiments/tla-conformance/throughput-r7/evidence/queue-traceability-apply-v1-values.json",
+        "sha256": "d427ba40d5197369bace3c26a2d6611025f6a69baebce0c8833e211a27165dd7",
+        "bytes": 12097
+      },
+      {
+        "file": "experiments/tla-conformance/throughput-r7/evidence/queue-transfer-adapter-a2-producer.json",
+        "sha256": "11d617e530bf323f27ad2b28a8bf72a2967a6cabf28fdc6ebd709c5d619af486",
+        "bytes": 38671
+      },
+      {
+        "file": "experiments/tla-conformance/throughput-r7/evidence/transfer-correction-values.json",
+        "sha256": "9da6a2ded5592c1d054666369320f88cf7e12cd1e4858a0719174d7fc7d47c1d",
+        "bytes": 4360076
+      },
+      {
+        "file": "experiments/tla-conformance/throughput-r7/registered-families.mjs",
+        "sha256": "9af0a6a07e6fc2a366bb403b526be435c57f2c50d9e82c67416028936dc65a19",
+        "bytes": 15869
+      },
+      {
+        "file": "experiments/tla-conformance/throughput-r7/registered-producer-family.mjs",
+        "sha256": "e8c9fcbbf669de7a68a76984da27d179b81b49ccba4fe645faf50790405dd655",
+        "bytes": 7417
+      },
+      {
+        "file": "experiments/tla-conformance/throughput-r7/registered-value-family.mjs",
+        "sha256": "1926bfc82e8cc608904d8a2785c2ae6775d2905186b4d9fb8b137a0696b821b3",
+        "bytes": 6193
+      },
+      {
+        "file": "experiments/tla-conformance/throughput-r7/strict-dependency-receipt.mjs",
+        "sha256": "0624eb98380768c24db1221e533e51c5248bb1311f5e144c01f3d2e5e7fad4f0",
+        "bytes": 3139
+      },
+      {
+        "file": "experiments/tla-conformance/throughput-r7/strict-dependency-semantic-receipt.mjs",
+        "sha256": "c33c1d5147e4d99ccf0c4c486bdccc482e12cc68b76f1748bc2c222c437fbbd1",
+        "bytes": 439
+      },
+      {
+        "file": "experiments/tla-conformance/traceability-apply1-r8/family.mjs",
+        "sha256": "04653d1bed156ac92354e9d506782179698e520cedbdfc04e68b5b6721f95deb",
+        "bytes": 2860
+      },
+      {
+        "file": "experiments/tla-conformance/transfer-surface-r6/source-equations-r7/contracts.mjs",
+        "sha256": "2dfa539b47911dc3bbcedbc6e9f28a83fb263ecff89c46bd61eb289bbd51079d",
+        "bytes": 12902
+      },
+      {
+        "file": "experiments/tla-conformance/transfer-surface-r6/source-equations-r7/family.mjs",
+        "sha256": "f2d187115bb1935d173fa456e8bcae7121e0ad4687d6322a2ecf6548a5bb28a1",
+        "bytes": 42412
+      },
+      {
+        "file": "experiments/tla-conformance/value-contracts/catalog-family.mjs",
+        "sha256": "32439d061232e266f53acd3b33025b97b172769ffe418964319177b8041cab9a",
+        "bytes": 13766
+      },
+      {
+        "file": "experiments/tla-conformance/value-contracts/surface-binding.mjs",
+        "sha256": "619b37fe3a9bc9be22e8a0c2167187cfce987c7856280c6df0c36c5a230c3618",
+        "bytes": 5245
+      },
+      {
+        "file": "experiments/tla-conformance/value-contracts/verify.mjs",
+        "sha256": "8a851ab3a5f532feb344674f69445797b3f873450e8c044ec7646505a308acad",
+        "bytes": 12938
+      }
+    ],
+    "purpose": "Hash-pinned self-contained materialization of omitted verifier source/evidence dependencies; every member must be absent before extraction and is removed after verification."
+  },
+  "bundles": {
+    "esbuildVersion": "0.27.7",
+    "entries": [
+      {
+        "mode": "verify",
+        "file": "experiments/tla-conformance/final-convergence/compact-final-verify.mjs",
+        "sha256": "5b1cba994f693c2073de6c4b68017ae58592a7dd051d265a85bb91b88fba6f1a",
+        "bytes": 775252
+      },
+      {
+        "mode": "selftest",
+        "file": "experiments/tla-conformance/final-convergence/compact-final-selftest.mjs",
+        "sha256": "000ae3c5027d2a70113332facb017866eac031574f2f3bf76ba0fdc14f2cb99e",
+        "bytes": 776656
+      },
+      {
+        "mode": "registry",
+        "file": "experiments/tla-conformance/final-convergence/compact-final-registry.mjs",
+        "sha256": "6cd1e1523a51712a8e84d9bc453d3b114c2a227eed2037ace4cf7cef18c0ca10",
+        "bytes": 3329
+      }
+    ],
+    "sources": [
+      {
+        "file": "experiments/tla-conformance/astra-authority-control-r8/family.mjs",
+        "sha256": "a0aef894200eec0f3cc1002b8a230054d69b50421497fc39fbc73c5d61527352",
+        "bytes": 9302
+      },
+      {
+        "file": "experiments/tla-conformance/astra-authority-control-r8/laws.mjs",
+        "sha256": "eb12edbec96b25c5a82da23c89fb48a47d35c47d81caf50ff21b1aab7a158188",
+        "bytes": 3267
+      },
+      {
+        "file": "experiments/tla-conformance/authority-r5/catalog-published-source-contracts.mjs",
+        "sha256": "d05ecad078de891073c82f4c523090382b608204269281464ca9a325ca3208b2",
+        "bytes": 15253
+      },
+      {
+        "file": "experiments/tla-conformance/authority-r5/catalog-published-source-equations.mjs",
+        "sha256": "243e06ade88446247ab26d1bcec53fb70cccab6c5929f2013dc2aa995ae73ce8",
+        "bytes": 42893
+      },
+      {
+        "file": "experiments/tla-conformance/authority-r5/catalog-read-dependency-closure-certificate.mjs",
+        "sha256": "43af8f930467cc8095cbb856487e7633d23ee2d0d9f9e28ae7615ed99e8d28d6",
+        "bytes": 70612
+      },
+      {
+        "file": "experiments/tla-conformance/authority-r5/catalog-read-dependency-closure-contracts.mjs",
+        "sha256": "5954cda55045d1bc447cc5a02e7ab1b85f067d065a56dcfb0d5cc94e1b9e6581",
+        "bytes": 17708
+      },
+      {
+        "file": "experiments/tla-conformance/authority-values-r40/family.mjs",
+        "sha256": "ff0c7243f5f2505057193b117dcbd03792faf96c9c6bef06d76dfeef4123915a",
+        "bytes": 16278
+      },
+      {
+        "file": "experiments/tla-conformance/boundary-adjudication-r18/family.mjs",
+        "sha256": "785ca23ec2e2fad59bc02c581f48b71fc9f0b5d1c0854363e434e3e33d723048",
+        "bytes": 3864
+      },
+      {
+        "file": "experiments/tla-conformance/catalog-foundation-r7/contracts.mjs",
+        "sha256": "e6efabb603807c5728d958ced0a5ce671e41249e0342bf22db55494ea253b504",
+        "bytes": 10567
+      },
+      {
+        "file": "experiments/tla-conformance/catalog-foundation-r7/family.mjs",
+        "sha256": "932cb060a2dff23d2866849c925ac1c5ce5e028533f875e8cc125fcfb2feee76",
+        "bytes": 43494
+      },
+      {
+        "file": "experiments/tla-conformance/catalog-foundation-r7/normalize.mjs",
+        "sha256": "7675175f5f4cd88f853a3b49530bbb4e1e625112fd3bd45786ff81210a9fee26",
+        "bytes": 14153
+      },
+      {
+        "file": "experiments/tla-conformance/catalog-public-lifecycle7-r9/publication-core-r10/value-family.mjs",
+        "sha256": "04af0af1f385abe7fcd5f18421f6f91ba681c440de752f0df0cf044f97402eec",
+        "bytes": 7087
+      },
+      {
+        "file": "experiments/tla-conformance/final-convergence/authority-current.mjs",
+        "sha256": "ab8fd408746fcd416f35b3e89c69b956c70d99b93a74e165fea628e425dfae43",
+        "bytes": 10974
+      },
+      {
+        "file": "experiments/tla-conformance/final-convergence/build-final-registry.mjs",
+        "sha256": "bddf4ad8bb8c94c586f924efc4a9c031d44cb7585de53450d0e6584ce12564f9",
+        "bytes": 2738
+      },
+      {
+        "file": "experiments/tla-conformance/final-convergence/final-families.mjs",
+        "sha256": "dd3dd5b74ce189ae558cd59cc0f1ef1822116d1f68edc1f471977029db21a53d",
+        "bytes": 11264
+      },
+      {
+        "file": "experiments/tla-conformance/final-convergence/final-head-transport.mjs",
+        "sha256": "5aa31b3e633126332cce4225e78df401dbd65974706a4a6c071f9ea7330dc119",
+        "bytes": 11291
+      },
+      {
+        "file": "experiments/tla-conformance/final-convergence/final-selftest.mjs",
+        "sha256": "ed9e4758c88eecd591b4ca97f4f3f8fad73769e26cb8150f48048f3fb8c1d333",
+        "bytes": 4604
+      },
+      {
+        "file": "experiments/tla-conformance/final-convergence/r137-current.mjs",
+        "sha256": "ec103c0e6c7ce1cdea8dc6934580af88674ecfa010c31134bec78754f87f7ded",
+        "bytes": 7043
+      },
+      {
+        "file": "experiments/tla-conformance/final-convergence/r168-assurance-transport.mjs",
+        "sha256": "6b2fe7115d7129cb16e49bf6b6aac866c02d8316dac72f4d591a432035e0fd5f",
+        "bytes": 8774
+      },
+      {
+        "file": "experiments/tla-conformance/final-convergence/readworld-current.mjs",
+        "sha256": "abcd6143bf86b66a1d05743051132be8c14779116f0f3b5c2eeef8dc14ad7269",
+        "bytes": 7504
+      },
+      {
+        "file": "experiments/tla-conformance/final-convergence/run-final-verifier.mjs",
+        "sha256": "7a4198e01e73dcf89b8970f55283c2fa418f5e7e723b45faba0ae4d7d51e96b7",
+        "bytes": 3278
+      },
+      {
+        "file": "experiments/tla-conformance/final-convergence/wrapper-current.mjs",
+        "sha256": "e2244f155912c5d0b826291d0d1d872139f7bcf5d62f9d9ae2c4662de6ab84bf",
+        "bytes": 8494
+      },
+      {
+        "file": "experiments/tla-conformance/fungibility-plan-r9/value-family.mjs",
+        "sha256": "eb3116cfea1c3d1311767f6a52d204894ef6d1785651c4240ea7c12973b08b9f",
+        "bytes": 12464
+      },
+      {
+        "file": "experiments/tla-conformance/fungibility-read-r9/summary-family.mjs",
+        "sha256": "c0da6a8677c30603a30f458f1b2411ff2b00f7e986d76332f340ff24f225e3a2",
+        "bytes": 13774
+      },
+      {
+        "file": "experiments/tla-conformance/fungibility-values5-r8/family.mjs",
+        "sha256": "5a79e3667f41b0bdbb99bb9b53ff16b50fb383126494037a45b4281479434ba4",
+        "bytes": 7269
+      },
+      {
+        "file": "experiments/tla-conformance/identity-values-r7/contracts.mjs",
+        "sha256": "dea23f4b3f929ac1bcf9b50cd41517c1b3fc4e3d879904aa6c4d83263ba7b2ce",
+        "bytes": 10705
+      },
+      {
+        "file": "experiments/tla-conformance/identity-values-r7/family.mjs",
+        "sha256": "493486e43054dd4613091e973558f2c0463e96ff83347080a3f32e636dde6709",
+        "bytes": 53766
+      },
+      {
+        "file": "experiments/tla-conformance/materialize1-r8/family.mjs",
+        "sha256": "dc42f9469113383d720bb669f842a38fcfb8a8974b8c0a910066e37efd7c62b9",
+        "bytes": 15036
+      },
+      {
+        "file": "experiments/tla-conformance/migration-helper-causal-r7/causal-runtime-verifier.mjs",
+        "sha256": "9ea9c57fbbbe973c27d621f14db11da443ff0076436f1bd47f65d506dadbd0e5",
+        "bytes": 2438
+      },
+      {
+        "file": "experiments/tla-conformance/migration-helper-causal-r7/independent-v9-laws.mjs",
+        "sha256": "1b8d045b8a12c6e04ce1ffc8864e437d050fa9ba06ea7dd2f888a0c221fd22d7",
+        "bytes": 26967
+      },
+      {
+        "file": "experiments/tla-conformance/migration-helper-causal-r7/registered-causal-b4-family.mjs",
+        "sha256": "bf374bdd2cbca5ad0c656b40778f4d8b3bb0e94a40494639af6d7895688911cc",
+        "bytes": 14154
+      },
+      {
+        "file": "experiments/tla-conformance/migration-helper-causal-r7/registered-frontier-v2-family.mjs",
+        "sha256": "5fc4397ee1c4cdd5711500d7f7bd041d2c8be9e45261556020a7f110e8a61326",
+        "bytes": 4105
+      },
+      {
+        "file": "experiments/tla-conformance/migration-helper-causal-r7/registered-value-family.mjs",
+        "sha256": "2740e8daa4881b604e551607bcb202229b366169c05e8cac830d4e2ba34729d4",
+        "bytes": 6661
+      },
+      {
+        "file": "experiments/tla-conformance/migration-r5/traceability-value-family.mjs",
+        "sha256": "aee9c793f692623d6f837d260d2534a75152846fe71e0401df1123d37fb9c1c8",
+        "bytes": 13883
+      },
+      {
+        "file": "experiments/tla-conformance/new-source-honest486-r43/pinned-irrelevance.mjs",
+        "sha256": "65200bf7ec49f2bb50565f5744611fa1d7172f366efc4b07a1094e3061c00bdf",
+        "bytes": 5232
+      },
+      {
+        "file": "experiments/tla-conformance/new-source-honest486-r43/value-currentizer.mjs",
+        "sha256": "ab310a81502d831d347e7b8e2ad8bc998c4e93e9ad1ef0f73200ad19b316869d",
+        "bytes": 3766
+      },
+      {
+        "file": "experiments/tla-conformance/quantity-values-r7/certificate.mjs",
+        "sha256": "8099926f527d391571e57c0828a27f24c57d4a7b59843684f9bda4c69f50cb26",
+        "bytes": 36413
+      },
+      {
+        "file": "experiments/tla-conformance/quantity-values-r7/contracts.mjs",
+        "sha256": "e45e82682ab647b80c0897e666b5b5b6b84f6cac990c785a925f307cabc7c239",
+        "bytes": 15965
+      },
+      {
+        "file": "experiments/tla-conformance/quantity-values-r7/event-values/certificate.mjs",
+        "sha256": "db0ad0a8e79777a6fe2b2e6fabfd550a87486d784aaf966b089f537dab505881",
+        "bytes": 54829
+      },
+      {
+        "file": "experiments/tla-conformance/quantity-values-r7/event-values/contracts.mjs",
+        "sha256": "acfd4139f5251ebf7a4aa85d5b464c70904c96fdf53964f7cb619a25d51f092c",
+        "bytes": 20851
+      },
+      {
+        "file": "experiments/tla-conformance/quantity-values-r7/event-values/registered-family-adapter.mjs",
+        "sha256": "e9ab67e6ac85cccce060b1b047c890593270222bab6184c076ab1596588116d8",
+        "bytes": 655
+      },
+      {
+        "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/sparse-record-certificate.mjs",
+        "sha256": "87d1873ad8385aa4a2672500d083810bc6c7c877d1885471effb76309ea105b4",
+        "bytes": 6641
+      },
+      {
+        "file": "experiments/tla-conformance/residual-core-v4-r10/family.mjs",
+        "sha256": "eedad8552a0cf54169b99f2fb63d1e681804a8e1f569eb38dc8b3d67e9bfa3da",
+        "bytes": 5615
+      },
+      {
+        "file": "experiments/tla-conformance/storage-protocol-r7/value-family.mjs",
+        "sha256": "77641c9ada40601c707dcc749134e34d28d92dbd079959b78d9270e819ebc574",
+        "bytes": 12525
+      },
+      {
+        "file": "experiments/tla-conformance/surface-bindings/lib/binding-checker.mjs",
+        "sha256": "4dd6bbf135ebb5a5da86b714e0d9b9d3550547a7df7b39aec1a471bf1ef3f88e",
+        "bytes": 57822
+      },
+      {
+        "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+        "sha256": "8d8854032e38a0df1044e5596c66d9a2b672277f357e361102b0b12c3d6952a0",
+        "bytes": 24128
+      },
+      {
+        "file": "experiments/tla-conformance/surface-residual-r8/direct-pure-v7/family.mjs",
+        "sha256": "09e00195e860663761ce0820058475ac4e087600a0733f96a082f8f038cf4352",
+        "bytes": 10408
+      },
+      {
+        "file": "experiments/tla-conformance/surface-residual-r8/final-unique8-r9/value-v2/family.mjs",
+        "sha256": "bf347b18208bd3f199e301e706b855cac0e82423097933ec66ccf97f38c9a4b1",
+        "bytes": 6566
+      },
+      {
+        "file": "experiments/tla-conformance/surface-residual-r8/pure-residual5-r10/composition-open-family.mjs",
+        "sha256": "ddc86319a13306798b17e79faf377b2fdb4ab977045be42368bf03daf6a9975b",
+        "bytes": 10370
+      },
+      {
+        "file": "experiments/tla-conformance/throughput-r7/registered-families.mjs",
+        "sha256": "9af0a6a07e6fc2a366bb403b526be435c57f2c50d9e82c67416028936dc65a19",
+        "bytes": 15869
+      },
+      {
+        "file": "experiments/tla-conformance/throughput-r7/registered-producer-family.mjs",
+        "sha256": "e8c9fcbbf669de7a68a76984da27d179b81b49ccba4fe645faf50790405dd655",
+        "bytes": 7417
+      },
+      {
+        "file": "experiments/tla-conformance/throughput-r7/registered-value-family.mjs",
+        "sha256": "1926bfc82e8cc608904d8a2785c2ae6775d2905186b4d9fb8b137a0696b821b3",
+        "bytes": 6193
+      },
+      {
+        "file": "experiments/tla-conformance/throughput-r7/strict-dependency-receipt.mjs",
+        "sha256": "0624eb98380768c24db1221e533e51c5248bb1311f5e144c01f3d2e5e7fad4f0",
+        "bytes": 3139
+      },
+      {
+        "file": "experiments/tla-conformance/throughput-r7/strict-dependency-semantic-receipt.mjs",
+        "sha256": "c33c1d5147e4d99ccf0c4c486bdccc482e12cc68b76f1748bc2c222c437fbbd1",
+        "bytes": 439
+      },
+      {
+        "file": "experiments/tla-conformance/traceability-apply1-r8/family.mjs",
+        "sha256": "04653d1bed156ac92354e9d506782179698e520cedbdfc04e68b5b6721f95deb",
+        "bytes": 2860
+      },
+      {
+        "file": "experiments/tla-conformance/transfer-surface-r6/source-equations-r7/contracts.mjs",
+        "sha256": "2dfa539b47911dc3bbcedbc6e9f28a83fb263ecff89c46bd61eb289bbd51079d",
+        "bytes": 12902
+      },
+      {
+        "file": "experiments/tla-conformance/transfer-surface-r6/source-equations-r7/family.mjs",
+        "sha256": "f2d187115bb1935d173fa456e8bcae7121e0ad4687d6322a2ecf6548a5bb28a1",
+        "bytes": 42412
+      },
+      {
+        "file": "experiments/tla-conformance/value-contracts/catalog-family.mjs",
+        "sha256": "32439d061232e266f53acd3b33025b97b172769ffe418964319177b8041cab9a",
+        "bytes": 13766
+      },
+      {
+        "file": "experiments/tla-conformance/value-contracts/surface-binding.mjs",
+        "sha256": "619b37fe3a9bc9be22e8a0c2167187cfce987c7856280c6df0c36c5a230c3618",
+        "bytes": 5245
+      },
+      {
+        "file": "experiments/tla-conformance/value-contracts/verify.mjs",
+        "sha256": "8a851ab3a5f532feb344674f69445797b3f873450e8c044ec7646505a308acad",
+        "bytes": 12938
+      }
+    ],
+    "entrypointGuardRewrite": "Bundled submodule self-execution guards matching process.argv[1] == fileURLToPath(import.meta.url) are disabled; source hashes are recorded here."
+  }
+}

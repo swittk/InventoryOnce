@@ -1,0 +1,2789 @@
+{
+  "schemaVersion": 1,
+  "route": "CERTIFIED_VALUE_EQUATION",
+  "proofKind": "fungibility-allocation-plan-complete-values-v1",
+  "family": "FungibilityAllocationPlan",
+  "surfaceDigest": "ec078013972d9ee2b4ba84d28cfa7449a18dc29679d81766e314db6a6139b81e",
+  "domain": "All typed planner inputs whose catalog is validated and whose world is a coherent fully published InventoryOnce world, matching the public planner contract. The complete planner and every private helper it transitively owns are checked against a frozen independent equation program; imported runtime semantics are final-source current authorities or the separately verified current FungibilityValue5 normalization equation. Reservation preservation composes the complete R134 current inspectInventoryReservationFeasibility equation, including recorded-deficit burden and sparse-record semantics, rather than treating bounded ReservationSafety B evidence as a universal value equation. No samples, native replay, graph replay, or stateful action credit are used.",
+  "allAdmittedInputs": true,
+  "sampledInputs": 0,
+  "graphRuns": 0,
+  "replayRuns": 0,
+  "inputs": [
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-published-source-contracts.mjs",
+      "sha256": "d05ecad078de891073c82f4c523090382b608204269281464ca9a325ca3208b2"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-published-source-equations.mjs",
+      "sha256": "243e06ade88446247ab26d1bcec53fb70cccab6c5929f2013dc2aa995ae73ce8"
+    },
+    {
+      "file": "experiments/tla-conformance/fungibility-values5-r8/equations.expected.ts.txt",
+      "sha256": "2cd2c41e8dcfc87de7626b270c1f234a43a11339b50f7a5483341642b2d95349"
+    },
+    {
+      "file": "experiments/tla-conformance/fungibility-values5-r8/family.mjs",
+      "sha256": "5a79e3667f41b0bdbb99bb9b53ff16b50fb383126494037a45b4281479434ba4"
+    },
+    {
+      "file": "experiments/tla-conformance/identity-values-r7/contracts.mjs",
+      "sha256": "dea23f4b3f929ac1bcf9b50cd41517c1b3fc4e3d879904aa6c4d83263ba7b2ce"
+    },
+    {
+      "file": "experiments/tla-conformance/identity-values-r7/equations.ts.txt",
+      "sha256": "f4b3b7a3fa1dbf3338f295c3d97f73cf753cba7741d69f272e91db7fa5079844"
+    },
+    {
+      "file": "experiments/tla-conformance/identity-values-r7/family.mjs",
+      "sha256": "493486e43054dd4613091e973558f2c0463e96ff83347080a3f32e636dde6709"
+    },
+    {
+      "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/catalog-read-current.json",
+      "sha256": "5cdbaea801a0155684a63394b7c8cc4ffdad586b30c988d55a3b90d732f34196"
+    },
+    {
+      "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/current-plan-dependencies.mjs",
+      "sha256": "a2ddf8adf8b3b005f53964f09847e35d4109091b457cfafa31fde273ba75e2d5"
+    },
+    {
+      "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/expected/plan-current.ts.txt",
+      "sha256": "4391b56e8ae874512b031064b72b7a46db263841f4f8b980b4e9124c36ab6021"
+    },
+    {
+      "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/plan-current.mjs",
+      "sha256": "cbac16cdbc3df26b2bcc86bc7b98f36eb6e381021f16ab568a3997b1fe9edacf"
+    },
+    {
+      "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+      "sha256": "8d8854032e38a0df1044e5596c66d9a2b672277f357e361102b0b12c3d6952a0"
+    },
+    {
+      "file": "experiments/tla-conformance/value-contracts/catalog-family.mjs",
+      "sha256": "32439d061232e266f53acd3b33025b97b172769ffe418964319177b8041cab9a"
+    },
+    {
+      "file": "experiments/tla-conformance/value-contracts/surface-binding.mjs",
+      "sha256": "619b37fe3a9bc9be22e8a0c2167187cfce987c7856280c6df0c36c5a230c3618"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2015.collection.d.ts",
+      "sha256": "dc2df20b1bcdc8c2d34af4926e2c3ab15ffe1160a63e58b7e09833f616efff44"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2015.core.d.ts",
+      "sha256": "c57796738e7f83dbc4b8e65132f11a377649c00dd3eee333f672b8f0a6bea671"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2015.iterable.d.ts",
+      "sha256": "0559b1f683ac7505ae451f9a96ce4c3c92bdc71411651ca6ddb0e88baaaad6a3"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2016.array.include.d.ts",
+      "sha256": "d15bea3d62cbbdb9797079416b8ac375ae99162a7fba5de2c6c505446486ac0a"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2017.string.d.ts",
+      "sha256": "2f11ff796926e0832f9ae148008138ad583bd181899ab7dd768a2666700b1893"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2020.bigint.d.ts",
+      "sha256": "d6d7ae4d1f1f3772e2a3cde568ed08991a8ae34a080ff1151af28b7f798e22ca"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2022.error.d.ts",
+      "sha256": "0a3d63ef2b853447ec4f749d3f368ce642264246e02911fcb1590d8c161b8005"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es5.d.ts",
+      "sha256": "c430d44666289dae81f30fa7b2edebf186ecc91a2d4c71266ea6ae76388792e1"
+    },
+    {
+      "file": "node_modules/typescript/package.json",
+      "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+    },
+    {
+      "file": "package.json",
+      "sha256": "f068ac4f83c2984a38d439b90159e48b7fdf42ee4792f7ccde56230c7ecf1a7c"
+    },
+    {
+      "file": "src/allocation.ts",
+      "sha256": "2721b6f412aa3abb55ffa9d929eaefc2d8982973c4ee862479b3af9988d3112d"
+    },
+    {
+      "file": "src/amounts.ts",
+      "sha256": "98ddc0fa8d80b2ca244a207f4eb8b55d86131c2ccfd77620da5c85248d03ef57"
+    },
+    {
+      "file": "src/canonical.ts",
+      "sha256": "eb2981c629182525c6742d2a67f513f0daec88507e5861f475d5de04984a2d56"
+    },
+    {
+      "file": "src/catalog.ts",
+      "sha256": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56"
+    },
+    {
+      "file": "src/events.ts",
+      "sha256": "8d076ee8f426c011d7df3f205dd014f0e835f71798b3684ca56844b691ba2370"
+    },
+    {
+      "file": "src/facade.ts",
+      "sha256": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d"
+    },
+    {
+      "file": "src/fungibility.ts",
+      "sha256": "483741a2e0f8e3cdf38e358929cce5f8b29ffb41494b1268cafa1d38a2197344"
+    },
+    {
+      "file": "src/index.ts",
+      "sha256": "2e0587666ff20d57a757c0576fddf8badf36c2901735db7225a0cebda829b555"
+    },
+    {
+      "file": "src/kernel.ts",
+      "sha256": "f336d22a07d6018dc5528bd2a13a33c5aa9f1a72b0c0ed048cb73219b9b0c06c"
+    },
+    {
+      "file": "src/measurements.ts",
+      "sha256": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5"
+    },
+    {
+      "file": "src/model.ts",
+      "sha256": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122"
+    },
+    {
+      "file": "src/ordering.ts",
+      "sha256": "e72ac94e99b1b4914f3f6dec55583e401484a41ecadd051be788724c88f24cb9"
+    },
+    {
+      "file": "src/picking.ts",
+      "sha256": "172dc19f4987ad392106a1b9cf32400e73f5bed0fb6b9344aa5eb1319afc5006"
+    },
+    {
+      "file": "src/projection.ts",
+      "sha256": "3710cbc322d4bc3e495e3023a7146e72996a95cc21e92c7a0a6a8f1e20bfc0da"
+    },
+    {
+      "file": "src/quantity.ts",
+      "sha256": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6"
+    },
+    {
+      "file": "src/reservations.ts",
+      "sha256": "fd0bfe707583a7952e4301cafd9ab5d702059b9174f18b5c5e30ae0d6cf85113"
+    },
+    {
+      "file": "src/selectors.ts",
+      "sha256": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957"
+    },
+    {
+      "file": "src/sparse-record.ts",
+      "sha256": "272a1f63afe9ed4c84cd76a4ce051b210b52e6e0a54cf47ec4f11a29979ada71"
+    },
+    {
+      "file": "src/usability.ts",
+      "sha256": "bb4cf272fd01be5c4866b388f2af63e9fdd7286c208600fb635ca10d30f0ad51"
+    },
+    {
+      "file": "tsconfig.json",
+      "sha256": "b46c6324e4819ea54c9824d2e0f4c28f9304aa54e39d7f8afbac65f744eed464"
+    }
+  ],
+  "equations": [
+    {
+      "id": "src/fungibility.ts#planInventoryFungibilityAllocation",
+      "law": "Plan one exact common-basis FIFO/FEFO allocation across every member revision, preserving exact member identities, package increments, expiry/increment diagnostics, and active reservation feasibility before returning source lines.",
+      "termSha256": "3da4feaee700c1fc0db2a494559409efc9882a5b7cf63321d48c3edabdc58747",
+      "implementation": {
+        "file": "src/fungibility.ts",
+        "start": {
+          "offset": 13039,
+          "line": 327,
+          "column": 1
+        },
+        "end": {
+          "offset": 18406,
+          "line": 487,
+          "column": 2
+        },
+        "sourceHash": "483741a2e0f8e3cdf38e358929cce5f8b29ffb41494b1268cafa1d38a2197344",
+        "astHash": "79661031a912e9fc37aa56f1feb378cf8c8dffb9429d00065ea1683f521341ec"
+      }
+    },
+    {
+      "id": "src/fungibility.ts#validateFungibilityReservationEffect",
+      "law": "Accept depletion only without a destination and transfer only with a nonblank destination; reject every malformed reservation effect before allocation search.",
+      "termSha256": "8a8e3b4bcca23ffe11592823f36bda714ca03ee3e82d20516fcf74fc200ae0cb",
+      "implementation": {
+        "file": "src/fungibility.ts",
+        "start": {
+          "offset": 18487,
+          "line": 490,
+          "column": 1
+        },
+        "end": {
+          "offset": 19037,
+          "line": 509,
+          "column": 2
+        },
+        "sourceHash": "483741a2e0f8e3cdf38e358929cce5f8b29ffb41494b1268cafa1d38a2197344",
+        "astHash": "c488902a496d3311574f3f498bd696c364f1297672cca6b91100bfa3d69f94b1"
+      }
+    },
+    {
+      "id": "src/fungibility.ts#fungibilityAllocationsPreserveReservations",
+      "law": "Apply the complete hypothetical allocation to sparse projection overlays, including destination rows for transfer, then accept exactly when the certified reservation feasibility projection reports Feasible.",
+      "termSha256": "4bf7e887e385a99dde5c1bfe85fe28b808cf4a41b6771e3633e465ae2b9a92f8",
+      "implementation": {
+        "file": "src/fungibility.ts",
+        "start": {
+          "offset": 20078,
+          "line": 531,
+          "column": 1
+        },
+        "end": {
+          "offset": 24424,
+          "line": 665,
+          "column": 2
+        },
+        "sourceHash": "483741a2e0f8e3cdf38e358929cce5f8b29ffb41494b1268cafa1d38a2197344",
+        "astHash": "44fb15cc1248de1554cac8ce84e44dec1b986cf0f074323166c05f9f99b064ea"
+      }
+    },
+    {
+      "id": "src/fungibility.ts#createFungibilitySparseRecordOverlay",
+      "law": "Provide a tombstone-aware sparse record overlay whose get/set/delete/has operations preserve immutable-base reads while retaining only local what-if mutations.",
+      "termSha256": "e21cb3def3d5a74de26ac897a2e35e014648c9bba86acf2ee1892f498dfb5ea0",
+      "implementation": {
+        "file": "src/fungibility.ts",
+        "start": {
+          "offset": 24625,
+          "line": 671,
+          "column": 1
+        },
+        "end": {
+          "offset": 26824,
+          "line": 724,
+          "column": 2
+        },
+        "sourceHash": "483741a2e0f8e3cdf38e358929cce5f8b29ffb41494b1268cafa1d38a2197344",
+        "astHash": "1abbfbb142dd844bf9086bc8140cb1f3fd29d89ab7dcfc0aab7bab82b6d641d0"
+      }
+    },
+    {
+      "id": "src/fungibility.ts#addFungibilitySimulationIndex",
+      "law": "Insert one exact position identity into one sparse index bucket once and retain deterministic sorted order.",
+      "termSha256": "bccfa3777e60b10a37b0566e494aa9f291a4ba9b3fcf23b42ca186a2b8d74210",
+      "implementation": {
+        "file": "src/fungibility.ts",
+        "start": {
+          "offset": 26907,
+          "line": 727,
+          "column": 1
+        },
+        "end": {
+          "offset": 27265,
+          "line": 737,
+          "column": 2
+        },
+        "sourceHash": "483741a2e0f8e3cdf38e358929cce5f8b29ffb41494b1268cafa1d38a2197344",
+        "astHash": "b16c7a9590b2b28a4a698feafccf3b8fd1e960bad8f9fd2fe66135189f48ed50"
+      }
+    },
+    {
+      "id": "src/fungibility.ts#removeFungibilitySimulationIndex",
+      "law": "Remove exactly one position identity from one sparse index bucket and tombstone the bucket when it becomes empty.",
+      "termSha256": "898d348eea5aa188a608d1b2a0ca263fdd46cb7defad05fcd46ed1b33c532612",
+      "implementation": {
+        "file": "src/fungibility.ts",
+        "start": {
+          "offset": 27346,
+          "line": 740,
+          "column": 1
+        },
+        "end": {
+          "offset": 27836,
+          "line": 753,
+          "column": 2
+        },
+        "sourceHash": "483741a2e0f8e3cdf38e358929cce5f8b29ffb41494b1268cafa1d38a2197344",
+        "astHash": "7523263e5ad42b9ba5306948a66c9fc758a0a03218b43c09da6f68960c234a41"
+      }
+    },
+    {
+      "id": "src/fungibility.ts#addFungibilityCandidate",
+      "law": "Convert one exact eligible member source line into common pool units, derive its indivisible allocation increment, and retain the exact evidence needed to map allocator output back to physical identity.",
+      "termSha256": "10c7a4d41b1e7dcd84235bf2df9c802d6af777c2139600fb4cf455d5081c975d",
+      "implementation": {
+        "file": "src/fungibility.ts",
+        "start": {
+          "offset": 28984,
+          "line": 779,
+          "column": 1
+        },
+        "end": {
+          "offset": 30355,
+          "line": 831,
+          "column": 2
+        },
+        "sourceHash": "483741a2e0f8e3cdf38e358929cce5f8b29ffb41494b1268cafa1d38a2197344",
+        "astHash": "cb4f60af5b6c5a34931a62883d7a637c80d80f2cecf9550c5fcab985ebea0672"
+      }
+    },
+    {
+      "id": "src/fungibility.ts#fungibilityAllocationIncrement",
+      "law": "Return the smallest legal common-basis quantum, requiring whole measured/serialized positions and package multiples while otherwise retaining the member reference quantum.",
+      "termSha256": "f94976c39d92eda95ea3667c93534b3572932d481f34f095ff56ac133095bc44",
+      "implementation": {
+        "file": "src/fungibility.ts",
+        "start": {
+          "offset": 30433,
+          "line": 834,
+          "column": 1
+        },
+        "end": {
+          "offset": 32025,
+          "line": 879,
+          "column": 2
+        },
+        "sourceHash": "483741a2e0f8e3cdf38e358929cce5f8b29ffb41494b1268cafa1d38a2197344",
+        "astHash": "68d7a8765b98388337b729729027f1cc0995130934a5df05aca19e8c9106cf76"
+      }
+    },
+    {
+      "id": "src/fungibility.ts#positionHasIndependentMeasuredContents",
+      "law": "Return true exactly when any independent axis is required or currently nonzero.",
+      "termSha256": "23a0b8889bb3e7ce41431adfa855a57d2b4cdc8c4464152eabdd94139beb89e5",
+      "implementation": {
+        "file": "src/fungibility.ts",
+        "start": {
+          "offset": 32115,
+          "line": 882,
+          "column": 1
+        },
+        "end": {
+          "offset": 32638,
+          "line": 901,
+          "column": 2
+        },
+        "sourceHash": "483741a2e0f8e3cdf38e358929cce5f8b29ffb41494b1268cafa1d38a2197344",
+        "astHash": "7204b9fd88c21fd0e8ac6e2b494ccbeba20e58f17ec1d10e622567bb9105ad14"
+      }
+    },
+    {
+      "id": "src/fungibility.ts#selectorForFungibilityMember",
+      "law": "Create one normalized stock selector for the exact member item/revision while preserving every common fungibility scope dimension.",
+      "termSha256": "fe35a02e7cbfdf57e83a7674793a31feef3777b26fa9f819444b31467fd821a5",
+      "implementation": {
+        "file": "src/fungibility.ts",
+        "start": {
+          "offset": 32714,
+          "line": 904,
+          "column": 1
+        },
+        "end": {
+          "offset": 32986,
+          "line": 913,
+          "column": 2
+        },
+        "sourceHash": "483741a2e0f8e3cdf38e358929cce5f8b29ffb41494b1268cafa1d38a2197344",
+        "astHash": "e7bb81622e23b09d766608c581edcd4a53c812c95b656d7d5a0ed6b314ff138a"
+      }
+    },
+    {
+      "id": "src/fungibility.ts#selectedFungibilityPositions",
+      "law": "Return exactly the projection positions selected by the certified stock-selector lookup.",
+      "termSha256": "1e1e0cfda50e03e01202b53e9444b01737fe08eb1abd8740e73261fbb7a94522",
+      "implementation": {
+        "file": "src/fungibility.ts",
+        "start": {
+          "offset": 33060,
+          "line": 916,
+          "column": 1
+        },
+        "end": {
+          "offset": 33269,
+          "line": 921,
+          "column": 2
+        },
+        "sourceHash": "483741a2e0f8e3cdf38e358929cce5f8b29ffb41494b1268cafa1d38a2197344",
+        "astHash": "3e68c0c89edb21a36adf5e880f7df9379d4a51387010967c83e4f2cfe21f1c33"
+      }
+    },
+    {
+      "id": "src/fungibility.ts#totalPositivePrimary",
+      "law": "Sum only positive primary-axis quantities from selected non-transfer positions in exact quantity arithmetic.",
+      "termSha256": "0235a02c5a01340e45bc8a89a6f93fad1b45ffc2cc913511e8ffb9710fde6ebe",
+      "implementation": {
+        "file": "src/fungibility.ts",
+        "start": {
+          "offset": 33356,
+          "line": 924,
+          "column": 1
+        },
+        "end": {
+          "offset": 34142,
+          "line": 948,
+          "column": 2
+        },
+        "sourceHash": "483741a2e0f8e3cdf38e358929cce5f8b29ffb41494b1268cafa1d38a2197344",
+        "astHash": "37f02db9406135d41473361f0fb7fe8725853ff98a7afbef68a446bf79f494df"
+      }
+    }
+  ],
+  "currentSemanticDependencies": [
+    {
+      "surfaceKey": "type:src/catalog.ts#InventoryCatalog.fungibilityRevision::call[0]",
+      "mode": "V",
+      "proofKind": "independent-catalog-foundation-closed-equations-v1",
+      "evidence": {
+        "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/independent-catalog-foundation-closed-equations-v1.json",
+        "sha256": "4b6bfb94dfcfd8c57ea822f254d393d41f044f50df735b8f68e8137091f8522f"
+      },
+      "signatureHash": "aa0b016e91b5e7a5c6b17303572205599e955f6f1658362f8144bf0ec23e3291",
+      "declaration": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 73774,
+          "line": 1781,
+          "column": 3
+        },
+        "end": {
+          "offset": 74109,
+          "line": 1791,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "96ab5a48ab62a2864ad1ecc5ce0c5b73617299e75f1b7f7ca6594bf431aa58ca"
+      },
+      "semanticIdentity": "cdc2ea07d46fade18772d1025da7ac82cc35d8fc64e72638abd7f9449a76a597"
+    },
+    {
+      "surfaceKey": "type:src/catalog.ts#InventoryCatalog.itemRevision::call[0]",
+      "mode": "V",
+      "proofKind": "r149-current-catalog-direct-equation-v1",
+      "signatureHash": "d41fb26bbd9d81122bf2187a22667b2b5efd5813c20af70380d1b54c864966c5",
+      "declaration": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 66198,
+          "line": 1575,
+          "column": 3
+        },
+        "end": {
+          "offset": 66453,
+          "line": 1580,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "ed486f2e0f9444fa04e761884a3ad98049e510f5c155279e93f0eb0def14f13b"
+      },
+      "semanticIdentity": "e8aa51173f5dc9831a81be6777a36e6eafcbcb70f7bb94fa290f8d71cdb7f035",
+      "source": {
+        "file": "src/catalog.ts",
+        "sha256": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56"
+      },
+      "law": "result = itemByRevisionId[key] when present; otherwise throw the declared key-specific error"
+    },
+    {
+      "surfaceKey": "type:src/catalog.ts#InventoryCatalog.packagingRevision::call[0]",
+      "mode": "V",
+      "proofKind": "r149-current-catalog-direct-equation-v1",
+      "signatureHash": "5dd6711cbc44d5431b8fc99e9971742928de303eb3ffe2f67c58f31c716e2141",
+      "declaration": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 66918,
+          "line": 1594,
+          "column": 3
+        },
+        "end": {
+          "offset": 67208,
+          "line": 1600,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "252017c83dce2889e9e24724c8c34097c8134c07a9fe9cef02135c71d52caa4e"
+      },
+      "semanticIdentity": "aa7b72bc18b3a3cc674f5560677e172014e6225b62a6dd477acfdfa9299d6a04",
+      "source": {
+        "file": "src/catalog.ts",
+        "sha256": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56"
+      },
+      "law": "result = packagingByRevisionId[key] when present; otherwise throw the declared key-specific error"
+    },
+    {
+      "surfaceKey": "export:./kernel#assertCanonicalInventoryTime::call[0]",
+      "mode": "V",
+      "proofKind": "inventoryonce-event-replacement-complete-source-equations-v1",
+      "evidence": {
+        "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-event-replacement-complete-source-equations-v1.json",
+        "sha256": "954ec040fc8bb764374495ef6d83b4652589912eb8bbd3fda6bbb8bab8cfaa8f"
+      },
+      "signatureHash": "7b0a763805f0e4c89320f7d8129343f1ebdab640dc88b99d9e1ceeffd79ead4e",
+      "declaration": {
+        "file": "src/events.ts",
+        "start": {
+          "offset": 55239,
+          "line": 1482,
+          "column": 1
+        },
+        "end": {
+          "offset": 55555,
+          "line": 1492,
+          "column": 2
+        },
+        "sourceHash": "8d076ee8f426c011d7df3f205dd014f0e835f71798b3684ca56844b691ba2370",
+        "astHash": "fe87b7059662a9421c224d2b56fce2cb004d97be93b476bb170e75aee3901d04"
+      },
+      "semanticIdentity": "bf6f863fec1ca0f3b9bb782409db20b574c6269b6397f6bd61dbbd79e8f60571"
+    },
+    {
+      "surfaceKey": "export:.#positiveQuantity::call[0]",
+      "mode": "V",
+      "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+      "evidence": {
+        "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+        "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+      },
+      "signatureHash": "095ace289a59baa695754b17e824bb16429b3267183b706559faedf7741c9923",
+      "declaration": {
+        "file": "src/quantity.ts",
+        "start": {
+          "offset": 3850,
+          "line": 95,
+          "column": 1
+        },
+        "end": {
+          "offset": 4035,
+          "line": 98,
+          "column": 2
+        },
+        "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+        "astHash": "73e79b60550f302d4494fbfee8fa564fbfa4b2ae00c65cba49b8f64405bf4385"
+      },
+      "semanticIdentity": "dd1f9214a089bfdad36edc85c3490a026ec635d190079e571b6f38d8703a3e7e"
+    },
+    {
+      "surfaceKey": "export:.#planInventoryAllocation::call[0]",
+      "mode": "V",
+      "proofKind": "independent-catalog-read-semantic-closure-equations-v2",
+      "evidence": {
+        "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/independent-catalog-read-semantic-closure-equations-v2.json",
+        "sha256": "5cdbaea801a0155684a63394b7c8cc4ffdad586b30c988d55a3b90d732f34196"
+      },
+      "signatureHash": "2d25722c4a0f022270b3c8af5e75b00ff0ac7fdb024626b33e9d05356d79a514",
+      "declaration": {
+        "file": "src/picking.ts",
+        "start": {
+          "offset": 5930,
+          "line": 147,
+          "column": 1
+        },
+        "end": {
+          "offset": 10093,
+          "line": 277,
+          "column": 2
+        },
+        "sourceHash": "172dc19f4987ad392106a1b9cf32400e73f5bed0fb6b9344aa5eb1319afc5006",
+        "astHash": "87eced1a8f3cd0572a426008b79bb919b7462b3b3c8e013a702f825a7b27df93"
+      },
+      "semanticIdentity": "8e2ccdcd26b0ece7cae890098caf4111ebbc6c464c2fc0392eefc6a94a1df851"
+    },
+    {
+      "surfaceKey": "export:.#stockAmount::call[0]",
+      "mode": "V",
+      "proofKind": "independent-identity-values-closed-equations-v1",
+      "evidence": {
+        "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/independent-identity-values-closed-equations-v1.json",
+        "sha256": "367dd364e3d4cae60d65abaf0896882ffce4d9699cf2d348e858398e1e925ed6"
+      },
+      "signatureHash": "54c8a7b8fc5aacda4040da1564c347072c24f4a16def862c4d354dcb31882b54",
+      "declaration": {
+        "file": "src/amounts.ts",
+        "start": {
+          "offset": 4978,
+          "line": 121,
+          "column": 1
+        },
+        "end": {
+          "offset": 5224,
+          "line": 132,
+          "column": 2
+        },
+        "sourceHash": "98ddc0fa8d80b2ca244a207f4eb8b55d86131c2ccfd77620da5c85248d03ef57",
+        "astHash": "015632df39984eb7d12616fec371ab1f74bf38ee2789990e76dfc54bc76546f5"
+      },
+      "semanticIdentity": "4d3169593b8de2a9025bacdc3882fc4b4080926953f5b7a4063b3bab3f06a210"
+    },
+    {
+      "surfaceKey": "export:.#quantityToDecimalString::call[0]",
+      "mode": "V",
+      "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+      "evidence": {
+        "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+        "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+      },
+      "signatureHash": "9e1dfd6151e85499eb1087f813a3c4fccfdd07e15dce5739d630c53b27ce7436",
+      "declaration": {
+        "file": "src/quantity.ts",
+        "start": {
+          "offset": 3066,
+          "line": 79,
+          "column": 1
+        },
+        "end": {
+          "offset": 3566,
+          "line": 87,
+          "column": 2
+        },
+        "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+        "astHash": "3cfb4062c80ab0c42d726848c48ba74f86558f7a23a69f435bd07b69f96ea754"
+      },
+      "semanticIdentity": "ac5ef899f43818b6ef469e7313d7bb02bcdf78ffc38513ece4fd2bc3629a66f8"
+    },
+    {
+      "surfaceKey": "export:./kernel#allocateInventory::call[0]",
+      "mode": "V",
+      "proofKind": "independent-catalog-read-semantic-closure-equations-v2",
+      "evidence": {
+        "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/independent-catalog-read-semantic-closure-equations-v2.json",
+        "sha256": "5cdbaea801a0155684a63394b7c8cc4ffdad586b30c988d55a3b90d732f34196"
+      },
+      "signatureHash": "c15d9c4250e83c3c13495b4e67c4dd9cecf6dc616bdaef0f11b1dbee44751553",
+      "declaration": {
+        "file": "src/allocation.ts",
+        "start": {
+          "offset": 3633,
+          "line": 90,
+          "column": 1
+        },
+        "end": {
+          "offset": 7442,
+          "line": 212,
+          "column": 2
+        },
+        "sourceHash": "2721b6f412aa3abb55ffa9d929eaefc2d8982973c4ee862479b3af9988d3112d",
+        "astHash": "3301e27ee7259627e8701af11c2f56964c1cbc895d74b01012154b8e6d93a441"
+      },
+      "semanticIdentity": "347aa317e2c8a40dcf2a0b257ce2257fd3e5be7ab54e1328754c5a649b27090c"
+    },
+    {
+      "surfaceKey": "export:./kernel#inventoryStockPositionIdentity::call[0]",
+      "mode": "V",
+      "proofKind": "independent-identity-values-closed-equations-v1",
+      "evidence": {
+        "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/independent-identity-values-closed-equations-v1.json",
+        "sha256": "367dd364e3d4cae60d65abaf0896882ffce4d9699cf2d348e858398e1e925ed6"
+      },
+      "signatureHash": "31b440f046506143b96b758bddbf593688d5fc367f19fda0c5ca1ca2d9a56c0d",
+      "declaration": {
+        "file": "src/model.ts",
+        "start": {
+          "offset": 9829,
+          "line": 234,
+          "column": 1
+        },
+        "end": {
+          "offset": 10414,
+          "line": 253,
+          "column": 2
+        },
+        "sourceHash": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
+        "astHash": "48a12ead90339db24f8619b6cfe0efab9b170c72a8daf140a5fd1ee45b65e52a"
+      },
+      "semanticIdentity": "2972fc53ad0c0273827ed74db1f92030b73ea63672087b3aea4be6e4d8ab2018"
+    },
+    {
+      "surfaceKey": "export:.#convertQuantityByReferenceExact::call[0]",
+      "mode": "V",
+      "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+      "evidence": {
+        "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+        "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+      },
+      "signatureHash": "77c7f081afb804272e09b8bd6554bc72ab102a9fd3ee57e8157230e1b2a2345a",
+      "declaration": {
+        "file": "src/quantity.ts",
+        "start": {
+          "offset": 10543,
+          "line": 275,
+          "column": 1
+        },
+        "end": {
+          "offset": 11265,
+          "line": 297,
+          "column": 2
+        },
+        "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+        "astHash": "f4e71ba41fbb52ef092b0d17113b4ba77abb7d01b623d3897f3304fc952c2540"
+      },
+      "semanticIdentity": "3658161a9f482fcf51499d768db47f8318ff3eec040e2d18e31069f1c8cf8334"
+    },
+    {
+      "surfaceKey": "export:.#inventoryAmountForPrimaryAllocation::call[0]",
+      "mode": "V",
+      "proofKind": "independent-catalog-read-semantic-closure-equations-v2",
+      "evidence": {
+        "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/independent-catalog-read-semantic-closure-equations-v2.json",
+        "sha256": "5cdbaea801a0155684a63394b7c8cc4ffdad586b30c988d55a3b90d732f34196"
+      },
+      "signatureHash": "61b30035818b4e77e9e76d70250a4913e2bba1b1a6130121220bf91aa7987218",
+      "declaration": {
+        "file": "src/picking.ts",
+        "start": {
+          "offset": 32170,
+          "line": 870,
+          "column": 1
+        },
+        "end": {
+          "offset": 36039,
+          "line": 988,
+          "column": 2
+        },
+        "sourceHash": "172dc19f4987ad392106a1b9cf32400e73f5bed0fb6b9344aa5eb1319afc5006",
+        "astHash": "d81fdee80c86729e44481adc9e1b555a12d531b18235a1a408da1fcf59750eef"
+      },
+      "semanticIdentity": "f0121b695137c3680be95d3e847413bc0df6c165d97b85f647a8178eb06716fd"
+    },
+    {
+      "surfaceKey": "export:.#resolveInventoryAmount::call[0]",
+      "mode": "V",
+      "proofKind": "independent-identity-values-closed-equations-v1",
+      "evidence": {
+        "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/independent-identity-values-closed-equations-v1.json",
+        "sha256": "367dd364e3d4cae60d65abaf0896882ffce4d9699cf2d348e858398e1e925ed6"
+      },
+      "signatureHash": "84c66555b541a18f67be589418c8af20f99d741ac9c94ea1402d98c4a50e7735",
+      "declaration": {
+        "file": "src/amounts.ts",
+        "start": {
+          "offset": 10260,
+          "line": 286,
+          "column": 1
+        },
+        "end": {
+          "offset": 11846,
+          "line": 327,
+          "column": 2
+        },
+        "sourceHash": "98ddc0fa8d80b2ca244a207f4eb8b55d86131c2ccfd77620da5c85248d03ef57",
+        "astHash": "42769b2d406240c33d3bb86ea85bf84e088050a831605944c9204466c7132f51"
+      },
+      "semanticIdentity": "ff0ab0b65adfbd57a5b842a6816b5307f38155742c95def452216648e89895bb"
+    },
+    {
+      "surfaceKey": "export:.#subtractInventoryMeasurements::call[0]",
+      "mode": "V",
+      "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+      "evidence": {
+        "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+        "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+      },
+      "signatureHash": "1091c69233ae3f799ff7085195952d63cca63766a0c6bd26e1987f6c55cbd540",
+      "declaration": {
+        "file": "src/measurements.ts",
+        "start": {
+          "offset": 5332,
+          "line": 146,
+          "column": 1
+        },
+        "end": {
+          "offset": 5562,
+          "line": 151,
+          "column": 2
+        },
+        "sourceHash": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5",
+        "astHash": "0c05c2d4dd47d6fcd9db1a5d319ae696852a923e3a24a72b212760ea857b4d4c"
+      },
+      "semanticIdentity": "9154535a579409df53b9542474bf68bec6ddf25d75f786ae1ff40bac641d2633"
+    },
+    {
+      "surfaceKey": "export:.#inventoryMeasurementsAreZero::call[0]",
+      "mode": "V",
+      "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+      "evidence": {
+        "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+        "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+      },
+      "signatureHash": "2ba71fb7b08f05a856c9aa6f8aced51ad76c685b83536604b27a606f53d4e30f",
+      "declaration": {
+        "file": "src/measurements.ts",
+        "start": {
+          "offset": 6841,
+          "line": 190,
+          "column": 1
+        },
+        "end": {
+          "offset": 7288,
+          "line": 204,
+          "column": 2
+        },
+        "sourceHash": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5",
+        "astHash": "886bb2ff9935ff03036f24bf94986d8b1c7875001cb4b9f54dd8451380581e3e"
+      },
+      "semanticIdentity": "9645873c69e451025d52fd2704d53f7e43c1b29d49cdf05392f173b967c4ac20"
+    },
+    {
+      "surfaceKey": "export:.#inventoryContainerIdentity::call[0]",
+      "mode": "V",
+      "proofKind": "independent-identity-values-closed-equations-v1",
+      "evidence": {
+        "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/independent-identity-values-closed-equations-v1.json",
+        "sha256": "367dd364e3d4cae60d65abaf0896882ffce4d9699cf2d348e858398e1e925ed6"
+      },
+      "signatureHash": "599050bae6fc0eef53bd9f1f7ba8fd2df77fa33d6bab90087e250f7f294cc3d6",
+      "declaration": {
+        "file": "src/model.ts",
+        "start": {
+          "offset": 6169,
+          "line": 143,
+          "column": 1
+        },
+        "end": {
+          "offset": 6344,
+          "line": 146,
+          "column": 2
+        },
+        "sourceHash": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
+        "astHash": "3e083a0793e9395ad0b5a8cd5c78fefca235c821d493156ddef1f9c01f0fc6d2"
+      },
+      "semanticIdentity": "227b441f7fedb0aced0f05c030021ab3498a948ff619aaeb4d27478bddfde2d7"
+    },
+    {
+      "surfaceKey": "export:./kernel#normalizeInventoryStockPositionKey::call[0]",
+      "mode": "V",
+      "proofKind": "independent-identity-values-closed-equations-v1",
+      "evidence": {
+        "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/independent-identity-values-closed-equations-v1.json",
+        "sha256": "367dd364e3d4cae60d65abaf0896882ffce4d9699cf2d348e858398e1e925ed6"
+      },
+      "signatureHash": "edb61e907ac8c470f1989a32ec2a370adec796cb3b85f03ee63546894f960f95",
+      "declaration": {
+        "file": "src/model.ts",
+        "start": {
+          "offset": 7640,
+          "line": 180,
+          "column": 1
+        },
+        "end": {
+          "offset": 9202,
+          "line": 216,
+          "column": 2
+        },
+        "sourceHash": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
+        "astHash": "57a88bdf7f60c39f5514b4cbad645d3c0447dd968ef63a17118619038cf0d8d3"
+      },
+      "semanticIdentity": "3532f8cf7a004c2925296b48f77f898979df44cf7ff2257ec8f6e2ddecd7277d"
+    },
+    {
+      "surfaceKey": "export:.#zeroInventoryMeasurements::call[0]",
+      "mode": "V",
+      "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+      "evidence": {
+        "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+        "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+      },
+      "signatureHash": "ce1caff64908d226e7a3b101f450a584e88ff21d5479c17afc268fb3892c3a95",
+      "declaration": {
+        "file": "src/measurements.ts",
+        "start": {
+          "offset": 6215,
+          "line": 172,
+          "column": 1
+        },
+        "end": {
+          "offset": 6789,
+          "line": 187,
+          "column": 2
+        },
+        "sourceHash": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5",
+        "astHash": "63389c2c1a526fdf2a06ef1077ea6ec52fa00d76c788e8192e70c8375c854546"
+      },
+      "semanticIdentity": "7b1ca90634e0f18474d8926ab8a994ae4195da9c4092eda6b4ad427ae9bd3dcf"
+    },
+    {
+      "surfaceKey": "export:.#addInventoryMeasurements::call[0]",
+      "mode": "V",
+      "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+      "evidence": {
+        "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+        "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+      },
+      "signatureHash": "1091c69233ae3f799ff7085195952d63cca63766a0c6bd26e1987f6c55cbd540",
+      "declaration": {
+        "file": "src/measurements.ts",
+        "start": {
+          "offset": 4241,
+          "line": 118,
+          "column": 1
+        },
+        "end": {
+          "offset": 5246,
+          "line": 143,
+          "column": 2
+        },
+        "sourceHash": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5",
+        "astHash": "dcd2dba5ce9482b5608580ca065203ed79019d27fd967d3b2c281f126710d51d"
+      },
+      "semanticIdentity": "edd6069ba2769930572cd7cf27f4452818e2f68d8df0f8418693045ff1e72abf"
+    },
+    {
+      "surfaceKey": "export:./kernel#inspectInventoryReservationFeasibility::call[0]",
+      "kind": "CURRENT_INDEPENDENT_RESERVATION_FEASIBILITY_EQUATION",
+      "proofKind": "independent-catalog-read-semantic-closure-equations-v2",
+      "semanticIdentity": "86c876f2e06ec82c19b60483da1ff20f149617fdc9fff5ed2b6d904a141a885b",
+      "declaration": {
+        "file": "src/reservations.ts",
+        "start": {
+          "offset": 12832,
+          "line": 350,
+          "column": 1
+        },
+        "end": {
+          "offset": 15136,
+          "line": 417,
+          "column": 2
+        },
+        "sourceHash": "fd0bfe707583a7952e4301cafd9ab5d702059b9174f18b5c5e30ae0d6cf85113",
+        "astHash": "106aecc071750bb2946dc9b637ffb654c55130d572565aebbd88cdfd527e9a46"
+      },
+      "lawId": "simultaneous-reservation-feasibility-v1",
+      "closure": {
+        "equationCount": 88,
+        "classCounts": {
+          "independent": 43,
+          "reused": 44,
+          "implicit-constructor": 1
+        },
+        "reachableKeySetSha256": "b2345632d9f909b5e0485c89c27b465aa16224c5ab11dc32e2fe3aa958a07c3a",
+        "reservationGroupFeasibilityExpectedTermSha256": "fd2964e77449366f59fd0f6d1e98018cbd4be43555d753a536994e84ed66edea",
+        "recordedDeficitBurdenExpectedTermSha256": "4583cad5dc5aa5beea51bd1657b400ef00ef49e481a3ac8a8f0fbe42132d501f",
+        "sparseHasTermSha256": "e9daeca4f845ef9ad59c68b07a1b9a898cfda606a63c818e50670d2fb2fd1a3e",
+        "sparseValueTermSha256": "80c4cf4ebb11ccea712a0252cede61d6b7dd69caf07ad7f4b6607298c0cc900f"
+      },
+      "authority": {
+        "sourceCommit": "843a446973761a0263d0d03ae8e7dd409d8298c4",
+        "artifact": {
+          "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/catalog-read-current.json",
+          "sha256": "5cdbaea801a0155684a63394b7c8cc4ffdad586b30c988d55a3b90d732f34196"
+        }
+      },
+      "semanticInputs": [
+        {
+          "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/catalog-read-current.json",
+          "sha256": "5cdbaea801a0155684a63394b7c8cc4ffdad586b30c988d55a3b90d732f34196"
+        }
+      ]
+    },
+    {
+      "surfaceKey": "export:.#leastCommonQuantityMultiple::call[0]",
+      "mode": "V",
+      "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+      "evidence": {
+        "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+        "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+      },
+      "signatureHash": "08d96c65dff49521b3ffe026da2a09d0e729d8ac46f1feb6979117e0aac06066",
+      "declaration": {
+        "file": "src/quantity.ts",
+        "start": {
+          "offset": 8547,
+          "line": 223,
+          "column": 1
+        },
+        "end": {
+          "offset": 9200,
+          "line": 240,
+          "column": 2
+        },
+        "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+        "astHash": "1f1a3098dd02b62e1579da182c3af7fd7c6e0da3917907bc3e2706465af0f0c4"
+      },
+      "semanticIdentity": "d4f19cb4feb7352c6cf330d79eefb14bb43e23d79abef74b9812f1afe07f8798"
+    },
+    {
+      "surfaceKey": "export:.#inventoryMeasurementAt::call[0]",
+      "mode": "V",
+      "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+      "evidence": {
+        "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+        "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+      },
+      "signatureHash": "8f3d288c4d4809d76759209643db939d620ee9cda16199c53c63777c545fa24e",
+      "declaration": {
+        "file": "src/measurements.ts",
+        "start": {
+          "offset": 3513,
+          "line": 96,
+          "column": 1
+        },
+        "end": {
+          "offset": 4160,
+          "line": 115,
+          "column": 2
+        },
+        "sourceHash": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5",
+        "astHash": "2c84b38ce35dd712fb33bee685a616e2427078ee8e4ed255dfcf0a8bffe50941"
+      },
+      "semanticIdentity": "86b1bf32e2cc3af70288a214a29f328675f35df8731136de6c0124fbf2371064"
+    },
+    {
+      "surfaceKey": "export:.#compareQuantity::call[0]",
+      "mode": "V",
+      "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+      "evidence": {
+        "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+        "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+      },
+      "signatureHash": "260f6181ad43d59a536f032b3ee71047b7cbbba907cc2a132b62240bbb6cdfbe",
+      "declaration": {
+        "file": "src/quantity.ts",
+        "start": {
+          "offset": 4340,
+          "line": 106,
+          "column": 1
+        },
+        "end": {
+          "offset": 4728,
+          "line": 114,
+          "column": 2
+        },
+        "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+        "astHash": "1db799552387f77a3ce886fe98189cbc57657d19dcfc522167d792851cd6af4d"
+      },
+      "semanticIdentity": "9b07201c2c74ab1ed0372b11f11db6b466200ac79678fa9b3c242357939234ac"
+    },
+    {
+      "surfaceKey": "export:.#zeroQuantity::call[0]",
+      "mode": "V",
+      "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+      "evidence": {
+        "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+        "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+      },
+      "signatureHash": "d49393cfab161dec1afb5aa6b0ff3a0a21b2f54910fffc870df48df4872b6512",
+      "declaration": {
+        "file": "src/quantity.ts",
+        "start": {
+          "offset": 3632,
+          "line": 90,
+          "column": 1
+        },
+        "end": {
+          "offset": 3757,
+          "line": 92,
+          "column": 2
+        },
+        "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+        "astHash": "799ab6145e82ab948f63276455ec76e0621271d245e176f2dd1e4529d1d9de6b"
+      },
+      "semanticIdentity": "cb7507c285e228d17e56b79849a209c07f107679ef2aadb6e2918976da292639"
+    },
+    {
+      "surfaceKey": "export:./kernel#normalizeInventoryStockSelector::call[0]",
+      "mode": "V",
+      "proofKind": "independent-identity-values-closed-equations-v1",
+      "evidence": {
+        "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/independent-identity-values-closed-equations-v1.json",
+        "sha256": "367dd364e3d4cae60d65abaf0896882ffce4d9699cf2d348e858398e1e925ed6"
+      },
+      "signatureHash": "ab49dafdbf57b266c3536065f5dee4ca876a90aef379655c8f0249ee1ca580a8",
+      "declaration": {
+        "file": "src/selectors.ts",
+        "start": {
+          "offset": 4855,
+          "line": 101,
+          "column": 1
+        },
+        "end": {
+          "offset": 7087,
+          "line": 170,
+          "column": 2
+        },
+        "sourceHash": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957",
+        "astHash": "90198be5327afb1a881d93183b9180068a4773e2322a9d86cc7d7bd8b2c31ef1"
+      },
+      "semanticIdentity": "7c39cec1073248480375df337280371ec5b2722fae9d7eae017013c4fecbf5fd"
+    },
+    {
+      "surfaceKey": "export:./kernel#findInventoryPositions::call[0]",
+      "mode": "V",
+      "proofKind": "independent-catalog-read-semantic-closure-equations-v2",
+      "evidence": {
+        "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/independent-catalog-read-semantic-closure-equations-v2.json",
+        "sha256": "5cdbaea801a0155684a63394b7c8cc4ffdad586b30c988d55a3b90d732f34196"
+      },
+      "signatureHash": "ad8aece92cdbbe9be952213d6b0d58ccbf4d6c62104c234dd53138ca59d12272",
+      "declaration": {
+        "file": "src/projection.ts",
+        "start": {
+          "offset": 30295,
+          "line": 792,
+          "column": 1
+        },
+        "end": {
+          "offset": 31517,
+          "line": 827,
+          "column": 2
+        },
+        "sourceHash": "3710cbc322d4bc3e495e3023a7146e72996a95cc21e92c7a0a6a8f1e20bfc0da",
+        "astHash": "f3d43a472158b958941b74b56255f7263748ec3b07cfd88f38847c12d0d6f9ef"
+      },
+      "semanticIdentity": "ae86e523377d57f643646cbcef9facdf322821f454799d99b8aa33f82aaca6f1"
+    },
+    {
+      "surfaceKey": "export:.#addQuantity::call[0]",
+      "mode": "V",
+      "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+      "evidence": {
+        "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+        "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+      },
+      "signatureHash": "08d96c65dff49521b3ffe026da2a09d0e729d8ac46f1feb6979117e0aac06066",
+      "declaration": {
+        "file": "src/quantity.ts",
+        "start": {
+          "offset": 5036,
+          "line": 122,
+          "column": 1
+        },
+        "end": {
+          "offset": 5403,
+          "line": 133,
+          "column": 2
+        },
+        "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+        "astHash": "41de671ae9083373361e703dce52f969d588fa4b6210fe21abb94c0c530bb04e"
+      },
+      "semanticIdentity": "4124e0038dfd48aafaddf74aaa79a7aacade11384f5c9416192ac610529d8971"
+    }
+  ],
+  "queuedDependencies": [
+    {
+      "surfaceKey": "export:.#normalizeInventoryFungibilityScope::call[0]",
+      "mode": "V",
+      "proofKind": "fungibility-scope-policy-batch-complete-values-v1",
+      "currentBuilder": true,
+      "equationId": "src/fungibility.ts#normalizeInventoryFungibilityScope"
+    }
+  ],
+  "proofs": [
+    {
+      "surfaceKey": "export:.#planInventoryFungibilityAllocation::call[0]",
+      "signatureHash": "a0402f4d7469b599725792a8b358f3f7891e24d947ddd65e7725f9f7de89ec75",
+      "declaration": {
+        "file": "src/fungibility.ts",
+        "start": {
+          "offset": 13039,
+          "line": 327,
+          "column": 1
+        },
+        "end": {
+          "offset": 18406,
+          "line": 487,
+          "column": 2
+        },
+        "sourceHash": "483741a2e0f8e3cdf38e358929cce5f8b29ffb41494b1268cafa1d38a2197344",
+        "astHash": "79661031a912e9fc37aa56f1feb378cf8c8dffb9429d00065ea1683f521341ec"
+      },
+      "equationId": "src/fungibility.ts#planInventoryFungibilityAllocation",
+      "semantics": {
+        "law": "Plan one exact common-basis FIFO/FEFO allocation across every member revision, preserving exact member identities, package increments, expiry/increment diagnostics, and active reservation feasibility before returning source lines.",
+        "completeExpectedTermSha256": "3da4feaee700c1fc0db2a494559409efc9882a5b7cf63321d48c3edabdc58747",
+        "localEquations": [
+          {
+            "id": "src/fungibility.ts#planInventoryFungibilityAllocation",
+            "termSha256": "3da4feaee700c1fc0db2a494559409efc9882a5b7cf63321d48c3edabdc58747"
+          },
+          {
+            "id": "src/fungibility.ts#validateFungibilityReservationEffect",
+            "termSha256": "8a8e3b4bcca23ffe11592823f36bda714ca03ee3e82d20516fcf74fc200ae0cb"
+          },
+          {
+            "id": "src/fungibility.ts#fungibilityAllocationsPreserveReservations",
+            "termSha256": "4bf7e887e385a99dde5c1bfe85fe28b808cf4a41b6771e3633e465ae2b9a92f8"
+          },
+          {
+            "id": "src/fungibility.ts#createFungibilitySparseRecordOverlay",
+            "termSha256": "e21cb3def3d5a74de26ac897a2e35e014648c9bba86acf2ee1892f498dfb5ea0"
+          },
+          {
+            "id": "src/fungibility.ts#addFungibilitySimulationIndex",
+            "termSha256": "bccfa3777e60b10a37b0566e494aa9f291a4ba9b3fcf23b42ca186a2b8d74210"
+          },
+          {
+            "id": "src/fungibility.ts#removeFungibilitySimulationIndex",
+            "termSha256": "898d348eea5aa188a608d1b2a0ca263fdd46cb7defad05fcd46ed1b33c532612"
+          },
+          {
+            "id": "src/fungibility.ts#addFungibilityCandidate",
+            "termSha256": "10c7a4d41b1e7dcd84235bf2df9c802d6af777c2139600fb4cf455d5081c975d"
+          },
+          {
+            "id": "src/fungibility.ts#fungibilityAllocationIncrement",
+            "termSha256": "f94976c39d92eda95ea3667c93534b3572932d481f34f095ff56ac133095bc44"
+          },
+          {
+            "id": "src/fungibility.ts#positionHasIndependentMeasuredContents",
+            "termSha256": "23a0b8889bb3e7ce41431adfa855a57d2b4cdc8c4464152eabdd94139beb89e5"
+          },
+          {
+            "id": "src/fungibility.ts#selectorForFungibilityMember",
+            "termSha256": "fe35a02e7cbfdf57e83a7674793a31feef3777b26fa9f819444b31467fd821a5"
+          },
+          {
+            "id": "src/fungibility.ts#selectedFungibilityPositions",
+            "termSha256": "1e1e0cfda50e03e01202b53e9444b01737fe08eb1abd8740e73261fbb7a94522"
+          },
+          {
+            "id": "src/fungibility.ts#totalPositivePrimary",
+            "termSha256": "0235a02c5a01340e45bc8a89a6f93fad1b45ffc2cc913511e8ffb9710fde6ebe"
+          }
+        ],
+        "currentSemanticDependencies": [
+          {
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.fungibilityRevision::call[0]",
+            "mode": "V",
+            "proofKind": "independent-catalog-foundation-closed-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/independent-catalog-foundation-closed-equations-v1.json",
+              "sha256": "4b6bfb94dfcfd8c57ea822f254d393d41f044f50df735b8f68e8137091f8522f"
+            },
+            "signatureHash": "aa0b016e91b5e7a5c6b17303572205599e955f6f1658362f8144bf0ec23e3291",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 73774,
+                "line": 1781,
+                "column": 3
+              },
+              "end": {
+                "offset": 74109,
+                "line": 1791,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "96ab5a48ab62a2864ad1ecc5ce0c5b73617299e75f1b7f7ca6594bf431aa58ca"
+            },
+            "semanticIdentity": "cdc2ea07d46fade18772d1025da7ac82cc35d8fc64e72638abd7f9449a76a597"
+          },
+          {
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.itemRevision::call[0]",
+            "mode": "V",
+            "proofKind": "r149-current-catalog-direct-equation-v1",
+            "signatureHash": "d41fb26bbd9d81122bf2187a22667b2b5efd5813c20af70380d1b54c864966c5",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 66198,
+                "line": 1575,
+                "column": 3
+              },
+              "end": {
+                "offset": 66453,
+                "line": 1580,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "ed486f2e0f9444fa04e761884a3ad98049e510f5c155279e93f0eb0def14f13b"
+            },
+            "semanticIdentity": "e8aa51173f5dc9831a81be6777a36e6eafcbcb70f7bb94fa290f8d71cdb7f035",
+            "source": {
+              "file": "src/catalog.ts",
+              "sha256": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56"
+            },
+            "law": "result = itemByRevisionId[key] when present; otherwise throw the declared key-specific error"
+          },
+          {
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.packagingRevision::call[0]",
+            "mode": "V",
+            "proofKind": "r149-current-catalog-direct-equation-v1",
+            "signatureHash": "5dd6711cbc44d5431b8fc99e9971742928de303eb3ffe2f67c58f31c716e2141",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 66918,
+                "line": 1594,
+                "column": 3
+              },
+              "end": {
+                "offset": 67208,
+                "line": 1600,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "252017c83dce2889e9e24724c8c34097c8134c07a9fe9cef02135c71d52caa4e"
+            },
+            "semanticIdentity": "aa7b72bc18b3a3cc674f5560677e172014e6225b62a6dd477acfdfa9299d6a04",
+            "source": {
+              "file": "src/catalog.ts",
+              "sha256": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56"
+            },
+            "law": "result = packagingByRevisionId[key] when present; otherwise throw the declared key-specific error"
+          },
+          {
+            "surfaceKey": "export:./kernel#assertCanonicalInventoryTime::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-event-replacement-complete-source-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-event-replacement-complete-source-equations-v1.json",
+              "sha256": "954ec040fc8bb764374495ef6d83b4652589912eb8bbd3fda6bbb8bab8cfaa8f"
+            },
+            "signatureHash": "7b0a763805f0e4c89320f7d8129343f1ebdab640dc88b99d9e1ceeffd79ead4e",
+            "declaration": {
+              "file": "src/events.ts",
+              "start": {
+                "offset": 55239,
+                "line": 1482,
+                "column": 1
+              },
+              "end": {
+                "offset": 55555,
+                "line": 1492,
+                "column": 2
+              },
+              "sourceHash": "8d076ee8f426c011d7df3f205dd014f0e835f71798b3684ca56844b691ba2370",
+              "astHash": "fe87b7059662a9421c224d2b56fce2cb004d97be93b476bb170e75aee3901d04"
+            },
+            "semanticIdentity": "bf6f863fec1ca0f3b9bb782409db20b574c6269b6397f6bd61dbbd79e8f60571"
+          },
+          {
+            "surfaceKey": "export:.#positiveQuantity::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+            },
+            "signatureHash": "095ace289a59baa695754b17e824bb16429b3267183b706559faedf7741c9923",
+            "declaration": {
+              "file": "src/quantity.ts",
+              "start": {
+                "offset": 3850,
+                "line": 95,
+                "column": 1
+              },
+              "end": {
+                "offset": 4035,
+                "line": 98,
+                "column": 2
+              },
+              "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+              "astHash": "73e79b60550f302d4494fbfee8fa564fbfa4b2ae00c65cba49b8f64405bf4385"
+            },
+            "semanticIdentity": "dd1f9214a089bfdad36edc85c3490a026ec635d190079e571b6f38d8703a3e7e"
+          },
+          {
+            "surfaceKey": "export:.#planInventoryAllocation::call[0]",
+            "mode": "V",
+            "proofKind": "independent-catalog-read-semantic-closure-equations-v2",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/independent-catalog-read-semantic-closure-equations-v2.json",
+              "sha256": "5cdbaea801a0155684a63394b7c8cc4ffdad586b30c988d55a3b90d732f34196"
+            },
+            "signatureHash": "2d25722c4a0f022270b3c8af5e75b00ff0ac7fdb024626b33e9d05356d79a514",
+            "declaration": {
+              "file": "src/picking.ts",
+              "start": {
+                "offset": 5930,
+                "line": 147,
+                "column": 1
+              },
+              "end": {
+                "offset": 10093,
+                "line": 277,
+                "column": 2
+              },
+              "sourceHash": "172dc19f4987ad392106a1b9cf32400e73f5bed0fb6b9344aa5eb1319afc5006",
+              "astHash": "87eced1a8f3cd0572a426008b79bb919b7462b3b3c8e013a702f825a7b27df93"
+            },
+            "semanticIdentity": "8e2ccdcd26b0ece7cae890098caf4111ebbc6c464c2fc0392eefc6a94a1df851"
+          },
+          {
+            "surfaceKey": "export:.#stockAmount::call[0]",
+            "mode": "V",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/independent-identity-values-closed-equations-v1.json",
+              "sha256": "367dd364e3d4cae60d65abaf0896882ffce4d9699cf2d348e858398e1e925ed6"
+            },
+            "signatureHash": "54c8a7b8fc5aacda4040da1564c347072c24f4a16def862c4d354dcb31882b54",
+            "declaration": {
+              "file": "src/amounts.ts",
+              "start": {
+                "offset": 4978,
+                "line": 121,
+                "column": 1
+              },
+              "end": {
+                "offset": 5224,
+                "line": 132,
+                "column": 2
+              },
+              "sourceHash": "98ddc0fa8d80b2ca244a207f4eb8b55d86131c2ccfd77620da5c85248d03ef57",
+              "astHash": "015632df39984eb7d12616fec371ab1f74bf38ee2789990e76dfc54bc76546f5"
+            },
+            "semanticIdentity": "4d3169593b8de2a9025bacdc3882fc4b4080926953f5b7a4063b3bab3f06a210"
+          },
+          {
+            "surfaceKey": "export:.#quantityToDecimalString::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+            },
+            "signatureHash": "9e1dfd6151e85499eb1087f813a3c4fccfdd07e15dce5739d630c53b27ce7436",
+            "declaration": {
+              "file": "src/quantity.ts",
+              "start": {
+                "offset": 3066,
+                "line": 79,
+                "column": 1
+              },
+              "end": {
+                "offset": 3566,
+                "line": 87,
+                "column": 2
+              },
+              "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+              "astHash": "3cfb4062c80ab0c42d726848c48ba74f86558f7a23a69f435bd07b69f96ea754"
+            },
+            "semanticIdentity": "ac5ef899f43818b6ef469e7313d7bb02bcdf78ffc38513ece4fd2bc3629a66f8"
+          },
+          {
+            "surfaceKey": "export:./kernel#allocateInventory::call[0]",
+            "mode": "V",
+            "proofKind": "independent-catalog-read-semantic-closure-equations-v2",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/independent-catalog-read-semantic-closure-equations-v2.json",
+              "sha256": "5cdbaea801a0155684a63394b7c8cc4ffdad586b30c988d55a3b90d732f34196"
+            },
+            "signatureHash": "c15d9c4250e83c3c13495b4e67c4dd9cecf6dc616bdaef0f11b1dbee44751553",
+            "declaration": {
+              "file": "src/allocation.ts",
+              "start": {
+                "offset": 3633,
+                "line": 90,
+                "column": 1
+              },
+              "end": {
+                "offset": 7442,
+                "line": 212,
+                "column": 2
+              },
+              "sourceHash": "2721b6f412aa3abb55ffa9d929eaefc2d8982973c4ee862479b3af9988d3112d",
+              "astHash": "3301e27ee7259627e8701af11c2f56964c1cbc895d74b01012154b8e6d93a441"
+            },
+            "semanticIdentity": "347aa317e2c8a40dcf2a0b257ce2257fd3e5be7ab54e1328754c5a649b27090c"
+          },
+          {
+            "surfaceKey": "export:./kernel#inventoryStockPositionIdentity::call[0]",
+            "mode": "V",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/independent-identity-values-closed-equations-v1.json",
+              "sha256": "367dd364e3d4cae60d65abaf0896882ffce4d9699cf2d348e858398e1e925ed6"
+            },
+            "signatureHash": "31b440f046506143b96b758bddbf593688d5fc367f19fda0c5ca1ca2d9a56c0d",
+            "declaration": {
+              "file": "src/model.ts",
+              "start": {
+                "offset": 9829,
+                "line": 234,
+                "column": 1
+              },
+              "end": {
+                "offset": 10414,
+                "line": 253,
+                "column": 2
+              },
+              "sourceHash": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
+              "astHash": "48a12ead90339db24f8619b6cfe0efab9b170c72a8daf140a5fd1ee45b65e52a"
+            },
+            "semanticIdentity": "2972fc53ad0c0273827ed74db1f92030b73ea63672087b3aea4be6e4d8ab2018"
+          },
+          {
+            "surfaceKey": "export:.#convertQuantityByReferenceExact::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+            },
+            "signatureHash": "77c7f081afb804272e09b8bd6554bc72ab102a9fd3ee57e8157230e1b2a2345a",
+            "declaration": {
+              "file": "src/quantity.ts",
+              "start": {
+                "offset": 10543,
+                "line": 275,
+                "column": 1
+              },
+              "end": {
+                "offset": 11265,
+                "line": 297,
+                "column": 2
+              },
+              "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+              "astHash": "f4e71ba41fbb52ef092b0d17113b4ba77abb7d01b623d3897f3304fc952c2540"
+            },
+            "semanticIdentity": "3658161a9f482fcf51499d768db47f8318ff3eec040e2d18e31069f1c8cf8334"
+          },
+          {
+            "surfaceKey": "export:.#inventoryAmountForPrimaryAllocation::call[0]",
+            "mode": "V",
+            "proofKind": "independent-catalog-read-semantic-closure-equations-v2",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/independent-catalog-read-semantic-closure-equations-v2.json",
+              "sha256": "5cdbaea801a0155684a63394b7c8cc4ffdad586b30c988d55a3b90d732f34196"
+            },
+            "signatureHash": "61b30035818b4e77e9e76d70250a4913e2bba1b1a6130121220bf91aa7987218",
+            "declaration": {
+              "file": "src/picking.ts",
+              "start": {
+                "offset": 32170,
+                "line": 870,
+                "column": 1
+              },
+              "end": {
+                "offset": 36039,
+                "line": 988,
+                "column": 2
+              },
+              "sourceHash": "172dc19f4987ad392106a1b9cf32400e73f5bed0fb6b9344aa5eb1319afc5006",
+              "astHash": "d81fdee80c86729e44481adc9e1b555a12d531b18235a1a408da1fcf59750eef"
+            },
+            "semanticIdentity": "f0121b695137c3680be95d3e847413bc0df6c165d97b85f647a8178eb06716fd"
+          },
+          {
+            "surfaceKey": "export:.#resolveInventoryAmount::call[0]",
+            "mode": "V",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/independent-identity-values-closed-equations-v1.json",
+              "sha256": "367dd364e3d4cae60d65abaf0896882ffce4d9699cf2d348e858398e1e925ed6"
+            },
+            "signatureHash": "84c66555b541a18f67be589418c8af20f99d741ac9c94ea1402d98c4a50e7735",
+            "declaration": {
+              "file": "src/amounts.ts",
+              "start": {
+                "offset": 10260,
+                "line": 286,
+                "column": 1
+              },
+              "end": {
+                "offset": 11846,
+                "line": 327,
+                "column": 2
+              },
+              "sourceHash": "98ddc0fa8d80b2ca244a207f4eb8b55d86131c2ccfd77620da5c85248d03ef57",
+              "astHash": "42769b2d406240c33d3bb86ea85bf84e088050a831605944c9204466c7132f51"
+            },
+            "semanticIdentity": "ff0ab0b65adfbd57a5b842a6816b5307f38155742c95def452216648e89895bb"
+          },
+          {
+            "surfaceKey": "export:.#subtractInventoryMeasurements::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+            },
+            "signatureHash": "1091c69233ae3f799ff7085195952d63cca63766a0c6bd26e1987f6c55cbd540",
+            "declaration": {
+              "file": "src/measurements.ts",
+              "start": {
+                "offset": 5332,
+                "line": 146,
+                "column": 1
+              },
+              "end": {
+                "offset": 5562,
+                "line": 151,
+                "column": 2
+              },
+              "sourceHash": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5",
+              "astHash": "0c05c2d4dd47d6fcd9db1a5d319ae696852a923e3a24a72b212760ea857b4d4c"
+            },
+            "semanticIdentity": "9154535a579409df53b9542474bf68bec6ddf25d75f786ae1ff40bac641d2633"
+          },
+          {
+            "surfaceKey": "export:.#inventoryMeasurementsAreZero::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+            },
+            "signatureHash": "2ba71fb7b08f05a856c9aa6f8aced51ad76c685b83536604b27a606f53d4e30f",
+            "declaration": {
+              "file": "src/measurements.ts",
+              "start": {
+                "offset": 6841,
+                "line": 190,
+                "column": 1
+              },
+              "end": {
+                "offset": 7288,
+                "line": 204,
+                "column": 2
+              },
+              "sourceHash": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5",
+              "astHash": "886bb2ff9935ff03036f24bf94986d8b1c7875001cb4b9f54dd8451380581e3e"
+            },
+            "semanticIdentity": "9645873c69e451025d52fd2704d53f7e43c1b29d49cdf05392f173b967c4ac20"
+          },
+          {
+            "surfaceKey": "export:.#inventoryContainerIdentity::call[0]",
+            "mode": "V",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/independent-identity-values-closed-equations-v1.json",
+              "sha256": "367dd364e3d4cae60d65abaf0896882ffce4d9699cf2d348e858398e1e925ed6"
+            },
+            "signatureHash": "599050bae6fc0eef53bd9f1f7ba8fd2df77fa33d6bab90087e250f7f294cc3d6",
+            "declaration": {
+              "file": "src/model.ts",
+              "start": {
+                "offset": 6169,
+                "line": 143,
+                "column": 1
+              },
+              "end": {
+                "offset": 6344,
+                "line": 146,
+                "column": 2
+              },
+              "sourceHash": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
+              "astHash": "3e083a0793e9395ad0b5a8cd5c78fefca235c821d493156ddef1f9c01f0fc6d2"
+            },
+            "semanticIdentity": "227b441f7fedb0aced0f05c030021ab3498a948ff619aaeb4d27478bddfde2d7"
+          },
+          {
+            "surfaceKey": "export:./kernel#normalizeInventoryStockPositionKey::call[0]",
+            "mode": "V",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/independent-identity-values-closed-equations-v1.json",
+              "sha256": "367dd364e3d4cae60d65abaf0896882ffce4d9699cf2d348e858398e1e925ed6"
+            },
+            "signatureHash": "edb61e907ac8c470f1989a32ec2a370adec796cb3b85f03ee63546894f960f95",
+            "declaration": {
+              "file": "src/model.ts",
+              "start": {
+                "offset": 7640,
+                "line": 180,
+                "column": 1
+              },
+              "end": {
+                "offset": 9202,
+                "line": 216,
+                "column": 2
+              },
+              "sourceHash": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
+              "astHash": "57a88bdf7f60c39f5514b4cbad645d3c0447dd968ef63a17118619038cf0d8d3"
+            },
+            "semanticIdentity": "3532f8cf7a004c2925296b48f77f898979df44cf7ff2257ec8f6e2ddecd7277d"
+          },
+          {
+            "surfaceKey": "export:.#zeroInventoryMeasurements::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+            },
+            "signatureHash": "ce1caff64908d226e7a3b101f450a584e88ff21d5479c17afc268fb3892c3a95",
+            "declaration": {
+              "file": "src/measurements.ts",
+              "start": {
+                "offset": 6215,
+                "line": 172,
+                "column": 1
+              },
+              "end": {
+                "offset": 6789,
+                "line": 187,
+                "column": 2
+              },
+              "sourceHash": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5",
+              "astHash": "63389c2c1a526fdf2a06ef1077ea6ec52fa00d76c788e8192e70c8375c854546"
+            },
+            "semanticIdentity": "7b1ca90634e0f18474d8926ab8a994ae4195da9c4092eda6b4ad427ae9bd3dcf"
+          },
+          {
+            "surfaceKey": "export:.#addInventoryMeasurements::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+            },
+            "signatureHash": "1091c69233ae3f799ff7085195952d63cca63766a0c6bd26e1987f6c55cbd540",
+            "declaration": {
+              "file": "src/measurements.ts",
+              "start": {
+                "offset": 4241,
+                "line": 118,
+                "column": 1
+              },
+              "end": {
+                "offset": 5246,
+                "line": 143,
+                "column": 2
+              },
+              "sourceHash": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5",
+              "astHash": "dcd2dba5ce9482b5608580ca065203ed79019d27fd967d3b2c281f126710d51d"
+            },
+            "semanticIdentity": "edd6069ba2769930572cd7cf27f4452818e2f68d8df0f8418693045ff1e72abf"
+          },
+          {
+            "surfaceKey": "export:./kernel#inspectInventoryReservationFeasibility::call[0]",
+            "kind": "CURRENT_INDEPENDENT_RESERVATION_FEASIBILITY_EQUATION",
+            "proofKind": "independent-catalog-read-semantic-closure-equations-v2",
+            "semanticIdentity": "86c876f2e06ec82c19b60483da1ff20f149617fdc9fff5ed2b6d904a141a885b",
+            "declaration": {
+              "file": "src/reservations.ts",
+              "start": {
+                "offset": 12832,
+                "line": 350,
+                "column": 1
+              },
+              "end": {
+                "offset": 15136,
+                "line": 417,
+                "column": 2
+              },
+              "sourceHash": "fd0bfe707583a7952e4301cafd9ab5d702059b9174f18b5c5e30ae0d6cf85113",
+              "astHash": "106aecc071750bb2946dc9b637ffb654c55130d572565aebbd88cdfd527e9a46"
+            },
+            "lawId": "simultaneous-reservation-feasibility-v1",
+            "closure": {
+              "equationCount": 88,
+              "classCounts": {
+                "independent": 43,
+                "reused": 44,
+                "implicit-constructor": 1
+              },
+              "reachableKeySetSha256": "b2345632d9f909b5e0485c89c27b465aa16224c5ab11dc32e2fe3aa958a07c3a",
+              "reservationGroupFeasibilityExpectedTermSha256": "fd2964e77449366f59fd0f6d1e98018cbd4be43555d753a536994e84ed66edea",
+              "recordedDeficitBurdenExpectedTermSha256": "4583cad5dc5aa5beea51bd1657b400ef00ef49e481a3ac8a8f0fbe42132d501f",
+              "sparseHasTermSha256": "e9daeca4f845ef9ad59c68b07a1b9a898cfda606a63c818e50670d2fb2fd1a3e",
+              "sparseValueTermSha256": "80c4cf4ebb11ccea712a0252cede61d6b7dd69caf07ad7f4b6607298c0cc900f"
+            },
+            "authority": {
+              "sourceCommit": "843a446973761a0263d0d03ae8e7dd409d8298c4",
+              "artifact": {
+                "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/catalog-read-current.json",
+                "sha256": "5cdbaea801a0155684a63394b7c8cc4ffdad586b30c988d55a3b90d732f34196"
+              }
+            },
+            "semanticInputs": [
+              {
+                "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/catalog-read-current.json",
+                "sha256": "5cdbaea801a0155684a63394b7c8cc4ffdad586b30c988d55a3b90d732f34196"
+              }
+            ]
+          },
+          {
+            "surfaceKey": "export:.#leastCommonQuantityMultiple::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+            },
+            "signatureHash": "08d96c65dff49521b3ffe026da2a09d0e729d8ac46f1feb6979117e0aac06066",
+            "declaration": {
+              "file": "src/quantity.ts",
+              "start": {
+                "offset": 8547,
+                "line": 223,
+                "column": 1
+              },
+              "end": {
+                "offset": 9200,
+                "line": 240,
+                "column": 2
+              },
+              "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+              "astHash": "1f1a3098dd02b62e1579da182c3af7fd7c6e0da3917907bc3e2706465af0f0c4"
+            },
+            "semanticIdentity": "d4f19cb4feb7352c6cf330d79eefb14bb43e23d79abef74b9812f1afe07f8798"
+          },
+          {
+            "surfaceKey": "export:.#inventoryMeasurementAt::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+            },
+            "signatureHash": "8f3d288c4d4809d76759209643db939d620ee9cda16199c53c63777c545fa24e",
+            "declaration": {
+              "file": "src/measurements.ts",
+              "start": {
+                "offset": 3513,
+                "line": 96,
+                "column": 1
+              },
+              "end": {
+                "offset": 4160,
+                "line": 115,
+                "column": 2
+              },
+              "sourceHash": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5",
+              "astHash": "2c84b38ce35dd712fb33bee685a616e2427078ee8e4ed255dfcf0a8bffe50941"
+            },
+            "semanticIdentity": "86b1bf32e2cc3af70288a214a29f328675f35df8731136de6c0124fbf2371064"
+          },
+          {
+            "surfaceKey": "export:.#compareQuantity::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+            },
+            "signatureHash": "260f6181ad43d59a536f032b3ee71047b7cbbba907cc2a132b62240bbb6cdfbe",
+            "declaration": {
+              "file": "src/quantity.ts",
+              "start": {
+                "offset": 4340,
+                "line": 106,
+                "column": 1
+              },
+              "end": {
+                "offset": 4728,
+                "line": 114,
+                "column": 2
+              },
+              "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+              "astHash": "1db799552387f77a3ce886fe98189cbc57657d19dcfc522167d792851cd6af4d"
+            },
+            "semanticIdentity": "9b07201c2c74ab1ed0372b11f11db6b466200ac79678fa9b3c242357939234ac"
+          },
+          {
+            "surfaceKey": "export:.#zeroQuantity::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+            },
+            "signatureHash": "d49393cfab161dec1afb5aa6b0ff3a0a21b2f54910fffc870df48df4872b6512",
+            "declaration": {
+              "file": "src/quantity.ts",
+              "start": {
+                "offset": 3632,
+                "line": 90,
+                "column": 1
+              },
+              "end": {
+                "offset": 3757,
+                "line": 92,
+                "column": 2
+              },
+              "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+              "astHash": "799ab6145e82ab948f63276455ec76e0621271d245e176f2dd1e4529d1d9de6b"
+            },
+            "semanticIdentity": "cb7507c285e228d17e56b79849a209c07f107679ef2aadb6e2918976da292639"
+          },
+          {
+            "surfaceKey": "export:./kernel#normalizeInventoryStockSelector::call[0]",
+            "mode": "V",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/independent-identity-values-closed-equations-v1.json",
+              "sha256": "367dd364e3d4cae60d65abaf0896882ffce4d9699cf2d348e858398e1e925ed6"
+            },
+            "signatureHash": "ab49dafdbf57b266c3536065f5dee4ca876a90aef379655c8f0249ee1ca580a8",
+            "declaration": {
+              "file": "src/selectors.ts",
+              "start": {
+                "offset": 4855,
+                "line": 101,
+                "column": 1
+              },
+              "end": {
+                "offset": 7087,
+                "line": 170,
+                "column": 2
+              },
+              "sourceHash": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957",
+              "astHash": "90198be5327afb1a881d93183b9180068a4773e2322a9d86cc7d7bd8b2c31ef1"
+            },
+            "semanticIdentity": "7c39cec1073248480375df337280371ec5b2722fae9d7eae017013c4fecbf5fd"
+          },
+          {
+            "surfaceKey": "export:./kernel#findInventoryPositions::call[0]",
+            "mode": "V",
+            "proofKind": "independent-catalog-read-semantic-closure-equations-v2",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/independent-catalog-read-semantic-closure-equations-v2.json",
+              "sha256": "5cdbaea801a0155684a63394b7c8cc4ffdad586b30c988d55a3b90d732f34196"
+            },
+            "signatureHash": "ad8aece92cdbbe9be952213d6b0d58ccbf4d6c62104c234dd53138ca59d12272",
+            "declaration": {
+              "file": "src/projection.ts",
+              "start": {
+                "offset": 30295,
+                "line": 792,
+                "column": 1
+              },
+              "end": {
+                "offset": 31517,
+                "line": 827,
+                "column": 2
+              },
+              "sourceHash": "3710cbc322d4bc3e495e3023a7146e72996a95cc21e92c7a0a6a8f1e20bfc0da",
+              "astHash": "f3d43a472158b958941b74b56255f7263748ec3b07cfd88f38847c12d0d6f9ef"
+            },
+            "semanticIdentity": "ae86e523377d57f643646cbcef9facdf322821f454799d99b8aa33f82aaca6f1"
+          },
+          {
+            "surfaceKey": "export:.#addQuantity::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+            },
+            "signatureHash": "08d96c65dff49521b3ffe026da2a09d0e729d8ac46f1feb6979117e0aac06066",
+            "declaration": {
+              "file": "src/quantity.ts",
+              "start": {
+                "offset": 5036,
+                "line": 122,
+                "column": 1
+              },
+              "end": {
+                "offset": 5403,
+                "line": 133,
+                "column": 2
+              },
+              "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+              "astHash": "41de671ae9083373361e703dce52f969d588fa4b6210fe21abb94c0c530bb04e"
+            },
+            "semanticIdentity": "4124e0038dfd48aafaddf74aaa79a7aacade11384f5c9416192ac610529d8971"
+          }
+        ],
+        "queuedDependency": {
+          "surfaceKey": "export:.#normalizeInventoryFungibilityScope::call[0]",
+          "mode": "V",
+          "proofKind": "fungibility-scope-policy-batch-complete-values-v1",
+          "currentBuilder": true,
+          "equationId": "src/fungibility.ts#normalizeInventoryFungibilityScope"
+        }
+      }
+    },
+    {
+      "surfaceKey": "export:./kernel#planInventoryFungibilityAllocation::call[0]",
+      "signatureHash": "a0402f4d7469b599725792a8b358f3f7891e24d947ddd65e7725f9f7de89ec75",
+      "declaration": {
+        "file": "src/fungibility.ts",
+        "start": {
+          "offset": 13039,
+          "line": 327,
+          "column": 1
+        },
+        "end": {
+          "offset": 18406,
+          "line": 487,
+          "column": 2
+        },
+        "sourceHash": "483741a2e0f8e3cdf38e358929cce5f8b29ffb41494b1268cafa1d38a2197344",
+        "astHash": "79661031a912e9fc37aa56f1feb378cf8c8dffb9429d00065ea1683f521341ec"
+      },
+      "equationId": "src/fungibility.ts#planInventoryFungibilityAllocation",
+      "semantics": {
+        "law": "Plan one exact common-basis FIFO/FEFO allocation across every member revision, preserving exact member identities, package increments, expiry/increment diagnostics, and active reservation feasibility before returning source lines.",
+        "completeExpectedTermSha256": "3da4feaee700c1fc0db2a494559409efc9882a5b7cf63321d48c3edabdc58747",
+        "localEquations": [
+          {
+            "id": "src/fungibility.ts#planInventoryFungibilityAllocation",
+            "termSha256": "3da4feaee700c1fc0db2a494559409efc9882a5b7cf63321d48c3edabdc58747"
+          },
+          {
+            "id": "src/fungibility.ts#validateFungibilityReservationEffect",
+            "termSha256": "8a8e3b4bcca23ffe11592823f36bda714ca03ee3e82d20516fcf74fc200ae0cb"
+          },
+          {
+            "id": "src/fungibility.ts#fungibilityAllocationsPreserveReservations",
+            "termSha256": "4bf7e887e385a99dde5c1bfe85fe28b808cf4a41b6771e3633e465ae2b9a92f8"
+          },
+          {
+            "id": "src/fungibility.ts#createFungibilitySparseRecordOverlay",
+            "termSha256": "e21cb3def3d5a74de26ac897a2e35e014648c9bba86acf2ee1892f498dfb5ea0"
+          },
+          {
+            "id": "src/fungibility.ts#addFungibilitySimulationIndex",
+            "termSha256": "bccfa3777e60b10a37b0566e494aa9f291a4ba9b3fcf23b42ca186a2b8d74210"
+          },
+          {
+            "id": "src/fungibility.ts#removeFungibilitySimulationIndex",
+            "termSha256": "898d348eea5aa188a608d1b2a0ca263fdd46cb7defad05fcd46ed1b33c532612"
+          },
+          {
+            "id": "src/fungibility.ts#addFungibilityCandidate",
+            "termSha256": "10c7a4d41b1e7dcd84235bf2df9c802d6af777c2139600fb4cf455d5081c975d"
+          },
+          {
+            "id": "src/fungibility.ts#fungibilityAllocationIncrement",
+            "termSha256": "f94976c39d92eda95ea3667c93534b3572932d481f34f095ff56ac133095bc44"
+          },
+          {
+            "id": "src/fungibility.ts#positionHasIndependentMeasuredContents",
+            "termSha256": "23a0b8889bb3e7ce41431adfa855a57d2b4cdc8c4464152eabdd94139beb89e5"
+          },
+          {
+            "id": "src/fungibility.ts#selectorForFungibilityMember",
+            "termSha256": "fe35a02e7cbfdf57e83a7674793a31feef3777b26fa9f819444b31467fd821a5"
+          },
+          {
+            "id": "src/fungibility.ts#selectedFungibilityPositions",
+            "termSha256": "1e1e0cfda50e03e01202b53e9444b01737fe08eb1abd8740e73261fbb7a94522"
+          },
+          {
+            "id": "src/fungibility.ts#totalPositivePrimary",
+            "termSha256": "0235a02c5a01340e45bc8a89a6f93fad1b45ffc2cc913511e8ffb9710fde6ebe"
+          }
+        ],
+        "currentSemanticDependencies": [
+          {
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.fungibilityRevision::call[0]",
+            "mode": "V",
+            "proofKind": "independent-catalog-foundation-closed-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/independent-catalog-foundation-closed-equations-v1.json",
+              "sha256": "4b6bfb94dfcfd8c57ea822f254d393d41f044f50df735b8f68e8137091f8522f"
+            },
+            "signatureHash": "aa0b016e91b5e7a5c6b17303572205599e955f6f1658362f8144bf0ec23e3291",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 73774,
+                "line": 1781,
+                "column": 3
+              },
+              "end": {
+                "offset": 74109,
+                "line": 1791,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "96ab5a48ab62a2864ad1ecc5ce0c5b73617299e75f1b7f7ca6594bf431aa58ca"
+            },
+            "semanticIdentity": "cdc2ea07d46fade18772d1025da7ac82cc35d8fc64e72638abd7f9449a76a597"
+          },
+          {
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.itemRevision::call[0]",
+            "mode": "V",
+            "proofKind": "r149-current-catalog-direct-equation-v1",
+            "signatureHash": "d41fb26bbd9d81122bf2187a22667b2b5efd5813c20af70380d1b54c864966c5",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 66198,
+                "line": 1575,
+                "column": 3
+              },
+              "end": {
+                "offset": 66453,
+                "line": 1580,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "ed486f2e0f9444fa04e761884a3ad98049e510f5c155279e93f0eb0def14f13b"
+            },
+            "semanticIdentity": "e8aa51173f5dc9831a81be6777a36e6eafcbcb70f7bb94fa290f8d71cdb7f035",
+            "source": {
+              "file": "src/catalog.ts",
+              "sha256": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56"
+            },
+            "law": "result = itemByRevisionId[key] when present; otherwise throw the declared key-specific error"
+          },
+          {
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.packagingRevision::call[0]",
+            "mode": "V",
+            "proofKind": "r149-current-catalog-direct-equation-v1",
+            "signatureHash": "5dd6711cbc44d5431b8fc99e9971742928de303eb3ffe2f67c58f31c716e2141",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 66918,
+                "line": 1594,
+                "column": 3
+              },
+              "end": {
+                "offset": 67208,
+                "line": 1600,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "252017c83dce2889e9e24724c8c34097c8134c07a9fe9cef02135c71d52caa4e"
+            },
+            "semanticIdentity": "aa7b72bc18b3a3cc674f5560677e172014e6225b62a6dd477acfdfa9299d6a04",
+            "source": {
+              "file": "src/catalog.ts",
+              "sha256": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56"
+            },
+            "law": "result = packagingByRevisionId[key] when present; otherwise throw the declared key-specific error"
+          },
+          {
+            "surfaceKey": "export:./kernel#assertCanonicalInventoryTime::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-event-replacement-complete-source-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-event-replacement-complete-source-equations-v1.json",
+              "sha256": "954ec040fc8bb764374495ef6d83b4652589912eb8bbd3fda6bbb8bab8cfaa8f"
+            },
+            "signatureHash": "7b0a763805f0e4c89320f7d8129343f1ebdab640dc88b99d9e1ceeffd79ead4e",
+            "declaration": {
+              "file": "src/events.ts",
+              "start": {
+                "offset": 55239,
+                "line": 1482,
+                "column": 1
+              },
+              "end": {
+                "offset": 55555,
+                "line": 1492,
+                "column": 2
+              },
+              "sourceHash": "8d076ee8f426c011d7df3f205dd014f0e835f71798b3684ca56844b691ba2370",
+              "astHash": "fe87b7059662a9421c224d2b56fce2cb004d97be93b476bb170e75aee3901d04"
+            },
+            "semanticIdentity": "bf6f863fec1ca0f3b9bb782409db20b574c6269b6397f6bd61dbbd79e8f60571"
+          },
+          {
+            "surfaceKey": "export:.#positiveQuantity::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+            },
+            "signatureHash": "095ace289a59baa695754b17e824bb16429b3267183b706559faedf7741c9923",
+            "declaration": {
+              "file": "src/quantity.ts",
+              "start": {
+                "offset": 3850,
+                "line": 95,
+                "column": 1
+              },
+              "end": {
+                "offset": 4035,
+                "line": 98,
+                "column": 2
+              },
+              "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+              "astHash": "73e79b60550f302d4494fbfee8fa564fbfa4b2ae00c65cba49b8f64405bf4385"
+            },
+            "semanticIdentity": "dd1f9214a089bfdad36edc85c3490a026ec635d190079e571b6f38d8703a3e7e"
+          },
+          {
+            "surfaceKey": "export:.#planInventoryAllocation::call[0]",
+            "mode": "V",
+            "proofKind": "independent-catalog-read-semantic-closure-equations-v2",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/independent-catalog-read-semantic-closure-equations-v2.json",
+              "sha256": "5cdbaea801a0155684a63394b7c8cc4ffdad586b30c988d55a3b90d732f34196"
+            },
+            "signatureHash": "2d25722c4a0f022270b3c8af5e75b00ff0ac7fdb024626b33e9d05356d79a514",
+            "declaration": {
+              "file": "src/picking.ts",
+              "start": {
+                "offset": 5930,
+                "line": 147,
+                "column": 1
+              },
+              "end": {
+                "offset": 10093,
+                "line": 277,
+                "column": 2
+              },
+              "sourceHash": "172dc19f4987ad392106a1b9cf32400e73f5bed0fb6b9344aa5eb1319afc5006",
+              "astHash": "87eced1a8f3cd0572a426008b79bb919b7462b3b3c8e013a702f825a7b27df93"
+            },
+            "semanticIdentity": "8e2ccdcd26b0ece7cae890098caf4111ebbc6c464c2fc0392eefc6a94a1df851"
+          },
+          {
+            "surfaceKey": "export:.#stockAmount::call[0]",
+            "mode": "V",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/independent-identity-values-closed-equations-v1.json",
+              "sha256": "367dd364e3d4cae60d65abaf0896882ffce4d9699cf2d348e858398e1e925ed6"
+            },
+            "signatureHash": "54c8a7b8fc5aacda4040da1564c347072c24f4a16def862c4d354dcb31882b54",
+            "declaration": {
+              "file": "src/amounts.ts",
+              "start": {
+                "offset": 4978,
+                "line": 121,
+                "column": 1
+              },
+              "end": {
+                "offset": 5224,
+                "line": 132,
+                "column": 2
+              },
+              "sourceHash": "98ddc0fa8d80b2ca244a207f4eb8b55d86131c2ccfd77620da5c85248d03ef57",
+              "astHash": "015632df39984eb7d12616fec371ab1f74bf38ee2789990e76dfc54bc76546f5"
+            },
+            "semanticIdentity": "4d3169593b8de2a9025bacdc3882fc4b4080926953f5b7a4063b3bab3f06a210"
+          },
+          {
+            "surfaceKey": "export:.#quantityToDecimalString::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+            },
+            "signatureHash": "9e1dfd6151e85499eb1087f813a3c4fccfdd07e15dce5739d630c53b27ce7436",
+            "declaration": {
+              "file": "src/quantity.ts",
+              "start": {
+                "offset": 3066,
+                "line": 79,
+                "column": 1
+              },
+              "end": {
+                "offset": 3566,
+                "line": 87,
+                "column": 2
+              },
+              "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+              "astHash": "3cfb4062c80ab0c42d726848c48ba74f86558f7a23a69f435bd07b69f96ea754"
+            },
+            "semanticIdentity": "ac5ef899f43818b6ef469e7313d7bb02bcdf78ffc38513ece4fd2bc3629a66f8"
+          },
+          {
+            "surfaceKey": "export:./kernel#allocateInventory::call[0]",
+            "mode": "V",
+            "proofKind": "independent-catalog-read-semantic-closure-equations-v2",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/independent-catalog-read-semantic-closure-equations-v2.json",
+              "sha256": "5cdbaea801a0155684a63394b7c8cc4ffdad586b30c988d55a3b90d732f34196"
+            },
+            "signatureHash": "c15d9c4250e83c3c13495b4e67c4dd9cecf6dc616bdaef0f11b1dbee44751553",
+            "declaration": {
+              "file": "src/allocation.ts",
+              "start": {
+                "offset": 3633,
+                "line": 90,
+                "column": 1
+              },
+              "end": {
+                "offset": 7442,
+                "line": 212,
+                "column": 2
+              },
+              "sourceHash": "2721b6f412aa3abb55ffa9d929eaefc2d8982973c4ee862479b3af9988d3112d",
+              "astHash": "3301e27ee7259627e8701af11c2f56964c1cbc895d74b01012154b8e6d93a441"
+            },
+            "semanticIdentity": "347aa317e2c8a40dcf2a0b257ce2257fd3e5be7ab54e1328754c5a649b27090c"
+          },
+          {
+            "surfaceKey": "export:./kernel#inventoryStockPositionIdentity::call[0]",
+            "mode": "V",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/independent-identity-values-closed-equations-v1.json",
+              "sha256": "367dd364e3d4cae60d65abaf0896882ffce4d9699cf2d348e858398e1e925ed6"
+            },
+            "signatureHash": "31b440f046506143b96b758bddbf593688d5fc367f19fda0c5ca1ca2d9a56c0d",
+            "declaration": {
+              "file": "src/model.ts",
+              "start": {
+                "offset": 9829,
+                "line": 234,
+                "column": 1
+              },
+              "end": {
+                "offset": 10414,
+                "line": 253,
+                "column": 2
+              },
+              "sourceHash": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
+              "astHash": "48a12ead90339db24f8619b6cfe0efab9b170c72a8daf140a5fd1ee45b65e52a"
+            },
+            "semanticIdentity": "2972fc53ad0c0273827ed74db1f92030b73ea63672087b3aea4be6e4d8ab2018"
+          },
+          {
+            "surfaceKey": "export:.#convertQuantityByReferenceExact::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+            },
+            "signatureHash": "77c7f081afb804272e09b8bd6554bc72ab102a9fd3ee57e8157230e1b2a2345a",
+            "declaration": {
+              "file": "src/quantity.ts",
+              "start": {
+                "offset": 10543,
+                "line": 275,
+                "column": 1
+              },
+              "end": {
+                "offset": 11265,
+                "line": 297,
+                "column": 2
+              },
+              "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+              "astHash": "f4e71ba41fbb52ef092b0d17113b4ba77abb7d01b623d3897f3304fc952c2540"
+            },
+            "semanticIdentity": "3658161a9f482fcf51499d768db47f8318ff3eec040e2d18e31069f1c8cf8334"
+          },
+          {
+            "surfaceKey": "export:.#inventoryAmountForPrimaryAllocation::call[0]",
+            "mode": "V",
+            "proofKind": "independent-catalog-read-semantic-closure-equations-v2",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/independent-catalog-read-semantic-closure-equations-v2.json",
+              "sha256": "5cdbaea801a0155684a63394b7c8cc4ffdad586b30c988d55a3b90d732f34196"
+            },
+            "signatureHash": "61b30035818b4e77e9e76d70250a4913e2bba1b1a6130121220bf91aa7987218",
+            "declaration": {
+              "file": "src/picking.ts",
+              "start": {
+                "offset": 32170,
+                "line": 870,
+                "column": 1
+              },
+              "end": {
+                "offset": 36039,
+                "line": 988,
+                "column": 2
+              },
+              "sourceHash": "172dc19f4987ad392106a1b9cf32400e73f5bed0fb6b9344aa5eb1319afc5006",
+              "astHash": "d81fdee80c86729e44481adc9e1b555a12d531b18235a1a408da1fcf59750eef"
+            },
+            "semanticIdentity": "f0121b695137c3680be95d3e847413bc0df6c165d97b85f647a8178eb06716fd"
+          },
+          {
+            "surfaceKey": "export:.#resolveInventoryAmount::call[0]",
+            "mode": "V",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/independent-identity-values-closed-equations-v1.json",
+              "sha256": "367dd364e3d4cae60d65abaf0896882ffce4d9699cf2d348e858398e1e925ed6"
+            },
+            "signatureHash": "84c66555b541a18f67be589418c8af20f99d741ac9c94ea1402d98c4a50e7735",
+            "declaration": {
+              "file": "src/amounts.ts",
+              "start": {
+                "offset": 10260,
+                "line": 286,
+                "column": 1
+              },
+              "end": {
+                "offset": 11846,
+                "line": 327,
+                "column": 2
+              },
+              "sourceHash": "98ddc0fa8d80b2ca244a207f4eb8b55d86131c2ccfd77620da5c85248d03ef57",
+              "astHash": "42769b2d406240c33d3bb86ea85bf84e088050a831605944c9204466c7132f51"
+            },
+            "semanticIdentity": "ff0ab0b65adfbd57a5b842a6816b5307f38155742c95def452216648e89895bb"
+          },
+          {
+            "surfaceKey": "export:.#subtractInventoryMeasurements::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+            },
+            "signatureHash": "1091c69233ae3f799ff7085195952d63cca63766a0c6bd26e1987f6c55cbd540",
+            "declaration": {
+              "file": "src/measurements.ts",
+              "start": {
+                "offset": 5332,
+                "line": 146,
+                "column": 1
+              },
+              "end": {
+                "offset": 5562,
+                "line": 151,
+                "column": 2
+              },
+              "sourceHash": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5",
+              "astHash": "0c05c2d4dd47d6fcd9db1a5d319ae696852a923e3a24a72b212760ea857b4d4c"
+            },
+            "semanticIdentity": "9154535a579409df53b9542474bf68bec6ddf25d75f786ae1ff40bac641d2633"
+          },
+          {
+            "surfaceKey": "export:.#inventoryMeasurementsAreZero::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+            },
+            "signatureHash": "2ba71fb7b08f05a856c9aa6f8aced51ad76c685b83536604b27a606f53d4e30f",
+            "declaration": {
+              "file": "src/measurements.ts",
+              "start": {
+                "offset": 6841,
+                "line": 190,
+                "column": 1
+              },
+              "end": {
+                "offset": 7288,
+                "line": 204,
+                "column": 2
+              },
+              "sourceHash": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5",
+              "astHash": "886bb2ff9935ff03036f24bf94986d8b1c7875001cb4b9f54dd8451380581e3e"
+            },
+            "semanticIdentity": "9645873c69e451025d52fd2704d53f7e43c1b29d49cdf05392f173b967c4ac20"
+          },
+          {
+            "surfaceKey": "export:.#inventoryContainerIdentity::call[0]",
+            "mode": "V",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/independent-identity-values-closed-equations-v1.json",
+              "sha256": "367dd364e3d4cae60d65abaf0896882ffce4d9699cf2d348e858398e1e925ed6"
+            },
+            "signatureHash": "599050bae6fc0eef53bd9f1f7ba8fd2df77fa33d6bab90087e250f7f294cc3d6",
+            "declaration": {
+              "file": "src/model.ts",
+              "start": {
+                "offset": 6169,
+                "line": 143,
+                "column": 1
+              },
+              "end": {
+                "offset": 6344,
+                "line": 146,
+                "column": 2
+              },
+              "sourceHash": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
+              "astHash": "3e083a0793e9395ad0b5a8cd5c78fefca235c821d493156ddef1f9c01f0fc6d2"
+            },
+            "semanticIdentity": "227b441f7fedb0aced0f05c030021ab3498a948ff619aaeb4d27478bddfde2d7"
+          },
+          {
+            "surfaceKey": "export:./kernel#normalizeInventoryStockPositionKey::call[0]",
+            "mode": "V",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/independent-identity-values-closed-equations-v1.json",
+              "sha256": "367dd364e3d4cae60d65abaf0896882ffce4d9699cf2d348e858398e1e925ed6"
+            },
+            "signatureHash": "edb61e907ac8c470f1989a32ec2a370adec796cb3b85f03ee63546894f960f95",
+            "declaration": {
+              "file": "src/model.ts",
+              "start": {
+                "offset": 7640,
+                "line": 180,
+                "column": 1
+              },
+              "end": {
+                "offset": 9202,
+                "line": 216,
+                "column": 2
+              },
+              "sourceHash": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
+              "astHash": "57a88bdf7f60c39f5514b4cbad645d3c0447dd968ef63a17118619038cf0d8d3"
+            },
+            "semanticIdentity": "3532f8cf7a004c2925296b48f77f898979df44cf7ff2257ec8f6e2ddecd7277d"
+          },
+          {
+            "surfaceKey": "export:.#zeroInventoryMeasurements::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+            },
+            "signatureHash": "ce1caff64908d226e7a3b101f450a584e88ff21d5479c17afc268fb3892c3a95",
+            "declaration": {
+              "file": "src/measurements.ts",
+              "start": {
+                "offset": 6215,
+                "line": 172,
+                "column": 1
+              },
+              "end": {
+                "offset": 6789,
+                "line": 187,
+                "column": 2
+              },
+              "sourceHash": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5",
+              "astHash": "63389c2c1a526fdf2a06ef1077ea6ec52fa00d76c788e8192e70c8375c854546"
+            },
+            "semanticIdentity": "7b1ca90634e0f18474d8926ab8a994ae4195da9c4092eda6b4ad427ae9bd3dcf"
+          },
+          {
+            "surfaceKey": "export:.#addInventoryMeasurements::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+            },
+            "signatureHash": "1091c69233ae3f799ff7085195952d63cca63766a0c6bd26e1987f6c55cbd540",
+            "declaration": {
+              "file": "src/measurements.ts",
+              "start": {
+                "offset": 4241,
+                "line": 118,
+                "column": 1
+              },
+              "end": {
+                "offset": 5246,
+                "line": 143,
+                "column": 2
+              },
+              "sourceHash": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5",
+              "astHash": "dcd2dba5ce9482b5608580ca065203ed79019d27fd967d3b2c281f126710d51d"
+            },
+            "semanticIdentity": "edd6069ba2769930572cd7cf27f4452818e2f68d8df0f8418693045ff1e72abf"
+          },
+          {
+            "surfaceKey": "export:./kernel#inspectInventoryReservationFeasibility::call[0]",
+            "kind": "CURRENT_INDEPENDENT_RESERVATION_FEASIBILITY_EQUATION",
+            "proofKind": "independent-catalog-read-semantic-closure-equations-v2",
+            "semanticIdentity": "86c876f2e06ec82c19b60483da1ff20f149617fdc9fff5ed2b6d904a141a885b",
+            "declaration": {
+              "file": "src/reservations.ts",
+              "start": {
+                "offset": 12832,
+                "line": 350,
+                "column": 1
+              },
+              "end": {
+                "offset": 15136,
+                "line": 417,
+                "column": 2
+              },
+              "sourceHash": "fd0bfe707583a7952e4301cafd9ab5d702059b9174f18b5c5e30ae0d6cf85113",
+              "astHash": "106aecc071750bb2946dc9b637ffb654c55130d572565aebbd88cdfd527e9a46"
+            },
+            "lawId": "simultaneous-reservation-feasibility-v1",
+            "closure": {
+              "equationCount": 88,
+              "classCounts": {
+                "independent": 43,
+                "reused": 44,
+                "implicit-constructor": 1
+              },
+              "reachableKeySetSha256": "b2345632d9f909b5e0485c89c27b465aa16224c5ab11dc32e2fe3aa958a07c3a",
+              "reservationGroupFeasibilityExpectedTermSha256": "fd2964e77449366f59fd0f6d1e98018cbd4be43555d753a536994e84ed66edea",
+              "recordedDeficitBurdenExpectedTermSha256": "4583cad5dc5aa5beea51bd1657b400ef00ef49e481a3ac8a8f0fbe42132d501f",
+              "sparseHasTermSha256": "e9daeca4f845ef9ad59c68b07a1b9a898cfda606a63c818e50670d2fb2fd1a3e",
+              "sparseValueTermSha256": "80c4cf4ebb11ccea712a0252cede61d6b7dd69caf07ad7f4b6607298c0cc900f"
+            },
+            "authority": {
+              "sourceCommit": "843a446973761a0263d0d03ae8e7dd409d8298c4",
+              "artifact": {
+                "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/catalog-read-current.json",
+                "sha256": "5cdbaea801a0155684a63394b7c8cc4ffdad586b30c988d55a3b90d732f34196"
+              }
+            },
+            "semanticInputs": [
+              {
+                "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/catalog-read-current.json",
+                "sha256": "5cdbaea801a0155684a63394b7c8cc4ffdad586b30c988d55a3b90d732f34196"
+              }
+            ]
+          },
+          {
+            "surfaceKey": "export:.#leastCommonQuantityMultiple::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+            },
+            "signatureHash": "08d96c65dff49521b3ffe026da2a09d0e729d8ac46f1feb6979117e0aac06066",
+            "declaration": {
+              "file": "src/quantity.ts",
+              "start": {
+                "offset": 8547,
+                "line": 223,
+                "column": 1
+              },
+              "end": {
+                "offset": 9200,
+                "line": 240,
+                "column": 2
+              },
+              "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+              "astHash": "1f1a3098dd02b62e1579da182c3af7fd7c6e0da3917907bc3e2706465af0f0c4"
+            },
+            "semanticIdentity": "d4f19cb4feb7352c6cf330d79eefb14bb43e23d79abef74b9812f1afe07f8798"
+          },
+          {
+            "surfaceKey": "export:.#inventoryMeasurementAt::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+            },
+            "signatureHash": "8f3d288c4d4809d76759209643db939d620ee9cda16199c53c63777c545fa24e",
+            "declaration": {
+              "file": "src/measurements.ts",
+              "start": {
+                "offset": 3513,
+                "line": 96,
+                "column": 1
+              },
+              "end": {
+                "offset": 4160,
+                "line": 115,
+                "column": 2
+              },
+              "sourceHash": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5",
+              "astHash": "2c84b38ce35dd712fb33bee685a616e2427078ee8e4ed255dfcf0a8bffe50941"
+            },
+            "semanticIdentity": "86b1bf32e2cc3af70288a214a29f328675f35df8731136de6c0124fbf2371064"
+          },
+          {
+            "surfaceKey": "export:.#compareQuantity::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+            },
+            "signatureHash": "260f6181ad43d59a536f032b3ee71047b7cbbba907cc2a132b62240bbb6cdfbe",
+            "declaration": {
+              "file": "src/quantity.ts",
+              "start": {
+                "offset": 4340,
+                "line": 106,
+                "column": 1
+              },
+              "end": {
+                "offset": 4728,
+                "line": 114,
+                "column": 2
+              },
+              "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+              "astHash": "1db799552387f77a3ce886fe98189cbc57657d19dcfc522167d792851cd6af4d"
+            },
+            "semanticIdentity": "9b07201c2c74ab1ed0372b11f11db6b466200ac79678fa9b3c242357939234ac"
+          },
+          {
+            "surfaceKey": "export:.#zeroQuantity::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+            },
+            "signatureHash": "d49393cfab161dec1afb5aa6b0ff3a0a21b2f54910fffc870df48df4872b6512",
+            "declaration": {
+              "file": "src/quantity.ts",
+              "start": {
+                "offset": 3632,
+                "line": 90,
+                "column": 1
+              },
+              "end": {
+                "offset": 3757,
+                "line": 92,
+                "column": 2
+              },
+              "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+              "astHash": "799ab6145e82ab948f63276455ec76e0621271d245e176f2dd1e4529d1d9de6b"
+            },
+            "semanticIdentity": "cb7507c285e228d17e56b79849a209c07f107679ef2aadb6e2918976da292639"
+          },
+          {
+            "surfaceKey": "export:./kernel#normalizeInventoryStockSelector::call[0]",
+            "mode": "V",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/independent-identity-values-closed-equations-v1.json",
+              "sha256": "367dd364e3d4cae60d65abaf0896882ffce4d9699cf2d348e858398e1e925ed6"
+            },
+            "signatureHash": "ab49dafdbf57b266c3536065f5dee4ca876a90aef379655c8f0249ee1ca580a8",
+            "declaration": {
+              "file": "src/selectors.ts",
+              "start": {
+                "offset": 4855,
+                "line": 101,
+                "column": 1
+              },
+              "end": {
+                "offset": 7087,
+                "line": 170,
+                "column": 2
+              },
+              "sourceHash": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957",
+              "astHash": "90198be5327afb1a881d93183b9180068a4773e2322a9d86cc7d7bd8b2c31ef1"
+            },
+            "semanticIdentity": "7c39cec1073248480375df337280371ec5b2722fae9d7eae017013c4fecbf5fd"
+          },
+          {
+            "surfaceKey": "export:./kernel#findInventoryPositions::call[0]",
+            "mode": "V",
+            "proofKind": "independent-catalog-read-semantic-closure-equations-v2",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/independent-catalog-read-semantic-closure-equations-v2.json",
+              "sha256": "5cdbaea801a0155684a63394b7c8cc4ffdad586b30c988d55a3b90d732f34196"
+            },
+            "signatureHash": "ad8aece92cdbbe9be952213d6b0d58ccbf4d6c62104c234dd53138ca59d12272",
+            "declaration": {
+              "file": "src/projection.ts",
+              "start": {
+                "offset": 30295,
+                "line": 792,
+                "column": 1
+              },
+              "end": {
+                "offset": 31517,
+                "line": 827,
+                "column": 2
+              },
+              "sourceHash": "3710cbc322d4bc3e495e3023a7146e72996a95cc21e92c7a0a6a8f1e20bfc0da",
+              "astHash": "f3d43a472158b958941b74b56255f7263748ec3b07cfd88f38847c12d0d6f9ef"
+            },
+            "semanticIdentity": "ae86e523377d57f643646cbcef9facdf322821f454799d99b8aa33f82aaca6f1"
+          },
+          {
+            "surfaceKey": "export:.#addQuantity::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "evidence": {
+              "file": "experiments/tla-conformance/r149-residual-composition-plan-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "0db882ca7523a45a3eda8ec6f822a6a04567c48f25d457adc83d099887e90866"
+            },
+            "signatureHash": "08d96c65dff49521b3ffe026da2a09d0e729d8ac46f1feb6979117e0aac06066",
+            "declaration": {
+              "file": "src/quantity.ts",
+              "start": {
+                "offset": 5036,
+                "line": 122,
+                "column": 1
+              },
+              "end": {
+                "offset": 5403,
+                "line": 133,
+                "column": 2
+              },
+              "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+              "astHash": "41de671ae9083373361e703dce52f969d588fa4b6210fe21abb94c0c530bb04e"
+            },
+            "semanticIdentity": "4124e0038dfd48aafaddf74aaa79a7aacade11384f5c9416192ac610529d8971"
+          }
+        ],
+        "queuedDependency": {
+          "surfaceKey": "export:.#normalizeInventoryFungibilityScope::call[0]",
+          "mode": "V",
+          "proofKind": "fungibility-scope-policy-batch-complete-values-v1",
+          "currentBuilder": true,
+          "equationId": "src/fungibility.ts#normalizeInventoryFungibilityScope"
+        }
+      }
+    }
+  ]
+}

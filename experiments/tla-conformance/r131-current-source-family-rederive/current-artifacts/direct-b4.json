@@ -1,0 +1,373 @@
+{
+  "schemaVersion": 1,
+  "route": "REGISTERED_CERTIFIED_PRODUCER",
+  "proofKind": "migration-plugin-helper-causal-b4-producer-v1",
+  "family": "MigrationPluginHelpersCausalB4",
+  "surfaceDigest": "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a",
+  "domain": "All values admitted by the exact four public TypeScript signatures. Application-owned readPage/createDeclaration/createBundle callbacks remain explicit typed external boundaries; the complete InventoryOnce-owned control flow is independently term-checked, while retained real callback chains establish causal source association without inventing formal Snapshot edges.",
+  "allAdmittedInputs": true,
+  "sampledInputs": 0,
+  "causalWitnessRuns": 4,
+  "producerGraphRuns": 0,
+  "producerReplayRuns": 0,
+  "inputs": [
+    {
+      "file": "experiments/tla-conformance/admission-audit/bank-current/canonical-535.json",
+      "sha256": "b745d1746bd1d4c436b1bd6c84c96e567b015adeaff8167ddb9471d15dac76d1"
+    },
+    {
+      "file": "experiments/tla-conformance/migration-helper-causal-r7/artifacts/runtime-causal.json",
+      "sha256": "db76e559e9019216bf38f2b284c20a14faf878b216132a9f504d03e75624a263"
+    },
+    {
+      "file": "experiments/tla-conformance/migration-helper-causal-r7/b4.expected.ts.txt",
+      "sha256": "ad90c1fb1080a55184cb6e23a01a6c9816921c01f11b81f536f32e767b61f052"
+    },
+    {
+      "file": "experiments/tla-conformance/migration-helper-causal-r7/causal-runtime-verifier.mjs",
+      "sha256": "9ea9c57fbbbe973c27d621f14db11da443ff0076436f1bd47f65d506dadbd0e5"
+    },
+    {
+      "file": "experiments/tla-conformance/migration-helper-causal-r7/causal-runtime.ts",
+      "sha256": "498ae71653d108d2c08166e65f93d6644d4394a0aa04cb8122228fc8a441f5a8"
+    },
+    {
+      "file": "experiments/tla-conformance/migration-helper-causal-r7/independent-v9-laws.mjs",
+      "sha256": "1d2fd4ab4a9994986a9323464fd9ba2269c69ec7a036dfeec7654c9b3c453d14"
+    },
+    {
+      "file": "experiments/tla-conformance/migration-helper-causal-r7/registered-causal-b4-family.mjs",
+      "sha256": "e44a38b0865f794a428c685af732349bbe2a8371e8ab2e733d2e7157e3848188"
+    },
+    {
+      "file": "experiments/tla-conformance/migration-helper-causal-r7/v9.expected.ts.txt",
+      "sha256": "fb93d6b0cad4c29156d438b5c8c180bac0aae26730d652859a9a7f372dabf097"
+    },
+    {
+      "file": "experiments/tla-conformance/migration-r5/artifacts/SnapshotSupersededWorkflow/surface-execution-v2.json",
+      "sha256": "33003c2fd7815f017af736151e0c8a21c6a15e15e3916cf526d1c5e84141120f"
+    },
+    {
+      "file": "src/migration-plugin.ts",
+      "sha256": "4b271d6398ba1b0eeb4a5b1cb48523a062f9bcf1c5b427755ec5e1f0fdebe5e6"
+    },
+    {
+      "file": "src/migrations.ts",
+      "sha256": "0e837a12fa171f3029b3931f0c2c0d12d83edbd4b12d86e9ec810ec7ede77384"
+    }
+  ],
+  "causalEvidence": {
+    "file": "experiments/tla-conformance/migration-helper-causal-r7/artifacts/runtime-causal.json",
+    "sha256": "db76e559e9019216bf38f2b284c20a14faf878b216132a9f504d03e75624a263",
+    "proofKind": "migration-plugin-helper-causal-runtime-v1"
+  },
+  "proofs": [
+    {
+      "surfaceKey": "export:./migrations#createInventoryMigrationPlanFromPlugin::call[0]",
+      "mode": "B",
+      "signatureHash": "9cef7dd6483ca2bc058bc806d965e5e126553bbf53acc62e040f67bac3b63412",
+      "declaration": {
+        "file": "src/migration-plugin.ts",
+        "start": {
+          "offset": 8616,
+          "line": 221,
+          "column": 1
+        },
+        "end": {
+          "offset": 8980,
+          "line": 230,
+          "column": 2
+        },
+        "sourceHash": "4b271d6398ba1b0eeb4a5b1cb48523a062f9bcf1c5b427755ec5e1f0fdebe5e6",
+        "astHash": "71b9bdc7688013ab2b50b054cb4aeed1971141bca3ea85c1791380ac2b318d13"
+      },
+      "law": "Invoke the actual plugin.createDeclaration with the real bounded reader, then pass exactly that returned declaration and the supplied catalog into strict defineInventoryMigration; the returned plan is caused by the callback result.",
+      "semantics": {
+        "termSha256": "23cf41f9dce337d8877c099c6b21f44e52ac9a195814589dcb1b3ab1e71c78de",
+        "implementation": {
+          "file": "src/migration-plugin.ts",
+          "start": {
+            "offset": 8616,
+            "line": 221,
+            "column": 1
+          },
+          "end": {
+            "offset": 8980,
+            "line": 230,
+            "column": 2
+          },
+          "sourceHash": "4b271d6398ba1b0eeb4a5b1cb48523a062f9bcf1c5b427755ec5e1f0fdebe5e6",
+          "astHash": "71b9bdc7688013ab2b50b054cb4aeed1971141bca3ea85c1791380ac2b318d13"
+        },
+        "dependencies": [
+          {
+            "supportingV": "export:./migrations#createInventoryLegacyQueryReader::call[0]",
+            "factoryExpectedTerm": {
+              "termSha256": "bab08a66619e1b45e6dbd4351d37d6ec6c5af62b830132ebf05fb05f86b68e5a",
+              "implementation": {
+                "file": "src/migration-plugin.ts",
+                "start": {
+                  "offset": 7546,
+                  "line": 192,
+                  "column": 1
+                },
+                "end": {
+                  "offset": 7939,
+                  "line": 201,
+                  "column": 2
+                },
+                "sourceHash": "4b271d6398ba1b0eeb4a5b1cb48523a062f9bcf1c5b427755ec5e1f0fdebe5e6",
+                "astHash": "ee9cf59bd29b47a5377fb1edc48b1d21ad352aa5f324d20c0ccf3bc67f464080"
+              }
+            }
+          },
+          {
+            "strictProducer": {
+              "surfaceKey": "export:./migrations#defineInventoryMigration::call[0]",
+              "mode": "A",
+              "execution": {
+                "file": "experiments/tla-conformance/migration-r5/artifacts/SnapshotSupersededWorkflow/surface-execution-v2.json",
+                "sha256": "33003c2fd7815f017af736151e0c8a21c6a15e15e3916cf526d1c5e84141120f"
+              },
+              "declaration": {
+                "file": "src/migrations.ts",
+                "start": {
+                  "offset": 11370,
+                  "line": 269,
+                  "column": 1
+                },
+                "end": {
+                  "offset": 18283,
+                  "line": 476,
+                  "column": 2
+                },
+                "sourceHash": "0e837a12fa171f3029b3931f0c2c0d12d83edbd4b12d86e9ec810ec7ede77384",
+                "astHash": "f20e03b07851c0705e3ab86e9f6c91383d4646213a32b4ae0102cb3db584abe4"
+              },
+              "signatureHash": "09bd0752df1e120eb9259d4b76a76626f0bf55c0c51623e8f3e1285216627b47"
+            }
+          }
+        ],
+        "externalBoundary": "InventoryMigrationPlugin.createDeclaration",
+        "causalMember": "pluginPlan"
+      },
+      "causalEvidence": {
+        "file": "experiments/tla-conformance/migration-helper-causal-r7/artifacts/runtime-causal.json",
+        "sha256": "db76e559e9019216bf38f2b284c20a14faf878b216132a9f504d03e75624a263",
+        "member": "pluginPlan"
+      }
+    },
+    {
+      "surfaceKey": "export:./migrations#createInventoryMigrationPlanFromSourcePlugin::call[0]",
+      "mode": "B",
+      "signatureHash": "55d6a0df65f6f095ecd1cb3d9a44a1cfce262b5b56ea7633d90129f32b42c4c8",
+      "declaration": {
+        "file": "src/migration-plugin.ts",
+        "start": {
+          "offset": 8046,
+          "line": 204,
+          "column": 1
+        },
+        "end": {
+          "offset": 8506,
+          "line": 218,
+          "column": 2
+        },
+        "sourceHash": "4b271d6398ba1b0eeb4a5b1cb48523a062f9bcf1c5b427755ec5e1f0fdebe5e6",
+        "astHash": "a3f2ddf440ae6e15dbb0862f9562c892c780891bcee5c34cb0b202f6f0cda9a1"
+      },
+      "law": "Invoke the actual plugin.createBundle with the real bounded reader, return the callback-provided catalog, and compile exactly the callback-provided declaration against that catalog through strict defineInventoryMigration.",
+      "semantics": {
+        "termSha256": "bf718bf03e66468ee47a59701fbaa275ab2b9995fd070056aa8d9d820d427323",
+        "implementation": {
+          "file": "src/migration-plugin.ts",
+          "start": {
+            "offset": 8046,
+            "line": 204,
+            "column": 1
+          },
+          "end": {
+            "offset": 8506,
+            "line": 218,
+            "column": 2
+          },
+          "sourceHash": "4b271d6398ba1b0eeb4a5b1cb48523a062f9bcf1c5b427755ec5e1f0fdebe5e6",
+          "astHash": "a3f2ddf440ae6e15dbb0862f9562c892c780891bcee5c34cb0b202f6f0cda9a1"
+        },
+        "dependencies": [
+          {
+            "supportingV": "export:./migrations#createInventoryLegacyQueryReader::call[0]",
+            "factoryExpectedTerm": {
+              "termSha256": "bab08a66619e1b45e6dbd4351d37d6ec6c5af62b830132ebf05fb05f86b68e5a",
+              "implementation": {
+                "file": "src/migration-plugin.ts",
+                "start": {
+                  "offset": 7546,
+                  "line": 192,
+                  "column": 1
+                },
+                "end": {
+                  "offset": 7939,
+                  "line": 201,
+                  "column": 2
+                },
+                "sourceHash": "4b271d6398ba1b0eeb4a5b1cb48523a062f9bcf1c5b427755ec5e1f0fdebe5e6",
+                "astHash": "ee9cf59bd29b47a5377fb1edc48b1d21ad352aa5f324d20c0ccf3bc67f464080"
+              }
+            }
+          },
+          {
+            "strictProducer": {
+              "surfaceKey": "export:./migrations#defineInventoryMigration::call[0]",
+              "mode": "A",
+              "execution": {
+                "file": "experiments/tla-conformance/migration-r5/artifacts/SnapshotSupersededWorkflow/surface-execution-v2.json",
+                "sha256": "33003c2fd7815f017af736151e0c8a21c6a15e15e3916cf526d1c5e84141120f"
+              },
+              "declaration": {
+                "file": "src/migrations.ts",
+                "start": {
+                  "offset": 11370,
+                  "line": 269,
+                  "column": 1
+                },
+                "end": {
+                  "offset": 18283,
+                  "line": 476,
+                  "column": 2
+                },
+                "sourceHash": "0e837a12fa171f3029b3931f0c2c0d12d83edbd4b12d86e9ec810ec7ede77384",
+                "astHash": "f20e03b07851c0705e3ab86e9f6c91383d4646213a32b4ae0102cb3db584abe4"
+              },
+              "signatureHash": "09bd0752df1e120eb9259d4b76a76626f0bf55c0c51623e8f3e1285216627b47"
+            }
+          }
+        ],
+        "externalBoundary": "InventoryMigrationSourcePlugin.createBundle",
+        "causalMember": "sourcePluginPlan"
+      },
+      "causalEvidence": {
+        "file": "experiments/tla-conformance/migration-helper-causal-r7/artifacts/runtime-causal.json",
+        "sha256": "db76e559e9019216bf38f2b284c20a14faf878b216132a9f504d03e75624a263",
+        "member": "sourcePluginPlan"
+      }
+    },
+    {
+      "surfaceKey": "export:./migrations#readAllInventoryLegacyQuery::call[0]",
+      "mode": "B",
+      "signatureHash": "23e0059d6965eaf5a71e74a971a20741dbc185de2cecbb6034c874a67151b93b",
+      "declaration": {
+        "file": "src/migration-plugin.ts",
+        "start": {
+          "offset": 5662,
+          "line": 143,
+          "column": 1
+        },
+        "end": {
+          "offset": 7452,
+          "line": 189,
+          "column": 2
+        },
+        "sourceHash": "4b271d6398ba1b0eeb4a5b1cb48523a062f9bcf1c5b427755ec5e1f0fdebe5e6",
+        "astHash": "eab494fe374fb760ca74c6c15958572b7d9caeeabdda1bf0e004d87f3d7244ed"
+      },
+      "law": "Validate positive safe bounds, repeatedly invoke the actual application query.readPage with exact cursor/limit, append callback rows in order, reject overflow/empty/repeated cursor/page exhaustion, and return only the callback-caused complete row sequence.",
+      "semantics": {
+        "termSha256": "ec86536e8b95add11e23d445163b4dd1f7dcf21c487f86ff083d90f6b1429954",
+        "implementation": {
+          "file": "src/migration-plugin.ts",
+          "start": {
+            "offset": 5662,
+            "line": 143,
+            "column": 1
+          },
+          "end": {
+            "offset": 7452,
+            "line": 189,
+            "column": 2
+          },
+          "sourceHash": "4b271d6398ba1b0eeb4a5b1cb48523a062f9bcf1c5b427755ec5e1f0fdebe5e6",
+          "astHash": "eab494fe374fb760ca74c6c15958572b7d9caeeabdda1bf0e004d87f3d7244ed"
+        },
+        "dependency": {
+          "local": "assertPositiveSafeInteger",
+          "termSha256": "0cd910cc4c0124fc59a7edfbeadd44af27765d45ad002010be7977bbf910074e"
+        },
+        "externalBoundary": "InventoryLegacyQuery.readPage",
+        "causalMember": "directRead"
+      },
+      "causalEvidence": {
+        "file": "experiments/tla-conformance/migration-helper-causal-r7/artifacts/runtime-causal.json",
+        "sha256": "db76e559e9019216bf38f2b284c20a14faf878b216132a9f504d03e75624a263",
+        "member": "directRead"
+      }
+    },
+    {
+      "surfaceKey": "type:src/migration-plugin.ts#InventoryLegacyQueryReader.readAll::call[0]",
+      "mode": "B",
+      "signatureHash": "692752529056d64860eb0cd376f99ffdf930d42b8d77f12c4d07e290c44979da",
+      "declaration": {
+        "file": "src/migration-plugin.ts",
+        "start": {
+          "offset": 1829,
+          "line": 47,
+          "column": 3
+        },
+        "end": {
+          "offset": 1925,
+          "line": 49,
+          "column": 30
+        },
+        "sourceHash": "4b271d6398ba1b0eeb4a5b1cb48523a062f9bcf1c5b427755ec5e1f0fdebe5e6",
+        "astHash": "b92643101cf69e0d9f6ca023be62f1d8c1d1fedd7246f7e97badfe7d43b152c9"
+      },
+      "law": "The factory-created reader delegates its exact query and captured options to readAllInventoryLegacyQuery; it does not reconstruct callback rows or detached source state.",
+      "semantics": {
+        "termSha256": "3f73dbb6af4a159fd3f33448372b62ad614e81a5fd6864702643558b2a0b77dd",
+        "implementation": {
+          "file": "src/migration-plugin.ts",
+          "start": {
+            "offset": 7792,
+            "line": 197,
+            "column": 14
+          },
+          "end": {
+            "offset": 7931,
+            "line": 199,
+            "column": 78
+          },
+          "sourceHash": "4b271d6398ba1b0eeb4a5b1cb48523a062f9bcf1c5b427755ec5e1f0fdebe5e6",
+          "astHash": "356b752155548d5de1e18f43be2bdb26d080b20e749f8f1f72a6d2398e9fef7b"
+        },
+        "dependency": {
+          "sameFamily": "export:./migrations#readAllInventoryLegacyQuery::call[0]",
+          "factoryExpectedTerm": {
+            "termSha256": "bab08a66619e1b45e6dbd4351d37d6ec6c5af62b830132ebf05fb05f86b68e5a",
+            "implementation": {
+              "file": "src/migration-plugin.ts",
+              "start": {
+                "offset": 7546,
+                "line": 192,
+                "column": 1
+              },
+              "end": {
+                "offset": 7939,
+                "line": 201,
+                "column": 2
+              },
+              "sourceHash": "4b271d6398ba1b0eeb4a5b1cb48523a062f9bcf1c5b427755ec5e1f0fdebe5e6",
+              "astHash": "ee9cf59bd29b47a5377fb1edc48b1d21ad352aa5f324d20c0ccf3bc67f464080"
+            }
+          }
+        },
+        "externalBoundary": null,
+        "causalMember": "readerRead"
+      },
+      "causalEvidence": {
+        "file": "experiments/tla-conformance/migration-helper-causal-r7/artifacts/runtime-causal.json",
+        "sha256": "db76e559e9019216bf38f2b284c20a14faf878b216132a9f504d03e75624a263",
+        "member": "readerRead"
+      }
+    }
+  ]
+}
