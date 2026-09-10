@@ -49,6 +49,18 @@ import {
   time3,
 } from "./test-fixtures.js";
 
+describe("quantity parser input bounds", () => {
+  it("rejects oversized significant digit text while preserving leading zeros", () => {
+    expect(parseQuantity("0000000000000000000000001", "piece")).toMatchObject({
+      amountMinor: 1,
+      decimals: 0,
+    });
+    expect(() => parseQuantity(`1${"0".repeat(10_000)}`, "piece")).toThrow(
+      "Quantity text exceeds the safe integer storage range."
+    );
+  });
+});
+
 describe("collision-free retry identity", () => {
   it("canonicalizes an empty qualified-dimension set to the same position identity as omission", () => {
     const base = {

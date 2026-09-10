@@ -131,7 +131,7 @@ describe("formal call-graph Vitest callback semantics", () => {
   it("decodes escaped static Vitest option keys before skip and focus decisions", () => {
     const source = typescript.createSourceFile(
       "escaped-options.ts",
-      'test("skip", { "sk\\u0069p": true }, () => {}); test("todo", { "to\\u0064o": true }, () => {}); test("focus", { "on\\u006cy": true }, () => {});',
+      'test("skip", { "sk\\u0069p": true }, () => {}); test("todo", { "to\\u0064o": true }, () => {}); test("focus", { "on\\u006cy": true }, () => {}); test("not-focus", { "on\\u006cy": false }, () => {});',
       typescript.ScriptTarget.Latest,
       true,
       typescript.ScriptKind.TS,
@@ -147,13 +147,15 @@ describe("formal call-graph Vitest callback semantics", () => {
     if (
       skipOptions === undefined || !typescript.isObjectLiteralExpression(skipOptions) ||
       todoOptions === undefined || !typescript.isObjectLiteralExpression(todoOptions) ||
-      calls[2] === undefined
+      calls[2] === undefined ||
+      calls[3] === undefined
     ) {
       throw new Error("Escaped Vitest option regression fixture did not parse as expected.");
     }
     expect(vitestSemantics.vitestObjectBooleanOptions(typescript, skipOptions)).toEqual({ skip: true, todo: false });
     expect(vitestSemantics.vitestObjectBooleanOptions(typescript, todoOptions)).toEqual({ skip: false, todo: true });
     expect(vitestSemantics.vitestFocusedRegistrationNode(typescript, calls[2])).not.toBeUndefined();
+    expect(vitestSemantics.vitestFocusedRegistrationNode(typescript, calls[3])).toBeUndefined();
   });
 
   it("fails closed when conditional Vitest modifiers are chained", () => {

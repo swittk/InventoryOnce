@@ -67,7 +67,12 @@ export function parseQuantity(value: string, unit: string): Quantity {
   if (!whole || fraction.length > MAXIMUM_QUANTITY_DECIMALS) {
     throw new Error("Quantity text has too many decimal places.");
   }
-  const digits = BigInt(`${whole}${fraction}` || "0") * sign;
+  const digitText = `${whole}${fraction}`;
+  const significantDigits = digitText.replace(/^0+/u, "") || "0";
+  if (significantDigits.length > String(Number.MAX_SAFE_INTEGER).length) {
+    throw new Error("Quantity text exceeds the safe integer storage range.");
+  }
+  const digits = BigInt(significantDigits) * sign;
   return quantity({
     amountMinor: safeNumber(digits, "Quantity text"),
     decimals: fraction.length,
