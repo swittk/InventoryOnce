@@ -12,6 +12,11 @@ const OFFICIAL = `${LAB}/r105-layered-6dfc-currentization/surface-bindings-6dfc.
 const MATRIX = `${LAB}/r131-current-source-family-rederive/builder-matrix.json`;
 const OUTPUT = `${LAB}/final-convergence/base-authority-index.json`;
 
+if (process.argv.includes("--check-root")) {
+  process.stdout.write(`${ROOT}\n`);
+  process.exit(0);
+}
+
 function sha256(bytes) { return createHash("sha256").update(bytes).digest("hex"); }
 function read(file) { return fs.readFileSync(path.resolve(ROOT, file)); }
 function json(file) { return JSON.parse(read(file).toString("utf8")); }

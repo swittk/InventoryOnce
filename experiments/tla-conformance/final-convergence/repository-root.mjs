@@ -6,9 +6,15 @@ export function finalConvergenceRepositoryRoot(moduleUrl) {
   return path.resolve(path.dirname(fileURLToPath(moduleUrl)), "../../..");
 }
 
-/** Return one absolute repository path without consulting the caller working directory. */
+/** Return one contained absolute repository path without consulting the caller working directory. */
 export function finalConvergenceRepositoryPath(repositoryRoot, repositoryRelativePath) {
-  return path.resolve(repositoryRoot, repositoryRelativePath);
+  const root = path.resolve(repositoryRoot);
+  const target = path.resolve(root, repositoryRelativePath);
+  const relative = path.relative(root, target);
+  if (relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+    throw new Error(`InventoryOnce final assurance path escapes repository root: ${repositoryRelativePath}.`);
+  }
+  return target;
 }
 
 /** Return whether this module is the process entrypoint independent of the caller working directory. */

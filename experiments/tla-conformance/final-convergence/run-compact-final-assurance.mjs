@@ -74,15 +74,17 @@ try {
   if (mode === "selftest") {
     const foreignCwd = fs.mkdtempSync(path.join(tmpdir(), "inventoryonce-final-cwd-"));
     try {
-      for (const script of [
-        "experiments/tla-conformance/final-convergence/build-base-authority-index.mjs",
-        "experiments/tla-conformance/final-convergence/build-final-registry.mjs",
-      ]) {
-        execFileSync(process.execPath, [repositoryPath(script), "--check"], {
-          cwd: foreignCwd,
-          stdio: "pipe",
-        });
-      }
+      const authorityRoot = execFileSync(
+        process.execPath,
+        [repositoryPath("experiments/tla-conformance/final-convergence/build-base-authority-index.mjs"), "--check-root"],
+        { cwd: foreignCwd, encoding: "utf8" },
+      ).trim();
+      assert.equal(authorityRoot, root, "Base authority generator used the caller working directory.");
+      execFileSync(
+        process.execPath,
+        [repositoryPath("experiments/tla-conformance/final-convergence/compact-final-registry.mjs"), "--check"],
+        { cwd: foreignCwd, stdio: "pipe" },
+      );
     } finally {
       fs.rmSync(foreignCwd, { recursive: true, force: true });
     }
