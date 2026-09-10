@@ -439,8 +439,9 @@ function reservationLifecycleEvidenceFingerprint(
     reservation.actorId ?? null,
     inventoryMetadataFingerprint(reservation.metadata),
     reservation.status,
-    reservation.allocations.map((allocation) =>
-      inventoryIntentFingerprint([
+    reservation.allocations.map(
+      /** Fingerprint one exact retained allocation without changing allocation order. */
+      (allocation) => inventoryIntentFingerprint([
         inventoryStockPositionIdentity(allocation.position),
         inventoryIntentFingerprint([
           allocation.quantity.amountMinor,
