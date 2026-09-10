@@ -4,6 +4,7 @@
   "priorHead": "2ac31f795ad4d7a8ad38ab7fd0cea4c784a5e8fe",
   "currentHead": "7046246c88b32487def30e96fffa4b2a740e0005",
   "surfaceDigest": "ef19f57e568927046de8ae5560321ded947c70e0d921b09cd6fc72e0f5a069c0",
+  "currentSurfaceDigest": "df3e798fd72cdf07ac5c088b706aa48068e84de0781b5e465b8b3c17e751c92d",
   "implementationSurfaceDigest": "03baa3c20d088f813397b4bac1a673eca726f18b845e10e8523af8bb47374e5f",
   "exactRepairFiles": [
     "AGENT_DIARY.md",
@@ -26,11 +27,13 @@
     "scripts/formal-proof-cache.selftest.mjs",
     "scripts/repository-assurance-state.mjs",
     "src/authority-cutover.ts",
+    "src/fungibility.ts",
     "src/migrations.ts",
     "test/authority-arbitrary-port.test.ts",
     "test/authority.test.ts",
     "test/formal-callgraph-semantics.test.ts",
     "test/formal-implementation-conformance.test.ts",
+    "test/fungibility.test.ts",
     "test/r47-concurrent-completion-peer.test.ts"
   ],
   "productSourceChanged": false,
@@ -44,10 +47,10 @@
   "assurance": {
     "currentReview": {
       "file": "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json",
-      "sha256": "1b4ffbb15bb7959baf9881ad52f30caf4d216b708a6290068e2129f9c7082654",
-      "certifiedHead": "8626522ad980b34b7939a5ac278d35e2c6f9a832",
-      "repositoryStateSha256": "23f7a5d9e0f5eb4f2ca6ac4e6518d4f8ba72c0691a0abad6e943820af0785560",
-      "fullLogSha256": "0e6dcac14c1f1f29db6372bbdfe76a6c03bb3b132313b5da24901c5fac1b8826",
+      "sha256": "701fce20b35110a696fb58471b36a9d801a87be2c9da37dcf6d455f958082220",
+      "certifiedHead": "4d9af05917d681630cc697bf2abb367c23de12ca",
+      "repositoryStateSha256": "978a2130b4b1e974fcaaa0a7b9807d41ba247ad8f4a373e106b7ff1546ee850c",
+      "fullLogSha256": "7a82fa394c569985c51bfab5e2f2c752c454a3c0405048384f898689dd67a40d",
       "surfaceSha256": "03baa3c20d088f813397b4bac1a673eca726f18b845e10e8523af8bb47374e5f"
     },
     "historicalReportDependency": "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
@@ -81,5 +84,5 @@
   "producerReplayRuns": 0,
   "reverseReruns": 0,
   "creditExpansion": false,
-  "contentSha256": "d53e5ac034f1476cdcb61030b7221095199b5ea218e2730b59d1158921fabe5e"
+  "contentSha256": "da85b05b62b0a8696f329c3e501acd5f3bc933d0dd22a9232dc31ef1c93388a7"
 }

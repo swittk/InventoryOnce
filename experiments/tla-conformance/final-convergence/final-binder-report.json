@@ -1,6 +1,6 @@
 {
   "status": "FINAL_BINDER_GREEN",
-  "surfaceDigest": "ef19f57e568927046de8ae5560321ded947c70e0d921b09cd6fc72e0f5a069c0",
+  "surfaceDigest": "df3e798fd72cdf07ac5c088b706aa48068e84de0781b5e465b8b3c17e751c92d",
   "callables": 535,
   "diagnostics": 47,
   "byCode": {
@@ -8,6 +8,6 @@
   },
   "hardRed": 47,
   "unexpected": 0,
-  "elapsedMs": 59404,
+  "elapsedMs": 66163,
   "unexpectedRows": []
 }

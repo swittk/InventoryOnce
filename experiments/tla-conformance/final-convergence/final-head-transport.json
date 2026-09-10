@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "status": "FINAL_HEAD_TRANSPORT_PROVED",
   "oldSourceHead": "6cafd49ff4b3729f80ae35d9fc0220f7a8a4b55a",
-  "finalSourceHead": "8626522ad980b34b7939a5ac278d35e2c6f9a832",
+  "finalSourceHead": "4d9af05917d681630cc697bf2abb367c23de12ca",
   "oldSurfaceDigest": "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a",
-  "finalSurfaceDigest": "ef19f57e568927046de8ae5560321ded947c70e0d921b09cd6fc72e0f5a069c0",
+  "finalSurfaceDigest": "df3e798fd72cdf07ac5c088b706aa48068e84de0781b5e465b8b3c17e751c92d",
   "callables": 535,
   "publicSignatureChanges": 0,
   "publicAstChanges": [
@@ -14,6 +14,7 @@
   "exactSourceDelta": [
     "src/authority-cutover.ts",
     "src/deficits.ts",
+    "src/fungibility.ts",
     "src/migrations.ts",
     "src/projection.ts",
     "src/storage.ts",
@@ -46,6 +47,14 @@
       ],
       "rule": "R167 makes empty locationIds select every location for recorded-deficit burdening while preserving strict non-empty filtering and independent per-location deficit accounting."
     },
+    "fungibility": {
+      "changedRuntime": [
+        "fn:fungibilityAllocationIncrement",
+        "fn:positionHasIndependentMeasuredContents",
+        "fn:positionHasUnfixedIndependentMeasuredContents"
+      ],
+      "rule": "Current review repair aligns fungibility allocation with ordinary picking: independent measurement axes fixed by intact packaging do not make the package unsplittable, while serial and genuinely unfixed measured contents retain whole-position allocation semantics."
+    },
     "migrationReplay": {
       "changedRuntime": [
         "fn:createDurableInventoryMigrationPlan",
@@ -67,6 +76,10 @@
       {
         "file": "src/deficits.ts",
         "sha256": "5f6b4781b0f8764f571ec37fee734bb3e1e572ffcb9c7d5917f8dbda79c64ec6"
+      },
+      {
+        "file": "src/fungibility.ts",
+        "sha256": "5be7109a918becee7ba8880ae319f1566bf487597a7f650f53c25cb4955817f1"
       },
       {
         "file": "src/migrations.ts",
@@ -109,6 +122,10 @@
       {
         "file": "test/review-hardening.test.ts",
         "sha256": "b5bc72eaf9189fed0c26b68f8895849188e14d45cd34951e414dfe2a7a9a3e9e"
+      },
+      {
+        "file": "test/fungibility.test.ts",
+        "sha256": "6dd9a2af45908670b8075065f998cd568e1ab04071f7920956f64ef78479a3ee"
       }
     ]
   },
@@ -134,8 +151,8 @@
   },
   "currentReviewPristineReproTransport": {
     "file": "experiments/tla-conformance/final-convergence/r170-pristine-repro-transport.json",
-    "sha256": "7e3f33cc53f058c8de18d76c0a3de942af59043b1a0c52f74d92f7ab51aa4388",
-    "contentSha256": "d53e5ac034f1476cdcb61030b7221095199b5ea218e2730b59d1158921fabe5e",
+    "sha256": "0d9c19d5ad3dc6df1347dac75879d2bc72d48d1065356d476c285f600d73d657",
+    "contentSha256": "da85b05b62b0a8696f329c3e501acd5f3bc933d0dd22a9232dc31ef1c93388a7",
     "affectedStrictRows": [
       {
         "surfaceKey": "export:.#cutoverInventoryAuthority::call[0]",
@@ -146,12 +163,12 @@
   },
   "currentReviewAssurance": {
     "file": "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json",
-    "sha256": "1b4ffbb15bb7959baf9881ad52f30caf4d216b708a6290068e2129f9c7082654",
-    "certifiedHead": "8626522ad980b34b7939a5ac278d35e2c6f9a832",
-    "repositoryStateSha256": "23f7a5d9e0f5eb4f2ca6ac4e6518d4f8ba72c0691a0abad6e943820af0785560",
-    "fullLogSha256": "0e6dcac14c1f1f29db6372bbdfe76a6c03bb3b132313b5da24901c5fac1b8826",
+    "sha256": "701fce20b35110a696fb58471b36a9d801a87be2c9da37dcf6d455f958082220",
+    "certifiedHead": "4d9af05917d681630cc697bf2abb367c23de12ca",
+    "repositoryStateSha256": "978a2130b4b1e974fcaaa0a7b9807d41ba247ad8f4a373e106b7ff1546ee850c",
+    "fullLogSha256": "7a82fa394c569985c51bfab5e2f2c752c454a3c0405048384f898689dd67a40d",
     "surfaceSha256": "03baa3c20d088f813397b4bac1a673eca726f18b845e10e8523af8bb47374e5f"
   },
   "creditExpansion": false,
-  "contentSha256": "498d589782d8c9e2d543edb5b6998a8948ad1b265c7560eb7133e71339efcfdf"
+  "contentSha256": "ddebe111318238bfce241f6a003525b232ef6d0584f3d718e09ae4268e86664f"
 }

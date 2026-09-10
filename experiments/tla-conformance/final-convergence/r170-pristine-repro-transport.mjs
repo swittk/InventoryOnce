@@ -10,6 +10,8 @@ import { verifyCurrentReviewAssurance } from "./current-review-assurance.mjs";
 const PRIOR_HEAD = "2ac31f795ad4d7a8ad38ab7fd0cea4c784a5e8fe";
 const CURRENT_HEAD = "7046246c88b32487def30e96fffa4b2a740e0005";
 const SURFACE_DIGEST = "ef19f57e568927046de8ae5560321ded947c70e0d921b09cd6fc72e0f5a069c0";
+const CURRENT_PRODUCT_HEAD = "4d9af05917d681630cc697bf2abb367c23de12ca";
+const CURRENT_INTEGRATED_SURFACE_DIGEST = "df3e798fd72cdf07ac5c088b706aa48068e84de0781b5e465b8b3c17e751c92d";
 const REPORT_FILE = "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json";
 const FIELD_FILE = "formal/implementation-conformance/FIELD_CLASSIFICATION.json";
 const BASE_VALUE = "experiments/tla-conformance/final-convergence/baseline-v309-before-r170-pristine-repro.json";
@@ -69,6 +71,7 @@ export function buildR170PristineReproTransport({ repositoryRoot = process.cwd()
   );
   const currentReviewAssurance = verifyCurrentReviewAssurance(root);
   const certifiedHead = currentReviewAssurance.receipt.certifiedHead;
+  assert.equal(certifiedHead, CURRENT_PRODUCT_HEAD, "Current review assurance no longer certifies the reviewed product repair head.");
   const postRepairAuthoritative = git([
     "diff", "--name-only", CURRENT_HEAD, certifiedHead, "--",
     "src", "formal", "scripts", "test", "package.json", "tsconfig.json", "tsconfig.test.json",
@@ -76,7 +79,7 @@ export function buildR170PristineReproTransport({ repositoryRoot = process.cwd()
   assert(postRepairAuthoritative.length > 0, "Current review assurance must explicitly transport authoritative bytes after the historical pristine-repro repair.");
 
   const surface = discoverCompilerSurface(root);
-  assert.equal(surface.digest, SURFACE_DIGEST);
+  assert.equal(surface.digest, CURRENT_INTEGRATED_SURFACE_DIGEST, "Integrated 535-callable surface no longer matches the current reviewed product head.");
   assert.equal(surface.callables.length, 535);
 
   const valueAffected = [];
@@ -108,6 +111,7 @@ export function buildR170PristineReproTransport({ repositoryRoot = process.cwd()
     priorHead: PRIOR_HEAD,
     currentHead: CURRENT_HEAD,
     surfaceDigest: SURFACE_DIGEST,
+    currentSurfaceDigest: surface.digest,
     implementationSurfaceDigest: currentReviewAssurance.receipt.surfaceSha256,
     exactRepairFiles: EXPECTED_REPAIR_DELTA,
     postRepairAuthoritativeFiles: postRepairAuthoritative,
