@@ -3,7 +3,7 @@
   "archive": {
     "file": "experiments/tla-conformance/final-convergence/compact-support.tar.gz",
     "sha256": "c735a5616878141ee0d107eb1d05e5f37d942b5f07a51e3de7b212d05ca7c8b5",
-    "runtimeClosureHead": "178757e7f3181ccc0bef3901173db7acf6a52f78",
+    "runtimeClosureHead": "26917cd76aec2d2b66aa0decd19f7ac6fff18056",
     "files": [
       {
         "file": "experiments/tla-conformance/astra-authority-control-r8/family.mjs",
