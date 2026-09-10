@@ -15,6 +15,9 @@ import {
   formalModels,
   statefulOperationFamilyIds,
 } from "./formal-models.mjs";
+import {
+  assertNoManifestImplementationModelClaim,
+} from "./executable-assurance-coherence.mjs";
 
 /** InventoryOnce package root. */
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -1097,13 +1100,18 @@ if (!("GAP-LEGACY-SOURCE-INTERPRETATION" in gaps)) {
     "Legacy migration interpretation gap disappeared from the checked report."
   );
 }
-if (
-  Object.values(apiManifest.entries).some((entry) =>
-    entry.models.includes("DistributedRights")
-  )
-) {
+try {
+  assertNoManifestImplementationModelClaim(
+    {
+      apiEntries: apiManifest.entries,
+      fieldEntries: fieldManifest.entries,
+      traceEntries: traceManifest.entries,
+    },
+    "DistributedRights",
+  );
+} catch {
   throw new Error(
-    "Current APIs must not claim DistributedRights implementation refinement before code exists."
+    "Current APIs, fields, and traces must not claim DistributedRights implementation refinement before code exists."
   );
 }
 

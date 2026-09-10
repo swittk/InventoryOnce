@@ -3,8 +3,8 @@
     "authorityMethods": 14,
     "callAndConstructSignatures": 510,
     "classMethods": 71,
-    "compilerCallGraphCallables": 2455,
-    "compilerCallGraphEdges": 6744,
+    "compilerCallGraphCallables": 2458,
+    "compilerCallGraphEdges": 6748,
     "compilerCallGraphTestRoots": 44,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 510,
@@ -47,7 +47,7 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:14971:<anonymous@419>",
+              "id": "test/authority-durable-shape.test.ts:14979:<anonymous@419>",
               "kind": "ArrowFunction",
               "line": 419,
               "name": "<anonymous@419>",
@@ -186,7 +186,7 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:14971:<anonymous@419>",
+              "id": "test/authority-durable-shape.test.ts:14979:<anonymous@419>",
               "kind": "ArrowFunction",
               "line": 419,
               "name": "<anonymous@419>",
@@ -321,7 +321,7 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:14971:<anonymous@419>",
+              "id": "test/authority-durable-shape.test.ts:14979:<anonymous@419>",
               "kind": "ArrowFunction",
               "line": 419,
               "name": "<anonymous@419>",
@@ -452,7 +452,7 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:14971:<anonymous@419>",
+              "id": "test/authority-durable-shape.test.ts:14979:<anonymous@419>",
               "kind": "ArrowFunction",
               "line": 419,
               "name": "<anonymous@419>",
@@ -587,7 +587,7 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:14971:<anonymous@419>",
+              "id": "test/authority-durable-shape.test.ts:14979:<anonymous@419>",
               "kind": "ArrowFunction",
               "line": 419,
               "name": "<anonymous@419>",
@@ -722,7 +722,7 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:14971:<anonymous@419>",
+              "id": "test/authority-durable-shape.test.ts:14979:<anonymous@419>",
               "kind": "ArrowFunction",
               "line": 419,
               "name": "<anonymous@419>",
@@ -857,7 +857,7 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:14971:<anonymous@419>",
+              "id": "test/authority-durable-shape.test.ts:14979:<anonymous@419>",
               "kind": "ArrowFunction",
               "line": 419,
               "name": "<anonymous@419>",
@@ -992,7 +992,7 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:14971:<anonymous@419>",
+              "id": "test/authority-durable-shape.test.ts:14979:<anonymous@419>",
               "kind": "ArrowFunction",
               "line": 419,
               "name": "<anonymous@419>",
@@ -1127,7 +1127,7 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:14971:<anonymous@419>",
+              "id": "test/authority-durable-shape.test.ts:14979:<anonymous@419>",
               "kind": "ArrowFunction",
               "line": 419,
               "name": "<anonymous@419>",
@@ -1258,7 +1258,7 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:14971:<anonymous@419>",
+              "id": "test/authority-durable-shape.test.ts:14979:<anonymous@419>",
               "kind": "ArrowFunction",
               "line": 419,
               "name": "<anonymous@419>",
@@ -1552,7 +1552,7 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:14971:<anonymous@419>",
+              "id": "test/authority-durable-shape.test.ts:14979:<anonymous@419>",
               "kind": "ArrowFunction",
               "line": 419,
               "name": "<anonymous@419>",
@@ -1683,7 +1683,7 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:14971:<anonymous@419>",
+              "id": "test/authority-durable-shape.test.ts:14979:<anonymous@419>",
               "kind": "ArrowFunction",
               "line": 419,
               "name": "<anonymous@419>",
@@ -1814,7 +1814,7 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:14971:<anonymous@419>",
+              "id": "test/authority-durable-shape.test.ts:14979:<anonymous@419>",
               "kind": "ArrowFunction",
               "line": 419,
               "name": "<anonymous@419>",
@@ -4979,7 +4979,7 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:14971:<anonymous@419>",
+              "id": "test/authority-durable-shape.test.ts:14979:<anonymous@419>",
               "kind": "ArrowFunction",
               "line": 419,
               "name": "<anonymous@419>",
@@ -5119,7 +5119,7 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:14971:<anonymous@419>",
+              "id": "test/authority-durable-shape.test.ts:14979:<anonymous@419>",
               "kind": "ArrowFunction",
               "line": 419,
               "name": "<anonymous@419>",
@@ -5255,7 +5255,7 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:14971:<anonymous@419>",
+              "id": "test/authority-durable-shape.test.ts:14979:<anonymous@419>",
               "kind": "ArrowFunction",
               "line": 419,
               "name": "<anonymous@419>",
@@ -5387,7 +5387,7 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:14971:<anonymous@419>",
+              "id": "test/authority-durable-shape.test.ts:14979:<anonymous@419>",
               "kind": "ArrowFunction",
               "line": 419,
               "name": "<anonymous@419>",
@@ -5523,7 +5523,7 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:14971:<anonymous@419>",
+              "id": "test/authority-durable-shape.test.ts:14979:<anonymous@419>",
               "kind": "ArrowFunction",
               "line": 419,
               "name": "<anonymous@419>",
@@ -5659,7 +5659,7 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:14971:<anonymous@419>",
+              "id": "test/authority-durable-shape.test.ts:14979:<anonymous@419>",
               "kind": "ArrowFunction",
               "line": 419,
               "name": "<anonymous@419>",
@@ -5795,7 +5795,7 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:14971:<anonymous@419>",
+              "id": "test/authority-durable-shape.test.ts:14979:<anonymous@419>",
               "kind": "ArrowFunction",
               "line": 419,
               "name": "<anonymous@419>",
@@ -5931,7 +5931,7 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:14971:<anonymous@419>",
+              "id": "test/authority-durable-shape.test.ts:14979:<anonymous@419>",
               "kind": "ArrowFunction",
               "line": 419,
               "name": "<anonymous@419>",
@@ -6067,7 +6067,7 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:14971:<anonymous@419>",
+              "id": "test/authority-durable-shape.test.ts:14979:<anonymous@419>",
               "kind": "ArrowFunction",
               "line": 419,
               "name": "<anonymous@419>",
@@ -6199,7 +6199,7 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:14971:<anonymous@419>",
+              "id": "test/authority-durable-shape.test.ts:14979:<anonymous@419>",
               "kind": "ArrowFunction",
               "line": 419,
               "name": "<anonymous@419>",
@@ -6495,7 +6495,7 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:14971:<anonymous@419>",
+              "id": "test/authority-durable-shape.test.ts:14979:<anonymous@419>",
               "kind": "ArrowFunction",
               "line": 419,
               "name": "<anonymous@419>",
@@ -6627,7 +6627,7 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:14971:<anonymous@419>",
+              "id": "test/authority-durable-shape.test.ts:14979:<anonymous@419>",
               "kind": "ArrowFunction",
               "line": 419,
               "name": "<anonymous@419>",
@@ -6759,7 +6759,7 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:14971:<anonymous@419>",
+              "id": "test/authority-durable-shape.test.ts:14979:<anonymous@419>",
               "kind": "ArrowFunction",
               "line": 419,
               "name": "<anonymous@419>",
@@ -22875,9 +22875,11 @@
       "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
-        "test/formal-implementation-conformance.test.ts"
+        "test/read-model.test.ts",
+        "test/read-snapshot.test.ts",
+        "test/availability.test.ts"
       ],
-      "family": "identity-normalization",
+      "family": "read-current",
       "gaps": [],
       "implementationTargets": [
         {
@@ -22890,24 +22892,26 @@
           "name": "findInventoryEventByOperationId"
         }
       ],
-      "inputMapping": "Identity and selector fields map to finite model atoms and exact set constraints.",
+      "inputMapping": "Selector/identity/scope/time fields map to a query over one fully published abstract world.",
       "internalReferences": [],
       "invariants": [
-        "TypeOK",
-        "ResourceAccounting",
-        "ContainmentIsAcyclic",
-        "PublishedRetainsAllDispositions",
-        "PublishedWorldMatchesSnapshot",
-        "SupersededRowsNeverResume"
+        "HeadReferencesCompleteWorld",
+        "ReportMatchesCurrentTruth",
+        "ReportsMatchExactPhysicalIdentity",
+        "PoolReportMatchesExactPhysicalTruth",
+        "ReportMatchesCurrentPhysicalTruth"
       ],
       "models": [
+        "PublishedHeadCAS",
         "ResourceDimensions",
-        "TraceabilityGraph",
-        "SnapshotSupersededWorkflow"
+        "UseByReservation",
+        "ReservationScope",
+        "CollectionView",
+        "FungibilityPool"
       ],
-      "rejectionRelation": "Empty, duplicate, contradictory, or non-canonical identities reject.",
-      "resultMapping": "Result is a canonical collision-free identity/selector observation.",
-      "retryRelation": "Pure helper; retry is ordinary referential equality.",
+      "rejectionRelation": "Unknown identity or invalid selector/time rejects; reads never fall back to staged or compatibility truth.",
+      "resultMapping": "Read result maps to exact current positions, summaries, availability, plans, metadata, claims, counts, or events from one world revision.",
+      "retryRelation": "Reads are side-effect-free; repeated reads without publication are equal.",
       "signature": {
         "callSignatures": [
           {
@@ -22934,6 +22938,8 @@
       },
       "stateProjection": [
         "abstractInventoryState",
+        "abstractReservationState",
+        "abstractCountState",
         "abstractTraceabilityState"
       ],
       "status": "covered"
@@ -28869,9 +28875,11 @@
       "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
-        "test/formal-implementation-conformance.test.ts"
+        "test/read-model.test.ts",
+        "test/read-snapshot.test.ts",
+        "test/availability.test.ts"
       ],
-      "family": "identity-normalization",
+      "family": "read-current",
       "gaps": [],
       "implementationTargets": [
         {
@@ -28884,7 +28892,7 @@
           "name": "listInventoryPackagingRevisions"
         }
       ],
-      "inputMapping": "Identity and selector fields map to finite model atoms and exact set constraints.",
+      "inputMapping": "Selector/identity/scope/time fields map to a query over one fully published abstract world.",
       "internalReferences": [
         {
           "occurrences": 7,
@@ -28892,21 +28900,23 @@
         }
       ],
       "invariants": [
-        "TypeOK",
-        "ResourceAccounting",
-        "ContainmentIsAcyclic",
-        "PublishedRetainsAllDispositions",
-        "PublishedWorldMatchesSnapshot",
-        "SupersededRowsNeverResume"
+        "HeadReferencesCompleteWorld",
+        "ReportMatchesCurrentTruth",
+        "ReportsMatchExactPhysicalIdentity",
+        "PoolReportMatchesExactPhysicalTruth",
+        "ReportMatchesCurrentPhysicalTruth"
       ],
       "models": [
+        "PublishedHeadCAS",
         "ResourceDimensions",
-        "TraceabilityGraph",
-        "SnapshotSupersededWorkflow"
+        "UseByReservation",
+        "ReservationScope",
+        "CollectionView",
+        "FungibilityPool"
       ],
-      "rejectionRelation": "Empty, duplicate, contradictory, or non-canonical identities reject.",
-      "resultMapping": "Result is a canonical collision-free identity/selector observation.",
-      "retryRelation": "Pure helper; retry is ordinary referential equality.",
+      "rejectionRelation": "Unknown identity or invalid selector/time rejects; reads never fall back to staged or compatibility truth.",
+      "resultMapping": "Read result maps to exact current positions, summaries, availability, plans, metadata, claims, counts, or events from one world revision.",
+      "retryRelation": "Reads are side-effect-free; repeated reads without publication are equal.",
       "signature": {
         "callSignatures": [
           {
@@ -28928,6 +28938,8 @@
       },
       "stateProjection": [
         "abstractInventoryState",
+        "abstractReservationState",
+        "abstractCountState",
         "abstractTraceabilityState"
       ],
       "status": "covered"
@@ -34214,9 +34226,11 @@
       "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
-        "test/formal-implementation-conformance.test.ts"
+        "test/read-model.test.ts",
+        "test/read-snapshot.test.ts",
+        "test/availability.test.ts"
       ],
-      "family": "identity-normalization",
+      "family": "read-current",
       "gaps": [],
       "implementationTargets": [
         {
@@ -34229,7 +34243,7 @@
           "name": "summarizeInventoryStock"
         }
       ],
-      "inputMapping": "Identity and selector fields map to finite model atoms and exact set constraints.",
+      "inputMapping": "Selector/identity/scope/time fields map to a query over one fully published abstract world.",
       "internalReferences": [
         {
           "occurrences": 2,
@@ -34241,21 +34255,23 @@
         }
       ],
       "invariants": [
-        "TypeOK",
-        "ResourceAccounting",
-        "ContainmentIsAcyclic",
-        "PublishedRetainsAllDispositions",
-        "PublishedWorldMatchesSnapshot",
-        "SupersededRowsNeverResume"
+        "HeadReferencesCompleteWorld",
+        "ReportMatchesCurrentTruth",
+        "ReportsMatchExactPhysicalIdentity",
+        "PoolReportMatchesExactPhysicalTruth",
+        "ReportMatchesCurrentPhysicalTruth"
       ],
       "models": [
+        "PublishedHeadCAS",
         "ResourceDimensions",
-        "TraceabilityGraph",
-        "SnapshotSupersededWorkflow"
+        "UseByReservation",
+        "ReservationScope",
+        "CollectionView",
+        "FungibilityPool"
       ],
-      "rejectionRelation": "Empty, duplicate, contradictory, or non-canonical identities reject.",
-      "resultMapping": "Result is a canonical collision-free identity/selector observation.",
-      "retryRelation": "Pure helper; retry is ordinary referential equality.",
+      "rejectionRelation": "Unknown identity or invalid selector/time rejects; reads never fall back to staged or compatibility truth.",
+      "resultMapping": "Read result maps to exact current positions, summaries, availability, plans, metadata, claims, counts, or events from one world revision.",
+      "retryRelation": "Reads are side-effect-free; repeated reads without publication are equal.",
       "signature": {
         "callSignatures": [
           {
@@ -34277,6 +34293,8 @@
       },
       "stateProjection": [
         "abstractInventoryState",
+        "abstractReservationState",
+        "abstractCountState",
         "abstractTraceabilityState"
       ],
       "status": "covered"
@@ -44933,9 +44951,11 @@
       "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
-        "test/formal-implementation-conformance.test.ts"
+        "test/read-model.test.ts",
+        "test/read-snapshot.test.ts",
+        "test/availability.test.ts"
       ],
-      "family": "identity-normalization",
+      "family": "read-current",
       "gaps": [],
       "implementationTargets": [
         {
@@ -44948,7 +44968,7 @@
           "name": "listInventoryPackagingRevisions"
         }
       ],
-      "inputMapping": "Identity and selector fields map to finite model atoms and exact set constraints.",
+      "inputMapping": "Selector/identity/scope/time fields map to a query over one fully published abstract world.",
       "internalReferences": [
         {
           "occurrences": 7,
@@ -44956,21 +44976,23 @@
         }
       ],
       "invariants": [
-        "TypeOK",
-        "ResourceAccounting",
-        "ContainmentIsAcyclic",
-        "PublishedRetainsAllDispositions",
-        "PublishedWorldMatchesSnapshot",
-        "SupersededRowsNeverResume"
+        "HeadReferencesCompleteWorld",
+        "ReportMatchesCurrentTruth",
+        "ReportsMatchExactPhysicalIdentity",
+        "PoolReportMatchesExactPhysicalTruth",
+        "ReportMatchesCurrentPhysicalTruth"
       ],
       "models": [
+        "PublishedHeadCAS",
         "ResourceDimensions",
-        "TraceabilityGraph",
-        "SnapshotSupersededWorkflow"
+        "UseByReservation",
+        "ReservationScope",
+        "CollectionView",
+        "FungibilityPool"
       ],
-      "rejectionRelation": "Empty, duplicate, contradictory, or non-canonical identities reject.",
-      "resultMapping": "Result is a canonical collision-free identity/selector observation.",
-      "retryRelation": "Pure helper; retry is ordinary referential equality.",
+      "rejectionRelation": "Unknown identity or invalid selector/time rejects; reads never fall back to staged or compatibility truth.",
+      "resultMapping": "Read result maps to exact current positions, summaries, availability, plans, metadata, claims, counts, or events from one world revision.",
+      "retryRelation": "Reads are side-effect-free; repeated reads without publication are equal.",
       "signature": {
         "callSignatures": [
           {
@@ -44992,6 +45014,8 @@
       },
       "stateProjection": [
         "abstractInventoryState",
+        "abstractReservationState",
+        "abstractCountState",
         "abstractTraceabilityState"
       ],
       "status": "covered"
@@ -49664,9 +49688,11 @@
       "evidenceMode": "indirect-call-chain",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
-        "test/formal-implementation-conformance.test.ts"
+        "test/read-model.test.ts",
+        "test/read-snapshot.test.ts",
+        "test/availability.test.ts"
       ],
-      "family": "identity-normalization",
+      "family": "read-current",
       "gaps": [],
       "implementationTargets": [
         {
@@ -49679,7 +49705,7 @@
           "name": "summarizeInventoryStock"
         }
       ],
-      "inputMapping": "Identity and selector fields map to finite model atoms and exact set constraints.",
+      "inputMapping": "Selector/identity/scope/time fields map to a query over one fully published abstract world.",
       "internalReferences": [
         {
           "occurrences": 2,
@@ -49691,21 +49717,23 @@
         }
       ],
       "invariants": [
-        "TypeOK",
-        "ResourceAccounting",
-        "ContainmentIsAcyclic",
-        "PublishedRetainsAllDispositions",
-        "PublishedWorldMatchesSnapshot",
-        "SupersededRowsNeverResume"
+        "HeadReferencesCompleteWorld",
+        "ReportMatchesCurrentTruth",
+        "ReportsMatchExactPhysicalIdentity",
+        "PoolReportMatchesExactPhysicalTruth",
+        "ReportMatchesCurrentPhysicalTruth"
       ],
       "models": [
+        "PublishedHeadCAS",
         "ResourceDimensions",
-        "TraceabilityGraph",
-        "SnapshotSupersededWorkflow"
+        "UseByReservation",
+        "ReservationScope",
+        "CollectionView",
+        "FungibilityPool"
       ],
-      "rejectionRelation": "Empty, duplicate, contradictory, or non-canonical identities reject.",
-      "resultMapping": "Result is a canonical collision-free identity/selector observation.",
-      "retryRelation": "Pure helper; retry is ordinary referential equality.",
+      "rejectionRelation": "Unknown identity or invalid selector/time rejects; reads never fall back to staged or compatibility truth.",
+      "resultMapping": "Read result maps to exact current positions, summaries, availability, plans, metadata, claims, counts, or events from one world revision.",
+      "retryRelation": "Reads are side-effect-free; repeated reads without publication are equal.",
       "signature": {
         "callSignatures": [
           {
@@ -49727,6 +49755,8 @@
       },
       "stateProjection": [
         "abstractInventoryState",
+        "abstractReservationState",
+        "abstractCountState",
         "abstractTraceabilityState"
       ],
       "status": "covered"

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   assertExecutableAssuranceMatchesManifests,
+  assertNoManifestImplementationModelClaim,
   executableAssuranceSummary,
 } from "./executable-assurance-coherence.mjs";
 
@@ -77,4 +78,37 @@ test("report-only manifest counters fail closed when missing or invalid", () => 
     () => assertExecutableAssuranceMatchesManifests({ ...invalidDepth, executable }),
     /counter 'maximumTypeDepth'/u,
   );
+});
+
+
+test("unknown executable trace refinement modes fail closed", () => {
+  const input = fixtures();
+  input.traces.entries.a.refinementMode = "future-mode";
+  assert.throws(
+    () => executableAssuranceSummary(input),
+    /Unknown executable assurance refinement mode 'future-mode'/u,
+  );
+});
+
+test("implementation model non-claims cover API, field, and trace manifests", () => {
+  const clean = {
+    apiEntries: { api: { models: ["InventoryOperation"] } },
+    fieldEntries: { field: { formalModels: ["InventoryOperation"] } },
+    traceEntries: { trace: { models: ["InventoryOperation"] } },
+  };
+  assert.doesNotThrow(() =>
+    assertNoManifestImplementationModelClaim(clean, "DistributedRights"),
+  );
+  for (const [bucket, entry] of [
+    ["apiEntries", { models: ["DistributedRights"] }],
+    ["fieldEntries", { formalModels: ["DistributedRights"] }],
+    ["traceEntries", { models: ["DistributedRights"] }],
+  ]) {
+    const candidate = structuredClone(clean);
+    candidate[bucket].bad = entry;
+    assert.throws(
+      () => assertNoManifestImplementationModelClaim(candidate, "DistributedRights"),
+      /must not claim DistributedRights/u,
+    );
+  }
 });

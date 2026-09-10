@@ -65,11 +65,46 @@
  * `executable` is the persisted generated report that must equal a fresh same-run summary field for field.
  */
 
+/** Executable trace modes accepted by the current assurance schema. */
+const executableTraceModes = new Set([
+  "state-result-refinement",
+  "bounded-property",
+  "direct-property",
+]);
+
+/** Reject unknown trace modes before partition counters can silently omit them. */
+function assertKnownTraceModes(traceEntries) {
+  for (const entry of traceEntries) {
+    if (!executableTraceModes.has(entry.refinementMode)) {
+      throw new Error(
+        `Unknown executable assurance refinement mode '${String(entry.refinementMode)}'.`,
+      );
+    }
+  }
+}
+
+/** Reject implementation-model claims from any registered API, field, or trace manifest. */
+export function assertNoManifestImplementationModelClaim(
+  { apiEntries, fieldEntries, traceEntries },
+  model,
+) {
+  const claimed =
+    Object.values(apiEntries).some((entry) => Array.isArray(entry.models) && entry.models.includes(model)) ||
+    Object.values(fieldEntries).some((entry) => Array.isArray(entry.formalModels) && entry.formalModels.includes(model)) ||
+    Object.values(traceEntries).some((entry) => Array.isArray(entry.models) && entry.models.includes(model));
+  if (claimed) {
+    throw new Error(
+      `Current manifests must not claim ${model} implementation refinement before code exists.`,
+    );
+  }
+}
+
 /** Build the complete executable-assurance summary that is derived from current manifests. */
 export function executableAssuranceSummary(
   /** @type {ExecutableAssuranceManifests} */ { api, fields, callChains, traces, gaps },
 ) {
   const traceEntries = Object.values(traces.entries);
+  assertKnownTraceModes(traceEntries);
   return {
     surfaceSha256: api.surfaceSha256,
     apiEntries: Object.keys(api.entries).length,

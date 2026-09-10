@@ -91,9 +91,11 @@ TypeOK ==
 ResourceAccounting ==
   Cardinality(active) = 1 + externalIn - externalOut
 
+\* Regression check implied by ActiveTokensHaveExactlyOneRealLocation because "TRANSIT" \in Locations; not independent evidence.
 InTransitStillExists ==
   \A t \in Tokens: loc[t] = "TRANSIT" => t \in active
 
+\* Check active-token existence is exactly equivalent to placement at a configured real location; loc is already a total function.
 ActiveTokensHaveExactlyOneRealLocation ==
   \A t \in Tokens: t \in active <=> loc[t] \in Locations
 

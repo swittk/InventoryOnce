@@ -57,14 +57,14 @@ Any added/removed method, callable export, class method, type field, field type,
 | facade-construction | 2 | InventoryOperation | covered | GAP-EXTERNAL-CLOCK, GAP-DB-IMPLEMENTATION-UNBOUNDED |
 | fungibility-movement | 3 | FungibilityPool, ReservationScope, ReservationSafety, UseByReservation, InventoryOperation, PublishedHeadCAS | covered | GAP-FUNGIBILITY-EXACT-SEARCH-BOUND |
 | fungibility-read | 12 | FungibilityPool, UseByReservation | covered | GAP-FUNGIBILITY-EXACT-SEARCH-BOUND |
-| identity-normalization | 27 | ResourceDimensions, TraceabilityGraph, SnapshotSupersededWorkflow | covered | — |
+| identity-normalization | 22 | ResourceDimensions, TraceabilityGraph, SnapshotSupersededWorkflow | covered | — |
 | lot-command | 3 | UseByReservation, CorrectionHistory, InventoryOperation | covered | — |
 | migration-definition | 8 | CatalogPublication, TraceabilityGraph, ReclassificationConservation, SnapshotSupersededWorkflow, CompositionRevision | covered | GAP-LEGACY-SOURCE-INTERPRETATION, GAP-EXTERNAL-MIGRATION-CALLBACKS |
 | migration-publication | 3 | CatalogPublication, InventoryOperation, PublishedHeadCAS, RepairLiveness, TraceabilityGraph, SnapshotSupersededWorkflow | covered | GAP-LEGACY-SOURCE-INTERPRETATION, GAP-DB-IMPLEMENTATION-UNBOUNDED |
 | operation-result-helper | 11 | InventoryOperation, PublishedHeadCAS | covered | — |
 | packaging-reclassification | 4 | PackagingIdentity, ReclassificationConservation, DualMeasure, InventoryOperation | covered | — |
 | pure-exact-value | 90 | DualMeasure, PackagingIdentity | covered | — |
-| read-current | 22 | PublishedHeadCAS, ResourceDimensions, UseByReservation, ReservationScope, CollectionView, FungibilityPool | covered | — |
+| read-current | 27 | PublishedHeadCAS, ResourceDimensions, UseByReservation, ReservationScope, CollectionView, FungibilityPool | covered | — |
 | read-snapshot | 18 | PublishedHeadCAS | covered | GAP-DB-IMPLEMENTATION-UNBOUNDED |
 | reservation | 19 | ReservationSafety, ReservationScope, UseByReservation, InventoryOperation | covered | — |
 | scrap | 5 | InventoryOperation, PackagingIdentity, DualMeasure, ReservationSafety, UseByReservation | covered | — |

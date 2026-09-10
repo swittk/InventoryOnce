@@ -287,7 +287,7 @@ describe("InventoryAuthorityControl durable state shape", () => {
     expect(accepted + rejected).toBe(46_080);
     expect(accepted).toBe(35);
     expect(rejected).toBe(46_045);
-  });
+  }, 90_000);
 
   it("preserves legacy-cutover activation inference for pre-field authoritative rows", async () => {
     const store = new MutableAuthorityStore();

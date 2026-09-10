@@ -172,7 +172,7 @@ async function greenfieldCase(foreign: boolean) {
   return { phase: "green-cert", foreign, outcome: "joined", revision: result.authority.revision };
 }
 
-test("R49 exhausts concrete same-request and foreign completion checkpoints", async () => {
+test("R47 exhausts concrete same-request and foreign completion checkpoints", async () => {
   const rows: unknown[] = [];
   rows.push(await greenfieldCase(false));
   rows.push(await greenfieldCase(true));

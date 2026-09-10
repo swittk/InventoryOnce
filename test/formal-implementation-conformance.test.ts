@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
@@ -73,6 +73,27 @@ describe("formal implementation conformance manifest", () => {
         { cwd: packageRoot, encoding: "utf8" }
       )
     ).toThrow();
+  });
+
+  it("classifies read declaration files as read-current by exact file identity", () => {
+    const manifest = JSON.parse(
+      readFileSync(
+        path.join(packageRoot, "formal/implementation-conformance/API_ASSURANCE.json"),
+        "utf8"
+      )
+    ) as { readonly entries: Readonly<Record<string, { readonly family: string; readonly signature: { readonly declaration: string } }>> };
+    const readFiles = new Set([
+      "src/read-model.ts",
+      "src/availability.ts",
+      "src/usability.ts",
+    ]);
+    const declarations = Object.values(manifest.entries).filter((entry) =>
+      readFiles.has(entry.signature.declaration)
+    );
+    expect(declarations.length).toBeGreaterThan(0);
+    expect(new Set(declarations.map((entry) => entry.family))).toEqual(
+      new Set(["read-current"])
+    );
   });
 
   it("frames repository assurance entries without path/content or deleted-marker collisions", () => {
