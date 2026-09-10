@@ -3,9 +3,13 @@ import {
   InventoryAllocationMethod,
   InventoryDeficitPolicy,
   InventoryFungibilityReservationEffectKind,
+  InventoryMeasurementAxisRole,
+  InventoryMeasurementRequirement,
   InventoryReservationFeasibilityStatus,
+  InventoryTrackingRequirement,
   createInventoryOnce,
   defineInventoryCatalog,
+  defineInventoryItem,
   defineScalarInventoryFungibilityPool,
   defineScalarInventoryItem,
   defineScalarInventoryPackaging,
@@ -15,6 +19,7 @@ import {
   packageAmount,
   parseQuantity,
   stockAmount,
+  unitCode,
   type InventoryCatalog,
   type InventoryItemDefinitionRevision,
 } from "../src/index.js";
@@ -689,6 +694,103 @@ describe("derived pool summaries and exact member movements", () => {
       count: 3,
       packagingRevisionId: pack2.revisionId,
     });
+  });
+
+  it("splits package-fixed independent measurements consistently with ordinary allocation", async () => {
+    const packaged = defineInventoryItem({
+      itemId: "fixed-measure-packaged",
+      revisionId: "fixed-measure-packaged-v1",
+      primaryAxis: {
+        axisId: "pieces",
+        role: InventoryMeasurementAxisRole.Primary,
+        unit: unitCode("piece"),
+        requirement: InventoryMeasurementRequirement.Required,
+      },
+      independentAxes: [{
+        axisId: "weight",
+        role: InventoryMeasurementAxisRole.Independent,
+        unit: unitCode("kg"),
+        requirement: InventoryMeasurementRequirement.Optional,
+      }],
+      reservationAxisId: "pieces",
+      tracking: {
+        lot: InventoryTrackingRequirement.Optional,
+        serial: InventoryTrackingRequirement.Optional,
+      },
+      qualifiedDimensions: [],
+    });
+    const alternative = defineScalarInventoryItem({
+      itemId: "fixed-measure-alternative",
+      revisionId: "fixed-measure-alternative-v1",
+      axisId: "pieces",
+      unit: "piece",
+    });
+    const packagingRevisionId = "fixed-measure-pack-v1";
+    const pool = defineScalarInventoryFungibilityPool({
+      poolId: "fixed-measure-pool",
+      revisionId: "fixed-measure-pool-v1",
+      basisUnit: "equivalent",
+      members: [{ item: packaged }, { item: alternative }],
+    });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [packaged, alternative],
+      activeItemRevisionIds: {
+        [packaged.itemId]: packaged.revisionId,
+        [alternative.itemId]: alternative.revisionId,
+      },
+      packagingRevisions: [{
+        revisionId: packagingRevisionId,
+        itemId: packaged.itemId,
+        itemRevisionId: packaged.revisionId,
+        packageUnit: unitCode("pack"),
+        fixedContents: {
+          primary: {
+            axisId: packaged.primaryAxis.axisId,
+            quantity: parseQuantity("2", "piece"),
+          },
+          independent: [{
+            axisId: "weight",
+            quantity: parseQuantity("3", "kg"),
+          }],
+        },
+      }],
+      fungibilityRevisions: [pool],
+      activeFungibilityRevisionIds: { [pool.poolId]: pool.revisionId },
+    });
+    const inventory = createInventoryOnce({
+      catalog,
+      storage: createInMemoryInventoryDurableStorage(),
+      clock: clockAt(time3),
+    });
+    await inventory.stock.receive({
+      operationId: "receive-fixed-measure-packs",
+      occurredAt: time0,
+      to: { itemId: packaged.itemId, locationId: "store" },
+      amount: packageAmount(2, packagingRevisionId),
+    });
+
+    const ordinary = await inventory.read.planAllocation({
+      selector: inventoryStockSelector(packaged.itemId, { locationIds: ["store"] }),
+      amount: packageAmount(1, packagingRevisionId),
+      method: InventoryAllocationMethod.Fifo,
+      at: time1,
+    });
+    expect(ordinary.lines).toHaveLength(1);
+
+    const fungible = await inventory.fungibility.plan({
+      fungibilityRevisionId: pool.revisionId,
+      requested: parseQuantity("2", "equivalent"),
+      method: InventoryAllocationMethod.Fifo,
+      scope: { locationIds: ["store"] },
+      at: time1,
+    });
+    expect(fungible.lines).toHaveLength(1);
+    expect(fungible.lines[0]?.amount).toMatchObject({
+      count: 1,
+      packagingRevisionId,
+    });
+    expect(fungible.shortfall.amountMinor).toBe(0);
+    expect(fungible.incrementBlockedStock).toBe(false);
   });
 
   it("transfers selected member stock without rewriting its item/package/lot identity", async () => {

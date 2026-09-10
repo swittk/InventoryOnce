@@ -1,7 +1,7 @@
 {
   "counts": {
-    "callables": 2470,
-    "edges": 6765,
+    "callables": 2472,
+    "edges": 6783,
     "publicEntries": 510,
     "publicEntriesWithTargets": 510,
     "publicEntriesWithWitnesses": 510,
@@ -1064,10 +1064,10 @@
                 "column": 84,
                 "file": "test/fungibility.test.ts",
                 "hasBody": true,
-                "id": "test/fungibility.test.ts:4157:<anonymous@135>",
+                "id": "test/fungibility.test.ts:4291:<anonymous@140>",
                 "kind": "ArrowFunction",
-                "line": 135,
-                "name": "<anonymous@135>",
+                "line": 140,
+                "name": "<anonymous@140>",
                 "reason": "test-callback"
               },
               {
@@ -1612,10 +1612,10 @@
                 "column": 84,
                 "file": "test/fungibility.test.ts",
                 "hasBody": true,
-                "id": "test/fungibility.test.ts:4157:<anonymous@135>",
+                "id": "test/fungibility.test.ts:4291:<anonymous@140>",
                 "kind": "ArrowFunction",
-                "line": 135,
-                "name": "<anonymous@135>",
+                "line": 140,
+                "name": "<anonymous@140>",
                 "reason": "test-callback"
               },
               {
@@ -3348,10 +3348,10 @@
                 "column": 84,
                 "file": "test/fungibility.test.ts",
                 "hasBody": true,
-                "id": "test/fungibility.test.ts:4157:<anonymous@135>",
+                "id": "test/fungibility.test.ts:4291:<anonymous@140>",
                 "kind": "ArrowFunction",
-                "line": 135,
-                "name": "<anonymous@135>",
+                "line": 140,
+                "name": "<anonymous@140>",
                 "reason": "test-callback"
               },
               {
@@ -3896,10 +3896,10 @@
                 "column": 84,
                 "file": "test/fungibility.test.ts",
                 "hasBody": true,
-                "id": "test/fungibility.test.ts:4157:<anonymous@135>",
+                "id": "test/fungibility.test.ts:4291:<anonymous@140>",
                 "kind": "ArrowFunction",
-                "line": 135,
-                "name": "<anonymous@135>",
+                "line": 140,
+                "name": "<anonymous@140>",
                 "reason": "test-callback"
               },
               {
@@ -11682,10 +11682,10 @@
                 "column": 84,
                 "file": "test/fungibility.test.ts",
                 "hasBody": true,
-                "id": "test/fungibility.test.ts:4157:<anonymous@135>",
+                "id": "test/fungibility.test.ts:4291:<anonymous@140>",
                 "kind": "ArrowFunction",
-                "line": 135,
-                "name": "<anonymous@135>",
+                "line": 140,
+                "name": "<anonymous@140>",
                 "reason": "test-callback"
               },
               {
@@ -14045,10 +14045,10 @@
                 "column": 82,
                 "file": "test/fungibility.test.ts",
                 "hasBody": true,
-                "id": "test/fungibility.test.ts:6589:<anonymous@208>",
+                "id": "test/fungibility.test.ts:6723:<anonymous@213>",
                 "kind": "ArrowFunction",
-                "line": 208,
-                "name": "<anonymous@208>",
+                "line": 213,
+                "name": "<anonymous@213>",
                 "reason": "test-callback"
               },
               {
@@ -15312,10 +15312,10 @@
                 "column": 82,
                 "file": "test/fungibility.test.ts",
                 "hasBody": true,
-                "id": "test/fungibility.test.ts:6589:<anonymous@208>",
+                "id": "test/fungibility.test.ts:6723:<anonymous@213>",
                 "kind": "ArrowFunction",
-                "line": 208,
-                "name": "<anonymous@208>",
+                "line": 213,
+                "name": "<anonymous@213>",
                 "reason": "test-callback"
               },
               {
@@ -16793,10 +16793,10 @@
                 "column": 87,
                 "file": "test/fungibility.test.ts",
                 "hasBody": true,
-                "id": "test/fungibility.test.ts:8903:<anonymous@271>",
+                "id": "test/fungibility.test.ts:9037:<anonymous@276>",
                 "kind": "ArrowFunction",
-                "line": 271,
-                "name": "<anonymous@271>",
+                "line": 276,
+                "name": "<anonymous@276>",
                 "reason": "test-callback"
               },
               {
@@ -21087,10 +21087,10 @@
                 "column": 84,
                 "file": "test/fungibility.test.ts",
                 "hasBody": true,
-                "id": "test/fungibility.test.ts:4157:<anonymous@135>",
+                "id": "test/fungibility.test.ts:4291:<anonymous@140>",
                 "kind": "ArrowFunction",
-                "line": 135,
-                "name": "<anonymous@135>",
+                "line": 140,
+                "name": "<anonymous@140>",
                 "reason": "test-callback"
               },
               {
@@ -22162,10 +22162,10 @@
                 "column": 82,
                 "file": "test/fungibility.test.ts",
                 "hasBody": true,
-                "id": "test/fungibility.test.ts:6589:<anonymous@208>",
+                "id": "test/fungibility.test.ts:6723:<anonymous@213>",
                 "kind": "ArrowFunction",
-                "line": 208,
-                "name": "<anonymous@208>",
+                "line": 213,
+                "name": "<anonymous@213>",
                 "reason": "test-callback"
               },
               {
@@ -23155,10 +23155,10 @@
                 "column": 82,
                 "file": "test/fungibility.test.ts",
                 "hasBody": true,
-                "id": "test/fungibility.test.ts:6589:<anonymous@208>",
+                "id": "test/fungibility.test.ts:6723:<anonymous@213>",
                 "kind": "ArrowFunction",
-                "line": 208,
-                "name": "<anonymous@208>",
+                "line": 213,
+                "name": "<anonymous@213>",
                 "reason": "test-callback"
               },
               {
@@ -24596,10 +24596,10 @@
                 "column": 87,
                 "file": "test/fungibility.test.ts",
                 "hasBody": true,
-                "id": "test/fungibility.test.ts:8903:<anonymous@271>",
+                "id": "test/fungibility.test.ts:9037:<anonymous@276>",
                 "kind": "ArrowFunction",
-                "line": 271,
-                "name": "<anonymous@271>",
+                "line": 276,
+                "name": "<anonymous@276>",
                 "reason": "test-callback"
               },
               {
@@ -28620,10 +28620,10 @@
                 "column": 82,
                 "file": "test/fungibility.test.ts",
                 "hasBody": true,
-                "id": "test/fungibility.test.ts:6589:<anonymous@208>",
+                "id": "test/fungibility.test.ts:6723:<anonymous@213>",
                 "kind": "ArrowFunction",
-                "line": 208,
-                "name": "<anonymous@208>",
+                "line": 213,
+                "name": "<anonymous@213>",
                 "reason": "test-callback"
               },
               {
@@ -28782,10 +28782,10 @@
                 "column": 87,
                 "file": "test/fungibility.test.ts",
                 "hasBody": true,
-                "id": "test/fungibility.test.ts:8903:<anonymous@271>",
+                "id": "test/fungibility.test.ts:9037:<anonymous@276>",
                 "kind": "ArrowFunction",
-                "line": 271,
-                "name": "<anonymous@271>",
+                "line": 276,
+                "name": "<anonymous@276>",
                 "reason": "test-callback"
               },
               {
@@ -28853,10 +28853,10 @@
                 "column": 89,
                 "file": "test/fungibility.test.ts",
                 "hasBody": true,
-                "id": "test/fungibility.test.ts:22846:<anonymous@694>",
+                "id": "test/fungibility.test.ts:26389:<anonymous@796>",
                 "kind": "ArrowFunction",
-                "line": 694,
-                "name": "<anonymous@694>",
+                "line": 796,
+                "name": "<anonymous@796>",
                 "reason": "test-callback"
               },
               {
@@ -34631,10 +34631,10 @@
                 "column": 87,
                 "file": "test/fungibility.test.ts",
                 "hasBody": true,
-                "id": "test/fungibility.test.ts:8903:<anonymous@271>",
+                "id": "test/fungibility.test.ts:9037:<anonymous@276>",
                 "kind": "ArrowFunction",
-                "line": 271,
-                "name": "<anonymous@271>",
+                "line": 276,
+                "name": "<anonymous@276>",
                 "reason": "test-callback"
               },
               {

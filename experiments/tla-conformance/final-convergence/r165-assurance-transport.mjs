@@ -23,6 +23,7 @@ const EXPECTED_DELTA = Object.freeze([
 ]);
 const OTHER_CHANGED = Object.freeze(EXPECTED_DELTA.filter((file) => file !== CURRENT_FORMAL));
 const POST_R165_REVIEW_HEAD = "d947e47af2502f2ed2f8ae6971ee639a91ff0867";
+const POST_R165_REVIEW_TREE = "d9b245e426193de5d36282087f7e4df8bb3fdeea";
 const POST_R165_TRACKED_DELTA = Object.freeze([
   "formal/FOUNDATIONS.md",
   "formal/implementation-conformance/API_ASSURANCE.json",
@@ -48,10 +49,12 @@ function cfgSemantics(module){const files=fs.readdirSync("formal").filter((file)
 export function buildR165AssuranceTransport(){
   const integrationHead=git(["rev-parse","HEAD"]);
   try { git(["merge-base","--is-ancestor",CURRENT_HEAD,integrationHead]); } catch { throw new Error("Integrated proof commit no longer descends from the R165 PR head."); }
+  try { git(["merge-base","--is-ancestor",POST_R165_REVIEW_HEAD,integrationHead]); } catch { throw new Error("Integrated proof commit no longer descends from the reviewed post-R165 head."); }
+  assert.equal(git(["rev-parse",`${POST_R165_REVIEW_HEAD}^{tree}`]),POST_R165_REVIEW_TREE,"Reviewed post-R165 commit tree identity changed.");
   const laterTracked=git(["diff","--name-only",CURRENT_HEAD,integrationHead,"--","src","formal","scripts","test","package.json","tsconfig.json","tsconfig.test.json"]).split(/\r?\n/u).filter(Boolean).sort();
   assert.deepEqual(laterTracked,[...POST_R165_TRACKED_DELTA].sort(),"Post-R165 authoritative reviewed product/assurance delta widened.");
   const exactReviewedDelta=git(["diff","--name-only",CURRENT_HEAD,POST_R165_REVIEW_HEAD,"--","src","formal","scripts","test","package.json","tsconfig.json","tsconfig.test.json"]).split(/\r?\n/u).filter(Boolean).sort();
-  assert.deepEqual(exactReviewedDelta,laterTracked,"Integrated proof tree no longer matches exact d947 reviewed bytes.");
+  assert.deepEqual(exactReviewedDelta,laterTracked,"Integrated proof tree no longer matches the reviewed d947 authoritative path set.");
   const changed=git(["diff","--name-only",PRIOR_HEAD,CURRENT_HEAD]).split(/\r?\n/u).filter(Boolean).sort();
   assert.deepEqual(changed,EXPECTED_DELTA,"R165 current-head delta widened.");
   const srcChanged=git(["diff","--name-only",PRIOR_HEAD,CURRENT_HEAD,"--","src"]).split(/\r?\n/u).filter(Boolean);
@@ -98,7 +101,7 @@ export function buildR165AssuranceTransport(){
   assert.equal(currentReport.compilerCallGraphWitnessedApis,510);
   assert.equal(currentReport.compilerCallGraphUnresolvedApis,0);
   const affectedStrictRows=[...producerAffected,...reportAffectedProducer].sort((a,b)=>a.surfaceKey.localeCompare(b.surfaceKey));
-  const core={schemaVersion:1,status:"R165_PLUS_R167_ASSURANCE_TRANSPORT_PROVED",priorHead:PRIOR_HEAD,currentHead:CURRENT_HEAD,surfaceDigest:SURFACE_DIGEST,exactChangedFiles:EXPECTED_DELTA,productSourceChanged:false,formalRegistry:{before:ref(PRIOR_FORMAL),after:ref(CURRENT_FORMAL),priorBytesAreExactPrefix:true,formalModels:structuredClone(current.formalModels),formalInvariantMutationChecks:structuredClone(current.formalInvariantMutationChecks),statefulOperationFamilyIds:structuredClone(current.statefulOperationFamilyIds),formalConfigCheckNamesAcrossCfgs:cfgSemantics(current),rule:"R165 appends only fail-fast mutation tuple consistency validation; registered models, mutation tuples, stateful families, and cfg check parsing remain identical."},affectedStrictRows,affectedValueRows:valueAffected,otherR165ProofInputs:[],postR165ReviewedDelta:{head:POST_R165_REVIEW_HEAD,trackedFiles:POST_R165_TRACKED_DELTA,assuranceFilesWithStrictProofInputs:[{file:REPORT_FILE,rows:reportAffectedProducer,evidence:ref(R167_ASSURANCE_RECEIPT),fullLog:ref(R167_ASSURANCE_LOG)}],productSourceFileHandledByFinalHeadTransport:"src/deficits.ts"},producerGraphRuns:0,producerReplayRuns:0,reverseReruns:0,tlcRuns:0,creditExpansion:false,baselineArtifacts:[ref(BASE_VALUE),ref(BASE_PRODUCER),ref(R167_ASSURANCE_RECEIPT),ref(R167_ASSURANCE_LOG)]};
+  const core={schemaVersion:1,status:"R165_PLUS_R167_ASSURANCE_TRANSPORT_PROVED",priorHead:PRIOR_HEAD,currentHead:CURRENT_HEAD,surfaceDigest:SURFACE_DIGEST,exactChangedFiles:EXPECTED_DELTA,productSourceChanged:false,formalRegistry:{before:ref(PRIOR_FORMAL),after:ref(CURRENT_FORMAL),priorBytesAreExactPrefix:true,formalModels:structuredClone(current.formalModels),formalInvariantMutationChecks:structuredClone(current.formalInvariantMutationChecks),statefulOperationFamilyIds:structuredClone(current.statefulOperationFamilyIds),formalConfigCheckNamesAcrossCfgs:cfgSemantics(current),rule:"R165 appends only fail-fast mutation tuple consistency validation; registered models, mutation tuples, stateful families, and cfg check parsing remain identical."},affectedStrictRows,affectedValueRows:valueAffected,otherR165ProofInputs:[],postR165ReviewedDelta:{head:POST_R165_REVIEW_HEAD,tree:POST_R165_REVIEW_TREE,trackedFiles:POST_R165_TRACKED_DELTA,assuranceFilesWithStrictProofInputs:[{file:REPORT_FILE,rows:reportAffectedProducer,evidence:ref(R167_ASSURANCE_RECEIPT),fullLog:ref(R167_ASSURANCE_LOG)}],productSourceFileHandledByFinalHeadTransport:"src/deficits.ts"},producerGraphRuns:0,producerReplayRuns:0,reverseReruns:0,tlcRuns:0,creditExpansion:false,baselineArtifacts:[ref(BASE_VALUE),ref(BASE_PRODUCER),ref(R167_ASSURANCE_RECEIPT),ref(R167_ASSURANCE_LOG)]};
   return{...core,contentSha256:sha256(canonicalJson(core))};
 }
 if(process.argv[1]!==undefined&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){

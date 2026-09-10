@@ -850,7 +850,11 @@ function fungibilityAllocationIncrement(input: {
   );
   if (
     input.position.key.serialId !== undefined ||
-    positionHasIndependentMeasuredContents(input.position, input.item)
+    positionHasUnfixedIndependentMeasuredContents(
+      input.catalog,
+      input.position,
+      input.item
+    )
   ) {
     return leastCommonQuantityMultiple(
       input.member.poolQuantity,
@@ -878,12 +882,25 @@ function fungibilityAllocationIncrement(input: {
   );
 }
 
-/** Return whether safe automatic allocation must move this whole measured position. */
-function positionHasIndependentMeasuredContents(
+/** Return whether safe automatic allocation must preserve a measured axis not fixed by packaging. */
+function positionHasUnfixedIndependentMeasuredContents(
+  catalog: InventoryCatalog,
   position: InventoryStockPosition,
   item: InventoryItemDefinitionRevision
 ): boolean {
+  const packagingRevisionId = position.key.packagingRevisionId;
+  const packaging = packagingRevisionId === undefined
+    ? undefined
+    : catalog.packagingRevision(packagingRevisionId);
   for (const axis of item.independentAxes) {
+    if (
+      packaging?.fixedContents.independent.some(
+        /** Match one package-fixed independent axis by exact axis identity. */
+        (measured) => measured.axisId === axis.axisId
+      ) === true
+    ) {
+      continue;
+    }
     const measured = inventoryMeasurementAt(
       position.measurements,
       axis.axisId,

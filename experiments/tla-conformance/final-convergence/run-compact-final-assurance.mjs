@@ -4,7 +4,10 @@ import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { verifyCurrentReviewAssurance } from "./current-review-assurance.mjs";
+import {
+  CURRENT_REVIEW_ASSURANCE_RECEIPT,
+  verifyCurrentReviewAssurance,
+} from "./current-review-assurance.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "../../..");
@@ -75,6 +78,30 @@ try {
     fs.symlinkSync(ordinary, symbolic);
     assert.throws(() => assertRegularFile(symbolic, "Synthetic proof input"), /not a regular file/u);
     fs.rmSync(selftestDir, { recursive: true, force: true });
+
+    // A self-consistent forged surface digest must still fail against independently derived source evidence.
+    const reviewReceiptPath = path.join(root, CURRENT_REVIEW_ASSURANCE_RECEIPT);
+    const reviewReceiptBytes = fs.readFileSync(reviewReceiptPath);
+    const reviewReceipt = JSON.parse(reviewReceiptBytes.toString("utf8"));
+    const reviewReportPath = path.join(root, reviewReceipt.report.file);
+    const reviewReportBytes = fs.readFileSync(reviewReportPath);
+    try {
+      const forgedDigest = "0".repeat(64);
+      const forgedReport = JSON.parse(reviewReportBytes.toString("utf8"));
+      forgedReport.surfaceSha256 = forgedDigest;
+      const forgedReportBytes = Buffer.from(`${JSON.stringify(forgedReport, null, 2)}\n`);
+      fs.writeFileSync(reviewReportPath, forgedReportBytes);
+      reviewReceipt.surfaceSha256 = forgedDigest;
+      reviewReceipt.report.sha256 = crypto.createHash("sha256").update(forgedReportBytes).digest("hex");
+      fs.writeFileSync(reviewReceiptPath, `${JSON.stringify(reviewReceipt, null, 2)}\n`);
+      assert.throws(
+        () => verifyCurrentReviewAssurance(root),
+        /surface digest is not independently source-derived/u,
+      );
+    } finally {
+      fs.writeFileSync(reviewReportPath, reviewReportBytes);
+      fs.writeFileSync(reviewReceiptPath, reviewReceiptBytes);
+    }
   }
   execFileSync(process.execPath, [bundleFile, ...process.argv.slice(3)], { cwd: root, stdio: "inherit" });
 } finally {

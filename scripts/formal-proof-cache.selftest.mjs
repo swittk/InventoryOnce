@@ -158,6 +158,16 @@ test("cache records require exact descriptor identity and verified status", () =
   assert.equal(readFormalProofCache(cache, descriptor), undefined);
   writeFormalProofCache(cache, descriptor, evidence);
   record = JSON.parse(readFileSync(written.path, "utf8"));
+  record.descriptor.tlcWorkers = "8";
+  writeFileSync(written.path, JSON.stringify(record));
+  assert.equal(readFormalProofCache(cache, descriptor), undefined);
+  writeFormalProofCache(cache, descriptor, evidence);
+  record = JSON.parse(readFileSync(written.path, "utf8"));
+  record.cacheKey = "0".repeat(64);
+  writeFileSync(written.path, JSON.stringify(record));
+  assert.equal(readFormalProofCache(cache, descriptor), undefined);
+  writeFormalProofCache(cache, descriptor, evidence);
+  record = JSON.parse(readFileSync(written.path, "utf8"));
   record.status = "partial";
   writeFileSync(written.path, JSON.stringify(record));
   assert.equal(readFormalProofCache(cache, descriptor), undefined);
