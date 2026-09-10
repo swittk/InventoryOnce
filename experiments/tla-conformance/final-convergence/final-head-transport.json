@@ -210,13 +210,13 @@
   },
   "currentReviewAssurance": {
     "file": "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json",
-    "sha256": "0bcce5f7584803bc99f708ac0260c30d4b208541c9c2274aba6ff895ca78f21e",
-    "evidenceHead": "37854f64e4af7e1957fae102ea6296f7dcde2908",
-    "certifiedHead": "0e9214af91ecf326e94ec77b1e9727087be78eb9",
-    "repositoryStateSha256": "1a9fd267a015f6f2c96348ce9be3cfd9d9444387c6e454b9b4718b5f139903b2",
-    "fullLogSha256": "1e1c65eae24ae399fe496cd8c9fb291d526671882066ab8a4573b12736a5afe1",
+    "sha256": "0a59c34ebcf836615d3cc1d8d42a1781db79fff8545824a7daead507cfd76b17",
+    "evidenceHead": "838dcdf01cbe58478562ea3ba1bafc16a37c231e",
+    "certifiedHead": "c88edc7578cd0897edc7a25a7a5b9751c371e010",
+    "repositoryStateSha256": "9f57db4e3ee1ad1c71e72c039fd46c4ffa2c2ae332e1789830d2dcaf57fe613c",
+    "fullLogSha256": "c23bef0f1206424e3dbcf924ab0be2118df5543d1ef25248c5195e5fba78eb0d",
     "surfaceSha256": "dec827da4c576f7638a0f6f9777217b7f024beab7b9ec08cf0a26e8a45733964"
   },
   "creditExpansion": false,
-  "contentSha256": "2a05def1727439b112bc01f062fabecc5ef38f05ad4fa4b5d009f4de8f3e4ab0"
+  "contentSha256": "2a0e269c2ccec855b98f0fcbe29ac476d82ecc93119774ffd086098a02bdeeac"
 }
