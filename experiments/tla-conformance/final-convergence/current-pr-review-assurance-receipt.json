@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "status": "CURRENT_PR_REVIEW_FULL_ASSURANCE_VERIFIED",
+  "certifiedHead": "8626522ad980b34b7939a5ac278d35e2c6f9a832",
+  "repositoryStateSha256": "23f7a5d9e0f5eb4f2ca6ac4e6518d4f8ba72c0691a0abad6e943820af0785560",
+  "surfaceSha256": "03baa3c20d088f813397b4bac1a673eca726f18b845e10e8523af8bb47374e5f",
+  "report": {
+    "file": "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
+    "sha256": "293e9d99e1be95d0a53762ee0b7766dc6d2d3b1bdc365cd151b6df3a0a0ff662"
+  },
+  "fullLog": {
+    "file": "experiments/tla-conformance/final-convergence/current-pr-review-full.log",
+    "sha256": "0e6dcac14c1f1f29db6372bbdfe76a6c03bb3b132313b5da24901c5fac1b8826"
+  }
+}
