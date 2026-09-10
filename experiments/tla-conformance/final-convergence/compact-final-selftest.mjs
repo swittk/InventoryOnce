@@ -2066,7 +2066,13 @@ function finalConvergenceRepositoryRoot(moduleUrl) {
   return path7.resolve(path7.dirname(fileURLToPath3(moduleUrl)), "../../..");
 }
 function finalConvergenceRepositoryPath(repositoryRoot, repositoryRelativePath) {
-  return path7.resolve(repositoryRoot, repositoryRelativePath);
+  const root3 = path7.resolve(repositoryRoot);
+  const target = path7.resolve(root3, repositoryRelativePath);
+  const relative = path7.relative(root3, target);
+  if (relative === ".." || relative.startsWith(`..${path7.sep}`) || path7.isAbsolute(relative)) {
+    throw new Error(`InventoryOnce final assurance path escapes repository root: ${repositoryRelativePath}.`);
+  }
+  return target;
 }
 function isDirectFinalConvergenceInvocation(moduleUrl, argvPath = process.argv[1]) {
   return argvPath !== void 0 && path7.resolve(argvPath) === fileURLToPath3(moduleUrl);

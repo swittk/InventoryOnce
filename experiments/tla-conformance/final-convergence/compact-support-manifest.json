@@ -3,7 +3,7 @@
   "archive": {
     "file": "experiments/tla-conformance/final-convergence/compact-support.tar.gz",
     "sha256": "057e1edfa089e4f987051c4ccbaf378abbe370678c299f26205cc51ffef52eb0",
-    "runtimeClosureHead": "c6c9d8f5dbc3a7842d5d2a75825e9016f1db0d07",
+    "runtimeClosureHead": "ce793259d766b35fcaf8b4cb2fb4800fe7c89fdf",
     "files": [
       {
         "file": "experiments/tla-conformance/astra-authority-control-r8/family.mjs",
@@ -419,20 +419,20 @@
       {
         "mode": "verify",
         "file": "experiments/tla-conformance/final-convergence/compact-final-verify.mjs",
-        "sha256": "a198b78c20ccbea33b16af761d2348645422db58f07513af24c13c353426c5cc",
-        "bytes": 723472
+        "sha256": "e4d98195f95cc9c96d29d0cc548d3630441f700d6e1b9ee96337e8b343648f60",
+        "bytes": 723798
       },
       {
         "mode": "selftest",
         "file": "experiments/tla-conformance/final-convergence/compact-final-selftest.mjs",
-        "sha256": "3752122cc037d62fea3b52a8828fbb3fd213403a67bea90532a52fb2b0d0c084",
-        "bytes": 724403
+        "sha256": "662fdee8f3cfc41e03b505be0bf993e4a0565db44423b5819f03bef89c1b66a9",
+        "bytes": 724729
       },
       {
         "mode": "registry",
         "file": "experiments/tla-conformance/final-convergence/compact-final-registry.mjs",
-        "sha256": "d2fd2b1f45dce37f17a7f9f68c9dcc82ed2575c525a8cf31ed54958d484edcb0",
-        "bytes": 3855
+        "sha256": "cf050e1503ddcbe4d174385417839e737faa2817ee42545dd8caa26b0f1701a3",
+        "bytes": 4174
       }
     ],
     "sources": [
@@ -523,8 +523,8 @@
       },
       {
         "file": "experiments/tla-conformance/final-convergence/repository-root.mjs",
-        "sha256": "c47f37520bc32d4bff4406cc7b974500378218b6c3fefe2cb7e56356642e7cb6",
-        "bytes": 1301
+        "sha256": "3db8ab938c86f964cf006b0fda9e439c5bbae78745b9096a0a3fb4d0d5867f25",
+        "bytes": 1630
       },
       {
         "file": "experiments/tla-conformance/final-convergence/run-final-verifier.mjs",

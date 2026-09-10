@@ -18,7 +18,13 @@ function finalConvergenceRepositoryRoot(moduleUrl) {
   return path.resolve(path.dirname(fileURLToPath(moduleUrl)), "../../..");
 }
 function finalConvergenceRepositoryPath(repositoryRoot, repositoryRelativePath) {
-  return path.resolve(repositoryRoot, repositoryRelativePath);
+  const root = path.resolve(repositoryRoot);
+  const target = path.resolve(root, repositoryRelativePath);
+  const relative = path.relative(root, target);
+  if (relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+    throw new Error(`InventoryOnce final assurance path escapes repository root: ${repositoryRelativePath}.`);
+  }
+  return target;
 }
 
 // experiments/tla-conformance/final-convergence/build-final-registry.mjs
