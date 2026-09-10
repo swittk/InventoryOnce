@@ -118,7 +118,8 @@ for (const [surfaceKey, mode] of strict) {
     if (rank !== 0) return rank;
     const priority = candidatePriority.get(left) - candidatePriority.get(right);
     if (priority !== 0) return priority;
-    return left.evidence.file.localeCompare(right.evidence.file);
+    if (left.evidence.file === right.evidence.file) return 0;
+    return left.evidence.file < right.evidence.file ? -1 : 1;
   });
   const candidate = rows[0];
   if (candidate === undefined) missing.push({ surfaceKey, mode });

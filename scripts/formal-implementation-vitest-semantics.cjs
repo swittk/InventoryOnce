@@ -43,21 +43,52 @@ function staticBooleanValue(ts, valueNode) {
   return undefined;
 }
 
-/** Return the exact node that makes one Vitest registration focused, or undefined. */
+/** Return one readable static object-property name, or undefined when the key requires runtime evaluation. */
+function staticObjectPropertyName(ts, property, sourceFile) {
+  if (
+    (!ts.isPropertyAssignment(property) && !ts.isShorthandPropertyAssignment(property)) ||
+    ts.isComputedPropertyName(property.name)
+  ) {
+    return undefined;
+  }
+  return property.name.getText(sourceFile).replace(/^['"]|['"]$/gu, "");
+}
+
+/** Read statically known boolean skip/todo options and fail closed on unreadable keys or spreads. */
+function vitestObjectBooleanOptions(ts, object) {
+  let skip = false;
+  let todo = false;
+  for (const property of object.properties) {
+    if (ts.isSpreadAssignment(property)) {
+      skip = undefined;
+      todo = undefined;
+      continue;
+    }
+    const name = staticObjectPropertyName(ts, property, object.getSourceFile());
+    if (name === undefined) {
+      skip = undefined;
+      todo = undefined;
+      continue;
+    }
+    if (name !== "skip" && name !== "todo") continue;
+    const value = ts.isPropertyAssignment(property)
+      ? staticBooleanValue(ts, property.initializer)
+      : undefined;
+    if (name === "skip") skip = value;
+    else todo = value;
+  }
+  return { skip, todo };
+}
+
+/** Return the exact node that makes one Vitest registration focused, or a conservative unknown option node. */
 function vitestFocusedRegistrationNode(ts, node) {
   if (expressionHasProperty(ts, node.expression, "only")) return node;
   for (const argument of node.arguments) {
     if (!ts.isObjectLiteralExpression(argument)) continue;
     for (const property of argument.properties) {
-      if (
-        !ts.isPropertyAssignment(property) &&
-        !ts.isShorthandPropertyAssignment(property)
-      ) {
-        continue;
-      }
-      const name = property.name
-        .getText(node.getSourceFile())
-        .replace(/^['"]|['"]$/gu, "");
+      if (ts.isSpreadAssignment(property)) return property;
+      const name = staticObjectPropertyName(ts, property, node.getSourceFile());
+      if (name === undefined) return property;
       if (name !== "only") continue;
       const value = ts.isPropertyAssignment(property)
         ? staticBooleanValue(ts, property.initializer)
@@ -132,6 +163,7 @@ module.exports = {
   expressionHasProperty,
   staticBooleanValue,
   vitestCallbackExecutes,
+  vitestObjectBooleanOptions,
   vitestConditionalMetadata,
   vitestFocusedRegistrationNode,
   vitestRegistrationName,

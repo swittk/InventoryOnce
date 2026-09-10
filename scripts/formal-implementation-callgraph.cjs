@@ -7,6 +7,7 @@ const {
   vitestCallbackExecutes,
   vitestConditionalMetadata,
   vitestFocusedRegistrationNode,
+  vitestObjectBooleanOptions,
   vitestRegistrationName,
   vitestRegistrationRuns,
   vitestSuiteChildrenExecute,
@@ -349,32 +350,6 @@ for (const source of executableTestSources) {
 function testRootFor(source) {
   return roots.get(`test-root:${relativeFile(source)}`)?.id;
 }
-/** Read a boolean skip/todo option from one object literal without executing test code. */
-function vitestObjectBooleanOptions(object) {
-  let skip = false;
-  let todo = false;
-  for (const property of object.properties) {
-    if (ts.isSpreadAssignment(property)) {
-      skip = undefined;
-      todo = undefined;
-      continue;
-    }
-    let name;
-    if (ts.isPropertyAssignment(property) || ts.isShorthandPropertyAssignment(property)) {
-      name = property.name.getText(object.getSourceFile()).replace(/^['"]|['"]$/gu, "");
-    } else {
-      continue;
-    }
-    if (name !== "skip" && name !== "todo") continue;
-    const value = ts.isPropertyAssignment(property)
-      ? staticBooleanValue(ts, property.initializer)
-      : undefined;
-    if (name === "skip") skip = value;
-    else todo = value;
-  }
-  return { skip, todo };
-}
-
 /** Resolve the effective static mode for a test/suite registration callback argument. */
 function vitestRegistrationMode(node, callbackArgumentIndex) {
   if (expressionHasProperty(ts, node.expression, "skip")) return "skip";
@@ -385,7 +360,7 @@ function vitestRegistrationMode(node, callbackArgumentIndex) {
     return "run";
   }
   if (!ts.isObjectLiteralExpression(options)) return "unknown";
-  const flags = vitestObjectBooleanOptions(options);
+  const flags = vitestObjectBooleanOptions(ts, options);
   if (flags.skip === true) return "skip";
   if (flags.todo === true) return "todo";
   if (flags.skip === undefined || flags.todo === undefined) return "unknown";

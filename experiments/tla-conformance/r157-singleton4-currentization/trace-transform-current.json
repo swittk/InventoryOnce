@@ -368,7 +368,7 @@
       "sha256": "f068ac4f83c2984a38d439b90159e48b7fdf42ee4792f7ccde56230c7ecf1a7c"
     },
     {
-      "file": "scripts/formal-models.mjs",
+      "file": "experiments/tla-conformance/final-convergence/formal-models-428f50a.mjs",
       "sha256": "f76ff5f3e2da45ad7d7828e328dea2e157e483fe7d42485228c037a169564c3c"
     },
     {

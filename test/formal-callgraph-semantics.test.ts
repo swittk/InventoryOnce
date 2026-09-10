@@ -16,6 +16,16 @@ const vitestSemantics = require(
     ts: typeof import("typescript"),
     node: import("typescript").CallExpression,
   ) => unknown;
+  /** Resolve static skip/todo options without executing computed object keys. */
+  readonly vitestObjectBooleanOptions: (
+    ts: typeof import("typescript"),
+    object: import("typescript").ObjectLiteralExpression,
+  ) => {
+    /** Statically known skip flag, or undefined when an unreadable key could supply it. */
+    readonly skip?: boolean;
+    /** Statically known todo flag, or undefined when an unreadable key could supply it. */
+    readonly todo?: boolean;
+  };
 };
 
 /** Static facts used to decide whether one Vitest registration callback executes. */
@@ -90,6 +100,34 @@ function suiteChildrenExecute(metadata: VitestExecutionMetadata): boolean {
 }
 
 describe("formal call-graph Vitest callback semantics", () => {
+  it("fails closed on computed Vitest option keys", () => {
+    const source = typescript.createSourceFile(
+      "computed-options.ts",
+      'const flagName = "skip"; test("computed", { [flagName]: true }, () => {});',
+      typescript.ScriptTarget.Latest,
+      true,
+      typescript.ScriptKind.TS,
+    );
+    const statement = source.statements[1];
+    if (
+      statement === undefined ||
+      !typescript.isExpressionStatement(statement) ||
+      !typescript.isCallExpression(statement.expression) ||
+      statement.expression.arguments[1] === undefined ||
+      !typescript.isObjectLiteralExpression(statement.expression.arguments[1])
+    ) {
+      throw new Error("Computed Vitest option regression fixture did not parse as expected.");
+    }
+    expect(
+      vitestSemantics.vitestObjectBooleanOptions(
+        typescript,
+        statement.expression.arguments[1],
+      ),
+    ).toEqual({ skip: undefined, todo: undefined });
+    expect(
+      vitestSemantics.vitestFocusedRegistrationNode(typescript, statement.expression),
+    ).not.toBeUndefined();
+  });
   it("fails closed when conditional Vitest modifiers are chained", () => {
     const source = typescript.createSourceFile(
       "conditional-chain.ts",

@@ -1,4 +1,8 @@
 import {
+  inventoryIntentFingerprint,
+  inventoryMetadataFingerprint,
+} from "./canonical.js";
+import {
   assertInventoryCatalogRetainsSnapshot,
   inventoryCatalogSnapshot,
   type InventoryCatalog,
@@ -28,6 +32,7 @@ import {
   InventoryReservationFeasibilityStatus,
   InventoryReservationOperationKind,
   InventoryReservationStatus,
+  type InventoryReservation,
   type InventoryReservationBook,
   type InventoryReservationFeasibilityGroup,
   type InventoryReservationBookResult,
@@ -35,6 +40,7 @@ import {
 import { inventoryMeasurementAt } from "./measurements.js";
 import { inventoryStockPositionIdentity } from "./model.js";
 import { compareQuantity, negateQuantity, quantityEq } from "./quantity.js";
+import { inventoryStockSelectorIdentity } from "./selectors.js";
 import { inventorySparseRecordValue } from "./sparse-record.js";
 import {
   InventoryApplyingOperationConflictError,
@@ -412,6 +418,43 @@ interface AssertReservationConsumptionMatchesIssueInput {
   readonly operationId: string;
 }
 
+/** Stable field-complete fingerprint for one normalized reservation lifecycle snapshot. */
+function reservationLifecycleEvidenceFingerprint(
+  reservation: InventoryReservation
+): string {
+  return inventoryIntentFingerprint([
+    reservation.reservationId,
+    reservation.operationId,
+    reservation.itemRevisionId,
+    inventoryStockSelectorIdentity(reservation.selector),
+    inventoryIntentFingerprint([
+      reservation.requested.amountMinor,
+      reservation.requested.decimals,
+      reservation.requested.unit,
+    ]),
+    reservation.createdAt,
+    reservation.expiresAt ?? null,
+    reservation.allowExpiredStock ?? false,
+    reservation.sourceReference ?? null,
+    reservation.actorId ?? null,
+    inventoryMetadataFingerprint(reservation.metadata),
+    reservation.status,
+    reservation.allocations.map((allocation) =>
+      inventoryIntentFingerprint([
+        inventoryStockPositionIdentity(allocation.position),
+        inventoryIntentFingerprint([
+          allocation.quantity.amountMinor,
+          allocation.quantity.decimals,
+          allocation.quantity.unit,
+        ]),
+      ])
+    ),
+    reservation.statusAt ?? null,
+    reservation.lastChangedAt,
+    reservation.consumptionEventId ?? null,
+  ]);
+}
+
 /** Reject a Consume transition unless one exact Issue removes every frozen allocation. */
 function assertReservationConsumptionMatchesIssue({
   catalog,
@@ -428,8 +471,9 @@ function assertReservationConsumptionMatchesIssue({
   if (
     baseReservation === undefined ||
     baseReservation.allocations.length === 0 ||
-    JSON.stringify(reservationDelta.operation.reservationAfter) !==
-      JSON.stringify(consumed)
+    reservationLifecycleEvidenceFingerprint(
+      reservationDelta.operation.reservationAfter
+    ) !== reservationLifecycleEvidenceFingerprint(consumed)
   ) {
     throw new Error(
       "Reservation consumption must issue one previously allocated claim with exact lifecycle evidence."

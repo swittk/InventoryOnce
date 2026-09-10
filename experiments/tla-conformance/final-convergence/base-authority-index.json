@@ -6250,7 +6250,7 @@
         "surfaceDigest": "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a",
         "evidence": {
           "file": "experiments/tla-conformance/r157-singleton4-currentization/trace-transform-current.json",
-          "sha256": "b50128b65a9cb09f568756fdf7ff899c8479287ba6bf95b4bd7bfc91108303ad"
+          "sha256": "89ef69bd51e41aca3cd06e42a3c9f7a5230cfba9e3319aacf2ca083698b5aede"
         },
         "proofIndex": 0,
         "proofSemanticSha256": "29d85ce91b27317127064b4bf2c75ea6aa15e46602b42d5342591e19cb150e9b"

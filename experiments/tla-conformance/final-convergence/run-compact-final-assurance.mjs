@@ -106,6 +106,34 @@ try {
       fs.writeFileSync(reviewReceiptPath, reviewReceiptBytes);
     }
 
+    // A later commit cannot replace the tracked log/report/receipt with a self-consistent fake run.
+    const immutableReceiptPath = path.join(root, CURRENT_REVIEW_ASSURANCE_RECEIPT);
+    const immutableReceiptBytes = fs.readFileSync(immutableReceiptPath);
+    const immutableReceipt = JSON.parse(immutableReceiptBytes.toString("utf8"));
+    const immutableReportPath = path.join(root, immutableReceipt.report.file);
+    const immutableLogPath = path.join(root, immutableReceipt.fullLog.file);
+    const immutableReportBytes = fs.readFileSync(immutableReportPath);
+    const immutableLogBytes = fs.readFileSync(immutableLogPath);
+    try {
+      const forgedLogBytes = Buffer.from("synthetic full assurance log with no executed run\n");
+      fs.writeFileSync(immutableLogPath, forgedLogBytes);
+      const forgedReport = JSON.parse(immutableReportBytes.toString("utf8"));
+      forgedReport.fullLogSha256 = crypto.createHash("sha256").update(forgedLogBytes).digest("hex");
+      const forgedReportBytes = Buffer.from(`${JSON.stringify(forgedReport, null, 2)}\n`);
+      fs.writeFileSync(immutableReportPath, forgedReportBytes);
+      immutableReceipt.fullLog.sha256 = forgedReport.fullLogSha256;
+      immutableReceipt.report.sha256 = crypto.createHash("sha256").update(forgedReportBytes).digest("hex");
+      fs.writeFileSync(immutableReceiptPath, `${JSON.stringify(immutableReceipt, null, 2)}\n`);
+      assert.throws(
+        () => verifyCurrentReviewAssurance(root),
+        /immutable evidence commit/u,
+      );
+    } finally {
+      fs.writeFileSync(immutableLogPath, immutableLogBytes);
+      fs.writeFileSync(immutableReportPath, immutableReportBytes);
+      fs.writeFileSync(immutableReceiptPath, immutableReceiptBytes);
+    }
+
     // Uncommitted authoritative bytes must never inherit certification from a committed receipt.
     const dirtyFormalPath = path.join(root, "formal", ".compact-dirty-authoritative-selftest");
     try {

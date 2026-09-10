@@ -989,6 +989,115 @@ describe("historical reservation authority and one-revision counts", () => {
 });
 
 describe("count delta integrity", () => {
+  it("accepts semantically identical count selector keys in a different insertion order", () => {
+    const observedCount = {
+      countId: "reordered-count-selector",
+      operationId: "reordered-count-selector-start",
+      itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a", itemRevisionIds: ["item-a-v2"] },
+      startedAt: time0,
+      snapshotRecordSequence: 1,
+      status: InventoryCountStatus.Observed,
+      observedAt: time1,
+      observedThroughRecordSequence: 1,
+      observations: [],
+    };
+    const base = {
+      counts: { [observedCount.countId]: observedCount },
+      operations: {},
+    };
+    expect(() =>
+      applyInventoryCountBookDelta(base, {
+        count: {
+          ...observedCount,
+          selector: { itemRevisionIds: ["item-a-v2"], itemId: "item-a" },
+          status: InventoryCountStatus.Abandoned,
+          statusAt: time2,
+        },
+        operation: {
+          operationId: "reordered-count-selector-abandon",
+          countId: observedCount.countId,
+          kind: InventoryCountOperationKind.Abandon,
+          intentFingerprint: "reordered-count-selector-abandon",
+        },
+      })
+    ).not.toThrow();
+  });
+  it("rejects reconciliation events on non-complete count deltas", () => {
+    const startedCount = {
+      countId: "forged-reconciliation-count",
+      operationId: "forged-reconciliation-count-start",
+      itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a", itemRevisionIds: ["item-a-v2"] },
+      startedAt: time0,
+      snapshotRecordSequence: 1,
+      status: InventoryCountStatus.Started,
+      observations: [],
+    };
+    const startedBase = {
+      counts: { [startedCount.countId]: startedCount },
+      operations: {},
+    };
+    expect(() =>
+      applyInventoryCountBookDelta({ counts: {}, operations: {} }, {
+        count: {
+          ...startedCount,
+          reconciliationEventId: "forged-start-reconciliation",
+        },
+        operation: {
+          operationId: startedCount.operationId,
+          countId: startedCount.countId,
+          kind: InventoryCountOperationKind.Start,
+          intentFingerprint: "forged-reconciliation-start",
+        },
+      })
+    ).toThrow("Only count completion may attach a reconciliation event.");
+    expect(() =>
+      applyInventoryCountBookDelta(startedBase, {
+        count: {
+          ...startedCount,
+          status: InventoryCountStatus.Observed,
+          observedAt: time1,
+          observedThroughRecordSequence: 1,
+          reconciliationEventId: "forged-observe-reconciliation",
+        },
+        operation: {
+          operationId: "forged-reconciliation-observe",
+          countId: startedCount.countId,
+          kind: InventoryCountOperationKind.Observe,
+          intentFingerprint: "forged-reconciliation-observe",
+        },
+      })
+    ).toThrow("Only count completion may attach a reconciliation event.");
+
+    const observedCount = {
+      ...startedCount,
+      status: InventoryCountStatus.Observed,
+      observedAt: time1,
+      observedThroughRecordSequence: 1,
+    };
+    const observedBase = {
+      counts: { [observedCount.countId]: observedCount },
+      operations: {},
+    };
+    expect(() =>
+      applyInventoryCountBookDelta(observedBase, {
+        count: {
+          ...observedCount,
+          status: InventoryCountStatus.Abandoned,
+          statusAt: time2,
+          reconciliationEventId: "forged-abandon-reconciliation",
+        },
+        operation: {
+          operationId: "forged-reconciliation-abandon",
+          countId: observedCount.countId,
+          kind: InventoryCountOperationKind.Abandon,
+          intentFingerprint: "forged-reconciliation-abandon",
+        },
+      })
+    ).toThrow("Only count completion may attach a reconciliation event.");
+  });
+
   it("rejects forged completion and abandonment deltas that rewrite observation evidence", () => {
     const observedCount = {
       countId: "forged-observation-count",

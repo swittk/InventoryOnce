@@ -85,6 +85,11 @@ export function buildR170AssuranceTransport({ repositoryRoot = process.cwd() } =
 
   const currentReviewAssurance = verifyCurrentReviewAssurance(root);
   const certifiedHead = currentReviewAssurance.receipt.certifiedHead;
+  try {
+    git(["merge-base", "--is-ancestor", CURRENT_HEAD, certifiedHead], root);
+  } catch {
+    throw new Error("Current review assurance does not descend from the R170 repair commit.");
+  }
   const afterRepair = git([
     "diff", "--name-only", CURRENT_HEAD, certifiedHead, "--",
     "src", "formal", "scripts", "test", "package.json", "tsconfig.json", "tsconfig.test.json",

@@ -56,6 +56,7 @@ export function buildR169AssuranceTransport({ repositoryRoot=process.cwd() }={})
   assert.deepEqual(repairDelta,[...EXPECTED_REPAIR_DELTA].sort(),"R169 reviewed repair delta widened.");
   assert.deepEqual(git(["diff","--name-only",PRIOR_HEAD,CURRENT_HEAD,"--","src"],root).split(/\r?\n/u).filter(Boolean),[],"R169 unexpectedly changed product runtime source.");
   const currentReviewAssurance=verifyCurrentReviewAssurance(root);
+  try { git(["merge-base","--is-ancestor",CURRENT_HEAD,currentReviewAssurance.receipt.certifiedHead],root); } catch { throw new Error("Current review assurance does not descend from the R169 repair commit."); }
   const afterRepair=git(["diff","--name-only",CURRENT_HEAD,currentReviewAssurance.receipt.certifiedHead,"--","src","formal","scripts","test","package.json","tsconfig.json","tsconfig.test.json"],root).split(/\r?\n/u).filter(Boolean).sort();
   assert(afterRepair.length>0,"Current review assurance must explicitly transport authoritative bytes after the historical R169 repair.");
   const surface=discoverCompilerSurface(root);

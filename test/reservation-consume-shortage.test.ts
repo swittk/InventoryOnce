@@ -490,6 +490,95 @@ describe("reservation consumption through an existing shortage", () => {
     expect(await storage.readOperation(operationId)).toBeUndefined();
   });
 
+  it("accepts a Consume lifecycle snapshot with equivalent reservation key order", async () => {
+    const { storage, catalog } =
+      await createConsumeShortageFixture("unallocated-out-of-scope");
+    const operationId = "consume-shortage:reordered-reservation-after";
+
+    await expect(
+      commitInventoryOperation({
+        catalog,
+        storage,
+        operationId,
+        intentFingerprint: "consume-shortage:reordered-reservation-after:v1",
+        clock: { now: () => time3 },
+        deficitPolicy: InventoryDeficitPolicy.Reject,
+        /** Materialize the retained lifecycle snapshot independently with reversed field insertion order. */
+        plan: ({ world }) => {
+          const allocated = world.reservations.reservations.c2?.allocations[0];
+          if (allocated === undefined) {
+            throw new Error("Reordered lifecycle fixture lost its frozen allocation.");
+          }
+          const issue = createInventoryIssueEvent({
+            catalog,
+            operationId,
+            occurredAt: time2,
+            from: allocated.position,
+            amount: stockAmount("1", "piece"),
+            metadata: { reservationId: "c2" },
+          });
+          const event = {
+            ...issue,
+            stockEffects: issue.stockEffects.map((effect) => ({
+              ...effect,
+              metadata: { reservationId: "c2" },
+            })),
+          };
+          const consumed = markInventoryReservationConsumed({
+            book: world.reservations,
+            operationId,
+            reservationId: "c2",
+            consumptionEventId: inventoryEventIdForOperation(operationId),
+            occurredAt: time2,
+          });
+          const operation = consumed.book.operations[operationId];
+          if (operation === undefined) {
+            throw new Error("Reordered lifecycle fixture lost its Consume operation.");
+          }
+          const retained = operation.reservationAfter;
+          const reservationAfter = {
+            ...(retained.consumptionEventId === undefined
+              ? {}
+              : { consumptionEventId: retained.consumptionEventId }),
+            lastChangedAt: retained.lastChangedAt,
+            ...(retained.statusAt === undefined ? {} : { statusAt: retained.statusAt }),
+            allocations: retained.allocations,
+            status: retained.status,
+            ...(retained.metadata === undefined ? {} : { metadata: retained.metadata }),
+            ...(retained.actorId === undefined ? {} : { actorId: retained.actorId }),
+            ...(retained.sourceReference === undefined
+              ? {}
+              : { sourceReference: retained.sourceReference }),
+            ...(retained.allowExpiredStock === undefined
+              ? {}
+              : { allowExpiredStock: retained.allowExpiredStock }),
+            ...(retained.expiresAt === undefined ? {} : { expiresAt: retained.expiresAt }),
+            createdAt: retained.createdAt,
+            requested: retained.requested,
+            selector: retained.selector,
+            itemRevisionId: retained.itemRevisionId,
+            operationId: retained.operationId,
+            reservationId: retained.reservationId,
+          };
+          return {
+            event,
+            reservationResult: {
+              ...consumed,
+              book: {
+                ...consumed.book,
+                operations: {
+                  ...consumed.book.operations,
+                  [operationId]: { ...operation, reservationAfter },
+                },
+              },
+            },
+            reservationId: "c2",
+          };
+        },
+      })
+    ).resolves.toMatchObject({ replayed: false });
+  });
+
   it("rejects a Consume operation whose retained reservationAfter differs from its row", async () => {
     const { inventory, storage, catalog } =
       await createConsumeShortageFixture("unallocated-out-of-scope");

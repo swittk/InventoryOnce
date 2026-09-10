@@ -3,8 +3,8 @@
     "authorityMethods": 14,
     "callAndConstructSignatures": 510,
     "classMethods": 71,
-    "compilerCallGraphCallables": 2474,
-    "compilerCallGraphEdges": 6787,
+    "compilerCallGraphCallables": 2489,
+    "compilerCallGraphEdges": 6815,
     "compilerCallGraphTestRoots": 44,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 510,
@@ -10245,9 +10245,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:5078:commitInventoryOperation",
+              "id": "src/coordinator.ts:5268:commitInventoryOperation",
               "kind": "FunctionDeclaration",
-              "line": 129,
+              "line": 135,
               "name": "commitInventoryOperation",
               "reason": "resolved-call"
             },
@@ -10577,9 +10577,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:5078:commitInventoryOperation",
+              "id": "src/coordinator.ts:5268:commitInventoryOperation",
               "kind": "FunctionDeclaration",
-              "line": 129,
+              "line": 135,
               "name": "commitInventoryOperation",
               "reason": "resolved-call"
             },
@@ -10587,9 +10587,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:22209:resumeInventoryDurableOperation",
+              "id": "src/coordinator.ts:23693:resumeInventoryDurableOperation",
               "kind": "FunctionDeclaration",
-              "line": 613,
+              "line": 657,
               "name": "resumeInventoryDurableOperation",
               "reason": "resolved-call"
             },
@@ -10677,7 +10677,7 @@
           "path": "src/composition.ts"
         },
         {
-          "occurrences": 7,
+          "occurrences": 8,
           "path": "src/coordinator.ts"
         },
         {
@@ -11157,9 +11157,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:23507:repairInventoryDurableOperations",
+              "id": "src/coordinator.ts:24991:repairInventoryDurableOperations",
               "kind": "FunctionDeclaration",
-              "line": 646,
+              "line": 690,
               "name": "repairInventoryDurableOperations",
               "reason": "resolved-call"
             },
@@ -11765,9 +11765,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:5078:commitInventoryOperation",
+              "id": "src/coordinator.ts:5268:commitInventoryOperation",
               "kind": "FunctionDeclaration",
-              "line": 129,
+              "line": 135,
               "name": "commitInventoryOperation",
               "reason": "resolved-call"
             },
@@ -11775,9 +11775,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:22209:resumeInventoryDurableOperation",
+              "id": "src/coordinator.ts:23693:resumeInventoryDurableOperation",
               "kind": "FunctionDeclaration",
-              "line": 613,
+              "line": 657,
               "name": "resumeInventoryDurableOperation",
               "reason": "resolved-call"
             },
@@ -11937,9 +11937,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:5078:commitInventoryOperation",
+              "id": "src/coordinator.ts:5268:commitInventoryOperation",
               "kind": "FunctionDeclaration",
-              "line": 129,
+              "line": 135,
               "name": "commitInventoryOperation",
               "reason": "resolved-call"
             },
@@ -11947,9 +11947,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:22209:resumeInventoryDurableOperation",
+              "id": "src/coordinator.ts:23693:resumeInventoryDurableOperation",
               "kind": "FunctionDeclaration",
-              "line": 613,
+              "line": 657,
               "name": "resumeInventoryDurableOperation",
               "reason": "resolved-call"
             },
@@ -12271,9 +12271,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:5078:commitInventoryOperation",
+              "id": "src/coordinator.ts:5268:commitInventoryOperation",
               "kind": "FunctionDeclaration",
-              "line": 129,
+              "line": 135,
               "name": "commitInventoryOperation",
               "reason": "resolved-call"
             },
@@ -12281,9 +12281,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:22209:resumeInventoryDurableOperation",
+              "id": "src/coordinator.ts:23693:resumeInventoryDurableOperation",
               "kind": "FunctionDeclaration",
-              "line": 613,
+              "line": 657,
               "name": "resumeInventoryDurableOperation",
               "reason": "resolved-call"
             },
@@ -12443,9 +12443,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:5078:commitInventoryOperation",
+              "id": "src/coordinator.ts:5268:commitInventoryOperation",
               "kind": "FunctionDeclaration",
-              "line": 129,
+              "line": 135,
               "name": "commitInventoryOperation",
               "reason": "resolved-call"
             },
@@ -12453,9 +12453,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:22209:resumeInventoryDurableOperation",
+              "id": "src/coordinator.ts:23693:resumeInventoryDurableOperation",
               "kind": "FunctionDeclaration",
-              "line": 613,
+              "line": 657,
               "name": "resumeInventoryDurableOperation",
               "reason": "resolved-call"
             },
@@ -12615,9 +12615,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:5078:commitInventoryOperation",
+              "id": "src/coordinator.ts:5268:commitInventoryOperation",
               "kind": "FunctionDeclaration",
-              "line": 129,
+              "line": 135,
               "name": "commitInventoryOperation",
               "reason": "resolved-call"
             },
@@ -12625,9 +12625,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:22209:resumeInventoryDurableOperation",
+              "id": "src/coordinator.ts:23693:resumeInventoryDurableOperation",
               "kind": "FunctionDeclaration",
-              "line": 613,
+              "line": 657,
               "name": "resumeInventoryDurableOperation",
               "reason": "resolved-call"
             },
@@ -25012,6 +25012,10 @@
           "path": "src/composition.ts"
         },
         {
+          "occurrences": 5,
+          "path": "src/coordinator.ts"
+        },
+        {
           "occurrences": 3,
           "path": "src/corrections.ts"
         },
@@ -26361,6 +26365,10 @@
         },
         {
           "occurrences": 2,
+          "path": "src/coordinator.ts"
+        },
+        {
+          "occurrences": 2,
           "path": "src/counts.ts"
         },
         {
@@ -27427,7 +27435,7 @@
           "path": "src/composition.ts"
         },
         {
-          "occurrences": 3,
+          "occurrences": 4,
           "path": "src/coordinator.ts"
         },
         {
@@ -28036,6 +28044,10 @@
         {
           "occurrences": 2,
           "path": "src/availability.ts"
+        },
+        {
+          "occurrences": 2,
+          "path": "src/coordinator.ts"
         },
         {
           "occurrences": 2,
@@ -31722,7 +31734,7 @@
           "path": "src/commands.ts"
         },
         {
-          "occurrences": 3,
+          "occurrences": 6,
           "path": "src/coordinator.ts"
         },
         {
@@ -47370,7 +47382,7 @@
           "path": "src/commands.ts"
         },
         {
-          "occurrences": 3,
+          "occurrences": 6,
           "path": "src/coordinator.ts"
         },
         {
@@ -51088,9 +51100,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:5078:commitInventoryOperation",
+              "id": "src/coordinator.ts:5268:commitInventoryOperation",
               "kind": "FunctionDeclaration",
-              "line": 129,
+              "line": 135,
               "name": "commitInventoryOperation",
               "reason": "resolved-call"
             }
@@ -51099,9 +51111,9 @@
             "column": 1,
             "file": "src/coordinator.ts",
             "hasBody": true,
-            "id": "src/coordinator.ts:5078:commitInventoryOperation",
+            "id": "src/coordinator.ts:5268:commitInventoryOperation",
             "kind": "FunctionDeclaration",
-            "line": 129,
+            "line": 135,
             "name": "commitInventoryOperation"
           },
           "test": "test/reservation-closure-shortage.test.ts"
@@ -51129,9 +51141,9 @@
           "column": 1,
           "file": "src/coordinator.ts",
           "hasBody": true,
-          "id": "src/coordinator.ts:5078:commitInventoryOperation",
+          "id": "src/coordinator.ts:5268:commitInventoryOperation",
           "kind": "FunctionDeclaration",
-          "line": 129,
+          "line": 135,
           "name": "commitInventoryOperation"
         }
       ],
@@ -51351,9 +51363,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:5078:commitInventoryOperation",
+              "id": "src/coordinator.ts:5268:commitInventoryOperation",
               "kind": "FunctionDeclaration",
-              "line": 129,
+              "line": 135,
               "name": "commitInventoryOperation",
               "reason": "resolved-call"
             },
@@ -51361,9 +51373,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:9019:createDurableOperationPlan",
+              "id": "src/coordinator.ts:9209:createDurableOperationPlan",
               "kind": "FunctionDeclaration",
-              "line": 246,
+              "line": 252,
               "name": "createDurableOperationPlan",
               "reason": "resolved-call"
             },
@@ -53027,9 +53039,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:23507:repairInventoryDurableOperations",
+              "id": "src/coordinator.ts:24991:repairInventoryDurableOperations",
               "kind": "FunctionDeclaration",
-              "line": 646,
+              "line": 690,
               "name": "repairInventoryDurableOperations",
               "reason": "resolved-call"
             }
@@ -53038,9 +53050,9 @@
             "column": 1,
             "file": "src/coordinator.ts",
             "hasBody": true,
-            "id": "src/coordinator.ts:23507:repairInventoryDurableOperations",
+            "id": "src/coordinator.ts:24991:repairInventoryDurableOperations",
             "kind": "FunctionDeclaration",
-            "line": 646,
+            "line": 690,
             "name": "repairInventoryDurableOperations"
           },
           "test": "test/formal-storage-refinement.test.ts"
@@ -53068,9 +53080,9 @@
           "column": 1,
           "file": "src/coordinator.ts",
           "hasBody": true,
-          "id": "src/coordinator.ts:23507:repairInventoryDurableOperations",
+          "id": "src/coordinator.ts:24991:repairInventoryDurableOperations",
           "kind": "FunctionDeclaration",
-          "line": 646,
+          "line": 690,
           "name": "repairInventoryDurableOperations"
         }
       ],
@@ -53157,9 +53169,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:5078:commitInventoryOperation",
+              "id": "src/coordinator.ts:5268:commitInventoryOperation",
               "kind": "FunctionDeclaration",
-              "line": 129,
+              "line": 135,
               "name": "commitInventoryOperation",
               "reason": "resolved-call"
             },
@@ -53167,9 +53179,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:22209:resumeInventoryDurableOperation",
+              "id": "src/coordinator.ts:23693:resumeInventoryDurableOperation",
               "kind": "FunctionDeclaration",
-              "line": 613,
+              "line": 657,
               "name": "resumeInventoryDurableOperation",
               "reason": "resolved-call"
             }
@@ -53178,9 +53190,9 @@
             "column": 1,
             "file": "src/coordinator.ts",
             "hasBody": true,
-            "id": "src/coordinator.ts:22209:resumeInventoryDurableOperation",
+            "id": "src/coordinator.ts:23693:resumeInventoryDurableOperation",
             "kind": "FunctionDeclaration",
-            "line": 613,
+            "line": 657,
             "name": "resumeInventoryDurableOperation"
           },
           "test": "test/reservation-closure-shortage.test.ts"
@@ -53204,9 +53216,9 @@
           "column": 1,
           "file": "src/coordinator.ts",
           "hasBody": true,
-          "id": "src/coordinator.ts:22209:resumeInventoryDurableOperation",
+          "id": "src/coordinator.ts:23693:resumeInventoryDurableOperation",
           "kind": "FunctionDeclaration",
-          "line": 613,
+          "line": 657,
           "name": "resumeInventoryDurableOperation"
         }
       ],
@@ -59295,7 +59307,7 @@
           "path": "src/index.ts"
         },
         {
-          "occurrences": 30,
+          "occurrences": 32,
           "path": "src/integrity.ts"
         },
         {
@@ -59522,7 +59534,7 @@
           "path": "src/index.ts"
         },
         {
-          "occurrences": 11,
+          "occurrences": 13,
           "path": "src/integrity.ts"
         },
         {
@@ -60630,7 +60642,7 @@
           "path": "src/catalog.ts"
         },
         {
-          "occurrences": 14,
+          "occurrences": 34,
           "path": "src/coordinator.ts"
         },
         {
@@ -60958,7 +60970,7 @@
           "path": "src/catalog.ts"
         },
         {
-          "occurrences": 2,
+          "occurrences": 3,
           "path": "src/coordinator.ts"
         },
         {
@@ -63466,7 +63478,7 @@
           "path": "src/index.ts"
         },
         {
-          "occurrences": 30,
+          "occurrences": 32,
           "path": "src/integrity.ts"
         },
         {
@@ -63688,7 +63700,7 @@
           "path": "src/index.ts"
         },
         {
-          "occurrences": 11,
+          "occurrences": 13,
           "path": "src/integrity.ts"
         },
         {
@@ -64920,7 +64932,7 @@
           "path": "src/catalog.ts"
         },
         {
-          "occurrences": 14,
+          "occurrences": 34,
           "path": "src/coordinator.ts"
         },
         {
@@ -72527,9 +72539,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:5078:commitInventoryOperation",
+              "id": "src/coordinator.ts:5268:commitInventoryOperation",
               "kind": "FunctionDeclaration",
-              "line": 129,
+              "line": 135,
               "name": "commitInventoryOperation",
               "reason": "resolved-call"
             },
@@ -72857,9 +72869,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:5078:commitInventoryOperation",
+              "id": "src/coordinator.ts:5268:commitInventoryOperation",
               "kind": "FunctionDeclaration",
-              "line": 129,
+              "line": 135,
               "name": "commitInventoryOperation",
               "reason": "resolved-call"
             },
@@ -72867,9 +72879,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:22209:resumeInventoryDurableOperation",
+              "id": "src/coordinator.ts:23693:resumeInventoryDurableOperation",
               "kind": "FunctionDeclaration",
-              "line": 613,
+              "line": 657,
               "name": "resumeInventoryDurableOperation",
               "reason": "resolved-call"
             },
@@ -72957,7 +72969,7 @@
           "path": "src/composition.ts"
         },
         {
-          "occurrences": 7,
+          "occurrences": 8,
           "path": "src/coordinator.ts"
         },
         {
@@ -73434,9 +73446,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:23507:repairInventoryDurableOperations",
+              "id": "src/coordinator.ts:24991:repairInventoryDurableOperations",
               "kind": "FunctionDeclaration",
-              "line": 646,
+              "line": 690,
               "name": "repairInventoryDurableOperations",
               "reason": "resolved-call"
             },
@@ -74038,9 +74050,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:5078:commitInventoryOperation",
+              "id": "src/coordinator.ts:5268:commitInventoryOperation",
               "kind": "FunctionDeclaration",
-              "line": 129,
+              "line": 135,
               "name": "commitInventoryOperation",
               "reason": "resolved-call"
             },
@@ -74048,9 +74060,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:22209:resumeInventoryDurableOperation",
+              "id": "src/coordinator.ts:23693:resumeInventoryDurableOperation",
               "kind": "FunctionDeclaration",
-              "line": 613,
+              "line": 657,
               "name": "resumeInventoryDurableOperation",
               "reason": "resolved-call"
             },
@@ -74209,9 +74221,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:5078:commitInventoryOperation",
+              "id": "src/coordinator.ts:5268:commitInventoryOperation",
               "kind": "FunctionDeclaration",
-              "line": 129,
+              "line": 135,
               "name": "commitInventoryOperation",
               "reason": "resolved-call"
             },
@@ -74219,9 +74231,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:22209:resumeInventoryDurableOperation",
+              "id": "src/coordinator.ts:23693:resumeInventoryDurableOperation",
               "kind": "FunctionDeclaration",
-              "line": 613,
+              "line": 657,
               "name": "resumeInventoryDurableOperation",
               "reason": "resolved-call"
             },
@@ -74541,9 +74553,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:5078:commitInventoryOperation",
+              "id": "src/coordinator.ts:5268:commitInventoryOperation",
               "kind": "FunctionDeclaration",
-              "line": 129,
+              "line": 135,
               "name": "commitInventoryOperation",
               "reason": "resolved-call"
             },
@@ -74551,9 +74563,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:22209:resumeInventoryDurableOperation",
+              "id": "src/coordinator.ts:23693:resumeInventoryDurableOperation",
               "kind": "FunctionDeclaration",
-              "line": 613,
+              "line": 657,
               "name": "resumeInventoryDurableOperation",
               "reason": "resolved-call"
             },
@@ -74712,9 +74724,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:5078:commitInventoryOperation",
+              "id": "src/coordinator.ts:5268:commitInventoryOperation",
               "kind": "FunctionDeclaration",
-              "line": 129,
+              "line": 135,
               "name": "commitInventoryOperation",
               "reason": "resolved-call"
             },
@@ -74722,9 +74734,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:22209:resumeInventoryDurableOperation",
+              "id": "src/coordinator.ts:23693:resumeInventoryDurableOperation",
               "kind": "FunctionDeclaration",
-              "line": 613,
+              "line": 657,
               "name": "resumeInventoryDurableOperation",
               "reason": "resolved-call"
             },
@@ -74883,9 +74895,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:5078:commitInventoryOperation",
+              "id": "src/coordinator.ts:5268:commitInventoryOperation",
               "kind": "FunctionDeclaration",
-              "line": 129,
+              "line": 135,
               "name": "commitInventoryOperation",
               "reason": "resolved-call"
             },
@@ -74893,9 +74905,9 @@
               "column": 1,
               "file": "src/coordinator.ts",
               "hasBody": true,
-              "id": "src/coordinator.ts:22209:resumeInventoryDurableOperation",
+              "id": "src/coordinator.ts:23693:resumeInventoryDurableOperation",
               "kind": "FunctionDeclaration",
-              "line": 613,
+              "line": 657,
               "name": "resumeInventoryDurableOperation",
               "reason": "resolved-call"
             },
@@ -76392,5 +76404,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "03baa3c20d088f813397b4bac1a673eca726f18b845e10e8523af8bb47374e5f"
+  "surfaceSha256": "0a7455bd5897a47ab605f28051c9fc910d90658ddbe391a78f968decf28d61b9"
 }

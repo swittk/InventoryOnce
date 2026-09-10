@@ -546,6 +546,19 @@ function assertAllowedCountTransition(
   next: InventoryCount,
   operation: InventoryCountOperation
 ): void {
+  if (
+    operation.kind !== InventoryCountOperationKind.Complete &&
+    next.reconciliationEventId !== undefined
+  ) {
+    throw new Error("Only count completion may attach a reconciliation event.");
+  }
+  if (
+    base !== undefined &&
+    base.status !== InventoryCountStatus.Completed &&
+    base.reconciliationEventId !== undefined
+  ) {
+    throw new Error("Non-completed count state cannot retain a reconciliation event.");
+  }
   if (operation.kind === InventoryCountOperationKind.Start) {
     if (base !== undefined || next.status !== InventoryCountStatus.Started) {
       throw new Error("Count start must add one new started row.");
@@ -645,9 +658,56 @@ function addedRecordKeys<T>(
   return added;
 }
 
-/** Compare already-normalized typed values exactly without accepting coercion. */
+/** JSON-safe normalized value compared without relying on object insertion order. */
+type NormalizedJsonComparable = object | string | number | boolean | null | undefined;
+
+/** Compare already-normalized typed values exactly without accepting coercion or object-key order. */
 function sameJson(left: object, right: object | undefined): boolean {
-  return right !== undefined && JSON.stringify(left) === JSON.stringify(right);
+  return right !== undefined && sameNormalizedJsonValue(left, right);
+}
+
+/** Compare one normalized JSON value recursively while preserving array order and ignoring omitted undefined fields. */
+function sameNormalizedJsonValue(
+  left: NormalizedJsonComparable,
+  right: NormalizedJsonComparable
+): boolean {
+  if (left === right) return true;
+  if (
+    left === null ||
+    right === null ||
+    typeof left !== "object" ||
+    typeof right !== "object"
+  ) {
+    return false;
+  }
+  if (Array.isArray(left) || Array.isArray(right)) {
+    if (!Array.isArray(left) || !Array.isArray(right) || left.length !== right.length) {
+      return false;
+    }
+    for (let index = 0; index < left.length; index += 1) {
+      if (!sameNormalizedJsonValue(left[index], right[index])) return false;
+    }
+    return true;
+  }
+  const leftKeys = normalizedJsonObjectKeys(left);
+  const rightKeys = normalizedJsonObjectKeys(right);
+  if (leftKeys.length !== rightKeys.length) return false;
+  for (const key of leftKeys) {
+    if (!Object.prototype.hasOwnProperty.call(right, key)) return false;
+    const leftValue = Object.getOwnPropertyDescriptor(left, key)?.value;
+    const rightValue = Object.getOwnPropertyDescriptor(right, key)?.value;
+    if (!sameNormalizedJsonValue(leftValue, rightValue)) return false;
+  }
+  return true;
+}
+
+/** Return own JSON object keys whose values survive ordinary JSON serialization. */
+function normalizedJsonObjectKeys(value: object): string[] {
+  const result: string[] = [];
+  for (const key of Object.keys(value)) {
+    if (Object.getOwnPropertyDescriptor(value, key)?.value !== undefined) result.push(key);
+  }
+  return result;
 }
 
 /** Turn one normalized typed record into stable key-sorted JSON rows while retaining canonical writer property order. */
