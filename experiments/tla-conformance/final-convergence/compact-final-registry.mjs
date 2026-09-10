@@ -1,7 +1,7 @@
 // experiments/tla-conformance/final-convergence/build-final-registry.mjs
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import path from "node:path";
+import path2 from "node:path";
 
 // experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs
 import crypto from "node:crypto";
@@ -11,14 +11,24 @@ function sha256(value2) {
   return crypto.createHash("sha256").update(value2).digest("hex");
 }
 
+// experiments/tla-conformance/final-convergence/repository-root.mjs
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+function finalConvergenceRepositoryRoot(moduleUrl) {
+  return path.resolve(path.dirname(fileURLToPath(moduleUrl)), "../../..");
+}
+function finalConvergenceRepositoryPath(repositoryRoot, repositoryRelativePath) {
+  return path.resolve(repositoryRoot, repositoryRelativePath);
+}
+
 // experiments/tla-conformance/final-convergence/build-final-registry.mjs
-var ROOT = process.cwd();
+var ROOT = finalConvergenceRepositoryRoot(import.meta.url);
 var OFFICIAL = "experiments/tla-conformance/r105-layered-6dfc-currentization/surface-bindings-6dfc.json";
 var VALUE = "experiments/tla-conformance/final-convergence/final-v309.json";
 var PRODUCER = "experiments/tla-conformance/final-convergence/final-a121-b58.json";
 var OUTPUT = "experiments/tla-conformance/final-convergence/final-surface-bindings.json";
 function read(file) {
-  return fs.readFileSync(path.resolve(ROOT, file));
+  return fs.readFileSync(path2.resolve(ROOT, file));
 }
 function json(file) {
   return JSON.parse(read(file).toString("utf8"));
@@ -61,6 +71,7 @@ assert.deepEqual(external, oldExternal, "Final registry changed honest external 
 var output = { schemaVersion: 1, owner: "final-convergence-0c94ee9", bindings };
 var text = `${JSON.stringify(output, null, 2)}
 `;
-if (process.argv.includes("--check")) assert.equal(fs.readFileSync(OUTPUT, "utf8"), text, "Final 535 registry is stale.");
-else fs.writeFileSync(OUTPUT, text);
+var outputPath = finalConvergenceRepositoryPath(ROOT, OUTPUT);
+if (process.argv.includes("--check")) assert.equal(fs.readFileSync(outputPath, "utf8"), text, "Final 535 registry is stale.");
+else fs.writeFileSync(outputPath, text);
 console.log(JSON.stringify({ status: "FINAL_535_REGISTRY_BUILT", counts, valueEvidence: valueRef, producerEvidence: producerRef, externalRows: external.length }, null, 2));
