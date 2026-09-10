@@ -575,7 +575,7 @@ import path43 from "node:path";
 // experiments/tla-conformance/value-contracts/surface-binding.mjs
 import fs40 from "node:fs";
 import path41 from "node:path";
-import { fileURLToPath as fileURLToPath17 } from "node:url";
+import { fileURLToPath as fileURLToPath15 } from "node:url";
 
 // experiments/tla-conformance/value-contracts/verify.mjs
 import fs2 from "node:fs";
@@ -1700,7 +1700,7 @@ function buildCatalogFamilyArtifact({ repositoryRoot, context: context2, surface
   if (sourceOverrides.size === 0) {
     const helpers = /* @__PURE__ */ new Map();
     for (const [key, row] of certified) {
-      let inspect2 = function(node) {
+      let inspect = function(node) {
         let symbol = ts.isIdentifier(node) || ts.isPropertyAccessExpression(node) ? context2.checker.getSymbolAtLocation(ts.isPropertyAccessExpression(node) ? node.name : node) : void 0;
         if (symbol !== void 0 && (symbol.flags & ts.SymbolFlags.Alias) !== 0) symbol = context2.checker.getAliasedSymbol(symbol);
         for (const dependency2 of symbol?.declarations ?? []) {
@@ -1722,12 +1722,11 @@ function buildCatalogFamilyArtifact({ repositoryRoot, context: context2, surface
             assert2(ts.isArrowFunction(target), "Unproved dynamic callback.");
           }
         }
-        ts.forEachChild(node, inspect2);
+        ts.forEachChild(node, inspect);
       };
-      var inspect = inspect2;
       const dependencies = /* @__PURE__ */ new Set();
       const declaration = row.declaration;
-      inspect2(declaration.body);
+      inspect(declaration.body);
       helpers.set(key, [...dependencies].sort());
     }
     for (const proof of proofs) proof.dependencies = helpers.get(`${proof.implementation.file}#${catalogContracts.find((contract) => contract.surfaceKey === proof.surfaceKey).className}.${catalogContracts.find((contract) => contract.surfaceKey === proof.surfaceKey).methodName}`);
@@ -2345,7 +2344,6 @@ import crypto3 from "node:crypto";
 import fs7 from "node:fs";
 import path8 from "node:path";
 import { execFileSync as execFileSync3 } from "node:child_process";
-import { fileURLToPath as fileURLToPath3 } from "node:url";
 var PRIOR_HEAD = "6fb8465f29d1929a13c7d948f85d2c8bce2d5d84";
 var CURRENT_HEAD = "5584d6e84fd5737a3a24f73daa57115602c3460d";
 var SURFACE_DIGEST = "10e90dfc4e5e2a7e203ff93d27af4e98cb3bd53a25d5b7f4c06780d6a76d15a8";
@@ -2433,8 +2431,8 @@ function buildR169AssuranceTransport({ repositoryRoot = process.cwd() } = {}) {
   const core = { schemaVersion: 1, status: "R169_CURRENT_HEAD_ASSURANCE_TRANSPORT_PROVED", priorHead: PRIOR_HEAD, currentHead: CURRENT_HEAD, surfaceDigest: SURFACE_DIGEST, exactRepairFiles: EXPECTED_REPAIR_DELTA, postRepairAuthoritativeFiles: afterRepair, productSourceChanged: false, affectedStrictRows: uniqueProducer, affectedValueRows: uniqueValue, assurance: { currentReview: currentReviewAssurance.reference, historicalReportDependency: REPORT_FILE, fullFormal: true, apiEntries: 510, unresolvedPublicApis: 0 }, packagingIdentity: { file: PACKAGING_MODEL, evidence: ref(PACKAGING_MODEL, root3), distinctEqualCountRevisions: true }, baselineArtifacts: [ref(BASE_VALUE, root3), ref(BASE_PRODUCER, root3)], producerGraphRuns: 0, producerReplayRuns: 0, reverseReruns: 0, creditExpansion: false };
   return { ...core, contentSha256: contentSha(core) };
 }
-if (process.argv[1] !== void 0 && path8.resolve(process.argv[1]) === fileURLToPath3(import.meta.url)) {
-  const root3 = path8.resolve(path8.dirname(fileURLToPath3(import.meta.url)), "../../..");
+if (process.argv[1] !== void 0 && false) {
+  const root3 = path8.resolve(path8.dirname(fileURLToPath(import.meta.url)), "../../..");
   const artifact = buildR169AssuranceTransport({ repositoryRoot: root3 });
   const target = path8.resolve(root3, "experiments/tla-conformance/final-convergence/r169-assurance-transport.json");
   const text = `${JSON.stringify(artifact, null, 2)}
@@ -2450,7 +2448,6 @@ import crypto4 from "node:crypto";
 import fs8 from "node:fs";
 import path9 from "node:path";
 import { execFileSync as execFileSync4 } from "node:child_process";
-import { fileURLToPath as fileURLToPath4 } from "node:url";
 var PRIOR_HEAD2 = "e2c1ccb3be53809b8b935cf4882137a08fa08576";
 var CURRENT_HEAD2 = "f430b5141b0afc0b2796e38bc90ef45df4c0dcd9";
 var SURFACE_DIGEST2 = "10e90dfc4e5e2a7e203ff93d27af4e98cb3bd53a25d5b7f4c06780d6a76d15a8";
@@ -2586,8 +2583,8 @@ function buildR170AssuranceTransport({ repositoryRoot = process.cwd() } = {}) {
   };
   return { ...core, contentSha256: contentSha2(core) };
 }
-if (process.argv[1] !== void 0 && path9.resolve(process.argv[1]) === fileURLToPath4(import.meta.url)) {
-  const root3 = path9.resolve(path9.dirname(fileURLToPath4(import.meta.url)), "../../..");
+if (process.argv[1] !== void 0 && false) {
+  const root3 = path9.resolve(path9.dirname(fileURLToPath(import.meta.url)), "../../..");
   const artifact = buildR170AssuranceTransport({ repositoryRoot: root3 });
   const target = path9.resolve(root3, "experiments/tla-conformance/final-convergence/r170-assurance-transport.json");
   const text = `${JSON.stringify(artifact, null, 2)}
@@ -2814,20 +2811,18 @@ function r168TransportReceipt() {
   return { ...ref4(R168_TRANSPORT), contentSha256: recorded.contentSha256, affectedStrictRows: recorded.affectedStrictRows, affectedValueRows: recorded.affectedValueRows };
 }
 function r169TransportReceipt() {
-  const built = buildR169AssuranceTransport(), recorded = readJson5(R169_TRANSPORT);
-  assert9.deepEqual(recorded, built, "R169 current-head assurance transport receipt is stale.");
+  const recorded = readJson5(R169_TRANSPORT);
   assert9.equal(recorded.status, "R169_CURRENT_HEAD_ASSURANCE_TRANSPORT_PROVED");
   assert9.equal(recorded.currentHead, "5584d6e84fd5737a3a24f73daa57115602c3460d");
   assert9(/^[a-f0-9]{64}$/u.test(recorded.contentSha256));
-  return { ...ref4(R169_TRANSPORT), contentSha256: built.contentSha256, affectedStrictRows: built.affectedStrictRows, affectedValueRows: built.affectedValueRows };
+  return { ...ref4(R169_TRANSPORT), contentSha256: recorded.contentSha256, affectedStrictRows: recorded.affectedStrictRows, affectedValueRows: recorded.affectedValueRows };
 }
 function r170TransportReceipt() {
-  const built = buildR170AssuranceTransport(), recorded = readJson5(R170_TRANSPORT2);
-  assert9.deepEqual(recorded, built, "R170 current-head assurance transport receipt is stale.");
+  const recorded = readJson5(R170_TRANSPORT2);
   assert9.equal(recorded.status, "R170_CURRENT_HEAD_ASSURANCE_TRANSPORT_PROVED");
   assert9.equal(recorded.currentHead, "f430b5141b0afc0b2796e38bc90ef45df4c0dcd9");
   assert9(/^[a-f0-9]{64}$/u.test(recorded.contentSha256));
-  return { ...ref4(R170_TRANSPORT2), contentSha256: built.contentSha256, affectedStrictRows: built.affectedStrictRows, affectedValueRows: built.affectedValueRows };
+  return { ...ref4(R170_TRANSPORT2), contentSha256: recorded.contentSha256, affectedStrictRows: recorded.affectedStrictRows, affectedValueRows: recorded.affectedValueRows };
 }
 function r170PristineTransportReceipt() {
   const built = buildR170PristineReproTransport(), recorded = readJson5(R170_PRISTINE_TRANSPORT2);
@@ -2954,6 +2949,18 @@ function build(kind, { repositoryRoot = process.cwd(), surface: surface2 = disco
   }
   return { schemaVersion: 1, ...kind === "producer" ? { route: "REGISTERED_CERTIFIED_PRODUCER" } : {}, proofKind: kind === "value" ? valueProofKind : producerProofKind, family: kind === "value" ? "FinalConvergenceValueV309" : "FinalConvergenceProducerA121B58", surfaceDigest: surface2.digest, domain: kind === "value" ? "Exact honest-488 V309 membership. Every member is independently selected from a frozen current authority or one of the final residual currentizers, rebound to the exact current compiler declaration, and transported across the only later source delta by the single final-head theorem." : "Exact honest-488 A121/B58 membership. Every package-owned action/read is independently selected from a frozen current authority or one of the final residual currentizers; the 47 true external callable identities are excluded and remain HARD_RED.", allAdmittedInputs: true, sampledInputs: 0, creditExpansion: false, ...kind === "producer" ? { producerGraphRuns: 0, producerReplayRuns: 0, reverseReruns: 0, externalSurfaceCreditGranted: false } : {}, inputs: [...inputs3.values()].sort((a, b) => a.file.localeCompare(b.file)), proofs };
 }
+function verifyCurrentHeadAssuranceTransports({ repositoryRoot = process.cwd() } = {}) {
+  const r169Recorded = JSON.parse(fs10.readFileSync(path11.resolve(repositoryRoot, R169_TRANSPORT), "utf8"));
+  const r169Built = buildR169AssuranceTransport({ repositoryRoot });
+  assert9.deepEqual(r169Recorded, r169Built, "R169 current-head assurance transport receipt is stale.");
+  const r170Recorded = JSON.parse(fs10.readFileSync(path11.resolve(repositoryRoot, R170_TRANSPORT2), "utf8"));
+  const r170Built = buildR170AssuranceTransport({ repositoryRoot });
+  assert9.deepEqual(r170Recorded, r170Built, "R170 current-head assurance transport receipt is stale.");
+  return {
+    r169: { file: R169_TRANSPORT, contentSha256: r169Built.contentSha256 },
+    r170: { file: R170_TRANSPORT2, contentSha256: r170Built.contentSha256 }
+  };
+}
 function buildFinalValueArtifact(input2) {
   return build("value", input2);
 }
@@ -2969,7 +2976,7 @@ assert9.equal(supportedProducerRows.length, 179);
 import assert11 from "node:assert/strict";
 import fs12 from "node:fs";
 import path13 from "node:path";
-import { fileURLToPath as fileURLToPath5 } from "node:url";
+import { fileURLToPath as fileURLToPath3 } from "node:url";
 
 // experiments/tla-conformance/throughput-r7/strict-dependency-receipt.mjs
 import assert10 from "node:assert/strict";
@@ -3026,7 +3033,7 @@ function strictDependencySemanticReceipt(input2) {
 // experiments/tla-conformance/boundary-adjudication-r18/family.mjs
 var proofKind = "inventoryonce-reservation-feasibility-guard-value-v1";
 var supportedSurfaceKeys = Object.freeze(["export:./kernel#assertInventoryReservationsFeasible::call[0]"]);
-var expectedFile = fileURLToPath5(new URL("./equations.expected.ts.txt", import.meta.url));
+var expectedFile = fileURLToPath3(new URL("./equations.expected.ts.txt", import.meta.url));
 var dependencyKey = "export:./kernel#inspectInventoryReservationFeasibility::call[0]";
 var inputFiles = Object.freeze([
   "src/reservations.ts",
@@ -3084,7 +3091,7 @@ import path18 from "node:path";
 import assert12 from "node:assert/strict";
 import fs13 from "node:fs";
 import path14 from "node:path";
-import { fileURLToPath as fileURLToPath6 } from "node:url";
+import { fileURLToPath as fileURLToPath4 } from "node:url";
 
 // experiments/tla-conformance/identity-values-r7/contracts.mjs
 var IDENTITY_VALUES_FAMILY_ID = "inventoryonce.identity-values.closed-source-equations.v1";
@@ -3304,7 +3311,7 @@ function lawIdForEquation(equationId) {
 // experiments/tla-conformance/identity-values-r7/family.mjs
 var IDENTITY_VALUES_SOURCE_BASE = "2eea09471b3bf8fcb61f38256e1c6a362149dad4";
 var identityValuesProofKind = "independent-identity-values-closed-equations-v1";
-var equationProgramPath = fileURLToPath6(new URL("./equations.ts.txt", import.meta.url));
+var equationProgramPath = fileURLToPath4(new URL("./equations.ts.txt", import.meta.url));
 var producerFiles2 = Object.freeze([
   "experiments/tla-conformance/authority-r5/catalog-published-source-contracts.mjs",
   "experiments/tla-conformance/authority-r5/catalog-published-source-equations.mjs",
@@ -4367,7 +4374,7 @@ var supportedSurfaceKeys2 = ASSIGNED_SURFACE_KEYS;
 import assert13 from "node:assert/strict";
 import fs14 from "node:fs";
 import path15 from "node:path";
-import { fileURLToPath as fileURLToPath7 } from "node:url";
+import { fileURLToPath as fileURLToPath5 } from "node:url";
 
 // experiments/tla-conformance/quantity-values-r7/contracts.mjs
 var QUANTITY_VALUES_PROOF_KIND = "inventoryonce-quantity-measurement-complete-source-equations-v1";
@@ -4582,7 +4589,7 @@ var FAMILY_DOMAIN = Object.freeze({
 });
 
 // experiments/tla-conformance/quantity-values-r7/certificate.mjs
-var expectedEquationPath = fileURLToPath7(
+var expectedEquationPath = fileURLToPath5(
   new URL("./equations.expected.ts.txt", import.meta.url)
 );
 var producerFiles3 = Object.freeze([
@@ -4955,13 +4962,13 @@ function verifyDependencyClosure({ repositoryRoot, context: context2, certified,
     return targetLibraryFile;
   }
   for (const [key, declaration] of declarations) {
-    let resolvedSymbol4 = function(node) {
+    let resolvedSymbol3 = function(node) {
       let symbol = context2.checker.getSymbolAtLocation(node);
       if (symbol !== void 0 && (symbol.flags & ts.SymbolFlags.Alias) !== 0) {
         symbol = context2.checker.getAliasedSymbol(symbol);
       }
       return symbol;
-    }, inspectCall2 = function(node) {
+    }, inspectCall = function(node) {
       const target = context2.checker.getResolvedSignature(node)?.declaration;
       assert13(target !== void 0, `Unresolved call '${node.getText()}'.`);
       if (target.getSourceFile().isDeclarationFile) {
@@ -4983,10 +4990,10 @@ function verifyDependencyClosure({ repositoryRoot, context: context2, certified,
       const targetKey = declarationKey3(repositoryRoot, target);
       assert13(certified.has(targetKey), `Unproved source call '${targetKey}'.`);
       if (targetKey !== key) dependencyNames.add(targetKey);
-    }, visit2 = function(node) {
-      if (ts.isCallExpression(node) || ts.isNewExpression(node)) inspectCall2(node);
+    }, visit = function(node) {
+      if (ts.isCallExpression(node) || ts.isNewExpression(node)) inspectCall(node);
       if (ts.isIdentifier(node)) {
-        const symbol = resolvedSymbol4(node);
+        const symbol = resolvedSymbol3(node);
         for (const sourceDeclaration of symbol?.declarations ?? []) {
           if (ts.isFunctionDeclaration(sourceDeclaration) && sourceDeclaration.body !== void 0) {
             const targetKey = declarationKey3(repositoryRoot, sourceDeclaration);
@@ -5023,11 +5030,10 @@ function verifyDependencyClosure({ repositoryRoot, context: context2, certified,
           }
         }
       }
-      ts.forEachChild(node, visit2);
+      ts.forEachChild(node, visit);
     };
-    var resolvedSymbol3 = resolvedSymbol4, inspectCall = inspectCall2, visit = visit2;
     const dependencyNames = /* @__PURE__ */ new Set();
-    visit2(declaration.body);
+    visit(declaration.body);
     dependencyNamesByKey.set(key, [...dependencyNames].sort(compareCodeUnits));
   }
   return {
@@ -5219,13 +5225,13 @@ var buildFamilyArtifact3 = buildQuantityValuesFamilyCertificate;
 import assert16 from "node:assert/strict";
 import fs16 from "node:fs";
 import path17 from "node:path";
-import { fileURLToPath as fileURLToPath9 } from "node:url";
+import { fileURLToPath as fileURLToPath7 } from "node:url";
 
 // experiments/tla-conformance/catalog-foundation-r7/family.mjs
 import assert15 from "node:assert/strict";
 import fs15 from "node:fs";
 import path16 from "node:path";
-import { fileURLToPath as fileURLToPath8 } from "node:url";
+import { fileURLToPath as fileURLToPath6 } from "node:url";
 
 // experiments/tla-conformance/catalog-foundation-r7/contracts.mjs
 var CATALOG_FOUNDATION_FAMILY_ID = "inventoryonce.catalog-foundation.closed-source-equations.v1";
@@ -5736,7 +5742,7 @@ function normalizeCatalogCallable(declaration) {
 // experiments/tla-conformance/catalog-foundation-r7/family.mjs
 var CATALOG_FOUNDATION_SOURCE_BASE = "2eea09471b3bf8fcb61f38256e1c6a362149dad4";
 var proofKind2 = "independent-catalog-foundation-closed-equations-v1";
-var equationProgramPath2 = fileURLToPath8(
+var equationProgramPath2 = fileURLToPath6(
   new URL("./equations.expected.ts.txt", import.meta.url)
 );
 var reusedAuthoritySpecification = Object.freeze({
@@ -6848,10 +6854,10 @@ var producerFiles5 = Object.freeze([
   "package.json",
   "tsconfig.json"
 ]);
-var equationProgramPath3 = fileURLToPath9(
+var equationProgramPath3 = fileURLToPath7(
   new URL("./equations.expected.ts.txt", import.meta.url)
 );
-var catalogFoundationDependencyPath = fileURLToPath9(
+var catalogFoundationDependencyPath = fileURLToPath7(
   new URL("./catalog-foundation-dependency-reference.json", import.meta.url)
 );
 var familyPassCache = /* @__PURE__ */ new WeakMap();
@@ -7234,7 +7240,7 @@ function verifyDependencyClosure2({ repositoryRoot, context: context2, roots }) 
     throw new Error(`Unproved transitive source callable '${id}'.`);
   }
   while (pending.length > 0) {
-    let inspect2 = function(node) {
+    let inspect = function(node) {
       if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
         const target = context2.checker.getResolvedSignature(node)?.declaration;
         assert16(target !== void 0, `Unresolved call '${node.getText()}'.`);
@@ -7289,16 +7295,15 @@ function verifyDependencyClosure2({ repositoryRoot, context: context2, roots }) 
           }
         }
       }
-      ts.forEachChild(node, inspect2);
+      ts.forEachChild(node, inspect);
     };
-    var inspect = inspect2;
     const declaration = pending.shift();
     const id = declarationId(repositoryRoot, declaration);
     if (declarations.has(id)) continue;
     validateCallableSyntax2(declaration);
     declarations.set(id, declaration);
     const dependencies = /* @__PURE__ */ new Set();
-    inspect2(declaration.body);
+    inspect(declaration.body);
     dependencies.delete(id);
     dependenciesById.set(id, [...dependencies].sort(compareCodeUnits));
   }
@@ -7940,7 +7945,7 @@ import path23 from "node:path";
 import assert18 from "node:assert/strict";
 import fs18 from "node:fs";
 import path19 from "node:path";
-import { fileURLToPath as fileURLToPath10 } from "node:url";
+import { fileURLToPath as fileURLToPath8 } from "node:url";
 var proofKind4 = "storage-protocol-construction-and-plan-closed-equations-v1";
 var supportedSurfaceKeys7 = Object.freeze([
   "export:./storage#InMemoryInventoryDurableStorage::construct[0]",
@@ -7974,7 +7979,7 @@ var reusedCertificates = Object.freeze([
   { family: "migration-plugin-helper-independent-source-closed-values-v3", certificateId: "sha256:945885132722aa1dc32b70b7a30d059be4f12c26de3296c6edda8936056fbdd7", artifactSha256: "dd2d300816956ca2d6725b988572c7f18040f33820538bb7a21210d6031e5763" },
   { family: "independent-catalog-read-semantic-closure-equations-v2", certificateId: "sha256:f9d1a11d40e1c7abbe8d2b5da2c217e30a486c11cb5b66003b50d565fe423978", artifactSha256: "67d676a3e69cdfce473335022cab7aff206f09f9a0f8560898def33cff4195b9" }
 ]);
-var expectedFile2 = fileURLToPath10(new URL("./value-equations.expected.ts.txt", import.meta.url));
+var expectedFile2 = fileURLToPath8(new URL("./value-equations.expected.ts.txt", import.meta.url));
 var producerFiles6 = Object.freeze([
   "experiments/tla-conformance/storage-protocol-r7/value-equations.expected.ts.txt",
   "experiments/tla-conformance/storage-protocol-r7/value-family.mjs",
@@ -8121,7 +8126,7 @@ function buildFamilyArtifact7({ repositoryRoot, context: context2, surface: surf
 import assert21 from "node:assert/strict";
 import fs21 from "node:fs";
 import path22 from "node:path";
-import { fileURLToPath as fileURLToPath12 } from "node:url";
+import { fileURLToPath as fileURLToPath10 } from "node:url";
 
 // experiments/tla-conformance/migration-helper-causal-r7/independent-v9-laws.mjs
 import assert19 from "node:assert/strict";
@@ -8486,7 +8491,7 @@ function buildIndependentV9Artifact({ repositoryRoot = process.cwd(), sourceOver
 import assert20 from "node:assert/strict";
 import fs20 from "node:fs";
 import path21 from "node:path";
-import { fileURLToPath as fileURLToPath11 } from "node:url";
+import { fileURLToPath as fileURLToPath9 } from "node:url";
 
 // experiments/tla-conformance/transfer-surface-r6/source-equations-r7/contracts.mjs
 var TRANSFER_CORRECTION_VALUE_PROOF_KIND = "inventoryonce-transfer-correction-complete-source-equations-v2";
@@ -8665,7 +8670,7 @@ function lawIdForEquation3(equationId) {
 }
 
 // experiments/tla-conformance/transfer-surface-r6/source-equations-r7/family.mjs
-var familyDirectory = path21.dirname(fileURLToPath11(import.meta.url));
+var familyDirectory = path21.dirname(fileURLToPath9(import.meta.url));
 var expectedFileBySource = new Map(
   LOCAL_SOURCE_FILES2.map((file) => [
     file,
@@ -8981,7 +8986,7 @@ function inspectClosure({
   const pendingSupporting = /* @__PURE__ */ new Map();
   const unresolved = /* @__PURE__ */ new Set();
   while (pendingDeclarations.length > 0) {
-    let visit2 = function(node) {
+    let visit = function(node) {
       if (ts.isTypeNode(node)) return;
       if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
         const signature = context2.checker.getResolvedSignature(node)?.declaration;
@@ -9029,9 +9034,8 @@ function inspectClosure({
           (dependencyValue.registered ? reusedSupporting : pendingSupporting).set(valueId, dependencyValue);
         }
       }
-      ts.forEachChild(node, visit2);
+      ts.forEachChild(node, visit);
     };
-    var visit = visit2;
     const declaration = pendingDeclarations.shift();
     const id = declarationId2(repositoryRoot, declaration);
     if (checkedLocal.has(id) || reused.has(id) || pendingDependencies.has(id)) continue;
@@ -9052,7 +9056,7 @@ function inspectClosure({
       continue;
     }
     checkedLocal.add(id);
-    visit2(declaration.body);
+    visit(declaration.body);
   }
   assert20.equal(
     unresolved.size,
@@ -9535,7 +9539,7 @@ var ROOT_LAWS = Object.freeze([
   Object.freeze({ id: "src/projection.ts#applyInventoryCommittedEvent", file: "src/projection.ts", name: "applyInventoryCommittedEvent", dependencies: ["src/projection.ts#applyInventoryCommittedEventInternal"] })
 ]);
 function rootDir() {
-  return path22.resolve(path22.dirname(fileURLToPath12(import.meta.url)), "../../..");
+  return path22.resolve(path22.dirname(fileURLToPath10(import.meta.url)), "../../..");
 }
 function sourceText4(root3, file, overrides) {
   const override = overrides?.get(file);
@@ -10185,7 +10189,7 @@ function buildFamilyArtifact13({ repositoryRoot = process.cwd(), context: contex
 import assert26 from "node:assert/strict";
 import fs26 from "node:fs";
 import path27 from "node:path";
-import { fileURLToPath as fileURLToPath13 } from "node:url";
+import { fileURLToPath as fileURLToPath11 } from "node:url";
 var DIRECTORY2 = "experiments/tla-conformance/traceability-apply1-r8";
 var FAMILY_FILE2 = `${DIRECTORY2}/family.mjs`;
 var proofKind10 = "traceability-apply-changes-complete-value-v1";
@@ -10193,7 +10197,7 @@ var supportedSurfaceKeys14 = Object.freeze([
   "export:./kernel#applyInventoryTraceabilityChanges::call[0]"
 ]);
 function rootDir2() {
-  return path27.resolve(path27.dirname(fileURLToPath13(import.meta.url)), "../../..");
+  return path27.resolve(path27.dirname(fileURLToPath11(import.meta.url)), "../../..");
 }
 function fileRef2(root3, file, sourceOverrides) {
   const override = sourceOverrides?.get(file);
@@ -10222,7 +10226,7 @@ function buildFamilyArtifact14({ repositoryRoot: root3 = rootDir2(), context: co
 import assert28 from "node:assert/strict";
 import fs28 from "node:fs";
 import path29 from "node:path";
-import { fileURLToPath as fileURLToPath14 } from "node:url";
+import { fileURLToPath as fileURLToPath12 } from "node:url";
 
 // experiments/tla-conformance/new-source-honest486-r43/pinned-irrelevance.mjs
 import assert27 from "node:assert/strict";
@@ -10314,7 +10318,7 @@ function loadPinnedNewSourceIrrelevance({ repositoryRoot: root3 = process.cwd(),
 
 // experiments/tla-conformance/new-source-honest486-r43/value-currentizer.mjs
 var proofKind11 = "r43-currentized-nonauthority-values-306-v2";
-var root = path29.resolve(path29.dirname(fileURLToPath14(import.meta.url)), "../../..");
+var root = path29.resolve(path29.dirname(fileURLToPath12(import.meta.url)), "../../..");
 var receiptBytes = fs28.readFileSync(path29.resolve(root, RECEIPT_FILE));
 assert28.equal(sha256(receiptBytes), RECEIPT_SHA256);
 var staticReceipt = JSON.parse(receiptBytes.toString("utf8"));
@@ -10476,16 +10480,15 @@ function helperGraph(actualByFile) {
   const selected = new Set(equationSpecs.map(([, name]) => name));
   const edges = [];
   for (const [file, name] of equationSpecs) {
-    let walk2 = function(node) {
+    let walk = function(node) {
       if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && selected.has(node.expression.text)) calls.add(node.expression.text);
-      ts.forEachChild(node, walk2);
+      ts.forEachChild(node, walk);
     };
-    var walk = walk2;
     const source7 = actualByFile.get(file);
     const fn2 = functions(source7).get(name);
     assert29(fn2?.body);
     const calls = /* @__PURE__ */ new Set();
-    walk2(fn2.body);
+    walk(fn2.body);
     for (const target of calls) edges.push(`${name}->${target}`);
   }
   edges.sort(compareCodeUnits);
@@ -10675,7 +10678,7 @@ function buildFamilyArtifact16({ repositoryRoot, context: context2, surface: sur
 import assert40 from "node:assert/strict";
 import fs39 from "node:fs";
 import path40 from "node:path";
-import { fileURLToPath as fileURLToPath16 } from "node:url";
+import { fileURLToPath as fileURLToPath14 } from "node:url";
 
 // experiments/tla-conformance/migration-helper-causal-r7/registered-value-family.mjs
 import assert30 from "node:assert/strict";
@@ -10703,7 +10706,7 @@ function checkBindingsAndEnums(repositoryRoot, context2, independent) {
   }
   const visited = /* @__PURE__ */ new Set();
   for (const row of [...independent.proofs, ...independent.localLaws]) {
-    let inspect2 = function(node) {
+    let inspect = function(node) {
       if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
         const target = context2.checker.getResolvedSignature(node)?.declaration;
         assert30(target !== void 0, `Unresolved semantic call: ${node.getText()}`);
@@ -10717,16 +10720,15 @@ function checkBindingsAndEnums(repositoryRoot, context2, independent) {
         const symbol = context2.checker.getSymbolAtLocation(node.name);
         assert30(!(symbol?.declarations ?? []).some((candidate) => ts.isGetAccessorDeclaration(candidate) || ts.isSetAccessorDeclaration(candidate)), "Accessor-bearing data requires an explicit effect proof.");
       }
-      ts.forEachChild(node, inspect2);
+      ts.forEachChild(node, inspect);
     };
-    var inspect = inspect2;
     const span = row.completeExpectedTerm.implementation;
     const source8 = context2.program.getSourceFile(path31.resolve(repositoryRoot, span.file));
     const declaration = nodeAtExactSpan(source8, span.start.offset, span.end.offset);
     assert30(declaration !== void 0 && ts.isFunctionDeclaration(declaration));
     if (visited.has(declaration)) continue;
     visited.add(declaration);
-    inspect2(declaration.body);
+    inspect(declaration.body);
   }
 }
 function buildFamilyArtifact17({ repositoryRoot, context: context2, surface: surface2 }) {
@@ -11098,7 +11100,7 @@ function buildFamilyArtifact19({ repositoryRoot, context: context2, surface: sur
 import assert34 from "node:assert/strict";
 import fs33 from "node:fs";
 import path34 from "node:path";
-import { fileURLToPath as fileURLToPath15 } from "node:url";
+import { fileURLToPath as fileURLToPath13 } from "node:url";
 
 // experiments/tla-conformance/authority-r5/catalog-read-dependency-closure-contracts.mjs
 var CATALOG_READ_CLEAN_HUB_COMMIT = "2eea09471b3bf8fcb61f38256e1c6a362149dad4";
@@ -11315,7 +11317,7 @@ var CATALOG_READ_STORAGE_ACQUISITION_BLOCKER = Object.freeze({
 });
 
 // experiments/tla-conformance/authority-r5/catalog-read-dependency-closure-certificate.mjs
-var FAMILY_DIRECTORY2 = path34.dirname(fileURLToPath15(import.meta.url));
+var FAMILY_DIRECTORY2 = path34.dirname(fileURLToPath13(import.meta.url));
 var REPOSITORY_ROOT2 = path34.resolve(FAMILY_DIRECTORY2, "../../..");
 var CERTIFICATE_PATH2 = path34.join(
   FAMILY_DIRECTORY2,
@@ -12648,7 +12650,7 @@ function buildCatalogReadDependencyClosureCertificate(sourceOverrides = /* @__PU
   const surface2 = currentCompilerSurface();
   const semanticCore = buildSemanticCore2(context2, sourceOverrides, surface2);
   const contentSha256 = sha256(canonicalJson(semanticCore));
-  const verifierPath2 = fileURLToPath15(import.meta.url);
+  const verifierPath2 = fileURLToPath13(import.meta.url);
   const document = {
     certificateKind: "INVENTORYONCE_CATALOG_READ_DEPENDENCY_CLOSURE",
     semanticCore,
@@ -13708,7 +13710,7 @@ function buildPlanValueArtifact({
 var buildFamilyArtifact25 = buildPlanValueArtifact;
 
 // experiments/tla-conformance/throughput-r7/registered-families.mjs
-var root2 = path40.resolve(path40.dirname(fileURLToPath16(import.meta.url)), "../../..");
+var root2 = path40.resolve(path40.dirname(fileURLToPath14(import.meta.url)), "../../..");
 var routeInputs = [
   "experiments/tla-conformance/throughput-r7/registered-value-family.mjs",
   "experiments/tla-conformance/value-contracts/surface-binding.mjs"
@@ -13854,7 +13856,7 @@ var registeredValueFamilies = Object.freeze([
 ]);
 
 // experiments/tla-conformance/value-contracts/surface-binding.mjs
-var contractsPath = fileURLToPath17(new URL("./contracts.json", import.meta.url));
+var contractsPath = fileURLToPath15(new URL("./contracts.json", import.meta.url));
 var producerFiles8 = [
   "experiments/tla-conformance/value-contracts/contracts.json",
   "experiments/tla-conformance/value-contracts/verify.mjs",
@@ -14099,6 +14101,7 @@ var HONEST_488 = "experiments/tla-conformance/r105-layered-6dfc-currentization/s
 function read(file) {
   return JSON.parse(fs42.readFileSync(path44.resolve(ROOT, file), "utf8"));
 }
+verifyCurrentHeadAssuranceTransports({ repositoryRoot: ROOT });
 var surface = discoverCompilerSurface(ROOT);
 var context = loadEvidenceCompilerContext(ROOT, []);
 var valueRegistration = Object.freeze({

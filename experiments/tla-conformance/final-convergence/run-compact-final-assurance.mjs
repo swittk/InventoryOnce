@@ -99,7 +99,7 @@ try {
       fs.writeFileSync(reviewReceiptPath, `${JSON.stringify(reviewReceipt, null, 2)}\n`);
       assert.throws(
         () => verifyCurrentReviewAssurance(root),
-        /surface digest is not independently source-derived/u,
+        /immutable evidence commit|surface digest is not independently source-derived/u,
       );
     } finally {
       fs.writeFileSync(reviewReportPath, reviewReportBytes);
