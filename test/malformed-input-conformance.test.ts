@@ -19,12 +19,12 @@ const realRepositoryRoot = realpathSync(repositoryRoot);
 function source(relativePath: string): string {
   const resolved = path.resolve(repositoryRoot, relativePath);
   const relative = path.relative(repositoryRoot, resolved);
-  if (relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+  if (relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
     throw new Error("Malformed-input assurance path must stay inside the repository.");
   }
   const realResolved = realpathSync(resolved);
   const realRelative = path.relative(realRepositoryRoot, realResolved);
-  if (realRelative.startsWith(`..${path.sep}`) || path.isAbsolute(realRelative)) {
+  if (realRelative === ".." || realRelative.startsWith(`..${path.sep}`) || path.isAbsolute(realRelative)) {
     throw new Error("Malformed-input assurance path must stay inside the repository.");
   }
   return readFileSync(realResolved, "utf8");
@@ -32,6 +32,7 @@ function source(relativePath: string): string {
 
 describe("malformed concrete input assurance manifest", () => {
   it("rejects assurance evidence paths that escape the repository", () => {
+    expect(() => source("..")).toThrow(/stay inside the repository/i);
     expect(() => source("../outside-repository.txt")).toThrow(/stay inside the repository/i);
   });
   it("binds every malformed-input invariant to a live guard and negative behavior regression", () => {

@@ -68,6 +68,30 @@ function vitestFocusedRegistrationNode(ts, node) {
   return undefined;
 }
 
+/** Return one conditional modifier, but fail closed when multiple skipIf/runIf modifiers are chained. */
+function vitestConditionalMetadata(ts, expression) {
+  if (ts.isCallExpression(expression)) {
+    if (ts.isPropertyAccessExpression(expression.expression)) {
+      const name = expression.expression.name.text;
+      if (name === "skipIf" || name === "runIf") {
+        const earlier = vitestConditionalMetadata(ts, expression.expression.expression);
+        if (earlier.conditionKind !== undefined) {
+          return { conditionKind: name, conditionValue: undefined };
+        }
+        return {
+          conditionKind: name,
+          conditionValue: staticBooleanValue(ts, expression.arguments[0]),
+        };
+      }
+    }
+    return vitestConditionalMetadata(ts, expression.expression);
+  }
+  if (ts.isPropertyAccessExpression(expression)) {
+    return vitestConditionalMetadata(ts, expression.expression);
+  }
+  return {};
+}
+
 /** Return whether a statically described registration is runnable rather than skipped/todo/unknown. */
 function vitestRegistrationRuns(metadata) {
   if (metadata.mode !== "run") return false;
@@ -108,6 +132,7 @@ module.exports = {
   expressionHasProperty,
   staticBooleanValue,
   vitestCallbackExecutes,
+  vitestConditionalMetadata,
   vitestFocusedRegistrationNode,
   vitestRegistrationName,
   vitestRegistrationRuns,

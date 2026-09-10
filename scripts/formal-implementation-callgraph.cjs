@@ -5,6 +5,7 @@ const {
   expressionHasProperty,
   staticBooleanValue,
   vitestCallbackExecutes,
+  vitestConditionalMetadata,
   vitestFocusedRegistrationNode,
   vitestRegistrationName,
   vitestRegistrationRuns,
@@ -348,26 +349,6 @@ for (const source of executableTestSources) {
 function testRootFor(source) {
   return roots.get(`test-root:${relativeFile(source)}`)?.id;
 }
-/** Return the nearest skipIf/runIf condition carried by one chained registration expression. */
-function vitestConditionalMetadata(expression) {
-  if (ts.isCallExpression(expression)) {
-    if (ts.isPropertyAccessExpression(expression.expression)) {
-      const name = expression.expression.name.text;
-      if (name === "skipIf" || name === "runIf") {
-        return {
-          conditionKind: name,
-          conditionValue: staticBooleanValue(ts, expression.arguments[0]),
-        };
-      }
-    }
-    return vitestConditionalMetadata(expression.expression);
-  }
-  if (ts.isPropertyAccessExpression(expression)) {
-    return vitestConditionalMetadata(expression.expression);
-  }
-  return {};
-}
-
 /** Read a boolean skip/todo option from one object literal without executing test code. */
 function vitestObjectBooleanOptions(object) {
   let skip = false;
@@ -433,7 +414,7 @@ function vitestRegistrationMetadata(
   return {
     registration,
     mode: vitestRegistrationMode(node, callbackArgumentIndex),
-    ...vitestConditionalMetadata(node.expression),
+    ...vitestConditionalMetadata(ts, node.expression),
     insideNonExecutingSuite,
     insideTodoSuite,
   };

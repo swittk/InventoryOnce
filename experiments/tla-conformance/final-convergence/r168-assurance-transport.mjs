@@ -58,6 +58,11 @@ export function buildR168AssuranceTransport({ repositoryRoot = process.cwd() } =
     "src", "formal", "scripts", "test", "package.json", "tsconfig.json", "tsconfig.test.json",
   ], root).split(/\r?\n/u).filter(Boolean).sort();
   assert.deepEqual(reviewedDelta, [...EXPECTED_DELTA].sort(), "R168 reviewed product/assurance delta widened.");
+  try {
+    git(["merge-base", "--is-ancestor", CURRENT_HEAD, integrationHead], root);
+  } catch {
+    throw new Error("Integrated proof head no longer descends from the R168 reviewed commit.");
+  }
   const integratedDelta = git([
     "diff", "--name-only", CURRENT_HEAD, integrationHead, "--",
     "src", "formal", "scripts", "test", "package.json", "tsconfig.json", "tsconfig.test.json",

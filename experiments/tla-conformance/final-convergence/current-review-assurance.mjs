@@ -6,6 +6,9 @@ import { execFileSync } from "node:child_process";
 import { repositoryAssuranceCommittedStateSha256 } from "../../../scripts/repository-assurance-state.mjs";
 
 export const CURRENT_REVIEW_ASSURANCE_RECEIPT = "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json";
+const CURRENT_REVIEW_ASSURANCE_REPORT = "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json";
+const CURRENT_REVIEW_ASSURANCE_FULL_LOG = "experiments/tla-conformance/final-convergence/current-pr-review-full.log";
+const AUTHORITATIVE_PATHS = Object.freeze(["src", "formal", "scripts", "test", "package.json", "tsconfig.json", "tsconfig.test.json"]);
 
 /** Hash one ordinary file's exact bytes with lowercase SHA-256. */
 function sha256(file) {
@@ -57,8 +60,10 @@ export function verifyCurrentReviewAssurance(repositoryRoot) {
   assert.equal(receipt.status, "CURRENT_PR_REVIEW_FULL_ASSURANCE_VERIFIED", "Current review assurance receipt status is invalid.");
   assert.match(receipt.certifiedHead, /^[a-f0-9]{40}$/u, "Current review assurance certified head is invalid.");
   execFileSync("git", ["merge-base", "--is-ancestor", receipt.certifiedHead, "HEAD"], { cwd: root, stdio: "ignore" });
-  const reportPath = regularFile(root, receipt.report.file, "Current review assurance report");
-  const logPath = regularFile(root, receipt.fullLog.file, "Current review assurance full log");
+  assert.equal(receipt.report.file, CURRENT_REVIEW_ASSURANCE_REPORT, "Current review assurance report path is not package-owned.");
+  assert.equal(receipt.fullLog.file, CURRENT_REVIEW_ASSURANCE_FULL_LOG, "Current review assurance full-log path is not package-owned.");
+  const reportPath = regularFile(root, CURRENT_REVIEW_ASSURANCE_REPORT, "Current review assurance report");
+  const logPath = regularFile(root, CURRENT_REVIEW_ASSURANCE_FULL_LOG, "Current review assurance full log");
   assert.equal(sha256(reportPath), receipt.report.sha256, "Current review assurance report bytes changed.");
   assert.equal(sha256(logPath), receipt.fullLog.sha256, "Current review assurance full-log bytes changed.");
   const report = JSON.parse(fs.readFileSync(reportPath, "utf8"));
@@ -78,14 +83,24 @@ export function verifyCurrentReviewAssurance(repositoryRoot) {
     "Current review assurance was not produced from the exact clean committed evidence state.",
   );
   assert.equal(report.fullLogSha256, receipt.fullLog.sha256, "Current review assurance report is not bound to the tracked full log.");
+  const dirtyAuthoritativePaths = execFileSync(
+    "git",
+    ["status", "--porcelain=v1", "--untracked-files=all", "--", ...AUTHORITATIVE_PATHS],
+    { cwd: root, encoding: "utf8" },
+  ).trim();
+  assert.equal(
+    dirtyAuthoritativePaths,
+    "",
+    "Current review assurance requires a clean authoritative worktree.",
+  );
   const authoritativeDelta = execFileSync(
     "git",
-    ["diff", "--name-only", receipt.certifiedHead, "HEAD", "--", "src", "formal", "scripts", "test", "package.json", "tsconfig.json", "tsconfig.test.json"],
+    ["diff", "--name-only", receipt.certifiedHead, "HEAD", "--", ...AUTHORITATIVE_PATHS],
     { cwd: root, encoding: "utf8" },
   ).split(/\r?\n/u).filter(Boolean).sort();
   assert.deepEqual(
     authoritativeDelta,
-    [receipt.report.file],
+    [CURRENT_REVIEW_ASSURANCE_REPORT],
     "Proof integration changed authoritative product/assurance bytes after the certified full run.",
   );
   return {

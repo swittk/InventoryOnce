@@ -1176,6 +1176,11 @@ describe("retained catalogue alias safety", () => {
       requirement: InventoryMeasurementRequirement.Optional,
     });
     tracking.serial = InventoryTrackingRequirement.Required;
+    const originalQualifiedDimension = qualifiedDimensions[0];
+    if (originalQualifiedDimension === undefined) {
+      throw new Error("Qualified dimension fixture disappeared.");
+    }
+    originalQualifiedDimension.description = "Poison.";
     qualifiedDimensions[0] = { dimensionId: "poison", description: "Poison." };
     itemIdentifiers.sku = "poison-sku";
     itemMetadataTags.push("poison");

@@ -29,9 +29,11 @@ function repositoryPath(file) {
 const mode = process.argv[2] ?? "verify";
 const bundle = manifest.bundles.entries.find((row) => row.mode === mode);
 assert(bundle !== undefined, `Unknown compact final-assurance mode: ${mode}`);
-const bundleFile = path.join(root, bundle.file);
+const bundleFile = repositoryPath(bundle.file);
+assertRegularFile(bundleFile, `Compact ${mode} bundle`);
 assert.equal(sha256(bundleFile), bundle.sha256, `Compact ${mode} bundle bytes changed.`);
-const archiveFile = path.join(root, manifest.archive.file);
+const archiveFile = repositoryPath(manifest.archive.file);
+assertRegularFile(archiveFile, "Compact support archive");
 assert.equal(sha256(archiveFile), manifest.archive.sha256, "Compact support archive bytes changed.");
 const archiveMembers = execFileSync("tar", ["-tzf", archiveFile], { encoding: "utf8" })
   .split("\n")
@@ -77,6 +79,7 @@ try {
     fs.writeFileSync(ordinary, "proof-input");
     fs.symlinkSync(ordinary, symbolic);
     assert.throws(() => assertRegularFile(symbolic, "Synthetic proof input"), /not a regular file/u);
+    assert.throws(() => repositoryPath("../outside-inventoryonce"), /escapes repository root/u);
     fs.rmSync(selftestDir, { recursive: true, force: true });
 
     // A self-consistent forged surface digest must still fail against independently derived source evidence.
@@ -101,6 +104,18 @@ try {
     } finally {
       fs.writeFileSync(reviewReportPath, reviewReportBytes);
       fs.writeFileSync(reviewReceiptPath, reviewReceiptBytes);
+    }
+
+    // Uncommitted authoritative bytes must never inherit certification from a committed receipt.
+    const dirtyFormalPath = path.join(root, "formal", ".compact-dirty-authoritative-selftest");
+    try {
+      fs.writeFileSync(dirtyFormalPath, "synthetic-uncommitted-formal-byte\n");
+      assert.throws(
+        () => verifyCurrentReviewAssurance(root),
+        /requires a clean authoritative worktree/u,
+      );
+    } finally {
+      fs.rmSync(dirtyFormalPath, { force: true });
     }
   }
   execFileSync(process.execPath, [bundleFile, ...process.argv.slice(3)], { cwd: root, stdio: "inherit" });

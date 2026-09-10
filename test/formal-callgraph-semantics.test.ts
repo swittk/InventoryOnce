@@ -7,6 +7,10 @@ const vitestSemantics = require(
   "../scripts/formal-implementation-vitest-semantics.cjs",
 ) as {
   readonly vitestCallbackExecutes: (metadata: VitestExecutionMetadata) => boolean;
+  readonly vitestConditionalMetadata: (
+    ts: typeof import("typescript"),
+    expression: import("typescript").Expression,
+  ) => { readonly conditionKind?: "skipIf" | "runIf"; readonly conditionValue?: boolean };
   readonly vitestSuiteChildrenExecute: (metadata: VitestExecutionMetadata) => boolean;
   readonly vitestFocusedRegistrationNode: (
     ts: typeof import("typescript"),
@@ -86,6 +90,30 @@ function suiteChildrenExecute(metadata: VitestExecutionMetadata): boolean {
 }
 
 describe("formal call-graph Vitest callback semantics", () => {
+  it("fails closed when conditional Vitest modifiers are chained", () => {
+    const source = typescript.createSourceFile(
+      "conditional-chain.ts",
+      'test.skipIf(true).runIf(true)("chained", () => {});',
+      typescript.ScriptTarget.Latest,
+      true,
+      typescript.ScriptKind.TS,
+    );
+    const statement = source.statements[0];
+    if (
+      statement === undefined ||
+      !typescript.isExpressionStatement(statement) ||
+      !typescript.isCallExpression(statement.expression)
+    ) {
+      throw new Error("Conditional Vitest regression fixture did not parse as expected.");
+    }
+    const metadata = vitestSemantics.vitestConditionalMetadata(
+      typescript,
+      statement.expression.expression,
+    );
+    expect(metadata.conditionKind).toBe("runIf");
+    expect(metadata.conditionValue).toBeUndefined();
+    expect(callbackExecutes({ registration: "test", mode: "run", ...metadata })).toBe(false);
+  });
   it("rejects every focused Vitest registration spelling used by the call graph", () => {
     expect(focusedRegistrationDecisions([
       'it.only("focused", () => {});',

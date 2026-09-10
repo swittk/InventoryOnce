@@ -5,6 +5,7 @@ import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { repositoryAssuranceStateSha256 } from "./repository-assurance-state.mjs";
+import { executableAssuranceSummary } from "./executable-assurance-coherence.mjs";
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repositoryRoot = packageRoot;
@@ -203,37 +204,7 @@ const report = {
   repositoryStateSha256: repositoryAssuranceStateSha256(repositoryRoot),
   fullFormal,
   ...(fullFormal ? { fullLogSha256: fullLogSha256() } : {}),
-  surfaceSha256: api.surfaceSha256,
-  apiEntries: Object.keys(api.entries).length,
-  callAndConstructSignatures: api.counts.callAndConstructSignatures,
-  directExecutableApis: api.counts.directExecutableApis,
-  indirectCallChainApis: api.counts.indirectCallChainApis,
-  explicitGapApis: api.counts.explicitGapApis,
-  unreferencedPublicApis: api.counts.unreferencedPublicApis,
-  compilerCallGraphCallables: callChains.counts.callables,
-  compilerCallGraphEdges: callChains.counts.edges,
-  compilerCallGraphTestRoots: callChains.counts.testRoots,
-  compilerCallGraphWitnessedApis: callChains.counts.publicEntriesWithWitnesses,
-  compilerCallGraphUnresolvedApis: callChains.counts.unresolvedPublicEntries,
-  fieldEntries: Object.keys(fields.entries).length,
-  inputFields: fields.counts.inputFields,
-  outputFields: fields.counts.outputFields,
-  recursiveTypeReferences: fields.counts.recursiveTypeReferences,
-  truncatedTypes: fields.counts.truncatedTypes,
-  boundedTraceEntries: Object.keys(traces.entries).length,
-  tracedPublicApis: new Set(
-    Object.values(traces.entries).flatMap((entry) => entry.apiEntries)
-  ).size,
-  stateResultTraceEntries: Object.values(traces.entries).filter(
-    (entry) => entry.refinementMode === "state-result-refinement"
-  ).length,
-  boundedPropertyTraceEntries: Object.values(traces.entries).filter(
-    (entry) => entry.refinementMode === "bounded-property"
-  ).length,
-  directPropertyTraceEntries: Object.values(traces.entries).filter(
-    (entry) => entry.refinementMode === "direct-property"
-  ).length,
-  explicitGapEntries: Object.keys(gaps.gaps).length,
+  ...executableAssuranceSummary({ api, fields, callChains, traces, gaps }),
   packageTraceTests,
   steps: steps.map((step) => ({ id: step.id, status: "passed" })),
 };
