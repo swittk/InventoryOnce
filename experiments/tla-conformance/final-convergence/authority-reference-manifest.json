@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
   "status": "FINAL_LIVE_INPUT_CLOSURE",
-  "head": "cbc22bdf29c5e9fa31b78fcf8763b5ae90ed28ea",
-  "surfaceDigest": "dec827da4c576f7638a0f6f9777217b7f024beab7b9ec08cf0a26e8a45733964",
+  "head": "cb0cd4a592a1fae22aad799cc7da7544864861e8",
+  "surfaceDigest": "d86185fec12cb312c70a47b40ff313bff40ab9bdbca1f3bda908906c63957ab3",
   "inputs": 123,
-  "totalBytes": 29113127,
+  "totalBytes": 29137766,
   "untrackedProofInputs": 0,
   "rows": [
     {
@@ -72,43 +72,43 @@
     },
     {
       "file": "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json",
-      "sha256": "0a59c34ebcf836615d3cc1d8d42a1781db79fff8545824a7daead507cfd76b17",
+      "sha256": "397f529a426da73ace00b6a638d949b9f0612dd486407f7cab7826280d5d0cc1",
       "sizeBytes": 698,
       "tracked": true,
       "nodeModules": false
     },
     {
       "file": "experiments/tla-conformance/final-convergence/current-pr-review-full.log",
-      "sha256": "c23bef0f1206424e3dbcf924ab0be2118df5543d1ef25248c5195e5fba78eb0d",
-      "sizeBytes": 28452,
+      "sha256": "20d53f0cd97347b4df6fb93743c6e651e0753b5bc8f8538ff9b64fc465c5b432",
+      "sizeBytes": 37414,
       "tracked": true,
       "nodeModules": false
     },
     {
       "file": "experiments/tla-conformance/final-convergence/final-a121-b58.json",
-      "sha256": "4ed3da9fa5b1b36e0ace187c68da28512237daeddd59bffbfa3f45cc2eb13019",
+      "sha256": "16d43cf992057fc2a9d9ef78f9cfb91ef5b3f954850d4b60dfe2787e9f8da6f6",
       "sizeBytes": 1650462,
       "tracked": true,
       "nodeModules": false
     },
     {
       "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-      "sha256": "e8606d677ccd03d575f1b00d1798c35a61265038c645e5a06f0a5f3f01099821",
-      "sizeBytes": 9250,
+      "sha256": "e96a147b4ef4baa80375ea59690868cfded15c10bcbda9ebd89843698184d26a",
+      "sizeBytes": 14933,
       "tracked": true,
       "nodeModules": false
     },
     {
       "file": "experiments/tla-conformance/final-convergence/final-surface-bindings.json",
-      "sha256": "99d10a96b0f7f30490a67a7d81df811420b9d43c0e8e7e41ec0832775e0458ba",
+      "sha256": "0f53b08a0e5a9cd24a5d6413a9dd645e75506ae5104dcb8a3a387f41ae5fad34",
       "sizeBytes": 165524,
       "tracked": true,
       "nodeModules": false
     },
     {
       "file": "experiments/tla-conformance/final-convergence/final-v309.json",
-      "sha256": "41a0d774097893eaa8ec7c81a69ba4a9bd16de7f440e2fc90109de7b0a232a71",
-      "sizeBytes": 1992085,
+      "sha256": "fc4dc67f5741d641e4ca7170562af04ce9b0159ad9e81b29744c12eb8d9dbdc6",
+      "sizeBytes": 1992088,
       "tracked": true,
       "nodeModules": false
     },
@@ -485,29 +485,29 @@
     },
     {
       "file": "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
-      "sha256": "68dbc4ac9ab48bb4ff8e03c6261b2c8b58f83a6f421e97afde75d824df524d7a",
+      "sha256": "25b87efd24634adbc0cb001155c295067eaee4e059a6d7aefbb5cff6e3d43fb3",
       "sizeBytes": 2459,
       "tracked": true,
       "nodeModules": false
     },
     {
       "file": "formal/implementation-conformance/FIELD_CLASSIFICATION.json",
-      "sha256": "eccc32ba0c1dd966c52bbecbb7274310574bf9ad02d30761a29b58fd346f44ff",
+      "sha256": "d5abbc6b7aa3716fbe3289f41c3857983218c6d657e023f526d9849f04586f68",
       "sizeBytes": 1869555,
       "tracked": true,
       "nodeModules": false
     },
     {
       "file": "package.json",
-      "sha256": "f068ac4f83c2984a38d439b90159e48b7fdf42ee4792f7ccde56230c7ecf1a7c",
-      "sizeBytes": 2374,
+      "sha256": "4d755b3753693226457d49789068e0177049b02d36a10e8f1415fecf690f13e3",
+      "sizeBytes": 2414,
       "tracked": true,
       "nodeModules": false
     },
     {
       "file": "scripts/formal-models.mjs",
-      "sha256": "06d8790d7bdaab99c791b66181074e7b5c4bb92ef10c9c2e664e196cfdb465a2",
-      "sizeBytes": 6463,
+      "sha256": "81d25d5af72e986cba01027b6da9ca09fa166064cedb0d5b39d56c592cb13a43",
+      "sizeBytes": 7594,
       "tracked": true,
       "nodeModules": false
     },
@@ -520,8 +520,8 @@
     },
     {
       "file": "src/amounts.ts",
-      "sha256": "98ddc0fa8d80b2ca244a207f4eb8b55d86131c2ccfd77620da5c85248d03ef57",
-      "sizeBytes": 13045,
+      "sha256": "062a224eb36a4b3bce457293e53610db0f0cf1588f6aa935b4fac32fab7c9091",
+      "sizeBytes": 13151,
       "tracked": true,
       "nodeModules": false
     },
@@ -562,8 +562,8 @@
     },
     {
       "file": "src/catalog.ts",
-      "sha256": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
-      "sizeBytes": 131982,
+      "sha256": "bd282cbd2dd61b4ae21fc2fa391637f3bb450068c96dae94b6a96c03da905894",
+      "sizeBytes": 132117,
       "tracked": true,
       "nodeModules": false
     },
@@ -576,8 +576,8 @@
     },
     {
       "file": "src/commands.ts",
-      "sha256": "c40c66fc3e5d3e60022534a561d44280cda205f3cc10be759f8efdc97038a98b",
-      "sizeBytes": 59270,
+      "sha256": "766000e709fa5cfa0551919103565b91b18b4dabf9fc8ab9c32d638748b1fd95",
+      "sizeBytes": 60298,
       "tracked": true,
       "nodeModules": false
     },
@@ -632,15 +632,15 @@
     },
     {
       "file": "src/facade.ts",
-      "sha256": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
-      "sizeBytes": 313770,
+      "sha256": "e642e24b4e1ef22bfb56bc90b3b068cc641e858da57e61995ab36a869a127b1f",
+      "sizeBytes": 313876,
       "tracked": true,
       "nodeModules": false
     },
     {
       "file": "src/fungibility.ts",
-      "sha256": "5be7109a918becee7ba8880ae319f1566bf487597a7f650f53c25cb4955817f1",
-      "sizeBytes": 34666,
+      "sha256": "74a49aa0babb1647556fc9001c2a4e1c6ae3edc2fabec901c3ab225e9982465b",
+      "sizeBytes": 34213,
       "tracked": true,
       "nodeModules": false
     },
@@ -653,8 +653,8 @@
     },
     {
       "file": "src/integrity.ts",
-      "sha256": "f8fd7043c3a74875f00a3cbea897d022ccd70a5c28e23d564fd2f1f78fe1f1a1",
-      "sizeBytes": 24693,
+      "sha256": "9664db06344f9a4fedb3249a36b0b424c0ff2f1377c719a95ff0b3537328ae4c",
+      "sizeBytes": 25891,
       "tracked": true,
       "nodeModules": false
     },
@@ -709,8 +709,8 @@
     },
     {
       "file": "src/model.ts",
-      "sha256": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
-      "sizeBytes": 11186,
+      "sha256": "a8ce500812b1e9f83ef546d7773c8586c5e4763fe08ed18894c1412ff26ebc94",
+      "sizeBytes": 11286,
       "tracked": true,
       "nodeModules": false
     },
@@ -723,8 +723,8 @@
     },
     {
       "file": "src/picking.ts",
-      "sha256": "172dc19f4987ad392106a1b9cf32400e73f5bed0fb6b9344aa5eb1319afc5006",
-      "sizeBytes": 36040,
+      "sha256": "d2f614e93ed0c3d2fa691542dd27f8fcf8a69126009d098dbc8bf0f9379831dd",
+      "sizeBytes": 35235,
       "tracked": true,
       "nodeModules": false
     },
@@ -800,8 +800,8 @@
     },
     {
       "file": "src/transfers.ts",
-      "sha256": "e1f88a6479b80cf80d5651909965e8d453701db3623617a8f4716645cd7722d3",
-      "sizeBytes": 43350,
+      "sha256": "d22a83241ed5d0afd421c7d81c66001b53a92e9f4db4f755d69b5b555426bd78",
+      "sizeBytes": 43493,
       "tracked": true,
       "nodeModules": false
     },
@@ -835,22 +835,22 @@
     },
     {
       "file": "test/review-hardening.test.ts",
-      "sha256": "c25477fe56e3fc833216b3f497eefdc0c54149e4b16b598303fc79de76aea49c",
-      "sizeBytes": 49290,
+      "sha256": "815ce2c4325e578486c63b6a132e7b15ca4a18226ab9d23e0fbb941f2768b26e",
+      "sizeBytes": 54560,
       "tracked": true,
       "nodeModules": false
     },
     {
       "file": "test/storage-conformance-suite.ts",
-      "sha256": "9b9d3beb9a80cbc04d1958b54caae1b2e168cb86b5b6e4203a2e5c6fd5f080b7",
-      "sizeBytes": 52529,
+      "sha256": "e686273f69fdf39b54ab7df3aef1386ce45df45c43b2f7f03058d1aa85e5a657",
+      "sizeBytes": 52604,
       "tracked": true,
       "nodeModules": false
     },
     {
       "file": "test/storage-conformance.test.ts",
-      "sha256": "961f0b128a0700c63ea818ff073e8491af253e3e41daa6431875bd11cb1071b0",
-      "sizeBytes": 13166,
+      "sha256": "bdf0b5a6210fe3678c9a8f8868d0278aa1b9fa95ec68749f25741ba83fb65342",
+      "sizeBytes": 15083,
       "tracked": true,
       "nodeModules": false
     },
