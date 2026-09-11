@@ -13,7 +13,7 @@ export const CURRENT_REVIEW_RUNTIME_PRIOR_HEAD = "1f4858d81b4ea6ef5d983b4e57fd68
 /** Exact PR head reviewed by Full Review 5182576645 before the retained-fact/systemic repair. */
 export const REVIEW_518257_RUNTIME_PRIOR_HEAD = "edcab7f37362137eb4f2766772740164a4f5ba09";
 /** Exact coherent runtime repair bound by the current full implementation assurance. */
-export const REVIEW_518257_RUNTIME_CERTIFIED_HEAD = "b077999cfa918ee495ec45e9475f1395baea2f54";
+export const REVIEW_518257_RUNTIME_CERTIFIED_HEAD = "ccc724a7aa6d8a03131a13bb0c9d673d648d8f96";
 /** Immutable compact pin inherited by the immediate reviewed predecessor. */
 export const REVIEW_518257_PRIOR_COMPACT_PIN = "8201c65b299442a798275f7f365c199582d1b04c";
 /** Exact compact-certified tree inherited by that predecessor. */
@@ -22,7 +22,7 @@ export const REVIEW_518257_PRIOR_COMPACT_CERTIFIED_HEAD = "bbe345988d3e3b5f4c086
 const REVIEW_518257_RUNTIME_PATCH = Object.freeze([
   Object.freeze({"file": "src/counts.ts", "patchSha256": "ed5a5086989323b05bb1bb3b7a7dc62ab237d7ca5529deb0ba487b0f4a4e18fc", "priorSha256": "9af2d347b6045606a5b5bf8fa28fb4cad049de13ef76965d034b4e582fddec0f", "currentSha256": "b5dc5df39a7f6bc0924da4d726b66900938de5249d64ebe3e2a1f1c69a09304f"}),
   Object.freeze({"file": "src/events.ts", "patchSha256": "4b4735d3803d47fa90d72a8fe7537ba76bbe84883fcef3e7eaef73212c5d4fe0", "priorSha256": "c05db661416309c1d0ccc048d3bcc71a4a0381c16e4bb8cdbbcfe13041d4cc6f", "currentSha256": "8fb399818de841504257cb39c89688b25567280b36712e4acdc6fcc56d6e8633"}),
-  Object.freeze({"file": "src/facade.ts", "patchSha256": "a8e26403c0b1e549781917f33ccb703bba8ef91791ca43d1eb21bec3365dcdcb", "priorSha256": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e", "currentSha256": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684"}),
+  Object.freeze({"file": "src/facade.ts", "patchSha256": "c5b42990a086ff5c5b92301f84769dfae2309259d01b6bc905ca2c3d0cd3564d", "priorSha256": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e", "currentSha256": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e"}),
   Object.freeze({"file": "src/measurements.ts", "patchSha256": "5d93633ea8fadca4c795f637329df3dcb45b6abf09aaa899ff38d9f38026443d", "priorSha256": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5", "currentSha256": "1f7ddb78819ce940cfaf1b17d0a44d88ad79bd9d8d5770bc08cb26584c568b20"}),
   Object.freeze({"file": "src/reservations.ts", "patchSha256": "2f3e0e508d4cc1143ef5f9b177398baa0cc9639a4bb870cc644b4719c79b4c97", "priorSha256": "034dcd70973097f81af0d3eb134a4aceb3130c02cf51fba86dc224744b2d1a86", "currentSha256": "e7f70033edaa5620109c3de4254077f0b70381098cb2657c608019a9e48b90aa"}),
   Object.freeze({"file": "src/sparse-record.ts", "patchSha256": "5f17942cd7fc692c17e359937eae1eed8fbb694d09e9c5315881d02a98233e77", "priorSha256": "272a1f63afe9ed4c84cd76a4ce051b210b52e6e0a54cf47ec4f11a29979ada71", "currentSha256": "5a48ffb609fbe6c1830c3b8526d1a0f0b7b12ba1384b57dd115ba97507d39ff2"}),
@@ -354,7 +354,7 @@ export function verifyReview518257RuntimeTransport(root) {
     laws: [
       "Every normalized and committed event owns its complete JSON-friendly fact graph; typed caller mutation cannot rewrite lifecycle, measurement, correction, or metadata intent after retention.",
       "Count and reservation inputs own nested quantities, positions, and metadata; all populated raw-identity dictionaries preserve own-only lookup semantics through lifecycle changes.",
-      "The exact six-file source transition, including retained public-group ownership in src/facade.ts, is hash-bound above the compact-certified predecessor; every other runtime module remains byte-identical and no later runtime drift is admitted.",
+      "The exact six-file source transition owns documented policy-request fields while generic application amount-line groups preserve their supported subtype behavior; every other runtime module remains byte-identical and no later runtime drift is admitted.",
     ],
   };
 }
