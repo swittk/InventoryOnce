@@ -16265,9 +16265,56 @@ function gitPathList(repositoryRoot, args) {
     maxBuffer: 64 * 1024 * 1024
   }).split("\0").filter(Boolean).sort();
 }
-function currentReviewProofIntegrationPaths(repositoryRoot) {
+function committedFileText(repositoryRoot, commit, file) {
+  return execFileSync4("git", ["show", `${commit}:${file}`], {
+    cwd: repositoryRoot,
+    encoding: "utf8",
+    maxBuffer: 64 * 1024 * 1024
+  });
+}
+function currentReviewProofIntegrationPaths(repositoryRoot, certifiedHead) {
   const root3 = path42.resolve(repositoryRoot);
-  const manifest = JSON.parse(fs38.readFileSync(regularFile(root3, COMPACT_MANIFEST, "Compact support manifest"), "utf8"));
+  const effectiveCertifiedHead = certifiedHead ?? JSON.parse(
+    fs38.readFileSync(regularFile(root3, CURRENT_REVIEW_ASSURANCE_RECEIPT, "Current review assurance receipt"), "utf8")
+  ).certifiedHead;
+  assert40.match(effectiveCertifiedHead, /^[a-f0-9]{40}$/u, "Current review certified head is invalid for proof-output derivation.");
+  const wrapper = committedFileText(root3, effectiveCertifiedHead, COMPACT_WRAPPER);
+  const anchorMatches = [...wrapper.matchAll(/const COMPACT_CERTIFICATE_COMMIT = "([a-f0-9]{40})";/gu)];
+  assert40.equal(anchorMatches.length, 1, "Full-assurance certified head has an invalid compact certificate anchor count.");
+  const certificateEvidenceHead = anchorMatches[0][1];
+  const expectedWrapper = `import { runCompactCommand } from "../../../scripts/compact-assurance-pipeline.mjs";
+// Updated only after successful independent pristine certification; this is verifier authority, not evidence data.
+const COMPACT_CERTIFICATE_COMMIT = "${certificateEvidenceHead}";
+await runCompactCommand({ moduleUrl: import.meta.url, mode: process.argv[2] ?? "verify", certificateCommit: COMPACT_CERTIFICATE_COMMIT });
+`;
+  assert40.equal(wrapper, expectedWrapper, "Full-assurance certified head does not contain the exact compact certificate wrapper.");
+  execFileSync4("git", ["merge-base", "--is-ancestor", certificateEvidenceHead, effectiveCertifiedHead], { cwd: root3, stdio: "ignore" });
+  const manifest = JSON.parse(committedFileText(root3, certificateEvidenceHead, COMPACT_MANIFEST));
+  assert40.equal(manifest.certification?.schemaVersion, 1, "Pinned compact certificate schema is unsupported.");
+  const compactCertifiedHead = manifest.certification?.certifiedHead;
+  assert40.match(compactCertifiedHead, /^[a-f0-9]{40}$/u, "Pinned compact certificate names an invalid tested head.");
+  assert40.equal(
+    execFileSync4("git", ["rev-parse", `${certificateEvidenceHead}^`], { cwd: root3, encoding: "utf8" }).trim(),
+    compactCertifiedHead,
+    "Pinned compact certificate evidence is not the direct child of its tested head."
+  );
+  const expectedModes = /* @__PURE__ */ new Map([
+    ["registry", "FINAL_535_REGISTRY_BUILT"],
+    ["selftest", "FINAL_CONVERGENCE_ADVERSARIAL_PASS"],
+    ["verify", "FINAL_BINDER_GREEN"]
+  ]);
+  assert40.equal(manifest.certification.processes?.length, expectedModes.size, "Pinned compact certificate has the wrong process count.");
+  for (const row of manifest.certification.processes) {
+    assert40.equal(row.exitCode, 0, `Pinned compact ${row.mode} process failed.`);
+    assert40.equal(row.signal, null, `Pinned compact ${row.mode} process was signalled.`);
+    assert40.equal(row.inputKey, manifest.certification.inputKey, `Pinned compact ${row.mode} input key differs.`);
+    assert40.equal(row.head, compactCertifiedHead, `Pinned compact ${row.mode} tested the wrong head.`);
+    assert40.equal(row.report?.status, expectedModes.get(row.mode), `Pinned compact ${row.mode} status is invalid.`);
+  }
+  const closure = JSON.parse(committedFileText(root3, compactCertifiedHead, COMPACT_CLOSURE));
+  assert40.equal(closure.schemaVersion, 2, "Pinned compact closure schema is unsupported.");
+  assert40.equal(closure.status, "FINAL_LIVE_INPUT_CLOSURE", "Pinned compact closure status is invalid.");
+  assert40.equal(closure.inputKey, manifest.certification.inputKey, "Pinned compact closure and certificate input keys differ.");
   const paths = /* @__PURE__ */ new Set([
     ...CURRENT_REVIEW_EVIDENCE_PATHS,
     CURRENT_REVIEW_ASSURANCE_SELF,
@@ -16277,16 +16324,11 @@ function currentReviewProofIntegrationPaths(repositoryRoot) {
     COMPACT_WRAPPER,
     AGENT_DIARY
   ]);
-  for (const row of manifest.bundles?.entries ?? []) {
-    assert40.equal(typeof row?.file, "string", "Compact bundle output path is invalid.");
+  assert40.equal(typeof manifest.archive?.file, "string", "Pinned compact archive path is invalid.");
+  paths.add(manifest.archive.file);
+  for (const row of closure.outputs ?? []) {
+    assert40.equal(typeof row?.file, "string", "Pinned compact output path is invalid.");
     paths.add(row.file);
-  }
-  if (typeof manifest.archive?.file === "string") paths.add(manifest.archive.file);
-  for (const node of manifest.graph ?? []) {
-    for (const row of node.outputs ?? []) {
-      assert40.equal(typeof row?.file, "string", "Compact graph output path is invalid.");
-      paths.add(row.file);
-    }
   }
   return paths;
 }
@@ -16370,7 +16412,7 @@ function verifyCurrentReviewAssurance(repositoryRoot, context) {
     independentlyDerivedSurfaceSha256: currentReviewSurfaceSha256(root3, context),
     independentlyDerivedRepositoryStateSha256: repositoryAssuranceCommittedStateSha256(root3, receipt.certifiedHead)
   });
-  const allowedProofIntegrationPaths = currentReviewProofIntegrationPaths(root3);
+  const allowedProofIntegrationPaths = currentReviewProofIntegrationPaths(root3, receipt.certifiedHead);
   const evidenceDelta = gitPathList(root3, [
     "diff",
     "--name-only",

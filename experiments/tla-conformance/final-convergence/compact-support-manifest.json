@@ -448,8 +448,8 @@
       {
         "mode": "unified",
         "file": "experiments/tla-conformance/final-convergence/compact-final-verify.mjs",
-        "sha256": "708dda8c246f54ee8a9ceae1bd800b3796796747973aba587cb1c90db68df6ec",
-        "bytes": 861541
+        "sha256": "c5468a2291c35a82041516c10f228acda5208ccdea709dfc8709b9ac6b28e334",
+        "bytes": 864885
       }
     ],
     "sources": [
@@ -520,8 +520,8 @@
       },
       {
         "file": "experiments/tla-conformance/final-convergence/current-review-assurance.mjs",
-        "sha256": "f34f3f5dbc781d1caf3b09647e244d1e44a650a44f436381da1c3f2b19766bac",
-        "bytes": 11981
+        "sha256": "8851ed0b8a45767a8baf158a255bed3c249e8b49506a0dd2fd4fc3df8f6227c0",
+        "bytes": 15369
       },
       {
         "file": "experiments/tla-conformance/final-convergence/final-families.mjs",
@@ -1095,7 +1095,7 @@
     },
     {
       "id": "binder",
-      "codeSha256": "99a6e54b64d4cd4bd1b8d4ae1ec6be090b63302538122df4bb36e749c740675e",
+      "codeSha256": "57d54eda7c1cb0db8677dd9069db7cc10c73c025965bbfd7d0a58c3522f21520",
       "compilerSourceSetKey": "e7df275724583249f730b06bb4def0f8c9e7ef2e37e93795c006ef06022f740b",
       "inputs": [],
       "outputs": [
