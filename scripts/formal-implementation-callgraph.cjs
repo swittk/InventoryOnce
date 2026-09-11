@@ -2,8 +2,8 @@ const ts = require("typescript");
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
 const {
+  compilerCallCanExecute,
   expressionHasProperty,
-  forEachStaticallyReachableChild,
   staticBooleanValue,
   standardLibraryCallbackCanExecute,
   vitestCallbackExecutes,
@@ -436,8 +436,18 @@ function vitestSuiteExecutionRoot(node) {
   return node.getSourceFile();
 }
 
-/** Cache suite/file runnable-test decisions because multiple hooks share one execution root. */
-const vitestRunnableSuiteCache = new WeakMap();
+/** Vitest hooks are dispatched only after collection-time graph reachability proves a runnable test. */
+const deferredVitestHooks = [];
+/** Test callbacks whose own registrations are statically runnable. */
+const runnableVitestTestCallbacks = new Set();
+
+/** Return whether one Vitest registration name is a lifecycle hook. */
+function isVitestHookRegistration(registration) {
+  return registration === "beforeAll" ||
+    registration === "beforeEach" ||
+    registration === "afterAll" ||
+    registration === "afterEach";
+}
 
 /** Return the callback argument index for one test registration, or -1 when no callable argument exists. */
 function vitestTestCallbackArgumentIndex(node) {
@@ -452,49 +462,13 @@ function vitestTestCallbackArgumentIndex(node) {
   return -1;
 }
 
-/** Return whether the hook's suite/file contains any statically runnable test. */
-function vitestSuiteHasRunnableTest(node) {
-  const executionRoot = vitestSuiteExecutionRoot(node);
-  const cached = vitestRunnableSuiteCache.get(executionRoot);
-  if (cached !== undefined) return cached;
-  let found = false;
-  const visit = (current) => {
-    if (found) return;
-    if (ts.isCallExpression(current) && isVitestRegistrationCall(current)) {
-      const registration = vitestRegistrationNameFromExpression(ts, current.expression);
-      if (registration === "it" || registration === "test") {
-        const callbackIndex = vitestTestCallbackArgumentIndex(current);
-        if (callbackIndex >= 0) {
-          const metadata = vitestRegistrationMetadata(
-            current,
-            callbackIndex,
-            isInsideNonExecutingSuite(current),
-            isInsideUncollectedSuite(current)
-          );
-          if (
-            !metadata.insideNonExecutingSuite &&
-            !metadata.insideUncollectedSuite &&
-            vitestRegistrationRuns(metadata)
-          ) {
-            found = true;
-            return;
-          }
-        }
-      }
-    }
-    forEachStaticallyReachableChild(ts, current, visit);
-  };
-  forEachStaticallyReachableChild(ts, executionRoot, visit);
-  vitestRunnableSuiteCache.set(executionRoot, found);
-  return found;
-}
-
-/** Add suite-level execution evidence needed to decide whether hooks actually run. */
+/** Add suite-level execution evidence supplied after collection reachability is known. */
 function vitestExecutionMetadata(
   node,
   callbackArgumentIndex,
   insideNonExecutingSuite,
-  insideUncollectedSuite
+  insideUncollectedSuite,
+  suiteHasRunnableTest
 ) {
   const metadata = vitestRegistrationMetadata(
     node,
@@ -502,19 +476,30 @@ function vitestExecutionMetadata(
     insideNonExecutingSuite,
     insideUncollectedSuite
   );
-  if (
-    metadata.registration !== "beforeAll" &&
-    metadata.registration !== "beforeEach" &&
-    metadata.registration !== "afterAll" &&
-    metadata.registration !== "afterEach"
-  ) {
-    return metadata;
+  return isVitestHookRegistration(metadata.registration)
+    ? { ...metadata, suiteHasRunnableTest: suiteHasRunnableTest === true }
+    : metadata;
+}
+
+/** Return the graph root whose collection determines whether one hook can execute. */
+function vitestExecutionRootId(node) {
+  const root = vitestSuiteExecutionRoot(node);
+  return ts.isSourceFile(root) ? testRootFor(root) : declarationToCallable.get(root);
+}
+
+/** Return whether one collected suite/file can reach a statically runnable test callback. */
+function vitestGraphHasRunnableTest(node) {
+  const rootId = vitestExecutionRootId(node);
+  if (rootId === undefined) return false;
+  const pending = [rootId], visited = new Set();
+  while (pending.length > 0) {
+    const current = pending.pop();
+    if (current === undefined || visited.has(current)) continue;
+    visited.add(current);
+    if (runnableVitestTestCallbacks.has(current)) return true;
+    for (const target of edges.get(current) ?? []) pending.push(target);
   }
-  return {
-    ...metadata,
-    suiteHasRunnableTest:
-      insideNonExecutingSuite === true ? false : vitestSuiteHasRunnableTest(node),
-  };
+  return false;
 }
 
 /** Resolve an aliased compiler symbol without changing package ownership. */
@@ -638,6 +623,7 @@ function callableInvokesParameter(callableId, parameterIndex) {
   function scan(current, callableRoot) {
     if (current !== callableRoot && isCallable(current)) return false;
     if (ts.isCallExpression(current) || ts.isNewExpression(current)) {
+      if (!compilerCallCanExecute(ts, current)) return false;
       if (resolvedSymbolAt(current.expression) === parameterSymbol) return true;
       for (let index = 0; index < (current.arguments?.length ?? 0); index += 1) {
         if (!callInvokesArgument(current, index)) continue;
@@ -652,7 +638,7 @@ function callableInvokesParameter(callableId, parameterIndex) {
       }
     }
     let found = false;
-    forEachStaticallyReachableChild(ts, current, (child) => { if (!found && scan(child, callableRoot)) found = true; });
+    ts.forEachChild(current, (child) => { if (!found && scan(child, callableRoot)) found = true; });
     return found;
   }
   const result = scan(callable, callable);
@@ -673,6 +659,7 @@ function callInvokesArgument(node, argumentIndex) {
 for (const source of packageSources) {
   function visit(node) {
     if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
+      if (!compilerCallCanExecute(ts, node)) return;
       const caller =
         enclosingCallable(node) ??
         (normalizedPath(source.fileName).startsWith(`${testRoot}/`)
@@ -683,10 +670,30 @@ for (const source of packageSources) {
         addEdge(caller, target, "resolved-call");
       }
       const concreteCallees = concreteCallableTargets(signature?.declaration);
+      const vitestRegistration = ts.isCallExpression(node) && isVitestRegistrationCall(node)
+        ? vitestRegistrationNameFromExpression(ts, node.expression)
+        : undefined;
+      if (isVitestHookRegistration(vitestRegistration)) {
+        const insideNonExecutingSuite = isInsideNonExecutingSuite(node);
+        const insideUncollectedSuite = isInsideUncollectedSuite(node);
+        for (let index = 0; index < node.arguments.length; index += 1) {
+          const targets = callbackTargets(node.arguments[index]);
+          if (targets.length === 0) continue;
+          const metadata = vitestExecutionMetadata(
+            node, index, insideNonExecutingSuite, insideUncollectedSuite, true
+          );
+          if (vitestCallbackExecutes(metadata)) {
+            deferredVitestHooks.push({ node, caller, targets });
+          }
+        }
+      }
       for (let index = 0; index < (node.arguments?.length ?? 0); index += 1) {
         if (!callInvokesArgument(node, index)) continue;
         const targets = callbackTargets(node.arguments[index]);
         if (targets.length === 0) continue;
+        if (vitestRegistration === "it" || vitestRegistration === "test") {
+          for (const target of targets) runnableVitestTestCallbacks.add(target);
+        }
         if (concreteCallees.length === 0) {
           for (const target of targets) addEdge(caller, target, "external-callback-dispatch");
           continue;
@@ -697,10 +704,18 @@ for (const source of packageSources) {
         }
       }
     }
-    forEachStaticallyReachableChild(ts, node, visit);
+    ts.forEachChild(node, visit);
   }
   visit(source);
 }
+
+
+/** Add hook callback edges only when collection-time graph reachability proves a runnable test. */
+for (const hook of deferredVitestHooks) {
+  if (!vitestGraphHasRunnableTest(hook.node)) continue;
+  for (const target of hook.targets) addEdge(hook.caller, target, "external-callback-dispatch");
+}
+
 
 /** Multi-root breadth-first tested call-chain reachability. */
 /** First predecessor retained for each callable reached from an executable test root. */

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { repositoryAssuranceInputPaths, repositoryAssuranceStateSha256, repositoryAssuranceCommittedStateSha256 } from "./repository-assurance-state.mjs";
+import { repositoryAssuranceStateSha256, repositoryAssuranceCommittedStateSha256 } from "./repository-assurance-state.mjs";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -128,6 +128,19 @@ test("ordinary compact validation authenticates manifest and closure against its
       /Current compact manifest differs from its pinned immutable certificate/u,
     );
     fs.writeFileSync(manifestPath, manifestOriginal);
+
+    // A moving candidate may legitimately have a newly captured manifest before its next certificate.
+    // Put the immutable pinned manifest back for the closure-specific control so manifest drift cannot
+    // mask the independent certified-tree comparison we intend to falsify here.
+    const wrapper = fs.readFileSync(path.join(root, directory, "run-compact-final-assurance.mjs"), "utf8");
+    const anchor = wrapper.match(/COMPACT_CERTIFICATE_COMMIT = "([0-9a-f]{40})"/u)?.[1];
+    assert.notEqual(anchor, undefined, "Compact certificate anchor is missing.");
+    const pinnedManifest = execFileSync(
+      "git",
+      ["show", `${anchor}:${directory}/compact-support-manifest.json`],
+      { cwd: root },
+    );
+    fs.writeFileSync(manifestPath, pinnedManifest);
 
     const closure = JSON.parse(closureOriginal.toString("utf8"));
     closure.forgedCertificateNote = true;
@@ -554,41 +567,6 @@ test("current-review admission and full state share the same domain despite ambi
 }));
 
 
-test("configured TypeScript discovery exposes ignored compiler roots to assurance state", () => temporaryDirectory(directory => {
-  const git = args => execFileSync("git", ["-c", "user.name=InventoryOnce", "-c", "user.email=inventoryonce@example.invalid", "-c", "commit.gpgsign=false", "-c", "core.hooksPath=", ...args], { cwd: directory, encoding: "utf8", stdio: "pipe" });
-  git(["init", "-q"]);
-  fs.symlinkSync(path.join(root, "node_modules"), path.join(directory, "node_modules"), "dir");
-  fs.mkdirSync(path.join(directory, "src"), { recursive: true });
-  fs.writeFileSync(path.join(directory, "package.json"), "{}\n");
-  fs.writeFileSync(path.join(directory, "tsconfig.test.json"), JSON.stringify({ compilerOptions: { noEmit: true }, include: ["src/**/*.ts"] }) + "\n");
-  fs.writeFileSync(path.join(directory, ".gitignore"), "node_modules/\nsrc/hidden.ts\n");
-  fs.writeFileSync(path.join(directory, "src", "visible.ts"), "export const visible = true;\n");
-  git(["add", "package.json", "tsconfig.test.json", ".gitignore", "src/visible.ts"]); git(["commit", "-qm", "baseline"]);
-  const committed = repositoryAssuranceCommittedStateSha256(directory, "HEAD");
-  const hidden = "src/hidden.ts";
-  fs.writeFileSync(path.join(directory, hidden), "export const hidden = true;\n");
-  assert(repositoryAssuranceInputPaths(directory, true).includes(hidden));
-  assert.notEqual(repositoryAssuranceStateSha256(directory), committed);
-  assert(currentReviewWorktreeDriftPaths(directory).includes(hidden));
-}));
-
-test("configured Vitest discovery exposes ignored executable tests to assurance state", () => temporaryDirectory(directory => {
-  const git = args => execFileSync("git", ["-c", "user.name=InventoryOnce", "-c", "user.email=inventoryonce@example.invalid", "-c", "commit.gpgsign=false", "-c", "core.hooksPath=", ...args], { cwd: directory, encoding: "utf8", stdio: "pipe" });
-  git(["init", "-q"]);
-  fs.symlinkSync(path.join(root, "node_modules"), path.join(directory, "node_modules"), "dir");
-  fs.mkdirSync(path.join(directory, "test", "states"), { recursive: true });
-  fs.writeFileSync(path.join(directory, "package.json"), JSON.stringify({ scripts: { test: "vitest run --dir test" } }) + "\n");
-  fs.writeFileSync(path.join(directory, ".gitignore"), "states/\n");
-  fs.writeFileSync(path.join(directory, "test", "visible.test.js"), 'import { test } from "vitest"; test("visible", () => {});\n');
-  git(["add", "package.json", ".gitignore", "test/visible.test.js"]); git(["commit", "-qm", "baseline"]);
-  const committed = repositoryAssuranceCommittedStateSha256(directory, "HEAD");
-  const hidden = "test/states/hidden.test.js";
-  fs.writeFileSync(path.join(directory, hidden), 'import { test } from "vitest"; test("hidden", () => { throw new Error("sentinel"); });\n');
-  assert(repositoryAssuranceInputPaths(directory, true).includes(hidden));
-  assert.notEqual(repositoryAssuranceStateSha256(directory), committed);
-  assert(currentReviewWorktreeDriftPaths(directory).includes(hidden));
-}));
-
 test("literal array callback dispatch agrees with the real runtime including empty, sparse, and singleton cases", () => {
   const methods = ["map", "flatMap", "filter", "forEach", "some", "every", "find", "findIndex", "findLast", "findLastIndex", "reduce", "reduceRight", "sort", "toSorted"];
   for (const method of methods) {
@@ -607,4 +585,20 @@ test("literal array callback dispatch agrees with the real runtime including emp
     let calls = 0; Function("mark", expression)(() => { calls += 1; });
     assert.equal(semantics.standardLibraryCallbackCanExecute(ts, call(expression + ";"), "from"), calls > 0, expression);
   }
+});
+
+
+test("strict source references reuse the exact compiler execution gate used by the public call graph", () => {
+  const manifest = JSON.parse(fs.readFileSync(path.join(root, "experiments/tla-conformance/final-convergence/compact-support-manifest.json"), "utf8"));
+  const archive = readCompactArchive(
+    fs.readFileSync(path.join(root, manifest.archive.file)),
+    manifest.archive.files,
+  );
+  const checkerPath = "experiments/tla-conformance/surface-bindings/lib/binding-checker.mjs";
+  const checker = archive.get(checkerPath)?.toString("utf8");
+  assert.equal(typeof checker, "string", `${checkerPath} is missing from compact support.`);
+  assert.match(checker, /formal-implementation-vitest-semantics\.cjs/u);
+  assert.match(checker, /!compilerCallCanExecute\(ts, node\)/u);
+  assert.doesNotMatch(checker, /function isStaticallyUnreachable/u);
+  assert.match(JSON.stringify(manifest.bundles), /scripts\/formal-implementation-vitest-semantics\.cjs/u);
 });

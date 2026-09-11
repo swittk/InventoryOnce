@@ -31,6 +31,331 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 
+// scripts/formal-implementation-vitest-semantics.cjs
+var require_formal_implementation_vitest_semantics = __commonJS({
+  "scripts/formal-implementation-vitest-semantics.cjs"(exports, module) {
+    "use strict";
+    function vitestRegistrationName(callee) {
+      const match = /(?:^|\.)(it|test|describe|beforeAll|beforeEach|afterAll|afterEach)(?:\.|$)/u.exec(callee);
+      return match?.[1];
+    }
+    function unwrappedExpression(ts4, expression) {
+      while (ts4.isParenthesizedExpression(expression) || ts4.isAsExpression(expression) || ts4.isTypeAssertionExpression(expression) || ts4.isNonNullExpression(expression) || ts4.isSatisfiesExpression(expression)) expression = expression.expression;
+      return expression;
+    }
+    function staticAccessName(ts4, expression) {
+      expression = unwrappedExpression(ts4, expression);
+      if (ts4.isPropertyAccessExpression(expression)) return expression.name.text;
+      if (ts4.isElementAccessExpression(expression)) {
+        const key = unwrappedExpression(ts4, expression.argumentExpression);
+        if (ts4.isStringLiteral(key) || ts4.isNoSubstitutionTemplateLiteral(key) || ts4.isNumericLiteral(key)) return key.text;
+      }
+      return void 0;
+    }
+    function registrationChain(ts4, expression) {
+      expression = unwrappedExpression(ts4, expression);
+      if (ts4.isCallExpression(expression)) {
+        const chain = registrationChain(ts4, expression.expression);
+        chain.push({ kind: "call", name: staticAccessName(ts4, expression.expression), node: expression });
+        return chain;
+      }
+      if (ts4.isPropertyAccessExpression(expression) || ts4.isElementAccessExpression(expression)) {
+        const chain = registrationChain(ts4, expression.expression);
+        chain.push({ kind: "access", name: staticAccessName(ts4, expression), node: expression });
+        return chain;
+      }
+      if (ts4.isTaggedTemplateExpression(expression)) {
+        const chain = registrationChain(ts4, expression.tag);
+        chain.push({ kind: "template", name: staticAccessName(ts4, expression.tag), node: expression });
+        return chain;
+      }
+      return [{ kind: "root", name: ts4.isIdentifier(expression) ? expression.text : void 0, node: expression }];
+    }
+    function vitestRegistrationNameFromExpression(ts4, expression) {
+      for (const part of registrationChain(ts4, expression)) {
+        if (part.name !== void 0 && /^(?:it|test|describe|beforeAll|beforeEach|afterAll|afterEach)$/u.test(part.name)) return part.name;
+      }
+      return void 0;
+    }
+    function expressionHasProperty(ts4, expression, propertyName) {
+      return registrationChain(ts4, expression).some((part) => part.kind === "access" && part.name === propertyName);
+    }
+    function staticBooleanValue(ts4, valueNode) {
+      if (valueNode === void 0) return void 0;
+      if (valueNode.kind === ts4.SyntaxKind.TrueKeyword) return true;
+      if (valueNode.kind === ts4.SyntaxKind.FalseKeyword) return false;
+      if (ts4.isParenthesizedExpression(valueNode)) {
+        return staticBooleanValue(ts4, valueNode.expression);
+      }
+      if (ts4.isPrefixUnaryExpression(valueNode) && valueNode.operator === ts4.SyntaxKind.ExclamationToken) {
+        const value = staticBooleanValue(ts4, valueNode.operand);
+        return value === void 0 ? void 0 : !value;
+      }
+      if (ts4.isAsExpression(valueNode) || ts4.isTypeAssertionExpression(valueNode) || ts4.isNonNullExpression(valueNode)) {
+        return staticBooleanValue(ts4, valueNode.expression);
+      }
+      return void 0;
+    }
+    function staticPrimitiveValue(ts4, expression) {
+      expression = unwrappedExpression(ts4, expression);
+      if (expression.kind === ts4.SyntaxKind.TrueKeyword) return { known: true, value: true };
+      if (expression.kind === ts4.SyntaxKind.FalseKeyword) return { known: true, value: false };
+      if (expression.kind === ts4.SyntaxKind.NullKeyword) return { known: true, value: null };
+      if (ts4.isStringLiteral(expression) || ts4.isNoSubstitutionTemplateLiteral(expression)) return { known: true, value: expression.text };
+      if (ts4.isNumericLiteral(expression)) return { known: true, value: Number(expression.text) };
+      if (ts4.isBigIntLiteral(expression)) return { known: true, value: BigInt(expression.text.slice(0, -1)) };
+      if (ts4.isVoidExpression(expression)) return { known: true, value: void 0 };
+      if (ts4.isPrefixUnaryExpression(expression) && (expression.operator === ts4.SyntaxKind.PlusToken || expression.operator === ts4.SyntaxKind.MinusToken)) {
+        const operand = staticPrimitiveValue(ts4, expression.operand);
+        if (!operand.known || typeof operand.value !== "number") return { known: false };
+        return { known: true, value: expression.operator === ts4.SyntaxKind.MinusToken ? -operand.value : operand.value };
+      }
+      return { known: false };
+    }
+    function compilerCallFlowNode(ts4, node) {
+      if (node?.flowNode !== void 0) return node.flowNode;
+      if (ts4.isCallExpression(node) || ts4.isNewExpression(node)) {
+        return compilerCallFlowNode(ts4, node.expression);
+      }
+      if (ts4.isPropertyAccessExpression(node)) {
+        return node.name.flowNode ?? compilerCallFlowNode(ts4, node.expression);
+      }
+      if (ts4.isElementAccessExpression(node)) {
+        return node.argumentExpression?.flowNode ?? compilerCallFlowNode(ts4, node.expression);
+      }
+      if (ts4.isParenthesizedExpression(node) || ts4.isAsExpression(node) || ts4.isTypeAssertionExpression(node) || ts4.isNonNullExpression(node)) {
+        return compilerCallFlowNode(ts4, node.expression);
+      }
+      return void 0;
+    }
+    function excludedByStaticEmptyIteration(ts4, node) {
+      let child = node;
+      for (let current = node.parent; current !== void 0; current = current.parent) {
+        if (ts4.isForOfStatement(current) && child === current.statement) {
+          const iterable = unwrappedExpression(ts4, current.expression);
+          if (ts4.isArrayLiteralExpression(iterable) && iterable.elements.length === 0) return true;
+        }
+        if (ts4.isForInStatement(current) && child === current.statement) {
+          const enumerable = unwrappedExpression(ts4, current.expression);
+          if (ts4.isObjectLiteralExpression(enumerable) && enumerable.properties.length === 0) return true;
+        }
+        child = current;
+      }
+      return false;
+    }
+    function statementStopsSwitchFallthrough(ts4, statement) {
+      if (ts4.isBreakStatement(statement) || ts4.isContinueStatement(statement) || ts4.isReturnStatement(statement) || ts4.isThrowStatement(statement)) return true;
+      if (ts4.isBlock(statement)) {
+        for (const child of statement.statements) {
+          if (statementStopsSwitchFallthrough(ts4, child)) return true;
+        }
+        return false;
+      }
+      if (ts4.isIfStatement(statement)) {
+        const condition = staticBooleanValue(ts4, statement.expression);
+        if (condition === true) return statementStopsSwitchFallthrough(ts4, statement.thenStatement);
+        if (condition === false) return statement.elseStatement !== void 0 && statementStopsSwitchFallthrough(ts4, statement.elseStatement);
+        return statement.elseStatement !== void 0 && statementStopsSwitchFallthrough(ts4, statement.thenStatement) && statementStopsSwitchFallthrough(ts4, statement.elseStatement);
+      }
+      return false;
+    }
+    function excludedByStaticSwitch(ts4, node) {
+      let clause;
+      for (let current = node.parent; current !== void 0; current = current.parent) {
+        if (ts4.isCaseClause(current) || ts4.isDefaultClause(current)) {
+          clause = current;
+          break;
+        }
+        if (ts4.isFunctionLike(current) || ts4.isSourceFile(current)) return false;
+      }
+      if (clause === void 0 || !ts4.isCaseBlock(clause.parent) || !ts4.isSwitchStatement(clause.parent.parent)) return false;
+      const switchStatement = clause.parent.parent;
+      const discriminant = staticPrimitiveValue(ts4, switchStatement.expression);
+      if (!discriminant.known) return false;
+      const clauses = [...switchStatement.caseBlock.clauses];
+      const target = clauses.indexOf(clause);
+      let selected = -1;
+      let fallback = -1;
+      for (let index = 0; index < clauses.length; index += 1) {
+        const row = clauses[index];
+        if (ts4.isDefaultClause(row)) {
+          fallback = index;
+          continue;
+        }
+        const value = staticPrimitiveValue(ts4, row.expression);
+        if (!value.known) return false;
+        if (selected < 0 && Object.is(value.value, discriminant.value)) selected = index;
+      }
+      if (selected < 0) selected = fallback;
+      if (selected < 0 || target < selected) return true;
+      for (let index = selected; index < target; index += 1) {
+        const row = clauses[index];
+        for (const statement of row.statements) {
+          if (statementStopsSwitchFallthrough(ts4, statement)) return true;
+        }
+      }
+      return false;
+    }
+    function compilerCallCanExecute2(ts4, node) {
+      const flow = compilerCallFlowNode(ts4, node);
+      return flow !== void 0 && (flow.flags & ts4.FlowFlags.Unreachable) === 0 && !excludedByStaticEmptyIteration(ts4, node) && !excludedByStaticSwitch(ts4, node);
+    }
+    function staticObjectPropertyName(ts4, property) {
+      if (!ts4.isPropertyAssignment(property) && !ts4.isShorthandPropertyAssignment(property) || ts4.isComputedPropertyName(property.name)) {
+        return void 0;
+      }
+      const decodedName = property.name.text;
+      return typeof decodedName === "string" ? decodedName : void 0;
+    }
+    function executionOptions(ts4, object) {
+      const flags = { skip: false, todo: false, only: false };
+      for (const property of object.properties) {
+        const name = staticObjectPropertyName(ts4, property);
+        if (ts4.isSpreadAssignment(property) || name === void 0) {
+          flags.skip = void 0;
+          flags.todo = void 0;
+          flags.only = void 0;
+        } else if (name === "skip" || name === "todo" || name === "only") {
+          flags[name] = ts4.isPropertyAssignment(property) ? staticBooleanValue(ts4, property.initializer) : void 0;
+        }
+      }
+      return flags;
+    }
+    function vitestObjectBooleanOptions(ts4, object) {
+      const flags = executionOptions(ts4, object);
+      return { skip: flags.skip, todo: flags.todo };
+    }
+    function vitestFocusedRegistrationNode(ts4, node) {
+      const chain = registrationChain(ts4, node.expression);
+      if (chain.some((part) => part.kind === "access" && (part.name === "only" || part.name === void 0))) return node;
+      for (let index = 1; index < node.arguments.length; index += 1) {
+        const argument = unwrappedExpression(ts4, node.arguments[index]);
+        if (ts4.isObjectLiteralExpression(argument) && executionOptions(ts4, argument).only !== false) return argument;
+      }
+      return void 0;
+    }
+    function staticCaseTable(ts4, expression, checker, seen = /* @__PURE__ */ new Set()) {
+      expression = unwrappedExpression(ts4, expression);
+      if (ts4.isArrayLiteralExpression(expression)) return expression;
+      if (checker === void 0 || !ts4.isIdentifier(expression)) return void 0;
+      const symbol = checker.getSymbolAtLocation(expression);
+      const declaration = symbol?.valueDeclaration;
+      if (declaration === void 0 || !ts4.isVariableDeclaration(declaration) || seen.has(declaration) || (declaration.parent.flags & ts4.NodeFlags.Const) === 0 || declaration.initializer === void 0) return void 0;
+      seen.add(declaration);
+      const initializer = unwrappedExpression(ts4, declaration.initializer);
+      if (!ts4.isCallExpression(initializer) || staticAccessName(ts4, initializer.expression) !== "freeze" || initializer.arguments.length !== 1) return void 0;
+      const access = unwrappedExpression(ts4, initializer.expression);
+      if (!ts4.isPropertyAccessExpression(access) && !ts4.isElementAccessExpression(access)) return void 0;
+      const object = checker.getSymbolAtLocation(access.expression);
+      if (!object?.declarations?.some((row) => row.getSourceFile().isDeclarationFile && row.getSourceFile().fileName.replaceAll("\\", "/").endsWith("/typescript/lib/lib.es5.d.ts"))) return void 0;
+      const table = unwrappedExpression(ts4, initializer.arguments[0]);
+      return ts4.isArrayLiteralExpression(table) ? table : void 0;
+    }
+    function vitestRegistrationMode(ts4, node, callbackArgumentIndex, checker) {
+      const chain = registrationChain(ts4, node.expression);
+      if (chain.some((part) => part.name === void 0)) return "unknown";
+      for (const part of chain) {
+        if (part.name !== "each" && part.name !== "for") continue;
+        if (part.kind === "template") return "unknown";
+        if (part.kind !== "call") continue;
+        const cases = part.node.arguments[0];
+        const table = cases === void 0 ? void 0 : staticCaseTable(ts4, cases, checker);
+        if (table === void 0) return "unknown";
+        const elements = table.elements;
+        if (elements.length === 0) return "empty";
+        if (elements.every((element) => ts4.isSpreadElement(element))) return "unknown";
+      }
+      if (expressionHasProperty(ts4, node.expression, "todo")) return "todo";
+      if (expressionHasProperty(ts4, node.expression, "skip")) return "skip";
+      if (callbackArgumentIndex !== 1 && callbackArgumentIndex !== 2) return "unknown";
+      if (callbackArgumentIndex === 1) {
+        const third = node.arguments[2];
+        return third === void 0 || ts4.isNumericLiteral(unwrappedExpression(ts4, third)) ? "run" : "unknown";
+      }
+      let options = node.arguments[1];
+      if (options === void 0) return "run";
+      options = unwrappedExpression(ts4, options);
+      if (ts4.isIdentifier(options) && options.text === "undefined") return "run";
+      if (!ts4.isObjectLiteralExpression(options)) return "unknown";
+      const flags = executionOptions(ts4, options);
+      if (flags.skip === true) return "skip";
+      if (flags.todo === true) return "todo";
+      return flags.skip === false && flags.todo === false && flags.only === false ? "run" : "unknown";
+    }
+    function vitestConditionalMetadata(ts4, expression) {
+      let conditionKind, conditionValue;
+      for (const part of registrationChain(ts4, expression)) {
+        if (part.kind !== "call" || part.name !== "skipIf" && part.name !== "runIf") continue;
+        const earlier = conditionKind;
+        conditionKind = part.name;
+        conditionValue = earlier === void 0 ? staticBooleanValue(ts4, part.node.arguments[0]) : void 0;
+      }
+      return conditionKind === void 0 ? {} : { conditionKind, conditionValue };
+    }
+    function vitestRegistrationRuns(metadata) {
+      if (metadata.mode !== "run") return false;
+      if (metadata.conditionKind === void 0) return true;
+      if (typeof metadata.conditionValue !== "boolean") return false;
+      return metadata.conditionKind === "skipIf" ? metadata.conditionValue === false : metadata.conditionKind === "runIf" && metadata.conditionValue === true;
+    }
+    function vitestCallbackExecutes(metadata) {
+      const registration = metadata.registration;
+      if (registration === void 0) return false;
+      if (registration === "describe") {
+        if (metadata.insideUncollectedSuite === true) return false;
+        return metadata.mode === "run" || metadata.mode === "skip" || metadata.mode === "todo";
+      }
+      if (metadata.insideNonExecutingSuite === true) return false;
+      if (registration === "beforeAll" || registration === "beforeEach" || registration === "afterAll" || registration === "afterEach") {
+        return metadata.suiteHasRunnableTest === true;
+      }
+      return vitestRegistrationRuns(metadata);
+    }
+    function vitestSuiteChildrenExecute(metadata) {
+      return metadata.registration === "describe" && vitestRegistrationRuns(metadata);
+    }
+    function standardLibraryCallbackCanExecute(ts4, node, methodName, checker) {
+      const access = unwrappedExpression(ts4, node.expression);
+      const receiver = methodName === "from" ? node.arguments[0] : ts4.isPropertyAccessExpression(access) || ts4.isElementAccessExpression(access) ? access.expression : void 0;
+      if (receiver === void 0) return true;
+      const array = unwrappedExpression(ts4, receiver);
+      if (!ts4.isArrayLiteralExpression(array)) return true;
+      if (array.elements.some((element) => ts4.isSpreadElement(element))) return true;
+      const visitsHoles = ["find", "findIndex", "findLast", "findLastIndex", "from"].includes(methodName);
+      let present = 0;
+      for (const element of array.elements) if (!ts4.isOmittedExpression(element)) present += 1;
+      const cardinality = visitsHoles ? array.elements.length : present;
+      if (methodName === "sort" || methodName === "toSorted") {
+        let comparable = 0;
+        for (const element of array.elements) {
+          if (ts4.isOmittedExpression(element)) continue;
+          const value = unwrappedExpression(ts4, element);
+          if (ts4.isVoidExpression(value) || checker !== void 0 && (checker.getTypeAtLocation(value).flags & ts4.TypeFlags.Undefined) !== 0) continue;
+          comparable += 1;
+        }
+        return comparable >= 2;
+      }
+      if (methodName === "reduce" || methodName === "reduceRight") return cardinality >= (node.arguments.length >= 2 ? 1 : 2);
+      return cardinality > 0;
+    }
+    module.exports = {
+      standardLibraryCallbackCanExecute,
+      expressionHasProperty,
+      vitestRegistrationMode,
+      vitestRegistrationNameFromExpression,
+      staticBooleanValue,
+      compilerCallCanExecute: compilerCallCanExecute2,
+      vitestCallbackExecutes,
+      vitestObjectBooleanOptions,
+      vitestConditionalMetadata,
+      vitestFocusedRegistrationNode,
+      vitestRegistrationName,
+      vitestRegistrationRuns,
+      vitestSuiteChildrenExecute
+    };
+  }
+});
+
 // scripts/formal-implementation-surface.cjs
 var require_formal_implementation_surface = __commonJS({
   "scripts/formal-implementation-surface.cjs"(exports, module) {
@@ -94,9 +419,9 @@ var require_formal_implementation_surface = __commonJS({
           );
           return `external:${externalPath}#${shortHash(source7.text)}`;
         }
-        const relative2 = path45.relative(root3, resolved);
-        if (relative2 !== ".." && !relative2.startsWith(`..${path45.sep}`) && !path45.isAbsolute(relative2)) {
-          return relative2.split(path45.sep).join("/");
+        const relative = path45.relative(root3, resolved);
+        if (relative !== ".." && !relative.startsWith(`..${path45.sep}`) && !path45.isAbsolute(relative)) {
+          return relative.split(path45.sep).join("/");
         }
         return `external-file:${path45.basename(resolved)}#${shortHash(source7.text)}`;
       }
@@ -770,11 +1095,11 @@ function loadCompilerContext(repositoryRoot, suppliedProgram) {
 }
 function isPackageDeclaration(context, declaration) {
   if (declaration === void 0) return false;
-  const relative2 = path2.relative(
+  const relative = path2.relative(
     context.rootDirectory,
     path2.resolve(declaration.getSourceFile().fileName)
   );
-  return !relative2.startsWith(`..${path2.sep}`) && !path2.isAbsolute(relative2);
+  return !relative.startsWith(`..${path2.sep}`) && !path2.isAbsolute(relative);
 }
 function isPublicDeclaration(context, declaration) {
   if (!isPackageDeclaration(context, declaration)) return false;
@@ -1227,8 +1552,8 @@ function dependencyBody(context, call) {
   if (body === void 0 || !ts.isFunctionDeclaration(body) || body.body === void 0 || body.getSourceFile().isDeclarationFile) {
     fail("VALUE_SEMANTIC_UNBOUND_CALL", "Called value helper has no unique resolved source body.");
   }
-  const relative2 = path3.relative(context.repositoryRoot, body.getSourceFile().fileName).replaceAll("\\", "/");
-  if (!relative2.startsWith("src/")) fail("VALUE_SEMANTIC_UNBOUND_CALL", "Dependency is not package source.");
+  const relative = path3.relative(context.repositoryRoot, body.getSourceFile().fileName).replaceAll("\\", "/");
+  if (!relative.startsWith("src/")) fail("VALUE_SEMANTIC_UNBOUND_CALL", "Dependency is not package source.");
   return body;
 }
 function deriveValueReturnTerm(context, implementation) {
@@ -1258,8 +1583,8 @@ function deriveValueReturnTerm(context, implementation) {
     const source7 = spanOf(context, body);
     dependencies.set(`${source7.file}:${source7.start.offset}:${source7.end.offset}`, source7);
     function sparseEmptyRecordTerm(dependency2, call) {
-      const relative2 = path3.relative(context.repositoryRoot, dependency2.getSourceFile().fileName).replaceAll("\\", "/");
-      if (relative2 !== "src/sparse-record.ts" || dependency2.name?.text !== "createInventorySparseRecord") return void 0;
+      const relative = path3.relative(context.repositoryRoot, dependency2.getSourceFile().fileName).replaceAll("\\", "/");
+      if (relative !== "src/sparse-record.ts" || dependency2.name?.text !== "createInventorySparseRecord") return void 0;
       if (call.arguments.length !== 0 || dependency2.parameters.length !== 0 || dependency2.body === void 0 || dependency2.body.statements.length !== 1 || !ts.isReturnStatement(dependency2.body.statements[0]) || dependency2.body.statements[0].expression === void 0) {
         fail("VALUE_SEMANTIC_SPARSE_RECORD", "Sparse-record construction must remain one zero-argument return expression.");
       }
@@ -3345,9 +3670,9 @@ function verifyReview518257RuntimeTransport(root3) {
   const currentFiles = execFileSync2("git", ["ls-tree", "-r", "--name-only", REVIEW_518257_RUNTIME_CERTIFIED_HEAD, "--", "src"], { cwd: root3, encoding: "utf8" }).trim().split("\n");
   assert5.deepEqual(currentFiles, priorFiles, "Review 5182576645 changed the runtime module domain.");
   for (const file of ["final-head-transport.json", "final-v309.json", "final-a121-b58.json", "final-surface-bindings.json", "final-binder-report.json"]) {
-    const relative2 = `experiments/tla-conformance/final-convergence/${file}`;
-    const certified = execFileSync2("git", ["show", `${REVIEW_518257_PRIOR_COMPACT_CERTIFIED_HEAD}:${relative2}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
-    const priorHead = execFileSync2("git", ["show", `${REVIEW_518257_RUNTIME_PRIOR_HEAD}:${relative2}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
+    const relative = `experiments/tla-conformance/final-convergence/${file}`;
+    const certified = execFileSync2("git", ["show", `${REVIEW_518257_PRIOR_COMPACT_CERTIFIED_HEAD}:${relative}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
+    const priorHead = execFileSync2("git", ["show", `${REVIEW_518257_RUNTIME_PRIOR_HEAD}:${relative}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
     assert5.equal(sha2563(priorHead), sha2563(certified), `Prior compact-certified artifact drifted before Review 5182576645: ${file}`);
   }
   const changed = execFileSync2("git", ["diff", "--name-only", REVIEW_518257_RUNTIME_PRIOR_HEAD, REVIEW_518257_RUNTIME_CERTIFIED_HEAD, "--", "src"], { cwd: root3, encoding: "utf8" }).trim().split("\n").filter(Boolean);
@@ -3395,9 +3720,9 @@ function verifyReview518196RuntimeTransport(root3, currentSourceMap) {
   const currentFiles = currentSourceMap === void 0 ? execFileSync2("git", ["ls-tree", "-r", "--name-only", REVIEW_518196_RUNTIME_CERTIFIED_HEAD, "--", "src"], { cwd: root3, encoding: "utf8" }).trim().split("\n") : [...currentSourceMap.keys()];
   assert5.deepEqual(currentFiles, priorFiles, "Review 5181962020 changed the runtime module domain.");
   for (const file of ["final-head-transport.json", "final-v309.json", "final-a121-b58.json", "final-surface-bindings.json", "final-binder-report.json"]) {
-    const relative2 = `experiments/tla-conformance/final-convergence/${file}`;
-    const certified = execFileSync2("git", ["show", `${REVIEW_518196_PRIOR_COMPACT_CERTIFIED_HEAD}:${relative2}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
-    const priorHead = execFileSync2("git", ["show", `${REVIEW_518196_RUNTIME_PRIOR_HEAD}:${relative2}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
+    const relative = `experiments/tla-conformance/final-convergence/${file}`;
+    const certified = execFileSync2("git", ["show", `${REVIEW_518196_PRIOR_COMPACT_CERTIFIED_HEAD}:${relative}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
+    const priorHead = execFileSync2("git", ["show", `${REVIEW_518196_RUNTIME_PRIOR_HEAD}:${relative}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
     assert5.equal(sha2563(priorHead), sha2563(certified), `Prior compact-certified artifact drifted before Review 5181962020: ${file}`);
   }
   const changed = execFileSync2("git", ["diff", "--name-only", REVIEW_518196_RUNTIME_PRIOR_HEAD, REVIEW_518196_RUNTIME_CERTIFIED_HEAD, "--", "src"], { cwd: root3, encoding: "utf8" }).trim().split("\n").filter(Boolean);
@@ -3446,9 +3771,9 @@ function verifyReview518113RuntimeTransport(root3, currentSourceMap) {
   const currentFiles = currentSourceMap === void 0 ? execFileSync2("git", ["ls-tree", "-r", "--name-only", REVIEW_518113_RUNTIME_CERTIFIED_HEAD, "--", "src"], { cwd: root3, encoding: "utf8" }).trim().split("\n") : [...currentSourceMap.keys()];
   assert5.deepEqual(currentFiles, priorFiles, "Review 5181132010 changed the runtime module domain.");
   for (const file of ["final-head-transport.json", "final-v309.json", "final-a121-b58.json", "final-surface-bindings.json", "final-binder-report.json"]) {
-    const relative2 = `experiments/tla-conformance/final-convergence/${file}`;
-    const certified = execFileSync2("git", ["show", `${REVIEW_518113_PRIOR_COMPACT_CERTIFIED_HEAD}:${relative2}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
-    const priorHead = execFileSync2("git", ["show", `${REVIEW_518113_RUNTIME_PRIOR_HEAD}:${relative2}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
+    const relative = `experiments/tla-conformance/final-convergence/${file}`;
+    const certified = execFileSync2("git", ["show", `${REVIEW_518113_PRIOR_COMPACT_CERTIFIED_HEAD}:${relative}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
+    const priorHead = execFileSync2("git", ["show", `${REVIEW_518113_RUNTIME_PRIOR_HEAD}:${relative}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
     assert5.equal(sha2563(priorHead), sha2563(certified), `Prior compact-certified artifact drifted before Review 5181132010: ${file}`);
   }
   const changed = execFileSync2("git", ["diff", "--name-only", REVIEW_518113_RUNTIME_PRIOR_HEAD, REVIEW_518113_RUNTIME_CERTIFIED_HEAD, "--", "src"], { cwd: root3, encoding: "utf8" }).trim().split("\n").filter(Boolean);
@@ -3499,9 +3824,9 @@ function verifyReview518009RuntimeTransport(root3, currentSourceMap) {
   const currentFiles = currentSourceMap === void 0 ? execFileSync2("git", ["ls-tree", "-r", "--name-only", REVIEW_518009_RUNTIME_CERTIFIED_HEAD, "--", "src"], { cwd: root3, encoding: "utf8" }).trim().split("\n") : [...currentSourceMap.keys()];
   assert5.deepEqual(currentFiles, priorFiles, "Review 5180096971 changed the runtime module domain.");
   for (const file of ["final-head-transport.json", "final-v309.json", "final-a121-b58.json", "final-surface-bindings.json", "final-binder-report.json"]) {
-    const relative2 = `experiments/tla-conformance/final-convergence/${file}`;
-    const certified = execFileSync2("git", ["show", `${REVIEW_518009_PRIOR_COMPACT_CERTIFIED_HEAD}:${relative2}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
-    const priorHead = execFileSync2("git", ["show", `${REVIEW_518009_RUNTIME_PRIOR_HEAD}:${relative2}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
+    const relative = `experiments/tla-conformance/final-convergence/${file}`;
+    const certified = execFileSync2("git", ["show", `${REVIEW_518009_PRIOR_COMPACT_CERTIFIED_HEAD}:${relative}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
+    const priorHead = execFileSync2("git", ["show", `${REVIEW_518009_RUNTIME_PRIOR_HEAD}:${relative}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
     assert5.equal(sha2563(priorHead), sha2563(certified), `Prior compact-certified artifact drifted before Review 5180096971: ${file}`);
   }
   const changed = execFileSync2("git", ["diff", "--name-only", REVIEW_518009_RUNTIME_PRIOR_HEAD, REVIEW_518009_RUNTIME_CERTIFIED_HEAD, "--", "src"], { cwd: root3, encoding: "utf8" }).trim().split("\n").filter(Boolean);
@@ -3604,9 +3929,9 @@ function verifyReview517722RuntimeTransport(root3, currentSourceMap) {
     ["verify", "FINAL_BINDER_GREEN"]
   ], "Prior compact certificate does not contain the three required green modes.");
   for (const file of ["final-head-transport.json", "final-v309.json", "final-a121-b58.json", "final-surface-bindings.json", "final-binder-report.json"]) {
-    const relative2 = `experiments/tla-conformance/final-convergence/${file}`;
-    const certified = execFileSync2("git", ["show", `${REVIEW_517722_PRIOR_COMPACT_CERTIFIED_HEAD}:${relative2}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
-    const priorHead = execFileSync2("git", ["show", `${REVIEW_517722_RUNTIME_PRIOR_HEAD}:${relative2}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
+    const relative = `experiments/tla-conformance/final-convergence/${file}`;
+    const certified = execFileSync2("git", ["show", `${REVIEW_517722_PRIOR_COMPACT_CERTIFIED_HEAD}:${relative}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
+    const priorHead = execFileSync2("git", ["show", `${REVIEW_517722_RUNTIME_PRIOR_HEAD}:${relative}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
     assert5.equal(sha2563(priorHead), sha2563(certified), `Prior compact-certified artifact drifted before Review 5177225566: ${file}`);
   }
   if (currentSourceMap === void 0) {
@@ -15228,6 +15553,8 @@ ${row.mode}`).sort(),
 }
 
 // experiments/tla-conformance/surface-bindings/lib/binding-checker.mjs
+var import_formal_implementation_vitest_semantics = __toESM(require_formal_implementation_vitest_semantics(), 1);
+var { compilerCallCanExecute } = import_formal_implementation_vitest_semantics.default;
 var EXECUTION_RECORD_FIELDS = Object.freeze([
   "edgeId",
   "action",
@@ -15411,35 +15738,6 @@ function literalTruth(expression) {
   }
   return void 0;
 }
-function isStaticallyUnreachable(node) {
-  let current = node;
-  while (current.parent !== void 0) {
-    const parent = current.parent;
-    if (ts.isIfStatement(parent)) {
-      const truth = literalTruth(parent.expression);
-      if (truth === false && parent.thenStatement === current) return true;
-      if (truth === true && parent.elseStatement === current) return true;
-    }
-    if ((ts.isWhileStatement(parent) || ts.isForStatement(parent)) && parent.statement === current && parent.expression !== void 0 && literalTruth(parent.expression) === false) {
-      return true;
-    }
-    if (ts.isBlock(parent) || ts.isSourceFile(parent)) {
-      const containingStatement = parent.statements.find(
-        (statement) => statement === current || statement.getStart() <= current.getStart() && statement.getEnd() >= current.getEnd()
-      );
-      if (containingStatement !== void 0) {
-        for (const statement of parent.statements) {
-          if (statement === containingStatement) break;
-          if (ts.isReturnStatement(statement) || ts.isThrowStatement(statement)) {
-            return true;
-          }
-        }
-      }
-    }
-    current = parent;
-  }
-  return false;
-}
 function resolveCallReference(context, reference, label, diagnostics, surfaceKey) {
   if (reference === null || typeof reference !== "object" || !isNonEmptyString(reference.file) || !Number.isSafeInteger(reference.start) || !Number.isSafeInteger(reference.end) || !isNonEmptyString(reference.sourceHash) || !isNonEmptyString(reference.astHash)) {
     diagnostics.push(
@@ -15496,7 +15794,7 @@ function resolveCallReference(context, reference, label, diagnostics, surfaceKey
       red("CALL_REFERENCE_DRIFT", surfaceKey, `${label} AST hash changed.`)
     );
   }
-  if (isStaticallyUnreachable(node)) {
+  if (!compilerCallCanExecute(ts, node)) {
     diagnostics.push(
       red("UNREACHABLE_CALL_REFERENCE", surfaceKey, `${label} is unreachable.`)
     );
@@ -16411,9 +16709,6 @@ import { execFileSync as execFileSync4 } from "node:child_process";
 // scripts/repository-assurance-state.mjs
 import { createHash as createHash2 } from "node:crypto";
 import { spawnSync } from "node:child_process";
-import { existsSync, lstatSync, readFileSync, readlinkSync } from "node:fs";
-import { createRequire } from "node:module";
-import { relative, resolve, sep } from "node:path";
 var excludedPaths = /* @__PURE__ */ new Set([
   "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json"
 ]);
@@ -16440,62 +16735,6 @@ function hashAssuranceEntries(entries) {
   }
   return hash.digest("hex");
 }
-function repositoryVitestTestPaths(repositoryRoot) {
-  let packageJson;
-  try {
-    packageJson = JSON.parse(readFileSync(resolve(repositoryRoot, "package.json"), "utf8"));
-  } catch (error) {
-    if (error instanceof Error && error.code === "ENOENT") return [];
-    throw error;
-  }
-  const testScript = packageJson?.scripts?.test;
-  if (typeof testScript !== "string") return [];
-  const vitestCommands = testScript.split("&&").map((command) => command.trim()).filter((command) => /^vitest(?:\s|$)/u.test(command));
-  if (vitestCommands.length === 0) return [];
-  if (vitestCommands.length !== 1 || vitestCommands[0] !== "vitest run --dir test") {
-    throw new Error("Repository assurance does not recognize the configured Vitest test command.");
-  }
-  const listed = spawnSync(
-    process.execPath,
-    [resolve(repositoryRoot, "node_modules/vitest/vitest.mjs"), "list", "--dir", "test", "--filesOnly", "--json"],
-    { cwd: repositoryRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024, env: { ...process.env, CI: "" } }
-  );
-  if (listed.error !== void 0 || listed.status !== 0) {
-    throw new Error("Unable to discover the configured Vitest test domain.");
-  }
-  let decoded;
-  try {
-    decoded = JSON.parse(listed.stdout);
-  } catch {
-    throw new Error("Vitest test-domain discovery emitted malformed JSON.");
-  }
-  if (!Array.isArray(decoded)) throw new Error("Vitest test-domain discovery did not emit a file array.");
-  const paths = [];
-  for (const row of decoded) {
-    if (row === null || typeof row !== "object" || typeof row.file !== "string") throw new Error("Vitest test-domain discovery emitted a malformed row.");
-    const path45 = relative(repositoryRoot, row.file).split(sep).join("/");
-    if (path45 === "" || path45 === ".." || path45.startsWith("../") || !path45.startsWith("test/")) throw new Error(`Vitest discovered a test outside the authoritative test root: ${path45}`);
-    paths.push(path45);
-  }
-  return [...new Set(paths)].sort();
-}
-function repositoryTypeScriptInputPaths(repositoryRoot) {
-  const configPath = resolve(repositoryRoot, "tsconfig.test.json");
-  if (!existsSync(configPath)) return [];
-  const require2 = createRequire(resolve(repositoryRoot, "package.json"));
-  const ts4 = require2("typescript");
-  const config = ts4.readConfigFile(configPath, ts4.sys.readFile);
-  if (config.error !== void 0) throw new Error("Repository TypeScript assurance config is invalid.");
-  const parsed = ts4.parseJsonConfigFileContent(config.config, ts4.sys, repositoryRoot, void 0, configPath);
-  if (parsed.errors.length !== 0) throw new Error("Repository TypeScript assurance config failed to parse.");
-  const paths = [];
-  for (const fileName of parsed.fileNames) {
-    const path45 = relative(repositoryRoot, fileName).split(sep).join("/");
-    if (path45 === "" || path45 === ".." || path45.startsWith("../")) throw new Error(`TypeScript selected a source outside the repository: ${path45}`);
-    paths.push(path45);
-  }
-  return [...new Set(paths)].sort();
-}
 function repositoryAssuranceInputPaths(repositoryRoot, untrackedOnly = false) {
   const listed = spawnSync(
     "git",
@@ -16505,16 +16744,7 @@ function repositoryAssuranceInputPaths(repositoryRoot, untrackedOnly = false) {
   if (listed.error !== void 0 || listed.status !== 0) {
     throw new Error("Unable to enumerate the repository assurance state.");
   }
-  const paths = new Set(listed.stdout.split("\0").filter(includedPath));
-  const discovered = [...repositoryTypeScriptInputPaths(repositoryRoot), ...repositoryVitestTestPaths(repositoryRoot)];
-  let tracked;
-  if (untrackedOnly && discovered.length > 0) {
-    const cached2 = spawnSync("git", ["ls-files", "--cached", "-z"], { cwd: repositoryRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
-    if (cached2.error !== void 0 || cached2.status !== 0) throw new Error("Unable to enumerate tracked repository assurance state.");
-    tracked = new Set(cached2.stdout.split("\0").filter(Boolean));
-  }
-  for (const path45 of discovered) if (includedPath(path45) && (!untrackedOnly || !tracked.has(path45))) paths.add(path45);
-  return [...paths].sort();
+  return [...new Set(listed.stdout.split("\0").filter(includedPath))].sort();
 }
 function repositoryAssuranceCommittedStateSha256(repositoryRoot, commit) {
   const listed = spawnSync(
@@ -16565,7 +16795,7 @@ function repositoryAssuranceCommittedStateSha256(repositoryRoot, commit) {
 var CURRENT_REVIEW_ASSURANCE_RECEIPT = "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json";
 var CURRENT_REVIEW_ASSURANCE_REPORT = "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json";
 var CURRENT_REVIEW_ASSURANCE_FULL_LOG = "experiments/tla-conformance/final-convergence/current-pr-review-full.log";
-var CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "86c28e668f6926acf1835539e388d1d942de7d36";
+var CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "a575cb20ddd3f8aca3ce01c4286ef1e142fab945";
 var CURRENT_REVIEW_ASSURANCE_SELF = "experiments/tla-conformance/final-convergence/current-review-assurance.mjs";
 var COMPACT_MANIFEST = "experiments/tla-conformance/final-convergence/compact-support-manifest.json";
 var COMPACT_CLOSURE = "experiments/tla-conformance/final-convergence/authority-reference-manifest.json";

@@ -1,4 +1,7 @@
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const require = createRequire(import.meta.url);
@@ -7,12 +10,11 @@ const vitestSemantics = require(
   "../scripts/formal-implementation-vitest-semantics.cjs",
 ) as {
   readonly vitestCallbackExecutes: (metadata: VitestExecutionMetadata) => boolean;
-  /** Visit only children that can execute under statically decidable control flow. */
-  readonly forEachStaticallyReachableChild: (
+  /** Return true only when TypeScript's bound control flow proves that one call can execute. */
+  readonly compilerCallCanExecute: (
     ts: typeof import("typescript"),
-    node: import("typescript").Node,
-    visit: (node: import("typescript").Node) => void,
-  ) => void;
+    node: import("typescript").CallExpression | import("typescript").NewExpression,
+  ) => boolean;
   readonly vitestConditionalMetadata: (
     ts: typeof import("typescript"),
     expression: import("typescript").Expression,
@@ -105,40 +107,117 @@ function suiteChildrenExecute(metadata: VitestExecutionMetadata): boolean {
   return semanticsDecision("vitestSuiteChildrenExecute", metadata);
 }
 
-/** Collect calls reached by the exact static-control-flow traversal used for callgraph execution credit. */
-function staticallyReachableCalls(sourceText: string): readonly string[] {
-  const source = typescript.createSourceFile("control-flow.ts", sourceText, typescript.ScriptTarget.Latest, true, typescript.ScriptKind.TS);
-  const calls: string[] = [];
-  const visit = (node: import("typescript").Node): void => {
-    if (typescript.isCallExpression(node) && typescript.isIdentifier(node.expression)) calls.push(node.expression.text);
-    vitestSemantics.forEachStaticallyReachableChild(typescript, node, visit);
-  };
-  visit(source);
-  return calls;
+/** Ask the exact compiler-flow gate whether named call sites can execute. */
+function compilerFlowCallDecisions(sourceText: string): Readonly<Record<string, boolean>> {
+  const directory = mkdtempSync(join(tmpdir(), "inventoryonce-flow-"));
+  try {
+    const file = join(directory, "control-flow.ts");
+    writeFileSync(file, sourceText);
+    const program = typescript.createProgram([file], {
+      target: typescript.ScriptTarget.ES2022,
+      module: typescript.ModuleKind.ESNext,
+      noEmit: true,
+      skipLibCheck: true,
+    });
+    program.getTypeChecker();
+    const source = program.getSourceFile(file);
+    if (source === undefined) throw new Error("Compiler-flow regression fixture was not loaded.");
+    const decisions: Record<string, boolean> = {};
+    const visit = (node: import("typescript").Node): void => {
+      if (typescript.isCallExpression(node) && typescript.isIdentifier(node.expression)) {
+        const name = node.expression.text;
+        if (name.startsWith("flow")) {
+          decisions[name] = vitestSemantics.compilerCallCanExecute(typescript, node);
+        }
+      }
+      typescript.forEachChild(node, visit);
+    };
+    visit(source);
+    return decisions;
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
 }
 
 describe("formal call-graph Vitest callback semantics", () => {
-  it("excludes statically unreachable branches, short circuits, loops, and post-abrupt calls", () => {
-    expect(staticallyReachableCalls(`
-      function callbackDead(cb: () => void) { return; cb(); }
-      function callbackLive(cb: () => void) { cb(); return; }
-      function probe() {
-        if (false) deadIf(); else liveElse();
-        if (true) liveIf(); else deadElse();
-        false ? deadTernary() : liveTernary();
-        false && deadAnd();
-        true || deadOr();
-        while (false) deadWhile();
-        for (const value of []) deadForOf();
-        for (const key in {}) deadForIn();
-        switch (0) { case 1: deadSwitch(); break; case 0: liveSwitch(); break; }
-        for (const value of [1]) liveForOf();
-        for (const key in { one: 1 }) liveForIn();
-        liveBeforeReturn();
+  it("uses compiler flow without losing hoisting or targeted continue semantics", () => {
+    const decisions = compilerFlowCallDecisions(`
+      declare function flowDeadIf(): void;
+      declare function flowDeadElse(): void;
+      declare function flowDeadTernary(): void;
+      declare function flowDeadAnd(): void;
+      declare function flowDeadOr(): void;
+      declare function flowDeadWhile(): void;
+      declare function flowDeadForOf(): void;
+      declare function flowDeadForIn(): void;
+      declare function flowDeadSwitch(): void;
+      declare function flowDeadAfterReturn(): void;
+      declare function flowDeadLabeledFor(): void;
+      declare function flowDeadLabeledDo(): void;
+      declare function flowLiveElse(): void;
+      declare function flowLiveIf(): void;
+      declare function flowLiveTernary(): void;
+      declare function flowLiveSwitch(): void;
+      declare function flowLiveBeforeReturn(): void;
+      declare function flowLiveHoisted(): void;
+      declare function flowLiveForContinue(): void;
+      declare function flowLiveDoContinue(): void;
+      declare function flowLiveConditionalContinue(): void;
+      function probe(flag: boolean): void {
+        if (false) flowDeadIf(); else flowLiveElse();
+        if (true) flowLiveIf(); else flowDeadElse();
+        false ? flowDeadTernary() : flowLiveTernary();
+        false && flowDeadAnd();
+        true || flowDeadOr();
+        while (false) flowDeadWhile();
+        for (const value of []) flowDeadForOf();
+        for (const key in {}) flowDeadForIn();
+        switch (0) { case 1: flowDeadSwitch(); break; case 0: flowLiveSwitch(); break; }
+        outerFor: for (let turns = 0; turns < 1; turns += 1) {
+          for (; true; flowDeadLabeledFor()) { continue outerFor; }
+        }
+        outerDo: for (let turns = 0; turns < 1; turns += 1) {
+          do { continue outerDo; } while (flowDeadLabeledDo());
+        }
+        let forTurns = 0;
+        for (; forTurns < 1; flowLiveForContinue(), forTurns += 1) { continue; }
+        let doTurns = 0;
+        do { continue; } while (flowLiveDoContinue(), ++doTurns < 1);
+        let conditionalTurns = 0;
+        for (; conditionalTurns < 1; flowLiveConditionalContinue(), conditionalTurns += 1) {
+          if (flag) continue;
+          return;
+        }
+        hoisted();
+        flowLiveBeforeReturn();
         return;
-        deadAfterReturn();
+        flowDeadAfterReturn();
+        function hoisted(): void { flowLiveHoisted(); }
       }
-    `)).toEqual(["cb", "liveElse", "liveIf", "liveTernary", "liveSwitch", "liveForOf", "liveForIn", "liveBeforeReturn"]);
+    `);
+    expect(decisions).toMatchObject({
+      flowDeadIf: false,
+      flowDeadElse: false,
+      flowDeadTernary: false,
+      flowDeadAnd: false,
+      flowDeadOr: false,
+      flowDeadWhile: false,
+      flowDeadForOf: false,
+      flowDeadForIn: false,
+      flowDeadSwitch: false,
+      flowDeadAfterReturn: false,
+      flowDeadLabeledFor: false,
+      flowDeadLabeledDo: false,
+      flowLiveElse: true,
+      flowLiveIf: true,
+      flowLiveTernary: true,
+      flowLiveSwitch: true,
+      flowLiveBeforeReturn: true,
+      flowLiveHoisted: true,
+      flowLiveForContinue: true,
+      flowLiveDoContinue: true,
+      flowLiveConditionalContinue: true,
+    });
   });
   it("fails closed on computed Vitest option keys", () => {
     const source = typescript.createSourceFile(

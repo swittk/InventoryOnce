@@ -98,147 +98,109 @@ function staticPrimitiveValue(ts, expression) {
   return { known: false };
 }
 
-/** Return whether one statement statically prevents later statements in the same block from executing. */
-function statementDefinitelyTerminates(ts, statement) {
+/** Return the compiler control-flow node attached to one executable call target. */
+function compilerCallFlowNode(ts, node) {
+  if (node?.flowNode !== undefined) return node.flowNode;
+  if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
+    return compilerCallFlowNode(ts, node.expression);
+  }
+  if (ts.isPropertyAccessExpression(node)) {
+    return node.name.flowNode ?? compilerCallFlowNode(ts, node.expression);
+  }
+  if (ts.isElementAccessExpression(node)) {
+    return node.argumentExpression?.flowNode ?? compilerCallFlowNode(ts, node.expression);
+  }
   if (
-    ts.isReturnStatement(statement) ||
-    ts.isThrowStatement(statement) ||
+    ts.isParenthesizedExpression(node) ||
+    ts.isAsExpression(node) ||
+    ts.isTypeAssertionExpression(node) ||
+    ts.isNonNullExpression(node)
+  ) {
+    return compilerCallFlowNode(ts, node.expression);
+  }
+  return undefined;
+}
+
+/** Return whether an enclosing literal-empty iteration excludes this call from execution. */
+function excludedByStaticEmptyIteration(ts, node) {
+  let child = node;
+  for (let current = node.parent; current !== undefined; current = current.parent) {
+    if (ts.isForOfStatement(current) && child === current.statement) {
+      const iterable = unwrappedExpression(ts, current.expression);
+      if (ts.isArrayLiteralExpression(iterable) && iterable.elements.length === 0) return true;
+    }
+    if (ts.isForInStatement(current) && child === current.statement) {
+      const enumerable = unwrappedExpression(ts, current.expression);
+      if (ts.isObjectLiteralExpression(enumerable) && enumerable.properties.length === 0) return true;
+    }
+    child = current;
+  }
+  return false;
+}
+
+/** Return whether one statement always prevents fallthrough to a later switch clause. */
+function statementStopsSwitchFallthrough(ts, statement) {
+  if (
     ts.isBreakStatement(statement) ||
-    ts.isContinueStatement(statement)
+    ts.isContinueStatement(statement) ||
+    ts.isReturnStatement(statement) ||
+    ts.isThrowStatement(statement)
   ) return true;
   if (ts.isBlock(statement)) {
     for (const child of statement.statements) {
-      if (statementDefinitelyTerminates(ts, child)) return true;
+      if (statementStopsSwitchFallthrough(ts, child)) return true;
     }
     return false;
   }
   if (ts.isIfStatement(statement)) {
     const condition = staticBooleanValue(ts, statement.expression);
-    if (condition === true) return statementDefinitelyTerminates(ts, statement.thenStatement);
-    if (condition === false) return statement.elseStatement !== undefined && statementDefinitelyTerminates(ts, statement.elseStatement);
-    return statement.elseStatement !== undefined && statementDefinitelyTerminates(ts, statement.thenStatement) && statementDefinitelyTerminates(ts, statement.elseStatement);
+    if (condition === true) return statementStopsSwitchFallthrough(ts, statement.thenStatement);
+    if (condition === false) return statement.elseStatement !== undefined && statementStopsSwitchFallthrough(ts, statement.elseStatement);
+    return statement.elseStatement !== undefined && statementStopsSwitchFallthrough(ts, statement.thenStatement) && statementStopsSwitchFallthrough(ts, statement.elseStatement);
   }
   return false;
 }
 
-/** Return whether a loop body can reach its increment/condition phase on at least one static path. */
-function statementMayReachLoopNextPhase(ts, statement) {
-  if (ts.isReturnStatement(statement) || ts.isThrowStatement(statement) || ts.isBreakStatement(statement)) return false;
-  if (ts.isContinueStatement(statement)) return true;
-  if (ts.isBlock(statement)) {
-    for (const child of statement.statements) {
-      if (!statementDefinitelyTerminates(ts, child)) continue;
-      return statementMayReachLoopNextPhase(ts, child);
+/** Return whether a statically selected switch path cannot reach this call's clause. */
+function excludedByStaticSwitch(ts, node) {
+  let clause;
+  for (let current = node.parent; current !== undefined; current = current.parent) {
+    if (ts.isCaseClause(current) || ts.isDefaultClause(current)) { clause = current; break; }
+    if (ts.isFunctionLike(current) || ts.isSourceFile(current)) return false;
+  }
+  if (clause === undefined || !ts.isCaseBlock(clause.parent) || !ts.isSwitchStatement(clause.parent.parent)) return false;
+  const switchStatement = clause.parent.parent;
+  const discriminant = staticPrimitiveValue(ts, switchStatement.expression);
+  if (!discriminant.known) return false;
+  const clauses = [...switchStatement.caseBlock.clauses];
+  const target = clauses.indexOf(clause);
+  let selected = -1;
+  let fallback = -1;
+  for (let index = 0; index < clauses.length; index += 1) {
+    const row = clauses[index];
+    if (ts.isDefaultClause(row)) { fallback = index; continue; }
+    const value = staticPrimitiveValue(ts, row.expression);
+    if (!value.known) return false;
+    if (selected < 0 && Object.is(value.value, discriminant.value)) selected = index;
+  }
+  if (selected < 0) selected = fallback;
+  if (selected < 0 || target < selected) return true;
+  for (let index = selected; index < target; index += 1) {
+    const row = clauses[index];
+    for (const statement of row.statements) {
+      if (statementStopsSwitchFallthrough(ts, statement)) return true;
     }
-    return true;
   }
-  if (ts.isIfStatement(statement)) {
-    const condition = staticBooleanValue(ts, statement.expression);
-    if (condition === true) return statementMayReachLoopNextPhase(ts, statement.thenStatement);
-    if (condition === false) return statement.elseStatement === undefined || statementMayReachLoopNextPhase(ts, statement.elseStatement);
-    if (statement.elseStatement === undefined) return true;
-    return statementMayReachLoopNextPhase(ts, statement.thenStatement) || statementMayReachLoopNextPhase(ts, statement.elseStatement);
-  }
-  return true;
+  return false;
 }
 
-/** Visit only compiler children that can execute under statically decidable control flow. */
-function forEachStaticallyReachableChild(ts, node, visit) {
-  if (ts.isSourceFile(node) || ts.isBlock(node)) {
-    let terminated = false;
-    for (const statement of node.statements) {
-      // Function declarations are hoisted and may be called before a preceding abrupt completion.
-      if (terminated) {
-        if (ts.isFunctionDeclaration(statement)) visit(statement);
-        continue;
-      }
-      visit(statement);
-      if (statementDefinitelyTerminates(ts, statement)) terminated = true;
-    }
-    return;
-  }
-  if (ts.isIfStatement(node)) {
-    visit(node.expression);
-    const condition = staticBooleanValue(ts, node.expression);
-    if (condition !== false) visit(node.thenStatement);
-    if (condition !== true && node.elseStatement !== undefined) visit(node.elseStatement);
-    return;
-  }
-  if (ts.isConditionalExpression(node)) {
-    visit(node.condition);
-    const condition = staticBooleanValue(ts, node.condition);
-    if (condition !== false) visit(node.whenTrue);
-    if (condition !== true) visit(node.whenFalse);
-    return;
-  }
-  if (ts.isBinaryExpression(node) && (node.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken || node.operatorToken.kind === ts.SyntaxKind.BarBarToken)) {
-    visit(node.left);
-    const left = staticBooleanValue(ts, node.left);
-    if (node.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken ? left !== false : left !== true) visit(node.right);
-    return;
-  }
-  if (ts.isForOfStatement(node)) {
-    visit(node.expression);
-    const iterable = unwrappedExpression(ts, node.expression);
-    if (ts.isArrayLiteralExpression(iterable) && iterable.elements.length === 0) return;
-    visit(node.initializer);
-    visit(node.statement);
-    return;
-  }
-  if (ts.isForInStatement(node)) {
-    visit(node.expression);
-    const enumerable = unwrappedExpression(ts, node.expression);
-    if (ts.isObjectLiteralExpression(enumerable) && enumerable.properties.length === 0) return;
-    visit(node.initializer);
-    visit(node.statement);
-    return;
-  }
-  if (ts.isSwitchStatement(node)) {
-    visit(node.expression);
-    const discriminant = staticPrimitiveValue(ts, node.expression);
-    const clauses = [...node.caseBlock.clauses];
-    const caseValues = clauses.map(clause => ts.isCaseClause(clause) ? staticPrimitiveValue(ts, clause.expression) : undefined);
-    if (!discriminant.known || caseValues.some(value => value !== undefined && !value.known)) {
-      visit(node.caseBlock);
-      return;
-    }
-    let start = -1, fallback = -1;
-    for (let index = 0; index < clauses.length; index += 1) {
-      const clause = clauses[index];
-      if (ts.isDefaultClause(clause)) { fallback = index; continue; }
-      if (Object.is(caseValues[index]?.value, discriminant.value)) { start = index; break; }
-    }
-    if (start < 0) start = fallback;
-    if (start < 0) return;
-    for (let index = start; index < clauses.length; index += 1) {
-      const clause = clauses[index];
-      for (const statement of clause.statements) {
-        visit(statement);
-        if (statementDefinitelyTerminates(ts, statement)) return;
-      }
-    }
-    return;
-  }
-  if (ts.isWhileStatement(node)) {
-    visit(node.expression);
-    if (staticBooleanValue(ts, node.expression) !== false) visit(node.statement);
-    return;
-  }
-  if (ts.isForStatement(node)) {
-    if (node.initializer !== undefined) visit(node.initializer);
-    if (node.condition !== undefined) visit(node.condition);
-    if (node.condition === undefined || staticBooleanValue(ts, node.condition) !== false) {
-      visit(node.statement);
-      if (node.incrementor !== undefined && statementMayReachLoopNextPhase(ts, node.statement)) visit(node.incrementor);
-    }
-    return;
-  }
-  if (ts.isDoStatement(node)) {
-    visit(node.statement);
-    if (statementMayReachLoopNextPhase(ts, node.statement)) visit(node.expression);
-    return;
-  }
-  ts.forEachChild(node, visit);
+/** Return true only when bound compiler flow and exact static cardinality both permit this call. */
+function compilerCallCanExecute(ts, node) {
+  const flow = compilerCallFlowNode(ts, node);
+  return flow !== undefined &&
+    (flow.flags & ts.FlowFlags.Unreachable) === 0 &&
+    !excludedByStaticEmptyIteration(ts, node) &&
+    !excludedByStaticSwitch(ts, node);
 }
 
 /** Return one readable static object-property name, or undefined when the key requires runtime evaluation. */
@@ -421,8 +383,7 @@ module.exports = {
   vitestRegistrationMode,
   vitestRegistrationNameFromExpression,
   staticBooleanValue,
-  forEachStaticallyReachableChild,
-  statementDefinitelyTerminates,
+  compilerCallCanExecute,
   vitestCallbackExecutes,
   vitestObjectBooleanOptions,
   vitestConditionalMetadata,
