@@ -57,7 +57,16 @@ function fixtures() {
       c: { apiEntries: ["two"], refinementMode: "direct-property" },
     },
   };
-  const gaps = { schemaVersion: 1, gaps: { external: {} } };
+  const gaps = {
+    schemaVersion: 1,
+    gaps: {
+      external: {
+        status: "application-boundary",
+        productionImpact: "External behavior is outside this fixture's modeled physical authority.",
+        requiredMitigation: "Keep external behavior separate from the modeled state and test its boundary independently.",
+      },
+    },
+  };
   /** @type {Parameters<typeof executableAssuranceSummary>[0]} */
   const manifests = { api, fields, callChains, traces, gaps };
   for (const section of ["api", "fields", "callChains"]) {
@@ -92,6 +101,24 @@ test("every executable assurance manifest requires its exact schema version", ()
     assert.throws(
       () => executableAssuranceSummary(input),
       new RegExp(`${section} assurance manifest schemaVersion must be ${version}`),
+    );
+  }
+});
+
+test("explicit formal gap rows require status impact and mitigation text", () => {
+  for (const field of ["status", "productionImpact", "requiredMitigation"]) {
+    const missing = fixtures();
+    delete missing.gaps.gaps.external[field];
+    assert.throws(
+      () => executableAssuranceSummary(missing),
+      new RegExp(`Explicit assurance gap 'external' requires nonempty trimmed ${field} text`),
+    );
+
+    const empty = fixtures();
+    empty.gaps.gaps.external[field] = "";
+    assert.throws(
+      () => executableAssuranceSummary(empty),
+      new RegExp(`Explicit assurance gap 'external' requires nonempty trimmed ${field} text`),
     );
   }
 });

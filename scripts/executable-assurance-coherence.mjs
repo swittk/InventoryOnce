@@ -121,6 +121,18 @@ function assertEntryMap(value, label) {
   }
 }
 
+/** Require every explicit formal gap to carry complete human-auditable release-impact text. */
+function assertGapEntries(gaps) {
+  for (const [id, gap] of Object.entries(gaps)) {
+    for (const field of ["status", "productionImpact", "requiredMitigation"]) {
+      const value = gap[field];
+      if (typeof value !== "string" || value.trim().length === 0 || value !== value.trim()) {
+        throw new Error(`Explicit assurance gap '${id}' requires nonempty trimmed ${field} text.`);
+      }
+    }
+  }
+}
+
 /** Validate shape and domains before either producing or comparing a summary. */
 function assertExecutableManifests(input) {
   for (const section of ["api", "fields", "callChains", "traces", "gaps"]) {
@@ -134,6 +146,7 @@ function assertExecutableManifests(input) {
     if (section === "api" || section === "fields" || section === "callChains") assertManifestCounters(section, manifest.counts, executableAssuranceCounterKeys[section]);
   }
   assertEntryMap(input.api.entries, "API"); assertEntryMap(input.fields.entries, "field"); assertEntryMap(input.gaps.gaps, "gap");
+  assertGapEntries(input.gaps.gaps);
   // Trace rows require the same non-empty identity boundary as every other manifest entry map.
   assertEntryMap(input.traces.entries, "trace");
   assertTraceApiEntries(Object.values(input.traces.entries), input.api.entries);
