@@ -1,10 +1,10 @@
 {
   "schemaVersion": 2,
   "status": "FINAL_LIVE_INPUT_CLOSURE",
-  "inputKey": "f7cbfe530d09df04f0f1fb36734581ca62c931339d1e1d5395f55a643030c083",
+  "inputKey": "1f1873168e698a2c73d57de91bf1b7465f6cbf1c41d1ae0e0f94da2ee48d547e",
   "surfaceDigest": "3ef3b72eed4ca0191f1136b18bc2a12d336ca4379afe1205c93b50ab89aae49b",
   "inputs": 431,
-  "totalBytes": 20473510,
+  "totalBytes": 20474257,
   "untrackedProofInputs": 0,
   "compilerRootSet": {
     "key": "8bc6ed2ceb08e2ccd6e015e83ac830adfc86f3263df31c9f11fb3465c59d7a7e",
@@ -2403,19 +2403,19 @@
     {
       "file": "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json",
       "kind": "tracked",
-      "sha256": "c2c4c78803fa5aa6e635f202c8cf8ead8ef5ee33ab7c1f4b90a805d73221c5ac",
+      "sha256": "7bdb933c71fa1a03368b4619138cbdf581a383f53930597f48c90dd744ea8b63",
       "sizeBytes": 698
     },
     {
       "file": "experiments/tla-conformance/final-convergence/current-pr-review-full.log",
       "kind": "tracked",
-      "sha256": "7cbc6cfb3233feb781fe704062a2e2440fac9b78f49394c0d03a5ff9db472d3c",
-      "sizeBytes": 38077
+      "sha256": "de8b1ccdecae74338ca9367a083285697526aab49c39e6d94aef9904cc421ec9",
+      "sizeBytes": 38393
     },
     {
       "file": "experiments/tla-conformance/final-convergence/current-review-assurance.mjs",
       "kind": "tracked",
-      "sha256": "bb39a8c910e4673be3118a70e180765bac50eaf9f3b7e3dcec4b6441e59d9308",
+      "sha256": "72103e37879cab13e1dae22e5b5d0c11fed19b42c324b23bbeb101a4fba3bd60",
       "sizeBytes": 9304
     },
     {
@@ -2679,7 +2679,7 @@
     {
       "file": "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
       "kind": "tracked",
-      "sha256": "f98cbee73a2ab4be386ee1e8c7fe4730c55c85299a002418c6891f78df53b19f",
+      "sha256": "51b5bb3f9ba48d31069992a3c7c38313c4dd6b7847bac0fed50f83e0203a8c3f",
       "sizeBytes": 2459
     },
     {
@@ -4311,8 +4311,8 @@
     {
       "file": "scripts/immutable-assurance-inputs.mjs",
       "kind": "tracked",
-      "sha256": "16913bc0a6e23556895a20be32e2125a59df2204722b87031362d2c09bef64eb",
-      "sizeBytes": 6157
+      "sha256": "4ab5e5eb3a0bd25f011f82e344d762842b9ec063920c538b6fcb64eaebda4c77",
+      "sizeBytes": 6588
     },
     {
       "file": "scripts/inventory-epoch-contract.mjs",
@@ -4906,7 +4906,7 @@
   "outputs": [
     {
       "file": "experiments/tla-conformance/final-convergence/compact-final-verify.mjs",
-      "sha256": "12d2ffb85f02e792c98be31dacf4f892e88dd2010d8242887742ed6195dde132",
+      "sha256": "2db5e709edd6dd66e662c49269fe62659e920f0131804faf31255bebd537395b",
       "sizeBytes": 833524
     },
     {
