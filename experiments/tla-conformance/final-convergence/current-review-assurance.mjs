@@ -10,7 +10,7 @@ import { repositoryAssuranceCommittedStateSha256 } from "../../../scripts/reposi
 export const CURRENT_REVIEW_ASSURANCE_RECEIPT = "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json";
 const CURRENT_REVIEW_ASSURANCE_REPORT = "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json";
 const CURRENT_REVIEW_ASSURANCE_FULL_LOG = "experiments/tla-conformance/final-convergence/current-pr-review-full.log";
-const CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "f5ea450f5436bc6be1a6cdaac34dee8744ba61c1";
+const CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "9750cfda5927cd19ebf9ab1f43ac5a2779e3386a";
 /** Product/full-assurance inputs that may not drift after the certified run. */
 export const CURRENT_REVIEW_AUTHORITATIVE_PATHS = Object.freeze([
   "src",
