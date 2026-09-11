@@ -23,7 +23,7 @@ import {
   type InventoryLotMetadataInput,
 } from "./commands.js";
 import {
-  assertCanonicalInventoryTime,
+  assertInventoryEpochMilliseconds,
   commitInventoryEvent,
   inventoryEventIntentFingerprint,
   type InventoryCommittedEvent,
@@ -116,7 +116,7 @@ export interface InventoryMigrationOpeningStock {
   /** Optional container metadata for `position.containerId`, reconstructed from the same legacy fact. */
   readonly container?: InventoryContainerMetadataInput;
   /** Real-world time represented by this opening; defaults to migration cutover time. */
-  readonly occurredAt?: string;
+  readonly occurredAtEpochMs?: number;
   /** Required provenance back to the legacy row. */
   readonly source: InventoryMigrationSourceReference;
   /** Extra JSON-safe source/application facts. */
@@ -134,7 +134,7 @@ export interface InventoryMigrationDeficitStock {
   /** Optional exact retained item revision; defaults to active/package revision. */
   readonly itemRevisionId?: string;
   /** Real-world time represented by this deficit; defaults to migration cutover time. */
-  readonly occurredAt?: string;
+  readonly occurredAtEpochMs?: number;
   /** Required provenance back to the legacy row. */
   readonly source: InventoryMigrationSourceReference;
   /** Extra JSON-safe source/application facts. */
@@ -148,7 +148,7 @@ export interface InventoryMigrationTraceabilityChange {
   /** Explicit containment/association/genealogy change. */
   readonly change: InventoryTraceabilityRelationChange;
   /** Real-world occurrence time; defaults to migration cutover time. */
-  readonly occurredAt?: string;
+  readonly occurredAtEpochMs?: number;
   /** Required provenance back to the legacy row. */
   readonly source: InventoryMigrationSourceReference;
   /** Extra JSON-safe source/application facts. */
@@ -164,7 +164,7 @@ export interface InventoryMigrationDeclaration {
   /** Optional legacy schema/application version. */
   readonly sourceVersion?: string;
   /** Canonical time represented by the opening snapshot. */
-  readonly cutoverAt: string;
+  readonly cutoverAtEpochMs: number;
   /** Canonical positive opening stock facts. */
   readonly openingStock: readonly InventoryMigrationOpeningStock[];
   /** Explicit coherent signed deficits, replayed as ordinary Issue events under Record mode. */
@@ -196,7 +196,7 @@ export interface InventoryMigrationPlan {
   /** Optional legacy schema/application version. */
   readonly sourceVersion?: string;
   /** Snapshot/cutover time. */
-  readonly cutoverAt: string;
+  readonly cutoverAtEpochMs: number;
   /** Ready only when no error diagnostic exists. */
   readonly status: InventoryMigrationPlanStatus;
   /** Deterministically ordered opening/traceability event drafts. */
@@ -234,7 +234,7 @@ export function inventoryMigrationSnapshotSupersededDisposition(input: {
   /** Exact legacy workflow row. */
   readonly source: InventoryMigrationSourceReference;
   /** Canonical opening-snapshot time. */
-  readonly snapshotAt: string;
+  readonly snapshotAtEpochMs: number;
   /** Plain reason current snapshot truth supersedes replay. */
   readonly reason: string;
   /** Optional bounded audit evidence. */
@@ -244,7 +244,7 @@ export function inventoryMigrationSnapshotSupersededDisposition(input: {
     dispositionId: input.dispositionId,
     kind: InventoryMigrationSourceDispositionKind.SnapshotSupersededDoNotReplay,
     source: input.source,
-    snapshotAt: input.snapshotAt,
+    snapshotAtEpochMs: input.snapshotAtEpochMs,
     reason: input.reason,
     ...(input.evidence === undefined ? {} : { evidence: input.evidence }),
   };
@@ -276,15 +276,15 @@ export function defineInventoryMigration({
   if (declaration.sourceSystem.trim().length === 0) {
     throw new Error("Inventory migration sourceSystem must not be empty.");
   }
-  assertCanonicalInventoryTime(
-    declaration.cutoverAt,
-    "inventory migration cutoverAt"
+  assertInventoryEpochMilliseconds(
+    declaration.cutoverAtEpochMs,
+    "inventory migration cutoverAtEpochMs"
   );
   // Normal command builders validate canonical time; this explicit call improves top-level diagnostics.
   const diagnostics = [...(declaration.diagnostics ?? [])];
   const sourceDispositions = normalizeInventoryMigrationSourceDispositions(
     declaration.sourceDispositions ?? [],
-    declaration.cutoverAt,
+    declaration.cutoverAtEpochMs,
     diagnostics
   );
   const events: InventoryEventDraft[] = [];
@@ -310,7 +310,7 @@ export function defineInventoryMigration({
           "opening",
           opening.openingId
         ),
-        occurredAt: opening.occurredAt ?? declaration.cutoverAt,
+        occurredAtEpochMs: opening.occurredAtEpochMs ?? declaration.cutoverAtEpochMs,
         to: opening.position,
         amount: opening.amount,
         sourceReference: inventoryIntentFingerprint([
@@ -362,7 +362,7 @@ export function defineInventoryMigration({
           "deficit",
           deficit.deficitId
         ),
-        occurredAt: deficit.occurredAt ?? declaration.cutoverAt,
+        occurredAtEpochMs: deficit.occurredAtEpochMs ?? declaration.cutoverAtEpochMs,
         from: deficit.position,
         amount: deficit.amount,
         sourceReference: inventoryIntentFingerprint([
@@ -414,7 +414,7 @@ export function defineInventoryMigration({
           "traceability",
           translated.changeId
         ),
-        occurredAt: translated.occurredAt ?? declaration.cutoverAt,
+        occurredAtEpochMs: translated.occurredAtEpochMs ?? declaration.cutoverAtEpochMs,
         changes: [translated.change],
         sourceReference: inventoryIntentFingerprint([
           translated.source.sourceType,
@@ -445,7 +445,7 @@ export function defineInventoryMigration({
     addJointMigrationReplayDiagnostic(
       catalog,
       events,
-      declaration.cutoverAt,
+      declaration.cutoverAtEpochMs,
       sourceByOperationId,
       diagnostics
     );
@@ -460,7 +460,7 @@ export function defineInventoryMigration({
     ...(declaration.sourceVersion === undefined
       ? {}
       : { sourceVersion: declaration.sourceVersion }),
-    cutoverAt: declaration.cutoverAt,
+    cutoverAtEpochMs: declaration.cutoverAtEpochMs,
     status,
     events,
     sourceDispositions,
@@ -519,7 +519,7 @@ export function dryRunInventoryMigration({
   for (const draft of plan.events) {
     const committed = commitInventoryEvent(
       draft,
-      plan.cutoverAt,
+      plan.cutoverAtEpochMs,
       world.projection.lastRecordSequence + 1
     );
     const projection = applyInventoryCommittedEvent({
@@ -646,9 +646,9 @@ export async function applyInventoryMigrationPlan({
       "Inventory migration target changed after the reviewed dry-run."
     );
   }
-  const recordedAt = clock.now();
-  assertCanonicalInventoryTime(
-    recordedAt,
+  const recordedAtEpochMs = clock.nowEpochMs();
+  assertInventoryEpochMilliseconds(
+    recordedAtEpochMs,
     "inventory migration durable record time"
   );
   // Build and validate every committed event/next root before the Applying fence exists.
@@ -656,7 +656,7 @@ export async function applyInventoryMigrationPlan({
     catalog,
     targetWorld,
     plan,
-    recordedAt
+    recordedAtEpochMs
   );
   await storage.beginMigrationManifest({
     migrationId: plan.migrationId,
@@ -725,7 +725,7 @@ export async function repairInventoryMigrationManifests({
 function addJointMigrationReplayDiagnostic(
   catalog: InventoryCatalog,
   events: readonly InventoryEventDraft[],
-  cutoverAt: string,
+  cutoverAtEpochMs: number,
   sourceByOperationId: ReadonlyMap<string, InventoryMigrationSourceReference>,
   diagnostics: InventoryMigrationDiagnostic[]
 ): void {
@@ -737,7 +737,7 @@ function addJointMigrationReplayDiagnostic(
     try {
       const committed = commitInventoryEvent(
         event,
-        cutoverAt,
+        cutoverAtEpochMs,
         world.projection.lastRecordSequence + 1
       );
       const projection = applyInventoryCommittedEvent({
@@ -784,7 +784,7 @@ function migrationDiagnosticsContainError(
 /** Validate, normalize, and deterministically order non-physical source dispositions. */
 function normalizeInventoryMigrationSourceDispositions(
   dispositions: readonly InventoryMigrationSourceDisposition[],
-  cutoverAt: string,
+  cutoverAtEpochMs: number,
   diagnostics: InventoryMigrationDiagnostic[]
 ): readonly InventoryMigrationSourceDisposition[] {
   const normalized: InventoryMigrationSourceDisposition[] = [];
@@ -814,13 +814,13 @@ function normalizeInventoryMigrationSourceDispositions(
           `unsupported disposition kind '${String(disposition.kind)}'`
         );
       }
-      assertCanonicalInventoryTime(
-        disposition.snapshotAt,
-        `inventory migration source disposition '${dispositionId}' snapshotAt`
+      assertInventoryEpochMilliseconds(
+        disposition.snapshotAtEpochMs,
+        `inventory migration source disposition '${dispositionId}' snapshotAtEpochMs`
       );
-      if (disposition.snapshotAt !== cutoverAt) {
+      if (disposition.snapshotAtEpochMs !== cutoverAtEpochMs) {
         throw new Error(
-          `snapshotAt '${disposition.snapshotAt}' differs from migration cutoverAt '${cutoverAt}'`
+          `snapshotAtEpochMs '${disposition.snapshotAtEpochMs}' differs from migration cutoverAtEpochMs '${cutoverAtEpochMs}'`
         );
       }
       const sourceType = requireMigrationDispositionText(
@@ -853,7 +853,7 @@ function normalizeInventoryMigrationSourceDispositions(
                 ),
               }),
         },
-        snapshotAt: disposition.snapshotAt,
+        snapshotAtEpochMs: disposition.snapshotAtEpochMs,
         reason,
         ...(disposition.evidence === undefined
           ? {}
@@ -899,7 +899,7 @@ function inventoryMigrationPlanDigest(
     plan.migrationId,
     plan.sourceSystem,
     plan.sourceVersion ?? null,
-    plan.cutoverAt,
+    plan.cutoverAtEpochMs,
     plan.status,
     plan.events.map(inventoryEventIntentFingerprint),
     plan.sourceDispositions.map(inventoryMigrationSourceDispositionFingerprint),
@@ -928,7 +928,7 @@ function createDurableInventoryMigrationPlan(
   catalog: InventoryCatalog,
   baseWorld: InventoryWorldState,
   plan: InventoryMigrationPlan,
-  recordedAt: string
+  recordedAtEpochMs: number
 ): InventoryDurableMigrationPlan {
   let world = baseWorld;
   assertInventoryCatalogRetainsSnapshot(catalog, world.catalog);
@@ -939,7 +939,7 @@ function createDurableInventoryMigrationPlan(
     try {
       const committed = commitInventoryEvent(
         event,
-        recordedAt,
+        recordedAtEpochMs,
         world.projection.lastRecordSequence + 1
       );
       committedEvents.push(committed);

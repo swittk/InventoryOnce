@@ -134,8 +134,8 @@ function assertExecutableManifests(input) {
     if (section === "api" || section === "fields" || section === "callChains") assertManifestCounters(section, manifest.counts, executableAssuranceCounterKeys[section]);
   }
   assertEntryMap(input.api.entries, "API"); assertEntryMap(input.fields.entries, "field"); assertEntryMap(input.gaps.gaps, "gap");
-  // Trace rows have a specific diagnostic and are validated before general map inspection.
-  if (input.traces.entries === null || typeof input.traces.entries !== "object" || Array.isArray(input.traces.entries)) throw new Error("Malformed trace assurance entry map.");
+  // Trace rows require the same non-empty identity boundary as every other manifest entry map.
+  assertEntryMap(input.traces.entries, "trace");
   assertTraceApiEntries(Object.values(input.traces.entries), input.api.entries);
   if (typeof input.api.surfaceSha256 !== "string" || input.api.surfaceSha256.length === 0) throw new Error("API assurance manifest surfaceSha256 must be a present non-empty string.");
   const apiCount = Object.keys(input.api.entries).length;

@@ -1,3 +1,4 @@
+import { assertInventoryEpochMilliseconds } from "./events.js";
 import {
   inventoryContainerIdentity,
   inventoryLotIdentity,
@@ -6,31 +7,34 @@ import {
 import type { InventoryProjectionState } from "./projection.js";
 
 /** Return the earliest lot expiry or container-specific use-by for one exact position. */
-export function inventoryPositionEffectiveUseBy(
+export function inventoryPositionEffectiveUseByEpochMs(
   projection: InventoryProjectionState,
   position: InventoryStockPositionKey,
-): string | undefined {
-  const lotExpiry = position.lotId === undefined
+): number | undefined {
+  const lotExpiryEpochMs = position.lotId === undefined
     ? undefined
     : projection.lots[
         inventoryLotIdentity(position.itemId, position.lotId)
-      ]?.definition.expiresAt;
-  const containerUseBy = position.containerId === undefined
+      ]?.definition.expiresAtEpochMs;
+  const containerUseByEpochMs = position.containerId === undefined
     ? undefined
     : projection.containers[
         inventoryContainerIdentity(position.containerId)
-      ]?.definition.useBy;
-  if (lotExpiry === undefined) return containerUseBy;
-  if (containerUseBy === undefined) return lotExpiry;
-  return lotExpiry <= containerUseBy ? lotExpiry : containerUseBy;
+      ]?.definition.useByEpochMs;
+  if (lotExpiryEpochMs !== undefined) assertInventoryEpochMilliseconds(lotExpiryEpochMs, "lot expiresAtEpochMs");
+  if (containerUseByEpochMs !== undefined) assertInventoryEpochMilliseconds(containerUseByEpochMs, "container useByEpochMs");
+  if (lotExpiryEpochMs === undefined) return containerUseByEpochMs;
+  if (containerUseByEpochMs === undefined) return lotExpiryEpochMs;
+  return lotExpiryEpochMs <= containerUseByEpochMs ? lotExpiryEpochMs : containerUseByEpochMs;
 }
 
 /** Return whether one position is expired at the supplied time; expiry is inclusive at effective use-by. */
 export function inventoryPositionIsExpiredAt(
   projection: InventoryProjectionState,
   position: InventoryStockPositionKey,
-  at: string,
+  atEpochMs: number,
 ): boolean {
-  const useBy = inventoryPositionEffectiveUseBy(projection, position);
-  return useBy !== undefined && useBy <= at;
+  assertInventoryEpochMilliseconds(atEpochMs, "position query atEpochMs");
+  const useByEpochMs = inventoryPositionEffectiveUseByEpochMs(projection, position);
+  return useByEpochMs !== undefined && useByEpochMs <= atEpochMs;
 }

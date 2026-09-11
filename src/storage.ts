@@ -1,7 +1,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { compareInventoryIdentityText } from "./ordering.js";
 import {
-  assertCanonicalInventoryTime,
+  assertInventoryEpochMilliseconds,
   type InventoryCommittedEvent,
 } from "./events.js";
 import {
@@ -151,7 +151,7 @@ export interface InventoryOperationReceipt {
   /** Stable operation/idempotency identity. */
   readonly operationId: string;
   /** Durable record time frozen with the operation plan. */
-  readonly recordedAt: string;
+  readonly recordedAtEpochMs: number;
   /** Published world revision after completion. */
   readonly worldRevision: number;
   /** Committed event identity when this operation wrote stock/traceability truth. */
@@ -197,7 +197,7 @@ export interface InventoryDurableOperation {
   /** Published world revision this plan was calculated from. */
   readonly baseRevision: number;
   /** Durable record time frozen before event commit. */
-  readonly recordedAt: string;
+  readonly recordedAtEpochMs: number;
   /** Current durable lifecycle. */
   readonly state: InventoryDurableOperationState;
   /** Complete next-world plan retained only while Applying so repair needs no caller code. */
@@ -229,7 +229,7 @@ export interface BeginInventoryDurableOperationInput {
   /** Published world revision used to calculate the plan. */
   readonly baseRevision: number;
   /** Durable record time used by the committed event/receipt. */
-  readonly recordedAt: string;
+  readonly recordedAtEpochMs: number;
   /** Complete semantically validated next-world plan. */
   readonly plan: InventoryDurableOperationPlan;
 }
@@ -854,7 +854,7 @@ export class InMemoryInventoryDurableStorage
       operationId: input.operationId,
       intentFingerprint: input.intentFingerprint,
       baseRevision: input.baseRevision,
-      recordedAt: input.recordedAt,
+      recordedAtEpochMs: input.recordedAtEpochMs,
       state: InventoryDurableOperationState.Applying,
       plan: structuredClone(input.plan),
       receipt: structuredClone(input.plan.receipt),
@@ -1281,9 +1281,9 @@ function validateBeginInventoryOperation(
       "Inventory durable baseRevision must be a non-negative safe integer."
     );
   }
-  assertCanonicalInventoryTime(
-    input.recordedAt,
-    "inventory operation recordedAt"
+  assertInventoryEpochMilliseconds(
+    input.recordedAtEpochMs,
+    "inventory operation recordedAtEpochMs"
   );
   if (input.plan.format !== "inventoryonce-compact-plan-v1") {
     throw new Error(
@@ -1302,9 +1302,9 @@ function validateBeginInventoryOperation(
       "Inventory operation receipt must use the frozen operationId."
     );
   }
-  if (receipt.recordedAt !== input.recordedAt) {
+  if (receipt.recordedAtEpochMs !== input.recordedAtEpochMs) {
     throw new Error(
-      "Inventory operation receipt must use the frozen recordedAt."
+      "Inventory operation receipt must use the frozen recordedAtEpochMs."
     );
   }
   if (receipt.worldRevision !== input.baseRevision + 1) {
@@ -1319,9 +1319,9 @@ function validateBeginInventoryOperation(
         "Inventory committed event must use the frozen operationId."
       );
     }
-    if (event.recordedAt !== input.recordedAt) {
+    if (event.recordedAtEpochMs !== input.recordedAtEpochMs) {
       throw new Error(
-        "Inventory committed event must use the frozen recordedAt."
+        "Inventory committed event must use the frozen recordedAtEpochMs."
       );
     }
     if (receipt.eventId !== event.eventId) {

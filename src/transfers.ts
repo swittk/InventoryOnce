@@ -78,12 +78,12 @@ export interface InventoryTransfer {
   /** Transfer-lifecycle carrierCustodianId value retained or supplied by this record. */ readonly carrierCustodianId?: PartyId;
   /** Transfer-lifecycle status value retained or supplied by this record. */ readonly status: InventoryTransferStatus;
   /** Transfer-lifecycle lines value retained or supplied by this record. */ readonly lines: readonly InventoryTransferLine[];
-  /** Transfer-lifecycle preparedAt value retained or supplied by this record. */ readonly preparedAt: string;
+  /** Transfer-lifecycle preparedAtEpochMs value retained or supplied by this record. */ readonly preparedAtEpochMs: number;
   /** Transfer-lifecycle preparedEventId value retained or supplied by this record. */ readonly preparedEventId: string;
-  /** Transfer-lifecycle dispatchedAt value retained or supplied by this record. */ readonly dispatchedAt?: string;
+  /** Transfer-lifecycle dispatchedAtEpochMs value retained or supplied by this record. */ readonly dispatchedAtEpochMs?: number;
   /** Transfer-lifecycle dispatchEventId value retained or supplied by this record. */ readonly dispatchEventId?: string;
-  /** Transfer-lifecycle lastReceivedAt value retained or supplied by this record. */ readonly lastReceivedAt?: string;
-  /** Transfer-lifecycle releasedAt value retained or supplied by this record. */ readonly releasedAt?: string;
+  /** Transfer-lifecycle lastReceivedAtEpochMs value retained or supplied by this record. */ readonly lastReceivedAtEpochMs?: number;
+  /** Transfer-lifecycle releasedAtEpochMs value retained or supplied by this record. */ readonly releasedAtEpochMs?: number;
   /** Transfer-lifecycle releaseEventId value retained or supplied by this record. */ readonly releaseEventId?: string;
   /** Transfer-lifecycle sourceReference value retained or supplied by this record. */ readonly sourceReference?: string;
 }
@@ -184,7 +184,7 @@ export function applyInventoryTransferLifecycleEvent(
         : { destinationCustodianId: change.destinationCustodianId }),
       status: InventoryTransferStatus.Prepared,
       lines,
-      preparedAt: event.occurredAt,
+      preparedAtEpochMs: event.occurredAtEpochMs,
       preparedEventId: event.eventId,
       ...(event.sourceReference === undefined
         ? {}
@@ -205,7 +205,7 @@ export function applyInventoryTransferLifecycleEvent(
       [existing.transferId]: {
         ...existing,
         status: InventoryTransferStatus.Released,
-        releasedAt: event.occurredAt,
+        releasedAtEpochMs: event.occurredAtEpochMs,
         releaseEventId: event.eventId,
       },
     };
@@ -219,7 +219,7 @@ export function applyInventoryTransferLifecycleEvent(
         ? {}
         : { carrierCustodianId: change.carrierCustodianId }),
       status: InventoryTransferStatus.InTransit,
-      dispatchedAt: event.occurredAt,
+      dispatchedAtEpochMs: event.occurredAtEpochMs,
       dispatchEventId: event.eventId,
     };
     assertDistinctLifecyclePositions(dispatched);
@@ -280,7 +280,7 @@ export function applyInventoryTransferLifecycleEvent(
       status: complete
         ? InventoryTransferStatus.Received
         : InventoryTransferStatus.PartiallyReceived,
-      lastReceivedAt: event.occurredAt,
+      lastReceivedAtEpochMs: event.occurredAtEpochMs,
     },
   };
 }
@@ -1017,7 +1017,7 @@ function transferLifecycleEvent(
       eventId: inventoryEventIdForOperation(header.operationId),
       operationId: header.operationId,
       kind,
-      occurredAt: header.occurredAt,
+      occurredAtEpochMs: header.occurredAtEpochMs,
       stockEffects,
       positiveLayerProvenanceTransfers,
       traceabilityChanges: [],
@@ -1103,7 +1103,7 @@ function inventoryTransferActionIntentFingerprint(
     header.operationId,
     action,
     transferId,
-    header.occurredAt,
+    header.occurredAtEpochMs,
     header.actorId ?? null,
     header.sourcePartyId ?? null,
     header.destinationPartyId ?? null,

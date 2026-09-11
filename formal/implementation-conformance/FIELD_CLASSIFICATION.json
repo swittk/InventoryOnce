@@ -6,7 +6,7 @@
     "callbackResultFields": 401,
     "fields": 2288,
     "inputFields": 1964,
-    "nullableFields": 0,
+    "nullableFields": 4,
     "optionalFields": 906,
     "outputFields": 849,
     "recursiveTypeReferences": 3,
@@ -59,7 +59,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "AbandonInventoryCountInput.occurredAt": {
+    "AbandonInventoryCountInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -69,7 +69,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -125,7 +125,7 @@
       "optional": false,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "ActivateGreenfieldInventoryAuthorityInput.activatedAt": {
+    "ActivateGreenfieldInventoryAuthorityInput.activatedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -135,7 +135,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/authority.test.ts"
@@ -235,7 +235,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "ActivateInventoryAuthorityInput.activatedAt": {
+    "ActivateInventoryAuthorityInput.activatedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -245,7 +245,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/authority.test.ts"
@@ -542,7 +542,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "AllocateInventoryInput.now": {
+    "AllocateInventoryInput.nowEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -552,7 +552,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -662,7 +662,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "AllocateInventoryReservationInput.occurredAt": {
+    "AllocateInventoryReservationInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -672,7 +672,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -1250,7 +1250,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "AssertInventoryReservationsFeasibleInput.at": {
+    "AssertInventoryReservationsFeasibleInput.atEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -1260,7 +1260,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -1464,7 +1464,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "BeginInventoryDurableOperationInput.recordedAt": {
+    "BeginInventoryDurableOperationInput.recordedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -1474,7 +1474,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-storage-refinement.test.ts",
         "test/storage-conformance.test.ts"
@@ -1974,7 +1974,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "CertifyInventoryAdapterInput.certifiedAt": {
+    "CertifyInventoryAdapterInput.certifiedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -1984,7 +1984,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/authority.test.ts"
@@ -2062,7 +2062,7 @@
       "optional": true,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "ClaimInventoryAuthorityFenceInput.startedAt": {
+    "ClaimInventoryAuthorityFenceInput.startedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -2072,7 +2072,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/authority.test.ts"
@@ -2108,7 +2108,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "CloseInventoryReservationInput.occurredAt": {
+    "CloseInventoryReservationInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -2118,7 +2118,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -2503,7 +2503,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "CompleteInventoryCountInput.completedAt": {
+    "CompleteInventoryCountInput.completedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -2513,7 +2513,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -2751,7 +2751,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "CreateInventoryCatalogPublicationInput.occurredAt": {
+    "CreateInventoryCatalogPublicationInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -2761,7 +2761,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -2983,7 +2983,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "CreateInventoryCompositionOpenEventInput.occurredAt": {
+    "CreateInventoryCompositionOpenEventInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -2993,7 +2993,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -3330,7 +3330,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "CreateInventoryContainerMetadataInput.occurredAt": {
+    "CreateInventoryContainerMetadataInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -3340,7 +3340,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -3560,7 +3560,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "CreateInventoryCorrectionInput.occurredAt": {
+    "CreateInventoryCorrectionInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -3570,7 +3570,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -3785,7 +3785,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "CreateInventoryCountReconciliationPlanInput.completedAt": {
+    "CreateInventoryCountReconciliationPlanInput.completedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -3795,7 +3795,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -4080,7 +4080,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "CreateInventoryIssueInput.occurredAt": {
+    "CreateInventoryIssueInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -4090,7 +4090,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -4312,7 +4312,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "CreateInventoryIssueManyInput.occurredAt": {
+    "CreateInventoryIssueManyInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -4322,7 +4322,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -4590,7 +4590,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "CreateInventoryLotMetadataInput.occurredAt": {
+    "CreateInventoryLotMetadataInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -4600,7 +4600,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -5114,7 +5114,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "CreateInventoryOpeningInput.occurredAt": {
+    "CreateInventoryOpeningInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -5124,7 +5124,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -5392,7 +5392,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "CreateInventoryPackInput.occurredAt": {
+    "CreateInventoryPackInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -5402,7 +5402,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -5739,7 +5739,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "CreateInventoryReceiptInput.occurredAt": {
+    "CreateInventoryReceiptInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -5749,7 +5749,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -5994,7 +5994,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "CreateInventoryReceiptManyInput.occurredAt": {
+    "CreateInventoryReceiptManyInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -6004,7 +6004,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -6295,7 +6295,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "CreateInventoryReclassificationInput.occurredAt": {
+    "CreateInventoryReclassificationInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -6305,7 +6305,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -6550,7 +6550,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "CreateInventoryReclassificationManyInput.occurredAt": {
+    "CreateInventoryReclassificationManyInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -6560,7 +6560,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -6736,7 +6736,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "CreateInventoryReservationInput.now": {
+    "CreateInventoryReservationInput.nowEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -6746,7 +6746,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -6971,7 +6971,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "CreateInventoryScrapInput.occurredAt": {
+    "CreateInventoryScrapInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -6981,7 +6981,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -7203,7 +7203,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "CreateInventoryScrapManyInput.occurredAt": {
+    "CreateInventoryScrapManyInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -7213,7 +7213,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -7435,7 +7435,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "CreateInventoryTraceabilityInput.occurredAt": {
+    "CreateInventoryTraceabilityInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -7445,7 +7445,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -7671,7 +7671,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "CreateInventoryTransferDispatchEventInput.occurredAt": {
+    "CreateInventoryTransferDispatchEventInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -7681,7 +7681,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -7974,7 +7974,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "CreateInventoryTransferInput.occurredAt": {
+    "CreateInventoryTransferInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -7984,7 +7984,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -8229,7 +8229,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "CreateInventoryTransferManyInput.occurredAt": {
+    "CreateInventoryTransferManyInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -8239,7 +8239,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -8515,7 +8515,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "CreateInventoryTransferPrepareEventInput.occurredAt": {
+    "CreateInventoryTransferPrepareEventInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -8525,7 +8525,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -8801,7 +8801,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "CreateInventoryTransferReceiveEventInput.occurredAt": {
+    "CreateInventoryTransferReceiveEventInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -8811,7 +8811,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -9037,7 +9037,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "CreateInventoryTransferReleaseEventInput.occurredAt": {
+    "CreateInventoryTransferReleaseEventInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -9047,7 +9047,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -9294,7 +9294,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "CreateInventoryTransformationInput.occurredAt": {
+    "CreateInventoryTransformationInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -9304,7 +9304,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -9595,7 +9595,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "CreateInventoryUnpackInput.occurredAt": {
+    "CreateInventoryUnpackInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -9605,7 +9605,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -9853,9 +9853,9 @@
         {
           "parameters": [
             {
-              "name": "cutoverAt",
+              "name": "cutoverAtEpochMs",
               "optional": false,
-              "type": "string"
+              "type": "number"
             }
           ],
           "result": "Promise<InventoryMigrationSourcePlan>"
@@ -9867,7 +9867,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "(cutoverAt: string) => Promise<InventoryMigrationSourcePlan>",
+      "discoveredType": "(cutoverAtEpochMs: number) => Promise<InventoryMigrationSourcePlan>",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/authority.test.ts"
@@ -9881,7 +9881,7 @@
       "optional": false,
       "rationale": "Executable callback behavior is supplied by an external/test boundary and is not itself a finite InventoryOnce state field."
     },
-    "CutoverInventoryAuthorityInput.cutoverAt": {
+    "CutoverInventoryAuthorityInput.cutoverAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -9891,7 +9891,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/authority.test.ts"
@@ -11538,7 +11538,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "EnsureInventoryScalarCatalogRevisionInput.occurredAt": {
+    "EnsureInventoryScalarCatalogRevisionInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -11548,7 +11548,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -11879,7 +11879,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "EnterInventoryDualRunInput.startedAt": {
+    "EnterInventoryDualRunInput.startedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -11889,7 +11889,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/authority.test.ts"
@@ -12526,7 +12526,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryAllocationCandidate.expiresAt": {
+    "InventoryAllocationCandidate.expiresAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -12536,7 +12536,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -12598,7 +12598,7 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryAllocationCandidate.receivedAt": {
+    "InventoryAllocationCandidate.receivedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -12608,7 +12608,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -13210,8 +13210,8 @@
       "optional": false,
       "rationale": "Injected protocol implementation must refine the modeled durable/authority port and pass the shared conformance suite."
     },
-    "InventoryAuthorityState.activatedAt": {
-      "allowsNull": false,
+    "InventoryAuthorityState.activatedAtEpochMs": {
+      "allowsNull": true,
       "allowsUndefined": false,
       "callSignatures": [],
       "callable": false,
@@ -13221,7 +13221,7 @@
         "input",
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number | null",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/authority.test.ts"
@@ -13302,8 +13302,8 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "InventoryAuthorityState.adapterCertifiedAt": {
-      "allowsNull": false,
+    "InventoryAuthorityState.adapterCertifiedAtEpochMs": {
+      "allowsNull": true,
       "allowsUndefined": false,
       "callSignatures": [],
       "callable": false,
@@ -13313,7 +13313,7 @@
         "input",
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number | null",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/authority.test.ts"
@@ -13440,8 +13440,8 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryAuthorityState.dualRunStartedAt": {
-      "allowsNull": false,
+    "InventoryAuthorityState.dualRunStartedAtEpochMs": {
+      "allowsNull": true,
       "allowsUndefined": false,
       "callSignatures": [],
       "callable": false,
@@ -13451,7 +13451,7 @@
         "input",
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number | null",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/authority.test.ts"
@@ -13463,8 +13463,8 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryAuthorityState.fenceStartedAt": {
-      "allowsNull": false,
+    "InventoryAuthorityState.fenceStartedAtEpochMs": {
+      "allowsNull": true,
       "allowsUndefined": false,
       "callSignatures": [],
       "callable": false,
@@ -13474,7 +13474,7 @@
         "input",
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number | null",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/authority.test.ts"
@@ -14171,7 +14171,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryAvailabilitySummary.at": {
+    "InventoryAvailabilitySummary.atEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -14181,7 +14181,7 @@
       "directions": [
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -17826,7 +17826,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryCommittedEvent.occurredAt": {
+    "InventoryCommittedEvent.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -17838,7 +17838,7 @@
         "input",
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -17976,7 +17976,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "InventoryCommittedEvent.recordedAt": {
+    "InventoryCommittedEvent.recordedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -17988,7 +17988,7 @@
         "input",
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -19117,7 +19117,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryContainerDefinition.openedAt": {
+    "InventoryContainerDefinition.openedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -19130,7 +19130,7 @@
         "input",
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -19143,7 +19143,7 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryContainerDefinition.useBy": {
+    "InventoryContainerDefinition.useByEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -19156,7 +19156,7 @@
         "input",
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -19243,7 +19243,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryContainerMetadataInput.openedAt": {
+    "InventoryContainerMetadataInput.openedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -19254,7 +19254,7 @@
         "callback-result",
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -19267,7 +19267,7 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryContainerMetadataInput.useBy": {
+    "InventoryContainerMetadataInput.useByEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -19278,7 +19278,7 @@
         "callback-result",
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -19496,7 +19496,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryCount.observedAt": {
+    "InventoryCount.observedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -19509,7 +19509,7 @@
         "input",
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -19671,7 +19671,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryCount.startedAt": {
+    "InventoryCount.startedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -19684,7 +19684,7 @@
         "input",
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -19721,7 +19721,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryCount.statusAt": {
+    "InventoryCount.statusAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -19734,7 +19734,7 @@
         "input",
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -20276,7 +20276,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "InventoryDualRunMismatchEvidence.recordedAt": {
+    "InventoryDualRunMismatchEvidence.recordedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -20287,7 +20287,7 @@
         "input",
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/authority.test.ts"
@@ -20764,7 +20764,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryDurableOperation.recordedAt": {
+    "InventoryDurableOperation.recordedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -20774,7 +20774,7 @@
       "directions": [
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-storage-refinement.test.ts",
         "test/storage-conformance.test.ts"
@@ -21411,7 +21411,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryEventDraft.occurredAt": {
+    "InventoryEventDraft.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -21423,7 +21423,7 @@
         "input",
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -21684,7 +21684,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryFungibilityAllocationLine.expiresAt": {
+    "InventoryFungibilityAllocationLine.expiresAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -21694,7 +21694,7 @@
       "directions": [
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -21730,7 +21730,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "InventoryFungibilityAllocationLine.layerStartedAt": {
+    "InventoryFungibilityAllocationLine.layerStartedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -21740,7 +21740,7 @@
       "directions": [
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -23852,7 +23852,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "InventoryLotDefinition.expiresAt": {
+    "InventoryLotDefinition.expiresAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -23865,7 +23865,7 @@
         "input",
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -23930,7 +23930,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "InventoryLotDefinition.manufacturedAt": {
+    "InventoryLotDefinition.manufacturedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -23943,7 +23943,7 @@
         "input",
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -23984,7 +23984,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryLotMetadataInput.expiresAt": {
+    "InventoryLotMetadataInput.expiresAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -23995,7 +23995,7 @@
         "callback-result",
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -24008,7 +24008,7 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryLotMetadataInput.manufacturedAt": {
+    "InventoryLotMetadataInput.manufacturedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -24019,7 +24019,7 @@
         "callback-result",
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -24440,7 +24440,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryMigrationDeclaration.cutoverAt": {
+    "InventoryMigrationDeclaration.cutoverAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -24451,7 +24451,7 @@
         "callback-result",
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/migrations.test.ts"
@@ -24803,7 +24803,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryMigrationDeficitStock.occurredAt": {
+    "InventoryMigrationDeficitStock.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -24814,7 +24814,7 @@
         "callback-result",
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/migrations.test.ts"
@@ -25616,7 +25616,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryMigrationOpeningStock.occurredAt": {
+    "InventoryMigrationOpeningStock.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -25627,7 +25627,7 @@
         "callback-result",
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/migrations.test.ts"
@@ -25720,7 +25720,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryMigrationPlan.cutoverAt": {
+    "InventoryMigrationPlan.cutoverAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -25732,7 +25732,7 @@
         "input",
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/migrations.test.ts"
@@ -26310,7 +26310,7 @@
       "optional": false,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryMigrationSourceDisposition.snapshotAt": {
+    "InventoryMigrationSourceDisposition.snapshotAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -26322,7 +26322,7 @@
         "input",
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/migrations.test.ts"
@@ -26640,7 +26640,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryMigrationTraceabilityChange.occurredAt": {
+    "InventoryMigrationTraceabilityChange.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -26651,7 +26651,7 @@
         "callback-result",
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/migrations.test.ts"
@@ -27013,7 +27013,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "InventoryOnceAbandonCountInput.occurredAt": {
+    "InventoryOnceAbandonCountInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -27023,7 +27023,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -27125,7 +27125,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryOnceAllocateReservationByPolicyInput.occurredAt": {
+    "InventoryOnceAllocateReservationByPolicyInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -27135,7 +27135,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -27217,7 +27217,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryOnceAllocateReservationInput.occurredAt": {
+    "InventoryOnceAllocateReservationInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -27227,7 +27227,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -27380,7 +27380,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceChangeContainerStatusInput.occurredAt": {
+    "InventoryOnceChangeContainerStatusInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -27390,7 +27390,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -27658,7 +27658,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceChangeCustodianInput.occurredAt": {
+    "InventoryOnceChangeCustodianInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -27668,7 +27668,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -27936,7 +27936,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceChangeDispositionAuthorityInput.occurredAt": {
+    "InventoryOnceChangeDispositionAuthorityInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -27946,7 +27946,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -28214,7 +28214,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceChangeOwnerInput.occurredAt": {
+    "InventoryOnceChangeOwnerInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -28224,7 +28224,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -28515,7 +28515,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceChangeQualifiedDimensionInput.occurredAt": {
+    "InventoryOnceChangeQualifiedDimensionInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -28525,7 +28525,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -28793,7 +28793,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceChangeStatusInput.occurredAt": {
+    "InventoryOnceChangeStatusInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -28803,7 +28803,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -29025,7 +29025,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceClearContainerStatusInput.occurredAt": {
+    "InventoryOnceClearContainerStatusInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -29035,7 +29035,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -29303,7 +29303,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceClearQualifiedDimensionInput.occurredAt": {
+    "InventoryOnceClearQualifiedDimensionInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -29313,7 +29313,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -29418,7 +29418,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceCloseReservationInput.occurredAt": {
+    "InventoryOnceCloseReservationInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -29428,7 +29428,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -29604,7 +29604,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceConsumeAllocatedReservationInput.occurredAt": {
+    "InventoryOnceConsumeAllocatedReservationInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -29614,7 +29614,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -29836,7 +29836,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceConsumeReservationInput.occurredAt": {
+    "InventoryOnceConsumeReservationInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -29846,7 +29846,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -30091,7 +30091,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceCorrectContainerInput.occurredAt": {
+    "InventoryOnceCorrectContainerInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -30101,7 +30101,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -30300,7 +30300,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceCorrectInput.occurredAt": {
+    "InventoryOnceCorrectInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -30310,7 +30310,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -30589,7 +30589,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceCorrectLotInput.occurredAt": {
+    "InventoryOnceCorrectLotInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -30599,7 +30599,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -30913,7 +30913,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceDefineContainerInput.occurredAt": {
+    "InventoryOnceDefineContainerInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -30923,7 +30923,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -31168,7 +31168,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceDefineLotInput.occurredAt": {
+    "InventoryOnceDefineLotInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -31178,7 +31178,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -31423,7 +31423,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceDimensionChangeInput.occurredAt": {
+    "InventoryOnceDimensionChangeInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -31433,7 +31433,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -31632,7 +31632,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceDispatchTransferInput.occurredAt": {
+    "InventoryOnceDispatchTransferInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -31642,7 +31642,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -32049,7 +32049,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryOnceFungibilityMovementInput.occurredAt": {
+    "InventoryOnceFungibilityMovementInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -32059,7 +32059,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -32350,7 +32350,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceIssueContainerInput.occurredAt": {
+    "InventoryOnceIssueContainerInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -32360,7 +32360,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -32605,7 +32605,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceIssueInput.occurredAt": {
+    "InventoryOnceIssueInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -32615,7 +32615,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -32814,7 +32814,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceIssueManyInput.occurredAt": {
+    "InventoryOnceIssueManyInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -32824,7 +32824,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -32975,7 +32975,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryOnceObserveCountInput.observedAt": {
+    "InventoryOnceObserveCountInput.observedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -32985,7 +32985,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -33115,7 +33115,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceOpenCompositionInput.occurredAt": {
+    "InventoryOnceOpenCompositionInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -33125,7 +33125,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -33416,7 +33416,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOncePackInput.occurredAt": {
+    "InventoryOncePackInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -33426,7 +33426,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -33740,7 +33740,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOncePlaceInContainerInput.occurredAt": {
+    "InventoryOncePlaceInContainerInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -33750,7 +33750,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -33950,7 +33950,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryOncePlanAllocationInput.at": {
+    "InventoryOncePlanAllocationInput.atEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -33960,7 +33960,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -34021,7 +34021,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryOncePlanAllocationInput.reservationAt": {
+    "InventoryOncePlanAllocationInput.reservationAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -34031,7 +34031,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -34138,7 +34138,7 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryOncePlanFungibilityInput.at": {
+    "InventoryOncePlanFungibilityInput.atEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -34148,7 +34148,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -34230,7 +34230,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryOncePlanFungibilityInput.reservationAt": {
+    "InventoryOncePlanFungibilityInput.reservationAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -34240,7 +34240,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -34555,7 +34555,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryOncePolicyBatchAllocationLine.expiresAt": {
+    "InventoryOncePolicyBatchAllocationLine.expiresAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -34566,7 +34566,7 @@
         "input",
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -34579,7 +34579,7 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryOncePolicyBatchAllocationLine.layerStartedAt": {
+    "InventoryOncePolicyBatchAllocationLine.layerStartedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -34590,7 +34590,7 @@
         "input",
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -34722,7 +34722,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOncePolicyBatchInput.occurredAt": {
+    "InventoryOncePolicyBatchInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -34732,7 +34732,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -35412,7 +35412,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryOncePolicyMovementInput.occurredAt": {
+    "InventoryOncePolicyMovementInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -35422,7 +35422,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -35721,7 +35721,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOncePrepareTransferInput.occurredAt": {
+    "InventoryOncePrepareTransferInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -35731,7 +35731,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -35957,7 +35957,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOncePublishCatalogInput.occurredAt": {
+    "InventoryOncePublishCatalogInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -35967,7 +35967,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -36258,7 +36258,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceReceiveInput.occurredAt": {
+    "InventoryOnceReceiveInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -36268,7 +36268,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -36490,7 +36490,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceReceiveManyInput.occurredAt": {
+    "InventoryOnceReceiveManyInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -36500,7 +36500,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -36699,7 +36699,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceReceiveTransferInput.occurredAt": {
+    "InventoryOnceReceiveTransferInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -36709,7 +36709,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -36931,7 +36931,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceReclassifyManyInput.occurredAt": {
+    "InventoryOnceReclassifyManyInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -36941,7 +36941,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -37092,7 +37092,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceReconcileCountInput.completedAt": {
+    "InventoryOnceReconcileCountInput.completedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -37102,7 +37102,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -37256,7 +37256,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryOnceRefineReservationInput.occurredAt": {
+    "InventoryOnceRefineReservationInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -37266,7 +37266,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -37442,7 +37442,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceRelationInput.occurredAt": {
+    "InventoryOnceRelationInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -37452,7 +37452,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -37651,7 +37651,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceReleaseTransferInput.occurredAt": {
+    "InventoryOnceReleaseTransferInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -37661,7 +37661,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -37929,7 +37929,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceRemoveFromContainerInput.occurredAt": {
+    "InventoryOnceRemoveFromContainerInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -37939,7 +37939,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -38161,7 +38161,7 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryOnceReplaceAbsoluteCountInput.occurredAt": {
+    "InventoryOnceReplaceAbsoluteCountInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -38171,7 +38171,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -38508,7 +38508,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceScrapContainerInput.occurredAt": {
+    "InventoryOnceScrapContainerInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -38518,7 +38518,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -38763,7 +38763,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceScrapInput.occurredAt": {
+    "InventoryOnceScrapInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -38773,7 +38773,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -38972,7 +38972,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceScrapManyInput.occurredAt": {
+    "InventoryOnceScrapManyInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -38982,7 +38982,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -39250,7 +39250,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceStartCountInput.startedAt": {
+    "InventoryOnceStartCountInput.startedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -39260,7 +39260,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -39488,7 +39488,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryOnceTransferByPolicyInput.occurredAt": {
+    "InventoryOnceTransferByPolicyInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -39498,7 +39498,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -39768,7 +39768,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceTransferContainerInput.occurredAt": {
+    "InventoryOnceTransferContainerInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -39778,7 +39778,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -40069,7 +40069,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryOnceTransferFungibleInput.occurredAt": {
+    "InventoryOnceTransferFungibleInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -40079,7 +40079,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -40393,7 +40393,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceTransferInput.occurredAt": {
+    "InventoryOnceTransferInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -40403,7 +40403,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -40602,7 +40602,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceTransferManyByPolicyInput.occurredAt": {
+    "InventoryOnceTransferManyByPolicyInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -40612,7 +40612,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -40857,7 +40857,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceTransferManyInput.occurredAt": {
+    "InventoryOnceTransferManyInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -40867,7 +40867,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -41182,7 +41182,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceTransformationInput.occurredAt": {
+    "InventoryOnceTransformationInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -41192,7 +41192,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -41736,7 +41736,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "InventoryOnceUnpackInput.occurredAt": {
+    "InventoryOnceUnpackInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -41746,7 +41746,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -42041,7 +42041,7 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryOperationPlanningContext.recordedAt": {
+    "InventoryOperationPlanningContext.recordedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -42051,7 +42051,7 @@
       "directions": [
         "callback-argument"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-storage-refinement.test.ts",
         "test/storage-conformance.test.ts"
@@ -42164,7 +42164,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "InventoryOperationReceipt.recordedAt": {
+    "InventoryOperationReceipt.recordedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -42175,7 +42175,7 @@
         "input",
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-storage-refinement.test.ts",
         "test/storage-conformance.test.ts"
@@ -42649,7 +42649,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryPolicyAllocationLine.expiresAt": {
+    "InventoryPolicyAllocationLine.expiresAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -42659,7 +42659,7 @@
       "directions": [
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -42673,7 +42673,7 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryPolicyAllocationLine.layerStartedAt": {
+    "InventoryPolicyAllocationLine.layerStartedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -42683,7 +42683,7 @@
       "directions": [
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -43221,7 +43221,7 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryPositionAvailability.effectiveUseBy": {
+    "InventoryPositionAvailability.effectiveUseByEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -43231,7 +43231,7 @@
       "directions": [
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -43415,7 +43415,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryPositiveLayerProvenanceOverride.startedAt": {
+    "InventoryPositiveLayerProvenanceOverride.startedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -43428,7 +43428,7 @@
         "input",
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -43993,7 +43993,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryProjectionState.positiveLayerStartedAtByPositionId": {
+    "InventoryProjectionState.positiveLayerStartedAtEpochMsByPositionId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -44005,7 +44005,7 @@
         "input",
         "output"
       ],
-      "discoveredType": "Readonly<Record<string, string>>",
+      "discoveredType": "Readonly<Record<string, number>>",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -44753,7 +44753,7 @@
       "optional": true,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "InventoryReservation.createdAt": {
+    "InventoryReservation.createdAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -44766,7 +44766,7 @@
         "input",
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -44780,7 +44780,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryReservation.expiresAt": {
+    "InventoryReservation.expiresAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -44793,7 +44793,7 @@
         "input",
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -44834,7 +44834,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "InventoryReservation.lastChangedAt": {
+    "InventoryReservation.lastChangedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -44847,7 +44847,7 @@
         "input",
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -45052,7 +45052,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryReservation.statusAt": {
+    "InventoryReservation.statusAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -45065,7 +45065,7 @@
         "input",
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -45456,7 +45456,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryReservationFeasibilityReport.at": {
+    "InventoryReservationFeasibilityReport.atEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -45466,7 +45466,7 @@
       "directions": [
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -48487,7 +48487,7 @@
       "optional": true,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "InventoryTransfer.dispatchedAt": {
+    "InventoryTransfer.dispatchedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -48499,7 +48499,7 @@
         "input",
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -48514,7 +48514,7 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryTransfer.lastReceivedAt": {
+    "InventoryTransfer.lastReceivedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -48526,7 +48526,7 @@
         "input",
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -48568,7 +48568,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryTransfer.preparedAt": {
+    "InventoryTransfer.preparedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -48580,7 +48580,7 @@
         "input",
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -48649,7 +48649,7 @@
       "optional": true,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "InventoryTransfer.releasedAt": {
+    "InventoryTransfer.releasedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -48661,7 +48661,7 @@
         "input",
         "output"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -50464,7 +50464,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "MarkInventoryReservationConsumedInput.occurredAt": {
+    "MarkInventoryReservationConsumedInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -50474,7 +50474,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -50584,7 +50584,7 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "NewInventoryReservation.createdAt": {
+    "NewInventoryReservation.createdAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -50594,7 +50594,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -50608,7 +50608,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "NewInventoryReservation.expiresAt": {
+    "NewInventoryReservation.expiresAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -50618,7 +50618,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -50890,7 +50890,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "ObserveInventoryCountInput.observedAt": {
+    "ObserveInventoryCountInput.observedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -50900,7 +50900,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -51028,7 +51028,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "PlanInventoryAllocationInput.at": {
+    "PlanInventoryAllocationInput.atEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -51038,7 +51038,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -51124,7 +51124,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "PlanInventoryAllocationInput.reservationAt": {
+    "PlanInventoryAllocationInput.reservationAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -51134,7 +51134,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -51266,7 +51266,7 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "PlanInventoryFungibilityAllocationInput.at": {
+    "PlanInventoryFungibilityAllocationInput.atEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -51276,7 +51276,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -51381,7 +51381,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "PlanInventoryFungibilityAllocationInput.reservationAt": {
+    "PlanInventoryFungibilityAllocationInput.reservationAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -51391,7 +51391,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -51661,7 +51661,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "PublishInventoryCatalogExtensionInput.occurredAt": {
+    "PublishInventoryCatalogExtensionInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -51671,7 +51671,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -51826,7 +51826,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "PublishInventoryCatalogIfChangedInput.occurredAt": {
+    "PublishInventoryCatalogIfChangedInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -51836,7 +51836,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -52309,7 +52309,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "RecordInventoryDualRunMismatchInput.recordedAt": {
+    "RecordInventoryDualRunMismatchInput.recordedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -52319,7 +52319,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/authority.test.ts"
@@ -52379,7 +52379,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "RefineInventoryReservationInput.occurredAt": {
+    "RefineInventoryReservationInput.occurredAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -52389,7 +52389,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -52932,7 +52932,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "StartInventoryCountInput.startedAt": {
+    "StartInventoryCountInput.startedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -52942,7 +52942,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -52978,7 +52978,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "SummarizeInventoryAvailabilityInput.at": {
+    "SummarizeInventoryAvailabilityInput.atEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -52988,7 +52988,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -53998,7 +53998,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/facade.ts:680:5.deficitPosition": {
+    "anonymous@src/facade.ts:681:5.deficitPosition": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -54023,7 +54023,7 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/facade.ts:680:5.groupId": {
+    "anonymous@src/facade.ts:681:5.groupId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -54047,7 +54047,7 @@
       "optional": true,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/facade.ts:680:5.requestId": {
+    "anonymous@src/facade.ts:681:5.requestId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -54225,7 +54225,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "{ readonly operationId: string; readonly recordedAt: string; readonly worldRevision: number; readonly eventId?: string; readonly reservationId?: string; readonly countId?: string; }",
+      "discoveredType": "{ readonly operationId: string; readonly recordedAtEpochMs: number; readonly worldRevision: number; readonly eventId?: string; readonly reservationId?: string; readonly countId?: string; }",
       "executableEvidence": [
         "test/formal-storage-refinement.test.ts",
         "test/storage-conformance.test.ts"
@@ -54335,7 +54335,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/integrity.ts:290:21.recordedAt": {
+    "anonymous@src/integrity.ts:290:21.recordedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -54345,7 +54345,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-storage-refinement.test.ts",
         "test/storage-conformance.test.ts"
@@ -54625,7 +54625,7 @@
       "optional": false,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "anonymous@src/migrations.ts:231:72.snapshotAt": {
+    "anonymous@src/migrations.ts:231:72.snapshotAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -54635,7 +54635,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "string",
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/migrations.test.ts"
@@ -54710,5 +54710,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "fe83db6e44a4d448decc7c2e16b0f88bb1d2d0ab4ad052c17a3b68d7c270cd22"
+  "surfaceSha256": "fcdd6b57f8e86b55498639c9e79fd6bbf8abbaac4d4d1821e0cd20bb4abe1a78"
 }

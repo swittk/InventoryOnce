@@ -19,7 +19,7 @@ import {
 } from "../src/index.js";
 import { createInMemoryInventoryDurableStorage } from "../src/storage-api.js";
 
-const occurredAt = "2030-01-01T00:00:00.000Z";
+const occurredAtEpochMs = 1893456000000;
 const itemId = "measured-count-item";
 const itemRevisionId = "measured-count-item-v1";
 
@@ -68,7 +68,7 @@ function inventoryFor(packagingRevisions: ReturnType<typeof defineInventoryPacka
   return createInventoryOnce({
     catalog,
     storage: createInMemoryInventoryDurableStorage(),
-    clock: { now: () => occurredAt },
+    clock: { nowEpochMs: () => occurredAtEpochMs },
   });
 }
 
@@ -89,7 +89,7 @@ describe("independent physical count reconciliation", () => {
     const inventory = inventoryFor();
     await inventory.stock.receive({
       operationId: "measured-loose-receive",
-      occurredAt,
+      occurredAtEpochMs,
       to: { itemId, locationId: "loose" },
       amount: measuredStockAmount("2", "piece", [
         { axisId: "weight", value: "20", unit: "kg" },
@@ -102,7 +102,7 @@ describe("independent physical count reconciliation", () => {
       itemRevisionId,
       selector: { itemId, locationIds: ["loose"] },
       observedMeasurements: measuredVector("2", "21"),
-      occurredAt,
+      occurredAtEpochMs,
       reason: "Reweighed unchanged piece stock.",
     });
 
@@ -139,7 +139,7 @@ describe("independent physical count reconciliation", () => {
     const inventory = inventoryFor([packaging]);
     await inventory.stock.receive({
       operationId: "dynamic-package-receive",
-      occurredAt,
+      occurredAtEpochMs,
       to: { itemId, locationId: "dynamic-package" },
       amount: packageAmount(1, packaging.revisionId, [
         { axisId: "weight", value: "3", unit: "kg" },
@@ -152,7 +152,7 @@ describe("independent physical count reconciliation", () => {
       itemRevisionId,
       selector: { itemId, locationIds: ["dynamic-package"] },
       observedMeasurements: measuredVector("24", "4"),
-      occurredAt,
+      occurredAtEpochMs,
     });
 
     expect(adjusted.event?.kind).toBe(InventoryEventKind.CountAdjustment);
@@ -178,7 +178,7 @@ describe("independent physical count reconciliation", () => {
     const inventory = inventoryFor([packaging]);
     await inventory.stock.receive({
       operationId: "fixed-package-receive",
-      occurredAt,
+      occurredAtEpochMs,
       to: { itemId, locationId: "fixed-package" },
       amount: packageAmount(1, packaging.revisionId),
     });
@@ -190,7 +190,7 @@ describe("independent physical count reconciliation", () => {
       itemRevisionId,
       selector: { itemId, locationIds: ["fixed-package"] },
       observedMeasurements: measuredVector("24", "4"),
-      occurredAt,
+      occurredAtEpochMs,
     })).rejects.toThrow("does not match the same whole package count");
     expect(await inventory.read.world()).toEqual(before);
   });

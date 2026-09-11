@@ -23,7 +23,7 @@ import {
   applyInventoryRecordedDeficitBurden,
   inventoryRecordedDeficitPoolSelector,
 } from "./deficits.js";
-import { assertCanonicalInventoryTime } from "./events.js";
+import { assertInventoryEpochMilliseconds } from "./events.js";
 import {
   addInventoryMeasurements,
   inventoryMeasurementAt,
@@ -62,7 +62,7 @@ import {
   type InventoryOptionalIdentityConstraint,
   type InventoryStockSelector,
 } from "./selectors.js";
-import { inventoryPositionEffectiveUseBy } from "./usability.js";
+import { inventoryPositionEffectiveUseByEpochMs } from "./usability.js";
 import type { InventoryWorldState } from "./world.js";
 
 /** One generic policy request that may be previewed or committed by issue/transfer/scrap helpers. */
@@ -92,9 +92,9 @@ export interface InventoryPolicyAllocationLine {
   /** Exact primary-axis quantity represented by this line. */
   readonly allocatedPrimary: Quantity;
   /** Time this exact position most recently became positive after being empty/negative. */
-  readonly layerStartedAt: string;
+  readonly layerStartedAtEpochMs: number;
   /** Current lot expiry used by FEFO/expiry exclusion when known. */
-  readonly expiresAt?: string;
+  readonly expiresAtEpochMs?: number;
 }
 
 /** Revision-frozen deterministic FIFO/FEFO allocation result. */
@@ -135,9 +135,9 @@ export interface PlanInventoryAllocationInput
   /** Fully published world used for physical stock and exact claim allocations. */
   readonly world: InventoryWorldState;
   /** Physical authority time used for lot/container expiry. */
-  readonly at: string;
+  readonly atEpochMs: number;
   /** Claim-book authority time; defaults to `at` for pure previews. */
-  readonly reservationAt?: string;
+  readonly reservationAtEpochMs?: number;
 }
 
 /**
@@ -151,15 +151,15 @@ export function planInventoryAllocation({
   amount,
   itemRevisionId,
   method,
-  at,
+  atEpochMs,
   allowExpiredLots = false,
   reservationId,
   allowAllocatedStock = false,
-  reservationAt = at,
+  reservationAtEpochMs = atEpochMs,
 }: PlanInventoryAllocationInput): InventoryPolicyAllocationPlan {
-  assertCanonicalInventoryTime(at, "inventory allocation authority time");
-  assertCanonicalInventoryTime(
-    reservationAt,
+  assertInventoryEpochMilliseconds(atEpochMs, "inventory allocation authority time");
+  assertInventoryEpochMilliseconds(
+    reservationAtEpochMs,
     "inventory allocation reservation authority time"
   );
   const selected = resolveAllocationItemAndSelector(
@@ -189,8 +189,8 @@ export function planInventoryAllocation({
     reservations: world.reservations,
     selector: deficitPoolSelector,
     item: selected.item,
-    at,
-    reservationAt,
+    atEpochMs,
+    reservationAtEpochMs,
     ...(reservationId === undefined ? {} : { reservationId }),
     allowAllocatedStock,
   });
@@ -200,7 +200,7 @@ export function planInventoryAllocation({
     locationIds: deficitLocationIds,
     item: selected.item,
     method,
-    at,
+    atEpochMs,
     allowExpiredLots,
     poolCandidates: candidateResult.candidates,
   });
@@ -208,7 +208,7 @@ export function planInventoryAllocation({
     requested: requestedPrimary,
     candidates: deficitAdjusted.candidates,
     method,
-    now: at,
+    nowEpochMs: atEpochMs,
     // Expired rows were removed before assigning the location-level deficit burden.
     allowExpired: true,
   });
@@ -241,10 +241,10 @@ export function planInventoryAllocation({
         allocatedPrimary: allocation.quantity,
       }),
       allocatedPrimary: allocation.quantity,
-      layerStartedAt: candidate.receivedAt,
-      ...(candidate.expiresAt === undefined
+      layerStartedAtEpochMs: candidate.receivedAtEpochMs,
+      ...(candidate.expiresAtEpochMs === undefined
         ? {}
-        : { expiresAt: candidate.expiresAt }),
+        : { expiresAtEpochMs: candidate.expiresAtEpochMs }),
     });
   }
   return {
@@ -327,7 +327,7 @@ interface ApplyPolicyAllocationDeficitBurdenInput {
   /** FIFO/FEFO order used to burden positive rows deterministically. */
   readonly method: InventoryAllocationMethod;
   /** Physical authority time used for expiry policy. */
-  readonly at: string;
+  readonly atEpochMs: number;
   /** Whether expired rows may back deficit and remain allocatable. */
   readonly allowExpiredLots: boolean;
   /** Positive claim-adjusted candidates across the whole location pool. */
@@ -345,7 +345,7 @@ function applyPolicyAllocationDeficitBurden({
   locationIds,
   item,
   method,
-  at,
+  atEpochMs,
   allowExpiredLots,
   poolCandidates,
 }: ApplyPolicyAllocationDeficitBurdenInput): DeficitAdjustedPolicyAllocationCandidates {
@@ -356,7 +356,7 @@ function applyPolicyAllocationDeficitBurden({
   const ordered: InventoryAllocationCandidate[] = [];
   for (const candidate of poolCandidates) {
     const expired =
-      candidate.expiresAt !== undefined && candidate.expiresAt <= at;
+      candidate.expiresAtEpochMs !== undefined && candidate.expiresAtEpochMs <= atEpochMs;
     if (expired && !allowExpiredLots) {
       if (
         inventoryStockPositionMatchesNormalizedSelector(
@@ -470,9 +470,9 @@ interface CreatePolicyAllocationCandidatesInput {
   /** Exact item revision and reservation axis policy. */
   readonly item: InventoryItemDefinitionRevision;
   /** Physical authority time used for expiry evidence. */
-  readonly at: string;
+  readonly atEpochMs: number;
   /** Claim-book authority time used to reconstruct active reservations. */
-  readonly reservationAt: string;
+  readonly reservationAtEpochMs: number;
   /** Optional claim whose own binding stays available to its allocator/consumer. */
   readonly reservationId?: string;
   /** Whether exact allocations should remain physically selectable. */
@@ -570,8 +570,8 @@ function createPolicyAllocationCandidates({
   reservations,
   selector,
   item,
-  at,
-  reservationAt,
+  atEpochMs,
+  reservationAtEpochMs,
   reservationId,
   allowAllocatedStock,
 }: CreatePolicyAllocationCandidatesInput): PolicyAllocationCandidates {
@@ -583,13 +583,13 @@ function createPolicyAllocationCandidates({
   // Reservation book frozen to the same authority time as this candidate plan.
   const historicalReservations = inventoryReservationsAt(
     reservations,
-    reservationAt
+    reservationAtEpochMs
   );
   // Build exact claim pressure once. Re-scanning every reservation for every candidate is quadratic.
   const reservationSummary = createExactPrimaryReservationSummary({
     reservations: historicalReservations,
     item,
-    at: reservationAt,
+    atEpochMs: reservationAtEpochMs,
     ...(reservationId === undefined
       ? {}
       : { excludedReservationId: reservationId }),
@@ -638,19 +638,19 @@ function createPolicyAllocationCandidates({
       ) <= 0
     )
       continue;
-    const receivedAt =
-      projection.positiveLayerStartedAtByPositionId[positionIdentity];
-    if (receivedAt === undefined) {
+    const receivedAtEpochMs =
+      projection.positiveLayerStartedAtEpochMsByPositionId[positionIdentity];
+    if (receivedAtEpochMs === undefined) {
       throw new Error(
         `Positive inventory position ${positionIdentity} has no projected positive-layer origin.`
       );
     }
-    const expiresAt = inventoryPositionEffectiveUseBy(projection, position.key);
+    const expiresAtEpochMs = inventoryPositionEffectiveUseByEpochMs(projection, position.key);
     const candidate: InventoryAllocationCandidate = {
       position: position.key,
       available,
-      receivedAt,
-      ...(expiresAt === undefined ? {} : { expiresAt }),
+      receivedAtEpochMs,
+      ...(expiresAtEpochMs === undefined ? {} : { expiresAtEpochMs }),
       ...allocationIncrementForPosition(catalog, position, item),
     };
     candidates.push(candidate);
@@ -682,7 +682,7 @@ interface CreateExactPrimaryReservationSummaryInput {
   /** Exact item revision whose primary candidates are being planned. */
   readonly item: InventoryItemDefinitionRevision;
   /** Claim-book authority time used to decide whether each row still protects stock. */
-  readonly at: string;
+  readonly atEpochMs: number;
   /** Optional reservation whose own binding stays available to its allocator/consumer. */
   readonly excludedReservationId?: string;
   /** Whether exact bindings are deliberately ignored as physical-truth candidates. */
@@ -693,7 +693,7 @@ interface CreateExactPrimaryReservationSummaryInput {
 function createExactPrimaryReservationSummary({
   reservations,
   item,
-  at,
+  atEpochMs,
   excludedReservationId,
   allowAllocatedStock,
 }: CreateExactPrimaryReservationSummaryInput): ExactPrimaryReservationSummary {
@@ -703,7 +703,7 @@ function createExactPrimaryReservationSummary({
   let unallocatedReservationsPresent = false;
   for (const reservation of reservations) {
     if (reservation.reservationId === excludedReservationId) continue;
-    if (!inventoryReservationIsActiveAt(reservation, at)) continue;
+    if (!inventoryReservationIsActiveAt(reservation, atEpochMs)) continue;
     if (reservation.itemRevisionId !== item.revisionId) continue;
     const allocations = reservation.allocations;
     if (allocations.length === 0) {

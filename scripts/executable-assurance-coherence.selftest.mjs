@@ -153,6 +153,16 @@ test("report-only manifest counters fail closed when missing or invalid", () => 
 });
 
 
+test("trace entry identities must be nonempty before summary credit", () => {
+  const input = fixtures();
+  input.traces.entries[""] = input.traces.entries.a;
+  delete input.traces.entries.a;
+  assert.throws(
+    () => executableAssuranceSummary(input),
+    /Malformed trace assurance entry ''/u,
+  );
+});
+
 test("missing or malformed trace apiEntries fail closed", () => {
   for (const invalid of [undefined, "one", ["one", 2]]) {
     const input = fixtures();
@@ -167,7 +177,7 @@ test("missing or malformed trace apiEntries fail closed", () => {
   nullEntry.traces.entries.a = null;
   assert.throws(
     () => executableAssuranceSummary(nullEntry),
-    /trace apiEntries must be a present array of strings/u,
+    /Malformed trace assurance entry 'a'/u,
   );
 });
 

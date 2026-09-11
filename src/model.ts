@@ -108,10 +108,10 @@ export interface InventoryLotDefinition {
   readonly itemId: ItemId;
   /** Stable lot identity from the maker/application. */
   readonly lotId: LotId;
-  /** Manufacturing time in canonical ISO-8601 form when known. */
-  readonly manufacturedAt?: string;
-  /** Maker/use-by expiry time in canonical ISO-8601 form when known. */
-  readonly expiresAt?: string;
+  /** Manufacturing time in safe-integer epoch milliseconds when known. */
+  readonly manufacturedAtEpochMs?: number;
+  /** Maker/use-by expiry time in safe-integer epoch milliseconds when known. */
+  readonly expiresAtEpochMs?: number;
   /** Extra application metadata that does not change lot identity. */
   readonly metadata?: InventoryMetadata;
 }
@@ -132,9 +132,9 @@ export interface InventoryContainerDefinition {
   /** GTIN/SSCC/barcode/vendor identifiers that help resolve this exact container. */
   readonly identifiers?: Readonly<Record<string, string>>;
   /** Time this exact container was physically opened/prepared when known. */
-  readonly openedAt?: string;
+  readonly openedAtEpochMs?: number;
   /** Container-specific use-by time, often shorter than the source lot expiry. */
-  readonly useBy?: string;
+  readonly useByEpochMs?: number;
   /** Extra application metadata that does not change container identity. */
   readonly metadata?: InventoryMetadata;
 }

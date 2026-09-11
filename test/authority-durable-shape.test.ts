@@ -11,9 +11,9 @@ import {
   type InventoryAuthorityStateStore,
 } from "../src/authority.js";
 
-const time0 = "2030-01-01T00:00:00.000Z";
-const time1 = "2030-01-01T00:00:01.000Z";
-const time2 = "2030-01-01T00:00:02.000Z";
+const time0 = 1893456000000;
+const time1 = 1893456001000;
+const time2 = 1893456002000;
 
 /** Mutable in-memory authority row used to probe the real public read/parser path. */
 class MutableAuthorityStore implements InventoryAuthorityStateStore {
@@ -100,7 +100,7 @@ function durableRow(
           commandId: "command-a",
           legacyIntentDigest: "legacy-a",
           authoritativeIntentDigest: "native-b",
-          recordedAt: time1,
+          recordedAtEpochMs: time1,
         },
       ]
     : [];
@@ -115,18 +115,18 @@ function durableRow(
       ? '[{"writerToken":"writer-a","attemptToken":"attempt-a"}]'
       : "[]",
     adapterCertificationDigest: shape.certified ? "adapter-a" : "",
-    adapterCertifiedAt: shape.certified ? time0 : "",
+    adapterCertifiedAtEpochMs: shape.certified ? time0 : null,
     sourceRoot: shape.sourceBound ? "source-root" : "",
     sourceRevision: shape.sourceBound ? 7 : 0,
     sourcePlanDigest: shape.sourceBound ? "source-plan" : "",
     sourceCatalogDigest: shape.sourceBound ? "source-catalog" : "",
-    dualRunStartedAt: shape.sourceBound ? time1 : "",
+    dualRunStartedAtEpochMs: shape.sourceBound ? time1 : null,
     dualRunMismatchEvidenceJson: JSON.stringify(mismatch),
     fenceToken: shape.fenceBound ? "fence-a" : "",
-    fenceStartedAt: shape.fenceBound ? time2 : "",
+    fenceStartedAtEpochMs: shape.fenceBound ? time2 : null,
     targetWorldRoot: shape.targetBound ? "target-root" : "",
     targetWorldRevision: shape.targetRevisionNonzero ? 1 : 0,
-    activatedAt: shape.targetBound ? time2 : "",
+    activatedAtEpochMs: shape.targetBound ? time2 : null,
     compatibilityProjectionWorldRevision: shape.projectionRevisionNonzero ? 1 : 0,
     compatibilityProjectionStatus: shape.projectionStatus,
     compatibilityProjectionError:
@@ -374,12 +374,12 @@ describe("InventoryAuthorityControl durable state shape", () => {
       await expect(authority.read()).resolves.toBeDefined();
     }
     const rejectedRows: readonly InventoryAuthorityDocument[] = [
-      { ...legacy, adapterCertifiedAt: time0 },
+      { ...legacy, adapterCertifiedAtEpochMs: time0 },
       { ...legacy, sourceRevision: 9 },
       { ...dualRun, sourceCatalogDigest: "" },
       { ...dualRun, sourceRoot: " source-root " },
-      { ...authoritative, fenceStartedAt: "2030-01-01" },
-      { ...authoritative, activatedAt: "2030-01-01" },
+      { ...authoritative, fenceStartedAtEpochMs: "2030-01-01" },
+      { ...authoritative, activatedAtEpochMs: "2030-01-01" },
       {
         ...authoritative,
         compatibilityProjectionStatus: InventoryCompatibilityProjectionStatus.Current,
@@ -394,7 +394,7 @@ describe("InventoryAuthorityControl durable state shape", () => {
             commandId: "",
             legacyIntentDigest: "legacy-a",
             authoritativeIntentDigest: "native-b",
-            recordedAt: time1,
+            recordedAtEpochMs: time1,
           },
         ]),
       },
@@ -405,7 +405,7 @@ describe("InventoryAuthorityControl durable state shape", () => {
             commandId: "command-a",
             legacyIntentDigest: "legacy-a",
             authoritativeIntentDigest: "native-b",
-            recordedAt: "2030-01-01",
+            recordedAtEpochMs: "2030-01-01",
           },
         ]),
       },
@@ -416,13 +416,13 @@ describe("InventoryAuthorityControl durable state shape", () => {
             commandId: "command-a",
             legacyIntentDigest: "legacy-a",
             authoritativeIntentDigest: "native-b",
-            recordedAt: time1,
+            recordedAtEpochMs: time1,
           },
           {
             commandId: "command-a",
             legacyIntentDigest: "legacy-c",
             authoritativeIntentDigest: "native-d",
-            recordedAt: time2,
+            recordedAtEpochMs: time2,
           },
         ]),
       },
@@ -433,13 +433,13 @@ describe("InventoryAuthorityControl durable state shape", () => {
       "cannot retain a source revision without complete source evidence",
       "source evidence must be retained as one complete bundle",
       "sourceRoot is not stored in canonical trimmed form",
-      "fence startedAt must be canonical UTC ISO time",
-      "activatedAt must be canonical UTC ISO time",
+      "field 'fenceStartedAtEpochMs' must be epoch milliseconds or null",
+      "field 'activatedAtEpochMs' must be epoch milliseconds or null",
       "non-failed compatibility projection cannot retain an error",
       "compatibility projection error must not be empty",
       "compatibility projection error exceeds its durable bound",
       "mismatch commandId must not be empty",
-      "mismatch recordedAt must be canonical UTC ISO time",
+      "DualRun mismatch evidence entry is invalid",
       "mismatch evidence repeats command",
     ];
     expect(expectedReasons).toHaveLength(rejectedRows.length);
@@ -463,7 +463,7 @@ describe("InventoryAuthorityControl durable state shape", () => {
     await expect(
       authority.authorizeCutover({ authorizationId: "cutover-a" })
     ).resolves.toMatchObject({ mode: InventoryAuthorityMode.Legacy });
-    await authority.certifyAdapter({ certificationDigest: "adapter-a", certifiedAt: time0 });
+    await authority.certifyAdapter({ certificationDigest: "adapter-a", certifiedAtEpochMs: time0 });
     await expect(
       authority.enterShadow({ certificationDigest: "adapter-a" })
     ).resolves.toMatchObject({ mode: InventoryAuthorityMode.Shadow });
@@ -472,7 +472,7 @@ describe("InventoryAuthorityControl durable state shape", () => {
       sourceRevision: 7,
       sourcePlanDigest: "source-plan",
       sourceCatalogDigest: "source-catalog",
-      startedAt: time1,
+      startedAtEpochMs: time1,
     });
     await expect(
       authority.admitLegacyWriter({
@@ -485,12 +485,12 @@ describe("InventoryAuthorityControl durable state shape", () => {
       attemptToken: "attempt-a",
     });
     await expect(
-      authority.claimFence({ fenceToken: "fence-a", startedAt: time2 })
+      authority.claimFence({ fenceToken: "fence-a", startedAtEpochMs: time2 })
     ).resolves.toMatchObject({ mode: InventoryAuthorityMode.Fencing });
     await expect(authority.releaseFence("fence-a")).resolves.toMatchObject({
       mode: InventoryAuthorityMode.DualRun,
     });
-    await authority.claimFence({ fenceToken: "fence-a", startedAt: time2 });
+    await authority.claimFence({ fenceToken: "fence-a", startedAtEpochMs: time2 });
     await expect(
       authority.activate({
         fenceToken: "fence-a",
@@ -498,7 +498,7 @@ describe("InventoryAuthorityControl durable state shape", () => {
         sourceCatalogDigest: "source-catalog",
         targetWorldRoot: "target-root",
         targetWorldRevision: 1,
-        activatedAt: time2,
+        activatedAtEpochMs: time2,
       })
     ).resolves.toMatchObject({
       mode: InventoryAuthorityMode.Authoritative,
@@ -523,21 +523,21 @@ describe("InventoryAuthorityControl durable state shape", () => {
       store: mismatchStore,
       namespaceId: "durable-shape-mismatch:primary",
     });
-    await mismatchAuthority.certifyAdapter({ certificationDigest: "adapter-a", certifiedAt: time0 });
+    await mismatchAuthority.certifyAdapter({ certificationDigest: "adapter-a", certifiedAtEpochMs: time0 });
     await mismatchAuthority.enterShadow({ certificationDigest: "adapter-a" });
     await mismatchAuthority.enterDualRun({
       sourceRoot: "source-root",
       sourceRevision: 7,
       sourcePlanDigest: "source-plan",
       sourceCatalogDigest: "source-catalog",
-      startedAt: time1,
+      startedAtEpochMs: time1,
     });
     await expect(
       mismatchAuthority.recordDualRunMismatch({
         commandId: "command-a",
         legacyIntentDigest: "legacy-a",
         authoritativeIntentDigest: "native-b",
-        recordedAt: time2,
+        recordedAtEpochMs: time2,
       })
     ).resolves.toMatchObject({ mode: InventoryAuthorityMode.DualRun });
 
@@ -546,14 +546,14 @@ describe("InventoryAuthorityControl durable state shape", () => {
       store: greenfieldStore,
       namespaceId: "durable-shape-greenfield:primary",
     });
-    await greenfield.certifyAdapter({ certificationDigest: "adapter-a", certifiedAt: time0 });
+    await greenfield.certifyAdapter({ certificationDigest: "adapter-a", certifiedAtEpochMs: time0 });
     await expect(
       greenfield.activateGreenfield({
         authorizationId: "greenfield-a",
         certificationDigest: "adapter-a",
         targetWorldRoot: "empty-root",
         targetWorldRevision: 0,
-        activatedAt: time1,
+        activatedAtEpochMs: time1,
       })
     ).resolves.toMatchObject({
       activationKind: InventoryAuthorityActivationKind.Greenfield,

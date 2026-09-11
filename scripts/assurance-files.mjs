@@ -27,7 +27,7 @@ export function assuranceRepositoryPath(repositoryRoot, relativePath) {
 }
 
 /** Open proof bytes without following a replaced leaf link, then require an ordinary file. */
-export function readAssuranceFile(repositoryRoot, relativePath) {
+function readOrdinaryAssuranceFile(repositoryRoot, relativePath) {
   const target = assuranceRepositoryPath(repositoryRoot, relativePath);
   if (!fs.lstatSync(target).isFile()) throw new Error(`Assurance input is not a regular file: ${relativePath}.`);
   const descriptor = fs.openSync(target, fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW ?? 0) | (fs.constants.O_NONBLOCK ?? 0));
@@ -152,4 +152,33 @@ export function claimAssuranceWorkspace(repositoryRoot) {
     assert.equal(JSON.parse(fs.readFileSync(ownerFile, "utf8")).owner, owner, "Compact assurance workspace ownership changed.");
     fs.unlinkSync(ownerFile); fs.rmdirSync(directory);
   };
+}
+
+/** One active synchronous/async proof transaction, isolated from every other worktree and caller. */
+const proofReadSessions = new Map();
+
+/** Read one contained ordinary input, sharing immutable bytes only inside an explicit proof transaction. */
+export function readAssuranceFile(repositoryRoot, relativePath) {
+  const session = proofReadSessions.get(path.resolve(repositoryRoot));
+  return session === undefined ? readOrdinaryAssuranceFile(repositoryRoot, relativePath) : session.read(relativePath);
+}
+
+/** Hash an input once per immutable transaction, rather than once per public callable. */
+export function assuranceFileSha256(repositoryRoot, relativePath) {
+  const session = proofReadSessions.get(path.resolve(repositoryRoot));
+  return session === undefined ? assuranceBytesSha256(readOrdinaryAssuranceFile(repositoryRoot, relativePath)) : session.hash(relativePath);
+}
+
+/** Bind an explicit transaction's checked reader without changing ordinary verifier behavior outside the transaction. */
+export async function withAssuranceReadSession(repositoryRoot, session, run) {
+  const root = path.resolve(repositoryRoot);
+  assert(!proofReadSessions.has(root), "An assurance read transaction is already active for this root.");
+  proofReadSessions.set(root, session);
+  try { return await run(); } finally { proofReadSessions.delete(root); }
+}
+
+/** Bind the compiler's immutable source string to the same exact bytes without rehashing it for every callable. */
+export function assuranceCompilerSourceSha256(repositoryRoot, file, text) {
+  const session = proofReadSessions.get(path.resolve(repositoryRoot));
+  return session === undefined ? assuranceBytesSha256(text) : session.compilerHash(file, text);
 }

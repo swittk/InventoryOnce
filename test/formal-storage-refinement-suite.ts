@@ -93,9 +93,9 @@ export interface InventoryFormalCriticalTrace {
 }
 
 /** Fixed lot expiries make FEFO source choice independent of object iteration order. */
-const earlyExpiry = "2027-01-01T00:00:00.000Z";
+const earlyExpiry = 1798761600000;
 /** Later lot expiry leaves one distinct bucket for the final absolute count. */
-const lateExpiry = "2028-01-01T00:00:00.000Z";
+const lateExpiry = 1830297600000;
 
 /** Build the real public façade over one supplied durable adapter. */
 function createRefinementInventory(
@@ -157,7 +157,7 @@ export async function runInventoryFormalCriticalTrace(
   const inventory = createRefinementInventory(storage);
   const receiveCommand = {
     operationId: `formal-receive-${suffix}`,
-    occurredAt: time0,
+    occurredAtEpochMs: time0,
     ...(decoration.receiveReason === undefined
       ? {}
       : { reason: decoration.receiveReason }),
@@ -166,12 +166,12 @@ export async function runInventoryFormalCriticalTrace(
       {
         to: loosePosition("store", { lotId: "FORMAL-EARLY" }),
         amount: stockAmount("5", "piece"),
-        lot: { expiresAt: earlyExpiry },
+        lot: { expiresAtEpochMs: earlyExpiry },
       },
       {
         to: loosePosition("store", { lotId: "FORMAL-LATE" }),
         amount: stockAmount("4", "piece"),
-        lot: { expiresAt: lateExpiry },
+        lot: { expiresAtEpochMs: lateExpiry },
       },
     ],
   };
@@ -190,7 +190,7 @@ export async function runInventoryFormalCriticalTrace(
 
   const issueCommand = {
     operationId: `formal-issue-${suffix}`,
-    occurredAt: time1,
+    occurredAtEpochMs: time1,
     ...(decoration.issueReason === undefined
       ? {}
       : { reason: decoration.issueReason }),
@@ -226,7 +226,7 @@ export async function runInventoryFormalCriticalTrace(
 
   const transferCommand = {
     operationId: `formal-transfer-${suffix}`,
-    occurredAt: time2,
+    occurredAtEpochMs: time2,
     ...(decoration.transferReason === undefined
       ? {}
       : { reason: decoration.transferReason }),
@@ -278,7 +278,7 @@ export async function runInventoryFormalCriticalTrace(
       primary: { axisId: "pieces", quantity: parseQuantity("3", "piece") },
       independent: [],
     },
-    occurredAt: time2,
+    occurredAtEpochMs: time2,
     reason: decoration.countReason ?? "Bounded formal count observation",
     metadata: decoration,
   };
@@ -324,7 +324,7 @@ function createFormalRefinementMigration(
     declaration: {
       migrationId,
       sourceSystem: "formal-refinement-source",
-      cutoverAt: time0,
+      cutoverAtEpochMs: time0,
       openingStock: [
         {
           openingId: `${migrationId}:opening`,
@@ -333,7 +333,7 @@ function createFormalRefinementMigration(
           }),
           amount: stockAmount(balance, "piece"),
           itemRevisionId: "item-a-v2",
-          lot: { manufacturedAt: time0, expiresAt: time3 },
+          lot: { manufacturedAtEpochMs: time0, expiresAtEpochMs: time3 },
           source: {
             sourceType: "formal-refinement-row",
             sourceId: `${migrationId}:row`,
@@ -420,7 +420,7 @@ export function runInventoryFormalStorageRefinementSuite(
         () =>
           inventory.stock.issueManyByPolicy({
             operationId: `formal-issue-${label}-rejection`,
-            occurredAt: time1,
+            occurredAtEpochMs: time1,
             requests: [
               {
                 requestId: "formal-issue-line",
@@ -440,7 +440,7 @@ export function runInventoryFormalStorageRefinementSuite(
         () =>
           inventory.stock.issueManyByPolicy({
             operationId: `formal-shortfall-${label}`,
-            occurredAt: time3,
+            occurredAtEpochMs: time3,
             requests: [
               {
                 requestId: "too-large",
@@ -627,7 +627,7 @@ export function runInventoryFormalStorageRefinementSuite(
       const receiveInventory = createRefinementInventory(receiveStorage);
       const receiveCommand = {
         operationId: receiveOperationId,
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         lines: [
           {
             to: loosePosition("store", { lotId: "FAIL-RECEIVE" }),
@@ -668,7 +668,7 @@ export function runInventoryFormalStorageRefinementSuite(
       const issueInventory = createRefinementInventory(issueStorage);
       await issueInventory.stock.receiveMany({
         operationId: `formal-fail-issue-seed-${label}`,
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         lines: [
           {
             to: loosePosition("store", { lotId: "FAIL-ISSUE" }),
@@ -678,7 +678,7 @@ export function runInventoryFormalStorageRefinementSuite(
       });
       const issueCommand = {
         operationId: issueOperationId,
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         requests: [
           {
             requestId: "fail-issue-line",
@@ -723,7 +723,7 @@ export function runInventoryFormalStorageRefinementSuite(
       const transferInventory = createRefinementInventory(transferStorage);
       await transferInventory.stock.receiveMany({
         operationId: `formal-fail-transfer-seed-${label}`,
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         lines: [
           {
             to: loosePosition("store", { lotId: "FAIL-TRANSFER" }),
@@ -733,7 +733,7 @@ export function runInventoryFormalStorageRefinementSuite(
       });
       const transferCommand = {
         operationId: transferOperationId,
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         toLocationId: "room",
         requests: [
           {
@@ -796,7 +796,7 @@ export function runInventoryFormalStorageRefinementSuite(
       const countInventory = createRefinementInventory(countStorage);
       await countInventory.stock.receiveMany({
         operationId: `formal-fail-count-seed-${label}`,
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         lines: [
           {
             to: loosePosition("store", { lotId: "FAIL-COUNT" }),
@@ -816,7 +816,7 @@ export function runInventoryFormalStorageRefinementSuite(
           primary: { axisId: "pieces", quantity: parseQuantity("3", "piece") },
           independent: [],
         },
-        occurredAt: time2,
+        occurredAtEpochMs: time2,
         reason: "Selected failpoint count",
       };
       await expect(

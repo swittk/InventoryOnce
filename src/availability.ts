@@ -53,7 +53,7 @@ import {
   type InventoryStockSelector,
 } from "./selectors.js";
 import {
-  inventoryPositionEffectiveUseBy,
+  inventoryPositionEffectiveUseByEpochMs,
   inventoryPositionIsExpiredAt,
 } from "./usability.js";
 
@@ -62,7 +62,7 @@ export interface InventoryPositionAvailability {
   /** Exact current stock position. */
   readonly position: InventoryStockPosition;
   /** Earliest lot expiry or container use-by when known. */
-  readonly effectiveUseBy?: string;
+  readonly effectiveUseByEpochMs?: number;
   /** True when this position is unusable at the requested authority time. */
   readonly expired: boolean;
   /** Exact active allocations on this item's reservation axis. */
@@ -122,7 +122,7 @@ export interface InventoryAvailabilitySummary {
   /** Normalized selector used by this read. */
   readonly selector: InventoryStockSelector;
   /** Authority time used for use-by and reservation lifecycle checks. */
-  readonly at: string;
+  readonly atEpochMs: number;
   /** Revision-safe physical/claim summaries. */
   readonly revisions: readonly InventoryAvailabilityRevisionSummary[];
   /** Global claim-feasibility report; shortages are not hidden behind a single scalar. */
@@ -140,7 +140,7 @@ export interface SummarizeInventoryAvailabilityInput {
   /** Broad or exact stock scope. */
   readonly selector: InventoryStockSelector;
   /** Authority time for expiry and claim lifecycle. */
-  readonly at: string;
+  readonly atEpochMs: number;
 }
 
 /** Compute truthful physical/claim availability without pretending broad claims are exact allocations. */
@@ -149,14 +149,14 @@ export function summarizeInventoryAvailability({
   projection,
   reservations,
   selector: rawSelector,
-  at,
+  atEpochMs,
 }: SummarizeInventoryAvailabilityInput): InventoryAvailabilitySummary {
   const selector = normalizeInventoryStockSelector(rawSelector);
   const positionsByRevision = selectedPositionsByRevision(projection, selector);
   /** Active claim rows reconstructed at the requested authority time. */
   const activeReservations: InventoryReservation[] = [];
-  for (const reservation of inventoryReservationsAt(reservations, at)) {
-    if (inventoryReservationIsActiveAt(reservation, at)) {
+  for (const reservation of inventoryReservationsAt(reservations, atEpochMs)) {
+    if (inventoryReservationIsActiveAt(reservation, atEpochMs)) {
       activeReservations.push(reservation);
     }
   }
@@ -175,19 +175,19 @@ export function summarizeInventoryAvailability({
         positions: positionsByRevision.get(revisionId) ?? [],
         activeReservations,
         revisionId,
-        at,
+        atEpochMs,
       })
     );
   }
   return {
     selector,
-    at,
+    atEpochMs,
     revisions,
     reservationFeasibility: inspectInventoryReservationFeasibility({
       catalog,
       projection,
       book: reservations,
-      at,
+      atEpochMs,
     }),
   };
 }
@@ -251,7 +251,7 @@ interface SummarizeAvailabilityRevisionInput {
   /** Exact frozen item revision. */
   readonly revisionId: ItemRevisionId;
   /** Authority time for expiry and claim lifecycle. */
-  readonly at: string;
+  readonly atEpochMs: number;
 }
 
 /** Build one exact revision summary from physical positions and active claim rows. */
@@ -262,7 +262,7 @@ function summarizeAvailabilityRevision({
   positions,
   activeReservations,
   revisionId,
-  at,
+  atEpochMs,
 }: SummarizeAvailabilityRevisionInput): InventoryAvailabilityRevisionSummary {
   const item = catalog.itemRevision(revisionId);
   const reservationAxis = catalog.measurementAxis(item, item.reservationAxisId);
@@ -291,7 +291,7 @@ function summarizeAvailabilityRevision({
     positions,
     revisionId,
     unit: reservationAxis.unit,
-    at,
+    atEpochMs,
   });
   const poolReservationIndex = indexAvailabilityReservations({
     activeReservations,
@@ -300,7 +300,7 @@ function summarizeAvailabilityRevision({
     positions: poolPositions,
     revisionId,
     unit: reservationAxis.unit,
-    at,
+    atEpochMs,
   });
   const pendingPositions: MutableInventoryPositionAvailability[] = [];
 
@@ -308,7 +308,7 @@ function summarizeAvailabilityRevision({
     const isDeficit = inventoryPositionIsDeficit(position);
     const deficitMeasurements = inventoryPositionDeficitMeasurements(position);
     const expired =
-      !isDeficit && inventoryPositionIsExpiredAt(projection, position.key, at);
+      !isDeficit && inventoryPositionIsExpiredAt(projection, position.key, atEpochMs);
     if (!isDeficit) {
       physicalOnHand = addInventoryMeasurements(
         physicalOnHand,
@@ -363,13 +363,13 @@ function summarizeAvailabilityRevision({
         exactAllocations.quantity
       );
     }
-    const effectiveUseBy = inventoryPositionEffectiveUseBy(
+    const effectiveUseByEpochMs = inventoryPositionEffectiveUseByEpochMs(
       projection,
       position.key
     );
     pendingPositions.push({
       position,
-      ...(effectiveUseBy === undefined ? {} : { effectiveUseBy }),
+      ...(effectiveUseByEpochMs === undefined ? {} : { effectiveUseByEpochMs }),
       expired,
       exactlyAllocated: exactAllocations.quantity,
       exactAllocationReservationIds: exactAllocations.reservationIds,
@@ -388,7 +388,7 @@ function summarizeAvailabilityRevision({
   for (const position of poolPositions) {
     if (inventoryPositionIsDeficit(position)) continue;
     if (position.key.transferId !== undefined) continue;
-    if (inventoryPositionIsExpiredAt(projection, position.key, at)) continue;
+    if (inventoryPositionIsExpiredAt(projection, position.key, atEpochMs)) continue;
     const physicalCapacity = inventoryMeasurementAt(
       position.measurements,
       reservationAxis.axisId,
@@ -433,7 +433,7 @@ function summarizeAvailabilityRevision({
     locationIds,
     poolPositions,
     selectedPositions: positions,
-    at,
+    atEpochMs,
     usableOnly: false,
   });
   const usableDeficit = availabilitySelectedDeficitBurdenMeasurements({
@@ -442,7 +442,7 @@ function summarizeAvailabilityRevision({
     locationIds,
     poolPositions,
     selectedPositions: positions,
-    at,
+    atEpochMs,
     usableOnly: true,
   });
   const onHand = subtractInventoryMeasurements(physicalOnHand, deficit);
@@ -538,7 +538,7 @@ interface AvailabilitySelectedDeficitBurdenInput {
   /** Exact positions selected by the caller. */
   readonly selectedPositions: readonly InventoryStockPosition[];
   /** Authority time used when only usable physical rows may carry burden. */
-  readonly at: string;
+  readonly atEpochMs: number;
   /** True when expired rows must not back this availability view. */
   readonly usableOnly: boolean;
 }
@@ -553,7 +553,7 @@ function availabilitySelectedDeficitBurdenMeasurements({
   locationIds,
   poolPositions,
   selectedPositions,
-  at,
+  atEpochMs,
   usableOnly,
 }: AvailabilitySelectedDeficitBurdenInput): InventoryMeasurementVector {
   if (selectedPositions.some(inventoryPositionIsDeficit)) {
@@ -575,7 +575,7 @@ function availabilitySelectedDeficitBurdenMeasurements({
       selectedPositionIds,
       axisId: item.primaryAxis.axisId,
       unit: item.primaryAxis.unit,
-      at,
+      atEpochMs,
       usableOnly,
     })
   );
@@ -591,7 +591,7 @@ function availabilitySelectedDeficitBurdenMeasurements({
         selectedPositionIds,
         axisId: axis.axisId,
         unit: axis.unit,
-        at,
+        atEpochMs,
         usableOnly,
       }),
     });
@@ -616,7 +616,7 @@ interface AvailabilitySelectedDeficitAxisBurdenInput {
   /** Exact unit of this axis. */
   readonly unit: Quantity["unit"];
   /** Authority time used for usable-only filtering. */
-  readonly at: string;
+  readonly atEpochMs: number;
   /** True when expired rows may not carry deficit burden. */
   readonly usableOnly: boolean;
 }
@@ -630,7 +630,7 @@ function availabilitySelectedDeficitAxisBurden({
   selectedPositionIds,
   axisId,
   unit,
-  at,
+  atEpochMs,
   usableOnly,
 }: AvailabilitySelectedDeficitAxisBurdenInput): Quantity {
   const capacityByPositionIdentity = new Map<string, Quantity>();
@@ -644,7 +644,7 @@ function availabilitySelectedDeficitAxisBurden({
     if (inventoryPositionIsDeficit(position)) continue;
     if (
       usableOnly &&
-      inventoryPositionIsExpiredAt(projection, position.key, at)
+      inventoryPositionIsExpiredAt(projection, position.key, atEpochMs)
     ) {
       continue;
     }
@@ -753,7 +753,7 @@ interface IndexAvailabilityReservationsInput {
   /** Reservation-axis unit. */
   readonly unit: Quantity["unit"];
   /** Authority time used for broad-claim expiry eligibility. */
-  readonly at: string;
+  readonly atEpochMs: number;
 }
 
 /**
@@ -768,7 +768,7 @@ function indexAvailabilityReservations({
   positions,
   revisionId,
   unit,
-  at,
+  atEpochMs,
 }: IndexAvailabilityReservationsInput): AvailabilityReservationIndex {
   const normalizedSelector = normalizeInventoryStockSelector(selector);
   const selectedPositionIdentities = new Set(
@@ -800,7 +800,7 @@ function indexAvailabilityReservations({
           reservation,
           projection,
           positions,
-          at
+          atEpochMs
         );
         broadSelectorTouches.set(touchIdentity, touches);
       }
@@ -881,7 +881,7 @@ function reservationTouchesPositions(
   reservation: InventoryReservation,
   projection: InventoryProjectionState,
   positions: readonly InventoryStockPosition[],
-  at: string
+  atEpochMs: number
 ): boolean {
   const normalizedSelector = normalizeInventoryStockSelector(reservation.selector);
   for (const position of positions) {
@@ -895,7 +895,7 @@ function reservationTouchesPositions(
     }
     if (
       reservation.allowExpiredStock !== true &&
-      inventoryPositionIsExpiredAt(projection, position.key, at)
+      inventoryPositionIsExpiredAt(projection, position.key, atEpochMs)
     ) {
       continue;
     }

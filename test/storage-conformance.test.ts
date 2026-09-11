@@ -40,14 +40,14 @@ it("canonicalizes nested compact and migration plan values independently of obje
   };
   const forwardReceipt = {
     operationId: "canonical-plan",
-    recordedAt: time0,
+    recordedAtEpochMs: time0,
     worldRevision: 1,
     eventId: "event-1",
   };
   const reverseReceipt = {
     eventId: "event-1",
     worldRevision: 1,
-    recordedAt: time0,
+    recordedAtEpochMs: time0,
     operationId: "canonical-plan",
   };
   expect(
@@ -94,7 +94,7 @@ it("binds deficit policy into the durable compact-plan digest", () => {
     catalogRoot: "catalog-root",
     receipt: {
       operationId: "digest-policy",
-      recordedAt: time0,
+      recordedAtEpochMs: time0,
       worldRevision: 1,
     },
     nextRoots: {
@@ -219,7 +219,7 @@ class HidingPublishedInventoryPartStorage extends InMemoryInventoryDurableStorag
     if (this.hiddenPart === "positive-layer-index") {
       return {
         ...world,
-        projection: { ...projection, positiveLayerStartedAtByPositionId: {} },
+        projection: { ...projection, positiveLayerStartedAtEpochMsByPositionId: {} },
       };
     }
     if (this.hiddenPart === "serial-position-index") {
@@ -325,7 +325,7 @@ it("the reusable component assertions reject adapters that lose reservation or c
   const reservationInventory = createTestInventory(reservationStorage);
   await reservationInventory.stock.receive({
     operationId: "broken-reservation-stock",
-    occurredAt: time0,
+    occurredAtEpochMs: time0,
     to: loosePosition("reserve-store"),
     amount: stockAmount("2", "piece"),
   });
@@ -335,7 +335,7 @@ it("the reusable component assertions reject adapters that lose reservation or c
     itemRevisionId: "item-a-v2",
     selector: { itemId: "item-a", locationIds: ["reserve-store"] },
     requested: parseQuantity("1", "piece"),
-    createdAt: time0,
+    createdAtEpochMs: time0,
   });
   const visibleReservationWorld = await reservationStorage.readWorld();
   reservationStorage.hide("reservations");
@@ -353,7 +353,7 @@ it("the reusable component assertions reject adapters that lose reservation or c
     countId: "shape-count",
     operationId: "broken-count",
     selector: { itemId: "item-a" },
-    startedAt: time0,
+    startedAtEpochMs: time0,
   });
   const visibleCountWorld = await countStorage.readWorld();
   countStorage.hide("counts");
@@ -371,7 +371,7 @@ it("the reusable shapes reject dropped catalogue, stock, lot, container, traceab
   const catalogInventory = createTestInventory(catalogStorage);
   await catalogInventory.catalog.publish({
     operationId: "shape-catalog",
-    occurredAt: time0,
+    occurredAtEpochMs: time0,
   });
   const visibleCatalogWorld = await catalogStorage.readWorld();
   catalogStorage.hide("catalog");
@@ -388,7 +388,7 @@ it("the reusable shapes reject dropped catalogue, stock, lot, container, traceab
     const stockInventory = createTestInventory(stockStorage);
     await stockInventory.stock.receive({
       operationId: "shape-stock",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("stock-store", {
         serialId: "SHAPE-SERIAL",
         containerId: "SHAPE-STOCK-CONTAINER",
@@ -411,12 +411,12 @@ it("the reusable shapes reject dropped catalogue, stock, lot, container, traceab
     const lotInventory = createTestInventory(lotStorage);
     await lotInventory.lots.define({
       operationId: "shape-lot-master",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       itemId: "item-a",
       lotId: "SHAPE-LOT",
       lot: {
-        manufacturedAt: time0,
-        expiresAt: time3,
+        manufacturedAtEpochMs: time0,
+        expiresAtEpochMs: time3,
         metadata: { source: "conformance" },
       },
     });
@@ -436,7 +436,7 @@ it("the reusable shapes reject dropped catalogue, stock, lot, container, traceab
     const containerInventory = createTestInventory(containerStorage);
     await containerInventory.containers.define({
       operationId: "shape-container-master",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       containerId: "SHAPE-CONTAINER",
       container: {
         containerType: "carton",
@@ -459,7 +459,7 @@ it("the reusable shapes reject dropped catalogue, stock, lot, container, traceab
     const traceInventory = createTestInventory(traceStorage);
     await traceInventory.traceability.aggregate({
       operationId: "shape-traceability",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       from: {
         kind: InventoryTraceabilityNodeKind.Container,
         id: "SHAPE-CHILD",

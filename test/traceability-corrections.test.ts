@@ -72,13 +72,13 @@ describe("traceability graph meanings", () => {
     };
     await inventory.traceability.aggregate({
       operationId: "aggregate-child",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       from: child,
       to: parent,
     });
     await inventory.traceability.associate({
       operationId: "associate-child",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       from: child,
       to: parent,
     });
@@ -96,14 +96,14 @@ describe("traceability graph meanings", () => {
     await expect(
       inventory.traceability.aggregate({
         operationId: "aggregate-cycle",
-        occurredAt: time2,
+        occurredAtEpochMs: time2,
         from: parent,
         to: child,
       })
     ).rejects.toThrow("Containment graph contains a cycle");
     await inventory.traceability.disaggregate({
       operationId: "disaggregate-child",
-      occurredAt: time3,
+      occurredAtEpochMs: time3,
       from: child,
       to: parent,
     });
@@ -133,7 +133,7 @@ describe("traceability graph meanings", () => {
           eventId: "atomic-genealogy-root",
           operationId: "atomic-genealogy-root",
           kind: InventoryEventKind.Traceability,
-          occurredAt: time0,
+          occurredAtEpochMs: time0,
           stockEffects: [],
           traceabilityChanges: [
             {
@@ -155,7 +155,7 @@ describe("traceability graph meanings", () => {
           eventId: "atomic-genealogy-correction",
           operationId: "atomic-genealogy-correction",
           kind: InventoryEventKind.Correction,
-          occurredAt: time1,
+          occurredAtEpochMs: time1,
           stockEffects: [],
           traceabilityChanges: [
             {
@@ -259,7 +259,7 @@ describe("traceability graph meanings", () => {
     };
     await inventory.stock.receive({
       operationId: "receive-containing-input",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("transform-containment-store", {
         containerId: container.id,
       }),
@@ -267,14 +267,14 @@ describe("traceability graph meanings", () => {
     });
     await inventory.traceability.aggregate({
       operationId: "aggregate-before-transform",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       from: child,
       to: container,
     });
     await expect(
       inventory.stock.transform({
         operationId: "transform-containing-input",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         consume: [
           {
             position: loosePosition("transform-containment-store", {
@@ -305,13 +305,13 @@ describe("traceability graph meanings", () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "receive-transform-input",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("work", { serialId: "serial-in" }),
       amount: stockAmount("1", "piece"),
     });
     await inventory.stock.transform({
       operationId: "transform-one",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       consume: [
         {
           position: loosePosition("work", { serialId: "serial-in" }),
@@ -345,14 +345,14 @@ describe("traceability graph meanings", () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "receive-related-serial",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("work", { serialId: "serial-a" }),
       amount: stockAmount("1", "piece"),
     });
     await expect(
       inventory.stock.transform({
         operationId: "unrelated-genealogy",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         consume: [
           {
             position: loosePosition("work", { serialId: "serial-a" }),
@@ -390,28 +390,28 @@ describe("append-only corrections", () => {
     };
     const root = await inventory.traceability.aggregate({
       operationId: "omit-trace-root",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       from: child,
       to: parent,
     });
     const removal = await inventory.traceability.disaggregate({
       operationId: "omit-trace-later-remove",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       from: child,
       to: parent,
     });
     await inventory.stock.correct({
       operationId: "verify-omit-trace-later-remove",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       correctsEventId: removal.event.eventId,
       reason: "The later removal was verified before the root was corrected.",
       replaceWith: (plans) =>
-        plans.disaggregate({ occurredAt: time1, from: child, to: parent }),
+        plans.disaggregate({ occurredAtEpochMs: time1, from: child, to: parent }),
     });
 
     const correction = await inventory.stock.correct({
       operationId: "omit-trace-root-correction",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       correctsEventId: root.event.eventId,
       reason: "The original aggregation never occurred.",
       replaceWith: (plans) => plans.omit(),
@@ -427,31 +427,31 @@ describe("append-only corrections", () => {
     const inventory = createTestInventory();
     const original = await inventory.stock.receive({
       operationId: "wrong-receipt",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("store"),
       amount: stockAmount("10", "piece"),
     });
     const firstCorrection = await inventory.stock.correct({
       operationId: "correct-to-seven",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       correctsEventId: original.event.eventId,
       reason: "The source document said seven.",
       metadata: { correctionTicket: "ticket-1" },
       replaceWith: (plans) =>
         plans.receive({
-          occurredAt: time0,
+          occurredAtEpochMs: time0,
           to: loosePosition("store"),
           amount: stockAmount("7", "piece"),
         }),
     });
     const secondCorrection = await inventory.stock.correct({
       operationId: "correct-to-eight",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       correctsEventId: original.event.eventId,
       reason: "Final recount confirmed eight.",
       replaceWith: (plans) =>
         plans.receive({
-          occurredAt: time0,
+          occurredAtEpochMs: time0,
           to: loosePosition("store"),
           amount: stockAmount("8", "piece"),
         }),
@@ -463,10 +463,10 @@ describe("append-only corrections", () => {
       InventoryEventKind.Receipt
     );
     expect(firstCorrection.event.kind).toBe(InventoryEventKind.Correction);
-    expect(firstCorrection.event.occurredAt).toBe(time1);
+    expect(firstCorrection.event.occurredAtEpochMs).toBe(time1);
     expect(firstCorrection.event.metadata).toMatchObject({
       correctionTicket: "ticket-1",
-      replacementOccurredAt: time0,
+      replacementOccurredAtEpochMs: time0,
     });
     expect(secondCorrection.event.correction?.supersedesCorrectionEventId).toBe(
       firstCorrection.event.eventId
@@ -484,7 +484,7 @@ describe("append-only corrections", () => {
     const inventory = createTestInventory();
     const original = await inventory.stock.receive({
       operationId: "future-replacement-root",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("future-replacement-store"),
       amount: stockAmount("1", "piece"),
     });
@@ -492,12 +492,12 @@ describe("append-only corrections", () => {
     await expect(
       inventory.stock.correct({
         operationId: "future-replacement-correction",
-        occurredAt: time2,
+        occurredAtEpochMs: time2,
         correctsEventId: original.event.eventId,
         reason: "Reject impossible replacement chronology explicitly.",
         replaceWith: (plans) =>
           plans.receive({
-            occurredAt: "2026-08-24T12:00:00.000Z",
+            occurredAtEpochMs: 1787572800000,
             to: loosePosition("future-replacement-store"),
             amount: stockAmount("1", "piece"),
           }),
@@ -510,19 +510,19 @@ describe("append-only corrections", () => {
     const inventory = createTestInventory();
     const original = await inventory.stock.receive({
       operationId: "reject-correction-root",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("reject-correction-store"),
       amount: stockAmount("10", "piece"),
     });
     await inventory.stock.issue({
       operationId: "reject-correction-issue",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       from: loosePosition("reject-correction-store"),
       amount: stockAmount("8", "piece"),
     });
     await inventory.stock.receive({
       operationId: "reject-correction-later-receipt",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       to: loosePosition("reject-correction-store"),
       amount: stockAmount("5", "piece"),
     });
@@ -530,12 +530,12 @@ describe("append-only corrections", () => {
     await expect(
       inventory.stock.correct({
         operationId: "reject-correction-rewrite-root",
-        occurredAt: time3,
+        occurredAtEpochMs: time3,
         correctsEventId: original.event.eventId,
         reason: "The original receipt was only five pieces.",
         replaceWith: (plans) =>
           plans.receive({
-            occurredAt: time0,
+            occurredAtEpochMs: time0,
             to: loosePosition("reject-correction-store"),
             amount: stockAmount("5", "piece"),
           }),
@@ -551,13 +551,13 @@ describe("append-only corrections", () => {
     const inventory = createTestInventory();
     const correctedRoot = await inventory.stock.receive({
       operationId: "fifo-provenance-root",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       to: loosePosition("fifo-store", { lotId: "LOT-A" }),
       amount: stockAmount("1", "piece"),
     });
     await inventory.stock.receive({
       operationId: "fifo-other-root",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("fifo-store", { lotId: "LOT-B" }),
       amount: stockAmount("1", "piece"),
     });
@@ -567,21 +567,21 @@ describe("append-only corrections", () => {
       }),
       amount: stockAmount("1", "piece"),
       method: InventoryAllocationMethod.Fifo,
-      at: time2,
+      atEpochMs: time2,
     };
     expect(
       (await inventory.read.planAllocation(request)).lines[0]?.position.lotId
     ).toBe("LOT-B");
 
-    const earlierTime = "2026-08-24T07:00:00.000Z";
+    const earlierTime = 1787554800000;
     const firstCorrection = await inventory.stock.correct({
       operationId: "fifo-provenance-earlier",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       correctsEventId: correctedRoot.event.eventId,
       reason: "The receipt happened one hour earlier.",
       replaceWith: (plans) =>
         plans.receive({
-          occurredAt: earlierTime,
+          occurredAtEpochMs: earlierTime,
           to: loosePosition("fifo-store", { lotId: "LOT-A" }),
           amount: stockAmount("1", "piece"),
         }),
@@ -589,19 +589,19 @@ describe("append-only corrections", () => {
     expect(firstCorrection.event.stockEffects).toEqual([]);
     expect(
       firstCorrection.event.positiveLayerProvenanceOverrides
-    ).toMatchObject([{ startedAt: earlierTime }]);
+    ).toMatchObject([{ startedAtEpochMs: earlierTime }]);
     expect(
       (await inventory.read.planAllocation(request)).lines[0]?.position.lotId
     ).toBe("LOT-A");
 
     const secondCorrection = await inventory.stock.correct({
       operationId: "fifo-provenance-restored",
-      occurredAt: time3,
+      occurredAtEpochMs: time3,
       correctsEventId: correctedRoot.event.eventId,
       reason: "The original receipt time was confirmed after all.",
       replaceWith: (plans) =>
         plans.receive({
-          occurredAt: time1,
+          occurredAtEpochMs: time1,
           to: loosePosition("fifo-store", { lotId: "LOT-A" }),
           amount: stockAmount("1", "piece"),
         }),
@@ -612,7 +612,7 @@ describe("append-only corrections", () => {
     expect(secondCorrection.event.stockEffects).toEqual([]);
     expect(
       secondCorrection.event.positiveLayerProvenanceOverrides
-    ).toMatchObject([{ startedAt: time1 }]);
+    ).toMatchObject([{ startedAtEpochMs: time1 }]);
     expect(
       (await inventory.read.planAllocation(request)).lines[0]?.position.lotId
     ).toBe("LOT-B");
@@ -622,26 +622,26 @@ describe("append-only corrections", () => {
     const inventory = createTestInventory();
     const root = await inventory.stock.receive({
       operationId: "omit-layer-root",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("omit-layer-store", { lotId: "LOT-OMIT" }),
       amount: stockAmount("1", "piece"),
     });
     await inventory.stock.receive({
       operationId: "omit-layer-top-up",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       to: loosePosition("omit-layer-store", { lotId: "LOT-OMIT" }),
       amount: stockAmount("1", "piece"),
     });
 
     const correction = await inventory.stock.correct({
       operationId: "omit-layer-root-correction",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       correctsEventId: root.event.eventId,
       reason: "The first receipt never happened.",
       replaceWith: (plans) => plans.omit(),
     });
     expect(correction.event.positiveLayerProvenanceOverrides).toMatchObject([
-      { startedAt: time1 },
+      { startedAtEpochMs: time1 },
     ]);
     const plan = await inventory.read.planAllocation({
       selector: inventoryStockSelector("item-a", {
@@ -649,10 +649,10 @@ describe("append-only corrections", () => {
       }),
       amount: stockAmount("1", "piece"),
       method: InventoryAllocationMethod.Fifo,
-      at: time3,
+      atEpochMs: time3,
     });
     expect(plan.lines).toHaveLength(1);
-    expect(plan.lines[0]?.layerStartedAt).toBe(time1);
+    expect(plan.lines[0]?.layerStartedAtEpochMs).toBe(time1);
     expect(plan.lines[0]?.allocatedPrimary.amountMinor).toBe(1);
   });
 
@@ -660,34 +660,34 @@ describe("append-only corrections", () => {
     const inventory = createTestInventory();
     await inventory.lots.define({
       operationId: "metadata-replay-lot-root",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       itemId: "item-a",
       lotId: "META-REPLAY",
-      lot: { manufacturedAt: time0 },
+      lot: { manufacturedAtEpochMs: time0 },
     });
     await inventory.lots.correct({
       operationId: "metadata-replay-lot-correction",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       itemId: "item-a",
       lotId: "META-REPLAY",
-      lot: { manufacturedAt: time0, expiresAt: time3 },
+      lot: { manufacturedAtEpochMs: time0, expiresAtEpochMs: time3 },
       reason: "Expiry date was confirmed later.",
     });
     const root = await inventory.stock.receive({
       operationId: "metadata-replay-stock-root",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       to: loosePosition("metadata-replay-store"),
       amount: stockAmount("2", "piece"),
     });
 
     await inventory.stock.correct({
       operationId: "metadata-replay-stock-correction",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       correctsEventId: root.event.eventId,
       reason: "Physical receipt was independently checked.",
       replaceWith: (plans) =>
         plans.receive({
-          occurredAt: time1,
+          occurredAtEpochMs: time1,
           to: loosePosition("metadata-replay-store"),
           amount: stockAmount("2", "piece"),
         }),
@@ -709,18 +709,18 @@ describe("append-only corrections", () => {
       const inventory = createTestInventory();
       const root = await inventory.stock.receive({
         operationId: "receipt-kind-root",
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         to: loosePosition("receipt-kind-store"),
         amount: stockAmount("1", "piece"),
       });
       await inventory.stock.correct({
         operationId: "correct-receipt-kind",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         correctsEventId: root.event.eventId,
         reason: "Receipt row was checked.",
         replaceWith: (plans) =>
           plans.receive({
-            occurredAt: time0,
+            occurredAtEpochMs: time0,
             to: loosePosition("receipt-kind-store"),
             amount: stockAmount("1", "piece"),
           }),
@@ -736,13 +736,13 @@ describe("append-only corrections", () => {
         declaration: {
           migrationId: "correction-opening",
           sourceSystem: "legacy-stock",
-          cutoverAt: time1,
+          cutoverAtEpochMs: time1,
           openingStock: [
             {
               openingId: "opening-one",
               position: loosePosition("opening-store"),
               amount: stockAmount("2", "piece"),
-              occurredAt: time1,
+              occurredAtEpochMs: time1,
               itemRevisionId: "item-a-v2",
               source: { sourceType: "legacy-stock", sourceId: "opening-one" },
             },
@@ -767,12 +767,12 @@ describe("append-only corrections", () => {
         throw new Error("Opening correction root disappeared.");
       const openingCorrection = await inventory.stock.correct({
         operationId: "correct-opening",
-        occurredAt: time2,
+        occurredAtEpochMs: time2,
         correctsEventId: root.eventId,
         reason: "Opening stock existed one day earlier than recorded.",
         replaceWith: (plans) =>
           plans.opening({
-            occurredAt: time0,
+            occurredAtEpochMs: time0,
             to: loosePosition("opening-store"),
             amount: stockAmount("2", "piece"),
             itemRevisionId: "item-a-v2",
@@ -781,16 +781,16 @@ describe("append-only corrections", () => {
       expect(openingCorrection.event.stockEffects).toEqual([]);
       expect(
         openingCorrection.event.positiveLayerProvenanceOverrides
-      ).toMatchObject([{ startedAt: time0 }]);
+      ).toMatchObject([{ startedAtEpochMs: time0 }]);
       const openingPlan = await inventory.read.planAllocation({
         selector: inventoryStockSelector("item-a", {
           locationIds: ["opening-store"],
         }),
         amount: stockAmount("1", "piece"),
         method: InventoryAllocationMethod.Fifo,
-        at: time3,
+        atEpochMs: time3,
       });
-      expect(openingPlan.lines[0]?.layerStartedAt).toBe(time0);
+      expect(openingPlan.lines[0]?.layerStartedAtEpochMs).toBe(time0);
       correctedRootKinds.add(root.kind);
     }
 
@@ -798,24 +798,24 @@ describe("append-only corrections", () => {
       const inventory = createTestInventory();
       await inventory.stock.receive({
         operationId: "issue-stock",
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         to: loosePosition("issue-store"),
         amount: stockAmount("2", "piece"),
       });
       const root = await inventory.stock.issue({
         operationId: "issue-root",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         from: loosePosition("issue-store"),
         amount: stockAmount("1", "piece"),
       });
       await inventory.stock.correct({
         operationId: "correct-issue",
-        occurredAt: time2,
+        occurredAtEpochMs: time2,
         correctsEventId: root.event.eventId,
         reason: "Issue row was checked.",
         replaceWith: (plans) =>
           plans.issue({
-            occurredAt: time1,
+            occurredAtEpochMs: time1,
             from: loosePosition("issue-store"),
             amount: stockAmount("1", "piece"),
           }),
@@ -827,25 +827,25 @@ describe("append-only corrections", () => {
       const inventory = createTestInventory();
       await inventory.stock.receive({
         operationId: "transfer-stock",
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         to: loosePosition("transfer-a"),
         amount: stockAmount("2", "piece"),
       });
       const root = await inventory.stock.transfer({
         operationId: "transfer-root",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         from: loosePosition("transfer-a"),
         toLocationId: "transfer-b",
         amount: stockAmount("1", "piece"),
       });
       await inventory.stock.correct({
         operationId: "correct-transfer",
-        occurredAt: time2,
+        occurredAtEpochMs: time2,
         correctsEventId: root.event.eventId,
         reason: "Transfer row was checked.",
         replaceWith: (plans) =>
           plans.transfer({
-            occurredAt: time1,
+            occurredAtEpochMs: time1,
             from: loosePosition("transfer-a"),
             toLocationId: "transfer-b",
             amount: stockAmount("1", "piece"),
@@ -858,25 +858,25 @@ describe("append-only corrections", () => {
       const inventory = createTestInventory();
       await inventory.stock.receive({
         operationId: "reclass-stock",
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         to: loosePosition("reclass-store"),
         amount: stockAmount("1", "piece"),
       });
       const root = await inventory.stock.changeStatus({
         operationId: "reclass-root",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         from: loosePosition("reclass-store"),
         toStatusId: "quarantine",
         amount: stockAmount("1", "piece"),
       });
       await inventory.stock.correct({
         operationId: "correct-reclass",
-        occurredAt: time2,
+        occurredAtEpochMs: time2,
         correctsEventId: root.event.eventId,
         reason: "Status row was checked.",
         replaceWith: (plans) =>
           plans.changeStatus({
-            occurredAt: time1,
+            occurredAtEpochMs: time1,
             from: loosePosition("reclass-store"),
             toStatusId: "quarantine",
             amount: stockAmount("1", "piece"),
@@ -889,26 +889,26 @@ describe("append-only corrections", () => {
       const inventory = createTestInventory();
       await inventory.stock.receive({
         operationId: "package-stock",
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         to: loosePosition("package-store"),
         itemRevisionId: "item-a-v1",
         amount: stockAmount("20", "piece"),
       });
       const packRoot = await inventory.stock.pack({
         operationId: "pack-root",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         from: loosePosition("package-store"),
         packagingRevisionId: "item-a-box-20-v1",
         packageCount: 1,
       });
       await inventory.stock.correct({
         operationId: "correct-pack",
-        occurredAt: time2,
+        occurredAtEpochMs: time2,
         correctsEventId: packRoot.event.eventId,
         reason: "Pack row was checked.",
         replaceWith: (plans) =>
           plans.pack({
-            occurredAt: time1,
+            occurredAtEpochMs: time1,
             from: loosePosition("package-store"),
             packagingRevisionId: "item-a-box-20-v1",
             packageCount: 1,
@@ -917,7 +917,7 @@ describe("append-only corrections", () => {
       correctedRootKinds.add(packRoot.event.kind);
       const unpackRoot = await inventory.stock.unpack({
         operationId: "unpack-root",
-        occurredAt: time2,
+        occurredAtEpochMs: time2,
         from: loosePosition("package-store", {
           packagingRevisionId: "item-a-box-20-v1",
         }),
@@ -925,12 +925,12 @@ describe("append-only corrections", () => {
       });
       await inventory.stock.correct({
         operationId: "correct-unpack",
-        occurredAt: time3,
+        occurredAtEpochMs: time3,
         correctsEventId: unpackRoot.event.eventId,
         reason: "Unpack row was checked.",
         replaceWith: (plans) =>
           plans.unpack({
-            occurredAt: time2,
+            occurredAtEpochMs: time2,
             from: loosePosition("package-store", {
               packagingRevisionId: "item-a-box-20-v1",
             }),
@@ -944,13 +944,13 @@ describe("append-only corrections", () => {
       const inventory = createTestInventory();
       await inventory.stock.receive({
         operationId: "transform-stock",
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         to: loosePosition("transform-store", { serialId: "input-serial" }),
         amount: stockAmount("1", "piece"),
       });
       const root = await inventory.stock.transform({
         operationId: "transform-root",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         consume: [
           {
             position: loosePosition("transform-store", {
@@ -970,12 +970,12 @@ describe("append-only corrections", () => {
       });
       await inventory.stock.correct({
         operationId: "correct-transform",
-        occurredAt: time2,
+        occurredAtEpochMs: time2,
         correctsEventId: root.event.eventId,
         reason: "Transformation row was checked.",
         replaceWith: (plans) =>
           plans.transform({
-            occurredAt: time1,
+            occurredAtEpochMs: time1,
             consume: [
               {
                 position: loosePosition("transform-store", {
@@ -1001,25 +1001,25 @@ describe("append-only corrections", () => {
       const inventory = createTestInventory();
       await inventory.stock.receive({
         operationId: "scrap-stock",
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         to: loosePosition("scrap-store"),
         amount: stockAmount("2", "piece"),
       });
       const root = await inventory.stock.scrap({
         operationId: "scrap-root",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         from: loosePosition("scrap-store"),
         amount: stockAmount("1", "piece"),
         reason: "Broken.",
       });
       await inventory.stock.correct({
         operationId: "correct-scrap",
-        occurredAt: time2,
+        occurredAtEpochMs: time2,
         correctsEventId: root.event.eventId,
         reason: "Scrap row was checked.",
         replaceWith: (plans) =>
           plans.scrap({
-            occurredAt: time1,
+            occurredAtEpochMs: time1,
             from: loosePosition("scrap-store"),
             amount: stockAmount("1", "piece"),
             reason: "Broken.",
@@ -1040,18 +1040,18 @@ describe("append-only corrections", () => {
       };
       const root = await inventory.traceability.aggregate({
         operationId: "trace-root",
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         from: child,
         to: parent,
       });
       await inventory.stock.correct({
         operationId: "correct-trace",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         correctsEventId: root.event.eventId,
         reason: "Traceability row was checked.",
         replaceWith: (plans) =>
           plans.aggregate({
-            occurredAt: time0,
+            occurredAtEpochMs: time0,
             from: child,
             to: parent,
           }),
@@ -1063,22 +1063,22 @@ describe("append-only corrections", () => {
       const inventory = createTestInventory();
       const root = await inventory.lots.define({
         operationId: "lot-metadata-root",
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         itemId: "item-a",
         lotId: "lot-correction",
-        lot: { expiresAt: time3 },
+        lot: { expiresAtEpochMs: time3 },
       });
       await inventory.stock.correct({
         operationId: "correct-lot-metadata",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         correctsEventId: root.event.eventId,
         reason: "Lot metadata row was checked.",
         replaceWith: (plans) =>
           plans.lotMetadata({
-            occurredAt: time0,
+            occurredAtEpochMs: time0,
             itemId: "item-a",
             lotId: "lot-correction",
-            lot: { expiresAt: time3 },
+            lot: { expiresAtEpochMs: time3 },
           }),
       });
       correctedRootKinds.add(root.event.kind);
@@ -1088,20 +1088,20 @@ describe("append-only corrections", () => {
       const inventory = createTestInventory();
       const root = await inventory.containers.define({
         operationId: "container-metadata-root",
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         containerId: "container-correction",
-        container: { containerType: "tray", useBy: time3 },
+        container: { containerType: "tray", useByEpochMs: time3 },
       });
       await inventory.stock.correct({
         operationId: "correct-container-metadata",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         correctsEventId: root.event.eventId,
         reason: "Container metadata row was checked.",
         replaceWith: (plans) =>
           plans.containerMetadata({
-            occurredAt: time0,
+            occurredAtEpochMs: time0,
             containerId: "container-correction",
-            container: { containerType: "tray", useBy: time3 },
+            container: { containerType: "tray", useByEpochMs: time3 },
           }),
       });
       correctedRootKinds.add(root.event.kind);
@@ -1111,7 +1111,7 @@ describe("append-only corrections", () => {
       const inventory = createTestInventory();
       await inventory.stock.receive({
         operationId: "count-correction-stock",
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         to: loosePosition("count-store"),
         amount: stockAmount("2", "piece"),
       });
@@ -1119,7 +1119,7 @@ describe("append-only corrections", () => {
         countId: "count-correction",
         operationId: "count-correction-start",
         selector: { itemId: "item-a", locationIds: ["count-store"] },
-        startedAt: time0,
+        startedAtEpochMs: time0,
       });
       const position = (
         await inventory.read.positions({
@@ -1136,25 +1136,25 @@ describe("append-only corrections", () => {
       await inventory.counts.observe({
         operationId: "count-correction-observe",
         countId: "count-correction",
-        observedAt: time1,
+        observedAtEpochMs: time1,
         observations: [{ position: position.key, measurements: observed }],
       });
       const root = await inventory.counts.reconcile({
         operationId: "count-adjustment-root",
         countId: "count-correction",
-        completedAt: time2,
+        completedAtEpochMs: time2,
         reason: "One missing.",
       });
       if (root.event === undefined)
         throw new Error("Expected count discrepancy event.");
       await inventory.stock.correct({
         operationId: "correct-count-adjustment",
-        occurredAt: time3,
+        occurredAtEpochMs: time3,
         correctsEventId: root.event.eventId,
         reason: "Count discrepancy row was checked.",
         replaceWith: (plans) =>
           plans.countAdjustment({
-            occurredAt: time1,
+            occurredAtEpochMs: time1,
             lines: [
               {
                 position: position.key,
@@ -1193,9 +1193,9 @@ describe("transformation genealogy set semantics", () => {
           amount: stockAmount("1", "piece"),
         }));
         for (const [index, line] of consume.entries()) {
-          await inventory.stock.receive({ operationId: `genealogy-seed-${index}`, occurredAt: time0, to: line.position, amount: line.amount });
+          await inventory.stock.receive({ operationId: `genealogy-seed-${index}`, occurredAtEpochMs: time0, to: line.position, amount: line.amount });
         }
-        const command = { operationId: "genealogy-shared-nodes", occurredAt: time1, consume, produce };
+        const command = { operationId: "genealogy-shared-nodes", occurredAtEpochMs: time1, consume, produce };
         const result = await inventory.stock.transform(command);
         const after = await inventory.read.world();
         const relations = Object.values(after.projection.traceability.relations);

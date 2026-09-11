@@ -82,7 +82,7 @@ export function createInventoryCorrectionEvent(
       "Physical transfer lifecycle events cannot be corrected through generic event replacement; use transfer lifecycle commands instead."
     );
   }
-  if (input.occurredAt < original.occurredAt) {
+  if (input.occurredAtEpochMs < original.occurredAtEpochMs) {
     throw new Error(
       "Inventory correction cannot occur before the retained root event."
     );
@@ -114,7 +114,7 @@ export function createInventoryCorrectionEvent(
           catalog: input.catalog,
           event: input.replacement,
         });
-  if (replacement !== undefined && replacement.occurredAt > original.recordedAt) {
+  if (replacement !== undefined && replacement.occurredAtEpochMs > original.recordedAtEpochMs) {
     throw new Error(
       "Inventory correction replacement cannot occur after the retained root event was durably recorded."
     );
@@ -148,7 +148,7 @@ export function createInventoryCorrectionEvent(
       eventId: inventoryEventIdForOperation(input.operationId),
       operationId: input.operationId,
       kind: InventoryEventKind.Correction,
-      occurredAt: input.occurredAt,
+      occurredAtEpochMs: input.occurredAtEpochMs,
       stockEffects,
       positiveLayerProvenanceOverrides,
       lotDefinitions: replacement?.lotDefinitions ?? [],
@@ -175,7 +175,7 @@ export function createInventoryCorrectionEvent(
         ...(replacement === undefined
           ? {}
           : {
-              replacementOccurredAt: replacement.occurredAt,
+              replacementOccurredAtEpochMs: replacement.occurredAtEpochMs,
               replacementEventIntentId: replacement.eventId,
               replacementOperationIntentId: replacement.operationId,
             }),
@@ -283,7 +283,7 @@ function projectHistoryWithReplacement(
               ...stockAndGraphDraft,
               traceabilityChanges: reconciledTraceabilityChanges,
             },
-        event.recordedAt,
+        event.recordedAtEpochMs,
         nextSequence
       )
     );
@@ -342,17 +342,17 @@ function createCorrectionPositiveLayerProvenanceOverrides(
   desired: InventoryProjectionState
 ): readonly InventoryPositiveLayerProvenanceOverride[] {
   const identities = new Set<string>([
-    ...Object.keys(actual.positiveLayerStartedAtByPositionId),
-    ...Object.keys(desired.positiveLayerStartedAtByPositionId),
+    ...Object.keys(actual.positiveLayerStartedAtEpochMsByPositionId),
+    ...Object.keys(desired.positiveLayerStartedAtEpochMsByPositionId),
   ]);
   const orderedIdentities = [...identities];
   orderedIdentities.sort();
   const overrides: InventoryPositiveLayerProvenanceOverride[] = [];
   for (const identity of orderedIdentities) {
-    const actualStartedAt = actual.positiveLayerStartedAtByPositionId[identity];
-    const desiredStartedAt =
-      desired.positiveLayerStartedAtByPositionId[identity];
-    if (actualStartedAt === desiredStartedAt) continue;
+    const actualStartedAtEpochMs = actual.positiveLayerStartedAtEpochMsByPositionId[identity];
+    const desiredStartedAtEpochMs =
+      desired.positiveLayerStartedAtEpochMsByPositionId[identity];
+    if (actualStartedAtEpochMs === desiredStartedAtEpochMs) continue;
     const position =
       desired.positions[identity]?.key ?? actual.positions[identity]?.key;
     if (position === undefined) {
@@ -362,9 +362,9 @@ function createCorrectionPositiveLayerProvenanceOverrides(
     }
     overrides.push({
       position,
-      ...(desiredStartedAt === undefined
+      ...(desiredStartedAtEpochMs === undefined
         ? {}
-        : { startedAt: desiredStartedAt }),
+        : { startedAtEpochMs: desiredStartedAtEpochMs }),
     });
   }
   return overrides;

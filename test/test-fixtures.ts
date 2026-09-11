@@ -19,13 +19,13 @@ import {
 } from "../src/storage-api.js";
 
 /** Stable test occurrence/record time. */
-export const time0 = "2026-08-24T08:00:00.000Z";
+export const time0 = 1787558400000;
 /** Stable later test time. */
-export const time1 = "2026-08-24T09:00:00.000Z";
+export const time1 = 1787562000000;
 /** Stable still-later test time. */
-export const time2 = "2026-08-24T10:00:00.000Z";
+export const time2 = 1787565600000;
 /** Stable final test time. */
-export const time3 = "2026-08-24T11:00:00.000Z";
+export const time3 = 1787569200000;
 
 /** Build retained scalar item/package revisions with both old and current package history. */
 export function createTabletCatalog(): InventoryCatalog {
@@ -65,10 +65,10 @@ export function createTabletCatalog(): InventoryCatalog {
 }
 
 /** Build a fixed clock so record time is deterministic and separate from occurrence time. */
-export function clockAt(recordedAt = time3): InventoryClock {
+export function clockAt(recordedAtEpochMs = time3): InventoryClock {
   return {
     /** Return the one test record time. */
-    now: () => recordedAt,
+    nowEpochMs: () => recordedAtEpochMs,
   };
 }
 

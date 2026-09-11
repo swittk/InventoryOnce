@@ -87,7 +87,7 @@ export function repositoryAssuranceCommittedStateSha256(repositoryRoot, commit) 
   if (listed.error !== undefined || listed.status !== 0) {
     throw new Error(`Unable to enumerate committed repository assurance state '${commit}'.`);
   }
-  const entries = [];
+  const rows = [];
   for (const record of listed.stdout.split("\0")) {
     if (record.length === 0) continue;
     const tab = record.indexOf("\t");
@@ -95,22 +95,27 @@ export function repositoryAssuranceCommittedStateSha256(repositoryRoot, commit) 
     const header = record.slice(0, tab).split(" ");
     const path = record.slice(tab + 1);
     if (!includedPath(path)) continue;
-    if (header.length !== 3 || header[1] !== "blob") {
-      throw new Error(`Repository assurance commit contains unsupported entry '${path}'.`);
-    }
-    const [mode, , objectId] = header;
-    const blob = spawnSync("git", ["cat-file", "blob", objectId], {
-      cwd: repositoryRoot,
-      maxBuffer: 64 * 1024 * 1024,
-    });
-    if (blob.error !== undefined || blob.status !== 0) {
-      throw new Error(`Unable to read committed repository assurance path '${path}'.`);
-    }
-    const kind = mode === "120000" ? 1 : mode === "100644" || mode === "100755" ? 0 : undefined;
-    if (kind === undefined) {
-      throw new Error(`Repository assurance commit has unsupported mode '${mode}' for '${path}'.`);
-    }
-    entries.push({ path, kind, payload: blob.stdout });
+    if (header.length !== 3 || header[1] !== "blob" || !/^[a-f0-9]{40,64}$/u.test(header[2])) throw new Error(`Unsupported committed assurance entry '${path}'.`);
+    const kind = header[0] === "120000" ? 1 : header[0] === "100644" || header[0] === "100755" ? 0 : undefined;
+    if (kind === undefined) throw new Error(`Unsupported committed assurance mode for '${path}'.`);
+    rows.push({ path, kind, objectId: header[2] });
   }
+  const batch = spawnSync("git", ["cat-file", "--batch"], {
+    cwd: repositoryRoot, input: rows.map(row => row.objectId + "\n").join(""), maxBuffer: 256 * 1024 * 1024,
+  });
+  if (batch.error !== undefined || batch.status !== 0) throw new Error("Unable to read committed assurance object batch.");
+  let offset = 0;
+  const entries = [];
+  for (const row of rows) {
+    const end = batch.stdout.indexOf(10, offset);
+    if (end < 0) throw new Error("Truncated committed assurance batch header.");
+    const fields = batch.stdout.subarray(offset, end).toString("ascii").split(" ");
+    if (fields.length !== 3 || fields[0] !== row.objectId || fields[1] !== "blob" || !/^(0|[1-9][0-9]*)$/u.test(fields[2])) throw new Error("Committed assurance batch identity mismatch.");
+    const size = Number(fields[2]); offset = end + 1;
+    if (!Number.isSafeInteger(size) || offset + size >= batch.stdout.length || batch.stdout[offset + size] !== 10) throw new Error("Truncated committed assurance batch payload.");
+    entries.push({ path: row.path, kind: row.kind, payload: batch.stdout.subarray(offset, offset + size) });
+    offset += size + 1;
+  }
+  if (offset !== batch.stdout.length) throw new Error("Unexpected trailing committed assurance batch output.");
   return hashAssuranceEntries(entries);
 }

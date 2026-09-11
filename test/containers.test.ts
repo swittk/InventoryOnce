@@ -34,11 +34,11 @@ export const FORMAL_IMPLEMENTATION_TRACE_IDS = [
 ] as const;
 
 /** Container use-by after opening but before the later test authority time. */
-const shortUseBy = "2026-08-24T09:30:00.000Z";
+const shortUseBy = 1787563800000;
 /** Corrected container use-by later than all test authority times. */
-const longUseBy = "2027-01-01T00:00:00.000Z";
+const longUseBy = 1798761600000;
 /** Source lot expiry later than the short container-specific use-by. */
-const lotExpiry = "2028-01-01T00:00:00.000Z";
+const lotExpiryEpochMs = 1830297600000;
 
 /** Add a second item so whole-container tests prove rows are not rebuilt item-by-item outside the package. */
 function createHeterogeneousContainerCatalog() {
@@ -78,7 +78,7 @@ describe("native handling-unit masters", () => {
     const inventory = createTestInventory(undefined, catalog);
     await inventory.stock.receiveMany({
       operationId: "receive-whole-pallet-contents",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       lines: [
         {
           to: loosePosition("store", {
@@ -87,7 +87,7 @@ describe("native handling-unit masters", () => {
             ownerId: "clinic",
           }),
           amount: stockAmount("3", "piece"),
-          lot: { expiresAt: lotExpiry },
+          lot: { expiresAtEpochMs: lotExpiryEpochMs },
           container: { containerType: "pallet" },
         },
         {
@@ -97,7 +97,7 @@ describe("native handling-unit masters", () => {
             ownerId: "clinic",
           }),
           amount: packageAmount(30, "item-a-box-20-v1"),
-          lot: { expiresAt: lotExpiry },
+          lot: { expiresAtEpochMs: lotExpiryEpochMs },
           container: { containerType: "carton" },
         },
         {
@@ -110,14 +110,14 @@ describe("native handling-unit masters", () => {
             ownerId: "clinic",
           },
           amount: stockAmount("1", "piece"),
-          lot: { expiresAt: lotExpiry },
+          lot: { expiresAtEpochMs: lotExpiryEpochMs },
           container: { containerType: "carton" },
         },
       ],
     });
     await inventory.traceability.aggregate({
       operationId: "put-carton-on-pallet",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       from: { kind: InventoryTraceabilityNodeKind.Container, id: "CARTON-1" },
       to: { kind: InventoryTraceabilityNodeKind.Container, id: "PALLET-1" },
     });
@@ -131,7 +131,7 @@ describe("native handling-unit masters", () => {
         packagingRevisionIds: ["item-a-box-20-v1"],
       },
       requested: parseQuantity("600", "piece"),
-      createdAt: time1,
+      createdAtEpochMs: time1,
     });
     const packagedPosition = (
       await inventory.read.positions({
@@ -145,7 +145,7 @@ describe("native handling-unit masters", () => {
     await inventory.reservations.allocate({
       operationId: "allocate-carton-packages",
       reservationId: "exact-carton-packages",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       allocations: [
         {
           position: packagedPosition.key,
@@ -156,7 +156,7 @@ describe("native handling-unit masters", () => {
     await expect(
       inventory.containers.transfer({
         operationId: "blocked-pallet-transfer",
-        occurredAt: time2,
+        occurredAtEpochMs: time2,
         containerId: "PALLET-1",
         toLocationId: "room",
       })
@@ -164,7 +164,7 @@ describe("native handling-unit masters", () => {
     await inventory.reservations.release({
       operationId: "release-carton-packages",
       reservationId: "exact-carton-packages",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
     });
     await inventory.reservations.reserve({
       reservationId: "broad-instrument-claim",
@@ -172,12 +172,12 @@ describe("native handling-unit masters", () => {
       itemRevisionId: "item-b-v1",
       selector: { itemId: "item-b" },
       requested: parseQuantity("1", "piece"),
-      createdAt: time2,
+      createdAtEpochMs: time2,
     });
 
     const moved = await inventory.containers.transfer({
       operationId: "move-whole-pallet",
-      occurredAt: time3,
+      occurredAtEpochMs: time3,
       containerId: "PALLET-1",
       toLocationId: "room",
     });
@@ -212,7 +212,7 @@ describe("native handling-unit masters", () => {
 
     await inventory.containers.changeStatus({
       operationId: "quarantine-whole-pallet",
-      occurredAt: time3,
+      occurredAtEpochMs: time3,
       containerId: "PALLET-1",
       toStatusId: "quarantine",
     });
@@ -228,7 +228,7 @@ describe("native handling-unit masters", () => {
     ).toBe(true);
     await inventory.containers.clearStatus({
       operationId: "clear-whole-pallet-status",
-      occurredAt: time3,
+      occurredAtEpochMs: time3,
       containerId: "PALLET-1",
     });
     const cleared = [
@@ -247,7 +247,7 @@ describe("native handling-unit masters", () => {
     const issuedInventory = createTestInventory();
     await issuedInventory.stock.receiveMany({
       operationId: "receive-container-to-issue",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       lines: [
         {
           to: loosePosition("store", {
@@ -269,7 +269,7 @@ describe("native handling-unit masters", () => {
     });
     const issued = await issuedInventory.containers.issue({
       operationId: "issue-whole-tray",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       containerId: "ISSUE-TRAY",
       destinationPartyId: "patient",
     });
@@ -281,7 +281,7 @@ describe("native handling-unit masters", () => {
     const scrappedInventory = createTestInventory();
     await scrappedInventory.stock.receive({
       operationId: "receive-container-to-scrap",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("store", { containerId: "SCRAP-TRAY" }),
       amount: stockAmount("2", "piece"),
       container: { containerType: "tray" },
@@ -292,11 +292,11 @@ describe("native handling-unit masters", () => {
       itemRevisionId: "item-a-v2",
       selector: { itemId: "item-a" },
       requested: parseQuantity("1", "piece"),
-      createdAt: time1,
+      createdAtEpochMs: time1,
     });
     const scrapped = await scrappedInventory.containers.scrap({
       operationId: "scrap-whole-tray",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       containerId: "SCRAP-TRAY",
       reason: "The whole tray was physically destroyed.",
     });
@@ -310,14 +310,14 @@ describe("native handling-unit masters", () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "receive-container-box",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("store", { lotId: "LOT-CONTAINER" }),
       amount: packageAmount(1, "item-a-box-24-v1"),
-      lot: { expiresAt: lotExpiry },
+      lot: { expiresAtEpochMs: lotExpiryEpochMs },
     });
     const unpacked = await inventory.stock.unpack({
       operationId: "unpack-into-open-vial",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       from: loosePosition("store", {
         lotId: "LOT-CONTAINER",
         packagingRevisionId: "item-a-box-24-v1",
@@ -326,8 +326,8 @@ describe("native handling-unit masters", () => {
       toContainerId: "OPEN-VIAL-1",
       container: {
         containerType: "opened-vial",
-        openedAt: time1,
-        useBy: shortUseBy,
+        openedAtEpochMs: time1,
+        useByEpochMs: shortUseBy,
         identifiers: { barcode: "VIAL-001" },
       },
     });
@@ -338,8 +338,8 @@ describe("native handling-unit masters", () => {
       definition: {
         containerId: "OPEN-VIAL-1",
         containerType: "opened-vial",
-        openedAt: time1,
-        useBy: shortUseBy,
+        openedAtEpochMs: time1,
+        useByEpochMs: shortUseBy,
       },
       rootEventId: unpacked.event.eventId,
     });
@@ -351,7 +351,7 @@ describe("native handling-unit masters", () => {
       }),
       amount: stockAmount("1", "piece"),
       method: InventoryAllocationMethod.Fefo,
-      at: time2,
+      atEpochMs: time2,
     });
     expect(preview.expiredStockWasExcluded).toBe(true);
     expect(preview.lines).toEqual([]);
@@ -362,17 +362,17 @@ describe("native handling-unit masters", () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "receive-proto-container-box",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("store", { lotId: "PROTO-LOT" }),
       amount: packageAmount(1, "item-a-box-24-v1"),
-      lot: { expiresAt: lotExpiry },
+      lot: { expiresAtEpochMs: lotExpiryEpochMs },
     });
     const identifiers = JSON.parse(
       '{"__proto__":"SSCC-PROTO","gtin":"GTIN-PROTO"}'
     ) as Record<string, string>;
     const unpacked = await inventory.stock.unpack({
       operationId: "unpack-proto-container",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       from: loosePosition("store", {
         lotId: "PROTO-LOT",
         packagingRevisionId: "item-a-box-24-v1",
@@ -395,27 +395,27 @@ describe("native handling-unit masters", () => {
     const inventory = createTestInventory();
     const placed = await inventory.stock.receive({
       operationId: "receive-open-syringe",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("store", {
         lotId: "SYRINGE-LOT",
         containerId: "SYRINGE-1",
       }),
       amount: stockAmount("5", "piece"),
-      lot: { expiresAt: lotExpiry },
+      lot: { expiresAtEpochMs: lotExpiryEpochMs },
       container: {
         containerType: "prepared-syringe",
-        openedAt: time0,
-        useBy: shortUseBy,
+        openedAtEpochMs: time0,
+        useByEpochMs: shortUseBy,
       },
     });
     const corrected = await inventory.containers.correct({
       operationId: "correct-syringe-use-by",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       containerId: "SYRINGE-1",
       container: {
         containerType: "prepared-syringe",
-        openedAt: time0,
-        useBy: longUseBy,
+        openedAtEpochMs: time0,
+        useByEpochMs: longUseBy,
       },
       reason: "The preparation protocol supplied the wrong use-by.",
     });
@@ -424,13 +424,13 @@ describe("native handling-unit masters", () => {
       placed.event.eventId
     );
     expect(
-      (await inventory.read.container("SYRINGE-1"))?.definition.useBy
+      (await inventory.read.container("SYRINGE-1"))?.definition.useByEpochMs
     ).toBe(longUseBy);
     expect(await quantityInContainer(inventory, "SYRINGE-1")).toBe(5);
 
     await inventory.containers.correct({
       operationId: "omit-syringe-master",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       containerId: "SYRINGE-1",
       reason: "This row was not actually a separately tracked container.",
     });
@@ -439,25 +439,25 @@ describe("native handling-unit masters", () => {
     await expect(
       inventory.containers.define({
         operationId: "cannot-redefine-removed-container",
-        occurredAt: time2,
+        occurredAtEpochMs: time2,
         containerId: "SYRINGE-1",
-        container: { useBy: longUseBy },
+        container: { useByEpochMs: longUseBy },
       })
     ).rejects.toThrow("removed by correction");
 
     await inventory.containers.correct({
       operationId: "restore-syringe-master",
-      occurredAt: time3,
+      occurredAtEpochMs: time3,
       containerId: "SYRINGE-1",
       container: {
         containerType: "prepared-syringe",
-        openedAt: time0,
-        useBy: longUseBy,
+        openedAtEpochMs: time0,
+        useByEpochMs: longUseBy,
       },
       reason: "The physical syringe identity was confirmed.",
     });
     expect(
-      (await inventory.read.container("SYRINGE-1"))?.definition.useBy
+      (await inventory.read.container("SYRINGE-1"))?.definition.useByEpochMs
     ).toBe(longUseBy);
     expect(await quantityInContainer(inventory, "SYRINGE-1")).toBe(5);
   });
@@ -466,14 +466,14 @@ describe("native handling-unit masters", () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "receive-loose-for-container",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("store", { lotId: "PLACE-LOT" }),
       amount: stockAmount("3", "piece"),
-      lot: { expiresAt: lotExpiry },
+      lot: { expiresAtEpochMs: lotExpiryEpochMs },
     });
     const placed = await inventory.stock.placeInContainer({
       operationId: "place-into-tray",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       from: loosePosition("store", { lotId: "PLACE-LOT" }),
       amount: stockAmount("3", "piece"),
       toContainerId: "TRAY-1",
@@ -497,7 +497,7 @@ describe("native handling-unit masters", () => {
       declaration: {
         migrationId: "legacy-container-opening",
         sourceSystem: "legacy-substock",
-        cutoverAt: time0,
+        cutoverAtEpochMs: time0,
         openingStock: [
           {
             openingId: "legacy-opened-vial",
@@ -507,11 +507,11 @@ describe("native handling-unit masters", () => {
             }),
             amount: stockAmount("4", "piece"),
             itemRevisionId: "item-a-v2",
-            lot: { expiresAt: lotExpiry },
+            lot: { expiresAtEpochMs: lotExpiryEpochMs },
             container: {
               containerType: "opened-vial",
-              openedAt: time0,
-              useBy: longUseBy,
+              openedAtEpochMs: time0,
+              useByEpochMs: longUseBy,
             },
             source: {
               sourceType: "InventoryStockSubstock",
@@ -538,8 +538,8 @@ describe("native handling-unit masters", () => {
       (await inventory.read.container("LEGACY-VIAL"))?.definition
     ).toMatchObject({
       containerType: "opened-vial",
-      openedAt: time0,
-      useBy: longUseBy,
+      openedAtEpochMs: time0,
+      useByEpochMs: longUseBy,
     });
     expect(await quantityInContainer(inventory, "LEGACY-VIAL")).toBe(4);
   });
@@ -548,13 +548,13 @@ describe("native handling-unit masters", () => {
     const inventory = createTestInventory();
     await inventory.containers.define({
       operationId: "define-container-z",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       containerId: "Z-CONTAINER",
       container: { containerType: "carton" },
     });
     await inventory.containers.define({
       operationId: "define-container-a",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       containerId: "A-CONTAINER",
       container: { containerType: "vial" },
     });

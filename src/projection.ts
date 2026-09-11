@@ -97,7 +97,7 @@ export interface InventoryProjectionState {
     Record<string, readonly string[]>
   >;
   /** Current uninterrupted positive-layer occurrence time by exact position identity. */
-  readonly positiveLayerStartedAtByPositionId: Readonly<Record<string, string>>;
+  readonly positiveLayerStartedAtEpochMsByPositionId: Readonly<Record<string, number>>;
   /** Current positive exact position by item-scoped serial identity. */
   readonly positivePositionIdBySerialIdentity: Readonly<Record<string, string>>;
   /** Current handling-unit metadata keyed by exact container identity. */
@@ -171,7 +171,7 @@ export function emptyInventoryProjectionState(): InventoryProjectionState {
     positionIdsByItemId: createInventorySparseRecord(),
     positionIdsByItemRevisionId: createInventorySparseRecord(),
     positionIdsByContainerIdentity: {},
-    positiveLayerStartedAtByPositionId: {},
+    positiveLayerStartedAtEpochMsByPositionId: {},
     positivePositionIdBySerialIdentity: {},
     containers: {},
     containerRootEventIdByIdentity: {},
@@ -207,7 +207,7 @@ function applyInventoryCommittedEventInternal(
   const normalizedDraft = defineInventoryEvent({ catalog, event });
   const normalizedEvent = commitInventoryEvent(
     normalizedDraft,
-    event.recordedAt,
+    event.recordedAtEpochMs,
     event.recordSequence
   );
   const earlierEventId = inventorySparseRecordValue(
@@ -512,10 +512,10 @@ function applyInventoryCommittedEventInternal(
   /** One desired final membership per touched container index row. */
   const containerIndexMutations = new Map<string, Map<string, boolean>>();
   /** O(1) FIFO provenance for each current uninterrupted positive layer. */
-  const positiveLayerStartedAtByPositionId: Record<string, string> =
+  const positiveLayerStartedAtEpochMsByPositionId: Record<string, number> =
     mutateProjection
-      ? (state.positiveLayerStartedAtByPositionId as Record<string, string>)
-      : { ...state.positiveLayerStartedAtByPositionId };
+      ? (state.positiveLayerStartedAtEpochMsByPositionId as Record<string, number>)
+      : { ...state.positiveLayerStartedAtEpochMsByPositionId };
   /** Current serial ownership index updated only for serials touched by this event. */
   const positivePositionIdBySerialIdentity: Record<string, string> =
     mutateProjection
@@ -589,9 +589,9 @@ function applyInventoryCommittedEventInternal(
       }
     }
     if (!wasPositive && isPositive) {
-      positiveLayerStartedAtByPositionId[identity] = normalizedEvent.occurredAt;
+      positiveLayerStartedAtEpochMsByPositionId[identity] = normalizedEvent.occurredAtEpochMs;
     } else if (wasPositive && !isPositive) {
-      delete positiveLayerStartedAtByPositionId[identity];
+      delete positiveLayerStartedAtEpochMsByPositionId[identity];
     }
     registerTouchedSerialPosition(
       touchedPositionIdsBySerialIdentity,
@@ -611,7 +611,7 @@ function applyInventoryCommittedEventInternal(
   );
   for (const [
     identity,
-    startedAt,
+    startedAtEpochMs,
   ] of conservedPositiveLayerStartByDestinationId) {
     const position = positions[identity];
     if (
@@ -622,13 +622,13 @@ function applyInventoryCommittedEventInternal(
         `Conserved FIFO provenance destination ${identity} is not positive after its event.`
       );
     }
-    positiveLayerStartedAtByPositionId[identity] = startedAt;
+    positiveLayerStartedAtEpochMsByPositionId[identity] = startedAtEpochMs;
   }
   for (const override of normalizedEvent.positiveLayerProvenanceOverrides ??
     []) {
     const identity = inventoryStockPositionIdentity(override.position);
     const position = positions[identity];
-    if (override.startedAt === undefined) {
+    if (override.startedAtEpochMs === undefined) {
       if (
         position !== undefined &&
         quantityIsPositive(position.measurements.primary.quantity)
@@ -637,7 +637,7 @@ function applyInventoryCommittedEventInternal(
           `Correction cannot remove positive-layer provenance from positive position ${identity}.`
         );
       }
-      delete positiveLayerStartedAtByPositionId[identity];
+      delete positiveLayerStartedAtEpochMsByPositionId[identity];
       continue;
     }
     if (
@@ -648,7 +648,7 @@ function applyInventoryCommittedEventInternal(
         `Correction cannot assign positive-layer provenance to non-positive position ${identity}.`
       );
     }
-    positiveLayerStartedAtByPositionId[identity] = override.startedAt;
+    positiveLayerStartedAtEpochMsByPositionId[identity] = override.startedAtEpochMs;
   }
   refreshTouchedSerialIndexes({
     positions,
@@ -692,7 +692,7 @@ function applyInventoryCommittedEventInternal(
       positionIdsByItemId,
       positionIdsByItemRevisionId,
       positionIdsByContainerIdentity,
-      positiveLayerStartedAtByPositionId,
+      positiveLayerStartedAtEpochMsByPositionId,
       positivePositionIdBySerialIdentity,
       containers,
       containerRootEventIdByIdentity,
@@ -718,8 +718,8 @@ function inventoryContainerDefinitionFingerprint(
     definition.containerId,
     definition.containerType ?? null,
     inventoryMetadataFingerprint(definition.identifiers),
-    definition.openedAt ?? null,
-    definition.useBy ?? null,
+    definition.openedAtEpochMs ?? null,
+    definition.useByEpochMs ?? null,
     inventoryMetadataFingerprint(definition.metadata),
   ]);
 }
@@ -731,8 +731,8 @@ function inventoryLotDefinitionFingerprint(
   return JSON.stringify([
     definition.itemId,
     definition.lotId,
-    definition.manufacturedAt ?? null,
-    definition.expiresAt ?? null,
+    definition.manufacturedAtEpochMs ?? null,
+    definition.expiresAtEpochMs ?? null,
     inventoryMetadataFingerprint(definition.metadata),
   ]);
 }
@@ -866,8 +866,8 @@ function candidatePositionIds(
 function captureConservedPositiveLayerStarts(
   state: InventoryProjectionState,
   event: InventoryCommittedEvent
-): ReadonlyMap<string, string> {
-  const result = new Map<string, string>();
+): ReadonlyMap<string, number> {
+  const result = new Map<string, number>();
   for (const transfer of event.positiveLayerProvenanceTransfers ?? []) {
     const sourceId = inventoryStockPositionIdentity(transfer.from);
     const destinationId = inventoryStockPositionIdentity(transfer.to);
@@ -880,20 +880,20 @@ function captureConservedPositiveLayerStarts(
         `Conserved FIFO provenance source ${sourceId} is not currently positive.`
       );
     }
-    const sourceStartedAt = state.positiveLayerStartedAtByPositionId[sourceId];
-    if (sourceStartedAt === undefined) {
+    const sourceStartedAtEpochMs = state.positiveLayerStartedAtEpochMsByPositionId[sourceId];
+    if (sourceStartedAtEpochMs === undefined) {
       throw new Error(
         `Conserved FIFO provenance source ${sourceId} has no projected layer start.`
       );
     }
-    const destinationStartedAt =
-      state.positiveLayerStartedAtByPositionId[destinationId];
+    const destinationStartedAtEpochMs =
+      state.positiveLayerStartedAtEpochMsByPositionId[destinationId];
     result.set(
       destinationId,
-      destinationStartedAt === undefined ||
-        sourceStartedAt < destinationStartedAt
-        ? sourceStartedAt
-        : destinationStartedAt
+      destinationStartedAtEpochMs === undefined ||
+        sourceStartedAtEpochMs < destinationStartedAtEpochMs
+        ? sourceStartedAtEpochMs
+        : destinationStartedAtEpochMs
     );
   }
   return result;

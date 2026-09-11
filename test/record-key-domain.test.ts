@@ -96,11 +96,11 @@ describe("string-keyed inventory records", () => {
     const inventory = createInventoryOnce({
       catalog,
       storage: createInMemoryInventoryDurableStorage(),
-      clock: { now: () => time1 },
+      clock: { nowEpochMs: () => time1 },
     });
     await inventory.stock.receive({
       operationId: "prototype-index-receive",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: { itemId: "valueOf", locationId: "store" },
       amount: stockAmount("2", "piece"),
     });
@@ -115,7 +115,7 @@ describe("string-keyed inventory records", () => {
 
     const batch = await inventory.stock.issueManyByPolicy({
       operationId: "prototype-index-batch",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       requests: [
         {
           requestId: "first",
@@ -202,7 +202,7 @@ describe("string-keyed inventory records", () => {
     const inventory = createInventoryOnce({
       catalog,
       storage: createInMemoryInventoryDurableStorage(),
-      clock: { now: () => time1 },
+      clock: { nowEpochMs: () => time1 },
     });
     const plan = await inventory.transformations.plan({
       transformationRevisionId: transformation.revisionId,
@@ -215,13 +215,13 @@ describe("string-keyed inventory records", () => {
   it("accepts a first reservation whose id matches an inherited property name", async () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
-      operationId: "seed-reserved-name-reservation", occurredAt: time0,
+      operationId: "seed-reserved-name-reservation", occurredAtEpochMs: time0,
       to: loosePosition("store"), amount: stockAmount("2", "piece"),
     });
     await expect(inventory.reservations.reserve({
       reservationId: "toString", operationId: "reserve-prototype-name",
       itemRevisionId: "item-a-v2", selector: { itemId: "item-a", locationIds: ["store"] },
-      requested: parseQuantity("1", "piece"), createdAt: time1,
+      requested: parseQuantity("1", "piece"), createdAtEpochMs: time1,
     })).resolves.toMatchObject({ reservation: { reservationId: "toString" } });
   });
 
@@ -230,18 +230,18 @@ describe("string-keyed inventory records", () => {
     await expect(inventory.counts.start({
       countId: "hasOwnProperty", operationId: "count-prototype-name",
       itemRevisionId: "item-a-v2", selector: { itemId: "item-a", locationIds: ["store"] },
-      startedAt: time1,
+      startedAtEpochMs: time1,
     })).resolves.toMatchObject({ count: { countId: "hasOwnProperty" } });
   });
 
   it("accepts a first transfer whose id matches an inherited property name", async () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
-      operationId: "seed-reserved-name-transfer", occurredAt: time0,
+      operationId: "seed-reserved-name-transfer", occurredAtEpochMs: time0,
       to: loosePosition("A"), amount: stockAmount("2", "piece"),
     });
     await expect(inventory.transfers.prepare({
-      operationId: "prepare-prototype-name", occurredAt: time1, transferId: "constructor",
+      operationId: "prepare-prototype-name", occurredAtEpochMs: time1, transferId: "constructor",
       transitLocationId: "TRANSIT", destinationLocationId: "B",
       lines: [{ lineId: "line", from: loosePosition("A"), amount: stockAmount("1", "piece") }],
     })).resolves.toMatchObject({ transfer: { transferId: "constructor" } });
@@ -250,7 +250,7 @@ describe("string-keyed inventory records", () => {
   it("accepts a first event operation whose id matches an inherited property name", async () => {
     const inventory = createTestInventory();
     await expect(inventory.stock.receive({
-      operationId: "toString", occurredAt: time0, to: loosePosition("store"),
+      operationId: "toString", occurredAtEpochMs: time0, to: loosePosition("store"),
       amount: stockAmount("1", "piece"),
     })).resolves.toBeDefined();
   });

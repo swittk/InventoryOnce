@@ -114,6 +114,7 @@ import {
   inventoryPositionIsDeficit,
 } from "./deficits.js";
 import {
+  assertInventoryEpochMilliseconds,
   InventoryEventKind,
   InventoryTraceabilityRelationAction,
   InventoryTraceabilityRelationKind,
@@ -245,7 +246,7 @@ import type { InventoryWorldState } from "./world.js";
 /** Default wall clock used when applications do not inject one. */
 const systemInventoryClock: InventoryClock = {
   /** Return canonical current UTC time. */
-  now: (): string => new Date().toISOString(),
+  nowEpochMs: (): number => Date.now(),
 };
 /** Reserved count metadata retaining one complete absolute-count intent. */
 const inventoryAbsoluteCountMetadataKey = "inventoryOnceAbsoluteCount";
@@ -292,13 +293,13 @@ export async function readPublishedInventoryCatalog(
 /** Read one coherent public snapshot directly from fully published durable truth. */
 export async function readPublishedInventorySnapshot(
   storage: InventoryDurableStorage,
-  at = systemInventoryClock.now()
+  atEpochMs = systemInventoryClock.nowEpochMs()
 ): Promise<InventoryOnceReadSnapshotApi> {
   const world = await storage.readWorld();
   return new InventoryOnceReadSnapshotImplementation(
     world,
     inventoryCatalogFromSnapshot(world.catalog),
-    at
+    atEpochMs
   );
 }
 
@@ -312,7 +313,7 @@ export interface PublishInventoryCatalogIfChangedInput
   /** Stable publication retry identity. */
   readonly operationId: string;
   /** Physical/approval time of this catalogue declaration. */
-  readonly occurredAt: string;
+  readonly occurredAtEpochMs: number;
   /** Optional deterministic record-time clock. */
   readonly clock?: InventoryClock;
 }
@@ -334,7 +335,7 @@ export async function publishInventoryCatalogIfChanged({
   storage,
   catalog,
   operationId,
-  occurredAt,
+  occurredAtEpochMs,
   clock,
   reason,
   metadata,
@@ -357,7 +358,7 @@ export async function publishInventoryCatalogIfChanged({
   });
   const publication = await inventory.catalog.publish({
     operationId,
-    occurredAt,
+    occurredAtEpochMs,
     ...(reason === undefined ? {} : { reason }),
     ...(metadata === undefined ? {} : { metadata }),
   });
@@ -389,7 +390,7 @@ export interface PublishInventoryCatalogExtensionInput
 export async function publishInventoryCatalogExtension({
   storage,
   operationId,
-  occurredAt,
+  occurredAtEpochMs,
   clock,
   reason,
   metadata,
@@ -419,7 +420,7 @@ export async function publishInventoryCatalogExtension({
         storage,
         catalog: extended,
         operationId,
-        occurredAt,
+        occurredAtEpochMs,
         ...(clock === undefined ? {} : { clock }),
         ...(reason === undefined ? {} : { reason }),
         ...(metadata === undefined ? {} : { metadata }),
@@ -657,9 +658,9 @@ export interface InventoryOnceClearContainerStatusInput
 export interface InventoryOncePlanAllocationInput
   extends InventoryAllocationPolicyRequest {
   /** Physical authority time for lot/container expiry; defaults to the façade clock. */
-  readonly at?: string;
+  readonly atEpochMs?: number;
   /** Claim-book authority time; defaults to the physical authority time. */
-  readonly reservationAt?: string;
+  readonly reservationAtEpochMs?: number;
 }
 
 /** Common header plus native FIFO/FEFO allocation policy for one physical movement. */
@@ -720,9 +721,9 @@ export interface InventoryOncePolicyBatchAllocationLine {
   /** Exact positive primary quantity assigned to this request. */
   readonly allocatedPrimary: Quantity;
   /** FIFO layer age frozen while planning the durable operation. */
-  readonly layerStartedAt: string;
+  readonly layerStartedAtEpochMs: number;
   /** Effective expiry used by FEFO when known. */
-  readonly expiresAt?: string;
+  readonly expiresAtEpochMs?: number;
 }
 
 /** Exact durable shortfall recorded as a signed non-allocatable Issue position. */
@@ -802,9 +803,9 @@ export interface InventoryOncePlanFungibilityInput {
   /** Optional common stock dimensions such as one source location. */
   readonly scope?: InventoryFungibilityScope;
   /** Physical authority time for use-by; defaults to the façade clock. */
-  readonly at?: string;
+  readonly atEpochMs?: number;
   /** Claim-book authority time; defaults to the physical authority time. */
-  readonly reservationAt?: string;
+  readonly reservationAtEpochMs?: number;
   /** Preview depletion or one exact location transfer. */
   readonly reservationEffect?: InventoryFungibilityReservationEffect;
   /** Explicit override permitting expired member stock. */
@@ -1104,7 +1105,7 @@ export interface InventoryOnceRefineReservationInput {
   /** New no-broader eligible-stock scope. */
   readonly selector: InventoryStockSelector;
   /** Lifecycle occurrence time. */
-  readonly occurredAt: string;
+  readonly occurredAtEpochMs: number;
 }
 
 /** Inputs for binding one reservation to exact positions. */
@@ -1116,7 +1117,7 @@ export interface InventoryOnceAllocateReservationInput {
   /** Exact position quantities totaling the request. */
   readonly allocations: readonly InventoryReservationAllocation[];
   /** Lifecycle occurrence time. */
-  readonly occurredAt: string;
+  readonly occurredAtEpochMs: number;
 }
 
 /** Inputs for binding one claim by native FIFO/FEFO selection. */
@@ -1126,7 +1127,7 @@ export interface InventoryOnceAllocateReservationByPolicyInput {
   /** Reservation being allocated/reallocated. */
   readonly reservationId: string;
   /** Lifecycle operation occurrence/selection time. */
-  readonly occurredAt: string;
+  readonly occurredAtEpochMs: number;
   /** FIFO or FEFO ordering used to choose exact positions. */
   readonly method: InventoryAllocationPolicyRequest["method"];
   /** Explicit override permitting expired lots in the allocation. */
@@ -1140,7 +1141,7 @@ export interface InventoryOnceCloseReservationInput {
   /** Reservation being closed. */
   readonly reservationId: string;
   /** Lifecycle occurrence time. */
-  readonly occurredAt: string;
+  readonly occurredAtEpochMs: number;
 }
 
 /** One exact measured fulfillment line for consuming an allocated reservation. */
@@ -1182,7 +1183,7 @@ export interface InventoryOnceReplaceAbsoluteCountInput {
   /** Exact bucket used when the candidate scope currently contains no non-zero position. */
   readonly positionWhenEmpty?: InventoryStockPositionKey;
   /** Time the immediate count, observation, and approval physically occurred. */
-  readonly occurredAt: string;
+  readonly occurredAtEpochMs: number;
   /** Actor responsible for and approving the count. */
   readonly actorId?: PartyId;
   /** Application/source row requesting this replacement. */
@@ -1204,7 +1205,7 @@ export interface InventoryOnceStartCountInput {
   /** Complete stock scope staff promise to observe. */
   readonly selector: InventoryStockSelector;
   /** Time count work started. */
-  readonly startedAt: string;
+  readonly startedAtEpochMs: number;
   /** Actor responsible for the count. */
   readonly actorId?: PartyId;
   /** Application/source row requesting this count. */
@@ -1220,7 +1221,7 @@ export interface InventoryOnceObserveCountInput {
   /** Started count being observed. */
   readonly countId: string;
   /** Time physical observation completed. */
-  readonly observedAt: string;
+  readonly observedAtEpochMs: number;
   /** Complete non-zero observed rows; omitted eligible rows mean observed zero. */
   readonly observations: readonly InventoryCountObservationLine[];
 }
@@ -1232,7 +1233,7 @@ export interface InventoryOnceReconcileCountInput {
   /** Observed count being completed. */
   readonly countId: string;
   /** Time reconciliation was approved/recorded. */
-  readonly completedAt: string;
+  readonly completedAtEpochMs: number;
   /** Optional actor approving reconciliation. */
   readonly actorId?: PartyId;
   /** Optional human reason for discrepancy adjustment. */
@@ -1673,7 +1674,7 @@ export interface InventoryOnceReadSnapshotApi {
   /** Read claim-aware physical and expiry availability from this exact snapshot. */
   availability(
     selector: InventoryStockSelector,
-    at?: string
+    atEpochMs?: number
   ): InventoryAvailabilitySummary;
   /** Preview native FIFO/FEFO lines against this exact snapshot. */
   planAllocation(
@@ -1715,7 +1716,7 @@ export interface InventoryOnceReadSnapshotApi {
   /** Read one current physical count by identity. */
   count(countId: string): InventoryCount | undefined;
   /** Check current physical stock against claims at one lifecycle time. */
-  reservationFeasibility(at?: string): InventoryReservationFeasibilityReport;
+  reservationFeasibility(atEpochMs?: number): InventoryReservationFeasibilityReport;
 }
 
 /** Read-only current/history query surface. */
@@ -1733,7 +1734,7 @@ export interface InventoryOnceReadApi {
   /** Read truthful physical/use-by/exact-allocation/broad-claim availability facts. */
   availability(
     selector: InventoryStockSelector,
-    at?: string
+    atEpochMs?: number
   ): Promise<InventoryAvailabilitySummary>;
   /** Preview exact native FIFO/FEFO source lines without writing inventory truth. */
   planAllocation(
@@ -1764,7 +1765,7 @@ export interface InventoryOnceReadApi {
   count(countId: string): Promise<InventoryCount | undefined>;
   /** Check current physical stock against claims active now or at one supplied lifecycle time. */
   reservationFeasibility(
-    at?: string
+    atEpochMs?: number
   ): Promise<InventoryReservationFeasibilityReport>;
 }
 
@@ -2150,10 +2151,10 @@ class InventoryOnceCompositionsImplementation
       clock: internals.clock,
       deficitPolicy: internals.deficitPolicy,
       /** Build exact outputs from the same published world/catalog revision being committed. */
-      plan: ({ world, recordedAt }) => {
+      plan: ({ world, recordedAtEpochMs }) => {
         assertInventoryLifecycleTimeWasRecorded(
-          input.occurredAt,
-          recordedAt,
+          input.occurredAtEpochMs,
+          recordedAtEpochMs,
           "composition opening"
         );
         const catalog = inventoryCatalogForPublishedWorld(
@@ -2455,10 +2456,10 @@ class InventoryOnceFungibilityImplementation
       fungibilityRevisionId: input.fungibilityRevisionId,
       requested: input.requested,
       method: input.method,
-      at: input.at ?? internals.clock.now(),
-      ...(input.reservationAt === undefined
+      atEpochMs: input.atEpochMs ?? internals.clock.nowEpochMs(),
+      ...(input.reservationAtEpochMs === undefined
         ? {}
-        : { reservationAt: input.reservationAt }),
+        : { reservationAtEpochMs: input.reservationAtEpochMs }),
       ...(input.reservationEffect === undefined
         ? {}
         : { reservationEffect: input.reservationEffect }),
@@ -2898,7 +2899,7 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
       "correction",
       input.operationId,
       input.correctsEventId,
-      input.occurredAt,
+      input.occurredAtEpochMs,
       input.actorId ?? null,
       input.sourcePartyId ?? null,
       input.destinationPartyId ?? null,
@@ -2924,7 +2925,7 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
           correctsEventId: input.correctsEventId,
           ...(replacement === undefined ? {} : { replacement }),
           operationId: input.operationId,
-          occurredAt: input.occurredAt,
+          occurredAtEpochMs: input.occurredAtEpochMs,
           ...(input.actorId === undefined ? {} : { actorId: input.actorId }),
           ...(input.sourcePartyId === undefined
             ? {}
@@ -2989,7 +2990,7 @@ async function commitInventoryFungibilityMovement(
   const intentFingerprint = inventoryIntentFingerprint([
     `inventory-fungibility-${kind}`,
     input.operationId,
-    input.occurredAt,
+    input.occurredAtEpochMs,
     input.actorId ?? null,
     input.sourcePartyId ?? null,
     input.destinationPartyId ?? null,
@@ -3013,10 +3014,10 @@ async function commitInventoryFungibilityMovement(
     clock: internals.clock,
     deficitPolicy: internals.deficitPolicy,
     /** Freeze exact real member lines selected from the same world used by durable begin. */
-    plan: ({ world, recordedAt }) => {
+    plan: ({ world, recordedAtEpochMs }) => {
       assertInventoryLifecycleTimeWasRecorded(
-        input.occurredAt,
-        recordedAt,
+        input.occurredAtEpochMs,
+        recordedAtEpochMs,
         `${kind} fungibility movement`
       );
       const allocation = planInventoryFungibilityAllocation({
@@ -3025,8 +3026,8 @@ async function commitInventoryFungibilityMovement(
         fungibilityRevisionId: input.fungibilityRevisionId,
         requested: input.requested,
         method: input.method,
-        at: input.occurredAt,
-        reservationAt: recordedAt,
+        atEpochMs: input.occurredAtEpochMs,
+        reservationAtEpochMs: recordedAtEpochMs,
         reservationEffect,
         scope,
         ...(input.allowExpiredLots === undefined
@@ -3197,7 +3198,7 @@ function inventoryCommandHeaderFromFungibilityInput(
 ): InventoryCommandHeader {
   return {
     operationId: input.operationId,
-    occurredAt: input.occurredAt,
+    occurredAtEpochMs: input.occurredAtEpochMs,
     ...(input.actorId === undefined ? {} : { actorId: input.actorId }),
     ...(input.sourcePartyId === undefined
       ? {}
@@ -3245,10 +3246,10 @@ function fungibilityIssueLine(
       selectedPoolUnit: line.poolQuantity.unit,
       selectedMemberQuantity: quantityToDecimalString(line.memberQuantity),
       selectedMemberUnit: line.memberQuantity.unit,
-      allocationLayerStartedAt: line.layerStartedAt,
-      ...(line.expiresAt === undefined
+      allocationLayerStartedAtEpochMs: line.layerStartedAtEpochMs,
+      ...(line.expiresAtEpochMs === undefined
         ? {}
-        : { allocationEffectiveUseBy: line.expiresAt }),
+        : { allocationEffectiveUseByEpochMs: line.expiresAtEpochMs }),
     },
   };
 }
@@ -3344,7 +3345,7 @@ async function commitInventoryPolicyBatch(
   const intentFingerprint = inventoryIntentFingerprint([
     `inventory-policy-batch-${kind}`,
     input.operationId,
-    input.occurredAt,
+    input.occurredAtEpochMs,
     input.actorId ?? null,
     input.sourcePartyId ?? null,
     input.destinationPartyId ?? null,
@@ -3362,10 +3363,10 @@ async function commitInventoryPolicyBatch(
     clock: internals.clock,
     deficitPolicy: internals.deficitPolicy,
     /** Freeze every allocation from one published revision before anything becomes visible. */
-    plan: ({ world, recordedAt }) => {
+    plan: ({ world, recordedAtEpochMs }) => {
       assertInventoryLifecycleTimeWasRecorded(
-        input.occurredAt,
-        recordedAt,
+        input.occurredAtEpochMs,
+        recordedAtEpochMs,
         `${kind} policy batch`
       );
       const planningPositions: Record<string, InventoryStockPosition> = {
@@ -3401,8 +3402,8 @@ async function commitInventoryPolicyBatch(
           selector: request.selector,
           amount: request.amount,
           method: request.method,
-          at: input.occurredAt,
-          reservationAt: recordedAt,
+          atEpochMs: input.occurredAtEpochMs,
+          reservationAtEpochMs: recordedAtEpochMs,
           ...(request.itemRevisionId === undefined
             ? {}
             : { itemRevisionId: request.itemRevisionId }),
@@ -3508,7 +3509,7 @@ function assertInventoryPolicyBatchInput(
       kind,
       {
         operationId: input.operationId,
-        occurredAt: input.occurredAt,
+        occurredAtEpochMs: input.occurredAtEpochMs,
         selector: request.selector,
         amount: request.amount,
         method: request.method,
@@ -3551,7 +3552,7 @@ function policyMovementInputFromBatchRequest(
 ): InventoryOncePolicyMovementInput {
   return {
     operationId: input.operationId,
-    occurredAt: input.occurredAt,
+    occurredAtEpochMs: input.occurredAtEpochMs,
     ...(input.actorId === undefined ? {} : { actorId: input.actorId }),
     ...(input.sourcePartyId === undefined
       ? {}
@@ -3628,8 +3629,8 @@ function policyBatchAllocation(
         positionIdentity: inventoryStockPositionIdentity(line.position),
         amount: line.amount,
         allocatedPrimary: line.allocatedPrimary,
-        layerStartedAt: line.layerStartedAt,
-        ...(line.expiresAt === undefined ? {} : { expiresAt: line.expiresAt }),
+        layerStartedAtEpochMs: line.layerStartedAtEpochMs,
+        ...(line.expiresAtEpochMs === undefined ? {} : { expiresAtEpochMs: line.expiresAtEpochMs }),
       })
     ),
     ...(deficit === undefined ? {} : { deficit }),
@@ -3929,10 +3930,10 @@ function policyBatchMetadataValue(
             allocatedPrimary: policyBatchQuantityMetadataValue(
               line.allocatedPrimary
             ),
-            layerStartedAt: line.layerStartedAt,
-            ...(line.expiresAt === undefined
+            layerStartedAtEpochMs: line.layerStartedAtEpochMs,
+            ...(line.expiresAtEpochMs === undefined
               ? {}
-              : { expiresAt: line.expiresAt }),
+              : { expiresAtEpochMs: line.expiresAtEpochMs }),
           })
         ),
         ...(allocation.deficit === undefined
@@ -4051,16 +4052,16 @@ function inventoryPolicyBatchAllocationsFromEvent(
         allocatedPrimary: policyBatchQuantityFromMetadata(
           line.allocatedPrimary
         ),
-        layerStartedAt: requirePolicyBatchMetadataString(
-          line.layerStartedAt,
-          "policy batch layerStartedAt"
+        layerStartedAtEpochMs: requirePolicyBatchEpochMilliseconds(
+          line.layerStartedAtEpochMs,
+          "policy batch layerStartedAtEpochMs"
         ),
-        ...(line.expiresAt === undefined
+        ...(line.expiresAtEpochMs === undefined
           ? {}
           : {
-              expiresAt: requirePolicyBatchMetadataString(
-                line.expiresAt,
-                "policy batch expiresAt"
+              expiresAtEpochMs: requirePolicyBatchEpochMilliseconds(
+                line.expiresAtEpochMs,
+                "policy batch expiresAtEpochMs"
               ),
             }),
       });
@@ -4510,7 +4511,7 @@ async function commitInventoryPolicyMovement(
   const intentFingerprint = inventoryIntentFingerprint([
     `inventory-policy-${kind}`,
     input.operationId,
-    input.occurredAt,
+    input.occurredAtEpochMs,
     input.actorId ?? null,
     input.sourcePartyId ?? null,
     input.destinationPartyId ?? null,
@@ -4534,10 +4535,10 @@ async function commitInventoryPolicyMovement(
     clock: internals.clock,
     deficitPolicy: internals.deficitPolicy,
     /** Select and freeze exact physical lines from the current world used by this durable plan. */
-    plan: ({ world, recordedAt }) => {
+    plan: ({ world, recordedAtEpochMs }) => {
       assertInventoryLifecycleTimeWasRecorded(
-        input.occurredAt,
-        recordedAt,
+        input.occurredAtEpochMs,
+        recordedAtEpochMs,
         `${kind} policy movement`
       );
       const allocation = planInventoryAllocation({
@@ -4546,8 +4547,8 @@ async function commitInventoryPolicyMovement(
         selector: input.selector,
         amount: input.amount,
         method: input.method,
-        at: input.occurredAt,
-        reservationAt: recordedAt,
+        atEpochMs: input.occurredAtEpochMs,
+        reservationAtEpochMs: recordedAtEpochMs,
         ...(input.itemRevisionId === undefined
           ? {}
           : { itemRevisionId: input.itemRevisionId }),
@@ -4910,7 +4911,7 @@ function inventoryCommandHeaderFromPolicyInput(
 ): InventoryCommandHeader {
   return {
     operationId: input.operationId,
-    occurredAt: input.occurredAt,
+    occurredAtEpochMs: input.occurredAtEpochMs,
     ...(input.actorId === undefined ? {} : { actorId: input.actorId }),
     ...(input.sourcePartyId === undefined
       ? {}
@@ -4936,10 +4937,10 @@ function policyIssueLine(
     amount: line.amount,
     itemRevisionId,
     metadata: {
-      allocationLayerStartedAt: line.layerStartedAt,
-      ...(line.expiresAt === undefined
+      allocationLayerStartedAtEpochMs: line.layerStartedAtEpochMs,
+      ...(line.expiresAtEpochMs === undefined
         ? {}
-        : { allocationLotExpiresAt: line.expiresAt }),
+        : { allocationLotExpiresAtEpochMs: line.expiresAtEpochMs }),
     },
   };
 }
@@ -5381,7 +5382,7 @@ class InventoryOnceReplacementPlansImplementation
           eventId: inventoryEventIdForOperation(this.operationId),
           operationId: this.operationId,
           kind: InventoryEventKind.CountAdjustment,
-          occurredAt: input.occurredAt,
+          occurredAtEpochMs: input.occurredAtEpochMs,
           stockEffects,
           traceabilityChanges: [],
           ...(input.actorId === undefined ? {} : { actorId: input.actorId }),
@@ -5643,7 +5644,7 @@ class InventoryOnceContainersImplementation
       "container-correction",
       input.operationId,
       input.containerId,
-      input.occurredAt,
+      input.occurredAtEpochMs,
       input.actorId ?? null,
       input.sourcePartyId ?? null,
       input.destinationPartyId ?? null,
@@ -5651,8 +5652,8 @@ class InventoryOnceContainersImplementation
       correctionReason,
       input.container?.containerType ?? null,
       inventoryMetadataFingerprint(input.container?.identifiers),
-      input.container?.openedAt ?? null,
-      input.container?.useBy ?? null,
+      input.container?.openedAtEpochMs ?? null,
+      input.container?.useByEpochMs ?? null,
       inventoryMetadataFingerprint(input.container?.metadata),
       inventoryMetadataFingerprint(input.metadata),
     ]);
@@ -5695,7 +5696,7 @@ class InventoryOnceContainersImplementation
             catalog: internals.catalog,
             projection: world.projection,
             operationId: input.operationId,
-            occurredAt: input.occurredAt,
+            occurredAtEpochMs: input.occurredAtEpochMs,
             correctsEventId: rootEventId,
             replacement,
             ...(input.actorId === undefined ? {} : { actorId: input.actorId }),
@@ -5741,7 +5742,7 @@ async function commitInventoryWholeContainerOperation(
     input.operationId,
     input.containerId,
     targetIdentity,
-    input.occurredAt,
+    input.occurredAtEpochMs,
     input.actorId ?? null,
     input.sourcePartyId ?? null,
     input.destinationPartyId ?? null,
@@ -5757,10 +5758,10 @@ async function commitInventoryWholeContainerOperation(
     clock: internals.clock,
     deficitPolicy: internals.deficitPolicy,
     /** Read contents and freeze every derived physical line before the durable Begin write. */
-    plan: ({ world, recordedAt }) => {
+    plan: ({ world, recordedAtEpochMs }) => {
       assertInventoryLifecycleTimeWasRecorded(
-        input.occurredAt,
-        recordedAt,
+        input.occurredAtEpochMs,
+        recordedAtEpochMs,
         `whole-container ${kind}`
       );
       const contents = findInventoryWholeContainerContents(
@@ -5774,7 +5775,7 @@ async function commitInventoryWholeContainerOperation(
       assertNoExactReservationBindsWholeContainerPositions(
         world,
         affectedPositions,
-        input.occurredAt
+        input.occurredAtEpochMs
       );
       const event = createInventoryWholeContainerEvent(
         internals.catalog,
@@ -5911,15 +5912,15 @@ function findPositionsChangedByWholeContainerOperation(
 function assertNoExactReservationBindsWholeContainerPositions(
   world: InventoryWorldState,
   positions: readonly InventoryStockPosition[],
-  at: string
+  atEpochMs: number
 ): void {
   const affectedPositionIds = new Set<string>();
   for (const position of positions) {
     affectedPositionIds.add(inventoryStockPositionIdentity(position.key));
   }
   const blockingReservationIds: string[] = [];
-  for (const reservation of inventoryReservationsAt(world.reservations, at)) {
-    if (!inventoryReservationIsActiveAt(reservation, at)) continue;
+  for (const reservation of inventoryReservationsAt(world.reservations, atEpochMs)) {
+    if (!inventoryReservationIsActiveAt(reservation, atEpochMs)) continue;
     for (const allocation of reservation.allocations) {
       if (
         !affectedPositionIds.has(
@@ -6032,7 +6033,7 @@ function inventoryCommandHeaderFromWholeContainerInput(
 ): InventoryCommandHeader {
   return {
     operationId: input.operationId,
-    occurredAt: input.occurredAt,
+    occurredAtEpochMs: input.occurredAtEpochMs,
     ...(input.actorId === undefined ? {} : { actorId: input.actorId }),
     ...(input.sourcePartyId === undefined
       ? {}
@@ -6139,14 +6140,14 @@ class InventoryOnceLotsImplementation implements InventoryOnceLotsApi {
       input.operationId,
       input.itemId,
       input.lotId,
-      input.occurredAt,
+      input.occurredAtEpochMs,
       input.actorId ?? null,
       input.sourcePartyId ?? null,
       input.destinationPartyId ?? null,
       input.sourceReference ?? null,
       correctionReason,
-      input.lot?.manufacturedAt ?? null,
-      input.lot?.expiresAt ?? null,
+      input.lot?.manufacturedAtEpochMs ?? null,
+      input.lot?.expiresAtEpochMs ?? null,
       inventoryMetadataFingerprint(input.lot?.metadata),
       inventoryMetadataFingerprint(input.metadata),
     ]);
@@ -6190,7 +6191,7 @@ class InventoryOnceLotsImplementation implements InventoryOnceLotsApi {
             catalog: internals.catalog,
             projection: world.projection,
             operationId: input.operationId,
-            occurredAt: input.occurredAt,
+            occurredAtEpochMs: input.occurredAtEpochMs,
             correctsEventId: rootEventId,
             replacement,
             ...(input.actorId === undefined ? {} : { actorId: input.actorId }),
@@ -6373,13 +6374,13 @@ class InventoryOnceReservationsImplementation
       clock: internals.clock,
       deficitPolicy: internals.deficitPolicy,
       /** Add the claim only after testing it against the current published stock/claims. */
-      plan: ({ world, recordedAt }) => {
+      plan: ({ world, recordedAtEpochMs }) => {
         const created = createInventoryReservation({
           catalog: internals.catalog,
           projection: world.projection,
           book: world.reservations,
           reservation,
-          now: recordedAt,
+          nowEpochMs: recordedAtEpochMs,
         });
         return {
           reservationResult: created,
@@ -6399,7 +6400,7 @@ class InventoryOnceReservationsImplementation
     const fingerprint = inventoryIntentFingerprint([
       "reservation-refine",
       input.reservationId,
-      input.occurredAt,
+      input.occurredAtEpochMs,
       inventoryStockSelectorIdentity(selector),
     ]);
     const result = await commitInventoryOperation({
@@ -6410,10 +6411,10 @@ class InventoryOnceReservationsImplementation
       clock: internals.clock,
       deficitPolicy: internals.deficitPolicy,
       /** Narrow the claim against the current published allocation and competing claims. */
-      plan: ({ world, recordedAt }) => {
+      plan: ({ world, recordedAtEpochMs }) => {
         assertInventoryLifecycleTimeWasRecorded(
-          input.occurredAt,
-          recordedAt,
+          input.occurredAtEpochMs,
+          recordedAtEpochMs,
           "reservation refinement"
         );
         const refined = refineInventoryReservation({
@@ -6423,7 +6424,7 @@ class InventoryOnceReservationsImplementation
           operationId: input.operationId,
           reservationId: input.reservationId,
           selector,
-          occurredAt: input.occurredAt,
+          occurredAtEpochMs: input.occurredAtEpochMs,
         });
         return {
           reservationResult: refined,
@@ -6445,7 +6446,7 @@ class InventoryOnceReservationsImplementation
     const fingerprint = inventoryIntentFingerprint([
       "reservation-allocate",
       input.reservationId,
-      input.occurredAt,
+      input.occurredAtEpochMs,
       allocations.map(reservationAllocationFingerprint),
     ]);
     const result = await commitInventoryOperation({
@@ -6456,10 +6457,10 @@ class InventoryOnceReservationsImplementation
       clock: internals.clock,
       deficitPolicy: internals.deficitPolicy,
       /** Bind exact positions against the current published stock and competing claims. */
-      plan: ({ world, recordedAt }) => {
+      plan: ({ world, recordedAtEpochMs }) => {
         assertInventoryLifecycleTimeWasRecorded(
-          input.occurredAt,
-          recordedAt,
+          input.occurredAtEpochMs,
+          recordedAtEpochMs,
           "reservation allocation"
         );
         const allocated = allocateInventoryReservation({
@@ -6469,7 +6470,7 @@ class InventoryOnceReservationsImplementation
           operationId: input.operationId,
           reservationId: input.reservationId,
           allocations,
-          occurredAt: input.occurredAt,
+          occurredAtEpochMs: input.occurredAtEpochMs,
         });
         return {
           reservationResult: allocated,
@@ -6488,7 +6489,7 @@ class InventoryOnceReservationsImplementation
     const fingerprint = inventoryIntentFingerprint([
       "reservation-allocate-by-policy",
       input.reservationId,
-      input.occurredAt,
+      input.occurredAtEpochMs,
       input.method,
       input.allowExpiredLots ?? false,
     ]);
@@ -6500,10 +6501,10 @@ class InventoryOnceReservationsImplementation
       clock: internals.clock,
       deficitPolicy: internals.deficitPolicy,
       /** Select exact positions and freeze the resulting allocation in one durable operation. */
-      plan: ({ world, recordedAt }) => {
+      plan: ({ world, recordedAtEpochMs }) => {
         assertInventoryLifecycleTimeWasRecorded(
-          input.occurredAt,
-          recordedAt,
+          input.occurredAtEpochMs,
+          recordedAtEpochMs,
           "reservation policy allocation"
         );
         const reservation =
@@ -6537,8 +6538,8 @@ class InventoryOnceReservationsImplementation
           ),
           itemRevisionId: reservation.itemRevisionId,
           method: input.method,
-          at: input.occurredAt,
-          reservationAt: recordedAt,
+          atEpochMs: input.occurredAtEpochMs,
+          reservationAtEpochMs: recordedAtEpochMs,
           reservationId: input.reservationId,
           allowExpiredLots:
             input.allowExpiredLots ?? reservation.allowExpiredStock ?? false,
@@ -6558,7 +6559,7 @@ class InventoryOnceReservationsImplementation
           operationId: input.operationId,
           reservationId: input.reservationId,
           allocations,
-          occurredAt: input.occurredAt,
+          occurredAtEpochMs: input.occurredAtEpochMs,
         });
         return {
           reservationResult: allocated,
@@ -6592,7 +6593,7 @@ class InventoryOnceReservationsImplementation
     const intentFingerprint = inventoryIntentFingerprint([
       "reservation-consume",
       input.reservationId,
-      input.occurredAt,
+      input.occurredAtEpochMs,
       input.actorId ?? null,
       input.sourcePartyId ?? null,
       input.destinationPartyId ?? null,
@@ -6609,10 +6610,10 @@ class InventoryOnceReservationsImplementation
       clock: internals.clock,
       deficitPolicy: internals.deficitPolicy,
       /** Build the issue and reservation close from the same published world revision. */
-      plan: ({ world, recordedAt }) => {
+      plan: ({ world, recordedAtEpochMs }) => {
         assertInventoryLifecycleTimeWasRecorded(
-          input.occurredAt,
-          recordedAt,
+          input.occurredAtEpochMs,
+          recordedAtEpochMs,
           "reservation consumption"
         );
         const reservation =
@@ -6633,7 +6634,7 @@ class InventoryOnceReservationsImplementation
           operationId: input.operationId,
           reservationId: input.reservationId,
           consumptionEventId: event.eventId,
-          occurredAt: input.occurredAt,
+          occurredAtEpochMs: input.occurredAtEpochMs,
         });
         return {
           event,
@@ -6653,7 +6654,7 @@ class InventoryOnceReservationsImplementation
     const intentFingerprint = inventoryIntentFingerprint([
       "reservation-consume-allocated",
       input.reservationId,
-      input.occurredAt,
+      input.occurredAtEpochMs,
       input.actorId ?? null,
       input.sourcePartyId ?? null,
       input.destinationPartyId ?? null,
@@ -6669,10 +6670,10 @@ class InventoryOnceReservationsImplementation
       clock: internals.clock,
       deficitPolicy: internals.deficitPolicy,
       /** Materialize exact legal issue amounts from the current frozen allocation. */
-      plan: ({ world, recordedAt }) => {
+      plan: ({ world, recordedAtEpochMs }) => {
         assertInventoryLifecycleTimeWasRecorded(
-          input.occurredAt,
-          recordedAt,
+          input.occurredAtEpochMs,
+          recordedAtEpochMs,
           "reservation allocated consumption"
         );
         const reservation =
@@ -6698,7 +6699,7 @@ class InventoryOnceReservationsImplementation
           operationId: input.operationId,
           reservationId: input.reservationId,
           consumptionEventId: event.eventId,
-          occurredAt: input.occurredAt,
+          occurredAtEpochMs: input.occurredAtEpochMs,
         });
         return {
           event,
@@ -6719,7 +6720,7 @@ class InventoryOnceReservationsImplementation
     const fingerprint = inventoryIntentFingerprint([
       `reservation-${kind}`,
       input.reservationId,
-      input.occurredAt,
+      input.occurredAtEpochMs,
     ]);
     const result = await commitInventoryOperation({
       catalog: internals.catalog,
@@ -6729,10 +6730,10 @@ class InventoryOnceReservationsImplementation
       clock: internals.clock,
       deficitPolicy: internals.deficitPolicy,
       /** Close the current claim row without changing physical stock. */
-      plan: ({ world, recordedAt }) => {
+      plan: ({ world, recordedAtEpochMs }) => {
         assertInventoryLifecycleTimeWasRecorded(
-          input.occurredAt,
-          recordedAt,
+          input.occurredAtEpochMs,
+          recordedAtEpochMs,
           `reservation ${kind}`
         );
         const closed =
@@ -6741,13 +6742,13 @@ class InventoryOnceReservationsImplementation
                 book: world.reservations,
                 operationId: input.operationId,
                 reservationId: input.reservationId,
-                occurredAt: input.occurredAt,
+                occurredAtEpochMs: input.occurredAtEpochMs,
               })
             : expireInventoryReservation({
                 book: world.reservations,
                 operationId: input.operationId,
                 reservationId: input.reservationId,
-                occurredAt: input.occurredAt,
+                occurredAtEpochMs: input.occurredAtEpochMs,
               });
         return {
           reservationResult: closed,
@@ -6808,8 +6809,8 @@ function newReservationFacadeFingerprint(
     reservation.itemRevisionId,
     inventoryStockSelectorIdentity(reservation.selector),
     quantityFingerprint(reservation.requested),
-    reservation.createdAt,
-    reservation.expiresAt ?? null,
+    reservation.createdAtEpochMs,
+    reservation.expiresAtEpochMs ?? null,
     reservation.allowExpiredStock ?? false,
     reservation.actorId ?? null,
     reservation.sourceReference ?? null,
@@ -6992,7 +6993,7 @@ function createReservationConsumptionEvent(
     }
     if (
       reservation.allowExpiredStock !== true &&
-      inventoryPositionIsExpiredAt(projection, line.from, input.occurredAt)
+      inventoryPositionIsExpiredAt(projection, line.from, input.occurredAtEpochMs)
     ) {
       throw new Error(
         "Reservation fulfillment cannot use stock past its lot/container use-by unless the claim explicitly permits it."
@@ -7056,7 +7057,7 @@ function createReservationConsumptionEvent(
       eventId: inventoryEventIdForOperation(input.operationId),
       operationId: input.operationId,
       kind: InventoryEventKind.Issue,
-      occurredAt: input.occurredAt,
+      occurredAtEpochMs: input.occurredAtEpochMs,
       stockEffects,
       traceabilityChanges: [],
       ...(input.actorId === undefined ? {} : { actorId: input.actorId }),
@@ -7353,7 +7354,7 @@ class InventoryOnceCountsImplementation implements InventoryOnceCountsApi {
     const observed = await this.observe({
       operationId: observeOperationId,
       countId: input.countId,
-      observedAt: input.occurredAt,
+      observedAtEpochMs: input.occurredAtEpochMs,
       observations:
         input.observedMeasurements === undefined
           ? []
@@ -7367,7 +7368,7 @@ class InventoryOnceCountsImplementation implements InventoryOnceCountsApi {
     const reconciled = await this.reconcile({
       operationId: reconcileOperationId,
       countId: input.countId,
-      completedAt: input.occurredAt,
+      completedAtEpochMs: input.occurredAtEpochMs,
       ...(input.actorId === undefined ? {} : { actorId: input.actorId }),
       ...(input.reason === undefined ? {} : { reason: input.reason }),
     });
@@ -7389,7 +7390,7 @@ class InventoryOnceCountsImplementation implements InventoryOnceCountsApi {
       input.operationId,
       input.itemRevisionId ?? null,
       inventoryStockSelectorIdentity(selector),
-      input.startedAt,
+      input.startedAtEpochMs,
       input.actorId ?? null,
       input.sourceReference ?? null,
       inventoryMetadataFingerprint(input.metadata),
@@ -7402,10 +7403,10 @@ class InventoryOnceCountsImplementation implements InventoryOnceCountsApi {
       clock: internals.clock,
       deficitPolicy: internals.deficitPolicy,
       /** Freeze the count's snapshot sequence from the current published event stream. */
-      plan: ({ world, recordedAt }) => {
+      plan: ({ world, recordedAtEpochMs }) => {
         assertInventoryLifecycleTimeWasRecorded(
-          input.startedAt,
-          recordedAt,
+          input.startedAtEpochMs,
+          recordedAtEpochMs,
           "count start"
         );
         const started = startInventoryCount({
@@ -7415,7 +7416,7 @@ class InventoryOnceCountsImplementation implements InventoryOnceCountsApi {
           countId: input.countId,
           operationId: input.operationId,
           selector,
-          startedAt: input.startedAt,
+          startedAtEpochMs: input.startedAtEpochMs,
           ...(input.itemRevisionId === undefined
             ? {}
             : { itemRevisionId: input.itemRevisionId }),
@@ -7444,7 +7445,7 @@ class InventoryOnceCountsImplementation implements InventoryOnceCountsApi {
     const fingerprint = inventoryIntentFingerprint([
       "count-observe",
       input.countId,
-      input.observedAt,
+      input.observedAtEpochMs,
       observations.map(countObservationFingerprint),
     ]);
     const result = await commitInventoryOperation({
@@ -7455,10 +7456,10 @@ class InventoryOnceCountsImplementation implements InventoryOnceCountsApi {
       clock: internals.clock,
       deficitPolicy: internals.deficitPolicy,
       /** Record the observation against the current count row and bounded event sequence. */
-      plan: ({ world, recordedAt }) => {
+      plan: ({ world, recordedAtEpochMs }) => {
         assertInventoryLifecycleTimeWasRecorded(
-          input.observedAt,
-          recordedAt,
+          input.observedAtEpochMs,
+          recordedAtEpochMs,
           "count observation"
         );
         const observed = observeInventoryCount({
@@ -7467,7 +7468,7 @@ class InventoryOnceCountsImplementation implements InventoryOnceCountsApi {
           book: world.counts,
           operationId: input.operationId,
           countId: input.countId,
-          observedAt: input.observedAt,
+          observedAtEpochMs: input.observedAtEpochMs,
           observations,
         });
         return {
@@ -7488,7 +7489,7 @@ class InventoryOnceCountsImplementation implements InventoryOnceCountsApi {
     const fingerprint = inventoryIntentFingerprint([
       "count-reconcile",
       input.countId,
-      input.completedAt,
+      input.completedAtEpochMs,
       input.actorId ?? null,
       input.reason ?? null,
     ]);
@@ -7500,10 +7501,10 @@ class InventoryOnceCountsImplementation implements InventoryOnceCountsApi {
       clock: internals.clock,
       deficitPolicy: internals.deficitPolicy,
       /** Derive and freeze the observation-time discrepancy plus terminal count row together. */
-      plan: ({ world, recordedAt }) => {
+      plan: ({ world, recordedAtEpochMs }) => {
         assertInventoryLifecycleTimeWasRecorded(
-          input.completedAt,
-          recordedAt,
+          input.completedAtEpochMs,
+          recordedAtEpochMs,
           "count reconciliation"
         );
         const plan = createInventoryCountReconciliationPlan({
@@ -7513,7 +7514,7 @@ class InventoryOnceCountsImplementation implements InventoryOnceCountsApi {
           book: world.counts,
           operationId: input.operationId,
           countId: input.countId,
-          completedAt: input.completedAt,
+          completedAtEpochMs: input.completedAtEpochMs,
           ...(input.actorId === undefined ? {} : { actorId: input.actorId }),
           ...(input.reason === undefined ? {} : { reason: input.reason }),
         });
@@ -7522,7 +7523,7 @@ class InventoryOnceCountsImplementation implements InventoryOnceCountsApi {
           operationId: input.operationId,
           countId: input.countId,
           intentFingerprint: plan.intentFingerprint,
-          completedAt: input.completedAt,
+          completedAtEpochMs: input.completedAtEpochMs,
           ...(plan.event === undefined
             ? {}
             : { reconciliationEventId: plan.event.eventId }),
@@ -7547,7 +7548,7 @@ class InventoryOnceCountsImplementation implements InventoryOnceCountsApi {
     const fingerprint = inventoryIntentFingerprint([
       "count-abandon",
       input.countId,
-      input.occurredAt,
+      input.occurredAtEpochMs,
       input.reason,
     ]);
     const result = await commitInventoryOperation({
@@ -7558,10 +7559,10 @@ class InventoryOnceCountsImplementation implements InventoryOnceCountsApi {
       clock: internals.clock,
       deficitPolicy: internals.deficitPolicy,
       /** Mark the current non-terminal count abandoned without touching stock. */
-      plan: ({ world, recordedAt }) => {
+      plan: ({ world, recordedAtEpochMs }) => {
         assertInventoryLifecycleTimeWasRecorded(
-          input.occurredAt,
-          recordedAt,
+          input.occurredAtEpochMs,
+          recordedAtEpochMs,
           "count abandonment"
         );
         const abandoned = abandonInventoryCount({
@@ -7614,10 +7615,10 @@ async function commitAbsoluteCountStart({
     clock: internals.clock,
     deficitPolicy: internals.deficitPolicy,
     /** Resolve the exact bucket against the same world revision the count start publishes from. */
-    plan: ({ world, recordedAt }) => {
+    plan: ({ world, recordedAtEpochMs }) => {
       assertInventoryLifecycleTimeWasRecorded(
-        input.occurredAt,
-        recordedAt,
+        input.occurredAtEpochMs,
+        recordedAtEpochMs,
         "absolute count start"
       );
       const item =
@@ -7677,7 +7678,7 @@ async function commitAbsoluteCountStart({
         operationId: startOperationId,
         itemRevisionId: item.revisionId,
         selector: exactSelector,
-        startedAt: input.occurredAt,
+        startedAtEpochMs: input.occurredAtEpochMs,
         ...(input.actorId === undefined ? {} : { actorId: input.actorId }),
         ...(input.sourceReference === undefined
           ? {}
@@ -7694,7 +7695,7 @@ async function commitAbsoluteCountStart({
         book: started.book,
         operationId: observeOperationId,
         countId: input.countId,
-        observedAt: input.occurredAt,
+        observedAtEpochMs: input.occurredAtEpochMs,
         observations:
           input.observedMeasurements === undefined
             ? []
@@ -7716,7 +7717,7 @@ async function commitAbsoluteCountStart({
         book: observed.book,
         operationId: reconcileOperationId,
         countId: input.countId,
-        completedAt: input.occurredAt,
+        completedAtEpochMs: input.occurredAtEpochMs,
         ...(input.actorId === undefined ? {} : { actorId: input.actorId }),
         ...(input.reason === undefined ? {} : { reason: input.reason }),
       });
@@ -7725,7 +7726,7 @@ async function commitAbsoluteCountStart({
         operationId: reconcileOperationId,
         countId: input.countId,
         intentFingerprint: reconciliation.intentFingerprint,
-        completedAt: input.occurredAt,
+        completedAtEpochMs: input.occurredAtEpochMs,
         ...(reconciliation.event === undefined
           ? {}
           : { reconciliationEventId: reconciliation.event.eventId }),
@@ -8081,7 +8082,7 @@ function absoluteCountIntentFingerprint(
     fallbackPosition === undefined
       ? null
       : inventoryStockPositionIdentity(fallbackPosition),
-    input.occurredAt,
+    input.occurredAtEpochMs,
     input.observedMeasurements === undefined
       ? null
       : inventoryMeasurementsFingerprint(input.observedMeasurements),
@@ -8195,7 +8196,7 @@ class InventoryOnceTraceabilityImplementation
       createInventoryTraceabilityEvent({
         catalog,
         operationId: input.operationId,
-        occurredAt: input.occurredAt,
+        occurredAtEpochMs: input.occurredAtEpochMs,
         changes: [{ action, kind, from: input.from, to: input.to }],
         ...(input.actorId === undefined ? {} : { actorId: input.actorId }),
         ...(input.sourcePartyId === undefined
@@ -8225,17 +8226,17 @@ class InventoryOnceReadSnapshotImplementation
   /** Exact retained catalogue from the same published world. */
   private readonly catalog: InventoryCatalog;
   /** Default lifecycle time frozen when the snapshot was created. */
-  private readonly defaultAt: string;
+  private readonly defaultAtEpochMs: number;
 
   /** Bind every public read helper to one coherent world/catalogue pair. */
   constructor(
     world: InventoryWorldState,
     catalog: InventoryCatalog,
-    defaultAt: string
+    defaultAtEpochMs: number
   ) {
     this.world = world;
     this.catalog = catalog;
-    this.defaultAt = defaultAt;
+    this.defaultAtEpochMs = defaultAtEpochMs;
     this.worldRevision = world.revision;
   }
 
@@ -8258,14 +8259,14 @@ class InventoryOnceReadSnapshotImplementation
   /** Read truthful availability from the frozen world and claim book. */
   availability(
     selector: InventoryStockSelector,
-    at = this.defaultAt
+    atEpochMs = this.defaultAtEpochMs
   ): InventoryAvailabilitySummary {
     return summarizeInventoryAvailability({
       catalog: this.catalog,
       projection: this.world.projection,
       reservations: this.world.reservations,
       selector,
-      at,
+      atEpochMs,
     });
   }
 
@@ -8279,10 +8280,10 @@ class InventoryOnceReadSnapshotImplementation
       selector: input.selector,
       amount: input.amount,
       method: input.method,
-      at: input.at ?? this.defaultAt,
-      ...(input.reservationAt === undefined
+      atEpochMs: input.atEpochMs ?? this.defaultAtEpochMs,
+      ...(input.reservationAtEpochMs === undefined
         ? {}
-        : { reservationAt: input.reservationAt }),
+        : { reservationAtEpochMs: input.reservationAtEpochMs }),
       ...(input.itemRevisionId === undefined
         ? {}
         : { itemRevisionId: input.itemRevisionId }),
@@ -8393,13 +8394,13 @@ class InventoryOnceReadSnapshotImplementation
 
   /** Check current physical stock against claims at one lifecycle time. */
   reservationFeasibility(
-    at = this.defaultAt
+    atEpochMs = this.defaultAtEpochMs
   ): InventoryReservationFeasibilityReport {
     return inspectInventoryReservationFeasibility({
       catalog: this.catalog,
       projection: this.world.projection,
       book: this.world.reservations,
-      at,
+      atEpochMs,
     });
   }
 }
@@ -8422,7 +8423,7 @@ class InventoryOnceReadImplementation implements InventoryOnceReadApi {
     return new InventoryOnceReadSnapshotImplementation(
       world,
       inventoryCatalogForPublishedWorld(world, internals.catalog),
-      internals.clock.now()
+      internals.clock.nowEpochMs()
     );
   }
 
@@ -8458,7 +8459,7 @@ class InventoryOnceReadImplementation implements InventoryOnceReadApi {
   /** Read truthful availability without collapsing broad claims into one misleading scalar. */
   async availability(
     selector: InventoryStockSelector,
-    at?: string
+    atEpochMs?: number
   ): Promise<InventoryAvailabilitySummary> {
     const internals = requireInventoryOnceInternals(this.owner);
     const world = await this.world();
@@ -8467,7 +8468,7 @@ class InventoryOnceReadImplementation implements InventoryOnceReadApi {
       projection: world.projection,
       reservations: world.reservations,
       selector,
-      at: at ?? internals.clock.now(),
+      atEpochMs: atEpochMs ?? internals.clock.nowEpochMs(),
     });
   }
 
@@ -8483,10 +8484,10 @@ class InventoryOnceReadImplementation implements InventoryOnceReadApi {
       selector: input.selector,
       amount: input.amount,
       method: input.method,
-      at: input.at ?? internals.clock.now(),
-      ...(input.reservationAt === undefined
+      atEpochMs: input.atEpochMs ?? internals.clock.nowEpochMs(),
+      ...(input.reservationAtEpochMs === undefined
         ? {}
-        : { reservationAt: input.reservationAt }),
+        : { reservationAtEpochMs: input.reservationAtEpochMs }),
       ...(input.itemRevisionId === undefined
         ? {}
         : { itemRevisionId: input.itemRevisionId }),
@@ -8569,7 +8570,7 @@ class InventoryOnceReadImplementation implements InventoryOnceReadApi {
   }
   /** Check current physical stock against claims active now or at one supplied lifecycle time. */
   async reservationFeasibility(
-    at?: string
+    atEpochMs?: number
   ): Promise<InventoryReservationFeasibilityReport> {
     const internals = requireInventoryOnceInternals(this.owner);
     const world = await this.world();
@@ -8577,7 +8578,7 @@ class InventoryOnceReadImplementation implements InventoryOnceReadApi {
       catalog: inventoryCatalogForPublishedWorld(world, internals.catalog),
       projection: world.projection,
       book: world.reservations,
-      at: at ?? internals.clock.now(),
+      atEpochMs: atEpochMs ?? internals.clock.nowEpochMs(),
     });
   }
 }
@@ -8649,11 +8650,18 @@ function compareProjectedLotDefinition(
 
 /** Reject future lifecycle facts because current claim authority is frozen at durable record time. */
 function assertInventoryLifecycleTimeWasRecorded(
-  occurredAt: string,
-  recordedAt: string,
+  occurredAtEpochMs: number,
+  recordedAtEpochMs: number,
   label: string
 ): void {
-  if (occurredAt > recordedAt) {
+  if (occurredAtEpochMs > recordedAtEpochMs) {
     throw new Error(`${label} cannot occur after its durable record time.`);
   }
+}
+
+/** Decode an exact instant retained in policy allocation metadata. */
+function requirePolicyBatchEpochMilliseconds(value: InventoryMetadataValue | undefined, label: string): number {
+  const epochMs = requirePolicyBatchMetadataNumber(value, label);
+  assertInventoryEpochMilliseconds(epochMs, label);
+  return epochMs;
 }

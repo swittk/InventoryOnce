@@ -81,7 +81,7 @@ export interface EnsureInventoryScalarCatalogRevisionInput {
   /** Stable retry identity for any catalogue publication. */
   readonly operationId: string;
   /** Canonical physical/publication occurrence time. */
-  readonly occurredAt: string;
+  readonly occurredAtEpochMs: number;
   /** Application-specific deterministic revision-id factory used only when append is required. */
   readonly defineRevision?: (
     declaration: InventoryScalarCatalogDeclaration
@@ -115,7 +115,7 @@ export async function ensureInventoryScalarCatalogRevision({
   allowCreate,
   activateRevision = false,
   operationId,
-  occurredAt,
+  occurredAtEpochMs,
   defineRevision,
   reason,
 }: EnsureInventoryScalarCatalogRevisionInput): Promise<EnsureInventoryScalarCatalogRevisionResult> {
@@ -213,7 +213,7 @@ export async function ensureInventoryScalarCatalogRevision({
       requestedUnit: normalizedRequestedUnit,
       selectedItemRevisionId: selected.revisionId,
       operationId,
-      occurredAt,
+      occurredAtEpochMs,
       activeItemRevisionIds: { [normalizedItemId]: selected.revisionId },
       reason: scalarCatalogPublicationReason(
         reason,
@@ -241,7 +241,7 @@ export async function ensureInventoryScalarCatalogRevision({
     requestedUnit: normalizedRequestedUnit,
     selectedItemRevisionId: definitions.item.revisionId,
     operationId,
-    occurredAt,
+    occurredAtEpochMs,
     itemRevisions: [definitions.item],
     packagingRevisions: definitions.packaging,
     activeItemRevisionIds:
@@ -296,7 +296,7 @@ interface PublishScalarCatalogInput {
   /** Stable publication retry identity. */
   readonly operationId: string;
   /** Canonical publication occurrence time. */
-  readonly occurredAt: string;
+  readonly occurredAtEpochMs: number;
   /** New immutable item revisions. */
   readonly itemRevisions?: readonly InventoryItemDefinitionRevision[];
   /** New immutable package revisions. */
@@ -315,7 +315,7 @@ async function publishScalarCatalog({
   requestedUnit,
   selectedItemRevisionId,
   operationId,
-  occurredAt,
+  occurredAtEpochMs,
   itemRevisions = [],
   packagingRevisions = [],
   activeItemRevisionIds = {},
@@ -330,7 +330,7 @@ async function publishScalarCatalog({
   const inventory = createInventoryOnce({ catalog: extended, storage });
   const publication = await inventory.catalog.publish({
     operationId: requireCatalogIdentity(operationId, "operationId"),
-    occurredAt,
+    occurredAtEpochMs,
     reason,
   });
   const publishedWorld = await storage.readWorld();

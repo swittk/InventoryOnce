@@ -204,7 +204,8 @@ describe("formal implementation conformance manifest", () => {
     expect(summary.callableFieldSignatures).toBeGreaterThanOrEqual(10);
     expect(summary.optionalFields).toBeGreaterThanOrEqual(821);
     expect(summary.undefinedFields).toBeGreaterThanOrEqual(2);
-    expect(summary.nullableFields).toBe(0);
+    // The four authority checkpoint instants are nullable because epoch 0 is a valid instant and cannot encode absence.
+    expect(summary.nullableFields).toBe(4);
     expect(summary.callAndConstructSignatures).toBeGreaterThanOrEqual(461);
     expect(summary.recursiveTypeReferences).toBeGreaterThanOrEqual(3);
     expect(summary.truncatedTypes).toBe(0);

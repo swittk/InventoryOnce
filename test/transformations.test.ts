@@ -206,7 +206,7 @@ describe("reusable physical transformation definitions", () => {
     const inventory = createInventoryOnce({ catalog, storage });
     await inventory.stock.receive({
       operationId: "receive-bottles",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: { itemId: "med-a", locationId: "room-a" },
       itemRevisionId: bottle.revisionId,
       amount: stockAmount("3", "bottle"),

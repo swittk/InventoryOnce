@@ -38,21 +38,21 @@ interface ReservationShortageFixture {
 
 /** Build the exact ReservationScope release counterexample through public calls. */
 async function createReservationShortageFixture(
-  secondClaimExpiresAt?: string
+  secondClaimExpiresAtEpochMs?: number
 ): Promise<ReservationShortageFixture> {
   const storage = createInMemoryInventoryDurableStorage();
-  let recordedAt = time1;
+  let recordedAtEpochMs = time1;
   const inventory = createTestInventory(
     storage,
     createTabletCatalog(),
     {
       /** Let the fixture cross the optional c2 expiry before recording physical loss. */
-      now: () => recordedAt,
+      nowEpochMs: () => recordedAtEpochMs,
     }
   );
   await inventory.stock.receiveMany({
     operationId: "closure:init:receive",
-    occurredAt: time0,
+    occurredAtEpochMs: time0,
     lines: [
       { to: loosePosition("u1"), amount: stockAmount("1", "piece") },
       { to: loosePosition("u2"), amount: stockAmount("1", "piece") },
@@ -64,7 +64,7 @@ async function createReservationShortageFixture(
     itemRevisionId: "item-a-v2",
     selector: { itemId: "item-a", locationIds: ["u1"] },
     requested: parseQuantity("1", "piece"),
-    createdAt: time1,
+    createdAtEpochMs: time1,
   });
   await inventory.reservations.reserve({
     reservationId: "c2",
@@ -72,15 +72,15 @@ async function createReservationShortageFixture(
     itemRevisionId: "item-a-v2",
     selector: { itemId: "item-a", locationIds: ["u2"] },
     requested: parseQuantity("1", "piece"),
-    createdAt: time1,
-    ...(secondClaimExpiresAt === undefined
+    createdAtEpochMs: time1,
+    ...(secondClaimExpiresAtEpochMs === undefined
       ? {}
-      : { expiresAt: secondClaimExpiresAt }),
+      : { expiresAtEpochMs: secondClaimExpiresAtEpochMs }),
   });
-  recordedAt = time3;
+  recordedAtEpochMs = time3;
   await inventory.stock.scrap({
     operationId: "closure:physical-loss:u1",
-    occurredAt: time2,
+    occurredAtEpochMs: time2,
     from: loosePosition("u1"),
     amount: stockAmount("1", "piece"),
     reason: "The u1 token was physically lost.",
@@ -108,7 +108,7 @@ describe("reservation closure through an existing shortage", () => {
     const command = {
       reservationId: "c2",
       operationId: "closure:release:c2",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
     };
 
     const released = await inventory.reservations.release(command);
@@ -144,7 +144,7 @@ describe("reservation closure through an existing shortage", () => {
     expect(replayed.reservation).toEqual(frozenRelease.reservation);
     expect(await inventory.read.world()).toEqual(after);
     await expect(
-      inventory.reservations.release({ ...command, occurredAt: time3 })
+      inventory.reservations.release({ ...command, occurredAtEpochMs: time3 })
     ).rejects.toThrow("retried with changed intent");
     const durableOperation = await storage.readOperation(command.operationId);
     expect(durableOperation).toMatchObject({
@@ -161,13 +161,13 @@ describe("reservation closure through an existing shortage", () => {
     await expect(inventory.reservations.expire({
       reservationId: "c2",
       operationId: "closure:premature-expire:c2",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
     })).rejects.toThrow("has not reached its expiry time");
     expect(await inventory.read.world()).toEqual(before);
     const command = {
       reservationId: "c2",
       operationId: "closure:expire:c2",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
     };
     const expired = await inventory.reservations.expire(command);
     const frozenExpiry = structuredClone(expired);
@@ -186,15 +186,15 @@ describe("reservation closure through an existing shortage", () => {
     expect(replayed.receipt).toEqual(frozenExpiry.receipt);
     expect(replayed.reservation).toEqual(frozenExpiry.reservation);
     expect(await inventory.read.world()).toEqual(after);
-    await expect(inventory.reservations.expire({ ...command, occurredAt: time3 }))
+    await expect(inventory.reservations.expire({ ...command, occurredAtEpochMs: time3 }))
       .rejects.toThrow("retried with changed intent");
   });
 
   it("retains the original release receipt after a later claim closure advances the world", async () => {
     const { inventory } = await createReservationShortageFixture();
-    const command = { reservationId: "c2", operationId: "closure:old-receipt:c2", occurredAt: time2 };
+    const command = { reservationId: "c2", operationId: "closure:old-receipt:c2", occurredAtEpochMs: time2 };
     const frozenRelease = structuredClone(await inventory.reservations.release(command));
-    await inventory.reservations.release({ reservationId: "c1", operationId: "closure:later-release:c1", occurredAt: time3 });
+    await inventory.reservations.release({ reservationId: "c1", operationId: "closure:later-release:c1", occurredAtEpochMs: time3 });
     const latestWorld = await inventory.read.world();
     expect(latestWorld.revision).toBeGreaterThan(frozenRelease.receipt.worldRevision);
     const replayed = await inventory.reservations.release(command);
@@ -211,7 +211,7 @@ describe("reservation closure through an existing shortage", () => {
     await expect(
       inventory.stock.receive({
         operationId: "closure:unrelated-receive",
-        occurredAt: time2,
+        occurredAtEpochMs: time2,
         to: loosePosition("u2"),
         amount: stockAmount("1", "piece"),
       })
@@ -223,7 +223,7 @@ describe("reservation closure through an existing shortage", () => {
         itemRevisionId: "item-a-v2",
         selector: { itemId: "item-a", locationIds: ["u2"] },
         requested: parseQuantity("1", "piece"),
-        createdAt: time2,
+        createdAtEpochMs: time2,
       })
     ).rejects.toThrow("cannot all be fulfilled");
     await expect(
@@ -231,13 +231,13 @@ describe("reservation closure through an existing shortage", () => {
         reservationId: "c2",
         operationId: "closure:unrelated-refine",
         selector: { itemId: "item-a", locationIds: ["u2"] },
-        occurredAt: time2,
+        occurredAtEpochMs: time2,
       })
     ).rejects.toThrow("cannot all be fulfilled");
     await expect(
       inventory.stock.issue({
         operationId: "closure:unrelated-issue",
-        occurredAt: time2,
+        occurredAtEpochMs: time2,
         from: loosePosition("u2"),
         amount: stockAmount("1", "piece"),
       })
@@ -263,7 +263,7 @@ describe("reservation closure through an existing shortage", () => {
             book: world.reservations,
             operationId: "closure:forged-release",
             reservationId: "c2",
-            occurredAt: time2,
+            occurredAtEpochMs: time2,
           });
           const first = valid.book.reservations.c1;
           if (first === undefined) throw new Error("Forged-plan fixture lost c1.");
@@ -278,8 +278,8 @@ describe("reservation closure through an existing shortage", () => {
                   c1: {
                     ...first,
                     status: InventoryReservationStatus.Released,
-                    statusAt: time2,
-                    lastChangedAt: time2,
+                    statusAtEpochMs: time2,
+                    lastChangedAtEpochMs: time2,
                   },
                 },
               },
@@ -310,7 +310,7 @@ describe("reservation closure through an existing shortage", () => {
           event: createInventoryTransferEvent({
             catalog,
             operationId: "closure:release-with-transfer",
-            occurredAt: time2,
+            occurredAtEpochMs: time2,
             from: loosePosition("u2"),
             toLocationId: "u3",
             amount: stockAmount("1", "piece"),
@@ -319,7 +319,7 @@ describe("reservation closure through an existing shortage", () => {
             book: world.reservations,
             operationId: "closure:release-with-transfer",
             reservationId: "c2",
-            occurredAt: time2,
+            occurredAtEpochMs: time2,
           }),
           reservationId: "c2",
         }),

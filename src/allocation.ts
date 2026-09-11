@@ -1,5 +1,5 @@
 import { compareInventoryIdentityText } from "./ordering.js";
-import { assertCanonicalInventoryTime } from "./events.js";
+import { assertInventoryEpochMilliseconds } from "./events.js";
 import {
   inventoryStockPositionIdentity,
   type InventoryStockPositionKey,
@@ -31,9 +31,9 @@ export interface InventoryAllocationCandidate {
   /** Exact currently allocatable quantity on one configured axis. */
   readonly available: Quantity;
   /** Event time this candidate entered its current allocatable layer. */
-  readonly receivedAt: string;
+  readonly receivedAtEpochMs: number;
   /** Expiry/use-by time when this stock can become unusable. */
-  readonly expiresAt?: string;
+  readonly expiresAtEpochMs?: number;
   /** Optional lower number chosen before normal FIFO/FEFO ordering. */
   readonly priority?: number;
   /** Optional indivisible allocation quantum, such as one intact package or serial piece. */
@@ -49,7 +49,7 @@ export interface AllocateInventoryInput {
   /** FIFO or FEFO ordering. */
   readonly method: InventoryAllocationMethod;
   /** Current canonical time used to exclude expired candidates. */
-  readonly now: string;
+  readonly nowEpochMs: number;
   /** Explicit override allowing expired stock to be allocated. */
   readonly allowExpired?: boolean;
   /** Optional whole-plan predicate used to reject allocations that violate external claims. */
@@ -91,18 +91,18 @@ export function allocateInventory({
   requested,
   candidates,
   method,
-  now,
+  nowEpochMs,
   allowExpired = false,
   acceptAllocations,
 }: AllocateInventoryInput): InventoryAllocationResult {
   positiveQuantity(requested, "Requested allocation");
-  assertCanonicalInventoryTime(now, "allocation now");
+  assertInventoryEpochMilliseconds(nowEpochMs, "allocation now");
   let expiredStockWasExcluded = false;
   const eligible: InventoryAllocationCandidate[] = [];
   for (const candidate of candidates) {
     validateAllocationCandidate(candidate, requested);
     const expired =
-      candidate.expiresAt !== undefined && candidate.expiresAt <= now;
+      candidate.expiresAtEpochMs !== undefined && candidate.expiresAtEpochMs <= nowEpochMs;
     if (expired && !allowExpired) {
       expiredStockWasExcluded = true;
       continue;
@@ -372,9 +372,9 @@ function validateAllocationCandidate(
   if (candidate.available.unit !== requested.unit) {
     throw new Error("Allocation candidate unit must match requested unit.");
   }
-  assertCanonicalInventoryTime(candidate.receivedAt, "candidate receivedAt");
-  if (candidate.expiresAt !== undefined) {
-    assertCanonicalInventoryTime(candidate.expiresAt, "candidate expiresAt");
+  assertInventoryEpochMilliseconds(candidate.receivedAtEpochMs, "candidate receivedAtEpochMs");
+  if (candidate.expiresAtEpochMs !== undefined) {
+    assertInventoryEpochMilliseconds(candidate.expiresAtEpochMs, "candidate expiresAtEpochMs");
   }
   if (
     candidate.priority !== undefined &&
@@ -399,13 +399,13 @@ export function compareInventoryAllocationCandidates(
   const priorityOrder = (left.priority ?? 0) - (right.priority ?? 0);
   if (priorityOrder !== 0) return priorityOrder;
   if (method === InventoryAllocationMethod.Fefo) {
-    const expiryOrder = compareOptionalExpiry(left.expiresAt, right.expiresAt);
+    const expiryOrder = compareOptionalExpiry(left.expiresAtEpochMs, right.expiresAtEpochMs);
     if (expiryOrder !== 0) return expiryOrder;
   }
-  const receiptOrder = compareInventoryIdentityText(left.receivedAt, right.receivedAt);
+  const receiptOrder = (left.receivedAtEpochMs < right.receivedAtEpochMs ? -1 : left.receivedAtEpochMs > right.receivedAtEpochMs ? 1 : 0);
   if (receiptOrder !== 0) return receiptOrder;
   if (method === InventoryAllocationMethod.Fifo) {
-    const expiryOrder = compareOptionalExpiry(left.expiresAt, right.expiresAt);
+    const expiryOrder = compareOptionalExpiry(left.expiresAtEpochMs, right.expiresAtEpochMs);
     if (expiryOrder !== 0) return expiryOrder;
   }
   return compareInventoryIdentityText(inventoryStockPositionIdentity(left.position), inventoryStockPositionIdentity(right.position));
@@ -413,13 +413,13 @@ export function compareInventoryAllocationCandidates(
 
 /** Compare expiry times with no-expiry candidates sorted last. */
 function compareOptionalExpiry(
-  left: string | undefined,
-  right: string | undefined
+  left: number | undefined,
+  right: number | undefined
 ): number {
   if (left === undefined && right === undefined) return 0;
   if (left === undefined) return 1;
   if (right === undefined) return -1;
-  return compareInventoryIdentityText(left, right);
+  return left < right ? -1 : left > right ? 1 : 0;
 }
 
 /** Round one exact same-unit quantity down to a whole number of one increment. */

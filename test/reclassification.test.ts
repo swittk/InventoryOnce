@@ -40,14 +40,14 @@ describe("atomic conserved split/merge/reclassification", () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "receive-splittable-stock",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("store", { lotId: "SPLIT-LOT" }),
       amount: stockAmount("10", "piece"),
     });
 
     const splitCommand = {
       operationId: "split-status-buckets",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       consume: [
         {
           from: loosePosition("store", { lotId: "SPLIT-LOT" }),
@@ -103,7 +103,7 @@ describe("atomic conserved split/merge/reclassification", () => {
     const inventory = createTestInventory();
     await inventory.stock.receiveMany({
       operationId: "receive-merge-containers",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       lines: [
         {
           to: loosePosition("store", {
@@ -125,7 +125,7 @@ describe("atomic conserved split/merge/reclassification", () => {
     });
     await inventory.stock.reclassifyMany({
       operationId: "merge-containers",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       consume: [
         {
           from: loosePosition("store", {
@@ -171,14 +171,14 @@ describe("atomic conserved split/merge/reclassification", () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "receive-relot-source",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("store", { lotId: "OLD-LOT" }),
       amount: stockAmount("2", "piece"),
-      lot: { expiresAt: "2027-01-01T00:00:00.000Z" },
+      lot: { expiresAtEpochMs: 1798761600000 },
     });
     await inventory.stock.reclassifyMany({
       operationId: "relot-after-supplier-confirmation",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       consume: [
         {
           from: loosePosition("store", { lotId: "OLD-LOT" }),
@@ -189,7 +189,7 @@ describe("atomic conserved split/merge/reclassification", () => {
         {
           to: loosePosition("store", { lotId: "CORRECT-LOT" }),
           amount: stockAmount("2", "piece"),
-          lot: { expiresAt: "2028-01-01T00:00:00.000Z" },
+          lot: { expiresAtEpochMs: 1830297600000 },
         },
       ],
       reason: "Supplier confirmed the physical batch was relabelled.",
@@ -197,8 +197,8 @@ describe("atomic conserved split/merge/reclassification", () => {
     expect((await storePositions(inventory))[0]?.key.lotId).toBe("CORRECT-LOT");
     expect(await inventory.read.lot("item-a", "OLD-LOT")).toBeDefined();
     expect(
-      (await inventory.read.lot("item-a", "CORRECT-LOT"))?.definition.expiresAt
-    ).toBe("2028-01-01T00:00:00.000Z");
+      (await inventory.read.lot("item-a", "CORRECT-LOT"))?.definition.expiresAtEpochMs
+    ).toBe(1830297600000);
   });
 
   it("rejects non-conserved output before writing any durable operation", async () => {
@@ -207,7 +207,7 @@ describe("atomic conserved split/merge/reclassification", () => {
     const inventory = createTestInventory(storage, catalog, clockAt(time3));
     await inventory.stock.receive({
       operationId: "receive-before-bad-reclassification",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("store", { lotId: "BAD-LOT" }),
       amount: stockAmount("2", "piece"),
     });
@@ -215,7 +215,7 @@ describe("atomic conserved split/merge/reclassification", () => {
     await expect(
       inventory.stock.reclassifyMany({
         operationId: "non-conserved-reclassification",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         consume: [
           {
             from: loosePosition("store", { lotId: "BAD-LOT" }),
@@ -243,14 +243,14 @@ describe("atomic conserved split/merge/reclassification", () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "receive-packaged-before-bypass",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("store", { lotId: "PACK-LOT" }),
       amount: packageAmount(1, "item-a-box-24-v1"),
     });
     await expect(
       inventory.stock.reclassifyMany({
         operationId: "attempt-package-bypass",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         consume: [
           {
             from: loosePosition("store", {
@@ -274,7 +274,7 @@ describe("atomic conserved split/merge/reclassification", () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "receive-reservation-reclassification",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("store", { lotId: "RESERVED-LOT" }),
       amount: stockAmount("2", "piece"),
     });
@@ -284,7 +284,7 @@ describe("atomic conserved split/merge/reclassification", () => {
       itemRevisionId: "item-a-v2",
       selector: { itemId: "item-a", lotIds: ["RESERVED-LOT"] },
       requested: parseQuantity("1", "piece"),
-      createdAt: time1,
+      createdAtEpochMs: time1,
     });
     const position = (await storePositions(inventory))[0];
     if (position === undefined) {
@@ -293,7 +293,7 @@ describe("atomic conserved split/merge/reclassification", () => {
     await inventory.reservations.allocate({
       operationId: "allocate-before-reclassification",
       reservationId: "reclassification-claim",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       allocations: [
         {
           position: position.key,
@@ -304,7 +304,7 @@ describe("atomic conserved split/merge/reclassification", () => {
     await expect(
       inventory.stock.reclassifyMany({
         operationId: "move-reserved-position",
-        occurredAt: time2,
+        occurredAtEpochMs: time2,
         consume: [
           {
             from: loosePosition("store", { lotId: "RESERVED-LOT" }),

@@ -18,7 +18,7 @@ describe("append-only native catalogue publication", () => {
       storage,
       catalog,
       operationId: "publish-read-catalog",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
     });
     const read = await readPublishedInventoryCatalog(storage);
     expect(read.world.revision).toBe(1);
@@ -32,7 +32,7 @@ describe("append-only native catalogue publication", () => {
       storage,
       catalog,
       operationId: "publish-base-catalog",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
     });
     expect(first).toMatchObject({ published: true, replayed: false });
     expect(first.world.revision).toBe(1);
@@ -40,7 +40,7 @@ describe("append-only native catalogue publication", () => {
       storage,
       catalog,
       operationId: "unused-no-op-identity",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
     });
     expect(noOp).toMatchObject({ published: false, replayed: false });
     expect(noOp.world.revision).toBe(1);
@@ -54,7 +54,7 @@ describe("append-only native catalogue publication", () => {
       storage,
       catalog,
       operationId: "publish-concurrent-base",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
     });
     const itemB = defineScalarInventoryItem({
       itemId: "item-b",
@@ -72,7 +72,7 @@ describe("append-only native catalogue publication", () => {
       publishInventoryCatalogExtension({
         storage,
         operationId: "publish-item-b",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         extension: {
           itemRevisions: [itemB],
           activeItemRevisionIds: { "item-b": itemB.revisionId },
@@ -81,7 +81,7 @@ describe("append-only native catalogue publication", () => {
       publishInventoryCatalogExtension({
         storage,
         operationId: "publish-item-c",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         extension: {
           itemRevisions: [itemC],
           activeItemRevisionIds: { "item-c": itemC.revisionId },
@@ -94,7 +94,7 @@ describe("append-only native catalogue publication", () => {
       await publishInventoryCatalogExtension({
         storage,
         operationId: "catalog-concurrent-no-op",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         extension: {},
       })
     ).catalog;
@@ -109,7 +109,7 @@ describe("append-only native catalogue publication", () => {
       storage,
       catalog: createTabletCatalog(),
       operationId: "publish-provenance-base",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
     });
     const itemB = defineScalarInventoryItem({
       itemId: "item-provenance",
@@ -120,7 +120,7 @@ describe("append-only native catalogue publication", () => {
     await publishInventoryCatalogExtension({
       storage,
       operationId: "publish-provenance-extension",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       reason: "Staff saved a transformation definition.",
       metadata: { sourceComponent: "InventoryTransformationConfig" },
       extension: {
@@ -144,7 +144,7 @@ describe("append-only native catalogue publication", () => {
       storage,
       catalog,
       operationId: "publish-extension-base",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
     });
     const itemV3 = defineScalarInventoryItem({
       itemId: "item-a",
@@ -161,7 +161,7 @@ describe("append-only native catalogue publication", () => {
     const extended = await publishInventoryCatalogExtension({
       storage,
       operationId: "publish-extension-v3",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       extension: {
         itemRevisions: [itemV3],
         activeItemRevisionIds: { "item-a": itemV3.revisionId },

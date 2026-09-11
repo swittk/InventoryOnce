@@ -1,12 +1,641 @@
-// experiments/tla-conformance/final-convergence/run-final-verifier.mjs
-import assert40 from "node:assert/strict";
-import fs39 from "node:fs";
-import path42 from "node:path";
+import { createRequire as __compactCreateRequire } from "node:module"; const require = __compactCreateRequire(import.meta.url);
+var __create = Object.create;
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require : typeof Proxy !== "undefined" ? new Proxy(x, {
+  get: (a, b) => (typeof require !== "undefined" ? require : a)[b]
+}) : x)(function(x) {
+  if (typeof require !== "undefined") return require.apply(this, arguments);
+  throw Error('Dynamic require of "' + x + '" is not supported');
+});
+var __commonJS = (cb, mod) => function __require2() {
+  return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 
-// experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs
-import crypto from "node:crypto";
+// scripts/formal-implementation-surface.cjs
+var require_formal_implementation_surface = __commonJS({
+  "scripts/formal-implementation-surface.cjs"(exports, module) {
+    "use strict";
+    var ts4 = __require("typescript");
+    var path45 = __require("node:path");
+    var crypto5 = __require("node:crypto");
+    function discoverImplementationSurface({ repositoryRoot = path45.resolve(__dirname, ".."), program: suppliedProgram } = {}) {
+      const root3 = path45.resolve(repositoryRoot);
+      const sourceRoot = path45.resolve(root3, "src");
+      const normalizedSourceRoot = path45.normalize(sourceRoot);
+      const normalizedSourcePrefix = `${normalizedSourceRoot}${path45.sep}`;
+      const program = suppliedProgram ?? (() => {
+        const configPath = path45.join(root3, "tsconfig.test.json");
+        const config = ts4.readConfigFile(configPath, ts4.sys.readFile);
+        if (config.error !== void 0) {
+          throw new Error(
+            ts4.flattenDiagnosticMessageText(config.error.messageText, "\n")
+          );
+        }
+        const parsed = ts4.parseJsonConfigFileContent(
+          config.config,
+          ts4.sys,
+          root3,
+          void 0,
+          configPath
+        );
+        if (parsed.errors.length > 0) {
+          throw new Error(
+            parsed.errors.map((error) => ts4.flattenDiagnosticMessageText(error.messageText, "\n")).join("\n")
+          );
+        }
+        return ts4.createProgram({
+          rootNames: parsed.fileNames,
+          options: parsed.options
+        });
+      })();
+      const semanticDiagnostics = program.getSemanticDiagnostics();
+      if (semanticDiagnostics.length > 0) {
+        throw new Error(
+          ts4.formatDiagnostics(semanticDiagnostics, {
+            getCanonicalFileName: (fileName) => fileName,
+            getCurrentDirectory: () => root3,
+            getNewLine: () => "\n"
+          })
+        );
+      }
+      const checker = program.getTypeChecker();
+      const formatFlags = ts4.TypeFormatFlags.NoTruncation | ts4.TypeFormatFlags.UseAliasDefinedOutsideCurrentScope;
+      function compareExact(left, right) {
+        return left < right ? -1 : left > right ? 1 : 0;
+      }
+      function stableDeclarationSource(source7) {
+        const resolved = path45.resolve(source7.fileName);
+        const normalized = resolved.split(path45.sep).join("/");
+        const nodeModulesMarker = "/node_modules/";
+        const nodeModulesIndex = normalized.lastIndexOf(nodeModulesMarker);
+        if (nodeModulesIndex >= 0) {
+          const externalPath = normalized.slice(
+            nodeModulesIndex + nodeModulesMarker.length
+          );
+          return `external:${externalPath}#${shortHash(source7.text)}`;
+        }
+        const relative = path45.relative(root3, resolved);
+        if (relative !== ".." && !relative.startsWith(`..${path45.sep}`) && !path45.isAbsolute(relative)) {
+          return relative.split(path45.sep).join("/");
+        }
+        return `external-file:${path45.basename(resolved)}#${shortHash(source7.text)}`;
+      }
+      const facadeInterfaces = [
+        ["InventoryOnceCatalogApi", "catalog"],
+        ["InventoryOnceCompositionsApi", "compositions"],
+        ["InventoryOnceTransformationsApi", "transformations"],
+        ["InventoryOnceCollectionsApi", "collections"],
+        ["InventoryOnceFungibilityApi", "fungibility"],
+        ["InventoryOnceStockApi", "stock"],
+        ["InventoryOnceContainersApi", "containers"],
+        ["InventoryOnceLotsApi", "lots"],
+        ["InventoryOnceTransfersApi", "transfers"],
+        ["InventoryOnceReservationsApi", "reservations"],
+        ["InventoryOnceCountsApi", "counts"],
+        ["InventoryOnceTraceabilityApi", "traceability"],
+        ["InventoryOnceReadSnapshotApi", "snapshot"],
+        ["InventoryOnceReadApi", "read"]
+      ];
+      const entrypointSources = {
+        root: "src/index.ts",
+        storage: "src/storage-api.ts",
+        migrations: "src/migrations-api.ts",
+        kernel: "src/kernel.ts"
+      };
+      function sourceFile3(relativePath4) {
+        const result = program.getSourceFile(path45.join(root3, relativePath4));
+        if (result === void 0)
+          throw new Error(`Missing source '${relativePath4}'.`);
+        return result;
+      }
+      function interfaceDeclaration(relativePath4, name) {
+        const result = sourceFile3(relativePath4).statements.find(
+          (statement) => ts4.isInterfaceDeclaration(statement) && statement.name.text === name
+        );
+        if (result === void 0) throw new Error(`Missing interface '${name}'.`);
+        return result;
+      }
+      function declarationOf(symbol, fallback) {
+        return symbol.valueDeclaration ?? symbol.declarations?.[0] ?? fallback;
+      }
+      function typeText2(type, node) {
+        return checker.typeToString(type, node, formatFlags);
+      }
+      function signatureShape2(signature, fallback) {
+        const declaration = signature.declaration ?? fallback;
+        return {
+          parameters: signature.getParameters().map((parameter) => {
+            const parameterDeclaration = declarationOf(parameter, declaration);
+            return {
+              name: parameter.name,
+              type: typeText2(
+                checker.getTypeOfSymbolAtLocation(parameter, parameterDeclaration),
+                parameterDeclaration
+              ),
+              optional: (parameter.flags & ts4.SymbolFlags.Optional) !== 0
+            };
+          }),
+          result: typeText2(checker.getReturnTypeOfSignature(signature), declaration)
+        };
+      }
+      function methodsOfInterface(relativePath4, name, prefix) {
+        const declaration = interfaceDeclaration(relativePath4, name);
+        const rows = [];
+        for (const member2 of checker.getPropertiesOfType(
+          checker.getTypeAtLocation(declaration)
+        )) {
+          const memberDeclaration = declarationOf(member2, declaration);
+          const memberType = checker.getTypeOfSymbolAtLocation(
+            member2,
+            memberDeclaration
+          );
+          const signatures = checker.getSignaturesOfType(memberType, ts4.SignatureKind.Call).map((signature) => signatureShape2(signature, memberDeclaration));
+          if (signatures.length === 0) continue;
+          rows.push({
+            key: `${prefix}.${member2.name}`,
+            interface: name,
+            method: member2.name,
+            signatures,
+            parameters: signatures[0].parameters,
+            result: signatures[0].result
+          });
+        }
+        return rows.sort((left, right) => compareExact(left.key, right.key));
+      }
+      function moduleExports(relativePath4) {
+        const source7 = sourceFile3(relativePath4);
+        const moduleSymbol = checker.getSymbolAtLocation(source7);
+        if (moduleSymbol === void 0)
+          throw new Error(`Missing module '${relativePath4}'.`);
+        const rows = [];
+        for (const exported of checker.getExportsOfModule(moduleSymbol)) {
+          const declaration = declarationOf(exported, source7);
+          const exportedType = checker.getTypeOfSymbolAtLocation(
+            exported,
+            declaration
+          );
+          const callSignatures = checker.getSignaturesOfType(exportedType, ts4.SignatureKind.Call).map((signature) => signatureShape2(signature, declaration));
+          const constructSignatures = checker.getSignaturesOfType(exportedType, ts4.SignatureKind.Construct).map((signature) => signatureShape2(signature, declaration));
+          if (callSignatures.length === 0 && constructSignatures.length === 0)
+            continue;
+          rows.push({
+            name: exported.name,
+            declaration: stableDeclarationSource(declaration.getSourceFile()),
+            callable: callSignatures.length > 0,
+            constructable: constructSignatures.length > 0,
+            callSignatures,
+            constructSignatures
+          });
+        }
+        return rows.sort((left, right) => compareExact(left.name, right.name));
+      }
+      function publicClassMembers(exported, constructorType) {
+        const instanceMembers = checker.getPropertiesOfType(
+          checker.getDeclaredTypeOfSymbol(exported)
+        );
+        const members = [...instanceMembers];
+        const memberNames = new Set(instanceMembers.map((member2) => member2.name));
+        for (const member2 of checker.getPropertiesOfType(constructorType)) {
+          const memberDeclaration = member2.valueDeclaration ?? member2.declarations?.[0];
+          if (memberDeclaration === void 0) continue;
+          const staticFlags = ts4.getCombinedModifierFlags(memberDeclaration);
+          if ((staticFlags & ts4.ModifierFlags.Static) === 0) continue;
+          if ((staticFlags & ts4.ModifierFlags.Private) !== 0 || (staticFlags & ts4.ModifierFlags.Protected) !== 0) {
+            continue;
+          }
+          if (memberNames.has(member2.name)) {
+            throw new Error(
+              `Exported class '${exported.name}' has both static and instance member '${member2.name}'; surface keys must distinguish them before that API can be certified.`
+            );
+          }
+          memberNames.add(member2.name);
+          members.push(member2);
+        }
+        return members;
+      }
+      function classMethods(relativePath4, entrypoint) {
+        const source7 = sourceFile3(relativePath4);
+        const moduleSymbol = checker.getSymbolAtLocation(source7);
+        if (moduleSymbol === void 0) return [];
+        const rows = [];
+        for (const exported of checker.getExportsOfModule(moduleSymbol)) {
+          const declaration = declarationOf(exported, source7);
+          const constructorType = checker.getTypeOfSymbolAtLocation(
+            exported,
+            declaration
+          );
+          if (checker.getSignaturesOfType(constructorType, ts4.SignatureKind.Construct).length === 0) {
+            continue;
+          }
+          for (const member2 of publicClassMembers(exported, constructorType)) {
+            const memberDeclaration = declarationOf(member2, declaration);
+            const flags = ts4.getCombinedModifierFlags(memberDeclaration);
+            if ((flags & ts4.ModifierFlags.Private) !== 0 || (flags & ts4.ModifierFlags.Protected) !== 0) {
+              continue;
+            }
+            const memberType = checker.getTypeOfSymbolAtLocation(
+              member2,
+              memberDeclaration
+            );
+            const signatures = checker.getSignaturesOfType(memberType, ts4.SignatureKind.Call).map((signature) => signatureShape2(signature, memberDeclaration));
+            if (signatures.length === 0) continue;
+            rows.push({
+              key: `${entrypoint}.${exported.name}.${member2.name}`,
+              className: exported.name,
+              method: member2.name,
+              declaration: stableDeclarationSource(memberDeclaration.getSourceFile()),
+              signatures,
+              parameters: signatures[0].parameters,
+              result: signatures[0].result
+            });
+          }
+        }
+        return rows.sort((left, right) => compareExact(left.key, right.key));
+      }
+      function sourceOwnedDeclarations(symbol) {
+        return (symbol?.getDeclarations() ?? []).filter((declaration) => {
+          const normalizedFileName = path45.normalize(
+            path45.resolve(declaration.getSourceFile().fileName)
+          );
+          return normalizedFileName.startsWith(normalizedSourcePrefix);
+        });
+      }
+      function shortHash(value) {
+        return crypto5.createHash("sha256").update(value).digest("hex").slice(0, 12);
+      }
+      function packageTypeIdentity(type) {
+        const symbol = type.aliasSymbol ?? type.getSymbol();
+        const declarations = sourceOwnedDeclarations(symbol).filter(
+          (declaration2) => ts4.isInterfaceDeclaration(declaration2) || ts4.isTypeAliasDeclaration(declaration2) || ts4.isClassDeclaration(declaration2) || ts4.isTypeLiteralNode(declaration2) || ts4.isMappedTypeNode(declaration2)
+        );
+        if (declarations.length === 0) return void 0;
+        const declaration = declarations[0];
+        const file = stableDeclarationSource(declaration.getSourceFile());
+        const location = declaration.getSourceFile().getLineAndCharacterOfPosition(declaration.getStart());
+        const rendered3 = typeText2(type, declaration);
+        const baseName = symbol.name === "__type" || symbol.name === "__object" ? `anonymous@${file}:${location.line + 1}:${location.character + 1}` : symbol.name;
+        const genericSuffix = (checker.getTypeArguments?.(type) ?? []).length > 0 ? `<${shortHash(rendered3)}>` : "";
+        const name = `${baseName}${genericSuffix}`;
+        return {
+          identity: `${name}|${file}|${declaration.pos}|${shortHash(rendered3)}`,
+          name,
+          declaration
+        };
+      }
+      const typeRecords = /* @__PURE__ */ new Map();
+      const visitedDirections = /* @__PURE__ */ new Map();
+      const recursiveTypeReferences = /* @__PURE__ */ new Set();
+      const truncatedTypes = /* @__PURE__ */ new Set();
+      const externalTypeIdentities = /* @__PURE__ */ new WeakMap();
+      let maximumTypeDepth = 0;
+      function externalTypeIdentity(type, renderedType) {
+        const existing = externalTypeIdentities.get(type);
+        if (existing !== void 0) return existing;
+        const symbol = type.aliasSymbol ?? type.getSymbol?.();
+        const declaration = symbol?.declarations?.[0];
+        const declarationAnchor = declaration === void 0 ? "no-declaration" : `${stableDeclarationSource(declaration.getSourceFile())}:${declaration.pos}:${declaration.end}`;
+        const identity = `external:${shortHash(`${type.flags}|${type.objectFlags ?? 0}|${declarationAnchor}|${renderedType}`)}`;
+        externalTypeIdentities.set(type, identity);
+        return identity;
+      }
+      function addDirection(row, direction) {
+        const directions = new Set(row.directions);
+        directions.add(direction);
+        row.directions = [...directions].sort();
+      }
+      function typeIncludesFlag(type, flag) {
+        return type.isUnion() ? type.types.some((member2) => (member2.flags & flag) !== 0) : (type.flags & flag) !== 0;
+      }
+      function visitType(type, direction, lineage = /* @__PURE__ */ new Set(), depth = 0) {
+        maximumTypeDepth = Math.max(maximumTypeDepth, depth);
+        if (depth > 128) {
+          truncatedTypes.add(typeText2(type));
+          return;
+        }
+        const owned = packageTypeIdentity(type);
+        const renderedType = typeText2(type);
+        if (/\.\.\. [0-9]+ more \.\.\./u.test(renderedType)) {
+          truncatedTypes.add(owned?.identity ?? renderedType);
+        }
+        const traversalIdentity2 = owned?.identity ?? externalTypeIdentity(type, renderedType);
+        if (lineage.has(traversalIdentity2)) {
+          recursiveTypeReferences.add(traversalIdentity2);
+          return;
+        }
+        const visited = visitedDirections.get(traversalIdentity2) ?? /* @__PURE__ */ new Set();
+        if (visited.has(direction)) return;
+        visited.add(direction);
+        visitedDirections.set(traversalIdentity2, visited);
+        const nextLineage = new Set(lineage);
+        nextLineage.add(traversalIdentity2);
+        if (type.isUnionOrIntersection()) {
+          for (const member2 of type.types) {
+            visitType(member2, direction, nextLineage, depth + 1);
+          }
+        }
+        for (const argument of checker.getTypeArguments?.(type) ?? []) {
+          visitType(argument, direction, nextLineage, depth + 1);
+        }
+        for (const signature of checker.getSignaturesOfType(
+          type,
+          ts4.SignatureKind.Call
+        )) {
+          for (const parameter of signature.getParameters()) {
+            const parameterDeclaration = declarationOf(
+              parameter,
+              signature.declaration ?? sourceFile3("src/index.ts")
+            );
+            visitType(
+              checker.getTypeOfSymbolAtLocation(parameter, parameterDeclaration),
+              "callback-argument",
+              nextLineage,
+              depth + 1
+            );
+          }
+          visitType(
+            checker.getReturnTypeOfSignature(signature),
+            "callback-result",
+            nextLineage,
+            depth + 1
+          );
+        }
+        const stringIndexType = checker.getIndexTypeOfType(type, ts4.IndexKind.String);
+        if (stringIndexType !== void 0) {
+          visitType(stringIndexType, direction, nextLineage, depth + 1);
+        }
+        const numberIndexType = checker.getIndexTypeOfType(type, ts4.IndexKind.Number);
+        if (numberIndexType !== void 0 && numberIndexType !== stringIndexType) {
+          visitType(numberIndexType, direction, nextLineage, depth + 1);
+        }
+        if (owned === void 0) return;
+        let record = typeRecords.get(owned.identity);
+        if (record === void 0) {
+          record = {
+            name: owned.name,
+            identity: owned.identity,
+            source: stableDeclarationSource(owned.declaration.getSourceFile()),
+            directions: [],
+            fields: []
+          };
+          typeRecords.set(owned.identity, record);
+        }
+        addDirection(record, direction);
+        const byName = new Map(record.fields.map((field) => [field.name, field]));
+        for (const property of checker.getPropertiesOfType(type)) {
+          const declaration = property.valueDeclaration ?? property.declarations?.[0];
+          if (declaration === void 0 || ts4.isMethodDeclaration(declaration) || ts4.isMethodSignature(declaration)) {
+            continue;
+          }
+          const propertyType = checker.getTypeOfSymbolAtLocation(
+            property,
+            declaration
+          );
+          const rendered3 = typeText2(propertyType, declaration);
+          let field = byName.get(property.name);
+          if (field === void 0) {
+            field = {
+              name: property.name,
+              type: rendered3,
+              optional: (property.flags & ts4.SymbolFlags.Optional) !== 0,
+              allowsUndefined: typeIncludesFlag(propertyType, ts4.TypeFlags.Undefined),
+              allowsNull: typeIncludesFlag(propertyType, ts4.TypeFlags.Null),
+              callable: checker.getSignaturesOfType(propertyType, ts4.SignatureKind.Call).length > 0,
+              callSignatures: checker.getSignaturesOfType(propertyType, ts4.SignatureKind.Call).map((signature) => signatureShape2(signature, declaration)),
+              source: stableDeclarationSource(declaration.getSourceFile()),
+              directions: []
+            };
+            record.fields.push(field);
+            byName.set(property.name, field);
+          } else if (field.type !== rendered3) {
+            throw new Error(
+              `Public field '${record.name}.${property.name}' has two resolved types.`
+            );
+          }
+          addDirection(field, direction);
+          visitType(propertyType, direction, nextLineage, depth + 1);
+        }
+        record.fields.sort((left, right) => compareExact(left.name, right.name));
+      }
+      function visitInterfaceTypes(relativePath4, name) {
+        const declaration = interfaceDeclaration(relativePath4, name);
+        const interfaceType = checker.getTypeAtLocation(declaration);
+        for (const member2 of checker.getPropertiesOfType(interfaceType)) {
+          const memberDeclaration = declarationOf(member2, declaration);
+          const memberType = checker.getTypeOfSymbolAtLocation(
+            member2,
+            memberDeclaration
+          );
+          for (const signature of checker.getSignaturesOfType(
+            memberType,
+            ts4.SignatureKind.Call
+          )) {
+            for (const parameter of signature.getParameters()) {
+              const parameterDeclaration = declarationOf(
+                parameter,
+                memberDeclaration
+              );
+              visitType(
+                checker.getTypeOfSymbolAtLocation(parameter, parameterDeclaration),
+                "input"
+              );
+            }
+            visitType(checker.getReturnTypeOfSignature(signature), "output");
+          }
+        }
+      }
+      function visitEntrypointTypes(relativePath4) {
+        const source7 = sourceFile3(relativePath4);
+        const moduleSymbol = checker.getSymbolAtLocation(source7);
+        if (moduleSymbol === void 0) return;
+        for (const exported of checker.getExportsOfModule(moduleSymbol)) {
+          const declaration = declarationOf(exported, source7);
+          const exportedType = checker.getTypeOfSymbolAtLocation(
+            exported,
+            declaration
+          );
+          for (const signature of [
+            ...checker.getSignaturesOfType(exportedType, ts4.SignatureKind.Call),
+            ...checker.getSignaturesOfType(exportedType, ts4.SignatureKind.Construct)
+          ]) {
+            for (const parameter of signature.getParameters()) {
+              const parameterDeclaration = declarationOf(parameter, declaration);
+              visitType(
+                checker.getTypeOfSymbolAtLocation(parameter, parameterDeclaration),
+                "input"
+              );
+            }
+            visitType(checker.getReturnTypeOfSignature(signature), "output");
+          }
+          if (checker.getSignaturesOfType(exportedType, ts4.SignatureKind.Construct).length === 0) {
+            continue;
+          }
+          for (const member2 of publicClassMembers(exported, exportedType)) {
+            const memberDeclaration = declarationOf(member2, declaration);
+            const flags = ts4.getCombinedModifierFlags(memberDeclaration);
+            if ((flags & ts4.ModifierFlags.Private) !== 0 || (flags & ts4.ModifierFlags.Protected) !== 0) {
+              continue;
+            }
+            const memberType = checker.getTypeOfSymbolAtLocation(
+              member2,
+              memberDeclaration
+            );
+            for (const signature of checker.getSignaturesOfType(
+              memberType,
+              ts4.SignatureKind.Call
+            )) {
+              for (const parameter of signature.getParameters()) {
+                const parameterDeclaration = declarationOf(
+                  parameter,
+                  memberDeclaration
+                );
+                visitType(
+                  checker.getTypeOfSymbolAtLocation(parameter, parameterDeclaration),
+                  "input"
+                );
+              }
+              visitType(checker.getReturnTypeOfSignature(signature), "output");
+            }
+          }
+        }
+      }
+      const facade = facadeInterfaces.flatMap(
+        ([name, prefix]) => methodsOfInterface("src/facade.ts", name, prefix)
+      );
+      const authority = methodsOfInterface(
+        "src/authority.ts",
+        "InventoryAuthorityControlPort",
+        "authority"
+      );
+      const storage = methodsOfInterface(
+        "src/storage.ts",
+        "InventoryDurableStorage",
+        "storage"
+      );
+      const entrypoints = Object.fromEntries(
+        Object.entries(entrypointSources).map(([name, relativePath4]) => [
+          name,
+          moduleExports(relativePath4)
+        ])
+      );
+      const classes = Object.entries(entrypointSources).flatMap(([name, relativePath4]) => classMethods(relativePath4, name)).sort((left, right) => compareExact(left.key, right.key));
+      for (const [name] of facadeInterfaces) {
+        visitInterfaceTypes("src/facade.ts", name);
+      }
+      visitInterfaceTypes("src/authority.ts", "InventoryAuthorityControlPort");
+      visitInterfaceTypes("src/storage.ts", "InventoryDurableStorage");
+      for (const relativePath4 of Object.values(entrypointSources)) {
+        visitEntrypointTypes(relativePath4);
+      }
+      const types = [...typeRecords.values()].map((record) => ({
+        ...record,
+        directions: [...record.directions].sort(),
+        fields: record.fields.map((field) => ({
+          ...field,
+          directions: [...field.directions].sort()
+        }))
+      })).sort((left, right) => compareExact(left.identity, right.identity));
+      return {
+        facade,
+        authority,
+        storage,
+        entrypoints,
+        classes,
+        types,
+        diagnostics: {
+          maximumTypeDepth,
+          recursiveTypeReferences: [...recursiveTypeReferences].sort(),
+          truncatedTypes: [...truncatedTypes].sort()
+        }
+      };
+    }
+    module.exports = { discoverImplementationSurface };
+    if (__require.main === module) console.log(JSON.stringify(discoverImplementationSurface(), void 0, 2));
+  }
+});
+
+// experiments/tla-conformance/final-convergence/run-final-verifier.mjs
+import assert43 from "node:assert/strict";
+import path44 from "node:path";
+import ts3 from "typescript";
+
+// scripts/assurance-files.mjs
 import fs from "node:fs";
 import path from "node:path";
+import crypto from "node:crypto";
+function assuranceRepositoryPath(repositoryRoot, relativePath4) {
+  const root3 = path.resolve(repositoryRoot);
+  if (typeof relativePath4 !== "string" || relativePath4.length === 0 || relativePath4.includes("\0") || relativePath4.includes("\\") || path.isAbsolute(relativePath4)) throw new Error(`Invalid repository-relative assurance path: ${String(relativePath4)}.`);
+  const components = relativePath4.split("/");
+  if (components.some((part) => part === "" || part === "." || part === "..")) throw new Error(`Assurance path escapes repository root: ${relativePath4}.`);
+  let current = root3;
+  const rootStat = fs.lstatSync(root3);
+  if (!rootStat.isDirectory() || rootStat.isSymbolicLink()) throw new Error("Assurance repository root is not an ordinary directory.");
+  for (let index = 0; index < components.length; index += 1) {
+    current = path.join(current, components[index]);
+    let stat;
+    try {
+      stat = fs.lstatSync(current);
+    } catch (error) {
+      if (error?.code === "ENOENT") continue;
+      throw error;
+    }
+    if (stat.isSymbolicLink()) throw new Error(`Assurance path crosses a symbolic link: ${relativePath4}.`);
+    if (index < components.length - 1 && !stat.isDirectory()) throw new Error(`Assurance path ancestor is not a directory: ${relativePath4}.`);
+  }
+  return current;
+}
+function readOrdinaryAssuranceFile(repositoryRoot, relativePath4) {
+  const target = assuranceRepositoryPath(repositoryRoot, relativePath4);
+  if (!fs.lstatSync(target).isFile()) throw new Error(`Assurance input is not a regular file: ${relativePath4}.`);
+  const descriptor = fs.openSync(target, fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW ?? 0) | (fs.constants.O_NONBLOCK ?? 0));
+  try {
+    if (!fs.fstatSync(descriptor).isFile()) throw new Error(`Assurance input is not a regular file: ${relativePath4}.`);
+    return fs.readFileSync(descriptor);
+  } finally {
+    fs.closeSync(descriptor);
+  }
+}
+function assuranceBytesSha256(bytes2) {
+  return crypto.createHash("sha256").update(bytes2).digest("hex");
+}
+var proofReadSessions = /* @__PURE__ */ new Map();
+function readAssuranceFile(repositoryRoot, relativePath4) {
+  const session = proofReadSessions.get(path.resolve(repositoryRoot));
+  return session === void 0 ? readOrdinaryAssuranceFile(repositoryRoot, relativePath4) : session.read(relativePath4);
+}
+function assuranceFileSha256(repositoryRoot, relativePath4) {
+  const session = proofReadSessions.get(path.resolve(repositoryRoot));
+  return session === void 0 ? assuranceBytesSha256(readOrdinaryAssuranceFile(repositoryRoot, relativePath4)) : session.hash(relativePath4);
+}
+function assuranceCompilerSourceSha256(repositoryRoot, file, text) {
+  const session = proofReadSessions.get(path.resolve(repositoryRoot));
+  return session === void 0 ? assuranceBytesSha256(text) : session.compilerHash(file, text);
+}
+
+// experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs
+import crypto2 from "node:crypto";
+import fs2 from "node:fs";
+import path2 from "node:path";
 import ts from "typescript";
 var SURFACE_SCHEMA_VERSION = 1;
 var TYPE_FORMAT_FLAGS = ts.TypeFormatFlags.NoTruncation | ts.TypeFormatFlags.UseAliasDefinedOutsideCurrentScope;
@@ -16,7 +645,7 @@ function compareCodeUnits(left, right) {
   return 0;
 }
 function sha256(value) {
-  return crypto.createHash("sha256").update(value).digest("hex");
+  return crypto2.createHash("sha256").update(value).digest("hex");
 }
 function canonicalJson(value) {
   if (Array.isArray(value)) {
@@ -31,11 +660,11 @@ function canonicalJson(value) {
   return JSON.stringify(value);
 }
 function normalizeRelativePath(repositoryRoot, fileName) {
-  return path.relative(repositoryRoot, fileName).replaceAll("\\", "/");
+  return path2.relative(repositoryRoot, fileName).replaceAll("\\", "/");
 }
 function readJson(fileName) {
   try {
-    return JSON.parse(fs.readFileSync(fileName, "utf8"));
+    return JSON.parse(fs2.readFileSync(fileName, "utf8"));
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     throw new Error(`Cannot read JSON '${fileName}': ${message}`);
@@ -57,14 +686,14 @@ function sourceForTypesTarget({
   exportKey,
   typesTarget
 }) {
-  const absoluteTarget = path.resolve(repositoryRoot, typesTarget);
-  const relativeOutput = path.relative(outputDirectory, absoluteTarget);
-  if (relativeOutput.startsWith(`..${path.sep}`) || path.isAbsolute(relativeOutput) || !relativeOutput.endsWith(".d.ts")) {
+  const absoluteTarget = path2.resolve(repositoryRoot, typesTarget);
+  const relativeOutput = path2.relative(outputDirectory, absoluteTarget);
+  if (relativeOutput.startsWith(`..${path2.sep}`) || path2.isAbsolute(relativeOutput) || !relativeOutput.endsWith(".d.ts")) {
     throw new Error(
       `Package export '${exportKey}' types target '${typesTarget}' is not a declaration below compiler outDir.`
     );
   }
-  return path.join(rootDirectory, relativeOutput.slice(0, -".d.ts".length) + ".ts");
+  return path2.join(rootDirectory, relativeOutput.slice(0, -".d.ts".length) + ".ts");
 }
 function throwDiagnostics(repositoryRoot, diagnostics) {
   if (diagnostics.length === 0) return;
@@ -76,11 +705,11 @@ function throwDiagnostics(repositoryRoot, diagnostics) {
     })
   );
 }
-function loadCompilerContext(repositoryRoot) {
-  const absoluteRoot = path.resolve(repositoryRoot);
-  const packageJsonPath = path.join(absoluteRoot, "package.json");
+function loadCompilerContext(repositoryRoot, suppliedProgram) {
+  const absoluteRoot = path2.resolve(repositoryRoot);
+  const packageJsonPath = path2.join(absoluteRoot, "package.json");
   const packageJson = readJson(packageJsonPath);
-  const configPath = path.join(absoluteRoot, "tsconfig.json");
+  const configPath = path2.join(absoluteRoot, "tsconfig.json");
   const config = ts.readConfigFile(configPath, ts.sys.readFile);
   if (config.error !== void 0) throwDiagnostics(absoluteRoot, [config.error]);
   const parsed = ts.parseJsonConfigFileContent(
@@ -91,16 +720,16 @@ function loadCompilerContext(repositoryRoot) {
     configPath
   );
   throwDiagnostics(absoluteRoot, parsed.errors);
-  const program = ts.createProgram({
+  const program = suppliedProgram ?? ts.createProgram({
     rootNames: parsed.fileNames,
     options: parsed.options
   });
   throwDiagnostics(absoluteRoot, ts.getPreEmitDiagnostics(program));
-  const rootDirectory = path.resolve(
+  const rootDirectory = path2.resolve(
     absoluteRoot,
     parsed.options.rootDir ?? "src"
   );
-  const outputDirectory = path.resolve(
+  const outputDirectory = path2.resolve(
     absoluteRoot,
     parsed.options.outDir ?? "dist"
   );
@@ -139,16 +768,16 @@ function loadCompilerContext(repositoryRoot) {
     entrypoints
   };
 }
-function isPackageDeclaration(context2, declaration) {
+function isPackageDeclaration(context, declaration) {
   if (declaration === void 0) return false;
-  const relative = path.relative(
-    context2.rootDirectory,
-    path.resolve(declaration.getSourceFile().fileName)
+  const relative = path2.relative(
+    context.rootDirectory,
+    path2.resolve(declaration.getSourceFile().fileName)
   );
-  return !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative);
+  return !relative.startsWith(`..${path2.sep}`) && !path2.isAbsolute(relative);
 }
-function isPublicDeclaration(context2, declaration) {
-  if (!isPackageDeclaration(context2, declaration)) return false;
+function isPublicDeclaration(context, declaration) {
+  if (!isPackageDeclaration(context, declaration)) return false;
   const flags = ts.getCombinedModifierFlags(declaration);
   return (flags & ts.ModifierFlags.Private) === 0 && (flags & ts.ModifierFlags.Protected) === 0;
 }
@@ -164,15 +793,15 @@ function firstDeclaration(symbol) {
     return fileComparison !== 0 ? fileComparison : left.getStart() - right.getStart();
   })[0];
 }
-function typeOfExport(context2, exportedSymbol, source7) {
-  const resolved = resolveSymbol(context2.checker, exportedSymbol);
+function typeOfExport(context, exportedSymbol, source7) {
+  const resolved = resolveSymbol(context.checker, exportedSymbol);
   const declaration = firstDeclaration(resolved) ?? source7;
   if ((resolved.flags & ts.SymbolFlags.Interface) !== 0 || (resolved.flags & ts.SymbolFlags.TypeAlias) !== 0) {
-    return context2.checker.getDeclaredTypeOfSymbol(resolved);
+    return context.checker.getDeclaredTypeOfSymbol(resolved);
   }
-  return context2.checker.getTypeOfSymbolAtLocation(resolved, declaration);
+  return context.checker.getTypeOfSymbolAtLocation(resolved, declaration);
 }
-function spanOf(context2, node) {
+function spanOf(context, node) {
   const source7 = node.getSourceFile();
   const startOffset = node.getStart(source7);
   const endOffset = node.getEnd();
@@ -181,7 +810,7 @@ function spanOf(context2, node) {
   const sourceText5 = source7.getFullText();
   const astText = sourceText5.slice(startOffset, endOffset);
   return {
-    file: normalizeRelativePath(context2.repositoryRoot, source7.fileName),
+    file: normalizeRelativePath(context.repositoryRoot, source7.fileName),
     start: {
       offset: startOffset,
       line: start.line + 1,
@@ -196,26 +825,26 @@ function spanOf(context2, node) {
     astHash: sha256(astText)
   };
 }
-function symbolDeclarationSpans(context2, symbol) {
+function symbolDeclarationSpans(context, symbol) {
   if (symbol === void 0) return [];
-  return [...resolveSymbol(context2.checker, symbol).declarations ?? []].filter((declaration) => isPackageDeclaration(context2, declaration)).map((declaration) => spanOf(context2, declaration)).sort((left, right) => {
+  return [...resolveSymbol(context.checker, symbol).declarations ?? []].filter((declaration) => isPackageDeclaration(context, declaration)).map((declaration) => spanOf(context, declaration)).sort((left, right) => {
     const fileComparison = compareCodeUnits(left.file, right.file);
     return fileComparison !== 0 ? fileComparison : left.start.offset - right.start.offset;
   });
 }
-function symbolForDeclaration(context2, declaration) {
+function symbolForDeclaration(context, declaration) {
   let current = declaration;
-  while (isPackageDeclaration(context2, current)) {
+  while (isPackageDeclaration(context, current)) {
     if (current.name !== void 0) {
-      const symbol = context2.checker.getSymbolAtLocation(current.name);
+      const symbol = context.checker.getSymbolAtLocation(current.name);
       if (symbol !== void 0) return symbol;
     }
     current = current.parent;
   }
   return void 0;
 }
-function typeText(context2, type, node) {
-  const rendered3 = context2.checker.typeToString(
+function typeText(context, type, node) {
+  const rendered3 = context.checker.typeToString(
     type,
     node,
     TYPE_FORMAT_FLAGS
@@ -225,20 +854,20 @@ function typeText(context2, type, node) {
   }
   return rendered3;
 }
-function signatureShape(context2, signature, fallback) {
+function signatureShape(context, signature, fallback) {
   const declaration = signature.declaration ?? fallback;
   const typeParameters = (signature.typeParameters ?? []).map((parameter) => ({
-    name: parameter.symbol?.name ?? typeText(context2, parameter, declaration),
-    constraint: parameter.getConstraint() === void 0 ? null : typeText(context2, parameter.getConstraint(), declaration),
-    default: parameter.getDefault() === void 0 ? null : typeText(context2, parameter.getDefault(), declaration)
+    name: parameter.symbol?.name ?? typeText(context, parameter, declaration),
+    constraint: parameter.getConstraint() === void 0 ? null : typeText(context, parameter.getConstraint(), declaration),
+    default: parameter.getDefault() === void 0 ? null : typeText(context, parameter.getDefault(), declaration)
   }));
   const parameters = signature.getParameters().map((parameter) => {
     const parameterDeclaration = firstDeclaration(parameter) ?? declaration;
     return {
       name: parameter.name,
       type: typeText(
-        context2,
-        context2.checker.getTypeOfSymbolAtLocation(
+        context,
+        context.checker.getTypeOfSymbolAtLocation(
           parameter,
           parameterDeclaration
         ),
@@ -249,39 +878,39 @@ function signatureShape(context2, signature, fallback) {
     };
   });
   const result = typeText(
-    context2,
-    context2.checker.getReturnTypeOfSignature(signature),
+    context,
+    context.checker.getReturnTypeOfSignature(signature),
     declaration
   );
   return { typeParameters, parameters, result };
 }
-function traversalIdentity(context2, type) {
+function traversalIdentity(context, type) {
   const symbol = type.aliasSymbol ?? type.getSymbol();
   const declaration = symbol === void 0 ? void 0 : firstDeclaration(symbol);
-  if (declaration !== void 0 && isPackageDeclaration(context2, declaration)) {
-    const span = spanOf(context2, declaration);
+  if (declaration !== void 0 && isPackageDeclaration(context, declaration)) {
+    const span = spanOf(context, declaration);
     return `package:${span.file}:${span.start.offset}:${typeText(
-      context2,
+      context,
       type,
       declaration
     )}`;
   }
-  return `compiler:${type.id ?? typeText(context2, type, context2.entrypoints[0].source)}`;
+  return `compiler:${type.id ?? typeText(context, type, context.entrypoints[0].source)}`;
 }
-function namedTypeAnchor(context2, type) {
+function namedTypeAnchor(context, type) {
   const symbol = type.aliasSymbol ?? type.getSymbol();
   if (symbol === void 0) return void 0;
   const declaration = firstDeclaration(symbol);
-  if (declaration === void 0 || !isPackageDeclaration(context2, declaration)) {
+  if (declaration === void 0 || !isPackageDeclaration(context, declaration)) {
     return void 0;
   }
   if (!ts.isInterfaceDeclaration(declaration) && !ts.isTypeAliasDeclaration(declaration) && !ts.isClassDeclaration(declaration)) {
     return void 0;
   }
-  const rendered3 = typeText(context2, type, declaration);
+  const rendered3 = typeText(context, type, declaration);
   const typeSuffix = rendered3 === symbol.name ? "" : `<${sha256(rendered3)}>`;
   return `type:${normalizeRelativePath(
-    context2.repositoryRoot,
+    context.repositoryRoot,
     declaration.getSourceFile().fileName
   )}#${symbol.name}${typeSuffix}`;
 }
@@ -294,8 +923,8 @@ function addReachability(row, reachabilityPath) {
     row.reachabilityPaths.sort();
   }
 }
-function discoverCompilerSurface(repositoryRoot, context2 = loadCompilerContext(repositoryRoot)) {
-  if (path.resolve(repositoryRoot) !== context2.repositoryRoot) throw new Error("Compiler surface context belongs to another repository.");
+function discoverCompilerSurface(repositoryRoot, context = loadCompilerContext(repositoryRoot)) {
+  if (path2.resolve(repositoryRoot) !== context.repositoryRoot) throw new Error("Compiler surface context belongs to another repository.");
   const callableByKey = /* @__PURE__ */ new Map();
   const typeByKey = /* @__PURE__ */ new Map();
   const recursiveReferences = /* @__PURE__ */ new Set();
@@ -303,11 +932,11 @@ function discoverCompilerSurface(repositoryRoot, context2 = loadCompilerContext(
   let maximumDepth = 0;
   function registerSignatures(type, kind, anchor, reachabilityPath, fallback) {
     const signatureKind = kind === "call" ? ts.SignatureKind.Call : ts.SignatureKind.Construct;
-    const signatures = context2.checker.getSignaturesOfType(type, signatureKind);
+    const signatures = context.checker.getSignaturesOfType(type, signatureKind);
     for (const [index, signature] of signatures.entries()) {
       const declaration = signature.declaration ?? fallback;
-      if (!isPublicDeclaration(context2, declaration)) continue;
-      const signatureData = signatureShape(context2, signature, declaration);
+      if (!isPublicDeclaration(context, declaration)) continue;
+      const signatureData = signatureShape(context, signature, declaration);
       const key = `${anchor}::${kind}[${index}]`;
       const existing = callableByKey.get(key);
       if (existing !== void 0) {
@@ -317,16 +946,16 @@ function discoverCompilerSurface(repositoryRoot, context2 = loadCompilerContext(
         addReachability(existing, reachabilityPath);
         continue;
       }
-      const declarationSymbol = symbolForDeclaration(context2, declaration);
+      const declarationSymbol = symbolForDeclaration(context, declaration);
       callableByKey.set(key, {
         key,
         kind,
         overloadIndex: index,
         signature: signatureData,
         signatureHash: sha256(canonicalJson(signatureData)),
-        declaration: spanOf(context2, declaration),
+        declaration: spanOf(context, declaration),
         symbolDeclarations: symbolDeclarationSpans(
-          context2,
+          context,
           declarationSymbol
         ),
         reachabilityPaths: [reachabilityPath]
@@ -338,14 +967,14 @@ function discoverCompilerSurface(repositoryRoot, context2 = loadCompilerContext(
     if (depth > 128) {
       throw new Error(`Public type traversal exceeded depth 128 at '${anchor}'.`);
     }
-    const identity = traversalIdentity(context2, type);
+    const identity = traversalIdentity(context, type);
     if (lineage.has(identity)) {
       recursiveReferences.add(`${anchor} -> ${identity}`);
       return;
     }
     const nextLineage = new Set(lineage);
     nextLineage.add(identity);
-    const namedAnchor = keepAnchor ? void 0 : namedTypeAnchor(context2, type);
+    const namedAnchor = keepAnchor ? void 0 : namedTypeAnchor(context, type);
     const semanticAnchor = namedAnchor ?? anchor;
     if (namedAnchor !== void 0) {
       const namedSymbol = type.aliasSymbol ?? type.getSymbol();
@@ -356,11 +985,11 @@ function discoverCompilerSurface(repositoryRoot, context2 = loadCompilerContext(
       const typeRow = typeByKey.get(namedAnchor) ?? {
         key: namedAnchor,
         rendered: typeText(
-          context2,
+          context,
           type,
           namedDeclaration
         ),
-        declaration: spanOf(context2, namedDeclaration),
+        declaration: spanOf(context, namedDeclaration),
         reachabilityPaths: []
       };
       addReachability(typeRow, reachabilityPath);
@@ -374,23 +1003,23 @@ function discoverCompilerSurface(repositoryRoot, context2 = loadCompilerContext(
       "call",
       semanticAnchor,
       reachabilityPath,
-      context2.entrypoints[0].source
+      context.entrypoints[0].source
     );
     registerSignatures(
       type,
       "construct",
       semanticAnchor,
       reachabilityPath,
-      context2.entrypoints[0].source
+      context.entrypoints[0].source
     );
     for (const kind of [ts.SignatureKind.Call, ts.SignatureKind.Construct]) {
       const label = kind === ts.SignatureKind.Call ? "call" : "construct";
-      for (const [index, signature] of context2.checker.getSignaturesOfType(type, kind).entries()) {
-        const declaration = signature.declaration ?? context2.entrypoints[0].source;
-        if (!isPublicDeclaration(context2, declaration)) continue;
+      for (const [index, signature] of context.checker.getSignaturesOfType(type, kind).entries()) {
+        const declaration = signature.declaration ?? context.entrypoints[0].source;
+        if (!isPublicDeclaration(context, declaration)) continue;
         for (const parameter of signature.getParameters()) {
           const parameterDeclaration = firstDeclaration(parameter) ?? declaration;
-          const parameterType = context2.checker.getTypeOfSymbolAtLocation(
+          const parameterType = context.checker.getTypeOfSymbolAtLocation(
             parameter,
             parameterDeclaration
           );
@@ -408,7 +1037,7 @@ function discoverCompilerSurface(repositoryRoot, context2 = loadCompilerContext(
           );
         }
         visitType(
-          context2.checker.getReturnTypeOfSignature(signature),
+          context.checker.getReturnTypeOfSignature(signature),
           `${semanticAnchor}::${label}[${index}]/return`,
           `${reachabilityPath}::${label}[${index}]/return`,
           nextLineage,
@@ -429,7 +1058,7 @@ function discoverCompilerSurface(repositoryRoot, context2 = loadCompilerContext(
         );
       }
     }
-    const typeArguments = context2.checker.getTypeArguments?.(type) ?? [];
+    const typeArguments = context.checker.getTypeArguments?.(type) ?? [];
     for (const [index, argument] of typeArguments.entries()) {
       visitType(
         argument,
@@ -440,12 +1069,12 @@ function discoverCompilerSurface(repositoryRoot, context2 = loadCompilerContext(
         false
       );
     }
-    for (const property of context2.checker.getPropertiesOfType(type)) {
+    for (const property of context.checker.getPropertiesOfType(type)) {
       const declaration = firstDeclaration(property);
-      if (declaration === void 0 || !isPublicDeclaration(context2, declaration)) {
+      if (declaration === void 0 || !isPublicDeclaration(context, declaration)) {
         continue;
       }
-      const propertyType = context2.checker.getTypeOfSymbolAtLocation(
+      const propertyType = context.checker.getTypeOfSymbolAtLocation(
         property,
         declaration
       );
@@ -459,12 +1088,12 @@ function discoverCompilerSurface(repositoryRoot, context2 = loadCompilerContext(
         false
       );
     }
-    for (const indexInfo of context2.checker.getIndexInfosOfType(type)) {
+    for (const indexInfo of context.checker.getIndexInfosOfType(type)) {
       const declaration = indexInfo.declaration;
-      if (declaration === void 0 || !isPublicDeclaration(context2, declaration)) {
+      if (declaration === void 0 || !isPublicDeclaration(context, declaration)) {
         continue;
       }
-      const indexKey = propertySegment(typeText(context2, indexInfo.keyType, declaration));
+      const indexKey = propertySegment(typeText(context, indexInfo.keyType, declaration));
       visitType(
         indexInfo.type,
         `${semanticAnchor}[index:${indexKey}]`,
@@ -476,19 +1105,19 @@ function discoverCompilerSurface(repositoryRoot, context2 = loadCompilerContext(
     }
   }
   const entrypointRows = [];
-  for (const entrypoint of context2.entrypoints) {
-    const moduleSymbol = context2.checker.getSymbolAtLocation(entrypoint.source);
+  for (const entrypoint of context.entrypoints) {
+    const moduleSymbol = context.checker.getSymbolAtLocation(entrypoint.source);
     if (moduleSymbol === void 0) {
       throw new Error(`Compiler has no module symbol for '${entrypoint.exportKey}'.`);
     }
     const exportRows = [];
-    for (const exportedSymbol of context2.checker.getExportsOfModule(moduleSymbol).sort((left, right) => compareCodeUnits(left.name, right.name))) {
-      const resolved = resolveSymbol(context2.checker, exportedSymbol);
+    for (const exportedSymbol of context.checker.getExportsOfModule(moduleSymbol).sort((left, right) => compareCodeUnits(left.name, right.name))) {
+      const resolved = resolveSymbol(context.checker, exportedSymbol);
       const declaration = firstDeclaration(resolved) ?? entrypoint.source;
-      const exportedType = typeOfExport(context2, exportedSymbol, entrypoint.source);
+      const exportedType = typeOfExport(context, exportedSymbol, entrypoint.source);
       const exportAnchor = `export:${entrypoint.exportKey}#${exportedSymbol.name}`;
-      const declarations = symbolDeclarationSpans(context2, resolved);
-      const renderedType = typeText(context2, exportedType, declaration);
+      const declarations = symbolDeclarationSpans(context, resolved);
+      const renderedType = typeText(context, exportedType, declaration);
       const exportRow = {
         key: exportAnchor,
         name: exportedSymbol.name,
@@ -512,7 +1141,7 @@ function discoverCompilerSurface(repositoryRoot, context2 = loadCompilerContext(
       key: entrypoint.exportKey,
       typesTarget: entrypoint.typesTarget,
       source: normalizeRelativePath(
-        context2.repositoryRoot,
+        context.repositoryRoot,
         entrypoint.source.fileName
       ),
       sourceHash: sha256(entrypoint.source.getFullText()),
@@ -522,10 +1151,10 @@ function discoverCompilerSurface(repositoryRoot, context2 = loadCompilerContext(
   const manifestWithoutDigest = {
     schemaVersion: SURFACE_SCHEMA_VERSION,
     package: {
-      name: context2.packageJson.name,
-      version: context2.packageJson.version,
-      packageJsonHash: sha256(fs.readFileSync(context2.packageJsonPath)),
-      tsconfigHash: sha256(fs.readFileSync(context2.configPath))
+      name: context.packageJson.name,
+      version: context.packageJson.version,
+      packageJsonHash: sha256(fs2.readFileSync(context.packageJsonPath)),
+      tsconfigHash: sha256(fs2.readFileSync(context.configPath))
     },
     entrypoints: entrypointRows,
     callables: [...callableByKey.values()].sort(
@@ -570,16 +1199,17 @@ function nodeAtExactSpan(source7, startOffset, endOffset) {
 }
 
 // experiments/tla-conformance/surface-bindings/lib/binding-checker.mjs
+import fs37 from "node:fs";
 import path41 from "node:path";
 
 // experiments/tla-conformance/value-contracts/surface-binding.mjs
-import fs37 from "node:fs";
+import fs36 from "node:fs";
 import path39 from "node:path";
 import { fileURLToPath as fileURLToPath16 } from "node:url";
 
 // experiments/tla-conformance/value-contracts/verify.mjs
-import fs2 from "node:fs";
-import path2 from "node:path";
+import fs3 from "node:fs";
+import path3 from "node:path";
 import { fileURLToPath } from "node:url";
 var contractPath = fileURLToPath(new URL("./contracts.json", import.meta.url));
 var verifierPath = fileURLToPath(import.meta.url);
@@ -588,20 +1218,20 @@ function fail(code, detail) {
   error.code = code;
   throw error;
 }
-function dependencyBody(context2, call) {
+function dependencyBody(context, call) {
   if (!ts.isIdentifier(call.expression) || call.questionDotToken !== void 0) {
     fail("VALUE_SEMANTIC_UNBOUND_CALL", "Only direct source-identifier calls are admitted.");
   }
-  const signature = context2.checker.getResolvedSignature(call);
+  const signature = context.checker.getResolvedSignature(call);
   const body = signature?.declaration;
   if (body === void 0 || !ts.isFunctionDeclaration(body) || body.body === void 0 || body.getSourceFile().isDeclarationFile) {
     fail("VALUE_SEMANTIC_UNBOUND_CALL", "Called value helper has no unique resolved source body.");
   }
-  const relative = path2.relative(context2.repositoryRoot, body.getSourceFile().fileName).replaceAll("\\", "/");
+  const relative = path3.relative(context.repositoryRoot, body.getSourceFile().fileName).replaceAll("\\", "/");
   if (!relative.startsWith("src/")) fail("VALUE_SEMANTIC_UNBOUND_CALL", "Dependency is not package source.");
   return body;
 }
-function deriveValueReturnTerm(context2, implementation) {
+function deriveValueReturnTerm(context, implementation) {
   const dependencies = /* @__PURE__ */ new Map();
   const standardDependencies = /* @__PURE__ */ new Map();
   const active = /* @__PURE__ */ new Set();
@@ -617,7 +1247,7 @@ function deriveValueReturnTerm(context2, implementation) {
       if (!ts.isIdentifier(parameter.name) || parameter.initializer !== void 0 || parameter.dotDotDotToken !== void 0) {
         fail("VALUE_SEMANTIC_PARAMETER", "Parameters must be simple, non-defaulted identifiers.");
       }
-      const symbol = context2.checker.getSymbolAtLocation(parameter.name);
+      const symbol = context.checker.getSymbolAtLocation(parameter.name);
       if (symbol === void 0) fail("VALUE_SEMANTIC_PARAMETER", "Parameter has no compiler identity.");
       environment.set(symbol, arguments_[index]);
     }
@@ -625,10 +1255,10 @@ function deriveValueReturnTerm(context2, implementation) {
       fail("VALUE_SEMANTIC_BODY", "One explicit return expression is required; no hidden statements are allowed.");
     }
     active.add(body);
-    const source7 = spanOf(context2, body);
+    const source7 = spanOf(context, body);
     dependencies.set(`${source7.file}:${source7.start.offset}:${source7.end.offset}`, source7);
     function sparseEmptyRecordTerm(dependency2, call) {
-      const relative = path2.relative(context2.repositoryRoot, dependency2.getSourceFile().fileName).replaceAll("\\", "/");
+      const relative = path3.relative(context.repositoryRoot, dependency2.getSourceFile().fileName).replaceAll("\\", "/");
       if (relative !== "src/sparse-record.ts" || dependency2.name?.text !== "createInventorySparseRecord") return void 0;
       if (call.arguments.length !== 0 || dependency2.parameters.length !== 0 || dependency2.body === void 0 || dependency2.body.statements.length !== 1 || !ts.isReturnStatement(dependency2.body.statements[0]) || dependency2.body.statements[0].expression === void 0) {
         fail("VALUE_SEMANTIC_SPARSE_RECORD", "Sparse-record construction must remain one zero-argument return expression.");
@@ -640,19 +1270,19 @@ function deriveValueReturnTerm(context2, implementation) {
       if (!ts.isCallExpression(runtimeExpression) || runtimeExpression.arguments.length !== 1 || runtimeExpression.arguments[0].kind !== ts.SyntaxKind.NullKeyword || runtimeExpression.questionDotToken !== void 0 || !ts.isPropertyAccessExpression(runtimeExpression.expression) || runtimeExpression.expression.questionDotToken !== void 0 || !ts.isIdentifier(runtimeExpression.expression.expression) || runtimeExpression.expression.expression.text !== "Object" || runtimeExpression.expression.name.text !== "create") {
         fail("VALUE_SEMANTIC_SPARSE_RECORD", "Sparse-record construction must be exact global Object.create(null).");
       }
-      const objectSymbol = context2.checker.getSymbolAtLocation(runtimeExpression.expression.expression);
+      const objectSymbol = context.checker.getSymbolAtLocation(runtimeExpression.expression.expression);
       const objectDeclarations = objectSymbol?.declarations ?? [];
       if (objectSymbol?.getName() !== "Object" || (objectSymbol.flags & ts.SymbolFlags.Alias) !== 0 || objectDeclarations.length === 0 || objectDeclarations.some((candidate) => !candidate.getSourceFile().isDeclarationFile) || !objectDeclarations.some((candidate) => ts.isVariableDeclaration(candidate) && candidate.name.getText(candidate.getSourceFile()) === "Object")) {
         fail("VALUE_SEMANTIC_SPARSE_RECORD", "Sparse-record construction must use the standard global Object intrinsic.");
       }
-      const signature = context2.checker.getResolvedSignature(runtimeExpression);
+      const signature = context.checker.getResolvedSignature(runtimeExpression);
       const declaration = signature?.declaration;
       if (declaration === void 0 || !declaration.getSourceFile().isDeclarationFile || declaration.getText(declaration.getSourceFile()) !== "create(o: object | null): any;") {
         fail("VALUE_SEMANTIC_SPARSE_RECORD", "Object.create must resolve to the reviewed standard declaration.");
       }
-      const source8 = spanOf(context2, dependency2);
+      const source8 = spanOf(context, dependency2);
       dependencies.set(`${source8.file}:${source8.start.offset}:${source8.end.offset}`, source8);
-      const standard = spanOf(context2, declaration);
+      const standard = spanOf(context, declaration);
       standardDependencies.set("Object.create", {
         operation: "Object.create",
         file: "typescript/lib/lib.es5.d.ts",
@@ -666,7 +1296,7 @@ function deriveValueReturnTerm(context2, implementation) {
     function term4(node) {
       if (ts.isParenthesizedExpression(node)) return term4(node.expression);
       if (ts.isIdentifier(node)) {
-        const symbol = context2.checker.getSymbolAtLocation(node);
+        const symbol = context.checker.getSymbolAtLocation(node);
         if (!environment.has(symbol)) fail("VALUE_SEMANTIC_NONLOCAL", `Non-parameter value '${node.text}'.`);
         return environment.get(symbol);
       }
@@ -677,7 +1307,7 @@ function deriveValueReturnTerm(context2, implementation) {
       if (node.kind === ts.SyntaxKind.NullKeyword) return ["null"];
       if (ts.isPropertyAccessExpression(node)) {
         if (node.questionDotToken !== void 0) fail("VALUE_SEMANTIC_FIELD", "Optional field reads are not admitted.");
-        const symbol = context2.checker.getSymbolAtLocation(node.name);
+        const symbol = context.checker.getSymbolAtLocation(node.name);
         if (symbol === void 0 || (symbol.flags & ts.SymbolFlags.Optional) !== 0 || (symbol.declarations ?? []).some((declaration) => ts.isGetAccessorDeclaration(declaration) || ts.isSetAccessorDeclaration(declaration))) {
           fail("VALUE_SEMANTIC_FIELD", "Only required declared data fields may be projected.");
         }
@@ -697,14 +1327,14 @@ function deriveValueReturnTerm(context2, implementation) {
       }
       if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.MinusToken) {
         for (const operand of [node.left, node.right]) {
-          if ((context2.checker.getTypeAtLocation(operand).flags & ts.TypeFlags.NumberLike) === 0) {
+          if ((context.checker.getTypeAtLocation(operand).flags & ts.TypeFlags.NumberLike) === 0) {
             fail("VALUE_SEMANTIC_NUMBER", "Subtraction requires declared number operands, not object coercion or bigint.");
           }
         }
         return ["subtract", term4(node.left), term4(node.right)];
       }
       if (ts.isCallExpression(node)) {
-        const dependency2 = dependencyBody(context2, node);
+        const dependency2 = dependencyBody(context, node);
         const sparse = sparseEmptyRecordTerm(dependency2, node);
         if (sparse !== void 0) return sparse;
         return expand(dependency2, node.arguments.map(term4));
@@ -724,9 +1354,9 @@ function deriveValueReturnTerm(context2, implementation) {
     standardDependencies: [...standardDependencies.values()].sort((left, right) => compareCodeUnits(left.operation, right.operation))
   };
 }
-function verifyValueSemantics(context2, surfaceKey, implementation) {
+function verifyValueSemantics(context, surfaceKey, implementation) {
   try {
-    const bytes2 = fs2.readFileSync(contractPath);
+    const bytes2 = fs3.readFileSync(contractPath);
     const document = JSON.parse(bytes2);
     if (document.schemaVersion !== 2 || document.domain !== "DECLARED_IMMUTABLE_DATA_VALUES_V2" || !Array.isArray(document.contracts)) {
       fail("VALUE_SEMANTIC_CONTRACT_SCHEMA", "Independent value specification schema is invalid.");
@@ -735,7 +1365,7 @@ function verifyValueSemantics(context2, surfaceKey, implementation) {
     if (matches.length !== 1) fail("VALUE_SEMANTIC_CONTRACT_MISSING", `Exactly one reviewed value contract is required for '${surfaceKey}'.`);
     const contract = matches[0];
     if (implementation.parameters.length !== contract.arity) fail("VALUE_SEMANTIC_ARITY", "Source arity differs from the independent value specification.");
-    const derived = deriveValueReturnTerm(context2, implementation);
+    const derived = deriveValueReturnTerm(context, implementation);
     if (canonicalJson(derived.term) !== canonicalJson(contract.term)) {
       fail("VALUE_SEMANTIC_RESULT_MISMATCH", `Returned value does not implement independent contract '${contract.id}'.`);
     }
@@ -748,10 +1378,10 @@ function verifyValueSemantics(context2, surfaceKey, implementation) {
         allAdmittedInputs: true,
         sampledInputs: 0,
         independentContract: true,
-        contractFile: path2.relative(context2.repositoryRoot, contractPath).replaceAll("\\", "/"),
+        contractFile: path3.relative(context.repositoryRoot, contractPath).replaceAll("\\", "/"),
         contractSha256: sha256(bytes2),
-        verifierFile: path2.relative(context2.repositoryRoot, verifierPath).replaceAll("\\", "/"),
-        verifierSha256: sha256(fs2.readFileSync(verifierPath)),
+        verifierFile: path3.relative(context.repositoryRoot, verifierPath).replaceAll("\\", "/"),
+        verifierSha256: sha256(fs3.readFileSync(verifierPath)),
         equationSha256: sha256(canonicalJson(contract.term)),
         dependencies: derived.dependencies,
         standardDependencies: derived.standardDependencies
@@ -764,19 +1394,22 @@ function verifyValueSemantics(context2, surfaceKey, implementation) {
 
 // experiments/tla-conformance/value-contracts/catalog-family.mjs
 import assert2 from "node:assert/strict";
-import fs3 from "node:fs";
-import path4 from "node:path";
+import fs5 from "node:fs";
+import path5 from "node:path";
 
 // experiments/tla-conformance/authority-r5/catalog-published-source-equations.mjs
 import assert from "node:assert/strict";
-import path3 from "node:path";
+import { createHash } from "node:crypto";
+import fs4 from "node:fs";
+import path4 from "node:path";
 import { fileURLToPath as fileURLToPath2 } from "node:url";
 
 // experiments/tla-conformance/authority-r5/catalog-published-source-contracts.mjs
-function member(surfaceKey, sourceFile4, className, methodName, equation3, law) {
+var CATALOG_PUBLISHED_SOURCE_DOMAIN = "ALL_VALIDATED_CATALOGS_AND_FROZEN_PUBLISHED_SNAPSHOTS_V1";
+function member(surfaceKey, sourceFile3, className, methodName, equation3, law) {
   return Object.freeze({
     surfaceKey,
-    sourceFile: sourceFile4,
+    sourceFile: sourceFile3,
     className,
     methodName,
     equation: equation3,
@@ -1066,9 +1699,9 @@ var CATALOG_PUBLISHED_SUPPORTING_CONTRACTS = Object.freeze([
     law: Object.freeze({ kind: "projected-lot-index" })
   })
 ]);
-function catalogSnapshotMember(sourceFile4, declarationKind, declarationName, surfaceKeys, equation3, law, className) {
+function catalogSnapshotMember(sourceFile3, declarationKind, declarationName, surfaceKeys, equation3, law, className) {
   return Object.freeze({
-    sourceFile: sourceFile4,
+    sourceFile: sourceFile3,
     declarationKind,
     declarationName,
     surfaceKeys: Object.freeze(surfaceKeys),
@@ -1165,16 +1798,35 @@ var CATALOG_PUBLICATION_STATEFUL_BLOCKER = Object.freeze({
 });
 
 // experiments/tla-conformance/authority-r5/catalog-published-source-equations.mjs
-var FAMILY_DIRECTORY = path3.dirname(fileURLToPath2(import.meta.url));
-var REPOSITORY_ROOT = path3.resolve(FAMILY_DIRECTORY, "../../..");
-var CERTIFICATE_PATH = path3.join(
+var FAMILY_DIRECTORY = path4.dirname(fileURLToPath2(import.meta.url));
+var REPOSITORY_ROOT = path4.resolve(FAMILY_DIRECTORY, "../../..");
+var CERTIFICATE_PATH = path4.join(
   FAMILY_DIRECTORY,
   "catalog-published-source-equations.json"
 );
-var BOUNDED_FIXTURE_CERTIFICATE_PATH = path3.join(
+var BOUNDED_FIXTURE_CERTIFICATE_PATH = path4.join(
   FAMILY_DIRECTORY,
   "catalog-published-value-certificate.json"
 );
+var BOUNDED_FIXTURE_DOMAIN = "RICH_SCALAR_CATALOG_AND_ONE_RECEIPT_SNAPSHOT_V1";
+var BOUNDED_FIXTURE_SHA256 = "c0860eda3406691b84924d56c7cea1b0625a55cd75ba594ce79f2480608a1869";
+var BOUNDED_FIXTURE_CERTIFICATE_ID = "VALUE_CERTIFICATE_FAMILY:sha256:b22005aec0d6a076d71d3686773b0366e4560bba04af3b728a25f7e5cd49942e";
+var SOURCE_FAMILY_ID = "inventoryonce.catalog-published.source-equations.v1";
+function sha2562(value) {
+  return createHash("sha256").update(value).digest("hex");
+}
+function requireExactKeys(value, expected, label) {
+  assert.equal(
+    value !== null && typeof value === "object" && !Array.isArray(value),
+    true,
+    `${label} must be an object.`
+  );
+  assert.deepEqual(
+    Object.keys(value).sort(compareCodeUnits),
+    [...expected].sort(compareCodeUnits),
+    `${label} fields changed.`
+  );
+}
 function findClassMethod(source7, className, methodName) {
   const matchingClasses = source7.statements.filter(
     (statement) => ts.isClassDeclaration(statement) && statement.name?.text === className
@@ -1559,6 +2211,119 @@ function expectedSupportingSource(contract) {
       throw new Error(`Unknown supporting source-equation law '${contract.law.kind}'.`);
   }
 }
+function emptyCatalogRecordSource(includeDigest) {
+  const emptyIndex = includeDigest ? "createInventorySparseRecord()" : "{}";
+  return `{
+    ${includeDigest ? "digest: inventoryCatalogDigest(input)," : ""}
+    itemRevisions: [],
+    activeItemRevisionIds: ${emptyIndex},
+    packagingRevisions: [],
+    compositionRevisions: [],
+    activeCompositionRevisionIds: ${emptyIndex},
+    transformationRevisions: [],
+    activeTransformationRevisionIds: ${emptyIndex},
+    collectionRevisions: [],
+    activeCollectionRevisionIds: ${emptyIndex},
+    fungibilityRevisions: [],
+    activeFungibilityRevisionIds: ${emptyIndex},
+  }`;
+}
+function retainedRevisionLoop({
+  retainedName,
+  collection,
+  lookup,
+  identity,
+  digest,
+  errorPrefix
+}) {
+  return `for (const ${retainedName} of retainedCatalog.${collection}) {
+    const supplied = p0.${lookup}(${retainedName}.${identity});
+    if (${digest}(supplied) !== ${digest}(${retainedName})) {
+      throw new Error(\`${errorPrefix}'${"${" + retainedName + "." + identity + "}"}' changed after it entered durable truth.\`);
+    }
+  }`;
+}
+function expectedCatalogSnapshotSource(contract) {
+  switch (contract.law.kind) {
+    case "catalog-static-define":
+      return "class Expected { static sample(p0) { return new InventoryCatalog(createInventoryCatalogParts(p0)); } }";
+    case "catalog-define-delegate":
+      return "function expected(p0) { return InventoryCatalog.define(p0); }";
+    case "empty-catalog-snapshot":
+      return `function expected() {
+        const input = ${emptyCatalogRecordSource(false)};
+        return ${emptyCatalogRecordSource(true)};
+      }`;
+    case "catalog-from-snapshot":
+      return `function expected(p0) {
+        const catalog = defineInventoryCatalog(p0);
+        if (catalog.digest !== p0.digest) {
+          throw new Error("Durable inventory catalogue snapshot digest does not match its definitions.");
+        }
+        return catalog;
+      }`;
+    case "retained-catalog-digest-equality": {
+      const loops = [
+        {
+          retainedName: "retainedItem",
+          collection: "itemRevisions",
+          lookup: "itemRevision",
+          identity: "revisionId",
+          digest: "inventoryItemRevisionDigest",
+          errorPrefix: "Inventory item revision "
+        },
+        {
+          retainedName: "retainedPackaging",
+          collection: "packagingRevisions",
+          lookup: "packagingRevision",
+          identity: "revisionId",
+          digest: "inventoryPackagingRevisionDigest",
+          errorPrefix: "Inventory packaging revision "
+        },
+        {
+          retainedName: "retainedComposition",
+          collection: "compositionRevisions",
+          lookup: "compositionRevision",
+          identity: "revisionId",
+          digest: "inventoryCompositionRevisionDigest",
+          errorPrefix: "Inventory composition revision "
+        },
+        {
+          retainedName: "retainedTransformation",
+          collection: "transformationRevisions",
+          lookup: "transformationRevision",
+          identity: "revisionId",
+          digest: "inventoryTransformationRevisionDigest",
+          errorPrefix: "Inventory transformation revision "
+        },
+        {
+          retainedName: "retainedCollection",
+          collection: "collectionRevisions",
+          lookup: "collectionRevision",
+          identity: "revisionId",
+          digest: "inventoryCollectionRevisionDigest",
+          errorPrefix: "Inventory collection revision "
+        },
+        {
+          retainedName: "retainedPool",
+          collection: "fungibilityRevisions",
+          lookup: "fungibilityRevision",
+          identity: "revisionId",
+          digest: "inventoryFungibilityRevisionDigest",
+          errorPrefix: "Inventory fungibility revision "
+        }
+      ].map(retainedRevisionLoop);
+      return `function expected(p0, p1) {
+        const retainedCatalog = inventoryCatalogFromSnapshot(p1);
+        ${loops.join("\n")}
+      }`;
+    }
+    case "catalog-snapshot-digest":
+      return "function expected(p0) { return inventoryCatalogFromSnapshot(p0).digest; }";
+    default:
+      throw new Error(`Unknown catalog snapshot source-equation law '${contract.law.kind}'.`);
+  }
+}
 function expectedMethodTerm(contract) {
   const source7 = ts.createSourceFile(
     `expected-${contract.methodName}.ts`,
@@ -1579,7 +2344,394 @@ function expectedSupportingTerm(contract) {
   );
   return normalizeCallable(findFunction(source7, "expected"));
 }
-if (false) {
+function expectedCatalogSnapshotTerm(contract) {
+  const source7 = ts.createSourceFile(
+    `expected-${contract.declarationName}.ts`,
+    expectedCatalogSnapshotSource(contract),
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS
+  );
+  const declaration = contract.declarationKind === "method" ? findClassMethod(source7, "Expected", "sample") : findFunction(source7, "expected");
+  return normalizeCallable(declaration);
+}
+function loadSource(sourceFile3, sourceOverrides) {
+  const absolute = path4.join(REPOSITORY_ROOT, sourceFile3);
+  const text = sourceOverrides.get(sourceFile3) ?? fs4.readFileSync(absolute, "utf8");
+  return ts.createSourceFile(
+    absolute,
+    text,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS
+  );
+}
+function verifyCatalogPublishedSourceContracts(sourceOverrides = /* @__PURE__ */ new Map()) {
+  const sourceCache = /* @__PURE__ */ new Map();
+  const source7 = (sourceFile3) => {
+    if (!sourceCache.has(sourceFile3)) {
+      sourceCache.set(sourceFile3, loadSource(sourceFile3, sourceOverrides));
+    }
+    return sourceCache.get(sourceFile3);
+  };
+  const equations2 = CATALOG_PUBLISHED_SOURCE_CONTRACTS.map((contract) => {
+    const declaration = findClassMethod(
+      source7(contract.sourceFile),
+      contract.className,
+      contract.methodName
+    );
+    const actualTerm = normalizeCallable(declaration);
+    const expectedTerm = expectedMethodTerm(contract);
+    assert.deepEqual(
+      actualTerm,
+      expectedTerm,
+      `${contract.surfaceKey} does not implement '${contract.equation}'.`
+    );
+    return { contract, declaration, term: actualTerm };
+  });
+  const supportingEquations = CATALOG_PUBLISHED_SUPPORTING_CONTRACTS.map(
+    (contract) => {
+      const declaration = findFunction(
+        source7(contract.sourceFile),
+        contract.functionName
+      );
+      const actualTerm = normalizeCallable(declaration);
+      const expectedTerm = expectedSupportingTerm(contract);
+      assert.deepEqual(
+        actualTerm,
+        expectedTerm,
+        `${contract.functionName} does not implement '${contract.equation}'.`
+      );
+      return { contract, declaration, term: actualTerm };
+    }
+  );
+  const catalogSnapshotEquations = CATALOG_SNAPSHOT_SOURCE_CONTRACTS.map(
+    (contract) => {
+      const declaration = contract.declarationKind === "method" ? findClassMethod(
+        source7(contract.sourceFile),
+        contract.className,
+        contract.declarationName
+      ) : findFunction(source7(contract.sourceFile), contract.declarationName);
+      const actualTerm = normalizeCallable(declaration);
+      const expectedTerm = expectedCatalogSnapshotTerm(contract);
+      assert.deepEqual(
+        actualTerm,
+        expectedTerm,
+        `${contract.declarationName} does not implement '${contract.equation}'.`
+      );
+      return { contract, declaration, term: actualTerm };
+    }
+  );
+  assert.equal(equations2.length, 33);
+  assert.equal(new Set(equations2.map(({ contract }) => contract.surfaceKey)).size, 33);
+  assert.equal(catalogSnapshotEquations.length, 6);
+  assert.equal(
+    catalogSnapshotEquations.reduce(
+      (total, { contract }) => total + contract.surfaceKeys.length,
+      0
+    ),
+    11
+  );
+  return { equations: equations2, supportingEquations, catalogSnapshotEquations };
+}
+function isConcretePackageCallable(context, declaration) {
+  if (declaration === void 0 || declaration.body === void 0 || !ts.isFunctionDeclaration(declaration) && !ts.isMethodDeclaration(declaration)) {
+    return false;
+  }
+  return normalizeRelativePath(
+    context.repositoryRoot,
+    declaration.getSourceFile().fileName
+  ).startsWith("src/");
+}
+function directSourceDependencies(context, declaration) {
+  const dependencies = /* @__PURE__ */ new Map();
+  const ownStart = declaration.getStart(declaration.getSourceFile());
+  const ownKey = `${declaration.getSourceFile().fileName}:${ownStart}`;
+  function addDependency(candidate) {
+    if (!isConcretePackageCallable(context, candidate)) return;
+    const key = `${candidate.getSourceFile().fileName}:${candidate.getStart(candidate.getSourceFile())}`;
+    if (key === ownKey || dependencies.has(key)) return;
+    const span = spanOf(context, candidate);
+    dependencies.set(key, {
+      declarationKind: ts.isMethodDeclaration(candidate) ? "method" : "function",
+      name: candidate.name !== void 0 && ts.isIdentifier(candidate.name) ? candidate.name.text : "anonymous",
+      sourceFile: span.file,
+      sourceAstSha256: span.astHash
+    });
+  }
+  function visit(node) {
+    if (ts.isCallExpression(node)) {
+      addDependency(context.checker.getResolvedSignature(node)?.declaration);
+    } else if (ts.isIdentifier(node)) {
+      const symbol = context.checker.getSymbolAtLocation(node);
+      for (const candidate of symbol?.declarations ?? []) addDependency(candidate);
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(declaration.body);
+  return [...dependencies.values()].sort(
+    (left, right) => compareCodeUnits(
+      `${left.sourceFile}:${left.name}:${left.sourceAstSha256}`,
+      `${right.sourceFile}:${right.name}:${right.sourceAstSha256}`
+    )
+  );
+}
+function semanticDeclarationIdentity(context, declaration) {
+  const span = spanOf(context, declaration);
+  return { sourceFile: span.file, sourceAstSha256: span.astHash };
+}
+function compilerDeclaration(context, contract, kind) {
+  const absolute = path4.join(REPOSITORY_ROOT, contract.sourceFile);
+  const source7 = context.program.getSourceFile(absolute);
+  assert.notEqual(source7, void 0, `Compiler omitted ${contract.sourceFile}.`);
+  return kind === "method" ? findClassMethod(source7, contract.className, contract.methodName) : findFunction(source7, contract.functionName);
+}
+function equationEvidence(context, verified) {
+  const declaration = compilerDeclaration(context, verified.contract, "method");
+  return {
+    producerMethod: `${verified.contract.className}.${verified.contract.methodName}`,
+    sourceFile: verified.contract.sourceFile,
+    className: verified.contract.className,
+    methodName: verified.contract.methodName,
+    equation: verified.contract.equation,
+    law: verified.contract.law,
+    completeBranchesChecked: true,
+    allValidatedInputs: true,
+    sampledInputs: 0,
+    normalizedTerm: verified.term,
+    normalizedTermSha256: sha2562(canonicalJson(verified.term)),
+    declaration: semanticDeclarationIdentity(context, declaration),
+    directSourceDependencies: directSourceDependencies(context, declaration)
+  };
+}
+function supportingEquationEvidence(context, verified) {
+  const declaration = compilerDeclaration(context, verified.contract, "function");
+  return {
+    sourceFile: verified.contract.sourceFile,
+    functionName: verified.contract.functionName,
+    equation: verified.contract.equation,
+    law: verified.contract.law,
+    completeBranchesChecked: true,
+    normalizedTerm: verified.term,
+    normalizedTermSha256: sha2562(canonicalJson(verified.term)),
+    declaration: semanticDeclarationIdentity(context, declaration),
+    directSourceDependencies: directSourceDependencies(context, declaration)
+  };
+}
+function catalogSnapshotEquationEvidence(context, verified) {
+  const source7 = context.program.getSourceFile(
+    path4.join(REPOSITORY_ROOT, verified.contract.sourceFile)
+  );
+  assert.notEqual(source7, void 0, `Compiler omitted ${verified.contract.sourceFile}.`);
+  const declaration = verified.contract.declarationKind === "method" ? findClassMethod(
+    source7,
+    verified.contract.className,
+    verified.contract.declarationName
+  ) : findFunction(source7, verified.contract.declarationName);
+  return {
+    sourceFile: verified.contract.sourceFile,
+    declarationKind: verified.contract.declarationKind,
+    declarationName: verified.contract.declarationName,
+    equation: verified.contract.equation,
+    law: verified.contract.law,
+    completeBranchesChecked: true,
+    allValidatedInputs: true,
+    sampledInputs: 0,
+    normalizedTerm: verified.term,
+    normalizedTermSha256: sha2562(canonicalJson(verified.term)),
+    declaration: semanticDeclarationIdentity(context, declaration),
+    directSourceDependencies: directSourceDependencies(context, declaration)
+  };
+}
+function boundedFixtureControl() {
+  let fixtureSha256 = BOUNDED_FIXTURE_SHA256;
+  let certificateId = BOUNDED_FIXTURE_CERTIFICATE_ID;
+  if (fs4.existsSync(BOUNDED_FIXTURE_CERTIFICATE_PATH)) {
+    const bytes2 = fs4.readFileSync(BOUNDED_FIXTURE_CERTIFICATE_PATH);
+    const document = JSON.parse(bytes2.toString("utf8"));
+    assert.equal(document.semanticCore.equationDomain, BOUNDED_FIXTURE_DOMAIN);
+    assert.equal(document.semanticCore.proofCounts.producerEquations, 33);
+    assert.equal(document.reviewEnvelope.globalBinderCreditGranted, false);
+    fixtureSha256 = sha2562(bytes2);
+    certificateId = document.contentAddress.certificateId;
+    assert.equal(fixtureSha256, BOUNDED_FIXTURE_SHA256);
+    assert.equal(certificateId, BOUNDED_FIXTURE_CERTIFICATE_ID);
+  }
+  return {
+    file: normalizeRelativePath(REPOSITORY_ROOT, BOUNDED_FIXTURE_CERTIFICATE_PATH),
+    sha256: fixtureSha256,
+    certificateId,
+    domain: BOUNDED_FIXTURE_DOMAIN,
+    equationCount: 33,
+    role: "BOUNDED_RUNTIME_REGRESSION_ONLY",
+    universalCreditGranted: false
+  };
+}
+function compilerBindingEnvelope() {
+  const surface = discoverCompilerSurface(REPOSITORY_ROOT);
+  const callableByKey = new Map(
+    surface.callables.map((callable) => [callable.key, callable])
+  );
+  const requested = [
+    ...CATALOG_PUBLISHED_SOURCE_CONTRACTS.map((contract) => ({
+      surfaceKey: contract.surfaceKey,
+      producerEquation: `${contract.className}.${contract.methodName}`
+    })),
+    ...CATALOG_SNAPSHOT_SOURCE_CONTRACTS.flatMap(
+      (contract) => contract.surfaceKeys.map((surfaceKey) => ({
+        surfaceKey,
+        producerEquation: contract.declarationKind === "method" ? `${contract.className}.${contract.declarationName}` : contract.declarationName
+      }))
+    )
+  ];
+  assert.equal(requested.length, 44);
+  assert.equal(new Set(requested.map(({ surfaceKey }) => surfaceKey)).size, 44);
+  return requested.map(({ surfaceKey, producerEquation }) => {
+    const callable = callableByKey.get(surfaceKey);
+    assert.notEqual(callable, void 0, `Compiler surface omitted '${surfaceKey}'.`);
+    return {
+      surfaceKey,
+      producerEquation,
+      proposedRelation: "COMPILER_BINDING_TO_COMPLETE_SOURCE_EQUATION",
+      callableIdentity: callable,
+      creditGrantedByLane: false
+    };
+  });
+}
+function buildCatalogPublishedSourceEquationSemanticCore() {
+  const context = loadCompilerContext(REPOSITORY_ROOT);
+  const verified = verifyCatalogPublishedSourceContracts();
+  const sourceEquations = verified.equations.map(
+    (equation3) => equationEvidence(context, equation3)
+  );
+  const supportingEquations = verified.supportingEquations.map(
+    (equation3) => supportingEquationEvidence(context, equation3)
+  );
+  const catalogSnapshotEquations = verified.catalogSnapshotEquations.map(
+    (equation3) => catalogSnapshotEquationEvidence(context, equation3)
+  );
+  const lawCounts = {};
+  for (const equation3 of sourceEquations) {
+    lawCounts[equation3.law.kind] = (lawCounts[equation3.law.kind] ?? 0) + 1;
+  }
+  return {
+    schemaVersion: 1,
+    familyId: SOURCE_FAMILY_ID,
+    familyVersion: 1,
+    domain: CATALOG_PUBLISHED_SOURCE_DOMAIN,
+    claim: "Every named read implements its independently declared complete source equation for all validated catalogs or all states of one already-frozen published snapshot.",
+    proofCounts: {
+      sourceEquations: sourceEquations.length,
+      catalogLookupEquations: 17,
+      publishedCatalogDelegationEquations: 3,
+      frozenSnapshotEquations: 13,
+      supportingHelperEquations: supportingEquations.length,
+      catalogSnapshotImplementationEquations: catalogSnapshotEquations.length,
+      catalogSnapshotCompilerBindings: CATALOG_SNAPSHOT_SOURCE_CONTRACTS.reduce(
+        (total, contract) => total + contract.surfaceKeys.length,
+        0
+      ),
+      sampledInputs: 0
+    },
+    lawCounts,
+    sourceEquations,
+    supportingEquations,
+    catalogSnapshotEquations,
+    statefulFamilyBlocker: CATALOG_PUBLICATION_STATEFUL_BLOCKER
+  };
+}
+function buildReviewEnvelope() {
+  const contractPath2 = path4.join(
+    FAMILY_DIRECTORY,
+    "catalog-published-source-contracts.mjs"
+  );
+  const verifierPath2 = fileURLToPath2(import.meta.url);
+  return {
+    status: "SOURCE_EQUATION_FAMILY_COMPLETE_AWAITING_SHARED_BINDER_REVIEW",
+    independentContract: {
+      file: normalizeRelativePath(REPOSITORY_ROOT, contractPath2),
+      sha256: sha2562(fs4.readFileSync(contractPath2))
+    },
+    verifier: {
+      file: normalizeRelativePath(REPOSITORY_ROOT, verifierPath2),
+      sha256: sha2562(fs4.readFileSync(verifierPath2)),
+      engine: "COMPLETE_SOURCE_CONTROL_FLOW_EQUATION_V1"
+    },
+    compilerBindings: compilerBindingEnvelope(),
+    statefulReadBindingBlocker: PUBLISHED_READ_STATEFUL_BINDING_BLOCKER,
+    boundedFixtureControl: boundedFixtureControl(),
+    applicability: {
+      binderOwner: "hub-global-binder",
+      sharedGateReplacedOrBypassed: false,
+      sourceEquationIsNotOriginalModelAdmission: true,
+      helperDelegationRequiresExactDependencyIdentity: true,
+      permitsAdditionalWrapperSemantics: false
+    },
+    authorityActionFamilyUsed: false,
+    authorityFixtureScenariosPromotedToFormalCredit: 0,
+    globalBinderCreditGranted: false
+  };
+}
+function buildCatalogPublishedSourceEquationDocument() {
+  const semanticCore = buildCatalogPublishedSourceEquationSemanticCore();
+  const contentSha256 = sha2562(canonicalJson(semanticCore));
+  return {
+    certificateKind: "INVENTORYONCE_SOURCE_EQUATION_FAMILY",
+    semanticCore,
+    contentAddress: {
+      algorithm: "sha256",
+      contentSha256,
+      certificateId: `SOURCE_EQUATION_FAMILY:sha256:${contentSha256}`
+    },
+    reviewEnvelope: buildReviewEnvelope()
+  };
+}
+function verifyCatalogPublishedSourceEquationDocument(document) {
+  requireExactKeys(
+    document,
+    ["certificateKind", "semanticCore", "contentAddress", "reviewEnvelope"],
+    "Source-equation certificate"
+  );
+  const expected = buildCatalogPublishedSourceEquationDocument();
+  assert.deepEqual(
+    document,
+    expected,
+    "Source-equation certificate differs from current independent contracts or source truth."
+  );
+  return {
+    certificateId: document.contentAddress.certificateId,
+    sourceEquations: document.semanticCore.proofCounts.sourceEquations,
+    supportingHelperEquations: document.semanticCore.proofCounts.supportingHelperEquations,
+    catalogSnapshotImplementationEquations: document.semanticCore.proofCounts.catalogSnapshotImplementationEquations,
+    catalogSnapshotCompilerBindings: document.semanticCore.proofCounts.catalogSnapshotCompilerBindings,
+    compilerBindingCandidates: document.reviewEnvelope.compilerBindings.length,
+    sampledInputs: document.semanticCore.proofCounts.sampledInputs,
+    statefulReadBindingBlocker: document.reviewEnvelope.statefulReadBindingBlocker.family,
+    statefulBlocker: document.semanticCore.statefulFamilyBlocker.gapId,
+    globalBinderCreditGranted: document.reviewEnvelope.globalBinderCreditGranted
+  };
+}
+function writeCatalogPublishedSourceEquationDocument() {
+  const document = buildCatalogPublishedSourceEquationDocument();
+  fs4.writeFileSync(CERTIFICATE_PATH, `${JSON.stringify(document, null, 2)}
+`);
+  return verifyCatalogPublishedSourceEquationDocument(document);
+}
+function verifyPersistedCatalogPublishedSourceEquationDocument() {
+  return verifyCatalogPublishedSourceEquationDocument(
+    JSON.parse(fs4.readFileSync(CERTIFICATE_PATH, "utf8"))
+  );
+}
+function runCommandLine() {
+  const mode = process.argv[2] ?? "--verify";
+  if (mode !== "--write" && mode !== "--verify") {
+    throw new Error(`Unknown source-equation mode '${mode}'.`);
+  }
+  const summary = mode === "--write" ? writeCatalogPublishedSourceEquationDocument() : verifyPersistedCatalogPublishedSourceEquationDocument();
+  process.stdout.write(`${JSON.stringify(summary, null, 2)}
+`);
+}
+if (process.argv[1] !== void 0 && path4.resolve(process.argv[1]) === fileURLToPath2(import.meta.url)) {
   runCommandLine();
 }
 
@@ -1620,7 +2772,7 @@ function parseSource(file, text) {
   return ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
 }
 function declarationKey(root3, declaration) {
-  const file = path4.relative(root3, declaration.getSourceFile().fileName).replaceAll("\\", "/");
+  const file = path5.relative(root3, declaration.getSourceFile().fileName).replaceAll("\\", "/");
   const owner = ts.isMethodDeclaration(declaration) ? `${declaration.parent.name.text}.` : "";
   return `${file}#${owner}${declaration.name.text}`;
 }
@@ -1632,37 +2784,37 @@ function validateCallableSyntax(declaration) {
     assert2(ts.isIdentifier(parameter.name));
   }
 }
-function requirePublicRelation(context2, callable, declaration, contract) {
+function requirePublicRelation(context, callable, declaration, contract) {
   if (contract.className === "InventoryCatalog") {
-    assert2.deepEqual(callable.declaration, spanOf(context2, declaration));
-    return { kind: "EXACT_CLASS_METHOD", implementation: spanOf(context2, declaration) };
+    assert2.deepEqual(callable.declaration, spanOf(context, declaration));
+    return { kind: "EXACT_CLASS_METHOD", implementation: spanOf(context, declaration) };
   }
   const source7 = declaration.getSourceFile();
   const publicOwner = source7.statements.find((node) => ts.isInterfaceDeclaration(node) && node.name.text === "InventoryOnceReadSnapshotApi");
   assert2(publicOwner !== void 0);
   const publicMembers = publicOwner.members.filter((node) => node.name?.getText(source7) === contract.methodName);
   assert2.equal(publicMembers.length, 1);
-  assert2.deepEqual(callable.declaration, spanOf(context2, publicMembers[0]));
+  assert2.deepEqual(callable.declaration, spanOf(context, publicMembers[0]));
   const implemented = declaration.parent.heritageClauses?.filter((clause) => clause.token === ts.SyntaxKind.ImplementsKeyword).flatMap((clause) => clause.types) ?? [];
-  const expectedSymbol = context2.checker.getSymbolAtLocation(publicOwner.name);
-  assert2(implemented.some((type) => context2.checker.getSymbolAtLocation(type.expression) === expectedSymbol), "Snapshot class no longer implements its exact public interface.");
-  const actualType = context2.checker.getTypeAtLocation(declaration);
-  const publicType = context2.checker.getTypeAtLocation(publicMembers[0]);
-  assert2(context2.checker.isTypeAssignableTo(actualType, publicType), "Implementation is not assignable to the public method.");
-  return { kind: "COMPILER_RESOLVED_IMPLEMENTS", interface: spanOf(context2, publicMembers[0]), implementation: spanOf(context2, declaration) };
+  const expectedSymbol = context.checker.getSymbolAtLocation(publicOwner.name);
+  assert2(implemented.some((type) => context.checker.getSymbolAtLocation(type.expression) === expectedSymbol), "Snapshot class no longer implements its exact public interface.");
+  const actualType = context.checker.getTypeAtLocation(declaration);
+  const publicType = context.checker.getTypeAtLocation(publicMembers[0]);
+  assert2(context.checker.isTypeAssignableTo(actualType, publicType), "Implementation is not assignable to the public method.");
+  return { kind: "COMPILER_RESOLVED_IMPLEMENTS", interface: spanOf(context, publicMembers[0]), implementation: spanOf(context, declaration) };
 }
-function buildCatalogFamilyArtifact({ repositoryRoot, context: context2, surface: surface2, sourceOverrides = /* @__PURE__ */ new Map() }) {
+function buildCatalogFamilyArtifact({ repositoryRoot, context, surface, sourceOverrides = /* @__PURE__ */ new Map() }) {
   assert2.equal(catalogContracts.length, 24);
   const inputFiles2 = [...sourceFiles, ...producerFiles];
-  const inputs3 = inputFiles2.map((file) => ({ file, sha256: sha256(sourceOverrides.get(file) ?? fs3.readFileSync(path4.resolve(repositoryRoot, file))) }));
-  const cacheKey = sha256(canonicalJson({ surface: surface2.digest, inputs: inputs3 }));
-  const old = sourceOverrides.size === 0 ? passCache.get(context2) : void 0;
+  const inputs3 = inputFiles2.map((file) => ({ file, sha256: sha256(sourceOverrides.get(file) ?? fs5.readFileSync(path5.resolve(repositoryRoot, file))) }));
+  const cacheKey = sha256(canonicalJson({ surface: surface.digest, inputs: inputs3 }));
+  const old = sourceOverrides.size === 0 ? passCache.get(context) : void 0;
   if (old?.key === cacheKey) return old.value;
-  const sources = new Map(sourceFiles.map((file) => [file, sourceOverrides.has(file) ? parseSource(path4.resolve(repositoryRoot, file), sourceOverrides.get(file)) : context2.program.getSourceFile(path4.resolve(repositoryRoot, file))]));
+  const sources = new Map(sourceFiles.map((file) => [file, sourceOverrides.has(file) ? parseSource(path5.resolve(repositoryRoot, file), sourceOverrides.get(file)) : context.program.getSourceFile(path5.resolve(repositoryRoot, file))]));
   for (const [file, source7] of sources) assert2(source7 !== void 0, `Missing compiler source ${file}.`);
   const certified = /* @__PURE__ */ new Map();
   const proofs = [];
-  const callableByKey = new Map(surface2.callables.map((callable) => [callable.key, callable]));
+  const callableByKey = new Map(surface.callables.map((callable) => [callable.key, callable]));
   for (const contract of catalogContracts) {
     const declaration = findClassMethod(sources.get(contract.sourceFile), contract.className, contract.methodName);
     validateCallableSyntax(declaration);
@@ -1670,14 +2822,14 @@ function buildCatalogFamilyArtifact({ repositoryRoot, context: context2, surface
     assert2.deepEqual(term4, expectedMethodTerm(contract), `Read equation changed: ${contract.surfaceKey}`);
     const callable = callableByKey.get(contract.surfaceKey);
     assert2(callable !== void 0, `Compiler omitted ${contract.surfaceKey}.`);
-    const relation = sourceOverrides.size === 0 ? requirePublicRelation(context2, callable, declaration, contract) : { kind: "MUTATION_CONTROL_ONLY" };
+    const relation = sourceOverrides.size === 0 ? requirePublicRelation(context, callable, declaration, contract) : { kind: "MUTATION_CONTROL_ONLY" };
     const key = declarationKey(repositoryRoot, declaration);
     certified.set(key, { declaration, term: term4 });
     proofs.push({
       surfaceKey: contract.surfaceKey,
       signatureHash: callable.signatureHash,
       declaration: callable.declaration,
-      implementation: spanOf(context2, declaration),
+      implementation: spanOf(context, declaration),
       relation,
       equation: contract.equation,
       term: term4,
@@ -1701,8 +2853,8 @@ function buildCatalogFamilyArtifact({ repositoryRoot, context: context2, surface
     const helpers = /* @__PURE__ */ new Map();
     for (const [key, row] of certified) {
       let inspect2 = function(node) {
-        let symbol = ts.isIdentifier(node) || ts.isPropertyAccessExpression(node) ? context2.checker.getSymbolAtLocation(ts.isPropertyAccessExpression(node) ? node.name : node) : void 0;
-        if (symbol !== void 0 && (symbol.flags & ts.SymbolFlags.Alias) !== 0) symbol = context2.checker.getAliasedSymbol(symbol);
+        let symbol = ts.isIdentifier(node) || ts.isPropertyAccessExpression(node) ? context.checker.getSymbolAtLocation(ts.isPropertyAccessExpression(node) ? node.name : node) : void 0;
+        if (symbol !== void 0 && (symbol.flags & ts.SymbolFlags.Alias) !== 0) symbol = context.checker.getAliasedSymbol(symbol);
         for (const dependency2 of symbol?.declarations ?? []) {
           assert2(!ts.isGetAccessorDeclaration(dependency2) && !ts.isSetAccessorDeclaration(dependency2), "Accessor-backed reads are not ordinary immutable data.");
           if ((ts.isFunctionDeclaration(dependency2) || ts.isMethodDeclaration(dependency2)) && dependency2.body !== void 0) {
@@ -1712,7 +2864,7 @@ function buildCatalogFamilyArtifact({ repositoryRoot, context: context2, surface
           }
         }
         if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
-          const target = context2.checker.getResolvedSignature(node)?.declaration;
+          const target = context.checker.getResolvedSignature(node)?.declaration;
           assert2(target !== void 0, `Unresolved call: ${node.getText()}`);
           if (target.getSourceFile().isDeclarationFile) {
             assert2(/[/\\]typescript[/\\]lib[/\\]lib\.[^/\\]+\.d\.ts$/u.test(target.getSourceFile().fileName), "Only exact standard-library calls may be assumed.");
@@ -1736,33 +2888,28 @@ function buildCatalogFamilyArtifact({ repositoryRoot, context: context2, surface
     schemaVersion: 1,
     mode: "V",
     proofKind: catalogProofKind,
-    surfaceDigest: surface2.digest,
+    surfaceDigest: surface.digest,
     domain: "Exact unmodified validated InventoryCatalog receivers and already-frozen native snapshot receivers; immutable plain data and standard unmodified ECMAScript built-ins.",
     excluded: "Storage acquisition, catalog construction/publication, unproved delegated summaries/allocation/packaging and mutable/proxied/custom receivers are not certified by these equations.",
     allAdmittedInputs: true,
     sampledInputs: 0,
     inputs: inputs3,
-    helperEquations: [...certified.entries()].filter(([key]) => !key.includes("#Inventory")).map(([key, row]) => ({ key, declaration: spanOf(context2, row.declaration), term: row.term })),
+    helperEquations: [...certified.entries()].filter(([key]) => !key.includes("#Inventory")).map(([key, row]) => ({ key, declaration: spanOf(context, row.declaration), term: row.term })),
     proofs
   };
-  if (sourceOverrides.size === 0) passCache.set(context2, { key: cacheKey, value: result });
+  if (sourceOverrides.size === 0) passCache.set(context, { key: cacheKey, value: result });
   return result;
 }
 
 // experiments/tla-conformance/throughput-r7/registered-value-family.mjs
 import assert3 from "node:assert/strict";
-import fs4 from "node:fs";
-import path5 from "node:path";
+import path6 from "node:path";
 var passes = /* @__PURE__ */ new WeakMap();
 var recordedPasses = /* @__PURE__ */ new WeakMap();
 function ownedFile(root3, file) {
-  assert3.equal(typeof file, "string");
-  assert3(file.length > 0 && !path5.isAbsolute(file));
-  const resolved = fs4.realpathSync(path5.resolve(root3, file));
-  assert3(resolved.startsWith(`${fs4.realpathSync(root3)}${path5.sep}`), "Family input leaves its repository.");
-  return resolved;
+  return assuranceRepositoryPath(root3, file);
 }
-function verifyInputs(root3, context2, inputs3) {
+function verifyInputs(root3, context, inputs3) {
   assert3(Array.isArray(inputs3) && inputs3.length > 0, "A family needs its complete semantic input set.");
   const seen = /* @__PURE__ */ new Set();
   for (const input2 of inputs3) {
@@ -1771,31 +2918,29 @@ function verifyInputs(root3, context2, inputs3) {
     seen.add(input2.file);
     assert3.match(input2.sha256, /^[0-9a-f]{64}$/u);
     const absolute = ownedFile(root3, input2.file);
-    const bytes2 = fs4.readFileSync(absolute);
-    assert3.equal(sha256(bytes2), input2.sha256, `Family input changed: ${input2.file}`);
+    assert3.equal(assuranceFileSha256(root3, input2.file), input2.sha256, `Family input changed: ${input2.file}`);
     if (input2.file.startsWith("src/") && input2.file.endsWith(".ts")) {
-      const source7 = context2.program.getSourceFile(path5.resolve(root3, input2.file));
+      const source7 = context.program.getSourceFile(path6.resolve(root3, input2.file));
       assert3(source7 !== void 0, `Compiler omitted source input: ${input2.file}`);
-      assert3.equal(sha256(source7.text), input2.sha256, `Compiler snapshot is stale: ${input2.file}`);
+      assert3.equal(assuranceCompilerSourceSha256(root3, input2.file, source7.text), input2.sha256, `Compiler snapshot is stale: ${input2.file}`);
     }
   }
 }
-function verifyRegisteredValueBinding({ repositoryRoot, context: context2, surface: surface2, binding, registrations }) {
+function verifyRegisteredValueBinding({ repositoryRoot, context, surface, binding, registrations }) {
   try {
     assert3.equal(binding.mode, "V");
     const file = ownedFile(repositoryRoot, binding.evidence.file);
-    const bytes2 = fs4.readFileSync(file);
-    const digest = sha256(bytes2);
+    const digest = assuranceFileSha256(repositoryRoot, binding.evidence.file);
     assert3.equal(digest, binding.evidence.sha256, "Family evidence changed.");
-    let recordedPass = recordedPasses.get(context2);
+    let recordedPass = recordedPasses.get(context);
     if (recordedPass === void 0) {
       recordedPass = /* @__PURE__ */ new Map();
-      recordedPasses.set(context2, recordedPass);
+      recordedPasses.set(context, recordedPass);
     }
     const recordedKey = `${file}:${digest}`;
     let parsed = recordedPass.get(recordedKey);
     if (parsed === void 0) {
-      const document = JSON.parse(bytes2.toString("utf8"));
+      const document = JSON.parse(readAssuranceFile(repositoryRoot, binding.evidence.file).toString("utf8"));
       parsed = { document, canonical: canonicalJson(document) };
       recordedPass.set(recordedKey, parsed);
     }
@@ -1807,35 +2952,35 @@ function verifyRegisteredValueBinding({ repositoryRoot, context: context2, surfa
     assert3(Array.isArray(registration.supportedSurfaceKeys));
     assert3.equal(new Set(registration.supportedSurfaceKeys).size, registration.supportedSurfaceKeys.length);
     assert3(registration.supportedSurfaceKeys.includes(binding.surfaceKey), "Binding is outside the reviewed family.");
-    let compilerPass = passes.get(context2);
+    let compilerPass = passes.get(context);
     if (compilerPass === void 0) {
       compilerPass = /* @__PURE__ */ new Map();
-      passes.set(context2, compilerPass);
+      passes.set(context, compilerPass);
     }
     let cached2 = compilerPass.get(registration);
-    if (cached2 !== void 0 && cached2.surfaceDigest === surface2.digest && cached2.builder === registration.buildFamilyArtifact && cached2.members === canonicalJson(registration.supportedSurfaceKeys)) {
-      verifyInputs(repositoryRoot, context2, cached2.artifact.inputs);
+    if (cached2 !== void 0 && cached2.surfaceDigest === surface.digest && cached2.builder === registration.buildFamilyArtifact && cached2.members === canonicalJson(registration.supportedSurfaceKeys)) {
+      verifyInputs(repositoryRoot, context, cached2.artifact.inputs);
     } else {
-      const artifact = registration.buildFamilyArtifact({ repositoryRoot, context: context2, surface: surface2 });
+      const artifact = registration.buildFamilyArtifact({ repositoryRoot, context, surface });
       assert3.equal(artifact.schemaVersion, 1);
       assert3.equal(artifact.proofKind, registration.proofKind);
       assert3.equal(artifact.sampledInputs, 0, "Sampled examples are not a complete source equation.");
       assert3.equal(artifact.allAdmittedInputs, true);
       assert3(typeof artifact.domain === "string" && artifact.domain.length > 0 || artifact.domain !== null && typeof artifact.domain === "object" && !Array.isArray(artifact.domain) && Object.keys(artifact.domain).length > 0, "A complete explicit domain is required.");
-      assert3.equal(artifact.surfaceDigest, surface2.digest);
+      assert3.equal(artifact.surfaceDigest, surface.digest);
       assert3(Array.isArray(artifact.proofs) && artifact.proofs.length > 0);
-      verifyInputs(repositoryRoot, context2, artifact.inputs);
+      verifyInputs(repositoryRoot, context, artifact.inputs);
       const proofKeys = artifact.proofs.map((proof) => proof.surfaceKey);
       assert3.equal(new Set(proofKeys).size, proofKeys.length, "Family repeats a proof key.");
       assert3(proofKeys.every((key) => registration.supportedSurfaceKeys.includes(key)));
-      const live2 = new Map(surface2.callables.map((callable) => [callable.key, callable]));
+      const live = new Map(surface.callables.map((callable) => [callable.key, callable]));
       for (const proof of artifact.proofs) {
-        const callable = live2.get(proof.surfaceKey);
+        const callable = live.get(proof.surfaceKey);
         assert3(callable !== void 0, "Family claims a non-public callable.");
         assert3.equal(proof.signatureHash, callable.signatureHash);
         assert3.deepEqual(proof.declaration, callable.declaration);
       }
-      cached2 = { surfaceDigest: surface2.digest, builder: registration.buildFamilyArtifact, members: canonicalJson(registration.supportedSurfaceKeys), artifact, canonical: canonicalJson(artifact) };
+      cached2 = { surfaceDigest: surface.digest, builder: registration.buildFamilyArtifact, members: canonicalJson(registration.supportedSurfaceKeys), artifact, canonical: canonicalJson(artifact) };
       compilerPass.set(registration, cached2);
     }
     assert3.equal(parsed.canonical, cached2.canonical, "Recorded family differs from independently rederived current semantics.");
@@ -1853,49 +2998,6 @@ import assert7 from "node:assert/strict";
 import assert4 from "node:assert/strict";
 import path7 from "node:path";
 import { execFileSync } from "node:child_process";
-
-// scripts/assurance-files.mjs
-import fs5 from "node:fs";
-import path6 from "node:path";
-import crypto2 from "node:crypto";
-function assuranceRepositoryPath(repositoryRoot, relativePath4) {
-  const root3 = path6.resolve(repositoryRoot);
-  if (typeof relativePath4 !== "string" || relativePath4.length === 0 || relativePath4.includes("\0") || relativePath4.includes("\\") || path6.isAbsolute(relativePath4)) throw new Error(`Invalid repository-relative assurance path: ${String(relativePath4)}.`);
-  const components = relativePath4.split("/");
-  if (components.some((part) => part === "" || part === "." || part === "..")) throw new Error(`Assurance path escapes repository root: ${relativePath4}.`);
-  let current = root3;
-  const rootStat = fs5.lstatSync(root3);
-  if (!rootStat.isDirectory() || rootStat.isSymbolicLink()) throw new Error("Assurance repository root is not an ordinary directory.");
-  for (let index = 0; index < components.length; index += 1) {
-    current = path6.join(current, components[index]);
-    let stat;
-    try {
-      stat = fs5.lstatSync(current);
-    } catch (error) {
-      if (error?.code === "ENOENT") continue;
-      throw error;
-    }
-    if (stat.isSymbolicLink()) throw new Error(`Assurance path crosses a symbolic link: ${relativePath4}.`);
-    if (index < components.length - 1 && !stat.isDirectory()) throw new Error(`Assurance path ancestor is not a directory: ${relativePath4}.`);
-  }
-  return current;
-}
-function readAssuranceFile(repositoryRoot, relativePath4) {
-  const target = assuranceRepositoryPath(repositoryRoot, relativePath4);
-  if (!fs5.lstatSync(target).isFile()) throw new Error(`Assurance input is not a regular file: ${relativePath4}.`);
-  const descriptor = fs5.openSync(target, fs5.constants.O_RDONLY | (fs5.constants.O_NOFOLLOW ?? 0) | (fs5.constants.O_NONBLOCK ?? 0));
-  try {
-    if (!fs5.fstatSync(descriptor).isFile()) throw new Error(`Assurance input is not a regular file: ${relativePath4}.`);
-    return fs5.readFileSync(descriptor);
-  } finally {
-    fs5.closeSync(descriptor);
-  }
-}
-function assuranceBytesSha256(bytes2) {
-  return crypto2.createHash("sha256").update(bytes2).digest("hex");
-}
-
-// scripts/immutable-assurance-inputs.mjs
 var FROZEN_FINAL_EVIDENCE_HEAD = "0141b46c18c60b03983081175bbfb5cd074eb8b1";
 function git(repositoryRoot, arguments_, encoding = "utf8") {
   const environment = { ...process.env };
@@ -1951,13 +3053,13 @@ function createImmutableAssuranceReader(repositoryRoot, anchorHead = FROZEN_FINA
     expectedHashes.set(file, hash);
     return hash;
   };
-  const read2 = (file) => {
+  const read = (file) => {
     const bytes2 = readAssuranceFile(root3, file);
     assert4.equal(assuranceBytesSha256(bytes2), expectedHash(file), `Frozen assurance evidence differs from immutable proof input: ${file}.`);
     return bytes2;
   };
   const json = (file) => {
-    const bytes2 = read2(file);
+    const bytes2 = read(file);
     if (!parsed.has(file)) parsed.set(file, freezeEvidence(JSON.parse(bytes2.toString("utf8"))));
     return parsed.get(file);
   };
@@ -1968,274 +3070,291 @@ function createImmutableAssuranceReader(repositoryRoot, anchorHead = FROZEN_FINA
     assertAssuranceCommitChain(root3, [value.priorHead, value.currentHead, certifiedHead]);
     return value;
   };
-  return Object.freeze({ read: read2, json, transport });
+  return Object.freeze({ read, json, transport });
+}
+
+// scripts/inventory-epoch-contract.mjs
+import assert5 from "node:assert/strict";
+import fs6 from "node:fs";
+import path8 from "node:path";
+import crypto3 from "node:crypto";
+import { execFileSync as execFileSync2 } from "node:child_process";
+import ts2 from "typescript";
+var EPOCH_PRIOR_PROOF_HEAD = "6983219e13295b8f6b073daefc3cbcd90b32ac35";
+var epochNames = Object.freeze({
+  "occurredAt": "occurredAtEpochMs",
+  "recordedAt": "recordedAtEpochMs",
+  "createdAt": "createdAtEpochMs",
+  "expiresAt": "expiresAtEpochMs",
+  "startedAt": "startedAtEpochMs",
+  "statusAt": "statusAtEpochMs",
+  "lastChangedAt": "lastChangedAtEpochMs",
+  "observedAt": "observedAtEpochMs",
+  "completedAt": "completedAtEpochMs",
+  "manufacturedAt": "manufacturedAtEpochMs",
+  "openedAt": "openedAtEpochMs",
+  "useBy": "useByEpochMs",
+  "cutoverAt": "cutoverAtEpochMs",
+  "snapshotAt": "snapshotAtEpochMs",
+  "layerStartedAt": "layerStartedAtEpochMs",
+  "reservationAt": "reservationAtEpochMs",
+  "receivedAt": "receivedAtEpochMs",
+  "preparedAt": "preparedAtEpochMs",
+  "dispatchedAt": "dispatchedAtEpochMs",
+  "lastReceivedAt": "lastReceivedAtEpochMs",
+  "releasedAt": "releasedAtEpochMs",
+  "adapterCertifiedAt": "adapterCertifiedAtEpochMs",
+  "dualRunStartedAt": "dualRunStartedAtEpochMs",
+  "fenceStartedAt": "fenceStartedAtEpochMs",
+  "activatedAt": "activatedAtEpochMs",
+  "certifiedAt": "certifiedAtEpochMs",
+  "defaultAt": "defaultAtEpochMs",
+  "explicitCutoverAt": "explicitCutoverAtEpochMs",
+  "replacementOccurredAt": "replacementOccurredAtEpochMs",
+  "actualStartedAt": "actualStartedAtEpochMs",
+  "desiredStartedAt": "desiredStartedAtEpochMs",
+  "lastCountWorkAt": "lastCountWorkAtEpochMs",
+  "sourceStartedAt": "sourceStartedAtEpochMs",
+  "destinationStartedAt": "destinationStartedAtEpochMs",
+  "effectiveUseBy": "effectiveUseByEpochMs",
+  "allocationLayerStartedAt": "allocationLayerStartedAtEpochMs",
+  "allocationEffectiveUseBy": "allocationEffectiveUseByEpochMs",
+  "allocationLotExpiresAt": "allocationLotExpiresAtEpochMs",
+  "containerUseBy": "containerUseByEpochMs",
+  "lotExpiry": "lotExpiryEpochMs",
+  "at": "atEpochMs",
+  "now": "nowEpochMs",
+  "positiveLayerStartedAtByPositionId": "positiveLayerStartedAtEpochMsByPositionId",
+  "assertCanonicalInventoryTime": "assertInventoryEpochMilliseconds",
+  "requireCanonicalTime": "requireEpochMilliseconds",
+  "requireCanonicalStoredTime": "requireStoredEpochMilliseconds",
+  "requireCanonicalCutoverTime": "requireCutoverEpochMilliseconds",
+  "inventoryPositionEffectiveUseBy": "inventoryPositionEffectiveUseByEpochMs",
+  "resolveInventoryCutoverAt": "resolveInventoryCutoverAtEpochMs"
+});
+var inverse = new Map(Object.entries(epochNames).map(([before, after]) => [after, before]));
+var nullableTimes = /* @__PURE__ */ new Set(["adapterCertifiedAtEpochMs", "dualRunStartedAtEpochMs", "fenceStartedAtEpochMs", "activatedAtEpochMs"]);
+var sha2563 = (bytes2) => crypto3.createHash("sha256").update(bytes2).digest("hex");
+var historical = /* @__PURE__ */ new Map();
+function readEpochPriorFile(root3, file) {
+  const key = `${root3}:${file}`;
+  if (!historical.has(key)) historical.set(key, execFileSync2("git", ["show", `${EPOCH_PRIOR_PROOF_HEAD}:${file}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 }));
+  return Buffer.from(historical.get(key));
+}
+function epochSurfaceKey(key) {
+  return key.replace(/[A-Za-z_$][A-Za-z0-9_$]*/gu, (name) => Object.hasOwn(epochNames, name) ? epochNames[name] : name);
+}
+function syntax(text, runtime = true) {
+  const emitted = runtime ? ts2.transpileModule(text, { compilerOptions: { target: ts2.ScriptTarget.ES2022, module: ts2.ModuleKind.ES2022, removeComments: true } }).outputText : text;
+  const source7 = ts2.createSourceFile("proof.ts", emitted, ts2.ScriptTarget.Latest, true, runtime ? ts2.ScriptKind.JS : ts2.ScriptKind.TS);
+  assert5.equal(source7.parseDiagnostics.length, 0, "Epoch proof cannot compare unparsable source.");
+  function visit(node) {
+    if (!ts2.isSourceFile(node) && typeof node.text === "string") return [node.kind, node.text];
+    const children = [];
+    ts2.forEachChild(node, (child) => {
+      children.push(visit(child));
+    });
+    return [node.kind, node.operator ?? null, ts2.isVariableDeclarationList(node) ? node.flags & ts2.NodeFlags.BlockScoped : null, ...children];
+  }
+  return JSON.stringify(visit(source7));
+}
+function functionSpan(text, name) {
+  const source7 = ts2.createSourceFile("proof.ts", text, ts2.ScriptTarget.Latest, true);
+  const found = source7.statements.filter((node) => ts2.isFunctionDeclaration(node) && node.name?.text === name);
+  assert5.equal(found.length, 1, `Expected exactly one temporal helper ${name}.`);
+  return { source: source7, node: found[0] };
+}
+function replaceFunction(text, name, replacement) {
+  const { source: source7, node } = functionSpan(text, name);
+  return text.slice(0, node.getStart(source7)) + replacement + text.slice(node.getEnd());
+}
+function checkFunction(text, name, expected) {
+  assert5.equal(syntax(functionSpan(text, name).node.getText()), syntax(expected), `Unproved temporal helper body: ${name}`);
+}
+function replaceOnce(text, before, after, label) {
+  assert5.equal(text.split(before).length, 2, `Temporal transformation must have one exact ${label}.`);
+  return text.replace(before, after);
+}
+function restoreNumericHelpers(file, current, prior) {
+  let text = current;
+  if (file === "src/events.ts") {
+    checkFunction(text, "assertInventoryEpochMilliseconds", `export function assertInventoryEpochMilliseconds(value, label) {
+      if (!Number.isSafeInteger(value)) { throw new Error(\`\${label} must be safe-integer epoch milliseconds.\`); }
+    }`);
+    text = replaceFunction(text, "assertInventoryEpochMilliseconds", functionSpan(prior, "assertCanonicalInventoryTime").node.getText());
+  }
+  if (file === "src/authority.ts") {
+    checkFunction(text, "requireEpochMilliseconds", `function requireEpochMilliseconds(value, label) {
+      if (!Number.isSafeInteger(value)) { throw new Error(\`InventoryOnce authority \${label} must be safe-integer epoch milliseconds.\`); } return value;
+    }`);
+    checkFunction(text, "requireStoredEpochMilliseconds", `function requireStoredEpochMilliseconds(value, label) {
+      if (value === null) { throw new Error(\`InventoryOnce authority \${label} must retain epoch milliseconds.\`); } return requireEpochMilliseconds(value, label);
+    }`);
+    checkFunction(text, "requireNullableEpochMilliseconds", `function requireNullableEpochMilliseconds(row, field) {
+      const value = row[field]; if (value === null) return null;
+      if (typeof value !== "number") { throw new Error(\`InventoryOnce authority field '\${field}' must be epoch milliseconds or null.\`); }
+      return requireEpochMilliseconds(value, field);
+    }`);
+    text = replaceFunction(text, "requireEpochMilliseconds", functionSpan(prior, "requireCanonicalTime").node.getText());
+    text = replaceFunction(text, "requireStoredEpochMilliseconds", functionSpan(prior, "requireCanonicalStoredTime").node.getText());
+    text = replaceFunction(text, "requireNullableEpochMilliseconds", "");
+    text = replaceOnce(text, `(left.recordedAtEpochMs < right.recordedAtEpochMs ? -1 : left.recordedAtEpochMs > right.recordedAtEpochMs ? 1 : 0)`, "compareCanonicalText(left.recordedAtEpochMs, right.recordedAtEpochMs)", "numeric mismatch comparison");
+    text = replaceOnce(text, `const sourceParts = [
+    state.sourceRoot.length !== 0,
+    state.sourcePlanDigest.length !== 0,
+    state.sourceCatalogDigest.length !== 0,
+    state.dualRunStartedAtEpochMs !== null,
+  ];`, `const sourceParts = [state.sourceRoot, state.sourcePlanDigest, state.sourceCatalogDigest, state.dualRunStartedAtEpochMs];`, "source-time presence tuple");
+    text = replaceOnce(text, `for (const present of sourceParts) {
+    if (present) sourcePartCount += 1;
+  }`, `for (const value of sourceParts) { if (value.length !== 0) sourcePartCount += 1; }`, "source evidence completeness");
+  }
+  if (file === "src/authority-cutover.ts") {
+    checkFunction(text, "requireCutoverEpochMilliseconds", `function requireCutoverEpochMilliseconds(value, label) {
+      if (value === null || !Number.isSafeInteger(value)) { throw new Error(\`InventoryOnce cutover \${label} must be safe-integer epoch milliseconds.\`); }
+    }`);
+    text = replaceFunction(text, "requireCutoverEpochMilliseconds", functionSpan(prior, "requireCanonicalCutoverTime").node.getText());
+    text = replaceOnce(text, `authority.dualRunStartedAtEpochMs ??
+    authority.adapterCertifiedAtEpochMs ??
+    authority.fenceStartedAtEpochMs`, `authority.dualRunStartedAtEpochMs || authority.adapterCertifiedAtEpochMs || authority.fenceStartedAtEpochMs`, "null-aware retained time selection");
+    text = text.replaceAll("    requireCutoverEpochMilliseconds(value, label);", "    requireRetainedCutoverText(value, label);\n    requireCutoverEpochMilliseconds(value, label);".replace("\n", "\n"));
+  }
+  if (file === "src/allocation.ts") {
+    text = replaceOnce(text, `(left.receivedAtEpochMs < right.receivedAtEpochMs ? -1 : left.receivedAtEpochMs > right.receivedAtEpochMs ? 1 : 0)`, "compareInventoryIdentityText(left.receivedAtEpochMs, right.receivedAtEpochMs)", "numeric FIFO comparison");
+    text = replaceOnce(text, "return left < right ? -1 : left > right ? 1 : 0;", "return compareInventoryIdentityText(left, right);", "numeric optional expiry comparison");
+  }
+  if (file === "src/facade.ts") {
+    checkFunction(text, "requirePolicyBatchEpochMilliseconds", `function requirePolicyBatchEpochMilliseconds(value, label) {
+      const epochMs = requirePolicyBatchMetadataNumber(value, label); assertInventoryEpochMilliseconds(epochMs, label); return epochMs;
+    }`);
+    text = replaceFunction(text, "requirePolicyBatchEpochMilliseconds", "");
+    text = text.replaceAll("requirePolicyBatchEpochMilliseconds(", "requirePolicyBatchMetadataString(");
+    text = replaceOnce(text, "Date.now()", "new Date().toISOString()", "numeric system clock");
+  }
+  return text;
+}
+function verifyEpochRuntimeTransport(root3) {
+  execFileSync2("git", ["merge-base", "--is-ancestor", EPOCH_PRIOR_PROOF_HEAD, "HEAD"], { cwd: root3, stdio: "ignore" });
+  const files = execFileSync2("git", ["ls-tree", "-r", "--name-only", EPOCH_PRIOR_PROOF_HEAD, "--", "src"], { cwd: root3, encoding: "utf8" }).trim().split("\n");
+  const currentFiles = execFileSync2("git", ["ls-files", "--", "src"], { cwd: root3, encoding: "utf8" }).trim().split("\n");
+  assert5.deepEqual(currentFiles, files, "Epoch transport changed the runtime module domain.");
+  const inputs3 = [], changes = [];
+  for (const file of files) {
+    let restoreType2 = function(type, removeNull = false) {
+      if (removeNull && ts2.isUnionTypeNode(type)) {
+        const retained = type.types.filter((child) => !(ts2.isLiteralTypeNode(child) && child.literal.kind === ts2.SyntaxKind.NullKeyword));
+        edit(type, retained.map((child) => child.getText(source7).replace(/\bnumber\b/gu, "string")).join(" | "));
+      } else {
+        const walk = (child) => {
+          if (child.kind === ts2.SyntaxKind.NumberKeyword) edit(child, "string");
+          else ts2.forEachChild(child, walk);
+        };
+        walk(type);
+      }
+    }, visit2 = function(node) {
+      if (ts2.isImportDeclaration(node) && node.moduleSpecifier.text === "./events.js" && !prior.includes('from "./events.js"')) {
+        edit(node, "");
+        return;
+      }
+      if (ts2.isImportSpecifier(node) && node.name.text === "assertInventoryEpochMilliseconds" && !prior.includes("assertCanonicalInventoryTime")) {
+        edit(node, "");
+        return;
+      }
+      if (ts2.isIfStatement(node) && node.elseStatement === void 0) {
+        const guarded = ts2.isBlock(node.thenStatement) && node.thenStatement.statements.length === 1 ? node.thenStatement.statements[0] : node.thenStatement;
+        if (guardStatement2(guarded) && !priorGuard2(guarded)) {
+          assert5(ts2.isBinaryExpression(node.expression) && (ts2.isIdentifier(node.expression.left) || ts2.isPropertyAccessExpression(node.expression.left)) && ts2.isIdentifier(node.expression.right) && node.expression.right.text === "undefined" && node.expression.operatorToken.kind === ts2.SyntaxKind.ExclamationEqualsEqualsToken, "Unproved conditional temporal admission.");
+          edit(node, "");
+          return;
+        }
+      }
+      if (guardStatement2(node) && !priorGuard2(node)) {
+        edit(node, "");
+        return;
+      }
+      if (ts2.isBinaryExpression(node) && temporal(node.left) && node.right.kind === ts2.SyntaxKind.NullKeyword) {
+        if (node.operatorToken.kind === ts2.SyntaxKind.EqualsEqualsEqualsToken || node.operatorToken.kind === ts2.SyntaxKind.ExclamationEqualsEqualsToken) {
+          edit(node, `${node.left.getText(source7)}.length ${node.operatorToken.getText(source7)} 0`);
+          return;
+        }
+      }
+      if (ts2.isPropertyAssignment(node) && nullableTimes.has(node.name.getText(source7))) {
+        if (node.initializer.kind === ts2.SyntaxKind.NullKeyword) {
+          edit(node.initializer, '""');
+        }
+        if (ts2.isStringLiteral(node.initializer) && node.initializer.text === "Number") edit(node.initializer, '"String"');
+      }
+      if (ts2.isCallExpression(node) && ts2.isIdentifier(node.expression) && node.expression.text === "requireNullableEpochMilliseconds") edit(node.expression, "requireString");
+      if (ts2.isBinaryExpression(node) && ts2.isTypeOfExpression(node.left) && node.left.expression.getText(source7).endsWith(".recordedAtEpochMs") && ts2.isStringLiteral(node.right) && node.right.text === "number") edit(node.right, '"string"');
+      const name = node.name !== void 0 && ts2.isIdentifier(node.name) ? node.name.text : void 0;
+      if (node.type !== void 0) {
+        if (name?.endsWith("EpochMs") || name === "positiveLayerStartedAtEpochMsByPositionId") restoreType2(node.type, nullableTimes.has(name));
+        else if (ts2.isArrowFunction(node) && ts2.isPropertyAssignment(node.parent) && node.parent.name.getText(source7) === "nowEpochMs") restoreType2(node.type);
+        else if (ts2.isParameter(node) && (ownerName2(node) === "compareOptionalExpiry" || ownerName2(node) === "resolveInventoryCutoverAtEpochMs" && name === "explicit")) restoreType2(node.type);
+        else if (ts2.isFunctionDeclaration(node) && name === "captureConservedPositiveLayerStarts") restoreType2(node.type);
+        else if (ts2.isFunctionDeclaration(node) && ["lotDefinitionFingerprintParts", "containerDefinitionFingerprintParts"].includes(name)) edit(node.type, node.type.getText(source7).replace(" | number", ""));
+      }
+      if (ts2.isAsExpression(node) && node.expression.getText(source7).includes("positiveLayerStartedAtEpochMsByPositionId")) restoreType2(node.type);
+      if (ts2.isNewExpression(node) && node.expression.getText(source7) === "Map" && ownerName2(node) === "captureConservedPositiveLayerStarts") for (const type of node.typeArguments ?? []) restoreType2(type);
+      ts2.forEachChild(node, visit2);
+    }, guardStatement2 = function(node) {
+      const expression = ts2.isExpressionStatement(node) ? node.expression : void 0;
+      if (expression === void 0 || !ts2.isCallExpression(expression) || !ts2.isIdentifier(expression.expression) || expression.expression.text !== "assertInventoryEpochMilliseconds") return false;
+      if (priorGuard2(node)) return true;
+      const pureReference = (value) => ts2.isIdentifier(value) || ts2.isPropertyAccessExpression(value) && pureReference(value.expression);
+      assert5.equal(expression.arguments.length, 2, "Temporal guards must retain their exact arity.");
+      assert5(pureReference(expression.arguments[0]), "Temporal guard argument may not introduce an effect.");
+      assert5(ts2.isStringLiteral(expression.arguments[1]) || ts2.isIdentifier(expression.arguments[1]), "Temporal diagnostic may not introduce an effect.");
+      return true;
+    }, priorGuard2 = function(node) {
+      const expression = node.expression;
+      const key = ownerName2(node) + ":" + expression.arguments[0]?.getText(source7).replace(/[A-Za-z_$][A-Za-z0-9_$]*/gu, (word) => inverse.get(word) ?? word).replace(/\s+/gu, "");
+      return previousGuardKeys.has(key);
+    }, ownerName2 = function(node) {
+      for (let parent = node.parent; parent; parent = parent.parent) {
+        if (ts2.isFunctionDeclaration(parent)) return parent.name?.text ?? "<anonymous>";
+      }
+      return "<module>";
+    }, collectPrior2 = function(node) {
+      if (ts2.isCallExpression(node) && ts2.isIdentifier(node.expression) && node.expression.text === "assertCanonicalInventoryTime") previousGuardKeys.add(ownerName2(node) + ":" + node.arguments[0]?.getText(previousSource).replace(/\s+/gu, ""));
+      ts2.forEachChild(node, collectPrior2);
+    };
+    var restoreType = restoreType2, visit = visit2, guardStatement = guardStatement2, priorGuard = priorGuard2, ownerName = ownerName2, collectPrior = collectPrior2;
+    const current = readAssuranceFile(root3, file).toString("utf8"), prior = readEpochPriorFile(root3, file).toString("utf8");
+    if (current === prior) {
+      inputs3.push({ file, sha256: sha2563(current) });
+      continue;
+    }
+    let text = restoreNumericHelpers(file, current, prior);
+    const source7 = ts2.createSourceFile(file, text, ts2.ScriptTarget.Latest, true);
+    const edits = [];
+    const edit = (node, replacement) => edits.push([node.getStart(source7), node.getEnd(), replacement]);
+    const temporal = (node) => ts2.isPropertyAccessExpression(node) && nullableTimes.has(node.name.text);
+    const previousGuardKeys = /* @__PURE__ */ new Set();
+    const previousSource = ts2.createSourceFile(file, prior, ts2.ScriptTarget.Latest, true);
+    collectPrior2(previousSource);
+    visit2(source7);
+    for (const [start, end, replacement] of edits.sort((a, b) => b[0] - a[0])) text = text.slice(0, start) + replacement + text.slice(end);
+    text = text.replace(/[A-Za-z_$][A-Za-z0-9_$]*/gu, (word) => inverse.get(word) ?? word);
+    text = text.replace(/\{\s*,/gu, "{").replace(/,\s*,/gu, ",");
+    if (syntax(text) !== syntax(prior) || syntax(text, false) !== syntax(prior, false)) {
+      fs6.mkdirSync(path8.join(root3, ".chatgpt/epoch-incremental"), { recursive: true });
+      fs6.writeFileSync(path8.join(root3, ".chatgpt/epoch-incremental/restored-" + path8.basename(file)), text);
+      throw new Error(`Epoch transport contains an unproved runtime change: ${file}`);
+    }
+    changes.push(file);
+    inputs3.push({ file, sha256: sha2563(current) });
+  }
+  return { priorProofHead: EPOCH_PRIOR_PROOF_HEAD, exactChangedRuntimeFiles: changes, inputs: inputs3, laws: [
+    "Safe-integer epoch milliseconds form an exact totally ordered instant domain including zero and negative values.",
+    "Relational numeric comparison preserves chronology; expiry is inclusive and absence is not a numeric sentinel.",
+    "Canonical JSON encodes safe integers injectively up to signed zero, which denotes the same instant; intent arrays retain their field order.",
+    "Every remaining runtime statement and identity operation is preserved by the checked whole-module reverse transformation."
+  ] };
 }
 
 // experiments/tla-conformance/final-convergence/final-head-transport.mjs
 import assert6 from "node:assert/strict";
-
-// scripts/repository-assurance-state.mjs
-import { createHash } from "node:crypto";
-import { spawnSync } from "node:child_process";
-import { lstatSync, readFileSync, readlinkSync } from "node:fs";
-import { resolve } from "node:path";
-var excludedPaths = /* @__PURE__ */ new Set([
-  "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json"
-]);
-function includedPath(path43) {
-  return path43.length > 0 && !path43.startsWith(".chatgpt/") && !excludedPaths.has(path43);
-}
-function hashAssuranceEntries(entries) {
-  const hash = createHash("sha256");
-  const writeLength = (length2) => {
-    const encoded = Buffer.allocUnsafe(8);
-    encoded.writeBigUInt64BE(BigInt(length2));
-    hash.update(encoded);
-  };
-  for (const entry of [...entries].sort((left, right) => left.path < right.path ? -1 : left.path > right.path ? 1 : 0)) {
-    const pathBytes = Buffer.from(entry.path);
-    writeLength(pathBytes.length);
-    hash.update(pathBytes);
-    hash.update(Buffer.from([entry.kind]));
-    writeLength(entry.payload.length);
-    hash.update(entry.payload);
-  }
-  return hash.digest("hex");
-}
-function repositoryAssuranceStateSha256(repositoryRoot) {
-  const listed = spawnSync(
-    "git",
-    ["ls-files", "--cached", "--others", "--exclude-standard", "-z"],
-    { cwd: repositoryRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }
-  );
-  if (listed.error !== void 0 || listed.status !== 0) {
-    throw new Error("Unable to enumerate the repository assurance state.");
-  }
-  const entries = [];
-  for (const path43 of listed.stdout.split("\0").filter(includedPath)) {
-    const absolute = resolve(repositoryRoot, path43);
-    let stat;
-    let kind;
-    let payload;
-    try {
-      stat = lstatSync(absolute);
-      if (stat.isSymbolicLink()) {
-        kind = 1;
-        payload = Buffer.from(readlinkSync(absolute));
-      } else if (stat.isFile()) {
-        kind = 0;
-        payload = readFileSync(absolute);
-      }
-    } catch (error) {
-      if (error instanceof Error && error.code === "ENOENT") {
-        kind = 2;
-        payload = Buffer.alloc(0);
-      } else {
-        throw error;
-      }
-    }
-    if (stat !== void 0 && !stat.isSymbolicLink() && !stat.isFile()) {
-      throw new Error(
-        `Repository assurance path '${path43}' is not a regular file or symbolic link.`
-      );
-    }
-    if (kind === void 0 || payload === void 0) {
-      throw new Error(`Unable to frame repository assurance path '${path43}'.`);
-    }
-    entries.push({ path: path43, kind, payload });
-  }
-  return hashAssuranceEntries(entries);
-}
-function repositoryAssuranceCommittedStateSha256(repositoryRoot, commit) {
-  const listed = spawnSync(
-    "git",
-    ["ls-tree", "-rz", "--full-tree", commit],
-    { cwd: repositoryRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }
-  );
-  if (listed.error !== void 0 || listed.status !== 0) {
-    throw new Error(`Unable to enumerate committed repository assurance state '${commit}'.`);
-  }
-  const entries = [];
-  for (const record of listed.stdout.split("\0")) {
-    if (record.length === 0) continue;
-    const tab = record.indexOf("	");
-    if (tab < 0) throw new Error("Malformed git ls-tree assurance record.");
-    const header = record.slice(0, tab).split(" ");
-    const path43 = record.slice(tab + 1);
-    if (!includedPath(path43)) continue;
-    if (header.length !== 3 || header[1] !== "blob") {
-      throw new Error(`Repository assurance commit contains unsupported entry '${path43}'.`);
-    }
-    const [mode, , objectId] = header;
-    const blob = spawnSync("git", ["cat-file", "blob", objectId], {
-      cwd: repositoryRoot,
-      maxBuffer: 64 * 1024 * 1024
-    });
-    if (blob.error !== void 0 || blob.status !== 0) {
-      throw new Error(`Unable to read committed repository assurance path '${path43}'.`);
-    }
-    const kind = mode === "120000" ? 1 : mode === "100644" || mode === "100755" ? 0 : void 0;
-    if (kind === void 0) {
-      throw new Error(`Repository assurance commit has unsupported mode '${mode}' for '${path43}'.`);
-    }
-    entries.push({ path: path43, kind, payload: blob.stdout });
-  }
-  return hashAssuranceEntries(entries);
-}
-
-// experiments/tla-conformance/final-convergence/final-head-transport.mjs
-import fs7 from "node:fs";
-import { execFileSync as execFileSync3 } from "node:child_process";
-import ts2 from "typescript";
-
-// experiments/tla-conformance/final-convergence/current-review-assurance.mjs
-import assert5 from "node:assert/strict";
-import crypto3 from "node:crypto";
-import fs6 from "node:fs";
-import path8 from "node:path";
-import { execFileSync as execFileSync2 } from "node:child_process";
-var CURRENT_REVIEW_ASSURANCE_RECEIPT = "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json";
-var CURRENT_REVIEW_ASSURANCE_REPORT = "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json";
-var CURRENT_REVIEW_ASSURANCE_FULL_LOG = "experiments/tla-conformance/final-convergence/current-pr-review-full.log";
-var CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "77c97c6cd33512a445a2acd98f4b97f1104c85b5";
-var AUTHORITATIVE_PATHS = Object.freeze(["src", "formal", "scripts", "test", "package.json", "tsconfig.json", "tsconfig.test.json"]);
-function sha2562(file) {
-  return crypto3.createHash("sha256").update(fs6.readFileSync(file)).digest("hex");
-}
-function canonicalJson2(value) {
-  if (Array.isArray(value)) return `[${value.map(canonicalJson2).join(",")}]`;
-  if (value !== null && typeof value === "object") {
-    return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonicalJson2(value[key])}`).join(",")}}`;
-  }
-  return JSON.stringify(value);
-}
-function currentReviewSurfaceSha256(repositoryRoot) {
-  const output = execFileSync2(
-    process.execPath,
-    [path8.join(repositoryRoot, "scripts/formal-implementation-surface.cjs")],
-    { cwd: repositoryRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }
-  );
-  return crypto3.createHash("sha256").update(canonicalJson2(JSON.parse(output))).digest("hex");
-}
-function repositoryPath(repositoryRoot, file) {
-  return assuranceRepositoryPath(repositoryRoot, file);
-}
-function regularFile(repositoryRoot, file, label) {
-  const target = repositoryPath(repositoryRoot, file);
-  const stat = fs6.lstatSync(target);
-  assert5.equal(stat.isFile(), true, `${label} is not a regular file.`);
-  return target;
-}
-function committedFileSha256(repositoryRoot, commit, file) {
-  const bytes2 = execFileSync2("git", ["show", `${commit}:${file}`], {
-    cwd: repositoryRoot,
-    encoding: null,
-    maxBuffer: 64 * 1024 * 1024
-  });
-  return crypto3.createHash("sha256").update(bytes2).digest("hex");
-}
-function assertCurrentReviewAssuranceContent({
-  receipt,
-  report,
-  reportSha256,
-  fullLogSha256,
-  independentlyDerivedSurfaceSha256,
-  independentlyDerivedRepositoryStateSha256
-}) {
-  assert5.equal(receipt.schemaVersion, 1, "Current review assurance receipt schema is unsupported.");
-  assert5.equal(receipt.status, "CURRENT_PR_REVIEW_FULL_ASSURANCE_VERIFIED", "Current review assurance receipt status is invalid.");
-  assert5.match(receipt.certifiedHead, /^[a-f0-9]{40}$/u, "Current review assurance certified head is invalid.");
-  assert5.equal(receipt.report.file, CURRENT_REVIEW_ASSURANCE_REPORT, "Current review assurance report path is not package-owned.");
-  assert5.equal(receipt.fullLog.file, CURRENT_REVIEW_ASSURANCE_FULL_LOG, "Current review assurance full-log path is not package-owned.");
-  assert5.equal(reportSha256, receipt.report.sha256, "Current review assurance report bytes changed.");
-  assert5.equal(fullLogSha256, receipt.fullLog.sha256, "Current review assurance full-log bytes changed.");
-  assert5.equal(report.repositoryHead, receipt.certifiedHead, "Current review assurance report certifies the wrong commit.");
-  assert5.equal(report.fullFormal, true, "Current review assurance report is not a full-formal run.");
-  assert5.match(report.surfaceSha256, /^[a-f0-9]{64}$/u, "Current review assurance report surface digest is invalid.");
-  assert5.match(receipt.surfaceSha256, /^[a-f0-9]{64}$/u, "Current review assurance receipt surface digest is invalid.");
-  assert5.equal(report.surfaceSha256, independentlyDerivedSurfaceSha256, "Current review assurance report surface digest is not independently source-derived.");
-  assert5.equal(receipt.surfaceSha256, independentlyDerivedSurfaceSha256, "Current review assurance receipt surface digest is not independently source-derived.");
-  assert5.equal(report.apiEntries, 510, "Current review assurance API census changed.");
-  assert5.equal(report.compilerCallGraphUnresolvedApis, 0, "Current review assurance has unresolved public APIs.");
-  assert5.equal(report.repositoryStateSha256, receipt.repositoryStateSha256, "Current review assurance state receipt disagrees with the report.");
-  assert5.equal(independentlyDerivedRepositoryStateSha256, receipt.repositoryStateSha256, "Current review assurance was not produced from the exact clean committed evidence state.");
-  assert5.equal(report.fullLogSha256, receipt.fullLog.sha256, "Current review assurance report is not bound to the tracked full log.");
-}
-function verifyCurrentReviewAssurance(repositoryRoot) {
-  const root3 = path8.resolve(repositoryRoot);
-  const receiptPath = regularFile(root3, CURRENT_REVIEW_ASSURANCE_RECEIPT, "Current review assurance receipt");
-  execFileSync2("git", ["merge-base", "--is-ancestor", CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD, "HEAD"], { cwd: root3, stdio: "ignore" });
-  assert5.equal(
-    sha2562(receiptPath),
-    committedFileSha256(root3, CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD, CURRENT_REVIEW_ASSURANCE_RECEIPT),
-    "Current review assurance receipt differs from its immutable evidence commit."
-  );
-  const receipt = JSON.parse(fs6.readFileSync(receiptPath, "utf8"));
-  assert5.match(receipt.certifiedHead, /^[a-f0-9]{40}$/u, "Current review assurance certified head is invalid.");
-  assert5.equal(
-    execFileSync2("git", ["rev-parse", `${CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD}^`], { cwd: root3, encoding: "utf8" }).trim(),
-    receipt.certifiedHead,
-    "Immutable current-review evidence commit is not the direct child of the certified repair head."
-  );
-  execFileSync2("git", ["merge-base", "--is-ancestor", receipt.certifiedHead, "HEAD"], { cwd: root3, stdio: "ignore" });
-  assert5.equal(receipt.report.file, CURRENT_REVIEW_ASSURANCE_REPORT, "Current review assurance report path is not package-owned.");
-  assert5.equal(receipt.fullLog.file, CURRENT_REVIEW_ASSURANCE_FULL_LOG, "Current review assurance full-log path is not package-owned.");
-  const reportPath = regularFile(root3, CURRENT_REVIEW_ASSURANCE_REPORT, "Current review assurance report");
-  const logPath = regularFile(root3, CURRENT_REVIEW_ASSURANCE_FULL_LOG, "Current review assurance full log");
-  assert5.equal(
-    sha2562(reportPath),
-    committedFileSha256(root3, CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD, CURRENT_REVIEW_ASSURANCE_REPORT),
-    "Current review assurance report differs from its immutable evidence commit."
-  );
-  assert5.equal(
-    sha2562(logPath),
-    committedFileSha256(root3, CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD, CURRENT_REVIEW_ASSURANCE_FULL_LOG),
-    "Current review assurance full log differs from its immutable evidence commit."
-  );
-  const reportSha256 = sha2562(reportPath);
-  const fullLogSha256 = sha2562(logPath);
-  const report = JSON.parse(fs6.readFileSync(reportPath, "utf8"));
-  assertCurrentReviewAssuranceContent({
-    receipt,
-    report,
-    reportSha256,
-    fullLogSha256,
-    independentlyDerivedSurfaceSha256: currentReviewSurfaceSha256(root3),
-    independentlyDerivedRepositoryStateSha256: repositoryAssuranceCommittedStateSha256(root3, receipt.certifiedHead)
-  });
-  const dirtyAuthoritativePaths = execFileSync2(
-    "git",
-    ["status", "--porcelain=v1", "--untracked-files=all", "--", ...AUTHORITATIVE_PATHS],
-    { cwd: root3, encoding: "utf8" }
-  ).trim();
-  assert5.equal(
-    dirtyAuthoritativePaths,
-    "",
-    "Current review assurance requires a clean authoritative worktree."
-  );
-  const authoritativeDelta = execFileSync2(
-    "git",
-    ["diff", "--name-only", receipt.certifiedHead, "HEAD", "--", ...AUTHORITATIVE_PATHS],
-    { cwd: root3, encoding: "utf8" }
-  ).split(/\r?\n/u).filter(Boolean).sort();
-  assert5.deepEqual(
-    authoritativeDelta,
-    [CURRENT_REVIEW_ASSURANCE_REPORT],
-    "Proof integration changed authoritative product/assurance bytes after the certified full run."
-  );
-  return {
-    receipt,
-    reference: {
-      file: CURRENT_REVIEW_ASSURANCE_RECEIPT,
-      sha256: sha2562(receiptPath),
-      evidenceHead: CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD,
-      certifiedHead: receipt.certifiedHead,
-      repositoryStateSha256: receipt.repositoryStateSha256,
-      fullLogSha256: receipt.fullLog.sha256,
-      surfaceSha256: receipt.surfaceSha256
-    }
-  };
-}
 
 // experiments/tla-conformance/final-convergence/repository-root.mjs
 import path9 from "node:path";
@@ -2257,758 +3376,96 @@ function assertFinalConvergenceRepositoryRoot(repositoryRoot, moduleUrl) {
 
 // experiments/tla-conformance/final-convergence/final-head-transport.mjs
 var ROOT = finalConvergenceRepositoryRoot(import.meta.url);
-var OLD_SOURCE_HEAD = "6cafd49ff4b3729f80ae35d9fc0220f7a8a4b55a";
-var FINAL_SOURCE_HEAD = "535b94d68e80516f7ee8dd56a569d4aaf1799ff3";
-var OLD_SURFACE_DIGEST = "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a";
-var FINAL_SURFACE_DIGEST = "8a6c398e2a7f94de13dfbf0a4c40815685e6591a672ef12a586c5471fd39b697";
-var OLD_SURFACE_FILE = "experiments/tla-conformance/final-convergence/old-surface-cc97e.json";
-var R170_TRANSPORT = "experiments/tla-conformance/final-convergence/r170-assurance-transport.json";
-var R170_PRISTINE_TRANSPORT = "experiments/tla-conformance/final-convergence/r170-pristine-repro-transport.json";
-var POST_CERTIFICATE_AUTHORITATIVE_FILES = Object.freeze([
-  "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json"
-]);
-var CHANGED_SOURCE_FILES = Object.freeze([
-  "src/amounts.ts",
-  "src/authority-cutover.ts",
-  "src/canonical.ts",
-  "src/catalog.ts",
-  "src/commands.ts",
-  "src/coordinator.ts",
-  "src/deficits.ts",
-  "src/events.ts",
-  "src/facade.ts",
-  "src/fungibility.ts",
-  "src/integrity.ts",
-  "src/migrations.ts",
-  "src/model.ts",
-  "src/picking.ts",
-  "src/projection.ts",
-  "src/quantity.ts",
-  "src/stock-amount-rules.ts",
-  "src/storage.ts",
-  "src/traceability-replay.ts",
-  "src/transfers.ts"
-]);
-var AUTHORITY_CHANGED_RUNTIME = Object.freeze([
-  "fn:assertCompletedInventoryCutoverManifest",
-  "fn:completedInventoryCutoverResult",
-  "fn:cutoverInventoryAuthority"
-]);
-var STORAGE_CHANGED_RUNTIME = Object.freeze([
-  "fn:assertPublishedInventoryMigrationTarget",
-  "method:InMemoryInventoryDurableStorage.completeMigrationManifestUnlocked"
-]);
-var DEFICIT_CHANGED_RUNTIME = Object.freeze([
-  "fn:applyInventoryRecordedDeficitBurden",
-  "fn:recordedDeficitByLocation"
-]);
-var MIGRATION_CHANGED_RUNTIME = Object.freeze([
-  "fn:createDurableInventoryMigrationPlan",
-  "fn:dryRunInventoryMigration"
-]);
-var FUNGIBILITY_CHANGED_RUNTIME = Object.freeze([
-  "fn:fungibilityAllocationIncrement",
-  "fn:positionHasIndependentMeasuredContents",
-  "fn:positionHasUnfixedIndependentMeasuredContents"
-]);
-var COORDINATOR_CHANGED_RUNTIME = Object.freeze([
-  "fn:assertReservationConsumptionMatchesIssue",
-  "fn:reservationLifecycleEvidenceFingerprint"
-]);
-var INTEGRITY_CHANGED_RUNTIME = Object.freeze([
-  "fn:assertAllowedCountTransition",
-  "fn:assertAllowedReservationTransition",
-  "fn:canonicalNormalizedJson",
-  "fn:inventoryCountBookDigest",
-  "fn:inventoryDurableMigrationPlanDigest",
-  "fn:inventoryDurablePlanDigest",
-  "fn:inventoryProjectionDigest",
-  "fn:inventoryReservationBookDigest",
-  "fn:inventoryWorldContentRoots",
-  "fn:normalizedJsonObjectKeys",
-  "fn:sameJson",
-  "fn:sameNormalizedJsonValue",
-  "fn:sortedRecordRows"
-]);
-var QUANTITY_CHANGED_RUNTIME = Object.freeze([
-  "fn:parseQuantity"
-]);
-function git2(args, encoding = "utf8") {
-  return execFileSync3("git", args, { cwd: ROOT, encoding, maxBuffer: 64 * 1024 * 1024 });
-}
-function oldText(file) {
-  return git2(["show", `${OLD_SOURCE_HEAD}:${file}`]);
-}
-function currentText(file) {
-  return fs7.readFileSync(finalConvergenceRepositoryPath(ROOT, file), "utf8");
-}
-function sourceFile(file, text) {
-  return ts2.createSourceFile(file, text, ts2.ScriptTarget.Latest, true, ts2.ScriptKind.TS);
-}
-function emitted(node) {
-  let text = node.getText(node.getSourceFile());
-  if (ts2.isFunctionDeclaration(node) && node.name !== void 0) {
-    const name = node.name.text;
-    text = text.replace(/^export\s+/u, "");
-    text = text.replace(new RegExp(`^(?:async\\s+)?function\\s+${name}\\b`, "u"), (match) => match.replace(name, "__proof"));
-  } else if (ts2.isMethodDeclaration(node) || ts2.isConstructorDeclaration(node)) {
-    text = `class __Host { ${text} }`;
+var passes2 = /* @__PURE__ */ new WeakMap();
+function buildFinalHeadTransport({ repositoryRoot = ROOT, context, surface } = {}) {
+  const root3 = assertFinalConvergenceRepositoryRoot(repositoryRoot, import.meta.url);
+  assert6(context !== void 0 && surface !== void 0 && context.repositoryRoot === root3, "Semantic transport requires the current shared compiler snapshot.");
+  if (passes2.has(context)) return structuredClone(passes2.get(context));
+  const transition = verifyEpochRuntimeTransport(root3);
+  const oldRegistry = JSON.parse(readEpochPriorFile(root3, "experiments/tla-conformance/final-convergence/final-surface-bindings.json"));
+  const mapped = oldRegistry.bindings.map((row) => epochSurfaceKey(row.surfaceKey));
+  assert6.equal(surface.callables.length, 535);
+  assert6.equal(new Set(mapped).size, 535, "Temporal vocabulary mapping is not bijective.");
+  assert6.deepEqual([...mapped].sort(), surface.callables.map((row) => row.key).sort(), "Temporal migration changed the public ownership domain.");
+  const inputs3 = [...transition.inputs];
+  for (const file of ["scripts/inventory-epoch-contract.mjs", "formal/UseByReservation.tla", "formal/UseByReservation.cfg", "formal/UseByReservationEpochZeroMutation.cfg"]) {
+    inputs3.push({ file, sha256: sha256(readAssuranceFile(root3, file)) });
   }
-  return ts2.transpileModule(text, {
-    compilerOptions: { target: ts2.ScriptTarget.ES2022, module: ts2.ModuleKind.None, removeComments: true, useDefineForClassFields: false }
-  }).outputText.trim();
-}
-function normalizedEmit(node) {
-  return emitted(node).replace(/\s+/gu, " ").trim();
-}
-function runtimeRows(file, text) {
-  const source7 = sourceFile(file, text);
-  const rows = /* @__PURE__ */ new Map();
-  for (const statement of source7.statements) {
-    if (ts2.isFunctionDeclaration(statement) && statement.name !== void 0 && statement.body !== void 0) {
-      rows.set(`fn:${statement.name.text}`, sha256(emitted(statement)));
-    }
-    if (ts2.isClassDeclaration(statement) && statement.name !== void 0) {
-      for (const member2 of statement.members) {
-        if (ts2.isMethodDeclaration(member2) && member2.body !== void 0) rows.set(`method:${statement.name.text}.${member2.name.getText(source7)}`, sha256(emitted(member2)));
-        if (ts2.isConstructorDeclaration(member2) && member2.body !== void 0) rows.set(`ctor:${statement.name.text}`, sha256(emitted(member2)));
-      }
-    }
-  }
-  return rows;
-}
-function changedRuntime(file) {
-  const before = runtimeRows(file, oldText(file));
-  const after = runtimeRows(file, currentText(file));
-  const names = [.../* @__PURE__ */ new Set([...before.keys(), ...after.keys()])].sort();
-  return names.filter((name) => before.get(name) !== after.get(name));
-}
-function transpiledFile(text) {
-  return ts2.transpileModule(text, { compilerOptions: { target: ts2.ScriptTarget.ES2022, module: ts2.ModuleKind.ES2022, removeComments: true, useDefineForClassFields: false } }).outputText.trim();
-}
-function assertProjectionAlphaRename() {
-  const before = transpiledFile(oldText("src/projection.ts"));
-  const candidate = currentText("src/projection.ts").replaceAll("existingEventWithSameId", "sameEventId");
-  assert6.equal(transpiledFile(candidate), before, "Projection delta exceeded the reviewed local-variable alpha rename.");
-}
-function assertTraceabilityAlphaRename() {
-  const before = oldText("src/traceability-replay.ts");
-  const current = currentText("src/traceability-replay.ts");
-  const start = current.indexOf("function validateAndIndexAddition(");
-  const end = current.indexOf("function removeIndexedRelation(", start);
-  assert6(start >= 0 && end > start, "Traceability helper boundaries changed.");
-  let helper = current.slice(start, end);
-  helper = helper.replace(
-    '  relation: Pick<InventoryTraceabilityRelationChange, "kind" | "from" | "to">,',
-    '  change: Pick<InventoryTraceabilityRelationChange, "kind" | "from" | "to">,'
-  );
-  helper = helper.replaceAll("relation.from", "change.from").replaceAll("relation.to", "change.to").replaceAll("relation.kind", "change.kind");
-  const candidate = `${current.slice(0, start)}${helper}${current.slice(end)}`;
-  assert6.equal(transpiledFile(candidate), transpiledFile(before), "Traceability replay delta exceeded the reviewed parameter alpha rename/comments.");
-}
-function assertFrozenTransfersDocumentationOnly() {
-  assert6.equal(transpiledFile(git2(["show", `${FROZEN_FINAL_EVIDENCE_HEAD}:src/transfers.ts`])), transpiledFile(oldText("src/transfers.ts")), "Pre-systemic transfer runtime emit changed.");
-}
-function exactChangedSourceFiles() {
-  return git2(["diff", "--name-only", OLD_SOURCE_HEAD, FINAL_SOURCE_HEAD, "--", "src"]).trim().split(/\r?\n/u).filter(Boolean).sort();
-}
-function currentHead() {
-  return git2(["rev-parse", "HEAD"]).trim();
-}
-var currentReviewAssuranceCache;
-function currentReviewAssuranceReference(repositoryRoot) {
-  const receiptFile = "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json";
-  const receiptSha256 = sha256(fs7.readFileSync(finalConvergenceRepositoryPath(repositoryRoot, receiptFile)));
-  const authoritativeStatus = git2([
-    "status",
-    "--porcelain=v1",
-    "--untracked-files=all",
-    "--",
-    "src",
-    "formal",
-    "scripts",
-    "test",
-    "package.json",
-    "tsconfig.json",
-    "tsconfig.test.json"
-  ]);
-  const key = `${currentHead()}:${receiptSha256}:${sha256(Buffer.from(authoritativeStatus))}`;
-  const reference = verifyCurrentReviewAssurance(repositoryRoot).reference;
-  assertAssuranceCommitChain(repositoryRoot, [FROZEN_FINAL_EVIDENCE_HEAD, reference.certifiedHead, currentHead()]);
-  currentReviewAssuranceCache = { key, reference: structuredClone(reference) };
-  return reference;
-}
-function assertCurrentProductTreeIsFinalSource() {
-  const head = currentHead();
-  const laterTracked = git2([
-    "diff",
-    "--name-only",
-    FINAL_SOURCE_HEAD,
-    head,
-    "--",
-    "src",
-    "formal",
-    "scripts",
-    "test",
-    "package.json",
-    "tsconfig.json",
-    "tsconfig.test.json"
-  ]).split(/\r?\n/u).filter(Boolean);
-  assert6.deepEqual(laterTracked, [...POST_CERTIFICATE_AUTHORITATIVE_FILES].sort(), "Integrated proof tree differs from the exact current-review certified product/assurance tree.");
-}
-var REVIEW_517437_PRIOR_SOURCE_HEAD = "02d7b37c46bfe0f3129fa3f377960d740886a083";
-function replaceTransitionFunction(text, name, replacement) {
-  const declaration = transitionFunction(text, name);
-  return `${text.slice(0, declaration.getStart())}${replacement}${text.slice(declaration.getEnd())}`;
-}
-function verifyReview517437ProductTransition() {
-  const exactFiles = git2([
-    "diff",
-    "--name-only",
-    REVIEW_517437_PRIOR_SOURCE_HEAD,
-    FINAL_SOURCE_HEAD,
-    "--",
-    "src"
-  ]).trim().split(/\r?\n/u).filter(Boolean).sort();
-  assert6.deepEqual(exactFiles, ["src/amounts.ts", "src/canonical.ts", "src/events.ts"]);
-  const priorAmount = git2(["show", `${REVIEW_517437_PRIOR_SOURCE_HEAD}:src/amounts.ts`]);
-  assert6.equal(
-    transpiledFile(currentText("src/amounts.ts")),
-    transpiledFile(priorAmount),
-    "Review 517437 amount delta exceeded comments."
-  );
-  const priorCanonical = git2(["show", `${REVIEW_517437_PRIOR_SOURCE_HEAD}:src/canonical.ts`]);
-  let restoredCanonical = currentText("src/canonical.ts");
-  restoredCanonical = replaceTransitionFunction(
-    restoredCanonical,
-    "inventoryIntentFingerprint",
-    transitionFunction(priorCanonical, "inventoryIntentFingerprint").getText()
-  );
-  restoredCanonical = replaceTransitionFunction(
-    restoredCanonical,
-    "assertInventoryIntentFingerprintValues",
-    transitionFunction(priorCanonical, "assertFiniteInventoryIntentFingerprintNumbers").getText()
-  );
-  assert6.equal(
-    transpiledFile(restoredCanonical),
-    transpiledFile(priorCanonical),
-    "Review 517437 fingerprint delta contains an unproved extra runtime change."
-  );
-  const priorEvents = git2(["show", `${REVIEW_517437_PRIOR_SOURCE_HEAD}:src/events.ts`]);
-  const restoredEvents = replaceTransitionFunction(
-    currentText("src/events.ts"),
-    "assertCanonicalInventoryTime",
-    transitionFunction(priorEvents, "assertCanonicalInventoryTime").getText()
-  );
-  assert6.equal(
-    transpiledFile(restoredEvents),
-    transpiledFile(priorEvents),
-    "Review 517437 canonical-time delta contains an unproved extra runtime change."
-  );
-  return {
-    priorCertifiedHead: REVIEW_517437_PRIOR_SOURCE_HEAD,
-    certifiedHead: FINAL_SOURCE_HEAD,
-    exactFiles,
-    laws: [
-      "Intent fingerprints reject every runtime value outside the typed primitive/array domain before JSON encoding.",
-      "Canonical inventory timestamps remain fixed-width four-digit UTC text, so lexical ordering equals chronological ordering.",
-      "The amount-source delta is comments only and emits identical JavaScript.",
-      "Reversing the two guard changes restores the prior certified runtime emission exactly."
-    ],
-    inputs: exactFiles.map((file) => ({
-      file,
-      sha256: sha256(fs7.readFileSync(finalConvergenceRepositoryPath(ROOT, file)))
-    }))
-  };
-}
-function buildUncachedFinalHeadTransport({ repositoryRoot = ROOT, context: context2, surface: surface2 } = {}) {
-  const resolvedRepositoryRoot = assertFinalConvergenceRepositoryRoot(repositoryRoot, import.meta.url);
-  assertCurrentProductTreeIsFinalSource();
-  assert6.deepEqual(exactChangedSourceFiles(), CHANGED_SOURCE_FILES, "Final product source delta widened.");
-  const oldSurfaceBytes = fs7.readFileSync(finalConvergenceRepositoryPath(resolvedRepositoryRoot, OLD_SURFACE_FILE));
-  const oldSurface = JSON.parse(oldSurfaceBytes.toString("utf8"));
-  assert6.equal(oldSurface.digest, OLD_SURFACE_DIGEST);
-  assert6.equal(oldSurface.callables.length, 535);
-  const currentSurface = surface2 ?? discoverCompilerSurface(resolvedRepositoryRoot, context2);
-  assert6.equal(currentSurface.digest, FINAL_SURFACE_DIGEST);
-  assert6.equal(currentSurface.callables.length, 535);
-  const oldByKey = new Map(oldSurface.callables.map((row) => [row.key, row]));
-  const signatureChanges = [];
-  const astChanges = [];
-  for (const current of currentSurface.callables) {
-    const previous = oldByKey.get(current.key);
-    assert6(previous !== void 0, `Final surface added callable ${current.key}`);
-    if (previous.signatureHash !== current.signatureHash) signatureChanges.push(current.key);
-    if (previous.declaration.astHash !== current.declaration.astHash) astChanges.push(current.key);
-  }
-  assert6.deepEqual(signatureChanges, [], "A public signature changed after the cc97e assurance freeze.");
-  assert6.deepEqual(astChanges, [
-    "export:.#cutoverInventoryAuthority::call[0]",
-    "export:.#parseQuantity::call[0]",
-    "export:.#resolveInventoryAmount::call[0]",
-    "export:./kernel#assertCanonicalInventoryTime::call[0]",
-    "export:./kernel#inventoryIntentFingerprint::call[0]",
-    "export:./kernel#normalizeInventoryStockPositionKey::call[0]",
-    "export:./kernel#parseQuantity::call[0]",
-    "export:./kernel#resolveInventoryAmount::call[0]",
-    "export:./migrations#dryRunInventoryMigration::call[0]",
-    "export:./storage#inventoryCountBookDigest::call[0]",
-    "export:./storage#inventoryDurableMigrationPlanDigest::call[0]",
-    "export:./storage#inventoryDurablePlanDigest::call[0]",
-    "export:./storage#inventoryProjectionDigest::call[0]",
-    "export:./storage#inventoryReservationBookDigest::call[0]",
-    "export:./storage#inventoryWorldContentRoots::call[0]"
-  ], "Unexpected public callable AST changed after cc97e.");
-  assertProjectionAlphaRename();
-  assertTraceabilityAlphaRename();
-  assertFrozenTransfersDocumentationOnly();
-  assert6.deepEqual(changedRuntime("src/authority-cutover.ts"), AUTHORITY_CHANGED_RUNTIME);
-  assert6.deepEqual(changedRuntime("src/storage.ts"), STORAGE_CHANGED_RUNTIME);
-  assert6.deepEqual(changedRuntime("src/deficits.ts"), DEFICIT_CHANGED_RUNTIME);
-  assert6.deepEqual(changedRuntime("src/fungibility.ts"), FUNGIBILITY_CHANGED_RUNTIME);
-  assert6.deepEqual(changedRuntime("src/coordinator.ts"), COORDINATOR_CHANGED_RUNTIME);
-  assert6.deepEqual(changedRuntime("src/integrity.ts"), INTEGRITY_CHANGED_RUNTIME);
-  assert6.deepEqual(changedRuntime("src/migrations.ts"), MIGRATION_CHANGED_RUNTIME);
-  assert6.deepEqual(changedRuntime("src/quantity.ts"), QUANTITY_CHANGED_RUNTIME);
-  const systemicRuntimeTransition = verifySystemicRuntimeTransition();
-  const systemicIntegrityTransition = verifySystemicIntegrityTransition();
-  const review517437ProductTransition = verifyReview517437ProductTransition();
-  const deficitTest = currentText("test/review-hardening.test.ts");
-  assert6(deficitTest.includes("treats an empty recorded-deficit location selection as all locations"));
-  assert6(deficitTest.includes("locationIds: []"));
-  assert6(deficitTest.includes("unselected location"));
-  const authorityTest = currentText("test/authority.test.ts");
-  assert6(authorityTest.includes("completedReplay.targetWorldRoot"));
-  assert6(authorityTest.includes("completedManifest?.targetWorldRevision"));
-  const storageTest = currentText("test/storage-conformance-suite.ts");
-  assert6(storageTest.includes("completedManifest?.targetWorldRoot"));
-  assert6(storageTest.includes("completedManifest?.targetWorldRevision"));
-  const storageSource = currentText("src/storage.ts");
-  for (const term4 of ["targetWorldRoot", "targetWorldRevision", "assertPublishedInventoryMigrationTarget"]) assert6(storageSource.includes(term4));
   const core = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     status: "FINAL_HEAD_TRANSPORT_PROVED",
-    oldSourceHead: OLD_SOURCE_HEAD,
-    finalSourceHead: FINAL_SOURCE_HEAD,
-    oldSurfaceDigest: OLD_SURFACE_DIGEST,
-    finalSurfaceDigest: FINAL_SURFACE_DIGEST,
+    priorProofHead: EPOCH_PRIOR_PROOF_HEAD,
+    finalSurfaceDigest: surface.digest,
     callables: 535,
-    publicSignatureChanges: 0,
-    publicAstChanges: astChanges,
-    exactSourceDelta: CHANGED_SOURCE_FILES,
-    semantics: {
-      projection: "ALPHA_RENAME_ONLY",
-      traceabilityReplay: "ALPHA_RENAME_ONLY_PLUS_COMMENTS",
-      transfers: "COMMENT_ONLY_RUNTIME_EMIT_IDENTICAL",
-      authorityCutover: { changedRuntime: AUTHORITY_CHANGED_RUNTIME, rule: "Completed-cutover replay retains durable target evidence and compares source dispositions through their canonical migration fingerprint, making equivalent adapter key-order round trips replay-safe." },
-      storage: { changedRuntime: STORAGE_CHANGED_RUNTIME, rule: "R144 records and validates exact published migration target root/revision; other storage runtime declarations are unchanged." },
-      recordedDeficit: { changedRuntime: DEFICIT_CHANGED_RUNTIME, rule: "R167 makes empty locationIds select every location for recorded-deficit burdening while preserving strict non-empty filtering and independent per-location deficit accounting." },
-      fungibility: { changedRuntime: FUNGIBILITY_CHANGED_RUNTIME, rule: "Current review repair aligns fungibility allocation with ordinary picking: independent measurement axes fixed by intact packaging do not make the package unsplittable, while serial and genuinely unfixed measured contents retain whole-position allocation semantics." },
-      reservationConsumption: { changedRuntime: COORDINATOR_CHANGED_RUNTIME, rule: "Consume validation compares the full normalized reservation lifecycle through a canonical field-complete fingerprint, so equivalent independently materialized object-key order is accepted while allocation order and every semantic field remain exact." },
-      integrityTransitions: { changedRuntime: INTEGRITY_CHANGED_RUNTIME, rule: "Integrity comparisons are recursively order-insensitive for object keys but preserve arrays exactly, and reconciliation event identity is admitted only by count completion." },
-      migrationReplay: { changedRuntime: MIGRATION_CHANGED_RUNTIME, rule: "Migration planning reuses one immutable catalog snapshot per run; the snapshot value is unchanged and existing migration replay/plan assertions remain green." },
-      quantityParsing: { changedRuntime: QUANTITY_CHANGED_RUNTIME, rule: "Decimal quantity parsing rejects impossible safe-integer magnitudes before BigInt construction while preserving exact accepted values, leading zeros, decimal scale, and the existing safe-integer validation." },
-      systemicRuntimeTransition,
-      systemicIntegrityTransition,
-      review517437ProductTransition
-    },
-    evidence: {
-      oldSurface: { file: OLD_SURFACE_FILE, sha256: sha256(oldSurfaceBytes) },
-      currentProductFiles: CHANGED_SOURCE_FILES.map((file) => ({ file, sha256: sha256(fs7.readFileSync(finalConvergenceRepositoryPath(resolvedRepositoryRoot, file))) })),
-      currentRegressionTests: ["test/authority.test.ts", "test/migrations.test.ts", "test/storage-conformance-suite.ts", "test/storage-conformance.test.ts", "test/review-hardening.test.ts", "test/fungibility.test.ts", "test/reservation-consume-shortage.test.ts", "test/formal-callgraph-semantics.test.ts"].map((file) => ({ file, sha256: sha256(fs7.readFileSync(finalConvergenceRepositoryPath(resolvedRepositoryRoot, file))) }))
-    },
-    currentReviewAssuranceTransport: (() => {
-      const recorded = JSON.parse(fs7.readFileSync(finalConvergenceRepositoryPath(resolvedRepositoryRoot, R170_TRANSPORT), "utf8"));
-      assert6.equal(recorded.status, "R170_CURRENT_HEAD_ASSURANCE_TRANSPORT_PROVED");
-      assert6.equal(recorded.currentHead, "f430b5141b0afc0b2796e38bc90ef45df4c0dcd9");
-      return { file: R170_TRANSPORT, sha256: sha256(fs7.readFileSync(finalConvergenceRepositoryPath(resolvedRepositoryRoot, R170_TRANSPORT))), contentSha256: recorded.contentSha256, affectedStrictRows: recorded.affectedStrictRows, affectedValueRows: recorded.affectedValueRows };
-    })(),
-    currentReviewPristineReproTransport: (() => {
-      const recorded = JSON.parse(fs7.readFileSync(finalConvergenceRepositoryPath(resolvedRepositoryRoot, R170_PRISTINE_TRANSPORT), "utf8"));
-      assert6.equal(recorded.status, "R170_PRISTINE_REPRO_ASSURANCE_TRANSPORT_PROVED");
-      assert6.equal(recorded.currentHead, "7046246c88b32487def30e96fffa4b2a740e0005");
-      return { file: R170_PRISTINE_TRANSPORT, sha256: sha256(fs7.readFileSync(finalConvergenceRepositoryPath(resolvedRepositoryRoot, R170_PRISTINE_TRANSPORT))), contentSha256: recorded.contentSha256, affectedStrictRows: recorded.affectedStrictRows, affectedValueRows: recorded.affectedValueRows };
-    })(),
-    currentReviewAssurance: currentReviewAssuranceReference(resolvedRepositoryRoot),
+    exactPrimitiveTransport: transition,
+    publicKeyTransport: oldRegistry.bindings.filter((row) => epochSurfaceKey(row.surfaceKey) !== row.surfaceKey).map((row) => ({ before: row.surfaceKey, after: epochSurfaceKey(row.surfaceKey), mode: row.mode })),
+    inputs: inputs3,
     creditExpansion: false
   };
-  return { ...core, contentSha256: sha256(canonicalJson(core)) };
-}
-function transitionFunction(text, name) {
-  const source7 = sourceFile("transition.ts", text);
-  const declarations = source7.statements.filter((node) => ts2.isFunctionDeclaration(node) && node.name?.text === name && node.body !== void 0);
-  assert6.equal(declarations.length, 1, `Systemic transition needs exactly one function ${name}.`);
-  return declarations[0];
-}
-function verifySystemicIntegrityTransition() {
-  const file = "src/integrity.ts";
-  const before = git2(["show", `${FROZEN_FINAL_EVIDENCE_HEAD}:${file}`]);
-  let restored = currentText(file);
-  const source7 = sourceFile(file, restored);
-  const canonical2 = source7.statements.filter((node) => ts2.isFunctionDeclaration(node) && node.name?.text === "canonicalNormalizedJson" && node.body !== void 0);
-  assert6.equal(canonical2.length, 1, "Systemic integrity transition needs exactly one canonical JSON helper.");
-  const canonicalText = canonical2[0].getText();
-  assert6(canonicalText.includes("keys.sort()"), "Canonical durable hashing must sort nested object keys.");
-  assert6(canonicalText.includes("value.map"), "Canonical durable hashing must preserve array order.");
-  restored = restored.slice(0, canonical2[0].getStart()) + restored.slice(canonical2[0].getEnd());
-  const canonicalCalls = restored.split("canonicalNormalizedJson(").length - 1;
-  assert6.equal(canonicalCalls, 7, "Systemic integrity transition changed the canonical-hash call set.");
-  restored = restored.replaceAll("canonicalNormalizedJson(", "JSON.stringify(");
-  const restoredSource = sourceFile(file, restored);
-  const reservation = restoredSource.statements.filter((node) => ts2.isFunctionDeclaration(node) && node.name?.text === "assertAllowedReservationTransition" && node.body !== void 0);
-  assert6.equal(reservation.length, 1, "Systemic integrity transition needs one reservation transition validator.");
-  const guard = reservation[0].body.statements.find((statement) => statement.getText().includes("base.consumptionEventId !== undefined"));
-  assert6(guard !== void 0, "Systemic integrity transition lost the corrupt reservation-state guard.");
-  assert6(guard.getText().includes("Non-consumed reservation state cannot retain a consumption event."), "Reservation-state guard changed its rejected invariant.");
-  restored = restored.slice(0, guard.getStart()) + restored.slice(guard.getEnd());
-  assert6.equal(transpiledFile(restored), transpiledFile(before), "Systemic integrity delta contains an unproved extra change.");
-  return {
-    priorProofHead: FROZEN_FINAL_EVIDENCE_HEAD,
-    exactFile: file,
-    laws: [
-      "Nested object insertion order cannot change a durable content root; array order remains semantic.",
-      "A non-consumed reservation cannot carry a consumption event before a lifecycle operation is applied.",
-      "Reversing exactly those two repairs restores the frozen reviewed runtime byte-for-byte after TypeScript emission."
-    ],
-    input: { file, sha256: sha256(currentText(file)) }
-  };
-}
-function verifySystemicRuntimeTransition() {
-  const sourceFiles2 = ["src/amounts.ts", "src/catalog.ts", "src/commands.ts", "src/facade.ts", "src/fungibility.ts", "src/picking.ts", "src/transfers.ts"];
-  const before = new Map(sourceFiles2.map((file) => [file, git2(["show", `${FROZEN_FINAL_EVIDENCE_HEAD}:${file}`])]));
-  const restored = new Map(sourceFiles2.map((file) => [file, currentText(file)]));
-  const guardSites = [
-    ["src/amounts.ts", "resolveInventoryAmount", "assertInventoryAmountKind(amount);"],
-    ["src/catalog.ts", "normalizeInventoryCompositionOutput", "assertInventoryCompositionAmountKind(output.amount);"],
-    ["src/commands.ts", "findCommandItem", "assertInventoryAmountKind(amount);"],
-    ["src/facade.ts", "normalizeFacadeAmount", "assertInventoryAmountKind(amount);"],
-    ["src/picking.ts", "resolveAllocationItemAndSelector", "assertInventoryAmountKind(amount);"],
-    ["src/transfers.ts", "transferCommandItem", "assertInventoryAmountKind(amount);"],
-    ["src/transfers.ts", "inventoryTransferAmountIntentValue", "assertInventoryAmountKind(amount);"]
-  ];
-  for (const [file, name, guard] of guardSites) {
-    const text = restored.get(file), declaration = transitionFunction(text, name), first = declaration.body.statements[0];
-    assert6.equal(first?.getText(), guard, `Amount admission must precede all effects in ${name}.`);
-    restored.set(file, text.slice(0, first.getStart()) + text.slice(first.getEnd()));
-  }
-  for (const file of sourceFiles2) {
-    let text = restored.get(file);
-    const source7 = sourceFile(file, text), added = source7.statements.filter((node) => ts2.isImportDeclaration(node) && node.moduleSpecifier.text === "./stock-amount-rules.js");
-    assert6.equal(added.length, 1, `Unexpected systemic dependency import in ${file}.`);
-    text = text.slice(0, added[0].getStart()) + text.slice(added[0].getEnd());
-    restored.set(file, text);
-  }
-  const rules = currentText("src/stock-amount-rules.ts");
-  const rulesSource = sourceFile("rules.ts", rules);
-  assert6.equal(rulesSource.statements.every((node) => ts2.isImportDeclaration(node) || ts2.isFunctionDeclaration(node)), true, "Shared rules gained unproved module initialization.");
-  assert6.deepEqual(rulesSource.statements.filter(ts2.isFunctionDeclaration).map((node) => node.name?.text).sort(), ["assertInventoryAmountKind", "assertInventoryCompositionAmountKind", "positionHasUnfixedIndependentMeasuredContents"].sort());
-  const expectedGuards = [
-    ["assertInventoryAmountKind", `function assertInventoryAmountKind(amount) {
-      if (
-        amount === null || typeof amount !== "object" || Array.isArray(amount) ||
-        (amount.kind !== InventoryAmountKind.Measured && amount.kind !== InventoryAmountKind.Package)
-      ) {
-        throw new Error("Inventory amount kind is invalid.");
-      }
-    }`],
-    ["assertInventoryCompositionAmountKind", `function assertInventoryCompositionAmountKind(amount) {
-      if (
-        amount === null || typeof amount !== "object" || Array.isArray(amount) ||
-        (amount.kind !== InventoryCompositionOutputAmountKind.Measured && amount.kind !== InventoryCompositionOutputAmountKind.Package)
-      ) {
-        throw new Error("Inventory composition output amount kind is invalid.");
-      }
-    }`]
-  ];
-  for (const [name, expected] of expectedGuards) assert6.equal(normalizedEmit(transitionFunction(rules, name)), normalizedEmit(transitionFunction(expected, name)), `${name} no longer implements exact closed-union admission.`);
-  const predicate = transitionFunction(before.get("src/picking.ts"), "positionHasUnfixedIndependentMeasuredContents");
-  assert6.equal(emitted(transitionFunction(rules, "positionHasUnfixedIndependentMeasuredContents")), emitted(predicate), "Shared measurement predicate changed instead of being extracted exactly.");
-  let picking = restored.get("src/picking.ts");
-  const increment = transitionFunction(picking, "allocationIncrementForPosition");
-  picking = picking.slice(0, increment.getStart()) + predicate.getText() + "\n" + picking.slice(increment.getStart());
-  restored.set("src/picking.ts", picking);
-  let fungibility = restored.get("src/fungibility.ts");
-  const wrapper = transitionFunction(fungibility, "positionHasUnfixedIndependentMeasuredContents");
-  const expectedWrapper = `function positionHasUnfixedIndependentMeasuredContents(catalog, position, item) {
-    const packagingRevisionId = position.key.packagingRevisionId;
-    const packaging = packagingRevisionId === undefined ? undefined : catalog.packagingRevision(packagingRevisionId);
-    return hasUnfixedIndependentMeasuredContents(position, item, packaging);
-  }`;
-  assert6.equal(normalizedEmit(wrapper), normalizedEmit(transitionFunction(expectedWrapper, wrapper.name.text)), "Fungibility wrapper no longer delegates the exact same physical predicate.");
-  const oldWrapper = transitionFunction(before.get("src/fungibility.ts"), wrapper.name.text);
-  fungibility = fungibility.slice(0, wrapper.getStart()) + oldWrapper.getText() + fungibility.slice(wrapper.getEnd());
-  const imports = sourceFile("fungibility.ts", fungibility).statements.filter((node) => ts2.isImportDeclaration(node) && node.moduleSpecifier.text === "./catalog.js");
-  const oldImports = sourceFile("fungibility.ts", before.get("src/fungibility.ts")).statements.filter((node) => ts2.isImportDeclaration(node) && node.moduleSpecifier.text === "./catalog.js");
-  assert6.equal(imports.length, 1);
-  assert6.equal(oldImports.length, 1);
-  const bindings = (node) => node.importClause.namedBindings.elements.map((element) => element.getText()).sort();
-  assert6.deepEqual(bindings(imports[0]), bindings(oldImports[0]).filter((name) => name !== "InventoryMeasurementRequirement"));
-  fungibility = fungibility.slice(0, imports[0].getStart()) + oldImports[0].getText() + fungibility.slice(imports[0].getEnd());
-  restored.set("src/fungibility.ts", fungibility);
-  let commands = restored.get("src/commands.ts");
-  const unique = transitionFunction(commands, "uniqueTransformationGenealogyNodes");
-  const expectedUnique = `function uniqueTransformationGenealogyNodes(nodes) {
-    const unique = new Map();
-    for (const node of nodes) {
-      if (node === undefined) throw new Error("Complete transformation lineage lost one node.");
-      const identity = inventoryTraceabilityNodeIdentity(node);
-      if (!unique.has(identity)) unique.set(identity, node);
-    }
-    return [...unique.values()];
-  }`;
-  assert6.equal(normalizedEmit(unique), normalizedEmit(transitionFunction(expectedUnique, unique.name.text)), "Genealogy node quotient must retain exactly one representative per existing exact physical identity.");
-  commands = commands.slice(0, unique.getStart()) + commands.slice(unique.getEnd());
-  for (const [uniqueName, originalName] of [["uniqueConsumedNodes", "consumedNodes"], ["uniqueProducedNodes", "producedNodes"]]) {
-    const text = `const ${uniqueName} = uniqueTransformationGenealogyNodes(${originalName});`;
-    assert6.equal(commands.split(text).length, 2, "Genealogy quotient must be applied once to each side before forming the product.");
-    commands = commands.replace(text, "");
-    assert6.equal(commands.split(`of ${uniqueName}`).length, 2, "Genealogy product must consume the unique node domain exactly once.");
-    commands = commands.replace(`of ${uniqueName}`, `of ${originalName}`);
-  }
-  restored.set("src/commands.ts", commands);
-  for (const file of sourceFiles2) assert6.equal(transpiledFile(restored.get(file)), transpiledFile(before.get(file)), `Systemic source delta contains an unproved extra change in ${file}.`);
-  return {
-    priorProofHead: FROZEN_FINAL_EVIDENCE_HEAD,
-    exactFiles: [...sourceFiles2, "src/stock-amount-rules.ts"].sort(),
-    guardSites: guardSites.map(([file, declaration]) => ({ file, declaration })),
-    laws: ["Closed Measured/Package unions are unchanged for every admitted typed value; all other discriminators reject before interpretation/effects.", "Picking and fungibility execute one byte-equivalent extracted independent-measurement predicate.", "The image of the product of stock-line identities equals the Cartesian product of their unique identity images; duplicate representations neither add nor remove a genealogy relation.", "Every original stock line and all remaining runtime statements are retained exactly by the verified reverse transformation."],
-    inputs: [...sourceFiles2, "src/stock-amount-rules.ts"].sort().map((file) => ({ file, sha256: sha256(currentText(file)) }))
-  };
-}
-var finalTransportCache;
-function buildFinalHeadTransport(input2 = {}) {
-  const repositoryRoot = assertFinalConvergenceRepositoryRoot(input2.repositoryRoot ?? ROOT, import.meta.url);
-  const evidenceNames = [OLD_SURFACE_FILE, R170_TRANSPORT, R170_PRISTINE_TRANSPORT, "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json", "experiments/tla-conformance/final-convergence/current-pr-review-full.log"];
-  const key = [currentHead(), repositoryAssuranceStateSha256(repositoryRoot), ...evidenceNames.map((file) => sha256(fs7.readFileSync(finalConvergenceRepositoryPath(repositoryRoot, file))))].join(":");
-  if (finalTransportCache?.key !== key) finalTransportCache = { key, artifact: buildUncachedFinalHeadTransport({ ...input2, repositoryRoot }) };
-  return structuredClone(finalTransportCache.artifact);
-}
-if (false) {
-  const artifact = buildFinalHeadTransport({ repositoryRoot: ROOT });
-  const target = finalConvergenceRepositoryPath(ROOT, "experiments/tla-conformance/final-convergence/final-head-transport.json");
-  const text = `${JSON.stringify(artifact, null, 2)}
-`;
-  if (process.argv.includes("--check")) assert6.equal(fs7.readFileSync(target, "utf8"), text, "Final-head transport artifact is stale.");
-  else fs7.writeFileSync(target, text);
-  console.log(JSON.stringify({ status: artifact.status, contentSha256: artifact.contentSha256, finalSurfaceDigest: artifact.finalSurfaceDigest }, null, 2));
+  const artifact = { ...core, contentSha256: sha256(canonicalJson(core)) };
+  passes2.set(context, artifact);
+  return structuredClone(artifact);
 }
 
 // experiments/tla-conformance/final-convergence/final-families.mjs
 var ROOT2 = finalConvergenceRepositoryRoot(import.meta.url);
-var frozenInputs = createImmutableAssuranceReader(ROOT2);
+var DIRECTORY = "experiments/tla-conformance/final-convergence/";
+var TRANSPORT = DIRECTORY + "final-head-transport.json";
+var frozen = createImmutableAssuranceReader(ROOT2);
+var protectedInputs = ["authority-producer17.json", "authority-value3.json", "r137-v15.json", "readworld-producer24.json", "wrapper-producer11.json", "r170-pristine-repro-transport.json"];
 var producerProofKind = "final-convergence-producer-a121-b58-v1";
 var valueProofKind = "final-convergence-value-v309-v1";
-var PREVIOUS_FINAL_SURFACE_DIGEST = "ec078013972d9ee2b4ba84d28cfa7449a18dc29679d81766e314db6a6139b81e";
-var BASE_INDEX = "experiments/tla-conformance/final-convergence/base-authority-index.json";
-var OFFICIAL = "experiments/tla-conformance/r105-layered-6dfc-currentization/surface-bindings-6dfc.json";
-var TRANSPORT = "experiments/tla-conformance/final-convergence/final-head-transport.json";
-var R165_TRANSPORT = "experiments/tla-conformance/final-convergence/r165-assurance-transport.json";
-var R168_TRANSPORT = "experiments/tla-conformance/final-convergence/r168-assurance-transport.json";
-var R169_TRANSPORT = "experiments/tla-conformance/final-convergence/r169-assurance-transport.json";
-var R170_TRANSPORT2 = "experiments/tla-conformance/final-convergence/r170-assurance-transport.json";
-var R170_PRISTINE_TRANSPORT2 = "experiments/tla-conformance/final-convergence/r170-pristine-repro-transport.json";
-var DIRECT35_TRANSPORT = "experiments/tla-conformance/r158-direct35-clean-handoff/direct35-current-source-transport.json";
-var FINAL_TRANSPORTED_BASE_AST_KEYS = /* @__PURE__ */ new Set([
-  "export:.#cutoverInventoryAuthority::call[0]",
-  "export:.#parseQuantity::call[0]",
-  "export:.#resolveInventoryAmount::call[0]",
-  "export:./kernel#assertCanonicalInventoryTime::call[0]",
-  "export:./kernel#inventoryIntentFingerprint::call[0]",
-  "export:./kernel#normalizeInventoryStockPositionKey::call[0]",
-  "export:./kernel#parseQuantity::call[0]",
-  "export:./kernel#resolveInventoryAmount::call[0]",
-  "export:./migrations#dryRunInventoryMigration::call[0]",
-  "export:./storage#inventoryCountBookDigest::call[0]",
-  "export:./storage#inventoryDurableMigrationPlanDigest::call[0]",
-  "export:./storage#inventoryDurablePlanDigest::call[0]",
-  "export:./storage#inventoryProjectionDigest::call[0]",
-  "export:./storage#inventoryReservationBookDigest::call[0]",
-  "export:./storage#inventoryWorldContentRoots::call[0]"
-]);
-var RECORDED = Object.freeze({
-  authorityProducer: "experiments/tla-conformance/final-convergence/authority-producer17.json",
-  authorityValue: "experiments/tla-conformance/final-convergence/authority-value3.json",
-  r137Value: "experiments/tla-conformance/final-convergence/r137-v15.json",
-  readWorldProducer: "experiments/tla-conformance/final-convergence/readworld-producer24.json",
-  wrapperProducer: "experiments/tla-conformance/final-convergence/wrapper-producer11.json"
-});
-function readJson2(file) {
-  return file === TRANSPORT ? JSON.parse(readAssuranceFile(ROOT2, file).toString("utf8")) : frozenInputs.json(file);
+function epochPriorArtifact(root3, kind) {
+  assert7(["value", "producer", "registry"].includes(kind), "Unknown prior proof domain.");
+  const file = DIRECTORY + `epoch-prior-${kind}.json`;
+  const original = DIRECTORY + (kind === "value" ? "final-v309.json" : kind === "producer" ? "final-a121-b58.json" : "final-surface-bindings.json");
+  const bytes2 = readAssuranceFile(root3, file);
+  assert7.equal(sha256(bytes2), sha256(readEpochPriorFile(root3, original)), "Prior epoch authority differs from its immutable proof commit.");
+  return { artifact: JSON.parse(bytes2), reference: { file, sha256: sha256(bytes2) } };
 }
-function ref(file) {
-  const bytes2 = file === TRANSPORT || file === "scripts/formal-models.mjs" ? readAssuranceFile(ROOT2, file) : frozenInputs.read(file);
-  return { file, sha256: sha256(bytes2) };
-}
-function canonical(value) {
-  if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
-  if (value !== null && typeof value === "object") return `{${Object.keys(value).sort().map((k) => `${JSON.stringify(k)}:${canonical(value[k])}`).join(",")}}`;
-  return JSON.stringify(value);
-}
-function live(surface2, key) {
-  const rows = surface2.callables.filter((r) => r.key === key);
-  assert7.equal(rows.length, 1, `Missing final callable ${key}`);
-  return rows[0];
-}
-function historicalTransportReceipt(file, status, currentHead2) {
-  const recorded = frozenInputs.transport(file, status, currentHead2, FROZEN_FINAL_EVIDENCE_HEAD);
-  const { contentSha256, ...core } = recorded;
-  assert7.equal(contentSha256, sha256(Buffer.from(canonical(core))), `Historical transport content hash is stale: ${file}`);
-  return { ...ref(file), contentSha256, affectedStrictRows: recorded.affectedStrictRows, affectedValueRows: recorded.affectedValueRows };
-}
-function transportReceipt(context2, surface2) {
-  const built = buildFinalHeadTransport({ repositoryRoot: ROOT2, context: context2, surface: surface2 }), recorded = readJson2(TRANSPORT);
-  assert7.deepEqual(recorded, built);
-  return { ...ref(TRANSPORT), contentSha256: built.contentSha256 };
-}
-function r165TransportReceipt() {
-  const receipt = historicalTransportReceipt(R165_TRANSPORT, "R165_PLUS_R167_ASSURANCE_TRANSPORT_PROVED", "0c94ee9925a0785a883241b2e6ed843e50aeb5ac");
-  const recorded = readJson2(R165_TRANSPORT);
-  assert7.equal(recorded.postR165ReviewedDelta.head, "d947e47af2502f2ed2f8ae6971ee639a91ff0867");
-  return receipt;
-}
-function r168TransportReceipt() {
-  return historicalTransportReceipt(R168_TRANSPORT, "R168_ASSURANCE_MAINTENANCE_TRANSPORT_PROVED", "e1759f756a9e7de5d67e7c03d563f6f574892e26");
-}
-function r169TransportReceipt() {
-  return historicalTransportReceipt(R169_TRANSPORT, "R169_CURRENT_HEAD_ASSURANCE_TRANSPORT_PROVED", "5584d6e84fd5737a3a24f73daa57115602c3460d");
-}
-function r170TransportReceipt() {
-  return historicalTransportReceipt(R170_TRANSPORT2, "R170_CURRENT_HEAD_ASSURANCE_TRANSPORT_PROVED", "f430b5141b0afc0b2796e38bc90ef45df4c0dcd9");
-}
-function r170PristineTransportReceipt() {
-  return historicalTransportReceipt(R170_PRISTINE_TRANSPORT2, "R170_PRISTINE_REPRO_ASSURANCE_TRANSPORT_PROVED", "7046246c88b32487def30e96fffa4b2a740e0005");
-}
-function verifySelectedAuthority(row, surface2, inputs3, transport) {
-  const a = row.authority, bytes2 = frozenInputs.read(a.evidence.file);
-  assert7.equal(sha256(bytes2), a.evidence.sha256, `Selected base authority changed: ${row.surfaceKey}`);
-  inputs3.set(a.evidence.file, a.evidence);
-  const d = JSON.parse(bytes2.toString("utf8"));
-  let recorded, baseSemantics;
-  if (a.kind === "PROOF_ARTIFACT") {
-    recorded = d.proofs?.[a.proofIndex];
-    assert7.equal(recorded?.surfaceKey, row.surfaceKey);
-    assert7.equal(sha256(Buffer.from(canonical(recorded.semantics ?? recorded.semantic ?? recorded))), a.proofSemanticSha256);
-    baseSemantics = structuredClone(recorded.semantics ?? recorded.semantic ?? recorded);
-  } else if (a.kind === "BINDING_REGISTRY") {
-    recorded = d.bindings?.[a.bindingIndex];
-    assert7.equal(recorded?.surfaceKey, row.surfaceKey);
-    assert7.equal(recorded?.mode, row.mode);
-    baseSemantics = { binding: structuredClone(recorded), direct35CurrentSourceTransport: ref(DIRECT35_TRANSPORT) };
-    inputs3.set(DIRECT35_TRANSPORT, ref(DIRECT35_TRANSPORT));
-  } else {
-    recorded = d.rows?.[a.rowIndex]?.binding;
-    assert7.equal(recorded?.surfaceKey, row.surfaceKey);
-    assert7.equal(recorded?.mode, row.mode);
-    baseSemantics = { binding: structuredClone(recorded), direct35CurrentSourceTransport: ref(DIRECT35_TRANSPORT) };
-    inputs3.set(DIRECT35_TRANSPORT, ref(DIRECT35_TRANSPORT));
-  }
-  const c = live(surface2, row.surfaceKey);
-  if (recorded?.signatureHash !== void 0) assert7.equal(recorded.signatureHash, c.signatureHash);
-  if (recorded?.declaration?.astHash !== void 0 && !FINAL_TRANSPORTED_BASE_AST_KEYS.has(row.surfaceKey)) assert7.equal(recorded.declaration.astHash, c.declaration.astHash, `Selected base public AST drifted: ${row.surfaceKey}`);
-  if (FINAL_TRANSPORTED_BASE_AST_KEYS.has(row.surfaceKey)) assert7.equal(transport.file, TRANSPORT, `Transported base AST row lost final-head transport: ${row.surfaceKey}`);
-  assert7(["cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a", PREVIOUS_FINAL_SURFACE_DIGEST, FINAL_SURFACE_DIGEST, null].includes(a.surfaceDigest ?? null), `Unexpected selected authority surface for ${row.surfaceKey}`);
-  return { surfaceKey: row.surfaceKey, mode: row.mode, signatureHash: c.signatureHash, declaration: c.declaration, semantics: { kind: "FINAL_CONSOLIDATED_BASE_AUTHORITY", baseAuthority: a, baseSemantics, finalHeadTransport: transport, creditExpansion: false } };
-}
-function residuals() {
+var priorRegistry = epochPriorArtifact(ROOT2, "registry").artifact;
+var epochRegistryRows = Object.freeze(priorRegistry.bindings.map((row) => Object.freeze({ ...row, surfaceKey: epochSurfaceKey(row.surfaceKey) })));
+var supportedValueKeys = Object.freeze(epochRegistryRows.filter((row) => row.mode === "V").map((row) => row.surfaceKey).sort());
+var supportedProducerRows = Object.freeze(epochRegistryRows.filter((row) => row.mode === "A" || row.mode === "B").map((row) => Object.freeze({ surfaceKey: row.surfaceKey, mode: row.mode })).sort((a, b) => a.surfaceKey < b.surfaceKey ? -1 : a.surfaceKey > b.surfaceKey ? 1 : 0));
+assert7.equal(epochRegistryRows.length, 535);
+assert7.equal(new Set(epochRegistryRows.map((row) => row.surfaceKey)).size, 535);
+assert7.equal(supportedValueKeys.length, 309);
+assert7.equal(supportedProducerRows.length, 179);
+function build(kind, { repositoryRoot = ROOT2, context, surface } = {}) {
+  const root3 = assertFinalConvergenceRepositoryRoot(repositoryRoot, import.meta.url);
+  assert7(context !== void 0 && surface !== void 0, "Final proof construction requires the shared compiler pass.");
+  for (const input2 of protectedInputs) frozen.read(DIRECTORY + input2);
+  const prior = epochPriorArtifact(root3, kind);
+  const currentTransport = buildFinalHeadTransport({ repositoryRoot: root3, context, surface });
+  assert7.deepEqual(JSON.parse(readAssuranceFile(root3, TRANSPORT)), currentTransport, "Current semantic transport is stale.");
+  const transport = { file: TRANSPORT, sha256: assuranceFileSha256(root3, TRANSPORT) };
+  const callableByKey = new Map(surface.callables.map((callable) => [callable.key, callable]));
+  const proofs = prior.artifact.proofs.map((proof) => {
+    const surfaceKey = epochSurfaceKey(proof.surfaceKey), current = callableByKey.get(surfaceKey);
+    assert7(current !== void 0, `Prior strict callable disappeared: ${proof.surfaceKey}`);
+    return {
+      ...proof,
+      surfaceKey,
+      signatureHash: current.signatureHash,
+      declaration: current.declaration,
+      semantics: { kind: "EXACT_EPOCH_MILLISECONDS_PRIMITIVE_TRANSPORT", priorProof: proof.semantics, priorSignatureHash: proof.signatureHash, priorAuthority: prior.reference, primitiveTransport: transport, creditExpansion: false }
+    };
+  });
+  const expected = kind === "value" ? supportedValueKeys : supportedProducerRows.map((row) => row.surfaceKey);
+  assert7.deepEqual(proofs.map((row) => row.surfaceKey).sort(), [...expected].sort());
   return {
-    authorityProducer: readJson2(RECORDED.authorityProducer),
-    authorityValue: readJson2(RECORDED.authorityValue),
-    r137Value: readJson2(RECORDED.r137Value),
-    readWorldProducer: readJson2(RECORDED.readWorldProducer),
-    wrapperProducer: readJson2(RECORDED.wrapperProducer)
-  };
-}
-function rebindFrozenResidual(proof, surface2, transport) {
-  const current = live(surface2, proof.surfaceKey);
-  assert7.equal(proof.signatureHash, current.signatureHash, `Frozen residual signature drifted: ${proof.surfaceKey}`);
-  return { ...structuredClone(proof), signatureHash: current.signatureHash, declaration: current.declaration, semantics: { ...structuredClone(proof.semantics), finalHeadTransport: transport, creditExpansion: false } };
-}
-function build(kind, { repositoryRoot = ROOT2, surface: surface2, context: context2 } = {}) {
-  for (const file of [OFFICIAL, BASE_INDEX, ...Object.values(RECORDED), R165_TRANSPORT, R168_TRANSPORT, R169_TRANSPORT, R170_TRANSPORT2, R170_PRISTINE_TRANSPORT2]) frozenInputs.read(file);
-  repositoryRoot = assertFinalConvergenceRepositoryRoot(repositoryRoot, import.meta.url);
-  surface2 ??= discoverCompilerSurface(repositoryRoot);
-  assert7.equal(surface2.digest, FINAL_SURFACE_DIGEST);
-  const transport = transportReceipt(context2, surface2), official = readJson2(OFFICIAL), modes = new Map(official.bindings.map((r2) => [r2.surfaceKey, r2.mode])), base = readJson2(BASE_INDEX);
-  assert7.equal(base.selectedRows, 418);
-  assert7.equal(base.missingRows, 70);
-  const baseRows = base.selected.filter((r2) => kind === "value" ? r2.mode === "V" : r2.mode === "A" || r2.mode === "B");
-  const expectedBase = kind === "value" ? 291 : 127;
-  assert7.equal(baseRows.length, expectedBase);
-  const inputs3 = /* @__PURE__ */ new Map([[BASE_INDEX, ref(BASE_INDEX)], [OFFICIAL, ref(OFFICIAL)], [TRANSPORT, ref(TRANSPORT)]]);
-  const proofs = baseRows.map((row) => verifySelectedAuthority(row, surface2, inputs3, transport));
-  const r = residuals();
-  const extra = (kind === "value" ? [...r.authorityValue.proofs, ...r.r137Value.proofs] : [...r.authorityProducer.proofs, ...r.readWorldProducer.proofs, ...r.wrapperProducer.proofs]).map((proof) => rebindFrozenResidual(proof, surface2, transport));
-  for (const file of Object.values(RECORDED)) inputs3.set(file, ref(file));
-  proofs.push(...extra);
-  if (kind === "producer") {
-    const r165 = r165TransportReceipt();
-    inputs3.set(R165_TRANSPORT, ref(R165_TRANSPORT));
-    for (const row of r165.affectedStrictRows) {
-      const affected = proofs.filter((p) => p.surfaceKey === row.surfaceKey && p.mode === row.mode);
-      assert7.equal(affected.length, 1, `Assurance transport affected row missing: ${row.surfaceKey}`);
-      affected[0].semantics = { ...affected[0].semantics, currentHeadAssuranceTransport: r165 };
-    }
-    assert7.deepEqual(r165.affectedStrictRows, [{ surfaceKey: "export:.#cutoverInventoryAuthority::call[0]", mode: "A" }, { surfaceKey: "type:src/facade.ts#InventoryOnceStockApi.reclassifyMany::call[0]", mode: "A" }]);
-    assert7.deepEqual(r165.affectedValueRows, []);
-    const r168 = r168TransportReceipt();
-    inputs3.set(R168_TRANSPORT, ref(R168_TRANSPORT));
-    for (const row of r168.affectedStrictRows) {
-      const affected = proofs.filter((p) => p.surfaceKey === row.surfaceKey && p.mode === row.mode);
-      assert7.equal(affected.length, 1, `R168 assurance transport affected row missing: ${row.surfaceKey}`);
-      affected[0].semantics = { ...affected[0].semantics, currentHeadReviewAssuranceTransport: r168 };
-    }
-    assert7.deepEqual(r168.affectedStrictRows, [{ surfaceKey: "export:.#cutoverInventoryAuthority::call[0]", mode: "A" }, { surfaceKey: "type:src/authority.ts#InventoryAuthorityControl.read::call[0]", mode: "B" }]);
-    assert7.deepEqual(r168.affectedValueRows, []);
-    const r169 = r169TransportReceipt();
-    inputs3.set(R169_TRANSPORT, ref(R169_TRANSPORT));
-    for (const row of r169.affectedStrictRows) {
-      const affected = proofs.filter((p) => p.surfaceKey === row.surfaceKey && p.mode === row.mode);
-      assert7.equal(affected.length, 1, `R169 assurance transport affected row missing: ${row.surfaceKey}`);
-      affected[0].semantics = { ...affected[0].semantics, currentHeadReview169AssuranceTransport: r169 };
-    }
-    assert7.deepEqual(r169.affectedStrictRows, [{ surfaceKey: "export:.#cutoverInventoryAuthority::call[0]", mode: "A" }, { surfaceKey: "type:src/facade.ts#InventoryOnceStockApi.reclassifyMany::call[0]", mode: "A" }]);
-    assert7.deepEqual(r169.affectedValueRows, []);
-    const r170 = r170TransportReceipt();
-    inputs3.set(R170_TRANSPORT2, ref(R170_TRANSPORT2));
-    for (const row of r170.affectedStrictRows) {
-      const affected = proofs.filter((p) => p.surfaceKey === row.surfaceKey && p.mode === row.mode);
-      assert7.equal(affected.length, 1, `R170 assurance transport affected row missing: ${row.surfaceKey}`);
-      affected[0].semantics = { ...affected[0].semantics, currentHeadReview170AssuranceTransport: r170 };
-    }
-    assert7.deepEqual(r170.affectedStrictRows, [{ surfaceKey: "export:.#cutoverInventoryAuthority::call[0]", mode: "A" }, { surfaceKey: "type:src/facade.ts#InventoryOnceTraceabilityApi.disaggregate::call[0]", mode: "A" }, { surfaceKey: "type:src/facade.ts#InventoryOnceTraceabilityApi.disassociate::call[0]", mode: "A" }]);
-    assert7.deepEqual(r170.affectedValueRows, []);
-    const r170Pristine = r170PristineTransportReceipt();
-    inputs3.set(R170_PRISTINE_TRANSPORT2, ref(R170_PRISTINE_TRANSPORT2));
-    for (const row of r170Pristine.affectedStrictRows) {
-      const affected = proofs.filter((p) => p.surfaceKey === row.surfaceKey && p.mode === row.mode);
-      assert7.equal(affected.length, 1, `R170 pristine-repro transport affected row missing: ${row.surfaceKey}`);
-      affected[0].semantics = { ...affected[0].semantics, currentHeadReview170PristineReproTransport: r170Pristine };
-    }
-    assert7.deepEqual(r170Pristine.affectedStrictRows, [{ surfaceKey: "export:.#cutoverInventoryAuthority::call[0]", mode: "A" }]);
-    assert7.deepEqual(r170Pristine.affectedValueRows, []);
-  }
-  proofs.sort((a, b) => a.surfaceKey.localeCompare(b.surfaceKey));
-  const expected = official.bindings.filter((r2) => kind === "value" ? r2.mode === "V" : r2.mode === "A" || r2.mode === "B").sort((a, b) => a.surfaceKey.localeCompare(b.surfaceKey));
-  assert7.equal(proofs.length, kind === "value" ? 309 : 179);
-  assert7.equal(new Set(proofs.map((p) => p.surfaceKey)).size, proofs.length);
-  assert7.deepEqual(proofs.map((p) => ({ surfaceKey: p.surfaceKey, mode: kind === "value" ? "V" : p.mode })), expected.map((r2) => ({ surfaceKey: r2.surfaceKey, mode: r2.mode })), `Final ${kind} membership differs from honest488.`);
-  for (const p of proofs) {
-    const c = live(surface2, p.surfaceKey);
-    assert7.equal(p.signatureHash, c.signatureHash);
-    assert7.deepEqual(p.declaration, c.declaration);
-    assert7.equal(modes.get(p.surfaceKey), kind === "value" ? "V" : p.mode);
-  }
-  return { schemaVersion: 1, ...kind === "producer" ? { route: "REGISTERED_CERTIFIED_PRODUCER" } : {}, proofKind: kind === "value" ? valueProofKind : producerProofKind, family: kind === "value" ? "FinalConvergenceValueV309" : "FinalConvergenceProducerA121B58", surfaceDigest: surface2.digest, domain: kind === "value" ? "Exact honest-488 V309 membership. Every member is independently selected from a frozen current authority or one of the final residual currentizers, rebound to the exact current compiler declaration, and transported across the only later source delta by the single final-head theorem." : "Exact honest-488 A121/B58 membership. Every package-owned action/read is independently selected from a frozen current authority or one of the final residual currentizers; the 47 true external callable identities are excluded and remain HARD_RED.", allAdmittedInputs: true, sampledInputs: 0, creditExpansion: false, ...kind === "producer" ? { producerGraphRuns: 0, producerReplayRuns: 0, reverseReruns: 0, externalSurfaceCreditGranted: false } : {}, inputs: [...inputs3.values()].sort((a, b) => a.file.localeCompare(b.file)), proofs };
-}
-function verifyCurrentHeadAssuranceTransports({ repositoryRoot = ROOT2, context: context2, surface: surface2 } = {}) {
-  repositoryRoot = assertFinalConvergenceRepositoryRoot(repositoryRoot, import.meta.url);
-  const current = buildFinalHeadTransport({ repositoryRoot, context: context2, surface: surface2 });
-  const r169 = r169TransportReceipt();
-  const r170 = r170TransportReceipt();
-  return {
-    current: { file: TRANSPORT, contentSha256: current.contentSha256, currentReviewAssurance: current.currentReviewAssurance },
-    r169: { file: R169_TRANSPORT, contentSha256: r169.contentSha256 },
-    r170: { file: R170_TRANSPORT2, contentSha256: r170.contentSha256 }
+    schemaVersion: 1,
+    ...kind === "producer" ? { route: "REGISTERED_CERTIFIED_PRODUCER" } : {},
+    proofKind: kind === "value" ? valueProofKind : producerProofKind,
+    family: kind === "value" ? "FinalConvergenceValueV309" : "FinalConvergenceProducerA121B58",
+    surfaceDigest: surface.digest,
+    domain: "Every admitted exact safe-integer epoch millisecond input, including signed instants and zero. The complete prior strict callable set is transported through the independently checked full TypeScript and emitted-syntax transformation; external ownership remains excluded.",
+    allAdmittedInputs: true,
+    sampledInputs: 0,
+    creditExpansion: false,
+    ...kind === "producer" ? { producerGraphRuns: 0, producerReplayRuns: 0, reverseReruns: 0, externalSurfaceCreditGranted: false } : {},
+    inputs: [prior.reference, transport, ...currentTransport.inputs],
+    proofs
   };
 }
 function buildFinalValueArtifact(input2) {
@@ -3017,47 +3474,43 @@ function buildFinalValueArtifact(input2) {
 function buildFinalProducerArtifact(input2) {
   return build("producer", input2);
 }
-var supportedValueKeys = Object.freeze(readJson2(OFFICIAL).bindings.filter((r) => r.mode === "V").map((r) => r.surfaceKey).sort());
-var supportedProducerRows = Object.freeze(readJson2(OFFICIAL).bindings.filter((r) => r.mode === "A" || r.mode === "B").map((r) => Object.freeze({ surfaceKey: r.surfaceKey, mode: r.mode })).sort((a, b) => a.surfaceKey.localeCompare(b.surfaceKey)));
-assert7.equal(supportedValueKeys.length, 309);
-assert7.equal(supportedProducerRows.length, 179);
 
 // experiments/tla-conformance/boundary-adjudication-r18/family.mjs
 import assert9 from "node:assert/strict";
-import fs9 from "node:fs";
+import fs8 from "node:fs";
 import path11 from "node:path";
 import { fileURLToPath as fileURLToPath4 } from "node:url";
 
 // experiments/tla-conformance/throughput-r7/strict-dependency-receipt.mjs
 import assert8 from "node:assert/strict";
-import fs8 from "node:fs";
+import fs7 from "node:fs";
 import path10 from "node:path";
 var registryFile = "experiments/tla-conformance/throughput-r7/evidence/surface-bindings.json";
 var reportFile = "experiments/tla-conformance/throughput-r7/evidence/admission-report.json";
 var expectedCheckerSha256 = "4dd6bbf135ebb5a5da86b714e0d9b9d3550547a7df7b39aec1a471bf1ef3f88e";
 var cache;
-function strictDependencyReceipt({ repositoryRoot, surface: surface2, requirements, label = "strict dependency" }) {
+function strictDependencyReceipt({ repositoryRoot, surface, requirements, label = "strict dependency" }) {
   assert8(Array.isArray(requirements) && requirements.length > 0);
-  const registryBytes = fs8.readFileSync(path10.resolve(repositoryRoot, registryFile));
-  const reportBytes = fs8.readFileSync(path10.resolve(repositoryRoot, reportFile));
-  const identity = `${sha256(registryBytes)}:${sha256(reportBytes)}:${surface2.digest}`;
+  const registryBytes = fs7.readFileSync(path10.resolve(repositoryRoot, registryFile));
+  const reportBytes = fs7.readFileSync(path10.resolve(repositoryRoot, reportFile));
+  const identity = `${sha256(registryBytes)}:${sha256(reportBytes)}:${surface.digest}`;
   if (cache?.identity !== identity) {
-    const registry2 = JSON.parse(registryBytes.toString("utf8"));
+    const registry = JSON.parse(registryBytes.toString("utf8"));
     const report = JSON.parse(reportBytes.toString("utf8"));
-    assert8.equal(registry2.schemaVersion, 1);
-    assert8(Array.isArray(registry2.bindings));
-    assert8.equal(registry2.bindings.length, surface2.callables.length);
-    assert8.equal(new Set(registry2.bindings.map((row) => row.surfaceKey)).size, surface2.callables.length);
-    const liveKeys = new Set(surface2.callables.map((row) => row.key));
-    assert8(registry2.bindings.every((row) => liveKeys.has(row.surfaceKey)), "Strict dependency registry is not the current compiler surface.");
-    const strict = registry2.bindings.filter((row) => row.mode !== "HARD_RED").length;
+    assert8.equal(registry.schemaVersion, 1);
+    assert8(Array.isArray(registry.bindings));
+    assert8.equal(registry.bindings.length, surface.callables.length);
+    assert8.equal(new Set(registry.bindings.map((row) => row.surfaceKey)).size, surface.callables.length);
+    const liveKeys = new Set(surface.callables.map((row) => row.key));
+    assert8(registry.bindings.every((row) => liveKeys.has(row.surfaceKey)), "Strict dependency registry is not the current compiler surface.");
+    const strict = registry.bindings.filter((row) => row.mode !== "HARD_RED").length;
     assert8.equal(report.status, "CURRENT_STRICT_FAMILY_ADMISSION");
     assert8.equal(report.strictGatePassed, true);
     assert8.equal(report.claimedDiagnostics, 0);
-    assert8.equal(report.surfaceDigest, surface2.digest);
+    assert8.equal(report.surfaceDigest, surface.digest);
     assert8.equal(report.strictCallables, strict);
     assert8.equal(report.strictCheckerSha256, expectedCheckerSha256);
-    cache = { identity, byKey: new Map(registry2.bindings.map((row) => [row.surfaceKey, row])), strictCallables: strict };
+    cache = { identity, byKey: new Map(registry.bindings.map((row) => [row.surfaceKey, row])), strictCallables: strict };
   }
   const seen = /* @__PURE__ */ new Set();
   const dependencies = requirements.map((requirement) => {
@@ -3098,11 +3551,11 @@ function parse(file, text) {
   return ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
 }
 function inputText(root3, overrides, file) {
-  return overrides.get(file) ?? fs9.readFileSync(path11.resolve(root3, file), "utf8");
+  return overrides.get(file) ?? fs8.readFileSync(path11.resolve(root3, file), "utf8");
 }
-function source(root3, context2, overrides, file) {
+function source(root3, context, overrides, file) {
   if (overrides.has(file)) return parse(file, inputText(root3, overrides, file));
-  const s = context2.program.getSourceFile(path11.resolve(root3, file));
+  const s = context.program.getSourceFile(path11.resolve(root3, file));
   assert9(s, `Compiler omitted '${file}'.`);
   return s;
 }
@@ -3119,27 +3572,27 @@ function equation(id, actual, actualSource, expected, expectedSource3) {
   assert9.equal(a, e, `Independent complete source equation changed for '${id}'.`);
   return { id, equationSha256: sha256(e), canonicalSource: e };
 }
-function dependency(root3, surface2) {
-  return strictDependencySemanticReceipt({ repositoryRoot: root3, surface: surface2, requirements: [{ surfaceKey: dependencyKey, mode: "B" }], label: "reservation feasibility guard dependency" });
+function dependency(root3, surface) {
+  return strictDependencySemanticReceipt({ repositoryRoot: root3, surface, requirements: [{ surfaceKey: dependencyKey, mode: "B" }], label: "reservation feasibility guard dependency" });
 }
-function buildFamilyArtifact({ repositoryRoot, context: context2, surface: surface2, sourceOverrides = /* @__PURE__ */ new Map() }) {
-  const expected = parse(expectedFile, fs9.readFileSync(expectedFile, "utf8"));
-  const reservations = source(repositoryRoot, context2, sourceOverrides, "src/reservations.ts");
+function buildFamilyArtifact({ repositoryRoot, context, surface, sourceOverrides = /* @__PURE__ */ new Map() }) {
+  const expected = parse(expectedFile, fs8.readFileSync(expectedFile, "utf8"));
+  const reservations = source(repositoryRoot, context, sourceOverrides, "src/reservations.ts");
   const eq = equation("src/reservations.ts#assertInventoryReservationsFeasible", fn(reservations, "assertInventoryReservationsFeasible"), reservations, fn(expected, "assertInventoryReservationsFeasible"), expected);
-  const callable = new Map(surface2.callables.map((x) => [x.key, x])).get(supportedSurfaceKeys[0]);
+  const callable = new Map(surface.callables.map((x) => [x.key, x])).get(supportedSurfaceKeys[0]);
   assert9(callable, "Compiler omitted reservation feasibility guard.");
   const inputs3 = [...new Set(inputFiles)].sort(compareCodeUnits).map((file) => ({ file, sha256: sha256(inputText(repositoryRoot, sourceOverrides, file)) }));
-  return { schemaVersion: 1, mode: "V", proofKind, sourceBase: "82d95e976919966154ee163976d0c93defdb3a10", surfaceDigest: surface2.digest, allAdmittedInputs: true, sampledInputs: 0, domain: { observableContract: "all reports produced by the already-strict ReservationSafety feasibility projection; exact feasible void return and deterministic sorted shortage error for every non-feasible report" }, strictDependencies: dependency(repositoryRoot, surface2), equations: [eq], inputs: inputs3, proofs: [{ surfaceKey: supportedSurfaceKeys[0], signatureHash: callable.signatureHash, declaration: callable.declaration, equationId: eq.id }] };
+  return { schemaVersion: 1, mode: "V", proofKind, sourceBase: "82d95e976919966154ee163976d0c93defdb3a10", surfaceDigest: surface.digest, allAdmittedInputs: true, sampledInputs: 0, domain: { observableContract: "all reports produced by the already-strict ReservationSafety feasibility projection; exact feasible void return and deterministic sorted shortage error for every non-feasible report" }, strictDependencies: dependency(repositoryRoot, surface), equations: [eq], inputs: inputs3, proofs: [{ surfaceKey: supportedSurfaceKeys[0], signatureHash: callable.signatureHash, declaration: callable.declaration, equationId: eq.id }] };
 }
 
 // experiments/tla-conformance/surface-residual-r8/pure-residual5-r10/composition-open-family.mjs
 import assert15 from "node:assert/strict";
-import fs14 from "node:fs";
+import fs13 from "node:fs";
 import path16 from "node:path";
 
 // experiments/tla-conformance/identity-values-r7/family.mjs
 import assert10 from "node:assert/strict";
-import fs10 from "node:fs";
+import fs9 from "node:fs";
 import path12 from "node:path";
 import { fileURLToPath as fileURLToPath5 } from "node:url";
 
@@ -3765,8 +4218,8 @@ function normalizeSupportingValue(declaration) {
   }
   fail2(`unsupported supporting value '${declaration.getText()}'.`);
 }
-function resolveSymbol2(context2, symbol) {
-  return symbol !== void 0 && (symbol.flags & ts.SymbolFlags.Alias) !== 0 ? context2.checker.getAliasedSymbol(symbol) : symbol;
+function resolveSymbol2(context, symbol) {
+  return symbol !== void 0 && (symbol.flags & ts.SymbolFlags.Alias) !== 0 ? context.checker.getAliasedSymbol(symbol) : symbol;
 }
 function visitRuntime(node, visitor) {
   if (ts.isTypeNode(node)) return;
@@ -3777,8 +4230,8 @@ function visitRuntime(node, visitor) {
   }
   ts.forEachChild(node, (child) => visitRuntime(child, visitor));
 }
-function sourceCallableDeclaration(context2, symbol) {
-  const resolved = resolveSymbol2(context2, symbol);
+function sourceCallableDeclaration(context, symbol) {
+  const resolved = resolveSymbol2(context, symbol);
   const callables = (resolved?.declarations ?? []).filter(
     (declaration) => !declaration.getSourceFile().isDeclarationFile && (ts.isFunctionDeclaration(declaration) || ts.isMethodDeclaration(declaration)) && declaration.body !== void 0
   );
@@ -3800,20 +4253,20 @@ function sourceSupportingValueId(repositoryRoot, declaration) {
   return name === void 0 ? void 0 : `${file}#${name}`;
 }
 function trustedTypeScriptLibraryDirectory(repositoryRoot) {
-  const packagePath = fs10.realpathSync(
+  const packagePath = fs9.realpathSync(
     path12.resolve(repositoryRoot, "node_modules/typescript/package.json")
   );
-  return fs10.realpathSync(path12.join(path12.dirname(packagePath), "lib"));
+  return fs9.realpathSync(path12.join(path12.dirname(packagePath), "lib"));
 }
 function requireTrustedTypeScriptLibraryFile(repositoryRoot, fileName) {
   const trustedDirectory = trustedTypeScriptLibraryDirectory(repositoryRoot);
-  const actualFile = fs10.realpathSync(fileName);
+  const actualFile = fs9.realpathSync(fileName);
   if (!actualFile.startsWith(`${trustedDirectory}${path12.sep}`) || !/^lib\.[^.].*\.d\.ts$/u.test(path12.basename(actualFile))) {
     fail2(`declaration '${fileName}' is outside the trusted TypeScript library.`);
   }
   return actualFile;
 }
-function validateStandardRootIdentity(context2, call) {
+function validateStandardRootIdentity(context, call) {
   const expression = call.expression;
   let root3;
   if (ts.isIdentifier(expression)) {
@@ -3822,7 +4275,7 @@ function validateStandardRootIdentity(context2, call) {
     root3 = expression.expression;
   }
   if (root3 === void 0) return;
-  const symbol = resolveSymbol2(context2, context2.checker.getSymbolAtLocation(root3));
+  const symbol = resolveSymbol2(context, context.checker.getSymbolAtLocation(root3));
   if (symbol === void 0 || (symbol.declarations ?? []).length === 0) {
     fail2(`standard root '${root3.text}' has no compiler declaration identity.`);
   }
@@ -3837,15 +4290,15 @@ function validateStandardRootIdentity(context2, call) {
       fail2(`standard root '${root3.text}' was replaced by package source.`);
     }
     requireTrustedTypeScriptLibraryFile(
-      context2.repositoryRoot,
+      context.repositoryRoot,
       declaration.getSourceFile().fileName
     );
   }
 }
-function standardOperation(context2, call, target) {
-  const sourceFile4 = target.getSourceFile().fileName;
-  requireTrustedTypeScriptLibraryFile(context2.repositoryRoot, sourceFile4);
-  validateStandardRootIdentity(context2, call);
+function standardOperation(context, call, target) {
+  const sourceFile3 = target.getSourceFile().fileName;
+  requireTrustedTypeScriptLibraryFile(context.repositoryRoot, sourceFile3);
+  validateStandardRootIdentity(context, call);
   const expression = call.expression;
   if (ts.isIdentifier(expression)) return expression.text;
   if (!ts.isPropertyAccessExpression(expression)) {
@@ -3950,7 +4403,7 @@ function expectedDependencies(specificationSource, expectedById) {
   }
   return byEquation;
 }
-function validateNoExternalEffects(context2, declaration, callOperations) {
+function validateNoExternalEffects(context, declaration, callOperations) {
   const localSymbols = /* @__PURE__ */ new Set();
   const freshLocalSymbols = /* @__PURE__ */ new Set();
   function isFreshLocalInitializer(initializer) {
@@ -3969,7 +4422,7 @@ function validateNoExternalEffects(context2, declaration, callOperations) {
     if (ts.isVariableDeclaration(node)) {
       const collect = (name) => {
         if (ts.isIdentifier(name)) {
-          const symbol = context2.checker.getSymbolAtLocation(name);
+          const symbol = context.checker.getSymbolAtLocation(name);
           if (symbol !== void 0) localSymbols.add(symbol);
         } else {
           for (const element of name.elements) {
@@ -3979,7 +4432,7 @@ function validateNoExternalEffects(context2, declaration, callOperations) {
       };
       collect(node.name);
       if (ts.isIdentifier(node.name) && node.initializer !== void 0 && isFreshLocalInitializer(node.initializer)) {
-        const symbol = context2.checker.getSymbolAtLocation(node.name);
+        const symbol = context.checker.getSymbolAtLocation(node.name);
         if (symbol !== void 0) freshLocalSymbols.add(symbol);
       }
     }
@@ -3988,14 +4441,14 @@ function validateNoExternalEffects(context2, declaration, callOperations) {
   visitRuntime(declaration.body, (node) => {
     if (ts.isBinaryExpression(node) && isAssignmentOperator(node.operatorToken.kind)) {
       if (!ts.isIdentifier(node.left)) fail2(`property or non-local assignment '${node.getText()}'.`);
-      const symbol = context2.checker.getSymbolAtLocation(node.left);
+      const symbol = context.checker.getSymbolAtLocation(node.left);
       if (symbol === void 0 || !localSymbols.has(symbol)) {
         fail2(`assignment escapes fresh local storage: '${node.getText()}'.`);
       }
     }
     if ((ts.isPrefixUnaryExpression(node) || ts.isPostfixUnaryExpression(node)) && [ts.SyntaxKind.PlusPlusToken, ts.SyntaxKind.MinusMinusToken].includes(node.operator)) {
       if (!ts.isIdentifier(node.operand)) fail2(`non-local update '${node.getText()}'.`);
-      const symbol = context2.checker.getSymbolAtLocation(node.operand);
+      const symbol = context.checker.getSymbolAtLocation(node.operand);
       if (symbol === void 0 || !localSymbols.has(symbol)) {
         fail2(`update escapes fresh local storage: '${node.getText()}'.`);
       }
@@ -4008,13 +4461,13 @@ function validateNoExternalEffects(context2, declaration, callOperations) {
     if (!ts.isIdentifier(receiver)) {
       fail2(`mutating built-in '${call.expression.getText()}' has a non-local receiver.`);
     }
-    const symbol = context2.checker.getSymbolAtLocation(receiver);
+    const symbol = context.checker.getSymbolAtLocation(receiver);
     if (symbol === void 0 || !freshLocalSymbols.has(symbol)) {
       fail2(`mutating built-in '${call.expression.getText()}' escapes fresh local storage.`);
     }
   }
 }
-function inspectActualEquation(context2, repositoryRoot, declaration) {
+function inspectActualEquation(context, repositoryRoot, declaration) {
   const sourceDependencies = /* @__PURE__ */ new Set();
   const supportingValues = /* @__PURE__ */ new Set();
   const standardOperations = /* @__PURE__ */ new Set();
@@ -4024,7 +4477,7 @@ function inspectActualEquation(context2, repositoryRoot, declaration) {
   visitRuntime(declaration.body, (node) => {
     if (ts.isPropertyAccessExpression(node) || ts.isElementAccessExpression(node)) {
       const symbolNode = ts.isPropertyAccessExpression(node) ? node.name : node.argumentExpression;
-      const symbol = symbolNode === void 0 ? void 0 : resolveSymbol2(context2, context2.checker.getSymbolAtLocation(symbolNode));
+      const symbol = symbolNode === void 0 ? void 0 : resolveSymbol2(context, context.checker.getSymbolAtLocation(symbolNode));
       for (const candidate of symbol?.declarations ?? []) {
         if (ts.isGetAccessorDeclaration(candidate) || ts.isSetAccessorDeclaration(candidate)) {
           fail2(`accessor-backed value '${node.getText()}' is outside the immutable data domain.`);
@@ -4032,8 +4485,8 @@ function inspectActualEquation(context2, repositoryRoot, declaration) {
       }
     }
     if (ts.isIdentifier(node)) {
-      const symbol = resolveSymbol2(context2, context2.checker.getSymbolAtLocation(node));
-      const callable = sourceCallableDeclaration(context2, symbol);
+      const symbol = resolveSymbol2(context, context.checker.getSymbolAtLocation(node));
+      const callable = sourceCallableDeclaration(context, symbol);
       if (callable !== void 0 && callable !== declaration) {
         const key = declarationKey2(repositoryRoot, callable);
         sourceDependencies.add(key);
@@ -4050,16 +4503,16 @@ function inspectActualEquation(context2, repositoryRoot, declaration) {
       }
     }
     if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
-      const target = context2.checker.getResolvedSignature(node)?.declaration;
+      const target = context.checker.getResolvedSignature(node)?.declaration;
       if (target === void 0) fail2(`unresolved call '${node.getText()}'.`);
       if (target.getSourceFile().isDeclarationFile) {
-        const operation = standardOperation(context2, node, target);
+        const operation = standardOperation(context, node, target);
         if (!ALLOWED_STANDARD_OPERATIONS.includes(operation)) {
           fail2(`standard operation '${operation}' is not independently admitted.`);
         }
         standardOperations.add(operation);
         callOperations.push({ call: node, operation });
-        const targetSpan = spanOf(context2, target);
+        const targetSpan = spanOf(context, target);
         standardDeclarations.set(
           `${operation}:${targetSpan.file}:${targetSpan.start.offset}`,
           { operation, declaration: targetSpan }
@@ -4073,7 +4526,7 @@ function inspectActualEquation(context2, repositoryRoot, declaration) {
       }
     }
   });
-  validateNoExternalEffects(context2, declaration, callOperations);
+  validateNoExternalEffects(context, declaration, callOperations);
   return {
     sourceDependencies: [...sourceDependencies].sort(compareCodeUnits),
     supportingValues: [...supportingValues].sort(compareCodeUnits),
@@ -4119,7 +4572,7 @@ function loadOverriddenContext(repositoryRoot, sourceOverrides) {
   };
 }
 function loadSpecification() {
-  const bytes2 = fs10.readFileSync(equationProgramPath);
+  const bytes2 = fs9.readFileSync(equationProgramPath);
   const source7 = ts.createSourceFile(
     equationProgramPath,
     bytes2.toString("utf8"),
@@ -4158,8 +4611,8 @@ function reusedCatalogEquation(catalogArtifact, equationId, implementationSpan) 
 }
 function buildIdentityValuesFamilyArtifact({
   repositoryRoot,
-  context: context2,
-  surface: surface2,
+  context,
+  surface,
   sourceOverrides = /* @__PURE__ */ new Map()
 }) {
   const root3 = path12.resolve(repositoryRoot);
@@ -4174,15 +4627,15 @@ function buildIdentityValuesFamilyArtifact({
   );
   const catalogArtifact = buildCatalogFamilyArtifact({
     repositoryRoot: root3,
-    context: context2,
-    surface: surface2,
+    context,
+    surface,
     sourceOverrides: catalogOverrides
   });
   const catalogArtifactDigest = sha256(canonicalJson(catalogArtifact));
   const inputFiles2 = [.../* @__PURE__ */ new Set([...SOURCE_FILES, ...producerFiles2])].sort(compareCodeUnits);
   const inputByFile = new Map(inputFiles2.map((file) => [file, {
     file,
-    sha256: sha256(sourceOverrides.get(file) ?? fs10.readFileSync(path12.resolve(root3, file)))
+    sha256: sha256(sourceOverrides.get(file) ?? fs9.readFileSync(path12.resolve(root3, file)))
   }]));
   for (const input2 of catalogArtifact.inputs) {
     const existing = inputByFile.get(input2.file);
@@ -4196,11 +4649,11 @@ function buildIdentityValuesFamilyArtifact({
     (left, right) => compareCodeUnits(left.file, right.file)
   );
   const cacheKey = sha256(
-    canonicalJson({ surface: surface2.digest, inputs: inputs3, catalogArtifactDigest })
+    canonicalJson({ surface: surface.digest, inputs: inputs3, catalogArtifactDigest })
   );
-  const old = sourceOverrides.size === 0 ? passCache2.get(context2) : void 0;
+  const old = sourceOverrides.size === 0 ? passCache2.get(context) : void 0;
   if (old?.key === cacheKey) return old.value;
-  const activeContext = sourceOverrides.size === 0 ? context2 : loadOverriddenContext(root3, sourceOverrides);
+  const activeContext = sourceOverrides.size === 0 ? context : loadOverriddenContext(root3, sourceOverrides);
   assert10.equal(path12.resolve(activeContext.repositoryRoot), root3);
   const sourceByFile = new Map(
     SOURCE_FILES.map((file) => {
@@ -4220,7 +4673,7 @@ function buildIdentityValuesFamilyArtifact({
   const expectedDependencyById = expectedDependencies(specificationSource, expectedById);
   const actualById = /* @__PURE__ */ new Map();
   const pending = [];
-  const callableByKey = new Map(surface2.callables.map((callable) => [callable.key, callable]));
+  const callableByKey = new Map(surface.callables.map((callable) => [callable.key, callable]));
   const publicProofSeeds = [];
   for (const surfaceKey of ASSIGNED_SURFACE_KEYS) {
     const callable = callableByKey.get(surfaceKey);
@@ -4374,7 +4827,7 @@ function buildIdentityValuesFamilyArtifact({
     proofKind: identityValuesProofKind,
     familyId: IDENTITY_VALUES_FAMILY_ID,
     sourceBase: IDENTITY_VALUES_SOURCE_BASE,
-    surfaceDigest: surface2.digest,
+    surfaceDigest: surface.digest,
     domain: {
       id: "VALIDATED_IMMUTABLE_IDENTITY_AMOUNT_SELECTOR_VALUES_V1",
       quantified: "Every input satisfying the published TypeScript shapes and the guards in these equations; no fixture or finite sample restriction.",
@@ -4414,7 +4867,7 @@ function buildIdentityValuesFamilyArtifact({
     equations: equations2,
     proofs
   };
-  if (sourceOverrides.size === 0) passCache2.set(context2, { key: cacheKey, value: result });
+  if (sourceOverrides.size === 0) passCache2.set(context, { key: cacheKey, value: result });
   return result;
 }
 var buildFamilyArtifact2 = buildIdentityValuesFamilyArtifact;
@@ -4422,7 +4875,7 @@ var supportedSurfaceKeys2 = ASSIGNED_SURFACE_KEYS;
 
 // experiments/tla-conformance/quantity-values-r7/certificate.mjs
 import assert11 from "node:assert/strict";
-import fs11 from "node:fs";
+import fs10 from "node:fs";
 import path13 from "node:path";
 import { fileURLToPath as fileURLToPath6 } from "node:url";
 
@@ -4995,16 +5448,16 @@ function boundedDeclarationLocation(repositoryRoot, declaration) {
   const start = source7.getLineAndCharacterOfPosition(declaration.getStart(source7));
   return `${relativePath(repositoryRoot, source7.fileName)}:${start.line + 1}:${start.character + 1}`;
 }
-function verifyDependencyClosure({ repositoryRoot, context: context2, certified, quantityMaximum, declarations }) {
+function verifyDependencyClosure({ repositoryRoot, context, certified, quantityMaximum, declarations }) {
   const builtins = /* @__PURE__ */ new Map();
   const runtimeGlobals = /* @__PURE__ */ new Map();
   const dependencyNamesByKey = /* @__PURE__ */ new Map();
-  const trustedLibraryRoot = fs11.realpathSync(
-    path13.dirname(ts.getDefaultLibFilePath(context2.program.getCompilerOptions()))
+  const trustedLibraryRoot = fs10.realpathSync(
+    path13.dirname(ts.getDefaultLibFilePath(context.program.getCompilerOptions()))
   );
   function trustedLibraryFile2(declaration) {
     assert11.equal(declaration.getSourceFile().isDeclarationFile, true, "Runtime library declaration must be ambient.");
-    const targetLibraryFile = fs11.realpathSync(declaration.getSourceFile().fileName);
+    const targetLibraryFile = fs10.realpathSync(declaration.getSourceFile().fileName);
     assert11(
       targetLibraryFile.startsWith(`${trustedLibraryRoot}${path13.sep}`),
       `Runtime declaration is outside trusted TypeScript library: ${targetLibraryFile}`
@@ -5013,23 +5466,23 @@ function verifyDependencyClosure({ repositoryRoot, context: context2, certified,
   }
   for (const [key, declaration] of declarations) {
     let resolvedSymbol4 = function(node) {
-      let symbol = context2.checker.getSymbolAtLocation(node);
+      let symbol = context.checker.getSymbolAtLocation(node);
       if (symbol !== void 0 && (symbol.flags & ts.SymbolFlags.Alias) !== 0) {
-        symbol = context2.checker.getAliasedSymbol(symbol);
+        symbol = context.checker.getAliasedSymbol(symbol);
       }
       return symbol;
     }, inspectCall2 = function(node) {
-      const target = context2.checker.getResolvedSignature(node)?.declaration;
+      const target = context.checker.getResolvedSignature(node)?.declaration;
       assert11(target !== void 0, `Unresolved call '${node.getText()}'.`);
       if (target.getSourceFile().isDeclarationFile) {
         trustedLibraryFile2(target);
         const builtinKey = builtinDeclarationKey(target);
         assert11(ALLOWED_BUILTIN_DECLARATIONS.has(builtinKey), `Unproved built-in '${builtinKey}'.`);
-        const declarationSpan = spanOf(context2, target);
+        const declarationSpan = spanOf(context, target);
         const evidenceKey = `${builtinKey}:${declarationSpan.start.offset}:${declarationSpan.end.offset}`;
         const old = builtins.get(evidenceKey) ?? { key: evidenceKey, operationKey: builtinKey, declaration: declarationSpan, callSites: [] };
         assert11.deepEqual(old.declaration, declarationSpan, `Built-in overload '${evidenceKey}' changed within one pass.`);
-        old.callSites.push(spanOf(context2, node));
+        old.callSites.push(spanOf(context, node));
         builtins.set(evidenceKey, old);
         return;
       }
@@ -5058,7 +5511,7 @@ function verifyDependencyClosure({ repositoryRoot, context: context2, certified,
                 ALLOWED_STANDARD_RUNTIME_GLOBALS.has(node.text),
                 `Unproved standard runtime global '${node.text}'.`
               );
-              const declarationSpan = spanOf(context2, sourceDeclaration);
+              const declarationSpan = spanOf(context, sourceDeclaration);
               const globalKey = `${node.text}:${declarationSpan.file}:${declarationSpan.start.offset}:${declarationSpan.end.offset}`;
               runtimeGlobals.set(globalKey, {
                 key: globalKey,
@@ -5106,21 +5559,21 @@ function normalizedTopLevelRuntimeValues(source7) {
   return names.sort(compareCodeUnits);
 }
 function sourceText(repositoryRoot, sourceOverrides, file) {
-  return sourceOverrides.get(file) ?? fs11.readFileSync(path13.resolve(repositoryRoot, file), "utf8");
+  return sourceOverrides.get(file) ?? fs10.readFileSync(path13.resolve(repositoryRoot, file), "utf8");
 }
 function buildQuantityValuesFamilyCertificate({
   repositoryRoot,
-  context: context2,
-  surface: surface2,
+  context,
+  surface,
   sourceOverrides = /* @__PURE__ */ new Map()
 }) {
   assert11.equal(ASSIGNED_SURFACE_KEYS2.length, 76, "Assigned alias cardinality changed.");
   assert11.equal(new Set(ASSIGNED_SURFACE_KEYS2).size, 76, "Assigned aliases must be unique.");
-  const expectedSource3 = parseSource2(expectedEquationPath, fs11.readFileSync(expectedEquationPath, "utf8"));
+  const expectedSource3 = parseSource2(expectedEquationPath, fs10.readFileSync(expectedEquationPath, "utf8"));
   const sources = new Map(
     FAMILY_SOURCE_FILES.map((file) => {
       const absolute = path13.resolve(repositoryRoot, file);
-      const source7 = sourceOverrides.has(file) ? parseSource2(absolute, sourceText(repositoryRoot, sourceOverrides, file)) : context2.program.getSourceFile(absolute);
+      const source7 = sourceOverrides.has(file) ? parseSource2(absolute, sourceText(repositoryRoot, sourceOverrides, file)) : context.program.getSourceFile(absolute);
       assert11(source7 !== void 0, `Missing compiler source '${file}'.`);
       return [file, source7];
     })
@@ -5150,13 +5603,13 @@ function buildQuantityValuesFamilyCertificate({
   const actualDeclarations = /* @__PURE__ */ new Map();
   const expectedTerms2 = /* @__PURE__ */ new Map();
   for (const name of [...allMemberNames, ...allHelperNames]) {
-    const sourceFile4 = MEMBER_SOURCE_BY_NAME[name] ?? HELPER_SOURCE_BY_NAME[name];
-    const actual = findFunction2(sources.get(sourceFile4), name);
+    const sourceFile3 = MEMBER_SOURCE_BY_NAME[name] ?? HELPER_SOURCE_BY_NAME[name];
+    const actual = findFunction2(sources.get(sourceFile3), name);
     const expected = findFunction2(expectedSource3, name);
     const actualTerm = normalizeQuantityValueCallable(actual);
     const expectedTerm = normalizeQuantityValueCallable(expected);
     assert11.deepEqual(actualTerm, expectedTerm, `Independent source equation changed for '${name}'.`);
-    actualDeclarations.set(`${sourceFile4}#${name}`, actual);
+    actualDeclarations.set(`${sourceFile3}#${name}`, actual);
     expectedTerms2.set(name, expectedTerm);
   }
   assert11.equal(actualDeclarations.size, 50, "Complete callable/helper equation closure changed.");
@@ -5164,7 +5617,7 @@ function buildQuantityValuesFamilyCertificate({
   if (sourceOverrides.size === 0) {
     closure = verifyDependencyClosure({
       repositoryRoot,
-      context: context2,
+      context,
       certified: new Set(actualDeclarations.keys()),
       quantityMaximum: actualMaximum,
       declarations: actualDeclarations
@@ -5179,18 +5632,18 @@ function buildQuantityValuesFamilyCertificate({
   const uniqueInputFiles = [...new Set(semanticInputs4)].sort(compareCodeUnits);
   const inputs3 = uniqueInputFiles.map((file) => ({
     file,
-    sha256: sha256(sourceOverrides.get(file) ?? fs11.readFileSync(path13.resolve(repositoryRoot, file)))
+    sha256: sha256(sourceOverrides.get(file) ?? fs10.readFileSync(path13.resolve(repositoryRoot, file)))
   }));
   const memberEquations = allMemberNames.map((name) => {
-    const sourceFile4 = MEMBER_SOURCE_BY_NAME[name];
-    const key = `${sourceFile4}#${name}`;
+    const sourceFile3 = MEMBER_SOURCE_BY_NAME[name];
+    const key = `${sourceFile3}#${name}`;
     const declaration = actualDeclarations.get(key);
     const term4 = expectedTerms2.get(name);
     return {
       id: key,
       name,
-      sourceFile: sourceFile4,
-      implementation: spanOf(context2, declaration),
+      sourceFile: sourceFile3,
+      implementation: spanOf(context, declaration),
       law: MEMBER_LAW_BY_NAME[name],
       equationSha256: sha256(canonicalJson(term4)),
       term: term4,
@@ -5198,15 +5651,15 @@ function buildQuantityValuesFamilyCertificate({
     };
   }).sort((left, right) => compareCodeUnits(left.id, right.id));
   const helperEquations = allHelperNames.map((name) => {
-    const sourceFile4 = HELPER_SOURCE_BY_NAME[name];
-    const key = `${sourceFile4}#${name}`;
+    const sourceFile3 = HELPER_SOURCE_BY_NAME[name];
+    const key = `${sourceFile3}#${name}`;
     const declaration = actualDeclarations.get(key);
     const term4 = expectedTerms2.get(name);
     return {
       id: key,
       name,
-      sourceFile: sourceFile4,
-      implementation: spanOf(context2, declaration),
+      sourceFile: sourceFile3,
+      implementation: spanOf(context, declaration),
       law: HELPER_LAW_BY_NAME[name],
       equationSha256: sha256(canonicalJson(term4)),
       term: term4,
@@ -5219,7 +5672,7 @@ function buildQuantityValuesFamilyCertificate({
     inputs: inputs3,
     maximumQuantityDecimals: {
       value: 18,
-      declaration: spanOf(context2, actualMaximum.statement)
+      declaration: spanOf(context, actualMaximum.statement)
     },
     runtimeImports,
     runtimeGlobals: closure.runtimeGlobals,
@@ -5228,19 +5681,19 @@ function buildQuantityValuesFamilyCertificate({
     helperEquations
   };
   const certificateId = `VALUE_CERTIFICATE_FAMILY:sha256:${sha256(canonicalJson(semanticCore))}`;
-  const callableByKey = new Map(surface2.callables.map((callable) => [callable.key, callable]));
+  const callableByKey = new Map(surface.callables.map((callable) => [callable.key, callable]));
   const proofs = [];
   for (const surfaceKey of ASSIGNED_SURFACE_KEYS2) {
     const match = /^export:(\.|\.\/kernel)#([^:]+)::call\[0\]$/u.exec(surfaceKey);
     assert11(match !== null, `Invalid assigned surface key '${surfaceKey}'.`);
     const [, entryPoint, name] = match;
-    const sourceFile4 = MEMBER_SOURCE_BY_NAME[name];
-    assert11(sourceFile4 !== void 0, `Assigned alias '${surfaceKey}' has no member equation.`);
-    const implementation = actualDeclarations.get(`${sourceFile4}#${name}`);
+    const sourceFile3 = MEMBER_SOURCE_BY_NAME[name];
+    assert11(sourceFile3 !== void 0, `Assigned alias '${surfaceKey}' has no member equation.`);
+    const implementation = actualDeclarations.get(`${sourceFile3}#${name}`);
     const callable = callableByKey.get(surfaceKey);
     assert11(callable !== void 0, `Compiler omitted assigned alias '${surfaceKey}'.`);
     if (sourceOverrides.size === 0) {
-      assert11.deepEqual(callable.declaration, spanOf(context2, implementation), `Alias declaration drifted for '${surfaceKey}'.`);
+      assert11.deepEqual(callable.declaration, spanOf(context, implementation), `Alias declaration drifted for '${surfaceKey}'.`);
       assert11(callable.reachabilityPaths.includes(`export:${entryPoint}#${name}`), `Alias reachability drifted for '${surfaceKey}'.`);
     }
     proofs.push({
@@ -5249,10 +5702,10 @@ function buildQuantityValuesFamilyCertificate({
       signature: callable.signature,
       signatureHash: callable.signatureHash,
       declaration: callable.declaration,
-      implementation: spanOf(context2, implementation),
+      implementation: spanOf(context, implementation),
       relation: sourceOverrides.size === 0 ? "COMPILER_RESOLVED_EXACT_EXPORT_ALIAS" : "MUTATION_CONTROL_ONLY",
-      memberEquationId: `${sourceFile4}#${name}`,
-      memberEquationSha256: memberEquations.find((row) => row.id === `${sourceFile4}#${name}`).equationSha256
+      memberEquationId: `${sourceFile3}#${name}`,
+      memberEquationSha256: memberEquations.find((row) => row.id === `${sourceFile3}#${name}`).equationSha256
     });
   }
   return {
@@ -5260,7 +5713,7 @@ function buildQuantityValuesFamilyCertificate({
     mode: "V",
     proofKind: QUANTITY_VALUES_PROOF_KIND,
     certificateId,
-    surfaceDigest: surface2.digest,
+    surfaceDigest: surface.digest,
     allAdmittedInputs: true,
     sampledInputs: 0,
     inputs: inputs3,
@@ -5274,13 +5727,13 @@ var buildFamilyArtifact3 = buildQuantityValuesFamilyCertificate;
 
 // experiments/tla-conformance/quantity-values-r7/event-values/certificate.mjs
 import assert14 from "node:assert/strict";
-import fs13 from "node:fs";
+import fs12 from "node:fs";
 import path15 from "node:path";
 import { fileURLToPath as fileURLToPath8 } from "node:url";
 
 // experiments/tla-conformance/catalog-foundation-r7/family.mjs
 import assert13 from "node:assert/strict";
-import fs12 from "node:fs";
+import fs11 from "node:fs";
 import path14 from "node:path";
 import { fileURLToPath as fileURLToPath7 } from "node:url";
 
@@ -5822,8 +6275,8 @@ function declarationKey4(repositoryRoot, declaration) {
   const owner = ts.isMethodDeclaration(declaration) || ts.isConstructorDeclaration(declaration) ? `${declaration.parent.name?.getText(source7)}.` : "";
   return `${file}#${owner}${name}`;
 }
-function resolveSymbol3(context2, symbol) {
-  return symbol !== void 0 && (symbol.flags & ts.SymbolFlags.Alias) !== 0 ? context2.checker.getAliasedSymbol(symbol) : symbol;
+function resolveSymbol3(context, symbol) {
+  return symbol !== void 0 && (symbol.flags & ts.SymbolFlags.Alias) !== 0 ? context.checker.getAliasedSymbol(symbol) : symbol;
 }
 function visitRuntime2(node, visitor) {
   if (ts.isTypeNode(node)) return;
@@ -5834,8 +6287,8 @@ function visitRuntime2(node, visitor) {
   }
   ts.forEachChild(node, (child) => visitRuntime2(child, visitor));
 }
-function sourceCallableDeclaration2(context2, symbol) {
-  const resolved = resolveSymbol3(context2, symbol);
+function sourceCallableDeclaration2(context, symbol) {
+  const resolved = resolveSymbol3(context, symbol);
   const callables = (resolved?.declarations ?? []).filter(
     (declaration) => !declaration.getSourceFile().isDeclarationFile && (ts.isFunctionDeclaration(declaration) || ts.isMethodDeclaration(declaration) || ts.isConstructorDeclaration(declaration)) && declaration.body !== void 0
   );
@@ -5922,23 +6375,23 @@ function sourceSupportingValueId2(repositoryRoot, declaration) {
   return name === void 0 ? void 0 : `${file}#${name}`;
 }
 function trustedTypeScriptLibraryDirectory2(repositoryRoot) {
-  const packagePath = fs12.realpathSync(
+  const packagePath = fs11.realpathSync(
     path14.resolve(repositoryRoot, "node_modules/typescript/package.json")
   );
-  return fs12.realpathSync(path14.join(path14.dirname(packagePath), "lib"));
+  return fs11.realpathSync(path14.join(path14.dirname(packagePath), "lib"));
 }
 function requireTrustedStandardDeclarationFile(repositoryRoot, fileName) {
-  const actualFile = fs12.realpathSync(fileName);
+  const actualFile = fs11.realpathSync(fileName);
   const typeScriptDirectory = trustedTypeScriptLibraryDirectory2(repositoryRoot);
   if (actualFile.startsWith(`${typeScriptDirectory}${path14.sep}`) && /^lib\.[^.].*\.d\.ts$/u.test(path14.basename(actualFile))) return actualFile;
-  const nodePackagePath = fs12.realpathSync(
+  const nodePackagePath = fs11.realpathSync(
     path14.resolve(repositoryRoot, "node_modules/@types/node/package.json")
   );
-  const nodeDirectory = fs12.realpathSync(path14.dirname(nodePackagePath));
+  const nodeDirectory = fs11.realpathSync(path14.dirname(nodePackagePath));
   if (actualFile.startsWith(`${nodeDirectory}${path14.sep}`) && actualFile.endsWith(".d.ts")) return actualFile;
   fail4(`declaration '${fileName}' is outside trusted TypeScript and Node libraries.`);
 }
-function validateStandardRootIdentity2(context2, call) {
+function validateStandardRootIdentity2(context, call) {
   const expression = call.expression;
   let root3;
   if (ts.isIdentifier(expression) && ["BigInt", "Error", "Map", "Number", "Set", "TextEncoder", "Uint8Array", "Uint32Array"].includes(expression.text)) {
@@ -5947,7 +6400,7 @@ function validateStandardRootIdentity2(context2, call) {
     root3 = expression.expression;
   }
   if (root3 === void 0) return;
-  const symbol = resolveSymbol3(context2, context2.checker.getSymbolAtLocation(root3));
+  const symbol = resolveSymbol3(context, context.checker.getSymbolAtLocation(root3));
   if (symbol === void 0 || (symbol.declarations ?? []).length === 0) {
     fail4(`standard root '${root3.text}' has no compiler declaration identity.`);
   }
@@ -5961,12 +6414,12 @@ function validateStandardRootIdentity2(context2, call) {
     if (!declaration.getSourceFile().isDeclarationFile) {
       fail4(`standard root '${root3.text}' was replaced by package source.`);
     }
-    requireTrustedStandardDeclarationFile(context2.repositoryRoot, declaration.getSourceFile().fileName);
+    requireTrustedStandardDeclarationFile(context.repositoryRoot, declaration.getSourceFile().fileName);
   }
 }
-function standardOperation2(context2, call, target) {
-  requireTrustedStandardDeclarationFile(context2.repositoryRoot, target.getSourceFile().fileName);
-  validateStandardRootIdentity2(context2, call);
+function standardOperation2(context, call, target) {
+  requireTrustedStandardDeclarationFile(context.repositoryRoot, target.getSourceFile().fileName);
+  validateStandardRootIdentity2(context, call);
   const expression = call.expression;
   if (ts.isIdentifier(expression)) return expression.text;
   if (!ts.isPropertyAccessExpression(expression)) {
@@ -5991,17 +6444,17 @@ function standardOperation2(context2, call, target) {
 function isNestedInside(declaration, owner) {
   return declaration.getSourceFile() === owner.getSourceFile() && declaration.getStart() >= owner.body.getStart() && declaration.getEnd() <= owner.body.getEnd();
 }
-function callbackParameterIndex(context2, owner, call) {
+function callbackParameterIndex(context, owner, call) {
   if (!ts.isIdentifier(call.expression)) return void 0;
-  const symbol = resolveSymbol3(context2, context2.checker.getSymbolAtLocation(call.expression));
+  const symbol = resolveSymbol3(context, context.checker.getSymbolAtLocation(call.expression));
   for (let index = 0; index < owner.parameters.length; index += 1) {
     const parameter = owner.parameters[index];
-    const parameterSymbol = ts.isIdentifier(parameter.name) ? resolveSymbol3(context2, context2.checker.getSymbolAtLocation(parameter.name)) : void 0;
+    const parameterSymbol = ts.isIdentifier(parameter.name) ? resolveSymbol3(context, context.checker.getSymbolAtLocation(parameter.name)) : void 0;
     if (parameterSymbol !== void 0 && parameterSymbol === symbol) return index;
   }
   return void 0;
 }
-function inspectActualEquation2(context2, repositoryRoot, declaration) {
+function inspectActualEquation2(context, repositoryRoot, declaration) {
   const sourceDependencies = /* @__PURE__ */ new Set();
   const supportingValues = /* @__PURE__ */ new Set();
   const standardOperations = /* @__PURE__ */ new Set();
@@ -6011,7 +6464,7 @@ function inspectActualEquation2(context2, repositoryRoot, declaration) {
   visitRuntime2(declaration.body, (node) => {
     if (ts.isPropertyAccessExpression(node) || ts.isElementAccessExpression(node)) {
       const symbolNode = ts.isPropertyAccessExpression(node) ? node.name : node.argumentExpression;
-      const symbol = symbolNode === void 0 ? void 0 : resolveSymbol3(context2, context2.checker.getSymbolAtLocation(symbolNode));
+      const symbol = symbolNode === void 0 ? void 0 : resolveSymbol3(context, context.checker.getSymbolAtLocation(symbolNode));
       for (const candidate of symbol?.declarations ?? []) {
         if (ts.isGetAccessorDeclaration(candidate) || ts.isSetAccessorDeclaration(candidate)) {
           fail4(`accessor-backed value '${node.getText()}' is outside the immutable data domain.`);
@@ -6019,8 +6472,8 @@ function inspectActualEquation2(context2, repositoryRoot, declaration) {
       }
     }
     if (ts.isIdentifier(node)) {
-      const symbol = resolveSymbol3(context2, context2.checker.getSymbolAtLocation(node));
-      const callable = sourceCallableDeclaration2(context2, symbol);
+      const symbol = resolveSymbol3(context, context.checker.getSymbolAtLocation(node));
+      const callable = sourceCallableDeclaration2(context, symbol);
       if (callable !== void 0 && callable !== declaration && !isNestedInside(callable, declaration)) {
         const key = declarationKey4(repositoryRoot, callable);
         sourceDependencies.add(key);
@@ -6037,21 +6490,21 @@ function inspectActualEquation2(context2, repositoryRoot, declaration) {
       }
     }
     if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
-      const callbackIndex = callbackParameterIndex(context2, declaration, node);
+      const callbackIndex = callbackParameterIndex(context, declaration, node);
       if (callbackIndex !== void 0) {
         callbackDependencies.add(`parameter:${callbackIndex}`);
         return;
       }
-      const target = context2.checker.getResolvedSignature(node)?.declaration;
+      const target = context.checker.getResolvedSignature(node)?.declaration;
       if (target === void 0) fail4(`unresolved call '${node.getText()}'.`);
       if (isNestedInside(target, declaration)) return;
       if (target.getSourceFile().isDeclarationFile) {
-        const operation = standardOperation2(context2, node, target);
+        const operation = standardOperation2(context, node, target);
         if (!ALLOWED_STANDARD_OPERATIONS2.includes(operation)) {
           fail4(`native operation '${operation}' is not independently admitted.`);
         }
         standardOperations.add(operation);
-        const targetSpan = spanOf(context2, target);
+        const targetSpan = spanOf(context, target);
         standardDeclarations.set(
           `${operation}:${targetSpan.file}:${targetSpan.start.offset}`,
           { operation, declaration: targetSpan }
@@ -6187,7 +6640,7 @@ function loadOverriddenContext2(repositoryRoot, sourceOverrides) {
   return { repositoryRoot: root3, program, checker: program.getTypeChecker() };
 }
 function loadSpecification2() {
-  const bytes2 = fs12.readFileSync(equationProgramPath2);
+  const bytes2 = fs11.readFileSync(equationProgramPath2);
   const source7 = ts.createSourceFile(
     equationProgramPath2,
     bytes2.toString("utf8"),
@@ -6198,8 +6651,8 @@ function loadSpecification2() {
   assert13.equal(source7.parseDiagnostics.length, 0, "Independent equation program has syntax errors.");
   return { bytes: bytes2, source: source7 };
 }
-function catalogEquationId(repositoryRoot, context2, artifact, proof) {
-  const source7 = context2.program.getSourceFile(path14.resolve(repositoryRoot, proof.implementation.file));
+function catalogEquationId(repositoryRoot, context, artifact, proof) {
+  const source7 = context.program.getSourceFile(path14.resolve(repositoryRoot, proof.implementation.file));
   assert13(source7 !== void 0);
   const declaration = nodeAtExactSpan(
     source7,
@@ -6222,8 +6675,8 @@ function mergeInputs(rows) {
 }
 function buildCatalogFoundationFamilyArtifact({
   repositoryRoot,
-  context: context2,
-  surface: surface2,
+  context,
+  surface,
   sourceOverrides = /* @__PURE__ */ new Map()
 }) {
   const root3 = path14.resolve(repositoryRoot);
@@ -6259,20 +6712,20 @@ function buildCatalogFoundationFamilyArtifact({
   );
   const quantityArtifact = buildFamilyArtifact3({
     repositoryRoot: root3,
-    context: context2,
-    surface: surface2,
+    context,
+    surface,
     sourceOverrides: quantityOverrides
   });
   const catalogArtifact = buildCatalogFamilyArtifact({
     repositoryRoot: root3,
-    context: context2,
-    surface: surface2,
+    context,
+    surface,
     sourceOverrides: catalogOverrides
   });
   const identityArtifact = buildFamilyArtifact2({
     repositoryRoot: root3,
-    context: context2,
-    surface: surface2,
+    context,
+    surface,
     sourceOverrides: identityOverrides
   });
   const quantityArtifactDigest = sha256(canonicalJson(quantityArtifact));
@@ -6280,7 +6733,7 @@ function buildCatalogFoundationFamilyArtifact({
   const identityArtifactDigest = sha256(canonicalJson(identityArtifact));
   const localInputs = [.../* @__PURE__ */ new Set([...SOURCE_FILES2, ...producerFiles4])].map((file) => ({
     file,
-    sha256: sha256(sourceOverrides.get(file) ?? fs12.readFileSync(path14.resolve(root3, file)))
+    sha256: sha256(sourceOverrides.get(file) ?? fs11.readFileSync(path14.resolve(root3, file)))
   }));
   const inputs3 = mergeInputs([
     ...localInputs,
@@ -6289,15 +6742,15 @@ function buildCatalogFoundationFamilyArtifact({
     ...identityArtifact.inputs
   ]);
   const cacheKey = sha256(canonicalJson({
-    surfaceDigest: surface2.digest,
+    surfaceDigest: surface.digest,
     inputs: inputs3,
     quantityArtifactDigest,
     catalogArtifactDigest,
     identityArtifactDigest
   }));
-  const cached2 = sourceOverrides.size === 0 ? passCache3.get(context2) : void 0;
+  const cached2 = sourceOverrides.size === 0 ? passCache3.get(context) : void 0;
   if (cached2?.key === cacheKey) return cached2.value;
-  const activeContext = sourceOverrides.size === 0 ? context2 : loadOverriddenContext2(root3, sourceOverrides);
+  const activeContext = sourceOverrides.size === 0 ? context : loadOverriddenContext2(root3, sourceOverrides);
   assert13.equal(path14.resolve(activeContext.repositoryRoot), root3);
   const sourceByFile = new Map(
     SOURCE_FILES2.map((file) => {
@@ -6333,7 +6786,7 @@ function buildCatalogFoundationFamilyArtifact({
     ...externalEquationIds,
     ...quantityEquationIds
   ])];
-  const callableByKey = new Map(surface2.callables.map((callable) => [callable.key, callable]));
+  const callableByKey = new Map(surface.callables.map((callable) => [callable.key, callable]));
   const publicProofSeeds = [];
   const pendingLocal = [];
   const usedExternalDependencies = /* @__PURE__ */ new Set();
@@ -6536,7 +6989,7 @@ function buildCatalogFoundationFamilyArtifact({
     proofKind: proofKind2,
     familyId: CATALOG_FOUNDATION_FAMILY_ID,
     sourceBase: CATALOG_FOUNDATION_SOURCE_BASE,
-    surfaceDigest: surface2.digest,
+    surfaceDigest: surface.digest,
     domain: {
       id: "VALIDATED_IMMUTABLE_CATALOG_FOUNDATION_VALUES_V1",
       quantified: "Every non-proxied plain-value input satisfying the published TypeScript shapes and every guard in the complete normalized equations; no fixture or finite-sample restriction.",
@@ -6595,7 +7048,7 @@ function buildCatalogFoundationFamilyArtifact({
     ...resultWithoutId,
     certificateId: `sha256:${sha256(canonicalJson(resultWithoutId))}`
   };
-  if (sourceOverrides.size === 0) passCache3.set(context2, { key: cacheKey, value: result });
+  if (sourceOverrides.size === 0) passCache3.set(context, { key: cacheKey, value: result });
   return result;
 }
 var buildFamilyArtifact4 = buildCatalogFoundationFamilyArtifact;
@@ -6916,7 +7369,7 @@ function relativePath2(repositoryRoot, fileName) {
   return path15.relative(repositoryRoot, fileName).replaceAll("\\", "/");
 }
 function readSource(repositoryRoot, sourceOverrides, file) {
-  return sourceOverrides.get(file) ?? fs13.readFileSync(path15.resolve(repositoryRoot, file), "utf8");
+  return sourceOverrides.get(file) ?? fs12.readFileSync(path15.resolve(repositoryRoot, file), "utf8");
 }
 function parseSource3(fileName, sourceText5) {
   return ts.createSourceFile(
@@ -7017,12 +7470,12 @@ function validateCatalogFoundationDependencyReference(reference) {
   assert14.equal(reference.reviewedCommit, null);
   return false;
 }
-function loadCatalogFoundationDependencyReference({ repositoryRoot, context: context2, surface: surface2 }) {
-  const pendingReference = JSON.parse(fs13.readFileSync(catalogFoundationDependencyPath, "utf8"));
+function loadCatalogFoundationDependencyReference({ repositoryRoot, context, surface }) {
+  const pendingReference = JSON.parse(fs12.readFileSync(catalogFoundationDependencyPath, "utf8"));
   validateCatalogFoundationDependencyReference(pendingReference);
-  const artifact = buildFamilyArtifact4({ repositoryRoot, context: context2, surface: surface2 });
+  const artifact = buildFamilyArtifact4({ repositoryRoot, context, surface });
   assert14.equal(artifact.proofKind, proofKind2);
-  assert14.equal(artifact.surfaceDigest, surface2.digest);
+  assert14.equal(artifact.surfaceDigest, surface.digest);
   assert14.equal(artifact.allAdmittedInputs, true);
   assert14.equal(artifact.sampledInputs, 0);
   const equations2 = new Map(artifact.equations.map((equation3) => [equation3.id, equation3]));
@@ -7048,12 +7501,12 @@ function loadCatalogFoundationDependencyReference({ repositoryRoot, context: con
     }
   };
 }
-function buildCurrentReusedDependencyAuthority({ repositoryRoot, context: context2, surface: surface2 }) {
-  const quantity = buildFamilyArtifact3({ repositoryRoot, context: context2, surface: surface2 });
-  const identity = buildFamilyArtifact2({ repositoryRoot, context: context2, surface: surface2 });
-  const catalog = buildCatalogFamilyArtifact({ repositoryRoot, context: context2, surface: surface2 });
+function buildCurrentReusedDependencyAuthority({ repositoryRoot, context, surface }) {
+  const quantity = buildFamilyArtifact3({ repositoryRoot, context, surface });
+  const identity = buildFamilyArtifact2({ repositoryRoot, context, surface });
+  const catalog = buildCatalogFamilyArtifact({ repositoryRoot, context, surface });
   for (const artifact of [quantity, identity, catalog]) {
-    assert14.equal(artifact.surfaceDigest, surface2.digest, `Current reused family surface drifted: ${artifact.proofKind}`);
+    assert14.equal(artifact.surfaceDigest, surface.digest, `Current reused family surface drifted: ${artifact.proofKind}`);
     assert14.equal(artifact.allAdmittedInputs, true, `Current reused family is incomplete: ${artifact.proofKind}`);
     assert14.equal(artifact.sampledInputs, 0, `Current reused family became sample-backed: ${artifact.proofKind}`);
   }
@@ -7072,7 +7525,7 @@ function buildCurrentReusedDependencyAuthority({ repositoryRoot, context: contex
   for (const row of identity.supportingValues ?? []) add(identity.proofKind, row.id);
   for (const row of catalog.proofs ?? []) add(catalog.proofKind, row.equationId);
   for (const row of catalog.helperEquations ?? []) add(catalog.proofKind, row.key);
-  const catalogSource = context2.program.getSourceFile(path15.resolve(repositoryRoot, "src/catalog.ts"));
+  const catalogSource = context.program.getSourceFile(path15.resolve(repositoryRoot, "src/catalog.ts"));
   assert14(catalogSource !== void 0, "Current compiler omitted src/catalog.ts.");
   const activeItem = findClassMethod2(catalogSource, "InventoryCatalog", "activeItem");
   const expectedActiveItemSource = parseSource3(
@@ -7118,7 +7571,7 @@ function buildCurrentReusedDependencyAuthority({ repositoryRoot, context: contex
     })),
     activeItem: {
       equationId: "src/catalog.ts#InventoryCatalog.activeItem",
-      declaration: spanOf(context2, activeItem),
+      declaration: spanOf(context, activeItem),
       equationSha256: sha256(canonicalJson(activeItemTerm))
     },
     inputs: [...inputsByFile.values()].sort((left, right) => compareCodeUnits(left.file, right.file))
@@ -7238,7 +7691,7 @@ function enumDeclarationId(repositoryRoot, declaration) {
 }
 function trustedLibraryFile(trustedLibraryRoot, declaration) {
   assert14.equal(declaration.getSourceFile().isDeclarationFile, true, "Runtime library declaration must be ambient.");
-  const file = fs13.realpathSync(declaration.getSourceFile().fileName);
+  const file = fs12.realpathSync(declaration.getSourceFile().fileName);
   assert14(file.startsWith(`${trustedLibraryRoot}${path15.sep}`), `Runtime declaration left the trusted TypeScript library: ${file}`);
   return file;
 }
@@ -7247,17 +7700,17 @@ function standardOperationKey(repositoryRoot, declaration) {
   const name = declaration.name?.getText(source7) ?? "<anonymous>";
   return `${relativePath2(repositoryRoot, source7.fileName)}#${name}#${ts.SyntaxKind[declaration.kind]}@${declaration.getStart(source7)}:${declaration.getEnd()}`;
 }
-function resolvedCompilerSymbol(context2, node) {
-  let symbol = context2.checker.getSymbolAtLocation(node);
+function resolvedCompilerSymbol(context, node) {
+  let symbol = context.checker.getSymbolAtLocation(node);
   if (symbol !== void 0 && (symbol.flags & ts.SymbolFlags.Alias) !== 0) {
-    symbol = context2.checker.getAliasedSymbol(symbol);
+    symbol = context.checker.getAliasedSymbol(symbol);
   }
   return symbol;
 }
-function verifyDependencyClosure2({ repositoryRoot, context: context2, roots }) {
+function verifyDependencyClosure2({ repositoryRoot, context, roots }) {
   const localFiles = new Set(LOCAL_SOURCE_FILES);
-  const trustedLibraryRoot = fs13.realpathSync(
-    path15.dirname(ts.getDefaultLibFilePath(context2.program.getCompilerOptions()))
+  const trustedLibraryRoot = fs12.realpathSync(
+    path15.dirname(ts.getDefaultLibFilePath(context.program.getCompilerOptions()))
   );
   const declarations = /* @__PURE__ */ new Map();
   const pending = [...roots];
@@ -7268,7 +7721,7 @@ function verifyDependencyClosure2({ repositoryRoot, context: context2, roots }) 
   const catalogFoundationDependencies = /* @__PURE__ */ new Set();
   const runtimeValues = /* @__PURE__ */ new Set();
   function resolvedSymbol3(node) {
-    return resolvedCompilerSymbol(context2, node);
+    return resolvedCompilerSymbol(context, node);
   }
   function classifySourceCallable(declaration, dependencies) {
     const id = declarationId(repositoryRoot, declaration);
@@ -7293,17 +7746,17 @@ function verifyDependencyClosure2({ repositoryRoot, context: context2, roots }) 
   while (pending.length > 0) {
     let inspect2 = function(node) {
       if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
-        const target = context2.checker.getResolvedSignature(node)?.declaration;
+        const target = context.checker.getResolvedSignature(node)?.declaration;
         assert14(target !== void 0, `Unresolved call '${node.getText()}'.`);
         if (target.getSourceFile().isDeclarationFile) {
           trustedLibraryFile(trustedLibraryRoot, target);
           const key = standardOperationKey(repositoryRoot, target);
           const prior = standardOperations.get(key) ?? {
             key,
-            declaration: spanOf(context2, target),
+            declaration: spanOf(context, target),
             callSites: []
           };
-          prior.callSites.push(spanOf(context2, node));
+          prior.callSites.push(spanOf(context, node));
           standardOperations.set(key, prior);
         } else if ((ts.isFunctionDeclaration(target) || ts.isMethodDeclaration(target) || ts.isConstructorDeclaration(target)) && target.body !== void 0) {
           classifySourceCallable(target, dependencies);
@@ -7331,7 +7784,7 @@ function verifyDependencyClosure2({ repositoryRoot, context: context2, roots }) 
             if (declarationIsInsideCallable2(candidate, declaration)) continue;
             if (candidate.getSourceFile().isDeclarationFile) {
               trustedLibraryFile(trustedLibraryRoot, candidate);
-              const declarationSpan = spanOf(context2, candidate);
+              const declarationSpan = spanOf(context, candidate);
               const globalKey = `${node.text}:${declarationSpan.file}:${declarationSpan.start.offset}:${declarationSpan.end.offset}`;
               runtimeGlobals.set(globalKey, {
                 key: globalKey,
@@ -7426,42 +7879,42 @@ function lawForEquation(id, publicName) {
   assert14(law !== void 0, `Missing independent law '${lawId}'.`);
   return law;
 }
-function replacementInterfaceRelation({ context: context2, source: source7, callable, implementation, methodName }) {
+function replacementInterfaceRelation({ context, source: source7, callable, implementation, methodName }) {
   const publicMethod = findInterfaceMethod(source7, "InventoryOnceReplacementPlans", methodName);
-  assert14.deepEqual(callable.declaration, spanOf(context2, publicMethod), `Public replacement declaration drifted for '${methodName}'.`);
+  assert14.deepEqual(callable.declaration, spanOf(context, publicMethod), `Public replacement declaration drifted for '${methodName}'.`);
   const owner = implementation.parent;
   assert14(ts.isClassDeclaration(owner));
   const implementedTypes = owner.heritageClauses?.filter((clause) => clause.token === ts.SyntaxKind.ImplementsKeyword).flatMap((clause) => clause.types) ?? [];
   const publicOwner = publicMethod.parent;
   assert14(ts.isInterfaceDeclaration(publicOwner));
-  const publicSymbol = context2.checker.getSymbolAtLocation(publicOwner.name);
+  const publicSymbol = context.checker.getSymbolAtLocation(publicOwner.name);
   assert14(
-    implementedTypes.some((type) => context2.checker.getSymbolAtLocation(type.expression) === publicSymbol),
+    implementedTypes.some((type) => context.checker.getSymbolAtLocation(type.expression) === publicSymbol),
     "Replacement implementation no longer implements the exact public interface."
   );
   assert14(
-    context2.checker.isTypeAssignableTo(
-      context2.checker.getTypeAtLocation(implementation),
-      context2.checker.getTypeAtLocation(publicMethod)
+    context.checker.isTypeAssignableTo(
+      context.checker.getTypeAtLocation(implementation),
+      context.checker.getTypeAtLocation(publicMethod)
     ),
     `Replacement implementation '${methodName}' is not assignable to its public declaration.`
   );
   return {
     kind: "COMPILER_RESOLVED_INTERFACE_IMPLEMENTATION",
-    interface: spanOf(context2, publicMethod),
-    implementation: spanOf(context2, implementation)
+    interface: spanOf(context, publicMethod),
+    implementation: spanOf(context, implementation)
   };
 }
-function replacementConstructionBridge({ context: context2, source: source7 }) {
+function replacementConstructionBridge({ context, source: source7 }) {
   const correct = findClassMethod2(source7, "InventoryOnceStockImplementation", "correct");
   const implementationClass = findClass(source7, "InventoryOnceReplacementPlansImplementation");
-  const implementationSymbol = context2.checker.getSymbolAtLocation(implementationClass.name);
+  const implementationSymbol = context.checker.getSymbolAtLocation(implementationClass.name);
   let construction;
   let callback;
   function visit(node) {
     if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.name.text === "replacementPlans" && ts.isNewExpression(node.initializer)) {
       assert14.equal(construction, void 0, "Replacement implementation is constructed more than once.");
-      const symbol = context2.checker.getSymbolAtLocation(node.initializer.expression);
+      const symbol = context.checker.getSymbolAtLocation(node.initializer.expression);
       assert14(symbol === implementationSymbol, "Correction callback constructs a different planner class.");
       assert14.equal(node.initializer.arguments?.length, 2);
       const [catalogArgument, operationArgument] = node.initializer.arguments;
@@ -7473,14 +7926,14 @@ function replacementConstructionBridge({ context: context2, source: source7 }) {
       assert14.equal(operationArgument.templateSpans.length, 1);
       assert14.equal(operationArgument.templateSpans[0].expression.getText(source7), "input.operationId");
       assert14.equal(operationArgument.templateSpans[0].literal.text, ":replacement");
-      construction = spanOf(context2, node.initializer);
+      construction = spanOf(context, node.initializer);
     }
     if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.name.text === "opaqueReplacement" && ts.isCallExpression(node.initializer) && ts.isPropertyAccessExpression(node.initializer.expression) && node.initializer.expression.name.text === "replaceWith") {
       assert14.equal(callback, void 0, "Replacement callback is invoked more than once.");
       assert14.equal(node.initializer.expression.expression.getText(source7), "input");
       assert14.equal(node.initializer.arguments.length, 1);
       assert14.equal(node.initializer.arguments[0].getText(source7), "replacementPlans");
-      callback = spanOf(context2, node.initializer);
+      callback = spanOf(context, node.initializer);
     }
     ts.forEachChild(node, visit);
   }
@@ -7489,16 +7942,16 @@ function replacementConstructionBridge({ context: context2, source: source7 }) {
   assert14(callback !== void 0, "Correction no longer passes the certified planner to replaceWith.");
   return {
     kind: "COMPILER_RESOLVED_CORRECTION_CALLBACK_BRIDGE",
-    correctMethod: spanOf(context2, correct),
+    correctMethod: spanOf(context, correct),
     construction,
     callback,
     durableBoundary: "The bridge ends at opaque plan construction; commitInventoryOperation and durable publication are not claimed by this value family."
   };
 }
-function runtimeValueEquations({ repositoryRoot, context: context2, sources, expectedSource: expectedSource3 }) {
+function runtimeValueEquations({ repositoryRoot, context, sources, expectedSource: expectedSource3 }) {
   const values = [];
-  const trustedLibraryRoot = fs13.realpathSync(
-    path15.dirname(ts.getDefaultLibFilePath(context2.program.getCompilerOptions()))
+  const trustedLibraryRoot = fs12.realpathSync(
+    path15.dirname(ts.getDefaultLibFilePath(context.program.getCompilerOptions()))
   );
   for (const id of LOCAL_RUNTIME_VALUE_IDS) {
     const separator = id.indexOf("#");
@@ -7511,7 +7964,7 @@ function runtimeValueEquations({ repositoryRoot, context: context2, sources, exp
       assert14((found.statement.declarationList.flags & ts.NodeFlags.Const) !== 0, "Replacement plan table must remain const-bound.");
       assert14(ts.isNewExpression(found.declaration.initializer));
       assert14.equal(found.declaration.initializer.expression.getText(source7), "WeakMap");
-      const runtimeSymbol = resolvedCompilerSymbol(context2, found.declaration.initializer.expression);
+      const runtimeSymbol = resolvedCompilerSymbol(context, found.declaration.initializer.expression);
       assert14(runtimeSymbol !== void 0, "WeakMap runtime value must resolve to one compiler symbol.");
       const runtimeDeclarations = runtimeSymbol.declarations ?? [];
       assert14(runtimeDeclarations.length > 0, "WeakMap runtime value must have a declaration.");
@@ -7523,7 +7976,7 @@ function runtimeValueEquations({ repositoryRoot, context: context2, sources, exp
         }
         trustedLibraryFile(trustedLibraryRoot, runtimeDeclaration);
       }
-      const constructorDeclaration = context2.checker.getResolvedSignature(found.declaration.initializer)?.declaration;
+      const constructorDeclaration = context.checker.getResolvedSignature(found.declaration.initializer)?.declaration;
       assert14(constructorDeclaration !== void 0, "WeakMap constructor signature must resolve.");
       trustedLibraryFile(trustedLibraryRoot, constructorDeclaration);
       const expected2 = findTopLevelVariable(expectedSource3, name);
@@ -7531,10 +7984,10 @@ function runtimeValueEquations({ repositoryRoot, context: context2, sources, exp
       assert14.deepEqual(term5, normalizeEventValueSyntax(expected2.statement), `Independent value equation changed: ${id}`);
       values.push({
         id,
-        declaration: spanOf(context2, found.statement),
+        declaration: spanOf(context, found.statement),
         term: term5,
-        runtimeGlobalDeclarations: runtimeDeclarations.map((runtimeDeclaration) => spanOf(context2, runtimeDeclaration)).sort((left, right) => compareCodeUnits(canonicalJson(left), canonicalJson(right))),
-        constructorDeclaration: spanOf(context2, constructorDeclaration),
+        runtimeGlobalDeclarations: runtimeDeclarations.map((runtimeDeclaration) => spanOf(context, runtimeDeclaration)).sort((left, right) => compareCodeUnits(canonicalJson(left), canonicalJson(right))),
+        constructorDeclaration: spanOf(context, constructorDeclaration),
         law: "One module-private WeakMap maps only library-created opaque plans to their exact event draft or null omit marker."
       });
       continue;
@@ -7545,7 +7998,7 @@ function runtimeValueEquations({ repositoryRoot, context: context2, sources, exp
     assert14.deepEqual(term4, normalizeEventValueSyntax(expected), `Independent value equation changed: ${id}`);
     values.push({
       id,
-      declaration: spanOf(context2, declaration),
+      declaration: spanOf(context, declaration),
       term: term4,
       law: "Every enum member and literal value is retained exactly; changed kind/action identities reject the family."
     });
@@ -7554,29 +8007,29 @@ function runtimeValueEquations({ repositoryRoot, context: context2, sources, exp
 }
 function buildEventValuesFamilyArtifact({
   repositoryRoot,
-  context: context2,
-  surface: surface2,
+  context,
+  surface,
   sourceOverrides = /* @__PURE__ */ new Map()
 }) {
   assert14.equal(ASSIGNED_SURFACE_KEYS4.length, 45, "Follow-on surface cardinality changed.");
   assert14.equal(new Set(ASSIGNED_SURFACE_KEYS4).size, 45, "Follow-on surface keys must be unique.");
-  assert14.equal(surface2.digest, EVENT_VALUES_SURFACE_DIGEST, "Event family requires the exact current 535 surface.");
+  assert14.equal(surface.digest, EVENT_VALUES_SURFACE_DIGEST, "Event family requires the exact current 535 surface.");
   const expectedSource3 = parseSource3(
     equationProgramPath3,
-    fs13.readFileSync(equationProgramPath3, "utf8")
+    fs12.readFileSync(equationProgramPath3, "utf8")
   );
   assert14.equal(expectedSource3.parseDiagnostics.length, 0, "Independent equation program has syntax errors.");
-  const activeContext = sourceOverrides.size === 0 ? context2 : loadOverriddenContext3(repositoryRoot, sourceOverrides);
-  const foundationContext = [...sourceOverrides.keys()].some((file) => SOURCE_FILES2.includes(file)) ? activeContext : context2;
+  const activeContext = sourceOverrides.size === 0 ? context : loadOverriddenContext3(repositoryRoot, sourceOverrides);
+  const foundationContext = [...sourceOverrides.keys()].some((file) => SOURCE_FILES2.includes(file)) ? activeContext : context;
   const catalogFoundationReference = loadCatalogFoundationDependencyReference({
     repositoryRoot,
     context: foundationContext,
-    surface: surface2
+    surface
   });
   const currentReusedDependencyAuthority = buildCurrentReusedDependencyAuthority({
     repositoryRoot,
     context: activeContext,
-    surface: surface2
+    surface
   });
   const allSourceFiles = Object.keys(EXPECTED_SOURCE_SHA256).sort(compareCodeUnits);
   const sources = /* @__PURE__ */ new Map();
@@ -7662,7 +8115,7 @@ function buildEventValuesFamilyArtifact({
   const dependenciesByEquationId = new Map(
     [...memberEquations, ...helperEquations].map((equation3) => [equation3.id, equation3.dependencies])
   );
-  const publicSurface = new Map(surface2.callables.map((callable) => [callable.key, callable]));
+  const publicSurface = new Map(surface.callables.map((callable) => [callable.key, callable]));
   const facadeSource = sources.get("src/facade.ts");
   const plannerBridge = sourceOverrides.size === 0 ? replacementConstructionBridge({ context: activeContext, source: facadeSource }) : { kind: "MUTATION_CONTROL_ONLY" };
   const proofs = [];
@@ -7754,7 +8207,7 @@ function buildEventValuesFamilyArtifact({
   ];
   const inputs3 = [...new Set(semanticInputFiles)].sort(compareCodeUnits).map((file) => ({
     file,
-    sha256: sha256(sourceOverrides.get(file) ?? fs13.readFileSync(path15.resolve(repositoryRoot, file)))
+    sha256: sha256(sourceOverrides.get(file) ?? fs12.readFileSync(path15.resolve(repositoryRoot, file)))
   }));
   const semanticCore = {
     proofKind: EVENT_VALUES_PROOF_KIND,
@@ -7805,7 +8258,7 @@ function buildEventValuesFamilyArtifact({
     mode: "V",
     proofKind: EVENT_VALUES_PROOF_KIND,
     certificateId,
-    surfaceDigest: surface2.digest,
+    surfaceDigest: surface.digest,
     allAdmittedInputs: fullFamilyAllAdmittedInputs,
     sampledInputs: 0,
     inputs: inputs3,
@@ -7843,15 +8296,15 @@ function buildFamilyArtifact5(arguments_) {
 }
 var supportedSurfaceKeys5 = ASSIGNED_SURFACE_KEYS4;
 function cachedInputsAreFresh(repositoryRoot, inputs3) {
-  return inputs3.every((input2) => sha256(fs13.readFileSync(path15.resolve(repositoryRoot, input2.file))) === input2.sha256);
+  return inputs3.every((input2) => sha256(fs12.readFileSync(path15.resolve(repositoryRoot, input2.file))) === input2.sha256);
 }
-function familyArtifactForCompilerPass({ repositoryRoot, context: context2, surface: surface2 }) {
-  const cached2 = familyPassCache.get(context2);
-  if (cached2 !== void 0 && cached2.surfaceDigest === surface2.digest && cachedInputsAreFresh(repositoryRoot, cached2.artifact.inputs)) {
+function familyArtifactForCompilerPass({ repositoryRoot, context, surface }) {
+  const cached2 = familyPassCache.get(context);
+  if (cached2 !== void 0 && cached2.surfaceDigest === surface.digest && cachedInputsAreFresh(repositoryRoot, cached2.artifact.inputs)) {
     return cached2.artifact;
   }
-  const artifact = buildEventValuesFamilyArtifact({ repositoryRoot, context: context2, surface: surface2 });
-  familyPassCache.set(context2, { surfaceDigest: surface2.digest, artifact });
+  const artifact = buildEventValuesFamilyArtifact({ repositoryRoot, context, surface });
+  familyPassCache.set(context, { surfaceDigest: surface.digest, artifact });
   return artifact;
 }
 
@@ -7887,11 +8340,11 @@ var DEPENDENCIES = Object.freeze([
 ]);
 function sf(root3, file, override) {
   const abs = path16.resolve(root3, file);
-  return ts.createSourceFile(abs, override ?? fs14.readFileSync(abs, "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  return ts.createSourceFile(abs, override ?? fs13.readFileSync(abs, "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
 }
 function expectedSource(root3) {
   const file = path16.resolve(root3, EXPECTED);
-  return ts.createSourceFile(file, fs14.readFileSync(file, "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  return ts.createSourceFile(file, fs13.readFileSync(file, "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
 }
 function findFunction4(source7, name) {
   const rows = source7.statements.filter((row) => ts.isFunctionDeclaration(row) && row.name?.text === name);
@@ -7904,8 +8357,8 @@ function runtimeTerm(node, source7) {
   const name = node.name?.text;
   assert15(name !== void 0);
   text = text.replace(new RegExp(`^(?:async\\s+)?function\\s+${name}\\b`), (m) => m.replace(name, "__proof"));
-  const emitted2 = ts.transpileModule(text, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.None, removeComments: true } }).outputText.trim();
-  const scanner = ts.createScanner(ts.ScriptTarget.ES2022, true, ts.LanguageVariant.Standard, emitted2);
+  const emitted = ts.transpileModule(text, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.None, removeComments: true } }).outputText.trim();
+  const scanner = ts.createScanner(ts.ScriptTarget.ES2022, true, ts.LanguageVariant.Standard, emitted);
   const tokens5 = [];
   for (; ; ) {
     const kind = scanner.scan();
@@ -7946,23 +8399,23 @@ function sourceEquationReceipt(root3, overrides = /* @__PURE__ */ new Map()) {
   assert15.deepEqual(supportingValues, { InventoryCompositionOutputAmountKind: { Measured: "measured", Package: "package" }, InventoryCompositionOutputLotPolicy: { None: "none", InheritSource: "inherit-source", InheritSourceWhenPresent: "inherit-source-when-present", Explicit: "explicit" }, InventoryTrackingRequirement: { Forbidden: "forbidden", Optional: "optional", Required: "required" }, InventoryTraceabilityNodeKind: { Serial: "serial", Container: "container", Lot: "lot", External: "external" } });
   return { publicEquation, privateEquations, supportingValues };
 }
-function familyArtifacts(root3, context2, surface2) {
+function familyArtifacts(root3, context, surface) {
   return /* @__PURE__ */ new Map([
-    ["identity", buildIdentityValuesFamilyArtifact({ repositoryRoot: root3, context: context2, surface: surface2 })],
-    ["quantity", buildQuantityValuesFamilyCertificate({ repositoryRoot: root3, context: context2, surface: surface2 })],
-    ["catalog", buildCatalogFamilyArtifact({ repositoryRoot: root3, context: context2, surface: surface2 })],
-    ["event", buildEventValuesFamilyArtifact({ repositoryRoot: root3, context: context2, surface: surface2 })]
+    ["identity", buildIdentityValuesFamilyArtifact({ repositoryRoot: root3, context, surface })],
+    ["quantity", buildQuantityValuesFamilyCertificate({ repositoryRoot: root3, context, surface })],
+    ["catalog", buildCatalogFamilyArtifact({ repositoryRoot: root3, context, surface })],
+    ["event", buildEventValuesFamilyArtifact({ repositoryRoot: root3, context, surface })]
   ]);
 }
-function dependencyReceipt(root3, context2, surface2) {
-  const families = familyArtifacts(root3, context2, surface2), receipts = [];
+function dependencyReceipt(root3, context, surface) {
+  const families = familyArtifacts(root3, context, surface), receipts = [];
   for (const dep of DEPENDENCIES) {
     const artifact = families.get(dep.family);
     assert15(artifact !== void 0);
-    assert15.equal(artifact.surfaceDigest, surface2.digest);
+    assert15.equal(artifact.surfaceDigest, surface.digest);
     const proof = artifact.proofs.find((p) => p.surfaceKey === dep.key);
     assert15(proof !== void 0, `${dep.family} missing ${dep.key}`);
-    const callable = surface2.callables.find((row) => row.key === dep.key);
+    const callable = surface.callables.find((row) => row.key === dep.key);
     assert15(callable !== void 0);
     assert15.equal(proof.signatureHash, callable.signatureHash);
     assert15.deepEqual(proof.declaration, callable.declaration);
@@ -7972,7 +8425,7 @@ function dependencyReceipt(root3, context2, surface2) {
 }
 function addInput(root3, inputs3, file) {
   if (inputs3.has(file)) return;
-  inputs3.set(file, { file, sha256: sha256(fs14.readFileSync(path16.resolve(root3, file))) });
+  inputs3.set(file, { file, sha256: sha256(fs13.readFileSync(path16.resolve(root3, file))) });
 }
 function semanticInputs(root3, deps) {
   const inputs3 = /* @__PURE__ */ new Map();
@@ -7980,22 +8433,22 @@ function semanticInputs(root3, deps) {
   for (const artifact of deps.families.values()) for (const input2 of artifact.inputs ?? artifact.producers ?? []) addInput(root3, inputs3, input2.file);
   return [...inputs3.values()].sort((a, b) => a.file < b.file ? -1 : a.file > b.file ? 1 : 0);
 }
-function buildFamilyArtifact6({ repositoryRoot = process.cwd(), context: context2 = loadEvidenceCompilerContext(repositoryRoot, []), surface: surface2 = discoverCompilerSurface(repositoryRoot), sourceOverrides = /* @__PURE__ */ new Map() } = {}) {
+function buildFamilyArtifact6({ repositoryRoot = process.cwd(), context = loadEvidenceCompilerContext(repositoryRoot, []), surface = discoverCompilerSurface(repositoryRoot), sourceOverrides = /* @__PURE__ */ new Map() } = {}) {
   const equations2 = sourceEquationReceipt(repositoryRoot, sourceOverrides);
   if (sourceOverrides.size > 0) return { mutationControlAccepted: false, equations: equations2 };
-  const deps = dependencyReceipt(repositoryRoot, context2, surface2), callable = surface2.callables.find((row) => row.key === supportedSurfaceKeys6[0]);
+  const deps = dependencyReceipt(repositoryRoot, context, surface), callable = surface.callables.find((row) => row.key === supportedSurfaceKeys6[0]);
   assert15(callable !== void 0);
-  return { schemaVersion: 1, proofKind: proofKind3, surfaceDigest: surface2.digest, domain: "Every input admitted by CreateInventoryCompositionOpenEventInput. Complete public control flow and all eleven private helper equations are independently frozen, including package-count rejection, source-package/item consistency, output placement validation, lot inheritance/explicit-lot rules, genealogy ambiguity, amount scaling, output placement and audit metadata. Exact external Catalog, Identity, Quantity and TransformationEvent semantics are rederived from their already-certified families; no sampled fixtures or bounded composition oracle are used.", allAdmittedInputs: true, sampledInputs: 0, producerGraphRuns: 0, producerReplayRuns: 0, inputs: semanticInputs(repositoryRoot, deps), proofs: [{ surfaceKey: supportedSurfaceKeys6[0], signatureHash: callable.signatureHash, declaration: callable.declaration, semantics: { completeExpectedTerm: equations2.publicEquation, privateEquations: equations2.privateEquations, supportingValues: equations2.supportingValues, dependencyReceipts: deps.receipts, languagePrimitives: ["Number.isSafeInteger", "Object.keys", "Object.entries", "Set", "encodeURIComponent"] } }] };
+  return { schemaVersion: 1, proofKind: proofKind3, surfaceDigest: surface.digest, domain: "Every input admitted by CreateInventoryCompositionOpenEventInput. Complete public control flow and all eleven private helper equations are independently frozen, including package-count rejection, source-package/item consistency, output placement validation, lot inheritance/explicit-lot rules, genealogy ambiguity, amount scaling, output placement and audit metadata. Exact external Catalog, Identity, Quantity and TransformationEvent semantics are rederived from their already-certified families; no sampled fixtures or bounded composition oracle are used.", allAdmittedInputs: true, sampledInputs: 0, producerGraphRuns: 0, producerReplayRuns: 0, inputs: semanticInputs(repositoryRoot, deps), proofs: [{ surfaceKey: supportedSurfaceKeys6[0], signatureHash: callable.signatureHash, declaration: callable.declaration, semantics: { completeExpectedTerm: equations2.publicEquation, privateEquations: equations2.privateEquations, supportingValues: equations2.supportingValues, dependencyReceipts: deps.receipts, languagePrimitives: ["Number.isSafeInteger", "Object.keys", "Object.entries", "Set", "encodeURIComponent"] } }] };
 }
 
 // experiments/tla-conformance/residual-core-v4-r10/family.mjs
 import assert20 from "node:assert/strict";
-import fs19 from "node:fs";
+import fs18 from "node:fs";
 import path21 from "node:path";
 
 // experiments/tla-conformance/storage-protocol-r7/value-family.mjs
 import assert16 from "node:assert/strict";
-import fs15 from "node:fs";
+import fs14 from "node:fs";
 import path17 from "node:path";
 import { fileURLToPath as fileURLToPath9 } from "node:url";
 var proofKind4 = "storage-protocol-construction-and-plan-closed-equations-v1";
@@ -8099,14 +8552,14 @@ function removeTypeComments(value, field = "") {
   return Object.fromEntries(Object.entries(value).map(([name, entry]) => [name, removeTypeComments(entry, name)]));
 }
 function sourceText2(repositoryRoot, sourceOverrides, file) {
-  return sourceOverrides.get(file) ?? fs15.readFileSync(path17.resolve(repositoryRoot, file), "utf8");
+  return sourceOverrides.get(file) ?? fs14.readFileSync(path17.resolve(repositoryRoot, file), "utf8");
 }
-function buildFamilyArtifact7({ repositoryRoot, context: context2, surface: surface2, sourceOverrides = /* @__PURE__ */ new Map() }) {
+function buildFamilyArtifact7({ repositoryRoot, context, surface, sourceOverrides = /* @__PURE__ */ new Map() }) {
   assert16.equal(supportedSurfaceKeys7.length, 7);
-  const expected = parseSource4(expectedFile2, fs15.readFileSync(expectedFile2, "utf8"));
+  const expected = parseSource4(expectedFile2, fs14.readFileSync(expectedFile2, "utf8"));
   const actualSources = /* @__PURE__ */ new Map();
-  for (const file of [...new Set(equations.map(([sourceFile4]) => sourceFile4))]) {
-    const source7 = sourceOverrides.has(file) ? parseSource4(path17.resolve(repositoryRoot, file), sourceText2(repositoryRoot, sourceOverrides, file)) : context2.program.getSourceFile(path17.resolve(repositoryRoot, file));
+  for (const file of [...new Set(equations.map(([sourceFile3]) => sourceFile3))]) {
+    const source7 = sourceOverrides.has(file) ? parseSource4(path17.resolve(repositoryRoot, file), sourceText2(repositoryRoot, sourceOverrides, file)) : context.program.getSourceFile(path17.resolve(repositoryRoot, file));
     assert16(source7 !== void 0, `Compiler omitted '${file}'.`);
     actualSources.set(file, source7);
   }
@@ -8119,12 +8572,12 @@ function buildFamilyArtifact7({ repositoryRoot, context: context2, surface: surf
     assert16.deepEqual(actualTerm, expectedTerm, `Independent storage equation changed for '${equationId}'.`);
     derivedEquations.push({
       id: `${file}#${equationId}`,
-      implementation: sourceOverrides.size === 0 ? spanOf(context2, actual) : null,
+      implementation: sourceOverrides.size === 0 ? spanOf(context, actual) : null,
       equationSha256: sha256(canonicalJson(expectedTerm)),
       term: expectedTerm
     });
   }
-  const callableByKey = new Map(surface2.callables.map((callable) => [callable.key, callable]));
+  const callableByKey = new Map(surface.callables.map((callable) => [callable.key, callable]));
   const publicEquationByKey = /* @__PURE__ */ new Map([
     [supportedSurfaceKeys7[0], "src/storage.ts#InMemoryInventoryDurableStorage.constructor"],
     [supportedSurfaceKeys7[1], "src/storage.ts#InventoryApplyingOperationConflictError.constructor"],
@@ -8151,14 +8604,14 @@ function buildFamilyArtifact7({ repositoryRoot, context: context2, surface: surf
   ])].sort(compareCodeUnits);
   const inputs3 = inputFiles2.map((file) => ({
     file,
-    sha256: sha256(sourceOverrides.get(file) ?? fs15.readFileSync(path17.resolve(repositoryRoot, file)))
+    sha256: sha256(sourceOverrides.get(file) ?? fs14.readFileSync(path17.resolve(repositoryRoot, file)))
   }));
   return {
     schemaVersion: 1,
     mode: "V",
     proofKind: proofKind4,
     sourceBase: "2eea09471b3bf8fcb61f38256e1c6a362149dad4",
-    surfaceDigest: surface2.digest,
+    surfaceDigest: surface.digest,
     allAdmittedInputs: true,
     sampledInputs: 0,
     domain: {
@@ -8176,13 +8629,13 @@ function buildFamilyArtifact7({ repositoryRoot, context: context2, surface: surf
 
 // experiments/tla-conformance/materialize1-r8/family.mjs
 import assert19 from "node:assert/strict";
-import fs18 from "node:fs";
+import fs17 from "node:fs";
 import path20 from "node:path";
 import { fileURLToPath as fileURLToPath11 } from "node:url";
 
 // experiments/tla-conformance/migration-helper-causal-r7/independent-v9-laws.mjs
 import assert17 from "node:assert/strict";
-import fs16 from "node:fs";
+import fs15 from "node:fs";
 import path18 from "node:path";
 var EXPECTED_FILE = "experiments/tla-conformance/migration-helper-causal-r7/v9.expected.ts.txt";
 var CAUSAL_FILE = "experiments/tla-conformance/migration-helper-causal-r7/artifacts/runtime-causal.json";
@@ -8239,12 +8692,12 @@ var expectedDependencies3 = /* @__PURE__ */ new Map([
   ]],
   ["src/storage.ts#inventoryWorldContentRootsEqual", []]
 ]);
-function currentSource(repositoryRoot, context2, file, sourceOverrides) {
+function currentSource(repositoryRoot, context, file, sourceOverrides) {
   const override = sourceOverrides.get(file);
   if (override !== void 0) {
     return ts.createSourceFile(path18.resolve(repositoryRoot, file), override, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   }
-  const source7 = context2.program.getSourceFile(path18.resolve(repositoryRoot, file));
+  const source7 = context.program.getSourceFile(path18.resolve(repositoryRoot, file));
   assert17(source7 !== void 0 && !source7.isDeclarationFile, `Missing source ${file}`);
   return source7;
 }
@@ -8275,7 +8728,7 @@ function completeCallableTerm(declaration, source7) {
   };
 }
 function expectedTerms(repositoryRoot) {
-  const text = fs16.readFileSync(path18.resolve(repositoryRoot, EXPECTED_FILE), "utf8");
+  const text = fs15.readFileSync(path18.resolve(repositoryRoot, EXPECTED_FILE), "utf8");
   const source7 = ts.createSourceFile(EXPECTED_FILE, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   const functions2 = /* @__PURE__ */ new Map();
   const values = /* @__PURE__ */ new Map();
@@ -8306,14 +8759,14 @@ function packageDeclarationId(repositoryRoot, declaration) {
   }
   return null;
 }
-function directPackageDependencies(repositoryRoot, context2, declaration) {
+function directPackageDependencies(repositoryRoot, context, declaration) {
   const dependencies = /* @__PURE__ */ new Set();
   function recordResolved(target) {
     if (target === void 0) return;
     let resolved = target;
     if (ts.isIdentifier(target) || ts.isPropertyAccessExpression(target)) {
-      let symbol = context2.checker.getSymbolAtLocation(ts.isPropertyAccessExpression(target) ? target.name : target);
-      if (symbol !== void 0 && (symbol.flags & ts.SymbolFlags.Alias) !== 0) symbol = context2.checker.getAliasedSymbol(symbol);
+      let symbol = context.checker.getSymbolAtLocation(ts.isPropertyAccessExpression(target) ? target.name : target);
+      if (symbol !== void 0 && (symbol.flags & ts.SymbolFlags.Alias) !== 0) symbol = context.checker.getAliasedSymbol(symbol);
       const sourceDeclaration = symbol?.declarations?.find((row) => packageDeclarationId(repositoryRoot, row) !== null);
       if (sourceDeclaration !== void 0) dependencies.add(packageDeclarationId(repositoryRoot, sourceDeclaration));
     }
@@ -8321,7 +8774,7 @@ function directPackageDependencies(repositoryRoot, context2, declaration) {
   }
   function visit(node) {
     if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
-      const target = context2.checker.getResolvedSignature(node)?.declaration;
+      const target = context.checker.getResolvedSignature(node)?.declaration;
       const id = target === void 0 ? null : packageDeclarationId(repositoryRoot, target);
       if (id !== null) dependencies.add(id);
       recordResolved(node.expression);
@@ -8332,48 +8785,48 @@ function directPackageDependencies(repositoryRoot, context2, declaration) {
   visit(declaration.body);
   return [...dependencies].sort();
 }
-function currentDeclaration(repositoryRoot, context2, file, name) {
-  const declaration = findFunction5(currentSource(repositoryRoot, context2, file, /* @__PURE__ */ new Map()), name);
-  return { declaration, span: spanOf(context2, declaration) };
+function currentDeclaration(repositoryRoot, context, file, name) {
+  const declaration = findFunction5(currentSource(repositoryRoot, context, file, /* @__PURE__ */ new Map()), name);
+  return { declaration, span: spanOf(context, declaration) };
 }
-function quantityCertificate(repositoryRoot, context2, surface2) {
-  const document = buildFamilyArtifact3({ repositoryRoot, context: context2, surface: surface2 });
+function quantityCertificate(repositoryRoot, context, surface) {
+  const document = buildFamilyArtifact3({ repositoryRoot, context, surface });
   assert17.equal(document.proofKind, "inventoryonce-quantity-measurement-complete-source-equations-v1");
   return { commit: "R131_CURRENT_SOURCE", sha256: sha256(canonicalJson(document)), document };
 }
-function identityCertificate(repositoryRoot, context2, surface2) {
-  const document = buildFamilyArtifact2({ repositoryRoot, context: context2, surface: surface2 });
+function identityCertificate(repositoryRoot, context, surface) {
+  const document = buildFamilyArtifact2({ repositoryRoot, context, surface });
   assert17.equal(document.proofKind, "independent-identity-values-closed-equations-v1");
   return { commit: "R131_CURRENT_SOURCE", sha256: sha256(canonicalJson(document)), document };
 }
-function quantityReceipt(repositoryRoot, context2, certificate, id) {
+function quantityReceipt(repositoryRoot, context, certificate, id) {
   const rows = [...certificate.document.semanticCore.memberEquations, ...certificate.document.semanticCore.helperEquations].filter((row) => row.id === id);
   assert17.equal(rows.length, 1, `Quantity certificate missing ${id}`);
   const [file, name] = id.split("#");
-  const current = currentDeclaration(repositoryRoot, context2, file, name);
+  const current = currentDeclaration(repositoryRoot, context, file, name);
   assert17.deepEqual(current.span, rows[0].implementation, `Quantity dependency drifted: ${id}`);
   return { kind: "INDEPENDENT_QUANTITY_EQUATION", id, certificateCommit: certificate.commit, certificateSha256: certificate.sha256, equationSha256: rows[0].equationSha256 };
 }
-function identityReceipt(repositoryRoot, context2, certificate, id) {
+function identityReceipt(repositoryRoot, context, certificate, id) {
   const rows = certificate.document.equations.filter((row) => row.id === id);
   assert17.equal(rows.length, 1, `Identity certificate missing ${id}`);
   const [file, name] = id.split("#");
-  const current = currentDeclaration(repositoryRoot, context2, file, name);
+  const current = currentDeclaration(repositoryRoot, context, file, name);
   assert17.deepEqual(current.span, rows[0].declaration, `Identity dependency drifted: ${id}`);
   return { kind: "INDEPENDENT_IDENTITY_EQUATION", id, certificateCommit: certificate.commit, certificateSha256: certificate.sha256, lawId: rows[0].lawId };
 }
 function strictSnapshotReceipt(repositoryRoot, surfaceKey) {
-  const bank = JSON.parse(fs16.readFileSync(path18.resolve(repositoryRoot, BANK_FILE), "utf8"));
+  const bank = JSON.parse(fs15.readFileSync(path18.resolve(repositoryRoot, BANK_FILE), "utf8"));
   const row = bank.rows.find((candidate) => candidate.callable.key === surfaceKey);
   assert17(row !== void 0 && row.binding.mode !== "HARD_RED", `Snapshot producer is not strict: ${surfaceKey}`);
   const execution = row.binding.execution;
   assert17(execution !== void 0);
-  const bytes2 = fs16.readFileSync(path18.resolve(repositoryRoot, execution.file));
+  const bytes2 = fs15.readFileSync(path18.resolve(repositoryRoot, execution.file));
   assert17.equal(sha256(bytes2), execution.sha256, `Snapshot execution drifted: ${surfaceKey}`);
   return { kind: "STRICT_SNAPSHOT_PRODUCER", surfaceKey, mode: row.binding.mode, execution };
 }
 function pairedCausalReceipt(repositoryRoot, id) {
-  const bytes2 = fs16.readFileSync(path18.resolve(repositoryRoot, CAUSAL_FILE));
+  const bytes2 = fs15.readFileSync(path18.resolve(repositoryRoot, CAUSAL_FILE));
   const document = JSON.parse(bytes2.toString("utf8"));
   assert17.equal(document.proofKind, "migration-plugin-helper-causal-runtime-v1");
   assert17.equal(sha256(bytes2), "db76e559e9019216bf38f2b284c20a14faf878b216132a9f504d03e75624a263");
@@ -8384,15 +8837,15 @@ function pairedCausalReceipt(repositoryRoot, id) {
   assert17.deepEqual(document.directRead.resultRows, document.readerRead.resultRows);
   return { kind: "PAIRED_B_CAUSAL_RUNTIME_READY", id, artifact: { file: CAUSAL_FILE, sha256: sha256(bytes2) }, globallyAdmitted: false };
 }
-function resolveDependency(repositoryRoot, context2, quantity, identity, localIds, dependency2) {
+function resolveDependency(repositoryRoot, context, quantity, identity, localIds, dependency2) {
   if (localIds.has(dependency2)) return { kind: "INDEPENDENT_LOCAL_EXPECTED_TERM", id: dependency2 };
   if (dependency2 === "src/migration-plugin.ts#readAllInventoryLegacyQuery") return pairedCausalReceipt(repositoryRoot, dependency2);
   if (dependency2 === "src/migrations.ts#dryRunInventoryMigration") return strictSnapshotReceipt(repositoryRoot, "export:./migrations#dryRunInventoryMigration::call[0]");
   if (["src/measurements.ts#inventoryMeasurementsEqual", "src/canonical.ts#inventoryIntentFingerprint"].includes(dependency2)) {
-    return quantityReceipt(repositoryRoot, context2, quantity, dependency2);
+    return quantityReceipt(repositoryRoot, context, quantity, dependency2);
   }
   if (["src/model.ts#inventoryStockPositionIdentity", "src/canonical.ts#inventoryMetadataFingerprint"].includes(dependency2)) {
-    return identityReceipt(repositoryRoot, context2, identity, dependency2);
+    return identityReceipt(repositoryRoot, context, identity, dependency2);
   }
   if (dependency2 === "src/integrity.ts#inventoryDurableMigrationPlanDigest") return { kind: "SAME_V9_COMPLETE_EXPECTED_TERM", id: dependency2 };
   const blockers = {
@@ -8404,17 +8857,17 @@ function resolveDependency(repositoryRoot, context2, quantity, identity, localId
   if (blockers[dependency2] !== void 0) return { kind: "NAMED_GAP", id: blockers[dependency2], dependency: dependency2 };
   throw new Error(`Unclassified semantic dependency ${dependency2}`);
 }
-function proveExpectedTerm(repositoryRoot, context2, expected, contract, sourceOverrides) {
-  const source7 = currentSource(repositoryRoot, context2, contract.file, sourceOverrides);
+function proveExpectedTerm(repositoryRoot, context, expected, contract, sourceOverrides) {
+  const source7 = currentSource(repositoryRoot, context, contract.file, sourceOverrides);
   const actual = findFunction5(source7, contract.implementation);
   const expectedTerm = expected.functions.get(contract.expected);
   assert17(expectedTerm !== void 0, `Expected term missing ${contract.expected}`);
   const term4 = completeCallableTerm(actual, source7);
   assert17.deepEqual(term4, expectedTerm, `Complete expected term mismatch: ${contract.implementation}`);
-  return { termSha256: sha256(canonicalJson(term4)), implementation: sourceOverrides.size === 0 ? spanOf(context2, actual) : { file: contract.file, mutatedControl: true } };
+  return { termSha256: sha256(canonicalJson(term4)), implementation: sourceOverrides.size === 0 ? spanOf(context, actual) : { file: contract.file, mutatedControl: true } };
 }
-function proveShaSupportingValues(repositoryRoot, context2, expected, sourceOverrides) {
-  const source7 = currentSource(repositoryRoot, context2, "src/digest.ts", sourceOverrides);
+function proveShaSupportingValues(repositoryRoot, context, expected, sourceOverrides) {
+  const source7 = currentSource(repositoryRoot, context, "src/digest.ts", sourceOverrides);
   const rows = [];
   for (const name of ["SHA256_INITIAL_HASH", "SHA256_ROUND_CONSTANTS"]) {
     const declarations = [];
@@ -8466,21 +8919,21 @@ function hasPairedB(receipts, localById, seen = /* @__PURE__ */ new Set()) {
   }
   return false;
 }
-function buildIndependentV9Artifact({ repositoryRoot = process.cwd(), sourceOverrides = /* @__PURE__ */ new Map(), context: context2 = loadEvidenceCompilerContext(repositoryRoot, []), surface: surface2 = discoverCompilerSurface(repositoryRoot) } = {}) {
+function buildIndependentV9Artifact({ repositoryRoot = process.cwd(), sourceOverrides = /* @__PURE__ */ new Map(), context = loadEvidenceCompilerContext(repositoryRoot, []), surface = discoverCompilerSurface(repositoryRoot) } = {}) {
   const expected = expectedTerms(repositoryRoot);
-  const quantity = quantityCertificate(repositoryRoot, context2, surface2);
-  const identity = identityCertificate(repositoryRoot, context2, surface2);
+  const quantity = quantityCertificate(repositoryRoot, context, surface);
+  const identity = identityCertificate(repositoryRoot, context, surface);
   const localIds = new Set(localLawContracts.map((row) => row.id));
   const proofs = [];
   const localLaws = [];
   for (const contract of v9Contracts) {
-    const proved = proveExpectedTerm(repositoryRoot, context2, expected, contract, sourceOverrides);
+    const proved = proveExpectedTerm(repositoryRoot, context, expected, contract, sourceOverrides);
     if (sourceOverrides.size > 0) continue;
-    const actual = findFunction5(currentSource(repositoryRoot, context2, contract.file, sourceOverrides), contract.implementation);
+    const actual = findFunction5(currentSource(repositoryRoot, context, contract.file, sourceOverrides), contract.implementation);
     const id = `${contract.file}#${contract.implementation}`;
-    const dependencies = directPackageDependencies(repositoryRoot, context2, actual);
+    const dependencies = directPackageDependencies(repositoryRoot, context, actual);
     assert17.deepEqual(dependencies, expectedDependencies3.get(id), `Direct dependency set changed: ${id}`);
-    const receipts = dependencies.map((dependency2) => resolveDependency(repositoryRoot, context2, quantity, identity, localIds, dependency2));
+    const receipts = dependencies.map((dependency2) => resolveDependency(repositoryRoot, context, quantity, identity, localIds, dependency2));
     proofs.push({
       surfaceKey: contract.surfaceKey,
       implementationId: id,
@@ -8492,17 +8945,17 @@ function buildIndependentV9Artifact({ repositoryRoot = process.cwd(), sourceOver
   }
   if (sourceOverrides.size > 0) {
     for (const contract of localLawContracts) {
-      proveExpectedTerm(repositoryRoot, context2, expected, contract, sourceOverrides);
+      proveExpectedTerm(repositoryRoot, context, expected, contract, sourceOverrides);
     }
-    proveShaSupportingValues(repositoryRoot, context2, expected, sourceOverrides);
+    proveShaSupportingValues(repositoryRoot, context, expected, sourceOverrides);
     return { mutationControlAccepted: false };
   }
   for (const contract of localLawContracts) {
-    const proved = proveExpectedTerm(repositoryRoot, context2, expected, contract, sourceOverrides);
-    const actual = findFunction5(currentSource(repositoryRoot, context2, contract.file, sourceOverrides), contract.implementation);
-    const dependencies = directPackageDependencies(repositoryRoot, context2, actual);
+    const proved = proveExpectedTerm(repositoryRoot, context, expected, contract, sourceOverrides);
+    const actual = findFunction5(currentSource(repositoryRoot, context, contract.file, sourceOverrides), contract.implementation);
+    const dependencies = directPackageDependencies(repositoryRoot, context, actual);
     assert17.deepEqual(dependencies, expectedDependencies3.get(contract.id), `Direct helper dependency set changed: ${contract.id}`);
-    const receipts = dependencies.map((dependency2) => resolveDependency(repositoryRoot, context2, quantity, identity, localIds, dependency2));
+    const receipts = dependencies.map((dependency2) => resolveDependency(repositoryRoot, context, quantity, identity, localIds, dependency2));
     localLaws.push({ id: contract.id, completeExpectedTerm: proved, dependencies: receipts, gaps: [] });
   }
   const localById = new Map(localLaws.map((law) => [law.id, law]));
@@ -8511,7 +8964,7 @@ function buildIndependentV9Artifact({ repositoryRoot = process.cwd(), sourceOver
     proof.gaps = transitiveGaps(proof.dependencies, localById);
     proof.status = proof.gaps.length > 0 ? "BLOCKED_DEPENDENCY_GAP" : hasPairedB(proof.dependencies, localById) ? "READY_WITH_PAIRED_B_DEPENDENCY" : "INDEPENDENTLY_CLOSED";
   }
-  const supportingValues = proveShaSupportingValues(repositoryRoot, context2, expected, sourceOverrides);
+  const supportingValues = proveShaSupportingValues(repositoryRoot, context, expected, sourceOverrides);
   const allGaps = [...proofs.flatMap((proof) => proof.gaps), ...localLaws.flatMap((law) => law.gaps)];
   const gapById = new Map(allGaps.map((gap) => [gap.id, gap]));
   return {
@@ -8541,7 +8994,7 @@ function buildIndependentV9Artifact({ repositoryRoot = process.cwd(), sourceOver
 
 // experiments/tla-conformance/transfer-surface-r6/source-equations-r7/family.mjs
 import assert18 from "node:assert/strict";
-import fs17 from "node:fs";
+import fs16 from "node:fs";
 import path19 from "node:path";
 import { fileURLToPath as fileURLToPath10 } from "node:url";
 
@@ -8881,10 +9334,10 @@ function normalizeSupportingValue3(declaration) {
     normalizedSyntax(declaration.initializer, source7)
   ];
 }
-function resolvedSymbol(context2, node) {
-  let symbol = context2.checker.getSymbolAtLocation(node);
+function resolvedSymbol(context, node) {
+  let symbol = context.checker.getSymbolAtLocation(node);
   if (symbol !== void 0 && (symbol.flags & ts.SymbolFlags.Alias) !== 0) {
-    symbol = context2.checker.getAliasedSymbol(symbol);
+    symbol = context.checker.getAliasedSymbol(symbol);
   }
   return symbol;
 }
@@ -8896,8 +9349,8 @@ function sourceCallableFromSymbol(symbol) {
   assert18.equal(declarations.length, 1, "Source callable has ambiguous runtime bodies.");
   return declarations[0];
 }
-function sourceCallableFromCall(context2, node) {
-  const declaration = context2.checker.getResolvedSignature(node)?.declaration;
+function sourceCallableFromCall(context, node) {
+  const declaration = context.checker.getResolvedSignature(node)?.declaration;
   if (declaration === void 0 || declaration.getSourceFile().isDeclarationFile || declaration.body === void 0) {
     return void 0;
   }
@@ -8973,7 +9426,7 @@ function dependencyIndex(manifest) {
 }
 function verifyStrictRegistrationReceipt(manifest) {
   const receiptPath = path19.join(familyDirectory, "current-registration-receipt.json");
-  const receiptBytes2 = fs17.readFileSync(receiptPath);
+  const receiptBytes2 = fs16.readFileSync(receiptPath);
   assert18.equal(sha256(receiptBytes2), CURRENT_REGISTRATION_RECEIPT_SHA256);
   assert18.equal(sha256(receiptBytes2), manifest.strictRegistrationReceipt.receiptSha256);
   const receipt = JSON.parse(receiptBytes2.toString("utf8"));
@@ -9021,7 +9474,7 @@ function supportingValueId(repositoryRoot, declaration) {
 }
 function inspectClosure({
   repositoryRoot,
-  context: context2,
+  context,
   seeds,
   localById,
   localSupportingById,
@@ -9041,20 +9494,20 @@ function inspectClosure({
     let visit2 = function(node) {
       if (ts.isTypeNode(node)) return;
       if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
-        const signature = context2.checker.getResolvedSignature(node)?.declaration;
+        const signature = context.checker.getResolvedSignature(node)?.declaration;
         if (signature?.getSourceFile().isDeclarationFile) {
           const operation = ambientOperation(node, signature);
-          const declarationSpan = spanOf(context2, signature);
+          const declarationSpan = spanOf(context, signature);
           const key = `${operation}:${declarationSpan.file}:${declarationSpan.start.offset}`;
           ambient.set(key, { operation, declaration: declarationSpan });
         }
-        const target = sourceCallableFromCall(context2, node);
+        const target = sourceCallableFromCall(context, node);
         if (target !== void 0 && !declarationIsInside(target, declaration)) {
           pendingDeclarations.push(target);
         }
       }
       if (ts.isIdentifier(node)) {
-        const symbol = resolvedSymbol(context2, node);
+        const symbol = resolvedSymbol(context, node);
         const target = sourceCallableFromSymbol(symbol);
         if (target !== void 0 && !declarationIsInside(target, declaration)) {
           pendingDeclarations.push(target);
@@ -9077,7 +9530,7 @@ function inspectClosure({
           }
           let owner = sourceDeclaration;
           if (ts.isEnumMember(owner)) owner = owner.parent;
-          const implementation = spanOf(context2, owner);
+          const implementation = spanOf(context, owner);
           assert18.equal(
             implementation.sourceHash,
             dependencyValue.sourceHash,
@@ -9098,7 +9551,7 @@ function inspectClosure({
       if (dependency2 === void 0) {
         unresolved.add(id);
       } else {
-        const implementation = spanOf(context2, declaration);
+        const implementation = spanOf(context, declaration);
         assert18.equal(
           implementation.sourceHash,
           dependency2.sourceHash,
@@ -9158,7 +9611,7 @@ function proofDependencySummary(surfaceKey, closure) {
 }
 function summarizeExecutionEvidence(repositoryRoot, file) {
   const absolute = path19.resolve(repositoryRoot, file);
-  const bytes2 = fs17.readFileSync(absolute);
+  const bytes2 = fs16.readFileSync(absolute);
   const evidence = JSON.parse(bytes2.toString("utf8"));
   assert18.equal(evidence.schemaVersion, 2, `${file} schema changed.`);
   assert18.equal(evidence.status, "PASS", `${file} is not passing evidence.`);
@@ -9191,13 +9644,13 @@ function summarizeExecutionEvidence(repositoryRoot, file) {
     }
   ];
   for (const input2 of referencedInputs) {
-    const inputBytes = fs17.readFileSync(path19.resolve(repositoryRoot, input2.file));
+    const inputBytes = fs16.readFileSync(path19.resolve(repositoryRoot, input2.file));
     assert18.equal(sha256(inputBytes), input2.sha256, `Frozen proof input changed: ${input2.file}`);
     sourceInputs.push(input2);
   }
   for (const observation of evidence.surfaceObservations) {
     const sourceReference = observation.sourceReference;
-    const sourceBytes = fs17.readFileSync(path19.resolve(repositoryRoot, sourceReference.file));
+    const sourceBytes = fs16.readFileSync(path19.resolve(repositoryRoot, sourceReference.file));
     assert18.equal(sha256(sourceBytes), sourceReference.sourceHash);
     const sourceTextValue = sourceBytes.toString("utf8");
     assert18.equal(
@@ -9226,7 +9679,7 @@ function summarizeExecutionEvidence(repositoryRoot, file) {
 }
 function summarizeForwardWitnesses(repositoryRoot) {
   const file = "experiments/tla-conformance/transfer-surface-r6/value-equation-candidates.json";
-  const bytes2 = fs17.readFileSync(path19.resolve(repositoryRoot, file));
+  const bytes2 = fs16.readFileSync(path19.resolve(repositoryRoot, file));
   assert18.equal(
     sha256(bytes2),
     "a9000d71656cc466f2eaf68564fd0848c63bdc1947cb217fccefe5a082e50817",
@@ -9254,10 +9707,10 @@ function summarizeForwardWitnesses(repositoryRoot) {
   };
 }
 function sourceText3(repositoryRoot, file, sourceOverrides) {
-  return sourceOverrides.get(file) ?? fs17.readFileSync(path19.resolve(repositoryRoot, file), "utf8");
+  return sourceOverrides.get(file) ?? fs16.readFileSync(path19.resolve(repositoryRoot, file), "utf8");
 }
-function buildSourceFlowJoins({ context: context2, surface: surface2, localById, executionEvidence }) {
-  const facade = context2.program.getSourceFile(path19.resolve(context2.repositoryRoot, "src/facade.ts"));
+function buildSourceFlowJoins({ context, surface, localById, executionEvidence }) {
+  const facade = context.program.getSourceFile(path19.resolve(context.repositoryRoot, "src/facade.ts"));
   assert18(facade !== void 0);
   const replacementImplementation = facade.statements.find(
     (statement) => ts.isClassDeclaration(statement) && statement.name?.text === "InventoryOnceReplacementPlansImplementation"
@@ -9270,7 +9723,7 @@ function buildSourceFlowJoins({ context: context2, surface: surface2, localById,
     (clause) => clause.token === ts.SyntaxKind.ImplementsKeyword && clause.types.some((type) => type.expression.getText(facade) === "InventoryOnceReplacementPlans")
   ) ?? false;
   assert18.equal(implementsReplacementPlans, true, "Replacement implementation lost its interface join.");
-  const callableByKey = new Map(surface2.callables.map((callable) => [callable.key, callable]));
+  const callableByKey = new Map(surface.callables.map((callable) => [callable.key, callable]));
   const correctionWrapper = localById.get("src/facade.ts#InventoryOnceStockImplementation.correct");
   const planConstructor = localById.get(
     "src/facade.ts#InventoryOnceReplacementPlansImplementation.constructor"
@@ -9289,12 +9742,12 @@ function buildSourceFlowJoins({ context: context2, surface: surface2, localById,
     return {
       surfaceKey,
       publicDeclaration: callable.declaration,
-      implementation: spanOf(context2, implementation),
+      implementation: spanOf(context, implementation),
       implementsInterface: "InventoryOnceReplacementPlans",
-      constructionCallsite: spanOf(context2, correctionWrapper),
-      implementationConstructor: spanOf(context2, planConstructor),
-      opaquePlanConstructor: spanOf(context2, opaqueConstructor),
-      opaquePlanReader: spanOf(context2, planReader),
+      constructionCallsite: spanOf(context, correctionWrapper),
+      implementationConstructor: spanOf(context, planConstructor),
+      opaquePlanConstructor: spanOf(context, opaqueConstructor),
+      opaquePlanReader: spanOf(context, planReader),
       relation: "CORRECTION_CALLBACK_RECEIVES_THE_UNIQUE_TYPED_IMPLEMENTATION"
     };
   });
@@ -9321,8 +9774,8 @@ function buildSourceFlowJoins({ context: context2, surface: surface2, localById,
 }
 function buildTransferCorrectionValueFamily({
   repositoryRoot,
-  context: context2,
-  surface: surface2,
+  context,
+  surface,
   sourceOverrides = /* @__PURE__ */ new Map(),
   dependencyManifestOverride
 }) {
@@ -9330,13 +9783,13 @@ function buildTransferCorrectionValueFamily({
   assert18.equal(ASSIGNED_SURFACE_KEYS5.length, 11, "Transfer/correction surface cardinality changed.");
   assert18.equal(new Set(ASSIGNED_SURFACE_KEYS5).size, 11, "Transfer/correction rows repeat.");
   const dependencyManifestPath = path19.join(familyDirectory, "dependency-manifest.json");
-  const dependencyManifestBytes = dependencyManifestOverride === void 0 ? fs17.readFileSync(dependencyManifestPath) : Buffer.from(`${JSON.stringify(dependencyManifestOverride, null, 2)}
+  const dependencyManifestBytes = dependencyManifestOverride === void 0 ? fs16.readFileSync(dependencyManifestPath) : Buffer.from(`${JSON.stringify(dependencyManifestOverride, null, 2)}
 `);
   const dependencyManifest = JSON.parse(dependencyManifestBytes.toString("utf8"));
   verifyStrictRegistrationReceipt(dependencyManifest);
   const dependencies = dependencyIndex(dependencyManifest);
   const sourceBaseManifestPath = path19.join(familyDirectory, "source-base-manifest.json");
-  const sourceBaseManifest = JSON.parse(fs17.readFileSync(sourceBaseManifestPath, "utf8"));
+  const sourceBaseManifest = JSON.parse(fs16.readFileSync(sourceBaseManifestPath, "utf8"));
   assert18.equal(sourceBaseManifest.schemaVersion, 1);
   assert18.equal(sourceBaseManifest.sourceBase, SOURCE_BASE);
   assert18.equal(sourceBaseManifest.sources.length, LOCAL_SOURCE_FILES2.length);
@@ -9347,16 +9800,16 @@ function buildTransferCorrectionValueFamily({
   for (const sourceInput of sourceBaseManifest.sources) {
     assert18(LOCAL_SOURCE_FILES2.includes(sourceInput.file));
     assert18.equal(
-      sha256(fs17.readFileSync(path19.resolve(root3, sourceInput.file))),
+      sha256(fs16.readFileSync(path19.resolve(root3, sourceInput.file))),
       sourceInput.sha256,
       `Local source differs from frozen base: ${sourceInput.file}`
     );
   }
   const redBeforePath = path19.join(familyDirectory, "red-before.json");
-  const redBefore = JSON.parse(fs17.readFileSync(redBeforePath, "utf8"));
+  const redBefore = JSON.parse(fs16.readFileSync(redBeforePath, "utf8"));
   assert18.equal(redBefore.schemaVersion, 1);
   assert18.equal(redBefore.sourceBase, SOURCE_BASE);
-  assert18.equal(redBefore.surfaceDigest, surface2.digest);
+  assert18.equal(redBefore.surfaceDigest, surface.digest);
   assert18.equal(redBefore.rejectedCount, 11);
   assert18.equal(redBefore.priorEvidenceDomain, "DECLARED_EXACT_SCALAR_TRANSFER_FIXTURES_V1");
   assert18.equal(
@@ -9367,7 +9820,7 @@ function buildTransferCorrectionValueFamily({
   const actualSourceByFile = new Map(
     LOCAL_SOURCE_FILES2.map((file) => {
       const absolute = path19.resolve(root3, file);
-      const source7 = sourceOverrides.has(file) ? parseSource5(absolute, sourceText3(root3, file, sourceOverrides)) : context2.program.getSourceFile(absolute);
+      const source7 = sourceOverrides.has(file) ? parseSource5(absolute, sourceText3(root3, file, sourceOverrides)) : context.program.getSourceFile(absolute);
       assert18(source7 !== void 0, `Compiler omitted local source '${file}'.`);
       return [file, source7];
     })
@@ -9376,7 +9829,7 @@ function buildTransferCorrectionValueFamily({
     LOCAL_SOURCE_FILES2.map((file) => {
       const expectedFile4 = expectedFileBySource.get(file);
       assert18(expectedFile4 !== void 0);
-      return [file, parseSource5(expectedFile4, fs17.readFileSync(expectedFile4, "utf8"))];
+      return [file, parseSource5(expectedFile4, fs16.readFileSync(expectedFile4, "utf8"))];
     })
   );
   const localById = /* @__PURE__ */ new Map();
@@ -9395,7 +9848,7 @@ function buildTransferCorrectionValueFamily({
     equations2.push({
       id: equationId,
       lawId: lawIdForEquation3(equationId),
-      declaration: sourceOverrides.size === 0 ? spanOf(context2, actual) : null,
+      declaration: sourceOverrides.size === 0 ? spanOf(context, actual) : null,
       equationSha256: sha256(canonicalJson(expectedTerm)),
       term: expectedTerm,
       strengtheningOnly: STRENGTHENING_EQUATION_IDS.includes(equationId)
@@ -9415,14 +9868,14 @@ function buildTransferCorrectionValueFamily({
     );
     const row = {
       id: valueId,
-      declaration: sourceOverrides.size === 0 ? spanOf(context2, actual) : null,
+      declaration: sourceOverrides.size === 0 ? spanOf(context, actual) : null,
       equationSha256: sha256(canonicalJson(expectedTerm)),
       term: expectedTerm
     };
     localSupportingById.set(valueId, row);
     supportingValues.push(row);
   }
-  const callableByKey = new Map(surface2.callables.map((callable) => [callable.key, callable]));
+  const callableByKey = new Map(surface.callables.map((callable) => [callable.key, callable]));
   const proofSeeds = [];
   const proofs = [];
   for (const surfaceKey of ASSIGNED_SURFACE_KEYS5) {
@@ -9435,7 +9888,7 @@ function buildTransferCorrectionValueFamily({
     proofSeeds.push(implementation);
     const isInterfaceMethod = surfaceKey.startsWith("type:");
     if (!isInterfaceMethod && sourceOverrides.size === 0) {
-      assert18.equal(canonicalJson(callable.declaration), canonicalJson(spanOf(context2, implementation)));
+      assert18.equal(canonicalJson(callable.declaration), canonicalJson(spanOf(context, implementation)));
     }
     proofs.push({
       surfaceKey,
@@ -9443,7 +9896,7 @@ function buildTransferCorrectionValueFamily({
       signature: callable.signature,
       signatureHash: callable.signatureHash,
       declaration: callable.declaration,
-      implementation: sourceOverrides.size === 0 ? spanOf(context2, implementation) : null,
+      implementation: sourceOverrides.size === 0 ? spanOf(context, implementation) : null,
       relation: isInterfaceMethod ? "COMPILER_TYPED_OPAQUE_REPLACEMENT_IMPLEMENTATION" : "COMPILER_RESOLVED_EXACT_EXPORT",
       equationId,
       equationSha256: equations2.find((equation3) => equation3.id === equationId).equationSha256,
@@ -9463,7 +9916,7 @@ function buildTransferCorrectionValueFamily({
   if (sourceOverrides.size === 0) {
     closure = inspectClosure({
       repositoryRoot: root3,
-      context: context2,
+      context,
       seeds: proofSeeds,
       localById,
       localSupportingById,
@@ -9481,7 +9934,7 @@ function buildTransferCorrectionValueFamily({
         proofs[index].surfaceKey,
         inspectClosure({
           repositoryRoot: root3,
-          context: context2,
+          context,
           seeds: [seed],
           localById,
           localSupportingById,
@@ -9501,7 +9954,7 @@ function buildTransferCorrectionValueFamily({
     (file) => summarizeExecutionEvidence(root3, file)
   );
   const forwardWitnesses = summarizeForwardWitnesses(root3);
-  const sourceFlowJoins = sourceOverrides.size === 0 ? buildSourceFlowJoins({ context: context2, surface: surface2, localById, executionEvidence }) : { plannerRows: [], causalRows: [] };
+  const sourceFlowJoins = sourceOverrides.size === 0 ? buildSourceFlowJoins({ context, surface, localById, executionEvidence }) : { plannerRows: [], causalRows: [] };
   const semanticFiles = /* @__PURE__ */ new Set([
     ...LOCAL_SOURCE_FILES2,
     ...producerFiles7,
@@ -9513,7 +9966,7 @@ function buildTransferCorrectionValueFamily({
   ]);
   const inputs3 = [...semanticFiles].sort(compareCodeUnits).map((file) => ({
     file,
-    sha256: file === relativePath3(root3, dependencyManifestPath) ? sha256(dependencyManifestBytes) : sha256(sourceOverrides.get(file) ?? fs17.readFileSync(path19.resolve(root3, file)))
+    sha256: file === relativePath3(root3, dependencyManifestPath) ? sha256(dependencyManifestBytes) : sha256(sourceOverrides.get(file) ?? fs16.readFileSync(path19.resolve(root3, file)))
   }));
   const semanticCore = {
     sourceBase: SOURCE_BASE,
@@ -9551,7 +10004,7 @@ function buildTransferCorrectionValueFamily({
     proofKind: TRANSFER_CORRECTION_VALUE_PROOF_KIND,
     certificateId,
     sourceBase: SOURCE_BASE,
-    surfaceDigest: surface2.digest,
+    surfaceDigest: surface.digest,
     allAdmittedInputs: pendingDependencyIds.length === 0,
     sampledInputs: 0,
     domain: FAMILY_DOMAIN3,
@@ -9559,16 +10012,16 @@ function buildTransferCorrectionValueFamily({
     semanticCore,
     proofs
   };
-  if (sourceOverrides.size === 0) passCache4.set(context2, result);
+  if (sourceOverrides.size === 0) passCache4.set(context, result);
   return result;
 }
 var supportedSurfaceKeys8 = ASSIGNED_SURFACE_KEYS5;
 var buildFamilyArtifact8 = buildTransferCorrectionValueFamily;
 
 // experiments/tla-conformance/materialize1-r8/family.mjs
-var DIRECTORY = "experiments/tla-conformance/materialize1-r8";
-var FAMILY_FILE = `${DIRECTORY}/family.mjs`;
-var EXPECTED_FILE2 = `${DIRECTORY}/roots-and-wrapper.expected.ts.txt`;
+var DIRECTORY2 = "experiments/tla-conformance/materialize1-r8";
+var FAMILY_FILE = `${DIRECTORY2}/family.mjs`;
+var EXPECTED_FILE2 = `${DIRECTORY2}/roots-and-wrapper.expected.ts.txt`;
 var CATALOG_RECORDED_FILE = "experiments/tla-conformance/throughput-r7/evidence/catalog-foundation-values.json";
 var TRANSFER_RECORDED_FILE = "experiments/tla-conformance/throughput-r7/evidence/transfer-correction-values.json";
 var MIGRATION_RECORDED_FILE = "experiments/tla-conformance/throughput-r7/evidence/migration-helper-values.json";
@@ -9596,12 +10049,12 @@ function rootDir() {
 }
 function sourceText4(root3, file, overrides) {
   const override = overrides?.get(file);
-  return override ?? fs18.readFileSync(path20.resolve(root3, file), "utf8");
+  return override ?? fs17.readFileSync(path20.resolve(root3, file), "utf8");
 }
 function fileRef(root3, file, overrides) {
   return { file, sha256: sha256(sourceText4(root3, file, overrides)) };
 }
-function sourceFile2(file, text) {
+function sourceFile(file, text) {
   const source7 = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   assert19.equal(source7.parseDiagnostics.length, 0, `Source does not parse: ${file}`);
   return source7;
@@ -9630,14 +10083,14 @@ function normalizedCallable(declaration, source7) {
   };
 }
 function buildRootEquations(root3, sourceOverrides = /* @__PURE__ */ new Map()) {
-  const expectedText = fs18.readFileSync(path20.resolve(root3, EXPECTED_FILE2), "utf8");
-  const expected = sourceFile2(EXPECTED_FILE2, expectedText);
+  const expectedText = fs17.readFileSync(path20.resolve(root3, EXPECTED_FILE2), "utf8");
+  const expected = sourceFile(EXPECTED_FILE2, expectedText);
   const actualByFile = /* @__PURE__ */ new Map();
   const rows = [];
   for (const law of ROOT_LAWS) {
     let actualSource = actualByFile.get(law.file);
     if (actualSource === void 0) {
-      actualSource = sourceFile2(law.file, sourceText4(root3, law.file, sourceOverrides));
+      actualSource = sourceFile(law.file, sourceText4(root3, law.file, sourceOverrides));
       actualByFile.set(law.file, actualSource);
     }
     const actual = findFunction6(actualSource, law.name);
@@ -9693,10 +10146,10 @@ function mergeInputs2(rows) {
   }
   return [...byFile.values()].sort((left, right) => left.file.localeCompare(right.file));
 }
-function buildFamilyArtifact9({ repositoryRoot: root3 = rootDir(), context: context2, surface: surface2, sourceOverrides = /* @__PURE__ */ new Map() } = {}) {
-  assert19(context2 !== void 0 && surface2 !== void 0, "Current compiler context and surface are required.");
-  assert19.equal(surface2.callables.length, 535);
-  const migration = buildIndependentV9Artifact({ repositoryRoot: root3, sourceOverrides, context: context2, surface: surface2 });
+function buildFamilyArtifact9({ repositoryRoot: root3 = rootDir(), context, surface, sourceOverrides = /* @__PURE__ */ new Map() } = {}) {
+  assert19(context !== void 0 && surface !== void 0, "Current compiler context and surface are required.");
+  assert19.equal(surface.callables.length, 535);
+  const migration = buildIndependentV9Artifact({ repositoryRoot: root3, sourceOverrides, context, surface });
   const materialize = v9Proof(migration, supportedSurfaceKeys9[0]);
   const validate = v9Local(migration, "src/storage.ts#validateInventoryDurableMigrationPlanAgainstBase");
   const rootsEqual = v9Local(migration, "src/storage.ts#inventoryWorldContentRootsEqual");
@@ -9709,13 +10162,13 @@ function buildFamilyArtifact9({ repositoryRoot: root3 = rootDir(), context: cont
   assert19.equal(planDigest.completeExpectedTerm.termSha256, "72964d804bdb2a1081604127173d18e6ce6033a24871378c919d43704170235e");
   assert19.equal(shaLaw.gaps.length, 0);
   assert19.equal(rotateLaw.gaps.length, 0);
-  const catalog = buildCatalogFoundationFamilyArtifact({ repositoryRoot: root3, context: context2, surface: surface2, sourceOverrides });
+  const catalog = buildCatalogFoundationFamilyArtifact({ repositoryRoot: root3, context, surface, sourceOverrides });
   assert19.equal(catalog.proofKind, "independent-catalog-foundation-closed-equations-v1");
   assert19.equal(catalog.allAdmittedInputs, true);
   assert19.equal(catalog.sampledInputs, 0);
   const catalogFromSnapshot = catalogEquation(catalog, "src/catalog.ts#inventoryCatalogFromSnapshot");
   const catalogRetainsSnapshot = catalogEquation(catalog, "src/catalog.ts#assertInventoryCatalogRetainsSnapshot");
-  const transfer = buildTransferCorrectionValueFamily({ repositoryRoot: root3, context: context2, surface: surface2, sourceOverrides });
+  const transfer = buildTransferCorrectionValueFamily({ repositoryRoot: root3, context, surface, sourceOverrides });
   assert19.equal(transfer.proofKind, "inventoryonce-transfer-correction-complete-source-equations-v2");
   assert19.equal(transfer.allAdmittedInputs, true);
   assert19.equal(transfer.sampledInputs, 0);
@@ -9729,7 +10182,7 @@ function buildFamilyArtifact9({ repositoryRoot: root3 = rootDir(), context: cont
   const countDigest = equationById(rootEquations, "src/integrity.ts#inventoryCountBookDigest");
   const sortedRows = equationById(rootEquations, "src/integrity.ts#sortedRecordRows");
   const publicApply = equationById(rootEquations, "src/projection.ts#applyInventoryCommittedEvent");
-  const callable = surface2.callables.find((row) => row.key === supportedSurfaceKeys9[0]);
+  const callable = surface.callables.find((row) => row.key === supportedSurfaceKeys9[0]);
   assert19(callable !== void 0, "Compiler surface lost materializeInventoryDurableMigrationWorld.");
   assert19.deepEqual(callable.declaration, materialize.completeExpectedTerm.implementation, "Materialize public declaration no longer matches its complete source law.");
   const inputs3 = mergeInputs2([
@@ -9793,7 +10246,7 @@ function buildFamilyArtifact9({ repositoryRoot: root3 = rootDir(), context: cont
     mode: "V",
     proofKind: proofKind5,
     family: "MigrationDurableWorldMaterializeV1",
-    surfaceDigest: surface2.digest,
+    surfaceDigest: surface.digest,
     domain: "Every typed InventoryWorldState and InventoryDurableMigrationPlan admitted by the complete source guards: exact plan/base roots, retained catalog, ordered committed migration events, deficit policy, source dispositions, and SHA-256 content roots. No finite fixture or producer-action restriction.",
     allAdmittedInputs: true,
     sampledInputs: 0,
@@ -9840,37 +10293,37 @@ function tokens(node, source7) {
   return out;
 }
 function findEquation(root3, overrides = /* @__PURE__ */ new Map()) {
-  const actualText = overrides.get("src/read-model.ts") ?? fs19.readFileSync(path21.resolve(root3, "src/read-model.ts"), "utf8");
-  const actual = sf2("src/read-model.ts", actualText), expected = sf2(EXPECTED2, fs19.readFileSync(path21.resolve(root3, EXPECTED2), "utf8"));
+  const actualText = overrides.get("src/read-model.ts") ?? fs18.readFileSync(path21.resolve(root3, "src/read-model.ts"), "utf8");
+  const actual = sf2("src/read-model.ts", actualText), expected = sf2(EXPECTED2, fs18.readFileSync(path21.resolve(root3, EXPECTED2), "utf8"));
   const a = functionDecl(actual, "findInventoryEventByOperationId"), e = functionDecl(expected, "findInventoryEventByOperationId"), at = tokens(a, actual), et = tokens(e, expected);
   assert20.deepEqual(at, et, "findInventoryEventByOperationId complete expected equation changed");
   return { equationId: FIND_ID, completeExpectedTerm: true, termSha256: sha256(canonicalJson(at)), implementationAstSha256: sha256(actualText.slice(a.getStart(actual), a.end)) };
 }
 function addInput2(root3, map, file) {
   if (map.has(file)) return;
-  map.set(file, { file, sha256: sha256(fs19.readFileSync(path21.resolve(root3, file))) });
+  map.set(file, { file, sha256: sha256(fs18.readFileSync(path21.resolve(root3, file))) });
 }
-function buildFamilyArtifact10({ repositoryRoot = process.cwd(), context: context2, surface: surface2, sourceOverrides = /* @__PURE__ */ new Map(), storageArtifactOverride, materializeArtifactOverride } = {}) {
-  assert20(context2 && surface2);
+function buildFamilyArtifact10({ repositoryRoot = process.cwd(), context, surface, sourceOverrides = /* @__PURE__ */ new Map(), storageArtifactOverride, materializeArtifactOverride } = {}) {
+  assert20(context && surface);
   const find = findEquation(repositoryRoot, sourceOverrides);
   if (sourceOverrides.size > 0) return { mutationControlAccepted: false, find };
-  const storageCurrent = buildFamilyArtifact7({ repositoryRoot, context: context2, surface: surface2 });
+  const storageCurrent = buildFamilyArtifact7({ repositoryRoot, context, surface });
   const storage = storageArtifactOverride ? storageArtifactOverride(structuredClone(storageCurrent)) : storageCurrent;
   assert20.deepEqual(storage, storageCurrent, "Storage value dependency drifted");
   const empty = storage.equations.find((x) => x.id === EMPTY_ID);
   assert20(empty !== void 0, "Storage complete empty-world equation missing");
   assert20.equal(empty.implementation.astHash, "095773ae9c97eac998910f614bd1af4134491c7df35dcab040b2162667e08961");
-  const materializeCurrent = buildFamilyArtifact9({ repositoryRoot, context: context2, surface: surface2 });
+  const materializeCurrent = buildFamilyArtifact9({ repositoryRoot, context, surface });
   const materialize = materializeArtifactOverride ? materializeArtifactOverride(structuredClone(materializeCurrent)) : materializeCurrent;
   assert20.deepEqual(materialize, materializeCurrent, "Materialize value dependency drifted");
   const digest = materialize.rootEquations.find((x) => x.id === DIGEST_ID);
   assert20(digest !== void 0 && digest.completeExpectedTerm === true, "Complete catalog-snapshot digest equation missing");
-  const live2 = new Map(surface2.callables.map((c) => [c.key, c]));
+  const live = new Map(surface.callables.map((c) => [c.key, c]));
   const inputs3 = /* @__PURE__ */ new Map();
   for (const artifact of [storageCurrent, materializeCurrent]) for (const input2 of artifact.inputs) addInput2(repositoryRoot, inputs3, input2.file);
   for (const file of [SELF, EXPECTED2, "src/read-model.ts", "src/world.ts", "src/integrity.ts", "node_modules/typescript/package.json"]) addInput2(repositoryRoot, inputs3, file);
   const proofs = supportedSurfaceKeys10.map((surfaceKey) => {
-    const c = live2.get(surfaceKey);
+    const c = live.get(surfaceKey);
     assert20(c !== void 0, `Missing ${surfaceKey}`);
     let semantic;
     if (surfaceKey.includes("findInventoryEventByOperationId")) {
@@ -9885,12 +10338,12 @@ function buildFamilyArtifact10({ repositoryRoot = process.cwd(), context: contex
     }
     return { surfaceKey, signatureHash: c.signatureHash, declaration: c.declaration, semantic };
   });
-  return { schemaVersion: 1, proofKind: proofKind6, surfaceDigest: surface2.digest, domain: "All valid typed inputs of the exact current implementations: complete branch/error/index semantics for findInventoryEventByOperationId; the independently rederived StorageProtocol empty world equation; and the independently rederived catalog-snapshot digest root equation plus its closed catalog dependency.", allAdmittedInputs: true, sampledInputs: 0, inputs: [...inputs3.values()].sort((a, b) => a.file < b.file ? -1 : a.file > b.file ? 1 : 0), proofs };
+  return { schemaVersion: 1, proofKind: proofKind6, surfaceDigest: surface.digest, domain: "All valid typed inputs of the exact current implementations: complete branch/error/index semantics for findInventoryEventByOperationId; the independently rederived StorageProtocol empty world equation; and the independently rederived catalog-snapshot digest root equation plus its closed catalog dependency.", allAdmittedInputs: true, sampledInputs: 0, inputs: [...inputs3.values()].sort((a, b) => a.file < b.file ? -1 : a.file > b.file ? 1 : 0), proofs };
 }
 
 // experiments/tla-conformance/catalog-public-lifecycle7-r9/publication-core-r10/value-family.mjs
 import assert21 from "node:assert/strict";
-import fs20 from "node:fs";
+import fs19 from "node:fs";
 import path22 from "node:path";
 
 // experiments/tla-conformance/quantity-values-r7/event-values/registered-family-adapter.mjs
@@ -9908,7 +10361,7 @@ var EVENT_HELPER = "src/commands.ts#createMovementEvent";
 var CATALOG_SNAPSHOT = "export:.#inventoryCatalogSnapshot::call[0]";
 function source2(root3, file, override) {
   const abs = path22.resolve(root3, file);
-  return ts.createSourceFile(abs, override ?? fs20.readFileSync(abs, "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  return ts.createSourceFile(abs, override ?? fs19.readFileSync(abs, "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
 }
 function findFunction7(sf3, name) {
   const rows = sf3.statements.filter((row) => ts.isFunctionDeclaration(row) && row.name?.text === name);
@@ -9921,8 +10374,8 @@ function runtimeTerm2(node, sf3) {
   const name = node.name?.text;
   assert21(name !== void 0);
   text = text.replace(new RegExp(`^(?:async\\s+)?function\\s+${name}\\b`), (match) => match.replace(name, "__proof"));
-  const emitted2 = ts.transpileModule(text, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.None, removeComments: true } }).outputText.trim();
-  const scanner = ts.createScanner(ts.ScriptTarget.ES2022, true, ts.LanguageVariant.Standard, emitted2), tokens5 = [];
+  const emitted = ts.transpileModule(text, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.None, removeComments: true } }).outputText.trim();
+  const scanner = ts.createScanner(ts.ScriptTarget.ES2022, true, ts.LanguageVariant.Standard, emitted), tokens5 = [];
   for (; ; ) {
     const kind = scanner.scan();
     if (kind === ts.SyntaxKind.EndOfFileToken) break;
@@ -9939,7 +10392,7 @@ function enumValue(sf3, name, member2) {
 }
 function addInput3(root3, map, file) {
   if (map.has(file)) return;
-  map.set(file, { file, sha256: sha256(fs20.readFileSync(path22.resolve(root3, file))) });
+  map.set(file, { file, sha256: sha256(fs19.readFileSync(path22.resolve(root3, file))) });
 }
 function sourceEquationReceipt2(root3, sourceOverrides = /* @__PURE__ */ new Map()) {
   const actualSource = source2(root3, "src/commands.ts", sourceOverrides.get("src/commands.ts"));
@@ -9952,8 +10405,8 @@ function sourceEquationReceipt2(root3, sourceOverrides = /* @__PURE__ */ new Map
   assert21.equal(kind, "catalog-publication", "InventoryEventKind.CatalogPublication drifted");
   return { normalizedTermSha256: sha256(canonicalJson(actual)), eventKind: kind, completeBranchesChecked: true, allValidatedInputs: true, sampledInputs: 0 };
 }
-function eventReceipt(root3, context2, surface2, override) {
-  const current = buildFamilyArtifact5({ repositoryRoot: root3, context: context2, surface: surface2 });
+function eventReceipt(root3, context, surface, override) {
+  const current = buildFamilyArtifact5({ repositoryRoot: root3, context, surface });
   let artifact = override ? override(structuredClone(current)) : current;
   assert21.deepEqual(artifact, current, "Event family dependency drifted");
   assert21.equal(artifact.proofKind, EVENT_VALUES_PROOF_KIND);
@@ -9963,14 +10416,14 @@ function eventReceipt(root3, context2, surface2, override) {
   assert21.deepEqual(helper.dependencies, ["src/commands.ts#inventoryEventIdForOperation", "src/events.ts#defineInventoryEvent"]);
   return { artifact, receipt: { proofKind: artifact.proofKind, certificateId: artifact.certificateId, helperId: helper.id, equationSha256: helper.equationSha256, declaration: helper.declaration, dependencies: helper.dependencies } };
 }
-function catalogReceipt(root3, context2, surface2, override) {
-  const current = buildValueContractArtifact({ repositoryRoot: root3, context: context2, surface: surface2 });
+function catalogReceipt(root3, context, surface, override) {
+  const current = buildValueContractArtifact({ repositoryRoot: root3, context, surface });
   let artifact = override ? override(structuredClone(current)) : current;
   assert21.deepEqual(artifact, current, "Catalog snapshot dependency drifted");
   assert21.equal(artifact.proofKind, "independent-closed-return-equations-v1");
   const proof = artifact.proofs.find((row) => row.surfaceKey === CATALOG_SNAPSHOT);
   assert21(proof !== void 0, "Value-contract family lost inventoryCatalogSnapshot proof");
-  const callable = surface2.callables.find((row) => row.key === CATALOG_SNAPSHOT);
+  const callable = surface.callables.find((row) => row.key === CATALOG_SNAPSHOT);
   assert21(callable !== void 0);
   assert21.equal(proof.signatureHash, callable.signatureHash);
   assert21.deepEqual(proof.declaration, callable.declaration);
@@ -9982,17 +10435,17 @@ function semanticInputs2(root3, event, catalog) {
   for (const family of [event.artifact, catalog.artifact]) for (const input2 of family.inputs ?? family.producers ?? []) addInput3(root3, map, input2.file);
   return [...map.values()].sort((a, b) => a.file < b.file ? -1 : a.file > b.file ? 1 : 0);
 }
-function buildFamilyArtifact11({ repositoryRoot = process.cwd(), context: context2 = loadEvidenceCompilerContext(repositoryRoot, []), surface: surface2 = discoverCompilerSurface(repositoryRoot), sourceOverrides = /* @__PURE__ */ new Map(), eventArtifactOverride, catalogArtifactOverride } = {}) {
+function buildFamilyArtifact11({ repositoryRoot = process.cwd(), context = loadEvidenceCompilerContext(repositoryRoot, []), surface = discoverCompilerSurface(repositoryRoot), sourceOverrides = /* @__PURE__ */ new Map(), eventArtifactOverride, catalogArtifactOverride } = {}) {
   const equation3 = sourceEquationReceipt2(repositoryRoot, sourceOverrides);
   if (sourceOverrides.size > 0) return { mutationControlAccepted: false, equation: equation3 };
-  const event = eventReceipt(repositoryRoot, context2, surface2, eventArtifactOverride), catalog = catalogReceipt(repositoryRoot, context2, surface2, catalogArtifactOverride), callable = surface2.callables.find((row) => row.key === supportedSurfaceKeys11[0]);
+  const event = eventReceipt(repositoryRoot, context, surface, eventArtifactOverride), catalog = catalogReceipt(repositoryRoot, context, surface, catalogArtifactOverride), callable = surface.callables.find((row) => row.key === supportedSurfaceKeys11[0]);
   assert21(callable !== void 0);
-  return { schemaVersion: 1, proofKind: proofKind7, surfaceDigest: surface2.digest, domain: "Every typed CreateInventoryCatalogPublicationInput. The complete public wrapper equation delegates to the independently rederived Event45 createMovementEvent/defineInventoryEvent closure with exact CatalogPublication enum semantics and the current complete inventoryCatalogSnapshot value proof; there is no sampled runtime domain.", allAdmittedInputs: true, sampledInputs: 0, inputs: semanticInputs2(repositoryRoot, event, catalog), proofs: [{ surfaceKey: supportedSurfaceKeys11[0], signatureHash: callable.signatureHash, declaration: callable.declaration, semantics: { completeExpectedTerm: equation3, eventMovementClosure: event.receipt, catalogSnapshot: catalog.receipt } }] };
+  return { schemaVersion: 1, proofKind: proofKind7, surfaceDigest: surface.digest, domain: "Every typed CreateInventoryCatalogPublicationInput. The complete public wrapper equation delegates to the independently rederived Event45 createMovementEvent/defineInventoryEvent closure with exact CatalogPublication enum semantics and the current complete inventoryCatalogSnapshot value proof; there is no sampled runtime domain.", allAdmittedInputs: true, sampledInputs: 0, inputs: semanticInputs2(repositoryRoot, event, catalog), proofs: [{ surfaceKey: supportedSurfaceKeys11[0], signatureHash: callable.signatureHash, declaration: callable.declaration, semantics: { completeExpectedTerm: equation3, eventMovementClosure: event.receipt, catalogSnapshot: catalog.receipt } }] };
 }
 
 // experiments/tla-conformance/surface-residual-r8/direct-pure-v7/family.mjs
 import assert22 from "node:assert/strict";
-import fs21 from "node:fs";
+import fs20 from "node:fs";
 import path23 from "node:path";
 var proofKind8 = "surface-residual-direct-pure-complete-values-v7-v1";
 var supportedSurfaceKeys12 = Object.freeze([
@@ -10038,11 +10491,11 @@ var CATALOG_KEYS = Object.freeze([
 ]);
 function source3(root3, file, override) {
   const abs = path23.resolve(root3, file);
-  return ts.createSourceFile(abs, override ?? fs21.readFileSync(abs, "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  return ts.createSourceFile(abs, override ?? fs20.readFileSync(abs, "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
 }
 function expectedSource2(root3) {
   const file = path23.resolve(root3, EXPECTED4);
-  return ts.createSourceFile(file, fs21.readFileSync(file, "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  return ts.createSourceFile(file, fs20.readFileSync(file, "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
 }
 function findFunction8(sf3, name) {
   const rows = sf3.statements.filter((row) => ts.isFunctionDeclaration(row) && row.name?.text === name);
@@ -10055,8 +10508,8 @@ function runtimeTerm3(node, sf3) {
   const name = node.name?.text;
   assert22(name !== void 0);
   text = text.replace(new RegExp(`^(?:async\\s+)?function\\s+${name}\\b`), (match) => match.replace(name, "__proof"));
-  const emitted2 = ts.transpileModule(text, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.None, removeComments: true } }).outputText.trim();
-  const scanner = ts.createScanner(ts.ScriptTarget.ES2022, true, ts.LanguageVariant.Standard, emitted2);
+  const emitted = ts.transpileModule(text, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.None, removeComments: true } }).outputText.trim();
+  const scanner = ts.createScanner(ts.ScriptTarget.ES2022, true, ts.LanguageVariant.Standard, emitted);
   const tokens5 = [];
   for (; ; ) {
     const kind = scanner.scan();
@@ -10091,27 +10544,27 @@ function sourceEquationReceipt3(root3, overrides = /* @__PURE__ */ new Map()) {
   }
   const publicEquations = PUBLIC2.map((row) => prove2(findFunction8(sf3(row.file), row.actual), findFunction8(expected, row.expected), row.actual));
   const privateEquations = PRIVATE2.map((row) => prove2(findFunction8(sf3(row.file), row.actual), findFunction8(expected, row.expected), row.actual));
-  const counts2 = sf3("src/counts.ts");
+  const counts = sf3("src/counts.ts");
   const supportingValues = {
-    InventoryCountOperationKind: enumValues2(counts2, "InventoryCountOperationKind", ["Abandon"]),
-    InventoryCountStatus: enumValues2(counts2, "InventoryCountStatus", ["Completed", "Abandoned"])
+    InventoryCountOperationKind: enumValues2(counts, "InventoryCountOperationKind", ["Abandon"]),
+    InventoryCountStatus: enumValues2(counts, "InventoryCountStatus", ["Completed", "Abandoned"])
   };
   assert22.deepEqual(supportingValues, { InventoryCountOperationKind: { Abandon: "abandon" }, InventoryCountStatus: { Completed: "completed", Abandoned: "abandoned" } });
   return { publicEquations, privateEquations, supportingValues };
 }
-function dependencyReceipt2(root3, context2, surface2) {
+function dependencyReceipt2(root3, context, surface) {
   const families = [
-    { name: "identity", artifact: buildFamilyArtifact2({ repositoryRoot: root3, context: context2, surface: surface2 }), keys: IDENTITY_KEYS },
-    { name: "catalog", artifact: buildCatalogFamilyArtifact({ repositoryRoot: root3, context: context2, surface: surface2 }), keys: CATALOG_KEYS }
+    { name: "identity", artifact: buildFamilyArtifact2({ repositoryRoot: root3, context, surface }), keys: IDENTITY_KEYS },
+    { name: "catalog", artifact: buildCatalogFamilyArtifact({ repositoryRoot: root3, context, surface }), keys: CATALOG_KEYS }
   ];
   const receipts = [];
   for (const family of families) {
-    assert22.equal(family.artifact.surfaceDigest, surface2.digest);
+    assert22.equal(family.artifact.surfaceDigest, surface.digest);
     const byKey = new Map(family.artifact.proofs.map((p) => [p.surfaceKey, p]));
     for (const surfaceKey of family.keys) {
       const proof = byKey.get(surfaceKey);
       assert22(proof !== void 0, `${family.name} dependency missing ${surfaceKey}`);
-      const callable = surface2.callables.find((row) => row.key === surfaceKey);
+      const callable = surface.callables.find((row) => row.key === surfaceKey);
       assert22(callable !== void 0);
       assert22.equal(proof.signatureHash, callable.signatureHash);
       assert22.deepEqual(proof.declaration, callable.declaration);
@@ -10122,7 +10575,7 @@ function dependencyReceipt2(root3, context2, surface2) {
 }
 function addInput4(root3, inputs3, file) {
   if (inputs3.has(file)) return;
-  inputs3.set(file, { file, sha256: sha256(fs21.readFileSync(path23.resolve(root3, file))) });
+  inputs3.set(file, { file, sha256: sha256(fs20.readFileSync(path23.resolve(root3, file))) });
 }
 function semanticInputs3(root3, dependencies) {
   const inputs3 = /* @__PURE__ */ new Map();
@@ -10130,23 +10583,23 @@ function semanticInputs3(root3, dependencies) {
   for (const family of dependencies.families) for (const input2 of family.artifact.inputs ?? family.artifact.producers ?? []) addInput4(root3, inputs3, input2.file);
   return [...inputs3.values()].sort((a, b) => a.file < b.file ? -1 : a.file > b.file ? 1 : 0);
 }
-function buildFamilyArtifact12({ repositoryRoot = process.cwd(), context: context2 = loadEvidenceCompilerContext(repositoryRoot, []), surface: surface2 = discoverCompilerSurface(repositoryRoot), sourceOverrides = /* @__PURE__ */ new Map() } = {}) {
+function buildFamilyArtifact12({ repositoryRoot = process.cwd(), context = loadEvidenceCompilerContext(repositoryRoot, []), surface = discoverCompilerSurface(repositoryRoot), sourceOverrides = /* @__PURE__ */ new Map() } = {}) {
   const equations2 = sourceEquationReceipt3(repositoryRoot, sourceOverrides);
   if (sourceOverrides.size > 0) return { mutationControlAccepted: false, equations: equations2 };
-  const dependencies = dependencyReceipt2(repositoryRoot, context2, surface2);
-  const live2 = new Map(surface2.callables.map((row) => [row.key, row]));
+  const dependencies = dependencyReceipt2(repositoryRoot, context, surface);
+  const live = new Map(surface.callables.map((row) => [row.key, row]));
   const byLabel = new Map(equations2.publicEquations.map((row) => [row.label, row]));
   const proofs = PUBLIC2.map((row) => {
-    const callable = live2.get(row.surfaceKey);
+    const callable = live.get(row.surfaceKey);
     assert22(callable !== void 0);
     return { surfaceKey: row.surfaceKey, signatureHash: callable.signatureHash, declaration: callable.declaration, semantics: { completeExpectedTerm: byLabel.get(row.actual), privateEquations: equations2.privateEquations, supportingValues: equations2.supportingValues, dependencyReceipts: dependencies.receipts } };
   });
-  return { schemaVersion: 1, proofKind: proofKind8, surfaceDigest: surface2.digest, domain: "Seven direct deterministic public functions over plain application inputs: four amount/policy grouping helpers, count abandonment, composition-open retry fingerprinting, and committed-event sequence normalization. Complete public/private source terms, count enum values, and exact Identity/Catalog semantic dependencies are rederived; constructors, application callbacks, event reducers, composition execution, and projection digest are excluded.", allAdmittedInputs: true, sampledInputs: 0, inputs: semanticInputs3(repositoryRoot, dependencies), proofs };
+  return { schemaVersion: 1, proofKind: proofKind8, surfaceDigest: surface.digest, domain: "Seven direct deterministic public functions over plain application inputs: four amount/policy grouping helpers, count abandonment, composition-open retry fingerprinting, and committed-event sequence normalization. Complete public/private source terms, count enum values, and exact Identity/Catalog semantic dependencies are rederived; constructors, application callbacks, event reducers, composition execution, and projection digest are excluded.", allAdmittedInputs: true, sampledInputs: 0, inputs: semanticInputs3(repositoryRoot, dependencies), proofs };
 }
 
 // experiments/tla-conformance/surface-residual-r8/final-unique8-r9/value-v2/family.mjs
 import assert23 from "node:assert/strict";
-import fs22 from "node:fs";
+import fs21 from "node:fs";
 import path24 from "node:path";
 var proofKind9 = "surface-residual-final-projection-values-v2-v1";
 var supportedSurfaceKeys13 = Object.freeze([
@@ -10165,7 +10618,7 @@ function findFunction9(sf3, name) {
   return rows[0];
 }
 function input(root3, file) {
-  return { file, sha256: sha256(fs22.readFileSync(path24.resolve(root3, file))) };
+  return { file, sha256: sha256(fs21.readFileSync(path24.resolve(root3, file))) };
 }
 function mergeInputs3(rows) {
   const by = /* @__PURE__ */ new Map();
@@ -10177,8 +10630,8 @@ function mergeInputs3(rows) {
   return [...by.values()].sort((a, b) => a.file.localeCompare(b.file));
 }
 function localDigestEquations(root3, overrides = /* @__PURE__ */ new Map()) {
-  const actualText = overrides.get("src/integrity.ts") ?? fs22.readFileSync(path24.resolve(root3, "src/integrity.ts"), "utf8");
-  const expectedText = fs22.readFileSync(path24.resolve(root3, EXPECTED5), "utf8");
+  const actualText = overrides.get("src/integrity.ts") ?? fs21.readFileSync(path24.resolve(root3, "src/integrity.ts"), "utf8");
+  const expectedText = fs21.readFileSync(path24.resolve(root3, EXPECTED5), "utf8");
   const actual = parse2("src/integrity.ts", actualText), expected = parse2(EXPECTED5, expectedText);
   const result = [];
   for (const name of ["inventoryProjectionDigest", "sortedRecordRows"]) {
@@ -10200,10 +10653,10 @@ function localLaw(artifact, id) {
   assert23.equal(rows[0].gaps.length, 0, `${id} still has gaps`);
   return rows[0];
 }
-function buildFamilyArtifact13({ repositoryRoot = process.cwd(), context: context2 = loadEvidenceCompilerContext(repositoryRoot, []), surface: surface2 = discoverCompilerSurface(repositoryRoot), sourceOverrides = /* @__PURE__ */ new Map() } = {}) {
+function buildFamilyArtifact13({ repositoryRoot = process.cwd(), context = loadEvidenceCompilerContext(repositoryRoot, []), surface = discoverCompilerSurface(repositoryRoot), sourceOverrides = /* @__PURE__ */ new Map() } = {}) {
   const root3 = repositoryRoot;
-  assert23.equal(surface2.callables.length, 535);
-  const transfer = buildFamilyArtifact8({ repositoryRoot: root3, context: context2, surface: surface2, sourceOverrides });
+  assert23.equal(surface.callables.length, 535);
+  const transfer = buildFamilyArtifact8({ repositoryRoot: root3, context, surface, sourceOverrides });
   assert23.equal(transfer.proofKind, "inventoryonce-transfer-correction-complete-source-equations-v2");
   assert23.equal(transfer.allAdmittedInputs, true);
   assert23.equal(transfer.sampledInputs, 0);
@@ -10211,12 +10664,12 @@ function buildFamilyArtifact13({ repositoryRoot = process.cwd(), context: contex
   assert23.equal(project.strengtheningOnly, false);
   const digestEquations = localDigestEquations(root3, sourceOverrides);
   if (sourceOverrides.size > 0) return { mutationControlAccepted: false, project, digestEquations };
-  const migration = buildIndependentV9Artifact({ repositoryRoot: root3, context: context2, surface: surface2 });
+  const migration = buildIndependentV9Artifact({ repositoryRoot: root3, context, surface });
   assert23.equal(migration.allAdmittedInputs, true);
   assert23.equal(migration.sampledInputs, 0);
   const shaLaw = localLaw(migration, "src/digest.ts#inventorySha256"), rotateLaw = localLaw(migration, "src/digest.ts#rotateRight");
-  const live2 = new Map(surface2.callables.map((row) => [row.key, row]));
-  const projectCallable = live2.get(supportedSurfaceKeys13[0]), digestCallable = live2.get(supportedSurfaceKeys13[1]);
+  const live = new Map(surface.callables.map((row) => [row.key, row]));
+  const projectCallable = live.get(supportedSurfaceKeys13[0]), digestCallable = live.get(supportedSurfaceKeys13[1]);
   assert23(projectCallable !== void 0 && digestCallable !== void 0);
   assert23.deepEqual(project.declaration, projectCallable.declaration, "projectInventoryEvents compiler declaration drifted from complete equation");
   const digestPublic = digestEquations.find((row) => row.id === "src/integrity.ts#inventoryProjectionDigest");
@@ -10232,7 +10685,7 @@ function buildFamilyArtifact13({ repositoryRoot = process.cwd(), context: contex
     ...transfer.inputs ?? [],
     ...migration.inputs ?? []
   ]);
-  return { schemaVersion: 1, proofKind: proofKind9, surfaceDigest: surface2.digest, domain: "Two universal deterministic value surfaces. projectInventoryEvents reuses the independently specified complete Transfer/Correction replay equation over every internally valid retained history; inventoryProjectionDigest independently specifies every projection-root field and stable key ordering while reusing the complete independently specified SHA-256/rotate laws. No fixtures, callbacks, storage I/O, constructors, native replay, graph replay, or reverse replay.", allAdmittedInputs: true, sampledInputs: 0, inputs: inputs3, proofs: [
+  return { schemaVersion: 1, proofKind: proofKind9, surfaceDigest: surface.digest, domain: "Two universal deterministic value surfaces. projectInventoryEvents reuses the independently specified complete Transfer/Correction replay equation over every internally valid retained history; inventoryProjectionDigest independently specifies every projection-root field and stable key ordering while reusing the complete independently specified SHA-256/rotate laws. No fixtures, callbacks, storage I/O, constructors, native replay, graph replay, or reverse replay.", allAdmittedInputs: true, sampledInputs: 0, inputs: inputs3, proofs: [
     { surfaceKey: supportedSurfaceKeys13[0], signatureHash: projectCallable.signatureHash, declaration: projectCallable.declaration, semantics: { completeExpectedTerm: { id: project.id, lawId: project.lawId, equationSha256: project.equationSha256, declaration: project.declaration }, sourceFamily: { proofKind: transfer.proofKind, domain: transfer.domain }, strengtheningOnly: project.strengtheningOnly } },
     { surfaceKey: supportedSurfaceKeys13[1], signatureHash: digestCallable.signatureHash, declaration: digestCallable.declaration, semantics: { completeExpectedTerm: digestPublic, privateEquations: [sortedRows], shaDependency: { id: shaLaw.id, completeExpectedTerm: shaLaw.completeExpectedTerm, dependencies: shaLaw.dependencies }, rotateDependency: { id: rotateLaw.id, completeExpectedTerm: rotateLaw.completeExpectedTerm }, shaSupportingValues: migration.supportingValues } }
   ] };
@@ -10240,11 +10693,11 @@ function buildFamilyArtifact13({ repositoryRoot = process.cwd(), context: contex
 
 // experiments/tla-conformance/traceability-apply1-r8/family.mjs
 import assert24 from "node:assert/strict";
-import fs23 from "node:fs";
+import fs22 from "node:fs";
 import path25 from "node:path";
 import { fileURLToPath as fileURLToPath12 } from "node:url";
-var DIRECTORY2 = "experiments/tla-conformance/traceability-apply1-r8";
-var FAMILY_FILE2 = `${DIRECTORY2}/family.mjs`;
+var DIRECTORY3 = "experiments/tla-conformance/traceability-apply1-r8";
+var FAMILY_FILE2 = `${DIRECTORY3}/family.mjs`;
 var proofKind10 = "traceability-apply-changes-complete-value-v1";
 var supportedSurfaceKeys14 = Object.freeze([
   "export:./kernel#applyInventoryTraceabilityChanges::call[0]"
@@ -10254,37 +10707,37 @@ function rootDir2() {
 }
 function fileRef2(root3, file, sourceOverrides) {
   const override = sourceOverrides?.get(file);
-  const bytes2 = override === void 0 ? fs23.readFileSync(path25.resolve(root3, file)) : Buffer.from(override);
+  const bytes2 = override === void 0 ? fs22.readFileSync(path25.resolve(root3, file)) : Buffer.from(override);
   return { file, sha256: sha256(bytes2) };
 }
-function buildFamilyArtifact14({ repositoryRoot: root3 = rootDir2(), context: context2, surface: surface2, sourceOverrides = /* @__PURE__ */ new Map() } = {}) {
-  assert24(context2 !== void 0 && surface2 !== void 0);
-  assert24.equal(surface2.callables.length, 535);
-  const upstream = buildTransferCorrectionValueFamily({ repositoryRoot: root3, context: context2, surface: surface2, sourceOverrides });
+function buildFamilyArtifact14({ repositoryRoot: root3 = rootDir2(), context, surface, sourceOverrides = /* @__PURE__ */ new Map() } = {}) {
+  assert24(context !== void 0 && surface !== void 0);
+  assert24.equal(surface.callables.length, 535);
+  const upstream = buildTransferCorrectionValueFamily({ repositoryRoot: root3, context, surface, sourceOverrides });
   assert24.equal(upstream.proofKind, "inventoryonce-transfer-correction-complete-source-equations-v2");
   assert24.equal(upstream.allAdmittedInputs, true);
   assert24.equal(upstream.sampledInputs, 0);
   const rows = upstream.semanticCore.equations.filter((row) => row.id === "src/traceability.ts#applyInventoryTraceabilityChanges");
   assert24.equal(rows.length, 1);
   const equation3 = rows[0];
-  const callable = surface2.callables.find((row) => row.key === supportedSurfaceKeys14[0]);
+  const callable = surface.callables.find((row) => row.key === supportedSurfaceKeys14[0]);
   assert24(callable !== void 0);
   assert24.deepEqual(callable.declaration, equation3.declaration, "Public traceability callable no longer equals the complete equation declaration.");
   const proof = { surfaceKey: supportedSurfaceKeys14[0], signatureHash: callable.signatureHash, declaration: callable.declaration, equationId: equation3.id, lawId: equation3.lawId, equationSha256: equation3.equationSha256, completeSourceEquation: true };
   const inputs3 = [fileRef2(root3, FAMILY_FILE2, sourceOverrides), ...upstream.inputs].sort((a, b) => a.file.localeCompare(b.file));
-  return { schemaVersion: 1, mode: "V", proofKind: proofKind10, family: "TraceabilityApplyChangesV1", surfaceDigest: surface2.digest, domain: "Every typed ApplyInventoryTraceabilityChangesInput admitted by the complete deterministic source equation: add/remove/invalidate branches, relation identity, containment parent/cycle checks, genealogy cycle checks, and deterministic containment index rebuild. No finite fixture restriction.", allAdmittedInputs: true, sampledInputs: 0, sourceCallableClosureComplete: true, inputs: inputs3, upstream: { proofKind: upstream.proofKind, artifactSha256: sha256(canonicalJson(upstream)) }, proofs: [proof] };
+  return { schemaVersion: 1, mode: "V", proofKind: proofKind10, family: "TraceabilityApplyChangesV1", surfaceDigest: surface.digest, domain: "Every typed ApplyInventoryTraceabilityChangesInput admitted by the complete deterministic source equation: add/remove/invalidate branches, relation identity, containment parent/cycle checks, genealogy cycle checks, and deterministic containment index rebuild. No finite fixture restriction.", allAdmittedInputs: true, sampledInputs: 0, sourceCallableClosureComplete: true, inputs: inputs3, upstream: { proofKind: upstream.proofKind, artifactSha256: sha256(canonicalJson(upstream)) }, proofs: [proof] };
 }
 
 // experiments/tla-conformance/new-source-honest486-r43/value-currentizer.mjs
 import assert26 from "node:assert/strict";
-import fs25 from "node:fs";
+import fs24 from "node:fs";
 import path27 from "node:path";
 import { fileURLToPath as fileURLToPath13 } from "node:url";
 
 // experiments/tla-conformance/new-source-honest486-r43/pinned-irrelevance.mjs
 import assert25 from "node:assert/strict";
-import { execFileSync as execFileSync4 } from "node:child_process";
-import fs24 from "node:fs";
+import { execFileSync as execFileSync3 } from "node:child_process";
+import fs23 from "node:fs";
 import path26 from "node:path";
 var RECEIPT_FILE = "experiments/tla-conformance/new-source-honest486-r43/source-irrelevance.json";
 var RECEIPT_SHA256 = "5497f5e926f011fe3404f46f7665619df7950b10529c000f07bbf40fc9baba5b";
@@ -10293,13 +10746,13 @@ var OLD = "19676c735dac922b66753fc713d1434bac28ffc9";
 var CURRENT_SURFACE = "c151b12edf5aac6fcd1fad6d435c36eae481af153a86888517b851f5da290af3";
 var cached;
 function bytes(root3, file) {
-  return fs24.readFileSync(path26.resolve(root3, file));
+  return fs23.readFileSync(path26.resolve(root3, file));
 }
-function git3(root3, args) {
-  return execFileSync4("git", args, { cwd: root3, encoding: "utf8", maxBuffer: 16 * 1024 * 1024 });
+function git2(root3, args) {
+  return execFileSync3("git", args, { cwd: root3, encoding: "utf8", maxBuffer: 16 * 1024 * 1024 });
 }
 function currentDelta(root3) {
-  return git3(root3, ["diff", "--name-only", OLD, "--", "src"]).split(/\r?\n/u).filter(Boolean).sort();
+  return git2(root3, ["diff", "--name-only", OLD, "--", "src"]).split(/\r?\n/u).filter(Boolean).sort();
 }
 function validateReceiptIdentity(receipt) {
   const copy = structuredClone(receipt);
@@ -10307,14 +10760,14 @@ function validateReceiptIdentity(receipt) {
   assert25.equal(sha256(canonicalJson(copy)), RECEIPT_CONTENT_SHA256, "R43 irrelevance receipt content id changed");
   assert25.equal(receipt.contentSha256, RECEIPT_CONTENT_SHA256);
 }
-function loadPinnedNewSourceIrrelevance({ repositoryRoot: root3 = process.cwd(), surface: surface2 } = {}) {
-  assert25(surface2 !== void 0);
-  assert25.equal(surface2.digest, CURRENT_SURFACE);
-  assert25.equal(surface2.callables.length, 535);
+function loadPinnedNewSourceIrrelevance({ repositoryRoot: root3 = process.cwd(), surface } = {}) {
+  assert25(surface !== void 0);
+  assert25.equal(surface.digest, CURRENT_SURFACE);
+  assert25.equal(surface.callables.length, 535);
   const sourceHashes = [sha256(bytes(root3, "src/authority.ts")), sha256(bytes(root3, "src/authority-cutover.ts"))].join(":");
-  const cacheKey = `${path26.resolve(root3)}:${surface2.digest}:${sourceHashes}`;
+  const cacheKey = `${path26.resolve(root3)}:${surface.digest}:${sourceHashes}`;
   if (cached?.key === cacheKey) {
-    for (const ref3 of cached.inputs) assert25.equal(sha256(bytes(root3, ref3.file)), ref3.sha256, `Cached R43 input changed: ${ref3.file}`);
+    for (const ref2 of cached.inputs) assert25.equal(sha256(bytes(root3, ref2.file)), ref2.sha256, `Cached R43 input changed: ${ref2.file}`);
     return cached.value;
   }
   const receiptBytes2 = bytes(root3, RECEIPT_FILE);
@@ -10328,7 +10781,7 @@ function loadPinnedNewSourceIrrelevance({ repositoryRoot: root3 = process.cwd(),
   assert25.deepEqual(currentDelta(root3), ["src/authority-cutover.ts", "src/authority.ts"]);
   assert25.equal(receipt.changedSource.authority.newSha256, sha256(bytes(root3, "src/authority.ts")));
   assert25.equal(receipt.changedSource.authorityCutover.newSha256, sha256(bytes(root3, "src/authority-cutover.ts")));
-  const live2 = new Map(surface2.callables.map((row) => [row.key, row]));
+  const live = new Map(surface.callables.map((row) => [row.key, row]));
   const unique = /* @__PURE__ */ new Map(), semantic = /* @__PURE__ */ new Map();
   const merge = (map, file, expected, label) => {
     const earlier = map.get(file);
@@ -10347,10 +10800,10 @@ function loadPinnedNewSourceIrrelevance({ repositoryRoot: root3 = process.cwd(),
   add("src/authority-cutover.ts", receipt.changedSource.authorityCutover.newSha256);
   for (const family of receipt.families) {
     add(family.artifact.file, family.artifact.sha256);
-    for (const ref3 of family.reachableFiles) add(ref3.file, ref3.sha256);
-    for (const ref3 of family.inheritedCurrentInputs ?? []) addSemantic(ref3.file, ref3.sha256);
+    for (const ref2 of family.reachableFiles) add(ref2.file, ref2.sha256);
+    for (const ref2 of family.inheritedCurrentInputs ?? []) addSemantic(ref2.file, ref2.sha256);
     for (const proof of family.proofs) {
-      const callable = live2.get(proof.surfaceKey);
+      const callable = live.get(proof.surfaceKey);
       assert25(callable !== void 0, `R43 callable missing ${proof.surfaceKey}`);
       assert25.equal(callable.signatureHash, proof.signatureHash, `R43 signature drift ${proof.surfaceKey}`);
       assert25.deepEqual(callable.declaration, proof.declaration, `R43 declaration drift ${proof.surfaceKey}`);
@@ -10361,7 +10814,7 @@ function loadPinnedNewSourceIrrelevance({ repositoryRoot: root3 = process.cwd(),
   assert25.equal(receipt.inheritedSemanticInputs?.previouslyOmittedReferences, 1707, "R43 previously omitted semantic input reference census changed");
   assert25.equal(receipt.inheritedSemanticInputs?.previouslyOmittedUniqueFiles, 395, "R43 previously omitted semantic input unique-file census changed");
   assert25.equal(receipt.inheritedSemanticInputs?.changedInputReferences, 14, "R43 reviewed Authority input substitution census changed");
-  for (const ref3 of semantic.values()) assert25.equal(sha256(bytes(root3, ref3.file)), ref3.sha256, `R43 pinned semantic input drifted: ${ref3.file}`);
+  for (const ref2 of semantic.values()) assert25.equal(sha256(bytes(root3, ref2.file)), ref2.sha256, `R43 pinned semantic input drifted: ${ref2.file}`);
   const inputs3 = [...unique.values()].sort((a, b) => a.file.localeCompare(b.file));
   const semanticInputs4 = [...semantic.values()].sort((a, b) => a.file.localeCompare(b.file));
   const value = { receipt, producerFamilies: receipt.families.filter((f) => f.modeClass === "PRODUCER"), valueFamilies: receipt.families.filter((f) => f.modeClass === "VALUE"), inputs: inputs3, semanticInputs: semanticInputs4 };
@@ -10372,32 +10825,32 @@ function loadPinnedNewSourceIrrelevance({ repositoryRoot: root3 = process.cwd(),
 // experiments/tla-conformance/new-source-honest486-r43/value-currentizer.mjs
 var proofKind11 = "r43-currentized-nonauthority-values-306-v2";
 var root = path27.resolve(path27.dirname(fileURLToPath13(import.meta.url)), "../../..");
-var receiptBytes = fs25.readFileSync(path27.resolve(root, RECEIPT_FILE));
+var receiptBytes = fs24.readFileSync(path27.resolve(root, RECEIPT_FILE));
 assert26.equal(sha256(receiptBytes), RECEIPT_SHA256);
 var staticReceipt = JSON.parse(receiptBytes.toString("utf8"));
 var supportedSurfaceKeys15 = Object.freeze(staticReceipt.families.filter((f) => f.modeClass === "VALUE").flatMap((f) => f.proofs.map((p) => p.surfaceKey)).sort((a, b) => a.localeCompare(b)));
 assert26.equal(supportedSurfaceKeys15.length, 306);
 assert26.equal(new Set(supportedSurfaceKeys15).size, 306);
-function ref2(repositoryRoot, file) {
-  return { file, sha256: sha256(fs25.readFileSync(path27.resolve(repositoryRoot, file))) };
+function ref(repositoryRoot, file) {
+  return { file, sha256: sha256(fs24.readFileSync(path27.resolve(repositoryRoot, file))) };
 }
 function inputs(repositoryRoot, pinned) {
   const map = new Map(pinned.semanticInputs.map((x) => [x.file, x]));
   for (const file of ["experiments/tla-conformance/new-source-honest486-r43/value-currentizer.mjs", "experiments/tla-conformance/new-source-honest486-r43/pinned-irrelevance.mjs", "experiments/tla-conformance/new-source-honest486-r43/source-irrelevance.mjs"]) {
-    const value = ref2(repositoryRoot, file), prior = map.get(file);
+    const value = ref(repositoryRoot, file), prior = map.get(file);
     assert26(prior === void 0 || prior.sha256 === value.sha256);
     map.set(file, value);
   }
   return [...map.values()].sort((a, b) => a.file.localeCompare(b.file));
 }
-function buildFamilyArtifact15({ repositoryRoot = process.cwd(), surface: surface2 } = {}) {
-  const pinned = loadPinnedNewSourceIrrelevance({ repositoryRoot, surface: surface2 });
-  const live2 = new Map(surface2.callables.map((c) => [c.key, c]));
+function buildFamilyArtifact15({ repositoryRoot = process.cwd(), surface } = {}) {
+  const pinned = loadPinnedNewSourceIrrelevance({ repositoryRoot, surface });
+  const live = new Map(surface.callables.map((c) => [c.key, c]));
   const proofs = [];
   for (const family of pinned.valueFamilies) {
     for (const inherited of family.proofs) {
       assert26.equal(inherited.mode, "V");
-      const callable = live2.get(inherited.surfaceKey);
+      const callable = live.get(inherited.surfaceKey);
       assert26(callable !== void 0);
       assert26.equal(callable.signatureHash, inherited.signatureHash);
       assert26.deepEqual(callable.declaration, inherited.declaration);
@@ -10406,12 +10859,12 @@ function buildFamilyArtifact15({ repositoryRoot = process.cwd(), surface: surfac
   }
   proofs.sort((a, b) => a.surfaceKey.localeCompare(b.surfaceKey));
   assert26.deepEqual(proofs.map((p) => p.surfaceKey), supportedSurfaceKeys15);
-  return { schemaVersion: 1, proofKind: proofKind11, family: "R43CurrentizedNonAuthorityValues306", surfaceDigest: surface2.digest, domain: { kind: "exact-source-irrelevance-currentization", families: pinned.valueFamilies.length, rows: proofs.length, changedModules: ["src/authority-cutover.ts", "src/authority.ts"], rule: "Each old value family was admitted in honest471 and its current callable declaration closure is byte-identical and cannot reach either changed source module." }, allAdmittedInputs: true, sampledInputs: 0, sourceIrrelevance: { file: RECEIPT_FILE, sha256: RECEIPT_SHA256, contentSha256: pinned.receipt.contentSha256 }, semanticInputClosure: { totalCurrentFiles: pinned.semanticInputs.length, inheritedReferences: pinned.receipt.inheritedSemanticInputs.references, previouslyOmittedReferences: pinned.receipt.inheritedSemanticInputs.previouslyOmittedReferences, previouslyOmittedUniqueFiles: pinned.receipt.inheritedSemanticInputs.previouslyOmittedUniqueFiles, validation: "trusted builder re-hashes every semantic input once per compiler/source snapshot; wrapper aliases re-check the content-addressed receipt and compact route inputs" }, inputs: inputs(repositoryRoot, pinned), proofs };
+  return { schemaVersion: 1, proofKind: proofKind11, family: "R43CurrentizedNonAuthorityValues306", surfaceDigest: surface.digest, domain: { kind: "exact-source-irrelevance-currentization", families: pinned.valueFamilies.length, rows: proofs.length, changedModules: ["src/authority-cutover.ts", "src/authority.ts"], rule: "Each old value family was admitted in honest471 and its current callable declaration closure is byte-identical and cannot reach either changed source module." }, allAdmittedInputs: true, sampledInputs: 0, sourceIrrelevance: { file: RECEIPT_FILE, sha256: RECEIPT_SHA256, contentSha256: pinned.receipt.contentSha256 }, semanticInputClosure: { totalCurrentFiles: pinned.semanticInputs.length, inheritedReferences: pinned.receipt.inheritedSemanticInputs.references, previouslyOmittedReferences: pinned.receipt.inheritedSemanticInputs.previouslyOmittedReferences, previouslyOmittedUniqueFiles: pinned.receipt.inheritedSemanticInputs.previouslyOmittedUniqueFiles, validation: "trusted builder re-hashes every semantic input once per compiler/source snapshot; wrapper aliases re-check the content-addressed receipt and compact route inputs" }, inputs: inputs(repositoryRoot, pinned), proofs };
 }
 
 // experiments/tla-conformance/authority-values-r40/family.mjs
 import assert27 from "node:assert/strict";
-import fs26 from "node:fs";
+import fs25 from "node:fs";
 import path28 from "node:path";
 var proofKind12 = "authority-result-validators-r36-helper-closed-v3-v1";
 var supportedSurfaceKeys16 = Object.freeze([
@@ -10479,11 +10932,11 @@ var staticInputs = Object.freeze([
 ]);
 var printer2 = ts.createPrinter({ removeComments: true, newLine: ts.NewLineKind.LineFeed });
 function readText(root3, file, overrides) {
-  return overrides.get(file) ?? fs26.readFileSync(path28.resolve(root3, file), "utf8");
+  return overrides.get(file) ?? fs25.readFileSync(path28.resolve(root3, file), "utf8");
 }
 function readBytes(root3, file, overrides) {
   const value = overrides.get(file);
-  return value === void 0 ? fs26.readFileSync(path28.resolve(root3, file)) : Buffer.from(value);
+  return value === void 0 ? fs25.readFileSync(path28.resolve(root3, file)) : Buffer.from(value);
 }
 function parse3(file, text) {
   return ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
@@ -10501,30 +10954,30 @@ function functions(source7) {
 function rendered2(node, source7) {
   return printer2.printNode(ts.EmitHint.Unspecified, node, source7).replaceAll(/\r\n/gu, "\n").trim();
 }
-function sourceFor(root3, context2, file, overrides) {
+function sourceFor(root3, context, file, overrides) {
   if (overrides.has(file)) return parse3(file, readText(root3, file, overrides));
-  const source7 = context2.program.getSourceFile(path28.resolve(root3, file));
+  const source7 = context.program.getSourceFile(path28.resolve(root3, file));
   assert27(source7 && !source7.isDeclarationFile, `Compiler omitted ${file}`);
-  assert27.equal(sha256(source7.text), sha256(fs26.readFileSync(path28.resolve(root3, file))), `Compiler snapshot stale ${file}`);
+  assert27.equal(sha256(source7.text), sha256(fs25.readFileSync(path28.resolve(root3, file))), `Compiler snapshot stale ${file}`);
   return source7;
 }
-function exactEquations(root3, context2, overrides) {
+function exactEquations(root3, context, overrides) {
   const expected = functions(parse3(expectedFile3, readText(root3, expectedFile3, overrides)));
   const actualByFile = /* @__PURE__ */ new Map();
   const receipts = [];
   for (const [file, name] of equationSpecs) {
     let source7 = actualByFile.get(file);
     if (source7 === void 0) {
-      source7 = sourceFor(root3, context2, file, overrides);
+      source7 = sourceFor(root3, context, file, overrides);
       actualByFile.set(file, source7);
     }
     const actual = functions(source7).get(name);
     const law = expected.get(name);
     assert27(actual && law, `Missing equation ${name}`);
     const current = rendered2(actual, source7);
-    const frozen = rendered2(law, law.getSourceFile());
-    assert27.equal(current, frozen, `Complete source equation drifted: ${name}`);
-    receipts.push({ id: `${file}#${name}`, equationSha256: sha256(frozen), completeSource: frozen });
+    const frozen2 = rendered2(law, law.getSourceFile());
+    assert27.equal(current, frozen2, `Complete source equation drifted: ${name}`);
+    receipts.push({ id: `${file}#${name}`, equationSha256: sha256(frozen2), completeSource: frozen2 });
   }
   assert27.equal(receipts.length, equationSpecs.length);
   return { receipts, actualByFile };
@@ -10572,8 +11025,8 @@ function reachableHelperEdges(rootName, graph) {
   }
   return [...edges].sort(compareCodeUnits);
 }
-function enumReceipt(root3, context2, overrides) {
-  const source7 = sourceFor(root3, context2, "src/authority.ts", overrides);
+function enumReceipt(root3, context, overrides) {
+  const source7 = sourceFor(root3, context, "src/authority.ts", overrides);
   const receipt = {};
   for (const [enumName, expectedMembers] of Object.entries(enumValues3)) {
     const rows = source7.statements.filter((row) => ts.isEnumDeclaration(row) && row.name.text === enumName);
@@ -10585,34 +11038,34 @@ function enumReceipt(root3, context2, overrides) {
       values[member2.name.text] = member2.initializer.text;
     }
     assert27.deepEqual(values, expectedMembers, `Authority enum semantics drifted: ${enumName}`);
-    receipt[enumName] = { values, declaration: spanOf(context2, declaration) };
+    receipt[enumName] = { values, declaration: spanOf(context, declaration) };
   }
   return receipt;
 }
-function dependencyCarryForward(root3, surface2, overrides) {
-  const canonical2 = JSON.parse(readText(root3, oldCanonicalFile, overrides));
+function dependencyCarryForward(root3, surface, overrides) {
+  const canonical = JSON.parse(readText(root3, oldCanonicalFile, overrides));
   const report = JSON.parse(readText(root3, oldReportFile, overrides));
-  assert27.equal(canonical2.surfaceDigest, baseSurfaceDigest);
+  assert27.equal(canonical.surfaceDigest, baseSurfaceDigest);
   assert27.equal(report.surfaceDigest, baseSurfaceDigest);
   assert27.equal(report.status, "CURRENT_STRICT_FAMILY_ADMISSION");
   assert27.equal(report.strictGatePassed, true);
   assert27.equal(report.claimedDiagnostics, 0);
   assert27.equal(report.strictCallables, baseStrict);
-  const strict = canonical2.rows.filter((row) => row.binding?.mode !== "HARD_RED").length;
+  const strict = canonical.rows.filter((row) => row.binding?.mode !== "HARD_RED").length;
   assert27.equal(strict, baseStrict);
-  const oldByKey = new Map(canonical2.rows.map((row) => [row.callable.key, row]));
-  const liveByKey = new Map(surface2.callables.map((row) => [row.key, row]));
+  const oldByKey = new Map(canonical.rows.map((row) => [row.callable.key, row]));
+  const liveByKey = new Map(surface.callables.map((row) => [row.key, row]));
   const dependencies = [];
   const evidenceFiles = [];
   for (const spec of dependencySpecs) {
     const old = oldByKey.get(spec.surfaceKey);
-    const live2 = liveByKey.get(spec.surfaceKey);
-    assert27(old && live2, `Dependency missing ${spec.surfaceKey}`);
+    const live = liveByKey.get(spec.surfaceKey);
+    assert27(old && live, `Dependency missing ${spec.surfaceKey}`);
     assert27.equal(old.binding.mode, spec.mode, `Dependency mode drift ${spec.surfaceKey}`);
-    assert27.equal(live2.signatureHash, old.callable.signatureHash, `Dependency signature drift ${spec.surfaceKey}`);
-    assert27.deepEqual(live2.declaration, old.callable.declaration, `Dependency declaration drift ${spec.surfaceKey}`);
-    const sourceBytes = readBytes(root3, live2.declaration.file, overrides);
-    assert27.equal(sha256(sourceBytes), live2.declaration.sourceHash, `Dependency source drift ${spec.surfaceKey}`);
+    assert27.equal(live.signatureHash, old.callable.signatureHash, `Dependency signature drift ${spec.surfaceKey}`);
+    assert27.deepEqual(live.declaration, old.callable.declaration, `Dependency declaration drift ${spec.surfaceKey}`);
+    const sourceBytes = readBytes(root3, live.declaration.file, overrides);
+    assert27.equal(sha256(sourceBytes), live.declaration.sourceHash, `Dependency source drift ${spec.surfaceKey}`);
     assert27(old.binding.evidence?.file && old.binding.evidence?.sha256, `Dependency evidence missing ${spec.surfaceKey}`);
     const snapshotFile = baselineEvidenceSnapshots[old.binding.evidence.file];
     assert27(snapshotFile !== void 0, `Dependency baseline snapshot missing ${spec.surfaceKey}`);
@@ -10625,32 +11078,32 @@ function dependencyCarryForward(root3, surface2, overrides) {
     dependencies.push({
       surfaceKey: spec.surfaceKey,
       mode: spec.mode,
-      signatureHash: live2.signatureHash,
-      declaration: live2.declaration,
+      signatureHash: live.signatureHash,
+      declaration: live.declaration,
       admittedEvidence: old.binding.evidence,
       baselineEvidenceSnapshot: { file: snapshotFile, sha256: old.binding.evidence.sha256 }
     });
   }
-  return { receipt: { kind: "CURRENT488_STRICT_SOURCE_UNCHANGED_CARRY_FORWARD", baseSurfaceDigest, baseStrictCallables: baseStrict, candidateSurfaceDigest: surface2.digest, dependencies }, evidenceFiles };
+  return { receipt: { kind: "CURRENT488_STRICT_SOURCE_UNCHANGED_CARRY_FORWARD", baseSurfaceDigest, baseStrictCallables: baseStrict, candidateSurfaceDigest: surface.digest, dependencies }, evidenceFiles };
 }
-function packageDependencyCalls(context2, surface2) {
-  const source7 = context2.program.getSourceFile(path28.resolve(context2.repositoryRoot, "src/authority-cutover.ts"));
+function packageDependencyCalls(context, surface) {
+  const source7 = context.program.getSourceFile(path28.resolve(context.repositoryRoot, "src/authority-cutover.ts"));
   assert27(source7);
   const green = functions(source7).get("inventoryAuthorityGreenfieldResult");
   assert27(green?.body);
   const expected = new Map(dependencySpecs.map((row) => [row.surfaceKey.split("#")[1].split("::")[0], row.surfaceKey]));
-  const live2 = new Map(surface2.callables.map((row) => [row.key, row]));
+  const live = new Map(surface.callables.map((row) => [row.key, row]));
   const receipts = [];
   function walk(node) {
     if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && expected.has(node.expression.text)) {
-      let symbol = context2.checker.getSymbolAtLocation(node.expression);
+      let symbol = context.checker.getSymbolAtLocation(node.expression);
       assert27(symbol);
-      if (symbol.flags & ts.SymbolFlags.Alias) symbol = context2.checker.getAliasedSymbol(symbol);
+      if (symbol.flags & ts.SymbolFlags.Alias) symbol = context.checker.getAliasedSymbol(symbol);
       const declarations = symbol.declarations ?? [];
       assert27.equal(declarations.length, 1, `Ambiguous dependency call ${node.expression.text}`);
-      const target = live2.get(expected.get(node.expression.text));
+      const target = live.get(expected.get(node.expression.text));
       assert27(target);
-      assert27.deepEqual(spanOf(context2, declarations[0]), target.declaration, `Dependency call target drift ${node.expression.text}`);
+      assert27.deepEqual(spanOf(context, declarations[0]), target.declaration, `Dependency call target drift ${node.expression.text}`);
       receipts.push({ call: node.expression.text, surfaceKey: target.key, targetDeclaration: target.declaration });
     }
     ts.forEachChild(node, walk);
@@ -10671,26 +11124,26 @@ function assertRuntimeTypeScript(root3, overrides) {
   ];
   const receipts = [];
   for (const [runtimeFile, snapshotFile] of pairs) {
-    const runtime = fs26.readFileSync(path28.resolve(root3, runtimeFile));
+    const runtime = fs25.readFileSync(path28.resolve(root3, runtimeFile));
     const snapshot = readBytes(root3, snapshotFile, overrides);
     assert27.equal(sha256(runtime), sha256(snapshot), `TypeScript runtime differs from reviewed snapshot: ${runtimeFile}`);
     receipts.push({ runtimeFile, snapshotFile, sha256: sha256(snapshot) });
   }
   return receipts;
 }
-function buildFamilyArtifact16({ repositoryRoot, context: context2, surface: surface2, sourceOverrides = /* @__PURE__ */ new Map() }) {
+function buildFamilyArtifact16({ repositoryRoot, context, surface, sourceOverrides = /* @__PURE__ */ new Map() }) {
   const root3 = path28.resolve(repositoryRoot);
-  assert27.equal(path28.resolve(context2.repositoryRoot), root3);
+  assert27.equal(path28.resolve(context.repositoryRoot), root3);
   const runtimeTypeScript = assertRuntimeTypeScript(root3, sourceOverrides);
-  const equations2 = exactEquations(root3, context2, sourceOverrides);
+  const equations2 = exactEquations(root3, context, sourceOverrides);
   const graph = helperGraph(equations2.actualByFile);
-  const enums = enumReceipt(root3, context2, sourceOverrides);
-  const dependency2 = dependencyCarryForward(root3, surface2, sourceOverrides);
-  const calls = packageDependencyCalls(context2, surface2);
-  const live2 = new Map(surface2.callables.map((row) => [row.key, row]));
+  const enums = enumReceipt(root3, context, sourceOverrides);
+  const dependency2 = dependencyCarryForward(root3, surface, sourceOverrides);
+  const calls = packageDependencyCalls(context, surface);
+  const live = new Map(surface.callables.map((row) => [row.key, row]));
   const eqByName = new Map(equations2.receipts.map((row) => [row.id.split("#")[1], row]));
   const proofs = supportedSurfaceKeys16.map((surfaceKey) => {
-    const callable = live2.get(surfaceKey);
+    const callable = live.get(surfaceKey);
     assert27(callable, `Missing public Authority value ${surfaceKey}`);
     const name = surfaceKey.split("#")[1].split("::")[0];
     return {
@@ -10708,7 +11161,7 @@ function buildFamilyArtifact16({ repositoryRoot, context: context2, surface: sur
     schemaVersion: 1,
     proofKind: proofKind12,
     mode: "V",
-    surfaceDigest: surface2.digest,
+    surfaceDigest: surface.digest,
     sourceBase: "63ce2175855315782abbedb48a2b532b42b57734",
     allAdmittedInputs: true,
     sampledInputs: 0,
@@ -10730,13 +11183,13 @@ function buildFamilyArtifact16({ repositoryRoot, context: context2, surface: sur
 
 // experiments/tla-conformance/throughput-r7/registered-families.mjs
 import assert38 from "node:assert/strict";
-import fs36 from "node:fs";
+import fs35 from "node:fs";
 import path38 from "node:path";
 import { fileURLToPath as fileURLToPath15 } from "node:url";
 
 // experiments/tla-conformance/migration-helper-causal-r7/registered-value-family.mjs
 import assert28 from "node:assert/strict";
-import fs27 from "node:fs";
+import fs26 from "node:fs";
 import path29 from "node:path";
 var proofKind13 = "migration-plugin-helper-independent-source-closed-values-v3";
 var supportedSurfaceKeys17 = [
@@ -10747,8 +11200,8 @@ var supportedSurfaceKeys17 = [
   "export:./storage#inventoryDurableMigrationPlanDigest::call[0]",
   "export:./storage#validateInventoryMigrationManifestBeginInput::call[0]"
 ];
-function checkBindingsAndEnums(repositoryRoot, context2, independent) {
-  const source7 = context2.program.getSourceFile(path29.resolve(repositoryRoot, "src/migrations.ts"));
+function checkBindingsAndEnums(repositoryRoot, context, independent) {
+  const source7 = context.program.getSourceFile(path29.resolve(repositoryRoot, "src/migrations.ts"));
   assert28(source7 !== void 0);
   for (const [owner, member2, value] of [["InventoryMigrationDiagnosticSeverity", "Error", "error"], ["InventoryMigrationDiagnosticCode", "AmbiguousLegacyMeaning", "ambiguous-legacy-meaning"]]) {
     const enums = source7.statements.filter((node) => ts.isEnumDeclaration(node) && node.name.text === owner);
@@ -10762,7 +11215,7 @@ function checkBindingsAndEnums(repositoryRoot, context2, independent) {
   for (const row of [...independent.proofs, ...independent.localLaws]) {
     let inspect2 = function(node) {
       if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
-        const target = context2.checker.getResolvedSignature(node)?.declaration;
+        const target = context.checker.getResolvedSignature(node)?.declaration;
         assert28(target !== void 0, `Unresolved semantic call: ${node.getText()}`);
         if (target.getSourceFile().isDeclarationFile) {
           assert28(/[/\\]typescript[/\\]lib[/\\]lib\.[^/\\]+\.d\.ts$/u.test(target.getSourceFile().fileName), "Only immutable standard-library effects may be assumed.");
@@ -10771,14 +11224,14 @@ function checkBindingsAndEnums(repositoryRoot, context2, independent) {
         }
       }
       if (ts.isPropertyAccessExpression(node)) {
-        const symbol = context2.checker.getSymbolAtLocation(node.name);
+        const symbol = context.checker.getSymbolAtLocation(node.name);
         assert28(!(symbol?.declarations ?? []).some((candidate) => ts.isGetAccessorDeclaration(candidate) || ts.isSetAccessorDeclaration(candidate)), "Accessor-bearing data requires an explicit effect proof.");
       }
       ts.forEachChild(node, inspect2);
     };
     var inspect = inspect2;
     const span = row.completeExpectedTerm.implementation;
-    const source8 = context2.program.getSourceFile(path29.resolve(repositoryRoot, span.file));
+    const source8 = context.program.getSourceFile(path29.resolve(repositoryRoot, span.file));
     const declaration = nodeAtExactSpan(source8, span.start.offset, span.end.offset);
     assert28(declaration !== void 0 && ts.isFunctionDeclaration(declaration));
     if (visited.has(declaration)) continue;
@@ -10786,13 +11239,13 @@ function checkBindingsAndEnums(repositoryRoot, context2, independent) {
     inspect2(declaration.body);
   }
 }
-function buildFamilyArtifact17({ repositoryRoot, context: context2, surface: surface2 }) {
-  const independent = buildIndependentV9Artifact({ repositoryRoot, context: context2, surface: surface2 });
+function buildFamilyArtifact17({ repositoryRoot, context, surface }) {
+  const independent = buildIndependentV9Artifact({ repositoryRoot, context, surface });
   const additiveClosed = [...supportedSurfaceKeys17, "export:./migrations#inventoryMigrationPositionsMatch::call[0]"].sort();
   assert28.deepEqual([...independent.disposition.independentlyClosed].sort(), additiveClosed, "Independent helper closure changed outside the reviewed additive frontier.");
   for (const surfaceKey of supportedSurfaceKeys17) assert28(independent.disposition.independentlyClosed.includes(surfaceKey), `Existing V6 proof disappeared: ${surfaceKey}`);
-  checkBindingsAndEnums(repositoryRoot, context2, independent);
-  const publicByKey = new Map(surface2.callables.map((row) => [row.key, row]));
+  checkBindingsAndEnums(repositoryRoot, context, independent);
+  const publicByKey = new Map(surface.callables.map((row) => [row.key, row]));
   const proofByKey = new Map(independent.proofs.map((row) => [row.surfaceKey, row]));
   const proofs = supportedSurfaceKeys17.map((surfaceKey) => {
     const callable = publicByKey.get(surfaceKey), proved = proofByKey.get(surfaceKey);
@@ -10809,17 +11262,17 @@ function buildFamilyArtifact17({ repositoryRoot, context: context2, surface: sur
   });
   const inputs3 = /* @__PURE__ */ new Map();
   function input2(file) {
-    const actual = sha256(fs27.readFileSync(path29.resolve(repositoryRoot, file))), prior = inputs3.get(file);
+    const actual = sha256(fs26.readFileSync(path29.resolve(repositoryRoot, file))), prior = inputs3.get(file);
     assert28(prior === void 0 || prior.sha256 === actual, `Conflicting proof identity: ${file}`);
     inputs3.set(file, { file, sha256: actual });
   }
-  for (const file of fs27.readdirSync(path29.resolve(repositoryRoot, "src"))) if (file.endsWith(".ts")) input2(`src/${file}`);
+  for (const file of fs26.readdirSync(path29.resolve(repositoryRoot, "src"))) if (file.endsWith(".ts")) input2(`src/${file}`);
   for (const file of ["v9.expected.ts.txt", "independent-v9-laws.mjs", "registered-value-family.mjs", "artifacts/runtime-causal.json", "import-source-receipt.json"]) input2(`experiments/tla-conformance/migration-helper-causal-r7/${file}`);
   input2("experiments/tla-conformance/admission-audit/bank-current/canonical-535.json");
   return {
     schemaVersion: 1,
     proofKind: proofKind13,
-    surfaceDigest: surface2.digest,
+    surfaceDigest: surface.digest,
     allAdmittedInputs: true,
     sampledInputs: 0,
     domain: "Declared immutable plain TypeScript inputs and unmodified built-ins. Six pure identity/diagnostic/digest/manifest-validation functions; callback reads, arbitrary migration execution, storage publication, and world materialization are excluded.",
@@ -10835,12 +11288,12 @@ function buildFamilyArtifact17({ repositoryRoot, context: context2, surface: sur
 
 // experiments/tla-conformance/migration-helper-causal-r7/registered-frontier-v2-family.mjs
 import assert31 from "node:assert/strict";
-import fs29 from "node:fs";
+import fs28 from "node:fs";
 import path31 from "node:path";
 
 // experiments/tla-conformance/migration-helper-causal-r7/registered-causal-b4-family.mjs
 import assert30 from "node:assert/strict";
-import fs28 from "node:fs";
+import fs27 from "node:fs";
 import path30 from "node:path";
 
 // experiments/tla-conformance/migration-helper-causal-r7/causal-runtime-verifier.mjs
@@ -10926,10 +11379,10 @@ function scanTokens3(text) {
   }
   return result;
 }
-function currentSource2(repositoryRoot, context2, overrides) {
+function currentSource2(repositoryRoot, context, overrides) {
   const replacement = overrides.get(SOURCE);
   if (replacement !== void 0) return ts.createSourceFile(path30.resolve(repositoryRoot, SOURCE), replacement, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
-  const source7 = context2.program.getSourceFile(path30.resolve(repositoryRoot, SOURCE));
+  const source7 = context.program.getSourceFile(path30.resolve(repositoryRoot, SOURCE));
   assert30(source7 !== void 0 && !source7.isDeclarationFile);
   return source7;
 }
@@ -10970,7 +11423,7 @@ function callableTerm(node, source7) {
 }
 function expectedDocument(repositoryRoot) {
   const file = path30.resolve(repositoryRoot, EXPECTED6);
-  const text = fs28.readFileSync(file, "utf8");
+  const text = fs27.readFileSync(file, "utf8");
   return { file: EXPECTED6, source: ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS) };
 }
 function assertExpectedFunction(actualSource, expectedSource3, name) {
@@ -10989,35 +11442,35 @@ function assertExpectedReaderArrow(actualSource, expectedSource3) {
   assert30.deepEqual(a, e, "Complete expected reader.readAll arrow mismatch");
   return { actual, termSha256: sha256(canonicalJson(a)) };
 }
-function strictDefineReceipt(repositoryRoot, context2, surface2) {
-  const bank = JSON.parse(fs28.readFileSync(path30.resolve(repositoryRoot, OLD_BANK), "utf8"));
+function strictDefineReceipt(repositoryRoot, context, surface) {
+  const bank = JSON.parse(fs27.readFileSync(path30.resolve(repositoryRoot, OLD_BANK), "utf8"));
   const key = "export:./migrations#defineInventoryMigration::call[0]";
   const row = bank.rows.find((candidate) => candidate.callable.key === key);
   assert30(row !== void 0 && row.binding.mode !== "HARD_RED");
-  const live2 = surface2.callables.find((candidate) => candidate.key === key);
-  assert30(live2 !== void 0);
-  assert30.equal(live2.signatureHash, row.callable.signatureHash);
-  assert30.deepEqual(live2.declaration, row.callable.declaration);
+  const live = surface.callables.find((candidate) => candidate.key === key);
+  assert30(live !== void 0);
+  assert30.equal(live.signatureHash, row.callable.signatureHash);
+  assert30.deepEqual(live.declaration, row.callable.declaration);
   const execution = row.binding.execution;
   assert30(execution !== void 0);
-  const bytes2 = fs28.readFileSync(path30.resolve(repositoryRoot, execution.file));
+  const bytes2 = fs27.readFileSync(path30.resolve(repositoryRoot, execution.file));
   assert30.equal(sha256(bytes2), execution.sha256);
-  const source7 = context2.program.getSourceFile(path30.resolve(repositoryRoot, live2.declaration.file));
+  const source7 = context.program.getSourceFile(path30.resolve(repositoryRoot, live.declaration.file));
   assert30(source7 !== void 0);
-  return { surfaceKey: key, mode: row.binding.mode, execution, declaration: live2.declaration, signatureHash: live2.signatureHash };
+  return { surfaceKey: key, mode: row.binding.mode, execution, declaration: live.declaration, signatureHash: live.signatureHash };
 }
 function causalReceipt(repositoryRoot) {
-  const bytes2 = fs28.readFileSync(path30.resolve(repositoryRoot, CAUSAL));
+  const bytes2 = fs27.readFileSync(path30.resolve(repositoryRoot, CAUSAL));
   const document = JSON.parse(bytes2.toString("utf8"));
   assert30.equal(verifyCausalB4Runtime(document), true);
   return { file: CAUSAL, sha256: sha256(bytes2), proofKind: document.proofKind, document };
 }
 function addInput5(repositoryRoot, inputs3, file) {
   if (inputs3.has(file)) return;
-  inputs3.set(file, { file, sha256: sha256(fs28.readFileSync(path30.resolve(repositoryRoot, file))) });
+  inputs3.set(file, { file, sha256: sha256(fs27.readFileSync(path30.resolve(repositoryRoot, file))) });
 }
-function buildSemanticCore({ repositoryRoot, context: context2, surface: surface2, sourceOverrides = /* @__PURE__ */ new Map() }) {
-  const source7 = currentSource2(repositoryRoot, context2, sourceOverrides);
+function buildSemanticCore({ repositoryRoot, context, surface, sourceOverrides = /* @__PURE__ */ new Map() }) {
+  const source7 = currentSource2(repositoryRoot, context, sourceOverrides);
   const expected = expectedDocument(repositoryRoot);
   const helper = assertExpectedFunction(source7, expected.source, "assertPositiveSafeInteger");
   const readAll = assertExpectedFunction(source7, expected.source, "readAllInventoryLegacyQuery");
@@ -11025,20 +11478,20 @@ function buildSemanticCore({ repositoryRoot, context: context2, surface: surface
   const sourcePlugin = assertExpectedFunction(source7, expected.source, "createInventoryMigrationPlanFromSourcePlugin");
   const reader = assertExpectedReaderArrow(source7, expected.source);
   if (sourceOverrides.size > 0) return { mutationControlAccepted: false };
-  const v9 = buildIndependentV9Artifact({ repositoryRoot, context: context2, surface: surface2 });
+  const v9 = buildIndependentV9Artifact({ repositoryRoot, context, surface });
   const factory = v9.proofs.find((proof) => proof.surfaceKey === "export:./migrations#createInventoryLegacyQueryReader::call[0]");
   assert30(factory !== void 0 && factory.status === "READY_WITH_PAIRED_B_DEPENDENCY");
-  const strictDefine = strictDefineReceipt(repositoryRoot, context2, surface2);
+  const strictDefine = strictDefineReceipt(repositoryRoot, context, surface);
   const causal = causalReceipt(repositoryRoot);
-  const live2 = new Map(surface2.callables.map((callable) => [callable.key, callable]));
+  const live = new Map(surface.callables.map((callable) => [callable.key, callable]));
   const terms = /* @__PURE__ */ new Map([
-    ["export:./migrations#readAllInventoryLegacyQuery::call[0]", { termSha256: readAll.termSha256, implementation: spanOf(context2, readAll.actual), dependency: { local: "assertPositiveSafeInteger", termSha256: helper.termSha256 }, externalBoundary: "InventoryLegacyQuery.readPage", causalMember: "directRead" }],
-    ["type:src/migration-plugin.ts#InventoryLegacyQueryReader.readAll::call[0]", { termSha256: reader.termSha256, implementation: spanOf(context2, reader.actual), dependency: { sameFamily: "export:./migrations#readAllInventoryLegacyQuery::call[0]", factoryExpectedTerm: factory.completeExpectedTerm }, externalBoundary: null, causalMember: "readerRead" }],
-    ["export:./migrations#createInventoryMigrationPlanFromPlugin::call[0]", { termSha256: ordinary.termSha256, implementation: spanOf(context2, ordinary.actual), dependencies: [{ supportingV: "export:./migrations#createInventoryLegacyQueryReader::call[0]", factoryExpectedTerm: factory.completeExpectedTerm }, { strictProducer: strictDefine }], externalBoundary: "InventoryMigrationPlugin.createDeclaration", causalMember: "pluginPlan" }],
-    ["export:./migrations#createInventoryMigrationPlanFromSourcePlugin::call[0]", { termSha256: sourcePlugin.termSha256, implementation: spanOf(context2, sourcePlugin.actual), dependencies: [{ supportingV: "export:./migrations#createInventoryLegacyQueryReader::call[0]", factoryExpectedTerm: factory.completeExpectedTerm }, { strictProducer: strictDefine }], externalBoundary: "InventoryMigrationSourcePlugin.createBundle", causalMember: "sourcePluginPlan" }]
+    ["export:./migrations#readAllInventoryLegacyQuery::call[0]", { termSha256: readAll.termSha256, implementation: spanOf(context, readAll.actual), dependency: { local: "assertPositiveSafeInteger", termSha256: helper.termSha256 }, externalBoundary: "InventoryLegacyQuery.readPage", causalMember: "directRead" }],
+    ["type:src/migration-plugin.ts#InventoryLegacyQueryReader.readAll::call[0]", { termSha256: reader.termSha256, implementation: spanOf(context, reader.actual), dependency: { sameFamily: "export:./migrations#readAllInventoryLegacyQuery::call[0]", factoryExpectedTerm: factory.completeExpectedTerm }, externalBoundary: null, causalMember: "readerRead" }],
+    ["export:./migrations#createInventoryMigrationPlanFromPlugin::call[0]", { termSha256: ordinary.termSha256, implementation: spanOf(context, ordinary.actual), dependencies: [{ supportingV: "export:./migrations#createInventoryLegacyQueryReader::call[0]", factoryExpectedTerm: factory.completeExpectedTerm }, { strictProducer: strictDefine }], externalBoundary: "InventoryMigrationPlugin.createDeclaration", causalMember: "pluginPlan" }],
+    ["export:./migrations#createInventoryMigrationPlanFromSourcePlugin::call[0]", { termSha256: sourcePlugin.termSha256, implementation: spanOf(context, sourcePlugin.actual), dependencies: [{ supportingV: "export:./migrations#createInventoryLegacyQueryReader::call[0]", factoryExpectedTerm: factory.completeExpectedTerm }, { strictProducer: strictDefine }], externalBoundary: "InventoryMigrationSourcePlugin.createBundle", causalMember: "sourcePluginPlan" }]
   ]);
   const proofs = supportedSurfaceRows.map(({ surfaceKey, mode }) => {
-    const callable = live2.get(surfaceKey);
+    const callable = live.get(surfaceKey);
     assert30(callable !== void 0, `Surface missing ${surfaceKey}`);
     const semantics = terms.get(surfaceKey);
     assert30(semantics !== void 0);
@@ -11046,20 +11499,20 @@ function buildSemanticCore({ repositoryRoot, context: context2, surface: surface
   });
   return { proofs, strictDefine, causal: { file: causal.file, sha256: causal.sha256, proofKind: causal.proofKind }, supportingFactory: factory };
 }
-function buildFamilyArtifact18({ repositoryRoot = process.cwd(), context: context2 = loadEvidenceCompilerContext(repositoryRoot, []), surface: surface2 = discoverCompilerSurface(repositoryRoot), sourceOverrides = /* @__PURE__ */ new Map() } = {}) {
-  if (sourceOverrides.size === 0 && currentBuildCache?.surfaceDigest === surface2.digest) {
+function buildFamilyArtifact18({ repositoryRoot = process.cwd(), context = loadEvidenceCompilerContext(repositoryRoot, []), surface = discoverCompilerSurface(repositoryRoot), sourceOverrides = /* @__PURE__ */ new Map() } = {}) {
+  if (sourceOverrides.size === 0 && currentBuildCache?.surfaceDigest === surface.digest) {
     for (const input2 of currentBuildCache.artifact.inputs) {
-      const actual = sha256(fs28.readFileSync(path30.resolve(repositoryRoot, input2.file)));
+      const actual = sha256(fs27.readFileSync(path30.resolve(repositoryRoot, input2.file)));
       assert30.equal(actual, input2.sha256, `Cached B4 input changed: ${input2.file}`);
       if (input2.file.startsWith("src/") && input2.file.endsWith(".ts")) {
-        const source7 = context2.program.getSourceFile(path30.resolve(repositoryRoot, input2.file));
+        const source7 = context.program.getSourceFile(path30.resolve(repositoryRoot, input2.file));
         assert30(source7 !== void 0, `Compiler omitted cached B4 source: ${input2.file}`);
         assert30.equal(sha256(source7.text), input2.sha256, `Compiler snapshot is stale: ${input2.file}`);
       }
     }
     return currentBuildCache.artifact;
   }
-  const core = buildSemanticCore({ repositoryRoot, context: context2, surface: surface2, sourceOverrides });
+  const core = buildSemanticCore({ repositoryRoot, context, surface, sourceOverrides });
   if (sourceOverrides.size > 0) return core;
   const inputs3 = /* @__PURE__ */ new Map();
   for (const file of [SOURCE, EXPECTED6, CAUSAL, CAUSAL_VERIFIER, "experiments/tla-conformance/migration-helper-causal-r7/registered-causal-b4-family.mjs", "experiments/tla-conformance/migration-helper-causal-r7/independent-v9-laws.mjs", "experiments/tla-conformance/migration-helper-causal-r7/v9.expected.ts.txt", "experiments/tla-conformance/migration-helper-causal-r7/causal-runtime.ts", OLD_BANK]) addInput5(repositoryRoot, inputs3, file);
@@ -11070,7 +11523,7 @@ function buildFamilyArtifact18({ repositoryRoot = process.cwd(), context: contex
     route: "REGISTERED_CERTIFIED_PRODUCER",
     proofKind: proofKind14,
     family: "MigrationPluginHelpersCausalB4",
-    surfaceDigest: surface2.digest,
+    surfaceDigest: surface.digest,
     domain: "All values admitted by the exact four public TypeScript signatures. Application-owned readPage/createDeclaration/createBundle callbacks remain explicit typed external boundaries; the complete InventoryOnce-owned control flow is independently term-checked, while retained real callback chains establish causal source association without inventing formal Snapshot edges.",
     allAdmittedInputs: true,
     sampledInputs: 0,
@@ -11081,7 +11534,7 @@ function buildFamilyArtifact18({ repositoryRoot = process.cwd(), context: contex
     causalEvidence: core.causal,
     proofs: core.proofs
   };
-  currentBuildCache = { surfaceDigest: surface2.digest, artifact };
+  currentBuildCache = { surfaceDigest: surface.digest, artifact };
   return artifact;
 }
 
@@ -11094,16 +11547,16 @@ var supportedSurfaceKeys18 = Object.freeze([
 var B4_FILE = "experiments/tla-conformance/migration-helper-causal-r7/artifacts/causal-b4-producer.json";
 function addInput6(repositoryRoot, inputs3, file) {
   if (inputs3.has(file)) return;
-  inputs3.set(file, { file, sha256: sha256(fs29.readFileSync(path31.resolve(repositoryRoot, file))) });
+  inputs3.set(file, { file, sha256: sha256(fs28.readFileSync(path31.resolve(repositoryRoot, file))) });
 }
-function buildFamilyArtifact19({ repositoryRoot, context: context2, surface: surface2 }) {
-  const independent = buildIndependentV9Artifact({ repositoryRoot, context: context2, surface: surface2 });
+function buildFamilyArtifact19({ repositoryRoot, context, surface }) {
+  const independent = buildIndependentV9Artifact({ repositoryRoot, context, surface });
   const byKey = new Map(independent.proofs.map((proof) => [proof.surfaceKey, proof]));
-  const live2 = new Map(surface2.callables.map((callable) => [callable.key, callable]));
-  const b4 = buildFamilyArtifact18({ repositoryRoot, context: context2, surface: surface2 });
+  const live = new Map(surface.callables.map((callable) => [callable.key, callable]));
+  const b4 = buildFamilyArtifact18({ repositoryRoot, context, surface });
   assert31.equal(b4.proofs.length, 4);
   assert31(b4.proofs.every((proof) => proof.mode === "B"));
-  const b4Bytes = fs29.readFileSync(path31.resolve(repositoryRoot, B4_FILE));
+  const b4Bytes = fs28.readFileSync(path31.resolve(repositoryRoot, B4_FILE));
   assert31.equal(canonicalJson(JSON.parse(b4Bytes.toString("utf8"))), canonicalJson(b4), "Persisted B4 dependency differs from current causal truth");
   const b4Receipt = { file: B4_FILE, sha256: sha256(b4Bytes), proofKind: b4.proofKind, rows: b4.proofs.map(({ surfaceKey, mode }) => ({ surfaceKey, mode })) };
   const proofs = supportedSurfaceKeys18.map((surfaceKey) => {
@@ -11114,7 +11567,7 @@ function buildFamilyArtifact19({ repositoryRoot, context: context2, surface: sur
     } else {
       assert31.equal(sourceProof.status, "INDEPENDENTLY_CLOSED");
     }
-    const callable = live2.get(surfaceKey);
+    const callable = live.get(surfaceKey);
     assert31(callable !== void 0);
     return {
       surfaceKey,
@@ -11136,12 +11589,12 @@ function buildFamilyArtifact19({ repositoryRoot, context: context2, surface: sur
     "experiments/tla-conformance/migration-helper-causal-r7/registered-frontier-v2-family.mjs",
     B4_FILE
   ]) addInput6(repositoryRoot, inputs3, file);
-  for (const name of fs29.readdirSync(path31.resolve(repositoryRoot, "src")).filter((name2) => name2.endsWith(".ts")).sort()) addInput6(repositoryRoot, inputs3, `src/${name}`);
+  for (const name of fs28.readdirSync(path31.resolve(repositoryRoot, "src")).filter((name2) => name2.endsWith(".ts")).sort()) addInput6(repositoryRoot, inputs3, `src/${name}`);
   addInput6(repositoryRoot, inputs3, "node_modules/typescript/package.json");
   return {
     schemaVersion: 1,
     proofKind: proofKind15,
-    surfaceDigest: surface2.digest,
+    surfaceDigest: surface.digest,
     domain: "Exactly the two still-red MigrationPluginHelpers V frontier rows: positionsMatch is independently complete-source closed; the reader factory is independently complete-source closed with its exact readAll callback dependency discharged by the same current causal B4 producer family.",
     allAdmittedInputs: true,
     sampledInputs: 0,
@@ -11153,7 +11606,7 @@ function buildFamilyArtifact19({ repositoryRoot, context: context2, surface: sur
 
 // experiments/tla-conformance/authority-r5/catalog-read-dependency-closure-certificate.mjs
 import assert32 from "node:assert/strict";
-import fs30 from "node:fs";
+import fs29 from "node:fs";
 import path32 from "node:path";
 import { fileURLToPath as fileURLToPath14 } from "node:url";
 
@@ -11457,6 +11910,18 @@ function currentCompilerSurface() {
   }
   return cachedCompilerSurface;
 }
+function requireExactKeys2(value, expected, label) {
+  assert32.equal(
+    value !== null && typeof value === "object" && !Array.isArray(value),
+    true,
+    `${label} must be an object.`
+  );
+  assert32.deepEqual(
+    Object.keys(value).sort(compareCodeUnits),
+    [...expected].sort(compareCodeUnits),
+    `${label} fields changed.`
+  );
+}
 function loadOverriddenContext4(sourceOverrides) {
   for (const file of sourceOverrides.keys()) {
     assert32(
@@ -11554,15 +12019,15 @@ function callableKey(declaration) {
 function isEmbeddedIn(declaration, owner) {
   return declaration.getSourceFile() === owner.getSourceFile() && declaration.getStart() >= owner.getStart() && declaration.getEnd() <= owner.getEnd();
 }
-function resolvedSymbol2(context2, node) {
+function resolvedSymbol2(context, node) {
   const location = ts.isPropertyAccessExpression(node) ? node.name : node;
-  const symbol = context2.checker.getSymbolAtLocation(location);
+  const symbol = context.checker.getSymbolAtLocation(location);
   if (symbol === void 0) return void 0;
-  return (symbol.flags & ts.SymbolFlags.Alias) === 0 ? symbol : context2.checker.getAliasedSymbol(symbol);
+  return (symbol.flags & ts.SymbolFlags.Alias) === 0 ? symbol : context.checker.getAliasedSymbol(symbol);
 }
-function concreteCallableDeclarations(context2, declaration) {
+function concreteCallableDeclarations(context, declaration) {
   if (isConcreteCallable(declaration)) return [declaration];
-  const symbol = declaration.symbol ?? (declaration.name === void 0 ? void 0 : context2.checker.getSymbolAtLocation(declaration.name));
+  const symbol = declaration.symbol ?? (declaration.name === void 0 ? void 0 : context.checker.getSymbolAtLocation(declaration.name));
   return (symbol?.declarations ?? []).filter(isConcreteCallable);
 }
 function isTopLevelVariable(declaration) {
@@ -11601,22 +12066,22 @@ function executableTerm(declaration) {
     declaration.getSourceFile()
   );
 }
-function sourceFile3(context2, relativeFile) {
-  const source7 = context2.program.getSourceFile(
+function sourceFile2(context, relativeFile) {
+  const source7 = context.program.getSourceFile(
     path32.resolve(REPOSITORY_ROOT2, relativeFile)
   );
   assert32.notEqual(source7, void 0, `Missing compiler source '${relativeFile}'.`);
   return source7;
 }
-function findFunction11(context2, relativeFile, functionName) {
-  const matches = sourceFile3(context2, relativeFile).statements.filter(
+function findFunction11(context, relativeFile, functionName) {
+  const matches = sourceFile2(context, relativeFile).statements.filter(
     (statement) => ts.isFunctionDeclaration(statement) && statement.name?.text === functionName && statement.body !== void 0
   );
   assert32.equal(matches.length, 1, `Expected one function '${functionName}'.`);
   return matches[0];
 }
-function findClassMethod3(context2, relativeFile, className, methodName) {
-  const classes = sourceFile3(context2, relativeFile).statements.filter(
+function findClassMethod3(context, relativeFile, className, methodName) {
+  const classes = sourceFile2(context, relativeFile).statements.filter(
     (statement) => ts.isClassDeclaration(statement) && statement.name?.text === className
   );
   assert32.equal(classes.length, 1, `Expected one class '${className}'.`);
@@ -11630,8 +12095,8 @@ function findClassMethod3(context2, relativeFile, className, methodName) {
   );
   return methods[0];
 }
-function findInterfaceMethod2(context2, interfaceName, methodName) {
-  const matches = sourceFile3(context2, "src/facade.ts").statements.filter(
+function findInterfaceMethod2(context, interfaceName, methodName) {
+  const matches = sourceFile2(context, "src/facade.ts").statements.filter(
     (statement) => ts.isInterfaceDeclaration(statement) && statement.name.text === interfaceName
   );
   assert32.equal(matches.length, 1, `Expected one interface '${interfaceName}'.`);
@@ -11650,7 +12115,7 @@ function isTypeScriptLibraryDeclaration(declaration) {
     declaration.getSourceFile().fileName
   );
 }
-function buildClosedProgramSlice(context2) {
+function buildClosedProgramSlice(context) {
   const callableQueue = [];
   const valueQueue = [];
   const callables = /* @__PURE__ */ new Map();
@@ -11675,7 +12140,7 @@ function buildClosedProgramSlice(context2) {
       isTypeScriptLibraryDeclaration(declaration),
       `Non-TypeScript external declaration '${declarationFile(declaration)}' entered the pure read closure.`
     );
-    const nativeSpan = spanOf(context2, declaration);
+    const nativeSpan = spanOf(context, declaration);
     const key = `${nativeSpan.file}@${nativeSpan.start.offset}-${nativeSpan.end.offset}`;
     nativeDeclarations.set(key, nativeSpan);
   }
@@ -11697,12 +12162,12 @@ function buildClosedProgramSlice(context2) {
       owner: ownerKey,
       parameter: parameterName,
       invocation: call.getText(call.getSourceFile()),
-      invocationSpan: spanOf(context2, call)
+      invocationSpan: spanOf(context, call)
     });
   }
   function recordImplicitConstructor(call, ownerKey) {
     assert32(ts.isNewExpression(call));
-    const symbol = resolvedSymbol2(context2, call.expression);
+    const symbol = resolvedSymbol2(context, call.expression);
     const classes = (symbol?.declarations ?? []).filter(ts.isClassDeclaration);
     assert32.equal(
       classes.length,
@@ -11729,7 +12194,7 @@ function buildClosedProgramSlice(context2) {
       key,
       owner: ownerKey,
       construction: call.getText(call.getSourceFile()),
-      classDeclaration: spanOf(context2, classDeclaration),
+      classDeclaration: spanOf(context, classDeclaration),
       fieldEquations: fields2.map(valueKey).sort(compareCodeUnits)
     });
     return key;
@@ -11742,7 +12207,7 @@ function buildClosedProgramSlice(context2) {
         throw new Error("Accessor bodies are outside the immutable plain-data domain.");
       }
       if (ts.isIdentifier(node) || ts.isPropertyAccessExpression(node)) {
-        const symbol = resolvedSymbol2(context2, node);
+        const symbol = resolvedSymbol2(context, node);
         for (const declaration of symbol?.declarations ?? []) {
           if (ts.isGetAccessorDeclaration(declaration) || ts.isSetAccessorDeclaration(declaration)) {
             throw new Error(
@@ -11750,7 +12215,7 @@ function buildClosedProgramSlice(context2) {
             );
           }
           for (const callable of concreteCallableDeclarations(
-            context2,
+            context,
             declaration
           )) {
             if (isPackageSourceDeclaration(callable) && !isEmbeddedIn(callable, owner)) {
@@ -11768,7 +12233,7 @@ function buildClosedProgramSlice(context2) {
         }
       }
       if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
-        const target = context2.checker.getResolvedSignature(node)?.declaration;
+        const target = context.checker.getResolvedSignature(node)?.declaration;
         if (target === void 0) {
           assert32(
             ts.isNewExpression(node),
@@ -11778,7 +12243,7 @@ function buildClosedProgramSlice(context2) {
         } else if (target.getSourceFile().isDeclarationFile) {
           recordNative(target);
         } else {
-          const concrete = concreteCallableDeclarations(context2, target);
+          const concrete = concreteCallableDeclarations(context, target);
           if (concrete.length === 0) {
             recordHigherOrder(ownerKey, node, target);
           }
@@ -11804,14 +12269,14 @@ function buildClosedProgramSlice(context2) {
   for (const contract of CATALOG_READ_SNAPSHOT_CONTRACTS) {
     enqueueCallable(
       findClassMethod3(
-        context2,
+        context,
         "src/facade.ts",
         "InventoryOnceReadSnapshotImplementation",
         contract.methodName
       )
     );
     enqueueCallable(
-      findFunction11(context2, contract.helperSourceFile, contract.helperName)
+      findFunction11(context, contract.helperSourceFile, contract.helperName)
     );
   }
   while (callableQueue.length > 0 || valueQueue.length > 0) {
@@ -11856,18 +12321,18 @@ function buildClosedProgramSlice(context2) {
     implicitConstructors
   };
 }
-function buildHigherOrderClosures(context2, programSlice) {
+function buildHigherOrderClosures(context, programSlice) {
   assert32.equal(
     programSlice.higherOrderInvocations.size,
     EXPECTED_HIGHER_ORDER_TARGETS.length
   );
-  const stockSource = sourceFile3(context2, "src/read-model.ts");
+  const stockSource = sourceFile2(context, "src/read-model.ts");
   const stockCalls = [];
-  const allocationSource = sourceFile3(context2, "src/allocation.ts");
+  const allocationSource = sourceFile2(context, "src/allocation.ts");
   const allocationCalls = [];
-  const pickingSource = sourceFile3(context2, "src/picking.ts");
+  const pickingSource = sourceFile2(context, "src/picking.ts");
   const pickingCalls = [];
-  const reservationSource = sourceFile3(context2, "src/reservations.ts");
+  const reservationSource = sourceFile2(context, "src/reservations.ts");
   const reservationCalls = [];
   function collectNamedCalls(source7, functionName, result) {
     function inspect(node) {
@@ -11895,7 +12360,7 @@ function buildHigherOrderClosures(context2, programSlice) {
   assert32.equal(allocationCalls[1].arguments[2].text, "undefined");
   collectNamedCalls(pickingSource, "allocateInventory", pickingCalls);
   const planAllocation = findFunction11(
-    context2,
+    context,
     "src/picking.ts",
     "planInventoryAllocation"
   );
@@ -11922,49 +12387,49 @@ function buildHigherOrderClosures(context2, programSlice) {
     {
       target: "src/read-model.ts#summarizeOptionalIdentity#readValueId",
       closure: "All nine reachable invocations supply an inline arrow whose body is embedded in a certified stock-summary declaration term.",
-      checkedCallSites: stockCalls.map((call) => spanOf(context2, call)),
+      checkedCallSites: stockCalls.map((call) => spanOf(context, call)),
       externalFunctionValues: 0
     },
     {
       target: "src/allocation.ts#createExactAllocationsIfPossible#acceptAllocations",
       closure: "The snapshot policy root omits allocateInventory.acceptAllocations, so destructuring binds undefined and both guarded callback invocations are unreachable in this specialization.",
-      checkedCallSites: [spanOf(context2, policyAllocationCall)],
+      checkedCallSites: [spanOf(context, policyAllocationCall)],
       externalFunctionValues: 0
     },
     {
       target: "src/reservations.ts#assignIndivisibleGroupCounts#useAssignment",
       closure: "The sole reachable invocation supplies the local recursive search arrow embedded in maximumReservationAssignmentWithIndivisibleGroups.",
-      checkedCallSites: reservationCalls.map((call) => spanOf(context2, call)),
+      checkedCallSites: reservationCalls.map((call) => spanOf(context, call)),
       externalFunctionValues: 0
     }
   ];
 }
-function publicSnapshotRelation(context2, surfaceCallable, implementation, methodName) {
+function publicSnapshotRelation(context, surfaceCallable, implementation, methodName) {
   const publicMethod = findInterfaceMethod2(
-    context2,
+    context,
     "InventoryOnceReadSnapshotApi",
     methodName
   );
   const implementedInterfaces = implementation.parent.heritageClauses?.filter((clause) => clause.token === ts.SyntaxKind.ImplementsKeyword).flatMap((clause) => clause.types) ?? [];
-  const interfaceSymbol = context2.checker.getSymbolAtLocation(publicMethod.owner.name);
+  const interfaceSymbol = context.checker.getSymbolAtLocation(publicMethod.owner.name);
   assert32(
     implementedInterfaces.some(
-      (type) => context2.checker.getSymbolAtLocation(type.expression) === interfaceSymbol
+      (type) => context.checker.getSymbolAtLocation(type.expression) === interfaceSymbol
     ),
     "Snapshot implementation no longer implements the public interface."
   );
   assert32(
-    context2.checker.isTypeAssignableTo(
-      context2.checker.getTypeAtLocation(implementation),
-      context2.checker.getTypeAtLocation(publicMethod.method)
+    context.checker.isTypeAssignableTo(
+      context.checker.getTypeAtLocation(implementation),
+      context.checker.getTypeAtLocation(publicMethod.method)
     ),
     `Snapshot implementation '${methodName}' is not assignable to its public method.`
   );
-  assert32.deepEqual(surfaceCallable.declaration, spanOf(context2, publicMethod.method));
+  assert32.deepEqual(surfaceCallable.declaration, spanOf(context, publicMethod.method));
   return {
     kind: "COMPILER_RESOLVED_IMPLEMENTS",
-    interface: spanOf(context2, publicMethod.method),
-    implementation: spanOf(context2, implementation)
+    interface: spanOf(context, publicMethod.method),
+    implementation: spanOf(context, implementation)
   };
 }
 function reachableEquationKeys(programSlice, rootKey) {
@@ -11989,7 +12454,7 @@ function expectedEquationDeclarations() {
     const specificationFile = path32.join(REPOSITORY_ROOT2, relativeFile);
     const specification = ts.createSourceFile(
       specificationFile,
-      fs30.readFileSync(specificationFile, "utf8"),
+      fs29.readFileSync(specificationFile, "utf8"),
       ts.ScriptTarget.Latest,
       true,
       ts.ScriptKind.TS
@@ -12080,13 +12545,13 @@ function lawIdForSource(sourceName) {
   assert32.equal(laws3.length, 1, `Expected one family law for '${sourceName}'.`);
   return laws3[0].lawId;
 }
-function declarationEquations(context2, programSlice) {
+function declarationEquations(context, programSlice) {
   const expected = expectedEquationDeclarations();
   const expectedValues = new Map(
     CATALOG_READ_EXPECTED_RUNTIME_VALUES.map((row) => [row.key, row])
   );
   const dependencyManifest = JSON.parse(
-    fs30.readFileSync(REUSED_DEPENDENCY_PATH, "utf8")
+    fs29.readFileSync(REUSED_DEPENDENCY_PATH, "utf8")
   );
   assert32.equal(dependencyManifest.schemaVersion, 1);
   assert32.equal(dependencyManifest.sourceBase, CATALOG_READ_CLEAN_HUB_COMMIT);
@@ -12101,7 +12566,7 @@ function declarationEquations(context2, programSlice) {
   for (const [key, declaration] of programSlice.callables) {
     const prior = reused.get(key);
     if (prior !== void 0) {
-      const implementation = spanOf(context2, declaration);
+      const implementation = spanOf(context, declaration);
       assert32.equal(
         implementation.sourceHash,
         CLEAN_HUB_SOURCE_SHA256[implementation.file],
@@ -12133,7 +12598,7 @@ function declarationEquations(context2, programSlice) {
       key,
       kind: "INDEPENDENT_TYPE_ERASED_SOURCE_EQUATION",
       lawId: lawIdForSource(declarationFile(declaration)),
-      declaration: spanOf(context2, declaration),
+      declaration: spanOf(context, declaration),
       expectedTermSha256: sha256(expectedTerm),
       directPackageDependencies: [
         ...programSlice.directDependencies.get(key) ?? []
@@ -12144,7 +12609,7 @@ function declarationEquations(context2, programSlice) {
   for (const [key, declaration] of programSlice.values) {
     const prior = reused.get(key);
     if (prior !== void 0) {
-      const implementation = spanOf(context2, declaration);
+      const implementation = spanOf(context, declaration);
       assert32.equal(
         implementation.sourceHash,
         CLEAN_HUB_SOURCE_SHA256[implementation.file],
@@ -12174,7 +12639,7 @@ function declarationEquations(context2, programSlice) {
       key,
       kind: "INDEPENDENT_RUNTIME_VALUE_EQUATION",
       lawId: lawIdForSource(declarationFile(declaration)),
-      declaration: spanOf(context2, declaration),
+      declaration: spanOf(context, declaration),
       expectedLaw: independent.law,
       directPackageDependencies: [
         ...programSlice.directDependencies.get(key) ?? []
@@ -12207,7 +12672,7 @@ function cleanHubComparisons(programSlice, sourceOverrides) {
   }
   files.add("src/storage.ts");
   return [...files].sort(compareCodeUnits).map((file) => {
-    const worktreeBytes = sourceOverrides.get(file) ?? fs30.readFileSync(path32.join(REPOSITORY_ROOT2, file));
+    const worktreeBytes = sourceOverrides.get(file) ?? fs29.readFileSync(path32.join(REPOSITORY_ROOT2, file));
     const worktreeSha256 = sha256(worktreeBytes);
     const cleanHubSha256 = CLEAN_HUB_SOURCE_SHA256[file];
     assert32.notEqual(cleanHubSha256, void 0, `No clean-hub hash for '${file}'.`);
@@ -12233,7 +12698,7 @@ function producerInputs(programSlice) {
   );
   return [.../* @__PURE__ */ new Set([...PRODUCER_FILES, ...nativeFiles])].sort(compareCodeUnits).map((file) => ({
     file,
-    sha256: sha256(fs30.readFileSync(path32.join(REPOSITORY_ROOT2, file)))
+    sha256: sha256(fs29.readFileSync(path32.join(REPOSITORY_ROOT2, file)))
   }));
 }
 function uniqueInputs(inputs3) {
@@ -12251,7 +12716,7 @@ function uniqueInputs(inputs3) {
   );
 }
 function publishedSourceCertificate() {
-  const bytes2 = fs30.readFileSync(PUBLISHED_SOURCE_CERTIFICATE_PATH);
+  const bytes2 = fs29.readFileSync(PUBLISHED_SOURCE_CERTIFICATE_PATH);
   const reference = CATALOG_READ_REUSED_CERTIFICATES.find(
     (candidate) => candidate.family === "catalog-published-direct-source"
   );
@@ -12263,10 +12728,10 @@ function publishedSourceCertificate() {
   );
   return JSON.parse(bytes2.toString("utf8"));
 }
-function catalogExtensionEquations(context2) {
+function catalogExtensionEquations(context) {
   const specification = ts.createSourceFile(
     CATALOG_EXTENSION_LAW_PATH,
-    fs30.readFileSync(CATALOG_EXTENSION_LAW_PATH, "utf8"),
+    fs29.readFileSync(CATALOG_EXTENSION_LAW_PATH, "utf8"),
     ts.ScriptTarget.Latest,
     true,
     ts.ScriptKind.TS
@@ -12281,7 +12746,7 @@ function catalogExtensionEquations(context2) {
     "mergeInventoryCatalogRevisionFamily"
   ];
   const equations2 = names.map((name) => {
-    const actual = findFunction11(context2, "src/catalog.ts", name);
+    const actual = findFunction11(context, "src/catalog.ts", name);
     const matches = specification.statements.filter(
       (statement) => ts.isFunctionDeclaration(statement) && statement.name?.text === name
     );
@@ -12296,12 +12761,12 @@ function catalogExtensionEquations(context2) {
     return {
       key: `src/catalog.ts#${name}`,
       lawId: "immutable-catalog-extension-v1",
-      declaration: spanOf(context2, actual),
+      declaration: spanOf(context, actual),
       expectedTermSha256: sha256(expectedTerm)
     };
   });
   const extension = findFunction11(
-    context2,
+    context,
     "src/catalog.ts",
     "extendInventoryCatalog"
   );
@@ -12328,7 +12793,7 @@ function catalogExtensionEquations(context2) {
     assert32.equal(call.arguments[3].text, expectedDigests[index]);
   }
   const merge = findFunction11(
-    context2,
+    context,
     "src/catalog.ts",
     "mergeInventoryCatalogRevisionFamily"
   );
@@ -12346,7 +12811,7 @@ function catalogExtensionEquations(context2) {
   return {
     specification: {
       file: normalizeRelativePath(REPOSITORY_ROOT2, CATALOG_EXTENSION_LAW_PATH),
-      sha256: sha256(fs30.readFileSync(CATALOG_EXTENSION_LAW_PATH)),
+      sha256: sha256(fs29.readFileSync(CATALOG_EXTENSION_LAW_PATH)),
       independentlyDeclared: true,
       executedProductionCode: false
     },
@@ -12423,7 +12888,7 @@ function storageBoundaryEvidence(sourceEquationCore) {
     sampledInputs: 0
   };
 }
-function buildSemanticCore2(context2, sourceOverrides, surface2) {
+function buildSemanticCore2(context, sourceOverrides, surface) {
   const priorSourceCertificate = publishedSourceCertificate();
   const priorSourceEquations = priorSourceCertificate.semanticCore;
   const priorByMethod = new Map(
@@ -12432,9 +12897,9 @@ function buildSemanticCore2(context2, sourceOverrides, surface2) {
       equation3
     ])
   );
-  const programSlice = buildClosedProgramSlice(context2);
-  const higherOrderClosures = buildHigherOrderClosures(context2, programSlice);
-  const equations2 = declarationEquations(context2, programSlice);
+  const programSlice = buildClosedProgramSlice(context);
+  const higherOrderClosures = buildHigherOrderClosures(context, programSlice);
+  const equations2 = declarationEquations(context, programSlice);
   const sourceComparisons = cleanHubComparisons(programSlice, sourceOverrides);
   const equationByKey2 = new Map(
     equations2.independent.map((equation3) => [equation3.key, equation3])
@@ -12445,25 +12910,25 @@ function buildSemanticCore2(context2, sourceOverrides, surface2) {
       equation3
     ])
   );
-  assert32.equal(surface2.callables.length, 535);
+  assert32.equal(surface.callables.length, 535);
   assert32.equal(
-    surface2.digest,
+    surface.digest,
     CATALOG_READ_OFFICIAL_SURFACE_DIGEST,
     "Catalog-read registration must bind the official clean-hub compiler surface."
   );
   const callableByKey = new Map(
-    surface2.callables.map((callable) => [callable.key, callable])
+    surface.callables.map((callable) => [callable.key, callable])
   );
   const proofs = CATALOG_READ_SNAPSHOT_CONTRACTS.map((contract) => {
     const implementation = findClassMethod3(
-      context2,
+      context,
       "src/facade.ts",
       "InventoryOnceReadSnapshotImplementation",
       contract.methodName
     );
     const implementationKey = callableKey(implementation);
     const helper = findFunction11(
-      context2,
+      context,
       contract.helperSourceFile,
       contract.helperName
     );
@@ -12486,7 +12951,7 @@ function buildSemanticCore2(context2, sourceOverrides, surface2) {
       signatureHash: surfaceCallable.signatureHash,
       declaration: surfaceCallable.declaration,
       relation: publicSnapshotRelation(
-        context2,
+        context,
         surfaceCallable,
         implementation,
         contract.methodName
@@ -12542,7 +13007,7 @@ function buildSemanticCore2(context2, sourceOverrides, surface2) {
       };
     }
   );
-  const extension = catalogExtensionEquations(context2);
+  const extension = catalogExtensionEquations(context);
   const extensionHandoffBindings = CATALOG_READ_EXTENSION_ALIAS_BINDINGS.map(
     (surfaceKey) => bindSurfaceAlias(
       callableByKey,
@@ -12585,7 +13050,7 @@ function buildSemanticCore2(context2, sourceOverrides, surface2) {
       commit: CATALOG_READ_CLEAN_HUB_COMMIT,
       relevantSourceFiles: sourceComparisons
     },
-    surfaceDigest: surface2.digest,
+    surfaceDigest: surface.digest,
     domain: CATALOG_READ_DEPENDENCY_CLOSURE_DOMAIN,
     claim: "For every valid input in the declared domain, the six snapshot methods and four unreserved pure helper aliases return or throw exactly as independently declared family equations specify; catalog-foundation aliases are retained only as a no-credit handoff to their reassigned owner.",
     excluded: "Mutable/proxied/custom receivers, replaced ECMAScript built-ins, storage acquisition, clocks not supplied as arguments, I/O, and catalog publication are outside this pure frozen-snapshot family.",
@@ -12615,7 +13080,7 @@ function buildSemanticCore2(context2, sourceOverrides, surface2) {
     laws: CATALOG_READ_FAMILY_LAWS,
     specifications: CATALOG_READ_EXPECTED_LAW_FILES.map((file) => ({
       file,
-      sha256: sha256(fs30.readFileSync(path32.join(REPOSITORY_ROOT2, file))),
+      sha256: sha256(fs29.readFileSync(path32.join(REPOSITORY_ROOT2, file))),
       independentlyDeclared: true,
       executedProductionCode: false
     })),
@@ -12645,15 +13110,15 @@ function buildSemanticCore2(context2, sourceOverrides, surface2) {
 }
 function buildCatalogReadDependencyClosureArtifact({
   repositoryRoot = REPOSITORY_ROOT2,
-  context: context2,
-  surface: surface2,
+  context,
+  surface,
   sourceOverrides = /* @__PURE__ */ new Map()
 } = {}) {
   assert32.equal(path32.resolve(repositoryRoot), REPOSITORY_ROOT2);
-  const compilerSurface = surface2 ?? currentCompilerSurface();
-  const usesCachedDefault = context2 === void 0 && surface2 === void 0 && sourceOverrides.size === 0;
+  const compilerSurface = surface ?? currentCompilerSurface();
+  const usesCachedDefault = context === void 0 && surface === void 0 && sourceOverrides.size === 0;
   const semanticCore = usesCachedDefault ? buildCatalogReadDependencyClosureCertificate().semanticCore : buildSemanticCore2(
-    sourceOverrides.size > 0 ? loadOverriddenContext4(sourceOverrides) : context2 ?? loadCompilerContext(REPOSITORY_ROOT2),
+    sourceOverrides.size > 0 ? loadOverriddenContext4(sourceOverrides) : context ?? loadCompilerContext(REPOSITORY_ROOT2),
     sourceOverrides,
     compilerSurface
   );
@@ -12701,9 +13166,9 @@ function buildCatalogReadDependencyClosureCertificate(sourceOverrides = /* @__PU
   if (sourceOverrides.size === 0 && cachedCertificateJson !== void 0) {
     return JSON.parse(cachedCertificateJson);
   }
-  const context2 = sourceOverrides.size === 0 ? loadCompilerContext(REPOSITORY_ROOT2) : loadOverriddenContext4(sourceOverrides);
-  const surface2 = currentCompilerSurface();
-  const semanticCore = buildSemanticCore2(context2, sourceOverrides, surface2);
+  const context = sourceOverrides.size === 0 ? loadCompilerContext(REPOSITORY_ROOT2) : loadOverriddenContext4(sourceOverrides);
+  const surface = currentCompilerSurface();
+  const semanticCore = buildSemanticCore2(context, sourceOverrides, surface);
   const contentSha256 = sha256(canonicalJson(semanticCore));
   const verifierPath2 = fileURLToPath14(import.meta.url);
   const document = {
@@ -12738,7 +13203,7 @@ function buildCatalogReadDependencyClosureCertificate(sourceOverrides = /* @__PU
       ),
       verifier: {
         file: normalizeRelativePath(REPOSITORY_ROOT2, verifierPath2),
-        sha256: sha256(fs30.readFileSync(verifierPath2))
+        sha256: sha256(fs29.readFileSync(verifierPath2))
       },
       contract: {
         file: normalizeRelativePath(
@@ -12749,7 +13214,7 @@ function buildCatalogReadDependencyClosureCertificate(sourceOverrides = /* @__PU
           )
         ),
         sha256: sha256(
-          fs30.readFileSync(
+          fs29.readFileSync(
             path32.join(
               FAMILY_DIRECTORY2,
               "catalog-read-dependency-closure-contracts.mjs"
@@ -12777,13 +13242,91 @@ function buildCatalogReadDependencyClosureCertificate(sourceOverrides = /* @__PU
   if (sourceOverrides.size === 0) cachedCertificateJson = JSON.stringify(document);
   return document;
 }
-if (false) {
-  runCommandLine();
+function verifyCatalogReadDependencyClosureCertificate(document) {
+  requireExactKeys2(
+    document,
+    ["certificateKind", "semanticCore", "contentAddress", "reviewEnvelope"],
+    "Catalog read dependency-closure certificate"
+  );
+  const expected = buildCatalogReadDependencyClosureCertificate();
+  assert32.deepEqual(
+    document,
+    expected,
+    "Catalog read dependency-closure certificate differs from current family truth."
+  );
+  return {
+    certificateId: document.contentAddress.certificateId,
+    eligibleSnapshotRows: document.semanticCore.proofCounts.eligibleSnapshotRows,
+    proposedStrictVRows: document.semanticCore.proofCounts.proposedStrictVRows,
+    strengthenedExistingVRows: document.semanticCore.proofCounts.strengthenedExistingVRows,
+    blockedStorageRows: document.semanticCore.proofCounts.blockedStorageRows,
+    completeCallableEquations: document.semanticCore.proofCounts.completeCallableEquations,
+    completeRuntimeValueEquations: document.semanticCore.proofCounts.completeRuntimeValueEquations,
+    independentEquationRows: document.semanticCore.proofCounts.independentEquationRows,
+    reusedEquationRows: document.semanticCore.proofCounts.reusedEquationRows,
+    closedHigherOrderTargets: document.semanticCore.proofCounts.closedHigherOrderTargets,
+    sampledInputs: document.semanticCore.proofCounts.sampledInputs,
+    producerGraphRuns: document.semanticCore.proofCounts.producerGraphRuns,
+    blocker: document.semanticCore.storageBoundary.gapId,
+    hubOwnsFinalAdmission: document.reviewEnvelope.hubOwnsFinalAdmission
+  };
+}
+function verifyPersistedCatalogReadDependencyClosureCertificate() {
+  return verifyCatalogReadDependencyClosureCertificate(
+    JSON.parse(fs29.readFileSync(CERTIFICATE_PATH2, "utf8"))
+  );
+}
+function verifyPersistedCatalogReadFamilyArtifact() {
+  const recorded = JSON.parse(fs29.readFileSync(REGISTERED_FAMILY_PATH, "utf8"));
+  const expected = buildFamilyArtifact20();
+  assert32.deepEqual(
+    recorded,
+    expected,
+    "Recorded catalog-read family differs from independently rederived semantics."
+  );
+  assert32.deepEqual(
+    recorded.proofs.map((proof) => proof.surfaceKey),
+    supportedSurfaceKeys19,
+    "Recorded catalog-read family does not contain exactly its reviewed members."
+  );
+  return {
+    proofKind: recorded.proofKind,
+    supportedSurfaceRows: recorded.proofs.length,
+    schemaVersion: recorded.schemaVersion,
+    surfaceDigest: recorded.surfaceDigest,
+    evidenceSha256: sha256(fs29.readFileSync(REGISTERED_FAMILY_PATH))
+  };
+}
+function writeCatalogReadDependencyClosureCertificate() {
+  const document = buildCatalogReadDependencyClosureCertificate();
+  fs29.writeFileSync(CERTIFICATE_PATH2, `${JSON.stringify(document, null, 2)}
+`);
+  fs29.writeFileSync(
+    REGISTERED_FAMILY_PATH,
+    `${JSON.stringify(buildFamilyArtifact20(), null, 2)}
+`
+  );
+  return verifyCatalogReadDependencyClosureCertificate(document);
+}
+function runCommandLine2() {
+  const mode = process.argv[2] ?? "--verify";
+  if (mode !== "--write" && mode !== "--verify") {
+    throw new Error(`Unknown dependency-closure mode '${mode}'.`);
+  }
+  const certificateSummary = mode === "--write" ? writeCatalogReadDependencyClosureCertificate() : verifyPersistedCatalogReadDependencyClosureCertificate();
+  const registeredFamily = verifyPersistedCatalogReadFamilyArtifact();
+  process.stdout.write(
+    `${JSON.stringify({ ...certificateSummary, registeredFamily }, null, 2)}
+`
+  );
+}
+if (process.argv[1] !== void 0 && path32.resolve(process.argv[1]) === fileURLToPath14(import.meta.url)) {
+  runCommandLine2();
 }
 
 // experiments/tla-conformance/astra-authority-control-r8/family.mjs
 import assert33 from "node:assert/strict";
-import fs31 from "node:fs";
+import fs30 from "node:fs";
 import path33 from "node:path";
 
 // experiments/tla-conformance/astra-authority-control-r8/laws.mjs
@@ -12857,26 +13400,26 @@ var inputs2 = [
   "package.json",
   "tsconfig.json"
 ];
-function symbolAt(context2, node) {
-  const symbol = context2.checker.getSymbolAtLocation(node);
+function symbolAt(context, node) {
+  const symbol = context.checker.getSymbolAtLocation(node);
   assert33(symbol, `Unresolved runtime name ${node.getText()}`);
-  return symbol.flags & ts.SymbolFlags.Alias ? context2.checker.getAliasedSymbol(symbol) : symbol;
+  return symbol.flags & ts.SymbolFlags.Alias ? context.checker.getAliasedSymbol(symbol) : symbol;
 }
-function runtimeValue(context2, node, root3) {
-  const symbol = symbolAt(context2, node);
+function runtimeValue(context, node, root3) {
+  const symbol = symbolAt(context, node);
   const declarations = symbol.declarations ?? [];
   assert33(declarations.length > 0);
   if (node.getText() === "Error") {
-    const allowed = new Set(["lib.es5.d.ts", "lib.es2022.error.d.ts"].map((file) => fs31.realpathSync(path33.join(root3, "node_modules/typescript/lib", file))));
-    for (const declaration2 of declarations) assert33(allowed.has(fs31.realpathSync(declaration2.getSourceFile().fileName)), "Shadowed Error");
-    return { name: "Error", declarations: declarations.map((declaration2) => spanOf(context2, declaration2)) };
+    const allowed = new Set(["lib.es5.d.ts", "lib.es2022.error.d.ts"].map((file) => fs30.realpathSync(path33.join(root3, "node_modules/typescript/lib", file))));
+    for (const declaration2 of declarations) assert33(allowed.has(fs30.realpathSync(declaration2.getSourceFile().fileName)), "Shadowed Error");
+    return { name: "Error", declarations: declarations.map((declaration2) => spanOf(context, declaration2)) };
   }
   assert33.equal(declarations.length, 1);
   const declaration = declarations[0];
   assert33(ts.isEnumMember(declaration) && declaration.initializer && ts.isStringLiteral(declaration.initializer), "Runtime value is not a literal enum member");
   assert33.equal(path33.relative(root3, declaration.getSourceFile().fileName), "src/authority.ts");
   assert33.equal(declaration.initializer.text, enumValues4.get(node.getText()), "Enum semantic value changed");
-  return { name: node.getText(), value: declaration.initializer.text, declaration: spanOf(context2, declaration) };
+  return { name: node.getText(), value: declaration.initializer.text, declaration: spanOf(context, declaration) };
 }
 function sourceTerm(declaration, resolveRuntime) {
   assert33(declaration.body && ts.isFunctionDeclaration(declaration));
@@ -12932,20 +13475,20 @@ function sourceTerm(declaration, resolveRuntime) {
   }
   return [declaration.parameters.map((parameter) => parameter.initializer ? expression(parameter.initializer) : null), ...declaration.body.statements.map(statement)];
 }
-function buildFamilyArtifact21({ repositoryRoot, context: context2, surface: surface2 }) {
+function buildFamilyArtifact21({ repositoryRoot, context, surface }) {
   const root3 = path33.resolve(repositoryRoot);
-  assert33.equal(path33.resolve(context2.repositoryRoot), root3);
+  assert33.equal(path33.resolve(context.repositoryRoot), root3);
   const proofs = laws2.map((law, index) => {
-    const callable = surface2.callables.find((candidate) => candidate.key === supportedSurfaceKeys20[index]);
+    const callable = surface.callables.find((candidate) => candidate.key === supportedSurfaceKeys20[index]);
     assert33(callable && callable.declaration.file === law.file);
-    const source7 = context2.program.getSourceFile(path33.resolve(root3, law.file));
-    assert33(source7 && sha256(source7.text) === sha256(fs31.readFileSync(path33.resolve(root3, law.file))), "Stale compiler source");
+    const source7 = context.program.getSourceFile(path33.resolve(root3, law.file));
+    assert33(source7 && sha256(source7.text) === sha256(fs30.readFileSync(path33.resolve(root3, law.file))), "Stale compiler source");
     const declaration = nodeAtExactSpan(source7, callable.declaration.start.offset, callable.declaration.end.offset);
     assert33(declaration && ts.isFunctionDeclaration(declaration) && declaration.name.text === law.name);
-    assert33.deepEqual(spanOf(context2, declaration), callable.declaration);
+    assert33.deepEqual(spanOf(context, declaration), callable.declaration);
     const dependencies = /* @__PURE__ */ new Map();
     const term4 = sourceTerm(declaration, (node) => {
-      const value = runtimeValue(context2, node, root3);
+      const value = runtimeValue(context, node, root3);
       dependencies.set(value.name, value);
     });
     assert33.deepEqual(term4, law.term, `Independent complete equation differs: ${law.name}`);
@@ -12963,18 +13506,18 @@ function buildFamilyArtifact21({ repositoryRoot, context: context2, surface: sur
     schemaVersion: 1,
     proofKind: proofKind17,
     mode: "V",
-    surfaceDigest: surface2.digest,
+    surfaceDigest: surface.digest,
     sampledInputs: 0,
     allAdmittedInputs: true,
     domain: "All plain immutable authority records with published field types and native string/number values (including NaN, infinities and signed zero); all native mode strings and optional operation label. Native Error and standard property access, no replaced globals, proxies, accessors or concurrent mutation. No state-parser validation is assumed.",
-    inputs: inputs2.map((file) => ({ file, sha256: sha256(fs31.readFileSync(path33.resolve(root3, file))) })),
+    inputs: inputs2.map((file) => ({ file, sha256: sha256(fs30.readFileSync(path33.resolve(root3, file))) })),
     proofs
   };
 }
 
 // experiments/tla-conformance/migration-r5/traceability-value-family.mjs
 import assert34 from "node:assert/strict";
-import fs32 from "node:fs";
+import fs31 from "node:fs";
 import path34 from "node:path";
 var proofKind18 = "traceability-pure-relations-rebuild-independent-equations-v1";
 var supportedSurfaceKeys21 = Object.freeze([
@@ -13041,12 +13584,12 @@ function findFunction12(source7, name) {
   assert34.equal(found.length, 1, `Expected one concrete function '${name}'.`);
   return found[0];
 }
-function sourceFor2(repositoryRoot, context2, file, overrides) {
+function sourceFor2(repositoryRoot, context, file, overrides) {
   const override = overrides.get(file);
   if (override !== void 0) {
     return ts.createSourceFile(path34.resolve(repositoryRoot, file), override, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   }
-  const source7 = context2.program.getSourceFile(path34.resolve(repositoryRoot, file));
+  const source7 = context.program.getSourceFile(path34.resolve(repositoryRoot, file));
   assert34(source7 !== void 0 && !source7.isDeclarationFile, `Compiler omitted '${file}'.`);
   return source7;
 }
@@ -13055,13 +13598,13 @@ function packageDeclarationId2(repositoryRoot, declaration) {
   if (!file.startsWith("src/") || !ts.isFunctionDeclaration(declaration) || declaration.name === void 0) return null;
   return `${file}#${declaration.name.text}`;
 }
-function directPackageDependencies2(repositoryRoot, context2, declaration) {
+function directPackageDependencies2(repositoryRoot, context, declaration) {
   const dependencies = /* @__PURE__ */ new Set();
   function recordFunctionValue(expression) {
     if (!ts.isIdentifier(expression) && !ts.isPropertyAccessExpression(expression)) return;
-    let symbol = context2.checker.getSymbolAtLocation(ts.isPropertyAccessExpression(expression) ? expression.name : expression);
+    let symbol = context.checker.getSymbolAtLocation(ts.isPropertyAccessExpression(expression) ? expression.name : expression);
     if (symbol !== void 0 && (symbol.flags & ts.SymbolFlags.Alias) !== 0) {
-      symbol = context2.checker.getAliasedSymbol(symbol);
+      symbol = context.checker.getAliasedSymbol(symbol);
     }
     for (const candidate of symbol?.declarations ?? []) {
       const id = packageDeclarationId2(repositoryRoot, candidate);
@@ -13070,7 +13613,7 @@ function directPackageDependencies2(repositoryRoot, context2, declaration) {
   }
   function visit(node) {
     if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
-      const target = context2.checker.getResolvedSignature(node)?.declaration;
+      const target = context.checker.getResolvedSignature(node)?.declaration;
       const id = target === void 0 ? null : packageDeclarationId2(repositoryRoot, target);
       if (id !== null) dependencies.add(id);
       recordFunctionValue(node.expression);
@@ -13080,7 +13623,7 @@ function directPackageDependencies2(repositoryRoot, context2, declaration) {
       }
     }
     if (ts.isPropertyAccessExpression(node)) {
-      const symbol = context2.checker.getSymbolAtLocation(node.name);
+      const symbol = context.checker.getSymbolAtLocation(node.name);
       assert34(!(symbol?.declarations ?? []).some((row) => ts.isGetAccessorDeclaration(row) || ts.isSetAccessorDeclaration(row)), "Accessor-bearing values are outside the immutable-data domain.");
     }
     ts.forEachChild(node, visit);
@@ -13088,38 +13631,38 @@ function directPackageDependencies2(repositoryRoot, context2, declaration) {
   visit(declaration.body);
   return [...dependencies].sort();
 }
-function buildTraceabilityValueArtifact({ repositoryRoot, context: context2, surface: surface2, sourceOverrides = /* @__PURE__ */ new Map() }) {
-  const expectedText = fs32.readFileSync(path34.resolve(repositoryRoot, EXPECTED_FILE3), "utf8");
+function buildTraceabilityValueArtifact({ repositoryRoot, context, surface, sourceOverrides = /* @__PURE__ */ new Map() }) {
+  const expectedText = fs31.readFileSync(path34.resolve(repositoryRoot, EXPECTED_FILE3), "utf8");
   const expectedSource3 = ts.createSourceFile(EXPECTED_FILE3, expectedText, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   const localIds = new Set(contracts.map((contract) => contract.id));
   const equations2 = [];
   for (const contract of contracts) {
-    const source7 = sourceFor2(repositoryRoot, context2, contract.file, sourceOverrides);
+    const source7 = sourceFor2(repositoryRoot, context, contract.file, sourceOverrides);
     const implementation = findFunction12(source7, contract.name);
     const expected = findFunction12(expectedSource3, contract.expected);
     const actualTerm = completeCallableTerm2(implementation, source7);
     const expectedTerm = completeCallableTerm2(expected, expectedSource3);
     assert34.deepEqual(actualTerm, expectedTerm, `Independent algorithm equation changed: ${contract.id}`);
-    const dependencies = sourceOverrides.has(contract.file) ? expectedDependencies4.get(contract.id) : directPackageDependencies2(repositoryRoot, context2, implementation);
+    const dependencies = sourceOverrides.has(contract.file) ? expectedDependencies4.get(contract.id) : directPackageDependencies2(repositoryRoot, context, implementation);
     assert34.deepEqual(dependencies, expectedDependencies4.get(contract.id), `Dependency closure changed: ${contract.id}`);
     for (const dependency2 of dependencies) assert34(localIds.has(dependency2), `Unproved dependency '${dependency2}'.`);
     equations2.push({
       id: contract.id,
-      implementation: sourceOverrides.has(contract.file) ? null : spanOf(context2, implementation),
+      implementation: sourceOverrides.has(contract.file) ? null : spanOf(context, implementation),
       independentExpectedFunction: contract.expected,
       termSha256: sha256(canonicalJson(expectedTerm)),
       dependencies
     });
   }
-  const boundedBytes = fs32.readFileSync(path34.resolve(repositoryRoot, BOUNDED_CERTIFICATE));
+  const boundedBytes = fs31.readFileSync(path34.resolve(repositoryRoot, BOUNDED_CERTIFICATE));
   const bounded = JSON.parse(boundedBytes.toString("utf8"));
   assert34.equal(bounded.native.totalHelperCalls, 33024);
   assert34.equal(bounded.formal.states, 1792);
   assert34.equal(bounded.scope.actionCreditGranted, false);
-  const observationBytes = fs32.readFileSync(path34.resolve(repositoryRoot, BOUNDED_OBSERVATIONS));
+  const observationBytes = fs31.readFileSync(path34.resolve(repositoryRoot, BOUNDED_OBSERVATIONS));
   assert34.equal(sha256(observationBytes), bounded.observations.sha256);
   if (sourceOverrides.size > 0) return { mutationOnly: true, equations: equations2 };
-  const callableByKey = new Map(surface2.callables.map((row) => [row.key, row]));
+  const callableByKey = new Map(surface.callables.map((row) => [row.key, row]));
   const equationByName = new Map(equations2.map((row) => [row.id.split("#")[1], row]));
   const proofs = supportedSurfaceKeys21.map((surfaceKey) => {
     const callable = callableByKey.get(surfaceKey);
@@ -13138,11 +13681,11 @@ function buildTraceabilityValueArtifact({ repositoryRoot, context: context2, sur
     "src/traceability-replay.ts",
     "src/model.ts",
     "src/ordering.ts"
-  ].map((file) => ({ file, sha256: sha256(fs32.readFileSync(path34.resolve(repositoryRoot, file))) }));
+  ].map((file) => ({ file, sha256: sha256(fs31.readFileSync(path34.resolve(repositoryRoot, file))) }));
   return {
     schemaVersion: 1,
     proofKind: proofKind18,
-    surfaceDigest: surface2.digest,
+    surfaceDigest: surface.digest,
     allAdmittedInputs: true,
     sampledInputs: 0,
     domain: "All immutable plain InventoryTraceabilityState/relation/event records admitted by the public TypeScript shapes, with native Array/Map/Set/Object/JSON sorting and iteration semantics. The complete guards, ordering, iterative ancestry traversal, relation indexing, and ordered event rebuild equations are included.",
@@ -13169,7 +13712,7 @@ function buildFamilyArtifact22(input2) {
 
 // experiments/tla-conformance/fungibility-values5-r8/family.mjs
 import assert35 from "node:assert/strict";
-import fs33 from "node:fs";
+import fs32 from "node:fs";
 import path35 from "node:path";
 var proofKind19 = "fungibility-scope-policy-batch-complete-values-v1";
 var supportedSurfaceKeys22 = Object.freeze([
@@ -13193,10 +13736,10 @@ var equationByKey = Object.freeze({
   "export:./kernel#normalizeInventoryFungibilityScope::call[0]": "src/fungibility.ts#normalizeInventoryFungibilityScope",
   "export:.#inventoryPolicyBatchAllocationLinesByReference::call[0]": "src/facade.ts#inventoryPolicyBatchAllocationLinesByReference"
 });
-function source4(root3, context2, file, overrides) {
+function source4(root3, context, file, overrides) {
   const changed = overrides.get(file);
   if (changed !== void 0) return ts.createSourceFile(path35.resolve(root3, file), changed, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
-  const s = context2.program.getSourceFile(path35.resolve(root3, file));
+  const s = context.program.getSourceFile(path35.resolve(root3, file));
   assert35(s !== void 0 && !s.isDeclarationFile, `Missing ${file}`);
   return s;
 }
@@ -13221,32 +13764,32 @@ function term(s, d) {
 }
 function addInput7(root3, inputs3, file) {
   if (inputs3.has(file)) return;
-  inputs3.set(file, { file, sha256: sha256(fs33.readFileSync(path35.resolve(root3, file))) });
+  inputs3.set(file, { file, sha256: sha256(fs32.readFileSync(path35.resolve(root3, file))) });
 }
-function identityReceipt2({ repositoryRoot, context: context2, surface: surface2, sourceOverrides }) {
-  const artifact = buildIdentityValuesFamilyArtifact({ repositoryRoot, context: context2, surface: surface2, sourceOverrides });
+function identityReceipt2({ repositoryRoot, context, surface, sourceOverrides }) {
+  const artifact = buildIdentityValuesFamilyArtifact({ repositoryRoot, context, surface, sourceOverrides });
   const equation3 = artifact.equations.find((row) => row.id === IDENTITY_DEP);
   assert35(equation3 !== void 0, "Identity selector equation missing");
   assert35.equal(equation3.lawId, "selector-normalization-v1");
   return { id: IDENTITY_DEP, lawId: equation3.lawId, declaration: equation3.declaration, termSha256: sha256(canonicalJson(equation3.term)), dependencies: equation3.dependencies, inputs: artifact.inputs };
 }
-function buildFamilyArtifact23({ repositoryRoot = process.cwd(), context: context2 = loadEvidenceCompilerContext(repositoryRoot, []), surface: surface2, sourceOverrides = /* @__PURE__ */ new Map() } = {}) {
-  assert35(surface2 !== void 0, "surface required");
-  const expectedText = fs33.readFileSync(path35.resolve(repositoryRoot, EXPECTED7), "utf8");
+function buildFamilyArtifact23({ repositoryRoot = process.cwd(), context = loadEvidenceCompilerContext(repositoryRoot, []), surface, sourceOverrides = /* @__PURE__ */ new Map() } = {}) {
+  assert35(surface !== void 0, "surface required");
+  const expectedText = fs32.readFileSync(path35.resolve(repositoryRoot, EXPECTED7), "utf8");
   const expected = ts.createSourceFile(path35.resolve(repositoryRoot, EXPECTED7), expectedText, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   assert35.equal(expected.parseDiagnostics.length, 0);
-  const identity = identityReceipt2({ repositoryRoot, context: context2, surface: surface2, sourceOverrides });
+  const identity = identityReceipt2({ repositoryRoot, context, surface, sourceOverrides });
   const equations2 = [];
   for (const c of contracts2) {
-    const aSource = source4(repositoryRoot, context2, c.file, sourceOverrides), a = findFunction13(aSource, c.name), e = findFunction13(expected, c.name);
+    const aSource = source4(repositoryRoot, context, c.file, sourceOverrides), a = findFunction13(aSource, c.name), e = findFunction13(expected, c.name);
     const actual = term(aSource, a), wanted = term(expected, e);
     assert35.deepEqual(actual, wanted, `Independent equation changed: ${c.id}`);
-    equations2.push({ id: c.id, law: c.law, dependencies: c.dependencies, termSha256: sha256(canonicalJson(actual)), implementation: sourceOverrides.size === 0 ? spanOf(context2, a) : { file: c.file, mutationControl: true } });
+    equations2.push({ id: c.id, law: c.law, dependencies: c.dependencies, termSha256: sha256(canonicalJson(actual)), implementation: sourceOverrides.size === 0 ? spanOf(context, a) : { file: c.file, mutationControl: true } });
   }
   if (sourceOverrides.size > 0) return { mutationControlAccepted: false };
-  const eq = new Map(equations2.map((x) => [x.id, x])), live2 = new Map(surface2.callables.map((c) => [c.key, c]));
+  const eq = new Map(equations2.map((x) => [x.id, x])), live = new Map(surface.callables.map((c) => [c.key, c]));
   const proofs = supportedSurfaceKeys22.map((surfaceKey) => {
-    const callable = live2.get(surfaceKey);
+    const callable = live.get(surfaceKey);
     assert35(callable !== void 0, `Missing ${surfaceKey}`);
     const equation3 = eq.get(equationByKey[surfaceKey]);
     assert35(equation3 !== void 0);
@@ -13255,12 +13798,12 @@ function buildFamilyArtifact23({ repositoryRoot = process.cwd(), context: contex
   const inputs3 = /* @__PURE__ */ new Map();
   for (const f of ["experiments/tla-conformance/fungibility-values5-r8/family.mjs", EXPECTED7, "experiments/tla-conformance/identity-values-r7/family.mjs", "experiments/tla-conformance/identity-values-r7/equations.ts.txt", "src/fungibility.ts", "src/facade.ts", "src/selectors.ts"]) addInput7(repositoryRoot, inputs3, f);
   for (const i of identity.inputs ?? []) addInput7(repositoryRoot, inputs3, i.file);
-  return { schemaVersion: 1, proofKind: proofKind19, surfaceDigest: surface2.digest, domain: "All inputs admitted by the exact five public TypeScript signatures. Three pure implementations are checked against separately authored complete declaration terms; selector normalization is recursively tied to the independent identity-selector equation. No runtime samples or stateful action credit.", allAdmittedInputs: true, sampledInputs: 0, inputs: [...inputs3.values()].sort((a, b) => a.file.localeCompare(b.file)), equations: equations2, identityDependency: { id: identity.id, lawId: identity.lawId, declaration: identity.declaration, termSha256: identity.termSha256, dependencies: identity.dependencies }, proofs };
+  return { schemaVersion: 1, proofKind: proofKind19, surfaceDigest: surface.digest, domain: "All inputs admitted by the exact five public TypeScript signatures. Three pure implementations are checked against separately authored complete declaration terms; selector normalization is recursively tied to the independent identity-selector equation. No runtime samples or stateful action credit.", allAdmittedInputs: true, sampledInputs: 0, inputs: [...inputs3.values()].sort((a, b) => a.file.localeCompare(b.file)), equations: equations2, identityDependency: { id: identity.id, lawId: identity.lawId, declaration: identity.declaration, termSha256: identity.termSha256, dependencies: identity.dependencies }, proofs };
 }
 
 // experiments/tla-conformance/fungibility-read-r9/summary-family.mjs
 import assert36 from "node:assert/strict";
-import fs34 from "node:fs";
+import fs33 from "node:fs";
 import path36 from "node:path";
 var proofKind20 = "fungibility-summary-complete-values-v1";
 var supportedSurfaceKeys23 = Object.freeze([
@@ -13333,7 +13876,7 @@ var LOCAL_CONTRACTS = Object.freeze([
     ]
   }
 ]);
-function source5(repositoryRoot, context2, file, sourceOverrides) {
+function source5(repositoryRoot, context, file, sourceOverrides) {
   const changed = sourceOverrides.get(file);
   if (changed !== void 0) {
     return ts.createSourceFile(
@@ -13344,12 +13887,12 @@ function source5(repositoryRoot, context2, file, sourceOverrides) {
       ts.ScriptKind.TS
     );
   }
-  const current = context2.program.getSourceFile(path36.resolve(repositoryRoot, file));
+  const current = context.program.getSourceFile(path36.resolve(repositoryRoot, file));
   assert36(current !== void 0 && !current.isDeclarationFile, `Missing ${file}`);
   return current;
 }
-function findFunction14(sourceFile4, name) {
-  const rows = sourceFile4.statements.filter(
+function findFunction14(sourceFile3, name) {
+  const rows = sourceFile3.statements.filter(
     (node) => ts.isFunctionDeclaration(node) && node.name?.text === name
   );
   assert36.equal(rows.length, 1, `Expected one function ${name}`);
@@ -13371,42 +13914,42 @@ function tokens3(text) {
   }
   return result;
 }
-function term2(sourceFile4, declaration) {
-  return tokens3(declaration.getText(sourceFile4));
+function term2(sourceFile3, declaration) {
+  return tokens3(declaration.getText(sourceFile3));
 }
-function readJson3(repositoryRoot, file) {
-  return JSON.parse(fs34.readFileSync(path36.resolve(repositoryRoot, file), "utf8"));
+function readJson2(repositoryRoot, file) {
+  return JSON.parse(fs33.readFileSync(path36.resolve(repositoryRoot, file), "utf8"));
 }
 function addInput8(repositoryRoot, inputs3, file) {
   if (inputs3.has(file)) return;
   inputs3.set(file, {
     file,
-    sha256: sha256(fs34.readFileSync(path36.resolve(repositoryRoot, file)))
+    sha256: sha256(fs33.readFileSync(path36.resolve(repositoryRoot, file)))
   });
 }
-function currentStrictDependencyReceipt(repositoryRoot, surface2) {
+function currentStrictDependencyReceipt(repositoryRoot, surface) {
   return strictDependencyReceipt({
     repositoryRoot,
-    surface: surface2,
+    surface,
     requirements: CURRENT_STRICT_DEPENDENCIES,
     label: "fungibility-summary dependency"
   }).dependencies;
 }
-function value5Receipt({ repositoryRoot, context: context2, surface: surface2, sourceOverrides }) {
-  const artifact = buildFamilyArtifact23({ repositoryRoot, context: context2, surface: surface2, sourceOverrides });
+function value5Receipt({ repositoryRoot, context, surface, sourceOverrides }) {
+  const artifact = buildFamilyArtifact23({ repositoryRoot, context, surface, sourceOverrides });
   const proof = artifact.proofs.find((row) => row.surfaceKey === VALUE5_NORMALIZE_KEY);
   assert36(proof !== void 0, "Value5 normalize proof missing");
   if (sourceOverrides.size > 0) {
     return { receipt: { surfaceKey: VALUE5_NORMALIZE_KEY, proofKind: proofKind19, mutationControl: true }, inputs: [] };
   }
   assert36.equal(artifact.proofKind, proofKind19);
-  assert36.equal(artifact.surfaceDigest, surface2.digest);
+  assert36.equal(artifact.surfaceDigest, surface.digest);
   assert36.equal(artifact.allAdmittedInputs, true);
   assert36.equal(artifact.sampledInputs, 0);
   assert36.deepEqual(artifact.proofs.map((row) => row.surfaceKey).sort(), [...supportedSurfaceKeys22].sort());
-  const recorded = readJson3(repositoryRoot, VALUE5_EVIDENCE);
+  const recorded = readJson2(repositoryRoot, VALUE5_EVIDENCE);
   assert36.deepEqual(recorded, artifact, "Value5 recorded evidence differs from current rederived family.");
-  const evidence = { file: VALUE5_EVIDENCE, sha256: sha256(fs34.readFileSync(path36.resolve(repositoryRoot, VALUE5_EVIDENCE))) };
+  const evidence = { file: VALUE5_EVIDENCE, sha256: sha256(fs33.readFileSync(path36.resolve(repositoryRoot, VALUE5_EVIDENCE))) };
   return {
     receipt: { surfaceKey: VALUE5_NORMALIZE_KEY, mode: "V", proofKind: proofKind19, evidence, equationId: proof.equationId },
     inputs: artifact.inputs ?? []
@@ -13414,12 +13957,12 @@ function value5Receipt({ repositoryRoot, context: context2, surface: surface2, s
 }
 function buildSummaryValueArtifact({
   repositoryRoot = process.cwd(),
-  context: context2 = loadEvidenceCompilerContext(repositoryRoot, []),
-  surface: surface2,
+  context = loadEvidenceCompilerContext(repositoryRoot, []),
+  surface,
   sourceOverrides = /* @__PURE__ */ new Map()
 } = {}) {
-  assert36(surface2 !== void 0, "surface required");
-  const expectedText = fs34.readFileSync(path36.resolve(repositoryRoot, EXPECTED8), "utf8");
+  assert36(surface !== void 0, "surface required");
+  const expectedText = fs33.readFileSync(path36.resolve(repositoryRoot, EXPECTED8), "utf8");
   const expected = ts.createSourceFile(
     path36.resolve(repositoryRoot, EXPECTED8),
     expectedText,
@@ -13430,7 +13973,7 @@ function buildSummaryValueArtifact({
   assert36.equal(expected.parseDiagnostics.length, 0, "Expected equation file must parse.");
   const equations2 = [];
   for (const contract of LOCAL_CONTRACTS) {
-    const actualSource = source5(repositoryRoot, context2, contract.file, sourceOverrides);
+    const actualSource = source5(repositoryRoot, context, contract.file, sourceOverrides);
     const actualDeclaration = findFunction14(actualSource, contract.name);
     const expectedDeclaration = findFunction14(expected, contract.name);
     const actualTerm = term2(actualSource, actualDeclaration);
@@ -13441,10 +13984,10 @@ function buildSummaryValueArtifact({
       law: contract.law,
       dependencies: contract.dependencies,
       termSha256: sha256(canonicalJson(actualTerm)),
-      implementation: sourceOverrides.size === 0 ? spanOf(context2, actualDeclaration) : { file: contract.file, mutationControl: true }
+      implementation: sourceOverrides.size === 0 ? spanOf(context, actualDeclaration) : { file: contract.file, mutationControl: true }
     });
   }
-  const facadeSource = source5(repositoryRoot, context2, "src/facade.ts", sourceOverrides);
+  const facadeSource = source5(repositoryRoot, context, "src/facade.ts", sourceOverrides);
   const snapshotDeclaration = findClassMethod(
     facadeSource,
     SNAPSHOT_CONTRACT.className,
@@ -13473,17 +14016,17 @@ function buildSummaryValueArtifact({
     law: SNAPSHOT_CONTRACT.equation,
     dependencies: ["src/fungibility.ts#summarizeInventoryFungibility"],
     termSha256: sha256(canonicalJson(snapshotActualTerm)),
-    implementation: sourceOverrides.size === 0 ? spanOf(context2, snapshotDeclaration) : { file: "src/facade.ts", mutationControl: true }
+    implementation: sourceOverrides.size === 0 ? spanOf(context, snapshotDeclaration) : { file: "src/facade.ts", mutationControl: true }
   };
   equations2.push(snapshotEquation);
-  const value5 = value5Receipt({ repositoryRoot, context: context2, surface: surface2, sourceOverrides });
+  const value5 = value5Receipt({ repositoryRoot, context, surface, sourceOverrides });
   if (sourceOverrides.size > 0) return { mutationControlAccepted: false };
-  const currentDependencies = currentStrictDependencyReceipt(repositoryRoot, surface2);
-  const live2 = new Map(surface2.callables.map((row) => [row.key, row]));
+  const currentDependencies = currentStrictDependencyReceipt(repositoryRoot, surface);
+  const live = new Map(surface.callables.map((row) => [row.key, row]));
   const summary = equations2.find((row) => row.id === "src/fungibility.ts#summarizeInventoryFungibility");
   assert36(summary !== void 0);
   const proofs = supportedSurfaceKeys23.map((surfaceKey) => {
-    const callable = live2.get(surfaceKey);
+    const callable = live.get(surfaceKey);
     assert36(callable !== void 0, `Missing ${surfaceKey}`);
     const equation3 = surfaceKey === SNAPSHOT_SURFACE_KEY ? snapshotEquation : summary;
     return {
@@ -13524,7 +14067,7 @@ function buildSummaryValueArtifact({
     proofKind: proofKind20,
     route: "CERTIFIED_VALUE_EQUATION",
     family: "FungibilitySummary",
-    surfaceDigest: surface2.digest,
+    surfaceDigest: surface.digest,
     domain: "All inputs admitted by the two direct summary exports plus the genuine frozen-snapshot fungibilitySummary signature. The full summary declaration and its two private selector helpers are checked against complete independent declaration terms; every external helper is either live-current strict V or the separately verified queued FungibilityValue5 normalize equation. No runtime samples, graph replay, or stateful action credit is used.",
     allAdmittedInputs: true,
     sampledInputs: 0,
@@ -13541,7 +14084,7 @@ var buildFamilyArtifact24 = buildSummaryValueArtifact;
 
 // experiments/tla-conformance/fungibility-plan-r9/value-family.mjs
 import assert37 from "node:assert/strict";
-import fs35 from "node:fs";
+import fs34 from "node:fs";
 import path37 from "node:path";
 var proofKind21 = "fungibility-allocation-plan-complete-values-v1";
 var supportedSurfaceKeys24 = Object.freeze([
@@ -13598,7 +14141,7 @@ var CURRENT_STRICT_DEPENDENCIES2 = Object.freeze([
   "export:./kernel#findInventoryPositions::call[0]",
   "export:.#addQuantity::call[0]"
 ]);
-function source6(repositoryRoot, context2, file, sourceOverrides) {
+function source6(repositoryRoot, context, file, sourceOverrides) {
   const changed = sourceOverrides.get(file);
   if (changed !== void 0) {
     return ts.createSourceFile(
@@ -13609,12 +14152,12 @@ function source6(repositoryRoot, context2, file, sourceOverrides) {
       ts.ScriptKind.TS
     );
   }
-  const current = context2.program.getSourceFile(path37.resolve(repositoryRoot, file));
+  const current = context.program.getSourceFile(path37.resolve(repositoryRoot, file));
   assert37(current !== void 0 && !current.isDeclarationFile, `Missing ${file}`);
   return current;
 }
-function findFunction15(sourceFile4, name) {
-  const rows = sourceFile4.statements.filter(
+function findFunction15(sourceFile3, name) {
+  const rows = sourceFile3.statements.filter(
     (node) => ts.isFunctionDeclaration(node) && node.name?.text === name
   );
   assert37.equal(rows.length, 1, `Expected one function ${name}`);
@@ -13636,45 +14179,45 @@ function tokens4(text) {
   }
   return result;
 }
-function term3(sourceFile4, declaration) {
-  return tokens4(declaration.getText(sourceFile4));
+function term3(sourceFile3, declaration) {
+  return tokens4(declaration.getText(sourceFile3));
 }
-function readJson4(repositoryRoot, file) {
-  return JSON.parse(fs35.readFileSync(path37.resolve(repositoryRoot, file), "utf8"));
+function readJson3(repositoryRoot, file) {
+  return JSON.parse(fs34.readFileSync(path37.resolve(repositoryRoot, file), "utf8"));
 }
 function addInput9(repositoryRoot, inputs3, file) {
   if (inputs3.has(file)) return;
   inputs3.set(file, {
     file,
-    sha256: sha256(fs35.readFileSync(path37.resolve(repositoryRoot, file)))
+    sha256: sha256(fs34.readFileSync(path37.resolve(repositoryRoot, file)))
   });
 }
-function currentStrictDependencyReceipt2(repositoryRoot, surface2) {
-  return strictDependencyReceipt({ repositoryRoot, surface: surface2, requirements: CURRENT_STRICT_DEPENDENCIES2, label: "fungibility-plan dependency" }).dependencies;
+function currentStrictDependencyReceipt2(repositoryRoot, surface) {
+  return strictDependencyReceipt({ repositoryRoot, surface, requirements: CURRENT_STRICT_DEPENDENCIES2, label: "fungibility-plan dependency" }).dependencies;
 }
-function value5Receipt2({ repositoryRoot, context: context2, surface: surface2, sourceOverrides }) {
-  const artifact = buildFamilyArtifact23({ repositoryRoot, context: context2, surface: surface2, sourceOverrides });
+function value5Receipt2({ repositoryRoot, context, surface, sourceOverrides }) {
+  const artifact = buildFamilyArtifact23({ repositoryRoot, context, surface, sourceOverrides });
   const proof = artifact.proofs.find((row) => row.surfaceKey === VALUE5_NORMALIZE_KEY2);
   assert37(proof !== void 0, "Value5 normalize proof missing");
   if (sourceOverrides.size > 0) return { receipt: { surfaceKey: VALUE5_NORMALIZE_KEY2, mutationControl: true }, inputs: [] };
   assert37.equal(artifact.proofKind, proofKind19);
-  assert37.equal(artifact.surfaceDigest, surface2.digest);
+  assert37.equal(artifact.surfaceDigest, surface.digest);
   assert37.equal(artifact.allAdmittedInputs, true);
   assert37.equal(artifact.sampledInputs, 0);
   assert37.deepEqual(artifact.proofs.map((row) => row.surfaceKey).sort(), [...supportedSurfaceKeys22].sort());
-  const recorded = readJson4(repositoryRoot, VALUE5_EVIDENCE2);
+  const recorded = readJson3(repositoryRoot, VALUE5_EVIDENCE2);
   assert37.deepEqual(recorded, artifact, "Value5 recorded evidence differs from current rederived family.");
-  const evidence = { file: VALUE5_EVIDENCE2, sha256: sha256(fs35.readFileSync(path37.resolve(repositoryRoot, VALUE5_EVIDENCE2))) };
+  const evidence = { file: VALUE5_EVIDENCE2, sha256: sha256(fs34.readFileSync(path37.resolve(repositoryRoot, VALUE5_EVIDENCE2))) };
   return { receipt: { surfaceKey: VALUE5_NORMALIZE_KEY2, mode: "V", proofKind: proofKind19, evidence, equationId: proof.equationId }, inputs: artifact.inputs ?? [] };
 }
 function buildPlanValueArtifact({
   repositoryRoot = process.cwd(),
-  context: context2 = loadEvidenceCompilerContext(repositoryRoot, []),
-  surface: surface2,
+  context = loadEvidenceCompilerContext(repositoryRoot, []),
+  surface,
   sourceOverrides = /* @__PURE__ */ new Map()
 } = {}) {
-  assert37(surface2 !== void 0, "surface required");
-  const expectedText = fs35.readFileSync(path37.resolve(repositoryRoot, EXPECTED9), "utf8");
+  assert37(surface !== void 0, "surface required");
+  const expectedText = fs34.readFileSync(path37.resolve(repositoryRoot, EXPECTED9), "utf8");
   const expected = ts.createSourceFile(
     path37.resolve(repositoryRoot, EXPECTED9),
     expectedText,
@@ -13683,7 +14226,7 @@ function buildPlanValueArtifact({
     ts.ScriptKind.TS
   );
   assert37.equal(expected.parseDiagnostics.length, 0, "Expected planner equation file must parse.");
-  const actual = source6(repositoryRoot, context2, "src/fungibility.ts", sourceOverrides);
+  const actual = source6(repositoryRoot, context, "src/fungibility.ts", sourceOverrides);
   const equations2 = [];
   for (const contract of LOCAL_CONTRACTS2) {
     const actualDeclaration = findFunction15(actual, contract.name);
@@ -13695,19 +14238,19 @@ function buildPlanValueArtifact({
       id: contract.id,
       law: contract.law,
       termSha256: sha256(canonicalJson(actualTerm)),
-      implementation: sourceOverrides.size === 0 ? spanOf(context2, actualDeclaration) : { file: "src/fungibility.ts", mutationControl: true }
+      implementation: sourceOverrides.size === 0 ? spanOf(context, actualDeclaration) : { file: "src/fungibility.ts", mutationControl: true }
     });
   }
-  const value5 = value5Receipt2({ repositoryRoot, context: context2, surface: surface2, sourceOverrides });
+  const value5 = value5Receipt2({ repositoryRoot, context, surface, sourceOverrides });
   if (sourceOverrides.size > 0) return { mutationControlAccepted: false };
-  const currentDependencies = currentStrictDependencyReceipt2(repositoryRoot, surface2);
+  const currentDependencies = currentStrictDependencyReceipt2(repositoryRoot, surface);
   const main = equations2.find(
     (row) => row.id === "src/fungibility.ts#planInventoryFungibilityAllocation"
   );
   assert37(main !== void 0);
-  const live2 = new Map(surface2.callables.map((row) => [row.key, row]));
+  const live = new Map(surface.callables.map((row) => [row.key, row]));
   const proofs = supportedSurfaceKeys24.map((surfaceKey) => {
-    const callable = live2.get(surfaceKey);
+    const callable = live.get(surfaceKey);
     assert37(callable !== void 0, `Missing ${surfaceKey}`);
     return {
       surfaceKey,
@@ -13749,7 +14292,7 @@ function buildPlanValueArtifact({
     route: "CERTIFIED_VALUE_EQUATION",
     proofKind: proofKind21,
     family: "FungibilityAllocationPlan",
-    surfaceDigest: surface2.digest,
+    surfaceDigest: surface.digest,
     domain: "All arguments and worlds admitted by the two direct planner signatures. The complete planner and every private helper it transitively owns are checked against a frozen independent equation program; every imported runtime dependency is live-current strict A/B/V or the separately verified queued FungibilityValue5 normalization equation. The reservation-preservation callback is included in the complete local equation and delegates its final universal claim decision to the already-strict inspectInventoryReservationFeasibility B projection. No samples, native replay, graph replay, or stateful action credit are used.",
     allAdmittedInputs: true,
     sampledInputs: 0,
@@ -13769,15 +14312,15 @@ var root2 = path38.resolve(path38.dirname(fileURLToPath15(import.meta.url)), "..
 var routeInputs = [
   "experiments/tla-conformance/throughput-r7/registered-value-family.mjs",
   "experiments/tla-conformance/value-contracts/surface-binding.mjs"
-].map((file) => ({ file, sha256: sha256(fs36.readFileSync(path38.resolve(root2, file))) }));
+].map((file) => ({ file, sha256: sha256(fs35.readFileSync(path38.resolve(root2, file))) }));
 function registeredBuilder(builder) {
   let cached2;
   return function buildRegisteredArtifact(input2) {
     assert38.equal(path38.resolve(input2.repositoryRoot), root2);
-    for (const identity of routeInputs) assert38.equal(sha256(fs36.readFileSync(path38.resolve(root2, identity.file))), identity.sha256, `Loaded route changed: ${identity.file}`);
+    for (const identity of routeInputs) assert38.equal(sha256(fs35.readFileSync(path38.resolve(root2, identity.file))), identity.sha256, `Loaded route changed: ${identity.file}`);
     if (cached2 !== void 0 && cached2.surfaceDigest === input2.surface.digest) {
       for (const identity of cached2.artifact.inputs) {
-        assert38.equal(sha256(fs36.readFileSync(path38.resolve(root2, identity.file))), identity.sha256, `Cached family input changed: ${identity.file}`);
+        assert38.equal(sha256(fs35.readFileSync(path38.resolve(root2, identity.file))), identity.sha256, `Cached family input changed: ${identity.file}`);
       }
       return cached2.artifact;
     }
@@ -13919,21 +14462,21 @@ var producerFiles8 = [
   "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
   "node_modules/typescript/package.json"
 ];
-function buildValueContractArtifact({ repositoryRoot, context: context2, surface: surface2 }) {
-  const specification = JSON.parse(fs37.readFileSync(contractsPath, "utf8"));
+function buildValueContractArtifact({ repositoryRoot, context, surface }) {
+  const specification = JSON.parse(fs36.readFileSync(contractsPath, "utf8"));
   const keys = specification.contracts.flatMap((contract) => contract.surfaceKeys).sort(compareCodeUnits);
   if (keys.length !== new Set(keys).size) throw new Error("Independent value contracts repeat a surface key.");
   const proofs = [];
   for (const surfaceKey of keys) {
-    const candidates = surface2.callables.filter((callable2) => callable2.key === surfaceKey);
+    const candidates = surface.callables.filter((callable2) => callable2.key === surfaceKey);
     if (candidates.length !== 1) throw new Error(`Value callable '${surfaceKey}' is missing or ambiguous.`);
     const callable = candidates[0];
     const declaration = callable.declaration;
-    const source7 = context2.program.getSourceFile(path39.resolve(repositoryRoot, declaration.file));
+    const source7 = context.program.getSourceFile(path39.resolve(repositoryRoot, declaration.file));
     if (source7 === void 0 || source7.isDeclarationFile || !declaration.file.startsWith("src/")) throw new Error(`Value callable '${surfaceKey}' has no package implementation.`);
     const implementation = nodeAtExactSpan(source7, declaration.start.offset, declaration.end.offset);
     if (implementation === void 0 || !ts.isFunctionDeclaration(implementation) || implementation.body === void 0) throw new Error(`Value callable '${surfaceKey}' is not an exact source function.`);
-    const verified = verifyValueSemantics(context2, surfaceKey, implementation);
+    const verified = verifyValueSemantics(context, surfaceKey, implementation);
     if (verified.status !== "PROVED") throw new Error(`Value equation failed for '${surfaceKey}': ${JSON.stringify(verified.diagnostics)}`);
     proofs.push({ surfaceKey, signatureHash: callable.signatureHash, declaration, semantics: verified.proof });
   }
@@ -13941,27 +14484,50 @@ function buildValueContractArtifact({ repositoryRoot, context: context2, surface
     schemaVersion: 1,
     mode: "V",
     proofKind: "independent-closed-return-equations-v1",
-    surfaceDigest: surface2.digest,
-    producers: producerFiles8.map((file) => ({ file, sha256: sha256(fs37.readFileSync(path39.resolve(repositoryRoot, file))) })),
+    surfaceDigest: surface.digest,
+    producers: producerFiles8.map((file) => ({ file, sha256: sha256(fs36.readFileSync(path39.resolve(repositoryRoot, file))) })),
     proofs
   };
+}
+var dispatchPasses = /* @__PURE__ */ new WeakMap();
+function verifyValueContractBinding({ repositoryRoot, context, surface, binding }) {
+  try {
+    const reference = binding.evidence;
+    if (binding.mode !== "V" || reference === void 0 || !/^[0-9a-f]{64}$/u.test(reference.sha256 ?? "")) throw new Error("Value evidence reference is incomplete.");
+    const digest = assuranceFileSha256(repositoryRoot, reference.file);
+    if (digest !== reference.sha256) throw new Error("Value evidence hash drifted.");
+    let pass = dispatchPasses.get(context);
+    if (pass === void 0) {
+      pass = /* @__PURE__ */ new Map();
+      dispatchPasses.set(context, pass);
+    }
+    const key = `${reference.file}:${digest}`;
+    let recorded = pass.get(key);
+    if (recorded === void 0) {
+      recorded = JSON.parse(readAssuranceFile(repositoryRoot, reference.file));
+      pass.set(key, recorded);
+    }
+    if (registeredValueFamilies.some((family) => family.proofKind === recorded.proofKind)) {
+      return verifyRegisteredValueBinding({ repositoryRoot, context, surface, binding, registrations: registeredValueFamilies });
+    }
+    const current = recorded.proofKind === catalogProofKind ? buildCatalogFamilyArtifact({ repositoryRoot, context, surface }) : buildValueContractArtifact({ repositoryRoot, context, surface });
+    if (canonicalJson(recorded) !== canonicalJson(current)) throw new Error("Recorded value proof differs from current independent source equations.");
+    if (!current.proofs.some((proof) => proof.surfaceKey === binding.surfaceKey)) throw new Error("No independent value equation for this callable.");
+    return [];
+  } catch (error) {
+    return [{ code: "VALUE_SEMANTIC_PROOF_REJECTED", detail: error instanceof Error ? error.message : String(error) }];
+  }
 }
 
 // experiments/tla-conformance/throughput-r7/registered-producer-family.mjs
 import assert39 from "node:assert/strict";
-import fs38 from "node:fs";
 import path40 from "node:path";
-var passes2 = /* @__PURE__ */ new WeakMap();
+var passes3 = /* @__PURE__ */ new WeakMap();
 var recordedPasses2 = /* @__PURE__ */ new WeakMap();
 function ownedFile2(root3, file) {
-  assert39.equal(typeof file, "string");
-  assert39(file.length > 0 && !path40.isAbsolute(file));
-  const realRoot = fs38.realpathSync(root3);
-  const resolved = fs38.realpathSync(path40.resolve(root3, file));
-  assert39(resolved.startsWith(`${realRoot}${path40.sep}`), "Registered producer input leaves its repository.");
-  return resolved;
+  return assuranceRepositoryPath(root3, file);
 }
-function verifyInputs2(root3, context2, inputs3) {
+function verifyInputs2(root3, context, inputs3) {
   assert39(Array.isArray(inputs3) && inputs3.length > 0, "Registered producer needs its complete semantic input set.");
   const seen = /* @__PURE__ */ new Set();
   for (const input2 of inputs3) {
@@ -13970,31 +14536,29 @@ function verifyInputs2(root3, context2, inputs3) {
     seen.add(input2.file);
     assert39.match(input2.sha256, /^[0-9a-f]{64}$/u);
     const absolute = ownedFile2(root3, input2.file);
-    const bytes2 = fs38.readFileSync(absolute);
-    assert39.equal(sha256(bytes2), input2.sha256, `Registered producer input changed: ${input2.file}`);
+    assert39.equal(assuranceFileSha256(root3, input2.file), input2.sha256, `Registered producer input changed: ${input2.file}`);
     if (input2.file.startsWith("src/") && input2.file.endsWith(".ts")) {
-      const source7 = context2.program.getSourceFile(path40.resolve(root3, input2.file));
+      const source7 = context.program.getSourceFile(path40.resolve(root3, input2.file));
       assert39(source7 !== void 0, `Compiler omitted registered producer source: ${input2.file}`);
-      assert39.equal(sha256(source7.text), input2.sha256, `Compiler snapshot is stale: ${input2.file}`);
+      assert39.equal(assuranceCompilerSourceSha256(root3, input2.file, source7.text), input2.sha256, `Compiler snapshot is stale: ${input2.file}`);
     }
   }
 }
-function verifyRegisteredProducerBinding({ repositoryRoot, context: context2, surface: surface2, binding, registrations }) {
+function verifyRegisteredProducerBinding({ repositoryRoot, context, surface, binding, registrations }) {
   try {
     assert39(binding.mode === "A" || binding.mode === "B", "Registered producer binding must remain A or B.");
     const file = ownedFile2(repositoryRoot, binding.evidence.file);
-    const bytes2 = fs38.readFileSync(file);
-    const digest = sha256(bytes2);
+    const digest = assuranceFileSha256(repositoryRoot, binding.evidence.file);
     assert39.equal(digest, binding.evidence.sha256, "Registered producer evidence changed.");
-    let recordedPass = recordedPasses2.get(context2);
+    let recordedPass = recordedPasses2.get(context);
     if (recordedPass === void 0) {
       recordedPass = /* @__PURE__ */ new Map();
-      recordedPasses2.set(context2, recordedPass);
+      recordedPasses2.set(context, recordedPass);
     }
     const recordedKey = `${file}:${digest}`;
     let recorded = recordedPass.get(recordedKey);
     if (recorded === void 0) {
-      const document = JSON.parse(bytes2.toString("utf8"));
+      const document = JSON.parse(readAssuranceFile(repositoryRoot, binding.evidence.file).toString("utf8"));
       recorded = { document, canonical: canonicalJson(document) };
       recordedPass.set(recordedKey, recorded);
     }
@@ -14017,17 +14581,17 @@ ${row.mode}`)).size,
       ),
       "Binding is outside the trusted producer registration."
     );
-    let compilerPass = passes2.get(context2);
+    let compilerPass = passes3.get(context);
     if (compilerPass === void 0) {
       compilerPass = /* @__PURE__ */ new Map();
-      passes2.set(context2, compilerPass);
+      passes3.set(context, compilerPass);
     }
     const registrationIdentity = canonicalJson(registration.supportedSurfaceRows);
     let cached2 = compilerPass.get(registration);
-    if (cached2 !== void 0 && cached2.surfaceDigest === surface2.digest && cached2.members === registrationIdentity && cached2.builder === registration.buildFamilyArtifact) {
-      verifyInputs2(repositoryRoot, context2, cached2.artifact.inputs);
+    if (cached2 !== void 0 && cached2.surfaceDigest === surface.digest && cached2.members === registrationIdentity && cached2.builder === registration.buildFamilyArtifact) {
+      verifyInputs2(repositoryRoot, context, cached2.artifact.inputs);
     } else {
-      const artifact = registration.buildFamilyArtifact({ repositoryRoot, context: context2, surface: surface2 });
+      const artifact = registration.buildFamilyArtifact({ repositoryRoot, context, surface });
       assert39.equal(artifact.schemaVersion, 1);
       assert39.equal(artifact.proofKind, registration.proofKind);
       assert39.equal(artifact.route, "REGISTERED_CERTIFIED_PRODUCER");
@@ -14038,9 +14602,9 @@ ${row.mode}`)).size,
         "Registered producer needs an explicit complete domain."
       );
       const artifactSurface = artifact.surfaceDigest ?? artifact.sourceHub?.surfaceDigest;
-      assert39.equal(artifactSurface, surface2.digest, "Registered producer surface identity changed.");
+      assert39.equal(artifactSurface, surface.digest, "Registered producer surface identity changed.");
       assert39(Array.isArray(artifact.proofs) && artifact.proofs.length > 0);
-      verifyInputs2(repositoryRoot, context2, artifact.inputs);
+      verifyInputs2(repositoryRoot, context, artifact.inputs);
       const proofPairs = artifact.proofs.map((proof) => `${proof.surfaceKey}
 ${proof.mode}`);
       assert39.equal(new Set(proofPairs).size, proofPairs.length, "Registered producer repeats a proof pair.");
@@ -14050,16 +14614,16 @@ ${proof.mode}`);
 ${row.mode}`).sort(),
         "Current producer membership differs from its trusted registration."
       );
-      const live2 = new Map(surface2.callables.map((callable) => [callable.key, callable]));
+      const live = new Map(surface.callables.map((callable) => [callable.key, callable]));
       for (const proof of artifact.proofs) {
         assert39(proof.mode === "A" || proof.mode === "B", "Registered producer emitted a non-A/B proof.");
-        const callable = live2.get(proof.surfaceKey);
+        const callable = live.get(proof.surfaceKey);
         assert39(callable !== void 0, "Registered producer claims a non-public callable.");
         assert39.equal(proof.signatureHash, callable.signatureHash);
         assert39.deepEqual(proof.declaration, callable.declaration);
       }
       cached2 = {
-        surfaceDigest: surface2.digest,
+        surfaceDigest: surface.digest,
         members: registrationIdentity,
         builder: registration.buildFamilyArtifact,
         artifact,
@@ -14120,6 +14684,41 @@ var REVERSE_EDGE_RECORD_FIELDS = Object.freeze([
   "targetState",
   "originalNextAccepted"
 ]);
+var BINDING_SCHEMA_VERSION = 1;
+function red(code, surfaceKey, detail) {
+  return { severity: "HARD_RED", code, surfaceKey, detail };
+}
+function isNonEmptyString(value) {
+  return typeof value === "string" && value.length > 0;
+}
+function bindingReadReferences(binding) {
+  if (binding.source?.readCall !== void 0 && binding.source?.readCalls === void 0) {
+    return [binding.source.readCall];
+  }
+  if (binding.source?.readCall === void 0 && Array.isArray(binding.source?.readCalls) && binding.source.readCalls.length > 0) {
+    return binding.source.readCalls;
+  }
+  return [];
+}
+function sourceReferences(binding) {
+  if (binding.mode === "A") {
+    return [
+      binding.source?.actionCall,
+      binding.source?.stateCheckCall,
+      binding.source?.resultCheckCall,
+      binding.source?.enablednessCheckCall,
+      binding.source?.reverseNextCheckCall
+    ].filter((reference) => reference !== void 0);
+  }
+  if (binding.mode === "B") {
+    return [
+      ...bindingReadReferences(binding),
+      binding.source?.projectionCall,
+      binding.source?.projectionCheckCall
+    ].filter((reference) => reference !== void 0);
+  }
+  return [];
+}
 function loadEvidenceCompilerContext(repositoryRoot, evidenceFileNames) {
   const base = loadCompilerContext(repositoryRoot);
   const evidenceFiles = new Set(
@@ -14149,80 +14748,1479 @@ function loadEvidenceCompilerContext(repositoryRoot, evidenceFileNames) {
   }
   return { ...base, program, checker: program.getTypeChecker() };
 }
+function evidenceCompilerContext(repositoryRoot, bindings) {
+  const evidenceFiles = [];
+  for (const binding of bindings) {
+    for (const reference of sourceReferences(binding)) {
+      if (isNonEmptyString(reference?.file)) {
+        if (repositoryOwnedPath(repositoryRoot, reference.file) === void 0) {
+          throw new Error(`Evidence source '${reference.file}' leaves the repository.`);
+        }
+        evidenceFiles.push(reference.file);
+      }
+    }
+  }
+  return loadEvidenceCompilerContext(repositoryRoot, evidenceFiles);
+}
+function isTestOnlyPath(relativePath4) {
+  return /(^|\/)(?:test|tests|fixtures?|__tests__)(\/|$)/u.test(relativePath4) || /\.(?:test|spec)\.[cm]?[jt]sx?$/u.test(relativePath4);
+}
+function repositoryOwnedPath(repositoryRoot, relativePath4) {
+  if (!isNonEmptyString(relativePath4) || path41.isAbsolute(relativePath4)) return void 0;
+  const absolutePath = path41.resolve(repositoryRoot, relativePath4);
+  const normalized = path41.relative(repositoryRoot, absolutePath);
+  return normalized.startsWith(`..${path41.sep}`) || path41.isAbsolute(normalized) ? void 0 : absolutePath;
+}
+function resolveSymbol4(checker, symbol) {
+  return (symbol.flags & ts.SymbolFlags.Alias) !== 0 ? checker.getAliasedSymbol(symbol) : symbol;
+}
+function callTargetDeclarationIds(context, call) {
+  const symbol = context.checker.getSymbolAtLocation(call.expression);
+  if (symbol === void 0) return [];
+  return [...resolveSymbol4(context.checker, symbol).declarations ?? []].map((declaration) => spanOf(context, declaration)).map((span) => `${span.file}:${span.start.offset}:${span.end.offset}`).sort();
+}
+function enclosingImportDeclaration(node) {
+  let current = node;
+  while (current !== void 0) {
+    if (ts.isImportDeclaration(current)) return current;
+    current = current.parent;
+  }
+  return void 0;
+}
+function importedSourceForCall(context, call) {
+  const possibleSymbols = [];
+  const direct = context.checker.getSymbolAtLocation(call.expression);
+  if (direct !== void 0) possibleSymbols.push(direct);
+  if (ts.isPropertyAccessExpression(call.expression)) {
+    const receiver = context.checker.getSymbolAtLocation(call.expression.expression);
+    if (receiver !== void 0) possibleSymbols.push(receiver);
+  }
+  for (const symbol of possibleSymbols) {
+    for (const declaration of symbol.declarations ?? []) {
+      const importDeclaration = enclosingImportDeclaration(declaration);
+      if (importDeclaration === void 0 || !ts.isStringLiteral(importDeclaration.moduleSpecifier)) {
+        continue;
+      }
+      const resolved = ts.resolveModuleName(
+        importDeclaration.moduleSpecifier.text,
+        call.getSourceFile().fileName,
+        context.program.getCompilerOptions(),
+        ts.sys
+      ).resolvedModule;
+      if (resolved !== void 0) {
+        return normalizeRelativePath(context.repositoryRoot, resolved.resolvedFileName);
+      }
+    }
+  }
+  return void 0;
+}
+function callUsesExactEntrypoint(context, call, callable, surface) {
+  if (!callable.key.startsWith("export:")) return true;
+  const separator = callable.key.indexOf("#", "export:".length);
+  if (separator < 0) return false;
+  const exportKey = callable.key.slice("export:".length, separator);
+  const expectedSource3 = surface.entrypoints.find(
+    (entrypoint) => entrypoint.key === exportKey
+  )?.source;
+  const importedSource = importedSourceForCall(context, call);
+  return expectedSource3 !== void 0 && importedSource === expectedSource3;
+}
+function surfaceDeclarationIds(callable) {
+  return [callable.declaration, ...callable.symbolDeclarations].map((span) => `${span.file}:${span.start.offset}:${span.end.offset}`).sort();
+}
+function literalTruth(expression) {
+  if (expression.kind === ts.SyntaxKind.TrueKeyword) return true;
+  if (expression.kind === ts.SyntaxKind.FalseKeyword || expression.kind === ts.SyntaxKind.NullKeyword || ts.isNumericLiteral(expression) && Number(expression.text) === 0 || ts.isStringLiteral(expression) && expression.text.length === 0) {
+    return false;
+  }
+  return void 0;
+}
+function isStaticallyUnreachable(node) {
+  let current = node;
+  while (current.parent !== void 0) {
+    const parent = current.parent;
+    if (ts.isIfStatement(parent)) {
+      const truth = literalTruth(parent.expression);
+      if (truth === false && parent.thenStatement === current) return true;
+      if (truth === true && parent.elseStatement === current) return true;
+    }
+    if ((ts.isWhileStatement(parent) || ts.isForStatement(parent)) && parent.statement === current && parent.expression !== void 0 && literalTruth(parent.expression) === false) {
+      return true;
+    }
+    if (ts.isBlock(parent) || ts.isSourceFile(parent)) {
+      const containingStatement = parent.statements.find(
+        (statement) => statement === current || statement.getStart() <= current.getStart() && statement.getEnd() >= current.getEnd()
+      );
+      if (containingStatement !== void 0) {
+        for (const statement of parent.statements) {
+          if (statement === containingStatement) break;
+          if (ts.isReturnStatement(statement) || ts.isThrowStatement(statement)) {
+            return true;
+          }
+        }
+      }
+    }
+    current = parent;
+  }
+  return false;
+}
+function resolveCallReference(context, reference, label, diagnostics, surfaceKey) {
+  if (reference === null || typeof reference !== "object" || !isNonEmptyString(reference.file) || !Number.isSafeInteger(reference.start) || !Number.isSafeInteger(reference.end) || !isNonEmptyString(reference.sourceHash) || !isNonEmptyString(reference.astHash)) {
+    diagnostics.push(
+      red("INVALID_SOURCE_REFERENCE", surfaceKey, `${label} is incomplete.`)
+    );
+    return void 0;
+  }
+  if (isTestOnlyPath(reference.file)) {
+    diagnostics.push(
+      red(
+        "TEST_ONLY_REFERENCE",
+        surfaceKey,
+        `${label} points to test/fixture source '${reference.file}'.`
+      )
+    );
+    return void 0;
+  }
+  const absoluteFile = repositoryOwnedPath(context.repositoryRoot, reference.file);
+  if (absoluteFile === void 0) {
+    diagnostics.push(
+      red("EVIDENCE_PATH_ESCAPE", surfaceKey, `${label} is not repository-relative.`)
+    );
+    return void 0;
+  }
+  const source7 = context.program.getSourceFile(absoluteFile);
+  if (source7 === void 0) {
+    diagnostics.push(
+      red("MISSING_SOURCE_FILE", surfaceKey, `${label} file is not compiled.`)
+    );
+    return void 0;
+  }
+  const actualSourceHash = sha256(source7.getFullText());
+  if (actualSourceHash !== reference.sourceHash) {
+    diagnostics.push(
+      red("SOURCE_REFERENCE_DRIFT", surfaceKey, `${label} source hash changed.`)
+    );
+  }
+  const node = nodeAtExactSpan(source7, reference.start, reference.end);
+  if (node === void 0 || !ts.isCallExpression(node)) {
+    diagnostics.push(
+      red(
+        "FALSE_CALL_REFERENCE",
+        surfaceKey,
+        `${label} does not identify one exact CallExpression.`
+      )
+    );
+    return void 0;
+  }
+  const actualAstHash = sha256(
+    source7.getFullText().slice(node.getStart(source7), node.getEnd())
+  );
+  if (actualAstHash !== reference.astHash) {
+    diagnostics.push(
+      red("CALL_REFERENCE_DRIFT", surfaceKey, `${label} AST hash changed.`)
+    );
+  }
+  if (isStaticallyUnreachable(node)) {
+    diagnostics.push(
+      red("UNREACHABLE_CALL_REFERENCE", surfaceKey, `${label} is unreachable.`)
+    );
+  }
+  return node;
+}
+function sameSymbol(checker, left, right) {
+  const leftSymbol = checker.getSymbolAtLocation(left);
+  const rightSymbol = checker.getSymbolAtLocation(right);
+  return leftSymbol !== void 0 && leftSymbol === rightSymbol;
+}
+function assignedVariableDeclaration(call) {
+  let current = call;
+  while (current.parent !== void 0) {
+    const parent = current.parent;
+    if (ts.isVariableDeclaration(parent) && parent.initializer === current) {
+      return parent;
+    }
+    if (ts.isAwaitExpression(parent) || ts.isParenthesizedExpression(parent) || ts.isAsExpression(parent)) {
+      current = parent;
+      continue;
+    }
+    break;
+  }
+  return void 0;
+}
+function callFeedsCall(context, sourceCall, sinkCall) {
+  if (sourceCall.getStart() >= sinkCall.getStart() && sourceCall.getEnd() <= sinkCall.getEnd()) {
+    return true;
+  }
+  const declaration = assignedVariableDeclaration(sourceCall);
+  if (declaration === void 0 || !ts.isIdentifier(declaration.name) || !ts.isVariableDeclarationList(declaration.parent) || (declaration.parent.flags & ts.NodeFlags.Const) === 0) {
+    return false;
+  }
+  let found = false;
+  function visit(node) {
+    if (ts.isIdentifier(node) && sameSymbol(context.checker, declaration.name, node)) {
+      found = true;
+    }
+    ts.forEachChild(node, visit);
+  }
+  for (const argument of sinkCall.arguments) visit(argument);
+  return found;
+}
+function checkResultIsEnforced(context, call) {
+  const signature = context.checker.getResolvedSignature(call);
+  const returnType = signature === void 0 ? context.checker.getTypeAtLocation(call) : context.checker.getReturnTypeOfSignature(signature);
+  if ((returnType.flags & ts.TypeFlags.Void) !== 0 || (returnType.flags & ts.TypeFlags.Never) !== 0) {
+    return true;
+  }
+  let current = call;
+  while (ts.isAwaitExpression(current.parent) || ts.isParenthesizedExpression(current.parent) || ts.isAsExpression(current.parent)) {
+    current = current.parent;
+  }
+  return !ts.isExpressionStatement(current.parent);
+}
+function checkInputExpressions(call) {
+  const inputs3 = [...call.arguments];
+  if (ts.isPropertyAccessExpression(call.expression) && ts.isCallExpression(call.expression.expression)) {
+    inputs3.push(...call.expression.expression.arguments);
+  }
+  return inputs3;
+}
+function hasOnlyLiteralCheckInputs(call) {
+  const inputs3 = checkInputExpressions(call);
+  return inputs3.length > 0 && inputs3.every((input2) => literalTruth(input2) !== void 0);
+}
+function isSha256(value) {
+  return typeof value === "string" && /^[0-9a-f]{64}$/u.test(value);
+}
+function hasExactFields(value, fields2) {
+  return value !== null && typeof value === "object" && !Array.isArray(value) && canonicalJson(Object.keys(value).sort()) === canonicalJson([...fields2].sort());
+}
+function verifyDigestFile(repositoryRoot, reference, label, diagnostics, surfaceKey) {
+  if (!hasExactFields(reference, ["file", "sha256"]) || !isNonEmptyString(reference.file) || !isSha256(reference.sha256)) {
+    diagnostics.push(red("INVALID_DIGEST_FILE", surfaceKey, `${label} is incomplete.`));
+    return;
+  }
+  const absoluteFile = repositoryOwnedPath(repositoryRoot, reference.file);
+  if (absoluteFile === void 0) {
+    diagnostics.push(red("EVIDENCE_PATH_ESCAPE", surfaceKey, `${label} leaves the repository.`));
+    return;
+  }
+  try {
+    if (sha256(fs37.readFileSync(absoluteFile)) !== reference.sha256) {
+      diagnostics.push(red("DIGEST_FILE_DRIFT", surfaceKey, `${label} SHA-256 changed.`));
+    }
+  } catch (error) {
+    diagnostics.push(
+      red(
+        "MISSING_DIGEST_FILE",
+        surfaceKey,
+        `${label}: ${error instanceof Error ? error.message : String(error)}`
+      )
+    );
+  }
+}
+function hasExactStateFields(state2, fields2) {
+  return state2 !== null && typeof state2 === "object" && !Array.isArray(state2) && canonicalJson(Object.keys(state2).sort()) === canonicalJson([...fields2].sort());
+}
+function isActionShape(action) {
+  return hasExactFields(action, ["operator", "arguments"]) && isNonEmptyString(action.operator) && Array.isArray(action.arguments);
+}
+function formalActionOperators(binding) {
+  const singular = binding.formal?.action;
+  const grouped = binding.formal?.actions;
+  if (isNonEmptyString(singular) && grouped === void 0) return [singular];
+  if (singular === void 0 && Array.isArray(grouped) && grouped.length > 0 && new Set(grouped).size === grouped.length && grouped.every((action) => isNonEmptyString(action))) {
+    return grouped;
+  }
+  return void 0;
+}
+function hasRegisteredProducerBindingShape(binding) {
+  return (binding?.mode === "A" || binding?.mode === "B") && hasExactFields(binding, ["surfaceKey", "mode", "evidence"]) && hasExactFields(binding.evidence, ["file", "sha256"]) && isNonEmptyString(binding.evidence.file) && isSha256(binding.evidence.sha256);
+}
+function hasExactBindingShape(binding) {
+  if (binding === null || typeof binding !== "object" || Array.isArray(binding)) {
+    return false;
+  }
+  if (binding.mode === "HARD_RED") {
+    return hasExactFields(binding, ["surfaceKey", "mode", "reason"]) && isNonEmptyString(binding.reason);
+  }
+  if (binding.mode === "C") {
+    return hasExactFields(binding, ["surfaceKey", "mode", "targetSurfaceKey"]) && isNonEmptyString(binding.targetSurfaceKey);
+  }
+  if (binding.mode === "V") {
+    return hasExactFields(binding, ["surfaceKey", "mode", "evidence"]) && hasExactFields(binding.evidence, ["file", "sha256"]) && isNonEmptyString(binding.evidence.file) && isSha256(binding.evidence.sha256);
+  }
+  if (hasRegisteredProducerBindingShape(binding)) return true;
+  if (binding.mode === "A") {
+    const formalFields = binding.formal?.actions === void 0 ? ["model", "source", "sourceHash", "variables", "action"] : ["model", "source", "sourceHash", "variables", "actions"];
+    return hasExactFields(binding, ["surfaceKey", "mode", "formal", "source", "execution"]) && hasExactFields(binding.formal, formalFields) && hasExactFields(
+      binding.source,
+      [
+        "actionCall",
+        "stateCheckCall",
+        "resultCheckCall",
+        "enablednessCheckCall",
+        "reverseNextCheckCall"
+      ]
+    ) && hasExactFields(binding.execution, ["file", "sha256"]);
+  }
+  if (binding.mode === "B") {
+    const sourceFields = binding.source?.readCalls === void 0 ? ["readCall", "projectionCall", "projectionCheckCall"] : ["readCalls", "projectionCall", "projectionCheckCall"];
+    const readReferences = bindingReadReferences(binding);
+    return hasExactFields(binding, ["surfaceKey", "mode", "formal", "source", "execution"]) && hasExactFields(binding.formal, ["model", "source", "sourceHash", "variables"]) && hasExactFields(binding.source, sourceFields) && readReferences.length > 0 && new Set(readReferences.map((reference) => canonicalJson(reference))).size === readReferences.length && hasExactFields(binding.execution, ["file", "sha256"]);
+  }
+  return false;
+}
+function requireExactFields(value, fields2, label, diagnostics, surfaceKey) {
+  if (!hasExactFields(value, fields2)) {
+    diagnostics.push(
+      red("EXECUTION_SCHEMA_SHAPE", surfaceKey, `${label} fields do not match schema v2.`)
+    );
+    return false;
+  }
+  return true;
+}
+function verifyExecutionEvidence(repositoryRoot, binding, callable, diagnostics) {
+  const reference = binding.execution;
+  if (reference === null || typeof reference !== "object" || !isNonEmptyString(reference.file) || !isNonEmptyString(reference.sha256)) {
+    diagnostics.push(
+      red("MISSING_EXECUTION_EVIDENCE", binding.surfaceKey, "Execution evidence is required.")
+    );
+    return;
+  }
+  const absoluteFile = repositoryOwnedPath(repositoryRoot, reference.file);
+  if (absoluteFile === void 0) {
+    diagnostics.push(
+      red("EVIDENCE_PATH_ESCAPE", binding.surfaceKey, "Execution evidence leaves the repository.")
+    );
+    return;
+  }
+  let bytes2;
+  let evidence;
+  try {
+    bytes2 = fs37.readFileSync(absoluteFile);
+    evidence = JSON.parse(bytes2.toString("utf8"));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    diagnostics.push(
+      red("INVALID_EXECUTION_EVIDENCE", binding.surfaceKey, message)
+    );
+    return;
+  }
+  if (sha256(bytes2) !== reference.sha256) {
+    diagnostics.push(
+      red("EXECUTION_EVIDENCE_DRIFT", binding.surfaceKey, "Evidence SHA-256 changed.")
+    );
+  }
+  if (!requireExactFields(
+    evidence,
+    [
+      "schemaVersion",
+      "status",
+      "producer",
+      "model",
+      "graph",
+      "checkpointEquivalence",
+      "executions",
+      "reverse",
+      "surfaceObservations"
+    ],
+    "Execution evidence",
+    diagnostics,
+    binding.surfaceKey
+  )) return;
+  if (evidence.schemaVersion !== 2 || evidence.status !== "PASS" || evidence.model?.name !== binding.formal?.model || evidence.model?.source !== binding.formal?.source || evidence.model?.sourceHash !== binding.formal?.sourceHash) {
+    diagnostics.push(
+      red(
+        "FORMAL_EVIDENCE_DRIFT",
+        binding.surfaceKey,
+        "Model name/source/hash or PASS schema v2 does not match the binding."
+      )
+    );
+  }
+  if (!requireExactFields(
+    evidence.producer,
+    ["command", "files"],
+    "Evidence producer",
+    diagnostics,
+    binding.surfaceKey
+  ) || !isNonEmptyString(evidence.producer?.command) || !Array.isArray(evidence.producer?.files) || evidence.producer.files.length === 0) {
+    diagnostics.push(
+      red("MISSING_EVIDENCE_PRODUCER", binding.surfaceKey, "Evidence has no executable producer.")
+    );
+  } else {
+    const requiredProducerRoles = /* @__PURE__ */ new Set([
+      "graph-exporter",
+      "implementation-driver",
+      "original-next-validator",
+      "evidence-builder"
+    ]);
+    const producerPathsByRole = /* @__PURE__ */ new Map();
+    for (const [index, producerFile] of evidence.producer.files.entries()) {
+      if (!requireExactFields(
+        producerFile,
+        ["role", "file", "sha256"],
+        `Producer file ${index}`,
+        diagnostics,
+        binding.surfaceKey
+      ) || !requiredProducerRoles.has(producerFile.role)) {
+        diagnostics.push(
+          red("INVALID_EVIDENCE_PRODUCER", binding.surfaceKey, `Producer file ${index} has an invalid role.`)
+        );
+        continue;
+      }
+      const rolePaths = producerPathsByRole.get(producerFile.role) ?? /* @__PURE__ */ new Set();
+      rolePaths.add(producerFile.file);
+      producerPathsByRole.set(producerFile.role, rolePaths);
+      verifyDigestFile(
+        repositoryRoot,
+        { file: producerFile.file, sha256: producerFile.sha256 },
+        `Producer file ${index}`,
+        diagnostics,
+        binding.surfaceKey
+      );
+    }
+    for (const role of requiredProducerRoles) {
+      if (!producerPathsByRole.has(role)) {
+        diagnostics.push(
+          red("MISSING_EVIDENCE_PRODUCER_ROLE", binding.surfaceKey, `Producer omits '${role}'.`)
+        );
+      }
+    }
+    const driverPaths = producerPathsByRole.get("implementation-driver") ?? /* @__PURE__ */ new Set();
+    const reversePaths = producerPathsByRole.get("original-next-validator") ?? /* @__PURE__ */ new Set();
+    if ([...reversePaths].some((fileName) => driverPaths.has(fileName))) {
+      diagnostics.push(
+        red("NONINDEPENDENT_REVERSE_PRODUCER", binding.surfaceKey, "Original-Next validator is the implementation driver.")
+      );
+    }
+  }
+  if (requireExactFields(
+    evidence.model,
+    ["name", "source", "sourceHash", "config", "variables", "actions"],
+    "Model evidence",
+    diagnostics,
+    binding.surfaceKey
+  )) {
+    verifyDigestFile(
+      repositoryRoot,
+      evidence.model.config,
+      "Authoritative CFG",
+      diagnostics,
+      binding.surfaceKey
+    );
+  }
+  const boundActionOperators = binding.mode === "A" ? formalActionOperators(binding) : void 0;
+  if (binding.mode === "A" && (boundActionOperators === void 0 || !Array.isArray(evidence.model?.actions) || boundActionOperators.some((action) => !evidence.model.actions.includes(action)))) {
+    diagnostics.push(
+      red("ACTION_BINDING_DRIFT", binding.surfaceKey, "Bound action is absent from model evidence.")
+    );
+  }
+  const declaredVariables = Array.isArray(evidence.model?.variables) ? evidence.model.variables : [];
+  const declaredActions = Array.isArray(evidence.model?.actions) ? evidence.model.actions : [];
+  if (declaredVariables.length === 0 || new Set(declaredVariables).size !== declaredVariables.length || declaredVariables.some((variable) => !isNonEmptyString(variable))) {
+    diagnostics.push(
+      red("MISSING_FORMAL_VARIABLES", binding.surfaceKey, "Evidence has invalid formal variables.")
+    );
+  }
+  if (declaredActions.length === 0 || new Set(declaredActions).size !== declaredActions.length || declaredActions.some((action) => !isNonEmptyString(action))) {
+    diagnostics.push(
+      red("MISSING_FORMAL_ACTIONS", binding.surfaceKey, "Evidence has invalid formal actions.")
+    );
+  }
+  const requestedVariables = binding.formal?.variables;
+  if (!Array.isArray(requestedVariables) || requestedVariables.length === 0 || requestedVariables.some((variable) => !declaredVariables.includes(variable))) {
+    diagnostics.push(
+      red("VARIABLE_BINDING_DRIFT", binding.surfaceKey, "Bound projection variables do not match the model.")
+    );
+  }
+  const graphShapeValid = requireExactFields(
+    evidence.graph,
+    ["origin", "completeness", "bounds", "stateFields", "nodes", "edges"],
+    "Graph evidence",
+    diagnostics,
+    binding.surfaceKey
+  );
+  const stateFields = Array.isArray(evidence.graph?.stateFields) ? evidence.graph.stateFields : [];
+  const graphNodes = Array.isArray(evidence.graph?.nodes) ? evidence.graph.nodes : [];
+  const graphEdges = Array.isArray(evidence.graph?.edges) ? evidence.graph.edges : [];
+  if (!graphShapeValid || evidence.graph?.origin !== "authoritative-tla-init" || evidence.graph?.completeness !== "complete-reachable-edge-multiset" || evidence.graph?.bounds !== "authoritative-cfg" || stateFields.length === 0 || new Set(stateFields).size !== stateFields.length || canonicalJson([...stateFields].sort()) !== canonicalJson([...declaredVariables].sort()) || graphNodes.length === 0 || graphEdges.length === 0) {
+    diagnostics.push(
+      red("INCOMPLETE_GRAPH_EVIDENCE", binding.surfaceKey, "Graph is not a complete authoritative-CFG multiset from Init.")
+    );
+  }
+  const nodeById = /* @__PURE__ */ new Map();
+  const initialStateIds = [];
+  for (const node of graphNodes) {
+    if (!requireExactFields(
+      node,
+      ["stateId", "initial", "state"],
+      "Graph node",
+      diagnostics,
+      binding.surfaceKey
+    )) continue;
+    if (!isNonEmptyString(node.stateId) || nodeById.has(node.stateId)) {
+      diagnostics.push(
+        red("DUPLICATE_OR_INVALID_GRAPH_NODE", binding.surfaceKey, "Graph node ids are not unique.")
+      );
+      continue;
+    }
+    if (!hasExactStateFields(node.state, stateFields)) {
+      diagnostics.push(
+        red("PROJECTION_SHAPE_DRIFT", binding.surfaceKey, `Node '${node.stateId}' projection keys drifted.`)
+      );
+    }
+    nodeById.set(node.stateId, node);
+    if (node.initial === true) initialStateIds.push(node.stateId);
+    else if (node.initial !== false) {
+      diagnostics.push(
+        red("INVALID_INIT_MARKER", binding.surfaceKey, `Node '${node.stateId}' has a non-boolean Init marker.`)
+      );
+    }
+  }
+  if (initialStateIds.length === 0) {
+    diagnostics.push(red("MISSING_REAL_INIT", binding.surfaceKey, "Graph has no authoritative Init state."));
+  }
+  const graphEdgeById = /* @__PURE__ */ new Map();
+  const outgoingByState = /* @__PURE__ */ new Map();
+  for (const edge of graphEdges) {
+    if (!requireExactFields(
+      edge,
+      GRAPH_EDGE_RECORD_FIELDS,
+      "Graph edge",
+      diagnostics,
+      binding.surfaceKey
+    )) continue;
+    if (!isNonEmptyString(edge.edgeId) || graphEdgeById.has(edge.edgeId)) {
+      diagnostics.push(
+        red("DUPLICATE_OR_INVALID_GRAPH_EDGE", binding.surfaceKey, "Graph edge occurrence ids are not unique.")
+      );
+      continue;
+    }
+    graphEdgeById.set(edge.edgeId, edge);
+    const sourceNode = nodeById.get(edge.fromStateId);
+    const targetNode = nodeById.get(edge.toStateId);
+    if (sourceNode === void 0 || targetNode === void 0) {
+      diagnostics.push(
+        red("MISSING_GRAPH_ENDPOINT", binding.surfaceKey, `Edge '${edge.edgeId}' has a missing endpoint.`)
+      );
+    } else if (canonicalJson(edge.sourceState) !== canonicalJson(sourceNode.state) || canonicalJson(edge.expectedState) !== canonicalJson(targetNode.state)) {
+      diagnostics.push(
+        red("GRAPH_STATE_MISMATCH", binding.surfaceKey, `Edge '${edge.edgeId}' states differ from its nodes.`)
+      );
+    }
+    if (!isActionShape(edge.action) || !declaredActions.includes(edge.action?.operator) || edge.formalEnabled !== true || !["accepted", "rejected"].includes(edge.expectedOutcome)) {
+      diagnostics.push(
+        red("INVALID_GRAPH_EDGE", binding.surfaceKey, `Edge '${edge.edgeId}' lacks exact action/enabledness/outcome.`)
+      );
+    }
+    const outgoing = outgoingByState.get(edge.fromStateId) ?? [];
+    outgoing.push(edge.toStateId);
+    outgoingByState.set(edge.fromStateId, outgoing);
+  }
+  const reachedStateIds = new Set(initialStateIds);
+  const reachabilityQueue = [...initialStateIds];
+  for (let index = 0; index < reachabilityQueue.length; index += 1) {
+    const stateId = reachabilityQueue[index];
+    for (const targetId of outgoingByState.get(stateId) ?? []) {
+      if (!reachedStateIds.has(targetId)) {
+        reachedStateIds.add(targetId);
+        reachabilityQueue.push(targetId);
+      }
+    }
+  }
+  if (reachedStateIds.size !== nodeById.size) {
+    diagnostics.push(
+      red("UNREACHABLE_GRAPH_NODE", binding.surfaceKey, "Graph contains a state outside the Init closure.")
+    );
+  }
+  const executions = Array.isArray(evidence.executions) ? evidence.executions : [];
+  const graphEdgeIds = [...graphEdgeById.keys()];
+  const executedEdgeIds = executions.map((execution) => execution?.edgeId);
+  if (executedEdgeIds.some((edgeId) => !isNonEmptyString(edgeId)) || new Set(executedEdgeIds).size !== executedEdgeIds.length) {
+    diagnostics.push(
+      red("DUPLICATE_EXECUTED_EDGE", binding.surfaceKey, "Executed edge ids are not unique.")
+    );
+  }
+  if (canonicalJson([...graphEdgeIds].sort()) !== canonicalJson([...executedEdgeIds].sort())) {
+    diagnostics.push(
+      red("MISSING_OR_EXTRA_EXECUTED_EDGE", binding.surfaceKey, "Replay is not the exact graph-edge multiset.")
+    );
+  }
+  const relevantExecutions = executions.filter(
+    (execution) => binding.mode === "A" ? boundActionOperators?.includes(execution?.action?.operator) === true : true
+  );
+  if (relevantExecutions.length === 0) {
+    diagnostics.push(
+      red("UNEXECUTED_SEMANTIC_BINDING", binding.surfaceKey, "No real execution covers this binding.")
+    );
+  }
+  const forkConcreteIds = [];
+  for (const execution of executions) {
+    if (!requireExactFields(
+      execution,
+      EXECUTION_RECORD_FIELDS,
+      "Execution",
+      diagnostics,
+      binding.surfaceKey
+    )) continue;
+    const graphEdge = graphEdgeById.get(execution.edgeId);
+    const stateKeys = Object.keys(execution.actualState ?? {}).sort();
+    if (Array.isArray(declaredVariables) && canonicalJson(stateKeys) !== canonicalJson([...declaredVariables].sort())) {
+      diagnostics.push(
+        red("PROJECTION_SHAPE_DRIFT", binding.surfaceKey, `Edge '${execution.edgeId}' projection keys drifted.`)
+      );
+    }
+    if (graphEdge === void 0 || canonicalJson(graphEdge.action) !== canonicalJson(execution.action) || graphEdge.formalEnabled !== execution.formalEnabled || graphEdge.expectedOutcome !== execution.outcome || canonicalJson(graphEdge.sourceState) !== canonicalJson(execution.expectedSourceState) || canonicalJson(execution.expectedSourceState) !== canonicalJson(execution.actualSourceState) || canonicalJson(graphEdge.expectedState) !== canonicalJson(execution.expectedState) || canonicalJson(graphEdge.expectedResult) !== canonicalJson(execution.expectedResult) || canonicalJson(execution.expectedState) !== canonicalJson(execution.actualState) || canonicalJson(execution.expectedResult) !== canonicalJson(execution.actualResult) || !hasExactFields(execution.checked, ["sourceState", "state", "result", "enabledness"]) || execution.checked?.sourceState !== true || execution.checked?.state !== true || execution.checked?.result !== true || execution.checked?.enabledness !== true) {
+      diagnostics.push(
+        red("UNCHECKED_OR_MISMATCHED_EXECUTION", binding.surfaceKey, `Edge '${execution.edgeId}' is not exact.`)
+      );
+      break;
+    }
+    if (!hasExactFields(
+      execution.checkpoint,
+      [
+        "forkConcreteId",
+        "sourceConcreteDigest",
+        "targetConcreteDigest",
+        "sourceFromInit",
+        "abstractStateSeeded"
+      ]
+    ) || !isNonEmptyString(execution.checkpoint?.forkConcreteId) || !isSha256(execution.checkpoint?.sourceConcreteDigest) || !isSha256(execution.checkpoint?.targetConcreteDigest) || execution.checkpoint?.sourceFromInit !== true || execution.checkpoint?.abstractStateSeeded !== false) {
+      diagnostics.push(
+        red("MISSING_DETACHED_FORK", binding.surfaceKey, `Edge '${execution.edgeId}' lacks an Init-derived detached fork.`)
+      );
+      break;
+    }
+    forkConcreteIds.push(execution.checkpoint.forkConcreteId);
+  }
+  if (new Set(forkConcreteIds).size !== forkConcreteIds.length) {
+    diagnostics.push(
+      red("SHARED_CHECKPOINT_FORK", binding.surfaceKey, "Sibling executions reuse one concrete fork.")
+    );
+  }
+  if (!requireExactFields(
+    evidence.checkpointEquivalence,
+    ["kind", "completeRepresentativeExploration", "evidence"],
+    "Checkpoint equivalence",
+    diagnostics,
+    binding.surfaceKey
+  ) || !["injective-concrete-state", "finite-all-representatives"].includes(
+    evidence.checkpointEquivalence?.kind
+  ) || evidence.checkpointEquivalence?.completeRepresentativeExploration !== true) {
+    diagnostics.push(
+      red("UNSOUND_CHECKPOINT_QUOTIENT", binding.surfaceKey, "Hidden-history equivalence is not proved exhaustively.")
+    );
+  } else {
+    verifyDigestFile(
+      repositoryRoot,
+      evidence.checkpointEquivalence.evidence,
+      "Checkpoint equivalence evidence",
+      diagnostics,
+      binding.surfaceKey
+    );
+  }
+  const reverseEdges = Array.isArray(evidence.reverse?.edges) ? evidence.reverse.edges : [];
+  if (!requireExactFields(
+    evidence.reverse,
+    ["validator", "importsImplementationTransition", "edges"],
+    "Reverse evidence",
+    diagnostics,
+    binding.surfaceKey
+  ) || evidence.reverse?.validator !== "original-tla-next" || evidence.reverse?.importsImplementationTransition !== false) {
+    diagnostics.push(
+      red("INVALID_REVERSE_PROOF", binding.surfaceKey, "Reverse evidence is not independent original TLA Next.")
+    );
+  }
+  const reverseEdgeIds = reverseEdges.map((edge) => edge?.edgeId);
+  if (reverseEdgeIds.some((edgeId) => !isNonEmptyString(edgeId)) || new Set(reverseEdgeIds).size !== reverseEdgeIds.length || canonicalJson([...reverseEdgeIds].sort()) !== canonicalJson([...graphEdgeIds].sort())) {
+    diagnostics.push(
+      red("MISSING_OR_EXTRA_REVERSE_EDGE", binding.surfaceKey, "Reverse proof is not the exact graph-edge multiset.")
+    );
+  }
+  for (const reverseEdge of reverseEdges) {
+    if (!requireExactFields(
+      reverseEdge,
+      REVERSE_EDGE_RECORD_FIELDS,
+      "Reverse edge",
+      diagnostics,
+      binding.surfaceKey
+    )) continue;
+    const graphEdge = graphEdgeById.get(reverseEdge.edgeId);
+    if (graphEdge === void 0 || canonicalJson(reverseEdge.action) !== canonicalJson(graphEdge.action) || canonicalJson(reverseEdge.sourceState) !== canonicalJson(graphEdge.sourceState) || canonicalJson(reverseEdge.targetState) !== canonicalJson(graphEdge.expectedState) || reverseEdge.originalNextAccepted !== true) {
+      diagnostics.push(
+        red("REVERSE_EDGE_MISMATCH", binding.surfaceKey, `Reverse edge '${reverseEdge.edgeId}' is not exact.`)
+      );
+      break;
+    }
+  }
+  const observations = Array.isArray(evidence.surfaceObservations) ? evidence.surfaceObservations : [];
+  const observationKeys = /* @__PURE__ */ new Set();
+  for (const [index, observation] of observations.entries()) {
+    const validFields = requireExactFields(
+      observation,
+      ["surfaceKey", "sourceReference", "edgeIds"],
+      `Surface observation ${index}`,
+      diagnostics,
+      binding.surfaceKey
+    );
+    const sourceReference = observation?.sourceReference;
+    const validReference = hasExactFields(
+      sourceReference,
+      ["file", "start", "end", "sourceHash", "astHash"]
+    ) && isNonEmptyString(sourceReference.file) && Number.isSafeInteger(sourceReference.start) && sourceReference.start >= 0 && Number.isSafeInteger(sourceReference.end) && sourceReference.end > sourceReference.start && isSha256(sourceReference.sourceHash) && isSha256(sourceReference.astHash);
+    const edgeIds = observation?.edgeIds;
+    const validEdgeIds = Array.isArray(edgeIds) && edgeIds.length > 0 && new Set(edgeIds).size === edgeIds.length && edgeIds.every((edgeId) => graphEdgeById.has(edgeId));
+    const observationKey = canonicalJson([
+      observation?.surfaceKey,
+      sourceReference
+    ]);
+    if (!validFields || !isNonEmptyString(observation?.surfaceKey) || !validReference || !validEdgeIds || observationKeys.has(observationKey)) {
+      diagnostics.push(
+        red("INVALID_SURFACE_OBSERVATION", binding.surfaceKey, `Surface observation ${index} is invalid or duplicate.`)
+      );
+    }
+    observationKeys.add(observationKey);
+  }
+  const expectedReferences = binding.mode === "A" ? [binding.source?.actionCall] : bindingReadReferences(binding);
+  const expectedObservationEdgeIds = relevantExecutions.map((execution) => execution?.edgeId).filter((edgeId) => isNonEmptyString(edgeId)).sort();
+  for (const expectedReference of expectedReferences) {
+    const matchingObservation = observations.find(
+      (observation) => observation?.surfaceKey === callable.key && canonicalJson(observation?.sourceReference) === canonicalJson(expectedReference)
+    );
+    if (matchingObservation === void 0 || !requireExactFields(
+      matchingObservation,
+      ["surfaceKey", "sourceReference", "edgeIds"],
+      "Surface observation",
+      diagnostics,
+      binding.surfaceKey
+    ) || !Array.isArray(matchingObservation.edgeIds) || new Set(matchingObservation.edgeIds).size !== matchingObservation.edgeIds.length || canonicalJson([...matchingObservation.edgeIds].sort()) !== canonicalJson(expectedObservationEdgeIds)) {
+      diagnostics.push(
+        red("FAKE_SURFACE_ASSOCIATION", binding.surfaceKey, "Runtime evidence did not observe this exact compiler callsite on every relevant edge.")
+      );
+    }
+  }
+}
+function implementationNode(context, callable) {
+  const spans = [callable.declaration, ...callable.symbolDeclarations];
+  const found = [];
+  for (const span of spans) {
+    const source7 = context.program.getSourceFile(
+      path41.resolve(context.repositoryRoot, span.file)
+    );
+    if (source7 === void 0) continue;
+    const node = nodeAtExactSpan(source7, span.start.offset, span.end.offset);
+    if (node === void 0) continue;
+    if ((ts.isFunctionDeclaration(node) || ts.isMethodDeclaration(node) || ts.isConstructorDeclaration(node) || ts.isFunctionExpression(node) || ts.isArrowFunction(node)) && node.body !== void 0) {
+      found.push(node);
+    } else if ((ts.isVariableDeclaration(node) || ts.isPropertyDeclaration(node)) && node.initializer !== void 0 && (ts.isFunctionExpression(node.initializer) || ts.isArrowFunction(node.initializer))) {
+      found.push(node.initializer);
+    }
+  }
+  const unique = [...new Set(found)];
+  return unique.length === 1 ? unique[0] : void 0;
+}
+function unwrapDelegateExpression(expression) {
+  let current = expression;
+  while (ts.isAwaitExpression(current) || ts.isParenthesizedExpression(current) || ts.isAsExpression(current)) {
+    current = current.expression;
+  }
+  return current;
+}
+function exportEntrypointForKey(surfaceKey) {
+  if (!surfaceKey.startsWith("export:")) return void 0;
+  const separator = surfaceKey.indexOf("#", "export:".length);
+  return separator < 0 ? void 0 : surfaceKey.slice("export:".length, separator);
+}
+function inspectCompilerDelegate(context, callable, surface) {
+  const implementation = implementationNode(context, callable);
+  if (implementation === void 0) {
+    return { status: "not-delegate", code: "MISSING_UNIQUE_DELEGATE_BODY", targetSurfaceKeys: [] };
+  }
+  let expression;
+  if (ts.isBlock(implementation.body)) {
+    if (implementation.body.statements.length !== 1 || !ts.isReturnStatement(implementation.body.statements[0]) || implementation.body.statements[0].expression === void 0) {
+      return { status: "not-delegate", code: "IMPURE_DELEGATE", targetSurfaceKeys: [] };
+    }
+    expression = implementation.body.statements[0].expression;
+  } else {
+    expression = implementation.body;
+  }
+  const call = unwrapDelegateExpression(expression);
+  if (!ts.isCallExpression(call)) {
+    return { status: "not-delegate", code: "IMPURE_DELEGATE", targetSurfaceKeys: [] };
+  }
+  const parameters = implementation.parameters;
+  if (call.arguments.length !== parameters.length) {
+    return { status: "not-delegate", code: "IMPURE_DELEGATE", targetSurfaceKeys: [] };
+  }
+  for (let index = 0; index < parameters.length; index += 1) {
+    const parameter = parameters[index];
+    const argument = call.arguments[index];
+    const argumentExpression = ts.isSpreadElement(argument) ? argument.expression : argument;
+    if (!ts.isIdentifier(parameter.name) || !ts.isIdentifier(argumentExpression) || !sameSymbol(context.checker, parameter.name, argumentExpression) || parameter.dotDotDotToken !== void 0 !== ts.isSpreadElement(argument)) {
+      return { status: "not-delegate", code: "IMPURE_DELEGATE", targetSurfaceKeys: [] };
+    }
+  }
+  const targetIds = new Set(callTargetDeclarationIds(context, call));
+  const declarationTargetKeys = surface.callables.filter(
+    (target) => target.key !== callable.key && surfaceDeclarationIds(target).some((id) => targetIds.has(id))
+  ).map((target) => target.key).sort();
+  const sourceEntrypoint = exportEntrypointForKey(callable.key);
+  const sameEntrypointTargets = sourceEntrypoint === void 0 ? [] : declarationTargetKeys.filter(
+    (targetKey) => exportEntrypointForKey(targetKey) === sourceEntrypoint
+  );
+  const targetSurfaceKeys = sameEntrypointTargets.length === 1 ? sameEntrypointTargets : declarationTargetKeys;
+  if (targetSurfaceKeys.length === 0) {
+    return { status: "not-delegate", code: "FALSE_DELEGATE_TARGET", targetSurfaceKeys };
+  }
+  return {
+    status: "compiler-proven-candidate",
+    code: null,
+    implementation: spanOf(context, implementation),
+    call: sourceReferenceForCall(context, call),
+    targetSurfaceKeys
+  };
+}
+function verifyDelegate(context, binding, callable, callableByKey, bindingByKey, diagnostics) {
+  const target = callableByKey.get(binding.targetSurfaceKey);
+  const targetBinding = bindingByKey.get(binding.targetSurfaceKey);
+  if (target === void 0) {
+    diagnostics.push(red("MISSING_DELEGATE_TARGET", binding.surfaceKey, "C target is not a surface key."));
+    return;
+  }
+  if (targetBinding === void 0 || !["A", "B"].includes(targetBinding.mode)) {
+    diagnostics.push(red("UNBOUND_DELEGATE_TARGET", binding.surfaceKey, "C target must be directly bound A or B."));
+    return;
+  }
+  const inspection = inspectCompilerDelegate(context, callable, {
+    callables: [...callableByKey.values()]
+  });
+  if (inspection.status !== "compiler-proven-candidate") {
+    diagnostics.push(
+      red(
+        inspection.code,
+        binding.surfaceKey,
+        "C body is not one exact parameter-preserving return call."
+      )
+    );
+    return;
+  }
+  if (!inspection.targetSurfaceKeys.includes(target.key)) {
+    diagnostics.push(
+      red("FALSE_DELEGATE_TARGET", binding.surfaceKey, "Compiler target differs from declared C target.")
+    );
+  }
+}
+function checkBindings({ repositoryRoot, surface, registries, registeredProducerFamilies = [], compilerContext }) {
+  const diagnostics = [];
+  const bindings = [];
+  const registryOwners = /* @__PURE__ */ new Set();
+  for (const registry of registries) {
+    if (!hasExactFields(registry, ["schemaVersion", "owner", "bindings"]) || registry.schemaVersion !== BINDING_SCHEMA_VERSION || !isNonEmptyString(registry.owner) || !Array.isArray(registry.bindings)) {
+      diagnostics.push(red("INVALID_BINDING_REGISTRY", "<registry>", "Registry schema/owner/bindings are invalid."));
+      continue;
+    }
+    if (registryOwners.has(registry.owner)) {
+      diagnostics.push(
+        red("DUPLICATE_REGISTRY_OWNER", "<registry>", `Owner '${registry.owner}' has multiple registries.`)
+      );
+    }
+    registryOwners.add(registry.owner);
+    bindings.push(...registry.bindings);
+  }
+  const callableByKey = new Map(surface.callables.map((callable) => [callable.key, callable]));
+  const bindingByKey = /* @__PURE__ */ new Map();
+  for (const binding of bindings) {
+    if (!isNonEmptyString(binding?.surfaceKey)) {
+      diagnostics.push(red("MISSING_BINDING_KEY", "<binding>", "Binding has no surfaceKey."));
+      continue;
+    }
+    if (bindingByKey.has(binding.surfaceKey)) {
+      diagnostics.push(red("DUPLICATE_BINDING", binding.surfaceKey, "Surface has more than one binding."));
+      continue;
+    }
+    bindingByKey.set(binding.surfaceKey, binding);
+    if (!callableByKey.has(binding.surfaceKey)) {
+      diagnostics.push(red("UNKNOWN_SURFACE_BINDING", binding.surfaceKey, "Binding key is not compiler reachable."));
+    }
+  }
+  for (const callable of surface.callables) {
+    if (!bindingByKey.has(callable.key)) {
+      diagnostics.push(red("MISSING_BINDING", callable.key, "Compiler-reachable callable is unbound."));
+    }
+  }
+  let context;
+  try {
+    context = compilerContext ?? evidenceCompilerContext(repositoryRoot, [...bindingByKey.values()]);
+    if (path41.resolve(repositoryRoot) !== context.repositoryRoot) throw new Error("Binder compiler context belongs to another repository.");
+    for (const binding of bindingByKey.values()) {
+      for (const reference of sourceReferences(binding)) {
+        if (isNonEmptyString(reference?.file) && context.program.getSourceFile(path41.resolve(repositoryRoot, reference.file)) === void 0) throw new Error("Shared compiler omitted a bound evidence source.");
+      }
+    }
+  } catch (error) {
+    diagnostics.push(
+      red(
+        "EVIDENCE_COMPILATION_FAILED",
+        "<program>",
+        error instanceof Error ? error.message : String(error)
+      )
+    );
+    return diagnostics;
+  }
+  for (const binding of bindingByKey.values()) {
+    const callable = callableByKey.get(binding.surfaceKey);
+    if (callable === void 0) continue;
+    if (!["A", "B", "C", "V", "HARD_RED"].includes(binding.mode)) {
+      diagnostics.push(red("INVALID_BINDING_MODE", binding.surfaceKey, "Mode must be A, B, C, V, or HARD_RED."));
+      continue;
+    }
+    if (!hasExactBindingShape(binding)) {
+      diagnostics.push(
+        red(
+          "BINDING_SCHEMA_SHAPE",
+          binding.surfaceKey,
+          "Binding fields do not match its exact mode schema."
+        )
+      );
+      continue;
+    }
+    if (binding.mode === "HARD_RED") {
+      diagnostics.push(
+        red("EXPLICIT_HARD_RED", binding.surfaceKey, binding.reason ?? "Explicitly unsupported/unbound.")
+      );
+      continue;
+    }
+    if (binding.mode === "C") {
+      verifyDelegate(context, binding, callable, callableByKey, bindingByKey, diagnostics);
+      continue;
+    }
+    if (binding.mode === "V") {
+      for (const issue of verifyValueContractBinding({ repositoryRoot, context, surface, binding })) {
+        diagnostics.push(red(issue.code, binding.surfaceKey, issue.detail));
+      }
+      continue;
+    }
+    if (hasRegisteredProducerBindingShape(binding)) {
+      for (const issue of verifyRegisteredProducerBinding({
+        repositoryRoot,
+        context,
+        surface,
+        binding,
+        registrations: registeredProducerFamilies
+      })) {
+        diagnostics.push(red(issue.code, binding.surfaceKey, issue.detail));
+      }
+      continue;
+    }
+    if (!isNonEmptyString(binding.formal?.model) || !isNonEmptyString(binding.formal?.source) || !isNonEmptyString(binding.formal?.sourceHash)) {
+      diagnostics.push(red("MISSING_FORMAL_IDENTITY", binding.surfaceKey, "A/B needs exact model identity/hash."));
+    }
+    if (isNonEmptyString(binding.formal?.source)) {
+      const formalSource = repositoryOwnedPath(repositoryRoot, binding.formal.source);
+      if (formalSource === void 0) {
+        diagnostics.push(red("EVIDENCE_PATH_ESCAPE", binding.surfaceKey, "Formal source leaves the repository."));
+        continue;
+      }
+      try {
+        const actualFormalHash = sha256(
+          fs37.readFileSync(formalSource)
+        );
+        if (actualFormalHash !== binding.formal.sourceHash) {
+          diagnostics.push(red("FORMAL_SOURCE_DRIFT", binding.surfaceKey, "Authoritative model source hash changed."));
+        }
+      } catch (error) {
+        diagnostics.push(
+          red(
+            "MISSING_FORMAL_SOURCE",
+            binding.surfaceKey,
+            error instanceof Error ? error.message : String(error)
+          )
+        );
+      }
+    }
+    if (binding.mode === "A" && formalActionOperators(binding) === void 0) {
+      diagnostics.push(
+        red(
+          "MISSING_FORMAL_ACTION",
+          binding.surfaceKey,
+          "A needs exactly one action or one non-empty unique action set."
+        )
+      );
+    }
+    const references = sourceReferences(binding);
+    const readReferences = binding.mode === "B" ? bindingReadReferences(binding) : [];
+    const expectedCount = binding.mode === "A" ? 5 : readReferences.length + 2;
+    if (references.length !== expectedCount) {
+      diagnostics.push(red("MISSING_SEMANTIC_CALLS", binding.surfaceKey, `${binding.mode} source evidence is incomplete.`));
+      continue;
+    }
+    const nodes = references.map(
+      (reference, index) => resolveCallReference(
+        context,
+        reference,
+        binding.mode === "A" ? ["action", "state check", "result check", "enabledness check", "reverse Next check"][index] : ["read", "projection", "projection check"][index],
+        diagnostics,
+        binding.surfaceKey
+      )
+    );
+    const semanticCalls = binding.mode === "A" ? nodes.slice(0, 1) : nodes.slice(0, -2);
+    for (const semanticCall of semanticCalls) {
+      if (semanticCall === void 0) continue;
+      const targetIds = new Set(surfaceDeclarationIds(callable));
+      if (!callTargetDeclarationIds(context, semanticCall).some((id) => targetIds.has(id)) || !callUsesExactEntrypoint(context, semanticCall, callable, surface)) {
+        diagnostics.push(red("FALSE_SURFACE_ASSOCIATION", binding.surfaceKey, "Compiler-resolved call differs from surface key."));
+      }
+    }
+    const checkCalls = binding.mode === "A" ? nodes.slice(1) : nodes.slice(2);
+    for (const checkCall of checkCalls) {
+      if (checkCall !== void 0 && !checkResultIsEnforced(context, checkCall)) {
+        diagnostics.push(
+          red("IGNORED_CHECK_RESULT", binding.surfaceKey, "A semantic check returns a value that is discarded.")
+        );
+      }
+      if (checkCall !== void 0 && hasOnlyLiteralCheckInputs(checkCall)) {
+        diagnostics.push(
+          red("CONSTANT_CHECK_INPUT", binding.surfaceKey, "A semantic check receives only literal constants.")
+        );
+      }
+    }
+    if (binding.mode === "A" && nodes[0] !== void 0 && nodes[2] !== void 0 && !callFeedsCall(context, nodes[0], nodes[2])) {
+      diagnostics.push(
+        red("ACTION_RESULT_NOT_CHECKED", binding.surfaceKey, "The real action result does not feed its result check.")
+      );
+    }
+    if (binding.mode === "B" && nodes.at(-2) !== void 0 && nodes.at(-1) !== void 0) {
+      const projectionCall = nodes.at(-2);
+      const projectionCheckCall = nodes.at(-1);
+      for (const readCall of nodes.slice(0, -2)) {
+        if (readCall !== void 0 && !callFeedsCall(context, readCall, projectionCall)) {
+          diagnostics.push(red("READ_DOES_NOT_FEED_PROJECTION", binding.surfaceKey, "Every declared read must feed the projection."));
+        }
+      }
+      if (!callFeedsCall(context, projectionCall, projectionCheckCall)) {
+        diagnostics.push(red("PROJECTION_NOT_CHECKED", binding.surfaceKey, "Projection result does not feed check."));
+      }
+      const projectionType = context.checker.getTypeAtLocation(projectionCall);
+      if ((projectionType.flags & ts.TypeFlags.Void) !== 0) {
+        diagnostics.push(red("EMPTY_PROJECTION", binding.surfaceKey, "Projection call returns void."));
+      }
+    }
+    verifyExecutionEvidence(repositoryRoot, binding, callable, diagnostics);
+  }
+  return diagnostics.sort((left, right) => {
+    const keyComparison = compareCodeUnits(left.surfaceKey, right.surfaceKey);
+    return keyComparison !== 0 ? keyComparison : compareCodeUnits(left.code, right.code);
+  });
+}
+function sourceReferenceForCall(context, call) {
+  const span = spanOf(context, call);
+  return {
+    file: span.file,
+    start: span.start.offset,
+    end: span.end.offset,
+    sourceHash: span.sourceHash,
+    astHash: span.astHash
+  };
+}
+
+// experiments/tla-conformance/final-convergence/current-review-assurance.mjs
+var import_formal_implementation_surface = __toESM(require_formal_implementation_surface(), 1);
+import assert40 from "node:assert/strict";
+import crypto4 from "node:crypto";
+import fs38 from "node:fs";
+import path42 from "node:path";
+import { execFileSync as execFileSync4 } from "node:child_process";
+
+// scripts/repository-assurance-state.mjs
+import { createHash as createHash2 } from "node:crypto";
+import { spawnSync } from "node:child_process";
+var excludedPaths = /* @__PURE__ */ new Set([
+  "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json"
+]);
+function includedPath(path45) {
+  return path45.length > 0 && !path45.startsWith(".chatgpt/") && !excludedPaths.has(path45);
+}
+function hashAssuranceEntries(entries) {
+  const hash = createHash2("sha256");
+  const writeLength = (length2) => {
+    const encoded = Buffer.allocUnsafe(8);
+    encoded.writeBigUInt64BE(BigInt(length2));
+    hash.update(encoded);
+  };
+  for (const entry of [...entries].sort((left, right) => left.path < right.path ? -1 : left.path > right.path ? 1 : 0)) {
+    const pathBytes = Buffer.from(entry.path);
+    writeLength(pathBytes.length);
+    hash.update(pathBytes);
+    hash.update(Buffer.from([entry.kind]));
+    writeLength(entry.payload.length);
+    hash.update(entry.payload);
+  }
+  return hash.digest("hex");
+}
+function repositoryAssuranceCommittedStateSha256(repositoryRoot, commit) {
+  const listed = spawnSync(
+    "git",
+    ["ls-tree", "-rz", "--full-tree", commit],
+    { cwd: repositoryRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }
+  );
+  if (listed.error !== void 0 || listed.status !== 0) {
+    throw new Error(`Unable to enumerate committed repository assurance state '${commit}'.`);
+  }
+  const rows = [];
+  for (const record of listed.stdout.split("\0")) {
+    if (record.length === 0) continue;
+    const tab = record.indexOf("	");
+    if (tab < 0) throw new Error("Malformed git ls-tree assurance record.");
+    const header = record.slice(0, tab).split(" ");
+    const path45 = record.slice(tab + 1);
+    if (!includedPath(path45)) continue;
+    if (header.length !== 3 || header[1] !== "blob" || !/^[a-f0-9]{40,64}$/u.test(header[2])) throw new Error(`Unsupported committed assurance entry '${path45}'.`);
+    const kind = header[0] === "120000" ? 1 : header[0] === "100644" || header[0] === "100755" ? 0 : void 0;
+    if (kind === void 0) throw new Error(`Unsupported committed assurance mode for '${path45}'.`);
+    rows.push({ path: path45, kind, objectId: header[2] });
+  }
+  const batch = spawnSync("git", ["cat-file", "--batch"], {
+    cwd: repositoryRoot,
+    input: rows.map((row) => row.objectId + "\n").join(""),
+    maxBuffer: 256 * 1024 * 1024
+  });
+  if (batch.error !== void 0 || batch.status !== 0) throw new Error("Unable to read committed assurance object batch.");
+  let offset = 0;
+  const entries = [];
+  for (const row of rows) {
+    const end = batch.stdout.indexOf(10, offset);
+    if (end < 0) throw new Error("Truncated committed assurance batch header.");
+    const fields2 = batch.stdout.subarray(offset, end).toString("ascii").split(" ");
+    if (fields2.length !== 3 || fields2[0] !== row.objectId || fields2[1] !== "blob" || !/^(0|[1-9][0-9]*)$/u.test(fields2[2])) throw new Error("Committed assurance batch identity mismatch.");
+    const size = Number(fields2[2]);
+    offset = end + 1;
+    if (!Number.isSafeInteger(size) || offset + size >= batch.stdout.length || batch.stdout[offset + size] !== 10) throw new Error("Truncated committed assurance batch payload.");
+    entries.push({ path: row.path, kind: row.kind, payload: batch.stdout.subarray(offset, offset + size) });
+    offset += size + 1;
+  }
+  if (offset !== batch.stdout.length) throw new Error("Unexpected trailing committed assurance batch output.");
+  return hashAssuranceEntries(entries);
+}
+
+// experiments/tla-conformance/final-convergence/current-review-assurance.mjs
+var CURRENT_REVIEW_ASSURANCE_RECEIPT = "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json";
+var CURRENT_REVIEW_ASSURANCE_REPORT = "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json";
+var CURRENT_REVIEW_ASSURANCE_FULL_LOG = "experiments/tla-conformance/final-convergence/current-pr-review-full.log";
+var CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "77c97c6cd33512a445a2acd98f4b97f1104c85b5";
+var AUTHORITATIVE_PATHS = Object.freeze(["src", "formal", "scripts", "test", "package.json", "tsconfig.json", "tsconfig.test.json"]);
+function sha2564(file) {
+  return crypto4.createHash("sha256").update(fs38.readFileSync(file)).digest("hex");
+}
+function canonicalJson2(value) {
+  if (Array.isArray(value)) return `[${value.map(canonicalJson2).join(",")}]`;
+  if (value !== null && typeof value === "object") {
+    return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonicalJson2(value[key])}`).join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+function currentReviewSurfaceSha256(repositoryRoot, context) {
+  const surface = import_formal_implementation_surface.default.discoverImplementationSurface({ repositoryRoot, program: context?.program });
+  return crypto4.createHash("sha256").update(canonicalJson2(surface)).digest("hex");
+}
+function repositoryPath(repositoryRoot, file) {
+  return assuranceRepositoryPath(repositoryRoot, file);
+}
+function regularFile(repositoryRoot, file, label) {
+  const target = repositoryPath(repositoryRoot, file);
+  const stat = fs38.lstatSync(target);
+  assert40.equal(stat.isFile(), true, `${label} is not a regular file.`);
+  return target;
+}
+function committedFileSha256(repositoryRoot, commit, file) {
+  const bytes2 = execFileSync4("git", ["show", `${commit}:${file}`], {
+    cwd: repositoryRoot,
+    encoding: null,
+    maxBuffer: 64 * 1024 * 1024
+  });
+  return crypto4.createHash("sha256").update(bytes2).digest("hex");
+}
+function assertCurrentReviewAssuranceContent({
+  receipt,
+  report,
+  reportSha256,
+  fullLogSha256,
+  independentlyDerivedSurfaceSha256,
+  independentlyDerivedRepositoryStateSha256
+}) {
+  assert40.equal(receipt.schemaVersion, 1, "Current review assurance receipt schema is unsupported.");
+  assert40.equal(receipt.status, "CURRENT_PR_REVIEW_FULL_ASSURANCE_VERIFIED", "Current review assurance receipt status is invalid.");
+  assert40.match(receipt.certifiedHead, /^[a-f0-9]{40}$/u, "Current review assurance certified head is invalid.");
+  assert40.equal(receipt.report.file, CURRENT_REVIEW_ASSURANCE_REPORT, "Current review assurance report path is not package-owned.");
+  assert40.equal(receipt.fullLog.file, CURRENT_REVIEW_ASSURANCE_FULL_LOG, "Current review assurance full-log path is not package-owned.");
+  assert40.equal(reportSha256, receipt.report.sha256, "Current review assurance report bytes changed.");
+  assert40.equal(fullLogSha256, receipt.fullLog.sha256, "Current review assurance full-log bytes changed.");
+  assert40.equal(report.repositoryHead, receipt.certifiedHead, "Current review assurance report certifies the wrong commit.");
+  assert40.equal(report.fullFormal, true, "Current review assurance report is not a full-formal run.");
+  assert40.match(report.surfaceSha256, /^[a-f0-9]{64}$/u, "Current review assurance report surface digest is invalid.");
+  assert40.match(receipt.surfaceSha256, /^[a-f0-9]{64}$/u, "Current review assurance receipt surface digest is invalid.");
+  assert40.equal(report.surfaceSha256, independentlyDerivedSurfaceSha256, "Current review assurance report surface digest is not independently source-derived.");
+  assert40.equal(receipt.surfaceSha256, independentlyDerivedSurfaceSha256, "Current review assurance receipt surface digest is not independently source-derived.");
+  assert40.equal(report.apiEntries, 510, "Current review assurance API census changed.");
+  assert40.equal(report.compilerCallGraphUnresolvedApis, 0, "Current review assurance has unresolved public APIs.");
+  assert40.equal(report.repositoryStateSha256, receipt.repositoryStateSha256, "Current review assurance state receipt disagrees with the report.");
+  assert40.equal(independentlyDerivedRepositoryStateSha256, receipt.repositoryStateSha256, "Current review assurance was not produced from the exact clean committed evidence state.");
+  assert40.equal(report.fullLogSha256, receipt.fullLog.sha256, "Current review assurance report is not bound to the tracked full log.");
+}
+function verifyCurrentReviewAssurance(repositoryRoot, context) {
+  const root3 = path42.resolve(repositoryRoot);
+  const receiptPath = regularFile(root3, CURRENT_REVIEW_ASSURANCE_RECEIPT, "Current review assurance receipt");
+  execFileSync4("git", ["merge-base", "--is-ancestor", CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD, "HEAD"], { cwd: root3, stdio: "ignore" });
+  assert40.equal(
+    sha2564(receiptPath),
+    committedFileSha256(root3, CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD, CURRENT_REVIEW_ASSURANCE_RECEIPT),
+    "Current review assurance receipt differs from its immutable evidence commit."
+  );
+  const receipt = JSON.parse(fs38.readFileSync(receiptPath, "utf8"));
+  assert40.match(receipt.certifiedHead, /^[a-f0-9]{40}$/u, "Current review assurance certified head is invalid.");
+  assert40.equal(
+    execFileSync4("git", ["rev-parse", `${CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD}^`], { cwd: root3, encoding: "utf8" }).trim(),
+    receipt.certifiedHead,
+    "Immutable current-review evidence commit is not the direct child of the certified repair head."
+  );
+  execFileSync4("git", ["merge-base", "--is-ancestor", receipt.certifiedHead, "HEAD"], { cwd: root3, stdio: "ignore" });
+  assert40.equal(receipt.report.file, CURRENT_REVIEW_ASSURANCE_REPORT, "Current review assurance report path is not package-owned.");
+  assert40.equal(receipt.fullLog.file, CURRENT_REVIEW_ASSURANCE_FULL_LOG, "Current review assurance full-log path is not package-owned.");
+  const reportPath = regularFile(root3, CURRENT_REVIEW_ASSURANCE_REPORT, "Current review assurance report");
+  const logPath = regularFile(root3, CURRENT_REVIEW_ASSURANCE_FULL_LOG, "Current review assurance full log");
+  assert40.equal(
+    sha2564(reportPath),
+    committedFileSha256(root3, CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD, CURRENT_REVIEW_ASSURANCE_REPORT),
+    "Current review assurance report differs from its immutable evidence commit."
+  );
+  assert40.equal(
+    sha2564(logPath),
+    committedFileSha256(root3, CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD, CURRENT_REVIEW_ASSURANCE_FULL_LOG),
+    "Current review assurance full log differs from its immutable evidence commit."
+  );
+  const reportSha256 = sha2564(reportPath);
+  const fullLogSha256 = sha2564(logPath);
+  const report = JSON.parse(fs38.readFileSync(reportPath, "utf8"));
+  assertCurrentReviewAssuranceContent({
+    receipt,
+    report,
+    reportSha256,
+    fullLogSha256,
+    independentlyDerivedSurfaceSha256: currentReviewSurfaceSha256(root3, context),
+    independentlyDerivedRepositoryStateSha256: repositoryAssuranceCommittedStateSha256(root3, receipt.certifiedHead)
+  });
+  const dirtyAuthoritativePaths = execFileSync4(
+    "git",
+    ["status", "--porcelain=v1", "--untracked-files=all", "--", ...AUTHORITATIVE_PATHS],
+    { cwd: root3, encoding: "utf8" }
+  ).trim();
+  assert40.equal(
+    dirtyAuthoritativePaths,
+    "",
+    "Current review assurance requires a clean authoritative worktree."
+  );
+  const authoritativeDelta = execFileSync4(
+    "git",
+    ["diff", "--name-only", receipt.certifiedHead, "HEAD", "--", ...AUTHORITATIVE_PATHS],
+    { cwd: root3, encoding: "utf8" }
+  ).split(/\r?\n/u).filter(Boolean).sort();
+  assert40.deepEqual(
+    authoritativeDelta,
+    [CURRENT_REVIEW_ASSURANCE_REPORT],
+    "Proof integration changed authoritative product/assurance bytes after the certified full run."
+  );
+  return {
+    receipt,
+    reference: {
+      file: CURRENT_REVIEW_ASSURANCE_RECEIPT,
+      sha256: sha2564(receiptPath),
+      evidenceHead: CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD,
+      certifiedHead: receipt.certifiedHead,
+      repositoryStateSha256: receipt.repositoryStateSha256,
+      fullLogSha256: receipt.fullLog.sha256,
+      surfaceSha256: receipt.surfaceSha256
+    }
+  };
+}
+
+// experiments/tla-conformance/final-convergence/build-final-registry.mjs
+import assert41 from "node:assert/strict";
+var DIRECTORY4 = "experiments/tla-conformance/final-convergence/";
+function buildFinalRegistry(root3) {
+  const valueFile = DIRECTORY4 + "final-v309.json", producerFile = DIRECTORY4 + "final-a121-b58.json";
+  const value = JSON.parse(readAssuranceFile(root3, valueFile)), producer = JSON.parse(readAssuranceFile(root3, producerFile));
+  assert41.equal(value.proofKind, "final-convergence-value-v309-v1");
+  assert41.equal(producer.proofKind, "final-convergence-producer-a121-b58-v1");
+  assert41.equal(value.proofs.length, 309);
+  assert41.equal(producer.proofs.length, 179);
+  assert41.equal(value.surfaceDigest, producer.surfaceDigest);
+  const values = new Set(value.proofs.map((row) => row.surfaceKey));
+  const producers = new Map(producer.proofs.map((row) => [row.surfaceKey, row.mode]));
+  assert41.equal(values.size, 309);
+  assert41.equal(producers.size, 179);
+  const valueRef = { file: valueFile, sha256: assuranceFileSha256(root3, valueFile) };
+  const producerRef = { file: producerFile, sha256: assuranceFileSha256(root3, producerFile) };
+  const bindings = epochRegistryRows.map((row) => {
+    if (row.mode === "HARD_RED") return structuredClone(row);
+    if (row.mode === "V") {
+      assert41(values.has(row.surfaceKey));
+      return { surfaceKey: row.surfaceKey, mode: row.mode, evidence: valueRef };
+    }
+    assert41.equal(producers.get(row.surfaceKey), row.mode);
+    return { surfaceKey: row.surfaceKey, mode: row.mode, evidence: producerRef };
+  });
+  assert41.equal(bindings.length, 535);
+  return { schemaVersion: 1, owner: "InventoryOnceEpochMilliseconds", bindings };
+}
+
+// experiments/tla-conformance/final-convergence/final-selftest.mjs
+import assert42 from "node:assert/strict";
+import fs39 from "node:fs";
+import path43 from "node:path";
+function runFinalAdversarialChecks(ROOT3, context) {
+  const VALUE_FILE = "experiments/tla-conformance/final-convergence/final-v309.json";
+  const PRODUCER_FILE = "experiments/tla-conformance/final-convergence/final-a121-b58.json";
+  const surface = context.surface;
+  const valueRegistration = Object.freeze({ proofKind: valueProofKind, buildFamilyArtifact: buildFinalValueArtifact, supportedSurfaceKeys: supportedValueKeys });
+  const producerRegistration = Object.freeze({ proofKind: producerProofKind, buildFamilyArtifact: buildFinalProducerArtifact, supportedSurfaceRows: supportedProducerRows });
+  function evidence(file) {
+    return { file, sha256: sha256(fs39.readFileSync(path43.resolve(ROOT3, file))) };
+  }
+  function writeTemp(name, document) {
+    const file = `experiments/tla-conformance/final-convergence/${name}`;
+    fs39.writeFileSync(finalConvergenceRepositoryPath(ROOT3, file), `${JSON.stringify(document, null, 2)}
+`);
+    return file;
+  }
+  const valueEvidence = evidence(VALUE_FILE);
+  const producerEvidence = evidence(PRODUCER_FILE);
+  const valueKey2 = supportedValueKeys[0];
+  const producerA = supportedProducerRows.find((row) => row.mode === "A");
+  const producerB = supportedProducerRows.find((row) => row.mode === "B");
+  assert42(producerA !== void 0 && producerB !== void 0);
+  assert42.deepEqual(verifyRegisteredValueBinding({ repositoryRoot: ROOT3, context, surface, binding: { surfaceKey: valueKey2, mode: "V", evidence: valueEvidence }, registrations: [valueRegistration] }), []);
+  assert42.equal(verifyRegisteredValueBinding({ repositoryRoot: ROOT3, context, surface, binding: { surfaceKey: valueKey2, mode: "A", evidence: valueEvidence }, registrations: [valueRegistration] })[0]?.code, "VALUE_FAMILY_PROOF_REJECTED");
+  const tamperedValue = JSON.parse(fs39.readFileSync(finalConvergenceRepositoryPath(ROOT3, VALUE_FILE), "utf8"));
+  tamperedValue.proofs[0].semantics = { ...tamperedValue.proofs[0].semantics, finalConvergenceTamper: true };
+  const tamperedValueFile = writeTemp(".tampered-v309.json", tamperedValue);
+  try {
+    assert42.equal(verifyRegisteredValueBinding({ repositoryRoot: ROOT3, context, surface, binding: { surfaceKey: tamperedValue.proofs[0].surfaceKey, mode: "V", evidence: evidence(tamperedValueFile) }, registrations: [valueRegistration] })[0]?.code, "VALUE_FAMILY_PROOF_REJECTED");
+  } finally {
+    fs39.rmSync(finalConvergenceRepositoryPath(ROOT3, tamperedValueFile), { force: true });
+  }
+  for (const row of [producerA, producerB]) {
+    assert42.deepEqual(verifyRegisteredProducerBinding({ repositoryRoot: ROOT3, context, surface, binding: { surfaceKey: row.surfaceKey, mode: row.mode, evidence: producerEvidence }, registrations: [producerRegistration] }), []);
+  }
+  assert42.equal(verifyRegisteredProducerBinding({ repositoryRoot: ROOT3, context, surface, binding: { surfaceKey: producerA.surfaceKey, mode: producerA.mode === "A" ? "B" : "A", evidence: producerEvidence }, registrations: [producerRegistration] })[0]?.code, "REGISTERED_PRODUCER_PROOF_REJECTED");
+  const tamperedProducer = JSON.parse(fs39.readFileSync(finalConvergenceRepositoryPath(ROOT3, PRODUCER_FILE), "utf8"));
+  tamperedProducer.proofs[0].semantics = { ...tamperedProducer.proofs[0].semantics, finalConvergenceTamper: true };
+  const tamperedProducerFile = writeTemp(".tampered-a121-b58.json", tamperedProducer);
+  try {
+    const row = tamperedProducer.proofs[0];
+    assert42.equal(verifyRegisteredProducerBinding({ repositoryRoot: ROOT3, context, surface, binding: { surfaceKey: row.surfaceKey, mode: row.mode, evidence: evidence(tamperedProducerFile) }, registrations: [producerRegistration] })[0]?.code, "REGISTERED_PRODUCER_PROOF_REJECTED");
+  } finally {
+    fs39.rmSync(finalConvergenceRepositoryPath(ROOT3, tamperedProducerFile), { force: true });
+  }
+  for (const [file, buildArtifact] of [
+    ["authority-producer17.json", buildFinalProducerArtifact],
+    ["authority-value3.json", buildFinalValueArtifact],
+    ["r137-v15.json", buildFinalValueArtifact],
+    ["readworld-producer24.json", buildFinalProducerArtifact],
+    ["wrapper-producer11.json", buildFinalProducerArtifact],
+    ["r170-pristine-repro-transport.json", buildFinalProducerArtifact]
+  ]) {
+    const target = finalConvergenceRepositoryPath(ROOT3, `experiments/tla-conformance/final-convergence/${file}`);
+    const original = fs39.readFileSync(target), times = fs39.statSync(target);
+    try {
+      const forged = JSON.parse(original.toString("utf8"));
+      if (Array.isArray(forged.proofs)) forged.proofs[0].semantics = { ...forged.proofs[0].semantics, systemicUnprovedAuthority: true };
+      else {
+        forged.affectedStrictRows = [];
+        const { contentSha256, ...core } = forged;
+        forged.contentSha256 = sha256(JSON.stringify(core));
+      }
+      fs39.writeFileSync(target, `${JSON.stringify(forged, null, 2)}
+`);
+      fs39.utimesSync(target, times.atime, times.mtime);
+      assert42.throws(() => buildArtifact({ repositoryRoot: ROOT3, context, surface }), /Frozen assurance evidence differs from immutable proof input/u, `Re-signed ${file} must not acquire proof credit.`);
+    } finally {
+      fs39.writeFileSync(target, original);
+      fs39.utimesSync(target, times.atime, times.mtime);
+    }
+  }
+  return { status: "FINAL_CONVERGENCE_ADVERSARIAL_PASS", surfaceDigest: surface.digest, valueRows: supportedValueKeys.length, producerRows: supportedProducerRows.length, controls: { honestValueAccepted: true, wrongValueModeRejected: true, resignedValueTamperRejected: true, honestAandBAccepted: true, wrongProducerModeRejected: true, resignedProducerTamperRejected: true, immutableHistoricalAuthorityTamperRejected: true, sameMtimeEvidenceDriftRejected: true } };
+}
 
 // experiments/tla-conformance/final-convergence/run-final-verifier.mjs
-var ROOT3 = finalConvergenceRepositoryRoot(import.meta.url);
-var FINAL_REGISTRY = "experiments/tla-conformance/final-convergence/final-surface-bindings.json";
-var HONEST_488 = "experiments/tla-conformance/r105-layered-6dfc-currentization/surface-bindings-6dfc.json";
-function read(file) {
-  return JSON.parse(fs39.readFileSync(path42.resolve(ROOT3, file), "utf8"));
+var DIRECTORY5 = "experiments/tla-conformance/final-convergence/";
+function createFinalCompilerContext(root3) {
+  const configPath = path44.join(root3, "tsconfig.test.json");
+  const config = ts3.readConfigFile(configPath, ts3.sys.readFile);
+  if (config.error !== void 0) throw new Error(ts3.flattenDiagnosticMessageText(config.error.messageText, "\n"));
+  const parsed = ts3.parseJsonConfigFileContent(config.config, ts3.sys, root3, void 0, configPath);
+  if (parsed.errors.length !== 0) throw new Error("Invalid shared assurance compiler configuration.");
+  const program = ts3.createProgram({ rootNames: parsed.fileNames, options: parsed.options });
+  const context = loadCompilerContext(root3, program);
+  context.surface = discoverCompilerSurface(root3, context);
+  return context;
 }
-var context = loadEvidenceCompilerContext(ROOT3, []);
-var surface = discoverCompilerSurface(ROOT3, context);
-verifyCurrentHeadAssuranceTransports({ repositoryRoot: ROOT3, context, surface });
-var valueRegistration = Object.freeze({
-  proofKind: valueProofKind,
-  buildFamilyArtifact: buildFinalValueArtifact,
-  supportedSurfaceKeys: supportedValueKeys
-});
-var producerRegistration = Object.freeze({
-  proofKind: producerProofKind,
-  buildFamilyArtifact: buildFinalProducerArtifact,
-  supportedSurfaceRows: supportedProducerRows
-});
-var registry = read(FINAL_REGISTRY);
-var honest = read(HONEST_488);
-var valueEvidence = registry.bindings.find((row) => row.mode === "V")?.evidence;
-var producerEvidence = registry.bindings.find((row) => row.mode === "A")?.evidence;
-assert40(valueEvidence !== void 0 && producerEvidence !== void 0);
-var valueAccepted = 0;
-for (const surfaceKey of supportedValueKeys) {
-  assert40.deepEqual(
-    verifyRegisteredValueBinding({
-      repositoryRoot: ROOT3,
-      context,
-      surface,
-      binding: { surfaceKey, mode: "V", evidence: valueEvidence },
-      registrations: [valueRegistration]
-    }),
-    [],
-    `Final V309 rejected ${surfaceKey}`
-  );
-  valueAccepted += 1;
+function verifyFinalCurrentReview(root3, context) {
+  return verifyCurrentReviewAssurance(root3, context);
 }
-var producerAccepted = 0;
-for (const { surfaceKey, mode } of supportedProducerRows) {
-  assert40.deepEqual(
-    verifyRegisteredProducerBinding({
-      repositoryRoot: ROOT3,
-      context,
-      surface,
-      binding: { surfaceKey, mode, evidence: producerEvidence },
-      registrations: [producerRegistration]
-    }),
-    [],
-    `Final A/B rejected ${surfaceKey}`
-  );
-  producerAccepted += 1;
+function buildFinalTransport(root3, context) {
+  return buildFinalHeadTransport({ repositoryRoot: root3, context, surface: context.surface });
 }
-var counts = registry.bindings.reduce((result, row) => {
-  result[row.mode] = (result[row.mode] ?? 0) + 1;
-  return result;
-}, {});
-assert40.deepEqual(counts, { A: 121, B: 58, V: 309, HARD_RED: 47 });
-assert40.deepEqual(
-  registry.bindings.filter((row) => row.mode === "HARD_RED"),
-  honest.bindings.filter((row) => row.mode === "HARD_RED"),
-  "Final convergence changed genuine external HARD_RED membership/reasons."
-);
-assert40.equal(valueAccepted, 309);
-assert40.equal(producerAccepted, 179);
-console.log(JSON.stringify({
-  status: "FINAL_REGISTERED_VERIFIER_GREEN",
-  surfaceDigest: surface.digest,
-  valueAccepted,
-  producerAccepted,
-  strictAccepted: valueAccepted + producerAccepted,
-  hardRed: counts.HARD_RED,
-  unexpected: 0
-}, null, 2));
+function buildFinalValues(root3, context) {
+  return buildFinalValueArtifact({ repositoryRoot: root3, context, surface: context.surface });
+}
+function buildFinalProducers(root3, context) {
+  return buildFinalProducerArtifact({ repositoryRoot: root3, context, surface: context.surface });
+}
+function buildFinalRegistryArtifact(root3) {
+  return buildFinalRegistry(root3);
+}
+function verifyFinalBindings(root3, context) {
+  const registry = JSON.parse(readAssuranceFile(root3, DIRECTORY5 + "final-surface-bindings.json"));
+  const counts = {};
+  for (const row of registry.bindings) counts[row.mode] = (counts[row.mode] ?? 0) + 1;
+  assert43.deepEqual(counts, { A: 121, V: 309, B: 58, HARD_RED: 47 });
+  assert43.deepEqual(registry.bindings.filter((row) => row.mode === "HARD_RED"), epochRegistryRows.filter((row) => row.mode === "HARD_RED"));
+  assert43.deepEqual(registry.bindings.filter((row) => row.mode === "V").map((row) => row.surfaceKey).sort(), [...supportedValueKeys].sort());
+  assert43.deepEqual(registry.bindings.filter((row) => row.mode === "A" || row.mode === "B").map((row) => ({ surfaceKey: row.surfaceKey, mode: row.mode })).sort((a, b) => a.surfaceKey < b.surfaceKey ? -1 : a.surfaceKey > b.surfaceKey ? 1 : 0), supportedProducerRows);
+  const diagnostics = checkBindings({ repositoryRoot: root3, surface: context.surface, registries: [registry], compilerContext: context, registeredProducerFamilies: [{ proofKind: producerProofKind, buildFamilyArtifact: buildFinalProducerArtifact, supportedSurfaceRows: supportedProducerRows }] });
+  const unexpectedRows = diagnostics.filter((row) => row.code !== "EXPLICIT_HARD_RED");
+  assert43.deepEqual(unexpectedRows, [], "Central binder rejected a current strict row.");
+  assert43.equal(diagnostics.length, 47);
+  return {
+    status: "FINAL_BINDER_GREEN",
+    surfaceDigest: context.surface.digest,
+    callables: context.surface.callables.length,
+    diagnostics: 47,
+    byCode: { EXPLICIT_HARD_RED: 47 },
+    hardRed: 47,
+    unexpected: 0,
+    unexpectedRows: [],
+    valueAccepted: 309,
+    producerAccepted: 179,
+    strictAccepted: 488
+  };
+}
+function verifyFinalRegistry(root3) {
+  const current = JSON.parse(readAssuranceFile(root3, DIRECTORY5 + "final-surface-bindings.json"));
+  assert43.deepEqual(buildFinalRegistry(root3), current, "Exact final registry is stale.");
+  return { status: "FINAL_535_REGISTRY_BUILT", counts: { A: 121, B: 58, V: 309, HARD_RED: 47 } };
+}
+function verifyFinalAdversarial(root3, context) {
+  return runFinalAdversarialChecks(root3, context);
+}
+export {
+  buildFinalProducers,
+  buildFinalRegistryArtifact,
+  buildFinalTransport,
+  buildFinalValues,
+  createFinalCompilerContext,
+  verifyFinalAdversarial,
+  verifyFinalBindings,
+  verifyFinalCurrentReview,
+  verifyFinalRegistry
+};

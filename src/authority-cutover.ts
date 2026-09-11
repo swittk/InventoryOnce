@@ -36,12 +36,12 @@ export interface CutoverInventoryAuthorityInput {
   /** Exact adapter-conformance certification accepted by this deployment. */
   readonly adapterCertificationDigest: string;
   /** Optional canonical source time; retries prefer retained DualRun time, then certification/fence evidence. */
-  readonly cutoverAt?: string;
+  readonly cutoverAtEpochMs?: number;
   /** Monotonic application source revision bound into DualRun/fence evidence. */
   readonly sourceRevision?: number;
   /** Compile one complete application-specific legacy source at the supplied frozen time. */
   readonly compileSource: (
-    cutoverAt: string,
+    cutoverAtEpochMs: number,
   ) => Promise<InventoryMigrationSourcePlan>;
   /** Wait until every admitted legacy writer has released after the fence wins. */
   readonly drainLegacyWriters: () => Promise<void>;
@@ -106,7 +106,7 @@ interface CompletedInventoryCutoverValidationInput {
   /** Exact adapter certification requested by this outer cutover. */
   readonly certificationDigest: string;
   /** Optional caller-fixed cutover time. */
-  readonly explicitCutoverAt: string | undefined;
+  readonly explicitCutoverAtEpochMs: number | undefined;
   /** Exact source revision requested by this outer cutover. */
   readonly sourceRevision: number;
   /** Application source compiler used to independently revalidate completion. */
@@ -148,23 +148,23 @@ async function completedInventoryCutoverResult(
     );
   }
   if (
-    input.explicitCutoverAt !== undefined &&
-    authority.dualRunStartedAt !== input.explicitCutoverAt
+    input.explicitCutoverAtEpochMs !== undefined &&
+    authority.dualRunStartedAtEpochMs !== input.explicitCutoverAtEpochMs
   ) {
     throw new Error(
       "InventoryOnce authoritative cutover time differs from this retry.",
     );
   }
-  const cutoverAt = resolveInventoryCutoverAt(
-    input.explicitCutoverAt,
+  const cutoverAtEpochMs = resolveInventoryCutoverAtEpochMs(
+    input.explicitCutoverAtEpochMs,
     authority,
   );
-  const compiled = await input.compileSource(cutoverAt);
+  const compiled = await input.compileSource(cutoverAtEpochMs);
   assertInventoryMigrationReady(compiled);
   assertInventoryCutoverSourceMatchesRequest(
     compiled,
     input.migrationId,
-    cutoverAt,
+    cutoverAtEpochMs,
   );
   const sourceRoot = inventoryMigrationSourceRoot(compiled);
   assertInventoryDualRunSource(
@@ -172,7 +172,7 @@ async function completedInventoryCutoverResult(
     compiled,
     sourceRoot,
     input.sourceRevision,
-    cutoverAt,
+    cutoverAtEpochMs,
   );
   const dryRun = dryRunInventoryMigration({
     catalog: compiled.catalog,
@@ -192,7 +192,7 @@ async function completedInventoryCutoverResult(
     fenceToken: input.fenceToken,
     certificationDigest: input.certificationDigest,
     sourceRevision: input.sourceRevision,
-    cutoverAt,
+    cutoverAtEpochMs,
     sourceRoot,
     sourcePlanDigest: compiled.plan.planDigest,
     sourceCatalogDigest: compiled.catalog.digest,
@@ -254,7 +254,7 @@ export async function bootstrapGreenfieldInventoryAuthority({
   if (authority.mode === InventoryAuthorityMode.Legacy) {
     const certified = await authorityControl.certifyAdapter({
       certificationDigest,
-      certifiedAt: clock.now(),
+      certifiedAtEpochMs: clock.nowEpochMs(),
     });
     acceptAuthorityPortState(authorityStream, certified, "greenfield certification");
     authority = certified;
@@ -285,7 +285,7 @@ export async function bootstrapGreenfieldInventoryAuthority({
     certificationDigest,
     targetWorldRoot,
     targetWorldRevision: 0,
-    activatedAt: clock.now(),
+    activatedAtEpochMs: clock.nowEpochMs(),
   });
   const result = inventoryAuthorityGreenfieldResult(activated);
   assertGreenfieldBootstrapMatches(
@@ -309,7 +309,7 @@ export async function cutoverInventoryAuthority({
   fenceToken: rawFenceToken,
   authorizationId: rawAuthorizationId,
   adapterCertificationDigest: rawCertificationDigest,
-  cutoverAt: explicitCutoverAt,
+  cutoverAtEpochMs: explicitCutoverAtEpochMs,
   sourceRevision = 0,
   compileSource,
   drainLegacyWriters,
@@ -339,7 +339,7 @@ export async function cutoverInventoryAuthority({
       fenceToken,
       authorizationId,
       certificationDigest,
-      explicitCutoverAt,
+      explicitCutoverAtEpochMs,
       sourceRevision,
       compileSource,
     });
@@ -350,7 +350,7 @@ export async function cutoverInventoryAuthority({
   if (authority.mode === InventoryAuthorityMode.Legacy) {
     const certified = await authorityControl.certifyAdapter({
       certificationDigest,
-      certifiedAt: clock.now(),
+      certifiedAtEpochMs: clock.nowEpochMs(),
     });
     acceptAuthorityPortState(authorityStream, certified, "cutover certification");
     authority = certified;
@@ -378,10 +378,10 @@ export async function cutoverInventoryAuthority({
     const completed = await resolveConcurrentCompletion(authority);
     if (completed !== undefined) return completed;
   }
-  const cutoverAt = resolveInventoryCutoverAt(explicitCutoverAt, authority);
-  const first = await compileSource(cutoverAt);
+  const cutoverAtEpochMs = resolveInventoryCutoverAtEpochMs(explicitCutoverAtEpochMs, authority);
+  const first = await compileSource(cutoverAtEpochMs);
   assertInventoryMigrationReady(first);
-  assertInventoryCutoverSourceMatchesRequest(first, migrationId, cutoverAt);
+  assertInventoryCutoverSourceMatchesRequest(first, migrationId, cutoverAtEpochMs);
   const sourceRoot = inventoryMigrationSourceRoot(first);
   if (authority.mode === InventoryAuthorityMode.Legacy) {
     const shadow = await authorityControl.enterShadow({ certificationDigest });
@@ -396,7 +396,7 @@ export async function cutoverInventoryAuthority({
       sourceRevision,
       sourcePlanDigest: first.plan.planDigest,
       sourceCatalogDigest: first.catalog.digest,
-      startedAt: cutoverAt,
+      startedAtEpochMs: cutoverAtEpochMs,
     });
     acceptAuthorityPortState(authorityStream, dualRun, "DualRun transition");
     authority = dualRun;
@@ -409,7 +409,7 @@ export async function cutoverInventoryAuthority({
       first,
       sourceRoot,
       sourceRevision,
-      cutoverAt,
+      cutoverAtEpochMs,
     );
   } else if (authority.mode === InventoryAuthorityMode.Fencing) {
     if (
@@ -448,7 +448,7 @@ export async function cutoverInventoryAuthority({
 
   const fenced = await authorityControl.claimFence({
     fenceToken,
-    startedAt: clock.now(),
+    startedAtEpochMs: clock.nowEpochMs(),
     sourceRoot,
     sourceRevision,
   });
@@ -475,7 +475,7 @@ export async function cutoverInventoryAuthority({
       fenceToken,
       certificationDigest,
       sourceRevision,
-      cutoverAt,
+      cutoverAtEpochMs,
       sourceRoot,
       sourcePlanDigest: first.plan.planDigest,
       sourceCatalogDigest: first.catalog.digest,
@@ -489,7 +489,7 @@ export async function cutoverInventoryAuthority({
     fenceToken,
     certificationDigest,
     sourceRevision,
-    cutoverAt,
+    cutoverAtEpochMs,
     sourceRoot,
     sourcePlanDigest: first.plan.planDigest,
     sourceCatalogDigest: first.catalog.digest,
@@ -506,9 +506,9 @@ export async function cutoverInventoryAuthority({
   // therefore retain fencing for an exact retry; explicit administrative
   // release remains a separate operation after the caller has quiesced peers.
   await drainLegacyWriters();
-  const second = await compileSource(cutoverAt);
+  const second = await compileSource(cutoverAtEpochMs);
   assertInventoryMigrationReady(second);
-  assertInventoryCutoverSourceMatchesRequest(second, migrationId, cutoverAt);
+  assertInventoryCutoverSourceMatchesRequest(second, migrationId, cutoverAtEpochMs);
   assertSameInventoryMigrationSource(first, second);
   const targetBefore = await storage.readWorld();
   if (manifest === undefined)
@@ -534,7 +534,7 @@ export async function cutoverInventoryAuthority({
     sourceRoot,
     targetWorldRoot,
     targetWorldRevision: targetAfter.revision,
-    activatedAt: clock.now(),
+    activatedAtEpochMs: clock.nowEpochMs(),
   });
   const result = inventoryAuthorityCutoverResult(activated);
   assertInventoryCutoverResultMatches(result, {
@@ -542,7 +542,7 @@ export async function cutoverInventoryAuthority({
     fenceToken,
     certificationDigest,
     sourceRevision,
-    cutoverAt,
+    cutoverAtEpochMs,
     sourceRoot,
     sourcePlanDigest: second.plan.planDigest,
     sourceCatalogDigest: second.catalog.digest,
@@ -554,19 +554,19 @@ export async function cutoverInventoryAuthority({
 }
 
 /** Reuse one durable timestamp across retries and concurrent process contenders. */
-function resolveInventoryCutoverAt(
-  explicit: string | undefined,
+function resolveInventoryCutoverAtEpochMs(
+  explicit: number | undefined,
   authority: InventoryAuthorityState,
-): string {
+): number {
   if (explicit !== undefined) {
-    requireCanonicalCutoverTime(explicit, "cutoverAt");
+    requireCutoverEpochMilliseconds(explicit, "cutoverAtEpochMs");
     return explicit;
   }
   const retained =
-    authority.dualRunStartedAt ||
-    authority.adapterCertifiedAt ||
-    authority.fenceStartedAt;
-  requireCanonicalCutoverTime(retained, "retained cutoverAt");
+    authority.dualRunStartedAtEpochMs ??
+    authority.adapterCertifiedAtEpochMs ??
+    authority.fenceStartedAtEpochMs;
+  requireCutoverEpochMilliseconds(retained, "retained cutoverAtEpochMs");
   return retained;
 }
 
@@ -583,14 +583,14 @@ function assertInventoryDualRunSource(
   compiled: InventoryMigrationSourcePlan,
   sourceRoot: string,
   sourceRevision: number,
-  cutoverAt: string,
+  cutoverAtEpochMs: number,
 ): void {
   if (
     authority.sourceRoot !== sourceRoot ||
     authority.sourceRevision !== sourceRevision ||
     authority.sourcePlanDigest !== compiled.plan.planDigest ||
     authority.sourceCatalogDigest !== compiled.catalog.digest ||
-    authority.dualRunStartedAt !== cutoverAt
+    authority.dualRunStartedAtEpochMs !== cutoverAtEpochMs
   ) {
     throw new Error(
       "InventoryOnce DualRun source evidence differs from this cutover.",
@@ -602,11 +602,11 @@ function assertInventoryDualRunSource(
 function assertInventoryCutoverSourceMatchesRequest(
   compiled: InventoryMigrationSourcePlan,
   migrationId: string,
-  cutoverAt: string,
+  cutoverAtEpochMs: number,
 ): void {
   if (
     compiled.plan.migrationId !== migrationId ||
-    compiled.plan.cutoverAt !== cutoverAt
+    compiled.plan.cutoverAtEpochMs !== cutoverAtEpochMs
   ) {
     throw new Error(
       "InventoryOnce cutover source migration identity/time differs from this request.",
@@ -833,7 +833,7 @@ function assertAuthorityPortRetainedLineage(
   if (
     previous.adapterCertificationDigest.length !== 0 &&
     (next.adapterCertificationDigest !== previous.adapterCertificationDigest ||
-      next.adapterCertifiedAt !== previous.adapterCertifiedAt)
+      next.adapterCertifiedAtEpochMs !== previous.adapterCertifiedAtEpochMs)
   ) {
     throw new Error(`InventoryOnce ${label} rewrote retained adapter certification.`);
   }
@@ -855,7 +855,7 @@ function assertAuthorityPortRetainedLineage(
       next.sourceRevision !== previous.sourceRevision ||
       next.sourcePlanDigest !== previous.sourcePlanDigest ||
       next.sourceCatalogDigest !== previous.sourceCatalogDigest ||
-      next.dualRunStartedAt !== previous.dualRunStartedAt
+      next.dualRunStartedAtEpochMs !== previous.dualRunStartedAtEpochMs
     ) {
       throw new Error(`InventoryOnce ${label} rewrote retained source evidence.`);
     }
@@ -863,7 +863,7 @@ function assertAuthorityPortRetainedLineage(
   if (previous.fenceToken.length !== 0) {
     if (
       next.fenceToken !== previous.fenceToken ||
-      next.fenceStartedAt !== previous.fenceStartedAt
+      next.fenceStartedAtEpochMs !== previous.fenceStartedAtEpochMs
     ) {
       throw new Error(`InventoryOnce ${label} rewrote retained fence ownership.`);
     }
@@ -876,7 +876,7 @@ function assertAuthorityPortRetainedLineage(
           candidate.commandId === earlier.commandId &&
           candidate.legacyIntentDigest === earlier.legacyIntentDigest &&
           candidate.authoritativeIntentDigest === earlier.authoritativeIntentDigest &&
-          candidate.recordedAt === earlier.recordedAt,
+          candidate.recordedAtEpochMs === earlier.recordedAtEpochMs,
       )
     ) {
       throw new Error(`InventoryOnce ${label} erased retained mismatch evidence.`);
@@ -887,7 +887,7 @@ function assertAuthorityPortRetainedLineage(
       next.activationKind !== previous.activationKind ||
       next.targetWorldRoot !== previous.targetWorldRoot ||
       next.targetWorldRevision !== previous.targetWorldRevision ||
-      next.activatedAt !== previous.activatedAt
+      next.activatedAtEpochMs !== previous.activatedAtEpochMs
     ) {
       throw new Error(`InventoryOnce ${label} rewrote retained activation evidence.`);
     }
@@ -923,7 +923,7 @@ interface ExpectedInventoryCutoverEvidence {
   /** Source revision whose compiled snapshot is being activated. */
   readonly sourceRevision: number;
   /** Optional explicit cutover timestamp when the caller fixed one. */
-  readonly cutoverAt?: string;
+  readonly cutoverAtEpochMs?: number;
   /** Optional source snapshot root once compilation has completed. */
   readonly sourceRoot?: string;
   /** Optional source migration plan digest once compilation has completed. */
@@ -955,20 +955,20 @@ export function inventoryAuthorityCutoverResult(
     state.greenfieldAuthorizationId.length !== 0 ||
     state.activeLegacyWriters.length !== 0 ||
     state.fenceToken.length === 0 ||
-    state.fenceStartedAt.length === 0 ||
+    state.fenceStartedAtEpochMs === null ||
     state.adapterCertificationDigest.length === 0 ||
-    state.adapterCertifiedAt.length === 0 ||
+    state.adapterCertifiedAtEpochMs === null ||
     state.sourceRoot.length === 0 ||
     !Number.isSafeInteger(state.sourceRevision) ||
     state.sourceRevision < 0 ||
     state.sourcePlanDigest.length === 0 ||
     state.sourceCatalogDigest.length === 0 ||
-    state.dualRunStartedAt.length === 0 ||
+    state.dualRunStartedAtEpochMs === null ||
     state.dualRunMismatchEvidence.length !== 0 ||
     state.targetWorldRoot.length === 0 ||
     !Number.isSafeInteger(state.targetWorldRevision) ||
     state.targetWorldRevision < 0 ||
-    state.activatedAt.length === 0
+    state.activatedAtEpochMs === null
   ) {
     throw new Error(
       "InventoryOnce authoritative state is missing valid cutover evidence.",
@@ -986,13 +986,12 @@ export function inventoryAuthorityCutoverResult(
     requireRetainedCutoverText(value, label);
   }
   for (const [value, label] of [
-    [state.fenceStartedAt, "fence startedAt"],
-    [state.adapterCertifiedAt, "adapter certifiedAt"],
-    [state.dualRunStartedAt, "dual-run startedAt"],
-    [state.activatedAt, "activatedAt"],
+    [state.fenceStartedAtEpochMs, "fence startedAtEpochMs"],
+    [state.adapterCertifiedAtEpochMs, "adapter certifiedAtEpochMs"],
+    [state.dualRunStartedAtEpochMs, "dual-run startedAtEpochMs"],
+    [state.activatedAtEpochMs, "activatedAtEpochMs"],
   ] as const) {
-    requireRetainedCutoverText(value, label);
-    requireCanonicalCutoverTime(value, label);
+    requireCutoverEpochMilliseconds(value, label);
   }
   return {
     authority: state,
@@ -1015,8 +1014,8 @@ function assertInventoryCutoverResultMatches(
     state.fenceToken !== expected.fenceToken ||
     state.adapterCertificationDigest !== expected.certificationDigest ||
     state.sourceRevision !== expected.sourceRevision ||
-    (expected.cutoverAt !== undefined &&
-      state.dualRunStartedAt !== expected.cutoverAt) ||
+    (expected.cutoverAtEpochMs !== undefined &&
+      state.dualRunStartedAtEpochMs !== expected.cutoverAtEpochMs) ||
     (expected.sourceRoot !== undefined &&
       state.sourceRoot !== expected.sourceRoot) ||
     (expected.sourcePlanDigest !== undefined &&
@@ -1051,12 +1050,12 @@ function assertInventoryFenceEvidenceMatches(
     state.activeLegacyWriters.length !== 0 ||
     state.dualRunMismatchEvidence.length !== 0 ||
     state.fenceToken !== expected.fenceToken ||
-    state.fenceStartedAt.length === 0 ||
+    state.fenceStartedAtEpochMs === null ||
     state.sourceRoot !== expected.sourceRoot ||
     state.sourceRevision !== expected.sourceRevision ||
     state.sourcePlanDigest !== expected.sourcePlanDigest ||
     state.sourceCatalogDigest !== expected.sourceCatalogDigest ||
-    state.dualRunStartedAt !== expected.cutoverAt ||
+    state.dualRunStartedAtEpochMs !== expected.cutoverAtEpochMs ||
     state.targetWorldRoot.length !== 0 ||
     state.targetWorldRevision !== 0
   ) {
@@ -1075,12 +1074,11 @@ function assertInventoryFenceEvidenceMatches(
     requireRetainedCutoverText(value, label);
   }
   for (const [value, label] of [
-    [state.fenceStartedAt, "fence startedAt"],
-    [state.adapterCertifiedAt, "adapter certifiedAt"],
-    [state.dualRunStartedAt, "dual-run startedAt"],
+    [state.fenceStartedAtEpochMs, "fence startedAtEpochMs"],
+    [state.adapterCertifiedAtEpochMs, "adapter certifiedAtEpochMs"],
+    [state.dualRunStartedAtEpochMs, "dual-run startedAtEpochMs"],
   ] as const) {
-    requireRetainedCutoverText(value, label);
-    requireCanonicalCutoverTime(value, label);
+    requireCutoverEpochMilliseconds(value, label);
   }
 }
 
@@ -1118,18 +1116,18 @@ export function inventoryAuthorityGreenfieldResult(
     state.greenfieldAuthorizationId.length === 0 ||
     state.activeLegacyWriters.length !== 0 ||
     state.adapterCertificationDigest.length === 0 ||
-    state.adapterCertifiedAt.length === 0 ||
+    state.adapterCertifiedAtEpochMs === null ||
     state.targetWorldRoot !== canonicalEmptyRoot ||
     state.targetWorldRevision !== 0 ||
     state.sourceRoot.length !== 0 ||
     state.sourceRevision !== 0 ||
     state.sourcePlanDigest.length !== 0 ||
     state.sourceCatalogDigest.length !== 0 ||
-    state.dualRunStartedAt.length !== 0 ||
+    state.dualRunStartedAtEpochMs !== null ||
     state.dualRunMismatchEvidence.length !== 0 ||
     state.fenceToken.length !== 0 ||
-    state.fenceStartedAt.length !== 0 ||
-    state.activatedAt.length === 0
+    state.fenceStartedAtEpochMs !== null ||
+    state.activatedAtEpochMs === null
   ) {
     throw new Error(
       "InventoryOnce authoritative state does not contain valid greenfield evidence.",
@@ -1144,11 +1142,10 @@ export function inventoryAuthorityGreenfieldResult(
     "greenfield adapterCertificationDigest",
   );
   for (const [value, label] of [
-    [state.adapterCertifiedAt, "greenfield adapter certifiedAt"],
-    [state.activatedAt, "greenfield activatedAt"],
+    [state.adapterCertifiedAtEpochMs, "greenfield adapter certifiedAtEpochMs"],
+    [state.activatedAtEpochMs, "greenfield activatedAtEpochMs"],
   ] as const) {
-    requireRetainedCutoverText(value, label);
-    requireCanonicalCutoverTime(value, label);
+    requireCutoverEpochMilliseconds(value, label);
   }
   return {
     authority: state,
@@ -1186,17 +1183,10 @@ function requireCutoverText(value: string, label: string): string {
   return normalized;
 }
 
-/** Require one canonical UTC ISO cutover instant. */
-function requireCanonicalCutoverTime(value: string, label: string): void {
-  const normalized = requireCutoverText(value, label);
-  const parsed = new Date(normalized);
-  if (
-    !Number.isFinite(parsed.getTime()) ||
-    parsed.toISOString() !== normalized
-  ) {
-    throw new Error(
-      `InventoryOnce cutover ${label} must be canonical UTC ISO time.`,
-    );
+/** Require one present numeric cutover instant; zero is valid, null is absent. */
+function requireCutoverEpochMilliseconds(value: number | null, label: string): asserts value is number {
+  if (value === null || !Number.isSafeInteger(value)) {
+    throw new Error(`InventoryOnce cutover ${label} must be safe-integer epoch milliseconds.`);
   }
 }
 

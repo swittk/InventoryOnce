@@ -21,7 +21,7 @@ import { defineInventoryMigration } from "../src/migrations.js";
 import { createInMemoryInventoryDurableStorage } from "../src/storage.js";
 import { emptyInventoryWorldState } from "../src/world.js";
 
-const time = "2030-01-01T00:00:00.000Z";
+const time = 1893456000000;
 /** Build one complete durable authority state with explicit field overrides for malformed-port cases. */
 function baseState(
   overrides: Partial<InventoryAuthorityState> = {},
@@ -35,17 +35,17 @@ function baseState(
     greenfieldAuthorizationId: "",
     activeLegacyWriters: [],
     fenceToken: "",
-    fenceStartedAt: "",
+    fenceStartedAtEpochMs: null,
     sourcePlanDigest: "",
     sourceCatalogDigest: "",
     targetWorldRoot: "",
     targetWorldRevision: 0,
-    activatedAt: "",
+    activatedAtEpochMs: null,
     adapterCertificationDigest: "",
-    adapterCertifiedAt: "",
+    adapterCertifiedAtEpochMs: null,
     sourceRoot: "",
     sourceRevision: 0,
-    dualRunStartedAt: "",
+    dualRunStartedAtEpochMs: null,
     dualRunMismatchEvidence: [],
     compatibilityProjectionWorldRevision: 0,
     compatibilityProjectionStatus: InventoryCompatibilityProjectionStatus.Lagging,
@@ -54,7 +54,7 @@ function baseState(
   };
 }
 /** Compile the fixed empty migration source used by authority-port rejection cases. */
-function compiled(migrationId = "m", cutoverAt = time) {
+function compiled(migrationId = "m", cutoverAtEpochMs = time) {
   const catalog = inventoryCatalogFromSnapshot(
     emptyInventoryWorldState().catalog,
   );
@@ -65,7 +65,7 @@ function compiled(migrationId = "m", cutoverAt = time) {
       declaration: {
         migrationId,
         sourceSystem: "s",
-        cutoverAt,
+        cutoverAtEpochMs,
         openingStock: [],
       },
     }),
@@ -92,7 +92,7 @@ function cutoverPort(
         (state = baseState({
           revision: 1,
           adapterCertificationDigest: "cert",
-          adapterCertifiedAt: time,
+          adapterCertifiedAtEpochMs: time,
         })),
       ),
     authorizeCutover: async () =>
@@ -117,7 +117,7 @@ function cutoverPort(
           sourceRevision: 0,
           sourcePlanDigest: first.plan.planDigest,
           sourceCatalogDigest: first.catalog.digest,
-          dualRunStartedAt: time,
+          dualRunStartedAtEpochMs: time,
         }),
       ),
     recordDualRunMismatch: async () => structuredClone(state),
@@ -134,8 +134,8 @@ function cutoverPort(
           revision: 5,
           mode: claimMode,
           fenceToken: claimMode === InventoryAuthorityMode.Fencing ? "f" : "",
-          fenceStartedAt:
-            claimMode === InventoryAuthorityMode.Fencing ? time : "",
+          fenceStartedAtEpochMs:
+            claimMode === InventoryAuthorityMode.Fencing ? time : null,
         }),
       ),
     activate: async (input: ActivateInventoryAuthorityInput) => {
@@ -157,7 +157,7 @@ function cutoverPort(
         greenfieldAuthorizationId: "",
         targetWorldRoot: input.targetWorldRoot,
         targetWorldRevision: input.targetWorldRevision,
-        activatedAt: input.activatedAt,
+        activatedAtEpochMs: input.activatedAtEpochMs,
         compatibilityProjectionWorldRevision: 0,
         compatibilityProjectionStatus: InventoryCompatibilityProjectionStatus.Lagging,
         compatibilityProjectionError: "",
@@ -246,10 +246,10 @@ describe("authority orchestration rejects arbitrary port lies", () => {
         fenceToken: "f",
         authorizationId: "auth",
         adapterCertificationDigest: "cert",
-        cutoverAt: time,
+        cutoverAtEpochMs: time,
         compileSource: async () => authority.compile(),
         drainLegacyWriters: async () => {},
-        clock: { now: () => time },
+        clock: { nowEpochMs: () => time },
       }),
     ).rejects.toThrow("returned fence evidence that differs");
   });
@@ -264,10 +264,10 @@ describe("authority orchestration rejects arbitrary port lies", () => {
         fenceToken: "f",
         authorizationId: "auth",
         adapterCertificationDigest: "cert",
-        cutoverAt: time,
+        cutoverAtEpochMs: time,
         compileSource: async () => authority.compile(),
         drainLegacyWriters: async () => {},
-        clock: { now: () => time },
+        clock: { nowEpochMs: () => time },
       }),
     ).rejects.toThrow("missing valid cutover evidence");
   });
@@ -282,10 +282,10 @@ describe("authority orchestration rejects arbitrary port lies", () => {
         fenceToken: "f",
         authorizationId: "auth",
         adapterCertificationDigest: "cert",
-        cutoverAt: time,
+        cutoverAtEpochMs: time,
         compileSource: async () => compiled("OTHER"),
         drainLegacyWriters: async () => {},
-        clock: { now: () => time },
+        clock: { nowEpochMs: () => time },
       }),
     ).rejects.toThrow("migration identity/time differs");
     const authority2 = cutoverPort();
@@ -297,10 +297,10 @@ describe("authority orchestration rejects arbitrary port lies", () => {
         fenceToken: "f",
         authorizationId: "auth",
         adapterCertificationDigest: "cert",
-        cutoverAt: time,
-        compileSource: async () => compiled("m", "2030-01-02T00:00:00.000Z"),
+        cutoverAtEpochMs: time,
+        compileSource: async () => compiled("m", 1893542400000),
         drainLegacyWriters: async () => {},
-        clock: { now: () => time },
+        clock: { nowEpochMs: () => time },
       }),
     ).rejects.toThrow("migration identity/time differs");
   });
@@ -314,17 +314,17 @@ describe("authority orchestration rejects arbitrary port lies", () => {
         activationKind: InventoryAuthorityActivationKind.LegacyCutover,
         cutoverAuthorizationId: "auth",
         fenceToken: "f",
-        fenceStartedAt: time,
+        fenceStartedAtEpochMs: time,
         adapterCertificationDigest: "cert",
-        adapterCertifiedAt: time,
+        adapterCertifiedAtEpochMs: time,
         sourceRoot: `${authority.compile().catalog.digest}:${authority.compile().plan.planDigest}`,
         sourceRevision: 0,
         sourcePlanDigest: authority.compile().plan.planDigest,
         sourceCatalogDigest: authority.compile().catalog.digest,
-        dualRunStartedAt: time,
+        dualRunStartedAtEpochMs: time,
         targetWorldRoot: "FAKE",
         targetWorldRevision: 1,
-        activatedAt: time,
+        activatedAtEpochMs: time,
       });
     await expect(
       cutoverInventoryAuthority({
@@ -334,10 +334,10 @@ describe("authority orchestration rejects arbitrary port lies", () => {
         fenceToken: "f",
         authorizationId: "auth",
         adapterCertificationDigest: "cert",
-        cutoverAt: time,
+        cutoverAtEpochMs: time,
         compileSource: async () => authority.compile(),
         drainLegacyWriters: async () => {},
-        clock: { now: () => time },
+        clock: { nowEpochMs: () => time },
       }),
     ).rejects.toThrow("no matching completed migration manifest");
   });
@@ -352,10 +352,10 @@ describe("authority orchestration rejects arbitrary port lies", () => {
       fenceToken: "f",
       authorizationId: "auth",
       adapterCertificationDigest: "cert",
-      cutoverAt: time,
+      cutoverAtEpochMs: time,
       compileSource: async () => honest.compile(),
       drainLegacyWriters: async () => {},
-      clock: { now: () => time },
+      clock: { nowEpochMs: () => time },
     });
     expect(first.authority.mode).toBe(InventoryAuthorityMode.Authoritative);
     const fake = {
@@ -373,13 +373,13 @@ describe("authority orchestration rejects arbitrary port lies", () => {
         fenceToken: "f",
         authorizationId: "auth",
         adapterCertificationDigest: "cert",
-        cutoverAt: time,
+        cutoverAtEpochMs: time,
         compileSource: async () => {
           compileCalls += 1;
           return honest.compile();
         },
         drainLegacyWriters: async () => {},
-        clock: { now: () => time },
+        clock: { nowEpochMs: () => time },
       }),
     ).rejects.toThrow("cutover evidence differs from this request");
     expect(compileCalls).toBe(1);
@@ -394,10 +394,10 @@ describe("authority orchestration rejects arbitrary port lies", () => {
       cutoverAuthorizationId: "LEGACY",
       greenfieldAuthorizationId: "green",
       adapterCertificationDigest: "cert",
-      adapterCertifiedAt: time,
+      adapterCertifiedAtEpochMs: time,
       targetWorldRoot: "FAKE",
       targetWorldRevision: 0,
-      activatedAt: time,
+      activatedAtEpochMs: time,
       compatibilityProjectionStatus: InventoryCompatibilityProjectionStatus.Current,
     });
     const authority = cutoverPort();
@@ -414,7 +414,7 @@ describe("authority orchestration rejects arbitrary port lies", () => {
         storage,
         adapterCertificationDigest: "cert",
         authorizationId: "green",
-        clock: { now: () => time },
+        clock: { nowEpochMs: () => time },
       }),
     ).rejects.toThrow("does not contain valid greenfield evidence");
     expect(storageCalls).toBe(0);
@@ -429,10 +429,10 @@ describe("authority orchestration rejects arbitrary port lies", () => {
       cutoverAuthorizationId: "LEGACY",
       greenfieldAuthorizationId: "green",
       adapterCertificationDigest: "cert",
-      adapterCertifiedAt: time,
+      adapterCertifiedAtEpochMs: time,
       targetWorldRoot: "FAKE",
       targetWorldRevision: 0,
-      activatedAt: time,
+      activatedAtEpochMs: time,
       compatibilityProjectionStatus: InventoryCompatibilityProjectionStatus.Current,
     });
     const authority = cutoverPort();
@@ -443,7 +443,7 @@ describe("authority orchestration rejects arbitrary port lies", () => {
           ...state,
           revision: 1,
           adapterCertificationDigest: "cert",
-          adapterCertifiedAt: time,
+          adapterCertifiedAtEpochMs: time,
         }),
       );
     authority.activateGreenfield = async () => structuredClone(fake);
@@ -453,7 +453,7 @@ describe("authority orchestration rejects arbitrary port lies", () => {
         storage: createInMemoryInventoryDurableStorage(),
         adapterCertificationDigest: "cert",
         authorizationId: "green",
-        clock: { now: () => time },
+        clock: { nowEpochMs: () => time },
       }),
     ).rejects.toThrow("does not contain valid greenfield evidence");
   });
@@ -473,10 +473,10 @@ describe("authority orchestration rejects arbitrary port lies", () => {
         fenceToken: "f",
         authorizationId: "auth",
         adapterCertificationDigest: "cert",
-        cutoverAt: time,
+        cutoverAtEpochMs: time,
         compileSource: async () => authority.compile(),
         drainLegacyWriters: async () => {},
-        clock: { now: () => time },
+        clock: { nowEpochMs: () => time },
       }),
     ).rejects.toThrow("switched authority namespace");
   });
@@ -496,10 +496,10 @@ describe("authority orchestration rejects arbitrary port lies", () => {
         fenceToken: "f",
         authorizationId: "auth",
         adapterCertificationDigest: "cert",
-        cutoverAt: time,
+        cutoverAtEpochMs: time,
         compileSource: async () => authority.compile(),
         drainLegacyWriters: async () => {},
-        clock: { now: () => time },
+        clock: { nowEpochMs: () => time },
       }),
     ).rejects.toThrow("rewound authority revision");
   });
@@ -520,10 +520,10 @@ describe("authority orchestration rejects arbitrary port lies", () => {
         fenceToken: "f",
         authorizationId: "auth",
         adapterCertificationDigest: "cert",
-        cutoverAt: time,
+        cutoverAtEpochMs: time,
         compileSource: async () => authority.compile(),
         drainLegacyWriters: async () => {},
-        clock: { now: () => time },
+        clock: { nowEpochMs: () => time },
       }),
     ).rejects.toThrow("pre-authority state cannot retain compatibility projection progress");
   });
@@ -545,7 +545,7 @@ describe("authority orchestration rejects arbitrary port lies", () => {
       storage: createInMemoryInventoryDurableStorage(),
       adapterCertificationDigest: "cert",
       authorizationId: "green",
-      clock: { now: () => time },
+      clock: { nowEpochMs: () => time },
     });
     expect(injected).toBe(true);
     expect(result.authority.compatibilityProjectionStatus).toBe(
@@ -574,10 +574,10 @@ describe("authority orchestration rejects arbitrary port lies", () => {
       fenceToken: "f",
       authorizationId: "auth",
       adapterCertificationDigest: "cert",
-      cutoverAt: time,
+      cutoverAtEpochMs: time,
       compileSource: async () => compiled(),
       drainLegacyWriters: async () => {},
-      clock: { now: () => time },
+      clock: { nowEpochMs: () => time },
     });
     expect(injected).toBe(true);
     expect(result.authority.compatibilityProjectionStatus).toBe(
@@ -608,7 +608,7 @@ describe("authority orchestration rejects arbitrary port lies", () => {
           certificationDigest: "cert",
           targetWorldRoot: inventoryWorldContentRoots(emptyInventoryWorldState()).world,
           targetWorldRevision: 0,
-          activatedAt: time,
+          activatedAtEpochMs: time,
         });
       },
     );
@@ -617,7 +617,7 @@ describe("authority orchestration rejects arbitrary port lies", () => {
       storage: createInMemoryInventoryDurableStorage(),
       adapterCertificationDigest: "cert",
       authorizationId: "green",
-      clock: { now: () => time },
+      clock: { nowEpochMs: () => time },
     });
     expect(injected).toBe(true);
     expect(result.authority.mode).toBe(InventoryAuthorityMode.Authoritative);
@@ -644,7 +644,7 @@ describe("authority orchestration rejects arbitrary port lies", () => {
           certificationDigest: "cert",
           targetWorldRoot: inventoryWorldContentRoots(emptyInventoryWorldState()).world,
           targetWorldRevision: 0,
-          activatedAt: time,
+          activatedAtEpochMs: time,
         });
       },
     );
@@ -654,7 +654,7 @@ describe("authority orchestration rejects arbitrary port lies", () => {
         storage: createInMemoryInventoryDurableStorage(),
         adapterCertificationDigest: "cert",
         authorizationId: "green",
-        clock: { now: () => time },
+        clock: { nowEpochMs: () => time },
       }),
     ).rejects.toThrow("does not match this greenfield bootstrap");
   });
@@ -682,10 +682,10 @@ describe("authority orchestration rejects arbitrary port lies", () => {
           fenceToken: "f",
           authorizationId: "auth",
           adapterCertificationDigest: "cert",
-          cutoverAt: time,
+          cutoverAtEpochMs: time,
           compileSource: async () => compiled(),
           drainLegacyWriters: async () => {},
-          clock: { now: () => time },
+          clock: { nowEpochMs: () => time },
         });
       },
     );
@@ -696,10 +696,10 @@ describe("authority orchestration rejects arbitrary port lies", () => {
       fenceToken: "f",
       authorizationId: "auth",
       adapterCertificationDigest: "cert",
-      cutoverAt: time,
+      cutoverAtEpochMs: time,
       compileSource: async () => compiled(),
       drainLegacyWriters: async () => {},
-      clock: { now: () => time },
+      clock: { nowEpochMs: () => time },
     });
     expect(injected).toBe(true);
     expect(result.authority.mode).toBe(InventoryAuthorityMode.Authoritative);
@@ -729,10 +729,10 @@ describe("authority orchestration rejects arbitrary port lies", () => {
           fenceToken: "other-fence",
           authorizationId: "other-auth",
           adapterCertificationDigest: "cert",
-          cutoverAt: time,
+          cutoverAtEpochMs: time,
           compileSource: async () => compiled(),
           drainLegacyWriters: async () => {},
-          clock: { now: () => time },
+          clock: { nowEpochMs: () => time },
         });
       },
     );
@@ -744,10 +744,10 @@ describe("authority orchestration rejects arbitrary port lies", () => {
         fenceToken: "f",
         authorizationId: "auth",
         adapterCertificationDigest: "cert",
-        cutoverAt: time,
+        cutoverAtEpochMs: time,
         compileSource: async () => compiled(),
         drainLegacyWriters: async () => {},
-        clock: { now: () => time },
+        clock: { nowEpochMs: () => time },
       }),
     ).rejects.toThrow("already authoritative under another fence token");
   });

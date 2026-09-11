@@ -28,9 +28,9 @@ export const FORMAL_IMPLEMENTATION_TRACE_IDS = [
 ] as const;
 
 /** Stable first expiry used by lot-master tests. */
-const expiry1 = "2027-01-01T00:00:00.000Z";
+const expiry1 = 1798761600000;
 /** Stable corrected expiry used by lot-master tests. */
-const expiry2 = "2027-02-01T00:00:00.000Z";
+const expiry2 = 1801440000000;
 
 /** Read the primary tablet total from one current revision summary. */
 async function currentStoreQuantity(
@@ -50,24 +50,24 @@ describe("native item-scoped lot masters", () => {
     const inventory = createTestInventory();
     const first = await inventory.stock.receive({
       operationId: "receive-lot-first",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("store", { lotId: "LOT-A" }),
       amount: stockAmount("2", "piece"),
-      lot: { expiresAt: expiry1, metadata: { supplierBatch: "A-1" } },
+      lot: { expiresAtEpochMs: expiry1, metadata: { supplierBatch: "A-1" } },
     });
     await inventory.stock.receive({
       operationId: "receive-lot-confirmation",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       to: loosePosition("store", { lotId: "LOT-A" }),
       amount: stockAmount("1", "piece"),
-      lot: { expiresAt: expiry1, metadata: { supplierBatch: "A-1" } },
+      lot: { expiresAtEpochMs: expiry1, metadata: { supplierBatch: "A-1" } },
     });
 
     expect(await inventory.read.lot("item-a", "LOT-A")).toMatchObject({
       definition: {
         itemId: "item-a",
         lotId: "LOT-A",
-        expiresAt: expiry1,
+        expiresAtEpochMs: expiry1,
         metadata: { supplierBatch: "A-1" },
       },
       rootEventId: first.event.eventId,
@@ -81,10 +81,10 @@ describe("native item-scoped lot masters", () => {
     await expect(
       inventory.stock.receive({
         operationId: "receive-lot-conflict",
-        occurredAt: time2,
+        occurredAtEpochMs: time2,
         to: loosePosition("store", { lotId: "LOT-A" }),
         amount: stockAmount("1", "piece"),
-        lot: { expiresAt: expiry2 },
+        lot: { expiresAtEpochMs: expiry2 },
       })
     ).rejects.toThrow("already has different metadata");
     expect(await currentStoreQuantity(inventory)).toBe(3);
@@ -94,18 +94,18 @@ describe("native item-scoped lot masters", () => {
     const inventory = createTestInventory();
     const root = await inventory.stock.receive({
       operationId: "receive-correctable-lot",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("store", { lotId: "LOT-B" }),
       amount: stockAmount("5", "piece"),
-      lot: { expiresAt: expiry1 },
+      lot: { expiresAtEpochMs: expiry1 },
     });
 
     const corrected = await inventory.lots.correct({
       operationId: "correct-lot-expiry",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       itemId: "item-a",
       lotId: "LOT-B",
-      lot: { expiresAt: expiry2 },
+      lot: { expiresAtEpochMs: expiry2 },
       reason: "The supplier label was rechecked.",
     });
     expect(corrected.event.kind).toBe(InventoryEventKind.Correction);
@@ -113,23 +113,23 @@ describe("native item-scoped lot masters", () => {
       root.event.eventId
     );
     expect(
-      (await inventory.read.lot("item-a", "LOT-B"))?.definition.expiresAt
+      (await inventory.read.lot("item-a", "LOT-B"))?.definition.expiresAtEpochMs
     ).toBe(expiry2);
     expect(await currentStoreQuantity(inventory)).toBe(5);
 
     const replay = await inventory.lots.correct({
       operationId: "correct-lot-expiry",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       itemId: "item-a",
       lotId: "LOT-B",
-      lot: { expiresAt: expiry2 },
+      lot: { expiresAtEpochMs: expiry2 },
       reason: "The supplier label was rechecked.",
     });
     expect(replay.replayed).toBe(true);
 
     await inventory.lots.correct({
       operationId: "omit-wrong-lot-master",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       itemId: "item-a",
       lotId: "LOT-B",
       reason: "This shipment never supplied lot metadata.",
@@ -143,23 +143,23 @@ describe("native item-scoped lot masters", () => {
     await expect(
       inventory.lots.define({
         operationId: "cannot-redefine-omitted-lot",
-        occurredAt: time2,
+        occurredAtEpochMs: time2,
         itemId: "item-a",
         lotId: "LOT-B",
-        lot: { expiresAt: expiry1 },
+        lot: { expiresAtEpochMs: expiry1 },
       })
     ).rejects.toThrow("removed by correction");
 
     await inventory.lots.correct({
       operationId: "restore-lot-master",
-      occurredAt: time3,
+      occurredAtEpochMs: time3,
       itemId: "item-a",
       lotId: "LOT-B",
-      lot: { expiresAt: expiry1 },
+      lot: { expiresAtEpochMs: expiry1 },
       reason: "The original supplier document was found.",
     });
     expect(
-      (await inventory.read.lot("item-a", "LOT-B"))?.definition.expiresAt
+      (await inventory.read.lot("item-a", "LOT-B"))?.definition.expiresAtEpochMs
     ).toBe(expiry1);
     expect(await currentStoreQuantity(inventory)).toBe(5);
     const restoredWorld = await inventory.read.world();
@@ -173,19 +173,19 @@ describe("native item-scoped lot masters", () => {
     const inventory = createTestInventory();
     const defined = await inventory.lots.define({
       operationId: "define-lot-c",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       itemId: "item-a",
       lotId: "LOT-C",
-      lot: { manufacturedAt: time0, expiresAt: expiry1 },
+      lot: { manufacturedAtEpochMs: time0, expiresAtEpochMs: expiry1 },
     });
     expect(defined.event.kind).toBe(InventoryEventKind.LotMetadata);
 
     await inventory.stock.receive({
       operationId: "receive-lot-c",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       to: loosePosition("store", { lotId: "LOT-C" }),
       amount: stockAmount("1", "piece"),
-      lot: { manufacturedAt: time0, expiresAt: expiry1 },
+      lot: { manufacturedAtEpochMs: time0, expiresAtEpochMs: expiry1 },
     });
     expect(
       (await inventory.read.lots("item-a")).map(
@@ -206,14 +206,14 @@ describe("native item-scoped lot masters", () => {
       declaration: {
         migrationId: "legacy-lot-opening",
         sourceSystem: "legacy-stock",
-        cutoverAt: time0,
+        cutoverAtEpochMs: time0,
         openingStock: [
           {
             openingId: "legacy-lot-row",
             position: loosePosition("store", { lotId: "LEGACY-LOT" }),
             amount: stockAmount("4", "piece"),
             itemRevisionId: "item-a-v2",
-            lot: { expiresAt: expiry1 },
+            lot: { expiresAtEpochMs: expiry1 },
             source: { sourceType: "InventoryLotBalance", sourceId: "row-1" },
           },
         ],
@@ -233,7 +233,7 @@ describe("native item-scoped lot masters", () => {
     });
     const inventory = createTestInventory(storage, catalog);
     expect(
-      (await inventory.read.lot("item-a", "LEGACY-LOT"))?.definition.expiresAt
+      (await inventory.read.lot("item-a", "LEGACY-LOT"))?.definition.expiresAtEpochMs
     ).toBe(expiry1);
     expect(await currentStoreQuantity(inventory)).toBe(4);
   });

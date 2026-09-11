@@ -44,14 +44,14 @@ describe("generic InventoryOnce read model", () => {
 
     await inventory.stock.receive({
       operationId: "receive-old-boxes",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: { itemId: "item-a", locationId: "store", lotId: "old-lot" },
       amount: packageAmount(2, "item-a-box-20-v1"),
       itemRevisionId: "item-a-v1",
     });
     await inventory.stock.receive({
       operationId: "receive-new-box",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       to: {
         itemId: "item-a",
         locationId: "store",
@@ -63,7 +63,7 @@ describe("generic InventoryOnce read model", () => {
     });
     await inventory.stock.receive({
       operationId: "receive-new-loose",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       to: {
         itemId: "item-a",
         locationId: "store",
@@ -125,7 +125,7 @@ describe("generic InventoryOnce read model", () => {
     );
     await inventory.stock.issue({
       operationId: "read-model-record-deficit",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       from: {
         itemId: "item-a",
         locationId: "store",
@@ -135,7 +135,7 @@ describe("generic InventoryOnce read model", () => {
     });
     await inventory.stock.receive({
       operationId: "read-model-positive-lot",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       to: { itemId: "item-a", locationId: "store", lotId: "POSITIVE" },
       amount: stockAmount("10", "piece"),
     });
@@ -164,7 +164,7 @@ describe("generic InventoryOnce read model", () => {
     const inventory = createTestInventory();
     const received = await inventory.stock.receive({
       operationId: "read-event-by-operation",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: { itemId: "item-a", locationId: "store" },
       amount: stockAmount("1", "piece"),
     });

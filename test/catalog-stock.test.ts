@@ -30,13 +30,13 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "receive-old-box",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("store", { lotId: "lot-old" }),
       amount: packageAmount(2, "item-a-box-20-v1"),
     });
     await inventory.stock.receive({
       operationId: "receive-new-box",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       to: loosePosition("store", { lotId: "lot-new" }),
       amount: packageAmount(2, "item-a-box-24-v1"),
     });
@@ -219,17 +219,17 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
     const inventory = createTestInventory();
     const command = {
       operationId: "receive-duplicate-package-lines",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       lines: [
         {
           to: loosePosition("store", { lotId: "DUPLICATE-PACKAGE" }),
           amount: packageAmount(1, "item-a-box-24-v1"),
-          lot: { expiresAt: "2027-01-01T00:00:00.000Z" },
+          lot: { expiresAtEpochMs: 1798761600000 },
         },
         {
           to: loosePosition("store", { lotId: "DUPLICATE-PACKAGE" }),
           amount: packageAmount(1, "item-a-box-24-v1"),
-          lot: { expiresAt: "2027-01-01T00:00:00.000Z" },
+          lot: { expiresAtEpochMs: 1798761600000 },
         },
       ],
     };
@@ -255,7 +255,7 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
     expect(
       await inventory.read.lot("item-a", "DUPLICATE-PACKAGE")
     ).toMatchObject({
-      definition: { expiresAt: "2027-01-01T00:00:00.000Z" },
+      definition: { expiresAtEpochMs: 1798761600000 },
     });
   });
 
@@ -264,7 +264,7 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
     await expect(
       inventory.stock.receiveMany({
         operationId: "reject-duplicate-receipt-metadata",
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         lines: [
           {
             to: loosePosition("store", { lotId: "DUPLICATE-METADATA" }),
@@ -314,7 +314,7 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
     const inventory = createTestInventory(undefined, catalog);
     const received = await inventory.stock.receive({
       operationId: "receive-measured",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: { itemId: "catch-item", locationId: "cold-room" },
       amount: measuredStockAmount("2", "piece", [
         { axisId: "weight", value: "3.40", unit: "kg" },
@@ -322,7 +322,7 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
     });
     await inventory.stock.issue({
       operationId: "issue-measured",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       from: { itemId: "catch-item", locationId: "cold-room" },
       amount: measuredStockAmount("1", "piece", [
         { axisId: "weight", value: "1.55", unit: "kg" },
@@ -339,12 +339,12 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
     await expect(
       inventory.stock.correct({
         operationId: "correct-measured-only-weight",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         correctsEventId: received.event.eventId,
         reason: "Replacement changes only the independently measured weight.",
         replaceWith: (plans) =>
           plans.receive({
-            occurredAt: time0,
+            occurredAtEpochMs: time0,
             to: { itemId: "catch-item", locationId: "cold-room" },
             amount: measuredStockAmount("2", "piece", [
               { axisId: "weight", value: "3.50", unit: "kg" },
@@ -368,19 +368,19 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
     });
     await inventory.stock.receive({
       operationId: "receive-loose",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: source,
       amount: stockAmount("10", "piece"),
     });
     const moved = await inventory.stock.transfer({
       operationId: "move-loose",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       from: source,
       toLocationId: "room-b",
       amount: stockAmount("4", "piece"),
     });
-    expect(moved.event.occurredAt).toBe(time1);
-    expect(moved.event.recordedAt).toBe(time3);
+    expect(moved.event.occurredAtEpochMs).toBe(time1);
+    expect(moved.event.recordedAtEpochMs).toBe(time3);
     const destinationEffect = moved.event.stockEffects.find(
       (effect) => effect.measurementsDelta.primary.quantity.amountMinor > 0
     );
@@ -395,7 +395,7 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
     });
     await inventory.stock.changeStatus({
       operationId: "quarantine-moved",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       from: { ...source, locationId: "room-b" },
       toStatusId: "quarantine",
       amount: stockAmount("4", "piece"),
@@ -413,14 +413,14 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
     const source = loosePosition("room-a");
     await inventory.stock.receive({
       operationId: "receive-transfer-normalization",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: source,
       amount: stockAmount("2", "piece"),
     });
 
     const moved = await inventory.stock.transfer({
       operationId: "move-trimmed-destination",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       from: source,
       toLocationId: " room-b ",
       amount: stockAmount("1", "piece"),
@@ -434,7 +434,7 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
     await expect(
       inventory.stock.transfer({
         operationId: "move-padded-same-destination",
-        occurredAt: time2,
+        occurredAtEpochMs: time2,
         from: source,
         toLocationId: " room-a ",
         amount: stockAmount("1", "piece"),
@@ -444,7 +444,7 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
     await expect(
       inventory.stock.receive({
         operationId: "receive-padded-lot",
-        occurredAt: time2,
+        occurredAtEpochMs: time2,
         to: loosePosition("room-a", { lotId: " LOT-A " }),
         amount: stockAmount("1", "piece"),
       })
@@ -455,14 +455,14 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "receive-loose-v1",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("store"),
       itemRevisionId: "item-a-v1",
       amount: stockAmount("40", "piece"),
     });
     await inventory.stock.pack({
       operationId: "pack-one",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       from: loosePosition("store"),
       packagingRevisionId: "item-a-box-20-v1",
       packageCount: 1,
@@ -475,7 +475,7 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
     ).toHaveLength(1);
     await inventory.stock.unpack({
       operationId: "unpack-one",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       from: loosePosition("store", {
         packagingRevisionId: "item-a-box-20-v1",
       }),
@@ -493,27 +493,27 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "receive-for-dimensions",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("store"),
       amount: stockAmount("1", "piece"),
     });
     await inventory.stock.changeOwner({
       operationId: "change-owner",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       from: loosePosition("store"),
       toOwnerId: "owner-b",
       amount: stockAmount("1", "piece"),
     });
     await inventory.stock.changeCustodian({
       operationId: "change-custodian",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       from: loosePosition("store", { ownerId: "owner-b" }),
       toCustodianId: "custodian-b",
       amount: stockAmount("1", "piece"),
     });
     await inventory.stock.changeDispositionAuthority({
       operationId: "change-authority",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       from: loosePosition("store", {
         ownerId: "owner-b",
         custodianId: "custodian-b",
@@ -528,14 +528,14 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
     });
     await inventory.stock.placeInContainer({
       operationId: "place-container",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       from: beforeContainer,
       toContainerId: "container-1",
       amount: stockAmount("1", "piece"),
     });
     await inventory.stock.changeQualifiedDimension({
       operationId: "set-grade",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       from: { ...beforeContainer, containerId: "container-1" },
       dimensionId: "grade",
       toValueId: "b",
@@ -543,7 +543,7 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
     });
     await inventory.stock.removeFromContainer({
       operationId: "remove-container",
-      occurredAt: time3,
+      occurredAtEpochMs: time3,
       from: {
         ...beforeContainer,
         containerId: "container-1",
@@ -565,7 +565,7 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
     const inventory = createTestInventory();
     const command = {
       operationId: "retry-receipt",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("store"),
       amount: stockAmount("5", "piece"),
     };

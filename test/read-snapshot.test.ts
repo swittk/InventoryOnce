@@ -52,15 +52,15 @@ describe("published InventoryOnce read snapshots", () => {
     const inventory = createInventoryOnce({
       catalog: createTabletCatalog(),
       storage: counted.storage,
-      clock: { now: (): string => time2 },
+      clock: { nowEpochMs: (): number => time2 },
     });
     await inventory.catalog.publish({
       operationId: "publish-snapshot-catalog",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
     });
     await inventory.stock.receive({
       operationId: "receive-snapshot-first",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: {
         itemId: "item-a",
         locationId: "store",
@@ -68,7 +68,7 @@ describe("published InventoryOnce read snapshots", () => {
         containerId: "CONTAINER-A",
       },
       amount: stockAmount("1", "piece"),
-      lot: { expiresAt: "2027-01-01T00:00:00.000Z" },
+      lot: { expiresAtEpochMs: 1798761600000 },
       container: { containerType: "tray" },
     });
 
@@ -90,7 +90,7 @@ describe("published InventoryOnce read snapshots", () => {
 
     await inventory.stock.receive({
       operationId: "receive-snapshot-second",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       to: { itemId: "item-a", locationId: "store", lotId: "LOT-B" },
       amount: stockAmount("1", "piece"),
       lot: {},

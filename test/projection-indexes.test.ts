@@ -26,8 +26,8 @@ import {
 } from "./test-fixtures.js";
 
 /** Build fixed occurrence times for deterministic projection-index stress coverage. */
-function indexedStressTime(minute: number): string {
-  return `2026-08-24T12:${String(minute).padStart(2, "0")}:00.000Z`;
+function indexedStressTime(minute: number): number {
+  return 1787572800000 + minute * 60000;
 }
 
 /** Build two unrelated items so index-local reads can prove they avoid global scans. */
@@ -76,13 +76,13 @@ describe("rebuildable stock performance indexes", () => {
     const inventory = createTestInventory(undefined, catalog);
     await inventory.stock.receive({
       operationId: "index-receive-a",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("store-a"),
       amount: stockAmount("2", "piece"),
     });
     await inventory.stock.receive({
       operationId: "index-receive-b",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: { itemId: "item-b", locationId: "store-b" },
       amount: stockAmount("3", "piece"),
     });
@@ -101,7 +101,7 @@ describe("rebuildable stock performance indexes", () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "revision-index-receive",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("revision-store"),
       amount: stockAmount("2", "piece"),
     });
@@ -126,13 +126,13 @@ describe("rebuildable stock performance indexes", () => {
     const position = loosePosition("fifo-store", { lotId: "FIFO-LOT" });
     await inventory.stock.receive({
       operationId: "fifo-layer-first",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: position,
       amount: stockAmount("2", "piece"),
     });
     await inventory.stock.receive({
       operationId: "fifo-layer-top-up",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       to: position,
       amount: stockAmount("1", "piece"),
     });
@@ -140,29 +140,29 @@ describe("rebuildable stock performance indexes", () => {
     const exact = world.projection.positionIdsByItemId["item-a"]?.[0];
     if (exact === undefined)
       throw new Error("FIFO position index disappeared.");
-    expect(world.projection.positiveLayerStartedAtByPositionId[exact]).toBe(
+    expect(world.projection.positiveLayerStartedAtEpochMsByPositionId[exact]).toBe(
       time0
     );
 
     await inventory.stock.issue({
       operationId: "fifo-layer-deplete",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       from: position,
       amount: stockAmount("3", "piece"),
     });
     world = await inventory.read.world();
     expect(
-      world.projection.positiveLayerStartedAtByPositionId[exact]
+      world.projection.positiveLayerStartedAtEpochMsByPositionId[exact]
     ).toBeUndefined();
 
     await inventory.stock.receive({
       operationId: "fifo-layer-restart",
-      occurredAt: time3,
+      occurredAtEpochMs: time3,
       to: position,
       amount: stockAmount("1", "piece"),
     });
     world = await inventory.read.world();
-    expect(world.projection.positiveLayerStartedAtByPositionId[exact]).toBe(
+    expect(world.projection.positiveLayerStartedAtEpochMsByPositionId[exact]).toBe(
       time3
     );
   });
@@ -171,13 +171,13 @@ describe("rebuildable stock performance indexes", () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "serial-index-receive",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("serial-a", { serialId: "SERIAL-1" }),
       amount: stockAmount("1", "piece"),
     });
     await inventory.stock.transfer({
       operationId: "serial-index-transfer",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       from: loosePosition("serial-a", { serialId: "SERIAL-1" }),
       toLocationId: "serial-b",
       amount: stockAmount("1", "piece"),
@@ -204,14 +204,14 @@ describe("rebuildable stock performance indexes", () => {
     for (let index = 1; index <= 4; index += 1) {
       await inventory.stock.receive({
         operationId: `cut-receive-${index}`,
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         to: loosePosition("cut-store"),
         amount: stockAmount("1", "piece"),
       });
     }
     await inventory.traceability.aggregate({
       operationId: "cut-post-traceability",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       from: { kind: InventoryTraceabilityNodeKind.Container, id: "cut-child" },
       to: { kind: InventoryTraceabilityNodeKind.Container, id: "cut-parent" },
     });
@@ -233,13 +233,13 @@ describe("rebuildable stock performance indexes", () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "rebuild-index-a",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("rebuild-store", { lotId: "R1" }),
       amount: stockAmount("2", "piece"),
     });
     await inventory.stock.receive({
       operationId: "rebuild-index-b",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       to: loosePosition("rebuild-store", {
         lotId: "R2",
         serialId: "R2-SERIAL",
@@ -249,7 +249,7 @@ describe("rebuildable stock performance indexes", () => {
     });
     await inventory.traceability.aggregate({
       operationId: "rebuild-container-nesting",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       from: {
         kind: InventoryTraceabilityNodeKind.Container,
         id: "R2-CONTAINER",
@@ -274,8 +274,8 @@ describe("rebuildable stock performance indexes", () => {
     expect(rebuilt.positionIdsByContainerIdentity).toEqual(
       world.projection.positionIdsByContainerIdentity
     );
-    expect(rebuilt.positiveLayerStartedAtByPositionId).toEqual(
-      world.projection.positiveLayerStartedAtByPositionId
+    expect(rebuilt.positiveLayerStartedAtEpochMsByPositionId).toEqual(
+      world.projection.positiveLayerStartedAtEpochMsByPositionId
     );
     expect(rebuilt.positivePositionIdBySerialIdentity).toEqual(
       world.projection.positivePositionIdBySerialIdentity
@@ -293,13 +293,13 @@ describe("rebuildable stock performance indexes", () => {
     const inventory = createTestInventory(undefined, catalog);
     await inventory.stock.receive({
       operationId: "indexed-fifo-first",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("indexed-fifo", { lotId: "OLD" }),
       amount: stockAmount("1", "piece"),
     });
     await inventory.stock.receive({
       operationId: "indexed-fifo-second",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       to: loosePosition("indexed-fifo", { lotId: "NEW" }),
       amount: stockAmount("1", "piece"),
     });
@@ -320,10 +320,10 @@ describe("rebuildable stock performance indexes", () => {
       selector: { itemId: "item-a", locationIds: ["indexed-fifo"] },
       amount: stockAmount("1", "piece"),
       method: InventoryAllocationMethod.Fifo,
-      at: time2,
+      atEpochMs: time2,
     });
     expect(plan.lines[0]?.position.lotId).toBe("OLD");
-    expect(plan.lines[0]?.layerStartedAt).toBe(time0);
+    expect(plan.lines[0]?.layerStartedAtEpochMs).toBe(time0);
   });
 
   it("keeps reset, transfer, backdated correction, and rebuild provenance exact at a fixed candidate count", async () => {
@@ -331,29 +331,29 @@ describe("rebuildable stock performance indexes", () => {
     const inventory = createTestInventory(
       undefined,
       catalog,
-      clockAt("2026-08-24T18:00:00.000Z")
+      clockAt(1787594400000)
     );
     await inventory.stock.receive({
       operationId: "stress-reset-root",
-      occurredAt: indexedStressTime(0),
+      occurredAtEpochMs: indexedStressTime(0),
       to: loosePosition("stress-store", { lotId: "RESET" }),
       amount: stockAmount("1", "piece"),
     });
     await inventory.stock.issue({
       operationId: "stress-reset-deplete",
-      occurredAt: indexedStressTime(1),
+      occurredAtEpochMs: indexedStressTime(1),
       from: loosePosition("stress-store", { lotId: "RESET" }),
       amount: stockAmount("1", "piece"),
     });
     await inventory.stock.receive({
       operationId: "stress-reset-restart",
-      occurredAt: indexedStressTime(2),
+      occurredAtEpochMs: indexedStressTime(2),
       to: loosePosition("stress-store", { lotId: "RESET" }),
       amount: stockAmount("1", "piece"),
     });
     const correctedRoot = await inventory.stock.receive({
       operationId: "stress-correction-root",
-      occurredAt: indexedStressTime(3),
+      occurredAtEpochMs: indexedStressTime(3),
       to: loosePosition("stress-store", { lotId: "CORRECTED" }),
       amount: stockAmount("1", "piece"),
     });
@@ -365,26 +365,26 @@ describe("rebuildable stock performance indexes", () => {
     for (const [index, lotId] of candidateLotIds.entries()) {
       await inventory.stock.receive({
         operationId: `stress-receive-${lotId}`,
-        occurredAt: indexedStressTime(index + 4),
+        occurredAtEpochMs: indexedStressTime(index + 4),
         to: loosePosition("stress-store", { lotId }),
         amount: stockAmount("1", "piece"),
       });
     }
     await inventory.stock.transfer({
       operationId: "stress-transfer-candidate",
-      occurredAt: "2026-08-24T13:00:00.000Z",
+      occurredAtEpochMs: 1787576400000,
       from: loosePosition("stress-store", { lotId: "STRESS-15" }),
       toLocationId: "stress-room",
       amount: stockAmount("1", "piece"),
     });
     await inventory.stock.correct({
       operationId: "stress-backdated-correction",
-      occurredAt: "2026-08-24T14:00:00.000Z",
+      occurredAtEpochMs: 1787580000000,
       correctsEventId: correctedRoot.event.eventId,
       reason: "The receipt was recorded after the physical arrival time.",
       replaceWith: (plans) =>
         plans.receive({
-          occurredAt: time0,
+          occurredAtEpochMs: time0,
           to: loosePosition("stress-store", { lotId: "CORRECTED" }),
           amount: stockAmount("1", "piece"),
         }),
@@ -404,7 +404,7 @@ describe("rebuildable stock performance indexes", () => {
       ...loosePosition("stress-room", { lotId: "STRESS-15" }),
       itemRevisionId: "item-a-v2",
     });
-    expect(world.projection.positiveLayerStartedAtByPositionId).toMatchObject({
+    expect(world.projection.positiveLayerStartedAtEpochMsByPositionId).toMatchObject({
       [resetPositionId]: indexedStressTime(2),
       [correctedPositionId]: time0,
       [movedPositionId]: indexedStressTime(19),
@@ -418,8 +418,8 @@ describe("rebuildable stock performance indexes", () => {
     expect(rebuilt.positionIdsByItemRevisionId).toEqual(
       world.projection.positionIdsByItemRevisionId
     );
-    expect(rebuilt.positiveLayerStartedAtByPositionId).toEqual(
-      world.projection.positiveLayerStartedAtByPositionId
+    expect(rebuilt.positiveLayerStartedAtEpochMsByPositionId).toEqual(
+      world.projection.positiveLayerStartedAtEpochMsByPositionId
     );
 
     const historyFreeWorld = {
@@ -438,11 +438,11 @@ describe("rebuildable stock performance indexes", () => {
       selector: { itemId: "item-a", locationIds: ["stress-room"] },
       amount: stockAmount("1", "piece"),
       method: InventoryAllocationMethod.Fifo,
-      at: "2026-08-24T15:00:00.000Z",
+      atEpochMs: 1787583600000,
     });
     expect(plan.lines).toHaveLength(1);
     expect(plan.lines[0]?.position.lotId).toBe("STRESS-15");
-    expect(plan.lines[0]?.layerStartedAt).toBe(indexedStressTime(19));
+    expect(plan.lines[0]?.layerStartedAtEpochMs).toBe(indexedStressTime(19));
   });
 
   it("keeps the oldest FIFO layer when conserved stock joins an existing destination", async () => {
@@ -453,19 +453,19 @@ describe("rebuildable stock performance indexes", () => {
     });
     await inventory.stock.receive({
       operationId: "fifo-merge-source-old",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: source,
       amount: stockAmount("2", "piece"),
     });
     await inventory.stock.receive({
       operationId: "fifo-merge-destination-new",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       to: destination,
       amount: stockAmount("1", "piece"),
     });
     await inventory.stock.transfer({
       operationId: "fifo-merge-transfer",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       from: source,
       toLocationId: "merge-destination",
       amount: stockAmount("2", "piece"),
@@ -475,7 +475,7 @@ describe("rebuildable stock performance indexes", () => {
       ...destination,
       itemRevisionId: "item-a-v2",
     });
-    expect(world.projection.positiveLayerStartedAtByPositionId[destinationId])
+    expect(world.projection.positiveLayerStartedAtEpochMsByPositionId[destinationId])
       .toBe(time0);
   });
 
@@ -483,14 +483,14 @@ describe("rebuildable stock performance indexes", () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "fifo-package-receive",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("package-provenance"),
       itemRevisionId: "item-a-v1",
       amount: stockAmount("20", "piece"),
     });
     await inventory.stock.pack({
       operationId: "fifo-package-pack",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       from: loosePosition("package-provenance"),
       packagingRevisionId: "item-a-box-20-v1",
       packageCount: 1,
@@ -503,14 +503,14 @@ describe("rebuildable stock performance indexes", () => {
     }))[0];
     if (packaged === undefined) throw new Error("Pack provenance row disappeared.");
     expect(
-      world.projection.positiveLayerStartedAtByPositionId[
+      world.projection.positiveLayerStartedAtEpochMsByPositionId[
         inventoryStockPositionIdentity(packaged.key)
       ]
     ).toBe(time0);
 
     await inventory.stock.unpack({
       operationId: "fifo-package-unpack",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       from: packaged.key,
       packageCount: 1,
     });
@@ -522,7 +522,7 @@ describe("rebuildable stock performance indexes", () => {
     if (loose === undefined) throw new Error("Unpack provenance row disappeared.");
     await inventory.stock.changeStatus({
       operationId: "fifo-package-status",
-      occurredAt: time3,
+      occurredAtEpochMs: time3,
       from: loose.key,
       toStatusId: "quarantine",
       amount: stockAmount("20", "piece"),
@@ -538,7 +538,7 @@ describe("rebuildable stock performance indexes", () => {
       throw new Error("Reclassified provenance row disappeared.");
     }
     expect(
-      world.projection.positiveLayerStartedAtByPositionId[
+      world.projection.positiveLayerStartedAtEpochMsByPositionId[
         inventoryStockPositionIdentity(quarantined.key)
       ]
     ).toBe(time0);
@@ -549,19 +549,19 @@ describe("rebuildable stock performance indexes", () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "multi-provenance-source-a",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("multi-provenance", { lotId: "MULTI-A" }),
       amount: stockAmount("1", "piece"),
     });
     await inventory.stock.receive({
       operationId: "multi-provenance-source-b",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       to: loosePosition("multi-provenance", { lotId: "MULTI-B" }),
       amount: stockAmount("1", "piece"),
     });
     await inventory.stock.reclassifyMany({
       operationId: "multi-provenance-reclassify",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       consume: [
         {
           from: loosePosition("multi-provenance", { lotId: "MULTI-A" }),
@@ -599,7 +599,7 @@ describe("rebuildable stock performance indexes", () => {
         ...loosePosition("multi-provenance", { lotId, statusId }),
         itemRevisionId: "item-a-v2",
       });
-      expect(world.projection.positiveLayerStartedAtByPositionId[identity])
+      expect(world.projection.positiveLayerStartedAtEpochMsByPositionId[identity])
         .toBe(time2);
     }
   });

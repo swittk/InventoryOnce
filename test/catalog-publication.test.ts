@@ -41,7 +41,7 @@ describe("append-only retained catalogue publication", () => {
     });
     const command = {
       operationId: "publish-base-catalog",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       reason: "Initial inventory definitions became authoritative.",
     };
     const published = await inventory.catalog.publish(command);
@@ -57,7 +57,7 @@ describe("append-only retained catalogue publication", () => {
     await expect(
       inventory.catalog.publish({
         operationId: "redundant-base-publication",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
       })
     ).rejects.toThrow("already the current durable catalogue");
   });
@@ -72,7 +72,7 @@ describe("append-only retained catalogue publication", () => {
     });
     const originalCommand = {
       operationId: "publish-before-later-extension",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
     };
     await baseInventory.catalog.publish(originalCommand);
 
@@ -93,7 +93,7 @@ describe("append-only retained catalogue publication", () => {
       clock: clockAt(time3),
     }).catalog.publish({
       operationId: "publish-later-extension",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
     });
     const beforeRetry = await storage.readWorld();
 
@@ -113,7 +113,7 @@ describe("append-only retained catalogue publication", () => {
     });
     await baseInventory.catalog.publish({
       operationId: "publish-before-extension",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
     });
 
     const itemV3 = defineScalarInventoryItem({
@@ -142,7 +142,7 @@ describe("append-only retained catalogue publication", () => {
     await expect(
       extendedInventory.stock.receive({
         operationId: "receive-before-catalog-publication",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         to: loosePosition("store", { lotId: "UNPUBLISHED-LOT" }),
         amount: packageAmount(1, "item-a-box-30-v1"),
       })
@@ -168,7 +168,7 @@ describe("append-only retained catalogue publication", () => {
     ).toEqual(["item-a-box-20-v1", "item-a-box-24-v1"]);
     const extensionPublication = await extendedInventory.catalog.publish({
       operationId: "publish-extended-catalog",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       reason: "Supplier changed the exact box definition.",
     });
     expect(extensionPublication.event.catalogDigest).toBe(
@@ -190,7 +190,7 @@ describe("append-only retained catalogue publication", () => {
 
     await extendedInventory.stock.receive({
       operationId: "receive-new-box-30",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       to: loosePosition("store", { lotId: "NEW-BOX-LOT" }),
       amount: packageAmount(1, "item-a-box-30-v1"),
     });
@@ -267,11 +267,11 @@ describe("append-only retained catalogue publication", () => {
     });
     await baseInventory.catalog.publish({
       operationId: "publish-fungibility-v1",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
     });
     await baseInventory.stock.receive({
       operationId: "receive-publication-old",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: {
         itemId: oldItem.itemId,
         locationId: "store",
@@ -282,7 +282,7 @@ describe("append-only retained catalogue publication", () => {
     });
     await baseInventory.stock.receive({
       operationId: "receive-publication-double",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: {
         itemId: doubleItem.itemId,
         locationId: "store",
@@ -321,7 +321,7 @@ describe("append-only retained catalogue publication", () => {
     await expect(
       extendedInventory.fungibility.issue({
         operationId: "issue-unpublished-fungibility-v2",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         fungibilityRevisionId: poolV2.revisionId,
         requested: parseQuantity("2", "dose-equivalent"),
         method: InventoryAllocationMethod.Fifo,
@@ -334,7 +334,7 @@ describe("append-only retained catalogue publication", () => {
 
     await extendedInventory.catalog.publish({
       operationId: "publish-fungibility-v2",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
     });
     expect(
       (await extendedInventory.fungibility.activeDefinition(poolV2.poolId))
@@ -347,7 +347,7 @@ describe("append-only retained catalogue publication", () => {
 
     const issuedV2 = await extendedInventory.fungibility.issue({
       operationId: "issue-published-fungibility-v2",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       fungibilityRevisionId: poolV2.revisionId,
       requested: parseQuantity("2", "dose-equivalent"),
       method: InventoryAllocationMethod.Fifo,
@@ -362,7 +362,7 @@ describe("append-only retained catalogue publication", () => {
 
     const issuedV1 = await extendedInventory.fungibility.issue({
       operationId: "issue-retained-fungibility-v1",
-      occurredAt: time3,
+      occurredAtEpochMs: time3,
       fungibilityRevisionId: poolV1.revisionId,
       requested: parseQuantity("1", "dose-equivalent"),
       method: InventoryAllocationMethod.Fifo,
@@ -386,7 +386,7 @@ describe("append-only retained catalogue publication", () => {
     });
     await baseInventory.catalog.publish({
       operationId: "publish-retained-base",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
     });
 
     const itemV3 = defineScalarInventoryItem({
@@ -408,7 +408,7 @@ describe("append-only retained catalogue publication", () => {
     await expect(
       incompleteInventory.catalog.publish({
         operationId: "publish-dropped-history",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
       })
     ).rejects.toThrow("Unknown inventory item revision");
 
@@ -425,7 +425,7 @@ describe("append-only retained catalogue publication", () => {
     await expect(
       extendedInventory.catalog.publish({
         operationId: "publish-retained-base",
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
       })
     ).rejects.toThrow("changed intent");
   });
@@ -438,12 +438,12 @@ describe("append-only retained catalogue publication", () => {
     });
     const published = await inventory.catalog.publish({
       operationId: "publish-uncorrectable-catalog",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
     });
     await expect(
       inventory.stock.correct({
         operationId: "try-correcting-catalog",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         correctsEventId: published.event.eventId,
         reason: "This should become a later publication instead.",
         replaceWith: (plans) => plans.omit(),

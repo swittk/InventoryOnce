@@ -17,15 +17,15 @@ import { defineInventoryMigration } from "../src/migrations.js";
 import { createInMemoryInventoryDurableStorage } from "../src/storage.js";
 import { emptyInventoryWorldState } from "../src/world.js";
 
-const time = "2030-01-01T00:00:00.000Z";
+const time = 1893456000000;
 /** Compile the fixed empty migration source used by each authority race case. */
-function compiled(migrationId = "m", cutoverAt = time) {
+function compiled(migrationId = "m", cutoverAtEpochMs = time) {
   const catalog = inventoryCatalogFromSnapshot(emptyInventoryWorldState().catalog);
   return {
     catalog,
     plan: defineInventoryMigration({
       catalog,
-      declaration: { migrationId, sourceSystem: "s", cutoverAt, openingStock: [] },
+      declaration: { migrationId, sourceSystem: "s", cutoverAtEpochMs, openingStock: [] },
     }),
   };
 }
@@ -98,10 +98,10 @@ async function legacyCase(phase: Phase, foreign: boolean) {
       fenceToken,
       authorizationId,
       adapterCertificationDigest: "cert",
-      cutoverAt: time,
+      cutoverAtEpochMs: time,
       compileSource: async () => compiled(),
       drainLegacyWriters: async () => {},
-      clock: { now: () => time },
+      clock: { nowEpochMs: () => time },
     });
   });
   let result: Awaited<ReturnType<typeof cutoverInventoryAuthority>> | undefined;
@@ -114,10 +114,10 @@ async function legacyCase(phase: Phase, foreign: boolean) {
       fenceToken: "f",
       authorizationId: "auth",
       adapterCertificationDigest: "cert",
-      cutoverAt: time,
+      cutoverAtEpochMs: time,
       compileSource: async () => compiled(),
       drainLegacyWriters: async () => {},
-      clock: { now: () => time },
+      clock: { nowEpochMs: () => time },
     });
   } catch (e) { error = e as Error; }
   assert.equal(injected > 0, true, `${phase}/${foreign}: hook did not fire`);
@@ -149,7 +149,7 @@ async function greenfieldCase(foreign: boolean) {
       certificationDigest: "cert",
       targetWorldRoot: inventoryWorldContentRoots(emptyInventoryWorldState()).world,
       targetWorldRevision: 0,
-      activatedAt: time,
+      activatedAtEpochMs: time,
     });
   });
   let result: Awaited<ReturnType<typeof bootstrapGreenfieldInventoryAuthority>> | undefined;
@@ -160,7 +160,7 @@ async function greenfieldCase(foreign: boolean) {
       storage: createInMemoryInventoryDurableStorage(),
       adapterCertificationDigest: "cert",
       authorizationId: "green",
-      clock: { now: () => time },
+      clock: { nowEpochMs: () => time },
     });
   } catch (e) { error = e as Error; }
   assert.equal(injected > 0, true);

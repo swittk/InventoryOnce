@@ -16,7 +16,7 @@ import {
   type InventoryReservationBookDelta,
 } from "./integrity.js";
 import {
-  assertCanonicalInventoryTime,
+  assertInventoryEpochMilliseconds,
   commitInventoryEvent,
   InventoryEventKind,
   type InventoryCommittedEvent,
@@ -55,8 +55,8 @@ import type { InventoryWorldState } from "./world.js";
 
 /** Clock used only for durable record time; real event time comes from command input. */
 export interface InventoryClock {
-  /** Return one canonical UTC timestamp for durable recording. */
-  now(): string;
+  /** Return one safe-integer epoch millisecond instant for durable recording. */
+  nowEpochMs(): number;
 }
 
 /** Inputs passed to one pure operation planner before anything is frozen. */
@@ -64,7 +64,7 @@ export interface InventoryOperationPlanningContext {
   /** Current fully published world snapshot. */
   readonly world: InventoryWorldState;
   /** Durable record time chosen for this planning attempt. */
-  readonly recordedAt: string;
+  readonly recordedAtEpochMs: number;
 }
 
 /** How one operation treats active claims after physical stock changes. */
@@ -164,13 +164,13 @@ export async function commitInventoryOperation({
   for (let attempt = 0; attempt < maxRevisionRetries; attempt += 1) {
     const world = await storage.readWorld();
     assertInventoryCatalogRetainsSnapshot(catalog, world.catalog);
-    const recordedAt = clock.now();
-    assertCanonicalInventoryTime(recordedAt, "inventory durable record time");
-    const logicalPlan = await plan({ world, recordedAt });
+    const recordedAtEpochMs = clock.nowEpochMs();
+    assertInventoryEpochMilliseconds(recordedAtEpochMs, "inventory durable record time");
+    const logicalPlan = await plan({ world, recordedAtEpochMs });
     const durablePlan = createDurableOperationPlan({
       catalog,
       world,
-      recordedAt,
+      recordedAtEpochMs,
       operationId,
       deficitPolicy,
       logicalPlan,
@@ -180,7 +180,7 @@ export async function commitInventoryOperation({
         operationId,
         intentFingerprint,
         baseRevision: world.revision,
-        recordedAt,
+        recordedAtEpochMs,
         plan: durablePlan,
       });
       const begun = beginResult.operation;
@@ -239,7 +239,7 @@ interface CreateDurableOperationPlanInput {
   /** Published base world. */
   readonly world: InventoryWorldState;
   /** Frozen durable record time. */
-  readonly recordedAt: string;
+  readonly recordedAtEpochMs: number;
   /** Stable operation identity. */
   readonly operationId: string;
   /** Negative physical stock rule. */
@@ -252,7 +252,7 @@ interface CreateDurableOperationPlanInput {
 function createDurableOperationPlan({
   catalog,
   world,
-  recordedAt,
+  recordedAtEpochMs,
   operationId,
   deficitPolicy,
   logicalPlan,
@@ -281,7 +281,7 @@ function createDurableOperationPlan({
       ? undefined
       : commitInventoryEvent(
           logicalPlan.event,
-          recordedAt,
+          recordedAtEpochMs,
           world.projection.lastRecordSequence + 1
         );
   const appliedEvent =
@@ -342,7 +342,7 @@ function createDurableOperationPlan({
         baseWorld: world,
         projection,
         reservations,
-        recordedAt,
+        recordedAtEpochMs,
         consumedReservationId: reservationDelta.reservation.reservationId,
       });
   }
@@ -354,17 +354,17 @@ function createDurableOperationPlan({
     !consumptionDoesNotIncreaseShortage
   ) {
     // Ordinary commands protect the claim book that exists when durable truth is recorded.
-    // Backdating occurredAt must not bypass a reservation created before this commit.
+    // Backdating occurredAtEpochMs must not bypass a reservation created before this commit.
     assertInventoryReservationsFeasible({
       catalog,
       projection,
       book: reservations,
-      at: recordedAt,
+      atEpochMs: recordedAtEpochMs,
     });
   }
   const receipt: InventoryOperationReceipt = {
     operationId,
-    recordedAt,
+    recordedAtEpochMs,
     worldRevision: world.revision + 1,
     ...(committedEvent === undefined
       ? {}
@@ -432,8 +432,8 @@ function reservationLifecycleEvidenceFingerprint(
       reservation.requested.decimals,
       reservation.requested.unit,
     ]),
-    reservation.createdAt,
-    reservation.expiresAt ?? null,
+    reservation.createdAtEpochMs,
+    reservation.expiresAtEpochMs ?? null,
     reservation.allowExpiredStock ?? false,
     reservation.sourceReference ?? null,
     reservation.actorId ?? null,
@@ -450,8 +450,8 @@ function reservationLifecycleEvidenceFingerprint(
         ]),
       ])
     ),
-    reservation.statusAt ?? null,
-    reservation.lastChangedAt,
+    reservation.statusAtEpochMs ?? null,
+    reservation.lastChangedAtEpochMs,
     reservation.consumptionEventId ?? null,
   ]);
 }
@@ -485,7 +485,7 @@ function assertReservationConsumptionMatchesIssue({
     committedEvent.kind !== InventoryEventKind.Issue ||
     committedEvent.operationId !== operationId ||
     committedEvent.eventId !== consumed.consumptionEventId ||
-    committedEvent.occurredAt !== consumed.statusAt ||
+    committedEvent.occurredAtEpochMs !== consumed.statusAtEpochMs ||
     committedEvent.metadata?.reservationId !== consumed.reservationId
   ) {
     throw new Error(
@@ -566,7 +566,7 @@ interface InventoryReservationConsumptionShortageInput {
   /** Reservation book after closing the consumed reservation. */
   readonly reservations: InventoryReservationBook;
   /** Same durable time used to interpret both reservation books. */
-  readonly recordedAt: string;
+  readonly recordedAtEpochMs: number;
   /** Only reservation identity removed from active competition. */
   readonly consumedReservationId: string;
 }
@@ -577,7 +577,7 @@ function inventoryReservationConsumptionDoesNotIncreaseShortage({
   baseWorld,
   projection,
   reservations,
-  recordedAt,
+  recordedAtEpochMs,
   consumedReservationId,
 }: InventoryReservationConsumptionShortageInput): boolean {
   // Most consumes leave every group feasible; calculate the prior max-flow only
@@ -586,14 +586,14 @@ function inventoryReservationConsumptionDoesNotIncreaseShortage({
     catalog,
     projection,
     book: reservations,
-    at: recordedAt,
+    atEpochMs: recordedAtEpochMs,
   });
   if (after.status === InventoryReservationFeasibilityStatus.Feasible) return true;
   const before = inspectInventoryReservationFeasibility({
     catalog,
     projection: baseWorld.projection,
     book: baseWorld.reservations,
-    at: recordedAt,
+    atEpochMs: recordedAtEpochMs,
   });
   // Revision-scoped groups may share item/axis/unit. A surviving reservation
   // identity locates its one prior group without a quadratic cross-group scan.

@@ -15,7 +15,7 @@ import {
 import { inventoryEventIdForOperation } from "./commands.js";
 import {
   InventoryEventKind,
-  assertCanonicalInventoryTime,
+  assertInventoryEpochMilliseconds,
   defineInventoryEvent,
   type InventoryCommittedEvent,
   type InventoryEventDraft,
@@ -80,19 +80,19 @@ export interface InventoryCount {
   /** Complete scope the observation promises to cover. */
   readonly selector: InventoryStockSelector;
   /** Time count work started. */
-  readonly startedAt: string;
+  readonly startedAtEpochMs: number;
   /** Durable event-stream sequence visible when count work started. */
   readonly snapshotRecordSequence: number;
   /** Current lifecycle state. */
   readonly status: InventoryCountStatus;
   /** Time the physical observation was completed. */
-  readonly observedAt?: string;
+  readonly observedAtEpochMs?: number;
   /** Durable sequence visible when observation was saved; later pre-observation records still join the occurrence cut. */
   readonly observedThroughRecordSequence?: number;
   /** Exact observed rows; omitted eligible rows mean observed zero. */
   readonly observations: readonly InventoryCountObservationLine[];
   /** Time the count became terminal. */
-  readonly statusAt?: string;
+  readonly statusAtEpochMs?: number;
   /** Reconciliation event, absent when no discrepancy existed. */
   readonly reconciliationEventId?: string;
   /** Actor responsible for the count when known. */
@@ -170,7 +170,7 @@ export interface StartInventoryCountInput {
   /** Complete scope that staff promise to observe. */
   readonly selector: InventoryStockSelector;
   /** Time count work started. */
-  readonly startedAt: string;
+  readonly startedAtEpochMs: number;
   /** Actor responsible for this count. */
   readonly actorId?: PartyId;
   /** Application/source row requesting this count. */
@@ -183,7 +183,7 @@ export interface StartInventoryCountInput {
 export function startInventoryCount(
   input: StartInventoryCountInput
 ): InventoryCountBookResult {
-  assertCanonicalInventoryTime(input.startedAt, "count startedAt");
+  assertInventoryEpochMilliseconds(input.startedAtEpochMs, "count startedAtEpochMs");
   const requestedSelector = normalizeInventoryStockSelector(input.selector);
   const item =
     input.itemRevisionId === undefined
@@ -208,7 +208,7 @@ export function startInventoryCount(
     input.operationId,
     item.revisionId,
     inventoryStockSelectorIdentity(selector),
-    input.startedAt,
+    input.startedAtEpochMs,
     String(input.projection.lastRecordSequence),
     input.actorId ?? null,
     input.sourceReference ?? null,
@@ -230,7 +230,7 @@ export function startInventoryCount(
     operationId: input.operationId,
     itemRevisionId: item.revisionId,
     selector,
-    startedAt: input.startedAt,
+    startedAtEpochMs: input.startedAtEpochMs,
     snapshotRecordSequence: input.projection.lastRecordSequence,
     status: InventoryCountStatus.Started,
     observations: [],
@@ -262,7 +262,7 @@ export interface ObserveInventoryCountInput {
   /** Started count being observed. */
   readonly countId: string;
   /** Time staff completed the physical observation. */
-  readonly observedAt: string;
+  readonly observedAtEpochMs: number;
   /** Complete observed rows; eligible positions omitted here mean physically observed zero. */
   readonly observations: readonly InventoryCountObservationLine[];
 }
@@ -271,7 +271,7 @@ export interface ObserveInventoryCountInput {
 export function observeInventoryCount(
   input: ObserveInventoryCountInput
 ): InventoryCountBookResult {
-  assertCanonicalInventoryTime(input.observedAt, "count observedAt");
+  assertInventoryEpochMilliseconds(input.observedAtEpochMs, "count observedAtEpochMs");
   const count = inventorySparseRecordValue(input.book.counts, input.countId);
   if (count === undefined) throw new Error("Unknown inventory count.");
   const observations = normalizeCountObservations(
@@ -295,7 +295,7 @@ export function observeInventoryCount(
   if (count.status !== InventoryCountStatus.Started) {
     throw new Error("Only a started inventory count can be observed.");
   }
-  if (input.observedAt < count.startedAt) {
+  if (input.observedAtEpochMs < count.startedAtEpochMs) {
     throw new Error(
       "Count observation cannot happen before the count started."
     );
@@ -310,7 +310,7 @@ export function observeInventoryCount(
   const value: InventoryCount = {
     ...count,
     status: InventoryCountStatus.Observed,
-    observedAt: input.observedAt,
+    observedAtEpochMs: input.observedAtEpochMs,
     observedThroughRecordSequence,
     observations,
   };
@@ -338,7 +338,7 @@ export interface CreateInventoryCountReconciliationPlanInput {
   /** Observed count to reconcile. */
   readonly countId: string;
   /** Time the reconciliation operation was requested/approved. */
-  readonly completedAt: string;
+  readonly completedAtEpochMs: number;
   /** Optional actor overriding the count starter. */
   readonly actorId?: PartyId;
   /** Optional human reconciliation reason. */
@@ -361,7 +361,7 @@ export interface InventoryCountReconciliationPlan {
 export function createInventoryCountReconciliationPlan(
   input: CreateInventoryCountReconciliationPlanInput
 ): InventoryCountReconciliationPlan {
-  assertCanonicalInventoryTime(input.completedAt, "count completedAt");
+  assertInventoryEpochMilliseconds(input.completedAtEpochMs, "count completedAtEpochMs");
   const count = inventorySparseRecordValue(input.book.counts, input.countId);
   if (count === undefined) throw new Error("Unknown inventory count.");
   const fingerprint = countCompletionFingerprint(input, count);
@@ -381,12 +381,12 @@ export function createInventoryCountReconciliationPlan(
   }
   if (
     count.status !== InventoryCountStatus.Observed ||
-    count.observedAt === undefined ||
+    count.observedAtEpochMs === undefined ||
     count.observedThroughRecordSequence === undefined
   ) {
     throw new Error("Only a fully observed inventory count can be reconciled.");
   }
-  if (input.completedAt < count.observedAt) {
+  if (input.completedAtEpochMs < count.observedAtEpochMs) {
     throw new Error(
       "Count reconciliation cannot happen before the observation."
     );
@@ -396,7 +396,7 @@ export function createInventoryCountReconciliationPlan(
     input.catalog,
     input.events,
     input.deficitPolicy,
-    count.observedAt
+    count.observedAtEpochMs
   );
   const expectedPositions = findInventoryPositions(
     expectedProjection,
@@ -462,7 +462,7 @@ export function createInventoryCountReconciliationPlan(
             eventId: inventoryEventIdForOperation(input.operationId),
             operationId: input.operationId,
             kind: InventoryEventKind.CountAdjustment,
-            occurredAt: count.observedAt,
+            occurredAtEpochMs: count.observedAtEpochMs,
             stockEffects,
             traceabilityChanges: [],
             ...((input.actorId ?? count.actorId) === undefined
@@ -477,7 +477,7 @@ export function createInventoryCountReconciliationPlan(
               snapshotRecordSequence: count.snapshotRecordSequence,
               observedThroughRecordSequence:
                 count.observedThroughRecordSequence,
-              completedAt: input.completedAt,
+              completedAtEpochMs: input.completedAtEpochMs,
             },
           },
         });
@@ -494,7 +494,7 @@ function projectInventoryEventsAtOrBefore(
   catalog: InventoryCatalog,
   events: readonly InventoryCommittedEvent[],
   deficitPolicy: InventoryDeficitPolicy,
-  observedAt: string
+  observedAtEpochMs: number
 ): InventoryProjectionState {
   const ordered = inventoryEventsInRecordSequence(events);
   // Retain every ordered event by identity so required correction predecessors can be recovered.
@@ -503,7 +503,7 @@ function projectInventoryEventsAtOrBefore(
   const includedEventIds = new Set<string>();
   for (const event of ordered) {
     eventById.set(event.eventId, event);
-    if (event.occurredAt <= observedAt) includedEventIds.add(event.eventId);
+    if (event.occurredAtEpochMs <= observedAtEpochMs) includedEventIds.add(event.eventId);
   }
   for (const event of ordered) {
     if (!includedEventIds.has(event.eventId)) continue;
@@ -545,7 +545,7 @@ export interface CompleteInventoryCountInput {
   /** Stable fingerprint returned by the reconciliation plan. */
   readonly intentFingerprint: string;
   /** Completion time. */
-  readonly completedAt: string;
+  readonly completedAtEpochMs: number;
   /** Committed discrepancy event; absent when no discrepancy existed. */
   readonly reconciliationEventId?: string;
 }
@@ -554,7 +554,7 @@ export interface CompleteInventoryCountInput {
 export function completeInventoryCount(
   input: CompleteInventoryCountInput
 ): InventoryCountBookResult {
-  assertCanonicalInventoryTime(input.completedAt, "count completion time");
+  assertInventoryEpochMilliseconds(input.completedAtEpochMs, "count completion time");
   const replay = findCountOperationReplay(
     input.book,
     input.operationId,
@@ -568,13 +568,13 @@ export function completeInventoryCount(
   if (count.status !== InventoryCountStatus.Observed) {
     throw new Error("Only an observed inventory count can complete.");
   }
-  if (count.observedAt === undefined || input.completedAt < count.observedAt) {
+  if (count.observedAtEpochMs === undefined || input.completedAtEpochMs < count.observedAtEpochMs) {
     throw new Error("Count completion cannot happen before the observation.");
   }
   const value: InventoryCount = {
     ...count,
     status: InventoryCountStatus.Completed,
-    statusAt: input.completedAt,
+    statusAtEpochMs: input.completedAtEpochMs,
     ...(input.reconciliationEventId === undefined
       ? {}
       : { reconciliationEventId: input.reconciliationEventId }),
@@ -597,7 +597,7 @@ export interface AbandonInventoryCountInput {
   /** Count being abandoned. */
   readonly countId: string;
   /** Abandonment occurrence time. */
-  readonly occurredAt: string;
+  readonly occurredAtEpochMs: number;
   /** Required plain reason for abandoning work. */
   readonly reason: string;
 }
@@ -606,12 +606,12 @@ export interface AbandonInventoryCountInput {
 export function abandonInventoryCount(
   input: AbandonInventoryCountInput
 ): InventoryCountBookResult {
-  assertCanonicalInventoryTime(input.occurredAt, "count abandon occurredAt");
+  assertInventoryEpochMilliseconds(input.occurredAtEpochMs, "count abandon occurredAtEpochMs");
   if (input.reason.trim().length === 0)
     throw new Error("Abandoned count needs reason.");
   const fingerprint = inventoryIntentFingerprint([
     input.countId,
-    input.occurredAt,
+    input.occurredAtEpochMs,
     input.reason,
   ]);
   const replay = findCountOperationReplay(
@@ -630,8 +630,8 @@ export function abandonInventoryCount(
   ) {
     throw new Error("Terminal inventory count cannot be abandoned again.");
   }
-  const lastCountWorkAt = count.observedAt ?? count.startedAt;
-  if (input.occurredAt < lastCountWorkAt) {
+  const lastCountWorkAtEpochMs = count.observedAtEpochMs ?? count.startedAtEpochMs;
+  if (input.occurredAtEpochMs < lastCountWorkAtEpochMs) {
     throw new Error(
       "Count abandonment cannot happen before the latest count work."
     );
@@ -639,7 +639,7 @@ export function abandonInventoryCount(
   const value: InventoryCount = {
     ...count,
     status: InventoryCountStatus.Abandoned,
-    statusAt: input.occurredAt,
+    statusAtEpochMs: input.occurredAtEpochMs,
     metadata: {
       ...(count.metadata ?? {}),
       abandonmentReason: input.reason,
@@ -699,7 +699,7 @@ function observationFingerprint(
 ): string {
   return inventoryIntentFingerprint([
     input.countId,
-    input.observedAt,
+    input.observedAtEpochMs,
     input.projection.lastRecordSequence,
     count.snapshotRecordSequence,
     input.observations.map(
@@ -719,8 +719,8 @@ function countCompletionFingerprint(
 ): string {
   return inventoryIntentFingerprint([
     input.countId,
-    input.completedAt,
-    count.observedAt ?? null,
+    input.completedAtEpochMs,
+    count.observedAtEpochMs ?? null,
     count.observedThroughRecordSequence ?? null,
     input.actorId ?? null,
     input.reason ?? null,

@@ -17,21 +17,21 @@ import {
 } from "./test-fixtures.js";
 
 /** Use-by between the allocation time and the availability-read time. */
-const useByBetweenTime1AndTime2 = "2026-08-24T09:30:00.000Z";
+const useByBetweenTime1AndTime2 = 1787563800000;
 /** Lot expiry safely after every test time. */
-const farFutureExpiry = "2027-08-24T00:00:00.000Z";
+const farFutureExpiry = 1819065600000;
 
 /** Read one revision summary or fail instead of hiding a test setup error. */
 async function currentAvailability(
   inventory: ReturnType<typeof createTestInventory>,
-  at: string
+  atEpochMs: number
 ) {
   const summary = await inventory.read.availability(
     inventoryStockSelector("item-a", {
       itemRevisionIds: ["item-a-v2"],
       locationIds: ["store"],
     }),
-    at
+    atEpochMs
   );
   const revision = summary.revisions[0];
   if (revision === undefined) {
@@ -45,18 +45,18 @@ async function currentAvailability(
 describe("truthful native availability read model", () => {
   it("separates physical, expired, exact-allocation, and broad-claim facts", async () => {
     // Mutable instant driving the injected clock across this availability scenario.
-    let recordedAt = time1;
+    let recordedAtEpochMs = time1;
     const inventory = createTestInventory(undefined, undefined, {
-      now: () => recordedAt,
+      nowEpochMs: () => recordedAtEpochMs,
     });
     await inventory.stock.receiveMany({
       operationId: "availability-receive-lots",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       lines: [
         {
           to: loosePosition("store", { lotId: "USABLE" }),
           amount: stockAmount("5", "piece"),
-          lot: { expiresAt: farFutureExpiry },
+          lot: { expiresAtEpochMs: farFutureExpiry },
         },
         {
           to: loosePosition("store", {
@@ -64,11 +64,11 @@ describe("truthful native availability read model", () => {
             containerId: "OPENED",
           }),
           amount: stockAmount("3", "piece"),
-          lot: { expiresAt: farFutureExpiry },
+          lot: { expiresAtEpochMs: farFutureExpiry },
           container: {
             containerType: "opened-vial",
-            openedAt: time0,
-            useBy: useByBetweenTime1AndTime2,
+            openedAtEpochMs: time0,
+            useByEpochMs: useByBetweenTime1AndTime2,
           },
         },
       ],
@@ -79,12 +79,12 @@ describe("truthful native availability read model", () => {
       itemRevisionId: "item-a-v2",
       selector: { itemId: "item-a", lotIds: ["USABLE"] },
       requested: parseQuantity("2", "piece"),
-      createdAt: time1,
+      createdAtEpochMs: time1,
     });
     await inventory.reservations.allocateByPolicy({
       operationId: "allocate-usable-exact",
       reservationId: "usable-exact",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       method: InventoryAllocationMethod.Fifo,
     });
     await inventory.reservations.reserve({
@@ -93,12 +93,12 @@ describe("truthful native availability read model", () => {
       itemRevisionId: "item-a-v2",
       selector: { itemId: "item-a", lotIds: ["EXPIRED"] },
       requested: parseQuantity("1", "piece"),
-      createdAt: time1,
+      createdAtEpochMs: time1,
     });
     await inventory.reservations.allocateByPolicy({
       operationId: "allocate-expired-exact",
       reservationId: "expired-exact",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       method: InventoryAllocationMethod.Fifo,
     });
     await inventory.reservations.reserve({
@@ -107,9 +107,9 @@ describe("truthful native availability read model", () => {
       itemRevisionId: "item-a-v2",
       selector: { itemId: "item-a", locationIds: ["store"] },
       requested: parseQuantity("1", "piece"),
-      createdAt: time1,
+      createdAtEpochMs: time1,
     });
-    recordedAt = time3;
+    recordedAtEpochMs = time3;
 
     const { summary, revision } = await currentAvailability(inventory, time2);
     expect(revision.onHand.primary.quantity.amountMinor).toBe(8);
@@ -139,7 +139,7 @@ describe("truthful native availability read model", () => {
     });
     expect(byLot.get("EXPIRED")).toMatchObject({
       expired: true,
-      effectiveUseBy: useByBetweenTime1AndTime2,
+      effectiveUseByEpochMs: useByBetweenTime1AndTime2,
       exactlyAllocated: { amountMinor: 1, unit: "piece" },
       exactAllocationReservationIds: ["expired-exact"],
       unallocatedUsablePhysical: { amountMinor: 0, unit: "piece" },
@@ -155,13 +155,13 @@ describe("truthful native availability read model", () => {
     );
     await inventory.stock.issue({
       operationId: "availability-record-deficit",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       from: loosePosition("store", { lotId: "__untracked__" }),
       amount: stockAmount("5", "piece"),
     });
     await inventory.stock.receive({
       operationId: "availability-receive-positive",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       to: loosePosition("store", { lotId: "POSITIVE" }),
       amount: stockAmount("10", "piece"),
     });
@@ -212,13 +212,13 @@ describe("truthful native availability read model", () => {
     );
     await inventory.stock.issue({
       operationId: "availability-record-multilot-deficit",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       from: loosePosition("store", { lotId: "__untracked__" }),
       amount: stockAmount("5", "piece"),
     });
     await inventory.stock.receiveMany({
       operationId: "availability-receive-multilot-positive",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       lines: [
         {
           to: loosePosition("store", { lotId: "A-FIRST" }),
@@ -275,11 +275,11 @@ describe("truthful native availability read model", () => {
 
   it("reports exact allocations whose physical positions disappeared", async () => {
     const inventory = createTestInventory(undefined, undefined, {
-      now: () => time3,
+      nowEpochMs: () => time3,
     });
     await inventory.stock.receive({
       operationId: "receive-unbacked-position",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("store", { lotId: "MISSING" }),
       amount: stockAmount("1", "piece"),
     });
@@ -289,17 +289,17 @@ describe("truthful native availability read model", () => {
       itemRevisionId: "item-a-v2",
       selector: { itemId: "item-a", lotIds: ["MISSING"] },
       requested: parseQuantity("1", "piece"),
-      createdAt: time1,
+      createdAtEpochMs: time1,
     });
     await inventory.reservations.allocateByPolicy({
       operationId: "allocate-unbacked",
       reservationId: "unbacked-claim",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       method: InventoryAllocationMethod.Fifo,
     });
     await inventory.stock.scrap({
       operationId: "physically-destroy-unbacked",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       from: loosePosition("store", { lotId: "MISSING" }),
       amount: stockAmount("1", "piece"),
       reason: "The allocated piece was physically destroyed.",
@@ -319,7 +319,7 @@ describe("truthful native availability read model", () => {
     const inventory = createTestInventory();
     await inventory.stock.receiveMany({
       operationId: "receive-several-allocation-rows",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       lines: [
         {
           to: loosePosition("store", { lotId: "ALLOC-A" }),
@@ -337,12 +337,12 @@ describe("truthful native availability read model", () => {
       itemRevisionId: "item-a-v2",
       selector: { itemId: "item-a", lotIds: ["ALLOC-A"] },
       requested: parseQuantity("2", "piece"),
-      createdAt: time1,
+      createdAtEpochMs: time1,
     });
     await inventory.reservations.allocateByPolicy({
       operationId: "allocate-allocation-a",
       reservationId: "allocation-a",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       method: InventoryAllocationMethod.Fifo,
     });
     await inventory.reservations.reserve({
@@ -351,12 +351,12 @@ describe("truthful native availability read model", () => {
       itemRevisionId: "item-a-v2",
       selector: { itemId: "item-a", lotIds: ["ALLOC-B"] },
       requested: parseQuantity("3", "piece"),
-      createdAt: time1,
+      createdAtEpochMs: time1,
     });
     await inventory.reservations.allocateByPolicy({
       operationId: "allocate-allocation-b",
       reservationId: "allocation-b",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       method: InventoryAllocationMethod.Fifo,
     });
 

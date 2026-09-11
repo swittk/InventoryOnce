@@ -98,7 +98,7 @@ export function inventoryProjectionDigest(
     sortedRecordRows(projection.positionIdsByItemId),
     sortedRecordRows(projection.positionIdsByItemRevisionId),
     sortedRecordRows(projection.positionIdsByContainerIdentity),
-    sortedRecordRows(projection.positiveLayerStartedAtByPositionId),
+    sortedRecordRows(projection.positiveLayerStartedAtEpochMsByPositionId),
     sortedRecordRows(projection.positivePositionIdBySerialIdentity),
     sortedRecordRows(projection.containers),
     sortedRecordRows(projection.containerRootEventIdByIdentity),
@@ -291,7 +291,7 @@ export function inventoryDurablePlanDigest(parts: {
     /** Stable operation identity. */
     readonly operationId: string;
     /** Frozen durable record time. */
-    readonly recordedAt: string;
+    readonly recordedAtEpochMs: number;
     /** Published world revision after this plan. */
     readonly worldRevision: number;
     /** Optional committed event identity. */
@@ -486,8 +486,8 @@ function sameReservationCreationFacts(
       left.operationId,
       left.itemRevisionId,
       left.requested,
-      left.createdAt,
-      left.expiresAt ?? null,
+      left.createdAtEpochMs,
+      left.expiresAtEpochMs ?? null,
       left.allowExpiredStock ?? false,
       left.sourceReference ?? null,
       left.actorId ?? null,
@@ -498,8 +498,8 @@ function sameReservationCreationFacts(
       right.operationId,
       right.itemRevisionId,
       right.requested,
-      right.createdAt,
-      right.expiresAt ?? null,
+      right.createdAtEpochMs,
+      right.expiresAtEpochMs ?? null,
       right.allowExpiredStock ?? false,
       right.sourceReference ?? null,
       right.actorId ?? null,
@@ -595,7 +595,7 @@ function assertAllowedCountTransition(
     }
     if (
       !sameJson(base.observations, next.observations) ||
-      base.observedAt !== next.observedAt ||
+      base.observedAtEpochMs !== next.observedAtEpochMs ||
       base.observedThroughRecordSequence !== next.observedThroughRecordSequence
     ) {
       throw new Error(
@@ -612,7 +612,7 @@ function assertAllowedCountTransition(
     throw new Error("Count abandon must make one non-terminal row abandoned.");
   if (
     !sameJson(base.observations, next.observations) ||
-    base.observedAt !== next.observedAt ||
+    base.observedAtEpochMs !== next.observedAtEpochMs ||
     base.observedThroughRecordSequence !== next.observedThroughRecordSequence
   ) {
     throw new Error(
@@ -632,7 +632,7 @@ function sameCountStartFacts(
       left.operationId,
       left.itemRevisionId,
       left.selector,
-      left.startedAt,
+      left.startedAtEpochMs,
       left.snapshotRecordSequence,
       left.actorId ?? null,
       left.sourceReference ?? null,
@@ -642,7 +642,7 @@ function sameCountStartFacts(
       right.operationId,
       right.itemRevisionId,
       right.selector,
-      right.startedAt,
+      right.startedAtEpochMs,
       right.snapshotRecordSequence,
       right.actorId ?? null,
       right.sourceReference ?? null,

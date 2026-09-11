@@ -68,7 +68,7 @@ function createRefinementMigration(balance = "5"): {
     declaration: {
       migrationId: "formal-migration",
       sourceSystem: "formal-legacy-source",
-      cutoverAt: time0,
+      cutoverAtEpochMs: time0,
       openingStock: [
         {
           openingId: "formal-opening",
@@ -77,7 +77,7 @@ function createRefinementMigration(balance = "5"): {
           }),
           amount: stockAmount(balance, "piece"),
           itemRevisionId: "item-a-v2",
-          lot: { manufacturedAt: time0, expiresAt: time3 },
+          lot: { manufacturedAtEpochMs: time0, expiresAtEpochMs: time3 },
           source: { sourceType: "legacy-row", sourceId: "formal-opening" },
         },
       ],
@@ -133,13 +133,13 @@ describe("formal implementation state/result refinement", () => {
       declaration: {
         migrationId: "formal-special-key-migration",
         sourceSystem: "formal-special-key-source",
-        cutoverAt: time0,
+        cutoverAtEpochMs: time0,
         openingStock: [],
         sourceDispositions: [
           inventoryMigrationSnapshotSupersededDisposition({
             dispositionId: "formal-special-key-row",
             source: { sourceType: "legacy", sourceId: "row" },
-            snapshotAt: time0,
+            snapshotAtEpochMs: time0,
             reason: "Retain exact audit evidence.",
             evidence: evidence as never,
           }),
@@ -169,7 +169,7 @@ describe("formal implementation state/result refinement", () => {
           const inventory = createTestInventory();
           const receiveCommand = {
             operationId: `bounded-receive-${suffix}`,
-            occurredAt: time0,
+            occurredAtEpochMs: time0,
             to: loosePosition("store", { lotId: `BOUNDED-${suffix}` }),
             amount: stockAmount(String(received), "piece"),
           };
@@ -180,7 +180,7 @@ describe("formal implementation state/result refinement", () => {
 
           const issueCommand = {
             operationId: `bounded-issue-${suffix}`,
-            occurredAt: time1,
+            occurredAtEpochMs: time1,
             selector: inventoryStockSelector("item-a", {
               locationIds: ["store"],
             }),
@@ -194,7 +194,7 @@ describe("formal implementation state/result refinement", () => {
 
           const transferCommand = {
             operationId: `bounded-transfer-${suffix}`,
-            occurredAt: time2,
+            occurredAtEpochMs: time2,
             selector: inventoryStockSelector("item-a", {
               locationIds: ["store"],
             }),
@@ -247,7 +247,7 @@ describe("formal implementation state/result refinement", () => {
     let before = await recordedInventory.read.world();
     const firstIssue = await recordedInventory.stock.issueByPolicy({
       operationId: "formal-record-deficit-from-empty",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       selector,
       amount: stockAmount("5", "piece"),
       method: InventoryAllocationMethod.Fifo,
@@ -269,7 +269,7 @@ describe("formal implementation state/result refinement", () => {
     const replayBefore = after;
     const replayedFirstIssue = await recordedInventory.stock.issueByPolicy({
       operationId: "formal-record-deficit-from-empty",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       selector,
       amount: stockAmount("5", "piece"),
       method: InventoryAllocationMethod.Fifo,
@@ -303,7 +303,7 @@ describe("formal implementation state/result refinement", () => {
     before = after;
     const receipt = await recordedInventory.stock.receive({
       operationId: "formal-receive-after-recorded-deficit",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       to: loosePosition("store", { lotId: "FORMAL-LATE-RECEIPT" }),
       amount: stockAmount("10", "piece"),
     });
@@ -325,7 +325,7 @@ describe("formal implementation state/result refinement", () => {
     before = after;
     const secondIssue = await recordedInventory.stock.issueByPolicy({
       operationId: "formal-issue-through-covered-deficit",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       selector: inventoryStockSelector("item-a", {
         locationIds: ["store"],
         lotIds: ["FORMAL-LATE-RECEIPT"],
@@ -351,7 +351,7 @@ describe("formal implementation state/result refinement", () => {
     await expect(
       rejectingInventory.stock.issueByPolicy({
         operationId: "formal-reject-deficit-from-empty",
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         selector,
         amount: stockAmount("1", "piece"),
         method: InventoryAllocationMethod.Fifo,
@@ -370,7 +370,7 @@ describe("formal implementation state/result refinement", () => {
     const states = [await authority.read()];
     await authority.certifyAdapter({
       certificationDigest: "formal-adapter-certification",
-      certifiedAt: time0,
+      certifiedAtEpochMs: time0,
     });
     states.push(
       await authority.enterShadow({
@@ -383,7 +383,7 @@ describe("formal implementation state/result refinement", () => {
         sourceRevision: 7,
         sourcePlanDigest: "formal-source-plan",
         sourceCatalogDigest: "formal-source-catalog",
-        startedAt: time1,
+        startedAtEpochMs: time1,
       })
     );
     states.push(
@@ -396,10 +396,10 @@ describe("formal implementation state/result refinement", () => {
       commandId: "formal-mismatch",
       legacyIntentDigest: "legacy-intent",
       authoritativeIntentDigest: "native-intent",
-      recordedAt: time2,
+      recordedAtEpochMs: time2,
     });
     await expect(
-      authority.claimFence({ fenceToken: "blocked-fence", startedAt: time2 })
+      authority.claimFence({ fenceToken: "blocked-fence", startedAtEpochMs: time2 })
     ).rejects.toThrow("mismatch evidence");
     expect((await authority.read()).mode).toBe(beforeMismatch.mode);
 
@@ -409,7 +409,7 @@ describe("formal implementation state/result refinement", () => {
     });
     await cleanAuthority.certifyAdapter({
       certificationDigest: "formal-adapter-certification",
-      certifiedAt: time0,
+      certifiedAtEpochMs: time0,
     });
     await cleanAuthority.enterShadow({
       certificationDigest: "formal-adapter-certification",
@@ -419,7 +419,7 @@ describe("formal implementation state/result refinement", () => {
       sourceRevision: 7,
       sourcePlanDigest: "formal-source-plan",
       sourceCatalogDigest: "formal-source-catalog",
-      startedAt: time1,
+      startedAtEpochMs: time1,
     });
     await cleanAuthority.authorizeCutover({
       authorizationId: "formal-clean-cutover-authorization",
@@ -427,7 +427,7 @@ describe("formal implementation state/result refinement", () => {
     states.push(
       await cleanAuthority.claimFence({
         fenceToken: "formal-fence",
-        startedAt: time2,
+        startedAtEpochMs: time2,
         sourceRoot: "formal-source-root",
         sourceRevision: 7,
       })
@@ -439,7 +439,7 @@ describe("formal implementation state/result refinement", () => {
       sourceRoot: "formal-source-root",
       targetWorldRoot: "formal-target-root",
       targetWorldRevision: 1,
-      activatedAt: time3,
+      activatedAtEpochMs: time3,
     });
     states.push(activated);
     for (const state of states) assertAbstractAuthorityInvariants(state);
@@ -459,7 +459,7 @@ describe("formal implementation state/result refinement", () => {
         sourceRoot: "formal-source-root",
         targetWorldRoot: "formal-target-root",
         targetWorldRevision: 1,
-        activatedAt: time3,
+        activatedAtEpochMs: time3,
       })
     ).toEqual(activated);
     await expect(cleanAuthority.releaseFence("formal-fence")).rejects.toThrow(

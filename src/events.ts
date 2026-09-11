@@ -147,7 +147,7 @@ export interface InventoryPositiveLayerProvenanceOverride {
   /** Exact stock position whose current uninterrupted positive layer is corrected. */
   readonly position: InventoryStockPositionKey;
   /** Correct physical start time; omission removes provenance when the positive layer no longer exists. */
-  readonly startedAt?: string;
+  readonly startedAtEpochMs?: number;
 }
 
 /** One conserved movement that carries FIFO layer age from an exact source to destination. */
@@ -213,8 +213,8 @@ export interface InventoryEventDraft {
   readonly operationId: string;
   /** Generic physical/business meaning of the event. */
   readonly kind: InventoryEventKind;
-  /** Real-world event occurrence time as canonical ISO-8601 text. */
-  readonly occurredAt: string;
+  /** Real-world event occurrence time as safe-integer epoch milliseconds. */
+  readonly occurredAtEpochMs: number;
   /** Signed exact stock changes; may be empty for metadata/traceability-only events. */
   readonly stockEffects: readonly InventoryStockEffect[];
   /** Conserved source-to-destination movements that retain FIFO layer age. */
@@ -252,7 +252,7 @@ export interface InventoryEventDraft {
 /** Durable immutable event after storage assigns record time and total order. */
 export interface InventoryCommittedEvent extends InventoryEventDraft {
   /** Time this event record became durable, distinct from physical occurrence time. */
-  readonly recordedAt: string;
+  readonly recordedAtEpochMs: number;
   /** Monotonic durable stream position used for projections/count snapshots/corrections. */
   readonly recordSequence: number;
 }
@@ -272,7 +272,7 @@ export function defineInventoryEvent({
 }: DefineInventoryEventInput): InventoryEventDraft {
   assertInventoryIdentity(event.eventId, "eventId");
   assertInventoryIdentity(event.operationId, "operationId");
-  assertCanonicalInventoryTime(event.occurredAt, "occurredAt");
+  assertInventoryEpochMilliseconds(event.occurredAtEpochMs, "occurredAtEpochMs");
   if (event.kind === InventoryEventKind.CatalogPublication) {
     if (event.catalogSnapshot === undefined) {
       throw new Error(
@@ -417,18 +417,22 @@ export function defineInventoryEvent({
 /** Assign durable record time/order after storage has won the operation commit. */
 export function commitInventoryEvent(
   event: InventoryEventDraft,
-  recordedAt: string,
+  recordedAtEpochMs: number,
   recordSequence: number
 ): InventoryCommittedEvent {
-  assertCanonicalInventoryTime(recordedAt, "recordedAt");
+  assertInventoryEpochMilliseconds(recordedAtEpochMs, "recordedAtEpochMs");
+  assertInventoryEpochMilliseconds(event.occurredAtEpochMs, "occurredAtEpochMs");
   // A committed physical fact cannot claim it happened after the clock that stored it.
-  if (event.occurredAt > recordedAt) {
+  if (event.occurredAtEpochMs > recordedAtEpochMs) {
     throw new Error(
-      "Inventory event occurredAt cannot be after its durable recordedAt time."
+      "Inventory event occurredAtEpochMs cannot be after its durable recordedAtEpochMs time."
     );
   }
   for (const override of event.positiveLayerProvenanceOverrides ?? []) {
-    if (override.startedAt !== undefined && override.startedAt > recordedAt) {
+    if (override.startedAtEpochMs !== undefined) {
+      assertInventoryEpochMilliseconds(override.startedAtEpochMs, "positive-layer startedAtEpochMs");
+    }
+    if (override.startedAtEpochMs !== undefined && override.startedAtEpochMs > recordedAtEpochMs) {
       throw new Error(
         "Inventory positive-layer provenance cannot start after durable record time."
       );
@@ -437,7 +441,7 @@ export function commitInventoryEvent(
   if (!Number.isSafeInteger(recordSequence) || recordSequence <= 0) {
     throw new Error("recordSequence must be a positive safe integer.");
   }
-  return { ...event, recordedAt, recordSequence };
+  return { ...event, recordedAtEpochMs, recordSequence };
 }
 
 /** Stable deterministic fingerprint for exact idempotency comparison. */
@@ -448,7 +452,7 @@ export function inventoryEventIntentFingerprint(
     event.eventId,
     event.operationId,
     event.kind,
-    event.occurredAt,
+    event.occurredAtEpochMs,
     event.actorId ?? null,
     event.sourcePartyId ?? null,
     event.destinationPartyId ?? null,
@@ -478,7 +482,7 @@ export function inventoryEventIntentFingerprint(
       /** Turn one correction provenance replacement into stable fingerprint parts. */
       (override) => [
         inventoryStockPositionIdentity(override.position),
-        override.startedAt ?? null,
+        override.startedAtEpochMs ?? null,
       ]
     ),
     event.stockEffects.map(
@@ -818,8 +822,8 @@ function normalizePositiveLayerProvenanceOverrides(
         );
       }
     }
-    if (raw.startedAt !== undefined) {
-      assertCanonicalInventoryTime(raw.startedAt, "positive-layer startedAt");
+    if (raw.startedAtEpochMs !== undefined) {
+      assertInventoryEpochMilliseconds(raw.startedAtEpochMs, "positive-layer startedAtEpochMs");
     }
     const identity = inventoryStockPositionIdentity(position);
     if (seen.has(identity)) {
@@ -830,7 +834,7 @@ function normalizePositiveLayerProvenanceOverrides(
     seen.add(identity);
     normalized.push({
       position,
-      ...(raw.startedAt === undefined ? {} : { startedAt: raw.startedAt }),
+      ...(raw.startedAtEpochMs === undefined ? {} : { startedAtEpochMs: raw.startedAtEpochMs }),
     });
   }
   normalized.sort(comparePositiveLayerProvenanceOverride);
@@ -944,16 +948,16 @@ function normalizeLotDefinitions(
       throw new Error(`Inventory event repeats lot definition ${identity}.`);
     }
     seen.add(identity);
-    if (raw.manufacturedAt !== undefined) {
-      assertCanonicalInventoryTime(raw.manufacturedAt, "lot manufacturedAt");
+    if (raw.manufacturedAtEpochMs !== undefined) {
+      assertInventoryEpochMilliseconds(raw.manufacturedAtEpochMs, "lot manufacturedAtEpochMs");
     }
-    if (raw.expiresAt !== undefined) {
-      assertCanonicalInventoryTime(raw.expiresAt, "lot expiresAt");
+    if (raw.expiresAtEpochMs !== undefined) {
+      assertInventoryEpochMilliseconds(raw.expiresAtEpochMs, "lot expiresAtEpochMs");
     }
     if (
-      raw.manufacturedAt !== undefined &&
-      raw.expiresAt !== undefined &&
-      raw.expiresAt <= raw.manufacturedAt
+      raw.manufacturedAtEpochMs !== undefined &&
+      raw.expiresAtEpochMs !== undefined &&
+      raw.expiresAtEpochMs <= raw.manufacturedAtEpochMs
     ) {
       throw new Error(
         "Inventory lot expiry must be after its manufacturing time."
@@ -962,10 +966,10 @@ function normalizeLotDefinitions(
     normalized.push({
       itemId: raw.itemId,
       lotId: raw.lotId,
-      ...(raw.manufacturedAt === undefined
+      ...(raw.manufacturedAtEpochMs === undefined
         ? {}
-        : { manufacturedAt: raw.manufacturedAt }),
-      ...(raw.expiresAt === undefined ? {} : { expiresAt: raw.expiresAt }),
+        : { manufacturedAtEpochMs: raw.manufacturedAtEpochMs }),
+      ...(raw.expiresAtEpochMs === undefined ? {} : { expiresAtEpochMs: raw.expiresAtEpochMs }),
       ...(raw.metadata === undefined ? {} : { metadata: raw.metadata }),
     });
   }
@@ -1006,12 +1010,12 @@ function assertLotDefinitionsBelongToEvent(
 /** Stable collision-free lot-definition fingerprint components. */
 function lotDefinitionFingerprintParts(
   definition: InventoryLotDefinition
-): readonly (string | null)[] {
+): readonly (string | number | null)[] {
   return [
     definition.itemId,
     definition.lotId,
-    definition.manufacturedAt ?? null,
-    definition.expiresAt ?? null,
+    definition.manufacturedAtEpochMs ?? null,
+    definition.expiresAtEpochMs ?? null,
     inventoryMetadataFingerprint(definition.metadata),
   ];
 }
@@ -1046,18 +1050,18 @@ function normalizeContainerDefinitions(
         "Inventory containerType must be omitted instead of empty."
       );
     }
-    if (raw.openedAt !== undefined) {
-      assertCanonicalInventoryTime(raw.openedAt, "container openedAt");
+    if (raw.openedAtEpochMs !== undefined) {
+      assertInventoryEpochMilliseconds(raw.openedAtEpochMs, "container openedAtEpochMs");
     }
-    if (raw.useBy !== undefined) {
-      assertCanonicalInventoryTime(raw.useBy, "container useBy");
+    if (raw.useByEpochMs !== undefined) {
+      assertInventoryEpochMilliseconds(raw.useByEpochMs, "container useByEpochMs");
     }
     if (
-      raw.openedAt !== undefined &&
-      raw.useBy !== undefined &&
-      raw.useBy <= raw.openedAt
+      raw.openedAtEpochMs !== undefined &&
+      raw.useByEpochMs !== undefined &&
+      raw.useByEpochMs <= raw.openedAtEpochMs
     ) {
-      throw new Error("Inventory container useBy must be after openedAt.");
+      throw new Error("Inventory container useByEpochMs must be after openedAtEpochMs.");
     }
     normalized.push({
       containerId: raw.containerId,
@@ -1067,8 +1071,8 @@ function normalizeContainerDefinitions(
       ...(raw.identifiers === undefined
         ? {}
         : { identifiers: normalizeContainerIdentifiers(raw.identifiers) }),
-      ...(raw.openedAt === undefined ? {} : { openedAt: raw.openedAt }),
-      ...(raw.useBy === undefined ? {} : { useBy: raw.useBy }),
+      ...(raw.openedAtEpochMs === undefined ? {} : { openedAtEpochMs: raw.openedAtEpochMs }),
+      ...(raw.useByEpochMs === undefined ? {} : { useByEpochMs: raw.useByEpochMs }),
       ...(raw.metadata === undefined ? {} : { metadata: raw.metadata }),
     });
   }
@@ -1148,13 +1152,13 @@ function assertContainerDefinitionsBelongToEvent(
 /** Stable collision-free container-definition fingerprint components. */
 function containerDefinitionFingerprintParts(
   definition: InventoryContainerDefinition
-): readonly (string | null)[] {
+): readonly (string | number | null)[] {
   return [
     definition.containerId,
     definition.containerType ?? null,
     inventoryMetadataFingerprint(definition.identifiers),
-    definition.openedAt ?? null,
-    definition.useBy ?? null,
+    definition.openedAtEpochMs ?? null,
+    definition.useByEpochMs ?? null,
     inventoryMetadataFingerprint(definition.metadata),
   ];
 }
@@ -1478,19 +1482,9 @@ function compareTraceabilityChange(
   return compareInventoryIdentityText(traceabilityChangeIdentity(left), traceabilityChangeIdentity(right));
 }
 
-/** Require canonical ISO-8601 text so intent fingerprints do not accept equivalent spellings. */
-export function assertCanonicalInventoryTime(
-  value: string,
-  label: string
-): void {
-  const epoch = Date.parse(value);
-  if (
-    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/u.test(value) ||
-    !Number.isFinite(epoch) ||
-    new Date(epoch).toISOString() !== value
-  ) {
-    throw new Error(
-      `${label} must be canonical ISO-8601 text such as 2026-08-24T09:00:00.000Z.`
-    );
+/** Require an exact numeric instant; epoch zero and dates before 1970 are valid. */
+export function assertInventoryEpochMilliseconds(value: number, label: string): void {
+  if (!Number.isSafeInteger(value)) {
+    throw new Error(`${label} must be safe-integer epoch milliseconds.`);
   }
 }

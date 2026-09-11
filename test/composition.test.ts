@@ -243,7 +243,7 @@ describe("revision-frozen heterogeneous package composition", () => {
 
     await inventory.stock.receive({
       operationId: "receive-old-ocp-pack",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: {
         itemId: fixture.oldPackItem.itemId,
         locationId: "store",
@@ -251,23 +251,23 @@ describe("revision-frozen heterogeneous package composition", () => {
         containerId: "OLD-OCP-CARTON",
       },
       amount: packageAmount(1, fixture.oldPack.revisionId),
-      lot: { expiresAt: "2028-01-01T00:00:00.000Z" },
+      lot: { expiresAtEpochMs: 1830297600000 },
       container: { containerType: "calendar-pack-carton" },
     });
     await inventory.stock.receive({
       operationId: "receive-new-ocp-pack",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: {
         itemId: fixture.newPackItem.itemId,
         locationId: "store",
         lotId: "NEW-OCP-LOT",
       },
       amount: packageAmount(1, fixture.newPack.revisionId),
-      lot: { expiresAt: "2029-01-01T00:00:00.000Z" },
+      lot: { expiresAtEpochMs: 1861920000000 },
     });
     await inventory.stock.transfer({
       operationId: "transfer-old-ocp-pack",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       from: {
         itemId: fixture.oldPackItem.itemId,
         locationId: "store",
@@ -281,7 +281,7 @@ describe("revision-frozen heterogeneous package composition", () => {
 
     const command = {
       operationId: "open-old-ocp-pack",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       from: {
         itemId: fixture.oldPackItem.itemId,
         locationId: "room",
@@ -339,8 +339,8 @@ describe("revision-frozen heterogeneous package composition", () => {
     ).toBe(0);
     expect(
       (await inventory.read.lot("active-a", "OLD-OCP-LOT"))?.definition
-        .expiresAt
-    ).toBe("2028-01-01T00:00:00.000Z");
+        .expiresAtEpochMs
+    ).toBe(1830297600000);
     const newPackRows = await inventory.read.positions({
       itemId: fixture.newPackItem.itemId,
       itemRevisionIds: [fixture.newPackItem.revisionId],
@@ -366,7 +366,7 @@ describe("revision-frozen heterogeneous package composition", () => {
     });
     await inventory.stock.receive({
       operationId: "receive-two-new-ocp-packs",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: {
         itemId: fixture.newPackItem.itemId,
         locationId: "store",
@@ -376,7 +376,7 @@ describe("revision-frozen heterogeneous package composition", () => {
     });
     await inventory.compositions.open({
       operationId: "open-two-new-ocp-packs",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       from: {
         itemId: fixture.newPackItem.itemId,
         locationId: "store",
@@ -620,7 +620,7 @@ describe("revision-frozen heterogeneous package composition", () => {
     });
     await inventory.stock.receive({
       operationId: "receive-placement-guard-pack",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: {
         itemId: fixture.oldPackItem.itemId,
         locationId: "store",
@@ -639,7 +639,7 @@ describe("revision-frozen heterogeneous package composition", () => {
     await expect(
       inventory.compositions.open({
         operationId: "reject-hidden-composition-transfer",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         from: {
           itemId: fixture.oldPackItem.itemId,
           locationId: "store",
@@ -661,7 +661,7 @@ describe("revision-frozen heterogeneous package composition", () => {
     }) as Record<string, { readonly metadata?: InventoryMetadata }>;
     await inventory.compositions.open({
       operationId: "open-placement-guard-pack",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       from: {
         itemId: fixture.oldPackItem.itemId,
         locationId: "store",
@@ -704,19 +704,19 @@ describe("revision-frozen heterogeneous package composition", () => {
     });
     await inventory.stock.receive({
       operationId: "receive-ambiguous-output-pack",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: {
         itemId: fixture.newPackItem.itemId,
         locationId: "store",
         lotId: "AMBIGUOUS-SOURCE-LOT",
       },
       amount: packageAmount(1, fixture.newPack.revisionId),
-      lot: { expiresAt: "2029-01-01T00:00:00.000Z" },
+      lot: { expiresAtEpochMs: 1861920000000 },
     });
     await expect(
       inventory.compositions.open({
         operationId: "open-ambiguous-output-pack",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         from: {
           itemId: fixture.newPackItem.itemId,
           locationId: "store",
@@ -743,7 +743,7 @@ describe("revision-frozen heterogeneous package composition", () => {
     });
     await inventory.stock.receive({
       operationId: "receive-ambiguous-source-pack",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: {
         itemId: fixture.newPackItem.itemId,
         locationId: "store",
@@ -752,7 +752,7 @@ describe("revision-frozen heterogeneous package composition", () => {
         containerId: "AMBIGUOUS-SOURCE-CONTAINER",
       },
       amount: packageAmount(1, fixture.newPack.revisionId),
-      lot: { expiresAt: "2029-01-01T00:00:00.000Z" },
+      lot: { expiresAtEpochMs: 1861920000000 },
       container: { containerType: "calendar-pack" },
     });
     const from = {
@@ -766,7 +766,7 @@ describe("revision-frozen heterogeneous package composition", () => {
     await expect(
       inventory.compositions.open({
         operationId: "reject-ambiguous-source-pack",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         from,
         packageCount: 1,
       })
@@ -775,7 +775,7 @@ describe("revision-frozen heterogeneous package composition", () => {
     await expect(
       inventory.compositions.open({
         operationId: "open-explicit-ambiguous-source-pack",
-        occurredAt: time2,
+        occurredAtEpochMs: time2,
         from,
         packageCount: 1,
         sourceTraceabilityNode: {
@@ -795,7 +795,7 @@ describe("revision-frozen heterogeneous package composition", () => {
     });
     await strictInventory.stock.receive({
       operationId: "receive-strict-no-lot-pack",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: {
         itemId: fixture.oldPackItem.itemId,
         locationId: "store",
@@ -805,7 +805,7 @@ describe("revision-frozen heterogeneous package composition", () => {
     await expect(
       strictInventory.compositions.open({
         operationId: "reject-strict-no-lot-open",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         from: {
           itemId: fixture.oldPackItem.itemId,
           locationId: "store",
@@ -844,7 +844,7 @@ describe("revision-frozen heterogeneous package composition", () => {
     });
     await optionalInventory.stock.receive({
       operationId: "receive-optional-no-lot-pack",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: {
         itemId: fixture.oldPackItem.itemId,
         locationId: "store",
@@ -853,7 +853,7 @@ describe("revision-frozen heterogeneous package composition", () => {
     });
     await optionalInventory.compositions.open({
       operationId: "open-optional-no-lot-pack",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       from: {
         itemId: fixture.oldPackItem.itemId,
         locationId: "store",
@@ -900,7 +900,7 @@ describe("revision-frozen heterogeneous package composition", () => {
     });
     await explicitInventory.stock.receive({
       operationId: "receive-explicit-lot-pack",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: {
         itemId: fixture.oldPackItem.itemId,
         locationId: "store",
@@ -909,7 +909,7 @@ describe("revision-frozen heterogeneous package composition", () => {
     });
     const explicitOpen = {
       operationId: "open-explicit-lot-pack",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       from: {
         itemId: fixture.oldPackItem.itemId,
         locationId: "store",
@@ -925,7 +925,7 @@ describe("revision-frozen heterogeneous package composition", () => {
       outputPlacements: {
         "active-a": {
           lotId: "ACTIVE-OUTPUT-LOT",
-          lot: { expiresAt: "2028-01-01T00:00:00.000Z" },
+          lot: { expiresAtEpochMs: 1830297600000 },
         },
         "placebo-a": { lotId: "PLACEBO-OUTPUT-LOT" },
       },

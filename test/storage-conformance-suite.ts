@@ -143,7 +143,7 @@ const storagePlanShapes: readonly StoragePlanShape[] = Object.freeze([
     run: async (inventory) => {
       await inventory.catalog.publish({
         operationId: "shape-catalog",
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
       });
     },
     assertPublished: (world) => {
@@ -171,7 +171,7 @@ const storagePlanShapes: readonly StoragePlanShape[] = Object.freeze([
     run: async (inventory) => {
       await inventory.stock.receive({
         operationId: "shape-stock",
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         to: loosePosition("stock-store", {
           serialId: "SHAPE-SERIAL",
           containerId: "SHAPE-STOCK-CONTAINER",
@@ -205,7 +205,7 @@ const storagePlanShapes: readonly StoragePlanShape[] = Object.freeze([
         ]
       ).toEqual([positionId]);
       expect(
-        world.projection.positiveLayerStartedAtByPositionId[positionId]
+        world.projection.positiveLayerStartedAtEpochMsByPositionId[positionId]
       ).toBe(time0);
       expect(
         world.projection.positivePositionIdBySerialIdentity[
@@ -224,12 +224,12 @@ const storagePlanShapes: readonly StoragePlanShape[] = Object.freeze([
     run: async (inventory) => {
       await inventory.lots.define({
         operationId: "shape-lot-master",
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         itemId: "item-a",
         lotId: "SHAPE-LOT",
         lot: {
-          manufacturedAt: time0,
-          expiresAt: time3,
+          manufacturedAtEpochMs: time0,
+          expiresAtEpochMs: time3,
           metadata: { source: "conformance" },
         },
       });
@@ -240,7 +240,7 @@ const storagePlanShapes: readonly StoragePlanShape[] = Object.freeze([
           definition: expect.objectContaining({
             itemId: "item-a",
             lotId: "SHAPE-LOT",
-            expiresAt: time3,
+            expiresAtEpochMs: time3,
           }),
           rootEventId: "inventory:event:shape-lot-master",
         }),
@@ -254,7 +254,7 @@ const storagePlanShapes: readonly StoragePlanShape[] = Object.freeze([
     },
     assertPublicReads: async (inventory) => {
       expect(await inventory.read.lot("item-a", "SHAPE-LOT")).toMatchObject({
-        definition: { itemId: "item-a", lotId: "SHAPE-LOT", expiresAt: time3 },
+        definition: { itemId: "item-a", lotId: "SHAPE-LOT", expiresAtEpochMs: time3 },
         rootEventId: "inventory:event:shape-lot-master",
       });
     },
@@ -267,7 +267,7 @@ const storagePlanShapes: readonly StoragePlanShape[] = Object.freeze([
     run: async (inventory) => {
       await inventory.containers.define({
         operationId: "shape-container-master",
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         containerId: "SHAPE-CONTAINER",
         container: {
           containerType: "carton",
@@ -304,7 +304,7 @@ const storagePlanShapes: readonly StoragePlanShape[] = Object.freeze([
     run: async (inventory) => {
       await inventory.traceability.aggregate({
         operationId: "shape-traceability",
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         from: {
           kind: InventoryTraceabilityNodeKind.Container,
           id: "SHAPE-CHILD",
@@ -366,7 +366,7 @@ const storagePlanShapes: readonly StoragePlanShape[] = Object.freeze([
     setup: async (inventory) => {
       await inventory.stock.receive({
         operationId: "shape-reserve-stock",
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         to: loosePosition("reserve-store"),
         amount: stockAmount("2", "piece"),
       });
@@ -378,7 +378,7 @@ const storagePlanShapes: readonly StoragePlanShape[] = Object.freeze([
         itemRevisionId: "item-a-v2",
         selector: { itemId: "item-a", locationIds: ["reserve-store"] },
         requested: parseQuantity("1", "piece"),
-        createdAt: time0,
+        createdAtEpochMs: time0,
       });
     },
     assertPublished: (world) => {
@@ -399,7 +399,7 @@ const storagePlanShapes: readonly StoragePlanShape[] = Object.freeze([
         countId: "shape-count",
         operationId: "shape-count-start",
         selector: { itemId: "item-a" },
-        startedAt: time0,
+        startedAtEpochMs: time0,
       });
     },
     assertPublished: (world) => {
@@ -417,7 +417,7 @@ const storagePlanShapes: readonly StoragePlanShape[] = Object.freeze([
     setup: async (inventory) => {
       await inventory.stock.receive({
         operationId: "shape-consume-stock",
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         to: loosePosition("consume-store"),
         amount: stockAmount("2", "piece"),
       });
@@ -427,7 +427,7 @@ const storagePlanShapes: readonly StoragePlanShape[] = Object.freeze([
         itemRevisionId: "item-a-v2",
         selector: { itemId: "item-a", locationIds: ["consume-store"] },
         requested: parseQuantity("1", "piece"),
-        createdAt: time0,
+        createdAtEpochMs: time0,
       });
       const position = (
         await inventory.read.positions({
@@ -440,7 +440,7 @@ const storagePlanShapes: readonly StoragePlanShape[] = Object.freeze([
       await inventory.reservations.allocate({
         operationId: "shape-consume-allocate",
         reservationId: "shape-consume-claim",
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         allocations: [
           { position: position.key, quantity: parseQuantity("1", "piece") },
         ],
@@ -458,7 +458,7 @@ const storagePlanShapes: readonly StoragePlanShape[] = Object.freeze([
       await inventory.reservations.consume({
         operationId: "shape-consume",
         reservationId: "shape-consume-claim",
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         fulfillment: [
           { from: position.key, amount: stockAmount("1", "piece") },
         ],
@@ -482,7 +482,7 @@ const storagePlanShapes: readonly StoragePlanShape[] = Object.freeze([
     setup: async (inventory) => {
       await inventory.stock.receive({
         operationId: "shape-count-stock",
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         to: loosePosition("count-store"),
         amount: stockAmount("2", "piece"),
       });
@@ -490,7 +490,7 @@ const storagePlanShapes: readonly StoragePlanShape[] = Object.freeze([
         countId: "shape-reconcile-count",
         operationId: "shape-reconcile-start",
         selector: { itemId: "item-a", locationIds: ["count-store"] },
-        startedAt: time0,
+        startedAtEpochMs: time0,
       });
       const position = (
         await inventory.read.positions({
@@ -503,7 +503,7 @@ const storagePlanShapes: readonly StoragePlanShape[] = Object.freeze([
       await inventory.counts.observe({
         operationId: "shape-reconcile-observe",
         countId: "shape-reconcile-count",
-        observedAt: time0,
+        observedAtEpochMs: time0,
         observations: [
           {
             position: position.key,
@@ -522,7 +522,7 @@ const storagePlanShapes: readonly StoragePlanShape[] = Object.freeze([
       await inventory.counts.reconcile({
         operationId: "shape-reconcile",
         countId: "shape-reconcile-count",
-        completedAt: time0,
+        completedAtEpochMs: time0,
         reason: "One piece was missing.",
       });
     },
@@ -631,7 +631,7 @@ function createStorageConformanceMigration() {
     declaration: {
       migrationId: "storage-conformance-migration",
       sourceSystem: "storage-conformance-source",
-      cutoverAt: time0,
+      cutoverAtEpochMs: time0,
       openingStock: [
         {
           openingId: "migration-container-stock",
@@ -641,7 +641,7 @@ function createStorageConformanceMigration() {
           }),
           amount: stockAmount("7", "piece"),
           itemRevisionId: "item-a-v2",
-          lot: { manufacturedAt: time0, expiresAt: time3 },
+          lot: { manufacturedAtEpochMs: time0, expiresAtEpochMs: time3 },
           container: {
             containerType: "carton",
             identifiers: { barcode: "MIGRATION-001" },
@@ -656,7 +656,7 @@ function createStorageConformanceMigration() {
             sourceType: "InventoryStockPendingOp",
             sourceId: "migration-pending-row",
           },
-          snapshotAt: time0,
+          snapshotAtEpochMs: time0,
           reason: "Opening snapshot supersedes this unresolved workflow row.",
           evidence: {
             workflowState: "pending",
@@ -711,7 +711,7 @@ export function runInventoryDurableStorageConformanceSuite(
       });
       const recorded = await recordInventory.stock.issueByPolicy({
         operationId: "conformance-record-deficit",
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         selector,
         amount: stockAmount("5", "piece"),
         method: InventoryAllocationMethod.Fifo,
@@ -737,7 +737,7 @@ export function runInventoryDurableStorageConformanceSuite(
 
       await restartedWithDeficit.stock.receive({
         operationId: "conformance-late-receipt",
-        occurredAt: time3,
+        occurredAtEpochMs: time3,
         to: loosePosition("deficit-store", { lotId: "LATE-RECEIPT" }),
         amount: stockAmount("10", "piece"),
       });
@@ -759,7 +759,7 @@ export function runInventoryDurableStorageConformanceSuite(
 
       const secondIssue = await restartedAfterReceipt.stock.issueByPolicy({
         operationId: "conformance-record-covered-shortfall",
-        occurredAt: time3,
+        occurredAtEpochMs: time3,
         selector: inventoryStockSelector("item-a", {
           itemRevisionIds: ["item-a-v2"],
           locationIds: ["deficit-store"],
@@ -786,7 +786,7 @@ export function runInventoryDurableStorageConformanceSuite(
       ).toBe(0);
       const replayed = await restartedAfterReceipt.stock.issueByPolicy({
         operationId: "conformance-record-covered-shortfall",
-        occurredAt: time3,
+        occurredAtEpochMs: time3,
         selector: inventoryStockSelector("item-a", {
           itemRevisionIds: ["item-a-v2"],
           locationIds: ["deficit-store"],
@@ -809,7 +809,7 @@ export function runInventoryDurableStorageConformanceSuite(
       await expect(
         rejectInventory.stock.issueByPolicy({
           operationId: "conformance-reject-deficit",
-          occurredAt: time0,
+          occurredAtEpochMs: time0,
           selector,
           amount: stockAmount("1", "piece"),
           method: InventoryAllocationMethod.Fifo,
@@ -912,7 +912,7 @@ export function runInventoryDurableStorageConformanceSuite(
         const inventory = createTestInventory(storage);
         const command = {
           operationId: "failpoint-receipt",
-          occurredAt: time0,
+          occurredAtEpochMs: time0,
           to: loosePosition("store"),
           amount: stockAmount("4", "piece"),
         };
@@ -1077,7 +1077,7 @@ export function runInventoryDurableStorageConformanceSuite(
         expect(
           await inventory.read.lot("item-a", "MIGRATION-LOT")
         ).toMatchObject({
-          definition: { lotId: "MIGRATION-LOT", expiresAt: time3 },
+          definition: { lotId: "MIGRATION-LOT", expiresAtEpochMs: time3 },
         });
         expect(await inventory.read.container("MIGRATION-CHILD")).toMatchObject(
           {
@@ -1138,7 +1138,7 @@ export function runInventoryDurableStorageConformanceSuite(
       const inventory = createTestInventory(storage);
       const command = {
         operationId: "concurrent-exact",
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         to: loosePosition("store"),
         amount: stockAmount("1", "piece"),
       };
@@ -1163,13 +1163,13 @@ export function runInventoryDurableStorageConformanceSuite(
       const results = await Promise.allSettled([
         inventory.stock.receive({
           operationId: "concurrent-changed",
-          occurredAt: time0,
+          occurredAtEpochMs: time0,
           to: loosePosition("store"),
           amount: stockAmount("1", "piece"),
         }),
         inventory.stock.receive({
           operationId: "concurrent-changed",
-          occurredAt: time0,
+          occurredAtEpochMs: time0,
           to: loosePosition("store"),
           amount: stockAmount("2", "piece"),
         }),
@@ -1211,7 +1211,7 @@ export function runInventoryDurableStorageConformanceSuite(
       const inventory = createTestInventory(storage);
       const command = {
         operationId: "pending-exact",
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         to: loosePosition("store"),
         amount: stockAmount("1", "piece"),
       };
@@ -1248,14 +1248,14 @@ export function runInventoryDurableStorageConformanceSuite(
       await expect(
         inventory.stock.receive({
           operationId: "pending-first",
-          occurredAt: time0,
+          occurredAtEpochMs: time0,
           to: loosePosition("store"),
           amount: stockAmount("1", "piece"),
         })
       ).rejects.toThrow("Stop after begin");
       await inventory.stock.receive({
         operationId: "second-after-repair",
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         to: loosePosition("store"),
         amount: stockAmount("2", "piece"),
       });
@@ -1286,7 +1286,7 @@ export function runInventoryDurableStorageConformanceSuite(
       const inventory = createTestInventory(storage);
       const command = {
         operationId: "abort-me",
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         to: loosePosition("store"),
         amount: stockAmount("1", "piece"),
       };
@@ -1338,7 +1338,7 @@ export function runInventoryDurableStorageConformanceSuite(
         await expect(
           inventory.stock.receive({
             operationId: frozenOperationId,
-            occurredAt: time0,
+            occurredAtEpochMs: time0,
             to: loosePosition("abort-store"),
             amount: stockAmount("1", "piece"),
           })

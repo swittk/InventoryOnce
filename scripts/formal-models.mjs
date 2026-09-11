@@ -73,6 +73,7 @@ export function formalConfigCheckNames(config) {
 
 /** Expected counterexamples as module, config, and the exact invariant TLC must reject. */
 export const formalInvariantMutationChecks = Object.freeze([
+  ["UseByReservation", "UseByReservationEpochZeroMutation", "AllocationEvidenceIsPaired"],
   [
     "SnapshotSupersededWorkflow",
     "SnapshotSupersededWorkflowResumeMutation",

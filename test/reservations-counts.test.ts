@@ -32,7 +32,7 @@ describe("broad reservations and physical truth", () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "current-reservation-stock",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("store"),
       amount: stockAmount("1", "piece"),
     });
@@ -42,12 +42,12 @@ describe("broad reservations and physical truth", () => {
       itemRevisionId: "item-a-v2",
       selector: { itemId: "item-a", locationIds: ["store"] },
       requested: parseQuantity("1", "piece"),
-      createdAt: time1,
+      createdAtEpochMs: time1,
     });
     await inventory.reservations.release({
       reservationId: "current-reservation",
       operationId: "current-reservation-release",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
     });
     const book = (await inventory.read.world()).reservations;
     const guardedOperations = new Proxy(book.operations, {
@@ -76,13 +76,13 @@ describe("broad reservations and physical truth", () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "receive-u1",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("u1"),
       amount: stockAmount("1", "piece"),
     });
     await inventory.stock.receive({
       operationId: "receive-u2",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("u2"),
       amount: stockAmount("1", "piece"),
     });
@@ -92,7 +92,7 @@ describe("broad reservations and physical truth", () => {
       itemRevisionId: "item-a-v2",
       selector: { itemId: "item-a" },
       requested: parseQuantity("1", "piece"),
-      createdAt: time1,
+      createdAtEpochMs: time1,
     });
     await inventory.reservations.reserve({
       reservationId: "claim-u1",
@@ -100,7 +100,7 @@ describe("broad reservations and physical truth", () => {
       itemRevisionId: "item-a-v2",
       selector: { itemId: "item-a", locationIds: ["u1"] },
       requested: parseQuantity("1", "piece"),
-      createdAt: time1,
+      createdAtEpochMs: time1,
     });
     const u2 = (
       await inventory.read.positions({
@@ -112,7 +112,7 @@ describe("broad reservations and physical truth", () => {
     await inventory.reservations.allocate({
       operationId: "allocate-broad-u2",
       reservationId: "claim-broad",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       allocations: [
         { position: u2.key, quantity: parseQuantity("1", "piece") },
       ],
@@ -123,7 +123,7 @@ describe("broad reservations and physical truth", () => {
         operationId: "refine-bound-claim",
         reservationId: "claim-broad",
         selector: { itemId: "item-a", locationIds: ["u1"] },
-        occurredAt: time3,
+        occurredAtEpochMs: time3,
       })
     ).rejects.toThrow("outside the declared selector");
     const report = await inventory.read.reservationFeasibility();
@@ -145,13 +145,13 @@ describe("broad reservations and physical truth", () => {
     );
     await inventory.stock.issue({
       operationId: "reservation-record-deficit",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       from: loosePosition("store", { lotId: "__untracked__" }),
       amount: stockAmount("5", "piece"),
     });
     await inventory.stock.receiveMany({
       operationId: "reservation-receive-after-deficit",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       lines: [
         {
           to: loosePosition("store", { lotId: "SUPPORT" }),
@@ -179,7 +179,7 @@ describe("broad reservations and physical truth", () => {
           lotIds: ["EXACT"],
         },
         requested: parseQuantity("6", "piece"),
-        createdAt: time2,
+        createdAtEpochMs: time2,
       })
     ).rejects.toThrow("cannot all be fulfilled");
 
@@ -193,7 +193,7 @@ describe("broad reservations and physical truth", () => {
         lotIds: ["EXACT"],
       },
       requested: parseQuantity("5", "piece"),
-      createdAt: time2,
+      createdAtEpochMs: time2,
     });
     await inventory.reservations.reserve({
       reservationId: "room-four",
@@ -205,7 +205,7 @@ describe("broad reservations and physical truth", () => {
         lotIds: ["ROOM"],
       },
       requested: parseQuantity("4", "piece"),
-      createdAt: time2,
+      createdAtEpochMs: time2,
     });
 
     const report = await inventory.read.reservationFeasibility();
@@ -221,7 +221,7 @@ describe("broad reservations and physical truth", () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "receive-three",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("store"),
       amount: stockAmount("3", "piece"),
     });
@@ -231,19 +231,19 @@ describe("broad reservations and physical truth", () => {
       itemRevisionId: "item-a-v2",
       selector: { itemId: "item-a", locationIds: ["store"] },
       requested: parseQuantity("2", "piece"),
-      createdAt: time1,
+      createdAtEpochMs: time1,
     });
     await expect(
       inventory.stock.issue({
         operationId: "ordinary-issue-two",
-        occurredAt: time2,
+        occurredAtEpochMs: time2,
         from: loosePosition("store"),
         amount: stockAmount("2", "piece"),
       })
     ).rejects.toThrow("cannot all be fulfilled");
     await inventory.stock.scrap({
       operationId: "physical-scrap-two",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       from: loosePosition("store"),
       amount: stockAmount("2", "piece"),
       reason: "Two pieces were physically destroyed.",
@@ -263,7 +263,7 @@ describe("broad reservations and physical truth", () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "count-shortage-receive",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("store"),
       amount: stockAmount("2", "piece"),
     });
@@ -273,11 +273,11 @@ describe("broad reservations and physical truth", () => {
       itemRevisionId: "item-a-v2",
       selector: { itemId: "item-a", locationIds: ["store"] },
       requested: parseQuantity("2", "piece"),
-      createdAt: time1,
+      createdAtEpochMs: time1,
     });
     await inventory.stock.scrap({
       operationId: "count-shortage-scrap",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       from: loosePosition("store"),
       amount: stockAmount("1", "piece"),
       reason: "Observed physical loss creates an existing shortage.",
@@ -291,7 +291,7 @@ describe("broad reservations and physical truth", () => {
       operationId: "count-during-shortage:start",
       itemRevisionId: "item-a-v2",
       selector: { itemId: "item-a", locationIds: ["store"] },
-      startedAt: time2,
+      startedAtEpochMs: time2,
     });
     const position = (
       await inventory.read.positions({ itemId: "item-a", locationIds: ["store"] })
@@ -300,7 +300,7 @@ describe("broad reservations and physical truth", () => {
     await inventory.counts.observe({
       operationId: "count-during-shortage:observe",
       countId: "count-during-shortage",
-      observedAt: time2,
+      observedAtEpochMs: time2,
       observations: [
         {
           position: position.key,
@@ -314,7 +314,7 @@ describe("broad reservations and physical truth", () => {
     const abandoned = await inventory.counts.abandon({
       operationId: "count-during-shortage:abandon",
       countId: "count-during-shortage",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       reason: "Metadata-only count lifecycle remains usable during shortage.",
     });
     expect(abandoned.count.status).toBe(InventoryCountStatus.Abandoned);
@@ -324,7 +324,7 @@ describe("broad reservations and physical truth", () => {
       operationId: "absolute-loss-during-shortage",
       itemRevisionId: "item-a-v2",
       selector: { itemId: "item-a", locationIds: ["store"] },
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       reason: "The remaining piece was also physically absent.",
     });
     expect(
@@ -344,7 +344,7 @@ describe("broad reservations and physical truth", () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "receive-for-consume",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("store"),
       amount: stockAmount("2", "piece"),
     });
@@ -354,7 +354,7 @@ describe("broad reservations and physical truth", () => {
       itemRevisionId: "item-a-v2",
       selector: { itemId: "item-a", locationIds: ["store"] },
       requested: parseQuantity("1", "piece"),
-      createdAt: time1,
+      createdAtEpochMs: time1,
     });
     const position = (await inventory.read.positions({ itemId: "item-a" }))[0];
     if (position === undefined)
@@ -365,12 +365,12 @@ describe("broad reservations and physical truth", () => {
       allocations: [
         { position: position.key, quantity: parseQuantity("1", "piece") },
       ],
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
     });
     const consumeCommand = {
       operationId: "consume-claim",
       reservationId: "claim-consume",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       reason: "The reserved piece was used.",
       fulfillment: [{ from: position.key, amount: stockAmount("1", "piece") }],
     };
@@ -397,7 +397,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "count-receive-ten",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("a"),
       amount: stockAmount("10", "piece"),
     });
@@ -405,11 +405,11 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
       countId: "count-a",
       operationId: "count-start",
       selector: { itemId: "item-a", locationIds: ["a"] },
-      startedAt: time0,
+      startedAtEpochMs: time0,
     });
     await inventory.stock.transfer({
       operationId: "move-before-observation",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       from: loosePosition("a"),
       toLocationId: "b",
       amount: stockAmount("2", "piece"),
@@ -425,7 +425,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     await inventory.counts.observe({
       operationId: "count-observe",
       countId: "count-a",
-      observedAt: time1,
+      observedAtEpochMs: time1,
       observations: [
         {
           position: aAtObservation.key,
@@ -441,7 +441,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     });
     await inventory.stock.transfer({
       operationId: "move-after-observation",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       from: loosePosition("a"),
       toLocationId: "b",
       amount: stockAmount("1", "piece"),
@@ -449,7 +449,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     const reconciled = await inventory.counts.reconcile({
       operationId: "count-reconcile",
       countId: "count-a",
-      completedAt: time3,
+      completedAtEpochMs: time3,
       reason: "One piece was missing at observation.",
     });
 
@@ -474,7 +474,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     const inventory = createTestInventory();
     const original = await inventory.stock.receive({
       operationId: "count-correction-root",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("a"),
       amount: stockAmount("10", "piece"),
     });
@@ -482,28 +482,28 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
       countId: "count-correction-cut",
       operationId: "count-correction-cut-start",
       selector: { itemId: "item-a", locationIds: ["a"] },
-      startedAt: time0,
+      startedAtEpochMs: time0,
     });
     await inventory.stock.correct({
       operationId: "count-correction-later-occurrence",
-      occurredAt: time3,
+      occurredAtEpochMs: time3,
       correctsEventId: original.event.eventId,
       reason: "First retained correction was recorded with a later occurrence time.",
       replaceWith: (plans) =>
         plans.receive({
-          occurredAt: time0,
+          occurredAtEpochMs: time0,
           to: loosePosition("a"),
           amount: stockAmount("7", "piece"),
         }),
     });
     await inventory.stock.correct({
       operationId: "count-correction-earlier-occurrence",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       correctsEventId: original.event.eventId,
       reason: "Later correction is the final retained meaning at observation time.",
       replaceWith: (plans) =>
         plans.receive({
-          occurredAt: time0,
+          occurredAtEpochMs: time0,
           to: loosePosition("a"),
           amount: stockAmount("8", "piece"),
         }),
@@ -516,7 +516,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     await inventory.counts.observe({
       operationId: "count-correction-cut-observe",
       countId: "count-correction-cut",
-      observedAt: time2,
+      observedAtEpochMs: time2,
       observations: [
         { position: position.key, measurements: position.measurements },
       ],
@@ -525,7 +525,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     const reconciled = await inventory.counts.reconcile({
       operationId: "count-correction-cut-reconcile",
       countId: "count-correction-cut",
-      completedAt: time3,
+      completedAtEpochMs: time3,
       reason: "Observed quantity already matches the final correction meaning.",
     });
 
@@ -537,7 +537,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "absolute-count-receive-ten",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("store"),
       amount: stockAmount("10", "piece"),
     });
@@ -559,7 +559,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
         locationId: "store",
         qualifiedDimensions: [],
       },
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       reason: "Seven pieces were physically present.",
     };
 
@@ -599,7 +599,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     await expect(
       inventory.stock.receive({
         operationId: command.operationId,
-        occurredAt: time2,
+        occurredAtEpochMs: time2,
         to: loosePosition("store"),
         amount: stockAmount("1", "piece"),
       })
@@ -615,7 +615,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "absolute-zero-receive",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("store", { lotId: "LOT-ZERO" }),
       amount: stockAmount("2", "piece"),
     });
@@ -628,7 +628,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
         locationIds: ["store"],
         lotIds: ["LOT-ZERO"],
       },
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       reason: "The lot bucket was physically empty.",
     };
 
@@ -669,7 +669,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     const inventory = createTestInventory(storage);
     await inventory.stock.receive({
       operationId: "absolute-resume-receive",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("store"),
       amount: stockAmount("5", "piece"),
     });
@@ -685,7 +685,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
         },
         independent: [],
       },
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       reason: "Three pieces were physically present.",
     };
 
@@ -697,7 +697,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     );
     await inventory.stock.issue({
       operationId: "absolute-resume-remove-current-row",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       from: loosePosition("store"),
       amount: stockAmount("5", "piece"),
     });
@@ -721,7 +721,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     const inventory = createTestInventory();
     await inventory.stock.receiveMany({
       operationId: "absolute-ambiguous-receive",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       lines: [
         {
           to: loosePosition("store", { lotId: "LOT-A" }),
@@ -754,7 +754,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
           locationId: "store",
           qualifiedDimensions: [],
         },
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
       })
     ).rejects.toThrow("more than one current stock position");
     expect(await inventory.read.count("absolute-ambiguous")).toBeUndefined();
@@ -784,7 +784,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
           locationId: "empty-store",
           qualifiedDimensions: [],
         },
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
       })
     ).rejects.toThrow("Omit zero count observation rows");
     expect(

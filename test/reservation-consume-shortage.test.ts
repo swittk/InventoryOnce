@@ -57,18 +57,18 @@ interface ConsumeShortageFixture {
 /** Reproduce one distinct Consume32 survivor shape entirely through public TypeScript. */
 async function createConsumeShortageFixture(
   shape: ConsumeShortageShape,
-  secondClaimExpiresAt?: string
+  secondClaimExpiresAtEpochMs?: number
 ): Promise<ConsumeShortageFixture> {
   const catalog = createTabletCatalog();
   const storage = createInMemoryInventoryDurableStorage();
-  let recordedAt = time1;
+  let recordedAtEpochMs = time1;
   const inventory = createTestInventory(storage, catalog, {
     /** Expose a mutable durable clock for the recorded-time expiry control. */
-    now: () => recordedAt,
+    nowEpochMs: () => recordedAtEpochMs,
   });
   await inventory.stock.receiveMany({
     operationId: `consume-shortage:${shape}:receive`,
-    occurredAt: time0,
+    occurredAtEpochMs: time0,
     lines: [
       { to: loosePosition("u1"), amount: stockAmount("1", "piece") },
       { to: loosePosition("u2"), amount: stockAmount("1", "piece") },
@@ -82,7 +82,7 @@ async function createConsumeShortageFixture(
     itemRevisionId: "item-a-v2",
     selector: { itemId: "item-a", locationIds: firstLocations },
     requested: parseQuantity("1", "piece"),
-    createdAt: time1,
+    createdAtEpochMs: time1,
   });
   await inventory.reservations.reserve({
     reservationId: "c2",
@@ -90,16 +90,16 @@ async function createConsumeShortageFixture(
     itemRevisionId: "item-a-v2",
     selector: { itemId: "item-a", locationIds: ["u2"] },
     requested: parseQuantity("1", "piece"),
-    createdAt: time1,
-    ...(secondClaimExpiresAt === undefined
+    createdAtEpochMs: time1,
+    ...(secondClaimExpiresAtEpochMs === undefined
       ? {}
-      : { expiresAt: secondClaimExpiresAt }),
+      : { expiresAtEpochMs: secondClaimExpiresAtEpochMs }),
   });
   if (shape === "allocated-lost-token") {
     await inventory.reservations.allocate({
       reservationId: "c1",
       operationId: `consume-shortage:${shape}:allocate:c1`,
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       allocations: [
         {
           position: { ...loosePosition("u1"), itemRevisionId: "item-a-v2" },
@@ -111,7 +111,7 @@ async function createConsumeShortageFixture(
   await inventory.reservations.allocate({
     reservationId: "c2",
     operationId: `consume-shortage:${shape}:allocate:c2`,
-    occurredAt: time1,
+    occurredAtEpochMs: time1,
     allocations: [
       {
         position: { ...loosePosition("u2"), itemRevisionId: "item-a-v2" },
@@ -121,17 +121,17 @@ async function createConsumeShortageFixture(
   });
   await inventory.stock.scrap({
     operationId: `consume-shortage:${shape}:loss:u1`,
-    occurredAt: time1,
+    occurredAtEpochMs: time1,
     from: loosePosition("u1"),
     amount: stockAmount("1", "piece"),
     reason: "The formal u1 token was physically lost.",
   });
-  if (secondClaimExpiresAt === undefined) {
+  if (secondClaimExpiresAtEpochMs === undefined) {
     expect(
       (await inventory.read.reservationFeasibility(time1)).status
     ).toBe(InventoryReservationFeasibilityStatus.Shortage);
   }
-  recordedAt = time3;
+  recordedAtEpochMs = time3;
   return { inventory, storage, catalog };
 }
 
@@ -172,16 +172,16 @@ describe("reservation consumption through an existing shortage", () => {
   it("uses only one feasibility calculation for an ordinary feasible consume", async () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
-      operationId: "consume-feasible:receive", occurredAt: time0,
+      operationId: "consume-feasible:receive", occurredAtEpochMs: time0,
       to: loosePosition("u1"), amount: stockAmount("1", "piece"),
     });
     await inventory.reservations.reserve({
       reservationId: "c1", operationId: "consume-feasible:reserve",
       itemRevisionId: "item-a-v2", selector: { itemId: "item-a" },
-      requested: parseQuantity("1", "piece"), createdAt: time1,
+      requested: parseQuantity("1", "piece"), createdAtEpochMs: time1,
     });
     await inventory.reservations.allocate({
-      reservationId: "c1", operationId: "consume-feasible:allocate", occurredAt: time1,
+      reservationId: "c1", operationId: "consume-feasible:allocate", occurredAtEpochMs: time1,
       allocations: [{ position: { ...loosePosition("u1"), itemRevisionId: "item-a-v2" },
         quantity: parseQuantity("1", "piece") }],
     });
@@ -189,7 +189,7 @@ describe("reservation consumption through an existing shortage", () => {
     const inspector = vi.spyOn(reservationSemantics, "inspectInventoryReservationFeasibility");
     try {
       await inventory.reservations.consumeAllocated({
-        reservationId: "c1", operationId: "consume-feasible:consume", occurredAt: time2,
+        reservationId: "c1", operationId: "consume-feasible:consume", occurredAtEpochMs: time2,
       });
       expect(inspector).toHaveBeenCalledTimes(1);
     } finally {
@@ -204,7 +204,7 @@ describe("reservation consumption through an existing shortage", () => {
     for (const [index, revision] of revisions.entries()) {
       const location = `lost-${index}`;
       await inventory.stock.receive({
-        operationId: `revision-group:receive:${index}`, occurredAt: time0,
+        operationId: `revision-group:receive:${index}`, occurredAtEpochMs: time0,
         to: loosePosition(location), amount: stockAmount("1", "piece"),
         itemRevisionId: revision,
       });
@@ -212,33 +212,33 @@ describe("reservation consumption through an existing shortage", () => {
         reservationId: `short-${index}`, operationId: `revision-group:reserve:${index}`,
         itemRevisionId: revision,
         selector: { itemId: "item-a", itemRevisionIds: [revision], locationIds: [location] },
-        requested: parseQuantity("1", "piece"), createdAt: time1,
+        requested: parseQuantity("1", "piece"), createdAtEpochMs: time1,
       });
     }
     await inventory.stock.receive({
-      operationId: "revision-group:receive:consume", occurredAt: time1,
+      operationId: "revision-group:receive:consume", occurredAtEpochMs: time1,
       to: loosePosition("u2"), amount: stockAmount("1", "piece"),
     });
     await inventory.reservations.reserve({
       reservationId: "consume", operationId: "revision-group:reserve:consume",
       itemRevisionId: "item-a-v2",
       selector: { itemId: "item-a", itemRevisionIds: ["item-a-v2"], locationIds: ["u2"] },
-      requested: parseQuantity("1", "piece"), createdAt: time1,
+      requested: parseQuantity("1", "piece"), createdAtEpochMs: time1,
     });
     await inventory.reservations.allocate({
-      reservationId: "consume", operationId: "revision-group:allocate", occurredAt: time1,
+      reservationId: "consume", operationId: "revision-group:allocate", occurredAtEpochMs: time1,
       allocations: [{ position: { ...loosePosition("u2"), itemRevisionId: "item-a-v2" },
         quantity: parseQuantity("1", "piece") }],
     });
     for (const [index, revision] of revisions.entries()) {
       await inventory.stock.scrap({
-        operationId: `revision-group:loss:${index}`, occurredAt: time2,
+        operationId: `revision-group:loss:${index}`, occurredAtEpochMs: time2,
         from: loosePosition(`lost-${index}`), itemRevisionId: revision,
         amount: stockAmount("1", "piece"), reason: "Physical loss in this revision scope.",
       });
     }
     await inventory.reservations.consumeAllocated({
-      reservationId: "consume", operationId: "revision-group:consume", occurredAt: time2,
+      reservationId: "consume", operationId: "revision-group:consume", occurredAtEpochMs: time2,
     });
     const report = await inventory.read.reservationFeasibility(time2);
     expect(report.groups).toHaveLength(2);
@@ -260,7 +260,7 @@ describe("reservation consumption through an existing shortage", () => {
       const command = {
         reservationId: "c2",
         operationId: `consume-shortage:${shape}:consume:c2`,
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
       };
       const consumed = await inventory.reservations.consumeAllocated(command);
       const after = await inventory.read.world();
@@ -291,7 +291,7 @@ describe("reservation consumption through an existing shortage", () => {
       await expect(
         inventory.reservations.consumeAllocated({
           ...command,
-          occurredAt: time2,
+          occurredAtEpochMs: time2,
         })
       ).rejects.toThrow("retried with changed intent");
     }
@@ -301,7 +301,7 @@ describe("reservation consumption through an existing shortage", () => {
     const inventory = createTestInventory();
     await inventory.stock.receiveMany({
       operationId: "consume-shortage:many:receive",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       lines: ["u1", "u2", "u3"].map(
         /** Give every formal token one exact piece. */
         (locationId) => ({
@@ -316,7 +316,7 @@ describe("reservation consumption through an existing shortage", () => {
       itemRevisionId: "item-a-v2",
       selector: { itemId: "item-a", locationIds: ["u1"] },
       requested: parseQuantity("1", "piece"),
-      createdAt: time1,
+      createdAtEpochMs: time1,
     });
     await inventory.reservations.reserve({
       reservationId: "c2",
@@ -324,12 +324,12 @@ describe("reservation consumption through an existing shortage", () => {
       itemRevisionId: "item-a-v2",
       selector: { itemId: "item-a", locationIds: ["u2", "u3"] },
       requested: parseQuantity("2", "piece"),
-      createdAt: time1,
+      createdAtEpochMs: time1,
     });
     await inventory.reservations.allocate({
       reservationId: "c2",
       operationId: "consume-shortage:many:allocate:c2",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       allocations: ["u2", "u3"].map(
         /** Bind each half of c2's exact request to one token. */
         (locationId) => ({
@@ -343,7 +343,7 @@ describe("reservation consumption through an existing shortage", () => {
     });
     await inventory.stock.scrap({
       operationId: "consume-shortage:many:loss:u1",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       from: loosePosition("u1"),
       amount: stockAmount("1", "piece"),
       reason: "The only stock eligible for c1 was lost.",
@@ -352,7 +352,7 @@ describe("reservation consumption through an existing shortage", () => {
     const consumed = await inventory.reservations.consumeAllocated({
       reservationId: "c2",
       operationId: "consume-shortage:many:consume:c2",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
     });
 
     expect(consumed.event?.stockEffects).toHaveLength(2);
@@ -375,7 +375,7 @@ describe("reservation consumption through an existing shortage", () => {
     ]);
     await inventory.stock.receiveMany({
       operationId: "consume-shortage:weight:receive",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       lines: [
         { to: position("u1"), amount },
         { to: position("u2"), amount },
@@ -390,12 +390,12 @@ describe("reservation consumption through an existing shortage", () => {
         itemRevisionId: "weight-item-v1",
         selector: { itemId: "weight-item", locationIds: [locationId] },
         requested: parseQuantity("1.25", "kg"),
-        createdAt: time1,
+        createdAtEpochMs: time1,
       });
       await inventory.reservations.allocate({
         reservationId: claim,
         operationId: `consume-shortage:weight:allocate:${claim}`,
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         allocations: [
           { position: position(locationId), quantity: parseQuantity("1.25", "kg") },
         ],
@@ -403,7 +403,7 @@ describe("reservation consumption through an existing shortage", () => {
     }
     await inventory.stock.scrap({
       operationId: "consume-shortage:weight:loss:u1",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       from: position("u1"),
       amount,
       reason: "The independently measured u1 stock was lost.",
@@ -412,7 +412,7 @@ describe("reservation consumption through an existing shortage", () => {
     const consumed = await inventory.reservations.consume({
       reservationId: "c2",
       operationId: "consume-shortage:weight:consume:c2",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       fulfillment: [{ from: position("u2"), amount }],
     });
 
@@ -440,7 +440,7 @@ describe("reservation consumption through an existing shortage", () => {
       inventory.reservations.consumeAllocated({
         reservationId: "c2",
         operationId: "consume-shortage:expired-at-record-time",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
       })
     ).rejects.toThrow("cannot all be fulfilled simultaneously");
 
@@ -462,14 +462,14 @@ describe("reservation consumption through an existing shortage", () => {
         storage,
         operationId,
         intentFingerprint: "consume-shortage:forged-event-link:v1",
-        clock: { now: () => time3 },
+        clock: { nowEpochMs: () => time3 },
         deficitPolicy: InventoryDeficitPolicy.Reject,
         /** Pair one real Issue with a Consume row that names another event. */
         plan: ({ world }) => ({
           event: createInventoryIssueEvent({
             catalog,
             operationId,
-            occurredAt: time2,
+            occurredAtEpochMs: time2,
             from: loosePosition("u2"),
             amount: stockAmount("1", "piece"),
             metadata: { reservationId: "c2" },
@@ -479,7 +479,7 @@ describe("reservation consumption through an existing shortage", () => {
             operationId,
             reservationId: "c2",
             consumptionEventId: "different-consumption-event",
-            occurredAt: time2,
+            occurredAtEpochMs: time2,
           }),
           reservationId: "c2",
         }),
@@ -501,7 +501,7 @@ describe("reservation consumption through an existing shortage", () => {
         storage,
         operationId,
         intentFingerprint: "consume-shortage:reordered-reservation-after:v1",
-        clock: { now: () => time3 },
+        clock: { nowEpochMs: () => time3 },
         deficitPolicy: InventoryDeficitPolicy.Reject,
         /** Materialize the retained lifecycle snapshot independently with reversed field insertion order. */
         plan: ({ world }) => {
@@ -512,7 +512,7 @@ describe("reservation consumption through an existing shortage", () => {
           const issue = createInventoryIssueEvent({
             catalog,
             operationId,
-            occurredAt: time2,
+            occurredAtEpochMs: time2,
             from: allocated.position,
             amount: stockAmount("1", "piece"),
             metadata: { reservationId: "c2" },
@@ -529,7 +529,7 @@ describe("reservation consumption through an existing shortage", () => {
             operationId,
             reservationId: "c2",
             consumptionEventId: inventoryEventIdForOperation(operationId),
-            occurredAt: time2,
+            occurredAtEpochMs: time2,
           });
           const operation = consumed.book.operations[operationId];
           if (operation === undefined) {
@@ -540,8 +540,8 @@ describe("reservation consumption through an existing shortage", () => {
             ...(retained.consumptionEventId === undefined
               ? {}
               : { consumptionEventId: retained.consumptionEventId }),
-            lastChangedAt: retained.lastChangedAt,
-            ...(retained.statusAt === undefined ? {} : { statusAt: retained.statusAt }),
+            lastChangedAtEpochMs: retained.lastChangedAtEpochMs,
+            ...(retained.statusAtEpochMs === undefined ? {} : { statusAtEpochMs: retained.statusAtEpochMs }),
             allocations: retained.allocations,
             status: retained.status,
             ...(retained.metadata === undefined ? {} : { metadata: retained.metadata }),
@@ -552,8 +552,8 @@ describe("reservation consumption through an existing shortage", () => {
             ...(retained.allowExpiredStock === undefined
               ? {}
               : { allowExpiredStock: retained.allowExpiredStock }),
-            ...(retained.expiresAt === undefined ? {} : { expiresAt: retained.expiresAt }),
-            createdAt: retained.createdAt,
+            ...(retained.expiresAtEpochMs === undefined ? {} : { expiresAtEpochMs: retained.expiresAtEpochMs }),
+            createdAtEpochMs: retained.createdAtEpochMs,
             requested: retained.requested,
             selector: retained.selector,
             itemRevisionId: retained.itemRevisionId,
@@ -591,14 +591,14 @@ describe("reservation consumption through an existing shortage", () => {
         storage,
         operationId,
         intentFingerprint: "consume-shortage:forged-reservation-after:v1",
-        clock: { now: () => time3 },
+        clock: { nowEpochMs: () => time3 },
         deficitPolicy: InventoryDeficitPolicy.Reject,
         /** Preserve the visible row while corrupting its append-only lifecycle snapshot. */
         plan: ({ world }) => {
           const event = createInventoryIssueEvent({
             catalog,
             operationId,
-            occurredAt: time2,
+            occurredAtEpochMs: time2,
             from: loosePosition("u2"),
             amount: stockAmount("1", "piece"),
             metadata: { reservationId: "c2" },
@@ -608,7 +608,7 @@ describe("reservation consumption through an existing shortage", () => {
             operationId,
             reservationId: "c2",
             consumptionEventId: inventoryEventIdForOperation(operationId),
-            occurredAt: time2,
+            occurredAtEpochMs: time2,
           });
           const operation = consumed.book.operations[operationId];
           if (operation === undefined) {
@@ -626,7 +626,7 @@ describe("reservation consumption through an existing shortage", () => {
                     ...operation,
                     reservationAfter: {
                       ...operation.reservationAfter,
-                      lastChangedAt: time1,
+                      lastChangedAtEpochMs: time1,
                     },
                   },
                 },

@@ -117,7 +117,7 @@ export function inventoryCompositionOpenIntentFingerprint(
   return inventoryIntentFingerprint([
     "composition-open",
     input.operationId,
-    input.occurredAt,
+    input.occurredAtEpochMs,
     composition.revisionId,
     sourcePositionId,
     input.packageCount,
@@ -143,13 +143,13 @@ export function inventoryCompositionOpenIntentFingerprint(
         placement.traceabilityNode === undefined
           ? null
           : inventoryTraceabilityNodeIdentity(placement.traceabilityNode),
-        placement.lot?.manufacturedAt ?? null,
-        placement.lot?.expiresAt ?? null,
+        placement.lot?.manufacturedAtEpochMs ?? null,
+        placement.lot?.expiresAtEpochMs ?? null,
         inventoryMetadataFingerprint(placement.lot?.metadata),
         placement.container?.containerType ?? null,
         inventoryMetadataFingerprint(placement.container?.identifiers),
-        placement.container?.openedAt ?? null,
-        placement.container?.useBy ?? null,
+        placement.container?.openedAtEpochMs ?? null,
+        placement.container?.useByEpochMs ?? null,
         inventoryMetadataFingerprint(placement.container?.metadata),
         inventoryMetadataFingerprint(placement.metadata),
       ]
@@ -241,7 +241,7 @@ export function createInventoryCompositionOpenEvent(
   return createInventoryTransformationEvent({
     catalog: input.catalog,
     operationId: input.operationId,
-    occurredAt: input.occurredAt,
+    occurredAtEpochMs: input.occurredAtEpochMs,
     consume: [consume],
     produce,
     ...(input.actorId === undefined ? {} : { actorId: input.actorId }),
@@ -449,12 +449,12 @@ function compositionOutputLotMetadata(
   }
   const definition = sourceLot.definition;
   return {
-    ...(definition.manufacturedAt === undefined
+    ...(definition.manufacturedAtEpochMs === undefined
       ? {}
-      : { manufacturedAt: definition.manufacturedAt }),
-    ...(definition.expiresAt === undefined
+      : { manufacturedAtEpochMs: definition.manufacturedAtEpochMs }),
+    ...(definition.expiresAtEpochMs === undefined
       ? {}
-      : { expiresAt: definition.expiresAt }),
+      : { expiresAtEpochMs: definition.expiresAtEpochMs }),
     ...(definition.metadata === undefined
       ? {}
       : { metadata: definition.metadata }),

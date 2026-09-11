@@ -98,7 +98,7 @@ export interface AbstractInventoryEvent {
   /** Physical transition kind. */
   readonly kind: string;
   /** Real-world occurrence time. */
-  readonly occurredAt: string;
+  readonly occurredAtEpochMs: number;
   /** Durable total order. */
   readonly recordSequence: number;
   /** Exact additive/subtractive resource effects. */
@@ -291,12 +291,12 @@ function abstractTransfer(transfer: InventoryTransfer): Readonly<Record<string, 
       preparedMeasurements: abstractMeasurements(line.preparedMeasurements),
       receivedMeasurements: abstractMeasurements(line.receivedMeasurements),
     })),
-    preparedAt: transfer.preparedAt,
+    preparedAtEpochMs: transfer.preparedAtEpochMs,
     preparedEventId: transfer.preparedEventId,
-    dispatchedAt: transfer.dispatchedAt,
+    dispatchedAtEpochMs: transfer.dispatchedAtEpochMs,
     dispatchEventId: transfer.dispatchEventId,
-    lastReceivedAt: transfer.lastReceivedAt,
-    releasedAt: transfer.releasedAt,
+    lastReceivedAtEpochMs: transfer.lastReceivedAtEpochMs,
+    releasedAtEpochMs: transfer.releasedAtEpochMs,
     releaseEventId: transfer.releaseEventId,
     sourceReference: transfer.sourceReference,
   });
@@ -334,7 +334,7 @@ function abstractEvent(event: InventoryCommittedEvent): AbstractInventoryEvent {
     eventId: event.eventId,
     operationId: event.operationId,
     kind: event.kind,
-    occurredAt: event.occurredAt,
+    occurredAtEpochMs: event.occurredAtEpochMs,
     recordSequence: event.recordSequence,
     effects: event.stockEffects.map((effect) => ({
       itemRevisionId: effect.itemRevisionId,
@@ -448,16 +448,16 @@ function abstractReservation(
     itemRevisionId: reservation.itemRevisionId,
     selector: reservation.selector,
     requested: abstractQuantity(reservation.requested),
-    createdAt: reservation.createdAt,
-    expiresAt: reservation.expiresAt,
+    createdAtEpochMs: reservation.createdAtEpochMs,
+    expiresAtEpochMs: reservation.expiresAtEpochMs,
     allowExpiredStock: reservation.allowExpiredStock,
     status: reservation.status,
     allocations: reservation.allocations.map((allocation) => ({
       position: abstractPositionKey(allocation.position),
       quantity: abstractQuantity(allocation.quantity),
     })),
-    statusAt: reservation.statusAt,
-    lastChangedAt: reservation.lastChangedAt,
+    statusAtEpochMs: reservation.statusAtEpochMs,
+    lastChangedAtEpochMs: reservation.lastChangedAtEpochMs,
     consumptionEventId: reservation.consumptionEventId,
   });
 }
@@ -498,16 +498,16 @@ function abstractCount(
     operationId: count.operationId,
     itemRevisionId: count.itemRevisionId,
     selector: count.selector,
-    startedAt: count.startedAt,
+    startedAtEpochMs: count.startedAtEpochMs,
     snapshotRecordSequence: count.snapshotRecordSequence,
     status: count.status,
-    observedAt: count.observedAt,
+    observedAtEpochMs: count.observedAtEpochMs,
     observedThroughRecordSequence: count.observedThroughRecordSequence,
     observations: count.observations.map((observation) => ({
       position: abstractPositionKey(observation.position),
       measurements: abstractMeasurements(observation.measurements),
     })),
-    statusAt: count.statusAt,
+    statusAtEpochMs: count.statusAtEpochMs,
     reconciliationEventId: count.reconciliationEventId,
   });
 }
@@ -601,8 +601,8 @@ export function abstractOperationResult(
                 positionIdentity: line.positionIdentity,
                 amount: line.amount,
                 allocatedPrimary: abstractQuantity(line.allocatedPrimary),
-                layerStartedAt: line.layerStartedAt,
-                expiresAt: line.expiresAt,
+                layerStartedAtEpochMs: line.layerStartedAtEpochMs,
+                expiresAtEpochMs: line.expiresAtEpochMs,
               })),
               deficit:
                 allocation.deficit === undefined
@@ -651,7 +651,7 @@ function abstractMigrationSourceDispositions(
       dispositionId: disposition.dispositionId,
       kind: disposition.kind,
       source: disposition.source,
-      snapshotAt: disposition.snapshotAt,
+      snapshotAtEpochMs: disposition.snapshotAtEpochMs,
       reason: disposition.reason,
       evidence: disposition.evidence,
     })
@@ -871,21 +871,21 @@ export function assertAbstractCountInvariants(book: InventoryCountBook): void {
       count.snapshotRecordSequence,
       `Count '${count.countId}' snapshot sequence`
     );
-    if (count.status === "started" && count.observedAt !== undefined) {
+    if (count.status === "started" && count.observedAtEpochMs !== undefined) {
       throw new Error(
         `Started count '${count.countId}' already has an observation time.`
       );
     }
     if (
       (count.status === "observed" || count.status === "completed") &&
-      (count.observedAt === undefined ||
+      (count.observedAtEpochMs === undefined ||
         count.observedThroughRecordSequence === undefined)
     ) {
       throw new Error(
         `Observed count '${count.countId}' lacks observation evidence.`
       );
     }
-    if (count.status === "completed" && count.statusAt === undefined) {
+    if (count.status === "completed" && count.statusAtEpochMs === undefined) {
       throw new Error(
         `Completed count '${count.countId}' lacks terminal time.`
       );

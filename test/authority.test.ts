@@ -36,11 +36,11 @@ const FORMAL_IMPLEMENTATION_TRACE_IDS = [
 void FORMAL_IMPLEMENTATION_TRACE_IDS;
 
 /** Stable certification time. */
-const time0 = "2026-08-26T00:00:00.000Z";
+const time0 = 1787702400000;
 /** Stable DualRun/fence time. */
-const time1 = "2026-08-26T01:00:00.000Z";
+const time1 = 1787706000000;
 /** Stable activation time. */
-const time2 = "2026-08-26T02:00:00.000Z";
+const time2 = 1787709600000;
 
 it("accepts equivalent authority schema maps regardless of property insertion order", async () => {
   const store = new TestInventoryAuthorityStore();
@@ -71,7 +71,7 @@ class ReorderedMigrationManifestStorage extends InMemoryInventoryDurableStorage 
       ...manifest,
       sourceDispositions: manifest.sourceDispositions.map((disposition) => ({
         reason: disposition.reason,
-        snapshotAt: disposition.snapshotAt,
+        snapshotAtEpochMs: disposition.snapshotAtEpochMs,
         source: {
           sourceId: disposition.source.sourceId,
           sourceType: disposition.source.sourceType,
@@ -149,7 +149,7 @@ async function enterDualRun(
 ): Promise<void> {
   await authority.certifyAdapter({
     certificationDigest: "adapter-v1",
-    certifiedAt: time0,
+    certifiedAtEpochMs: time0,
   });
   await authority.enterShadow({ certificationDigest: "adapter-v1" });
   await authority.enterDualRun({
@@ -157,11 +157,24 @@ async function enterDualRun(
     sourceRevision: 1,
     sourcePlanDigest: "source-plan-1",
     sourceCatalogDigest: "source-catalog-1",
-    startedAt: time1,
+    startedAtEpochMs: time1,
   });
 }
 
 describe("portable InventoryOnce authority controller", () => {
+  it("round-trips numeric authority evidence at zero without confusing it with absence", async () => {
+    const store = new TestInventoryAuthorityStore();
+    const authority = createInventoryAuthorityControl({ namespaceId: "epoch-zero", store });
+    expect((await authority.read()).adapterCertifiedAtEpochMs).toBeNull();
+    const certified = await authority.certifyAdapter({ certificationDigest: "epoch-adapter", certifiedAtEpochMs: 0 });
+    expect(certified.adapterCertifiedAtEpochMs).toBe(0);
+    const active = await authority.activateGreenfield({ authorizationId: "epoch-greenfield", certificationDigest: "epoch-adapter", targetWorldRoot: "empty-epoch-world", targetWorldRevision: 0, activatedAtEpochMs: 0 });
+    expect(active.activatedAtEpochMs).toBe(0);
+    expect(active.fenceStartedAtEpochMs).toBeNull();
+    expect((await authority.read()).activatedAtEpochMs).toBe(0);
+    expect(Object.hasOwn(await store.read() ?? {}, "activatedAt")).toBe(false);
+  });
+
   it("rejects authority revision exhaustion before publishing an unreadable durable row", async () => {
     const database = new TestAuthorityDatabase();
     const authority = createInventoryAuthorityControl({
@@ -180,7 +193,7 @@ describe("portable InventoryOnce authority controller", () => {
     await expect(
       authority.certifyAdapter({
         certificationDigest: "adapter-v1",
-        certifiedAt: time0,
+        certifiedAtEpochMs: time0,
       })
     ).rejects.toThrow("next revision must be a non-negative safe integer");
     expect(database.document.revision).toBe(Number.MAX_SAFE_INTEGER);
@@ -219,7 +232,7 @@ describe("portable InventoryOnce authority controller", () => {
     await expect(
       authority.claimFence({
         fenceToken: "cutover-a",
-        startedAt: time1,
+        startedAtEpochMs: time1,
         sourceRoot: "source-root-1",
         sourceRevision: 1,
       })
@@ -238,7 +251,7 @@ describe("portable InventoryOnce authority controller", () => {
       (
         await authority.claimFence({
           fenceToken: "cutover-a",
-          startedAt: time1,
+          startedAtEpochMs: time1,
           sourceRoot: "source-root-1",
           sourceRevision: 1,
         })
@@ -251,7 +264,7 @@ describe("portable InventoryOnce authority controller", () => {
       sourceRoot: "source-root-1",
       targetWorldRoot: "world-root-1",
       targetWorldRevision: 1,
-      activatedAt: time2,
+      activatedAtEpochMs: time2,
     });
     expect(activated.mode).toBe(InventoryAuthorityMode.Authoritative);
     expect(activated.activationKind).toBe(
@@ -266,7 +279,7 @@ describe("portable InventoryOnce authority controller", () => {
         sourceRoot: "source-root-1",
         targetWorldRoot: " world-root-1 ",
         targetWorldRevision: 1,
-        activatedAt: time2,
+        activatedAtEpochMs: time2,
       })
     ).resolves.toEqual(activated);
     await expect(authority.releaseFence("cutover-a")).rejects.toThrow(
@@ -283,7 +296,7 @@ describe("portable InventoryOnce authority controller", () => {
     await authority.authorizeCutover({ authorizationId: "projection-failure-cutover" });
     await authority.claimFence({
       fenceToken: "projection-failure-fence",
-      startedAt: time1,
+      startedAtEpochMs: time1,
       sourceRoot: "source-root-1",
       sourceRevision: 1,
     });
@@ -294,7 +307,7 @@ describe("portable InventoryOnce authority controller", () => {
       sourceRoot: "source-root-1",
       targetWorldRoot: "world-root-projection-failure",
       targetWorldRevision: 1,
-      activatedAt: time2,
+      activatedAtEpochMs: time2,
     });
 
     const failed = await authority.markCompatibilityProjectionFailed({
@@ -322,11 +335,11 @@ describe("portable InventoryOnce authority controller", () => {
       commandId: "command-a",
       legacyIntentDigest: "legacy-a",
       authoritativeIntentDigest: "native-b",
-      recordedAt: time2,
+      recordedAtEpochMs: time2,
     });
     expect(mismatched.dualRunMismatchEvidence).toHaveLength(1);
     await expect(
-      authority.claimFence({ fenceToken: "blocked", startedAt: time2 })
+      authority.claimFence({ fenceToken: "blocked", startedAtEpochMs: time2 })
     ).rejects.toThrow("mismatch evidence");
   });
 
@@ -341,7 +354,7 @@ describe("portable InventoryOnce authority controller", () => {
       storage,
       adapterCertificationDigest: "adapter-v1",
       authorizationId: "greenfield-deployment-1",
-      clock: { now: (): string => time0 },
+      clock: { nowEpochMs: (): number => time0 },
     };
     const first = await bootstrapGreenfieldInventoryAuthority(input);
     expect(first.targetWorldRevision).toBe(0);
@@ -372,7 +385,7 @@ describe("portable InventoryOnce authority controller", () => {
         sourceCatalogDigest: "fake-catalog",
         targetWorldRoot: first.targetWorldRoot,
         targetWorldRevision: 1,
-        activatedAt: time2,
+        activatedAtEpochMs: time2,
       })
     ).rejects.toThrow("differs from activation evidence");
   });
@@ -385,7 +398,7 @@ describe("portable InventoryOnce authority controller", () => {
     const storage = createInMemoryInventoryDurableStorage();
     await authority.certifyAdapter({
       certificationDigest: "adapter-v1",
-      certifiedAt: time0,
+      certifiedAtEpochMs: time0,
     });
     const authorized = await authority.authorizeCutover({
       authorizationId: "legacy-cutover-authorization",
@@ -399,7 +412,7 @@ describe("portable InventoryOnce authority controller", () => {
         storage,
         adapterCertificationDigest: "adapter-v1",
         authorizationId: "greenfield-authorization",
-        clock: { now: (): string => time1 },
+        clock: { nowEpochMs: (): number => time1 },
       })
     ).rejects.toThrow("cannot reuse legacy source");
     expect((await authority.read()).cutoverAuthorizationId).toBe(
@@ -416,11 +429,11 @@ describe("portable InventoryOnce authority controller", () => {
     const inventory = createInventoryOnce({
       catalog: createTabletCatalog(),
       storage,
-      clock: { now: (): string => time0 },
+      clock: { nowEpochMs: (): number => time0 },
     });
     await inventory.catalog.publish({
       operationId: "greenfield-nonempty-catalog",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
     });
     await expect(
       bootstrapGreenfieldInventoryAuthority({
@@ -428,7 +441,7 @@ describe("portable InventoryOnce authority controller", () => {
         storage,
         adapterCertificationDigest: "adapter-v1",
         authorizationId: "greenfield-deployment-2",
-        clock: { now: (): string => time0 },
+        clock: { nowEpochMs: (): number => time0 },
       })
     ).rejects.toThrow("exact canonical revision-zero empty world");
     expect((await authority.read()).mode).toBe(InventoryAuthorityMode.Legacy);
@@ -446,7 +459,7 @@ describe("portable InventoryOnce authority controller", () => {
     });
     await first.certifyAdapter({
       certificationDigest: "adapter-v1",
-      certifiedAt: time0,
+      certifiedAtEpochMs: time0,
     });
     const [activation, admission] = await Promise.allSettled([
       first.activateGreenfield({
@@ -454,7 +467,7 @@ describe("portable InventoryOnce authority controller", () => {
         certificationDigest: "adapter-v1",
         targetWorldRoot: "empty-world-root",
         targetWorldRevision: 0,
-        activatedAt: time1,
+        activatedAtEpochMs: time1,
       }),
       second.admitLegacyWriter({
         writerToken: "legacy-writer",
@@ -491,9 +504,9 @@ describe("portable InventoryOnce authority controller", () => {
     });
     const storage = createInMemoryInventoryDurableStorage();
     /** Mutable test clock advanced to prove retained certification time wins over retry time. */
-    let now = time0;
+    let nowEpochMs = time0;
     /** Cutover timestamps actually supplied to compileSource, in call order. */
-    const compiledAt: string[] = [];
+    const compiledAtEpochMs: number[] = [];
     const common = {
       authority,
       storage,
@@ -501,37 +514,37 @@ describe("portable InventoryOnce authority controller", () => {
       fenceToken: "certification-time-retry-fence",
       authorizationId: "certification-time-retry-authorization",
       adapterCertificationDigest: "adapter-v1",
-      compileSource: async (cutoverAt: string) => {
-        compiledAt.push(cutoverAt);
+      compileSource: async (cutoverAtEpochMs: number) => {
+        compiledAtEpochMs.push(cutoverAtEpochMs);
         throw new Error("Injected pre-DualRun source failure.");
       },
       drainLegacyWriters: (): Promise<void> => Promise.resolve(),
-      clock: { now: (): string => now },
+      clock: { nowEpochMs: (): number => nowEpochMs },
     };
 
     await expect(cutoverInventoryAuthority(common)).rejects.toThrow(
       "Injected pre-DualRun source failure"
     );
-    now = time2;
+    nowEpochMs = time2;
     await expect(cutoverInventoryAuthority(common)).rejects.toThrow(
       "Injected pre-DualRun source failure"
     );
 
-    expect(compiledAt).toEqual([time0, time0]);
+    expect(compiledAtEpochMs).toEqual([time0, time0]);
     const retained = await authority.read();
     expect(retained.mode).toBe(InventoryAuthorityMode.Legacy);
-    expect(retained.adapterCertifiedAt).toBe(time0);
+    expect(retained.adapterCertifiedAtEpochMs).toBe(time0);
     expect(retained.cutoverAuthorizationId).toBe(
       "certification-time-retry-authorization"
     );
-    expect(retained.dualRunStartedAt).toBe("");
+    expect(retained.dualRunStartedAtEpochMs).toBe(null);
     await expect(
       cutoverInventoryAuthority({
         ...common,
         authorizationId: "different-certification-time-authorization",
       })
     ).rejects.toThrow("authorization differs from durable evidence");
-    expect(compiledAt).toEqual([time0, time0]);
+    expect(compiledAtEpochMs).toEqual([time0, time0]);
   });
 
   it("keeps the legacy fence after a durable migration exists even when retry drain fails", async () => {
@@ -570,7 +583,7 @@ describe("portable InventoryOnce authority controller", () => {
         return typeof value === "function" ? value.bind(target) : value;
       },
     });
-    const compileSource = async (cutoverAt: string) => {
+    const compileSource = async (cutoverAtEpochMs: number) => {
       const catalog = createTabletCatalog();
       return {
         catalog,
@@ -579,7 +592,7 @@ describe("portable InventoryOnce authority controller", () => {
           declaration: {
             migrationId: "durable-manifest-retry-fence-migration",
             sourceSystem: "durable-manifest-retry-fence-source",
-            cutoverAt,
+            cutoverAtEpochMs,
             openingStock: [
               {
                 openingId: "durable-manifest-retry-fence-row",
@@ -611,11 +624,11 @@ describe("portable InventoryOnce authority controller", () => {
         failRetryDrain
           ? Promise.reject(new Error("Injected retry drain failure."))
           : Promise.resolve(),
-      clock: { now: (): string => time2 },
+      clock: { nowEpochMs: (): number => time2 },
     };
 
     await expect(
-      cutoverInventoryAuthority({ ...common, cutoverAt: time1 })
+      cutoverInventoryAuthority({ ...common, cutoverAtEpochMs: time1 })
     ).rejects.toThrow("Injected staged migration failure");
     expect(
       await storage.readMigrationManifest(common.migrationId)
@@ -655,7 +668,7 @@ describe("portable InventoryOnce authority controller", () => {
     await stale.read();
     await publisher.read();
     const storage = createInMemoryInventoryDurableStorage();
-    const compileSource = async (cutoverAt: string) => {
+    const compileSource = async (cutoverAtEpochMs: number) => {
       const catalog = createTabletCatalog();
       return {
         catalog,
@@ -664,7 +677,7 @@ describe("portable InventoryOnce authority controller", () => {
           declaration: {
             migrationId: "same-token-stale-release-migration",
             sourceSystem: "same-token-stale-release-source",
-            cutoverAt,
+            cutoverAtEpochMs,
             openingStock: [
               {
                 openingId: "same-token-stale-release-row",
@@ -713,9 +726,9 @@ describe("portable InventoryOnce authority controller", () => {
       authorizationId: "same-token-stale-release-authorization",
       adapterCertificationDigest: "adapter-v1",
       sourceRevision: 17,
-      cutoverAt: time1,
+      cutoverAtEpochMs: time1,
       compileSource,
-      clock: { now: (): string => time2 },
+      clock: { nowEpochMs: (): number => time2 },
     };
 
     const staleRun = cutoverInventoryAuthority({
@@ -765,7 +778,7 @@ describe("portable InventoryOnce authority controller", () => {
       namespaceId: "cutover-time-retry:primary",
     });
     const storage = createInMemoryInventoryDurableStorage();
-    const compileSource = async (cutoverAt: string) => {
+    const compileSource = async (cutoverAtEpochMs: number) => {
       const catalog = createTabletCatalog();
       return {
         catalog,
@@ -774,7 +787,7 @@ describe("portable InventoryOnce authority controller", () => {
           declaration: {
             migrationId: "cutover-time-retry-migration",
             sourceSystem: "cutover-time-retry-source",
-            cutoverAt,
+            cutoverAtEpochMs,
             openingStock: [
               {
                 openingId: "cutover-time-retry-row",
@@ -809,16 +822,16 @@ describe("portable InventoryOnce authority controller", () => {
         }
         return Promise.resolve();
       },
-      clock: { now: (): string => time2 },
+      clock: { nowEpochMs: (): number => time2 },
     };
 
     await expect(
-      cutoverInventoryAuthority({ ...common, cutoverAt: time1 })
+      cutoverInventoryAuthority({ ...common, cutoverAtEpochMs: time1 })
     ).rejects.toThrow("Injected pre-migration drain failure");
     const retained = await authority.read();
     expect(retained.mode).toBe(InventoryAuthorityMode.Fencing);
-    expect(retained.adapterCertifiedAt).toBe(time2);
-    expect(retained.dualRunStartedAt).toBe(time1);
+    expect(retained.adapterCertifiedAtEpochMs).toBe(time2);
+    expect(retained.dualRunStartedAtEpochMs).toBe(time1);
 
     await expect(
       cutoverInventoryAuthority({
@@ -836,7 +849,7 @@ describe("portable InventoryOnce authority controller", () => {
     expect(retried.authority.cutoverAuthorizationId).toBe(
       "cutover-time-retry-authorization"
     );
-    expect(retried.authority.dualRunStartedAt).toBe(time1);
+    expect(retried.authority.dualRunStartedAtEpochMs).toBe(time1);
     const completedManifest = await storage.readMigrationManifest(common.migrationId);
     expect(completedManifest?.targetWorldRoot).toBe(retried.targetWorldRoot);
     expect(completedManifest?.targetWorldRevision).toBe(retried.targetWorldRevision);
@@ -858,7 +871,7 @@ describe("portable InventoryOnce authority controller", () => {
     });
     const storage = new ReorderedMigrationManifestStorage();
     const migrationId = "cutover-disposition-order-migration";
-    const compileSource = async (cutoverAt: string) => {
+    const compileSource = async (cutoverAtEpochMs: number) => {
       const catalog = createTabletCatalog();
       return {
         catalog,
@@ -867,7 +880,7 @@ describe("portable InventoryOnce authority controller", () => {
           declaration: {
             migrationId,
             sourceSystem: "cutover-disposition-order-source",
-            cutoverAt,
+            cutoverAtEpochMs,
             openingStock: [],
             sourceDispositions: [
               {
@@ -878,7 +891,7 @@ describe("portable InventoryOnce authority controller", () => {
                   sourceId: "pending-1",
                   note: "snapshot authority",
                 },
-                snapshotAt: cutoverAt,
+                snapshotAtEpochMs: cutoverAtEpochMs,
                 reason: "opening snapshot supersedes pending legacy intent",
                 evidence: { sourceRevision: 7, provider: "legacy" },
               },
@@ -895,11 +908,11 @@ describe("portable InventoryOnce authority controller", () => {
       fenceToken: "cutover-disposition-order-fence",
       authorizationId: "cutover-disposition-order-authorization",
       adapterCertificationDigest: "adapter-v1",
-      cutoverAt: time1,
+      cutoverAtEpochMs: time1,
       sourceRevision: 7,
       compileSource,
       drainLegacyWriters: async () => {},
-      clock: { now: (): string => time2 },
+      clock: { nowEpochMs: (): number => time2 },
     });
     expect(result.authority.mode).toBe(InventoryAuthorityMode.Authoritative);
     const replay = await cutoverInventoryAuthority({
@@ -912,7 +925,7 @@ describe("portable InventoryOnce authority controller", () => {
       sourceRevision: 7,
       compileSource,
       drainLegacyWriters: async () => {},
-      clock: { now: (): string => time2 },
+      clock: { nowEpochMs: (): number => time2 },
     });
     expect(replay.targetWorldRoot).toBe(result.targetWorldRoot);
   });

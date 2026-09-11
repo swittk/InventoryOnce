@@ -1,3 +1,4 @@
+import implementationSurface from "../../../scripts/formal-implementation-surface.cjs";
 import assert from "node:assert/strict";
 import { assuranceRepositoryPath } from "../../../scripts/assurance-files.mjs";
 import crypto from "node:crypto";
@@ -27,13 +28,9 @@ function canonicalJson(value) {
 }
 
 /** Independently derive the current canonical compiler surface digest from source. */
-export function currentReviewSurfaceSha256(repositoryRoot) {
-  const output = execFileSync(
-    process.execPath,
-    [path.join(repositoryRoot, "scripts/formal-implementation-surface.cjs")],
-    { cwd: repositoryRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 },
-  );
-  return crypto.createHash("sha256").update(canonicalJson(JSON.parse(output))).digest("hex");
+export function currentReviewSurfaceSha256(repositoryRoot, context) {
+  const surface = implementationSurface.discoverImplementationSurface({ repositoryRoot, program: context?.program });
+  return crypto.createHash("sha256").update(canonicalJson(surface)).digest("hex");
 }
 
 /** Resolve one repository-relative path and fail closed on root escape. */
@@ -89,7 +86,7 @@ export function assertCurrentReviewAssuranceContent({
 }
 
 /** Verify the exact reviewed commit against independently recomputed committed state and tracked full-run log bytes. */
-export function verifyCurrentReviewAssurance(repositoryRoot) {
+export function verifyCurrentReviewAssurance(repositoryRoot, context) {
   const root = path.resolve(repositoryRoot);
   const receiptPath = regularFile(root, CURRENT_REVIEW_ASSURANCE_RECEIPT, "Current review assurance receipt");
   execFileSync("git", ["merge-base", "--is-ancestor", CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD, "HEAD"], { cwd: root, stdio: "ignore" });
@@ -128,7 +125,7 @@ export function verifyCurrentReviewAssurance(repositoryRoot) {
     report,
     reportSha256,
     fullLogSha256,
-    independentlyDerivedSurfaceSha256: currentReviewSurfaceSha256(root),
+    independentlyDerivedSurfaceSha256: currentReviewSurfaceSha256(root, context),
     independentlyDerivedRepositoryStateSha256: repositoryAssuranceCommittedStateSha256(root, receipt.certifiedHead),
   });
   const dirtyAuthoritativePaths = execFileSync(

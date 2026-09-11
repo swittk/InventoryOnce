@@ -116,13 +116,13 @@ async function receiveMember(input: {
   /** Exact piece count. */
   readonly quantity: string;
   /** Physical occurrence time. */
-  readonly occurredAt: string;
+  readonly occurredAtEpochMs: number;
   /** Optional FEFO expiry. */
-  readonly expiresAt?: string;
+  readonly expiresAtEpochMs?: number;
 }): Promise<void> {
   await input.inventory.stock.receive({
     operationId: input.operationId,
-    occurredAt: input.occurredAt,
+    occurredAtEpochMs: input.occurredAtEpochMs,
     to: {
       itemId: input.itemId,
       locationId: "store",
@@ -130,9 +130,9 @@ async function receiveMember(input: {
     },
     amount: stockAmount(input.quantity, "piece"),
     itemRevisionId: input.itemRevisionId,
-    ...(input.expiresAt === undefined
+    ...(input.expiresAtEpochMs === undefined
       ? {}
-      : { lot: { expiresAt: input.expiresAt } }),
+      : { lot: { expiresAtEpochMs: input.expiresAtEpochMs } }),
   });
 }
 
@@ -251,7 +251,7 @@ describe("derived pool summaries and exact member movements", () => {
       itemRevisionId: "old-brand-v1",
       lotId: "SPARSE-OLD",
       quantity: "2",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
     });
     await receiveMember({
       inventory,
@@ -260,7 +260,7 @@ describe("derived pool summaries and exact member movements", () => {
       itemRevisionId: "new-brand-v1",
       lotId: "SPARSE-NEW",
       quantity: "2",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
     });
     positionEnumerations = 0;
     const planned = await inventory.fungibility.plan({
@@ -268,7 +268,7 @@ describe("derived pool summaries and exact member movements", () => {
       requested: parseQuantity("1", "dose-equivalent"),
       method: InventoryAllocationMethod.Fifo,
       scope: { locationIds: ["store"] },
-      at: time3,
+      atEpochMs: time3,
     });
     expect(planned.lines).toHaveLength(1);
     expect(positionEnumerations).toBe(0);
@@ -287,11 +287,11 @@ describe("derived pool summaries and exact member movements", () => {
       itemRevisionId: "old-brand-v1",
       lotId: "TRANSFER-POOL-LOT",
       quantity: "2",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
     });
     await inventory.transfers.prepare({
       operationId: "prepare-fungibility-transfer-stock",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       transferId: "POOL-TRANSFER",
       transitLocationId: "transit",
       destinationLocationId: "destination",
@@ -319,7 +319,7 @@ describe("derived pool summaries and exact member movements", () => {
       requested: parseQuantity("1", "dose-equivalent"),
       method: InventoryAllocationMethod.Fifo,
       scope: { locationIds: ["store"] },
-      at: time3,
+      atEpochMs: time3,
     });
     expect(plan.lines).toEqual([]);
     expect(plan.shortfall.amountMinor).toBe(1);
@@ -339,7 +339,7 @@ describe("derived pool summaries and exact member movements", () => {
       itemRevisionId: "old-brand-v1",
       lotId: "OLD-LOT",
       quantity: "3",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
     });
     await receiveMember({
       inventory,
@@ -348,7 +348,7 @@ describe("derived pool summaries and exact member movements", () => {
       itemRevisionId: "new-brand-v1",
       lotId: "NEW-LOT",
       quantity: "2",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
     });
     await receiveMember({
       inventory,
@@ -357,7 +357,7 @@ describe("derived pool summaries and exact member movements", () => {
       itemRevisionId: "double-strength-v1",
       lotId: "DOUBLE-LOT",
       quantity: "1",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
     });
 
     const v1 = await inventory.fungibility.summary({
@@ -400,7 +400,7 @@ describe("derived pool summaries and exact member movements", () => {
     });
     await inventory.stock.issueByPolicy({
       operationId: "record-old-member-deficit",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       selector: inventoryStockSelector("old-brand", {
         itemRevisionIds: ["old-brand-v1"],
         locationIds: ["store"],
@@ -416,7 +416,7 @@ describe("derived pool summaries and exact member movements", () => {
       itemRevisionId: "old-brand-v1",
       lotId: "OLD-AFTER-DEFICIT",
       quantity: "10",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
     });
     await receiveMember({
       inventory,
@@ -425,7 +425,7 @@ describe("derived pool summaries and exact member movements", () => {
       itemRevisionId: "new-brand-v1",
       lotId: "NEW-BESIDE-DEFICIT",
       quantity: "2",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
     });
 
     const summary = await inventory.fungibility.summary({
@@ -452,7 +452,7 @@ describe("derived pool summaries and exact member movements", () => {
       requested: parseQuantity("8", "dose-equivalent"),
       method: InventoryAllocationMethod.Fifo,
       scope: { locationIds: ["store"] },
-      at: time2,
+      atEpochMs: time2,
     });
     expect(
       preview.lines.reduce(
@@ -468,7 +468,7 @@ describe("derived pool summaries and exact member movements", () => {
       requested: parseQuantity("9", "dose-equivalent"),
       method: InventoryAllocationMethod.Fifo,
       scope: { locationIds: ["store"] },
-      at: time2,
+      atEpochMs: time2,
     });
     expect(tooLarge.lines).toEqual([]);
     expect(tooLarge.shortfall.amountMinor).toBe(9);
@@ -488,8 +488,8 @@ describe("derived pool summaries and exact member movements", () => {
       itemRevisionId: "old-brand-v1",
       lotId: "PINNED-OLD",
       quantity: "1",
-      occurredAt: time0,
-      expiresAt: "2027-02-01T00:00:00.000Z",
+      occurredAtEpochMs: time0,
+      expiresAtEpochMs: 1801440000000,
     });
     await receiveMember({
       inventory,
@@ -498,8 +498,8 @@ describe("derived pool summaries and exact member movements", () => {
       itemRevisionId: "new-brand-v1",
       lotId: "PINNED-NEW",
       quantity: "1",
-      occurredAt: time1,
-      expiresAt: "2027-03-01T00:00:00.000Z",
+      occurredAtEpochMs: time1,
+      expiresAtEpochMs: 1803859200000,
     });
     await receiveMember({
       inventory,
@@ -508,8 +508,8 @@ describe("derived pool summaries and exact member movements", () => {
       itemRevisionId: "double-strength-v1",
       lotId: "PINNED-DOUBLE",
       quantity: "1",
-      occurredAt: time2,
-      expiresAt: "2027-01-01T00:00:00.000Z",
+      occurredAtEpochMs: time2,
+      expiresAtEpochMs: 1798761600000,
     });
 
     expect(
@@ -517,7 +517,7 @@ describe("derived pool summaries and exact member movements", () => {
     ).toBe("brand-pool-v2");
     const command = {
       operationId: "issue-against-frozen-v1",
-      occurredAt: time3,
+      occurredAtEpochMs: time3,
       fungibilityRevisionId: "brand-pool-v1",
       requested: parseQuantity("1", "dose-equivalent"),
       method: InventoryAllocationMethod.Fefo,
@@ -557,8 +557,8 @@ describe("derived pool summaries and exact member movements", () => {
       itemRevisionId: "old-brand-v1",
       lotId: "RATIO-OLD",
       quantity: "2",
-      occurredAt: time0,
-      expiresAt: "2027-05-01T00:00:00.000Z",
+      occurredAtEpochMs: time0,
+      expiresAtEpochMs: 1809129600000,
     });
     await receiveMember({
       inventory,
@@ -567,8 +567,8 @@ describe("derived pool summaries and exact member movements", () => {
       itemRevisionId: "double-strength-v1",
       lotId: "RATIO-DOUBLE",
       quantity: "1",
-      occurredAt: time1,
-      expiresAt: "2027-01-01T00:00:00.000Z",
+      occurredAtEpochMs: time1,
+      expiresAtEpochMs: 1798761600000,
     });
 
     const preview = await inventory.fungibility.plan({
@@ -576,7 +576,7 @@ describe("derived pool summaries and exact member movements", () => {
       requested: parseQuantity("2", "dose-equivalent"),
       method: InventoryAllocationMethod.Fefo,
       scope: { locationIds: ["store"] },
-      at: time3,
+      atEpochMs: time3,
     });
     expect(preview.shortfall.amountMinor).toBe(0);
     expect(preview.lines).toHaveLength(1);
@@ -588,7 +588,7 @@ describe("derived pool summaries and exact member movements", () => {
 
     const issued = await inventory.fungibility.issue({
       operationId: "issue-double-as-two-equivalents",
-      occurredAt: time3,
+      occurredAtEpochMs: time3,
       fungibilityRevisionId: "brand-pool-v2",
       requested: parseQuantity("2", "dose-equivalent"),
       method: InventoryAllocationMethod.Fefo,
@@ -662,7 +662,7 @@ describe("derived pool summaries and exact member movements", () => {
     });
     await inventory.stock.receive({
       operationId: "receive-three-two-piece-packs",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: { itemId: packaged.itemId, locationId: "store" },
       amount: packageAmount(3, pack2.revisionId),
     });
@@ -672,7 +672,7 @@ describe("derived pool summaries and exact member movements", () => {
       requested: parseQuantity("1.5", "equivalent"),
       method: InventoryAllocationMethod.Fifo,
       scope: { locationIds: ["store"] },
-      at: time1,
+      atEpochMs: time1,
     });
     expect(blocked.lines).toEqual([]);
     expect(blocked.shortfall).toMatchObject({
@@ -687,7 +687,7 @@ describe("derived pool summaries and exact member movements", () => {
       requested: parseQuantity("3", "equivalent"),
       method: InventoryAllocationMethod.Fifo,
       scope: { locationIds: ["store"] },
-      at: time1,
+      atEpochMs: time1,
     });
     expect(legal.lines).toHaveLength(1);
     expect(legal.lines[0]?.amount).toMatchObject({
@@ -764,7 +764,7 @@ describe("derived pool summaries and exact member movements", () => {
     });
     await inventory.stock.receive({
       operationId: "receive-fixed-measure-packs",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: { itemId: packaged.itemId, locationId: "store" },
       amount: packageAmount(2, packagingRevisionId),
     });
@@ -773,7 +773,7 @@ describe("derived pool summaries and exact member movements", () => {
       selector: inventoryStockSelector(packaged.itemId, { locationIds: ["store"] }),
       amount: packageAmount(1, packagingRevisionId),
       method: InventoryAllocationMethod.Fifo,
-      at: time1,
+      atEpochMs: time1,
     });
     expect(ordinary.lines).toHaveLength(1);
 
@@ -782,7 +782,7 @@ describe("derived pool summaries and exact member movements", () => {
       requested: parseQuantity("2", "equivalent"),
       method: InventoryAllocationMethod.Fifo,
       scope: { locationIds: ["store"] },
-      at: time1,
+      atEpochMs: time1,
     });
     expect(fungible.lines).toHaveLength(1);
     expect(fungible.lines[0]?.amount).toMatchObject({
@@ -807,11 +807,11 @@ describe("derived pool summaries and exact member movements", () => {
       itemRevisionId: "new-brand-v1",
       lotId: "TRANSFER-NEW",
       quantity: "2",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
     });
     const transferred = await inventory.fungibility.transfer({
       operationId: "transfer-fungible-two",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       fungibilityRevisionId: "brand-pool-v1",
       requested: parseQuantity("2", "dose-equivalent"),
       method: InventoryAllocationMethod.Fifo,
@@ -863,7 +863,7 @@ describe("derived pool summaries and exact member movements", () => {
       itemRevisionId: "old-brand-v1",
       lotId: "TRANSFER-PROTECTED-OLD",
       quantity: "1",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
     });
     await inventory.reservations.reserve({
       reservationId: "cross-location-old-claim",
@@ -874,7 +874,7 @@ describe("derived pool summaries and exact member movements", () => {
         locationIds: ["store", "room"],
       }),
       requested: parseQuantity("1", "piece"),
-      createdAt: time1,
+      createdAtEpochMs: time1,
     });
 
     const depletedPreview = await inventory.fungibility.plan({
@@ -882,7 +882,7 @@ describe("derived pool summaries and exact member movements", () => {
       requested: parseQuantity("1", "dose-equivalent"),
       method: InventoryAllocationMethod.Fifo,
       scope: { locationIds: ["store"] },
-      at: time2,
+      atEpochMs: time2,
     });
     expect(depletedPreview.lines).toEqual([]);
 
@@ -891,7 +891,7 @@ describe("derived pool summaries and exact member movements", () => {
       requested: parseQuantity("1", "dose-equivalent"),
       method: InventoryAllocationMethod.Fifo,
       scope: { locationIds: ["store"] },
-      at: time2,
+      atEpochMs: time2,
       reservationEffect: {
         kind: InventoryFungibilityReservationEffectKind.Transfer,
         toLocationId: "room",
@@ -901,7 +901,7 @@ describe("derived pool summaries and exact member movements", () => {
 
     await inventory.fungibility.transfer({
       operationId: "transfer-protected-old",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       fungibilityRevisionId: "brand-pool-v1",
       requested: parseQuantity("1", "dose-equivalent"),
       method: InventoryAllocationMethod.Fifo,
@@ -941,7 +941,7 @@ describe("derived pool summaries and exact member movements", () => {
       itemRevisionId: "old-brand-v1",
       lotId: "BACKDATED-OLD",
       quantity: "1",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
     });
     await inventory.reservations.reserve({
       reservationId: "later-old-claim",
@@ -952,13 +952,13 @@ describe("derived pool summaries and exact member movements", () => {
         locationIds: ["store"],
       }),
       requested: parseQuantity("1", "piece"),
-      createdAt: time2,
+      createdAtEpochMs: time2,
     });
 
     await expect(
       inventory.fungibility.issue({
         operationId: "backdated-pool-issue",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         fungibilityRevisionId: "brand-pool-v1",
         requested: parseQuantity("1", "dose-equivalent"),
         method: InventoryAllocationMethod.Fifo,
@@ -985,7 +985,7 @@ describe("derived pool summaries and exact member movements", () => {
       itemRevisionId: "old-brand-v1",
       lotId: "BROAD-PROTECTED-OLD",
       quantity: "1",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
     });
     await receiveMember({
       inventory,
@@ -994,7 +994,7 @@ describe("derived pool summaries and exact member movements", () => {
       itemRevisionId: "new-brand-v1",
       lotId: "BROAD-FREE-NEW",
       quantity: "1",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
     });
     await inventory.reservations.reserve({
       reservationId: "broad-old-brand-claim",
@@ -1005,7 +1005,7 @@ describe("derived pool summaries and exact member movements", () => {
         locationIds: ["store"],
       }),
       requested: parseQuantity("1", "piece"),
-      createdAt: time2,
+      createdAtEpochMs: time2,
     });
 
     const preview = await inventory.fungibility.plan({
@@ -1013,14 +1013,14 @@ describe("derived pool summaries and exact member movements", () => {
       requested: parseQuantity("1", "dose-equivalent"),
       method: InventoryAllocationMethod.Fifo,
       scope: { locationIds: ["store"] },
-      at: time3,
+      atEpochMs: time3,
     });
     expect(preview.lines).toHaveLength(1);
     expect(preview.lines[0]?.position.itemId).toBe("new-brand");
 
     const issued = await inventory.fungibility.issue({
       operationId: "issue-around-broad-claim",
-      occurredAt: time3,
+      occurredAtEpochMs: time3,
       fungibilityRevisionId: "brand-pool-v1",
       requested: parseQuantity("1", "dose-equivalent"),
       method: InventoryAllocationMethod.Fifo,
@@ -1050,7 +1050,7 @@ describe("derived pool summaries and exact member movements", () => {
       itemRevisionId: "old-brand-v1",
       lotId: "RESERVED-OLD",
       quantity: "1",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
     });
     await receiveMember({
       inventory,
@@ -1059,7 +1059,7 @@ describe("derived pool summaries and exact member movements", () => {
       itemRevisionId: "new-brand-v1",
       lotId: "FREE-NEW",
       quantity: "1",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
     });
     await inventory.reservations.reserve({
       reservationId: "old-brand-claim",
@@ -1070,7 +1070,7 @@ describe("derived pool summaries and exact member movements", () => {
         lotIds: ["RESERVED-OLD"],
       }),
       requested: parseQuantity("1", "piece"),
-      createdAt: time1,
+      createdAtEpochMs: time1,
     });
     const reserved = (
       await inventory.read.positions({
@@ -1089,12 +1089,12 @@ describe("derived pool summaries and exact member movements", () => {
           quantity: parseQuantity("1", "piece"),
         },
       ],
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
     });
 
     const issued = await inventory.fungibility.issue({
       operationId: "issue-free-fungible-member",
-      occurredAt: time3,
+      occurredAtEpochMs: time3,
       fungibilityRevisionId: "brand-pool-v1",
       requested: parseQuantity("1", "dose-equivalent"),
       method: InventoryAllocationMethod.Fifo,

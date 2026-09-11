@@ -52,8 +52,8 @@ import {
 export interface InventoryCommandHeader {
   /** Stable retry identity; one operation id freezes one exact intent. */
   readonly operationId: string;
-  /** Real-world occurrence time in canonical ISO-8601 form. */
-  readonly occurredAt: string;
+  /** Real-world occurrence time in safe-integer epoch milliseconds. */
+  readonly occurredAtEpochMs: number;
   /** Actor who performed/asserted the event when known. */
   readonly actorId?: PartyId;
   /** Business/owning/possessing source party when meaningful. */
@@ -71,9 +71,9 @@ export interface InventoryCommandHeader {
 /** Optional lot/batch metadata asserted by a stock or metadata event. */
 export interface InventoryLotMetadataInput {
   /** Manufacturing time when known. */
-  readonly manufacturedAt?: string;
+  readonly manufacturedAtEpochMs?: number;
   /** Expiry/use-by time when known. */
-  readonly expiresAt?: string;
+  readonly expiresAtEpochMs?: number;
   /** Extra JSON-safe lot metadata that does not change stock arithmetic. */
   readonly metadata?: InventoryMetadata;
 }
@@ -85,9 +85,9 @@ export interface InventoryContainerMetadataInput {
   /** GTIN/SSCC/barcode/vendor identifiers resolving this exact container. */
   readonly identifiers?: Readonly<Record<string, string>>;
   /** Time this exact container was physically opened/prepared when known. */
-  readonly openedAt?: string;
+  readonly openedAtEpochMs?: number;
   /** Container-specific use-by time. */
-  readonly useBy?: string;
+  readonly useByEpochMs?: number;
   /** Extra JSON-safe metadata that does not change container identity. */
   readonly metadata?: InventoryMetadata;
 }
@@ -1201,7 +1201,7 @@ function createMovementEvent(
       eventId: inventoryEventIdForOperation(header.operationId),
       operationId: header.operationId,
       kind,
-      occurredAt: header.occurredAt,
+      occurredAtEpochMs: header.occurredAtEpochMs,
       stockEffects,
       lotDefinitions,
       containerDefinitions,
@@ -1273,8 +1273,8 @@ function inventoryLotDefinitionCommandFingerprint(
   return JSON.stringify([
     definition.itemId,
     definition.lotId,
-    definition.manufacturedAt ?? null,
-    definition.expiresAt ?? null,
+    definition.manufacturedAtEpochMs ?? null,
+    definition.expiresAtEpochMs ?? null,
     inventoryMetadataFingerprint(definition.metadata),
   ]);
 }
@@ -1343,8 +1343,8 @@ function inventoryContainerDefinitionCommandFingerprint(
     definition.containerId,
     definition.containerType ?? null,
     inventoryMetadataFingerprint(definition.identifiers),
-    definition.openedAt ?? null,
-    definition.useBy ?? null,
+    definition.openedAtEpochMs ?? null,
+    definition.useByEpochMs ?? null,
     inventoryMetadataFingerprint(definition.metadata),
   ]);
 }

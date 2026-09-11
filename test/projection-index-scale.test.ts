@@ -79,13 +79,13 @@ function createWorldWithExactReservations(
       itemRevisionId: "item-a-v2",
       selector,
       requested: parseQuantity("1", "piece"),
-      createdAt: time0,
+      createdAtEpochMs: time0,
       status: InventoryReservationStatus.Active,
       get allocations(): readonly InventoryReservationAllocation[] {
         onAllocationRead();
         return allocations;
       },
-      lastChangedAt: time0,
+      lastChangedAtEpochMs: time0,
     };
     reservations[reservationId] = reservation;
     operations[operationId] = {
@@ -116,7 +116,7 @@ async function runHighLotItem(positionCount: number) {
   const publishStarted = performance.now();
   await inventory.stock.receiveMany({
     operationId: `scale-${positionCount}`,
-    occurredAt: time0,
+    occurredAtEpochMs: time0,
     lines,
   });
   const publishMs = performance.now() - publishStarted;
@@ -137,7 +137,7 @@ async function runHighLotItem(positionCount: number) {
     }),
     amount: stockAmount("1", "piece"),
     method: InventoryAllocationMethod.Fifo,
-    at: "2026-08-26T00:00:00.000Z",
+    atEpochMs: 1787702400000,
   });
   const planMs = performance.now() - planStarted;
   return { inventory, world, rows, plan, publishMs, readMs, planMs };
@@ -162,7 +162,7 @@ function replayRetainedEventHistory(eventCount: number): {
           eventId: `scale-history-event-${index}`,
           operationId: `scale-history-operation-${index}`,
           kind: InventoryEventKind.Receipt,
-          occurredAt: time0,
+          occurredAtEpochMs: time0,
           stockEffects: [
             {
               itemRevisionId: "item-a-v2",
@@ -213,7 +213,7 @@ function replayTraceabilityHistory(
           eventId: `scale-${kind}-event-${index}`,
           operationId: `scale-${kind}-operation-${index}`,
           kind: InventoryEventKind.Traceability,
-          occurredAt: time0,
+          occurredAtEpochMs: time0,
           stockEffects: [],
           traceabilityChanges: [
             {
@@ -345,7 +345,7 @@ describe("projection index real-world scale", () => {
     const started = performance.now();
     const issued = await inventory.stock.issueManyByPolicy({
       operationId: "scale-policy-batch-100",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       requests,
     });
     const elapsedMs = performance.now() - started;
@@ -387,7 +387,7 @@ describe("projection index real-world scale", () => {
       }),
       amount: stockAmount("1", "piece"),
       method: InventoryAllocationMethod.Fifo,
-      at: "2026-08-26T00:00:00.000Z",
+      atEpochMs: 1787702400000,
     });
     expect(plan.lines).toEqual([]);
     expect(plan.shortfall.amountMinor).toBe(1);
@@ -417,7 +417,7 @@ describe("projection index real-world scale", () => {
           itemRevisionIds: ["item-a-v2"],
           locationIds: ["scale-store"],
         }),
-        at: "2026-08-26T00:00:00.000Z",
+        atEpochMs: 1787702400000,
       });
       expect(summary.revisions[0]?.positions).toHaveLength(positionCount);
       expect(summary.revisions[0]?.exactlyAllocatedUsable.amountMinor).toBe(
@@ -508,7 +508,7 @@ describe("projection index real-world scale", () => {
     expect(projection).toContain("applyIndexedIdentityMutations(");
     expect(projection).not.toContain("function addIndexedPosition(");
     expect(projection).not.toContain("function removeIndexedPosition(");
-    expect(picking).toContain("positiveLayerStartedAtByPositionId");
+    expect(picking).toContain("positiveLayerStartedAtEpochMsByPositionId");
     expect(picking).toContain("createExactPrimaryReservationSummary(");
     expect(picking).toContain("reservedPrimaryByPositionIdentity.get(");
     expect(picking).not.toContain("exactPrimaryReservedAtPosition(");

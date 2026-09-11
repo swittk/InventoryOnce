@@ -171,7 +171,7 @@ async function receivePacks(
 ): Promise<void> {
   await inventory.stock.receive({
     operationId: `receive:${itemRevisionId}:${locationId}`,
-    occurredAt: time0,
+    occurredAtEpochMs: time0,
     to: { itemId, locationId },
     itemRevisionId,
     amount: stockAmount(amount, "pack"),
@@ -279,7 +279,7 @@ describe("revision-frozen read-only inventory collections", () => {
     });
     await inventory.stock.issueByPolicy({
       operationId: "record-old-brand-deficit-for-collection",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       selector: inventoryStockSelector("brand-x-old", {
         itemRevisionIds: ["brand-x-old-v1"],
         locationIds: ["store"],
@@ -290,7 +290,7 @@ describe("revision-frozen read-only inventory collections", () => {
     });
     await inventory.stock.receive({
       operationId: "receive-old-brand-after-collection-deficit",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       to: { itemId: "brand-x-old", locationId: "store", lotId: "OLD-LATE" },
       itemRevisionId: "brand-x-old-v1",
       amount: stockAmount("10", "pack"),

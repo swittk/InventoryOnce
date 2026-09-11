@@ -211,7 +211,7 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
           declaration: {
             migrationId: "complete-source-migration",
             sourceSystem: "complete-legacy-source",
-            cutoverAt: time0,
+            cutoverAtEpochMs: time0,
             openingStock: legacyStock.map((row) => ({
               openingId: row.id,
               position: {
@@ -263,7 +263,7 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
         sourceType: "InventoryStockPendingOp",
         sourceId: "row-a",
       },
-      snapshotAt: time0,
+      snapshotAtEpochMs: time0,
       reason: "Current opening snapshot supersedes this unresolved row.",
       evidence: {
         workflowState: "pending",
@@ -278,7 +278,7 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
       declaration: {
         migrationId: "snapshot-disposition-migration",
         sourceSystem: "legacy-snapshot",
-        cutoverAt: time0,
+        cutoverAtEpochMs: time0,
         openingStock: [
           {
             openingId: "opening-a",
@@ -315,7 +315,7 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
       declaration: {
         migrationId: "snapshot-disposition-migration",
         sourceSystem: "legacy-snapshot",
-        cutoverAt: time0,
+        cutoverAtEpochMs: time0,
         openingStock: [
           {
             openingId: "opening-a",
@@ -370,7 +370,7 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
       declaration: {
         migrationId: "empty-ready-migration",
         sourceSystem: "empty-legacy-source",
-        cutoverAt: time0,
+        cutoverAtEpochMs: time0,
         openingStock: [],
       },
     });
@@ -387,7 +387,7 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
     const disposition = inventoryMigrationSnapshotSupersededDisposition({
       dispositionId: "duplicate-row",
       source: { sourceType: "InventoryMutation", sourceId: "row-a" },
-      snapshotAt: time3,
+      snapshotAtEpochMs: time3,
       reason: "Wrong snapshot time for this migration.",
     });
     const plan = defineInventoryMigration({
@@ -395,7 +395,7 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
       declaration: {
         migrationId: "invalid-disposition-migration",
         sourceSystem: "legacy-snapshot",
-        cutoverAt: time0,
+        cutoverAtEpochMs: time0,
         openingStock: [],
         sourceDispositions: [disposition, disposition],
       },
@@ -425,7 +425,7 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
         return {
           migrationId: "migration-1",
           sourceSystem: "legacy-test-store",
-          cutoverAt: time0,
+          cutoverAtEpochMs: time0,
           openingStock: rows.map((row) => ({
             openingId: row.id,
             position: { itemId: "item-a", locationId: row.locationId },
@@ -524,7 +524,7 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
         Promise.resolve({
           migrationId: "blocked-migration",
           sourceSystem: "legacy-test-store",
-          cutoverAt: time0,
+          cutoverAtEpochMs: time0,
           openingStock: [],
           diagnostics: [
             inventoryMigrationProblem(
@@ -592,7 +592,7 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
       declaration: {
         migrationId: "migration-cycle",
         sourceSystem: "legacy-test-store",
-        cutoverAt: time0,
+        cutoverAtEpochMs: time0,
         openingStock: [],
         traceabilityChanges: [
           {
@@ -647,7 +647,7 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
     const declaration: InventoryMigrationDeclaration = {
       migrationId: "migration-resume",
       sourceSystem: "legacy-test-store",
-      cutoverAt: time0,
+      cutoverAtEpochMs: time0,
       openingStock,
     };
     const plan = defineInventoryMigration({ catalog, declaration });
@@ -789,7 +789,7 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
         declaration: {
           migrationId: "migration-cutover-failpoint",
           sourceSystem: "legacy-cutover-test",
-          cutoverAt: time0,
+          cutoverAtEpochMs: time0,
           openingStock: [
             {
               openingId: "row-a",
@@ -894,7 +894,7 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
         declaration: {
           migrationId: `migration-abort-${timing}`,
           sourceSystem: "legacy-abort-test",
-          cutoverAt: time0,
+          cutoverAtEpochMs: time0,
           openingStock: [
             {
               openingId: "row-one",
@@ -966,7 +966,7 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
       declaration: {
         migrationId: "joint-conflict",
         sourceSystem: "legacy-graph",
-        cutoverAt: time0,
+        cutoverAtEpochMs: time0,
         openingStock: [],
         traceabilityChanges: [
           {
@@ -1009,7 +1009,7 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
       declaration: {
         migrationId: "digest-plan",
         sourceSystem: "legacy-stock",
-        cutoverAt: time0,
+        cutoverAtEpochMs: time0,
         openingStock: [
           {
             openingId: "opening-one",
@@ -1075,7 +1075,7 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
       declaration: {
         migrationId: "target-preflight",
         sourceSystem: "legacy-graph",
-        cutoverAt: time0,
+        cutoverAtEpochMs: time0,
         openingStock: [],
         traceabilityChanges: [
           {
@@ -1105,7 +1105,7 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
     const targetInventory = createTestInventory(storage, catalog);
     await targetInventory.traceability.aggregate({
       operationId: "native-edge",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       from: { kind: InventoryTraceabilityNodeKind.Container, id: "child" },
       to: { kind: InventoryTraceabilityNodeKind.Container, id: "parent" },
     });

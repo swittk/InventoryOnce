@@ -17,7 +17,7 @@ import {
   type InventoryFungibilityRevisionId,
   type InventoryItemDefinitionRevision,
 } from "./catalog.js";
-import { assertCanonicalInventoryTime } from "./events.js";
+import { assertInventoryEpochMilliseconds } from "./events.js";
 import {
   addInventoryMeasurements,
   inventoryMeasurementAt,
@@ -256,9 +256,9 @@ export interface InventoryFungibilityAllocationLine {
   /** Exact common-basis contribution of this selected line. */
   readonly poolQuantity: Quantity;
   /** Time this exact position entered its current uninterrupted positive layer. */
-  readonly layerStartedAt: string;
+  readonly layerStartedAtEpochMs: number;
   /** Effective lot/container use-by used by FEFO when known. */
-  readonly expiresAt?: string;
+  readonly expiresAtEpochMs?: number;
 }
 
 /** Exact deterministic allocation of one common-basis pool request. */
@@ -296,9 +296,9 @@ export interface PlanInventoryFungibilityAllocationInput {
   /** FIFO or FEFO ordering applied globally across member positions. */
   readonly method: InventoryAllocationMethod;
   /** Physical authority time for lot/container use-by checks. */
-  readonly at: string;
+  readonly atEpochMs: number;
   /** Claim-book authority time; defaults to `at` for pure previews. */
-  readonly reservationAt?: string;
+  readonly reservationAtEpochMs?: number;
   /** How selected stock should affect claim feasibility; defaults to depletion. */
   readonly reservationEffect?: InventoryFungibilityReservationEffect;
   /** Optional common stock dimensions such as one source location. */
@@ -330,8 +330,8 @@ export function planInventoryFungibilityAllocation({
   fungibilityRevisionId,
   requested,
   method,
-  at,
-  reservationAt = at,
+  atEpochMs,
+  reservationAtEpochMs = atEpochMs,
   reservationEffect = {
     kind: InventoryFungibilityReservationEffectKind.Deplete,
   },
@@ -339,9 +339,9 @@ export function planInventoryFungibilityAllocation({
   allowExpiredLots = false,
   allowAllocatedStock = false,
 }: PlanInventoryFungibilityAllocationInput): InventoryFungibilityAllocationPlan {
-  assertCanonicalInventoryTime(at, "fungibility allocation authority time");
-  assertCanonicalInventoryTime(
-    reservationAt,
+  assertInventoryEpochMilliseconds(atEpochMs, "fungibility allocation authority time");
+  assertInventoryEpochMilliseconds(
+    reservationAtEpochMs,
     "fungibility allocation reservation authority time"
   );
   validateFungibilityReservationEffect(reservationEffect);
@@ -391,8 +391,8 @@ export function planInventoryFungibilityAllocation({
       ),
       itemRevisionId: item.revisionId,
       method,
-      at,
-      reservationAt,
+      atEpochMs,
+      reservationAtEpochMs,
       allowExpiredLots,
       allowAllocatedStock,
     });
@@ -421,7 +421,7 @@ export function planInventoryFungibilityAllocation({
     requested,
     candidates,
     method,
-    now: at,
+    nowEpochMs: atEpochMs,
     allowExpired: true,
     ...(allowAllocatedStock
       ? {}
@@ -433,7 +433,7 @@ export function planInventoryFungibilityAllocation({
             fungibilityAllocationsPreserveReservations({
               catalog,
               world,
-              reservationAt,
+              reservationAtEpochMs,
               reservationEffect,
               allocations,
               evidenceByPosition,
@@ -465,10 +465,10 @@ export function planInventoryFungibilityAllocation({
       }),
       memberQuantity,
       poolQuantity: allocation.quantity,
-      layerStartedAt: evidence.sourceLine.layerStartedAt,
-      ...(evidence.sourceLine.expiresAt === undefined
+      layerStartedAtEpochMs: evidence.sourceLine.layerStartedAtEpochMs,
+      ...(evidence.sourceLine.expiresAtEpochMs === undefined
         ? {}
-        : { expiresAt: evidence.sourceLine.expiresAt }),
+        : { expiresAtEpochMs: evidence.sourceLine.expiresAtEpochMs }),
     });
   }
   return {
@@ -515,7 +515,7 @@ interface FungibilityReservationPreservationInput {
   /** Current published world before the hypothetical pool issue/transfer. */
   readonly world: InventoryWorldState;
   /** Claim-book authority time used for reservation lifecycle rules. */
-  readonly reservationAt: string;
+  readonly reservationAtEpochMs: number;
   /** How selected stock changes physical claim capacity. */
   readonly reservationEffect: InventoryFungibilityReservationEffect;
   /** Complete candidate allocation being considered by the exact allocator. */
@@ -531,7 +531,7 @@ interface FungibilityReservationPreservationInput {
 function fungibilityAllocationsPreserveReservations({
   catalog,
   world,
-  reservationAt,
+  reservationAtEpochMs,
   reservationEffect,
   allocations,
   evidenceByPosition,
@@ -659,7 +659,7 @@ function fungibilityAllocationsPreserveReservations({
       catalog,
       projection,
       book: world.reservations,
-      at: reservationAt,
+      atEpochMs: reservationAtEpochMs,
     }).status === InventoryReservationFeasibilityStatus.Feasible
   );
 }
@@ -814,10 +814,10 @@ function addFungibilityCandidate({
   const candidate: InventoryAllocationCandidate = {
     position: sourceLine.position,
     available: poolAvailable,
-    receivedAt: sourceLine.layerStartedAt,
-    ...(sourceLine.expiresAt === undefined
+    receivedAtEpochMs: sourceLine.layerStartedAtEpochMs,
+    ...(sourceLine.expiresAtEpochMs === undefined
       ? {}
-      : { expiresAt: sourceLine.expiresAt }),
+      : { expiresAtEpochMs: sourceLine.expiresAtEpochMs }),
     allocationIncrement,
   };
   candidates.push(candidate);

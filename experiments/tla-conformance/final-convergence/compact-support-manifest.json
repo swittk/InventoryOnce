@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "archive": {
     "file": "experiments/tla-conformance/final-convergence/compact-support.tar.gz",
-    "sha256": "2fd30e34e90890da08b3b1d1c340a861e2cd1a49cca461c223544974e0f80916",
-    "runtimeClosureHead": "cb0cd4a592a1fae22aad799cc7da7544864861e8",
+    "sha256": "5a469ed34bb89234301b017bc38d940d2e18d55aab444f2f149909acfda78f49",
+    "bytes": 1054585,
     "files": [
       {
         "file": "experiments/tla-conformance/astra-authority-control-r8/family.mjs",
@@ -92,23 +92,38 @@
       },
       {
         "file": "experiments/tla-conformance/final-convergence/build-final-registry.mjs",
-        "sha256": "e418e7863e7feb8a404d9332318b2edc54944eb62584d31d4ad65eb2d32b5351",
-        "bytes": 2978
+        "sha256": "57a78d1e9892b6d89cad328b0772ecb0686b7e6bccc93e3544e88bd35e45e54e",
+        "bytes": 1858
+      },
+      {
+        "file": "experiments/tla-conformance/final-convergence/epoch-prior-producer.json",
+        "sha256": "c7523de32012f0f7706a4250619de199b7826eb810b69fba4955d40dc079897a",
+        "bytes": 1650462
+      },
+      {
+        "file": "experiments/tla-conformance/final-convergence/epoch-prior-registry.json",
+        "sha256": "0ebf063d2b6cb0a63d667409142cb3945b9f84be000aa6eb4f3bf678c186d8ae",
+        "bytes": 165524
+      },
+      {
+        "file": "experiments/tla-conformance/final-convergence/epoch-prior-value.json",
+        "sha256": "dbaabf43838e2957c0625ef25b927eb0450c5e3c6f942810e665c4d9759a1a48",
+        "bytes": 1992088
       },
       {
         "file": "experiments/tla-conformance/final-convergence/final-families.mjs",
-        "sha256": "ef49bc471669d6932c5e57cf6f35027f2c307ce079c13d8ced4e51c404d76e59",
-        "bytes": 16888
+        "sha256": "a1817158b5403ac9a14538245562ab718efdf82820c5b84d4861965c865b7acb",
+        "bytes": 5994
       },
       {
         "file": "experiments/tla-conformance/final-convergence/final-head-transport.mjs",
-        "sha256": "ff92ee12ee7aba49a17bdc96931b02ff0f450d92271b30420672051dddbb4142",
-        "bytes": 35308
+        "sha256": "76de5b2b30b90381194f7f8fef6f7fcc2405e4be5832ce846ff779c13073ed28",
+        "bytes": 2544
       },
       {
         "file": "experiments/tla-conformance/final-convergence/final-selftest.mjs",
-        "sha256": "377cd7c2dce35a4f97c7d2391c2b78758b6ebec4a52c0421332901de3e35550b",
-        "bytes": 6503
+        "sha256": "9be3ad5e552975ebb72bb4027c5172748539e869c5b856f7dcfc0f6bb4d8bb5c",
+        "bytes": 6393
       },
       {
         "file": "experiments/tla-conformance/final-convergence/r137-current.mjs",
@@ -122,8 +137,8 @@
       },
       {
         "file": "experiments/tla-conformance/final-convergence/run-final-verifier.mjs",
-        "sha256": "d279efbaa39b76e8829033a0c35627d91492b92c96acf565ddcf2d480ef7251b",
-        "bytes": 3515
+        "sha256": "eeb98cc89518ef12d26374cd4d0e78216aa1e35860f33af0284f32ceb1eefeba",
+        "bytes": 4729
       },
       {
         "file": "experiments/tla-conformance/final-convergence/wrapper-current.mjs",
@@ -282,13 +297,13 @@
       },
       {
         "file": "experiments/tla-conformance/surface-bindings/lib/binding-checker.mjs",
-        "sha256": "0bb398290e3dd836abd818c5428c88373514484e7c4dcfead0500521611b0ac7",
-        "bytes": 57867
+        "sha256": "59e654c4f0095358e0f2c8b138059b9182810cdf526a554b5b0cbc9636803c56",
+        "bytes": 58376
       },
       {
         "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
-        "sha256": "a3e0ab5624bfeba0ea4892cd9a584a38421ab390eb14034ebb91f951f9adbc69",
-        "bytes": 24259
+        "sha256": "ffcd24ffea8dbd9de20b606b26a11a53cc6eb0acb2b33d066c6fd64992ab20c9",
+        "bytes": 24295
       },
       {
         "file": "experiments/tla-conformance/surface-residual-r8/direct-pure-v7/family.mjs",
@@ -362,13 +377,13 @@
       },
       {
         "file": "experiments/tla-conformance/throughput-r7/registered-producer-family.mjs",
-        "sha256": "e8c9fcbbf669de7a68a76984da27d179b81b49ccba4fe645faf50790405dd655",
-        "bytes": 7417
+        "sha256": "3e187ff75fab078f93fee1706b945d31a3016a6a9353bff5784f5d5becb1b278",
+        "bytes": 7365
       },
       {
         "file": "experiments/tla-conformance/throughput-r7/registered-value-family.mjs",
-        "sha256": "1926bfc82e8cc608904d8a2785c2ae6775d2905186b4d9fb8b137a0696b821b3",
-        "bytes": 6193
+        "sha256": "abc66f63b80c3bdcb41700a7898e0e6e8ea48eddb9d317fd8effb38a75e7b5c8",
+        "bytes": 6183
       },
       {
         "file": "experiments/tla-conformance/throughput-r7/strict-dependency-receipt.mjs",
@@ -402,38 +417,24 @@
       },
       {
         "file": "experiments/tla-conformance/value-contracts/surface-binding.mjs",
-        "sha256": "619b37fe3a9bc9be22e8a0c2167187cfce987c7856280c6df0c36c5a230c3618",
-        "bytes": 5245
+        "sha256": "930f4d8240fddc6cf7b22f9c0419950d4a109bb057542bb231d716de0bf54ebe",
+        "bytes": 5651
       },
       {
         "file": "experiments/tla-conformance/value-contracts/verify.mjs",
         "sha256": "8a851ab3a5f532feb344674f69445797b3f873450e8c044ec7646505a308acad",
         "bytes": 12938
       }
-    ],
-    "purpose": "Hash-pinned self-contained materialization of omitted verifier source/evidence dependencies; every member must be absent before extraction and is removed after verification.",
-    "bytes": 678630
+    ]
   },
   "bundles": {
     "esbuildVersion": "0.27.7",
     "entries": [
       {
-        "mode": "verify",
+        "mode": "unified",
         "file": "experiments/tla-conformance/final-convergence/compact-final-verify.mjs",
-        "sha256": "b6078c5ff4cc20476252f4c22e46b731794e06deb1a4194dd6b47ecc4587ade7",
-        "bytes": 749581
-      },
-      {
-        "mode": "selftest",
-        "file": "experiments/tla-conformance/final-convergence/compact-final-selftest.mjs",
-        "sha256": "fa35f5556340f317aa02965495c633c3f858fa731d1e1828004857a454835143",
-        "bytes": 751891
-      },
-      {
-        "mode": "registry",
-        "file": "experiments/tla-conformance/final-convergence/compact-final-registry.mjs",
-        "sha256": "88e564767d20373d267b6c381d8d0bf1d8c6ac00ccd283d756cc15c14c84ff58",
-        "bytes": 5816
+        "sha256": "b7829b60655a77cfe0885e2e5a16fe26f5cf64af9cdf1ed97f18e8819db0cd5b",
+        "bytes": 833524
       }
     ],
     "sources": [
@@ -499,28 +500,28 @@
       },
       {
         "file": "experiments/tla-conformance/final-convergence/build-final-registry.mjs",
-        "sha256": "e418e7863e7feb8a404d9332318b2edc54944eb62584d31d4ad65eb2d32b5351",
-        "bytes": 2978
+        "sha256": "57a78d1e9892b6d89cad328b0772ecb0686b7e6bccc93e3544e88bd35e45e54e",
+        "bytes": 1858
       },
       {
         "file": "experiments/tla-conformance/final-convergence/current-review-assurance.mjs",
-        "sha256": "b997f1aa189c4aa0543a40e9ddc126acd841f17db55c4846d1495beafb8de5f6",
-        "bytes": 9294
+        "sha256": "f5a2b8e3f1e3c210c1ca06cf6bdd45669b34222305579a8c66a37676777701ba",
+        "bytes": 9304
       },
       {
         "file": "experiments/tla-conformance/final-convergence/final-families.mjs",
-        "sha256": "ef49bc471669d6932c5e57cf6f35027f2c307ce079c13d8ced4e51c404d76e59",
-        "bytes": 16888
+        "sha256": "a1817158b5403ac9a14538245562ab718efdf82820c5b84d4861965c865b7acb",
+        "bytes": 5994
       },
       {
         "file": "experiments/tla-conformance/final-convergence/final-head-transport.mjs",
-        "sha256": "ff92ee12ee7aba49a17bdc96931b02ff0f450d92271b30420672051dddbb4142",
-        "bytes": 35308
+        "sha256": "76de5b2b30b90381194f7f8fef6f7fcc2405e4be5832ce846ff779c13073ed28",
+        "bytes": 2544
       },
       {
         "file": "experiments/tla-conformance/final-convergence/final-selftest.mjs",
-        "sha256": "377cd7c2dce35a4f97c7d2391c2b78758b6ebec4a52c0421332901de3e35550b",
-        "bytes": 6503
+        "sha256": "9be3ad5e552975ebb72bb4027c5172748539e869c5b856f7dcfc0f6bb4d8bb5c",
+        "bytes": 6393
       },
       {
         "file": "experiments/tla-conformance/final-convergence/repository-root.mjs",
@@ -529,8 +530,8 @@
       },
       {
         "file": "experiments/tla-conformance/final-convergence/run-final-verifier.mjs",
-        "sha256": "d279efbaa39b76e8829033a0c35627d91492b92c96acf565ddcf2d480ef7251b",
-        "bytes": 3515
+        "sha256": "eeb98cc89518ef12d26374cd4d0e78216aa1e35860f33af0284f32ceb1eefeba",
+        "bytes": 4729
       },
       {
         "file": "experiments/tla-conformance/fungibility-plan-r9/value-family.mjs",
@@ -639,13 +640,13 @@
       },
       {
         "file": "experiments/tla-conformance/surface-bindings/lib/binding-checker.mjs",
-        "sha256": "0bb398290e3dd836abd818c5428c88373514484e7c4dcfead0500521611b0ac7",
-        "bytes": 57867
+        "sha256": "59e654c4f0095358e0f2c8b138059b9182810cdf526a554b5b0cbc9636803c56",
+        "bytes": 58376
       },
       {
         "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
-        "sha256": "a3e0ab5624bfeba0ea4892cd9a584a38421ab390eb14034ebb91f951f9adbc69",
-        "bytes": 24259
+        "sha256": "ffcd24ffea8dbd9de20b606b26a11a53cc6eb0acb2b33d066c6fd64992ab20c9",
+        "bytes": 24295
       },
       {
         "file": "experiments/tla-conformance/surface-residual-r8/direct-pure-v7/family.mjs",
@@ -669,13 +670,13 @@
       },
       {
         "file": "experiments/tla-conformance/throughput-r7/registered-producer-family.mjs",
-        "sha256": "e8c9fcbbf669de7a68a76984da27d179b81b49ccba4fe645faf50790405dd655",
-        "bytes": 7417
+        "sha256": "3e187ff75fab078f93fee1706b945d31a3016a6a9353bff5784f5d5becb1b278",
+        "bytes": 7365
       },
       {
         "file": "experiments/tla-conformance/throughput-r7/registered-value-family.mjs",
-        "sha256": "1926bfc82e8cc608904d8a2785c2ae6775d2905186b4d9fb8b137a0696b821b3",
-        "bytes": 6193
+        "sha256": "abc66f63b80c3bdcb41700a7898e0e6e8ea48eddb9d317fd8effb38a75e7b5c8",
+        "bytes": 6183
       },
       {
         "file": "experiments/tla-conformance/throughput-r7/strict-dependency-receipt.mjs",
@@ -709,8 +710,8 @@
       },
       {
         "file": "experiments/tla-conformance/value-contracts/surface-binding.mjs",
-        "sha256": "619b37fe3a9bc9be22e8a0c2167187cfce987c7856280c6df0c36c5a230c3618",
-        "bytes": 5245
+        "sha256": "930f4d8240fddc6cf7b22f9c0419950d4a109bb057542bb231d716de0bf54ebe",
+        "bytes": 5651
       },
       {
         "file": "experiments/tla-conformance/value-contracts/verify.mjs",
@@ -719,8 +720,13 @@
       },
       {
         "file": "scripts/assurance-files.mjs",
-        "sha256": "095a5fa032c1d51f37b690f33813a698eafab1846c2cab9eff78b27ebb351d5d",
-        "bytes": 9730
+        "sha256": "d0af1ab80ddccfc665cc9534217e95ee11b5c36c2b437044b395cd6850552fd9",
+        "bytes": 11444
+      },
+      {
+        "file": "scripts/formal-implementation-surface.cjs",
+        "sha256": "889352b2b4ad28444e22ba8f528be70557325318d681f5c3760c47ca937fca87",
+        "bytes": 23474
       },
       {
         "file": "scripts/immutable-assurance-inputs.mjs",
@@ -728,11 +734,295 @@
         "bytes": 6157
       },
       {
+        "file": "scripts/inventory-epoch-contract.mjs",
+        "sha256": "8d4bb7239a581139a49a888808ede73da3685f79dc7ecee7811eb75020a076ff",
+        "bytes": 19467
+      },
+      {
         "file": "scripts/repository-assurance-state.mjs",
-        "sha256": "c2703aa37d1f1c8da49c276ee3ed05e67209d87e85440b59258dbe5689ab33a5",
-        "bytes": 4449
+        "sha256": "685ab8c9b07f2ffa4bfc3ee143abafe64915da072e01744bcc8ac270c82a8939",
+        "bytes": 5357
       }
     ],
-    "entrypointGuardRewrite": "Bundled submodule self-execution guards matching process.argv[1] == fileURLToPath(import.meta.url) are disabled; source hashes are recorded here."
+    "moduleGraph": {
+      "scripts/assurance-files.mjs": [],
+      "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs": [],
+      "experiments/tla-conformance/value-contracts/verify.mjs": [
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs"
+      ],
+      "experiments/tla-conformance/authority-r5/catalog-published-source-contracts.mjs": [],
+      "experiments/tla-conformance/authority-r5/catalog-published-source-equations.mjs": [
+        "experiments/tla-conformance/authority-r5/catalog-published-source-contracts.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs"
+      ],
+      "experiments/tla-conformance/value-contracts/catalog-family.mjs": [
+        "experiments/tla-conformance/authority-r5/catalog-published-source-contracts.mjs",
+        "experiments/tla-conformance/authority-r5/catalog-published-source-equations.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs"
+      ],
+      "experiments/tla-conformance/throughput-r7/registered-value-family.mjs": [
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+        "scripts/assurance-files.mjs"
+      ],
+      "scripts/immutable-assurance-inputs.mjs": [
+        "scripts/assurance-files.mjs"
+      ],
+      "scripts/inventory-epoch-contract.mjs": [
+        "scripts/assurance-files.mjs"
+      ],
+      "experiments/tla-conformance/final-convergence/repository-root.mjs": [
+        "scripts/assurance-files.mjs"
+      ],
+      "experiments/tla-conformance/final-convergence/final-head-transport.mjs": [
+        "experiments/tla-conformance/final-convergence/repository-root.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+        "scripts/assurance-files.mjs",
+        "scripts/inventory-epoch-contract.mjs"
+      ],
+      "experiments/tla-conformance/final-convergence/final-families.mjs": [
+        "experiments/tla-conformance/final-convergence/final-head-transport.mjs",
+        "experiments/tla-conformance/final-convergence/repository-root.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+        "scripts/assurance-files.mjs",
+        "scripts/immutable-assurance-inputs.mjs",
+        "scripts/inventory-epoch-contract.mjs"
+      ],
+      "experiments/tla-conformance/throughput-r7/strict-dependency-receipt.mjs": [
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs"
+      ],
+      "experiments/tla-conformance/throughput-r7/strict-dependency-semantic-receipt.mjs": [
+        "experiments/tla-conformance/throughput-r7/strict-dependency-receipt.mjs"
+      ],
+      "experiments/tla-conformance/boundary-adjudication-r18/family.mjs": [
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+        "experiments/tla-conformance/throughput-r7/strict-dependency-semantic-receipt.mjs"
+      ],
+      "experiments/tla-conformance/identity-values-r7/contracts.mjs": [],
+      "experiments/tla-conformance/identity-values-r7/family.mjs": [
+        "experiments/tla-conformance/identity-values-r7/contracts.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+        "experiments/tla-conformance/value-contracts/catalog-family.mjs"
+      ],
+      "experiments/tla-conformance/quantity-values-r7/contracts.mjs": [],
+      "experiments/tla-conformance/quantity-values-r7/certificate.mjs": [
+        "experiments/tla-conformance/quantity-values-r7/contracts.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs"
+      ],
+      "experiments/tla-conformance/catalog-foundation-r7/contracts.mjs": [],
+      "experiments/tla-conformance/catalog-foundation-r7/normalize.mjs": [
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs"
+      ],
+      "experiments/tla-conformance/catalog-foundation-r7/family.mjs": [
+        "experiments/tla-conformance/catalog-foundation-r7/contracts.mjs",
+        "experiments/tla-conformance/catalog-foundation-r7/normalize.mjs",
+        "experiments/tla-conformance/identity-values-r7/family.mjs",
+        "experiments/tla-conformance/quantity-values-r7/certificate.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+        "experiments/tla-conformance/value-contracts/catalog-family.mjs"
+      ],
+      "experiments/tla-conformance/quantity-values-r7/event-values/contracts.mjs": [],
+      "experiments/tla-conformance/quantity-values-r7/event-values/certificate.mjs": [
+        "experiments/tla-conformance/catalog-foundation-r7/contracts.mjs",
+        "experiments/tla-conformance/catalog-foundation-r7/family.mjs",
+        "experiments/tla-conformance/identity-values-r7/family.mjs",
+        "experiments/tla-conformance/quantity-values-r7/certificate.mjs",
+        "experiments/tla-conformance/quantity-values-r7/event-values/contracts.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+        "experiments/tla-conformance/value-contracts/catalog-family.mjs"
+      ],
+      "experiments/tla-conformance/surface-residual-r8/pure-residual5-r10/composition-open-family.mjs": [
+        "experiments/tla-conformance/identity-values-r7/family.mjs",
+        "experiments/tla-conformance/quantity-values-r7/certificate.mjs",
+        "experiments/tla-conformance/quantity-values-r7/event-values/certificate.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/binding-checker.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+        "experiments/tla-conformance/value-contracts/catalog-family.mjs"
+      ],
+      "experiments/tla-conformance/storage-protocol-r7/value-family.mjs": [
+        "experiments/tla-conformance/quantity-values-r7/certificate.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs"
+      ],
+      "experiments/tla-conformance/migration-helper-causal-r7/independent-v9-laws.mjs": [
+        "experiments/tla-conformance/identity-values-r7/family.mjs",
+        "experiments/tla-conformance/quantity-values-r7/certificate.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/binding-checker.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs"
+      ],
+      "experiments/tla-conformance/transfer-surface-r6/source-equations-r7/contracts.mjs": [],
+      "experiments/tla-conformance/transfer-surface-r6/source-equations-r7/family.mjs": [
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+        "experiments/tla-conformance/transfer-surface-r6/source-equations-r7/contracts.mjs"
+      ],
+      "experiments/tla-conformance/materialize1-r8/family.mjs": [
+        "experiments/tla-conformance/catalog-foundation-r7/family.mjs",
+        "experiments/tla-conformance/migration-helper-causal-r7/independent-v9-laws.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+        "experiments/tla-conformance/transfer-surface-r6/source-equations-r7/family.mjs"
+      ],
+      "experiments/tla-conformance/residual-core-v4-r10/family.mjs": [
+        "experiments/tla-conformance/materialize1-r8/family.mjs",
+        "experiments/tla-conformance/storage-protocol-r7/value-family.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs"
+      ],
+      "experiments/tla-conformance/quantity-values-r7/event-values/registered-family-adapter.mjs": [
+        "experiments/tla-conformance/quantity-values-r7/event-values/certificate.mjs",
+        "experiments/tla-conformance/quantity-values-r7/event-values/contracts.mjs"
+      ],
+      "experiments/tla-conformance/catalog-public-lifecycle7-r9/publication-core-r10/value-family.mjs": [
+        "experiments/tla-conformance/quantity-values-r7/event-values/registered-family-adapter.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/binding-checker.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+        "experiments/tla-conformance/value-contracts/surface-binding.mjs"
+      ],
+      "experiments/tla-conformance/surface-residual-r8/direct-pure-v7/family.mjs": [
+        "experiments/tla-conformance/identity-values-r7/family.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/binding-checker.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+        "experiments/tla-conformance/value-contracts/catalog-family.mjs"
+      ],
+      "experiments/tla-conformance/surface-residual-r8/final-unique8-r9/value-v2/family.mjs": [
+        "experiments/tla-conformance/migration-helper-causal-r7/independent-v9-laws.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/binding-checker.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+        "experiments/tla-conformance/transfer-surface-r6/source-equations-r7/family.mjs"
+      ],
+      "experiments/tla-conformance/traceability-apply1-r8/family.mjs": [
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+        "experiments/tla-conformance/transfer-surface-r6/source-equations-r7/family.mjs"
+      ],
+      "experiments/tla-conformance/new-source-honest486-r43/pinned-irrelevance.mjs": [
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs"
+      ],
+      "experiments/tla-conformance/new-source-honest486-r43/value-currentizer.mjs": [
+        "experiments/tla-conformance/new-source-honest486-r43/pinned-irrelevance.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs"
+      ],
+      "experiments/tla-conformance/authority-values-r40/family.mjs": [
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs"
+      ],
+      "experiments/tla-conformance/migration-helper-causal-r7/registered-value-family.mjs": [
+        "experiments/tla-conformance/migration-helper-causal-r7/independent-v9-laws.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs"
+      ],
+      "experiments/tla-conformance/migration-helper-causal-r7/causal-runtime-verifier.mjs": [],
+      "experiments/tla-conformance/migration-helper-causal-r7/registered-causal-b4-family.mjs": [
+        "experiments/tla-conformance/migration-helper-causal-r7/causal-runtime-verifier.mjs",
+        "experiments/tla-conformance/migration-helper-causal-r7/independent-v9-laws.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/binding-checker.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs"
+      ],
+      "experiments/tla-conformance/migration-helper-causal-r7/registered-frontier-v2-family.mjs": [
+        "experiments/tla-conformance/migration-helper-causal-r7/independent-v9-laws.mjs",
+        "experiments/tla-conformance/migration-helper-causal-r7/registered-causal-b4-family.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs"
+      ],
+      "experiments/tla-conformance/authority-r5/catalog-read-dependency-closure-contracts.mjs": [],
+      "experiments/tla-conformance/authority-r5/catalog-read-dependency-closure-certificate.mjs": [
+        "experiments/tla-conformance/authority-r5/catalog-read-dependency-closure-contracts.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs"
+      ],
+      "experiments/tla-conformance/astra-authority-control-r8/laws.mjs": [],
+      "experiments/tla-conformance/astra-authority-control-r8/family.mjs": [
+        "experiments/tla-conformance/astra-authority-control-r8/laws.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs"
+      ],
+      "experiments/tla-conformance/migration-r5/traceability-value-family.mjs": [
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs"
+      ],
+      "experiments/tla-conformance/fungibility-values5-r8/family.mjs": [
+        "experiments/tla-conformance/identity-values-r7/family.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/binding-checker.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs"
+      ],
+      "experiments/tla-conformance/fungibility-read-r9/summary-family.mjs": [
+        "experiments/tla-conformance/authority-r5/catalog-published-source-equations.mjs",
+        "experiments/tla-conformance/fungibility-values5-r8/family.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/binding-checker.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+        "experiments/tla-conformance/throughput-r7/strict-dependency-receipt.mjs"
+      ],
+      "experiments/tla-conformance/fungibility-plan-r9/value-family.mjs": [
+        "experiments/tla-conformance/fungibility-values5-r8/family.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/binding-checker.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+        "experiments/tla-conformance/throughput-r7/strict-dependency-receipt.mjs"
+      ],
+      "experiments/tla-conformance/throughput-r7/registered-families.mjs": [
+        "experiments/tla-conformance/astra-authority-control-r8/family.mjs",
+        "experiments/tla-conformance/authority-r5/catalog-read-dependency-closure-certificate.mjs",
+        "experiments/tla-conformance/authority-values-r40/family.mjs",
+        "experiments/tla-conformance/boundary-adjudication-r18/family.mjs",
+        "experiments/tla-conformance/catalog-foundation-r7/family.mjs",
+        "experiments/tla-conformance/catalog-public-lifecycle7-r9/publication-core-r10/value-family.mjs",
+        "experiments/tla-conformance/final-convergence/final-families.mjs",
+        "experiments/tla-conformance/fungibility-plan-r9/value-family.mjs",
+        "experiments/tla-conformance/fungibility-read-r9/summary-family.mjs",
+        "experiments/tla-conformance/fungibility-values5-r8/family.mjs",
+        "experiments/tla-conformance/identity-values-r7/family.mjs",
+        "experiments/tla-conformance/materialize1-r8/family.mjs",
+        "experiments/tla-conformance/migration-helper-causal-r7/registered-frontier-v2-family.mjs",
+        "experiments/tla-conformance/migration-helper-causal-r7/registered-value-family.mjs",
+        "experiments/tla-conformance/migration-r5/traceability-value-family.mjs",
+        "experiments/tla-conformance/new-source-honest486-r43/value-currentizer.mjs",
+        "experiments/tla-conformance/quantity-values-r7/certificate.mjs",
+        "experiments/tla-conformance/quantity-values-r7/contracts.mjs",
+        "experiments/tla-conformance/quantity-values-r7/event-values/registered-family-adapter.mjs",
+        "experiments/tla-conformance/residual-core-v4-r10/family.mjs",
+        "experiments/tla-conformance/storage-protocol-r7/value-family.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+        "experiments/tla-conformance/surface-residual-r8/direct-pure-v7/family.mjs",
+        "experiments/tla-conformance/surface-residual-r8/final-unique8-r9/value-v2/family.mjs",
+        "experiments/tla-conformance/surface-residual-r8/pure-residual5-r10/composition-open-family.mjs",
+        "experiments/tla-conformance/traceability-apply1-r8/family.mjs",
+        "experiments/tla-conformance/transfer-surface-r6/source-equations-r7/contracts.mjs",
+        "experiments/tla-conformance/transfer-surface-r6/source-equations-r7/family.mjs"
+      ],
+      "experiments/tla-conformance/value-contracts/surface-binding.mjs": [
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+        "experiments/tla-conformance/throughput-r7/registered-families.mjs",
+        "experiments/tla-conformance/throughput-r7/registered-value-family.mjs",
+        "experiments/tla-conformance/value-contracts/catalog-family.mjs",
+        "experiments/tla-conformance/value-contracts/verify.mjs",
+        "scripts/assurance-files.mjs"
+      ],
+      "experiments/tla-conformance/throughput-r7/registered-producer-family.mjs": [
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+        "scripts/assurance-files.mjs"
+      ],
+      "experiments/tla-conformance/surface-bindings/lib/binding-checker.mjs": [
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+        "experiments/tla-conformance/throughput-r7/registered-producer-family.mjs",
+        "experiments/tla-conformance/value-contracts/surface-binding.mjs"
+      ],
+      "scripts/formal-implementation-surface.cjs": [],
+      "scripts/repository-assurance-state.mjs": [],
+      "experiments/tla-conformance/final-convergence/current-review-assurance.mjs": [
+        "scripts/assurance-files.mjs",
+        "scripts/formal-implementation-surface.cjs",
+        "scripts/repository-assurance-state.mjs"
+      ],
+      "experiments/tla-conformance/final-convergence/build-final-registry.mjs": [
+        "experiments/tla-conformance/final-convergence/final-families.mjs",
+        "scripts/assurance-files.mjs"
+      ],
+      "experiments/tla-conformance/final-convergence/final-selftest.mjs": [
+        "experiments/tla-conformance/final-convergence/final-families.mjs",
+        "experiments/tla-conformance/final-convergence/repository-root.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/binding-checker.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+        "experiments/tla-conformance/throughput-r7/registered-producer-family.mjs",
+        "experiments/tla-conformance/throughput-r7/registered-value-family.mjs"
+      ],
+      "experiments/tla-conformance/final-convergence/run-final-verifier.mjs": [
+        "experiments/tla-conformance/final-convergence/build-final-registry.mjs",
+        "experiments/tla-conformance/final-convergence/current-review-assurance.mjs",
+        "experiments/tla-conformance/final-convergence/final-families.mjs",
+        "experiments/tla-conformance/final-convergence/final-head-transport.mjs",
+        "experiments/tla-conformance/final-convergence/final-selftest.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/binding-checker.mjs",
+        "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+        "scripts/assurance-files.mjs"
+      ]
+    }
   }
 }

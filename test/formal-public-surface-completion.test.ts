@@ -159,7 +159,7 @@ describe("remaining public implementation surfaces", () => {
     });
     await authority.certifyAdapter({
       certificationDigest: "surface-completion-certification",
-      certifiedAt: time0,
+      certifiedAtEpochMs: time0,
     });
     const admitted = await authority.admitLegacyWriter({
       writerToken: "surface-writer",
@@ -177,7 +177,7 @@ describe("remaining public implementation surfaces", () => {
       certificationDigest: "surface-completion-certification",
       targetWorldRoot: "surface-empty-world-root",
       targetWorldRevision: 0,
-      activatedAt: time1,
+      activatedAtEpochMs: time1,
     });
     expect(activated.mode).toBe(InventoryAuthorityMode.Authoritative);
     const failed = await authority.markCompatibilityProjectionFailed({
@@ -201,13 +201,13 @@ describe("remaining public implementation surfaces", () => {
     const inventory = createTestInventory(storage);
     const received = await inventory.stock.receive({
       operationId: "surface-snapshot-receipt",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("surface-store", {
         lotId: "SURFACE-LOT",
         containerId: "SURFACE-CONTAINER",
       }),
       amount: stockAmount("2", "piece"),
-      lot: { expiresAt: time3 },
+      lot: { expiresAtEpochMs: time3 },
       container: { containerType: "tray" },
     });
     const snapshot = await readPublishedInventorySnapshot(storage, time2);
@@ -223,7 +223,7 @@ describe("remaining public implementation surfaces", () => {
         selector: { itemId: "item-a", locationIds: ["surface-store"] },
         amount: stockAmount("1", "piece"),
         method: InventoryAllocationMethod.Fifo,
-        at: time2,
+        atEpochMs: time2,
       }).lines[0]?.allocatedPrimary.amountMinor
     ).toBe(1);
     expect(

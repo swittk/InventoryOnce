@@ -29,7 +29,7 @@ export interface InventoryMigrationSourceDisposition {
   /** Exact legacy row retained as audit evidence. */
   readonly source: InventoryMigrationSourceReference;
   /** Canonical opening-snapshot time whose truth supersedes this row. */
-  readonly snapshotAt: string;
+  readonly snapshotAtEpochMs: number;
   /** Plain explicit reason; never inferred as completed or aborted. */
   readonly reason: string;
   /** Optional bounded JSON-safe audit evidence. */
@@ -47,7 +47,7 @@ export function inventoryMigrationSourceDispositionFingerprint(
     disposition.source.sourceType,
     disposition.source.sourceId,
     disposition.source.note ?? null,
-    disposition.snapshotAt,
+    disposition.snapshotAtEpochMs,
     disposition.reason,
     inventoryMetadataFingerprint(disposition.evidence),
   ];

@@ -53,7 +53,7 @@ describe("first-class physical transfer lifecycle", () => {
     await expect(
       inventory.transfers.prepare({
         operationId: "record-mode-empty-prepare",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         transferId: "RECORD-T",
         transitLocationId: "TRANSIT",
         destinationLocationId: "B",
@@ -88,7 +88,7 @@ describe("first-class physical transfer lifecycle", () => {
     await expect(
       inventory.transfers.prepare({
         operationId: "duplicate-line-prepare",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         transferId: "DUP-LINE",
         transitLocationId: "TRANSIT",
         destinationLocationId: "B",
@@ -113,7 +113,7 @@ describe("first-class physical transfer lifecycle", () => {
       createInventoryTransferPrepareEvent({
         catalog,
         operationId: "duplicate-source-prepare",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         transferId: "DUP-SOURCE",
         transitLocationId: "TRANSIT",
         destinationLocationId: "B",
@@ -140,7 +140,7 @@ describe("first-class physical transfer lifecycle", () => {
       createInventoryTransferPrepareEvent({
         catalog,
         operationId: "reject-transfer-bound-source",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         transferId: "NEW-TRANSFER",
         transitLocationId: "TRANSIT",
         destinationLocationId: "B",
@@ -157,7 +157,7 @@ describe("first-class physical transfer lifecycle", () => {
     const draft = createInventoryTransferPrepareEvent({
       catalog,
       operationId: "cross-transfer-effect-op",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       transferId: "T1",
       transitLocationId: "TRANSIT",
       destinationLocationId: "B",
@@ -187,13 +187,13 @@ describe("first-class physical transfer lifecycle", () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "seed-duplicate-receipt",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("A"),
       amount: stockAmount("5", "piece"),
     });
     await inventory.transfers.prepare({
       operationId: "prepare-duplicate-receipt",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       transferId: "DUP-RECEIVE",
       transitLocationId: "TRANSIT",
       destinationLocationId: "B",
@@ -207,7 +207,7 @@ describe("first-class physical transfer lifecycle", () => {
     });
     await inventory.transfers.dispatch({
       operationId: "dispatch-duplicate-receipt",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       transferId: "DUP-RECEIVE",
     });
     const before = await inventory.transfers.find({
@@ -216,7 +216,7 @@ describe("first-class physical transfer lifecycle", () => {
     await expect(
       inventory.transfers.receive({
         operationId: "receive-duplicate-lines",
-        occurredAt: time3,
+        occurredAtEpochMs: time3,
         transferId: "DUP-RECEIVE",
         lines: [
           { lineId: "line", amount: stockAmount("1", "piece") },
@@ -238,7 +238,7 @@ describe("first-class physical transfer lifecycle", () => {
           eventId: "raw-transfer-bypass-event",
           operationId: "raw-transfer-bypass-operation",
           kind: InventoryEventKind.Issue,
-          occurredAt: time1,
+          occurredAtEpochMs: time1,
           stockEffects: [
             {
               itemRevisionId: "item-a-v2",
@@ -266,14 +266,14 @@ describe("first-class physical transfer lifecycle", () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "seed-transfer-stock",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("A", { ownerId: "clinic", custodianId: "clinic" }),
       amount: stockAmount("100", "piece"),
     });
 
     await inventory.transfers.prepare({
       operationId: "prepare-t1",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       transferId: "T1",
       transitLocationId: "TRANSIT",
       destinationLocationId: "B",
@@ -291,7 +291,7 @@ describe("first-class physical transfer lifecycle", () => {
     });
     await inventory.transfers.prepare({
       operationId: "prepare-t2",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       transferId: "T2",
       transitLocationId: "TRANSIT",
       destinationLocationId: "B",
@@ -322,7 +322,7 @@ describe("first-class physical transfer lifecycle", () => {
     await expect(
       inventory.stock.issueByPolicy({
         operationId: "cannot-use-prepared",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         selector: inventoryStockSelector("item-a", { locationIds: ["A"] }),
         amount: stockAmount("51", "piece"),
         method: InventoryAllocationMethod.Fifo,
@@ -333,13 +333,13 @@ describe("first-class physical transfer lifecycle", () => {
 
     await inventory.transfers.dispatch({
       operationId: "dispatch-t1",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       transferId: "T1",
       carrierCustodianId: "carrier",
     });
     await inventory.transfers.dispatch({
       operationId: "dispatch-t2",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       transferId: "T2",
       carrierCustodianId: "carrier",
     });
@@ -369,7 +369,7 @@ describe("first-class physical transfer lifecycle", () => {
     expect(t1TransitIdentity).toBeDefined();
     if (t1TransitIdentity === undefined) throw new Error("Missing T1 transit identity.");
     expect(
-      transitWorld.projection.positiveLayerStartedAtByPositionId[t1TransitIdentity]
+      transitWorld.projection.positiveLayerStartedAtEpochMsByPositionId[t1TransitIdentity]
     ).toBe(time0);
     const smuggledTransitPosition = transitPositions[0];
     if (smuggledTransitPosition === undefined)
@@ -377,7 +377,7 @@ describe("first-class physical transfer lifecycle", () => {
     await expect(
       inventory.stock.issue({
         operationId: "cannot-smuggle-transfer-position",
-        occurredAt: time2,
+        occurredAtEpochMs: time2,
         // Deliberately pass a transfer-bound key to verify issue refuses what its honest type excludes.
         from: smuggledTransitPosition.key as never,
         amount: stockAmount("1", "piece"),
@@ -386,7 +386,7 @@ describe("first-class physical transfer lifecycle", () => {
 
     const partial = await inventory.transfers.receive({
       operationId: "receive-t1-five",
-      occurredAt: time3,
+      occurredAtEpochMs: time3,
       transferId: "T1",
       lines: [{ lineId: "tablets", amount: stockAmount("5", "piece") }],
     });
@@ -448,7 +448,7 @@ describe("first-class physical transfer lifecycle", () => {
     expect(destinationIdentity).toBeDefined();
     if (destinationIdentity === undefined) throw new Error("Missing destination identity.");
     expect(
-      receivedWorld.projection.positiveLayerStartedAtByPositionId[
+      receivedWorld.projection.positiveLayerStartedAtEpochMsByPositionId[
         destinationIdentity
       ]
     ).toBe(time0);
@@ -458,13 +458,13 @@ describe("first-class physical transfer lifecycle", () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "seed-retry",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("A"),
       amount: stockAmount("20", "piece"),
     });
     const prepared = await inventory.transfers.prepare({
       operationId: "prepare-retry",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       transferId: "TR",
       transitLocationId: "TRANSIT",
       destinationLocationId: "B",
@@ -479,19 +479,19 @@ describe("first-class physical transfer lifecycle", () => {
     const directDispatchDraft = createInventoryTransferDispatchEvent({
       catalog: createTabletCatalog(),
       operationId: "direct-dispatch-builder",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       transfer: prepared.transfer,
     });
     expect(directDispatchDraft.stockEffects.length).toBeGreaterThan(0);
     const dispatched = await inventory.transfers.dispatch({
       operationId: "dispatch-retry",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       transferId: "TR",
     });
     const directReceiveDraft = createInventoryTransferReceiveEvent({
       catalog: createTabletCatalog(),
       operationId: "direct-receive-builder",
-      occurredAt: time3,
+      occurredAtEpochMs: time3,
       transfer: dispatched.transfer,
       lines: [{ lineId: "line", amount: stockAmount("1", "piece") }],
     });
@@ -499,13 +499,13 @@ describe("first-class physical transfer lifecycle", () => {
 
     const first = await inventory.transfers.receive({
       operationId: "receive-seven",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       transferId: "TR",
       lines: [{ lineId: "line", amount: stockAmount("7", "piece") }],
     });
     const replayed = await inventory.transfers.receive({
       operationId: "receive-seven",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       transferId: "TR",
       lines: [{ lineId: "line", amount: stockAmount("7", "piece") }],
     });
@@ -520,7 +520,7 @@ describe("first-class physical transfer lifecycle", () => {
     await expect(
       inventory.transfers.receive({
         operationId: "receive-seven",
-        occurredAt: time2,
+        occurredAtEpochMs: time2,
         transferId: "TR",
         lines: [{ lineId: "line", amount: stockAmount("8", "piece") }],
       })
@@ -528,7 +528,7 @@ describe("first-class physical transfer lifecycle", () => {
 
     const completed = await inventory.transfers.receive({
       operationId: "receive-rest",
-      occurredAt: time3,
+      occurredAtEpochMs: time3,
       transferId: "TR",
     });
     expect(completed.transfer.status).toBe(InventoryTransferStatus.Received);
@@ -547,13 +547,13 @@ describe("first-class physical transfer lifecycle", () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "seed-transfer-correction",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("A"),
       amount: stockAmount("8", "piece"),
     });
     const prepared = await inventory.transfers.prepare({
       operationId: "prepare-transfer-correction",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       transferId: "CORRECT-T",
       transitLocationId: "TRANSIT",
       destinationLocationId: "B",
@@ -569,7 +569,7 @@ describe("first-class physical transfer lifecycle", () => {
     await expect(
       inventory.stock.correct({
         operationId: "generic-correct-transfer",
-        occurredAt: time2,
+        occurredAtEpochMs: time2,
         correctsEventId: prepared.event.eventId,
         reason: "Attempt generic correction of transfer lifecycle truth.",
         replaceWith: (plans) => plans.omit(),
@@ -584,13 +584,13 @@ describe("first-class physical transfer lifecycle", () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "seed-release",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("A"),
       amount: stockAmount("10", "piece"),
     });
     const prepared = await inventory.transfers.prepare({
       operationId: "prepare-release",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       transferId: "REL",
       transitLocationId: "TRANSIT",
       destinationLocationId: "B",
@@ -605,7 +605,7 @@ describe("first-class physical transfer lifecycle", () => {
     const directReleaseDraft = createInventoryTransferReleaseEvent({
       catalog: createTabletCatalog(),
       operationId: "direct-release-builder",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       transfer: prepared.transfer,
     });
     expect(directReleaseDraft.stockEffects.length).toBeGreaterThan(0);
@@ -619,7 +619,7 @@ describe("first-class physical transfer lifecycle", () => {
 
     const released = await inventory.transfers.release({
       operationId: "release",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       transferId: "REL",
     });
     expect(released.transfer.status).toBe(InventoryTransferStatus.Released);
@@ -636,7 +636,7 @@ describe("first-class physical transfer lifecycle", () => {
     await expect(
       inventory.transfers.dispatch({
         operationId: "dispatch-released",
-        occurredAt: time3,
+        occurredAtEpochMs: time3,
         transferId: "REL",
       })
     ).rejects.toThrow(/^Only a prepared transfer can be dispatched\.$/u);
@@ -646,14 +646,14 @@ describe("first-class physical transfer lifecycle", () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "seed-exact-package",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("A", { lotId: "LOT-PACK" }),
       amount: packageAmount(2, "item-a-box-24-v1"),
-      lot: { expiresAt: "2028-01-01T00:00:00.000Z" },
+      lot: { expiresAtEpochMs: 1830297600000 },
     });
     await inventory.transfers.prepare({
       operationId: "prepare-exact-package",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       transferId: "PACK-T",
       transitLocationId: "TRANSIT",
       destinationLocationId: "B",
@@ -670,12 +670,12 @@ describe("first-class physical transfer lifecycle", () => {
     });
     await inventory.transfers.dispatch({
       operationId: "dispatch-exact-package",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       transferId: "PACK-T",
     });
     await inventory.transfers.receive({
       operationId: "receive-exact-package",
-      occurredAt: time3,
+      occurredAtEpochMs: time3,
       transferId: "PACK-T",
     });
     const receivedPackage = (
@@ -693,19 +693,19 @@ describe("first-class physical transfer lifecycle", () => {
 
     await inventory.stock.receive({
       operationId: "seed-exact-container",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: loosePosition("A", {
         lotId: "LOT-TRAY",
         containerId: "TRAY-X",
         qualifiedDimensions: [{ dimensionId: "grade", valueId: "A" }],
       }),
       amount: stockAmount("6", "piece"),
-      lot: { expiresAt: "2028-02-01T00:00:00.000Z" },
+      lot: { expiresAtEpochMs: 1832976000000 },
       container: { containerType: "tray", identifiers: { barcode: "TRAY-X" } },
     });
     await inventory.transfers.prepare({
       operationId: "prepare-exact-container",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       transferId: "TRAY-T",
       transitLocationId: "TRANSIT",
       destinationLocationId: "C",
@@ -723,7 +723,7 @@ describe("first-class physical transfer lifecycle", () => {
     });
     await inventory.transfers.dispatch({
       operationId: "dispatch-exact-container",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       transferId: "TRAY-T",
       carrierCustodianId: "carrier",
     });
@@ -745,7 +745,7 @@ describe("first-class physical transfer lifecycle", () => {
 
     await inventory.transfers.receive({
       operationId: "receive-exact-container",
-      occurredAt: time3,
+      occurredAtEpochMs: time3,
       transferId: "TRAY-T",
     });
     const receivedTray = (

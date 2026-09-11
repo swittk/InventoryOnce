@@ -118,11 +118,11 @@ describe("composition/collection catalogue publication", () => {
     });
     await baseInventory.catalog.publish({
       operationId: "publish-composition-collection-v1",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
     });
     await baseInventory.stock.receive({
       operationId: "receive-publication-old-pack",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       to: {
         itemId: oldPackItem.itemId,
         locationId: "store",
@@ -215,7 +215,7 @@ describe("composition/collection catalogue publication", () => {
     await expect(
       extendedInventory.compositions.open({
         operationId: "open-before-composition-publication",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         from: {
           itemId: oldPackItem.itemId,
           locationId: "store",
@@ -231,7 +231,7 @@ describe("composition/collection catalogue publication", () => {
 
     await extendedInventory.catalog.publish({
       operationId: "publish-composition-collection-v2",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
     });
     expect(
       (
@@ -263,7 +263,7 @@ describe("composition/collection catalogue publication", () => {
 
     await extendedInventory.stock.receive({
       operationId: "receive-publication-new-pack",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       to: {
         itemId: newPackItem.itemId,
         locationId: "store",
@@ -288,7 +288,7 @@ describe("composition/collection catalogue publication", () => {
 
     const opened = await extendedInventory.compositions.open({
       operationId: "open-retained-publication-old-pack",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       from: {
         itemId: oldPackItem.itemId,
         locationId: "store",

@@ -116,19 +116,19 @@ export interface InventoryAuthorityState {
   /** Digest of the adapter certification run accepted before Shadow mode. */
   readonly adapterCertificationDigest: string;
   /** Canonical time at which the adapter certification was accepted. */
-  readonly adapterCertifiedAt: string;
+  readonly adapterCertifiedAtEpochMs: number | null;
   /** Complete source root checked before DualRun and again under the fence. */
   readonly sourceRoot: string;
   /** Source revision represented by sourceRoot. */
   readonly sourceRevision: number;
   /** Canonical time DualRun started. */
-  readonly dualRunStartedAt: string;
+  readonly dualRunStartedAtEpochMs: number | null;
   /** Canonically ordered mismatch evidence; non-empty evidence blocks fencing. */
   readonly dualRunMismatchEvidence: readonly InventoryDualRunMismatchEvidence[];
   /** Stable cutover retry identity. */
   readonly fenceToken: string;
   /** Canonical time the source write fence started. */
-  readonly fenceStartedAt: string;
+  readonly fenceStartedAtEpochMs: number | null;
   /** Exact accepted source migration plan digest. */
   readonly sourcePlanDigest: string;
   /** Exact accepted source catalogue digest. */
@@ -138,7 +138,7 @@ export interface InventoryAuthorityState {
   /** Exact published InventoryOnce world revision. */
   readonly targetWorldRevision: number;
   /** Canonical time authority activated. */
-  readonly activatedAt: string;
+  readonly activatedAtEpochMs: number | null;
   /** Last published world revision written to legacy compatibility rows. */
   readonly compatibilityProjectionWorldRevision: number;
   /** Current compatibility projector condition. */
@@ -152,7 +152,7 @@ export interface CertifyInventoryAdapterInput {
   /** Stable digest emitted by the adapter conformance/certification run. */
   readonly certificationDigest: string;
   /** Canonical time at which certification completed. */
-  readonly certifiedAt: string;
+  readonly certifiedAtEpochMs: number;
 }
 
 /** Inputs for moving a certified legacy stream into Shadow mode. */
@@ -172,7 +172,7 @@ export interface EnterInventoryDualRunInput {
   /** Exact source catalogue digest for the shadow read. */
   readonly sourceCatalogDigest: string;
   /** Canonical time DualRun started. */
-  readonly startedAt: string;
+  readonly startedAtEpochMs: number;
 }
 
 /** One mismatch record that prevents a source fence from being claimed. */
@@ -184,7 +184,7 @@ export interface RecordInventoryDualRunMismatchInput {
   /** Intent/result digest seen by the InventoryOnce path. */
   readonly authoritativeIntentDigest: string;
   /** Canonical time the mismatch was recorded. */
-  readonly recordedAt: string;
+  readonly recordedAtEpochMs: number;
 }
 
 /** Inputs for explicitly authorizing one legacy-source authority cutover. */
@@ -222,7 +222,7 @@ export interface ClaimInventoryAuthorityFenceInput {
   /** Stable retry identity for this cutover. */
   readonly fenceToken: string;
   /** Canonical fence claim time. */
-  readonly startedAt: string;
+  readonly startedAtEpochMs: number;
   /** Optional source-root assertion from the caller; current durable root is always checked. */
   readonly sourceRoot?: string;
   /** Optional source-revision assertion from the caller. */
@@ -244,7 +244,7 @@ export interface ActivateInventoryAuthorityInput {
   /** Complete source root checked under the fence. */
   readonly sourceRoot?: string;
   /** Canonical activation time. */
-  readonly activatedAt: string;
+  readonly activatedAtEpochMs: number;
 }
 
 /** Inputs for explicitly activating a certified empty greenfield stream. */
@@ -258,7 +258,7 @@ export interface ActivateGreenfieldInventoryAuthorityInput {
   /** Greenfield activation can bind only revision zero. */
   readonly targetWorldRevision: 0;
   /** Canonical activation time. */
-  readonly activatedAt: string;
+  readonly activatedAtEpochMs: number;
 }
 
 /** Inputs for recording one successful compatibility projection. */
@@ -378,7 +378,7 @@ export class InventoryAuthorityControl
       input.certificationDigest,
       "certificationDigest"
     );
-    const certifiedAt = requireCanonicalTime(input.certifiedAt, "certifiedAt");
+    const certifiedAtEpochMs = requireEpochMilliseconds(input.certifiedAtEpochMs, "certifiedAtEpochMs");
     const current = await this.read();
     if (current.mode !== InventoryAuthorityMode.Legacy) {
       if (current.adapterCertificationDigest === certificationDigest)
@@ -408,7 +408,7 @@ export class InventoryAuthorityControl
       {
         revision: nextInventoryAuthorityRevision(current.revision),
         adapterCertificationDigest: certificationDigest,
-        adapterCertifiedAt: certifiedAt,
+        adapterCertifiedAtEpochMs: certifiedAtEpochMs,
       }
     );
     const next = await this.read();
@@ -479,9 +479,9 @@ export class InventoryAuthorityControl
       input.sourceCatalogDigest,
       "sourceCatalogDigest"
     );
-    const startedAt = requireCanonicalTime(
-      input.startedAt,
-      "DualRun startedAt"
+    const startedAtEpochMs = requireEpochMilliseconds(
+      input.startedAtEpochMs,
+      "DualRun startedAtEpochMs"
     );
     requireSafeNonNegativeInteger(input.sourceRevision, "sourceRevision");
     const current = await this.read();
@@ -518,7 +518,7 @@ export class InventoryAuthorityControl
         sourceRevision: input.sourceRevision,
         sourcePlanDigest,
         sourceCatalogDigest,
-        dualRunStartedAt: startedAt,
+        dualRunStartedAtEpochMs: startedAtEpochMs,
         dualRunMismatchEvidenceJson: "[]",
       }
     );
@@ -544,9 +544,9 @@ export class InventoryAuthorityControl
       input.authoritativeIntentDigest,
       "authoritativeIntentDigest"
     );
-    const recordedAt = requireCanonicalTime(
-      input.recordedAt,
-      "mismatch recordedAt"
+    const recordedAtEpochMs = requireEpochMilliseconds(
+      input.recordedAtEpochMs,
+      "mismatch recordedAtEpochMs"
     );
     for (let attempt = 0; attempt < AUTHORITY_CAS_RETRY_LIMIT; attempt += 1) {
       const current = await this.read();
@@ -569,7 +569,7 @@ export class InventoryAuthorityControl
           commandId,
           legacyIntentDigest,
           authoritativeIntentDigest,
-          recordedAt,
+          recordedAtEpochMs,
         },
       ].sort(compareMismatchEvidence);
       const changed = await this.store.compareAndSet(
@@ -764,7 +764,7 @@ export class InventoryAuthorityControl
     input: ClaimInventoryAuthorityFenceInput
   ): Promise<InventoryAuthorityState> {
     const token = requireText(input.fenceToken, "fenceToken");
-    const startedAt = requireCanonicalTime(input.startedAt, "fence startedAt");
+    const startedAtEpochMs = requireEpochMilliseconds(input.startedAtEpochMs, "fence startedAtEpochMs");
     const current = await this.read();
     if (current.mode === InventoryAuthorityMode.Authoritative) {
       if (current.fenceToken === token) return current;
@@ -831,12 +831,12 @@ export class InventoryAuthorityControl
         revision: nextInventoryAuthorityRevision(current.revision),
         mode: InventoryAuthorityMode.Fencing,
         fenceToken: token,
-        fenceStartedAt: startedAt,
+        fenceStartedAtEpochMs: startedAtEpochMs,
         sourcePlanDigest: current.sourcePlanDigest,
         sourceCatalogDigest: current.sourceCatalogDigest,
         targetWorldRoot: "",
         targetWorldRevision: 0,
-        activatedAt: "",
+        activatedAtEpochMs: null,
       }
     );
     const next = await this.read();
@@ -882,7 +882,7 @@ export class InventoryAuthorityControl
       input.targetWorldRoot,
       "targetWorldRoot"
     );
-    const activatedAt = requireCanonicalTime(input.activatedAt, "activatedAt");
+    const activatedAtEpochMs = requireEpochMilliseconds(input.activatedAtEpochMs, "activatedAtEpochMs");
     if (
       !Number.isSafeInteger(input.targetWorldRevision) ||
       input.targetWorldRevision < 0
@@ -959,7 +959,7 @@ export class InventoryAuthorityControl
         sourceCatalogDigest,
         targetWorldRoot,
         targetWorldRevision: input.targetWorldRevision,
-        activatedAt,
+        activatedAtEpochMs,
         compatibilityProjectionWorldRevision: 0,
         compatibilityProjectionStatus:
           InventoryCompatibilityProjectionStatus.Lagging,
@@ -995,9 +995,9 @@ export class InventoryAuthorityControl
       input.targetWorldRoot,
       "greenfield targetWorldRoot"
     );
-    const activatedAt = requireCanonicalTime(
-      input.activatedAt,
-      "greenfield activatedAt"
+    const activatedAtEpochMs = requireEpochMilliseconds(
+      input.activatedAtEpochMs,
+      "greenfield activatedAtEpochMs"
     );
     if (input.targetWorldRevision !== 0) {
       throw new Error(
@@ -1026,7 +1026,7 @@ export class InventoryAuthorityControl
     }
     if (
       current.adapterCertificationDigest !== certificationDigest ||
-      current.adapterCertifiedAt.length === 0
+      current.adapterCertifiedAtEpochMs === null
     ) {
       throw new Error(
         "InventoryOnce greenfield activation requires the exact retained adapter certification."
@@ -1037,10 +1037,10 @@ export class InventoryAuthorityControl
       current.sourceRoot.length !== 0 ||
       current.sourcePlanDigest.length !== 0 ||
       current.sourceCatalogDigest.length !== 0 ||
-      current.dualRunStartedAt.length !== 0 ||
+      current.dualRunStartedAtEpochMs !== null ||
       current.dualRunMismatchEvidence.length !== 0 ||
       current.fenceToken.length !== 0 ||
-      current.fenceStartedAt.length !== 0
+      current.fenceStartedAtEpochMs !== null
     ) {
       throw new Error(
         "InventoryOnce greenfield activation cannot reuse legacy source, migration, mismatch, or fence evidence."
@@ -1065,7 +1065,7 @@ export class InventoryAuthorityControl
         greenfieldAuthorizationId: authorizationId,
         targetWorldRoot,
         targetWorldRevision: 0,
-        activatedAt,
+        activatedAtEpochMs,
         compatibilityProjectionWorldRevision: 0,
         compatibilityProjectionStatus:
           InventoryCompatibilityProjectionStatus.Current,
@@ -1118,7 +1118,7 @@ export class InventoryAuthorityControl
         revision: nextInventoryAuthorityRevision(current.revision),
         mode: InventoryAuthorityMode.DualRun,
         fenceToken: "",
-        fenceStartedAt: "",
+        fenceStartedAtEpochMs: null,
       }
     );
     const next = await this.read();
@@ -1219,17 +1219,17 @@ export class InventoryAuthorityControl
       greenfieldAuthorizationId: "String",
       activeLegacyWritersJson: "String",
       fenceToken: "String",
-      fenceStartedAt: "String",
+      fenceStartedAtEpochMs: "Number",
       sourcePlanDigest: "String",
       sourceCatalogDigest: "String",
       targetWorldRoot: "String",
       targetWorldRevision: "Number",
-      activatedAt: "String",
+      activatedAtEpochMs: "Number",
       adapterCertificationDigest: "String",
-      adapterCertifiedAt: "String",
+      adapterCertifiedAtEpochMs: "Number",
       sourceRoot: "String",
       sourceRevision: "Number",
-      dualRunStartedAt: "String",
+      dualRunStartedAtEpochMs: "Number",
       dualRunMismatchEvidenceJson: "String",
       compatibilityProjectionWorldRevision: "Number",
       compatibilityProjectionStatus: "String",
@@ -1244,17 +1244,17 @@ export class InventoryAuthorityControl
       greenfieldAuthorizationId: "",
       activeLegacyWriters: [],
       fenceToken: "",
-      fenceStartedAt: "",
+      fenceStartedAtEpochMs: null,
       sourcePlanDigest: "",
       sourceCatalogDigest: "",
       targetWorldRoot: "",
       targetWorldRevision: 0,
-      activatedAt: "",
+      activatedAtEpochMs: null,
       adapterCertificationDigest: "",
-      adapterCertifiedAt: "",
+      adapterCertifiedAtEpochMs: null,
       sourceRoot: "",
       sourceRevision: 0,
-      dualRunStartedAt: "",
+      dualRunStartedAtEpochMs: null,
       dualRunMismatchEvidence: [],
       compatibilityProjectionWorldRevision: 0,
       compatibilityProjectionStatus:
@@ -1286,17 +1286,17 @@ function stateDocument(
     greenfieldAuthorizationId: state.greenfieldAuthorizationId,
     activeLegacyWritersJson: serializeActiveWriters(state.activeLegacyWriters),
     fenceToken: state.fenceToken,
-    fenceStartedAt: state.fenceStartedAt,
+    fenceStartedAtEpochMs: state.fenceStartedAtEpochMs,
     sourcePlanDigest: state.sourcePlanDigest,
     sourceCatalogDigest: state.sourceCatalogDigest,
     targetWorldRoot: state.targetWorldRoot,
     targetWorldRevision: state.targetWorldRevision,
-    activatedAt: state.activatedAt,
+    activatedAtEpochMs: state.activatedAtEpochMs,
     adapterCertificationDigest: state.adapterCertificationDigest,
-    adapterCertifiedAt: state.adapterCertifiedAt,
+    adapterCertifiedAtEpochMs: state.adapterCertifiedAtEpochMs,
     sourceRoot: state.sourceRoot,
     sourceRevision: state.sourceRevision,
-    dualRunStartedAt: state.dualRunStartedAt,
+    dualRunStartedAtEpochMs: state.dualRunStartedAtEpochMs,
     dualRunMismatchEvidenceJson: serializeMismatchEvidence(
       state.dualRunMismatchEvidence
     ),
@@ -1393,20 +1393,20 @@ function parseState(
     greenfieldAuthorizationId,
     activeLegacyWriters,
     fenceToken: requireString(row, "fenceToken"),
-    fenceStartedAt: requireString(row, "fenceStartedAt"),
+    fenceStartedAtEpochMs: requireNullableEpochMilliseconds(row, "fenceStartedAtEpochMs"),
     sourcePlanDigest: requireString(row, "sourcePlanDigest"),
     sourceCatalogDigest: requireString(row, "sourceCatalogDigest"),
     targetWorldRoot: requireString(row, "targetWorldRoot"),
     targetWorldRevision: requireNonNegativeInteger(row, "targetWorldRevision"),
-    activatedAt: requireString(row, "activatedAt"),
+    activatedAtEpochMs: requireNullableEpochMilliseconds(row, "activatedAtEpochMs"),
     adapterCertificationDigest: requireString(
       row,
       "adapterCertificationDigest"
     ),
-    adapterCertifiedAt: requireString(row, "adapterCertifiedAt"),
+    adapterCertifiedAtEpochMs: requireNullableEpochMilliseconds(row, "adapterCertifiedAtEpochMs"),
     sourceRoot: requireString(row, "sourceRoot"),
     sourceRevision: requireNonNegativeInteger(row, "sourceRevision"),
-    dualRunStartedAt: requireString(row, "dualRunStartedAt"),
+    dualRunStartedAtEpochMs: requireNullableEpochMilliseconds(row, "dualRunStartedAtEpochMs"),
     dualRunMismatchEvidence: parseMismatchEvidence(
       requireString(row, "dualRunMismatchEvidenceJson")
     ),
@@ -1430,7 +1430,7 @@ function assertInventoryAuthorityDurableStateReachable(
 ): void {
   /** Whether adapter certification has been durably accepted. */
   const adapterCertified = state.adapterCertificationDigest.length !== 0;
-  if (adapterCertified !== (state.adapterCertifiedAt.length !== 0)) {
+  if (adapterCertified !== (state.adapterCertifiedAtEpochMs !== null)) {
     throw new Error(
       "InventoryOnce authority adapter certification digest/time must be retained together."
     );
@@ -1440,7 +1440,7 @@ function assertInventoryAuthorityDurableStateReachable(
       state.adapterCertificationDigest,
       "adapterCertificationDigest"
     );
-    requireCanonicalStoredTime(state.adapterCertifiedAt, "adapterCertifiedAt");
+    requireStoredEpochMilliseconds(state.adapterCertifiedAtEpochMs, "adapterCertifiedAtEpochMs");
   }
   if (state.cutoverAuthorizationId.length !== 0)
     requireCanonicalStoredText(
@@ -1455,15 +1455,15 @@ function assertInventoryAuthorityDurableStateReachable(
 
   /** Source evidence is written atomically when Shadow becomes DualRun. */
   const sourceParts = [
-    state.sourceRoot,
-    state.sourcePlanDigest,
-    state.sourceCatalogDigest,
-    state.dualRunStartedAt,
+    state.sourceRoot.length !== 0,
+    state.sourcePlanDigest.length !== 0,
+    state.sourceCatalogDigest.length !== 0,
+    state.dualRunStartedAtEpochMs !== null,
   ];
   /** Number of fields present in the atomic source-evidence bundle. */
   let sourcePartCount = 0;
-  for (const value of sourceParts) {
-    if (value.length !== 0) sourcePartCount += 1;
+  for (const present of sourceParts) {
+    if (present) sourcePartCount += 1;
   }
   if (sourcePartCount !== 0 && sourcePartCount !== sourceParts.length) {
     throw new Error(
@@ -1475,7 +1475,7 @@ function assertInventoryAuthorityDurableStateReachable(
     requireCanonicalStoredText(state.sourceRoot, "sourceRoot");
     requireCanonicalStoredText(state.sourcePlanDigest, "sourcePlanDigest");
     requireCanonicalStoredText(state.sourceCatalogDigest, "sourceCatalogDigest");
-    requireCanonicalStoredTime(state.dualRunStartedAt, "DualRun startedAt");
+    requireStoredEpochMilliseconds(state.dualRunStartedAtEpochMs, "DualRun startedAtEpochMs");
   } else if (state.sourceRevision !== 0) {
     throw new Error(
       "InventoryOnce authority cannot retain a source revision without complete source evidence."
@@ -1484,7 +1484,7 @@ function assertInventoryAuthorityDurableStateReachable(
 
   /** Fence token and start time are created and released as one pair. */
   const fenceTokenPresent = state.fenceToken.length !== 0;
-  const fenceTimePresent = state.fenceStartedAt.length !== 0;
+  const fenceTimePresent = state.fenceStartedAtEpochMs !== null;
   if (fenceTokenPresent !== fenceTimePresent) {
     throw new Error(
       "InventoryOnce authority fence token/time must be retained together."
@@ -1493,12 +1493,12 @@ function assertInventoryAuthorityDurableStateReachable(
   const fenceBound = fenceTokenPresent && fenceTimePresent;
   if (fenceBound) {
     requireCanonicalStoredText(state.fenceToken, "fenceToken");
-    requireCanonicalStoredTime(state.fenceStartedAt, "fence startedAt");
+    requireStoredEpochMilliseconds(state.fenceStartedAtEpochMs, "fence startedAtEpochMs");
   }
 
   /** Activation target root and time are published together. */
   const targetRootPresent = state.targetWorldRoot.length !== 0;
-  const activatedAtPresent = state.activatedAt.length !== 0;
+  const activatedAtPresent = state.activatedAtEpochMs !== null;
   if (targetRootPresent !== activatedAtPresent) {
     throw new Error(
       "InventoryOnce authority target root/activation time must be retained together."
@@ -1507,7 +1507,7 @@ function assertInventoryAuthorityDurableStateReachable(
   const targetBound = targetRootPresent && activatedAtPresent;
   if (targetBound) {
     requireCanonicalStoredText(state.targetWorldRoot, "targetWorldRoot");
-    requireCanonicalStoredTime(state.activatedAt, "activatedAt");
+    requireStoredEpochMilliseconds(state.activatedAtEpochMs, "activatedAtEpochMs");
   } else if (state.targetWorldRevision !== 0) {
     throw new Error(
       "InventoryOnce authority cannot retain a target revision before activation."
@@ -1633,15 +1633,12 @@ function requireCanonicalStoredText(value: string, label: string): string {
   return value;
 }
 
-/** Require one persisted timestamp to already equal the writer-side canonical UTC form. */
-function requireCanonicalStoredTime(value: string, label: string): string {
-  const normalized = requireCanonicalTime(value, label);
-  if (normalized !== value) {
-    throw new Error(
-      `InventoryOnce authority ${label} is not stored in canonical UTC form.`
-    );
+/** Require present numeric time evidence; null denotes absence, never epoch zero. */
+function requireStoredEpochMilliseconds(value: number | null, label: string): number {
+  if (value === null) {
+    throw new Error(`InventoryOnce authority ${label} must retain epoch milliseconds.`);
   }
-  return value;
+  return requireEpochMilliseconds(value, label);
 }
 
 /** Read explicit activation provenance, inferring legacy cutover for pre-field authoritative rows. */
@@ -1706,7 +1703,7 @@ export interface InventoryDualRunMismatchEvidence {
   /** InventoryOnce intent/result digest. */
   readonly authoritativeIntentDigest: string;
   /** Canonical mismatch time. */
-  readonly recordedAt: string;
+  readonly recordedAtEpochMs: number;
 }
 
 /** Parse canonical mismatch evidence and reject malformed durable state. */
@@ -1734,11 +1731,11 @@ function parseMismatchEvidence(
       !("commandId" in entry) ||
       !("legacyIntentDigest" in entry) ||
       !("authoritativeIntentDigest" in entry) ||
-      !("recordedAt" in entry) ||
+      !("recordedAtEpochMs" in entry) ||
       typeof entry.commandId !== "string" ||
       typeof entry.legacyIntentDigest !== "string" ||
       typeof entry.authoritativeIntentDigest !== "string" ||
-      typeof entry.recordedAt !== "string"
+      typeof entry.recordedAtEpochMs !== "number"
     ) {
       throw new Error(
         "InventoryOnce DualRun mismatch evidence entry is invalid."
@@ -1764,9 +1761,9 @@ function parseMismatchEvidence(
         entry.authoritativeIntentDigest,
         "mismatch authoritativeIntentDigest"
       ),
-      recordedAt: requireCanonicalStoredTime(
-        entry.recordedAt,
-        "mismatch recordedAt"
+      recordedAtEpochMs: requireStoredEpochMilliseconds(
+        entry.recordedAtEpochMs,
+        "mismatch recordedAtEpochMs"
       ),
     });
   }
@@ -1798,7 +1795,7 @@ function compareMismatchEvidence(
 ): number {
   const commandOrder = compareCanonicalText(left.commandId, right.commandId);
   return commandOrder === 0
-    ? compareCanonicalText(left.recordedAt, right.recordedAt)
+    ? (left.recordedAtEpochMs < right.recordedAtEpochMs ? -1 : left.recordedAtEpochMs > right.recordedAtEpochMs ? 1 : 0)
     : commandOrder;
 }
 
@@ -1982,19 +1979,22 @@ function requireText(value: string, label: string): string {
   return normalized;
 }
 
-/** Require one canonical UTC ISO instant. */
-function requireCanonicalTime(value: string, label: string): string {
-  const normalized = requireText(value, label);
-  const parsed = new Date(normalized);
-  if (
-    !Number.isFinite(parsed.getTime()) ||
-    parsed.toISOString() !== normalized
-  ) {
-    throw new Error(
-      `InventoryOnce authority ${label} must be canonical UTC ISO time.`
-    );
+/** Require one signed safe-integer epoch millisecond instant. */
+function requireEpochMilliseconds(value: number, label: string): number {
+  if (!Number.isSafeInteger(value)) {
+    throw new Error(`InventoryOnce authority ${label} must be safe-integer epoch milliseconds.`);
   }
-  return normalized;
+  return value;
+}
+
+/** Read a numeric instant or explicit absent evidence without accepting legacy text or missing fields. */
+function requireNullableEpochMilliseconds(row: InventoryAuthorityDocument, field: string): number | null {
+  const value = row[field];
+  if (value === null) return null;
+  if (typeof value !== "number") {
+    throw new Error(`InventoryOnce authority field '${field}' must be epoch milliseconds or null.`);
+  }
+  return requireEpochMilliseconds(value, field);
 }
 
 /** Read one required string field. */

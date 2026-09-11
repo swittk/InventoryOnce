@@ -2,11 +2,14 @@ const ts = require("typescript");
 const path = require("node:path");
 const crypto = require("node:crypto");
 
+/** Derive the implementation census from one shared compiler snapshot or a standalone command. */
+function discoverImplementationSurface({ repositoryRoot = path.resolve(__dirname, ".."), program: suppliedProgram } = {}) {
 /** InventoryOnce package/source roots. */
-const root = path.resolve(__dirname, "..");
+const root = path.resolve(repositoryRoot);
 const sourceRoot = path.resolve(root, "src");
 const normalizedSourceRoot = path.normalize(sourceRoot);
 const normalizedSourcePrefix = `${normalizedSourceRoot}${path.sep}`;
+const program = suppliedProgram ?? (() => {
 const configPath = path.join(root, "tsconfig.test.json");
 const config = ts.readConfigFile(configPath, ts.sys.readFile);
 if (config.error !== undefined) {
@@ -28,10 +31,11 @@ if (parsed.errors.length > 0) {
       .join("\n")
   );
 }
-const program = ts.createProgram({
+return ts.createProgram({
   rootNames: parsed.fileNames,
   options: parsed.options,
 });
+})();
 const semanticDiagnostics = program.getSemanticDiagnostics();
 if (semanticDiagnostics.length > 0) {
   throw new Error(
@@ -620,9 +624,7 @@ const types = [...typeRecords.values()]
   }))
   .sort((left, right) => compareExact(left.identity, right.identity));
 
-console.log(
-  JSON.stringify(
-    {
+return {
       facade,
       authority,
       storage,
@@ -634,8 +636,8 @@ console.log(
         recursiveTypeReferences: [...recursiveTypeReferences].sort(),
         truncatedTypes: [...truncatedTypes].sort(),
       },
-    },
-    undefined,
-    2
-  )
-);
+    };
+}
+
+module.exports = { discoverImplementationSurface };
+if (require.main === module) console.log(JSON.stringify(discoverImplementationSurface(), undefined, 2));

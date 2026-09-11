@@ -1,39 +1,42 @@
 ---- MODULE UseByReservation ----
 EXTENDS Naturals, Integers, FiniteSets, TLC
 
+\* Finite signed epoch-millisecond quotient. Runtime absence is null/undefined; the
+\* model-only NoTime sentinel sits strictly outside the modeled instant domain.
 Resources == {"early", "late"}
 NoResource == "none"
-NoTime == -1
+MinTime == -2
 MaxTime == 3
+NoTime == MinTime - 1
 
-UseBy(resource) ==
-  CASE resource = "early" -> 1
+UseByEpochMs(resource) ==
+  CASE resource = "early" -> 0
     [] resource = "late"  -> 3
     [] OTHER               -> MaxTime + 1
 
-VARIABLES now,
+VARIABLES nowEpochMs,
           stock,
           claimState,
           allowExpired,
           allocation,
-          allocatedAt,
+          allocatedAtEpochMs,
           consumedResource,
-          consumedAt,
+          consumedAtEpochMs,
           shortageReport
 
 vars ==
-  <<now,
+  <<nowEpochMs,
     stock,
     claimState,
     allowExpired,
     allocation,
-    allocatedAt,
+    allocatedAtEpochMs,
     consumedResource,
-    consumedAt,
+    consumedAtEpochMs,
     shortageReport>>
 
 ResourceUsable(resource, time, allowsExpired) ==
-  resource \in stock /\ (allowsExpired \/ time < UseBy(resource))
+  resource \in stock /\ (allowsExpired \/ time < UseByEpochMs(resource))
 
 \* Active allocated claims require that exact resource to remain usable; active
 \* unallocated claims require at least one usable resource in current stock.
@@ -42,88 +45,88 @@ ClaimFeasible(stockSet, time, state, allowsExpired, allocatedResource) ==
   THEN TRUE
   ELSE IF allocatedResource # NoResource
        THEN allocatedResource \in stockSet /\
-            (allowsExpired \/ time < UseBy(allocatedResource))
+            (allowsExpired \/ time < UseByEpochMs(allocatedResource))
        ELSE \E resource \in stockSet:
-              allowsExpired \/ time < UseBy(resource)
+              allowsExpired \/ time < UseByEpochMs(resource)
 
 \* A shortage is exactly the negation of current claim feasibility.
 ShortageFor(stockSet, time, state, allowsExpired, allocatedResource) ==
   ~ClaimFeasible(stockSet, time, state, allowsExpired, allocatedResource)
 
 Init ==
-  /\ now = 0
+  /\ nowEpochMs = MinTime
   /\ stock = Resources
   /\ claimState = "none"
   /\ allowExpired = FALSE
   /\ allocation = NoResource
-  /\ allocatedAt = NoTime
+  /\ allocatedAtEpochMs = NoTime
   /\ consumedResource = NoResource
-  /\ consumedAt = NoTime
+  /\ consumedAtEpochMs = NoTime
   /\ shortageReport = FALSE
 
 CreateClaim(allowsExpired) ==
   /\ claimState = "none"
-  /\ ClaimFeasible(stock, now, "active", allowsExpired, NoResource)
+  /\ ClaimFeasible(stock, nowEpochMs, "active", allowsExpired, NoResource)
   /\ allowExpired' = allowsExpired
   /\ claimState' = "active"
   /\ allocation' = NoResource
-  /\ allocatedAt' = NoTime
+  /\ allocatedAtEpochMs' = NoTime
   /\ consumedResource' = consumedResource
-  /\ consumedAt' = consumedAt
-  /\ now' = now
+  /\ consumedAtEpochMs' = consumedAtEpochMs
+  /\ nowEpochMs' = nowEpochMs
   /\ stock' = stock
   /\ shortageReport' =
-       ShortageFor(stock', now', claimState', allowExpired', allocation')
+       ShortageFor(stock', nowEpochMs', claimState', allowExpired', allocation')
 
 Allocate(resource) ==
   /\ claimState = "active"
-  /\ ResourceUsable(resource, now, allowExpired)
+  /\ ResourceUsable(resource, nowEpochMs, allowExpired)
   /\ allocation' = resource
-  /\ allocatedAt' = now
-  /\ UNCHANGED <<now, stock, claimState, allowExpired,
-                  consumedResource, consumedAt>>
+  /\ allocatedAtEpochMs' = nowEpochMs
+  /\ UNCHANGED <<nowEpochMs, stock, claimState, allowExpired,
+                  consumedResource, consumedAtEpochMs>>
   /\ shortageReport' =
-       ShortageFor(stock', now', claimState', allowExpired', allocation')
+       ShortageFor(stock', nowEpochMs', claimState', allowExpired', allocation')
 
 AdvanceTime ==
-  /\ now < MaxTime
-  /\ now' = now + 1
+  /\ nowEpochMs < MaxTime
+  /\ nowEpochMs' = nowEpochMs + 1
   /\ UNCHANGED <<stock, claimState, allowExpired, allocation,
-                  allocatedAt, consumedResource, consumedAt>>
+                  allocatedAtEpochMs, consumedResource, consumedAtEpochMs>>
   /\ shortageReport' =
-       ShortageFor(stock', now', claimState', allowExpired', allocation')
+       ShortageFor(stock', nowEpochMs', claimState', allowExpired', allocation')
 
 PhysicalLoss(resource) ==
   /\ resource \in stock
   /\ stock' = stock \ {resource}
-  /\ UNCHANGED <<now, claimState, allowExpired, allocation,
-                  allocatedAt, consumedResource, consumedAt>>
+  /\ UNCHANGED <<nowEpochMs, claimState, allowExpired, allocation,
+                  allocatedAtEpochMs, consumedResource, consumedAtEpochMs>>
   /\ shortageReport' =
-       ShortageFor(stock', now', claimState', allowExpired', allocation')
+       ShortageFor(stock', nowEpochMs', claimState', allowExpired', allocation')
 
 Consume ==
   /\ claimState = "active"
   /\ allocation # NoResource
-  /\ ResourceUsable(allocation, now, allowExpired)
+  /\ ResourceUsable(allocation, nowEpochMs, allowExpired)
   /\ stock' = stock \ {allocation}
   /\ claimState' = "consumed"
   /\ consumedResource' = allocation
-  /\ consumedAt' = now
+  /\ consumedAtEpochMs' = nowEpochMs
   /\ allocation' = NoResource
-  /\ allocatedAt' = NoTime
-  /\ UNCHANGED <<now, allowExpired>>
+  /\ allocatedAtEpochMs' = NoTime
+  /\ UNCHANGED <<nowEpochMs, allowExpired>>
   /\ shortageReport' =
-       ShortageFor(stock', now', claimState', allowExpired', allocation')
+       ShortageFor(stock', nowEpochMs', claimState', allowExpired', allocation')
 
 Release ==
   /\ claimState = "active"
   /\ claimState' = "released"
   /\ allocation' = NoResource
-  /\ allocatedAt' = NoTime
-  /\ UNCHANGED <<now, stock, allowExpired,
-                  consumedResource, consumedAt>>
+  /\ allocatedAtEpochMs' = NoTime
+  /\ UNCHANGED <<nowEpochMs, stock, allowExpired,
+                  consumedResource, consumedAtEpochMs>>
   /\ shortageReport' =
-       ShortageFor(stock', now', claimState', allowExpired', allocation')
+       ShortageFor(stock', nowEpochMs', claimState', allowExpired', allocation')
 
 Next ==
   \/ \E allowsExpired \in BOOLEAN: CreateClaim(allowsExpired)
@@ -136,58 +139,58 @@ Next ==
 Spec == Init /\ [][Next]_vars
 
 TypeOK ==
-  /\ now \in 0..MaxTime
+  /\ nowEpochMs \in MinTime..MaxTime
   /\ stock \subseteq Resources
   /\ claimState \in {"none", "active", "consumed", "released"}
   /\ allowExpired \in BOOLEAN
   /\ allocation \in Resources \cup {NoResource}
-  /\ allocatedAt \in {NoTime} \cup 0..MaxTime
+  /\ allocatedAtEpochMs \in {NoTime} \cup MinTime..MaxTime
   /\ consumedResource \in Resources \cup {NoResource}
-  /\ consumedAt \in {NoTime} \cup 0..MaxTime
+  /\ consumedAtEpochMs \in {NoTime} \cup MinTime..MaxTime
   /\ shortageReport \in BOOLEAN
 
 ReportMatchesCurrentTruth ==
   shortageReport =
-    ShortageFor(stock, now, claimState, allowExpired, allocation)
+    ShortageFor(stock, nowEpochMs, claimState, allowExpired, allocation)
 
 OrdinaryAllocationWasUsable ==
-  allocatedAt = NoTime \/
+  allocatedAtEpochMs = NoTime \/
     allowExpired \/
-    allocatedAt < UseBy(allocation)
+    allocatedAtEpochMs < UseByEpochMs(allocation)
 
 OrdinaryConsumptionWasUsable ==
-  consumedAt = NoTime \/
+  consumedAtEpochMs = NoTime \/
     allowExpired \/
-    consumedAt < UseBy(consumedResource)
+    consumedAtEpochMs < UseByEpochMs(consumedResource)
 
 AllocationEvidenceIsPaired ==
-  (allocation = NoResource) = (allocatedAt = NoTime)
+  (allocation = NoResource) = (allocatedAtEpochMs = NoTime)
 
 ConsumedClaimHasEvidence ==
   claimState = "consumed" =>
     /\ consumedResource \in Resources
-    /\ consumedAt \in 0..MaxTime
+    /\ consumedAtEpochMs \in MinTime..MaxTime
 
 
 \* Deliberate negative control: advance the clock while retaining the old report.
 AdvanceTimeStaleReportMutation ==
-  /\ now < MaxTime
-  /\ now' = now + 1
+  /\ nowEpochMs < MaxTime
+  /\ nowEpochMs' = nowEpochMs + 1
   /\ UNCHANGED <<stock, claimState, allowExpired, allocation,
-                  allocatedAt, consumedResource, consumedAt, shortageReport>>
+                  allocatedAtEpochMs, consumedResource, consumedAtEpochMs, shortageReport>>
 
 \* Deliberate negative control: bind an ordinary claim to a resource that is already expired.
 AllocateExpiredMutation(resource) ==
   /\ claimState = "active"
   /\ resource \in stock
   /\ ~allowExpired
-  /\ now >= UseBy(resource)
+  /\ nowEpochMs >= UseByEpochMs(resource)
   /\ allocation' = resource
-  /\ allocatedAt' = now
-  /\ UNCHANGED <<now, stock, claimState, allowExpired,
-                  consumedResource, consumedAt>>
+  /\ allocatedAtEpochMs' = nowEpochMs
+  /\ UNCHANGED <<nowEpochMs, stock, claimState, allowExpired,
+                  consumedResource, consumedAtEpochMs>>
   /\ shortageReport' =
-       ShortageFor(stock', now', claimState', allowExpired', allocation')
+       ShortageFor(stock', nowEpochMs', claimState', allowExpired', allocation')
 
 \* Deliberate negative control: consume an ordinary allocation after its use-by boundary.
 ConsumeExpiredMutation ==
@@ -195,16 +198,16 @@ ConsumeExpiredMutation ==
   /\ allocation # NoResource
   /\ allocation \in stock
   /\ ~allowExpired
-  /\ now >= UseBy(allocation)
+  /\ nowEpochMs >= UseByEpochMs(allocation)
   /\ stock' = stock \ {allocation}
   /\ claimState' = "consumed"
   /\ consumedResource' = allocation
-  /\ consumedAt' = now
+  /\ consumedAtEpochMs' = nowEpochMs
   /\ allocation' = NoResource
-  /\ allocatedAt' = NoTime
-  /\ UNCHANGED <<now, allowExpired>>
+  /\ allocatedAtEpochMs' = NoTime
+  /\ UNCHANGED <<nowEpochMs, allowExpired>>
   /\ shortageReport' =
-       ShortageFor(stock', now', claimState', allowExpired', allocation')
+       ShortageFor(stock', nowEpochMs', claimState', allowExpired', allocation')
 
 StaleReportMutationNext == Next \/ AdvanceTimeStaleReportMutation
 StaleReportMutationSpec == Init /\ [][StaleReportMutationNext]_vars
@@ -215,5 +218,20 @@ ExpiredAllocationMutationSpec == Init /\ [][ExpiredAllocationMutationNext]_vars
 
 ExpiredConsumptionMutationNext == Next \/ ConsumeExpiredMutation
 ExpiredConsumptionMutationSpec == Init /\ [][ExpiredConsumptionMutationNext]_vars
+
+
+\* A zero millisecond allocation is evidence, not absence. This also forces the
+\* positive graph to reach an allocation at zero before the mutant can fire.
+EpochZeroAbsenceMutation ==
+  /\ claimState = "active"
+  /\ nowEpochMs = 0
+  /\ allocation \in Resources
+  /\ allocatedAtEpochMs = 0
+  /\ allocatedAtEpochMs' = NoTime
+  /\ UNCHANGED <<nowEpochMs, stock, claimState, allowExpired, allocation,
+                  consumedResource, consumedAtEpochMs, shortageReport>>
+
+EpochZeroMutationNext == Next \/ EpochZeroAbsenceMutation
+EpochZeroMutationSpec == Init /\ [][EpochZeroMutationNext]_vars
 
 =============================================================================

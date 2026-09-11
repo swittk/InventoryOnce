@@ -9,7 +9,7 @@ import {
 } from "./canonical.js";
 import type { InventoryCatalog } from "./catalog.js";
 import { applyInventoryRecordedDeficitBurden } from "./deficits.js";
-import { assertCanonicalInventoryTime } from "./events.js";
+import { assertInventoryEpochMilliseconds } from "./events.js";
 import { inventoryMeasurementAt } from "./measurements.js";
 import {
   inventoryStockPositionIdentity,
@@ -78,7 +78,7 @@ export interface InventoryReservationFeasibilityGroup {
 /** Read-side explanation of active-claim feasibility after ordinary or physical-truth changes. */
 export interface InventoryReservationFeasibilityReport {
   /** Time used to decide which active reservations have expired logically. */
-  readonly at: string;
+  readonly atEpochMs: number;
   /** Feasible only when every competing group has zero shortage. */
   readonly status: InventoryReservationFeasibilityStatus;
   /** Exact results for every active competing claim group. */
@@ -106,9 +106,9 @@ export interface NewInventoryReservation {
   /** Positive requested quantity on the item's configured reservation axis. */
   readonly requested: Quantity;
   /** Time the claim was created. */
-  readonly createdAt: string;
+  readonly createdAtEpochMs: number;
   /** Optional time after which the claim stops reducing availability. */
-  readonly expiresAt?: string;
+  readonly expiresAtEpochMs?: number;
   /** Explicitly permit stock past its lot/container use-by to back this claim. */
   readonly allowExpiredStock?: boolean;
   /** Application/source row that requested this claim. */
@@ -126,9 +126,9 @@ export interface InventoryReservation extends NewInventoryReservation {
   /** Exact position bindings when picking/allocation has happened. */
   readonly allocations: readonly InventoryReservationAllocation[];
   /** Time the current terminal status was set. */
-  readonly statusAt?: string;
+  readonly statusAtEpochMs?: number;
   /** Latest causally ordered lifecycle change, including refinement/allocation. */
-  readonly lastChangedAt: string;
+  readonly lastChangedAtEpochMs: number;
   /** Committed issue event that consumed this reservation. */
   readonly consumptionEventId?: string;
 }
@@ -200,7 +200,7 @@ export interface CreateInventoryReservationInput {
   /** New claim intent. */
   readonly reservation: NewInventoryReservation;
   /** Current time used for expiry and feasibility. */
-  readonly now: string;
+  readonly nowEpochMs: number;
 }
 
 /** Create an empty reservation book. */
@@ -217,23 +217,23 @@ export function createInventoryReservation({
   projection,
   book,
   reservation,
-  now,
+  nowEpochMs,
 }: CreateInventoryReservationInput): InventoryReservationBookResult {
-  assertCanonicalInventoryTime(now, "reservation now");
-  assertCanonicalInventoryTime(reservation.createdAt, "reservation createdAt");
-  if (reservation.createdAt > now) {
+  assertInventoryEpochMilliseconds(nowEpochMs, "reservation now");
+  assertInventoryEpochMilliseconds(reservation.createdAtEpochMs, "reservation createdAtEpochMs");
+  if (reservation.createdAtEpochMs > nowEpochMs) {
     throw new Error(
-      "Reservation createdAt cannot be after its durable record time."
+      "Reservation createdAtEpochMs cannot be after its durable record time."
     );
   }
-  if (reservation.expiresAt !== undefined) {
-    assertCanonicalInventoryTime(
-      reservation.expiresAt,
-      "reservation expiresAt"
+  if (reservation.expiresAtEpochMs !== undefined) {
+    assertInventoryEpochMilliseconds(
+      reservation.expiresAtEpochMs,
+      "reservation expiresAtEpochMs"
     );
     if (
-      reservation.expiresAt <= reservation.createdAt ||
-      reservation.expiresAt <= now
+      reservation.expiresAtEpochMs <= reservation.createdAtEpochMs ||
+      reservation.expiresAtEpochMs <= nowEpochMs
     ) {
       throw new Error(
         "Cannot create an already-expired inventory reservation."
@@ -280,7 +280,7 @@ export function createInventoryReservation({
     ...normalizedCreation,
     status: InventoryReservationStatus.Active,
     allocations: [],
-    lastChangedAt: reservation.createdAt,
+    lastChangedAtEpochMs: reservation.createdAtEpochMs,
   };
   const nextBook = addReservationOperation(
     {
@@ -302,7 +302,7 @@ export function createInventoryReservation({
     catalog,
     projection,
     book: nextBook,
-    at: now,
+    atEpochMs: nowEpochMs,
   });
   return { book: nextBook, reservation: value, replayed: false };
 }
@@ -316,7 +316,7 @@ export interface AssertInventoryReservationsFeasibleInput {
   /** Reservation book to test. */
   readonly book: InventoryReservationBook;
   /** Time determining which active claims have expired logically. */
-  readonly at: string;
+  readonly atEpochMs: number;
 }
 
 /** Throw unless all active claims have one simultaneous non-overlapping stock assignment. */
@@ -324,13 +324,13 @@ export function assertInventoryReservationsFeasible({
   catalog,
   projection,
   book,
-  at,
+  atEpochMs,
 }: AssertInventoryReservationsFeasibleInput): void {
   const report = inspectInventoryReservationFeasibility({
     catalog,
     projection,
     book,
-    at,
+    atEpochMs,
   });
   if (report.status === InventoryReservationFeasibilityStatus.Feasible) return;
   const shortReservationIds: string[] = [];
@@ -351,12 +351,12 @@ export function inspectInventoryReservationFeasibility({
   catalog,
   projection,
   book,
-  at,
+  atEpochMs,
 }: AssertInventoryReservationsFeasibleInput): InventoryReservationFeasibilityReport {
-  assertCanonicalInventoryTime(at, "reservation feasibility time");
+  assertInventoryEpochMilliseconds(atEpochMs, "reservation feasibility time");
   const activeReservations: InventoryReservation[] = [];
-  for (const reservation of inventoryReservationsAt(book, at)) {
-    if (inventoryReservationIsActiveAt(reservation, at)) {
+  for (const reservation of inventoryReservationsAt(book, atEpochMs)) {
+    if (inventoryReservationIsActiveAt(reservation, atEpochMs)) {
       activeReservations.push(reservation);
     }
   }
@@ -372,7 +372,7 @@ export function inspectInventoryReservationFeasibility({
       catalog,
       projection,
       reservations,
-      at
+      atEpochMs
     );
     const shortage = quantity({
       amountMinor: safeNumberFromBigInt(
@@ -413,22 +413,23 @@ export function inspectInventoryReservationFeasibility({
     });
   }
   results.sort(compareReservationFeasibilityGroup);
-  return { at, status, groups: results };
+  return { atEpochMs, status, groups: results };
 }
 
 /** Rebuild every reservation row as it existed at one lifecycle occurrence time. */
 export function inventoryReservationsAt(
   book: InventoryReservationBook,
-  at: string
+  atEpochMs: number
 ): readonly InventoryReservation[] {
-  const current = currentInventoryReservationsAt(book, at);
+  assertInventoryEpochMilliseconds(atEpochMs, "reservation query atEpochMs");
+  const current = currentInventoryReservationsAt(book, atEpochMs);
   if (current !== undefined) return current;
   const latestByReservationId = new Map<
     string,
     InventoryReservationOperation
   >();
   for (const operation of Object.values(book.operations)) {
-    if (operation.reservationAfter.lastChangedAt > at) continue;
+    if (operation.reservationAfter.lastChangedAtEpochMs > atEpochMs) continue;
     const earlier = latestByReservationId.get(operation.reservationId);
     if (
       earlier === undefined ||
@@ -452,11 +453,11 @@ export function inventoryReservationsAt(
  */
 function currentInventoryReservationsAt(
   book: InventoryReservationBook,
-  at: string
+  atEpochMs: number
 ): readonly InventoryReservation[] | undefined {
   const reservations = Object.values(book.reservations);
   for (const reservation of reservations) {
-    if (reservation.lastChangedAt > at) return undefined;
+    if (reservation.lastChangedAtEpochMs > atEpochMs) return undefined;
   }
   reservations.sort(compareReservationIdentity);
   return reservations;
@@ -465,14 +466,18 @@ function currentInventoryReservationsAt(
 /** Return whether this retained reservation row reduced availability at this authority time. */
 export function inventoryReservationIsActiveAt(
   reservation: InventoryReservation,
-  at: string
+  atEpochMs: number
 ): boolean {
-  if (at < reservation.createdAt) return false;
-  if (reservation.expiresAt !== undefined && at >= reservation.expiresAt)
+  assertInventoryEpochMilliseconds(atEpochMs, "reservation query atEpochMs");
+  assertInventoryEpochMilliseconds(reservation.createdAtEpochMs, "reservation createdAtEpochMs");
+  if (reservation.expiresAtEpochMs !== undefined) assertInventoryEpochMilliseconds(reservation.expiresAtEpochMs, "reservation expiresAtEpochMs");
+  if (reservation.statusAtEpochMs !== undefined) assertInventoryEpochMilliseconds(reservation.statusAtEpochMs, "reservation statusAtEpochMs");
+  if (atEpochMs < reservation.createdAtEpochMs) return false;
+  if (reservation.expiresAtEpochMs !== undefined && atEpochMs >= reservation.expiresAtEpochMs)
     return false;
   if (reservation.status === InventoryReservationStatus.Active) return true;
   // A released, expired, or consumed row still protected stock before that terminal fact happened.
-  return reservation.statusAt !== undefined && at < reservation.statusAt;
+  return reservation.statusAtEpochMs !== undefined && atEpochMs < reservation.statusAtEpochMs;
 }
 
 /** Inputs for narrowing one active reservation selector. */
@@ -490,21 +495,21 @@ export interface RefineInventoryReservationInput {
   /** New selector that must be a structural subset of the existing selector. */
   readonly selector: InventoryStockSelector;
   /** Lifecycle operation occurrence time. */
-  readonly occurredAt: string;
+  readonly occurredAtEpochMs: number;
 }
 
 /** Narrow one claim without making the global set of claims infeasible. */
 export function refineInventoryReservation(
   input: RefineInventoryReservationInput
 ): InventoryReservationBookResult {
-  assertCanonicalInventoryTime(
-    input.occurredAt,
-    "reservation refine occurredAt"
+  assertInventoryEpochMilliseconds(
+    input.occurredAtEpochMs,
+    "reservation refine occurredAtEpochMs"
   );
   const reservation = requireActiveReservation(
     input.book,
     input.reservationId,
-    input.occurredAt
+    input.occurredAtEpochMs
   );
   const selector = freezeReservationEligibleItemRevisions(
     input.catalog,
@@ -521,7 +526,7 @@ export function refineInventoryReservation(
   }
   const fingerprint = inventoryIntentFingerprint([
     input.reservationId,
-    input.occurredAt,
+    input.occurredAtEpochMs,
     inventoryStockSelectorIdentity(selector),
   ]);
   const replay = findReservationOperationReplay(
@@ -535,7 +540,7 @@ export function refineInventoryReservation(
   const value: InventoryReservation = {
     ...reservation,
     selector,
-    lastChangedAt: input.occurredAt,
+    lastChangedAtEpochMs: input.occurredAtEpochMs,
   };
   const nextBook = replaceReservationWithOperation(input.book, value, {
     operationId: input.operationId,
@@ -547,7 +552,7 @@ export function refineInventoryReservation(
     catalog: input.catalog,
     projection: input.projection,
     book: nextBook,
-    at: input.occurredAt,
+    atEpochMs: input.occurredAtEpochMs,
   });
   return { book: nextBook, reservation: value, replayed: false };
 }
@@ -567,21 +572,21 @@ export interface AllocateInventoryReservationInput {
   /** Exact position quantities whose total must equal the request. */
   readonly allocations: readonly InventoryReservationAllocation[];
   /** Lifecycle operation occurrence time. */
-  readonly occurredAt: string;
+  readonly occurredAtEpochMs: number;
 }
 
 /** Bind one broad claim to exact positions while preserving global feasibility. */
 export function allocateInventoryReservation(
   input: AllocateInventoryReservationInput
 ): InventoryReservationBookResult {
-  assertCanonicalInventoryTime(
-    input.occurredAt,
-    "reservation allocation occurredAt"
+  assertInventoryEpochMilliseconds(
+    input.occurredAtEpochMs,
+    "reservation allocation occurredAtEpochMs"
   );
   const reservation = requireActiveReservation(
     input.book,
     input.reservationId,
-    input.occurredAt
+    input.occurredAtEpochMs
   );
   const item = input.catalog.itemRevision(reservation.itemRevisionId);
   const axis = input.catalog.measurementAxis(item, item.reservationAxisId);
@@ -592,11 +597,11 @@ export function allocateInventoryReservation(
     reservation,
     axis.axisId,
     axis.unit,
-    input.occurredAt
+    input.occurredAtEpochMs
   );
   const fingerprint = inventoryIntentFingerprint([
     input.reservationId,
-    input.occurredAt,
+    input.occurredAtEpochMs,
     allocations.map(allocationFingerprint),
   ]);
   const replay = findReservationOperationReplay(
@@ -610,7 +615,7 @@ export function allocateInventoryReservation(
   const value: InventoryReservation = {
     ...reservation,
     allocations,
-    lastChangedAt: input.occurredAt,
+    lastChangedAtEpochMs: input.occurredAtEpochMs,
   };
   const nextBook = replaceReservationWithOperation(input.book, value, {
     operationId: input.operationId,
@@ -622,7 +627,7 @@ export function allocateInventoryReservation(
     catalog: input.catalog,
     projection: input.projection,
     book: nextBook,
-    at: input.occurredAt,
+    atEpochMs: input.occurredAtEpochMs,
   });
   return { book: nextBook, reservation: value, replayed: false };
 }
@@ -636,20 +641,20 @@ export interface CloseInventoryReservationInput {
   /** Reservation being closed. */
   readonly reservationId: string;
   /** Lifecycle operation occurrence time. */
-  readonly occurredAt: string;
+  readonly occurredAtEpochMs: number;
 }
 
 /** Release one active claim without changing physical stock. */
 export function releaseInventoryReservation(
   input: CloseInventoryReservationInput
 ): InventoryReservationBookResult {
-  assertCanonicalInventoryTime(
-    input.occurredAt,
-    "reservation release occurredAt"
+  assertInventoryEpochMilliseconds(
+    input.occurredAtEpochMs,
+    "reservation release occurredAtEpochMs"
   );
   const fingerprint = inventoryIntentFingerprint([
     input.reservationId,
-    input.occurredAt,
+    input.occurredAtEpochMs,
   ]);
   const replay = findReservationOperationReplay(
     input.book,
@@ -662,13 +667,13 @@ export function releaseInventoryReservation(
   const reservation = requireActiveReservation(
     input.book,
     input.reservationId,
-    input.occurredAt
+    input.occurredAtEpochMs
   );
   const value: InventoryReservation = {
     ...reservation,
     status: InventoryReservationStatus.Released,
-    statusAt: input.occurredAt,
-    lastChangedAt: input.occurredAt,
+    statusAtEpochMs: input.occurredAtEpochMs,
+    lastChangedAtEpochMs: input.occurredAtEpochMs,
   };
   const book = replaceReservationWithOperation(input.book, value, {
     operationId: input.operationId,
@@ -683,13 +688,13 @@ export function releaseInventoryReservation(
 export function expireInventoryReservation(
   input: CloseInventoryReservationInput
 ): InventoryReservationBookResult {
-  assertCanonicalInventoryTime(
-    input.occurredAt,
-    "reservation expiry occurredAt"
+  assertInventoryEpochMilliseconds(
+    input.occurredAtEpochMs,
+    "reservation expiry occurredAtEpochMs"
   );
   const fingerprint = inventoryIntentFingerprint([
     input.reservationId,
-    input.occurredAt,
+    input.occurredAtEpochMs,
   ]);
   const replay = findReservationOperationReplay(
     input.book,
@@ -705,18 +710,18 @@ export function expireInventoryReservation(
   if (reservation.status !== InventoryReservationStatus.Active) {
     throw new Error("Only an active inventory reservation can expire.");
   }
-  assertReservationLifecycleTime(reservation, input.occurredAt);
+  assertReservationLifecycleTime(reservation, input.occurredAtEpochMs);
   if (
-    reservation.expiresAt === undefined ||
-    reservation.expiresAt > input.occurredAt
+    reservation.expiresAtEpochMs === undefined ||
+    reservation.expiresAtEpochMs > input.occurredAtEpochMs
   ) {
     throw new Error("Inventory reservation has not reached its expiry time.");
   }
   const value: InventoryReservation = {
     ...reservation,
     status: InventoryReservationStatus.Expired,
-    statusAt: input.occurredAt,
-    lastChangedAt: input.occurredAt,
+    statusAtEpochMs: input.occurredAtEpochMs,
+    lastChangedAtEpochMs: input.occurredAtEpochMs,
   };
   const book = replaceReservationWithOperation(input.book, value, {
     operationId: input.operationId,
@@ -738,21 +743,21 @@ export interface MarkInventoryReservationConsumedInput {
   /** Committed issue event that consumed the exact allocation. */
   readonly consumptionEventId: string;
   /** Physical issue occurrence time. */
-  readonly occurredAt: string;
+  readonly occurredAtEpochMs: number;
 }
 
 /** Close one active allocated claim against one committed issue event exactly once. */
 export function markInventoryReservationConsumed(
   input: MarkInventoryReservationConsumedInput
 ): InventoryReservationBookResult {
-  assertCanonicalInventoryTime(
-    input.occurredAt,
-    "reservation consume occurredAt"
+  assertInventoryEpochMilliseconds(
+    input.occurredAtEpochMs,
+    "reservation consume occurredAtEpochMs"
   );
   const fingerprint = inventoryIntentFingerprint([
     input.reservationId,
     input.consumptionEventId,
-    input.occurredAt,
+    input.occurredAtEpochMs,
   ]);
   const replay = findReservationOperationReplay(
     input.book,
@@ -765,7 +770,7 @@ export function markInventoryReservationConsumed(
   const reservation = requireActiveReservation(
     input.book,
     input.reservationId,
-    input.occurredAt
+    input.occurredAtEpochMs
   );
   if (reservation.allocations.length === 0) {
     throw new Error("Reservation must be allocated before it can be consumed.");
@@ -773,8 +778,8 @@ export function markInventoryReservationConsumed(
   const value: InventoryReservation = {
     ...reservation,
     status: InventoryReservationStatus.Consumed,
-    statusAt: input.occurredAt,
-    lastChangedAt: input.occurredAt,
+    statusAtEpochMs: input.occurredAtEpochMs,
+    lastChangedAtEpochMs: input.occurredAtEpochMs,
     consumptionEventId: input.consumptionEventId,
   };
   const book = replaceReservationWithOperation(input.book, value, {
@@ -794,7 +799,7 @@ function normalizeReservationAllocations(
   reservation: InventoryReservation,
   axisId: string,
   unit: Quantity["unit"],
-  at: string
+  atEpochMs: number
 ): readonly InventoryReservationAllocation[] {
   if (allocations.length === 0) {
     throw new Error(
@@ -838,7 +843,7 @@ function normalizeReservationAllocations(
       reservation,
       axisId,
       unit,
-      at
+      atEpochMs
     );
   }
   return normalized;
@@ -852,7 +857,7 @@ function assertReservationAllocationCanBecomeLegalIssue(
   reservation: InventoryReservation,
   axisId: string,
   unit: Quantity["unit"],
-  at: string
+  atEpochMs: number
 ): void {
   if (allocation.position.transferId !== undefined) {
     throw new Error("Reservation allocation cannot bind prepared or in-transit transfer stock.");
@@ -866,7 +871,7 @@ function assertReservationAllocationCanBecomeLegalIssue(
   }
   if (
     reservation.allowExpiredStock !== true &&
-    inventoryPositionIsExpiredAt(projection, projected.key, at)
+    inventoryPositionIsExpiredAt(projection, projected.key, atEpochMs)
   ) {
     throw new Error(
       "Reservation allocation cannot use stock past its lot/container use-by unless the claim explicitly permits it."
@@ -913,14 +918,14 @@ function assertReservationAllocationCanBecomeLegalIssue(
 /** Keep lifecycle writes in causal order even when callers submit backdated commands. */
 function assertReservationLifecycleTime(
   reservation: InventoryReservation,
-  occurredAt: string
+  occurredAtEpochMs: number
 ): void {
-  if (occurredAt < reservation.createdAt) {
+  if (occurredAtEpochMs < reservation.createdAtEpochMs) {
     throw new Error(
       "Reservation lifecycle change cannot happen before creation."
     );
   }
-  if (occurredAt < reservation.lastChangedAt) {
+  if (occurredAtEpochMs < reservation.lastChangedAtEpochMs) {
     throw new Error(
       "Reservation lifecycle change cannot predate the latest change."
     );
@@ -1010,14 +1015,14 @@ function reservationPositionEligible(
   reservation: InventoryReservation,
   projection: InventoryProjectionState,
   position: InventoryStockPositionKey,
-  at: string
+  atEpochMs: number
 ): boolean {
   if (position.transferId !== undefined) return false;
   if (!inventoryStockPositionMatchesSelector(position, reservation.selector))
     return false;
   return (
     reservation.allowExpiredStock === true ||
-    !inventoryPositionIsExpiredAt(projection, position, at)
+    !inventoryPositionIsExpiredAt(projection, position, atEpochMs)
   );
 }
 
@@ -1026,7 +1031,7 @@ function reservationGroupFeasibility(
   catalog: InventoryCatalog,
   projection: InventoryProjectionState,
   reservations: readonly InventoryReservation[],
-  at: string
+  atEpochMs: number
 ): ReservationGroupFeasibility {
   const first = reservations[0];
   if (first === undefined) {
@@ -1063,7 +1068,7 @@ function reservationGroupFeasibility(
       const position = projection.positions[identity];
       if (
         position !== undefined &&
-        reservationPositionEligible(reservation, projection, position.key, at)
+        reservationPositionEligible(reservation, projection, position.key, atEpochMs)
       ) {
         candidatePositionIdentities.add(identity);
       }
@@ -1082,7 +1087,7 @@ function reservationGroupFeasibility(
       }
       for (const reservation of broadReservations) {
         if (
-          reservationPositionEligible(reservation, projection, position.key, at)
+          reservationPositionEligible(reservation, projection, position.key, atEpochMs)
         ) {
           candidatePositionIdentities.add(identity);
           break;
@@ -1133,7 +1138,7 @@ function reservationGroupFeasibility(
               reservation,
               projection,
               position.key,
-              at
+              atEpochMs
             )
           : allocations.some(
               /** Exact claims can use only their retained allocation positions. */
@@ -1144,7 +1149,7 @@ function reservationGroupFeasibility(
                   reservation,
                   projection,
                   position.key,
-                  at
+                  atEpochMs
                 )
             )
       ) {
@@ -1236,7 +1241,7 @@ function reservationGroupFeasibility(
       allocationsByReservation,
       positions,
       projection,
-      at,
+      atEpochMs,
       decimals,
     });
   }
@@ -1277,7 +1282,7 @@ function reservationGroupFeasibility(
               reservation,
               projection,
               candidate.position,
-              at
+              atEpochMs
             )
             ? requested
             : 0n
@@ -1285,7 +1290,7 @@ function reservationGroupFeasibility(
               reservation,
               projection,
               candidate.position,
-              at
+              atEpochMs
             )
           ? allocatedByPosition.get(candidate.identity) ?? 0n
           : 0n;
@@ -1364,7 +1369,7 @@ interface ExactReservationGroupFeasibilityInput {
   /** Current published projection used for expiry/selector checks. */
   readonly projection: InventoryProjectionState;
   /** Authority time for eligibility. */
-  readonly at: string;
+  readonly atEpochMs: number;
   /** Shared exact decimal scale. */
   readonly decimals: number;
 }
@@ -1379,7 +1384,7 @@ function exactReservationGroupFeasibility({
   allocationsByReservation,
   positions,
   projection,
-  at,
+  atEpochMs,
   decimals,
 }: ExactReservationGroupFeasibilityInput): ReservationGroupFeasibility {
   const capacityByPositionIdentity = new Map<string, bigint>();
@@ -1412,7 +1417,7 @@ function exactReservationGroupFeasibility({
           reservation,
           projection,
           allocation.position,
-          at
+          atEpochMs
         )
       ) {
         continue;
@@ -1905,8 +1910,8 @@ function newReservationFingerprint(
     reservation.itemRevisionId,
     inventoryStockSelectorIdentity(reservation.selector),
     quantityFingerprint(reservation.requested),
-    reservation.createdAt,
-    reservation.expiresAt ?? null,
+    reservation.createdAtEpochMs,
+    reservation.expiresAtEpochMs ?? null,
     reservation.allowExpiredStock ?? false,
     reservation.sourceReference ?? null,
     reservation.actorId ?? null,
@@ -1992,7 +1997,7 @@ function replaceReservationWithOperation(
 function requireActiveReservation(
   book: InventoryReservationBook,
   reservationId: string,
-  at: string
+  atEpochMs: number
 ): InventoryReservation {
   const reservation = inventorySparseRecordValue(book.reservations, reservationId);
   if (reservation === undefined)
@@ -2000,8 +2005,8 @@ function requireActiveReservation(
   if (reservation.status !== InventoryReservationStatus.Active) {
     throw new Error("Inventory reservation is no longer active.");
   }
-  assertReservationLifecycleTime(reservation, at);
-  if (!inventoryReservationIsActiveAt(reservation, at)) {
+  assertReservationLifecycleTime(reservation, atEpochMs);
+  if (!inventoryReservationIsActiveAt(reservation, atEpochMs)) {
     throw new Error("Inventory reservation is no longer active.");
   }
   return reservation;

@@ -131,7 +131,7 @@ describe("direct execution of otherwise family-only public helpers", () => {
           operationId: "",
           intentFingerprint: "intent",
           baseRevision: 0,
-          recordedAt: time0,
+          recordedAtEpochMs: time0,
           plan: {} as InventoryDurableOperationPlan,
         }),
       "operationId"

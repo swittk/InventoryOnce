@@ -169,7 +169,7 @@ def kernel_family(name,decl):
   if 'container' in low: return 'container-command'
   if 'lot' in low: return 'lot-command'
   if 'traceability' in low: return 'traceability'
-  if name in {'assertCanonicalInventoryTime','commitInventoryEvent','createInventoryCatalogPublicationEvent','defineInventoryEvent','inventoryEventIdForOperation','inventoryEventIntentFingerprint'}: return 'operation-result-helper'
+  if name in {'assertInventoryEpochMilliseconds','commitInventoryEvent','createInventoryCatalogPublicationEvent','defineInventoryEvent','inventoryEventIdForOperation','inventoryEventIntentFingerprint'}: return 'operation-result-helper'
   raise KeyError(f'unmapped event/command public API {name} from {decl}')
  raise KeyError(f'unmapped kernel public API {name} from {decl}')
 
@@ -363,7 +363,7 @@ IDENTITY_EXACT={'operationId','migrationId','eventId','countId','reservationId',
 def models_for(source,owner,field):
  if (
   'MigrationSourceDisposition' in owner
-  or field in {'sourceDispositions', 'dispositionId', 'snapshotAt'}
+  or field in {'sourceDispositions', 'dispositionId', 'snapshotAtEpochMs'}
  ):
   return ['SnapshotSupersededWorkflow','PublishedHeadCAS','AuthorityWriterFence']
  if (
@@ -394,7 +394,7 @@ def classify_field(owner,row):
  if callable_ and field in CALLBACK_GAPS:
   category='unsupported/unmodelled'; gaps=[CALLBACK_GAPS[field]]
   rationale='Executable callback behavior is supplied by an external/test boundary and is not itself a finite InventoryOnce state field.'
- elif field in AUDIT or field in {'recordedAt'}:
+ elif field in AUDIT or field in {'recordedAtEpochMs'}:
   category='observational/audit-only'; gaps=['GAP-ARBITRARY-AUDIT-METADATA'] if field=='metadata' else []
   rationale='Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources.'
  elif field in DECOR:

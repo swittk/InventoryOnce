@@ -55,7 +55,7 @@ describe("native scalar catalogue lifecycle", () => {
       },
       allowCreate: true,
       operationId: "catalog-first",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
       defineRevision,
     });
     expect(first).toMatchObject({ published: true, replayed: false });
@@ -69,7 +69,7 @@ describe("native scalar catalogue lifecycle", () => {
       requestedUnit: "box",
       allowCreate: false,
       operationId: "catalog-unused-read-id",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       defineRevision,
     });
     expect(reused).toMatchObject({
@@ -86,7 +86,7 @@ describe("native scalar catalogue lifecycle", () => {
       },
       allowCreate: true,
       operationId: "catalog-historical",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       defineRevision,
     });
     expect(historical.itemRevisionId).toBe("item-a:piece:carton-24");
@@ -104,7 +104,7 @@ describe("native scalar catalogue lifecycle", () => {
       allowCreate: false,
       activateRevision: true,
       operationId: "catalog-activate-existing",
-      occurredAt: time2,
+      occurredAtEpochMs: time2,
       defineRevision,
     });
     expect(activated.catalog.activeItem("item-a").revisionId).toBe(
@@ -122,7 +122,7 @@ describe("native scalar catalogue lifecycle", () => {
         allowCreate: false,
         activateRevision: true,
         operationId: "catalog-cannot-create-via-activation",
-        occurredAt: time2,
+        occurredAtEpochMs: time2,
         defineRevision,
       })
     ).rejects.toThrow(
@@ -160,7 +160,7 @@ describe("native scalar catalogue lifecycle", () => {
       storage,
     }).catalog.publish({
       operationId: "publish-alias-item",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
     });
 
     const selected = await ensureInventoryScalarCatalogRevision({
@@ -173,7 +173,7 @@ describe("native scalar catalogue lifecycle", () => {
       },
       allowCreate: false,
       operationId: "reuse-alias-item",
-      occurredAt: time1,
+      occurredAtEpochMs: time1,
       defineRevision,
     });
     expect(selected).toMatchObject({
@@ -199,7 +199,7 @@ describe("native scalar catalogue lifecycle", () => {
         },
         allowCreate: true,
         operationId: "catalog-conflict",
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         defineRevision,
       })
     ).rejects.toThrow("conflicting primary quantities");
@@ -217,7 +217,7 @@ describe("native scalar catalogue lifecycle", () => {
         },
         allowCreate: true,
         operationId: "catalog-dishonest-factory",
-        occurredAt: time0,
+        occurredAtEpochMs: time0,
         defineRevision: (declaration) => {
           const definitions = defineRevision(declaration);
           return {
@@ -253,7 +253,7 @@ describe("native scalar catalogue lifecycle", () => {
       storage: itemStorage,
     }).catalog.publish({
       operationId: "publish-item-conflict-base",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
     });
     await expect(
       ensureInventoryScalarCatalogRevision({
@@ -265,7 +265,7 @@ describe("native scalar catalogue lifecycle", () => {
         },
         allowCreate: true,
         operationId: "redefine-item-conflict",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         defineRevision: (declaration) => ({
           item: defineScalarInventoryItem({
             itemId: declaration.itemId,
@@ -313,7 +313,7 @@ describe("native scalar catalogue lifecycle", () => {
       storage: packageStorage,
     }).catalog.publish({
       operationId: "publish-package-conflict-base",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
     });
     await expect(
       ensureInventoryScalarCatalogRevision({
@@ -325,7 +325,7 @@ describe("native scalar catalogue lifecycle", () => {
         },
         allowCreate: true,
         operationId: "redefine-package-conflict",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         defineRevision: (declaration) => ({
           item: packageItem,
           packaging: [
@@ -388,7 +388,7 @@ describe("native scalar catalogue lifecycle", () => {
     const storage = createInMemoryInventoryDurableStorage();
     await createInventoryOnce({ catalog, storage }).catalog.publish({
       operationId: "publish-ambiguous-catalog",
-      occurredAt: time0,
+      occurredAtEpochMs: time0,
     });
 
     await expect(
@@ -402,7 +402,7 @@ describe("native scalar catalogue lifecycle", () => {
         allowCreate: false,
         activateRevision: true,
         operationId: "select-ambiguous",
-        occurredAt: time1,
+        occurredAtEpochMs: time1,
         defineRevision,
       })
     ).rejects.toThrow("matches 2 retained revisions");
