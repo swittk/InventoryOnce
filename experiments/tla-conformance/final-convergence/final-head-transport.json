@@ -3,10 +3,29 @@
   "status": "FINAL_HEAD_TRANSPORT_PROVED",
   "priorProofHead": "6983219e13295b8f6b073daefc3cbcd90b32ac35",
   "immediatePriorProofHead": "63f520f3bb21fcbb5da51c31ef9e5d327f8de51f",
-  "finalSurfaceDigest": "fbc79941dc29cef43a8e581cca170df1f5f2f43bd53bf8dccf680ee7895af165",
+  "finalSurfaceDigest": "86fed1d38ffff962f04fb33eece6fb8a57bab91c27296e985966445ea9cf4960",
   "callables": 535,
   "exactPrimitiveTransport": {
     "priorProofHead": "6983219e13295b8f6b073daefc3cbcd90b32ac35",
+    "review518113RuntimeTransport": {
+      "priorCertifiedHead": "dc287206c21f7ab9f7a7fc111ac7b0312e22d1b8",
+      "certifiedRepairHead": "ba2b74e99f4d2e51aa81553b7d9cacc7c10c586a",
+      "exactChangedRuntimeFiles": [
+        "src/model.ts"
+      ],
+      "transitions": [
+        {
+          "file": "src/model.ts",
+          "patchSha256": "4b89e58eb31457bd607c923d714ebd71e332e43742e31c1ede23dbe46287be22",
+          "priorSha256": "9c4b76f4dd92022eaaee93552765d0b09898651aea3de6f4bffa6c41786b9dd6",
+          "currentSha256": "1ae3505cbf09e4b5ad003f14ab0363dca016d4c22dcfbae14926c978b5655ddc"
+        }
+      ],
+      "laws": [
+        "Normalized stock-position qualified dimensions are copied element-by-element so later caller mutation cannot rewrite retained content behind an already-computed durable position identity.",
+        "The exact one-file runtime patch is hash-bound above the compact-certified reviewed predecessor; every other runtime module remains byte-identical."
+      ]
+    },
     "review518009RuntimeTransport": {
       "priorCertifiedHead": "868d9295079148fb00e66ccf146b504fdcdee41e",
       "certifiedRepairHead": "9dfd0a30cd032989c336b9292807113ae7ba9635",
@@ -272,7 +291,7 @@
       },
       {
         "file": "src/model.ts",
-        "sha256": "9c4b76f4dd92022eaaee93552765d0b09898651aea3de6f4bffa6c41786b9dd6"
+        "sha256": "1ae3505cbf09e4b5ad003f14ab0363dca016d4c22dcfbae14926c978b5655ddc"
       },
       {
         "file": "src/ordering.ts",
@@ -483,7 +502,7 @@
     },
     {
       "file": "src/model.ts",
-      "sha256": "9c4b76f4dd92022eaaee93552765d0b09898651aea3de6f4bffa6c41786b9dd6"
+      "sha256": "1ae3505cbf09e4b5ad003f14ab0363dca016d4c22dcfbae14926c978b5655ddc"
     },
     {
       "file": "src/ordering.ts",
@@ -551,7 +570,7 @@
     },
     {
       "file": "scripts/inventory-epoch-contract.mjs",
-      "sha256": "a1a87a611c3393d1f0f6eefd019dd14da695430ed2d38f00f46861ffd2688d58"
+      "sha256": "ee313b3340d9af3022cbf8b06dd2c019ec2846f23a61657476d64c3bf8e0aca2"
     },
     {
       "file": "formal/UseByReservation.tla",
@@ -567,5 +586,5 @@
     }
   ],
   "creditExpansion": false,
-  "contentSha256": "ae63b2764ed4c7db04d3140a86dc207581d596260f42f6f5aa9b06fe9aee04f8"
+  "contentSha256": "65b33efc99f57a5b32ba32c4cae2d4650cfe355b1d5ad31b3cc6738d8316d6c6"
 }
