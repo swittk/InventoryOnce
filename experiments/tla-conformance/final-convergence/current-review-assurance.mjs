@@ -10,7 +10,7 @@ import { repositoryAssuranceCommittedStateSha256 } from "../../../scripts/reposi
 export const CURRENT_REVIEW_ASSURANCE_RECEIPT = "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json";
 const CURRENT_REVIEW_ASSURANCE_REPORT = "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json";
 const CURRENT_REVIEW_ASSURANCE_FULL_LOG = "experiments/tla-conformance/final-convergence/current-pr-review-full.log";
-const CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "60b72fc64ff0ea0393e92ae61416f9cdafa9a65a";
+const CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "415f28e0b87af512419d014bf65747eb7d9e4131";
 const AUTHORITATIVE_PATHS = Object.freeze(["src", "formal", "scripts", "test", "package.json", "tsconfig.json", "tsconfig.test.json"]);
 
 /** Hash one ordinary file's exact bytes with lowercase SHA-256. */
