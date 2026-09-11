@@ -117,6 +117,33 @@ test("unexpected executable report fields fail closed", () => {
   );
 });
 
+test("exact full-report metadata is admitted but malformed wrapper fields fail closed", () => {
+  const input = fixtures();
+  const summary = executableAssuranceSummary(input);
+  const executable = {
+    version: 5,
+    repositoryHead: "a".repeat(40),
+    repositoryStateSha256: "b".repeat(64),
+    fullFormal: true,
+    fullLogSha256: "c".repeat(64),
+    ...summary,
+    packageTraceTests: ["test/example.test.ts"],
+    steps: [{ id: "example-step", status: "passed" }],
+  };
+  assert.deepEqual(
+    assertExecutableAssuranceMatchesManifests({ ...input, executable }),
+    summary,
+  );
+  assert.throws(
+    () => assertExecutableAssuranceMatchesManifests({ ...input, executable: { ...executable, steps: [{ id: "example-step", status: "failed" }] } }),
+    /steps.*unique exact/u,
+  );
+  assert.throws(
+    () => assertExecutableAssuranceMatchesManifests({ ...input, executable: { ...executable, wrapperDrift: true } }),
+    /wrapperDrift.*unexpected executable assurance field/u,
+  );
+});
+
 test("duplicated manifest counters and call-chain domain partitions must agree", () => {
   const staleGraph = fixtures();
   staleGraph.api.counts.compilerCallGraphEdges += 1;

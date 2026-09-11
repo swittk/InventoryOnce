@@ -266,8 +266,44 @@ export function assertExecutableAssuranceMatchesManifests(
     throw new Error("Executable assurance report must be a plain object.");
   }
   const mismatches = [];
+  const metadataKeys = new Set([
+    "version",
+    "repositoryHead",
+    "repositoryStateSha256",
+    "fullFormal",
+    "fullLogSha256",
+    "packageTraceTests",
+    "steps",
+  ]);
+  const metadataPresent = Object.keys(executable).some((key) => metadataKeys.has(key));
+  if (metadataPresent) {
+    if (executable.version !== 5) mismatches.push("version: executable assurance report version must be 5");
+    if (typeof executable.repositoryHead !== "string" || !/^[0-9a-f]{40,64}$/u.test(executable.repositoryHead)) mismatches.push("repositoryHead: invalid executable assurance repository head");
+    if (typeof executable.repositoryStateSha256 !== "string" || !/^[0-9a-f]{64}$/u.test(executable.repositoryStateSha256)) mismatches.push("repositoryStateSha256: invalid executable assurance repository state digest");
+    if (typeof executable.fullFormal !== "boolean") mismatches.push("fullFormal: executable assurance full-formal marker must be boolean");
+    if (executable.fullFormal === true) {
+      if (typeof executable.fullLogSha256 !== "string" || !/^[0-9a-f]{64}$/u.test(executable.fullLogSha256)) mismatches.push("fullLogSha256: full-formal executable assurance needs the exact full-log digest");
+    } else if (Object.hasOwn(executable, "fullLogSha256")) {
+      mismatches.push("fullLogSha256: partial executable assurance must not claim a full-log digest");
+    }
+    if (!Array.isArray(executable.packageTraceTests) || executable.packageTraceTests.some((file) => typeof file !== "string" || file.length === 0) || new Set(executable.packageTraceTests).size !== executable.packageTraceTests.length) {
+      mismatches.push("packageTraceTests: executable assurance trace-test list must contain unique nonempty paths");
+    }
+    if (!Array.isArray(executable.steps) || executable.steps.length === 0) {
+      mismatches.push("steps: executable assurance report must contain passed step evidence");
+    } else {
+      const stepIds = new Set();
+      for (const step of executable.steps) {
+        if (step === null || typeof step !== "object" || Array.isArray(step) || Object.keys(step).sort().join(",") !== "id,status" || typeof step.id !== "string" || step.id.length === 0 || step.status !== "passed" || stepIds.has(step.id)) {
+          mismatches.push("steps: executable assurance steps must be unique exact {id,status:passed} rows");
+          break;
+        }
+        stepIds.add(step.id);
+      }
+    }
+  }
   for (const key of Object.keys(executable)) {
-    if (!Object.hasOwn(expected, key)) {
+    if (!Object.hasOwn(expected, key) && !(metadataPresent && metadataKeys.has(key))) {
       mismatches.push(`${key}: unexpected executable assurance field`);
     }
   }
