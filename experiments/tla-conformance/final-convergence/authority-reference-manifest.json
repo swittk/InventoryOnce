@@ -1,13 +1,13 @@
 {
   "schemaVersion": 2,
   "status": "FINAL_LIVE_INPUT_CLOSURE",
-  "inputKey": "ab2741eca578d8f92d78ce9aeb6a5cbac3cd98fd4c71aa55c31cf205bb62cd5f",
-  "surfaceDigest": "86fed1d38ffff962f04fb33eece6fb8a57bab91c27296e985966445ea9cf4960",
-  "inputs": 430,
-  "totalBytes": 20990551,
+  "inputKey": "03465117aaf70697460038148dd398494ef5c81c6b934cc0cc89c44b5c33ca22",
+  "surfaceDigest": "bc7621e40665f3e44db6d4bbe7ce52ad0db4ec0831ef919a82eb5215aef4140e",
+  "inputs": 440,
+  "totalBytes": 29122003,
   "untrackedProofInputs": 0,
   "compilerRootSet": {
-    "key": "4603e7336ac5e0f1177468aba92c797f79f851d214d9f464d81028ecae38ced7",
+    "key": "f2e806b2057b2517532b2cd26663e80574a6d1b9b95627807e75da650c80b2a4",
     "rows": [
       {
         "file": "src/allocation.ts",
@@ -151,8 +151,8 @@
       },
       {
         "file": "src/model.ts",
-        "sha256": "1ae3505cbf09e4b5ad003f14ab0363dca016d4c22dcfbae14926c978b5655ddc",
-        "sizeBytes": 12195
+        "sha256": "3edf36474afb9ba9fcfb825a3b6dcb4579fc0438963166caed7f588311ba71bc",
+        "sizeBytes": 12290
       },
       {
         "file": "src/ordering.ts",
@@ -431,8 +431,8 @@
       },
       {
         "file": "test/review-hardening.test.ts",
-        "sha256": "8999a3729bb3df089c19320122a9c346edf32d10b48044fcd3a6084bdb68b9bb",
-        "sizeBytes": 58867
+        "sha256": "59ad6a6fad85291204932465e941c1cb47045b1c3123b3b559e24bf19d920167",
+        "sizeBytes": 59422
       },
       {
         "file": "test/storage-conformance.test.ts",
@@ -457,7 +457,7 @@
     ]
   },
   "compilerSourceSet": {
-    "key": "6252dc6ad360d22c4e9081ae80fe54df317f441a8af79b53eea0692cc5f73033",
+    "key": "5725b5d92f7e947e3d634a7e4e8384d7a34c719e1e967d804cea594cdb204efc",
     "rows": [
       {
         "file": "node_modules/.pnpm/@standard-schema+spec@1.1.0/node_modules/@standard-schema/spec/dist/index.d.ts",
@@ -1914,8 +1914,8 @@
       {
         "file": "src/model.ts",
         "kind": "tracked",
-        "sha256": "1ae3505cbf09e4b5ad003f14ab0363dca016d4c22dcfbae14926c978b5655ddc",
-        "sizeBytes": 12195
+        "sha256": "3edf36474afb9ba9fcfb825a3b6dcb4579fc0438963166caed7f588311ba71bc",
+        "sizeBytes": 12290
       },
       {
         "file": "src/ordering.ts",
@@ -2268,8 +2268,8 @@
       {
         "file": "test/review-hardening.test.ts",
         "kind": "tracked",
-        "sha256": "8999a3729bb3df089c19320122a9c346edf32d10b48044fcd3a6084bdb68b9bb",
-        "sizeBytes": 58867
+        "sha256": "59ad6a6fad85291204932465e941c1cb47045b1c3123b3b559e24bf19d920167",
+        "sizeBytes": 59422
       },
       {
         "file": "test/storage-conformance-suite.ts",
@@ -2383,6 +2383,12 @@
       "sizeBytes": 7087
     },
     {
+      "file": "experiments/tla-conformance/final-convergence/authority-current.mjs",
+      "kind": "archived",
+      "sha256": "ab8fd408746fcd416f35b3e89c69b956c70d99b93a74e165fea628e425dfae43",
+      "sizeBytes": 10974
+    },
+    {
       "file": "experiments/tla-conformance/final-convergence/build-final-registry.mjs",
       "kind": "archived",
       "sha256": "57a78d1e9892b6d89cad328b0772ecb0686b7e6bccc93e3544e88bd35e45e54e",
@@ -2397,20 +2403,38 @@
     {
       "file": "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json",
       "kind": "tracked",
-      "sha256": "5275f814729ae9189c0027b90a758a034e823d364719ee329799852db5753bda",
+      "sha256": "0b883cf08fb0906f01b72697d27299327d0b6c83d251d9bfb603c7735b924626",
       "sizeBytes": 698
     },
     {
       "file": "experiments/tla-conformance/final-convergence/current-pr-review-full.log",
       "kind": "tracked",
-      "sha256": "dd647b34d940abe8711988b4701a0649940614a16fdcd0d872a5e9ce2acdc1ff",
-      "sizeBytes": 35883
+      "sha256": "96636dd9f8b3638afbc08b6fd7c29b6e7982a1fe8fc208227752025cfe4fa280",
+      "sizeBytes": 36042
     },
     {
       "file": "experiments/tla-conformance/final-convergence/current-review-assurance.mjs",
       "kind": "tracked",
-      "sha256": "4bcdaa26c4d8145ded4747a7becbd156b8a362c3134ab8d117a9a91675a6ccb6",
-      "sizeBytes": 16426
+      "sha256": "37c251ae83464586e0ee492bee246632ba9c381eedcd8312d28c1b13f561611c",
+      "sizeBytes": 19149
+    },
+    {
+      "file": "experiments/tla-conformance/final-convergence/epoch-prior-producer.json",
+      "kind": "archived",
+      "sha256": "c7523de32012f0f7706a4250619de199b7826eb810b69fba4955d40dc079897a",
+      "sizeBytes": 1650462
+    },
+    {
+      "file": "experiments/tla-conformance/final-convergence/epoch-prior-registry.json",
+      "kind": "archived",
+      "sha256": "0ebf063d2b6cb0a63d667409142cb3945b9f84be000aa6eb4f3bf678c186d8ae",
+      "sizeBytes": 165524
+    },
+    {
+      "file": "experiments/tla-conformance/final-convergence/epoch-prior-value.json",
+      "kind": "archived",
+      "sha256": "dbaabf43838e2957c0625ef25b927eb0450c5e3c6f942810e665c4d9759a1a48",
+      "sizeBytes": 1992088
     },
     {
       "file": "experiments/tla-conformance/final-convergence/final-families.mjs",
@@ -2431,16 +2455,52 @@
       "sizeBytes": 6393
     },
     {
+      "file": "experiments/tla-conformance/final-convergence/r137-current.mjs",
+      "kind": "archived",
+      "sha256": "ec103c0e6c7ce1cdea8dc6934580af88674ecfa010c31134bec78754f87f7ded",
+      "sizeBytes": 7043
+    },
+    {
+      "file": "experiments/tla-conformance/final-convergence/readworld-current.mjs",
+      "kind": "archived",
+      "sha256": "abcd6143bf86b66a1d05743051132be8c14779116f0f3b5c2eeef8dc14ad7269",
+      "sizeBytes": 7504
+    },
+    {
       "file": "experiments/tla-conformance/final-convergence/repository-root.mjs",
       "kind": "tracked",
       "sha256": "f04fef731a36a932123fdb4057e6a52ef900a0e558f4e192562245385d1b1ef7",
       "sizeBytes": 1402
     },
     {
+      "file": "experiments/tla-conformance/final-convergence/review-517722-prior-producer.json",
+      "kind": "archived",
+      "sha256": "dc14a14754df5e857197342bf3f3f9774b294a1200f85d9e07264bf3e724cfcc",
+      "sizeBytes": 1830337
+    },
+    {
+      "file": "experiments/tla-conformance/final-convergence/review-517722-prior-registry.json",
+      "kind": "archived",
+      "sha256": "0e21b5cd2649af21d83f7ec6dc37972f5f1e2a91a1ee148deed3600c445c8bba",
+      "sizeBytes": 165554
+    },
+    {
+      "file": "experiments/tla-conformance/final-convergence/review-517722-prior-value.json",
+      "kind": "archived",
+      "sha256": "65fab2f52823f4d1cbc8eb14ae92d7dacd20ea8a7d48c8b85a5ba046805efbce",
+      "sizeBytes": 2281444
+    },
+    {
       "file": "experiments/tla-conformance/final-convergence/run-final-verifier.mjs",
       "kind": "archived",
       "sha256": "eeb98cc89518ef12d26374cd4d0e78216aa1e35860f33af0284f32ceb1eefeba",
       "sizeBytes": 4729
+    },
+    {
+      "file": "experiments/tla-conformance/final-convergence/wrapper-current.mjs",
+      "kind": "archived",
+      "sha256": "7fde4533ae05973ca89753070768f5272a74c552c7892960b1c1e7ffedb3ef8d",
+      "sizeBytes": 10356
     },
     {
       "file": "experiments/tla-conformance/fungibility-plan-r9/value-family.mjs",
@@ -2673,7 +2733,7 @@
     {
       "file": "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
       "kind": "tracked",
-      "sha256": "25d956890af83971757f83782ae914bc9780ce4129b66a22dd49d25c9f6549b1",
+      "sha256": "a7cc1837c1d281370e19ca485c0856fceabf6db0c79d602fa3b930f5664a6a69",
       "sizeBytes": 2459
     },
     {
@@ -4305,8 +4365,8 @@
     {
       "file": "scripts/inventory-epoch-contract.mjs",
       "kind": "tracked",
-      "sha256": "ee313b3340d9af3022cbf8b06dd2c019ec2846f23a61657476d64c3bf8e0aca2",
-      "sizeBytes": 58892
+      "sha256": "db5891fd05bd22b10d6694347cb8e86e4773092b27ddc4cca9d703ab446d14d2",
+      "sizeBytes": 65526
     },
     {
       "file": "scripts/repository-assurance-state.mjs",
@@ -4485,8 +4545,8 @@
     {
       "file": "src/model.ts",
       "kind": "tracked",
-      "sha256": "1ae3505cbf09e4b5ad003f14ab0363dca016d4c22dcfbae14926c978b5655ddc",
-      "sizeBytes": 12195
+      "sha256": "3edf36474afb9ba9fcfb825a3b6dcb4579fc0438963166caed7f588311ba71bc",
+      "sizeBytes": 12290
     },
     {
       "file": "src/ordering.ts",
@@ -4839,8 +4899,8 @@
     {
       "file": "test/review-hardening.test.ts",
       "kind": "tracked",
-      "sha256": "8999a3729bb3df089c19320122a9c346edf32d10b48044fcd3a6084bdb68b9bb",
-      "sizeBytes": 58867
+      "sha256": "59ad6a6fad85291204932465e941c1cb47045b1c3123b3b559e24bf19d920167",
+      "sizeBytes": 59422
     },
     {
       "file": "test/storage-conformance-suite.ts",
@@ -4894,8 +4954,8 @@
   "outputs": [
     {
       "file": "experiments/tla-conformance/final-convergence/compact-final-verify.mjs",
-      "sha256": "31ef20055215f23b22b201dab3d4fe205d407ef42b5f68d7002899866f3ca515",
-      "sizeBytes": 878173
+      "sha256": "aae6c2dc5a6eb1a7059fe91625a230dfafe5f4a58ce3c5619d3c73bc3c690886",
+      "sizeBytes": 886670
     },
     {
       "file": "experiments/tla-conformance/final-convergence/compact-final-selftest.mjs",
@@ -4909,27 +4969,27 @@
     },
     {
       "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-      "sha256": "fab2ec2c13e1adb54745478499e9ea2f32651ccd56ae0f790fb8d267e5498b71",
-      "sizeBytes": 23577
+      "sha256": "f9dd9ddc758ddf7cd8c6054842e940c33df2d61e913e18e12e1442b14b342aff",
+      "sizeBytes": 24569
     },
     {
       "file": "experiments/tla-conformance/final-convergence/final-v309.json",
-      "sha256": "872dcd9650485c00022d96f59b7c5bd99744af72e1748af31443fcfba26e6455",
+      "sha256": "d90891093615ffcf8c39eb6fba7e43df2bd6dc1e4d15f0f48a4bda53446da2a0",
       "sizeBytes": 2598560
     },
     {
       "file": "experiments/tla-conformance/final-convergence/final-a121-b58.json",
-      "sha256": "4a089b3bb3d7da1d5586bdd08009f51bcf0b75c8c5aef66786e84133897d3667",
+      "sha256": "fec879f8f6f730fc2483bea7cc14cfc6b9e285746e9d08a8fd5cf377f13e1763",
       "sizeBytes": 2027372
     },
     {
       "file": "experiments/tla-conformance/final-convergence/final-surface-bindings.json",
-      "sha256": "810f2387390962c90fca91c3fec51a243ebbf29bb28f31cd126be00d8afcb4bf",
+      "sha256": "418e205200b11376c531cb88013d90fc17624e7e674f8d919c9b513990f79d99",
       "sizeBytes": 165554
     },
     {
       "file": "experiments/tla-conformance/final-convergence/final-binder-report.json",
-      "sha256": "ffea896e12754cced13ea6bafd2b759722d7e24c38a786fee5dc063479127b16",
+      "sha256": "620774bfe772f5eca64920248c069c8f7a6d6fa41f34187e0fb824d9ed469f64",
       "sizeBytes": 348
     }
   ],
