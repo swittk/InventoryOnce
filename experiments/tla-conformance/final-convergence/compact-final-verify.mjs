@@ -15907,7 +15907,7 @@ function repositoryAssuranceCommittedStateSha256(repositoryRoot, commit) {
 var CURRENT_REVIEW_ASSURANCE_RECEIPT = "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json";
 var CURRENT_REVIEW_ASSURANCE_REPORT = "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json";
 var CURRENT_REVIEW_ASSURANCE_FULL_LOG = "experiments/tla-conformance/final-convergence/current-pr-review-full.log";
-var CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "77c97c6cd33512a445a2acd98f4b97f1104c85b5";
+var CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "c8cdb14d191167dbb757b19f9539d78297c67159";
 var AUTHORITATIVE_PATHS = Object.freeze(["src", "formal", "scripts", "test", "package.json", "tsconfig.json", "tsconfig.test.json"]);
 function sha2564(file) {
   return crypto4.createHash("sha256").update(fs38.readFileSync(file)).digest("hex");

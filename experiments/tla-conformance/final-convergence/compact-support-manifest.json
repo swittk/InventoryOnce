@@ -433,7 +433,7 @@
       {
         "mode": "unified",
         "file": "experiments/tla-conformance/final-convergence/compact-final-verify.mjs",
-        "sha256": "b7829b60655a77cfe0885e2e5a16fe26f5cf64af9cdf1ed97f18e8819db0cd5b",
+        "sha256": "d336863d46ede8e46d5c2cca77a5001f33fb9b9267c6eeb14a76872f07fd7dc9",
         "bytes": 833524
       }
     ],
@@ -505,7 +505,7 @@
       },
       {
         "file": "experiments/tla-conformance/final-convergence/current-review-assurance.mjs",
-        "sha256": "f5a2b8e3f1e3c210c1ca06cf6bdd45669b34222305579a8c66a37676777701ba",
+        "sha256": "c0a4eacf54cf92c74bca4f66a83b4ab4baae1bed97567d947014513756a5ace9",
         "bytes": 9304
       },
       {
@@ -1024,5 +1024,67 @@
         "scripts/assurance-files.mjs"
       ]
     }
-  }
+  },
+  "graph": [
+    {
+      "id": "transport",
+      "codeSha256": "9a7a3b4f7d7e7de722284bedf572882ec5e3e2880db8f6c7a40be3efb3aff750",
+      "inputs": [],
+      "outputs": [
+        {
+          "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
+          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198",
+          "sizeBytes": 15230
+        }
+      ]
+    },
+    {
+      "id": "values",
+      "codeSha256": "259a873319ea2eb3ab92b1c8e6c066e98df86046bc52b608c491b13c45098245",
+      "inputs": [],
+      "outputs": [
+        {
+          "file": "experiments/tla-conformance/final-convergence/final-v309.json",
+          "sha256": "6134a1cd8d90ec50d249ba1ec45239a6cdcd4c74e2571743b4ddc659d5a9cb21",
+          "sizeBytes": 2281443
+        }
+      ]
+    },
+    {
+      "id": "producers",
+      "codeSha256": "259a873319ea2eb3ab92b1c8e6c066e98df86046bc52b608c491b13c45098245",
+      "inputs": [],
+      "outputs": [
+        {
+          "file": "experiments/tla-conformance/final-convergence/final-a121-b58.json",
+          "sha256": "83d94e82d7ae7a5b5dce55df69380183a6630be55a2338e771d1ed53ea08e2c8",
+          "sizeBytes": 1830337
+        }
+      ]
+    },
+    {
+      "id": "registry",
+      "codeSha256": "0986dba3e47cb13209e833bcfb9d399661cd8be17e31f8f1940e5fd1d649c20e",
+      "inputs": [],
+      "outputs": [
+        {
+          "file": "experiments/tla-conformance/final-convergence/final-surface-bindings.json",
+          "sha256": "36ad42adc5b1277bfda718c7a4dc4c70b8aed1035d00c9872ee7c33c85e09ce9",
+          "sizeBytes": 165554
+        }
+      ]
+    },
+    {
+      "id": "binder",
+      "codeSha256": "d8dc90801a36bae6ab087c5ce7d4a43a4fe14c59433b8be3047103230a94f1d9",
+      "inputs": [],
+      "outputs": [
+        {
+          "file": "experiments/tla-conformance/final-convergence/final-binder-report.json",
+          "sha256": "98f5f51ba66959675316e5e30080211fe26695d7f8095cf1cd391320bd5450bd",
+          "sizeBytes": 348
+        }
+      ]
+    }
+  ]
 }

@@ -1,412 +1,445 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "status": "FINAL_HEAD_TRANSPORT_PROVED",
-  "oldSourceHead": "6cafd49ff4b3729f80ae35d9fc0220f7a8a4b55a",
-  "finalSourceHead": "535b94d68e80516f7ee8dd56a569d4aaf1799ff3",
-  "oldSurfaceDigest": "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a",
-  "finalSurfaceDigest": "8a6c398e2a7f94de13dfbf0a4c40815685e6591a672ef12a586c5471fd39b697",
+  "priorProofHead": "6983219e13295b8f6b073daefc3cbcd90b32ac35",
+  "finalSurfaceDigest": "3ef3b72eed4ca0191f1136b18bc2a12d336ca4379afe1205c93b50ab89aae49b",
   "callables": 535,
-  "publicSignatureChanges": 0,
-  "publicAstChanges": [
-    "export:.#cutoverInventoryAuthority::call[0]",
-    "export:.#parseQuantity::call[0]",
-    "export:.#resolveInventoryAmount::call[0]",
-    "export:./kernel#assertCanonicalInventoryTime::call[0]",
-    "export:./kernel#inventoryIntentFingerprint::call[0]",
-    "export:./kernel#normalizeInventoryStockPositionKey::call[0]",
-    "export:./kernel#parseQuantity::call[0]",
-    "export:./kernel#resolveInventoryAmount::call[0]",
-    "export:./migrations#dryRunInventoryMigration::call[0]",
-    "export:./storage#inventoryCountBookDigest::call[0]",
-    "export:./storage#inventoryDurableMigrationPlanDigest::call[0]",
-    "export:./storage#inventoryDurablePlanDigest::call[0]",
-    "export:./storage#inventoryProjectionDigest::call[0]",
-    "export:./storage#inventoryReservationBookDigest::call[0]",
-    "export:./storage#inventoryWorldContentRoots::call[0]"
-  ],
-  "exactSourceDelta": [
-    "src/amounts.ts",
-    "src/authority-cutover.ts",
-    "src/canonical.ts",
-    "src/catalog.ts",
-    "src/commands.ts",
-    "src/coordinator.ts",
-    "src/deficits.ts",
-    "src/events.ts",
-    "src/facade.ts",
-    "src/fungibility.ts",
-    "src/integrity.ts",
-    "src/migrations.ts",
-    "src/model.ts",
-    "src/picking.ts",
-    "src/projection.ts",
-    "src/quantity.ts",
-    "src/stock-amount-rules.ts",
-    "src/storage.ts",
-    "src/traceability-replay.ts",
-    "src/transfers.ts"
-  ],
-  "semantics": {
-    "projection": "ALPHA_RENAME_ONLY",
-    "traceabilityReplay": "ALPHA_RENAME_ONLY_PLUS_COMMENTS",
-    "transfers": "COMMENT_ONLY_RUNTIME_EMIT_IDENTICAL",
-    "authorityCutover": {
-      "changedRuntime": [
-        "fn:assertCompletedInventoryCutoverManifest",
-        "fn:completedInventoryCutoverResult",
-        "fn:cutoverInventoryAuthority"
-      ],
-      "rule": "Completed-cutover replay retains durable target evidence and compares source dispositions through their canonical migration fingerprint, making equivalent adapter key-order round trips replay-safe."
-    },
-    "storage": {
-      "changedRuntime": [
-        "fn:assertPublishedInventoryMigrationTarget",
-        "method:InMemoryInventoryDurableStorage.completeMigrationManifestUnlocked"
-      ],
-      "rule": "R144 records and validates exact published migration target root/revision; other storage runtime declarations are unchanged."
-    },
-    "recordedDeficit": {
-      "changedRuntime": [
-        "fn:applyInventoryRecordedDeficitBurden",
-        "fn:recordedDeficitByLocation"
-      ],
-      "rule": "R167 makes empty locationIds select every location for recorded-deficit burdening while preserving strict non-empty filtering and independent per-location deficit accounting."
-    },
-    "fungibility": {
-      "changedRuntime": [
-        "fn:fungibilityAllocationIncrement",
-        "fn:positionHasIndependentMeasuredContents",
-        "fn:positionHasUnfixedIndependentMeasuredContents"
-      ],
-      "rule": "Current review repair aligns fungibility allocation with ordinary picking: independent measurement axes fixed by intact packaging do not make the package unsplittable, while serial and genuinely unfixed measured contents retain whole-position allocation semantics."
-    },
-    "reservationConsumption": {
-      "changedRuntime": [
-        "fn:assertReservationConsumptionMatchesIssue",
-        "fn:reservationLifecycleEvidenceFingerprint"
-      ],
-      "rule": "Consume validation compares the full normalized reservation lifecycle through a canonical field-complete fingerprint, so equivalent independently materialized object-key order is accepted while allocation order and every semantic field remain exact."
-    },
-    "integrityTransitions": {
-      "changedRuntime": [
-        "fn:assertAllowedCountTransition",
-        "fn:assertAllowedReservationTransition",
-        "fn:canonicalNormalizedJson",
-        "fn:inventoryCountBookDigest",
-        "fn:inventoryDurableMigrationPlanDigest",
-        "fn:inventoryDurablePlanDigest",
-        "fn:inventoryProjectionDigest",
-        "fn:inventoryReservationBookDigest",
-        "fn:inventoryWorldContentRoots",
-        "fn:normalizedJsonObjectKeys",
-        "fn:sameJson",
-        "fn:sameNormalizedJsonValue",
-        "fn:sortedRecordRows"
-      ],
-      "rule": "Integrity comparisons are recursively order-insensitive for object keys but preserve arrays exactly, and reconciliation event identity is admitted only by count completion."
-    },
-    "migrationReplay": {
-      "changedRuntime": [
-        "fn:createDurableInventoryMigrationPlan",
-        "fn:dryRunInventoryMigration"
-      ],
-      "rule": "Migration planning reuses one immutable catalog snapshot per run; the snapshot value is unchanged and existing migration replay/plan assertions remain green."
-    },
-    "quantityParsing": {
-      "changedRuntime": [
-        "fn:parseQuantity"
-      ],
-      "rule": "Decimal quantity parsing rejects impossible safe-integer magnitudes before BigInt construction while preserving exact accepted values, leading zeros, decimal scale, and the existing safe-integer validation."
-    },
-    "systemicRuntimeTransition": {
-      "priorProofHead": "0141b46c18c60b03983081175bbfb5cd074eb8b1",
-      "exactFiles": [
-        "src/amounts.ts",
-        "src/catalog.ts",
-        "src/commands.ts",
-        "src/facade.ts",
-        "src/fungibility.ts",
-        "src/picking.ts",
-        "src/stock-amount-rules.ts",
-        "src/transfers.ts"
-      ],
-      "guardSites": [
-        {
-          "file": "src/amounts.ts",
-          "declaration": "resolveInventoryAmount"
-        },
-        {
-          "file": "src/catalog.ts",
-          "declaration": "normalizeInventoryCompositionOutput"
-        },
-        {
-          "file": "src/commands.ts",
-          "declaration": "findCommandItem"
-        },
-        {
-          "file": "src/facade.ts",
-          "declaration": "normalizeFacadeAmount"
-        },
-        {
-          "file": "src/picking.ts",
-          "declaration": "resolveAllocationItemAndSelector"
-        },
-        {
-          "file": "src/transfers.ts",
-          "declaration": "transferCommandItem"
-        },
-        {
-          "file": "src/transfers.ts",
-          "declaration": "inventoryTransferAmountIntentValue"
-        }
-      ],
-      "laws": [
-        "Closed Measured/Package unions are unchanged for every admitted typed value; all other discriminators reject before interpretation/effects.",
-        "Picking and fungibility execute one byte-equivalent extracted independent-measurement predicate.",
-        "The image of the product of stock-line identities equals the Cartesian product of their unique identity images; duplicate representations neither add nor remove a genealogy relation.",
-        "Every original stock line and all remaining runtime statements are retained exactly by the verified reverse transformation."
-      ],
-      "inputs": [
-        {
-          "file": "src/amounts.ts",
-          "sha256": "baafd8185575085919dd5e79e4dddfcbd2e0d527300d8390682228a545096f03"
-        },
-        {
-          "file": "src/catalog.ts",
-          "sha256": "bd282cbd2dd61b4ae21fc2fa391637f3bb450068c96dae94b6a96c03da905894"
-        },
-        {
-          "file": "src/commands.ts",
-          "sha256": "766000e709fa5cfa0551919103565b91b18b4dabf9fc8ab9c32d638748b1fd95"
-        },
-        {
-          "file": "src/facade.ts",
-          "sha256": "e642e24b4e1ef22bfb56bc90b3b068cc641e858da57e61995ab36a869a127b1f"
-        },
-        {
-          "file": "src/fungibility.ts",
-          "sha256": "74a49aa0babb1647556fc9001c2a4e1c6ae3edc2fabec901c3ab225e9982465b"
-        },
-        {
-          "file": "src/picking.ts",
-          "sha256": "d2f614e93ed0c3d2fa691542dd27f8fcf8a69126009d098dbc8bf0f9379831dd"
-        },
-        {
-          "file": "src/stock-amount-rules.ts",
-          "sha256": "9945e2784be603a670e6c9341cd26393e0ed1011a8b5886df535b62fe1417443"
-        },
-        {
-          "file": "src/transfers.ts",
-          "sha256": "d22a83241ed5d0afd421c7d81c66001b53a92e9f4db4f755d69b5b555426bd78"
-        }
-      ]
-    },
-    "systemicIntegrityTransition": {
-      "priorProofHead": "0141b46c18c60b03983081175bbfb5cd074eb8b1",
-      "exactFile": "src/integrity.ts",
-      "laws": [
-        "Nested object insertion order cannot change a durable content root; array order remains semantic.",
-        "A non-consumed reservation cannot carry a consumption event before a lifecycle operation is applied.",
-        "Reversing exactly those two repairs restores the frozen reviewed runtime byte-for-byte after TypeScript emission."
-      ],
-      "input": {
-        "file": "src/integrity.ts",
-        "sha256": "9664db06344f9a4fedb3249a36b0b424c0ff2f1377c719a95ff0b3537328ae4c"
-      }
-    },
-    "review517437ProductTransition": {
-      "priorCertifiedHead": "02d7b37c46bfe0f3129fa3f377960d740886a083",
-      "certifiedHead": "535b94d68e80516f7ee8dd56a569d4aaf1799ff3",
-      "exactFiles": [
-        "src/amounts.ts",
-        "src/canonical.ts",
-        "src/events.ts"
-      ],
-      "laws": [
-        "Intent fingerprints reject every runtime value outside the typed primitive/array domain before JSON encoding.",
-        "Canonical inventory timestamps remain fixed-width four-digit UTC text, so lexical ordering equals chronological ordering.",
-        "The amount-source delta is comments only and emits identical JavaScript.",
-        "Reversing the two guard changes restores the prior certified runtime emission exactly."
-      ],
-      "inputs": [
-        {
-          "file": "src/amounts.ts",
-          "sha256": "baafd8185575085919dd5e79e4dddfcbd2e0d527300d8390682228a545096f03"
-        },
-        {
-          "file": "src/canonical.ts",
-          "sha256": "ea07b9d783173577bb019572c6dc438ae286234de9214d75191d33634ab1153e"
-        },
-        {
-          "file": "src/events.ts",
-          "sha256": "79b6afc2041c6139e02dcf608fed89917f662fcf967cd03821869417d20152dc"
-        }
-      ]
-    }
-  },
-  "evidence": {
-    "oldSurface": {
-      "file": "experiments/tla-conformance/final-convergence/old-surface-cc97e.json",
-      "sha256": "10f166473989fb8c4816fffb8d32d7fb3d66bfa4e430fa0dc6c1102548e2f22a"
-    },
-    "currentProductFiles": [
+  "exactPrimitiveTransport": {
+    "priorProofHead": "6983219e13295b8f6b073daefc3cbcd90b32ac35",
+    "exactChangedRuntimeFiles": [
+      "src/allocation.ts",
+      "src/authority-cutover.ts",
+      "src/authority.ts",
+      "src/availability.ts",
+      "src/catalog-lifecycle.ts",
+      "src/commands.ts",
+      "src/composition.ts",
+      "src/coordinator.ts",
+      "src/corrections.ts",
+      "src/counts.ts",
+      "src/events.ts",
+      "src/facade.ts",
+      "src/fungibility.ts",
+      "src/integrity.ts",
+      "src/migration-evidence.ts",
+      "src/migrations.ts",
+      "src/model.ts",
+      "src/picking.ts",
+      "src/projection.ts",
+      "src/reservations.ts",
+      "src/storage.ts",
+      "src/transfers.ts",
+      "src/usability.ts"
+    ],
+    "inputs": [
+      {
+        "file": "src/allocation.ts",
+        "sha256": "78d97aa9adb12209dc504281b2a193b3e1de6952351bdc938627dd80b944c485"
+      },
       {
         "file": "src/amounts.ts",
         "sha256": "baafd8185575085919dd5e79e4dddfcbd2e0d527300d8390682228a545096f03"
       },
       {
         "file": "src/authority-cutover.ts",
-        "sha256": "d0f33f945f2997a22b99e94d973241ee6b21e49f27c42967c5de204d20307a86"
+        "sha256": "cb5a2e749c3ff529928be674e70a9c10d2fc6c7dcca9958bd7a4c47095af6419"
+      },
+      {
+        "file": "src/authority.ts",
+        "sha256": "f056a8a25b889ac6ea93d6abf8307659832ea11ef255c7a8c9b5f7dc5f3b6a35"
+      },
+      {
+        "file": "src/availability.ts",
+        "sha256": "1fae2e085ef831bc6dcba75f3a69e7b71ae3554a308f34b29e51ba99d629cbaf"
       },
       {
         "file": "src/canonical.ts",
         "sha256": "ea07b9d783173577bb019572c6dc438ae286234de9214d75191d33634ab1153e"
       },
       {
+        "file": "src/catalog-lifecycle.ts",
+        "sha256": "436966d65ca78cd9e0b40b4e0b92a0948cc8f3ba9c7ded0765f66dabdd9b7010"
+      },
+      {
         "file": "src/catalog.ts",
         "sha256": "bd282cbd2dd61b4ae21fc2fa391637f3bb450068c96dae94b6a96c03da905894"
       },
       {
+        "file": "src/collections.ts",
+        "sha256": "c18dd56e7167b25239fb825319ce2ae2d736f8d9cbe70296201ab675228daf37"
+      },
+      {
         "file": "src/commands.ts",
-        "sha256": "766000e709fa5cfa0551919103565b91b18b4dabf9fc8ab9c32d638748b1fd95"
+        "sha256": "969f1103fbe2bfe9c28e3fd1f0c8c2fab93022dbbadf06a37000fcf9927bee0a"
+      },
+      {
+        "file": "src/composition.ts",
+        "sha256": "8f20884d81b941279c163829ff2e87f947e6215c9145975bb81910dc41534437"
       },
       {
         "file": "src/coordinator.ts",
-        "sha256": "7c49ee594705844941283255464240107ceba12edfce479eb576c3d0ca90fff0"
+        "sha256": "f6c77d1af47cc075ebd52577eca5b81dee6ead50a423e95f61cc3a10d5252178"
+      },
+      {
+        "file": "src/corrections.ts",
+        "sha256": "4aa9c8adc2568fd4a6ea3d44f05691929a90e2dd7eb959278bd90c0f7c99b87e"
+      },
+      {
+        "file": "src/counts.ts",
+        "sha256": "9af2d347b6045606a5b5bf8fa28fb4cad049de13ef76965d034b4e582fddec0f"
       },
       {
         "file": "src/deficits.ts",
         "sha256": "5f6b4781b0f8764f571ec37fee734bb3e1e572ffcb9c7d5917f8dbda79c64ec6"
       },
       {
+        "file": "src/digest.ts",
+        "sha256": "5fa667c59dd65a667d8cceddd9bf8c25eb46d3787a22ad7db797fd3722d5f833"
+      },
+      {
         "file": "src/events.ts",
-        "sha256": "79b6afc2041c6139e02dcf608fed89917f662fcf967cd03821869417d20152dc"
+        "sha256": "0a71d0a73a32cf1b2616e2bf5fa45bee447d90a7e3417eb1f5673f069eb5c412"
       },
       {
         "file": "src/facade.ts",
-        "sha256": "e642e24b4e1ef22bfb56bc90b3b068cc641e858da57e61995ab36a869a127b1f"
+        "sha256": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1"
       },
       {
         "file": "src/fungibility.ts",
-        "sha256": "74a49aa0babb1647556fc9001c2a4e1c6ae3edc2fabec901c3ab225e9982465b"
+        "sha256": "6a4000cb79131cd5390c76a4e1235e72bbbee746279d719463d70d72cb17ae75"
+      },
+      {
+        "file": "src/index.ts",
+        "sha256": "2e0587666ff20d57a757c0576fddf8badf36c2901735db7225a0cebda829b555"
       },
       {
         "file": "src/integrity.ts",
-        "sha256": "9664db06344f9a4fedb3249a36b0b424c0ff2f1377c719a95ff0b3537328ae4c"
+        "sha256": "c78d5c52243a59670449f8bd8f24108bc6c2d75e66fe761e523cf8ff3825d221"
+      },
+      {
+        "file": "src/kernel.ts",
+        "sha256": "f336d22a07d6018dc5528bd2a13a33c5aa9f1a72b0c0ed048cb73219b9b0c06c"
+      },
+      {
+        "file": "src/measurement-schema.ts",
+        "sha256": "747f064996c12b3a9b324779bd748362b49b2563e303b2599243bc8a630d144e"
+      },
+      {
+        "file": "src/measurements.ts",
+        "sha256": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5"
+      },
+      {
+        "file": "src/migration-evidence.ts",
+        "sha256": "5d92da78f12304380fb6215d65d6ed7f15948583fef8c738fdf90abf547a7755"
+      },
+      {
+        "file": "src/migration-plugin.ts",
+        "sha256": "4b271d6398ba1b0eeb4a5b1cb48523a062f9bcf1c5b427755ec5e1f0fdebe5e6"
+      },
+      {
+        "file": "src/migrations-api.ts",
+        "sha256": "0d1358ee90d4b39d3b59da0d27dcb9798e5699e02bbba325132f734c1322fed1"
       },
       {
         "file": "src/migrations.ts",
-        "sha256": "da6ae27847698112ab23af8f22937914da852e61ff501a5dc2f3153f4446c478"
+        "sha256": "8fcaa652d89cbeba7b2d6ca65395ff13b2ffac9325f95eee7a49149f400ae2ea"
       },
       {
         "file": "src/model.ts",
-        "sha256": "a8ce500812b1e9f83ef546d7773c8586c5e4763fe08ed18894c1412ff26ebc94"
+        "sha256": "21eb0b726b2f95d88e77e953eb77d94bd070d877a71a389d34e5ec8dc2d656d0"
+      },
+      {
+        "file": "src/ordering.ts",
+        "sha256": "e72ac94e99b1b4914f3f6dec55583e401484a41ecadd051be788724c88f24cb9"
       },
       {
         "file": "src/picking.ts",
-        "sha256": "d2f614e93ed0c3d2fa691542dd27f8fcf8a69126009d098dbc8bf0f9379831dd"
+        "sha256": "c78ffd31ebcc285d1fd739356ec17c1e36180290ebde67a412c9dad49fc6fc4c"
       },
       {
         "file": "src/projection.ts",
-        "sha256": "3710cbc322d4bc3e495e3023a7146e72996a95cc21e92c7a0a6a8f1e20bfc0da"
+        "sha256": "eb95c0ce59d87fe84bd150289b5edc50c3900340a3025ecd17d22013bcd67569"
       },
       {
         "file": "src/quantity.ts",
         "sha256": "34b35abdb08602952d68f1026ff960cfd306d133c787fed188f1c2e229ac0f35"
       },
       {
+        "file": "src/read-model.ts",
+        "sha256": "8b1db302ecf22895f1d6458a8be27ec606066e88fd77ebba0cfadbd0452a97f4"
+      },
+      {
+        "file": "src/reservations.ts",
+        "sha256": "034dcd70973097f81af0d3eb134a4aceb3130c02cf51fba86dc224744b2d1a86"
+      },
+      {
+        "file": "src/selectors.ts",
+        "sha256": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957"
+      },
+      {
+        "file": "src/sparse-record.ts",
+        "sha256": "272a1f63afe9ed4c84cd76a4ce051b210b52e6e0a54cf47ec4f11a29979ada71"
+      },
+      {
         "file": "src/stock-amount-rules.ts",
         "sha256": "9945e2784be603a670e6c9341cd26393e0ed1011a8b5886df535b62fe1417443"
       },
       {
+        "file": "src/storage-api.ts",
+        "sha256": "9d135bd7c1925f3b7ab533a45958e57287383f4016e7077e8ede2c35144202b1"
+      },
+      {
         "file": "src/storage.ts",
-        "sha256": "abf1cd6af9898121e5841ff9f79af36682e9c0187b64db8de8f7d3f3da030ee1"
+        "sha256": "df926d8f96c3beebd32be1fbf2c487f74ab56bb13cefc99133f958c4cb4fa373"
       },
       {
         "file": "src/traceability-replay.ts",
         "sha256": "b7d8ebf3f50317b2e9229adb0235e486ef1e192ea8a4127316ec3c786e485b2a"
       },
       {
+        "file": "src/traceability.ts",
+        "sha256": "7db0c39cb3262339e76790a7ba10569d67d205ab84f1adb078b6b6d95e93a59c"
+      },
+      {
         "file": "src/transfers.ts",
-        "sha256": "d22a83241ed5d0afd421c7d81c66001b53a92e9f4db4f755d69b5b555426bd78"
+        "sha256": "5ec7bd42d63fed3827201437a820a4c39d65001e9f381b4376bf3356b2414287"
+      },
+      {
+        "file": "src/usability.ts",
+        "sha256": "f0470a392be3e6f0142d6589de66d4bbb34831aa2c1e958467e49a9c57737942"
+      },
+      {
+        "file": "src/world.ts",
+        "sha256": "2f1bd43c85fcdda332ad16ebdb73d367b0ed502a7145c085c7a7433ff26063c1"
       }
     ],
-    "currentRegressionTests": [
-      {
-        "file": "test/authority.test.ts",
-        "sha256": "c09ae43d11787d8ab7f883ea60fdcb7b85eac3ea340a038183724feca72ec8cc"
-      },
-      {
-        "file": "test/migrations.test.ts",
-        "sha256": "af9602c48f2bc303a90ec5c93320c78a4971484b6e73bc168ecac4c4137b07ea"
-      },
-      {
-        "file": "test/storage-conformance-suite.ts",
-        "sha256": "e686273f69fdf39b54ab7df3aef1386ce45df45c43b2f7f03058d1aa85e5a657"
-      },
-      {
-        "file": "test/storage-conformance.test.ts",
-        "sha256": "bdf0b5a6210fe3678c9a8f8868d0278aa1b9fa95ec68749f25741ba83fb65342"
-      },
-      {
-        "file": "test/review-hardening.test.ts",
-        "sha256": "19c7f549fd65bb918c7e2ce7ad41866725730edcf38aa489e1d1809f75dbc9f4"
-      },
-      {
-        "file": "test/fungibility.test.ts",
-        "sha256": "6dd9a2af45908670b8075065f998cd568e1ab04071f7920956f64ef78479a3ee"
-      },
-      {
-        "file": "test/reservation-consume-shortage.test.ts",
-        "sha256": "90746cf9ddf6829dc970340d4eed0329f9e3ff68d62e90793aed4920c307c5a0"
-      },
-      {
-        "file": "test/formal-callgraph-semantics.test.ts",
-        "sha256": "302203b91ac9f2630f6273f5586fc720a3844ce08637cd93fbbb2c892feca71a"
-      }
+    "laws": [
+      "Safe-integer epoch milliseconds form an exact totally ordered instant domain including zero and negative values.",
+      "Relational numeric comparison preserves chronology; expiry is inclusive and absence is not a numeric sentinel.",
+      "Canonical JSON encodes safe integers injectively up to signed zero, which denotes the same instant; intent arrays retain their field order.",
+      "Every remaining runtime statement and identity operation is preserved by the checked whole-module reverse transformation."
     ]
   },
-  "currentReviewAssuranceTransport": {
-    "file": "experiments/tla-conformance/final-convergence/r170-assurance-transport.json",
-    "sha256": "57676919220a7bf198dd622a9a957efb386969826e715515081bb1cae9d1cfca",
-    "contentSha256": "dbf88293caff4960240b8bf370ace588aed6139f4d11fbb497528f42d6c0f116",
-    "affectedStrictRows": [
-      {
-        "surfaceKey": "export:.#cutoverInventoryAuthority::call[0]",
-        "mode": "A"
-      },
-      {
-        "surfaceKey": "type:src/facade.ts#InventoryOnceTraceabilityApi.disaggregate::call[0]",
-        "mode": "A"
-      },
-      {
-        "surfaceKey": "type:src/facade.ts#InventoryOnceTraceabilityApi.disassociate::call[0]",
-        "mode": "A"
-      }
-    ],
-    "affectedValueRows": []
-  },
-  "currentReviewPristineReproTransport": {
-    "file": "experiments/tla-conformance/final-convergence/r170-pristine-repro-transport.json",
-    "sha256": "d5ce8887d5cc6aa2a4a78eb0be3c093dcbbcf1134073af46b01387de14f145c8",
-    "contentSha256": "26ec1e50b8b24943cadcda22d76bc4098b603c657fc066708a2351c029bda34b",
-    "affectedStrictRows": [
-      {
-        "surfaceKey": "export:.#cutoverInventoryAuthority::call[0]",
-        "mode": "A"
-      }
-    ],
-    "affectedValueRows": []
-  },
-  "currentReviewAssurance": {
-    "file": "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json",
-    "sha256": "573220289fac2e1fd3a70dc891e74b86c7384b07851eac3dbc22f626e76c032c",
-    "evidenceHead": "77c97c6cd33512a445a2acd98f4b97f1104c85b5",
-    "certifiedHead": "535b94d68e80516f7ee8dd56a569d4aaf1799ff3",
-    "repositoryStateSha256": "1c659f781befe8e9ef2f228985390aacb9b69274a0b0c64211125a05b833ddea",
-    "fullLogSha256": "01b194cc9f270b5cafc2905848d47f91ffa5d55a097fb8cc67d8920a7a798891",
-    "surfaceSha256": "fe83db6e44a4d448decc7c2e16b0f88bb1d2d0ab4ad052c17a3b68d7c270cd22"
-  },
+  "publicKeyTransport": [
+    {
+      "before": "export:.#inventoryPositionEffectiveUseBy::call[0]",
+      "after": "export:.#inventoryPositionEffectiveUseByEpochMs::call[0]",
+      "mode": "V"
+    },
+    {
+      "before": "export:./kernel#assertCanonicalInventoryTime::call[0]",
+      "after": "export:./kernel#assertInventoryEpochMilliseconds::call[0]",
+      "mode": "V"
+    },
+    {
+      "before": "export:./kernel#inventoryPositionEffectiveUseBy::call[0]",
+      "after": "export:./kernel#inventoryPositionEffectiveUseByEpochMs::call[0]",
+      "mode": "V"
+    },
+    {
+      "before": "type:src/coordinator.ts#InventoryClock.now::call[0]",
+      "after": "type:src/coordinator.ts#InventoryClock.nowEpochMs::call[0]",
+      "mode": "HARD_RED"
+    }
+  ],
+  "inputs": [
+    {
+      "file": "src/allocation.ts",
+      "sha256": "78d97aa9adb12209dc504281b2a193b3e1de6952351bdc938627dd80b944c485"
+    },
+    {
+      "file": "src/amounts.ts",
+      "sha256": "baafd8185575085919dd5e79e4dddfcbd2e0d527300d8390682228a545096f03"
+    },
+    {
+      "file": "src/authority-cutover.ts",
+      "sha256": "cb5a2e749c3ff529928be674e70a9c10d2fc6c7dcca9958bd7a4c47095af6419"
+    },
+    {
+      "file": "src/authority.ts",
+      "sha256": "f056a8a25b889ac6ea93d6abf8307659832ea11ef255c7a8c9b5f7dc5f3b6a35"
+    },
+    {
+      "file": "src/availability.ts",
+      "sha256": "1fae2e085ef831bc6dcba75f3a69e7b71ae3554a308f34b29e51ba99d629cbaf"
+    },
+    {
+      "file": "src/canonical.ts",
+      "sha256": "ea07b9d783173577bb019572c6dc438ae286234de9214d75191d33634ab1153e"
+    },
+    {
+      "file": "src/catalog-lifecycle.ts",
+      "sha256": "436966d65ca78cd9e0b40b4e0b92a0948cc8f3ba9c7ded0765f66dabdd9b7010"
+    },
+    {
+      "file": "src/catalog.ts",
+      "sha256": "bd282cbd2dd61b4ae21fc2fa391637f3bb450068c96dae94b6a96c03da905894"
+    },
+    {
+      "file": "src/collections.ts",
+      "sha256": "c18dd56e7167b25239fb825319ce2ae2d736f8d9cbe70296201ab675228daf37"
+    },
+    {
+      "file": "src/commands.ts",
+      "sha256": "969f1103fbe2bfe9c28e3fd1f0c8c2fab93022dbbadf06a37000fcf9927bee0a"
+    },
+    {
+      "file": "src/composition.ts",
+      "sha256": "8f20884d81b941279c163829ff2e87f947e6215c9145975bb81910dc41534437"
+    },
+    {
+      "file": "src/coordinator.ts",
+      "sha256": "f6c77d1af47cc075ebd52577eca5b81dee6ead50a423e95f61cc3a10d5252178"
+    },
+    {
+      "file": "src/corrections.ts",
+      "sha256": "4aa9c8adc2568fd4a6ea3d44f05691929a90e2dd7eb959278bd90c0f7c99b87e"
+    },
+    {
+      "file": "src/counts.ts",
+      "sha256": "9af2d347b6045606a5b5bf8fa28fb4cad049de13ef76965d034b4e582fddec0f"
+    },
+    {
+      "file": "src/deficits.ts",
+      "sha256": "5f6b4781b0f8764f571ec37fee734bb3e1e572ffcb9c7d5917f8dbda79c64ec6"
+    },
+    {
+      "file": "src/digest.ts",
+      "sha256": "5fa667c59dd65a667d8cceddd9bf8c25eb46d3787a22ad7db797fd3722d5f833"
+    },
+    {
+      "file": "src/events.ts",
+      "sha256": "0a71d0a73a32cf1b2616e2bf5fa45bee447d90a7e3417eb1f5673f069eb5c412"
+    },
+    {
+      "file": "src/facade.ts",
+      "sha256": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1"
+    },
+    {
+      "file": "src/fungibility.ts",
+      "sha256": "6a4000cb79131cd5390c76a4e1235e72bbbee746279d719463d70d72cb17ae75"
+    },
+    {
+      "file": "src/index.ts",
+      "sha256": "2e0587666ff20d57a757c0576fddf8badf36c2901735db7225a0cebda829b555"
+    },
+    {
+      "file": "src/integrity.ts",
+      "sha256": "c78d5c52243a59670449f8bd8f24108bc6c2d75e66fe761e523cf8ff3825d221"
+    },
+    {
+      "file": "src/kernel.ts",
+      "sha256": "f336d22a07d6018dc5528bd2a13a33c5aa9f1a72b0c0ed048cb73219b9b0c06c"
+    },
+    {
+      "file": "src/measurement-schema.ts",
+      "sha256": "747f064996c12b3a9b324779bd748362b49b2563e303b2599243bc8a630d144e"
+    },
+    {
+      "file": "src/measurements.ts",
+      "sha256": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5"
+    },
+    {
+      "file": "src/migration-evidence.ts",
+      "sha256": "5d92da78f12304380fb6215d65d6ed7f15948583fef8c738fdf90abf547a7755"
+    },
+    {
+      "file": "src/migration-plugin.ts",
+      "sha256": "4b271d6398ba1b0eeb4a5b1cb48523a062f9bcf1c5b427755ec5e1f0fdebe5e6"
+    },
+    {
+      "file": "src/migrations-api.ts",
+      "sha256": "0d1358ee90d4b39d3b59da0d27dcb9798e5699e02bbba325132f734c1322fed1"
+    },
+    {
+      "file": "src/migrations.ts",
+      "sha256": "8fcaa652d89cbeba7b2d6ca65395ff13b2ffac9325f95eee7a49149f400ae2ea"
+    },
+    {
+      "file": "src/model.ts",
+      "sha256": "21eb0b726b2f95d88e77e953eb77d94bd070d877a71a389d34e5ec8dc2d656d0"
+    },
+    {
+      "file": "src/ordering.ts",
+      "sha256": "e72ac94e99b1b4914f3f6dec55583e401484a41ecadd051be788724c88f24cb9"
+    },
+    {
+      "file": "src/picking.ts",
+      "sha256": "c78ffd31ebcc285d1fd739356ec17c1e36180290ebde67a412c9dad49fc6fc4c"
+    },
+    {
+      "file": "src/projection.ts",
+      "sha256": "eb95c0ce59d87fe84bd150289b5edc50c3900340a3025ecd17d22013bcd67569"
+    },
+    {
+      "file": "src/quantity.ts",
+      "sha256": "34b35abdb08602952d68f1026ff960cfd306d133c787fed188f1c2e229ac0f35"
+    },
+    {
+      "file": "src/read-model.ts",
+      "sha256": "8b1db302ecf22895f1d6458a8be27ec606066e88fd77ebba0cfadbd0452a97f4"
+    },
+    {
+      "file": "src/reservations.ts",
+      "sha256": "034dcd70973097f81af0d3eb134a4aceb3130c02cf51fba86dc224744b2d1a86"
+    },
+    {
+      "file": "src/selectors.ts",
+      "sha256": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957"
+    },
+    {
+      "file": "src/sparse-record.ts",
+      "sha256": "272a1f63afe9ed4c84cd76a4ce051b210b52e6e0a54cf47ec4f11a29979ada71"
+    },
+    {
+      "file": "src/stock-amount-rules.ts",
+      "sha256": "9945e2784be603a670e6c9341cd26393e0ed1011a8b5886df535b62fe1417443"
+    },
+    {
+      "file": "src/storage-api.ts",
+      "sha256": "9d135bd7c1925f3b7ab533a45958e57287383f4016e7077e8ede2c35144202b1"
+    },
+    {
+      "file": "src/storage.ts",
+      "sha256": "df926d8f96c3beebd32be1fbf2c487f74ab56bb13cefc99133f958c4cb4fa373"
+    },
+    {
+      "file": "src/traceability-replay.ts",
+      "sha256": "b7d8ebf3f50317b2e9229adb0235e486ef1e192ea8a4127316ec3c786e485b2a"
+    },
+    {
+      "file": "src/traceability.ts",
+      "sha256": "7db0c39cb3262339e76790a7ba10569d67d205ab84f1adb078b6b6d95e93a59c"
+    },
+    {
+      "file": "src/transfers.ts",
+      "sha256": "5ec7bd42d63fed3827201437a820a4c39d65001e9f381b4376bf3356b2414287"
+    },
+    {
+      "file": "src/usability.ts",
+      "sha256": "f0470a392be3e6f0142d6589de66d4bbb34831aa2c1e958467e49a9c57737942"
+    },
+    {
+      "file": "src/world.ts",
+      "sha256": "2f1bd43c85fcdda332ad16ebdb73d367b0ed502a7145c085c7a7433ff26063c1"
+    },
+    {
+      "file": "scripts/inventory-epoch-contract.mjs",
+      "sha256": "8d4bb7239a581139a49a888808ede73da3685f79dc7ecee7811eb75020a076ff"
+    },
+    {
+      "file": "formal/UseByReservation.tla",
+      "sha256": "6c7fbef3a4ce759fd2b55e785d4c6d61bfc5bc373fa1361a652004f137724fb5"
+    },
+    {
+      "file": "formal/UseByReservation.cfg",
+      "sha256": "276c4fa8ebdaace217bae1ba1873d20540f271188b8f53bab79b1536a03b1f18"
+    },
+    {
+      "file": "formal/UseByReservationEpochZeroMutation.cfg",
+      "sha256": "bb52cbcec2b079259816ac41de679f603f309c5f287a6e8d6fb74846a4cbf651"
+    }
+  ],
   "creditExpansion": false,
-  "contentSha256": "771eae42b21819a3815897ac22a1bf57b21c5cc40d70ce267e6cbae63acb703f"
+  "contentSha256": "1574780cdf3807dc2a118651bffd8af395d045a27d7d47537862476ca5ea1dc8"
 }
