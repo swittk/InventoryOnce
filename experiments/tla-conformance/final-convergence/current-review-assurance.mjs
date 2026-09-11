@@ -112,14 +112,9 @@ export function assertCurrentReviewTrackedDriftAllowed(changedPaths, allowedPath
   );
 }
 
-/** Return current tracked/untracked dirt while excluding local ChatGPT audit state from the product proof domain. */
+/** Return current tracked worktree drift; ambient/untracked bytes receive no post-certification proof credit. */
 function currentReviewDirtyPaths(repositoryRoot) {
-  const tracked = gitPathList(repositoryRoot, ["diff", "--name-only", "-z", "HEAD", "--"]);
-  const untracked = gitPathList(repositoryRoot, [
-    "-c", "core.excludesFile=/dev/null",
-    "ls-files", "--others", "--exclude-per-directory=.gitignore", "-z",
-  ]).filter(file => !file.startsWith(".chatgpt/"));
-  return [...new Set([...tracked, ...untracked])].sort();
+  return gitPathList(repositoryRoot, ["diff", "--name-only", "-z", "HEAD", "--"]);
 }
 
 /** Validate report/receipt semantic bindings independently of immutable Git-byte anchoring. */
