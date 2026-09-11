@@ -15,7 +15,7 @@ export type InventoryIntentFingerprintValue =
 export function inventoryIntentFingerprint(
   values: readonly InventoryIntentFingerprintValue[],
 ): string {
-  assertFiniteInventoryIntentFingerprintNumbers(values);
+  assertInventoryIntentFingerprintValues(values);
   return JSON.stringify(values);
 }
 
@@ -68,19 +68,29 @@ function isInventoryMetadataArray(
   return Array.isArray(value);
 }
 
-/** Reject the one JSON number shape that would silently stringify as null. */
-function assertFiniteInventoryIntentFingerprintNumbers(
+/** Reject runtime values outside the collision-free primitive/array fingerprint domain. */
+function assertInventoryIntentFingerprintValues(
   values: readonly InventoryIntentFingerprintValue[],
 ): void {
   for (const value of values) {
     if (value === undefined) {
       throw new Error("Inventory intent fingerprint values must not be undefined.");
     }
-    if (typeof value === "number" && !Number.isFinite(value)) {
-      throw new Error("Inventory intent fingerprint numbers must be finite.");
-    }
     if (Array.isArray(value)) {
-      assertFiniteInventoryIntentFingerprintNumbers(value);
+      assertInventoryIntentFingerprintValues(value);
+      continue;
     }
+    if (value === null || typeof value === "boolean" || typeof value === "string") {
+      continue;
+    }
+    if (typeof value === "number") {
+      if (!Number.isFinite(value)) {
+        throw new Error("Inventory intent fingerprint numbers must be finite.");
+      }
+      continue;
+    }
+    throw new Error(
+      "Inventory intent fingerprint values must contain only null, booleans, finite numbers, strings, and arrays."
+    );
   }
 }

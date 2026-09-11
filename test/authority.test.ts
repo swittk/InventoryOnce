@@ -22,7 +22,10 @@ import {
   InventoryStorageWriteStage,
   createInMemoryInventoryDurableStorage,
 } from "../src/storage-api.js";
-import { createTabletCatalog } from "./test-fixtures.js";
+import {
+  TestInventoryAuthorityStore,
+  createTabletCatalog,
+} from "./test-fixtures.js";
 
 /** Machine-audited bounded trace identities executed by this suite. */
 const FORMAL_IMPLEMENTATION_TRACE_IDS = [
@@ -38,6 +41,17 @@ const time0 = "2026-08-26T00:00:00.000Z";
 const time1 = "2026-08-26T01:00:00.000Z";
 /** Stable activation time. */
 const time2 = "2026-08-26T02:00:00.000Z";
+
+it("accepts equivalent authority schema maps regardless of property insertion order", async () => {
+  const store = new TestInventoryAuthorityStore();
+  await store.ensure({ mode: "String", revision: "Number" });
+  await expect(
+    store.ensure({ revision: "Number", mode: "String" }),
+  ).resolves.toBeUndefined();
+  await expect(
+    store.ensure({ revision: "String", mode: "String" }),
+  ).rejects.toThrow("Formal authority schema changed");
+});
 
 /** Shared durable row used by independent controller instances. */
 class TestAuthorityDatabase {

@@ -27,7 +27,13 @@
     "dist",
     "README.md",
     "docs",
-    "formal"
+    "formal",
+    "scripts",
+    "src",
+    "test",
+    "tsconfig.json",
+    "tsconfig.test.json",
+    "experiments/tla-conformance/final-convergence/repository-root.mjs"
   ],
   "scripts": {
     "clean": "rm -rf dist",

@@ -8,6 +8,8 @@ import { fileURLToPath } from "node:url";
 import { tmpdir } from "node:os";
 import {
   CURRENT_REVIEW_ASSURANCE_RECEIPT,
+  assertCurrentReviewAssuranceContent,
+  currentReviewSurfaceSha256,
   verifyCurrentReviewAssurance,
 } from "./current-review-assurance.mjs";
 
@@ -80,56 +82,45 @@ try {
     assert.throws(() => repositoryPath("../outside-inventoryonce"), /escapes repository root/u);
     fs.rmSync(selftestDir, { recursive: true, force: true });
 
-    // A self-consistent forged surface digest must still fail against independently derived source evidence.
+    // A self-consistent forged surface digest must reach the source-derived semantic check, not an earlier immutable-byte guard.
     const reviewReceiptPath = path.join(root, CURRENT_REVIEW_ASSURANCE_RECEIPT);
-    const reviewReceiptBytes = fs.readFileSync(reviewReceiptPath);
-    const reviewReceipt = JSON.parse(reviewReceiptBytes.toString("utf8"));
+    const reviewReceipt = JSON.parse(fs.readFileSync(reviewReceiptPath, "utf8"));
     const reviewReportPath = path.join(root, reviewReceipt.report.file);
-    const reviewReportBytes = fs.readFileSync(reviewReportPath);
-    try {
-      const forgedDigest = "0".repeat(64);
-      const forgedReport = JSON.parse(reviewReportBytes.toString("utf8"));
-      forgedReport.surfaceSha256 = forgedDigest;
-      const forgedReportBytes = Buffer.from(`${JSON.stringify(forgedReport, null, 2)}\n`);
-      fs.writeFileSync(reviewReportPath, forgedReportBytes);
-      reviewReceipt.surfaceSha256 = forgedDigest;
-      reviewReceipt.report.sha256 = crypto.createHash("sha256").update(forgedReportBytes).digest("hex");
-      fs.writeFileSync(reviewReceiptPath, `${JSON.stringify(reviewReceipt, null, 2)}\n`);
-      assert.throws(
-        () => verifyCurrentReviewAssurance(root),
-        /immutable evidence commit|surface digest is not independently source-derived/u,
-      );
-    } finally {
-      fs.writeFileSync(reviewReportPath, reviewReportBytes);
-      fs.writeFileSync(reviewReceiptPath, reviewReceiptBytes);
-    }
+    const reviewReport = JSON.parse(fs.readFileSync(reviewReportPath, "utf8"));
+    const reviewLogPath = path.join(root, reviewReceipt.fullLog.file);
+    const forgedDigest = "0".repeat(64);
+    const forgedReport = { ...reviewReport, surfaceSha256: forgedDigest };
+    const forgedReportBytes = Buffer.from(`${JSON.stringify(forgedReport, null, 2)}\n`);
+    const forgedReceipt = {
+      ...reviewReceipt,
+      surfaceSha256: forgedDigest,
+      report: {
+        ...reviewReceipt.report,
+        sha256: crypto.createHash("sha256").update(forgedReportBytes).digest("hex"),
+      },
+    };
+    assert.throws(
+      () => assertCurrentReviewAssuranceContent({
+        receipt: forgedReceipt,
+        report: forgedReport,
+        reportSha256: forgedReceipt.report.sha256,
+        fullLogSha256: sha256(reviewLogPath),
+        independentlyDerivedSurfaceSha256: currentReviewSurfaceSha256(root),
+        independentlyDerivedRepositoryStateSha256: reviewReceipt.repositoryStateSha256,
+      }),
+      /surface digest is not independently source-derived/u,
+    );
 
-    // A later commit cannot replace the tracked log/report/receipt with a self-consistent fake run.
-    const immutableReceiptPath = path.join(root, CURRENT_REVIEW_ASSURANCE_RECEIPT);
-    const immutableReceiptBytes = fs.readFileSync(immutableReceiptPath);
-    const immutableReceipt = JSON.parse(immutableReceiptBytes.toString("utf8"));
-    const immutableReportPath = path.join(root, immutableReceipt.report.file);
-    const immutableLogPath = path.join(root, immutableReceipt.fullLog.file);
-    const immutableReportBytes = fs.readFileSync(immutableReportPath);
-    const immutableLogBytes = fs.readFileSync(immutableLogPath);
+    // Mutating only the tracked full log must reach the exact immutable-log byte guard.
+    const immutableLogBytes = fs.readFileSync(reviewLogPath);
     try {
-      const forgedLogBytes = Buffer.from("synthetic full assurance log with no executed run\n");
-      fs.writeFileSync(immutableLogPath, forgedLogBytes);
-      const forgedReport = JSON.parse(immutableReportBytes.toString("utf8"));
-      forgedReport.fullLogSha256 = crypto.createHash("sha256").update(forgedLogBytes).digest("hex");
-      const forgedReportBytes = Buffer.from(`${JSON.stringify(forgedReport, null, 2)}\n`);
-      fs.writeFileSync(immutableReportPath, forgedReportBytes);
-      immutableReceipt.fullLog.sha256 = forgedReport.fullLogSha256;
-      immutableReceipt.report.sha256 = crypto.createHash("sha256").update(forgedReportBytes).digest("hex");
-      fs.writeFileSync(immutableReceiptPath, `${JSON.stringify(immutableReceipt, null, 2)}\n`);
+      fs.writeFileSync(reviewLogPath, "synthetic full assurance log with no executed run\n");
       assert.throws(
         () => verifyCurrentReviewAssurance(root),
-        /immutable evidence commit/u,
+        /full log differs from its immutable evidence commit/u,
       );
     } finally {
-      fs.writeFileSync(immutableLogPath, immutableLogBytes);
-      fs.writeFileSync(immutableReportPath, immutableReportBytes);
-      fs.writeFileSync(immutableReceiptPath, immutableReceiptBytes);
+      fs.writeFileSync(reviewLogPath, immutableLogBytes);
     }
 
     // Uncommitted authoritative bytes must never inherit certification from a committed receipt.

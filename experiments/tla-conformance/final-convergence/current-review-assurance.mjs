@@ -27,7 +27,7 @@ function canonicalJson(value) {
 }
 
 /** Independently derive the current canonical compiler surface digest from source. */
-function currentSurfaceSha256(repositoryRoot) {
+export function currentReviewSurfaceSha256(repositoryRoot) {
   const output = execFileSync(
     process.execPath,
     [path.join(repositoryRoot, "scripts/formal-implementation-surface.cjs")],
@@ -59,6 +59,35 @@ function committedFileSha256(repositoryRoot, commit, file) {
   return crypto.createHash("sha256").update(bytes).digest("hex");
 }
 
+/** Validate report/receipt semantic bindings independently of immutable Git-byte anchoring. */
+export function assertCurrentReviewAssuranceContent({
+  receipt,
+  report,
+  reportSha256,
+  fullLogSha256,
+  independentlyDerivedSurfaceSha256,
+  independentlyDerivedRepositoryStateSha256,
+}) {
+  assert.equal(receipt.schemaVersion, 1, "Current review assurance receipt schema is unsupported.");
+  assert.equal(receipt.status, "CURRENT_PR_REVIEW_FULL_ASSURANCE_VERIFIED", "Current review assurance receipt status is invalid.");
+  assert.match(receipt.certifiedHead, /^[a-f0-9]{40}$/u, "Current review assurance certified head is invalid.");
+  assert.equal(receipt.report.file, CURRENT_REVIEW_ASSURANCE_REPORT, "Current review assurance report path is not package-owned.");
+  assert.equal(receipt.fullLog.file, CURRENT_REVIEW_ASSURANCE_FULL_LOG, "Current review assurance full-log path is not package-owned.");
+  assert.equal(reportSha256, receipt.report.sha256, "Current review assurance report bytes changed.");
+  assert.equal(fullLogSha256, receipt.fullLog.sha256, "Current review assurance full-log bytes changed.");
+  assert.equal(report.repositoryHead, receipt.certifiedHead, "Current review assurance report certifies the wrong commit.");
+  assert.equal(report.fullFormal, true, "Current review assurance report is not a full-formal run.");
+  assert.match(report.surfaceSha256, /^[a-f0-9]{64}$/u, "Current review assurance report surface digest is invalid.");
+  assert.match(receipt.surfaceSha256, /^[a-f0-9]{64}$/u, "Current review assurance receipt surface digest is invalid.");
+  assert.equal(report.surfaceSha256, independentlyDerivedSurfaceSha256, "Current review assurance report surface digest is not independently source-derived.");
+  assert.equal(receipt.surfaceSha256, independentlyDerivedSurfaceSha256, "Current review assurance receipt surface digest is not independently source-derived.");
+  assert.equal(report.apiEntries, 510, "Current review assurance API census changed.");
+  assert.equal(report.compilerCallGraphUnresolvedApis, 0, "Current review assurance has unresolved public APIs.");
+  assert.equal(report.repositoryStateSha256, receipt.repositoryStateSha256, "Current review assurance state receipt disagrees with the report.");
+  assert.equal(independentlyDerivedRepositoryStateSha256, receipt.repositoryStateSha256, "Current review assurance was not produced from the exact clean committed evidence state.");
+  assert.equal(report.fullLogSha256, receipt.fullLog.sha256, "Current review assurance report is not bound to the tracked full log.");
+}
+
 /** Verify the exact reviewed commit against independently recomputed committed state and tracked full-run log bytes. */
 export function verifyCurrentReviewAssurance(repositoryRoot) {
   const root = path.resolve(repositoryRoot);
@@ -70,8 +99,6 @@ export function verifyCurrentReviewAssurance(repositoryRoot) {
     "Current review assurance receipt differs from its immutable evidence commit.",
   );
   const receipt = JSON.parse(fs.readFileSync(receiptPath, "utf8"));
-  assert.equal(receipt.schemaVersion, 1, "Current review assurance receipt schema is unsupported.");
-  assert.equal(receipt.status, "CURRENT_PR_REVIEW_FULL_ASSURANCE_VERIFIED", "Current review assurance receipt status is invalid.");
   assert.match(receipt.certifiedHead, /^[a-f0-9]{40}$/u, "Current review assurance certified head is invalid.");
   assert.equal(
     execFileSync("git", ["rev-parse", `${CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD}^`], { cwd: root, encoding: "utf8" }).trim(),
@@ -93,25 +120,17 @@ export function verifyCurrentReviewAssurance(repositoryRoot) {
     committedFileSha256(root, CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD, CURRENT_REVIEW_ASSURANCE_FULL_LOG),
     "Current review assurance full log differs from its immutable evidence commit.",
   );
-  assert.equal(sha256(reportPath), receipt.report.sha256, "Current review assurance report bytes changed.");
-  assert.equal(sha256(logPath), receipt.fullLog.sha256, "Current review assurance full-log bytes changed.");
+  const reportSha256 = sha256(reportPath);
+  const fullLogSha256 = sha256(logPath);
   const report = JSON.parse(fs.readFileSync(reportPath, "utf8"));
-  assert.equal(report.repositoryHead, receipt.certifiedHead, "Current review assurance report certifies the wrong commit.");
-  assert.equal(report.fullFormal, true, "Current review assurance report is not a full-formal run.");
-  assert.match(report.surfaceSha256, /^[a-f0-9]{64}$/u, "Current review assurance report surface digest is invalid.");
-  assert.match(receipt.surfaceSha256, /^[a-f0-9]{64}$/u, "Current review assurance receipt surface digest is invalid.");
-  const independentlyDerivedSurfaceSha256 = currentSurfaceSha256(root);
-  assert.equal(report.surfaceSha256, independentlyDerivedSurfaceSha256, "Current review assurance report surface digest is not independently source-derived.");
-  assert.equal(receipt.surfaceSha256, independentlyDerivedSurfaceSha256, "Current review assurance receipt surface digest is not independently source-derived.");
-  assert.equal(report.apiEntries, 510, "Current review assurance API census changed.");
-  assert.equal(report.compilerCallGraphUnresolvedApis, 0, "Current review assurance has unresolved public APIs.");
-  assert.equal(report.repositoryStateSha256, receipt.repositoryStateSha256, "Current review assurance state receipt disagrees with the report.");
-  assert.equal(
-    repositoryAssuranceCommittedStateSha256(root, receipt.certifiedHead),
-    receipt.repositoryStateSha256,
-    "Current review assurance was not produced from the exact clean committed evidence state.",
-  );
-  assert.equal(report.fullLogSha256, receipt.fullLog.sha256, "Current review assurance report is not bound to the tracked full log.");
+  assertCurrentReviewAssuranceContent({
+    receipt,
+    report,
+    reportSha256,
+    fullLogSha256,
+    independentlyDerivedSurfaceSha256: currentReviewSurfaceSha256(root),
+    independentlyDerivedRepositoryStateSha256: repositoryAssuranceCommittedStateSha256(root, receipt.certifiedHead),
+  });
   const dirtyAuthoritativePaths = execFileSync(
     "git",
     ["status", "--porcelain=v1", "--untracked-files=all", "--", ...AUTHORITATIVE_PATHS],

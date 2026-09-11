@@ -20,6 +20,15 @@ function fixtures() {
       explicitGapApis: 0,
       unreferencedPublicApis: 0,
       maximumTypeDepth: 4,
+      compilerCallGraphCallables: 4,
+      compilerCallGraphEdges: 5,
+      compilerCallGraphTestRoots: 2,
+      compilerCallGraphWitnessedApis: 2,
+      compilerCallGraphUnresolvedApis: 0,
+      reachableFields: 3,
+      reachableTypes: 2,
+      recursiveTypeReferences: 1,
+      truncatedTypes: 0,
     },
   };
   const fields = {
@@ -38,7 +47,7 @@ function fixtures() {
   };
   const callChains = {
     schemaVersion: 1,
-    counts: { callables: 4, edges: 5, testRoots: 2, publicEntriesWithWitnesses: 2, unresolvedPublicEntries: 0 },
+    counts: { callables: 4, edges: 5, testRoots: 2, publicEntries: 2, publicEntriesWithTargets: 2, publicEntriesWithWitnesses: 2, unresolvedPublicEntries: 0 },
   };
   const traces = {
     schemaVersion: 1,
@@ -93,6 +102,37 @@ test("one stale manifest-derived field rejects the executable report", () => {
   assert.throws(
     () => assertExecutableAssuranceMatchesManifests({ ...input, executable }),
     /compilerCallGraphEdges/u,
+  );
+});
+
+test("duplicated manifest counters and call-chain domain partitions must agree", () => {
+  const staleGraph = fixtures();
+  staleGraph.api.counts.compilerCallGraphEdges += 1;
+  assert.throws(
+    () => executableAssuranceSummary(staleGraph),
+    /compilerCallGraphEdges.*disagrees/u,
+  );
+
+  const staleFields = fixtures();
+  staleFields.api.counts.reachableFields += 1;
+  assert.throws(
+    () => executableAssuranceSummary(staleFields),
+    /reachableFields.*disagrees/u,
+  );
+
+  const wrongDomain = fixtures();
+  wrongDomain.callChains.counts.publicEntries += 1;
+  assert.throws(
+    () => executableAssuranceSummary(wrongDomain),
+    /public entry counter differs/u,
+  );
+
+  const incompletePartition = fixtures();
+  incompletePartition.callChains.counts.publicEntriesWithWitnesses = 1;
+  incompletePartition.api.counts.compilerCallGraphWitnessedApis = 1;
+  assert.throws(
+    () => executableAssuranceSummary(incompletePartition),
+    /do not partition the API domain/u,
   );
 });
 test("report-only manifest counters fail closed when missing or invalid", () => {

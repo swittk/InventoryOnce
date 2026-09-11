@@ -18,6 +18,10 @@ import {
 import {
   assertNoManifestImplementationModelClaim,
 } from "./executable-assurance-coherence.mjs";
+import {
+  assuranceRepositoryPath,
+  readAssuranceFile,
+} from "./assurance-files.mjs";
 
 /** InventoryOnce package root. */
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -57,7 +61,8 @@ const kernelReferenceCalls = [
 
 /** Read one checked JSON file. */
 function readJson(name) {
-  return JSON.parse(readFileSync(resolve(manifestRoot, name), "utf8"));
+  const relativePath = `formal/implementation-conformance/${name}`;
+  return JSON.parse(readAssuranceFile(repositoryRoot, relativePath).toString("utf8"));
 }
 
 /** Locale-independent UTF-16 code-unit ordering for generated artifact keys. */
@@ -193,9 +198,7 @@ function readFormalVocabulary() {
 
 /** Resolve one evidence path from a package-relative or repository-relative declaration. */
 function evidencePath(path) {
-  return path.startsWith("apps/") || path.startsWith("packages/")
-    ? resolve(repositoryRoot, path)
-    : resolve(packageRoot, path);
+  return assuranceRepositoryPath(repositoryRoot, path);
 }
 
 /** Recursively list TypeScript evidence sources under one directory. */
@@ -359,7 +362,7 @@ function validateTraceAssurance(traceManifest, apiManifest, vocabulary) {
       }
       const normalized = relative(repositoryRoot, path).replaceAll("\\", "/");
       if (actualSources.has(normalized)) declarationCovered = true;
-      const source = readFileSync(path, "utf8");
+      const source = readAssuranceFile(repositoryRoot, evidence).toString("utf8");
       if (
         /\b(?:it|test)\s*\(/u.test(source) ||
         source.includes("runInventoryFormalStorageRefinementSuite(")

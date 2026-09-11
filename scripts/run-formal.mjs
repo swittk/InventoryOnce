@@ -325,13 +325,15 @@ async function runInvariantMutationCheck(model, config, invariant, positiveWitne
   }
 }
 
-assertFormalPositiveReachabilityRegistration(readdirSync(join(process.cwd(), "formal")));
-assertFormalMutationRegistrationCompleteness(
-  readdirSync(join(process.cwd(), "formal")),
+const formalConfigFileNames = readdirSync(join(process.cwd(), "formal"));
+const readFormalConfig = (config) =>
+  readFileSync(join(process.cwd(), "formal", `${config}.cfg`), "utf8");
+assertFormalPositiveReachabilityRegistration(
+  formalConfigFileNames,
+  readFormalConfig,
 );
-assertFormalMutationRegistrationConsistency((config) =>
-  readFileSync(join(process.cwd(), "formal", `${config}.cfg`), "utf8"),
-);
+assertFormalMutationRegistrationCompleteness(formalConfigFileNames);
+assertFormalMutationRegistrationConsistency(readFormalConfig);
 await ensureTlaTools();
 console.log(
   `InventoryOnce formal mode: ${coldFormalRun ? "cold/full (cache bypassed)" : "content-addressed proof cache enabled"}; TLC jobs=${requestedJobs}; workers/job=${requestedWorkers}.`
@@ -365,7 +367,11 @@ if (modelRun.status !== 0) {
   } else {
     const witnessRun = await runBoundedPool(formalPositiveReachabilityChecks, ([model, config, invariant]) => runInvariantMutationCheck(model, config, invariant, true));
     for (let index = 0; index < witnessRun.results.length; index += 1) {
-      emitProofSection(`=== TLC positive reachability witness: ${formalPositiveReachabilityChecks[index][1]} ===`, witnessRun.results[index]);
+      const result = witnessRun.results[index];
+      const row = formalPositiveReachabilityChecks[index];
+      if (result !== undefined && row !== undefined) {
+        emitProofSection(`=== TLC positive reachability witness: ${row[1]} ===`, result);
+      }
     }
     if (witnessRun.status !== 0) process.exitCode = witnessRun.status;
     else console.log(

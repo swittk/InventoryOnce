@@ -12,6 +12,7 @@ import { readCompactArchive, materializeAssuranceFiles, claimAssuranceWorkspace,
 import { formalProofDescriptor, formalProofCacheKey, readFormalProofCache, writeFormalProofCache } from "./formal-proof-cache.mjs";
 import { executableAssuranceSummary, assertExecutableAssuranceMatchesManifests } from "./executable-assurance-coherence.mjs";
 import { finalConvergenceRepositoryPath } from "../experiments/tla-conformance/final-convergence/repository-root.mjs";
+import { assertFormalPositiveReachabilityRegistration } from "./formal-models.mjs";
 
 /** Repository inputs are rooted at this test module, never the invoking shell. */
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -132,6 +133,58 @@ test("all executable manifest schema versions fail closed independently", () => 
     const input = manifests();
     input[section].schemaVersion = version + 1;
     assert.throws(() => executableAssuranceSummary(input), /schemaVersion/u, section);
+  }
+});
+
+test("positive reachability registration binds each invariant to its witness config", () => {
+  const files = ["SnapshotSupersededWorkflowNonzeroWitness.cfg"];
+  assert.doesNotThrow(() =>
+    assertFormalPositiveReachabilityRegistration(
+      files,
+      () => "SPECIFICATION FairSpec\nINVARIANT NonzeroSnapshotIsUnreachable\n",
+    ),
+  );
+  assert.throws(
+    () => assertFormalPositiveReachabilityRegistration(files, () => "SPECIFICATION FairSpec\nINVARIANT RenamedWitness\n"),
+    /does not declare registered invariant/u,
+  );
+});
+
+test("published tarball contains every tracked input domain required by advertised assurance commands", () => {
+  const packed = JSON.parse(
+    execFileSync("npm", ["pack", "--dry-run", "--ignore-scripts", "--json"], {
+      cwd: root,
+      encoding: "utf8",
+      maxBuffer: 32 * 1024 * 1024,
+    }),
+  );
+  assert.equal(packed.length, 1);
+  const packedFiles = new Set(packed[0].files.map((entry) => entry.path));
+  const required = execFileSync(
+    "git",
+    [
+      "ls-files",
+      "scripts",
+      "src",
+      "test",
+      "formal",
+      "tsconfig.json",
+      "tsconfig.test.json",
+      "experiments/tla-conformance/final-convergence/repository-root.mjs",
+    ],
+    { cwd: root, encoding: "utf8" },
+  ).trim().split(/\r?\n/u).filter(Boolean);
+  for (const file of required) {
+    assert(packedFiles.has(file), `Published package omits assurance input '${file}'.`);
+  }
+  for (const entrypoint of [
+    "scripts/run-formal.mjs",
+    "scripts/audit-formal-implementation-conformance.mjs",
+    "scripts/run-formal-implementation-conformance.mjs",
+    "scripts/generate-formal-implementation-assurance.py",
+    "scripts/report-implementation-conformance.mjs",
+  ]) {
+    assert(packedFiles.has(entrypoint), `Published package omits advertised command entrypoint '${entrypoint}'.`);
   }
 });
 

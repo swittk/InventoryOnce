@@ -111,11 +111,17 @@ export class TestInventoryAuthorityStore implements InventoryAuthorityStateStore
 
   /** Create or verify the scalar schema. */
   async ensure(fields: InventoryAuthorityFields): Promise<void> {
-    if (
-      this.database.fields !== undefined &&
-      JSON.stringify(this.database.fields) !== JSON.stringify(fields)
-    ) {
-      throw new Error("Formal authority schema changed.");
+    if (this.database.fields !== undefined) {
+      const currentKeys = Object.keys(this.database.fields);
+      const nextKeys = Object.keys(fields);
+      if (currentKeys.length !== nextKeys.length) {
+        throw new Error("Formal authority schema changed.");
+      }
+      for (const key of currentKeys) {
+        if (this.database.fields[key] !== fields[key]) {
+          throw new Error("Formal authority schema changed.");
+        }
+      }
     }
     this.database.fields ??= structuredClone(fields);
   }

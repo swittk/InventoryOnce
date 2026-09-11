@@ -1484,7 +1484,11 @@ export function assertCanonicalInventoryTime(
   label: string
 ): void {
   const epoch = Date.parse(value);
-  if (!Number.isFinite(epoch) || new Date(epoch).toISOString() !== value) {
+  if (
+    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/u.test(value) ||
+    !Number.isFinite(epoch) ||
+    new Date(epoch).toISOString() !== value
+  ) {
     throw new Error(
       `${label} must be canonical ISO-8601 text such as 2026-08-24T09:00:00.000Z.`
     );

@@ -27,6 +27,7 @@ import {
   projectInventoryEvents,
   refineInventoryReservation,
   markInventoryReservationConsumed,
+  assertCanonicalInventoryTime,
 } from "../src/kernel.js";
 import type { InventoryIntentFingerprintValue } from "../src/canonical.js";
 import { applyInventoryRecordedDeficitBurden } from "../src/deficits.js";
@@ -251,6 +252,23 @@ describe("collision-free retry identity", () => {
         [["nested", undefined]] as unknown as readonly InventoryIntentFingerprintValue[]
       )
     ).toThrow("must not be undefined");
+    for (const invalid of [{ nested: "object" }, 1n, () => "function"]) {
+      expect(() =>
+        inventoryIntentFingerprint(
+          [invalid] as unknown as readonly InventoryIntentFingerprintValue[]
+        )
+      ).toThrow("only null, booleans, finite numbers, strings, and arrays");
+    }
+  });
+
+  it("rejects expanded-year ISO text before lexicographic durable time comparisons", () => {
+    const expandedFuture = new Date(8_640_000_000_000_000).toISOString();
+    expect(expandedFuture.startsWith("+")).toBe(true);
+    expect(expandedFuture > time0).toBe(false);
+    expect(() =>
+      assertCanonicalInventoryTime(expandedFuture, "expanded future")
+    ).toThrow("must be canonical ISO-8601 text");
+    expect(() => assertCanonicalInventoryTime(time0, "ordinary time")).not.toThrow();
   });
 
   it("rejects delimiter-shifted header identities before another world revision is planned", async () => {

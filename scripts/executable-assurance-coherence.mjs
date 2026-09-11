@@ -141,6 +141,32 @@ function assertExecutableManifests(input) {
   const apiCount = Object.keys(input.api.entries).length;
   if (apiCount === 0 || input.api.counts.callAndConstructSignatures !== apiCount || input.api.counts.directExecutableApis + input.api.counts.indirectCallChainApis + input.api.counts.explicitGapApis + input.api.counts.unreferencedPublicApis !== apiCount) throw new Error("API assurance counters do not partition the actual nonempty API domain.");
   if (input.fields.counts.fields !== Object.keys(input.fields.entries).length) throw new Error("Field assurance counter differs from actual field domain.");
+  const duplicatedCounters = [
+    ["compilerCallGraphCallables", input.api.counts.compilerCallGraphCallables, input.callChains.counts.callables],
+    ["compilerCallGraphEdges", input.api.counts.compilerCallGraphEdges, input.callChains.counts.edges],
+    ["compilerCallGraphTestRoots", input.api.counts.compilerCallGraphTestRoots, input.callChains.counts.testRoots],
+    ["compilerCallGraphWitnessedApis", input.api.counts.compilerCallGraphWitnessedApis, input.callChains.counts.publicEntriesWithWitnesses],
+    ["compilerCallGraphUnresolvedApis", input.api.counts.compilerCallGraphUnresolvedApis, input.callChains.counts.unresolvedPublicEntries],
+    ["reachableFields", input.api.counts.reachableFields, input.fields.counts.fields],
+    ["reachableTypes", input.api.counts.reachableTypes, input.fields.counts.types],
+    ["recursiveTypeReferences", input.api.counts.recursiveTypeReferences, input.fields.counts.recursiveTypeReferences],
+    ["truncatedTypes", input.api.counts.truncatedTypes, input.fields.counts.truncatedTypes],
+  ];
+  for (const [label, apiValue, sourceValue] of duplicatedCounters) {
+    if (apiValue !== sourceValue) {
+      throw new Error(`Executable assurance duplicated counter '${label}' disagrees across manifests.`);
+    }
+  }
+  if (input.callChains.counts.publicEntries !== apiCount) {
+    throw new Error("Call-chain public entry counter differs from the actual API domain.");
+  }
+  if (
+    input.callChains.counts.publicEntriesWithWitnesses +
+      input.callChains.counts.unresolvedPublicEntries !==
+    apiCount
+  ) {
+    throw new Error("Call-chain witnessed and unresolved counters do not partition the API domain.");
+  }
 }
 
 /** Reject implementation-model claims from any registered API, field, or trace manifest. */

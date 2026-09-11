@@ -310,6 +310,7 @@ export function resolveInventoryAmount(
     amount.count
   );
   const independent = [...fixed.independent];
+  // Track axes whose values the intact package revision already fixes.
   const fixedAxes = new Set<string>();
   for (const measured of fixed.independent) fixedAxes.add(measured.axisId);
   for (const input of amount.independent) {
@@ -350,6 +351,7 @@ function createMeasuredVector(
 function validateIndependentAmountInputs(
   inputs: readonly InventoryIndependentAmountInput[]
 ): void {
+  // Track axis identities so one independent measurement cannot be supplied twice.
   const seenAxes = new Set<string>();
   for (const input of inputs) {
     if (input.axisId.trim().length === 0) {

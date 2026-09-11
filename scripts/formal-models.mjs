@@ -201,10 +201,23 @@ export const formalPositiveReachabilityChecks = Object.freeze([
 ]);
 
 /** Prevent missing, duplicate, or unregistered positive reachability witnesses from silently dropping coverage. */
-export function assertFormalPositiveReachabilityRegistration(configFileNames) {
+export function assertFormalPositiveReachabilityRegistration(
+  configFileNames,
+  readConfig,
+) {
+  if (typeof readConfig !== "function") {
+    throw new Error("Positive formal witness registration requires config access.");
+  }
   const expected = configFileNames.filter(file => file.endsWith("Witness.cfg")).sort();
   const registered = formalPositiveReachabilityChecks.map(([model, config, invariant]) => {
-    if (!formalModels.includes(model) || !/^[A-Za-z_][A-Za-z0-9_]*$/u.test(invariant)) throw new Error("Invalid positive formal witness registration.");
+    if (!formalModels.includes(model) || !/^[A-Za-z_][A-Za-z0-9_]*$/u.test(invariant)) {
+      throw new Error("Invalid positive formal witness registration.");
+    }
+    if (!formalConfigCheckNames(readConfig(config)).includes(invariant)) {
+      throw new Error(
+        `Positive formal witness '${config}' does not declare registered invariant '${invariant}'.`
+      );
+    }
     return `${config}.cfg`;
   }).sort();
   if (new Set(registered).size !== registered.length || JSON.stringify(expected) !== JSON.stringify(registered)) throw new Error("Positive formal witness registration is incomplete or duplicated.");
