@@ -3,7 +3,7 @@
   "route": "REGISTERED_CERTIFIED_PRODUCER",
   "proofKind": "final-convergence-producer-a121-b58-v1",
   "family": "FinalConvergenceProducerA121B58",
-  "surfaceDigest": "2333066efbeb600a7c0dfc662e1f03e557f878bf8acd39b7bdd43d1bdadcda4e",
+  "surfaceDigest": "7a74e02dc7f2e6e3227bd8f247fae7601a67df92bf79cae1687ecbde07de498b",
   "domain": "The complete previously compact-certified 535-row ownership partition, with all 488 strict package-owned rows transported through the exact Review 517722 seven-file runtime transition. Invalid runtime discriminators/cuts are narrowed fail-closed; retained traceability values are copied without identity change; fungibility member ordering is a deterministic permutation; the correction replay patch is the exact independently full-assurance-certified source transition. External ownership remains excluded.",
   "allAdmittedInputs": true,
   "sampledInputs": 0,
@@ -20,7 +20,7 @@
     },
     {
       "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-      "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+      "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
     },
     {
       "file": "src/allocation.ts",
@@ -92,7 +92,7 @@
     },
     {
       "file": "src/facade.ts",
-      "sha256": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684"
+      "sha256": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e"
     },
     {
       "file": "src/fungibility.ts",
@@ -204,7 +204,7 @@
     },
     {
       "file": "scripts/inventory-epoch-contract.mjs",
-      "sha256": "cae2ec6de14506a3f1515461c9046603a66c1b1ec57ef80207b50a0847e8dabc"
+      "sha256": "0514bb44e329905d8ef18a5af41d0d0ba8f4478aecae33e20d9147165525f879"
     },
     {
       "file": "formal/UseByReservation.tla",
@@ -348,7 +348,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -451,7 +451,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -547,7 +547,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -643,7 +643,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -776,7 +776,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -909,7 +909,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -1024,7 +1024,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -1139,7 +1139,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -1254,7 +1254,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -1387,7 +1387,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -1483,7 +1483,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -1682,7 +1682,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -1815,7 +1815,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -1911,7 +1911,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -2049,7 +2049,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -2185,7 +2185,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -2321,7 +2321,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -2460,7 +2460,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -2598,7 +2598,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -2736,7 +2736,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -2827,7 +2827,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -2974,7 +2974,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -3120,7 +3120,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -3216,7 +3216,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -3355,7 +3355,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -3613,7 +3613,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -3716,7 +3716,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -3855,7 +3855,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -3958,7 +3958,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -4073,7 +4073,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -4169,7 +4169,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -4338,7 +4338,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -4558,7 +4558,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -4680,7 +4680,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -4761,7 +4761,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -4773,16 +4773,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 76349,
-          "line": 1827,
+          "offset": 76319,
+          "line": 1826,
           "column": 1
         },
         "end": {
-          "offset": 76475,
-          "line": 1831,
+          "offset": 76445,
+          "line": 1830,
           "column": 2
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "f453901dd9f6b6d49613dd77fdf731cb711ae9888725c34a1668a30df4f40cb2"
       },
       "semantics": {
@@ -4841,7 +4841,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -5065,7 +5065,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -5155,7 +5155,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -5236,7 +5236,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -5248,16 +5248,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 75102,
-          "line": 1803,
+          "offset": 75072,
+          "line": 1802,
           "column": 3
         },
         "end": {
-          "offset": 76283,
-          "line": 1823,
+          "offset": 76253,
+          "line": 1822,
           "column": 4
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "ba0bc7ab3fbd3fe821c99eb766bc7acc2dc96465cb5cb6be0fb5b6d6ad433e01"
       },
       "semantics": {
@@ -5316,7 +5316,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -5328,16 +5328,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 13216,
-          "line": 391,
+          "offset": 13186,
+          "line": 390,
           "column": 1
         },
         "end": {
-          "offset": 14859,
-          "line": 439,
+          "offset": 14829,
+          "line": 438,
           "column": 2
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "bdcd93c0d5a8299c7bcbc365655026754401fba0ae5a2ccce5d7e8f16cd71feb"
       },
       "semantics": {
@@ -5549,7 +5549,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -5561,16 +5561,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 11333,
-          "line": 335,
+          "offset": 11303,
+          "line": 334,
           "column": 1
         },
         "end": {
-          "offset": 12495,
-          "line": 373,
+          "offset": 12465,
+          "line": 372,
           "column": 2
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "ba5c6d26451b48d13fe008e160e5c2d4ec1618464510b7a61eb5af9655965696"
       },
       "semantics": {
@@ -5847,7 +5847,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -5859,16 +5859,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 9230,
-          "line": 284,
+          "offset": 9200,
+          "line": 283,
           "column": 1
         },
         "end": {
-          "offset": 9491,
-          "line": 292,
+          "offset": 9461,
+          "line": 291,
           "column": 2
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "45edd8d67b4e4600e863ba119503e2491847fddb49e431f7590c9ed56348c035"
       },
       "semantics": {
@@ -5984,7 +5984,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -5996,16 +5996,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 9579,
-          "line": 295,
+          "offset": 9549,
+          "line": 294,
           "column": 1
         },
         "end": {
-          "offset": 9937,
-          "line": 305,
+          "offset": 9907,
+          "line": 304,
           "column": 2
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "756312cdc9760798b4cfdd7bdf9613990fdaddbdabe58049502fba374cb406a2"
       },
       "semantics": {
@@ -6122,7 +6122,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -6361,7 +6361,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       },
@@ -6616,7 +6616,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       },
@@ -6872,7 +6872,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       },
@@ -7127,7 +7127,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       },
@@ -7382,7 +7382,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       },
@@ -7637,7 +7637,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       },
@@ -7893,7 +7893,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       },
@@ -8148,7 +8148,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       },
@@ -8403,7 +8403,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       },
@@ -8658,7 +8658,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       },
@@ -8950,7 +8950,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       },
@@ -9205,7 +9205,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       },
@@ -9460,7 +9460,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       },
@@ -9715,7 +9715,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       },
@@ -9743,16 +9743,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 50029,
-          "line": 1255,
+          "offset": 49999,
+          "line": 1254,
           "column": 3
         },
         "end": {
-          "offset": 50098,
-          "line": 1255,
+          "offset": 50068,
+          "line": 1254,
           "column": 72
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "dd08e7f8b435e266d9b94c8abd326e8531d2c388fd0ba7f3d8c118cd15b612b0"
       },
       "semantics": {
@@ -9880,7 +9880,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -9892,16 +9892,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 49869,
-          "line": 1253,
+          "offset": 49839,
+          "line": 1252,
           "column": 3
         },
         "end": {
-          "offset": 49944,
-          "line": 1253,
+          "offset": 49914,
+          "line": 1252,
           "column": 78
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "33d953dc0e9b79c7f925c777b12bb7b4ce8652eeefc60909fc77770c9f0856cf"
       },
       "semantics": {
@@ -10029,7 +10029,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -10041,16 +10041,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 50179,
-          "line": 1257,
+          "offset": 50149,
+          "line": 1256,
           "column": 3
         },
         "end": {
-          "offset": 50277,
-          "line": 1259,
+          "offset": 50247,
+          "line": 1258,
           "column": 58
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "8141ac7bc20a4a17172d91c73da06d8b9145696c418d87449e5869457e8cbcee"
       },
       "semantics": {
@@ -10178,7 +10178,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -10190,16 +10190,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 50380,
-          "line": 1261,
+          "offset": 50350,
+          "line": 1260,
           "column": 3
         },
         "end": {
-          "offset": 50472,
-          "line": 1263,
+          "offset": 50442,
+          "line": 1262,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "15d65735a6df7ace7a6d8f027571fa7535370c10540502d45fef446a7a85b69e"
       },
       "semantics": {
@@ -10354,7 +10354,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -10366,16 +10366,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 55397,
-          "line": 1368,
+          "offset": 55367,
+          "line": 1367,
           "column": 3
         },
         "end": {
-          "offset": 55507,
-          "line": 1370,
+          "offset": 55477,
+          "line": 1369,
           "column": 53
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "6844ba0b2d415b71e87f1937ae25ac82d3196d0fe37c9e6abc54babfc0afb67b"
       },
       "semantics": {
@@ -10441,7 +10441,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -10453,16 +10453,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 55206,
-          "line": 1364,
+          "offset": 55176,
+          "line": 1363,
           "column": 3
         },
         "end": {
-          "offset": 55316,
-          "line": 1366,
+          "offset": 55286,
+          "line": 1365,
           "column": 53
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "c76d2accf897604b3bd7ed56e8eaed9ee6ce60260bf0d6f673afd24942345866"
       },
       "semantics": {
@@ -10528,7 +10528,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -10540,16 +10540,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 55599,
-          "line": 1372,
+          "offset": 55569,
+          "line": 1371,
           "column": 3
         },
         "end": {
-          "offset": 55696,
-          "line": 1374,
+          "offset": 55666,
+          "line": 1373,
           "column": 42
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "29cecace4daed41af30fbc9f39849af6d96a220c7a22d957c946838dad1482c3"
       },
       "semantics": {
@@ -10615,7 +10615,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -10627,16 +10627,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 50843,
-          "line": 1273,
+          "offset": 50813,
+          "line": 1272,
           "column": 3
         },
         "end": {
-          "offset": 50956,
-          "line": 1275,
+          "offset": 50926,
+          "line": 1274,
           "column": 54
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "941412702bae430ba7d4cd70f191bb256df65c9c0426a3db36e1a3e8af92ccb2"
       },
       "semantics": {
@@ -10702,7 +10702,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -10714,16 +10714,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 50649,
-          "line": 1269,
+          "offset": 50619,
+          "line": 1268,
           "column": 3
         },
         "end": {
-          "offset": 50761,
-          "line": 1271,
+          "offset": 50731,
+          "line": 1270,
           "column": 54
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "ffb4ac3425b803542c20181704403a85b17135e21314e220ebae4fc85af5a45d"
       },
       "semantics": {
@@ -10789,7 +10789,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -10801,16 +10801,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 51046,
-          "line": 1277,
+          "offset": 51016,
+          "line": 1276,
           "column": 3
         },
         "end": {
-          "offset": 51159,
-          "line": 1279,
+          "offset": 51129,
+          "line": 1278,
           "column": 54
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "49d304e52f4c25e3f9b90bc2f7f2936581235113fd04b886a70b5b80140caf9d"
       },
       "semantics": {
@@ -10876,7 +10876,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -10888,16 +10888,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 51259,
-          "line": 1281,
+          "offset": 51229,
+          "line": 1280,
           "column": 3
         },
         "end": {
-          "offset": 51349,
-          "line": 1283,
+          "offset": 51319,
+          "line": 1282,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "149d5329106d4b2aa542ff15d5474000c6d6fac4f01fa5c06126b79d201b971b"
       },
       "semantics": {
@@ -10963,7 +10963,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -10975,16 +10975,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 62915,
-          "line": 1536,
+          "offset": 62885,
+          "line": 1535,
           "column": 3
         },
         "end": {
-          "offset": 63019,
-          "line": 1538,
+          "offset": 62989,
+          "line": 1537,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "e736cc90052b7077966eb048e8f9ac01aab7fdb5c0bd5d60b0935216bb53b2b0"
       },
       "semantics": {
@@ -11452,7 +11452,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -11464,16 +11464,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 63112,
-          "line": 1540,
+          "offset": 63082,
+          "line": 1539,
           "column": 3
         },
         "end": {
-          "offset": 63214,
-          "line": 1542,
+          "offset": 63184,
+          "line": 1541,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "91914679028ef028e8f9dcce63d4f75297528c7f9e649cf2647d42ac86e25a71"
       },
       "semantics": {
@@ -11941,7 +11941,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -11953,16 +11953,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 63475,
-          "line": 1548,
+          "offset": 63445,
+          "line": 1547,
           "column": 3
         },
         "end": {
-          "offset": 63569,
-          "line": 1550,
+          "offset": 63539,
+          "line": 1549,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "9b5be4a3a311738222ed8b53bcd21f9e36fd0475e58ee90b09fa9b743e303b33"
       },
       "semantics": {
@@ -12330,7 +12330,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -12342,16 +12342,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 63310,
-          "line": 1544,
+          "offset": 63280,
+          "line": 1543,
           "column": 3
         },
         "end": {
-          "offset": 63402,
-          "line": 1546,
+          "offset": 63372,
+          "line": 1545,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "a1ecdcb020c2dc53d317cc4ae155eabb80b92937f14cf0b7fd820521937f4e3f"
       },
       "semantics": {
@@ -12506,7 +12506,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -12518,16 +12518,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 62561,
-          "line": 1528,
+          "offset": 62531,
+          "line": 1527,
           "column": 3
         },
         "end": {
-          "offset": 62651,
-          "line": 1530,
+          "offset": 62621,
+          "line": 1529,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "a63f32c063c0d0458974c527e61cdf28a653f3c47627c228b66941ff166bbeab"
       },
       "semantics": {
@@ -12995,7 +12995,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -13007,16 +13007,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 62730,
-          "line": 1532,
+          "offset": 62700,
+          "line": 1531,
           "column": 3
         },
         "end": {
-          "offset": 62820,
-          "line": 1534,
+          "offset": 62790,
+          "line": 1533,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "4c11bdb94d37b38708d17bad6682e04fe4f7801f6eb56ec419b164a68bb9f61a"
       },
       "semantics": {
@@ -13484,7 +13484,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -13496,16 +13496,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 62383,
-          "line": 1524,
+          "offset": 62353,
+          "line": 1523,
           "column": 3
         },
         "end": {
-          "offset": 62479,
-          "line": 1526,
+          "offset": 62449,
+          "line": 1525,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "587e6aafa7bc8cb8113123e087b355f2ceec0be4a5c7016a238df0a79e8136c0"
       },
       "semantics": {
@@ -14036,7 +14036,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -14048,16 +14048,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 67371,
-          "line": 1640,
+          "offset": 67341,
+          "line": 1639,
           "column": 3
         },
         "end": {
-          "offset": 67461,
-          "line": 1642,
+          "offset": 67431,
+          "line": 1641,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "4b7a321ff33834f4cda655a333139fd62d2030ac8e3faba87cdb47518adf7f06"
       },
       "semantics": {
@@ -14390,7 +14390,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -14402,16 +14402,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 67043,
-          "line": 1632,
+          "offset": 67013,
+          "line": 1631,
           "column": 3
         },
         "end": {
-          "offset": 67133,
-          "line": 1634,
+          "offset": 67103,
+          "line": 1633,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "6dcdb18318b294b06e381cf4b4c3cdca3febef75b921638874803393b456a78a"
       },
       "semantics": {
@@ -14486,7 +14486,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -14498,16 +14498,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 67210,
-          "line": 1636,
+          "offset": 67180,
+          "line": 1635,
           "column": 3
         },
         "end": {
-          "offset": 67304,
-          "line": 1638,
+          "offset": 67274,
+          "line": 1637,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "377b2d494fac838e21fffe1c38718dece77335c982cf5f6d9c758fc9f6926a2d"
       },
       "semantics": {
@@ -14582,7 +14582,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -14594,16 +14594,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 66707,
-          "line": 1626,
+          "offset": 66677,
+          "line": 1625,
           "column": 3
         },
         "end": {
-          "offset": 66813,
-          "line": 1628,
+          "offset": 66783,
+          "line": 1627,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "ba80e2508d36894733034d155fcb93f0a35adbf7bfa83d0d4cbd5077d7b767c2"
       },
       "semantics": {
@@ -14669,7 +14669,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -14681,16 +14681,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 66888,
-          "line": 1630,
+          "offset": 66858,
+          "line": 1629,
           "column": 3
         },
         "end": {
-          "offset": 66966,
-          "line": 1630,
+          "offset": 66936,
+          "line": 1629,
           "column": 81
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "fa48fee50f9d3d8855bbfbcb37d1b934256df3aaf43b2f071de58d27ba19879a"
       },
       "semantics": {
@@ -14765,7 +14765,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -14777,16 +14777,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 56057,
-          "line": 1384,
+          "offset": 56027,
+          "line": 1383,
           "column": 3
         },
         "end": {
-          "offset": 56171,
-          "line": 1386,
+          "offset": 56141,
+          "line": 1385,
           "column": 58
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "0c945ba2d13c84843183b787d864f9626994cdbad20b4215107b6409004039d2"
       },
       "semantics": {
@@ -14965,7 +14965,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -14977,16 +14977,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 55866,
-          "line": 1380,
+          "offset": 55836,
+          "line": 1379,
           "column": 3
         },
         "end": {
-          "offset": 55982,
-          "line": 1382,
+          "offset": 55952,
+          "line": 1381,
           "column": 58
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "e3b0f82ace58d5adfd108a04f6e7aa99924fd2cdee80806834614dd564f9397e"
       },
       "semantics": {
@@ -15165,7 +15165,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -15177,16 +15177,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 56634,
-          "line": 1396,
+          "offset": 56604,
+          "line": 1395,
           "column": 3
         },
         "end": {
-          "offset": 56723,
-          "line": 1398,
+          "offset": 56693,
+          "line": 1397,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "cc7c998c1fd77e179a2bcd967fed8a28c72abaaec7bebfdacc01f9db34b9406d"
       },
       "semantics": {
@@ -15513,7 +15513,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -15525,16 +15525,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 56440,
-          "line": 1392,
+          "offset": 56410,
+          "line": 1391,
           "column": 3
         },
         "end": {
-          "offset": 56540,
-          "line": 1394,
+          "offset": 56510,
+          "line": 1393,
           "column": 50
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "8a59ac29c10aa03000a595446cb4d9ff54540f58f3c327f04864ae09eee5f906"
       },
       "semantics": {
@@ -15739,7 +15739,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -15751,16 +15751,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 56988,
-          "line": 1404,
+          "offset": 56958,
+          "line": 1403,
           "column": 3
         },
         "end": {
-          "offset": 57077,
-          "line": 1406,
+          "offset": 57047,
+          "line": 1405,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "521838f8d5471fb44481a80dbed105b7219972b928b716f782204f362ad3c8d7"
       },
       "semantics": {
@@ -16087,7 +16087,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -16099,16 +16099,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 56263,
-          "line": 1388,
+          "offset": 56233,
+          "line": 1387,
           "column": 3
         },
         "end": {
-          "offset": 56362,
-          "line": 1390,
+          "offset": 56332,
+          "line": 1389,
           "column": 43
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "47167a079de0ec7b5f35f8b4a132993c63372826f4cc0aab52a63c4e25354ace"
       },
       "semantics": {
@@ -16319,7 +16319,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -16331,16 +16331,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 56810,
-          "line": 1400,
+          "offset": 56780,
+          "line": 1399,
           "column": 3
         },
         "end": {
-          "offset": 56905,
-          "line": 1402,
+          "offset": 56875,
+          "line": 1401,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "9afccbd70d7471dd911b4d371d0173630f2d8d75f0c38000579edfee62083b1c"
       },
       "semantics": {
@@ -16667,7 +16667,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -16679,16 +16679,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 63987,
-          "line": 1558,
+          "offset": 63957,
+          "line": 1557,
           "column": 3
         },
         "end": {
-          "offset": 64075,
-          "line": 1560,
+          "offset": 64045,
+          "line": 1559,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "338d92f5798a85d068ca32d2ce174f0d886cf0c6c14260ef9c5340d61072b04d"
       },
       "semantics": {
@@ -17056,7 +17056,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -17068,16 +17068,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 63812,
-          "line": 1556,
+          "offset": 63782,
+          "line": 1555,
           "column": 3
         },
         "end": {
-          "offset": 63890,
-          "line": 1556,
+          "offset": 63860,
+          "line": 1555,
           "column": 81
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "1001b725f93b06d7660379b6d0b3aee9b0204512f5ffe831629e330e84ea1168"
       },
       "semantics": {
@@ -17232,7 +17232,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -17244,16 +17244,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 71767,
-          "line": 1736,
+          "offset": 71737,
+          "line": 1735,
           "column": 3
         },
         "end": {
-          "offset": 71885,
-          "line": 1739,
+          "offset": 71855,
+          "line": 1738,
           "column": 44
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "ed8a677e68dd0feaf1763fd3d31d3786a0584cd5250e77b59b89cc56d24fcf54"
       },
       "semantics": {
@@ -17969,7 +17969,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -17981,16 +17981,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 72415,
-          "line": 1749,
+          "offset": 72385,
+          "line": 1748,
           "column": 3
         },
         "end": {
-          "offset": 72514,
-          "line": 1751,
+          "offset": 72484,
+          "line": 1750,
           "column": 65
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "9906c0e22689b79ff87db24390dcfd895ff46aea74fd9d4a77f5a0751813ac70"
       },
       "semantics": {
@@ -18697,7 +18697,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -18709,16 +18709,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 72603,
-          "line": 1753,
+          "offset": 72573,
+          "line": 1752,
           "column": 3
         },
         "end": {
-          "offset": 72675,
-          "line": 1753,
+          "offset": 72645,
+          "line": 1752,
           "column": 75
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "18bd006953b087110f6fbf2a724de2fde114c4571f059fa0cbe730fb402decf3"
       },
       "semantics": {
@@ -19425,7 +19425,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -19437,16 +19437,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 73310,
-          "line": 1766,
+          "offset": 73280,
+          "line": 1765,
           "column": 3
         },
         "end": {
-          "offset": 73370,
-          "line": 1766,
+          "offset": 73340,
+          "line": 1765,
           "column": 63
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "919a374c91792f46a4c952b5a1ee96606e371e5056cf5ee5eee5a04a5b7c8b8a"
       },
       "semantics": {
@@ -19542,7 +19542,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -19554,16 +19554,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 73052,
-          "line": 1762,
+          "offset": 73022,
+          "line": 1761,
           "column": 3
         },
         "end": {
-          "offset": 73121,
-          "line": 1762,
+          "offset": 73091,
+          "line": 1761,
           "column": 72
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "0b74535d0c2b664d330f2d6f04328d46c398229c6e8f7eae2383b519a32e867b"
       },
       "semantics": {
@@ -19645,7 +19645,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -19657,16 +19657,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 72752,
-          "line": 1755,
+          "offset": 72722,
+          "line": 1754,
           "column": 3
         },
         "end": {
-          "offset": 72853,
-          "line": 1758,
+          "offset": 72823,
+          "line": 1757,
           "column": 59
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "03f9450a8c483dbed26faa8177d66072c42502ac842a3e55a6298e31cf9b8554"
       },
       "semantics": {
@@ -20373,7 +20373,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -20385,16 +20385,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 72927,
-          "line": 1760,
+          "offset": 72897,
+          "line": 1759,
           "column": 3
         },
         "end": {
-          "offset": 73002,
-          "line": 1760,
+          "offset": 72972,
+          "line": 1759,
           "column": 78
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "aae9a1e00bf20cb1c5ca63f18633cebd4b2f93254965768d2e7d4b5974a94e2d"
       },
       "semantics": {
@@ -21101,7 +21101,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -21113,16 +21113,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 72187,
-          "line": 1745,
+          "offset": 72157,
+          "line": 1744,
           "column": 3
         },
         "end": {
-          "offset": 72337,
-          "line": 1747,
+          "offset": 72307,
+          "line": 1746,
           "column": 66
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "a31ba3fe95df643e402ae9551afe1840d9728ee8eb8f5b1eba84d82eb465f228"
       },
       "semantics": {
@@ -21829,7 +21829,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -21841,16 +21841,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 71974,
-          "line": 1741,
+          "offset": 71944,
+          "line": 1740,
           "column": 3
         },
         "end": {
-          "offset": 72078,
-          "line": 1743,
+          "offset": 72048,
+          "line": 1742,
           "column": 45
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "42ec1f468855648db88ebf4c1ce1ebf7946fcd078df855d8b487d3976d3e406a"
       },
       "semantics": {
@@ -21916,7 +21916,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -21928,16 +21928,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 71395,
-          "line": 1730,
+          "offset": 71365,
+          "line": 1729,
           "column": 3
         },
         "end": {
-          "offset": 71499,
-          "line": 1732,
+          "offset": 71469,
+          "line": 1731,
           "column": 57
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "5231c8b5d7cbd94872e1248f06014242e940a6ae2b9fcc109bbf696bd5c9cd9e"
       },
       "semantics": {
@@ -22031,7 +22031,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -22043,16 +22043,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 73175,
-          "line": 1764,
+          "offset": 73145,
+          "line": 1763,
           "column": 3
         },
         "end": {
-          "offset": 73253,
-          "line": 1764,
+          "offset": 73223,
+          "line": 1763,
           "column": 81
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "54a7b263fafeab61c89fae22348323a532bbd80bf0cb4b23711ed26afa58e5eb"
       },
       "semantics": {
@@ -22155,7 +22155,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -22167,16 +22167,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 73472,
-          "line": 1768,
+          "offset": 73442,
+          "line": 1767,
           "column": 3
         },
         "end": {
-          "offset": 73571,
-          "line": 1770,
+          "offset": 73541,
+          "line": 1769,
           "column": 53
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "b7df607dcfbb9c5b27e4ecf577ca2af121e1ba45d498bea680c729e6e9b5c596"
       },
       "semantics": {
@@ -22270,7 +22270,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -22282,16 +22282,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 71183,
-          "line": 1726,
+          "offset": 71153,
+          "line": 1725,
           "column": 3
         },
         "end": {
-          "offset": 71233,
-          "line": 1726,
+          "offset": 71203,
+          "line": 1725,
           "column": 53
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "5c53def143ebab66aa06b102919bb93da424c6aad8ab3682a7985957466380d4"
       },
       "semantics": {
@@ -22366,7 +22366,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -22378,16 +22378,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 71602,
-          "line": 1734,
+          "offset": 71572,
+          "line": 1733,
           "column": 3
         },
         "end": {
-          "offset": 71676,
-          "line": 1734,
+          "offset": 71646,
+          "line": 1733,
           "column": 77
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "0b02858f5a89482512de0968d1d59933f57571eb61d149b51f34db4d34349b9e"
       },
       "semantics": {
@@ -22453,7 +22453,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -22465,16 +22465,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 71293,
-          "line": 1728,
+          "offset": 71263,
+          "line": 1727,
           "column": 3
         },
         "end": {
-          "offset": 71331,
-          "line": 1728,
+          "offset": 71301,
+          "line": 1727,
           "column": 41
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "7175222ec6ea8d9611fa3cd1ee4f527929c6cb65967e172134fad2badcc74a13"
       },
       "semantics": {
@@ -22540,7 +22540,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -22552,16 +22552,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 70668,
-          "line": 1716,
+          "offset": 70638,
+          "line": 1715,
           "column": 3
         },
         "end": {
-          "offset": 70737,
-          "line": 1716,
+          "offset": 70707,
+          "line": 1715,
           "column": 72
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "845fbc871f6493db501327da57b289077f37d44748462b1837c0fd80089c6b76"
       },
       "semantics": {
@@ -22655,7 +22655,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -22667,16 +22667,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 70924,
-          "line": 1720,
+          "offset": 70894,
+          "line": 1719,
           "column": 3
         },
         "end": {
-          "offset": 71006,
-          "line": 1720,
+          "offset": 70976,
+          "line": 1719,
           "column": 85
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "c55dc59f66d7e093b84125fab6e8eff1c4c08386dd6d405453d39e0b8781ecc4"
       },
       "semantics": {
@@ -22770,7 +22770,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -22782,16 +22782,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 65511,
-          "line": 1598,
+          "offset": 65481,
+          "line": 1597,
           "column": 3
         },
         "end": {
-          "offset": 65615,
-          "line": 1600,
+          "offset": 65585,
+          "line": 1599,
           "column": 46
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "120450080b2433fcbd9d11e6ec99ed451de638fa76a3cc9c2253695957b4801c"
       },
       "semantics": {
@@ -22903,7 +22903,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -22915,16 +22915,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 65676,
-          "line": 1602,
+          "offset": 65646,
+          "line": 1601,
           "column": 3
         },
         "end": {
-          "offset": 65796,
-          "line": 1604,
+          "offset": 65766,
+          "line": 1603,
           "column": 46
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "55fc6daf0f262f36d9a673d8ae3410284baba279c6b64e8daa4a93e816e340f6"
       },
       "semantics": {
@@ -23036,7 +23036,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -23048,16 +23048,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 66219,
-          "line": 1614,
+          "offset": 66189,
+          "line": 1613,
           "column": 3
         },
         "end": {
-          "offset": 66321,
-          "line": 1616,
+          "offset": 66291,
+          "line": 1615,
           "column": 46
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "56a1e9a0bf039c9f5d5ad02277bd759f69c91424b96b5dd93f593c4cfd89fa7e"
       },
       "semantics": {
@@ -23169,7 +23169,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -23181,16 +23181,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 66402,
-          "line": 1618,
+          "offset": 66372,
+          "line": 1617,
           "column": 3
         },
         "end": {
-          "offset": 66522,
-          "line": 1620,
+          "offset": 66492,
+          "line": 1619,
           "column": 46
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "9d4c0f9515c6ba78f15e023b4815632d9bdf1b17f3eb5038d0db5b8262b4c630"
       },
       "semantics": {
@@ -23302,7 +23302,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -23314,16 +23314,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 66037,
-          "line": 1610,
+          "offset": 66007,
+          "line": 1609,
           "column": 3
         },
         "end": {
-          "offset": 66136,
-          "line": 1612,
+          "offset": 66106,
+          "line": 1611,
           "column": 46
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "99446c92de23cbe1e851a623746ca5c990a7b84713b8f085ee9ef0e1cd7372bc"
       },
       "semantics": {
@@ -23435,7 +23435,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -23447,16 +23447,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 65358,
-          "line": 1594,
+          "offset": 65328,
+          "line": 1593,
           "column": 3
         },
         "end": {
-          "offset": 65458,
-          "line": 1596,
+          "offset": 65428,
+          "line": 1595,
           "column": 46
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "0d123a311a1c6d531c2c45761e05d00fa61d39309266545823bc716a4f9f94d9"
       },
       "semantics": {
@@ -23634,7 +23634,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -23646,16 +23646,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 65866,
-          "line": 1606,
+          "offset": 65836,
+          "line": 1605,
           "column": 3
         },
         "end": {
-          "offset": 65966,
-          "line": 1608,
+          "offset": 65936,
+          "line": 1607,
           "column": 46
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "7839c18a89f89aa804308dd18d05fdde549ce96fc17f526c87348dd5a16d835d"
       },
       "semantics": {
@@ -23767,7 +23767,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -23779,16 +23779,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 65213,
-          "line": 1590,
+          "offset": 65183,
+          "line": 1589,
           "column": 3
         },
         "end": {
-          "offset": 65304,
-          "line": 1592,
+          "offset": 65274,
+          "line": 1591,
           "column": 46
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "07f87e499394f6b3e3c534e1aceb163428153c7022ee2794f61e275176846bab"
       },
       "semantics": {
@@ -23900,7 +23900,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -23912,16 +23912,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 59576,
-          "line": 1464,
+          "offset": 59546,
+          "line": 1463,
           "column": 3
         },
         "end": {
-          "offset": 59677,
-          "line": 1466,
+          "offset": 59647,
+          "line": 1465,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "b3f047630cb6cc94e883e02da4a8e0e1810535371e18c99a8db440d91126fd30"
       },
       "semantics": {
@@ -24079,7 +24079,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -24091,16 +24091,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 59875,
-          "line": 1472,
+          "offset": 59845,
+          "line": 1471,
           "column": 3
         },
         "end": {
-          "offset": 59998,
-          "line": 1474,
+          "offset": 59968,
+          "line": 1473,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "c6b525d952fb357fc16713360f3622163b91228fea13de11c3dffc312e8bce3b"
       },
       "semantics": {
@@ -24352,7 +24352,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -24364,16 +24364,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 59290,
-          "line": 1456,
+          "offset": 59260,
+          "line": 1455,
           "column": 3
         },
         "end": {
-          "offset": 59383,
-          "line": 1458,
+          "offset": 59353,
+          "line": 1457,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "1ffdc31b14d579b5cb6c2e9b8613b6c6a1a2df45601bb125c8f531a28132ec6a"
       },
       "semantics": {
@@ -24531,7 +24531,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -24543,16 +24543,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 60548,
-          "line": 1488,
+          "offset": 60518,
+          "line": 1487,
           "column": 3
         },
         "end": {
-          "offset": 60667,
-          "line": 1490,
+          "offset": 60637,
+          "line": 1489,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "1659c2cdf2b8f47ce026927422d4551b3e63f7946ea9a92042275c7ce4db37a8"
       },
       "semantics": {
@@ -24710,7 +24710,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -24722,16 +24722,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 59009,
-          "line": 1448,
+          "offset": 58979,
+          "line": 1447,
           "column": 3
         },
         "end": {
-          "offset": 59104,
-          "line": 1450,
+          "offset": 59074,
+          "line": 1449,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "10b56c95648b2c3e2f2faaeba333cc8c1ee33b559e36ca3971c309cf706bf123"
       },
       "semantics": {
@@ -24889,7 +24889,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -24901,16 +24901,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 59729,
-          "line": 1468,
+          "offset": 59699,
+          "line": 1467,
           "column": 3
         },
         "end": {
-          "offset": 59828,
-          "line": 1470,
+          "offset": 59798,
+          "line": 1469,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "4a04ded5ceff90db002ba2479896614eeaab74c3179b7d8b3ecce68663af18ce"
       },
       "semantics": {
@@ -25068,7 +25068,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -25080,16 +25080,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 60044,
-          "line": 1476,
+          "offset": 60014,
+          "line": 1475,
           "column": 3
         },
         "end": {
-          "offset": 60165,
-          "line": 1478,
+          "offset": 60135,
+          "line": 1477,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "88506772ecee1aee50bd19fb624be5a633f0fa961c0c8dc9ce4ad956ee25b7ea"
       },
       "semantics": {
@@ -25341,7 +25341,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -25353,16 +25353,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 59432,
-          "line": 1460,
+          "offset": 59402,
+          "line": 1459,
           "column": 3
         },
         "end": {
-          "offset": 59523,
-          "line": 1462,
+          "offset": 59493,
+          "line": 1461,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "2d8ade2f4b4822fdd9c60bb56d38e637e5848f2e41c5abdbd7c7b69084e485ad"
       },
       "semantics": {
@@ -25520,7 +25520,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -25532,16 +25532,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 60720,
-          "line": 1492,
+          "offset": 60690,
+          "line": 1491,
           "column": 3
         },
         "end": {
-          "offset": 60837,
-          "line": 1494,
+          "offset": 60807,
+          "line": 1493,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "fa6e602a0d8a381c11cbd468161769fbbcbb58bd8a7e2e3799fa2968d5975674"
       },
       "semantics": {
@@ -25699,7 +25699,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -25711,16 +25711,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 59147,
-          "line": 1452,
+          "offset": 59117,
+          "line": 1451,
           "column": 3
         },
         "end": {
-          "offset": 59240,
-          "line": 1454,
+          "offset": 59210,
+          "line": 1453,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "ee6b13c8ccf85dbd3b06e3f97ad664d11519e9096d0a75624715469b74e3b3c1"
       },
       "semantics": {
@@ -25878,7 +25878,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -25890,16 +25890,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 62083,
-          "line": 1518,
+          "offset": 62053,
+          "line": 1517,
           "column": 3
         },
         "end": {
-          "offset": 62160,
-          "line": 1518,
+          "offset": 62130,
+          "line": 1517,
           "column": 80
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "8d2c114f9aa5de85f3ce9a187b091aa7b4a94f345b8a66973ccfed02642970e9"
       },
       "semantics": {
@@ -25985,7 +25985,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -25997,16 +25997,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 57563,
-          "line": 1418,
+          "offset": 57533,
+          "line": 1417,
           "column": 3
         },
         "end": {
-          "offset": 57636,
-          "line": 1418,
+          "offset": 57606,
+          "line": 1417,
           "column": 76
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "78b5b6738e0ff944ad003fd712f43896798b25be997089d79c30005f8391571d"
       },
       "semantics": {
@@ -26081,7 +26081,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -26093,16 +26093,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 57887,
-          "line": 1424,
+          "offset": 57857,
+          "line": 1423,
           "column": 3
         },
         "end": {
-          "offset": 57984,
-          "line": 1426,
+          "offset": 57954,
+          "line": 1425,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "d88f256cde763a2e56311b9a9a7776a31219a944f1399fd3e03b69e872602d49"
       },
       "semantics": {
@@ -27627,7 +27627,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -27639,16 +27639,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 57710,
-          "line": 1420,
+          "offset": 57680,
+          "line": 1419,
           "column": 3
         },
         "end": {
-          "offset": 57799,
-          "line": 1422,
+          "offset": 57769,
+          "line": 1421,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "49b07d6b8ad2ea015c55260985cd21ded5556abc2d99c1ba49d9ab17518e0e51"
       },
       "semantics": {
@@ -27803,7 +27803,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -27815,16 +27815,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 58085,
-          "line": 1428,
+          "offset": 58055,
+          "line": 1427,
           "column": 3
         },
         "end": {
-          "offset": 58196,
-          "line": 1430,
+          "offset": 58166,
+          "line": 1429,
           "column": 46
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "916bd0b8753694a064b307616d3c12c8a2960f942aa5109507720d91442528af"
       },
       "semantics": {
@@ -27890,7 +27890,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -27902,16 +27902,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 61105,
-          "line": 1500,
+          "offset": 61075,
+          "line": 1499,
           "column": 3
         },
         "end": {
-          "offset": 61176,
-          "line": 1500,
+          "offset": 61146,
+          "line": 1499,
           "column": 74
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "ef994f60e1f0c1f3739e8bc21186aafacf9f0e48a7af82d3358de11983e9095d"
       },
       "semantics": {
@@ -27977,7 +27977,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -27989,16 +27989,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 60218,
-          "line": 1480,
+          "offset": 60188,
+          "line": 1479,
           "column": 3
         },
         "end": {
-          "offset": 60321,
-          "line": 1482,
+          "offset": 60291,
+          "line": 1481,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "0dbaead040a83caa1cda7a1dc29013a904b31e776a75dfcbd74cd14797613274"
       },
       "semantics": {
@@ -28156,7 +28156,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -28168,16 +28168,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 57242,
-          "line": 1412,
+          "offset": 57212,
+          "line": 1411,
           "column": 3
         },
         "end": {
-          "offset": 57319,
-          "line": 1412,
+          "offset": 57289,
+          "line": 1411,
           "column": 80
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "2534b7c3383e41c43d1b9f38dfab6716cb658d73e2efd53580b216a83f8ea608"
       },
       "semantics": {
@@ -28259,7 +28259,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -28271,16 +28271,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 57408,
-          "line": 1414,
+          "offset": 57378,
+          "line": 1413,
           "column": 3
         },
         "end": {
-          "offset": 57501,
-          "line": 1416,
+          "offset": 57471,
+          "line": 1415,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "711fecc27f362d56da7e89d8952b3e1e00f05e40ce0b3aaf36a92d1e876d2d07"
       },
       "semantics": {
@@ -28346,7 +28346,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -28358,16 +28358,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 60935,
-          "line": 1496,
+          "offset": 60905,
+          "line": 1495,
           "column": 3
         },
         "end": {
-          "offset": 61034,
-          "line": 1498,
+          "offset": 61004,
+          "line": 1497,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "948af04643dfa9c7eb2977b292f6fe863b74f965ec42c18f9c7f1f4b30e63fdb"
       },
       "semantics": {
@@ -28893,7 +28893,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -28905,16 +28905,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 60378,
-          "line": 1484,
+          "offset": 60348,
+          "line": 1483,
           "column": 3
         },
         "end": {
-          "offset": 60487,
-          "line": 1486,
+          "offset": 60457,
+          "line": 1485,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "f9d0edb63f28388fff2e066849f38b30aecc905387650df44eda0b9c154d9a8e"
       },
       "semantics": {
@@ -29072,7 +29072,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -29084,16 +29084,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 61568,
-          "line": 1508,
+          "offset": 61538,
+          "line": 1507,
           "column": 3
         },
         "end": {
-          "offset": 61641,
-          "line": 1508,
+          "offset": 61611,
+          "line": 1507,
           "column": 76
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "c94c701f68cb753ce3bed2c31921a844df1021b78707757327a9f83869a37e76"
       },
       "semantics": {
@@ -29248,7 +29248,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -29260,16 +29260,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 61897,
-          "line": 1514,
+          "offset": 61867,
+          "line": 1513,
           "column": 3
         },
         "end": {
-          "offset": 61994,
-          "line": 1516,
+          "offset": 61964,
+          "line": 1515,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "50685edbdd76c400cf1a6a2f1f7ab9a2c675b84685be711f515b87eafd8ba813"
       },
       "semantics": {
@@ -30794,7 +30794,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -30806,16 +30806,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 61719,
-          "line": 1510,
+          "offset": 61689,
+          "line": 1509,
           "column": 3
         },
         "end": {
-          "offset": 61808,
-          "line": 1512,
+          "offset": 61778,
+          "line": 1511,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "e1c367563675bab3d3c524182e1c500988d4c36b27f737a193c353977a7f4465"
       },
       "semantics": {
@@ -30970,7 +30970,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -30982,16 +30982,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 58289,
-          "line": 1432,
+          "offset": 58259,
+          "line": 1431,
           "column": 3
         },
         "end": {
-          "offset": 58376,
-          "line": 1434,
+          "offset": 58346,
+          "line": 1433,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "b1cfc4ce598ed7d902bed896224b9265c04fa4ebeca07c48abd2839a05648ad9"
       },
       "semantics": {
@@ -31101,7 +31101,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -31113,16 +31113,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 58648,
-          "line": 1440,
+          "offset": 58618,
+          "line": 1439,
           "column": 3
         },
         "end": {
-          "offset": 58751,
-          "line": 1442,
+          "offset": 58721,
+          "line": 1441,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "b7a8bff1231461945e14a1dc6d6e9a59a11231e102bfe2e52108d6d503468cb6"
       },
       "semantics": {
@@ -32647,7 +32647,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -32659,16 +32659,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 58459,
-          "line": 1436,
+          "offset": 58429,
+          "line": 1435,
           "column": 3
         },
         "end": {
-          "offset": 58554,
-          "line": 1438,
+          "offset": 58524,
+          "line": 1437,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "c17503aba6cce413d07eebe75b9e5441bff686bfb20075637fc412bfa5b2af5a"
       },
       "semantics": {
@@ -33176,7 +33176,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -33188,16 +33188,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 58848,
-          "line": 1444,
+          "offset": 58818,
+          "line": 1443,
           "column": 3
         },
         "end": {
-          "offset": 58965,
-          "line": 1446,
+          "offset": 58935,
+          "line": 1445,
           "column": 46
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "5e649dcfa063bc2563d7a7deeccbf17e96b4289ed4182ba9a4b4dea038af04c9"
       },
       "semantics": {
@@ -33379,7 +33379,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -33391,16 +33391,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 61414,
-          "line": 1504,
+          "offset": 61384,
+          "line": 1503,
           "column": 3
         },
         "end": {
-          "offset": 61508,
-          "line": 1506,
+          "offset": 61478,
+          "line": 1505,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "063017193801fbb7ad4764f31a0ed671b9e6462b686a54afe8299be18a45c0ee"
       },
       "semantics": {
@@ -33494,7 +33494,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -33506,16 +33506,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 61241,
-          "line": 1502,
+          "offset": 61211,
+          "line": 1501,
           "column": 3
         },
         "end": {
-          "offset": 61316,
-          "line": 1502,
+          "offset": 61286,
+          "line": 1501,
           "column": 78
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "96d0d4d3a8da96a4549c1d8f1f4e243cc029489932281bfefc248430c278d207"
       },
       "semantics": {
@@ -33581,7 +33581,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -33593,16 +33593,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 67633,
-          "line": 1648,
+          "offset": 67603,
+          "line": 1647,
           "column": 3
         },
         "end": {
-          "offset": 67721,
-          "line": 1650,
+          "offset": 67691,
+          "line": 1649,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "fb0fa3ed06dd0f03bcac5084dae388a4a513dc1287536ce683da6c5cc91dfa49"
       },
       "semantics": {
@@ -33897,7 +33897,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -33909,16 +33909,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 67951,
-          "line": 1656,
+          "offset": 67921,
+          "line": 1655,
           "column": 3
         },
         "end": {
-          "offset": 68039,
-          "line": 1658,
+          "offset": 68009,
+          "line": 1657,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "f35e6e9c4ae223131eebae57e1dcb3ac2ae9b380fdd0c7801920ab37963c9060"
       },
       "semantics": {
@@ -34215,7 +34215,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -34227,16 +34227,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 67793,
-          "line": 1652,
+          "offset": 67763,
+          "line": 1651,
           "column": 3
         },
         "end": {
-          "offset": 67884,
-          "line": 1654,
+          "offset": 67854,
+          "line": 1653,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "e206ea6b7438c82a03559ec9bb5a63ce5d9193e1f195ec940c01babcbacebc59"
       },
       "semantics": {
@@ -34349,7 +34349,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -34361,16 +34361,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 68112,
-          "line": 1660,
+          "offset": 68082,
+          "line": 1659,
           "column": 3
         },
         "end": {
-          "offset": 68203,
-          "line": 1662,
+          "offset": 68173,
+          "line": 1661,
           "column": 40
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "18ccd31dad37b2d630f05e6af71b238edec6284fa4a4ab6375e2995e64cd0395"
       },
       "semantics": {
@@ -34483,7 +34483,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -34495,16 +34495,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 64451,
-          "line": 1570,
+          "offset": 64421,
+          "line": 1569,
           "column": 3
         },
         "end": {
-          "offset": 64549,
-          "line": 1572,
+          "offset": 64519,
+          "line": 1571,
           "column": 43
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "289fbed148e601857da3085ca95d9592bab4eb2f535644f9aa7bbe8deeec09a4"
       },
       "semantics": {
@@ -34620,7 +34620,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -34632,16 +34632,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 64956,
-          "line": 1582,
+          "offset": 64926,
+          "line": 1581,
           "column": 3
         },
         "end": {
-          "offset": 65048,
-          "line": 1584,
+          "offset": 65018,
+          "line": 1583,
           "column": 45
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "7859d7a276fa96355890574ce49a5d97e6590d9f23954c5b601aafbccb8ea56f"
       },
       "semantics": {
@@ -34749,7 +34749,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -34761,16 +34761,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 64272,
-          "line": 1566,
+          "offset": 64242,
+          "line": 1565,
           "column": 3
         },
         "end": {
-          "offset": 64368,
-          "line": 1568,
+          "offset": 64338,
+          "line": 1567,
           "column": 43
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "36f055ebda62a33e67a7c80c1efefa090d759574aab260bd393c38b3b44e00c5"
       },
       "semantics": {
@@ -34887,7 +34887,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -34899,16 +34899,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 64633,
-          "line": 1574,
+          "offset": 64603,
+          "line": 1573,
           "column": 3
         },
         "end": {
-          "offset": 64729,
-          "line": 1576,
+          "offset": 64699,
+          "line": 1575,
           "column": 43
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "2eeb911e8064680393cd1a5698d64b731a9d939a1be5f6a76e396afc2a061a05"
       },
       "semantics": {
@@ -35024,7 +35024,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -35036,16 +35036,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 64791,
-          "line": 1578,
+          "offset": 64761,
+          "line": 1577,
           "column": 3
         },
         "end": {
-          "offset": 64887,
-          "line": 1580,
+          "offset": 64857,
+          "line": 1579,
           "column": 43
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "e43494ecb5afc033809399ee440a436fae6130684f22868a14b3dddeb701eab9"
       },
       "semantics": {
@@ -35161,7 +35161,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -35173,16 +35173,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 53902,
-          "line": 1335,
+          "offset": 53872,
+          "line": 1334,
           "column": 3
         },
         "end": {
-          "offset": 54024,
-          "line": 1337,
+          "offset": 53994,
+          "line": 1336,
           "column": 57
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "96ca14a4699c94a1012b8a783afbfb7efa9992cc3b10248bdbbee823df1dbf80"
       },
       "semantics": {
@@ -35358,7 +35358,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -35370,16 +35370,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 54692,
-          "line": 1351,
+          "offset": 54662,
+          "line": 1350,
           "column": 3
         },
         "end": {
-          "offset": 54830,
-          "line": 1354,
+          "offset": 54800,
+          "line": 1353,
           "column": 68
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "f9ecadeec64b6b0c5d0fffca68cde83501319e3290b36f5819a88968af7e15b8"
       },
       "semantics": {
@@ -35555,7 +35555,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -35567,16 +35567,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 53699,
-          "line": 1331,
+          "offset": 53669,
+          "line": 1330,
           "column": 3
         },
         "end": {
-          "offset": 53817,
-          "line": 1333,
+          "offset": 53787,
+          "line": 1332,
           "column": 57
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "f39dcf73c269507d11f0d0cc196ab3b9fcd24191408e4daa5a7fd5a1b8b7173a"
       },
       "semantics": {
@@ -35752,7 +35752,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -35764,16 +35764,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 54111,
-          "line": 1339,
+          "offset": 54081,
+          "line": 1338,
           "column": 3
         },
         "end": {
-          "offset": 54217,
-          "line": 1341,
+          "offset": 54187,
+          "line": 1340,
           "column": 68
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "87b8e64218042faf5f608a125a1f24591c935d15132442720ff8b73e5744d135"
       },
       "semantics": {
@@ -35949,7 +35949,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -35961,16 +35961,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 54301,
-          "line": 1343,
+          "offset": 54271,
+          "line": 1342,
           "column": 3
         },
         "end": {
-          "offset": 54409,
-          "line": 1345,
+          "offset": 54379,
+          "line": 1344,
           "column": 68
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "3fcb67e8a429b1f636653342c0f254ad8bb440880f5796fa5777be24b26bd0a2"
       },
       "semantics": {
@@ -36146,7 +36146,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -36158,16 +36158,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 54927,
-          "line": 1356,
+          "offset": 54897,
+          "line": 1355,
           "column": 3
         },
         "end": {
-          "offset": 55037,
-          "line": 1358,
+          "offset": 55007,
+          "line": 1357,
           "column": 47
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "947e98b1bdfd642bdfce90dcc9b79480d1429fc8b76fbba08d766138e605190c"
       },
       "semantics": {
@@ -36874,7 +36874,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -36886,16 +36886,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 54493,
-          "line": 1347,
+          "offset": 54463,
+          "line": 1346,
           "column": 3
         },
         "end": {
-          "offset": 54599,
-          "line": 1349,
+          "offset": 54569,
+          "line": 1348,
           "column": 68
         },
-        "sourceHash": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684",
+        "sourceHash": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
         "astHash": "e13f10b65aeb125490d67edd523234581ff8f0272864b4cef1a647bfd030c0e0"
       },
       "semantics": {
@@ -37071,7 +37071,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -37179,7 +37179,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -37311,7 +37311,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -37471,7 +37471,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -37606,7 +37606,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -37700,7 +37700,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -37832,7 +37832,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -37926,7 +37926,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -38038,7 +38038,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -38169,7 +38169,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -38281,7 +38281,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -38412,7 +38412,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -38543,7 +38543,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -38675,7 +38675,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -38807,7 +38807,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -38901,7 +38901,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -39033,7 +39033,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -39165,7 +39165,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }
@@ -39297,7 +39297,7 @@
         },
         "runtimeTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e3e2d2c25c835df89f890d6687eebab41cf032baf070454f240ebe2f19e2fe4d"
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e"
         },
         "creditExpansion": false
       }

@@ -3,13 +3,13 @@
   "status": "FINAL_HEAD_TRANSPORT_PROVED",
   "priorProofHead": "6983219e13295b8f6b073daefc3cbcd90b32ac35",
   "immediatePriorProofHead": "63f520f3bb21fcbb5da51c31ef9e5d327f8de51f",
-  "finalSurfaceDigest": "2333066efbeb600a7c0dfc662e1f03e557f878bf8acd39b7bdd43d1bdadcda4e",
+  "finalSurfaceDigest": "7a74e02dc7f2e6e3227bd8f247fae7601a67df92bf79cae1687ecbde07de498b",
   "callables": 535,
   "exactPrimitiveTransport": {
     "priorProofHead": "6983219e13295b8f6b073daefc3cbcd90b32ac35",
     "review518257RuntimeTransport": {
       "priorCertifiedHead": "edcab7f37362137eb4f2766772740164a4f5ba09",
-      "certifiedRepairHead": "b077999cfa918ee495ec45e9475f1395baea2f54",
+      "certifiedRepairHead": "ccc724a7aa6d8a03131a13bb0c9d673d648d8f96",
       "exactChangedRuntimeFiles": [
         "src/counts.ts",
         "src/events.ts",
@@ -33,9 +33,9 @@
         },
         {
           "file": "src/facade.ts",
-          "patchSha256": "a8e26403c0b1e549781917f33ccb703bba8ef91791ca43d1eb21bec3365dcdcb",
+          "patchSha256": "c5b42990a086ff5c5b92301f84769dfae2309259d01b6bc905ca2c3d0cd3564d",
           "priorSha256": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
-          "currentSha256": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684"
+          "currentSha256": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e"
         },
         {
           "file": "src/measurements.ts",
@@ -59,7 +59,7 @@
       "laws": [
         "Every normalized and committed event owns its complete JSON-friendly fact graph; typed caller mutation cannot rewrite lifecycle, measurement, correction, or metadata intent after retention.",
         "Count and reservation inputs own nested quantities, positions, and metadata; all populated raw-identity dictionaries preserve own-only lookup semantics through lifecycle changes.",
-        "The exact six-file source transition, including retained public-group ownership in src/facade.ts, is hash-bound above the compact-certified predecessor; every other runtime module remains byte-identical and no later runtime drift is admitted."
+        "The exact six-file source transition owns documented policy-request fields while generic application amount-line groups preserve their supported subtype behavior; every other runtime module remains byte-identical and no later runtime drift is admitted."
       ]
     },
     "review518196RuntimeTransport": {
@@ -321,7 +321,7 @@
       },
       {
         "file": "src/facade.ts",
-        "sha256": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684"
+        "sha256": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e"
       },
       {
         "file": "src/fungibility.ts",
@@ -532,7 +532,7 @@
     },
     {
       "file": "src/facade.ts",
-      "sha256": "9561a9555158c6bc1a59f61b28787744d04e4d0ee5d603658bdd796f44c86684"
+      "sha256": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e"
     },
     {
       "file": "src/fungibility.ts",
@@ -644,7 +644,7 @@
     },
     {
       "file": "scripts/inventory-epoch-contract.mjs",
-      "sha256": "cae2ec6de14506a3f1515461c9046603a66c1b1ec57ef80207b50a0847e8dabc"
+      "sha256": "0514bb44e329905d8ef18a5af41d0d0ba8f4478aecae33e20d9147165525f879"
     },
     {
       "file": "formal/UseByReservation.tla",
@@ -660,5 +660,5 @@
     }
   ],
   "creditExpansion": false,
-  "contentSha256": "8560d41032922a689e1018ca3b2ef338ba0429dee6c33ea99ea307e4d8d87b0b"
+  "contentSha256": "bf3b5afb57100c77a601888abcd57dde2fbc9813c3f4c4f0790aeb22fc02c43a"
 }
