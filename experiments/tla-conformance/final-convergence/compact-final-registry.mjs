@@ -1,18 +1,6 @@
 // experiments/tla-conformance/final-convergence/build-final-registry.mjs
 import assert from "node:assert/strict";
 import fs2 from "node:fs";
-import path3 from "node:path";
-
-// experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs
-import crypto from "node:crypto";
-import ts from "typescript";
-var TYPE_FORMAT_FLAGS = ts.TypeFormatFlags.NoTruncation | ts.TypeFormatFlags.UseAliasDefinedOutsideCurrentScope;
-function sha256(value2) {
-  return crypto.createHash("sha256").update(value2).digest("hex");
-}
-
-// experiments/tla-conformance/final-convergence/repository-root.mjs
-import path2 from "node:path";
 
 // scripts/assurance-files.mjs
 import fs from "node:fs";
@@ -39,8 +27,28 @@ function assuranceRepositoryPath(repositoryRoot, relativePath) {
   }
   return current;
 }
+function readAssuranceFile(repositoryRoot, relativePath) {
+  const target = assuranceRepositoryPath(repositoryRoot, relativePath);
+  if (!fs.lstatSync(target).isFile()) throw new Error(`Assurance input is not a regular file: ${relativePath}.`);
+  const descriptor = fs.openSync(target, fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW ?? 0) | (fs.constants.O_NONBLOCK ?? 0));
+  try {
+    if (!fs.fstatSync(descriptor).isFile()) throw new Error(`Assurance input is not a regular file: ${relativePath}.`);
+    return fs.readFileSync(descriptor);
+  } finally {
+    fs.closeSync(descriptor);
+  }
+}
+
+// experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs
+import crypto from "node:crypto";
+import ts from "typescript";
+var TYPE_FORMAT_FLAGS = ts.TypeFormatFlags.NoTruncation | ts.TypeFormatFlags.UseAliasDefinedOutsideCurrentScope;
+function sha256(value2) {
+  return crypto.createHash("sha256").update(value2).digest("hex");
+}
 
 // experiments/tla-conformance/final-convergence/repository-root.mjs
+import path2 from "node:path";
 import { fileURLToPath } from "node:url";
 function finalConvergenceRepositoryRoot(moduleUrl) {
   return path2.resolve(path2.dirname(fileURLToPath(moduleUrl)), "../../..");
@@ -56,7 +64,7 @@ var VALUE = "experiments/tla-conformance/final-convergence/final-v309.json";
 var PRODUCER = "experiments/tla-conformance/final-convergence/final-a121-b58.json";
 var OUTPUT = "experiments/tla-conformance/final-convergence/final-surface-bindings.json";
 function read(file) {
-  return fs2.readFileSync(path3.resolve(ROOT, file));
+  return readAssuranceFile(ROOT, file);
 }
 function json(file) {
   return JSON.parse(read(file).toString("utf8"));

@@ -1579,7 +1579,7 @@ function expectedSupportingTerm(contract) {
   );
   return normalizeCallable(findFunction(source7, "expected"));
 }
-if (process.argv[1] !== void 0 && false) {
+if (false) {
   runCommandLine();
 }
 
@@ -2097,7 +2097,7 @@ import { execFileSync as execFileSync2 } from "node:child_process";
 var CURRENT_REVIEW_ASSURANCE_RECEIPT = "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json";
 var CURRENT_REVIEW_ASSURANCE_REPORT = "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json";
 var CURRENT_REVIEW_ASSURANCE_FULL_LOG = "experiments/tla-conformance/final-convergence/current-pr-review-full.log";
-var CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "a27b15f90854112a94f75c418d744122e8eb7363";
+var CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "77c97c6cd33512a445a2acd98f4b97f1104c85b5";
 var AUTHORITATIVE_PATHS = Object.freeze(["src", "formal", "scripts", "test", "package.json", "tsconfig.json", "tsconfig.test.json"]);
 function sha2562(file) {
   return crypto3.createHash("sha256").update(fs6.readFileSync(file)).digest("hex");
@@ -2109,7 +2109,7 @@ function canonicalJson2(value) {
   }
   return JSON.stringify(value);
 }
-function currentSurfaceSha256(repositoryRoot) {
+function currentReviewSurfaceSha256(repositoryRoot) {
   const output = execFileSync2(
     process.execPath,
     [path8.join(repositoryRoot, "scripts/formal-implementation-surface.cjs")],
@@ -2134,6 +2134,33 @@ function committedFileSha256(repositoryRoot, commit, file) {
   });
   return crypto3.createHash("sha256").update(bytes2).digest("hex");
 }
+function assertCurrentReviewAssuranceContent({
+  receipt,
+  report,
+  reportSha256,
+  fullLogSha256,
+  independentlyDerivedSurfaceSha256,
+  independentlyDerivedRepositoryStateSha256
+}) {
+  assert5.equal(receipt.schemaVersion, 1, "Current review assurance receipt schema is unsupported.");
+  assert5.equal(receipt.status, "CURRENT_PR_REVIEW_FULL_ASSURANCE_VERIFIED", "Current review assurance receipt status is invalid.");
+  assert5.match(receipt.certifiedHead, /^[a-f0-9]{40}$/u, "Current review assurance certified head is invalid.");
+  assert5.equal(receipt.report.file, CURRENT_REVIEW_ASSURANCE_REPORT, "Current review assurance report path is not package-owned.");
+  assert5.equal(receipt.fullLog.file, CURRENT_REVIEW_ASSURANCE_FULL_LOG, "Current review assurance full-log path is not package-owned.");
+  assert5.equal(reportSha256, receipt.report.sha256, "Current review assurance report bytes changed.");
+  assert5.equal(fullLogSha256, receipt.fullLog.sha256, "Current review assurance full-log bytes changed.");
+  assert5.equal(report.repositoryHead, receipt.certifiedHead, "Current review assurance report certifies the wrong commit.");
+  assert5.equal(report.fullFormal, true, "Current review assurance report is not a full-formal run.");
+  assert5.match(report.surfaceSha256, /^[a-f0-9]{64}$/u, "Current review assurance report surface digest is invalid.");
+  assert5.match(receipt.surfaceSha256, /^[a-f0-9]{64}$/u, "Current review assurance receipt surface digest is invalid.");
+  assert5.equal(report.surfaceSha256, independentlyDerivedSurfaceSha256, "Current review assurance report surface digest is not independently source-derived.");
+  assert5.equal(receipt.surfaceSha256, independentlyDerivedSurfaceSha256, "Current review assurance receipt surface digest is not independently source-derived.");
+  assert5.equal(report.apiEntries, 510, "Current review assurance API census changed.");
+  assert5.equal(report.compilerCallGraphUnresolvedApis, 0, "Current review assurance has unresolved public APIs.");
+  assert5.equal(report.repositoryStateSha256, receipt.repositoryStateSha256, "Current review assurance state receipt disagrees with the report.");
+  assert5.equal(independentlyDerivedRepositoryStateSha256, receipt.repositoryStateSha256, "Current review assurance was not produced from the exact clean committed evidence state.");
+  assert5.equal(report.fullLogSha256, receipt.fullLog.sha256, "Current review assurance report is not bound to the tracked full log.");
+}
 function verifyCurrentReviewAssurance(repositoryRoot) {
   const root3 = path8.resolve(repositoryRoot);
   const receiptPath = regularFile(root3, CURRENT_REVIEW_ASSURANCE_RECEIPT, "Current review assurance receipt");
@@ -2144,8 +2171,6 @@ function verifyCurrentReviewAssurance(repositoryRoot) {
     "Current review assurance receipt differs from its immutable evidence commit."
   );
   const receipt = JSON.parse(fs6.readFileSync(receiptPath, "utf8"));
-  assert5.equal(receipt.schemaVersion, 1, "Current review assurance receipt schema is unsupported.");
-  assert5.equal(receipt.status, "CURRENT_PR_REVIEW_FULL_ASSURANCE_VERIFIED", "Current review assurance receipt status is invalid.");
   assert5.match(receipt.certifiedHead, /^[a-f0-9]{40}$/u, "Current review assurance certified head is invalid.");
   assert5.equal(
     execFileSync2("git", ["rev-parse", `${CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD}^`], { cwd: root3, encoding: "utf8" }).trim(),
@@ -2167,25 +2192,17 @@ function verifyCurrentReviewAssurance(repositoryRoot) {
     committedFileSha256(root3, CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD, CURRENT_REVIEW_ASSURANCE_FULL_LOG),
     "Current review assurance full log differs from its immutable evidence commit."
   );
-  assert5.equal(sha2562(reportPath), receipt.report.sha256, "Current review assurance report bytes changed.");
-  assert5.equal(sha2562(logPath), receipt.fullLog.sha256, "Current review assurance full-log bytes changed.");
+  const reportSha256 = sha2562(reportPath);
+  const fullLogSha256 = sha2562(logPath);
   const report = JSON.parse(fs6.readFileSync(reportPath, "utf8"));
-  assert5.equal(report.repositoryHead, receipt.certifiedHead, "Current review assurance report certifies the wrong commit.");
-  assert5.equal(report.fullFormal, true, "Current review assurance report is not a full-formal run.");
-  assert5.match(report.surfaceSha256, /^[a-f0-9]{64}$/u, "Current review assurance report surface digest is invalid.");
-  assert5.match(receipt.surfaceSha256, /^[a-f0-9]{64}$/u, "Current review assurance receipt surface digest is invalid.");
-  const independentlyDerivedSurfaceSha256 = currentSurfaceSha256(root3);
-  assert5.equal(report.surfaceSha256, independentlyDerivedSurfaceSha256, "Current review assurance report surface digest is not independently source-derived.");
-  assert5.equal(receipt.surfaceSha256, independentlyDerivedSurfaceSha256, "Current review assurance receipt surface digest is not independently source-derived.");
-  assert5.equal(report.apiEntries, 510, "Current review assurance API census changed.");
-  assert5.equal(report.compilerCallGraphUnresolvedApis, 0, "Current review assurance has unresolved public APIs.");
-  assert5.equal(report.repositoryStateSha256, receipt.repositoryStateSha256, "Current review assurance state receipt disagrees with the report.");
-  assert5.equal(
-    repositoryAssuranceCommittedStateSha256(root3, receipt.certifiedHead),
-    receipt.repositoryStateSha256,
-    "Current review assurance was not produced from the exact clean committed evidence state."
-  );
-  assert5.equal(report.fullLogSha256, receipt.fullLog.sha256, "Current review assurance report is not bound to the tracked full log.");
+  assertCurrentReviewAssuranceContent({
+    receipt,
+    report,
+    reportSha256,
+    fullLogSha256,
+    independentlyDerivedSurfaceSha256: currentReviewSurfaceSha256(root3),
+    independentlyDerivedRepositoryStateSha256: repositoryAssuranceCommittedStateSha256(root3, receipt.certifiedHead)
+  });
   const dirtyAuthoritativePaths = execFileSync2(
     "git",
     ["status", "--porcelain=v1", "--untracked-files=all", "--", ...AUTHORITATIVE_PATHS],
@@ -2229,9 +2246,6 @@ function finalConvergenceRepositoryRoot(moduleUrl) {
 function finalConvergenceRepositoryPath(repositoryRoot, repositoryRelativePath) {
   return assuranceRepositoryPath(repositoryRoot, repositoryRelativePath);
 }
-function isDirectFinalConvergenceInvocation(moduleUrl, argvPath = process.argv[1]) {
-  return argvPath !== void 0 && path9.resolve(argvPath) === fileURLToPath3(moduleUrl);
-}
 function assertFinalConvergenceRepositoryRoot(repositoryRoot, moduleUrl) {
   const expected = finalConvergenceRepositoryRoot(moduleUrl);
   const actual = path9.resolve(repositoryRoot);
@@ -2244,9 +2258,9 @@ function assertFinalConvergenceRepositoryRoot(repositoryRoot, moduleUrl) {
 // experiments/tla-conformance/final-convergence/final-head-transport.mjs
 var ROOT = finalConvergenceRepositoryRoot(import.meta.url);
 var OLD_SOURCE_HEAD = "6cafd49ff4b3729f80ae35d9fc0220f7a8a4b55a";
-var FINAL_SOURCE_HEAD = "02d7b37c46bfe0f3129fa3f377960d740886a083";
+var FINAL_SOURCE_HEAD = "535b94d68e80516f7ee8dd56a569d4aaf1799ff3";
 var OLD_SURFACE_DIGEST = "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a";
-var FINAL_SURFACE_DIGEST = "d86185fec12cb312c70a47b40ff313bff40ab9bdbca1f3bda908906c63957ab3";
+var FINAL_SURFACE_DIGEST = "8a6c398e2a7f94de13dfbf0a4c40815685e6591a672ef12a586c5471fd39b697";
 var OLD_SURFACE_FILE = "experiments/tla-conformance/final-convergence/old-surface-cc97e.json";
 var R170_TRANSPORT = "experiments/tla-conformance/final-convergence/r170-assurance-transport.json";
 var R170_PRISTINE_TRANSPORT = "experiments/tla-conformance/final-convergence/r170-pristine-repro-transport.json";
@@ -2256,10 +2270,12 @@ var POST_CERTIFICATE_AUTHORITATIVE_FILES = Object.freeze([
 var CHANGED_SOURCE_FILES = Object.freeze([
   "src/amounts.ts",
   "src/authority-cutover.ts",
+  "src/canonical.ts",
   "src/catalog.ts",
   "src/commands.ts",
   "src/coordinator.ts",
   "src/deficits.ts",
+  "src/events.ts",
   "src/facade.ts",
   "src/fungibility.ts",
   "src/integrity.ts",
@@ -2440,6 +2456,71 @@ function assertCurrentProductTreeIsFinalSource() {
   ]).split(/\r?\n/u).filter(Boolean);
   assert6.deepEqual(laterTracked, [...POST_CERTIFICATE_AUTHORITATIVE_FILES].sort(), "Integrated proof tree differs from the exact current-review certified product/assurance tree.");
 }
+var REVIEW_517437_PRIOR_SOURCE_HEAD = "02d7b37c46bfe0f3129fa3f377960d740886a083";
+function replaceTransitionFunction(text, name, replacement) {
+  const declaration = transitionFunction(text, name);
+  return `${text.slice(0, declaration.getStart())}${replacement}${text.slice(declaration.getEnd())}`;
+}
+function verifyReview517437ProductTransition() {
+  const exactFiles = git2([
+    "diff",
+    "--name-only",
+    REVIEW_517437_PRIOR_SOURCE_HEAD,
+    FINAL_SOURCE_HEAD,
+    "--",
+    "src"
+  ]).trim().split(/\r?\n/u).filter(Boolean).sort();
+  assert6.deepEqual(exactFiles, ["src/amounts.ts", "src/canonical.ts", "src/events.ts"]);
+  const priorAmount = git2(["show", `${REVIEW_517437_PRIOR_SOURCE_HEAD}:src/amounts.ts`]);
+  assert6.equal(
+    transpiledFile(currentText("src/amounts.ts")),
+    transpiledFile(priorAmount),
+    "Review 517437 amount delta exceeded comments."
+  );
+  const priorCanonical = git2(["show", `${REVIEW_517437_PRIOR_SOURCE_HEAD}:src/canonical.ts`]);
+  let restoredCanonical = currentText("src/canonical.ts");
+  restoredCanonical = replaceTransitionFunction(
+    restoredCanonical,
+    "inventoryIntentFingerprint",
+    transitionFunction(priorCanonical, "inventoryIntentFingerprint").getText()
+  );
+  restoredCanonical = replaceTransitionFunction(
+    restoredCanonical,
+    "assertInventoryIntentFingerprintValues",
+    transitionFunction(priorCanonical, "assertFiniteInventoryIntentFingerprintNumbers").getText()
+  );
+  assert6.equal(
+    transpiledFile(restoredCanonical),
+    transpiledFile(priorCanonical),
+    "Review 517437 fingerprint delta contains an unproved extra runtime change."
+  );
+  const priorEvents = git2(["show", `${REVIEW_517437_PRIOR_SOURCE_HEAD}:src/events.ts`]);
+  const restoredEvents = replaceTransitionFunction(
+    currentText("src/events.ts"),
+    "assertCanonicalInventoryTime",
+    transitionFunction(priorEvents, "assertCanonicalInventoryTime").getText()
+  );
+  assert6.equal(
+    transpiledFile(restoredEvents),
+    transpiledFile(priorEvents),
+    "Review 517437 canonical-time delta contains an unproved extra runtime change."
+  );
+  return {
+    priorCertifiedHead: REVIEW_517437_PRIOR_SOURCE_HEAD,
+    certifiedHead: FINAL_SOURCE_HEAD,
+    exactFiles,
+    laws: [
+      "Intent fingerprints reject every runtime value outside the typed primitive/array domain before JSON encoding.",
+      "Canonical inventory timestamps remain fixed-width four-digit UTC text, so lexical ordering equals chronological ordering.",
+      "The amount-source delta is comments only and emits identical JavaScript.",
+      "Reversing the two guard changes restores the prior certified runtime emission exactly."
+    ],
+    inputs: exactFiles.map((file) => ({
+      file,
+      sha256: sha256(fs7.readFileSync(finalConvergenceRepositoryPath(ROOT, file)))
+    }))
+  };
+}
 function buildUncachedFinalHeadTransport({ repositoryRoot = ROOT, context: context2, surface: surface2 } = {}) {
   const resolvedRepositoryRoot = assertFinalConvergenceRepositoryRoot(repositoryRoot, import.meta.url);
   assertCurrentProductTreeIsFinalSource();
@@ -2465,6 +2546,8 @@ function buildUncachedFinalHeadTransport({ repositoryRoot = ROOT, context: conte
     "export:.#cutoverInventoryAuthority::call[0]",
     "export:.#parseQuantity::call[0]",
     "export:.#resolveInventoryAmount::call[0]",
+    "export:./kernel#assertCanonicalInventoryTime::call[0]",
+    "export:./kernel#inventoryIntentFingerprint::call[0]",
     "export:./kernel#normalizeInventoryStockPositionKey::call[0]",
     "export:./kernel#parseQuantity::call[0]",
     "export:./kernel#resolveInventoryAmount::call[0]",
@@ -2489,6 +2572,7 @@ function buildUncachedFinalHeadTransport({ repositoryRoot = ROOT, context: conte
   assert6.deepEqual(changedRuntime("src/quantity.ts"), QUANTITY_CHANGED_RUNTIME);
   const systemicRuntimeTransition = verifySystemicRuntimeTransition();
   const systemicIntegrityTransition = verifySystemicIntegrityTransition();
+  const review517437ProductTransition = verifyReview517437ProductTransition();
   const deficitTest = currentText("test/review-hardening.test.ts");
   assert6(deficitTest.includes("treats an empty recorded-deficit location selection as all locations"));
   assert6(deficitTest.includes("locationIds: []"));
@@ -2525,7 +2609,8 @@ function buildUncachedFinalHeadTransport({ repositoryRoot = ROOT, context: conte
       migrationReplay: { changedRuntime: MIGRATION_CHANGED_RUNTIME, rule: "Migration planning reuses one immutable catalog snapshot per run; the snapshot value is unchanged and existing migration replay/plan assertions remain green." },
       quantityParsing: { changedRuntime: QUANTITY_CHANGED_RUNTIME, rule: "Decimal quantity parsing rejects impossible safe-integer magnitudes before BigInt construction while preserving exact accepted values, leading zeros, decimal scale, and the existing safe-integer validation." },
       systemicRuntimeTransition,
-      systemicIntegrityTransition
+      systemicIntegrityTransition,
+      review517437ProductTransition
     },
     evidence: {
       oldSurface: { file: OLD_SURFACE_FILE, sha256: sha256(oldSurfaceBytes) },
@@ -2698,7 +2783,7 @@ function buildFinalHeadTransport(input2 = {}) {
   if (finalTransportCache?.key !== key) finalTransportCache = { key, artifact: buildUncachedFinalHeadTransport({ ...input2, repositoryRoot }) };
   return structuredClone(finalTransportCache.artifact);
 }
-if (isDirectFinalConvergenceInvocation(import.meta.url)) {
+if (false) {
   const artifact = buildFinalHeadTransport({ repositoryRoot: ROOT });
   const target = finalConvergenceRepositoryPath(ROOT, "experiments/tla-conformance/final-convergence/final-head-transport.json");
   const text = `${JSON.stringify(artifact, null, 2)}
@@ -2727,6 +2812,8 @@ var FINAL_TRANSPORTED_BASE_AST_KEYS = /* @__PURE__ */ new Set([
   "export:.#cutoverInventoryAuthority::call[0]",
   "export:.#parseQuantity::call[0]",
   "export:.#resolveInventoryAmount::call[0]",
+  "export:./kernel#assertCanonicalInventoryTime::call[0]",
+  "export:./kernel#inventoryIntentFingerprint::call[0]",
   "export:./kernel#normalizeInventoryStockPositionKey::call[0]",
   "export:./kernel#parseQuantity::call[0]",
   "export:./kernel#resolveInventoryAmount::call[0]",
@@ -12690,7 +12777,7 @@ function buildCatalogReadDependencyClosureCertificate(sourceOverrides = /* @__PU
   if (sourceOverrides.size === 0) cachedCertificateJson = JSON.stringify(document);
   return document;
 }
-if (process.argv[1] !== void 0 && false) {
+if (false) {
   runCommandLine();
 }
 
