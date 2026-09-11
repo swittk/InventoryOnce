@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { emptyInventoryCountBook } from "../src/counts.js";
+import { emptyInventoryCountBook, startInventoryCount, observeInventoryCount } from "../src/counts.js";
 import { emptyInventoryProjectionState } from "../src/projection.js";
-import { emptyInventoryReservationBook } from "../src/reservations.js";
+import { emptyInventoryReservationBook, createInventoryReservation, allocateInventoryReservation, releaseInventoryReservation } from "../src/reservations.js";
 import {
   InventoryAllocationMethod,
   InventoryCollectionMemberKind,
@@ -255,4 +255,72 @@ describe("string-keyed inventory records", () => {
     })).resolves.toBeDefined();
   });
 
+});
+
+
+describe("retained book ownership and sparse dictionaries", () => {
+  it("keeps arbitrary missing keys absent after count start and observe, not only in empty books", async () => {
+    const catalog = createTabletCatalog(), inventory = createTestInventory(undefined, catalog);
+    const world = await inventory.read.world();
+    const started = startInventoryCount({ catalog, projection: world.projection, book: emptyInventoryCountBook(), countId: "count", operationId: "start", selector: inventoryStockSelector("item-a"), startedAtEpochMs: time0 });
+    const observed = observeInventoryCount({ catalog, projection: world.projection, book: started.book, countId: "count", operationId: "observe", observedAtEpochMs: time1, observations: [] });
+    for (const result of [started, observed]) {
+      expect(result.book.counts["constructor"]).toBeUndefined();
+      expect(result.book.operations["toString"]).toBeUndefined();
+      expect(Object.getPrototypeOf(result.book.counts)).toBeNull();
+      expect(Object.getPrototypeOf(result.book.operations)).toBeNull();
+    }
+  });
+
+  it("retains count metadata and complete observation rows independently of mutable callers", async () => {
+    const catalog = createTabletCatalog(), inventory = createTestInventory(undefined, catalog);
+    const world = await inventory.read.world(), metadata = { entries: [{ label: "before" }] };
+    const started = startInventoryCount({ catalog, projection: world.projection, book: emptyInventoryCountBook(), countId: "count", operationId: "start", selector: inventoryStockSelector("item-a"), startedAtEpochMs: time0, metadata });
+    const position = { itemId: "item-a", itemRevisionId: "item-a-v2", locationId: "A" };
+    const measuredQuantity = { ...parseQuantity("2", "piece") };
+    const measurements = { primary: { axisId: "pieces", quantity: measuredQuantity }, independent: [] };
+    const observed = observeInventoryCount({ catalog, projection: world.projection, book: started.book, countId: "count", operationId: "observe", observedAtEpochMs: time1, observations: [{ position, measurements }] });
+    position.locationId = "B"; measuredQuantity.amountMinor = 3; metadata.entries[0]!.label = "after";
+    expect(started.count.metadata).toEqual({ entries: [{ label: "before" }] });
+    expect(observed.count.metadata).toEqual({ entries: [{ label: "before" }] });
+    expect(observed.count.observations[0]?.position.locationId).toBe("A");
+    expect(observed.count.observations[0]?.measurements.primary.quantity.amountMinor).toBe(2);
+  });
+
+  it.each([1, 2])("owns reservation creation and allocation facts for %i source rows, preserving sparse keys through release", async rows => {
+    const catalog = createTabletCatalog(), inventory = createTestInventory(undefined, catalog);
+    await inventory.stock.receive({ operationId: "seed", occurredAtEpochMs: time0, to: loosePosition("A"), amount: stockAmount("2", "piece") });
+    const world = await inventory.read.world();
+    const requested = { ...parseQuantity("2", "piece") }, metadata = { nested: ["before"] };
+    const created = createInventoryReservation({ catalog, projection: world.projection, book: emptyInventoryReservationBook(), nowEpochMs: time1,
+      reservation: { reservationId: "claim", operationId: "create", itemRevisionId: "item-a-v2", selector: inventoryStockSelector("item-a"), requested, createdAtEpochMs: time1, metadata } });
+    const position = { itemId: "item-a", itemRevisionId: "item-a-v2", locationId: "A" };
+    const amount = { ...parseQuantity(rows === 1 ? "2" : "1", "piece") };
+    const allocation = { position, quantity: amount };
+    const allocated = allocateInventoryReservation({ catalog, projection: world.projection, book: created.book, reservationId: "claim", operationId: "allocate", occurredAtEpochMs: time1, allocations: rows === 1 ? [allocation] : [allocation, allocation] });
+    const released = releaseInventoryReservation({ book: allocated.book, reservationId: "claim", operationId: "release", occurredAtEpochMs: time1 });
+    requested.amountMinor = 8; metadata.nested[0] = "after"; position.locationId = "B"; amount.amountMinor = 9;
+    for (const result of [created, allocated, released]) {
+      expect(result.reservation.requested.amountMinor).toBe(2);
+      expect(result.reservation.metadata).toEqual({ nested: ["before"] });
+      expect(result.book.reservations["constructor"]).toBeUndefined();
+      expect(result.book.operations["toString"]).toBeUndefined();
+      expect(Object.getPrototypeOf(result.book.reservations)).toBeNull();
+      expect(Object.getPrototypeOf(result.book.operations)).toBeNull();
+    }
+    expect(allocated.reservation.allocations[0]?.position.locationId).toBe("A");
+    expect(allocated.reservation.allocations[0]?.quantity.amountMinor).toBe(2);
+    expect(allocated.book.operations["allocate"]?.reservationAfter).toEqual(allocated.reservation);
+  });
+
+  it("normalizes measurement values without retaining caller-owned quantity objects", () => {
+    const primaryQuantity = { ...parseQuantity("2", "piece") };
+    const secondaryQuantity = { ...parseQuantity("3", "gram") };
+    const primary = inventoryMeasurement("pieces", primaryQuantity);
+    const vector = inventoryMeasurementVector(primary, [{ axisId: "weight", quantity: secondaryQuantity }]);
+    primaryQuantity.amountMinor = 5; secondaryQuantity.amountMinor = 6;
+    expect(primary.quantity.amountMinor).toBe(2);
+    expect(vector.primary.quantity.amountMinor).toBe(2);
+    expect(vector.independent[0]?.quantity.amountMinor).toBe(3);
+  });
 });

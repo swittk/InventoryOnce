@@ -1,5 +1,8 @@
 import { compareInventoryIdentityText } from "./ordering.js";
 import {
+  cloneInventoryRetainedData,
+  cloneInventorySparseRecord,
+  setInventorySparseRecordValue,
   createInventorySparseRecord,
   inventorySparseRecordValue,
 } from "./sparse-record.js";
@@ -238,7 +241,7 @@ export function startInventoryCount(
     ...(input.sourceReference === undefined
       ? {}
       : { sourceReference: input.sourceReference }),
-    ...(input.metadata === undefined ? {} : { metadata: input.metadata }),
+    ...(input.metadata === undefined ? {} : { metadata: cloneInventoryRetainedData(input.metadata) }),
   };
   const book = replaceCountWithOperation(input.book, count, {
     operationId: input.operationId,
@@ -689,7 +692,7 @@ function normalizeCountObservations(
     normalized.push(observation);
   }
   normalized.sort(compareObservationLine);
-  return normalized;
+  return cloneInventoryRetainedData(normalized);
 }
 
 /** Stable observation intent fingerprint. */
@@ -778,10 +781,11 @@ function replaceCountWithOperation(
       `Count operation '${operation.operationId}' already exists.`
     );
   }
-  return {
-    counts: { ...book.counts, [count.countId]: count },
-    operations: { ...book.operations, [operation.operationId]: operation },
-  };
+  const counts = cloneInventorySparseRecord(book.counts);
+  setInventorySparseRecordValue(counts, count.countId, count);
+  const operations = cloneInventorySparseRecord(book.operations);
+  setInventorySparseRecordValue(operations, operation.operationId, operation);
+  return { counts, operations };
 }
 
 /** Sort observation rows by exact position identity. */

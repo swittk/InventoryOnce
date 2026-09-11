@@ -776,6 +776,9 @@ export function assertAbstractInventoryInvariants(
     }
     eventIds.add(event.eventId);
     operationIds.add(event.operationId);
+    if (world.projection.events[event.eventId]?.eventId !== event.eventId) {
+      throw new Error(`Event dictionary key disagrees for '${event.eventId}'.`);
+    }
     if (
       world.projection.eventIdsBySequence[String(event.recordSequence)] !==
       event.eventId
@@ -791,13 +794,97 @@ export function assertAbstractInventoryInvariants(
   if (state.events.length !== state.lastRecordSequence) {
     throw new Error("Published event count does not match lastRecordSequence.");
   }
+  if (Object.keys(world.projection.eventIdsBySequence).length !== eventIds.size ||
+      Object.keys(world.projection.eventIdByOperationId).length !== operationIds.size) {
+    throw new Error("Event indexes retain entries without a published event.");
+  }
+  assertAbstractPositionIndexes(world.projection);
+  assertAbstractHistoryIndexes(world.projection);
   assertAbstractTraceabilityInvariants(world.projection.traceability);
+}
+
+/** Require an exact scalar index domain and value mapping, including absence of orphan keys. */
+function assertAbstractScalarIndex<T>(actual: Readonly<Record<string, T>>, expected: ReadonlyMap<string, T>, label: string): void {
+  if (Object.keys(actual).length !== expected.size) throw new Error(`${label} index domain differs from its primary facts.`);
+  for (const [key, value] of expected) {
+    if (!Object.hasOwn(actual, key) || actual[key] !== value) throw new Error(`${label} index value disagrees at '${key}'.`);
+  }
+}
+
+/** Require exact grouped-index membership, order, and domain independently of the reducer's builders. */
+function assertAbstractGroupedIndex(actual: Readonly<Record<string, readonly string[]>>, expected: ReadonlyMap<string, string[]>, label: string): void {
+  if (Object.keys(actual).length !== expected.size) throw new Error(`${label} index domain differs from its primary facts.`);
+  for (const [key, members] of expected) {
+    members.sort(compareAbstractIdentityText);
+    const retained = actual[key];
+    if (!Object.hasOwn(actual, key) || retained === undefined || retained.length !== members.length) throw new Error(`${label} index membership differs at '${key}'.`);
+    for (let i = 0; i < members.length; i += 1) if (retained[i] !== members[i]) throw new Error(`${label} index order/value differs at '${key}'.`);
+  }
+}
+
+/** Add one primary identity to an independently derived group. */
+function addAbstractIndexMember(groups: Map<string, string[]>, key: string, identity: string): void {
+  const members = groups.get(key);
+  if (members === undefined) groups.set(key, [identity]); else members.push(identity);
+}
+
+/** Independently derive current position, serial, positive-layer, and lot index domains. */
+function assertAbstractPositionIndexes(p: InventoryWorldState["projection"]): void {
+  const byItem = new Map<string, string[]>(), byRevision = new Map<string, string[]>(), byContainer = new Map<string, string[]>();
+  const serials = new Map<string, string>(), positiveLayers = new Set<string>();
+  for (const [identity, position] of Object.entries(p.positions)) {
+    addAbstractIndexMember(byItem, position.key.itemId, identity);
+    addAbstractIndexMember(byRevision, position.key.itemRevisionId, identity);
+    if (position.key.containerId !== undefined) addAbstractIndexMember(byContainer, JSON.stringify([position.key.containerId]), identity);
+    if (position.measurements.primary.quantity.amountMinor > 0) {
+      positiveLayers.add(identity);
+      if (position.key.serialId !== undefined) serials.set(JSON.stringify([position.key.itemId, position.key.serialId]), identity);
+    }
+  }
+  assertAbstractGroupedIndex(p.positionIdsByItemId, byItem, "Item position");
+  assertAbstractGroupedIndex(p.positionIdsByItemRevisionId, byRevision, "Revision position");
+  assertAbstractGroupedIndex(p.positionIdsByContainerIdentity, byContainer, "Container position");
+  assertAbstractScalarIndex(p.positivePositionIdBySerialIdentity, serials, "Positive serial");
+  if (Object.keys(p.positiveLayerStartedAtEpochMsByPositionId).length !== positiveLayers.size) throw new Error("Positive layer index domain differs from positive positions.");
+  for (const identity of positiveLayers) if (!Object.hasOwn(p.positiveLayerStartedAtEpochMsByPositionId, identity) || !Number.isSafeInteger(p.positiveLayerStartedAtEpochMsByPositionId[identity])) throw new Error("Positive layer index lacks a valid occurrence time.");
+  const lotsByItem = new Map<string, string[]>();
+  for (const [identity, lot] of Object.entries(p.lots)) addAbstractIndexMember(lotsByItem, lot.definition.itemId, identity);
+  assertAbstractGroupedIndex(p.lotIdentitiesByItemId, lotsByItem, "Item lot");
+}
+
+/** Derive retained metadata ownership and current corrections from ordered event facts, including tombstoned masters. */
+function assertAbstractHistoryIndexes(p: InventoryWorldState["projection"]): void {
+  const lotRoots = new Map<string, string>(), containerRoots = new Map<string, string>(), corrections = new Map<string, string>();
+  const events = Object.values(p.events).sort((a, b) => a.recordSequence - b.recordSequence);
+  for (const event of events) {
+    const root = event.correction?.correctsEventId ?? event.eventId;
+    if (event.correction !== undefined) corrections.set(root, event.eventId);
+    for (const lot of event.lotDefinitions ?? []) {
+      const identity = JSON.stringify([lot.itemId, lot.lotId]);
+      if (!lotRoots.has(identity)) lotRoots.set(identity, root);
+    }
+    for (const container of event.containerDefinitions ?? []) {
+      const identity = JSON.stringify([container.containerId]);
+      if (!containerRoots.has(identity)) containerRoots.set(identity, root);
+    }
+  }
+  assertAbstractScalarIndex(p.lotRootEventIdByIdentity, lotRoots, "Lot root ownership");
+  assertAbstractScalarIndex(p.containerRootEventIdByIdentity, containerRoots, "Container root ownership");
+  assertAbstractScalarIndex(p.correctionEventIdByCorrectedEventId, corrections, "Current correction");
+  assertAbstractRecordIdentities(p.transfers, row => row.transferId, "Transfer");
+}
+
+/** Require row primary identities to match dictionary keys rather than merely enumerating values. */
+function assertAbstractRecordIdentities<T>(rows: Readonly<Record<string, T>>, identityOf: (value: T) => string, label: string): void {
+  for (const [key, value] of Object.entries(rows)) if (key !== identityOf(value)) throw new Error(`${label} dictionary key disagrees with its primary identity.`);
 }
 
 /** Independently check claim lifecycle/allocation evidence. */
 export function assertAbstractReservationInvariants(
   book: InventoryReservationBook
 ): void {
+  assertAbstractRecordIdentities(book.reservations, row => row.reservationId, "Reservation");
+  assertAbstractRecordIdentities(book.operations, row => row.operationId, "Reservation operation");
   const operationIds = new Set<string>();
   const lifecycleSequences = new Set<number>();
   for (const operation of Object.values(book.operations)) {
@@ -861,6 +948,8 @@ export function assertAbstractReservationInvariants(
 
 /** Independently check count-stage evidence and observation completeness shape. */
 export function assertAbstractCountInvariants(book: InventoryCountBook): void {
+  assertAbstractRecordIdentities(book.counts, row => row.countId, "Count");
+  assertAbstractRecordIdentities(book.operations, row => row.operationId, "Count operation");
   for (const operation of Object.values(book.operations)) {
     if (book.counts[operation.countId] === undefined) {
       throw new Error(`Count operation lost '${operation.countId}'.`);

@@ -32,16 +32,16 @@ const vitestSemantics = require(
 interface VitestExecutionMetadata {
   /** Vitest primitive that registered the callback. */
   readonly registration?: string;
-  /** Statically resolved run/skip/todo state. */
-  readonly mode: "run" | "skip" | "todo" | "unknown";
+  /** Statically resolved run/skip/todo or absent/unknown registration state. */
+  readonly mode: "run" | "skip" | "todo" | "empty" | "unknown";
   /** Conditional registration form when present. */
   readonly conditionKind?: "skipIf" | "runIf";
   /** Statically resolved conditional value when known. */
   readonly conditionValue?: boolean;
   /** Whether an enclosing skipped/non-running suite prevents test/hook execution. */
   readonly insideNonExecutingSuite?: boolean;
-  /** Whether an enclosing todo suite prevents even nested suite collection. */
-  readonly insideTodoSuite?: boolean;
+  /** Whether an enclosing empty or unknown suite prevents proving nested collection. */
+  readonly insideUncollectedSuite?: boolean;
   /** Whether the enclosing suite/file contains at least one runnable test. */
   readonly suiteHasRunnableTest?: boolean;
 }
@@ -258,7 +258,7 @@ describe("formal call-graph Vitest callback semantics", () => {
     };
     expect(callbackExecutes(skippedSuite)).toBe(true);
     expect(callbackExecutes({ registration: "describe", mode: "todo" })).toBe(
-      false
+      true
     );
     expect(suiteChildrenExecute(skippedSuite)).toBe(false);
     expect(suiteChildrenExecute({ registration: "describe", mode: "run" })).toBe(true);
@@ -270,7 +270,7 @@ describe("formal call-graph Vitest callback semantics", () => {
     expect(callbackExecutes({
       registration: "describe",
       mode: "run",
-      insideTodoSuite: true,
+      insideUncollectedSuite: true,
     })).toBe(false);
     expect(callbackExecutes({
       registration: "test",

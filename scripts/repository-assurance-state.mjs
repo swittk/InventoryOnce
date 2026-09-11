@@ -34,16 +34,22 @@ function hashAssuranceEntries(entries) {
   return hash.digest("hex");
 }
 
-/** Hash tracked plus repository-.gitignore-visible untracked state without ambient Git excludes or self-hashing the stored report. */
-export function repositoryAssuranceStateSha256(repositoryRoot) {
+/** Enumerate one authoritative repository domain without ambient global/info excludes or local coordination. */
+export function repositoryAssuranceInputPaths(repositoryRoot, untrackedOnly = false) {
   const listed = spawnSync(
     "git",
-    ["-c", "core.excludesFile=/dev/null", "ls-files", "--cached", "--others", "--exclude-per-directory=.gitignore", "-z"],
+    ["-c", "core.excludesFile=/dev/null", "ls-files", ...(untrackedOnly ? [] : ["--cached"]), "--others", "--exclude-per-directory=.gitignore", "-z"],
     { cwd: repositoryRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }
   );
   if (listed.error !== undefined || listed.status !== 0) {
     throw new Error("Unable to enumerate the repository assurance state.");
   }
+  return [...new Set(listed.stdout.split("\0").filter(includedPath))].sort();
+}
+
+/** Hash tracked plus repository-.gitignore-visible untracked state without ambient Git excludes or self-hashing the stored report. */
+export function repositoryAssuranceStateSha256(repositoryRoot) {
+  const paths = repositoryAssuranceInputPaths(repositoryRoot);
   const indexed = spawnSync(
     "git",
     ["ls-files", "--stage", "-z"],
@@ -62,8 +68,11 @@ export function repositoryAssuranceStateSha256(repositoryRoot) {
     }
     trackedModeByPath.set(record.slice(tab + 1), header[0]);
   }
+  const fileMode = spawnSync("git", ["config", "--bool", "core.fileMode"], { cwd: repositoryRoot, encoding: "utf8" });
+  if (fileMode.error !== undefined || (fileMode.status !== 0 && fileMode.status !== 1)) throw new Error("Unable to read Git file-mode semantics.");
+  const ignoresExecutableBit = fileMode.status === 0 && fileMode.stdout.trim() === "false";
   const entries = [];
-  for (const path of listed.stdout.split("\0").filter(includedPath)) {
+  for (const path of paths) {
     const absolute = resolve(repositoryRoot, path);
     let stat;
     let kind;
@@ -77,7 +86,10 @@ export function repositoryAssuranceStateSha256(repositoryRoot) {
         payload = Buffer.from(readlinkSync(absolute));
       } else if (stat.isFile()) {
         kind = 0;
-        mode = (stat.mode & 0o111) === 0 ? "100644" : "100755";
+        const trackedMode = trackedModeByPath.get(path);
+        mode = ignoresExecutableBit && (trackedMode === "100644" || trackedMode === "100755")
+          ? trackedMode
+          : (stat.mode & 0o100) === 0 ? "100644" : "100755";
         payload = readFileSync(absolute);
       }
     } catch (error) {

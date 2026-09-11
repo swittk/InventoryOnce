@@ -5,7 +5,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
-import { repositoryAssuranceCommittedStateSha256 } from "../../../scripts/repository-assurance-state.mjs";
+import { repositoryAssuranceCommittedStateSha256, repositoryAssuranceInputPaths } from "../../../scripts/repository-assurance-state.mjs";
 
 export const CURRENT_REVIEW_ASSURANCE_RECEIPT = "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json";
 const CURRENT_REVIEW_ASSURANCE_REPORT = "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json";
@@ -213,29 +213,11 @@ export function assertCurrentReviewTrackedDriftAllowed(changedPaths, allowedPath
   );
 }
 
-/** Return whether one untracked path can affect product, test, formal, or compact-assurance semantics. */
-function currentReviewAuthoritativeUntrackedPath(file) {
-  return (
-    file === "package.json" ||
-    file === "pnpm-lock.yaml" ||
-    file === "tsconfig.json" ||
-    file === "tsconfig.test.json" ||
-    file.startsWith("src/") ||
-    file.startsWith("formal/") ||
-    file.startsWith("scripts/") ||
-    file.startsWith("test/") ||
-    file.startsWith("assurance/") ||
-    file.startsWith("experiments/tla-conformance/final-convergence/")
-  );
-}
-
 /** Return current tracked drift plus unauthenticated untracked authoritative inputs; local coordination stays ambient. */
 export function currentReviewWorktreeDriftPaths(repositoryRoot, authenticatedTemporarySupportRows = new Map()) {
   const modified = gitPathList(repositoryRoot, ["diff", "--name-only", "-z", "HEAD", "--"]);
   const untracked = [];
-  for (const file of gitPathList(repositoryRoot, [
-    "ls-files", "--others", "--exclude-standard", "-z", "--",
-  ]).filter(currentReviewAuthoritativeUntrackedPath)) {
+  for (const file of repositoryAssuranceInputPaths(repositoryRoot, true)) {
     const expected = authenticatedTemporarySupportRows.get(file);
     if (expected === undefined) {
       untracked.push(file);

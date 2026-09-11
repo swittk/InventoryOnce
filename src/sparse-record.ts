@@ -43,3 +43,25 @@ export function cloneInventorySparseRecord<T>(
   }
   return clone;
 }
+
+
+/** Detach one JSON-friendly retained fact without losing own-only dictionary prototypes. */
+export function cloneInventoryRetainedData<T>(value: T): T {
+  const cloned = structuredClone(value);
+  restoreRetainedSparsePrototypes(value, cloned, new WeakSet<object>());
+  return cloned;
+}
+
+/** Restore null-prototype dictionaries after platform cloning; shared subgraphs are visited once. */
+function restoreRetainedSparsePrototypes(
+  source: unknown,
+  cloned: unknown,
+  visited: WeakSet<object>
+): void {
+  if (source === null || typeof source !== "object" || cloned === null || typeof cloned !== "object" || visited.has(source)) return;
+  visited.add(source);
+  if (Object.getPrototypeOf(source) === null) Object.setPrototypeOf(cloned, null);
+  for (const key of Object.keys(source)) {
+    restoreRetainedSparsePrototypes(Reflect.get(source, key), Reflect.get(cloned, key), visited);
+  }
+}

@@ -57,7 +57,7 @@ export function inventoryMeasurement(
   if (trimmedAxisId !== axisId) {
     throw new Error("Measurement axisId must not contain surrounding whitespace.");
   }
-  return { axisId, quantity: measuredQuantity };
+  return { axisId, quantity: { ...measuredQuantity } };
 }
 
 /** Build and normalize one primary-plus-independent measurement vector. */

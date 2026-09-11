@@ -1,3 +1,4 @@
+import { cloneInventoryRetainedData } from "./sparse-record.js";
 import { compareInventoryIdentityText } from "./ordering.js";
 import {
   inventoryIntentFingerprint,
@@ -474,7 +475,8 @@ export function defineInventoryEvent({
     traceabilityChanges,
     containerDefinitions
   );
-  return {
+  // Snapshot the complete validated intent, not a hand-maintained subset of optional fact fields.
+  return cloneInventoryRetainedData({
     ...event,
     stockEffects,
     positiveLayerProvenanceTransfers,
@@ -483,7 +485,7 @@ export function defineInventoryEvent({
     containerDefinitions,
     traceabilityChanges,
     ...(transferLifecycle === undefined ? {} : { transferLifecycle }),
-  };
+  });
 }
 
 /** Assign durable record time/order after storage has won the operation commit. */
@@ -513,7 +515,7 @@ export function commitInventoryEvent(
   if (!Number.isSafeInteger(recordSequence) || recordSequence <= 0) {
     throw new Error("recordSequence must be a positive safe integer.");
   }
-  return { ...event, recordedAtEpochMs, recordSequence };
+  return cloneInventoryRetainedData({ ...event, recordedAtEpochMs, recordSequence });
 }
 
 /** Stable deterministic fingerprint for exact idempotency comparison. */

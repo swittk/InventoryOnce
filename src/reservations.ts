@@ -1,5 +1,8 @@
 import { compareInventoryIdentityText } from "./ordering.js";
 import {
+  cloneInventoryRetainedData,
+  cloneInventorySparseRecord,
+  setInventorySparseRecordValue,
   createInventorySparseRecord,
   inventorySparseRecordValue,
 } from "./sparse-record.js";
@@ -258,10 +261,10 @@ export function createInventoryReservation({
       `Reservation quantity must use '${reservationAxis.unit}', not '${reservation.requested.unit}'.`
     );
   }
-  const normalizedCreation: NewInventoryReservation = {
+  const normalizedCreation: NewInventoryReservation = cloneInventoryRetainedData({
     ...reservation,
     selector,
-  };
+  });
   const fingerprint = newReservationFingerprint(normalizedCreation);
   const replay = findReservationOperationReplay(
     book,
@@ -282,14 +285,10 @@ export function createInventoryReservation({
     allocations: [],
     lastChangedAtEpochMs: reservation.createdAtEpochMs,
   };
+  const reservations = cloneInventorySparseRecord(book.reservations);
+  setInventorySparseRecordValue(reservations, value.reservationId, value);
   const nextBook = addReservationOperation(
-    {
-      reservations: {
-        ...book.reservations,
-        [value.reservationId]: value,
-      },
-      operations: book.operations,
-    },
+    { reservations, operations: book.operations },
     value,
     {
       operationId: value.operationId,
@@ -818,7 +817,7 @@ function normalizeReservationAllocations(
     grouped.set(
       identity,
       earlier === undefined
-        ? allocation
+        ? cloneInventoryRetainedData(allocation)
         : {
             position: earlier.position,
             quantity: addQuantity(earlier.quantity, allocation.quantity),
@@ -1965,13 +1964,9 @@ function addReservationOperation(
     lifecycleSequence,
     reservationAfter: reservation,
   };
-  return {
-    reservations: book.reservations,
-    operations: {
-      ...book.operations,
-      [operation.operationId]: retainedOperation,
-    },
-  };
+  const operations = cloneInventorySparseRecord(book.operations);
+  setInventorySparseRecordValue(operations, operation.operationId, retainedOperation);
+  return { reservations: book.reservations, operations };
 }
 
 /** Replace one current reservation row and append its immutable lifecycle operation together. */
@@ -1980,14 +1975,10 @@ function replaceReservationWithOperation(
   reservation: InventoryReservation,
   operation: NewInventoryReservationOperation
 ): InventoryReservationBook {
+  const reservations = cloneInventorySparseRecord(book.reservations);
+  setInventorySparseRecordValue(reservations, reservation.reservationId, reservation);
   return addReservationOperation(
-    {
-      reservations: {
-        ...book.reservations,
-        [reservation.reservationId]: reservation,
-      },
-      operations: book.operations,
-    },
+    { reservations, operations: book.operations },
     reservation,
     operation
   );

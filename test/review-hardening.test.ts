@@ -15,6 +15,12 @@ import {
   type InventoryMetadataValue,
 } from "../src/index.js";
 import {
+  defineInventoryEvent,
+  commitInventoryEvent,
+  inventoryEventIntentFingerprint,
+  InventoryEventKind,
+  InventoryTransferLifecycleAction,
+  type InventoryEventDraft,
   InventoryCountOperationKind,
   InventoryCountStatus,
   InventoryDeficitPolicy,
@@ -1533,5 +1539,70 @@ describe("durable content-root representation independence", () => {
     expect(inventoryReservationBookDigest(reordered.reservations)).toBe(inventoryReservationBookDigest(original.reservations));
     expect(inventoryCountBookDigest(reordered.counts)).toBe(inventoryCountBookDigest(original.counts));
     expect(inventoryWorldContentRoots(reordered)).toEqual(inventoryWorldContentRoots(original));
+  });
+});
+
+
+describe("retained event ownership across every lifecycle branch", () => {
+  it("detaches the full event graph, including optional metadata, measurements, and correction references", () => {
+    const catalog = createTabletCatalog();
+    const metadata = { nested: [{ note: "original" }] };
+    const amount = { amountMinor: 2, decimals: 0, unit: unitCode("piece") };
+    const measurements = { primary: { axisId: "pieces", quantity: amount }, independent: [] };
+    const correction = { correctsEventId: "earlier", reason: "retain reason" };
+    const raw: InventoryEventDraft = {
+      eventId: "ownership-event", operationId: "ownership-event", kind: InventoryEventKind.Correction,
+      occurredAtEpochMs: time0, metadata, correction,
+      stockEffects: [{ itemRevisionId: "item-a-v2", position: { itemId: "item-a", itemRevisionId: "item-a-v2", locationId: "A" },
+        measurementsDelta: measurements, evidence: { transactedMeasurements: measurements }, metadata }],
+      traceabilityChanges: [],
+    };
+    const retained = defineInventoryEvent({ catalog, event: raw });
+    const fingerprint = inventoryEventIntentFingerprint(retained);
+    amount.amountMinor = 3; metadata.nested[0]!.note = "changed"; correction.reason = "changed";
+    expect(inventoryEventIntentFingerprint(retained)).toBe(fingerprint);
+    expect(retained.stockEffects[0]?.measurementsDelta.primary.quantity.amountMinor).toBe(2);
+  });
+
+  it.each([
+    InventoryTransferLifecycleAction.Prepare, InventoryTransferLifecycleAction.Dispatch,
+    InventoryTransferLifecycleAction.Receive, InventoryTransferLifecycleAction.Release,
+  ])("detaches %s lifecycle records including both measurement vectors", async action => {
+    const catalog = createTabletCatalog();
+    const inventory = createTestInventory(undefined, catalog);
+    await inventory.stock.receive({ operationId: "seed", occurredAtEpochMs: time0, to: loosePosition("A"), amount: stockAmount("2", "piece") });
+    const prepared = await inventory.transfers.prepare({ operationId: "prepare", occurredAtEpochMs: time0, transferId: "ownership-transfer", transitLocationId: "T", destinationLocationId: "B",
+      lines: [{ lineId: "line", from: loosePosition("A"), amount: stockAmount("2", "piece") }] });
+    let event: InventoryEventDraft = prepared.event;
+    if (action === InventoryTransferLifecycleAction.Dispatch || action === InventoryTransferLifecycleAction.Receive) {
+      event = (await inventory.transfers.dispatch({ operationId: "dispatch", occurredAtEpochMs: time0, transferId: "ownership-transfer", carrierCustodianId: "carrier" })).event;
+    }
+    if (action === InventoryTransferLifecycleAction.Receive) {
+      event = (await inventory.transfers.receive({ operationId: "receive", occurredAtEpochMs: time0, transferId: "ownership-transfer" })).event;
+    }
+    if (action === InventoryTransferLifecycleAction.Release) {
+      event = (await inventory.transfers.release({ operationId: "release", occurredAtEpochMs: time0, transferId: "ownership-transfer" })).event;
+    }
+    const change = event.transferLifecycle;
+    if (change === undefined) throw new Error("The real lifecycle operation must produce its lifecycle evidence.");
+    const measurements = { primary: { axisId: "pieces", quantity: { amountMinor: 2, decimals: 0, unit: unitCode("piece") } }, independent: [] };
+    const first = change.action === InventoryTransferLifecycleAction.Prepare || change.action === InventoryTransferLifecycleAction.Receive ? change.lines[0] : undefined;
+    const line = { ...first, lineId: "line", sourcePosition: { itemId: "item-a", itemRevisionId: "item-a-v2", locationId: "A" }, preparedMeasurements: measurements, receivedMeasurements: measurements };
+    const lifecycle = { ...change, lines: [line] };
+    const retained = defineInventoryEvent({ catalog, event: { ...event, transferLifecycle: lifecycle } });
+    const fingerprint = inventoryEventIntentFingerprint(retained);
+    lifecycle.transferId = "changed-transfer";
+    line.lineId = "changed-line"; measurements.primary.quantity.amountMinor = 3;
+    expect(inventoryEventIntentFingerprint(retained)).toBe(fingerprint);
+    expect(retained.transferLifecycle?.transferId).toBe("ownership-transfer");
+  });
+
+  it("commits a detached record rather than retaining a caller-created draft graph", () => {
+    const metadata = { list: ["before"] };
+    const event: InventoryEventDraft = { eventId: "commit-copy", operationId: "commit-copy", kind: InventoryEventKind.Receipt,
+      occurredAtEpochMs: time0, metadata, stockEffects: [{ itemRevisionId: "item-a-v2", position: { itemId: "item-a", itemRevisionId: "item-a-v2", locationId: "A" }, measurementsDelta: { primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") }, independent: [] } }], traceabilityChanges: [] };
+    const committed = commitInventoryEvent(event, time1, 1);
+    metadata.list[0] = "after";
+    expect(committed.metadata).toEqual({ list: ["before"] });
   });
 });

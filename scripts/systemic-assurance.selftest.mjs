@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { repositoryAssuranceStateSha256, repositoryAssuranceCommittedStateSha256 } from "./repository-assurance-state.mjs";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -413,7 +414,7 @@ test("materialization owns only newly created files and leaves preexisting and f
 
 test("empty parameter tables and dynamic modifiers never manufacture executable callback credit", () => {
   for (const expression of ['test.each([])', 'test["each"]([])', '(test.for)([])']) {
-    assert.equal(semantics.vitestRegistrationMode(ts, call(`${expression}("empty", () => {});`), 1), "skip");
+    assert.equal(semantics.vitestRegistrationMode(ts, call(`${expression}("empty", () => {});`), 1), "empty");
   }
   assert.equal(semantics.vitestRegistrationMode(ts, call('test[modifier]("unknown", () => {});'), 1), "unknown");
   assert.notEqual(semantics.vitestFocusedRegistrationNode(ts, call('test[modifier]("unknown", () => {});')), undefined);
@@ -475,17 +476,100 @@ test("shared registration interpreter agrees with actual installed Vitest execut
     ['test["skipIf"](true)', false], ['test["skipIf"](false)', true],
     ['(test.runIf)(true)', true], ['test["runIf"](false)', false],
     ['test.each([])', false], ['test.for([])', false], ['test.each([1])', true],
+    ['describe', true, true], ['describe.skip', true, false], ['describe.todo', true, false],
+    ['describe.each([])', false, false], ['describe.for([])', false, false],
+    ['describe.skip.each([])', false, false], ['describe.skip.for([])', false, false],
+    ['describe.todo.each([])', false, false], ['describe.todo.for([])', false, false],
+    ['describe.each([1])', true, true], ['describe.for([1])', true, true],
+    ['describe.skipIf(true)', true, false], ['describe.skipIf(false)', true, true],
+    ['describe.runIf(true)', true, true], ['describe.runIf(false)', true, false],
   ];
   const testFile = path.join(directory, "execution.test.mjs"), evidence = path.join(directory, "executed.jsonl");
   fs.symlinkSync(path.join(root, "node_modules"), path.join(directory, "node_modules"), "dir");
-  const lines = ['import {test} from "vitest";', 'import fs from "node:fs";'];
-  for (const [index, [expression, executes]] of cases.entries()) {
-    const metadata = { registration: "test", mode: semantics.vitestRegistrationMode(ts, call(`${expression}("case-${index}", () => {});`), 1), ...semantics.vitestConditionalMetadata(ts, call(`${expression}("case-${index}", () => {});`).expression) };
-    assert.equal(semantics.vitestRegistrationRuns(metadata), executes, expression);
-    lines.push(`${expression}("case-${index}", () => { fs.appendFileSync(${JSON.stringify(evidence)}, ${JSON.stringify(String(index) + "\n")}); });`);
+  const lines = ['import {test,describe} from "vitest";', 'import fs from "node:fs";'];
+  const expected = [];
+  for (const [index, [expression, executes, childrenExecute]] of cases.entries()) {
+    const registration = expression.startsWith("describe") ? "describe" : "test";
+    const parsed = call(`${expression}("case-${index}", () => {});`);
+    const metadata = { registration, mode: semantics.vitestRegistrationMode(ts, parsed, 1), ...semantics.vitestConditionalMetadata(ts, parsed.expression) };
+    assert.equal(semantics.vitestCallbackExecutes(metadata), executes, expression);
+    if (registration === "describe") assert.equal(semantics.vitestSuiteChildrenExecute(metadata), childrenExecute, expression);
+    const mark = value => `fs.appendFileSync(${JSON.stringify(evidence)}, ${JSON.stringify(String(value) + "\n")});`;
+    const children = registration === "describe" ? `describe("nested", () => { ${mark(index + 100)} test("leaf", () => { ${mark(index + 200)} }); });` : "";
+    lines.push(`${expression}("case-${index}", () => { ${mark(index)} ${children} });`);
+    if (executes) expected.push(index);
+    if (registration === "describe" && executes) expected.push(index + 100);
+    if (childrenExecute) expected.push(index + 200);
   }
   fs.writeFileSync(testFile, lines.join("\n"));
   execFileSync(process.execPath, [path.join(root, "node_modules/vitest/vitest.mjs"), "run", "--root", directory, "--maxWorkers", "1", "--no-file-parallelism"], { cwd: directory, timeout: 20000, stdio: "pipe", env: { ...process.env, CI: "" } });
   const executed = fs.readFileSync(evidence, "utf8").trim().split("\n").map(Number).sort((a,b)=>a-b);
-  assert.deepEqual(executed, cases.flatMap(([, executes], index) => executes ? [index] : []));
+  assert.deepEqual(executed, expected.sort((a,b)=>a-b));
 }));
+
+
+test("empty parameterized suite factories never earn execution credit even through skip modifiers", () => {
+  for (const expression of ['describe.each([])', 'describe.for([])', 'describe.skip.each([])', 'describe.skip.for([])', 'describe["skip"]["each"]([])']) {
+    const mode = semantics.vitestRegistrationMode(ts, call(`${expression}("empty", () => {});`), 1);
+    assert.equal(semantics.vitestCallbackExecutes({ registration: "describe", mode }), false, expression);
+  }
+  assert.equal(semantics.vitestCallbackExecutes({ registration: "describe", mode: semantics.vitestRegistrationMode(ts, call('describe.skip.each([1])("one", () => {});'), 1) }), true);
+});
+
+test("live repository modes agree with Git including owner-only execution and disabled fileMode", () => temporaryDirectory(directory => {
+  const git = args => execFileSync("git", ["-c", "user.name=InventoryOnce", "-c", "user.email=inventoryonce@example.invalid", "-c", "commit.gpgsign=false", "-c", "core.hooksPath=", ...args], { cwd: directory, encoding: "utf8", stdio: "pipe" }).trim();
+  git(["init", "-q"]);
+  const file = path.join(directory, "tracked.txt"); fs.writeFileSync(file, "same bytes"); fs.chmodSync(file, 0o644);
+  git(["add", "tracked.txt"]); git(["commit", "-qm", "baseline"]);
+  const committed = repositoryAssuranceCommittedStateSha256(directory, "HEAD");
+  assert.equal(repositoryAssuranceStateSha256(directory), committed);
+  for (const mode of [0o654, 0o645]) {
+    fs.chmodSync(file, mode);
+    assert.equal(git(["diff", "--name-only"]), "");
+    assert.equal(repositoryAssuranceStateSha256(directory), committed, `non-owner execute ${mode.toString(8)}`);
+  }
+  fs.chmodSync(file, 0o744);
+  assert.notEqual(repositoryAssuranceStateSha256(directory), committed);
+  git(["config", "core.fileMode", "false"]);
+  assert.equal(repositoryAssuranceStateSha256(directory), committed);
+  fs.writeFileSync(file, "changed bytes");
+  assert.notEqual(repositoryAssuranceStateSha256(directory), committed);
+}));
+
+
+test("current-review admission and full state share the same domain despite ambient Git excludes", () => temporaryDirectory(directory => {
+  const git = args => execFileSync("git", ["-c", "user.name=InventoryOnce", "-c", "user.email=inventoryonce@example.invalid", "-c", "commit.gpgsign=false", "-c", "core.hooksPath=", ...args], { cwd: directory, encoding: "utf8", stdio: "pipe" });
+  git(["init", "-q"]); fs.writeFileSync(path.join(directory, "package.json"), "{}\n");
+  git(["add", "package.json"]); git(["commit", "-qm", "baseline"]);
+  fs.mkdirSync(path.join(directory, "test"));
+  const globalExcludes = path.join(directory, ".git", "global-excludes");
+  fs.writeFileSync(globalExcludes, "test/global-hidden.test.ts\n");
+  git(["config", "core.excludesFile", globalExcludes]);
+  fs.writeFileSync(path.join(directory, ".git", "info", "exclude"), "test/info-hidden.test.ts\n");
+  const files = ["test/global-hidden.test.ts", "test/info-hidden.test.ts", "vitest.config.mjs"];
+  const committed = repositoryAssuranceCommittedStateSha256(directory, "HEAD");
+  for (const file of files) fs.writeFileSync(path.join(directory, file), "export {};\n");
+  assert.notEqual(repositoryAssuranceStateSha256(directory), committed);
+  assert.deepEqual(currentReviewWorktreeDriftPaths(directory), files);
+}));
+
+
+test("literal array callback dispatch agrees with the real runtime including empty, sparse, and singleton cases", () => {
+  const methods = ["map", "flatMap", "filter", "forEach", "some", "every", "find", "findIndex", "findLast", "findLastIndex", "reduce", "reduceRight", "sort", "toSorted"];
+  for (const method of methods) {
+    for (const array of ["[]", "[1]", "[1,2]", "[,]", "[,,]", "[,1]", "[void 0,1]", "[void 0,void 0]"]) {
+      for (const hasInitial of method === "reduce" || method === "reduceRight" ? [false, true] : [false]) {
+        const expression = `${array}.${method}(() => { mark(); return 0; }${hasInitial ? ", 0" : ""})`;
+        let calls = 0;
+        try { Function("mark", expression)(() => { calls += 1; }); }
+        catch (error) { assert(error instanceof TypeError && calls === 0 && (method === "reduce" || method === "reduceRight")); }
+        assert.equal(semantics.standardLibraryCallbackCanExecute(ts, call(expression + ";"), method), calls > 0, expression);
+      }
+    }
+  }
+  for (const array of ["[]", "[1]", "[,]", "[,,]"]) {
+    const expression = `Array.from(${array}, () => { mark(); return 0; })`;
+    let calls = 0; Function("mark", expression)(() => { calls += 1; });
+    assert.equal(semantics.standardLibraryCallbackCanExecute(ts, call(expression + ";"), "from"), calls > 0, expression);
+  }
+});

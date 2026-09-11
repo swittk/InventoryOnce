@@ -767,3 +767,26 @@ describe("first-class physical transfer lifecycle", () => {
     ]);
   });
 });
+
+
+describe("custody collapse is atomically rejected at the publishing boundary", () => {
+  it.each(["destination", "carrier"])("does not publish %s overrides that merge distinct receiving lines", async override => {
+    const inventory = createTestInventory();
+    const fromA = { ...loosePosition("A"), custodianId: "custodian-a" };
+    const fromB = { ...loosePosition("A"), custodianId: "custodian-b" };
+    await inventory.stock.receive({ operationId: "seed-a", occurredAtEpochMs: time0, to: fromA, amount: stockAmount("1", "piece") });
+    await inventory.stock.receive({ operationId: "seed-b", occurredAtEpochMs: time0, to: fromB, amount: stockAmount("1", "piece") });
+    const preparation = { operationId: "prepare-collapsed", occurredAtEpochMs: time1, transferId: "collapse-transfer", transitLocationId: "T", destinationLocationId: "B",
+      lines: [{ lineId: "a", from: fromA, amount: stockAmount("1", "piece") }, { lineId: "b", from: fromB, amount: stockAmount("1", "piece") }] };
+    if (override === "destination") {
+      const before = await inventory.read.world();
+      await expect(inventory.transfers.prepare({ ...preparation, destinationCustodianId: "destination" })).rejects.toThrow("destination positions would collapse distinct transfer lines");
+      expect(await inventory.read.world()).toEqual(before);
+    } else {
+      await inventory.transfers.prepare(preparation);
+      const before = await inventory.read.world();
+      await expect(inventory.transfers.dispatch({ operationId: "dispatch-collapsed", occurredAtEpochMs: time1, transferId: "collapse-transfer", carrierCustodianId: "carrier" })).rejects.toThrow("Inventory event repeats stock position");
+      expect(await inventory.read.world()).toEqual(before);
+    }
+  });
+});

@@ -579,3 +579,40 @@ describe("formal implementation state/result refinement", () => {
     ).toBe("completed");
   });
 });
+
+
+describe("independent projection index bijections", () => {
+  it("rejects surplus sequence and operation index rows on an otherwise honest published world", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receive({ operationId: "index-control", occurredAtEpochMs: time0, to: loosePosition("A"), amount: stockAmount("1", "piece") });
+    const world = await inventory.read.world();
+    expect(() => assertAbstractInventoryInvariants(world)).not.toThrow();
+    for (const projection of [
+      { ...world.projection, eventIdsBySequence: { ...world.projection.eventIdsBySequence, "999": "missing" } },
+      { ...world.projection, eventIdByOperationId: { ...world.projection.eventIdByOperationId, orphan: "missing" } },
+    ]) {
+      expect(() => assertAbstractInventoryInvariants({ ...world, projection })).toThrow("Event indexes retain entries without a published event");
+    }
+  });
+});
+
+
+describe("all projection secondary-index domains", () => {
+  it("rejects orphan entries across independently derivable sibling indexes", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receive({ operationId: "index-domains", occurredAtEpochMs: time0, to: loosePosition("A"), amount: stockAmount("1", "piece") });
+    const world = await inventory.read.world(), p = world.projection;
+    const variants = [
+      { ...p, positionIdsByItemId: { ...p.positionIdsByItemId, orphan: [] } },
+      { ...p, positionIdsByItemRevisionId: { ...p.positionIdsByItemRevisionId, orphan: [] } },
+      { ...p, positionIdsByContainerIdentity: { ...p.positionIdsByContainerIdentity, orphan: [] } },
+      { ...p, positivePositionIdBySerialIdentity: { ...p.positivePositionIdBySerialIdentity, orphan: "missing" } },
+      { ...p, positiveLayerStartedAtEpochMsByPositionId: { ...p.positiveLayerStartedAtEpochMsByPositionId, orphan: 0 } },
+      { ...p, lotIdentitiesByItemId: { ...p.lotIdentitiesByItemId, orphan: [] } },
+      { ...p, lotRootEventIdByIdentity: { ...p.lotRootEventIdByIdentity, orphan: "missing" } },
+      { ...p, containerRootEventIdByIdentity: { ...p.containerRootEventIdByIdentity, orphan: "missing" } },
+      { ...p, correctionEventIdByCorrectedEventId: { ...p.correctionEventIdByCorrectedEventId, orphan: "missing" } },
+    ];
+    for (const projection of variants) expect.soft(() => assertAbstractInventoryInvariants({ ...world, projection })).toThrow();
+  });
+});

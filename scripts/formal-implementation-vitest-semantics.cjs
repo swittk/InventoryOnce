@@ -146,8 +146,6 @@ function staticCaseTable(ts, expression, checker, seen = new Set()) {
 function vitestRegistrationMode(ts, node, callbackArgumentIndex, checker) {
   const chain = registrationChain(ts, node.expression);
   if (chain.some(part => part.name === undefined)) return "unknown";
-  if (expressionHasProperty(ts, node.expression, "skip")) return "skip";
-  if (expressionHasProperty(ts, node.expression, "todo")) return "todo";
   // Nonempty literal tables prove registration; unknown dynamic tables cannot promise that any callback is reached.
   for (const part of chain) {
     if (part.name !== "each" && part.name !== "for") continue;
@@ -157,9 +155,12 @@ function vitestRegistrationMode(ts, node, callbackArgumentIndex, checker) {
     const table = cases === undefined ? undefined : staticCaseTable(ts, cases, checker);
     if (table === undefined) return "unknown";
     const elements = table.elements;
-    if (elements.length === 0) return "skip";
+    if (elements.length === 0) return "empty";
     if (elements.every(element => ts.isSpreadElement(element))) return "unknown";
   }
+  // A table that registers nothing overrides skip: even skipped suite factories cannot run without a case.
+  if (expressionHasProperty(ts, node.expression, "todo")) return "todo";
+  if (expressionHasProperty(ts, node.expression, "skip")) return "skip";
   if (callbackArgumentIndex !== 1 && callbackArgumentIndex !== 2) return "unknown";
   if (callbackArgumentIndex === 1) {
     const third = node.arguments[2];
@@ -203,10 +204,10 @@ function vitestRegistrationRuns(metadata) {
 function vitestCallbackExecutes(metadata) {
   const registration = metadata.registration;
   if (registration === undefined) return false;
-  // Todo-suite factories and their descendants never execute; skipped suites still collect nested describe callbacks.
+  // Registered skip/todo suite factories collect nested suites; empty tables register no factory at all.
   if (registration === "describe") {
-    if (metadata.insideTodoSuite === true) return false;
-    return metadata.mode === "run" || metadata.mode === "skip";
+    if (metadata.insideUncollectedSuite === true) return false;
+    return metadata.mode === "run" || metadata.mode === "skip" || metadata.mode === "todo";
   }
   if (metadata.insideNonExecutingSuite === true) return false;
   if (
@@ -225,7 +226,36 @@ function vitestSuiteChildrenExecute(metadata) {
   return metadata.registration === "describe" && vitestRegistrationRuns(metadata);
 }
 
+/** Exclude literal array calls that cannot dispatch a callback, including sparse and singleton reductions/sorts. */
+function standardLibraryCallbackCanExecute(ts, node, methodName, checker) {
+  const access = unwrappedExpression(ts, node.expression);
+  const receiver = methodName === "from"
+    ? node.arguments[0]
+    : ts.isPropertyAccessExpression(access) || ts.isElementAccessExpression(access) ? access.expression : undefined;
+  if (receiver === undefined) return true;
+  const array = unwrappedExpression(ts, receiver);
+  if (!ts.isArrayLiteralExpression(array)) return true;
+  if (array.elements.some(element => ts.isSpreadElement(element))) return true;
+  const visitsHoles = ["find", "findIndex", "findLast", "findLastIndex", "from"].includes(methodName);
+  let present = 0;
+  for (const element of array.elements) if (!ts.isOmittedExpression(element)) present += 1;
+  const cardinality = visitsHoles ? array.elements.length : present;
+  if (methodName === "sort" || methodName === "toSorted") {
+    let comparable = 0;
+    for (const element of array.elements) {
+      if (ts.isOmittedExpression(element)) continue;
+      const value = unwrappedExpression(ts, element);
+      if (ts.isVoidExpression(value) || checker !== undefined && (checker.getTypeAtLocation(value).flags & ts.TypeFlags.Undefined) !== 0) continue;
+      comparable += 1;
+    }
+    return comparable >= 2;
+  }
+  if (methodName === "reduce" || methodName === "reduceRight") return cardinality >= (node.arguments.length >= 2 ? 1 : 2);
+  return cardinality > 0;
+}
+
 module.exports = {
+  standardLibraryCallbackCanExecute,
   expressionHasProperty,
   vitestRegistrationMode,
   vitestRegistrationNameFromExpression,

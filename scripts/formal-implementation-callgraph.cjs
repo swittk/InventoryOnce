@@ -4,6 +4,7 @@ const { execFileSync } = require("node:child_process");
 const {
   expressionHasProperty,
   staticBooleanValue,
+  standardLibraryCallbackCanExecute,
   vitestCallbackExecutes,
   vitestConditionalMetadata,
   vitestFocusedRegistrationNode,
@@ -369,7 +370,7 @@ function vitestRegistrationMetadata(
   node,
   callbackArgumentIndex,
   insideNonExecutingSuite,
-  insideTodoSuite = false
+  insideUncollectedSuite = false
 ) {
   const callee = node.expression.getText(node.getSourceFile());
   const registration = isVitestRegistrationCall(node)
@@ -380,19 +381,19 @@ function vitestRegistrationMetadata(
     mode: vitestRegistrationMode(node, callbackArgumentIndex),
     ...vitestConditionalMetadata(ts, node.expression),
     insideNonExecutingSuite,
-    insideTodoSuite,
+    insideUncollectedSuite,
   };
 }
 
-/** Return whether this node is nested in describe.todo; its factory never executes, so nested tests/hooks are not collected. */
-function isInsideTodoSuite(node) {
+/** Return whether an enclosing empty or unknown suite registration cannot prove any factory collection. */
+function isInsideUncollectedSuite(node) {
   let current = node.parent;
   while (current !== undefined) {
     if ((ts.isArrowFunction(current) || ts.isFunctionExpression(current)) && ts.isCallExpression(current.parent)) {
       const callbackIndex = current.parent.arguments.indexOf(current);
       if (callbackIndex >= 0) {
         const metadata = vitestRegistrationMetadata(current.parent, callbackIndex, false);
-        if (metadata.registration === "describe" && (metadata.mode === "todo" || metadata.mode === "unknown")) return true;
+        if (metadata.registration === "describe" && (metadata.mode === "empty" || metadata.mode === "unknown")) return true;
       }
     }
     current = current.parent;
@@ -467,11 +468,11 @@ function vitestSuiteHasRunnableTest(node) {
             current,
             callbackIndex,
             isInsideNonExecutingSuite(current),
-            isInsideTodoSuite(current)
+            isInsideUncollectedSuite(current)
           );
           if (
             !metadata.insideNonExecutingSuite &&
-            !metadata.insideTodoSuite &&
+            !metadata.insideUncollectedSuite &&
             vitestRegistrationRuns(metadata)
           ) {
             found = true;
@@ -492,13 +493,13 @@ function vitestExecutionMetadata(
   node,
   callbackArgumentIndex,
   insideNonExecutingSuite,
-  insideTodoSuite
+  insideUncollectedSuite
 ) {
   const metadata = vitestRegistrationMetadata(
     node,
     callbackArgumentIndex,
     insideNonExecutingSuite,
-    insideTodoSuite
+    insideUncollectedSuite
   );
   if (
     metadata.registration !== "beforeAll" &&
@@ -526,7 +527,7 @@ function isTestCallback(node) {
       node.parent,
       callbackIndex,
       isInsideNonExecutingSuite(node),
-      isInsideTodoSuite(node)
+      isInsideUncollectedSuite(node)
     )
   );
 }
@@ -593,7 +594,7 @@ function externalCallbackArgumentIndexes(node) {
     vitestRegistrationNameFromExpression(ts, node.expression) !== undefined
   ) {
     const insideNonExecutingSuite = isInsideNonExecutingSuite(node);
-    const insideTodoSuite = isInsideTodoSuite(node);
+    const insideUncollectedSuite = isInsideUncollectedSuite(node);
     for (let index = 0; index < (node.arguments?.length ?? 0); index += 1) {
       if (callbackTargets(node.arguments[index]).length === 0) continue;
       if (
@@ -602,7 +603,7 @@ function externalCallbackArgumentIndexes(node) {
             node,
             index,
             insideNonExecutingSuite,
-            insideTodoSuite
+            insideUncollectedSuite
           )
         )
       ) {
@@ -618,10 +619,10 @@ function externalCallbackArgumentIndexes(node) {
   let methodName;
   if (ts.isPropertyAccessExpression(node.expression)) methodName = node.expression.name.text;
   else if (ts.isIdentifier(node.expression)) methodName = node.expression.text;
-  if (arrayCallbackMethods.has(methodName)) indexes.add(0);
+  if (arrayCallbackMethods.has(methodName) && standardLibraryCallbackCanExecute(ts, node, methodName, checker)) indexes.add(0);
   else if (methodName === "then") { indexes.add(0); indexes.add(1); }
   else if (methodName === "catch" || methodName === "finally") indexes.add(0);
-  else if (methodName === "from") indexes.add(1);
+  else if (methodName === "from" && standardLibraryCallbackCanExecute(ts, node, methodName, checker)) indexes.add(1);
   if (ts.isNewExpression(node) && node.expression.getText(node.getSourceFile()) === "Promise") indexes.add(0);
   return indexes;
 }
