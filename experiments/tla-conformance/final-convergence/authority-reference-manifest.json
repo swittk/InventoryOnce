@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
   "status": "FINAL_LIVE_INPUT_CLOSURE",
-  "head": "cb0cd4a592a1fae22aad799cc7da7544864861e8",
-  "surfaceDigest": "d86185fec12cb312c70a47b40ff313bff40ab9bdbca1f3bda908906c63957ab3",
-  "inputs": 123,
-  "totalBytes": 29137766,
+  "head": "4b6021b56f785a9466b48a6e4d096e3002c34b5d",
+  "surfaceDigest": "8a6c398e2a7f94de13dfbf0a4c40815685e6591a672ef12a586c5471fd39b697",
+  "inputs": 124,
+  "totalBytes": 29165110,
   "untrackedProofInputs": 0,
   "rows": [
     {
@@ -72,42 +72,42 @@
     },
     {
       "file": "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json",
-      "sha256": "397f529a426da73ace00b6a638d949b9f0612dd486407f7cab7826280d5d0cc1",
+      "sha256": "573220289fac2e1fd3a70dc891e74b86c7384b07851eac3dbc22f626e76c032c",
       "sizeBytes": 698,
       "tracked": true,
       "nodeModules": false
     },
     {
       "file": "experiments/tla-conformance/final-convergence/current-pr-review-full.log",
-      "sha256": "20d53f0cd97347b4df6fb93743c6e651e0753b5bc8f8538ff9b64fc465c5b432",
-      "sizeBytes": 37414,
+      "sha256": "01b194cc9f270b5cafc2905848d47f91ffa5d55a097fb8cc67d8920a7a798891",
+      "sizeBytes": 37618,
       "tracked": true,
       "nodeModules": false
     },
     {
       "file": "experiments/tla-conformance/final-convergence/final-a121-b58.json",
-      "sha256": "16d43cf992057fc2a9d9ef78f9cfb91ef5b3f954850d4b60dfe2787e9f8da6f6",
+      "sha256": "c7523de32012f0f7706a4250619de199b7826eb810b69fba4955d40dc079897a",
       "sizeBytes": 1650462,
       "tracked": true,
       "nodeModules": false
     },
     {
       "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-      "sha256": "e96a147b4ef4baa80375ea59690868cfded15c10bcbda9ebd89843698184d26a",
-      "sizeBytes": 14933,
+      "sha256": "8fef1da2490ec71ade694e5c0c31dbb9b83050c5bbf24782e3df72289f4c1cce",
+      "sizeBytes": 16583,
       "tracked": true,
       "nodeModules": false
     },
     {
       "file": "experiments/tla-conformance/final-convergence/final-surface-bindings.json",
-      "sha256": "0f53b08a0e5a9cd24a5d6413a9dd645e75506ae5104dcb8a3a387f41ae5fad34",
+      "sha256": "0ebf063d2b6cb0a63d667409142cb3945b9f84be000aa6eb4f3bf678c186d8ae",
       "sizeBytes": 165524,
       "tracked": true,
       "nodeModules": false
     },
     {
       "file": "experiments/tla-conformance/final-convergence/final-v309.json",
-      "sha256": "fc4dc67f5741d641e4ca7170562af04ce9b0159ad9e81b29744c12eb8d9dbdc6",
+      "sha256": "dbaabf43838e2957c0625ef25b927eb0450c5e3c6f942810e665c4d9759a1a48",
       "sizeBytes": 1992088,
       "tracked": true,
       "nodeModules": false
@@ -485,7 +485,7 @@
     },
     {
       "file": "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
-      "sha256": "25b87efd24634adbc0cb001155c295067eaee4e059a6d7aefbb5cff6e3d43fb3",
+      "sha256": "ce7d78f63a6f1ac287af2e7c65afda2579239812437313590bcf6aef63e35e28",
       "sizeBytes": 2459,
       "tracked": true,
       "nodeModules": false
@@ -499,15 +499,22 @@
     },
     {
       "file": "package.json",
-      "sha256": "4d755b3753693226457d49789068e0177049b02d36a10e8f1415fecf690f13e3",
-      "sizeBytes": 2414,
+      "sha256": "098c454be4e6664162cac0ce5f9946a27d7777a8c1b7f924f307100287b716d8",
+      "sizeBytes": 2572,
+      "tracked": true,
+      "nodeModules": false
+    },
+    {
+      "file": "scripts/formal-implementation-surface.cjs",
+      "sha256": "c73b627d46e487f41f9472f5bd4be550024996fca7a0f24af03f9c8b6a6c0243",
+      "sizeBytes": 23107,
       "tracked": true,
       "nodeModules": false
     },
     {
       "file": "scripts/formal-models.mjs",
-      "sha256": "81d25d5af72e986cba01027b6da9ca09fa166064cedb0d5b39d56c592cb13a43",
-      "sizeBytes": 7594,
+      "sha256": "b2583ef963282eb8f3aa07197c457855bf84a7d6d72e4404bfff0a1f0e10f12b",
+      "sizeBytes": 7971,
       "tracked": true,
       "nodeModules": false
     },
@@ -520,8 +527,8 @@
     },
     {
       "file": "src/amounts.ts",
-      "sha256": "062a224eb36a4b3bce457293e53610db0f0cf1588f6aa935b4fac32fab7c9091",
-      "sizeBytes": 13151,
+      "sha256": "baafd8185575085919dd5e79e4dddfcbd2e0d527300d8390682228a545096f03",
+      "sizeBytes": 13307,
       "tracked": true,
       "nodeModules": false
     },
@@ -548,8 +555,8 @@
     },
     {
       "file": "src/canonical.ts",
-      "sha256": "eb2981c629182525c6742d2a67f513f0daec88507e5861f475d5de04984a2d56",
-      "sizeBytes": 2904,
+      "sha256": "ea07b9d783173577bb019572c6dc438ae286234de9214d75191d33634ab1153e",
+      "sizeBytes": 3198,
       "tracked": true,
       "nodeModules": false
     },
@@ -625,8 +632,8 @@
     },
     {
       "file": "src/events.ts",
-      "sha256": "8d076ee8f426c011d7df3f205dd014f0e835f71798b3684ca56844b691ba2370",
-      "sizeBytes": 55556,
+      "sha256": "79b6afc2041c6139e02dcf608fed89917f662fcf967cd03821869417d20152dc",
+      "sizeBytes": 55637,
       "tracked": true,
       "nodeModules": false
     },
@@ -821,8 +828,8 @@
     },
     {
       "file": "test/authority.test.ts",
-      "sha256": "ee481f59d78e30fa63b6b8c28edff121db01c25799fc0d2b545100b2db0d3ad1",
-      "sizeBytes": 33998,
+      "sha256": "c09ae43d11787d8ab7f883ea60fdcb7b85eac3ea340a038183724feca72ec8cc",
+      "sizeBytes": 34484,
       "tracked": true,
       "nodeModules": false
     },
@@ -835,8 +842,8 @@
     },
     {
       "file": "test/review-hardening.test.ts",
-      "sha256": "815ce2c4325e578486c63b6a132e7b15ca4a18226ab9d23e0fbb941f2768b26e",
-      "sizeBytes": 54560,
+      "sha256": "19c7f549fd65bb918c7e2ce7ad41866725730edcf38aa489e1d1809f75dbc9f4",
+      "sizeBytes": 55391,
       "tracked": true,
       "nodeModules": false
     },
