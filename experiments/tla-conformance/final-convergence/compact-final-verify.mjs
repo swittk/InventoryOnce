@@ -907,6 +907,7 @@ import ts3 from "typescript";
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
+import { gunzipSync } from "node:zlib";
 function assuranceRepositoryPath(repositoryRoot, relativePath4) {
   const root3 = path.resolve(repositoryRoot);
   if (typeof relativePath4 !== "string" || relativePath4.length === 0 || relativePath4.includes("\0") || relativePath4.includes("\\") || path.isAbsolute(relativePath4)) throw new Error(`Invalid repository-relative assurance path: ${String(relativePath4)}.`);
@@ -942,6 +943,70 @@ function readOrdinaryAssuranceFile(repositoryRoot, relativePath4) {
 }
 function assuranceBytesSha256(bytes2) {
   return crypto.createHash("sha256").update(bytes2).digest("hex");
+}
+function tarInteger(field, label) {
+  const text = field.toString("ascii").replace(/\0.*$/su, "").trim();
+  if (!/^[0-7]+$/u.test(text)) throw new Error(`Unsupported compact tar ${label}.`);
+  const value = Number.parseInt(text, 8);
+  if (!Number.isSafeInteger(value) || value < 0) throw new Error(`Invalid compact tar ${label}.`);
+  return value;
+}
+function tarText(field) {
+  const end = field.indexOf(0);
+  const bytes2 = end < 0 ? field : field.subarray(0, end);
+  if (end >= 0 && field.subarray(end).some((byte) => byte !== 0)) throw new Error("Invalid compact tar text padding.");
+  const text = new TextDecoder("utf-8", { fatal: true }).decode(bytes2);
+  if (text.length === 0) throw new Error("Empty compact tar member name.");
+  return text;
+}
+function readCompactArchive(bytes2, declaredFiles) {
+  if (!Array.isArray(declaredFiles) || declaredFiles.length === 0) throw new Error("Compact archive has no declared file closure.");
+  const declared = /* @__PURE__ */ new Map();
+  let total = 0;
+  for (const row of declaredFiles) {
+    if (row === null || typeof row !== "object" || typeof row.file !== "string" || !row.file.startsWith("experiments/tla-conformance/") || row.file.split("/").some((part) => part === "" || part === "." || part === "..") || row.file.includes("\\") || row.file.includes("\0") || !Number.isSafeInteger(row.bytes) || row.bytes < 0 || typeof row.sha256 !== "string" || !/^[a-f0-9]{64}$/u.test(row.sha256) || declared.has(row.file)) throw new Error("Malformed or duplicate compact archive member declaration.");
+    declared.set(row.file, row);
+    total += row.bytes;
+  }
+  if (!Number.isSafeInteger(total) || total > 128 * 1024 * 1024) throw new Error("Compact archive exceeds its supported byte closure.");
+  const content = gunzipSync(bytes2, { maxOutputLength: Math.min(160 * 1024 * 1024, total + declared.size * 4096 + 20480) });
+  const files = /* @__PURE__ */ new Map();
+  let offset = 0, longName;
+  while (offset + 512 <= content.length) {
+    const header = content.subarray(offset, offset + 512);
+    offset += 512;
+    if (header.every((byte) => byte === 0)) {
+      if (longName !== void 0 || content.length < offset + 512 || content.subarray(offset).some((byte) => byte !== 0)) throw new Error("Malformed compact tar terminator.");
+      if (files.size !== declared.size) throw new Error("Compact archive members differ from its manifest.");
+      return files;
+    }
+    let checksum = 0;
+    for (let index = 0; index < 512; index += 1) checksum += index >= 148 && index < 156 ? 32 : header[index];
+    if (checksum !== tarInteger(header.subarray(148, 156), "checksum")) throw new Error("Compact tar header checksum mismatch.");
+    const size = tarInteger(header.subarray(124, 136), "size");
+    if (offset + size > content.length) throw new Error("Truncated compact tar member.");
+    const payload = content.subarray(offset, offset + size);
+    offset += Math.ceil(size / 512) * 512;
+    if (offset > content.length) throw new Error("Truncated compact tar member padding.");
+    const kind = header[156];
+    if (kind === 76) {
+      if (longName !== void 0 || size > 4096) throw new Error("Invalid compact tar long-name header.");
+      longName = tarText(payload);
+      continue;
+    }
+    if (kind !== 0 && kind !== 48) throw new Error("Compact tar member is not an ordinary file; links and special entries are forbidden.");
+    const shortName = tarText(header.subarray(0, 100));
+    const prefixBytes = header.subarray(345, 500);
+    const prefix = prefixBytes.every((byte) => byte === 0) ? "" : tarText(prefixBytes);
+    const name = longName ?? (prefix ? `${prefix}/${shortName}` : shortName);
+    longName = void 0;
+    const row = declared.get(name);
+    if (row === void 0 || files.has(name)) throw new Error(`Unexpected or duplicate compact archive member: ${name}.`);
+    if (payload.length !== row.bytes || assuranceBytesSha256(payload) !== row.sha256) throw new Error(`Compact archive member content mismatch: ${name}.`);
+    if (header.subarray(157, 257).some((byte) => byte !== 0)) throw new Error("Ordinary compact member has a link target.");
+    files.set(name, payload);
+  }
+  throw new Error("Compact archive lacks its terminal zero blocks.");
 }
 var proofReadSessions = /* @__PURE__ */ new Map();
 function readAssuranceFile(repositoryRoot, relativePath4) {
@@ -16795,7 +16860,7 @@ function repositoryAssuranceCommittedStateSha256(repositoryRoot, commit) {
 var CURRENT_REVIEW_ASSURANCE_RECEIPT = "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json";
 var CURRENT_REVIEW_ASSURANCE_REPORT = "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json";
 var CURRENT_REVIEW_ASSURANCE_FULL_LOG = "experiments/tla-conformance/final-convergence/current-pr-review-full.log";
-var CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "a575cb20ddd3f8aca3ce01c4286ef1e142fab945";
+var CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "20e7fd1ebf34f92a4cb9c41aed90a95677225954";
 var CURRENT_REVIEW_ASSURANCE_SELF = "experiments/tla-conformance/final-convergence/current-review-assurance.mjs";
 var COMPACT_MANIFEST = "experiments/tla-conformance/final-convergence/compact-support-manifest.json";
 var COMPACT_CLOSURE = "experiments/tla-conformance/final-convergence/authority-reference-manifest.json";
@@ -16830,13 +16895,17 @@ function regularFile(repositoryRoot, file, label) {
   assert40.equal(stat.isFile(), true, `${label} is not a regular file.`);
   return target;
 }
-function committedFileSha256(repositoryRoot, commit, file) {
-  const bytes2 = execFileSync4("git", ["show", `${commit}:${file}`], {
+function committedFileBytes(repositoryRoot, commit, file) {
+  return execFileSync4("git", ["show", `${commit}:${file}`], {
     cwd: repositoryRoot,
     encoding: null,
     maxBuffer: 64 * 1024 * 1024
   });
-  return crypto4.createHash("sha256").update(bytes2).digest("hex");
+}
+function committedFileSha256(repositoryRoot, commit, file) {
+  return crypto4.createHash("sha256").update(
+    committedFileBytes(repositoryRoot, commit, file)
+  ).digest("hex");
 }
 function gitPathList(repositoryRoot, args) {
   return execFileSync4("git", args, {
@@ -16929,13 +16998,23 @@ await runCompactCommand({ moduleUrl: import.meta.url, mode: process.argv[2] ?? "
   assert40.equal(typeof manifest.archive?.file, "string", "Pinned compact archive path is invalid.");
   assert40.match(manifest.archive?.sha256, /^[a-f0-9]{64}$/u, "Pinned compact archive digest is invalid.");
   assert40(Array.isArray(manifest.archive?.files), "Pinned compact archive file manifest is invalid.");
+  const fullManifest = JSON.parse(committedFileText(root3, effectiveCertifiedHead, COMPACT_MANIFEST));
+  assert40.equal(fullManifest.archive?.file, manifest.archive.file, "Full-certified compact archive path changed unexpectedly.");
+  assert40.match(fullManifest.archive?.sha256, /^[a-f0-9]{64}$/u, "Full-certified compact archive digest is invalid.");
+  assert40(Array.isArray(fullManifest.archive?.files), "Full-certified compact archive file manifest is invalid.");
+  const fullArchiveBytes = committedFileBytes(root3, effectiveCertifiedHead, fullManifest.archive.file);
+  assert40.equal(
+    crypto4.createHash("sha256").update(fullArchiveBytes).digest("hex"),
+    fullManifest.archive.sha256,
+    "Full-certified compact archive bytes differ from its manifest."
+  );
+  const fullSupport = readCompactArchive(fullArchiveBytes, fullManifest.archive.files);
   const temporarySupportRows = /* @__PURE__ */ new Map();
-  for (const row of manifest.archive.files) {
-    assert40.equal(typeof row?.file, "string", "Pinned compact support path is invalid.");
-    assert40.match(row.sha256, /^[a-f0-9]{64}$/u, `Pinned compact support digest is invalid: ${row.file}`);
-    assert40(Number.isSafeInteger(row.bytes) && row.bytes >= 0, `Pinned compact support size is invalid: ${row.file}`);
-    assert40(!temporarySupportRows.has(row.file), `Pinned compact support path is duplicated: ${row.file}`);
-    temporarySupportRows.set(row.file, { sha256: row.sha256, bytes: row.bytes });
+  for (const [file, bytes2] of fullSupport) {
+    temporarySupportRows.set(file, {
+      sha256: crypto4.createHash("sha256").update(bytes2).digest("hex"),
+      bytes: bytes2.length
+    });
   }
   const closure = JSON.parse(committedFileText(root3, compactCertifiedHead, COMPACT_CLOSURE));
   assert40.equal(closure.schemaVersion, 2, "Pinned compact closure schema is unsupported.");

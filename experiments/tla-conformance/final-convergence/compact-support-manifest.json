@@ -448,8 +448,8 @@
       {
         "mode": "unified",
         "file": "experiments/tla-conformance/final-convergence/compact-final-verify.mjs",
-        "sha256": "30f41b9b036364c8ed0bf936b49f34116d5bf5f1b82fd01c6e2b5933d5bff675",
-        "bytes": 911531
+        "sha256": "dcec0ca7a794a7449e546062e6109c01e19d19a6ad802cc7418d8345a708b3d3",
+        "bytes": 916391
       }
     ],
     "sources": [
@@ -520,8 +520,8 @@
       },
       {
         "file": "experiments/tla-conformance/final-convergence/current-review-assurance.mjs",
-        "sha256": "040464c54060c1962c922905ff1919e5af0c57d73db4c983cca503665332cec3",
-        "bytes": 18532
+        "sha256": "92bd0eedf3bc2365ba8991781e5ec6e31ede337a081c71348d4e3be22ee1e621",
+        "bytes": 19529
       },
       {
         "file": "experiments/tla-conformance/final-convergence/final-families.mjs",
@@ -1051,7 +1051,7 @@
     {
       "id": "transport",
       "codeSha256": "e410567a99774785ca4b0b87325464196d0d3b02cadb26b7951e67a7c28d075b",
-      "compilerSourceSetKey": "3a9b8bdbca89bfa941cc533148eed65776c38f972ac9f7bd4231b504a54b8936",
+      "compilerSourceSetKey": "2033afdae7f41ca59d0a9f2ab470ef24387dc1b519002da185ebe4a869d4c010",
       "inputs": [],
       "outputs": [
         {
@@ -1064,7 +1064,7 @@
     {
       "id": "values",
       "codeSha256": "a0a3ca50c8113b6a12a37245e509c7560cddc3468fe1544f7dbd0cd6bcb5470b",
-      "compilerSourceSetKey": "3a9b8bdbca89bfa941cc533148eed65776c38f972ac9f7bd4231b504a54b8936",
+      "compilerSourceSetKey": "2033afdae7f41ca59d0a9f2ab470ef24387dc1b519002da185ebe4a869d4c010",
       "inputs": [],
       "outputs": [
         {
@@ -1077,7 +1077,7 @@
     {
       "id": "producers",
       "codeSha256": "a0a3ca50c8113b6a12a37245e509c7560cddc3468fe1544f7dbd0cd6bcb5470b",
-      "compilerSourceSetKey": "3a9b8bdbca89bfa941cc533148eed65776c38f972ac9f7bd4231b504a54b8936",
+      "compilerSourceSetKey": "2033afdae7f41ca59d0a9f2ab470ef24387dc1b519002da185ebe4a869d4c010",
       "inputs": [],
       "outputs": [
         {
@@ -1090,7 +1090,7 @@
     {
       "id": "registry",
       "codeSha256": "5c7f85bd2d04ef66ba6888220f256a0dabb4811406aac6855f695af8663e5ddf",
-      "compilerSourceSetKey": "3a9b8bdbca89bfa941cc533148eed65776c38f972ac9f7bd4231b504a54b8936",
+      "compilerSourceSetKey": "2033afdae7f41ca59d0a9f2ab470ef24387dc1b519002da185ebe4a869d4c010",
       "inputs": [],
       "outputs": [
         {
@@ -1102,8 +1102,8 @@
     },
     {
       "id": "binder",
-      "codeSha256": "04187e2fe7b2988026a5d0be141c7ca70d968ac266b51ea1c396bcf1a6ff97b8",
-      "compilerSourceSetKey": "3a9b8bdbca89bfa941cc533148eed65776c38f972ac9f7bd4231b504a54b8936",
+      "codeSha256": "91aacad90e199570ee2b8cc50db68d2253c113603c2d4f83cae964d43d7847bd",
+      "compilerSourceSetKey": "2033afdae7f41ca59d0a9f2ab470ef24387dc1b519002da185ebe4a869d4c010",
       "inputs": [],
       "outputs": [
         {
@@ -1113,104 +1113,5 @@
         }
       ]
     }
-  ],
-  "certification": {
-    "schemaVersion": 1,
-    "certifiedHead": "c75d92d6cedfeaf90d15b80f01fb0275d83c8b54",
-    "inputKey": "ac7c06d5efc40ff447f3a092aa0e8b371db600e15dc2c72d3af2de6791b0f386",
-    "processes": [
-      {
-        "mode": "registry",
-        "head": "c75d92d6cedfeaf90d15b80f01fb0275d83c8b54",
-        "inputKey": "ac7c06d5efc40ff447f3a092aa0e8b371db600e15dc2c72d3af2de6791b0f386",
-        "exitCode": 0,
-        "signal": null,
-        "stdout": "{\"status\":\"FINAL_535_REGISTRY_BUILT\",\"counts\":{\"A\":121,\"B\":58,\"V\":309,\"HARD_RED\":47},\"mode\":\"registry\",\"inputKey\":\"ac7c06d5efc40ff447f3a092aa0e8b371db600e15dc2c72d3af2de6791b0f386\",\"head\":\"c75d92d6cedfeaf90d15b80f01fb0275d83c8b54\",\"compilerPasses\":1,\"elapsedMs\":8214}\n",
-        "stderr": "",
-        "stdoutSha256": "ac2380e969a0211757689685f7595fa1751b7031d0621737230c3c9edd13222f",
-        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "elapsedMs": 8915,
-        "report": {
-          "status": "FINAL_535_REGISTRY_BUILT",
-          "counts": {
-            "A": 121,
-            "B": 58,
-            "V": 309,
-            "HARD_RED": 47
-          },
-          "mode": "registry",
-          "inputKey": "ac7c06d5efc40ff447f3a092aa0e8b371db600e15dc2c72d3af2de6791b0f386",
-          "head": "c75d92d6cedfeaf90d15b80f01fb0275d83c8b54",
-          "compilerPasses": 1,
-          "elapsedMs": 8214
-        }
-      },
-      {
-        "mode": "selftest",
-        "head": "c75d92d6cedfeaf90d15b80f01fb0275d83c8b54",
-        "inputKey": "ac7c06d5efc40ff447f3a092aa0e8b371db600e15dc2c72d3af2de6791b0f386",
-        "exitCode": 0,
-        "signal": null,
-        "stdout": "{\"status\":\"FINAL_CONVERGENCE_ADVERSARIAL_PASS\",\"surfaceDigest\":\"7a74e02dc7f2e6e3227bd8f247fae7601a67df92bf79cae1687ecbde07de498b\",\"valueRows\":309,\"producerRows\":179,\"controls\":{\"honestValueAccepted\":true,\"wrongValueModeRejected\":true,\"resignedValueTamperRejected\":true,\"honestAandBAccepted\":true,\"wrongProducerModeRejected\":true,\"resignedProducerTamperRejected\":true,\"immutableHistoricalAuthorityTamperRejected\":true,\"sameMtimeEvidenceDriftRejected\":true},\"mode\":\"selftest\",\"inputKey\":\"ac7c06d5efc40ff447f3a092aa0e8b371db600e15dc2c72d3af2de6791b0f386\",\"head\":\"c75d92d6cedfeaf90d15b80f01fb0275d83c8b54\",\"compilerPasses\":1,\"elapsedMs\":43826}\n",
-        "stderr": "",
-        "stdoutSha256": "8b67dd07ac754058603628ba33a78a137eb5741da61173cf7aeb86112d6b78a2",
-        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "elapsedMs": 44498,
-        "report": {
-          "status": "FINAL_CONVERGENCE_ADVERSARIAL_PASS",
-          "surfaceDigest": "7a74e02dc7f2e6e3227bd8f247fae7601a67df92bf79cae1687ecbde07de498b",
-          "valueRows": 309,
-          "producerRows": 179,
-          "controls": {
-            "honestValueAccepted": true,
-            "wrongValueModeRejected": true,
-            "resignedValueTamperRejected": true,
-            "honestAandBAccepted": true,
-            "wrongProducerModeRejected": true,
-            "resignedProducerTamperRejected": true,
-            "immutableHistoricalAuthorityTamperRejected": true,
-            "sameMtimeEvidenceDriftRejected": true
-          },
-          "mode": "selftest",
-          "inputKey": "ac7c06d5efc40ff447f3a092aa0e8b371db600e15dc2c72d3af2de6791b0f386",
-          "head": "c75d92d6cedfeaf90d15b80f01fb0275d83c8b54",
-          "compilerPasses": 1,
-          "elapsedMs": 43826
-        }
-      },
-      {
-        "mode": "verify",
-        "head": "c75d92d6cedfeaf90d15b80f01fb0275d83c8b54",
-        "inputKey": "ac7c06d5efc40ff447f3a092aa0e8b371db600e15dc2c72d3af2de6791b0f386",
-        "exitCode": 0,
-        "signal": null,
-        "stdout": "{\"status\":\"FINAL_BINDER_GREEN\",\"surfaceDigest\":\"7a74e02dc7f2e6e3227bd8f247fae7601a67df92bf79cae1687ecbde07de498b\",\"callables\":535,\"diagnostics\":47,\"byCode\":{\"EXPLICIT_HARD_RED\":47},\"hardRed\":47,\"unexpected\":0,\"unexpectedRows\":[],\"valueAccepted\":309,\"producerAccepted\":179,\"strictAccepted\":488,\"mode\":\"verify\",\"inputKey\":\"ac7c06d5efc40ff447f3a092aa0e8b371db600e15dc2c72d3af2de6791b0f386\",\"head\":\"c75d92d6cedfeaf90d15b80f01fb0275d83c8b54\",\"compilerPasses\":1,\"elapsedMs\":43271}\n",
-        "stderr": "",
-        "stdoutSha256": "fbfafb350389ebae9cf74285fbd1f6d95e68d085a7a517f6466186f88365fd42",
-        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "elapsedMs": 43969,
-        "report": {
-          "status": "FINAL_BINDER_GREEN",
-          "surfaceDigest": "7a74e02dc7f2e6e3227bd8f247fae7601a67df92bf79cae1687ecbde07de498b",
-          "callables": 535,
-          "diagnostics": 47,
-          "byCode": {
-            "EXPLICIT_HARD_RED": 47
-          },
-          "hardRed": 47,
-          "unexpected": 0,
-          "unexpectedRows": [],
-          "valueAccepted": 309,
-          "producerAccepted": 179,
-          "strictAccepted": 488,
-          "mode": "verify",
-          "inputKey": "ac7c06d5efc40ff447f3a092aa0e8b371db600e15dc2c72d3af2de6791b0f386",
-          "head": "c75d92d6cedfeaf90d15b80f01fb0275d83c8b54",
-          "compilerPasses": 1,
-          "elapsedMs": 43271
-        }
-      }
-    ],
-    "elapsedMs": 45881
-  }
+  ]
 }
