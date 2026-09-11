@@ -3,10 +3,30 @@
   "status": "FINAL_HEAD_TRANSPORT_PROVED",
   "priorProofHead": "6983219e13295b8f6b073daefc3cbcd90b32ac35",
   "immediatePriorProofHead": "63f520f3bb21fcbb5da51c31ef9e5d327f8de51f",
-  "finalSurfaceDigest": "a761b48ce053a501d3b1e732da0126b6bfe92e9b998c194baa698cd02cfd7ed7",
+  "finalSurfaceDigest": "fbc79941dc29cef43a8e581cca170df1f5f2f43bd53bf8dccf680ee7895af165",
   "callables": 535,
   "exactPrimitiveTransport": {
     "priorProofHead": "6983219e13295b8f6b073daefc3cbcd90b32ac35",
+    "review518009RuntimeTransport": {
+      "priorCertifiedHead": "868d9295079148fb00e66ccf146b504fdcdee41e",
+      "certifiedRepairHead": "9dfd0a30cd032989c336b9292807113ae7ba9635",
+      "exactChangedRuntimeFiles": [
+        "src/commands.ts"
+      ],
+      "transitions": [
+        {
+          "file": "src/commands.ts",
+          "patchSha256": "b74171f7c9bf6f1dc45cd60a1cc1570010dbba2e27dd741377f4b6f1021d859d",
+          "priorSha256": "fc2f48062ed4f83633798b01e2780381ab034db7f3a83011556e3a30053f7255",
+          "currentSha256": "28b89e567e0c3619d9d9bca10cc501342f31e4bea91645efda4f180c7cec0621"
+        }
+      ],
+      "laws": [
+        "Typed duplicate exact batch movement lines are grouped by exact physical route/position identity using exact quantity addition and deterministic ordering before event construction.",
+        "Ambiguous non-disjoint transfer/reclassification graphs fail explicitly rather than depending on incidental duplicate-position rejection or inventing provenance pairing.",
+        "The exact one-file runtime patch is independently full-assurance certified at the named repair commit; every other runtime module remains byte-identical to the reviewed predecessor."
+      ]
+    },
     "latestReviewRuntimeTransport": {
       "priorCertifiedHead": "a7d872d92a1f555e41e016592c9e840afad59bd6",
       "certifiedRepairHead": "919d979811013e202ac01e4981b5d40bda53fc40",
@@ -176,7 +196,7 @@
       },
       {
         "file": "src/commands.ts",
-        "sha256": "fc2f48062ed4f83633798b01e2780381ab034db7f3a83011556e3a30053f7255"
+        "sha256": "28b89e567e0c3619d9d9bca10cc501342f31e4bea91645efda4f180c7cec0621"
       },
       {
         "file": "src/composition.ts",
@@ -387,7 +407,7 @@
     },
     {
       "file": "src/commands.ts",
-      "sha256": "fc2f48062ed4f83633798b01e2780381ab034db7f3a83011556e3a30053f7255"
+      "sha256": "28b89e567e0c3619d9d9bca10cc501342f31e4bea91645efda4f180c7cec0621"
     },
     {
       "file": "src/composition.ts",
@@ -531,7 +551,7 @@
     },
     {
       "file": "scripts/inventory-epoch-contract.mjs",
-      "sha256": "ee3f91bcda8eb0cf8ce292d9c3ce8d8ca79903f276b81b7b70cc0e5378a44dea"
+      "sha256": "a1a87a611c3393d1f0f6eefd019dd14da695430ed2d38f00f46861ffd2688d58"
     },
     {
       "file": "formal/UseByReservation.tla",
@@ -547,5 +567,5 @@
     }
   ],
   "creditExpansion": false,
-  "contentSha256": "2111a9436dcb08ed08d6fdac7b02fcb946b1a567256aaf712cfeff95b70f28e4"
+  "contentSha256": "ae63b2764ed4c7db04d3140a86dc207581d596260f42f6f5aa9b06fe9aee04f8"
 }
