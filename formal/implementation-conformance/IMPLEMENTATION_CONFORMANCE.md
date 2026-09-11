@@ -27,8 +27,8 @@ Surface SHA-256: `715f9ffaa724c4d4750c49d413b8113fe6a9577274cbcb1eb76e63f0a22ef9
 - Explicit undefined-union fields: 2
 - Explicit nullable fields: 4
 - Public call/construct overload signatures: 510
-- Directly executed public APIs: 200
-- Public APIs exercised through tested internal call chains: 306
+- Directly executed public APIs: 197
+- Public APIs exercised through tested internal call chains: 309
 - Explicit-gap public APIs: 4
 - Unreferenced public APIs: 0
 - Explicit recursive type edges: 3

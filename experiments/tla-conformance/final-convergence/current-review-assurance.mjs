@@ -84,12 +84,50 @@ function committedFileText(repositoryRoot, commit, file) {
   });
 }
 
+/** Authenticate the current-review receipt before using its certified head outside the full verifier. */
+function immutableCurrentReviewCertifiedHead(repositoryRoot) {
+  const receiptPath = regularFile(
+    repositoryRoot,
+    CURRENT_REVIEW_ASSURANCE_RECEIPT,
+    "Current review assurance receipt"
+  );
+  execFileSync(
+    "git",
+    ["merge-base", "--is-ancestor", CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD, "HEAD"],
+    { cwd: repositoryRoot, stdio: "ignore" }
+  );
+  assert.equal(
+    sha256(receiptPath),
+    committedFileSha256(
+      repositoryRoot,
+      CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD,
+      CURRENT_REVIEW_ASSURANCE_RECEIPT
+    ),
+    "Current review assurance receipt differs from its immutable evidence commit."
+  );
+  const receipt = JSON.parse(fs.readFileSync(receiptPath, "utf8"));
+  assert.match(
+    receipt.certifiedHead,
+    /^[a-f0-9]{40}$/u,
+    "Current review certified head is invalid for proof-output derivation."
+  );
+  assert.equal(
+    execFileSync(
+      "git",
+      ["rev-parse", `${CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD}^`],
+      { cwd: repositoryRoot, encoding: "utf8" }
+    ).trim(),
+    receipt.certifiedHead,
+    "Immutable current-review evidence commit is not the direct child of the certified repair head."
+  );
+  return receipt.certifiedHead;
+}
+
 /** Derive compact outputs from the immutable compact certificate pinned by the full-assurance certified head. */
 export function currentReviewProofIntegrationPaths(repositoryRoot, certifiedHead) {
   const root = path.resolve(repositoryRoot);
-  const effectiveCertifiedHead = certifiedHead ?? JSON.parse(
-    fs.readFileSync(regularFile(root, CURRENT_REVIEW_ASSURANCE_RECEIPT, "Current review assurance receipt"), "utf8"),
-  ).certifiedHead;
+  const effectiveCertifiedHead =
+    certifiedHead ?? immutableCurrentReviewCertifiedHead(root);
   assert.match(effectiveCertifiedHead, /^[a-f0-9]{40}$/u, "Current review certified head is invalid for proof-output derivation.");
 
   const wrapper = committedFileText(root, effectiveCertifiedHead, COMPACT_WRAPPER);

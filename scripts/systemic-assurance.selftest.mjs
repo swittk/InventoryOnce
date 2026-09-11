@@ -45,6 +45,28 @@ test("current-review full-assurance drift gate default-denies tracked inputs out
   );
 });
 
+test("mutable current-review receipt cannot choose proof-integration authority", () => {
+  const receiptPath = path.join(
+    root,
+    "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json"
+  );
+  const original = fs.readFileSync(receiptPath);
+  try {
+    const receipt = JSON.parse(original.toString("utf8"));
+    receipt.certifiedHead = execFileSync("git", ["rev-parse", "HEAD"], {
+      cwd: root,
+      encoding: "utf8",
+    }).trim();
+    fs.writeFileSync(receiptPath, `${JSON.stringify(receipt, null, 2)}\n`);
+    assert.throws(
+      () => currentReviewProofIntegrationPaths(root),
+      /receipt differs from its immutable evidence commit/u,
+    );
+  } finally {
+    fs.writeFileSync(receiptPath, original);
+  }
+});
+
 test("mutable compact manifest cannot expand the current-review proof-output allowlist", () => {
   const manifestPath = path.join(root, "experiments/tla-conformance/final-convergence/compact-support-manifest.json");
   const original = fs.readFileSync(manifestPath);

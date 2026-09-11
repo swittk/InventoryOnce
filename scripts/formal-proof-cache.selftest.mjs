@@ -64,14 +64,14 @@ test("exact TLC worker setting participates in the proof key", () => {
   };
   const one = formalProofDescriptor({ ...common, tlcWorkers: "1" });
   const sixteen = formalProofDescriptor({ ...common, tlcWorkers: "16" });
-  const automatic = formalProofDescriptor({ ...common, tlcWorkers: "auto" });
   assert.equal(one.tlcWorkers, "1");
   assert.notEqual(formalProofCacheKey(one), formalProofCacheKey(sixteen));
-  assert.notEqual(formalProofCacheKey(sixteen), formalProofCacheKey(automatic));
-  assert.throws(
-    () => formalProofDescriptor({ ...common, tlcWorkers: "0" }),
-    /exact TLC worker setting/u,
-  );
+  for (const invalidWorkers of ["0", "auto"]) {
+    assert.throws(
+      () => formalProofDescriptor({ ...common, tlcWorkers: invalidWorkers }),
+      /positive-integer TLC worker count/u,
+    );
+  }
   assert.throws(
     () => formalProofDescriptor({ ...common, tlaToolsSha256: "not-a-sha", tlcWorkers: "4" }),
     /exact lowercase SHA-256 identity/u,

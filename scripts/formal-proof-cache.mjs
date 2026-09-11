@@ -103,8 +103,8 @@ export function formalProofDescriptor({
   if (typeof tlaToolsSha256 !== "string" || !/^[a-f0-9]{64}$/u.test(tlaToolsSha256)) {
     throw new Error("Formal proof cache entries require the exact lowercase SHA-256 identity of tla2tools.jar.");
   }
-  if (typeof tlcWorkers !== "string" || !/^(?:auto|[1-9][0-9]*)$/u.test(tlcWorkers)) {
-    throw new Error("Formal proof cache entries require the exact TLC worker setting.");
+  if (typeof tlcWorkers !== "string" || !/^[1-9][0-9]*$/u.test(tlcWorkers)) {
+    throw new Error("Formal proof cache entries require an explicit positive-integer TLC worker count.");
   }
   const files = [
     ...transitiveLocalTlaFiles(absoluteRoot, model),
@@ -220,7 +220,7 @@ function assertFormalProofDescriptor(descriptor) {
     if (descriptor.mutationProcessContractVersion !== FORMAL_MUTATION_PROCESS_CONTRACT_VERSION) throw new Error("Invalid mutation proof process contract.");
   } else if (descriptor.outcome !== "model-passed" || descriptor.invariant !== null) throw new Error("Invalid formal proof outcome or invariant.");
   if (typeof descriptor.tlaToolsSha256 !== "string" || !/^[a-f0-9]{64}$/u.test(descriptor.tlaToolsSha256)) throw new Error("Invalid formal proof tool identity.");
-  if (typeof descriptor.tlcWorkers !== "string" || !/^(?:auto|[1-9][0-9]*)$/u.test(descriptor.tlcWorkers)) throw new Error("Invalid formal proof worker identity.");
+  if (typeof descriptor.tlcWorkers !== "string" || !/^[1-9][0-9]*$/u.test(descriptor.tlcWorkers)) throw new Error("Invalid formal proof worker identity; expected a positive integer.");
   if (!Array.isArray(descriptor.inputs) || descriptor.inputs.length < 2) throw new Error("Formal proof descriptor requires nonempty model/config input closure.");
   const paths = new Set(); let previous = "";
   for (const input of descriptor.inputs) {

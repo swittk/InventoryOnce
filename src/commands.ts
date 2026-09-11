@@ -671,12 +671,156 @@ function compareGroupedInventoryReceiptEntry(
   return compareInventoryIdentityText(left[0], right[0]);
 }
 
+/** One exact outgoing stock position accumulated from duplicate batch command lines. */
+interface GroupedInventoryOutgoingLine {
+  /** Frozen item definition governing the exact source. */
+  readonly item: InventoryItemDefinitionRevision;
+  /** Revision-qualified exact source after package identity is resolved. */
+  readonly position: InventoryStockPositionKey;
+  /** Sum of every outgoing line targeting this exact movement identity. */
+  readonly measurements: InventoryMeasurementVector;
+  /** Exact intact-package revision retained by this movement. */
+  readonly packaging?: InventoryPackagingDefinitionRevision;
+  /** Whole package count represented by the summed lines. */
+  readonly packageCount?: number;
+  /** Identical application metadata retained for the one combined effect. */
+  readonly metadata?: InventoryMetadata;
+}
+
+/** One exact one-to-one transfer route accumulated from duplicate batch lines. */
+interface GroupedInventoryTransferLine extends GroupedInventoryOutgoingLine {
+  /** Exact destination preserving every non-location stock dimension. */
+  readonly destination: InventoryStockPositionKey;
+}
+
+/** One exact transformation position plus its normalized genealogy node. */
+interface GroupedInventoryTransformationLine {
+  /** Grouped physical amount and metadata for this exact position. */
+  readonly movement: GroupedInventoryOutgoingLine;
+  /** Effective serial/container/lot/external genealogy identity after inference. */
+  readonly genealogyNode?: InventoryTraceabilityNodeRef;
+}
+
+/** Compare two optional genealogy nodes by the exact traceability identity they represent. */
+function sameTransformationGenealogyNode(
+  left: InventoryTraceabilityNodeRef | undefined,
+  right: InventoryTraceabilityNodeRef | undefined
+): boolean {
+  if (left === undefined || right === undefined) return left === right;
+  return (
+    inventoryTraceabilityNodeIdentity(left) ===
+    inventoryTraceabilityNodeIdentity(right)
+  );
+}
+
+/** Sort grouped transformation entries by their collision-free exact position identity. */
+function compareGroupedInventoryTransformationEntry(
+  left: readonly [string, GroupedInventoryTransformationLine],
+  right: readonly [string, GroupedInventoryTransformationLine]
+): number {
+  return compareInventoryIdentityText(left[0], right[0]);
+}
+
+/** Freeze one resolved outgoing line before duplicate exact identities are combined. */
+function groupedInventoryOutgoingLine(
+  item: InventoryItemDefinitionRevision,
+  position: InventoryStockPositionKey,
+  resolved: ResolvedInventoryAmount,
+  metadata: InventoryMetadata | undefined
+): GroupedInventoryOutgoingLine {
+  return {
+    item,
+    position,
+    measurements: resolved.measurements,
+    ...(resolved.packaging === undefined ? {} : { packaging: resolved.packaging }),
+    ...(resolved.packageCount === undefined ? {} : { packageCount: resolved.packageCount }),
+    ...(metadata === undefined ? {} : { metadata }),
+  };
+}
+
+/** Combine one duplicate outgoing line without changing package or metadata identity. */
+function mergeGroupedInventoryOutgoingLine(
+  earlier: GroupedInventoryOutgoingLine,
+  resolved: ResolvedInventoryAmount,
+  metadata: InventoryMetadata | undefined,
+  identity: string,
+  label: string
+): GroupedInventoryOutgoingLine {
+  if (
+    inventoryMetadataFingerprint(earlier.metadata) !==
+    inventoryMetadataFingerprint(metadata)
+  ) {
+    throw new Error(
+      `${label} lines for exact movement ${identity} have conflicting effect metadata.`
+    );
+  }
+  return {
+    ...earlier,
+    measurements: addInventoryMeasurements(
+      earlier.measurements,
+      resolved.measurements
+    ),
+    ...mergeOutgoingPackageCount(earlier, resolved, identity, label),
+  };
+}
+
+/** Preserve package identity/count while combining duplicate outgoing lines. */
+function mergeOutgoingPackageCount(
+  earlier: GroupedInventoryOutgoingLine,
+  resolved: ResolvedInventoryAmount,
+  identity: string,
+  label: string
+): Pick<GroupedInventoryOutgoingLine, "packaging" | "packageCount"> {
+  if (earlier.packaging === undefined && resolved.packaging === undefined) {
+    return {};
+  }
+  const packaging = earlier.packaging;
+  const resolvedPackaging = resolved.packaging;
+  if (
+    packaging === undefined ||
+    resolvedPackaging === undefined ||
+    packaging.revisionId !== resolvedPackaging.revisionId ||
+    earlier.packageCount === undefined ||
+    resolved.packageCount === undefined
+  ) {
+    throw new Error(
+      `${label} lines for exact movement ${identity} disagree about package identity.`
+    );
+  }
+  const packageCount = earlier.packageCount + resolved.packageCount;
+  if (!Number.isSafeInteger(packageCount) || packageCount <= 0) {
+    throw new Error(
+      `${label} package count overflowed at exact movement ${identity}.`
+    );
+  }
+  return { packaging, packageCount };
+}
+
+/** Rebuild the resolved amount represented by one grouped outgoing command line. */
+function groupedInventoryOutgoingAmount(
+  line: GroupedInventoryOutgoingLine
+): ResolvedInventoryAmount {
+  return {
+    measurements: line.measurements,
+    ...(line.packaging === undefined ? {} : { packaging: line.packaging }),
+    ...(line.packageCount === undefined ? {} : { packageCount: line.packageCount }),
+  };
+}
+
+/** Sort grouped outgoing command entries by their collision-free identity key. */
+function compareGroupedInventoryOutgoingEntry(
+  left: readonly [string, GroupedInventoryOutgoingLine],
+  right: readonly [string, GroupedInventoryOutgoingLine]
+): number {
+  return compareInventoryIdentityText(left[0], right[0]);
+}
+
 /** Create one atomic issue event from multiple exact source lines. */
 export function createInventoryIssueManyEvent(
   input: CreateInventoryIssueManyInput
 ): InventoryEventDraft {
   assertNonEmptyMovementLines(input.lines, "issue");
-  const stockEffects: InventoryStockEffect[] = [];
+  const groupedEffects = new Map<string, GroupedInventoryOutgoingLine>();
   for (const line of input.lines) {
     const item = findCommandItem(
       input.catalog,
@@ -690,7 +834,33 @@ export function createInventoryIssueManyEvent(
       resolved,
       item.revisionId
     );
-    stockEffects.push(negativeEffect(item, from, resolved, line.metadata));
+    const identity = inventoryStockPositionIdentity(from);
+    const earlier = groupedEffects.get(identity);
+    groupedEffects.set(
+      identity,
+      earlier === undefined
+        ? groupedInventoryOutgoingLine(item, from, resolved, line.metadata)
+        : mergeGroupedInventoryOutgoingLine(
+            earlier,
+            resolved,
+            line.metadata,
+            identity,
+            "Issue"
+          )
+    );
+  }
+  const groupedEntries = [...groupedEffects.entries()];
+  groupedEntries.sort(compareGroupedInventoryOutgoingEntry);
+  const stockEffects: InventoryStockEffect[] = [];
+  for (const [, line] of groupedEntries) {
+    stockEffects.push(
+      negativeEffect(
+        line.item,
+        line.position,
+        groupedInventoryOutgoingAmount(line),
+        line.metadata
+      )
+    );
   }
   return createMovementEvent(
     input.catalog,
@@ -705,8 +875,9 @@ export function createInventoryTransferManyEvent(
   input: CreateInventoryTransferManyInput
 ): InventoryEventDraft {
   assertNonEmptyMovementLines(input.lines, "transfer");
-  const stockEffects: InventoryStockEffect[] = [];
-  const provenanceTransfers: InventoryPositiveLayerProvenanceTransfer[] = [];
+  const groupedTransfers = new Map<string, GroupedInventoryTransferLine>();
+  // One-to-one FIFO provenance cannot represent a source split, destination merge, or route cycle.
+  const endpointRoutes = new Map<string, string>();
   for (const line of input.lines) {
     const toLocationId = line.toLocationId.trim();
     if (toLocationId.length === 0) {
@@ -733,9 +904,50 @@ export function createInventoryTransferManyEvent(
       ...from,
       locationId: toLocationId,
     });
-    stockEffects.push(negativeEffect(item, from, resolved, line.metadata));
-    stockEffects.push(positiveEffect(item, to, resolved, line.metadata));
-    provenanceTransfers.push({ from, to });
+    const fromIdentity = inventoryStockPositionIdentity(from);
+    const toIdentity = inventoryStockPositionIdentity(to);
+    const routeIdentity = JSON.stringify([fromIdentity, toIdentity]);
+    for (const endpointIdentity of [fromIdentity, toIdentity]) {
+      const earlierRoute = endpointRoutes.get(endpointIdentity);
+      if (earlierRoute !== undefined && earlierRoute !== routeIdentity) {
+        throw new Error(
+          "Transfer batch lines must form disjoint one-to-one exact source/destination routes."
+        );
+      }
+      endpointRoutes.set(endpointIdentity, routeIdentity);
+    }
+    const earlier = groupedTransfers.get(routeIdentity);
+    if (earlier === undefined) {
+      groupedTransfers.set(routeIdentity, {
+        ...groupedInventoryOutgoingLine(item, from, resolved, line.metadata),
+        destination: to,
+      });
+    } else {
+      groupedTransfers.set(routeIdentity, {
+        ...mergeGroupedInventoryOutgoingLine(
+          earlier,
+          resolved,
+          line.metadata,
+          routeIdentity,
+          "Transfer"
+        ),
+        destination: earlier.destination,
+      });
+    }
+  }
+  const groupedEntries = [...groupedTransfers.entries()];
+  groupedEntries.sort(compareGroupedInventoryOutgoingEntry);
+  const stockEffects: InventoryStockEffect[] = [];
+  const provenanceTransfers: InventoryPositiveLayerProvenanceTransfer[] = [];
+  for (const [, line] of groupedEntries) {
+    const amount = groupedInventoryOutgoingAmount(line);
+    stockEffects.push(
+      negativeEffect(line.item, line.position, amount, line.metadata)
+    );
+    stockEffects.push(
+      positiveEffect(line.item, line.destination, amount, line.metadata)
+    );
+    provenanceTransfers.push({ from: line.position, to: line.destination });
   }
   return withPositiveLayerProvenanceTransfers(
     input.catalog,
@@ -795,9 +1007,10 @@ export function createInventoryReclassificationManyEvent(
 ): InventoryEventDraft {
   assertNonEmptyMovementLines(input.consume, "reclassification source");
   assertNonEmptyMovementLines(input.produce, "reclassification destination");
-  const stockEffects: InventoryStockEffect[] = [];
-  const provenanceSources: InventoryProvenanceLine[] = [];
-  const provenanceDestinations: InventoryProvenanceLine[] = [];
+  const groupedSources = new Map<string, GroupedInventoryOutgoingLine>();
+  const groupedDestinations = new Map<string, GroupedInventoryOutgoingLine>();
+  /** Exact source identities must not also be emitted as unchanged destinations. */
+  const sourceIdentities = new Set<string>();
   /** Lot masters asserted by destination lines and deduplicated for this event. */
   const lotDefinitions = new Map<string, InventoryLotDefinition>();
   /** Container masters asserted by destination lines and deduplicated for this event. */
@@ -815,11 +1028,21 @@ export function createInventoryReclassificationManyEvent(
       resolved,
       item.revisionId
     );
-    stockEffects.push(negativeEffect(item, from, resolved, line.metadata));
-    provenanceSources.push({
-      position: from,
-      measurements: resolved.measurements,
-    });
+    const identity = inventoryStockPositionIdentity(from);
+    sourceIdentities.add(identity);
+    const earlier = groupedSources.get(identity);
+    groupedSources.set(
+      identity,
+      earlier === undefined
+        ? groupedInventoryOutgoingLine(item, from, resolved, line.metadata)
+        : mergeGroupedInventoryOutgoingLine(
+            earlier,
+            resolved,
+            line.metadata,
+            identity,
+            "Reclassification source"
+          )
+    );
   }
   for (const line of input.produce) {
     const item = findCommandItem(
@@ -830,13 +1053,54 @@ export function createInventoryReclassificationManyEvent(
     );
     const resolved = resolveInventoryAmount(input.catalog, item, line.amount);
     const to = positionWithAmountPackaging(line.to, resolved, item.revisionId);
-    stockEffects.push(positiveEffect(item, to, resolved, line.metadata));
-    provenanceDestinations.push({
-      position: to,
-      measurements: resolved.measurements,
-    });
+    const identity = inventoryStockPositionIdentity(to);
+    if (sourceIdentities.has(identity)) {
+      throw new Error(
+        "Reclassification source and destination exact positions must be disjoint."
+      );
+    }
     collectLotDefinition(lotDefinitions, to, line.lot);
     collectContainerDefinition(containerDefinitions, to, line.container);
+    const earlier = groupedDestinations.get(identity);
+    groupedDestinations.set(
+      identity,
+      earlier === undefined
+        ? groupedInventoryOutgoingLine(item, to, resolved, line.metadata)
+        : mergeGroupedInventoryOutgoingLine(
+            earlier,
+            resolved,
+            line.metadata,
+            identity,
+            "Reclassification destination"
+          )
+    );
+  }
+  const sourceEntries = [...groupedSources.entries()];
+  const destinationEntries = [...groupedDestinations.entries()];
+  sourceEntries.sort(compareGroupedInventoryOutgoingEntry);
+  destinationEntries.sort(compareGroupedInventoryOutgoingEntry);
+  const stockEffects: InventoryStockEffect[] = [];
+  const provenanceSources: InventoryProvenanceLine[] = [];
+  const provenanceDestinations: InventoryProvenanceLine[] = [];
+  for (const [, line] of sourceEntries) {
+    const amount = groupedInventoryOutgoingAmount(line);
+    stockEffects.push(
+      negativeEffect(line.item, line.position, amount, line.metadata)
+    );
+    provenanceSources.push({
+      position: line.position,
+      measurements: line.measurements,
+    });
+  }
+  for (const [, line] of destinationEntries) {
+    const amount = groupedInventoryOutgoingAmount(line);
+    stockEffects.push(
+      positiveEffect(line.item, line.position, amount, line.metadata)
+    );
+    provenanceDestinations.push({
+      position: line.position,
+      measurements: line.measurements,
+    });
   }
   return withPositiveLayerProvenanceTransfers(
     input.catalog,
@@ -952,12 +1216,14 @@ export function createInventoryTransformationEvent(
       "Inventory transformation needs both consume and produce lines."
     );
   }
-  const stockEffects: InventoryStockEffect[] = [];
+  const groupedConsumed = new Map<string, GroupedInventoryTransformationLine>();
+  const groupedProduced = new Map<string, GroupedInventoryTransformationLine>();
+  /** Exact consumed positions must not also be emitted unchanged as transformation outputs. */
+  const consumedIdentities = new Set<string>();
   /** Lot masters asserted by consumed/produced lines and deduplicated for this event. */
   const lotDefinitions = new Map<string, InventoryLotDefinition>();
   /** Container masters asserted by consumed/produced lines and deduplicated for this event. */
   const containerDefinitions = new Map<string, InventoryContainerDefinition>();
-  const consumedGenealogyLines: InventoryTransformationGenealogyLine[] = [];
   for (const line of input.consume) {
     const item = findCommandItem(
       input.catalog,
@@ -971,17 +1237,37 @@ export function createInventoryTransformationEvent(
       resolved,
       item.revisionId
     );
-    stockEffects.push(negativeEffect(item, position, resolved, line.metadata));
+    const identity = inventoryStockPositionIdentity(position);
+    consumedIdentities.add(identity);
     collectLotDefinition(lotDefinitions, position, line.lot);
     collectContainerDefinition(containerDefinitions, position, line.container);
-    consumedGenealogyLines.push({
+    const genealogyNode = findTransformationGenealogyNodeForLine({
       position,
       ...(line.traceabilityNode === undefined
         ? {}
         : { explicitNode: line.traceabilityNode }),
     });
+    const earlier = groupedConsumed.get(identity);
+    if (earlier !== undefined &&
+        !sameTransformationGenealogyNode(earlier.genealogyNode, genealogyNode)) {
+      throw new Error(
+        `Transformation consume lines for exact position ${identity} disagree about genealogy identity.`
+      );
+    }
+    groupedConsumed.set(identity, {
+      movement:
+        earlier === undefined
+          ? groupedInventoryOutgoingLine(item, position, resolved, line.metadata)
+          : mergeGroupedInventoryOutgoingLine(
+              earlier.movement,
+              resolved,
+              line.metadata,
+              identity,
+              "Transformation consume"
+            ),
+      ...(genealogyNode === undefined ? {} : { genealogyNode }),
+    });
   }
-  const producedGenealogyLines: InventoryTransformationGenealogyLine[] = [];
   for (const line of input.produce) {
     const item = findCommandItem(
       input.catalog,
@@ -995,14 +1281,80 @@ export function createInventoryTransformationEvent(
       resolved,
       item.revisionId
     );
-    stockEffects.push(positiveEffect(item, position, resolved, line.metadata));
+    const identity = inventoryStockPositionIdentity(position);
+    if (consumedIdentities.has(identity)) {
+      throw new Error(
+        "Transformation consume and produce exact positions must be disjoint."
+      );
+    }
     collectLotDefinition(lotDefinitions, position, line.lot);
     collectContainerDefinition(containerDefinitions, position, line.container);
-    producedGenealogyLines.push({
+    const genealogyNode = findTransformationGenealogyNodeForLine({
       position,
       ...(line.traceabilityNode === undefined
         ? {}
         : { explicitNode: line.traceabilityNode }),
+    });
+    const earlier = groupedProduced.get(identity);
+    if (earlier !== undefined &&
+        !sameTransformationGenealogyNode(earlier.genealogyNode, genealogyNode)) {
+      throw new Error(
+        `Transformation produce lines for exact position ${identity} disagree about genealogy identity.`
+      );
+    }
+    groupedProduced.set(identity, {
+      movement:
+        earlier === undefined
+          ? groupedInventoryOutgoingLine(item, position, resolved, line.metadata)
+          : mergeGroupedInventoryOutgoingLine(
+              earlier.movement,
+              resolved,
+              line.metadata,
+              identity,
+              "Transformation produce"
+            ),
+      ...(genealogyNode === undefined ? {} : { genealogyNode }),
+    });
+  }
+  const consumedEntries = [...groupedConsumed.entries()];
+  const producedEntries = [...groupedProduced.entries()];
+  consumedEntries.sort(compareGroupedInventoryTransformationEntry);
+  producedEntries.sort(compareGroupedInventoryTransformationEntry);
+  const stockEffects: InventoryStockEffect[] = [];
+  const consumedGenealogyLines: InventoryTransformationGenealogyLine[] = [];
+  const producedGenealogyLines: InventoryTransformationGenealogyLine[] = [];
+  for (const [, line] of consumedEntries) {
+    const movement = line.movement;
+    stockEffects.push(
+      negativeEffect(
+        movement.item,
+        movement.position,
+        groupedInventoryOutgoingAmount(movement),
+        movement.metadata
+      )
+    );
+    consumedGenealogyLines.push({
+      position: movement.position,
+      ...(line.genealogyNode === undefined
+        ? {}
+        : { explicitNode: line.genealogyNode }),
+    });
+  }
+  for (const [, line] of producedEntries) {
+    const movement = line.movement;
+    stockEffects.push(
+      positiveEffect(
+        movement.item,
+        movement.position,
+        groupedInventoryOutgoingAmount(movement),
+        movement.metadata
+      )
+    );
+    producedGenealogyLines.push({
+      position: movement.position,
+      ...(line.genealogyNode === undefined
+        ? {}
+        : { explicitNode: line.genealogyNode }),
     });
   }
   const traceabilityChanges = createTransformationGenealogy(
@@ -1052,7 +1404,7 @@ export function createInventoryScrapManyEvent(
     throw new Error("Scrapping inventory needs an explicit reason.");
   }
   assertNonEmptyMovementLines(input.lines, "scrap");
-  const stockEffects: InventoryStockEffect[] = [];
+  const groupedEffects = new Map<string, GroupedInventoryOutgoingLine>();
   for (const line of input.lines) {
     const item = findCommandItem(
       input.catalog,
@@ -1066,7 +1418,33 @@ export function createInventoryScrapManyEvent(
       resolved,
       item.revisionId
     );
-    stockEffects.push(negativeEffect(item, from, resolved, line.metadata));
+    const identity = inventoryStockPositionIdentity(from);
+    const earlier = groupedEffects.get(identity);
+    groupedEffects.set(
+      identity,
+      earlier === undefined
+        ? groupedInventoryOutgoingLine(item, from, resolved, line.metadata)
+        : mergeGroupedInventoryOutgoingLine(
+            earlier,
+            resolved,
+            line.metadata,
+            identity,
+            "Scrap"
+          )
+    );
+  }
+  const groupedEntries = [...groupedEffects.entries()];
+  groupedEntries.sort(compareGroupedInventoryOutgoingEntry);
+  const stockEffects: InventoryStockEffect[] = [];
+  for (const [, line] of groupedEntries) {
+    stockEffects.push(
+      negativeEffect(
+        line.item,
+        line.position,
+        groupedInventoryOutgoingAmount(line),
+        line.metadata
+      )
+    );
   }
   return createMovementEvent(
     input.catalog,

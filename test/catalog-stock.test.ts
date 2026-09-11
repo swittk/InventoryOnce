@@ -282,6 +282,192 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
     expect(await inventory.read.positions({ itemId: "item-a" })).toEqual([]);
   });
 
+  it("combines duplicate issue scrap and exact transfer-route batch lines", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receive({
+      operationId: "receive-for-duplicate-outgoing-lines",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store"),
+      amount: stockAmount("12", "piece"),
+    });
+
+    const issued = await inventory.stock.issueMany({
+      operationId: "issue-duplicate-lines",
+      occurredAtEpochMs: time1,
+      lines: [
+        { from: loosePosition("store"), amount: stockAmount("1", "piece") },
+        { from: loosePosition("store"), amount: stockAmount("2", "piece") },
+      ],
+    });
+    expect(issued.event.stockEffects).toHaveLength(1);
+    expect(issued.event.stockEffects[0]?.measurementsDelta.primary.quantity.amountMinor).toBe(-3);
+
+    const transferred = await inventory.stock.transferMany({
+      operationId: "transfer-duplicate-route-lines",
+      occurredAtEpochMs: time2,
+      lines: [
+        { from: loosePosition("store"), toLocationId: "room-b", amount: stockAmount("1", "piece") },
+        { from: loosePosition("store"), toLocationId: "room-b", amount: stockAmount("2", "piece") },
+      ],
+    });
+    expect(transferred.event.stockEffects).toHaveLength(2);
+    expect(
+      transferred.event.stockEffects.find((effect) => effect.position.locationId === "store")
+        ?.measurementsDelta.primary.quantity.amountMinor
+    ).toBe(-3);
+    expect(
+      transferred.event.stockEffects.find((effect) => effect.position.locationId === "room-b")
+        ?.measurementsDelta.primary.quantity.amountMinor
+    ).toBe(3);
+
+    const scrapped = await inventory.stock.scrapMany({
+      operationId: "scrap-duplicate-lines",
+      occurredAtEpochMs: time3,
+      reason: "Destroyed in one physical batch.",
+      lines: [
+        { from: loosePosition("room-b"), amount: stockAmount("1", "piece") },
+        { from: loosePosition("room-b"), amount: stockAmount("1", "piece") },
+      ],
+    });
+    expect(scrapped.event.stockEffects).toHaveLength(1);
+    expect(scrapped.event.stockEffects[0]?.measurementsDelta.primary.quantity.amountMinor).toBe(-2);
+
+    const positions = await inventory.read.positions({ itemId: "item-a" });
+    const byLocation = new Map(
+      positions.map((position) => [
+        position.key.locationId,
+        position.measurements.primary.quantity.amountMinor,
+      ])
+    );
+    expect(byLocation.get("store")).toBe(6);
+    expect(byLocation.get("room-b")).toBe(1);
+  });
+
+  it("combines duplicate reclassification and transformation positions systemically", async () => {
+    const reclassificationInventory = createTestInventory();
+    await reclassificationInventory.stock.receive({
+      operationId: "receive-for-duplicate-reclassification",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store"),
+      amount: stockAmount("4", "piece"),
+    });
+    const reclassified = await reclassificationInventory.stock.reclassifyMany({
+      operationId: "reclassify-duplicate-source-lines",
+      occurredAtEpochMs: time1,
+      consume: [
+        { from: loosePosition("store"), amount: stockAmount("1", "piece") },
+        { from: loosePosition("store"), amount: stockAmount("1", "piece") },
+      ],
+      produce: [
+        {
+          to: loosePosition("store", {
+            qualifiedDimensions: [{ dimensionId: "grade", valueId: "b" }],
+          }),
+          amount: stockAmount("2", "piece"),
+        },
+      ],
+    });
+    expect(reclassified.event.stockEffects).toHaveLength(2);
+    expect(
+      reclassified.event.stockEffects.find(
+        (effect) => effect.measurementsDelta.primary.quantity.amountMinor < 0
+      )?.measurementsDelta.primary.quantity.amountMinor
+    ).toBe(-2);
+
+    const transformationInventory = createTestInventory();
+    await transformationInventory.stock.receive({
+      operationId: "receive-for-duplicate-transformation",
+      occurredAtEpochMs: time0,
+      to: loosePosition("transform-store"),
+      amount: stockAmount("2", "piece"),
+    });
+    const transformed = await transformationInventory.stock.transform({
+      operationId: "transform-duplicate-consume-lines",
+      occurredAtEpochMs: time1,
+      consume: [
+        { position: loosePosition("transform-store"), amount: stockAmount("1", "piece") },
+        { position: loosePosition("transform-store"), amount: stockAmount("1", "piece") },
+      ],
+      produce: [
+        {
+          position: loosePosition("transform-store"),
+          itemRevisionId: "item-a-v1",
+          amount: stockAmount("2", "piece"),
+        },
+      ],
+    });
+    expect(transformed.event.stockEffects).toHaveLength(2);
+    expect(
+      transformed.event.stockEffects.find(
+        (effect) => effect.position.itemRevisionId === "item-a-v1"
+      )?.measurementsDelta.primary.quantity.amountMinor
+    ).toBe(2);
+  });
+
+  it("preserves package evidence while combining duplicate outgoing package lines", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receiveMany({
+      operationId: "receive-packages-for-duplicate-issue",
+      occurredAtEpochMs: time0,
+      lines: [
+        { to: loosePosition("pack-store"), amount: packageAmount(1, "item-a-box-24-v1") },
+        { to: loosePosition("pack-store"), amount: packageAmount(1, "item-a-box-24-v1") },
+      ],
+    });
+    const issued = await inventory.stock.issueMany({
+      operationId: "issue-duplicate-package-lines",
+      occurredAtEpochMs: time1,
+      lines: [
+        { from: loosePosition("pack-store"), amount: packageAmount(1, "item-a-box-24-v1") },
+        { from: loosePosition("pack-store"), amount: packageAmount(1, "item-a-box-24-v1") },
+      ],
+    });
+    expect(issued.event.stockEffects).toHaveLength(1);
+    expect(issued.event.stockEffects[0]).toMatchObject({
+      measurementsDelta: {
+        primary: { quantity: { amountMinor: -48, unit: "piece" } },
+      },
+      evidence: {
+        packagingRevisionId: "item-a-box-24-v1",
+        packageCount: "2",
+      },
+    });
+  });
+
+  it("rejects conflicting duplicate outgoing metadata and non-disjoint transfer routes", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receive({
+      operationId: "receive-for-duplicate-outgoing-rejections",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store"),
+      amount: stockAmount("8", "piece"),
+    });
+    await expect(
+      inventory.stock.issueMany({
+        operationId: "reject-duplicate-issue-metadata",
+        occurredAtEpochMs: time1,
+        lines: [
+          { from: loosePosition("store"), amount: stockAmount("1", "piece"), metadata: { source: "a" } },
+          { from: loosePosition("store"), amount: stockAmount("1", "piece"), metadata: { source: "b" } },
+        ],
+      })
+    ).rejects.toThrow("conflicting effect metadata");
+    await expect(
+      inventory.stock.transferMany({
+        operationId: "reject-transfer-source-split",
+        occurredAtEpochMs: time1,
+        lines: [
+          { from: loosePosition("store"), toLocationId: "room-b", amount: stockAmount("1", "piece") },
+          { from: loosePosition("store"), toLocationId: "room-c", amount: stockAmount("1", "piece") },
+        ],
+      })
+    ).rejects.toThrow("disjoint one-to-one exact source/destination routes");
+    expect(
+      (await inventory.read.positions({ itemId: "item-a" }))[0]
+        ?.measurements.primary.quantity.amountMinor
+    ).toBe(8);
+  });
+
   it("stores primary and independently measured truth without converting one into the other", async () => {
     const measuredItem = defineInventoryItem({
       itemId: "catch-item",

@@ -51,8 +51,8 @@ if (!/^[1-9][0-9]*$/u.test(requestedJobsText)) {
 const requestedJobs = Number(requestedJobsText);
 const defaultWorkers = Math.max(1, Math.min(16, Math.floor(availableCpus / requestedJobs)));
 const requestedWorkers = process.env.INVENTORYONCE_TLC_WORKERS ?? String(defaultWorkers);
-if (requestedWorkers !== "auto" && !/^[1-9][0-9]*$/u.test(requestedWorkers)) {
-  throw new Error("INVENTORYONCE_TLC_WORKERS must be 'auto' or a positive integer.");
+if (!/^[1-9][0-9]*$/u.test(requestedWorkers)) {
+  throw new Error("INVENTORYONCE_TLC_WORKERS must be a positive integer.");
 }
 
 /** Return the SHA-256 of one local file without trusting its name. */
