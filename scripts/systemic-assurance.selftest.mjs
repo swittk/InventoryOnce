@@ -14,7 +14,7 @@ import { executableAssuranceSummary, assertExecutableAssuranceMatchesManifests }
 import { finalConvergenceRepositoryPath } from "../experiments/tla-conformance/final-convergence/repository-root.mjs";
 import { assertFormalPositiveReachabilityRegistration } from "./formal-models.mjs";
 import { compactCompilerSourceSetIdentity, compactCompilerSourceSetKey } from "./compact-assurance-pipeline.mjs";
-import { CURRENT_REVIEW_AUTHORITATIVE_PATHS } from "../experiments/tla-conformance/final-convergence/current-review-assurance.mjs";
+import { assertCurrentReviewTrackedDriftAllowed, currentReviewProofIntegrationPaths } from "../experiments/tla-conformance/final-convergence/current-review-assurance.mjs";
 
 /** Repository inputs are rooted at this test module, never the invoking shell. */
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -27,9 +27,22 @@ function temporaryDirectory(run) {
   try { return run(directory); } finally { fs.rmSync(directory, { recursive: true, force: true }); }
 }
 
-test("current-review full-assurance drift gate binds dependency resolution", () => {
-  assert(CURRENT_REVIEW_AUTHORITATIVE_PATHS.includes("package.json"));
-  assert(CURRENT_REVIEW_AUTHORITATIVE_PATHS.includes("pnpm-lock.yaml"));
+test("current-review full-assurance drift gate default-denies tracked inputs outside proof outputs", () => {
+  const allowed = currentReviewProofIntegrationPaths(root);
+  for (const file of [".gitignore", "package.json", "pnpm-lock.yaml", "tsconfig.json", "tsconfig.test.json", "src/events.ts"]) {
+    assert.equal(allowed.has(file), false, file);
+    assert.throws(
+      () => assertCurrentReviewTrackedDriftAllowed([file], allowed),
+      /tracked drift escaped the proof-integration closure/u,
+      file,
+    );
+  }
+  assert.doesNotThrow(() =>
+    assertCurrentReviewTrackedDriftAllowed(
+      ["experiments/tla-conformance/final-convergence/compact-support-manifest.json"],
+      allowed,
+    ),
+  );
 });
 
 test("compact source-set identity detects compiler roots before cache reuse", () => {

@@ -11,18 +11,17 @@ export const CURRENT_REVIEW_ASSURANCE_RECEIPT = "experiments/tla-conformance/fin
 const CURRENT_REVIEW_ASSURANCE_REPORT = "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json";
 const CURRENT_REVIEW_ASSURANCE_FULL_LOG = "experiments/tla-conformance/final-convergence/current-pr-review-full.log";
 const CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "9750cfda5927cd19ebf9ab1f43ac5a2779e3386a";
-/** Product/full-assurance inputs that may not drift after the certified run. */
-export const CURRENT_REVIEW_AUTHORITATIVE_PATHS = Object.freeze([
-  "src",
-  "formal",
-  "scripts",
-  "test",
-  "package.json",
-  "pnpm-lock.yaml",
-  "tsconfig.json",
-  "tsconfig.test.json",
+const CURRENT_REVIEW_ASSURANCE_SELF = "experiments/tla-conformance/final-convergence/current-review-assurance.mjs";
+const COMPACT_MANIFEST = "experiments/tla-conformance/final-convergence/compact-support-manifest.json";
+const COMPACT_CLOSURE = "experiments/tla-conformance/final-convergence/authority-reference-manifest.json";
+const COMPACT_WRAPPER = "experiments/tla-conformance/final-convergence/run-compact-final-assurance.mjs";
+const POST_FULL_RUNTIME_TRANSPORT = "scripts/inventory-epoch-contract.mjs";
+const AGENT_DIARY = "AGENT_DIARY.md";
+const CURRENT_REVIEW_EVIDENCE_PATHS = Object.freeze([
+  CURRENT_REVIEW_ASSURANCE_RECEIPT,
+  CURRENT_REVIEW_ASSURANCE_REPORT,
+  CURRENT_REVIEW_ASSURANCE_FULL_LOG,
 ]);
-const POST_FULL_PROOF_INTEGRATION_PATHS = Object.freeze(["scripts/inventory-epoch-contract.mjs"]);
 
 /** Hash one ordinary file's exact bytes with lowercase SHA-256. */
 function sha256(file) {
@@ -65,6 +64,62 @@ function committedFileSha256(repositoryRoot, commit, file) {
     maxBuffer: 64 * 1024 * 1024,
   });
   return crypto.createHash("sha256").update(bytes).digest("hex");
+}
+
+/** Return sorted nonempty NUL-delimited Git paths without interpreting file names as shell text. */
+function gitPathList(repositoryRoot, args) {
+  return execFileSync("git", args, {
+    cwd: repositoryRoot,
+    encoding: "utf8",
+    maxBuffer: 64 * 1024 * 1024,
+  }).split("\0").filter(Boolean).sort();
+}
+
+/** Derive tracked outputs owned by compact currentization/certification from the current manifest. */
+export function currentReviewProofIntegrationPaths(repositoryRoot) {
+  const root = path.resolve(repositoryRoot);
+  const manifest = JSON.parse(fs.readFileSync(regularFile(root, COMPACT_MANIFEST, "Compact support manifest"), "utf8"));
+  const paths = new Set([
+    ...CURRENT_REVIEW_EVIDENCE_PATHS,
+    CURRENT_REVIEW_ASSURANCE_SELF,
+    POST_FULL_RUNTIME_TRANSPORT,
+    COMPACT_MANIFEST,
+    COMPACT_CLOSURE,
+    COMPACT_WRAPPER,
+    AGENT_DIARY,
+  ]);
+  for (const row of manifest.bundles?.entries ?? []) {
+    assert.equal(typeof row?.file, "string", "Compact bundle output path is invalid.");
+    paths.add(row.file);
+  }
+  if (typeof manifest.archive?.file === "string") paths.add(manifest.archive.file);
+  for (const node of manifest.graph ?? []) {
+    for (const row of node.outputs ?? []) {
+      assert.equal(typeof row?.file, "string", "Compact graph output path is invalid.");
+      paths.add(row.file);
+    }
+  }
+  return paths;
+}
+
+/** Default-deny any tracked drift that is not one of the exact proof-integration outputs. */
+export function assertCurrentReviewTrackedDriftAllowed(changedPaths, allowedPaths) {
+  const unexpected = [...new Set(changedPaths)].filter(file => !allowedPaths.has(file)).sort();
+  assert.deepEqual(
+    unexpected,
+    [],
+    `Post-certification tracked drift escaped the proof-integration closure: ${unexpected.join(", ")}`,
+  );
+}
+
+/** Return current tracked/untracked dirt while excluding local ChatGPT audit state from the product proof domain. */
+function currentReviewDirtyPaths(repositoryRoot) {
+  const tracked = gitPathList(repositoryRoot, ["diff", "--name-only", "-z", "HEAD", "--"]);
+  const untracked = gitPathList(repositoryRoot, [
+    "-c", "core.excludesFile=/dev/null",
+    "ls-files", "--others", "--exclude-per-directory=.gitignore", "-z",
+  ]).filter(file => !file.startsWith(".chatgpt/"));
+  return [...new Set([...tracked, ...untracked])].sort();
 }
 
 /** Validate report/receipt semantic bindings independently of immutable Git-byte anchoring. */
@@ -139,29 +194,21 @@ export function verifyCurrentReviewAssurance(repositoryRoot, context) {
     independentlyDerivedSurfaceSha256: currentReviewSurfaceSha256(root, context),
     independentlyDerivedRepositoryStateSha256: repositoryAssuranceCommittedStateSha256(root, receipt.certifiedHead),
   });
-  const dirtyAuthoritativePaths = execFileSync(
-    "git",
-    ["status", "--porcelain=v1", "--untracked-files=all", "--", ...CURRENT_REVIEW_AUTHORITATIVE_PATHS],
-    { cwd: root, encoding: "utf8" },
-  ).trim();
-  assert.equal(
-    dirtyAuthoritativePaths,
-    "",
-    "Current review assurance requires a clean authoritative worktree.",
-  );
-  const authoritativeDelta = execFileSync(
-    "git",
-    ["diff", "--name-only", receipt.certifiedHead, "HEAD", "--", ...CURRENT_REVIEW_AUTHORITATIVE_PATHS],
-    { cwd: root, encoding: "utf8" },
-  ).split(/\r?\n/u).filter(Boolean).sort();
-  const proofIntegrationDelta = POST_FULL_PROOF_INTEGRATION_PATHS.filter((file) =>
-    committedFileSha256(root, receipt.certifiedHead, file) !== committedFileSha256(root, "HEAD", file)
-  );
+  const allowedProofIntegrationPaths = currentReviewProofIntegrationPaths(root);
+  const evidenceDelta = gitPathList(root, [
+    "diff", "--name-only", "-z", receipt.certifiedHead, CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD, "--",
+  ]);
   assert.deepEqual(
-    authoritativeDelta,
-    [CURRENT_REVIEW_ASSURANCE_REPORT, ...proofIntegrationDelta].sort(),
-    "Proof integration changed authoritative product/full-assurance bytes outside the separately compact-certified proof bridge.",
+    evidenceDelta,
+    [...CURRENT_REVIEW_EVIDENCE_PATHS].sort(),
+    "Immutable current-review evidence commit changed bytes outside its exact receipt/report/log payload.",
   );
+  const trackedPostCertificationDelta = gitPathList(root, [
+    "diff", "--name-only", "-z", receipt.certifiedHead, "HEAD", "--",
+  ]);
+  assertCurrentReviewTrackedDriftAllowed(trackedPostCertificationDelta, allowedProofIntegrationPaths);
+  const dirtyPaths = currentReviewDirtyPaths(root);
+  assertCurrentReviewTrackedDriftAllowed(dirtyPaths, allowedProofIntegrationPaths);
   return {
     receipt,
     reference: {

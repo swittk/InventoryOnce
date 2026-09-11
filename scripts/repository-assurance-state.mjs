@@ -34,11 +34,11 @@ function hashAssuranceEntries(entries) {
   return hash.digest("hex");
 }
 
-/** Hash the current tracked/unignored repository state without self-hashing the stored report. */
+/** Hash tracked plus repository-.gitignore-visible untracked state without ambient Git excludes or self-hashing the stored report. */
 export function repositoryAssuranceStateSha256(repositoryRoot) {
   const listed = spawnSync(
     "git",
-    ["ls-files", "--cached", "--others", "--exclude-standard", "-z"],
+    ["-c", "core.excludesFile=/dev/null", "ls-files", "--cached", "--others", "--exclude-per-directory=.gitignore", "-z"],
     { cwd: repositoryRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }
   );
   if (listed.error !== undefined || listed.status !== 0) {

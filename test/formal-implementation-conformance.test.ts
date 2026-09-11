@@ -138,6 +138,44 @@ describe("formal implementation conformance manifest", () => {
     }
   });
 
+  it("keeps repository assurance state independent of ambient Git exclude configuration", () => {
+    const root = mkdtempSync(path.join(tmpdir(), "inventoryonce-assurance-excludes-"));
+    const external = mkdtempSync(path.join(tmpdir(), "inventoryonce-assurance-global-excludes-"));
+    try {
+      execFileSync("git", ["init", "-q"], { cwd: root });
+      writeFileSync(path.join(root, ".gitignore"), "dist/\nnode_modules/\n");
+      writeFileSync(path.join(root, "tracked.txt"), "tracked\n");
+      execFileSync("git", ["add", ".gitignore", "tracked.txt"], { cwd: root });
+      execFileSync(
+        "git",
+        ["-c", "user.name=InventoryOnce", "-c", "user.email=inventoryonce@example.invalid", "commit", "-q", "-m", "fixture"],
+        { cwd: root },
+      );
+      writeFileSync(path.join(root, "ambient.txt"), "ambient\n");
+      const script = [
+        'import { repositoryAssuranceStateSha256 } from "./scripts/repository-assurance-state.mjs";',
+        "process.stdout.write(repositoryAssuranceStateSha256(process.argv[1]));",
+      ].join("\n");
+      const hash = () => execFileSync(
+        process.execPath,
+        ["--input-type=module", "--eval", script, root],
+        { cwd: packageRoot, encoding: "utf8" },
+      ).trim();
+      const baseline = hash();
+
+      writeFileSync(path.join(root, ".git", "info", "exclude"), "ambient.txt\n");
+      expect(hash()).toBe(baseline);
+
+      const globalExclude = path.join(external, "global-excludes");
+      writeFileSync(globalExclude, "ambient.txt\n");
+      execFileSync("git", ["config", "core.excludesFile", globalExclude], { cwd: root });
+      expect(hash()).toBe(baseline);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+      rmSync(external, { recursive: true, force: true });
+    }
+  });
+
   it("binds regular-file Git mode into live and committed assurance state", () => {
     const root = mkdtempSync(path.join(tmpdir(), "inventoryonce-assurance-mode-"));
     try {
