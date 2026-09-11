@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   InventoryAllocationMethod,
+  combineInventoryAmountLineGroups,
   combineInventoryPolicyBatchRequestGroups,
+  defineInventoryAmountLineGroup,
   defineInventoryPolicyBatchRequestGroup,
   inventoryPolicyBatchAllocationLinesByReference,
   inventoryStockSelector,
@@ -29,6 +31,63 @@ function request(
 }
 
 describe("policy request groups and allocation reads", () => {
+  it("owns retained amount lines and policy requests instead of aliasing caller objects", () => {
+    const catalog = createTabletCatalog();
+    const mutableLine = {
+      itemRevisionId: "item-a-v2",
+      amount: stockAmount("1", "piece"),
+      applicationValue: "original",
+    };
+    const amountGroup = defineInventoryAmountLineGroup({
+      catalog,
+      itemId: "item-a",
+      expectedItemRevisionId: "item-a-v2",
+      expectedAmount: stockAmount("1", "piece"),
+      lines: [mutableLine],
+    });
+    const combinedAmounts = combineInventoryAmountLineGroups([amountGroup]);
+    const callerLocationIds = ["store"];
+    const mutableRequest = {
+      requestId: "request-owned",
+      selector: inventoryStockSelector("item-a", {
+        itemRevisionIds: ["item-a-v2"],
+        locationIds: callerLocationIds,
+      }),
+      amount: stockAmount("1", "piece"),
+      itemRevisionId: "item-a-v2",
+      method: InventoryAllocationMethod.Fifo,
+    };
+    const policyGroup = defineInventoryPolicyBatchRequestGroup({
+      catalog,
+      itemId: "item-a",
+      expectedItemRevisionId: "item-a-v2",
+      expectedAmount: stockAmount("1", "piece"),
+      reference: "application-owned",
+      requests: [mutableRequest],
+    });
+    const combinedPolicy = combineInventoryPolicyBatchRequestGroups([policyGroup]);
+
+    expect(amountGroup[0]).not.toBe(mutableLine);
+    expect(combinedAmounts[0]).not.toBe(amountGroup[0]);
+    expect(policyGroup.requests[0]).not.toBe(mutableRequest);
+    expect(combinedPolicy.requests[0]).not.toBe(policyGroup.requests[0]);
+
+    mutableLine.itemRevisionId = "mutated-revision";
+    mutableLine.applicationValue = "mutated-application-data";
+    mutableRequest.requestId = "mutated-request";
+    callerLocationIds[0] = "other-location";
+    expect(amountGroup[0]?.itemRevisionId).toBe("item-a-v2");
+    expect(amountGroup[0]?.applicationValue).toBe("original");
+    expect(combinedAmounts[0]?.applicationValue).toBe("original");
+    expect(combinedAmounts[0]?.itemRevisionId).toBe("item-a-v2");
+    expect(policyGroup.requests[0]?.requestId).toBe("request-owned");
+    expect(combinedPolicy.requests[0]?.requestId).toBe("request-owned");
+    expect(policyGroup.requests[0]?.selector.locationIds).toEqual(["store"]);
+    expect(combinedPolicy.requests[0]?.selector.locationIds).toEqual(["store"]);
+    expect(policyGroup.referenceByRequestId.get("request-owned")).toBe(
+      "application-owned"
+    );
+  });
   it("freezes one application reference while proving child requests conserve the parent", () => {
     const catalog = createTabletCatalog();
     const group = defineInventoryPolicyBatchRequestGroup({

@@ -189,6 +189,7 @@ import {
   type ListInventoryPackagingRevisionsInput,
 } from "./read-model.js";
 import {
+  cloneInventoryRetainedData,
   createInventorySparseRecord,
   inventorySparseRecordValue,
   setInventorySparseRecordValue,
@@ -7146,17 +7147,22 @@ export function defineInventoryAmountLineGroup<
     lines,
     label,
   });
-  return [...lines];
+  /** Owned child-line snapshots returned independently of the caller's mutable objects. */
+  const retainedLines: TLine[] = [];
+  for (const line of lines) retainedLines.push(cloneInventoryRetainedData(line));
+  return retainedLines;
 }
 
 /** Flatten already-validated amount-line groups without reconstructing their physical meaning. */
 export function combineInventoryAmountLineGroups<
   TLine extends InventoryAmountLineRead
 >(groups: readonly (readonly TLine[])[]): readonly TLine[] {
-  return groups.flatMap(
-    /** Copy one already-validated group into the flattened immutable result. */
-    (group) => [...group]
-  );
+  /** Owned flattened snapshots so arbitrary structurally typed groups cannot alias this result. */
+  const retainedLines: TLine[] = [];
+  for (const group of groups) {
+    for (const line of group) retainedLines.push(cloneInventoryRetainedData(line));
+  }
+  return retainedLines;
 }
 
 /** One validated policy-request group belonging to a single application reference. */
@@ -7258,11 +7264,16 @@ export function defineInventoryPolicyBatchRequestGroup({
     ),
     label,
   });
+  /** Owned request snapshots whose nested selectors/amounts cannot be rewritten by the caller. */
+  const retainedRequests: InventoryOncePolicyBatchRequest[] = [];
+  for (const request of requests) {
+    retainedRequests.push(cloneInventoryRetainedData(request));
+  }
   return {
     reference,
-    requests: [...requests],
+    requests: retainedRequests,
     referenceByRequestId: new Map(
-      requests.map(
+      retainedRequests.map(
         /** Freeze one native request identity to its application result reference. */
         (request) => [request.requestId, reference]
       )
@@ -7283,7 +7294,9 @@ export function combineInventoryPolicyBatchRequestGroups(
           `Inventory policy batch repeats requestId '${request.requestId}'.`
         );
       }
-      requests.push(request);
+      /** Own even structurally supplied groups instead of trusting their child-object lifetime. */
+      const retainedRequest = cloneInventoryRetainedData(request);
+      requests.push(retainedRequest);
       const reference = group.referenceByRequestId.get(request.requestId);
       if (reference === undefined) {
         throw new Error(
