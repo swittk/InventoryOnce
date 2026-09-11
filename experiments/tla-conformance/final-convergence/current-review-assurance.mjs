@@ -12,6 +12,7 @@ const CURRENT_REVIEW_ASSURANCE_REPORT = "formal/implementation-conformance/EXECU
 const CURRENT_REVIEW_ASSURANCE_FULL_LOG = "experiments/tla-conformance/final-convergence/current-pr-review-full.log";
 const CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "f5ea450f5436bc6be1a6cdaac34dee8744ba61c1";
 const AUTHORITATIVE_PATHS = Object.freeze(["src", "formal", "scripts", "test", "package.json", "tsconfig.json", "tsconfig.test.json"]);
+const POST_FULL_PROOF_INTEGRATION_PATHS = Object.freeze(["scripts/inventory-epoch-contract.mjs"]);
 
 /** Hash one ordinary file's exact bytes with lowercase SHA-256. */
 function sha256(file) {
@@ -143,10 +144,13 @@ export function verifyCurrentReviewAssurance(repositoryRoot, context) {
     ["diff", "--name-only", receipt.certifiedHead, "HEAD", "--", ...AUTHORITATIVE_PATHS],
     { cwd: root, encoding: "utf8" },
   ).split(/\r?\n/u).filter(Boolean).sort();
+  const proofIntegrationDelta = POST_FULL_PROOF_INTEGRATION_PATHS.filter((file) =>
+    committedFileSha256(root, receipt.certifiedHead, file) !== committedFileSha256(root, "HEAD", file)
+  );
   assert.deepEqual(
     authoritativeDelta,
-    [CURRENT_REVIEW_ASSURANCE_REPORT],
-    "Proof integration changed authoritative product/assurance bytes after the certified full run.",
+    [CURRENT_REVIEW_ASSURANCE_REPORT, ...proofIntegrationDelta].sort(),
+    "Proof integration changed authoritative product/full-assurance bytes outside the separately compact-certified proof bridge.",
   );
   return {
     receipt,

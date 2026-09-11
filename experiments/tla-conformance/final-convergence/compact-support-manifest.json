@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "archive": {
     "file": "experiments/tla-conformance/final-convergence/compact-support.tar.gz",
-    "sha256": "5a469ed34bb89234301b017bc38d940d2e18d55aab444f2f149909acfda78f49",
-    "bytes": 1054585,
+    "sha256": "7f5968e6ba5cbdb6c763a943cedc1a163249c6a2f956d766936fd823c433b366",
+    "bytes": 1471332,
     "files": [
       {
         "file": "experiments/tla-conformance/astra-authority-control-r8/family.mjs",
@@ -112,13 +112,13 @@
       },
       {
         "file": "experiments/tla-conformance/final-convergence/final-families.mjs",
-        "sha256": "a1817158b5403ac9a14538245562ab718efdf82820c5b84d4861965c865b7acb",
-        "bytes": 5994
+        "sha256": "1f47622286e59b69e1d20a9ec4032a759a529bc4e1e2f3535f3e6196b1a34bf4",
+        "bytes": 6291
       },
       {
         "file": "experiments/tla-conformance/final-convergence/final-head-transport.mjs",
-        "sha256": "76de5b2b30b90381194f7f8fef6f7fcc2405e4be5832ce846ff779c13073ed28",
-        "bytes": 2544
+        "sha256": "ab554ec5ec8dadcfa633e32a4370c5732bff1fd497af5278a5ea57cab5080cf9",
+        "bytes": 3044
       },
       {
         "file": "experiments/tla-conformance/final-convergence/final-selftest.mjs",
@@ -134,6 +134,21 @@
         "file": "experiments/tla-conformance/final-convergence/readworld-current.mjs",
         "sha256": "abcd6143bf86b66a1d05743051132be8c14779116f0f3b5c2eeef8dc14ad7269",
         "bytes": 7504
+      },
+      {
+        "file": "experiments/tla-conformance/final-convergence/review-517722-prior-producer.json",
+        "sha256": "dc14a14754df5e857197342bf3f3f9774b294a1200f85d9e07264bf3e724cfcc",
+        "bytes": 1830337
+      },
+      {
+        "file": "experiments/tla-conformance/final-convergence/review-517722-prior-registry.json",
+        "sha256": "0e21b5cd2649af21d83f7ec6dc37972f5f1e2a91a1ee148deed3600c445c8bba",
+        "bytes": 165554
+      },
+      {
+        "file": "experiments/tla-conformance/final-convergence/review-517722-prior-value.json",
+        "sha256": "65fab2f52823f4d1cbc8eb14ae92d7dacd20ea8a7d48c8b85a5ba046805efbce",
+        "bytes": 2281444
       },
       {
         "file": "experiments/tla-conformance/final-convergence/run-final-verifier.mjs",
@@ -433,8 +448,8 @@
       {
         "mode": "unified",
         "file": "experiments/tla-conformance/final-convergence/compact-final-verify.mjs",
-        "sha256": "cf866dafb38ecfe660e185ffa72046addd03c758f5bd898e67aec324599a8cc8",
-        "bytes": 841060
+        "sha256": "bf1679c7a199079569849da18a2888780732bcf6a4f6652527e22dc26afb4446",
+        "bytes": 851702
       }
     ],
     "sources": [
@@ -505,18 +520,18 @@
       },
       {
         "file": "experiments/tla-conformance/final-convergence/current-review-assurance.mjs",
-        "sha256": "988549d938bbce455db117b0eb45730e275c8b045c63603ace12f1c99f482e78",
+        "sha256": "3363f7e4381a03cd4b659c606d412390f07859b7cfad3fbbdf36801206d5b6fa",
         "bytes": 9304
       },
       {
         "file": "experiments/tla-conformance/final-convergence/final-families.mjs",
-        "sha256": "a1817158b5403ac9a14538245562ab718efdf82820c5b84d4861965c865b7acb",
-        "bytes": 5994
+        "sha256": "1f47622286e59b69e1d20a9ec4032a759a529bc4e1e2f3535f3e6196b1a34bf4",
+        "bytes": 6291
       },
       {
         "file": "experiments/tla-conformance/final-convergence/final-head-transport.mjs",
-        "sha256": "76de5b2b30b90381194f7f8fef6f7fcc2405e4be5832ce846ff779c13073ed28",
-        "bytes": 2544
+        "sha256": "ab554ec5ec8dadcfa633e32a4370c5732bff1fd497af5278a5ea57cab5080cf9",
+        "bytes": 3044
       },
       {
         "file": "experiments/tla-conformance/final-convergence/final-selftest.mjs",
@@ -735,13 +750,13 @@
       },
       {
         "file": "scripts/inventory-epoch-contract.mjs",
-        "sha256": "85ff15d7744c7a6d631f65b7467e3a0bddbe0f9ed371dad2c354f999b329fd64",
-        "bytes": 27155
+        "sha256": "f2000fc740d0a3868848bf5e62b66cb0f72ded24369305ce7b10d8c9d73b28e5",
+        "bytes": 37572
       },
       {
         "file": "scripts/repository-assurance-state.mjs",
-        "sha256": "685ab8c9b07f2ffa4bfc3ee143abafe64915da072e01744bcc8ac270c82a8939",
-        "bytes": 5357
+        "sha256": "41484b3f95b1346022c4da16542a8687d6944180ba36369f7a76039e3aa95c47",
+        "bytes": 6544
       }
     ],
     "moduleGraph": {
