@@ -3,11 +3,38 @@
   "status": "FINAL_HEAD_TRANSPORT_PROVED",
   "priorProofHead": "6983219e13295b8f6b073daefc3cbcd90b32ac35",
   "immediatePriorProofHead": "63f520f3bb21fcbb5da51c31ef9e5d327f8de51f",
-  "finalSurfaceDigest": "334397f78b71d8d59ea4fadadd6e8feec9e4f16b585b6c591c6b36f045a9e6e6",
+  "finalSurfaceDigest": "a761b48ce053a501d3b1e732da0126b6bfe92e9b998c194baa698cd02cfd7ed7",
   "callables": 535,
   "exactPrimitiveTransport": {
     "priorProofHead": "6983219e13295b8f6b073daefc3cbcd90b32ac35",
     "latestReviewRuntimeTransport": {
+      "priorCertifiedHead": "a7d872d92a1f555e41e016592c9e840afad59bd6",
+      "certifiedRepairHead": "919d979811013e202ac01e4981b5d40bda53fc40",
+      "exactChangedRuntimeFiles": [
+        "src/events.ts",
+        "src/fungibility.ts"
+      ],
+      "transitions": [
+        {
+          "file": "src/events.ts",
+          "patchSha256": "00f9f60fcb96475cbe43b1fd653f47d29ac330b3b0e5a9bad980dbe77cd77654",
+          "priorSha256": "00155761783c7396c3c06e0756e70eb4fc96b6caa936ef7106344ab00d05705d",
+          "currentSha256": "c05db661416309c1d0ccc048d3bcc71a4a0381c16e4bb8cdbbcfe13041d4cc6f"
+        },
+        {
+          "file": "src/fungibility.ts",
+          "patchSha256": "195d7bca9b532cb773f399cb5849907da5a3d1d55d6a902bfd92a27b0d2e14ab",
+          "priorSha256": "3c6de2a463fb57aee417b442cfba202e13277cc0de80a49ee2020f12c65d47b7",
+          "currentSha256": "6f8c2e715b4edf11d8a2d466af44276cc8a55653de54b81af5fa342d59aff34f"
+        }
+      ],
+      "laws": [
+        "One event may assert at most one action per exact traceability kind/from/to edge; exact duplicate diagnostics remain separately fail-closed.",
+        "Fungibility summary member ordering changes only the deterministic permutation comparator from locale-sensitive collation to the package canonical identity comparator.",
+        "Both runtime changes reproduce red-before, are independently full-assurance certified at the named repair commit, and reverse exactly to the reviewed predecessor in emitted-runtime and typed-AST form."
+      ]
+    },
+    "review517722RuntimeTransport": {
       "priorCertifiedHead": "63f520f3bb21fcbb5da51c31ef9e5d327f8de51f",
       "certifiedRepairHead": "3ea1626f6e42533b018bd532626c421e9f9aa2a9",
       "exactChangedRuntimeFiles": [
@@ -177,7 +204,7 @@
       },
       {
         "file": "src/events.ts",
-        "sha256": "00155761783c7396c3c06e0756e70eb4fc96b6caa936ef7106344ab00d05705d"
+        "sha256": "c05db661416309c1d0ccc048d3bcc71a4a0381c16e4bb8cdbbcfe13041d4cc6f"
       },
       {
         "file": "src/facade.ts",
@@ -185,7 +212,7 @@
       },
       {
         "file": "src/fungibility.ts",
-        "sha256": "3c6de2a463fb57aee417b442cfba202e13277cc0de80a49ee2020f12c65d47b7"
+        "sha256": "6f8c2e715b4edf11d8a2d466af44276cc8a55653de54b81af5fa342d59aff34f"
       },
       {
         "file": "src/index.ts",
@@ -388,7 +415,7 @@
     },
     {
       "file": "src/events.ts",
-      "sha256": "00155761783c7396c3c06e0756e70eb4fc96b6caa936ef7106344ab00d05705d"
+      "sha256": "c05db661416309c1d0ccc048d3bcc71a4a0381c16e4bb8cdbbcfe13041d4cc6f"
     },
     {
       "file": "src/facade.ts",
@@ -396,7 +423,7 @@
     },
     {
       "file": "src/fungibility.ts",
-      "sha256": "3c6de2a463fb57aee417b442cfba202e13277cc0de80a49ee2020f12c65d47b7"
+      "sha256": "6f8c2e715b4edf11d8a2d466af44276cc8a55653de54b81af5fa342d59aff34f"
     },
     {
       "file": "src/index.ts",
@@ -504,7 +531,7 @@
     },
     {
       "file": "scripts/inventory-epoch-contract.mjs",
-      "sha256": "f2000fc740d0a3868848bf5e62b66cb0f72ded24369305ce7b10d8c9d73b28e5"
+      "sha256": "ee3f91bcda8eb0cf8ce292d9c3ce8d8ca79903f276b81b7b70cc0e5378a44dea"
     },
     {
       "file": "formal/UseByReservation.tla",
@@ -520,5 +547,5 @@
     }
   ],
   "creditExpansion": false,
-  "contentSha256": "3ab046ef5b79730f4acaf91eceed83b0893b9c7c3082ed42d7c3a360765e88e8"
+  "contentSha256": "2111a9436dcb08ed08d6fdac7b02fcb946b1a567256aaf712cfeff95b70f28e4"
 }
