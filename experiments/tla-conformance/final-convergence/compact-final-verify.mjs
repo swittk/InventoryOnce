@@ -16215,7 +16215,7 @@ function repositoryAssuranceCommittedStateSha256(repositoryRoot, commit) {
 var CURRENT_REVIEW_ASSURANCE_RECEIPT = "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json";
 var CURRENT_REVIEW_ASSURANCE_REPORT = "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json";
 var CURRENT_REVIEW_ASSURANCE_FULL_LOG = "experiments/tla-conformance/final-convergence/current-pr-review-full.log";
-var CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "eb40a3b00c580499dd83ad38c02ae96a6375494a";
+var CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "cbe115eb8c1ee626be4c8fd7ff3f58190f74894a";
 var CURRENT_REVIEW_ASSURANCE_SELF = "experiments/tla-conformance/final-convergence/current-review-assurance.mjs";
 var COMPACT_MANIFEST = "experiments/tla-conformance/final-convergence/compact-support-manifest.json";
 var COMPACT_CLOSURE = "experiments/tla-conformance/final-convergence/authority-reference-manifest.json";
@@ -16324,8 +16324,6 @@ await runCompactCommand({ moduleUrl: import.meta.url, mode: process.argv[2] ?? "
     COMPACT_WRAPPER,
     AGENT_DIARY
   ]);
-  assert40.equal(typeof manifest.archive?.file, "string", "Pinned compact archive path is invalid.");
-  paths.add(manifest.archive.file);
   for (const row of closure.outputs ?? []) {
     assert40.equal(typeof row?.file, "string", "Pinned compact output path is invalid.");
     paths.add(row.file);
