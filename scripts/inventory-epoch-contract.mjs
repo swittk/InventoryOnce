@@ -10,6 +10,18 @@ import { readAssuranceFile } from "./assurance-files.mjs";
 export const EPOCH_PRIOR_PROOF_HEAD = "6983219e13295b8f6b073daefc3cbcd90b32ac35";
 /** Prior fully certified PR head before Review 5176369856 added malformed-input admission guards. */
 export const CURRENT_REVIEW_RUNTIME_PRIOR_HEAD = "1f4858d81b4ea6ef5d983b4e57fd680519c1e833";
+/** Exact PR head reviewed by Full Review 5181132010. */
+export const REVIEW_518113_RUNTIME_PRIOR_HEAD = "dc287206c21f7ab9f7a7fc111ac7b0312e22d1b8";
+/** Exact supported-domain runtime repair head for Full Review 5181132010. */
+export const REVIEW_518113_RUNTIME_CERTIFIED_HEAD = "ba2b74e99f4d2e51aa81553b7d9cacc7c10c586a";
+/** Exact compact pin inherited by the reviewed predecessor before the Review 5181132010 runtime change. */
+export const REVIEW_518113_PRIOR_COMPACT_PIN = "ceb527e08cc2f775644c28a469556dc924e73536";
+/** Exact compact-certified tree inherited by that predecessor. */
+export const REVIEW_518113_PRIOR_COMPACT_CERTIFIED_HEAD = "6509bc071b0a1b6169a6acaab551f3f4598869da";
+/** Immutable runtime patch admitted by the Review 5181132010 transport. */
+const REVIEW_518113_RUNTIME_PATCH = Object.freeze([
+  Object.freeze({ file: "src/model.ts", patchSha256: "4b89e58eb31457bd607c923d714ebd71e332e43742e31c1ede23dbe46287be22", priorSha256: "9c4b76f4dd92022eaaee93552765d0b09898651aea3de6f4bffa6c41786b9dd6", currentSha256: "1ae3505cbf09e4b5ad003f14ab0363dca016d4c22dcfbae14926c978b5655ddc" }),
+]);
 /** Exact PR head reviewed by Full Review 5180096971. */
 export const REVIEW_518009_RUNTIME_PRIOR_HEAD = "868d9295079148fb00e66ccf146b504fdcdee41e";
 /** Exact runtime repair head independently full-certified for Full Review 5180096971. */
@@ -266,13 +278,66 @@ function traceabilityEdgeIdentity(
   return text;
 }
 
+/** Prove Full Review 5181132010 as one immutable exact source transition above the prior compact-certified PR head. */
+export function verifyReview518113RuntimeTransport(root) {
+  execFileSync("git", ["merge-base", "--is-ancestor", REVIEW_518113_RUNTIME_PRIOR_HEAD, REVIEW_518113_RUNTIME_CERTIFIED_HEAD], { cwd: root, stdio: "ignore" });
+  execFileSync("git", ["merge-base", "--is-ancestor", REVIEW_518113_RUNTIME_CERTIFIED_HEAD, "HEAD"], { cwd: root, stdio: "ignore" });
+  execFileSync("git", ["merge-base", "--is-ancestor", REVIEW_518113_PRIOR_COMPACT_PIN, REVIEW_518113_RUNTIME_PRIOR_HEAD], { cwd: root, stdio: "ignore" });
+  const priorFiles = execFileSync("git", ["ls-tree", "-r", "--name-only", REVIEW_518113_RUNTIME_PRIOR_HEAD, "--", "src"], { cwd: root, encoding: "utf8" }).trim().split("\n");
+  const currentFiles = execFileSync("git", ["ls-tree", "-r", "--name-only", REVIEW_518113_RUNTIME_CERTIFIED_HEAD, "--", "src"], { cwd: root, encoding: "utf8" }).trim().split("\n");
+  assert.deepEqual(currentFiles, priorFiles, "Review 5181132010 changed the runtime module domain.");
+  for (const file of ["final-head-transport.json", "final-v309.json", "final-a121-b58.json", "final-surface-bindings.json", "final-binder-report.json"]) {
+    const relative = `experiments/tla-conformance/final-convergence/${file}`;
+    const certified = execFileSync("git", ["show", `${REVIEW_518113_PRIOR_COMPACT_CERTIFIED_HEAD}:${relative}`], { cwd: root, maxBuffer: 64 * 1024 * 1024 });
+    const priorHead = execFileSync("git", ["show", `${REVIEW_518113_RUNTIME_PRIOR_HEAD}:${relative}`], { cwd: root, maxBuffer: 64 * 1024 * 1024 });
+    assert.equal(sha256(priorHead), sha256(certified), `Prior compact-certified artifact drifted before Review 5181132010: ${file}`);
+  }
+  const changed = execFileSync("git", ["diff", "--name-only", REVIEW_518113_RUNTIME_PRIOR_HEAD, REVIEW_518113_RUNTIME_CERTIFIED_HEAD, "--", "src"], { cwd: root, encoding: "utf8" }).trim().split("\n").filter(Boolean);
+  assert.deepEqual(changed, REVIEW_518113_RUNTIME_PATCH.map(row => row.file), "Review 5181132010 runtime patch escaped its audited position-ownership family.");
+  const laterRuntimeDelta = execFileSync("git", ["diff", "--name-only", REVIEW_518113_RUNTIME_CERTIFIED_HEAD, "HEAD", "--", "src"], { cwd: root, encoding: "utf8" }).trim();
+  assert.equal(laterRuntimeDelta, "", "Runtime source changed after the Review 5181132010 repair candidate.");
+  const expectedByFile = new Map(REVIEW_518113_RUNTIME_PATCH.map(row => [row.file, row]));
+  const inputs = [], priorSources = new Map(), transitions = [];
+  for (const file of currentFiles) {
+    const current = readAssuranceFile(root, file);
+    const certified = execFileSync("git", ["show", `${REVIEW_518113_RUNTIME_CERTIFIED_HEAD}:${file}`], { cwd: root, maxBuffer: 64 * 1024 * 1024 });
+    assert.equal(sha256(current), sha256(certified), `Current runtime source differs from the Review 5181132010 repair: ${file}`);
+    inputs.push({ file, sha256: sha256(current) });
+    const prior = execFileSync("git", ["show", `${REVIEW_518113_RUNTIME_PRIOR_HEAD}:${file}`], { cwd: root, maxBuffer: 64 * 1024 * 1024 });
+    priorSources.set(file, prior.toString("utf8"));
+    if (current.equals(prior)) continue;
+    const expected = expectedByFile.get(file);
+    assert(expected !== undefined, `Unclassified Review 5181132010 runtime source change: ${file}`);
+    assert.equal(sha256(prior), expected.priorSha256, `Review 5181132010 prior source drifted: ${file}`);
+    assert.equal(sha256(current), expected.currentSha256, `Review 5181132010 current source drifted: ${file}`);
+    const patch = execFileSync("git", ["diff", "--no-ext-diff", "--unified=0", REVIEW_518113_RUNTIME_PRIOR_HEAD, REVIEW_518113_RUNTIME_CERTIFIED_HEAD, "--", file], { cwd: root, maxBuffer: 64 * 1024 * 1024 });
+    assert.equal(sha256(patch), expected.patchSha256, `Review 5181132010 exact source patch drifted: ${file}`);
+    transitions.push({ ...expected });
+  }
+  assert.equal(transitions.length, REVIEW_518113_RUNTIME_PATCH.length, "Review 5181132010 transition coverage is incomplete.");
+  return {
+    priorCertifiedHead: REVIEW_518113_RUNTIME_PRIOR_HEAD,
+    certifiedRepairHead: REVIEW_518113_RUNTIME_CERTIFIED_HEAD,
+    exactChangedRuntimeFiles: changed,
+    transitions,
+    inputs,
+    priorSources,
+    laws: [
+      "Normalized stock-position qualified dimensions are copied element-by-element so later caller mutation cannot rewrite retained content behind an already-computed durable position identity.",
+      "The exact one-file runtime patch is hash-bound above the compact-certified reviewed predecessor; every other runtime module remains byte-identical.",
+    ],
+  };
+}
+
 /** Prove Full Review 5180096971 as one immutable exact source transition above the prior compact-certified PR head. */
-export function verifyReview518009RuntimeTransport(root) {
+export function verifyReview518009RuntimeTransport(root, currentSourceMap) {
   execFileSync("git", ["merge-base", "--is-ancestor", REVIEW_518009_RUNTIME_PRIOR_HEAD, REVIEW_518009_RUNTIME_CERTIFIED_HEAD], { cwd: root, stdio: "ignore" });
   execFileSync("git", ["merge-base", "--is-ancestor", REVIEW_518009_RUNTIME_CERTIFIED_HEAD, "HEAD"], { cwd: root, stdio: "ignore" });
   execFileSync("git", ["merge-base", "--is-ancestor", REVIEW_518009_PRIOR_COMPACT_PIN, REVIEW_518009_RUNTIME_PRIOR_HEAD], { cwd: root, stdio: "ignore" });
   const priorFiles = execFileSync("git", ["ls-tree", "-r", "--name-only", REVIEW_518009_RUNTIME_PRIOR_HEAD, "--", "src"], { cwd: root, encoding: "utf8" }).trim().split("\n");
-  const currentFiles = execFileSync("git", ["ls-tree", "-r", "--name-only", REVIEW_518009_RUNTIME_CERTIFIED_HEAD, "--", "src"], { cwd: root, encoding: "utf8" }).trim().split("\n");
+  const currentFiles = currentSourceMap === undefined
+    ? execFileSync("git", ["ls-tree", "-r", "--name-only", REVIEW_518009_RUNTIME_CERTIFIED_HEAD, "--", "src"], { cwd: root, encoding: "utf8" }).trim().split("\n")
+    : [...currentSourceMap.keys()];
   assert.deepEqual(currentFiles, priorFiles, "Review 5180096971 changed the runtime module domain.");
   for (const file of ["final-head-transport.json", "final-v309.json", "final-a121-b58.json", "final-surface-bindings.json", "final-binder-report.json"]) {
     const relative = `experiments/tla-conformance/final-convergence/${file}`;
@@ -282,12 +347,16 @@ export function verifyReview518009RuntimeTransport(root) {
   }
   const changed = execFileSync("git", ["diff", "--name-only", REVIEW_518009_RUNTIME_PRIOR_HEAD, REVIEW_518009_RUNTIME_CERTIFIED_HEAD, "--", "src"], { cwd: root, encoding: "utf8" }).trim().split("\n").filter(Boolean);
   assert.deepEqual(changed, REVIEW_518009_RUNTIME_PATCH.map(row => row.file), "Review 5180096971 runtime patch escaped its audited command family.");
-  const laterRuntimeDelta = execFileSync("git", ["diff", "--name-only", REVIEW_518009_RUNTIME_CERTIFIED_HEAD, "HEAD", "--", "src"], { cwd: root, encoding: "utf8" }).trim();
-  assert.equal(laterRuntimeDelta, "", "Runtime source changed after the independently certified Review 5180096971 repair.");
+  if (currentSourceMap === undefined) {
+    const laterRuntimeDelta = execFileSync("git", ["diff", "--name-only", REVIEW_518009_RUNTIME_CERTIFIED_HEAD, "HEAD", "--", "src"], { cwd: root, encoding: "utf8" }).trim();
+    assert.equal(laterRuntimeDelta, "", "Runtime source changed after the independently certified Review 5180096971 repair.");
+  }
   const expectedByFile = new Map(REVIEW_518009_RUNTIME_PATCH.map(row => [row.file, row]));
   const inputs = [], priorSources = new Map(), transitions = [];
   for (const file of currentFiles) {
-    const current = readAssuranceFile(root, file);
+    const current = currentSourceMap === undefined
+      ? readAssuranceFile(root, file)
+      : Buffer.from(currentSourceMap.get(file), "utf8");
     const certified = execFileSync("git", ["show", `${REVIEW_518009_RUNTIME_CERTIFIED_HEAD}:${file}`], { cwd: root, maxBuffer: 64 * 1024 * 1024 });
     assert.equal(sha256(current), sha256(certified), `Current runtime source differs from the certified Review 5180096971 repair: ${file}`);
     inputs.push({ file, sha256: sha256(current) });
@@ -544,13 +613,14 @@ function verifyCurrentReviewRuntimeTransport(root, currentSourceMap) {
 /** Reverse only the declared temporal representation changes, rejecting any unrelated runtime delta. */
 export function verifyEpochRuntimeTransport(root) {
   execFileSync("git", ["merge-base", "--is-ancestor", EPOCH_PRIOR_PROOF_HEAD, CURRENT_REVIEW_RUNTIME_PRIOR_HEAD], { cwd: root, stdio: "ignore" });
-  const review518009Transition = verifyReview518009RuntimeTransport(root);
+  const review518113Transition = verifyReview518113RuntimeTransport(root);
+  const review518009Transition = verifyReview518009RuntimeTransport(root, review518113Transition.priorSources);
   const latestReviewTransition = verifyReview517849RuntimeTransport(root, review518009Transition.priorSources);
   const review517722Transition = verifyReview517722RuntimeTransport(root, latestReviewTransition.priorSources);
   const reviewTransition = verifyCurrentReviewRuntimeTransport(root, review517722Transition.priorSources);
   const files = execFileSync("git", ["ls-tree", "-r", "--name-only", EPOCH_PRIOR_PROOF_HEAD, "--", "src"], { cwd: root, encoding: "utf8" }).trim().split("\n");
   assert.deepEqual([...reviewTransition.priorSources.keys()], files, "Epoch transport changed the runtime module domain before the reviewed guard delta.");
-  const inputs = review518009Transition.inputs, changes = [];
+  const inputs = review518113Transition.inputs, changes = [];
   for (const file of files) {
     const current = reviewTransition.priorSources.get(file), prior = readEpochPriorFile(root, file).toString("utf8");
     assert.equal(typeof current, "string", `Missing prior certified runtime source: ${file}`);
@@ -644,7 +714,13 @@ export function verifyEpochRuntimeTransport(root) {
     }
     changes.push(file);
   }
-  return { priorProofHead: EPOCH_PRIOR_PROOF_HEAD, review518009RuntimeTransport: {
+  return { priorProofHead: EPOCH_PRIOR_PROOF_HEAD, review518113RuntimeTransport: {
+    priorCertifiedHead: review518113Transition.priorCertifiedHead,
+    certifiedRepairHead: review518113Transition.certifiedRepairHead,
+    exactChangedRuntimeFiles: review518113Transition.exactChangedRuntimeFiles,
+    transitions: review518113Transition.transitions,
+    laws: review518113Transition.laws,
+  }, review518009RuntimeTransport: {
     priorCertifiedHead: review518009Transition.priorCertifiedHead,
     certifiedRepairHead: review518009Transition.certifiedRepairHead,
     exactChangedRuntimeFiles: review518009Transition.exactChangedRuntimeFiles,
