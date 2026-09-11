@@ -12,7 +12,7 @@ import { formalCodeText } from "./formal-syntax.mjs";
 import { readAssuranceFile } from "./assurance-files.mjs";
 
 /** Bump only when the semantic proof invocation contract itself changes. */
-export const FORMAL_PROOF_CACHE_SCHEMA_VERSION = 3;
+export const FORMAL_PROOF_CACHE_SCHEMA_VERSION = 4;
 /** Pinned TLC 1.7.4 process exit for a completed safety-invariant violation. */
 export const TLC_INVARIANT_VIOLATION_EXIT_CODE = 12;
 /** Bump when mutation-child completion/witness acceptance becomes stricter. */
@@ -168,6 +168,27 @@ function validFormalModelProofSummary(value) {
   );
 }
 
+/** Return whether persisted positive proof evidence came from one successful completed TLC process. */
+function validFormalModelProcessEvidence(value) {
+  if (
+    value === null ||
+    typeof value !== "object" ||
+    value.status !== 0 ||
+    value.signal !== null ||
+    typeof value.output !== "string" ||
+    !validFormalModelProofSummary(value.summary)
+  ) {
+    return false;
+  }
+  const parsed = formalModelProofSummary(value.output);
+  return (
+    parsed !== undefined &&
+    parsed.generated === value.summary.generated &&
+    parsed.distinct === value.summary.distinct &&
+    parsed.depth === value.summary.depth
+  );
+}
+
 /** Return whether one completed TLC child proves the named mutation invariant was violated. */
 export function formalMutationProcessProvesInvariantRejection({
   status,
@@ -267,7 +288,7 @@ export function readFormalProofCache(cacheDirectory, descriptor) {
   }
   if (
     descriptor.outcome === "model-passed" &&
-    !validFormalModelProofSummary(value.evidence)
+    !validFormalModelProcessEvidence(value.evidence)
   ) {
     return undefined;
   }
@@ -285,9 +306,9 @@ export function writeFormalProofCache(cacheDirectory, descriptor, evidence = und
   assertFormalProofDescriptor(descriptor);
   if (
     descriptor.outcome === "model-passed" &&
-    !validFormalModelProofSummary(evidence)
+    !validFormalModelProcessEvidence(evidence)
   ) {
-    throw new Error("Positive formal proof cache entries require exact terminal TLC state/depth evidence.");
+    throw new Error("Positive formal proof cache entries require one successful completed TLC process with exact terminal state/depth evidence.");
   }
   if (
     descriptor.outcome === "mutation-rejected" &&

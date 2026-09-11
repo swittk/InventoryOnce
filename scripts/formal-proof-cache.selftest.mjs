@@ -100,14 +100,19 @@ test("positive cache records persist exact terminal TLC state/depth evidence", (
     "12345 states generated, 678 distinct states found, 0 states left on queue.",
     "The depth of the complete state graph search is 9.",
   ].join("\n");
-  const evidence = formalModelProofSummary(output);
-  assert.deepEqual(evidence, { generated: 12345, distinct: 678, depth: 9 });
+  const summary = formalModelProofSummary(output);
+  assert.deepEqual(summary, { generated: 12345, distinct: 678, depth: 9 });
   assert.equal(formalModelProofSummary("TLC finished without state totals."), undefined);
   const cache = join(root, "cache");
   assert.throws(
     () => writeFormalProofCache(cache, descriptor),
-    /exact terminal TLC state\/depth evidence/u,
+    /successful completed TLC process/u,
   );
+  assert.throws(
+    () => writeFormalProofCache(cache, descriptor, summary),
+    /successful completed TLC process/u,
+  );
+  const evidence = { status: 0, signal: null, output, summary };
   const written = writeFormalProofCache(cache, descriptor, evidence);
   assert.deepEqual(readFormalProofCache(cache, descriptor)?.evidence, evidence);
   const record = JSON.parse(readFileSync(written.path, "utf8"));

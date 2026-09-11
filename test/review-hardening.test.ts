@@ -110,6 +110,21 @@ describe("collision-free retry identity", () => {
     );
   });
 
+  it("copies a dimensionless caller-owned key so later mutation cannot rewrite retained position identity", () => {
+    const callerKey = {
+      itemId: "item-a",
+      itemRevisionId: "item-a-v2",
+      locationId: "store",
+    };
+    const normalized = normalizeInventoryStockPositionKey(callerKey);
+    const retainedIdentity = inventoryStockPositionIdentity(normalized);
+
+    callerKey.locationId = "other-store";
+
+    expect(normalized.locationId).toBe("store");
+    expect(inventoryStockPositionIdentity(normalized)).toBe(retainedIdentity);
+  });
+
   it("copies qualified-dimension elements so caller mutation cannot rewrite retained position identity", () => {
     const callerDimension = { dimensionId: "grade", valueId: "red" };
     const normalized = normalizeInventoryStockPositionKey({

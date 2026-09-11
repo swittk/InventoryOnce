@@ -197,7 +197,8 @@ export function normalizeInventoryStockPositionKey(
   ] as const) {
     if (value !== undefined) assertInventoryIdentity(value, label);
   }
-  if (key.qualifiedDimensions === undefined) return key;
+  // Copy the caller-owned key so later mutation cannot change retained position truth.
+  if (key.qualifiedDimensions === undefined) return { ...key };
   const { qualifiedDimensions, ...withoutQualifiedDimensions } = key;
   // Empty qualified dimensions are semantic omission and must share one durable position identity.
   if (qualifiedDimensions.length === 0) return withoutQualifiedDimensions;

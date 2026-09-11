@@ -196,9 +196,29 @@ export function assertCurrentReviewTrackedDriftAllowed(changedPaths, allowedPath
   );
 }
 
-/** Return current tracked worktree drift; ambient/untracked bytes receive no post-certification proof credit. */
-function currentReviewDirtyPaths(repositoryRoot) {
-  return gitPathList(repositoryRoot, ["diff", "--name-only", "-z", "HEAD", "--"]);
+/** Return whether one untracked path can affect product, test, formal, or compact-assurance semantics. */
+function currentReviewAuthoritativeUntrackedPath(file) {
+  return (
+    file === "package.json" ||
+    file === "pnpm-lock.yaml" ||
+    file === "tsconfig.json" ||
+    file === "tsconfig.test.json" ||
+    file.startsWith("src/") ||
+    file.startsWith("formal/") ||
+    file.startsWith("scripts/") ||
+    file.startsWith("test/") ||
+    file.startsWith("assurance/") ||
+    file.startsWith("experiments/tla-conformance/final-convergence/")
+  );
+}
+
+/** Return current tracked drift plus untracked authoritative inputs; local coordination files stay ambient. */
+export function currentReviewWorktreeDriftPaths(repositoryRoot) {
+  const modified = gitPathList(repositoryRoot, ["diff", "--name-only", "-z", "HEAD", "--"]);
+  const untracked = gitPathList(repositoryRoot, [
+    "ls-files", "--others", "--exclude-standard", "-z", "--",
+  ]).filter(currentReviewAuthoritativeUntrackedPath);
+  return [...new Set([...modified, ...untracked])].sort();
 }
 
 /** Validate report/receipt semantic bindings independently of immutable Git-byte anchoring. */
@@ -286,7 +306,7 @@ export function verifyCurrentReviewAssurance(repositoryRoot, context) {
     "diff", "--name-only", "-z", receipt.certifiedHead, "HEAD", "--",
   ]);
   assertCurrentReviewTrackedDriftAllowed(trackedPostCertificationDelta, allowedProofIntegrationPaths);
-  const dirtyPaths = currentReviewDirtyPaths(root);
+  const dirtyPaths = currentReviewWorktreeDriftPaths(root);
   assertCurrentReviewTrackedDriftAllowed(dirtyPaths, allowedProofIntegrationPaths);
   return {
     receipt,

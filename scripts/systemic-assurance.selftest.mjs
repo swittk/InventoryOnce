@@ -14,7 +14,7 @@ import { executableAssuranceSummary, assertExecutableAssuranceMatchesManifests }
 import { finalConvergenceRepositoryPath } from "../experiments/tla-conformance/final-convergence/repository-root.mjs";
 import { assertFormalPositiveReachabilityRegistration } from "./formal-models.mjs";
 import { assertTrustedCompactCertificateManifest, compactCompilerSourceSetIdentity, compactCompilerSourceSetKey, runCompactCommand } from "./compact-assurance-pipeline.mjs";
-import { assertCurrentReviewTrackedDriftAllowed, currentReviewProofIntegrationPaths } from "../experiments/tla-conformance/final-convergence/current-review-assurance.mjs";
+import { assertCurrentReviewTrackedDriftAllowed, currentReviewProofIntegrationPaths, currentReviewWorktreeDriftPaths } from "../experiments/tla-conformance/final-convergence/current-review-assurance.mjs";
 
 /** Repository inputs are rooted at this test module, never the invoking shell. */
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -44,6 +44,20 @@ test("current-review full-assurance drift gate default-denies tracked inputs out
     ),
   );
 });
+
+test("current-review drift enumeration includes untracked authoritative inputs but not local coordination files", () => temporaryDirectory(directory => {
+  execFileSync("git", ["init", "-q"], { cwd: directory });
+  execFileSync("git", ["config", "user.email", "assurance@example.invalid"], { cwd: directory });
+  execFileSync("git", ["config", "user.name", "InventoryOnce assurance"], { cwd: directory });
+  fs.writeFileSync(path.join(directory, "package.json"), "{}\n");
+  execFileSync("git", ["add", "package.json"], { cwd: directory });
+  execFileSync("git", ["commit", "-qm", "baseline"], { cwd: directory });
+  fs.mkdirSync(path.join(directory, "test"));
+  fs.mkdirSync(path.join(directory, ".chatgpt"));
+  fs.writeFileSync(path.join(directory, "test", "untracked-proof-input.test.ts"), "throw new Error('probe');\n");
+  fs.writeFileSync(path.join(directory, ".chatgpt", "local.json"), "{}\n");
+  assert.deepEqual(currentReviewWorktreeDriftPaths(directory), ["test/untracked-proof-input.test.ts"]);
+}));
 
 test("mutable current-review receipt cannot choose proof-integration authority", () => {
   const receiptPath = path.join(
@@ -206,7 +220,10 @@ test("all proof cache boundaries reject incomplete or unrecognized descriptors",
   fs.writeFileSync(path.join(directory, "formal/Model.tla"), "---- MODULE Model ----\n====\n");
   fs.writeFileSync(path.join(directory, "formal/Model.cfg"), "SPECIFICATION Spec\n");
   const valid = formalProofDescriptor({ repositoryRoot: directory, model: "Model", config: "Model", outcome: "model-passed", tlaToolsSha256: "a".repeat(64), tlcWorkers: "1" });
-  const cache = path.join(directory, "cache"), evidence = { generated: 2, distinct: 1, depth: 1 };
+  const output = "2 states generated, 1 distinct states found, 0 states left on queue.\nThe depth of the complete state graph search is 1.\n";
+  const cache = path.join(directory, "cache"), evidence = {
+    status: 0, signal: null, output, summary: { generated: 2, distinct: 1, depth: 1 },
+  };
   const written = writeFormalProofCache(cache, valid, evidence);
   assert.deepEqual(readFormalProofCache(cache, valid)?.evidence, evidence);
   for (const mutate of [

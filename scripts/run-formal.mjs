@@ -194,8 +194,8 @@ async function runModel(model) {
       status: 0,
       output:
         `TLC proof cache hit for '${model}' (${hit.key.slice(0, 12)}).\n` +
-        `${evidence.generated} states generated, ${evidence.distinct} distinct states found, 0 states left on queue.\n` +
-        `The depth of the complete state graph search is ${evidence.depth}.\n`,
+        `${evidence.summary.generated} states generated, ${evidence.summary.distinct} distinct states found, 0 states left on queue.\n` +
+        `The depth of the complete state graph search is ${evidence.summary.depth}.\n`,
     };
   }
 
@@ -229,12 +229,13 @@ async function runModel(model) {
         output,
       };
     }
-    const evidence = formalModelProofSummary(output);
-    if (evidence === undefined) {
+    const summary = formalModelProofSummary(output);
+    if (summary === undefined) {
       output += `TLC completed without one exact terminal state/depth summary; metadata remains at ${modelMetadataDirectory}.\n`;
       return { status: 1, output };
     }
     modelPassed = true;
+    const evidence = { status: result.status, signal: result.signal, output, summary };
     const written = cacheVerifiedProof(descriptor, evidence);
     if (written !== undefined) {
       output += `Cached verified TLC proof for '${model}' (${written.key.slice(0, 12)}).\n`;
