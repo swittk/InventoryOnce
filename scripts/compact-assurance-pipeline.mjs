@@ -461,8 +461,20 @@ export async function runCompactCommand({moduleUrl,mode,certificateCommit}={}) {
     }
     return withSupport(root,manifest,()=>currentize(root,manifest,anchor));
   }
-  const selected=mode?.startsWith("validate-")?mode.slice(9):mode;
+  const certificationProbe=mode?.startsWith("validate-")??false;
+  const selected=certificationProbe?mode.slice(9):mode;
   assert(["verify","selftest","registry"].includes(selected),`Unknown compact assurance command: ${mode}`);
+  if(!certificationProbe){
+    assert.notEqual(anchor,NO_CERTIFICATE,"Ordinary compact validation requires a pinned certificate.");
+    if(certificateCommit!==undefined) assert.equal(certificateAnchor(root),certificateCommit,"Compact wrapper certificate anchor differs from the invoked certificate.");
+    const pinnedManifest=trustedManifest(root,anchor);
+    assert(pinnedManifest!==undefined,"Ordinary compact validation lost its pinned certificate manifest.");
+    const pinnedManifestBytes=git(root,["show",`${anchor}:${MANIFEST}`],null);
+    assert(ordinaryBytes(root,MANIFEST).equals(pinnedManifestBytes),"Current compact manifest differs from its pinned immutable certificate.");
+    const certifiedHead=pinnedManifest.certification.certifiedHead;
+    const pinnedClosureBytes=git(root,["show",`${certifiedHead}:${CLOSURE}`],null);
+    assert(ordinaryBytes(root,CLOSURE).equals(pinnedClosureBytes),"Current compact closure differs from its pinned immutable certified tree.");
+  }
   const report=await withSupport(root,manifest,()=>validateMode(root,manifest,selected));
   console.log(JSON.stringify(report));return report;
 }

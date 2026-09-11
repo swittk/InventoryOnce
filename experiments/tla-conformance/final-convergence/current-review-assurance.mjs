@@ -141,8 +141,6 @@ await runCompactCommand({ moduleUrl: import.meta.url, mode: process.argv[2] ?? "
     COMPACT_WRAPPER,
     AGENT_DIARY,
   ]);
-  assert.equal(typeof manifest.archive?.file, "string", "Pinned compact archive path is invalid.");
-  paths.add(manifest.archive.file);
   for (const row of closure.outputs ?? []) {
     assert.equal(typeof row?.file, "string", "Pinned compact output path is invalid.");
     paths.add(row.file);

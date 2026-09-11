@@ -13,7 +13,7 @@ import { formalProofDescriptor, formalProofCacheKey, readFormalProofCache, write
 import { executableAssuranceSummary, assertExecutableAssuranceMatchesManifests } from "./executable-assurance-coherence.mjs";
 import { finalConvergenceRepositoryPath } from "../experiments/tla-conformance/final-convergence/repository-root.mjs";
 import { assertFormalPositiveReachabilityRegistration } from "./formal-models.mjs";
-import { compactCompilerSourceSetIdentity, compactCompilerSourceSetKey } from "./compact-assurance-pipeline.mjs";
+import { compactCompilerSourceSetIdentity, compactCompilerSourceSetKey, runCompactCommand } from "./compact-assurance-pipeline.mjs";
 import { assertCurrentReviewTrackedDriftAllowed, currentReviewProofIntegrationPaths } from "../experiments/tla-conformance/final-convergence/current-review-assurance.mjs";
 
 /** Repository inputs are rooted at this test module, never the invoking shell. */
@@ -43,6 +43,54 @@ test("current-review full-assurance drift gate default-denies tracked inputs out
       allowed,
     ),
   );
+});
+
+test("mutable compact manifest cannot expand the current-review proof-output allowlist", () => {
+  const manifestPath = path.join(root, "experiments/tla-conformance/final-convergence/compact-support-manifest.json");
+  const original = fs.readFileSync(manifestPath);
+  const before = [...currentReviewProofIntegrationPaths(root)].sort();
+  try {
+    const manifest = JSON.parse(original.toString("utf8"));
+    manifest.graph ??= [{ id: "synthetic", outputs: [] }];
+    manifest.graph[0].outputs ??= [];
+    manifest.graph[0].outputs.push({ file: ".gitignore", sha256: "0".repeat(64), sizeBytes: 0 });
+    fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+    const after = [...currentReviewProofIntegrationPaths(root)].sort();
+    assert.deepEqual(after, before);
+    assert.equal(after.includes(".gitignore"), false);
+  } finally {
+    fs.writeFileSync(manifestPath, original);
+  }
+});
+
+test("ordinary compact validation authenticates manifest and closure against its pinned certificate", async () => {
+  const directory = "experiments/tla-conformance/final-convergence";
+  const manifestPath = path.join(root, directory, "compact-support-manifest.json");
+  const closurePath = path.join(root, directory, "authority-reference-manifest.json");
+  const manifestOriginal = fs.readFileSync(manifestPath);
+  const closureOriginal = fs.readFileSync(closurePath);
+  try {
+    const manifest = JSON.parse(manifestOriginal.toString("utf8"));
+    manifest.certification.processes[0].exitCode = 99;
+    manifest.certification.processes[0].report.status = "FORGED_CERTIFICATE_FAILURE";
+    fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+    await assert.rejects(
+      () => runCompactCommand({ mode: "verify" }),
+      /Current compact manifest differs from its pinned immutable certificate/u,
+    );
+    fs.writeFileSync(manifestPath, manifestOriginal);
+
+    const closure = JSON.parse(closureOriginal.toString("utf8"));
+    closure.forgedCertificateNote = true;
+    fs.writeFileSync(closurePath, `${JSON.stringify(closure, null, 2)}\n`);
+    await assert.rejects(
+      () => runCompactCommand({ mode: "verify" }),
+      /Current compact closure differs from its pinned immutable certified tree/u,
+    );
+  } finally {
+    fs.writeFileSync(manifestPath, manifestOriginal);
+    fs.writeFileSync(closurePath, closureOriginal);
+  }
 });
 
 test("compact source-set identity detects compiler roots before cache reuse", () => {
