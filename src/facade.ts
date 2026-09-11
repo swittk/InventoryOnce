@@ -189,7 +189,6 @@ import {
   type ListInventoryPackagingRevisionsInput,
 } from "./read-model.js";
 import {
-  cloneInventoryRetainedData,
   createInventorySparseRecord,
   inventorySparseRecordValue,
   setInventorySparseRecordValue,
@@ -7128,7 +7127,7 @@ export interface DefineInventoryAmountLineGroupInput<
   readonly label?: string;
 }
 
-/** Validate and retain one exact parent/child amount-line group. */
+/** Validate one exact parent/child amount-line group while preserving the caller's generic line subtype. */
 export function defineInventoryAmountLineGroup<
   TLine extends InventoryAmountLineRead
 >({
@@ -7147,22 +7146,95 @@ export function defineInventoryAmountLineGroup<
     lines,
     label,
   });
-  /** Owned child-line snapshots returned independently of the caller's mutable objects. */
-  const retainedLines: TLine[] = [];
-  for (const line of lines) retainedLines.push(cloneInventoryRetainedData(line));
-  return retainedLines;
+  // This helper groups application-owned generic lines; copying the array must not erase subtype behavior.
+  return [...lines];
 }
 
-/** Flatten already-validated amount-line groups without reconstructing their physical meaning. */
+/** Flatten already-validated generic amount-line groups while preserving each application-owned line. */
 export function combineInventoryAmountLineGroups<
   TLine extends InventoryAmountLineRead
 >(groups: readonly (readonly TLine[])[]): readonly TLine[] {
-  /** Owned flattened snapshots so arbitrary structurally typed groups cannot alias this result. */
-  const retainedLines: TLine[] = [];
+  const lines: TLine[] = [];
   for (const group of groups) {
-    for (const line of group) retainedLines.push(cloneInventoryRetainedData(line));
+    for (const line of group) lines.push(line);
   }
-  return retainedLines;
+  return lines;
+}
+
+/** Snapshot one policy request's documented kernel fields without traversing opaque structural extensions. */
+function snapshotInventoryPolicyBatchRequest(
+  request: InventoryOncePolicyBatchRequest
+): InventoryOncePolicyBatchRequest {
+  return {
+    requestId: request.requestId,
+    selector: normalizeInventoryStockSelector(request.selector),
+    amount: snapshotInventoryPolicyAmount(request.amount),
+    method: request.method,
+    ...(request.groupId === undefined ? {} : { groupId: request.groupId }),
+    ...(request.itemRevisionId === undefined
+      ? {}
+      : { itemRevisionId: request.itemRevisionId }),
+    ...(request.allowExpiredLots === undefined
+      ? {}
+      : { allowExpiredLots: request.allowExpiredLots }),
+    ...(request.deficitPosition === undefined
+      ? {}
+      : { deficitPosition: snapshotInventoryPolicyDeficitPosition(request.deficitPosition) }),
+  };
+}
+
+/** Snapshot one exact policy amount using only the public amount contract. */
+function snapshotInventoryPolicyAmount(amount: InventoryAmount): InventoryAmount {
+  const independent = amount.independent.map(
+    /** Copy one independently measured axis into kernel-owned request state. */
+    (entry) => ({ axisId: entry.axisId, value: entry.value, unit: entry.unit })
+  );
+  return amount.kind === InventoryAmountKind.Measured
+    ? {
+        kind: amount.kind,
+        primaryValue: amount.primaryValue,
+        primaryUnit: amount.primaryUnit,
+        independent,
+      }
+    : {
+        kind: amount.kind,
+        count: amount.count,
+        packagingRevisionId: amount.packagingRevisionId,
+        independent,
+      };
+}
+
+/** Snapshot one optional deficit position using only the public position-input contract. */
+function snapshotInventoryPolicyDeficitPosition(
+  position: InventoryStockPositionInput
+): InventoryStockPositionInput {
+  return {
+    itemId: position.itemId,
+    locationId: position.locationId,
+    ...(position.lotId === undefined ? {} : { lotId: position.lotId }),
+    ...(position.serialId === undefined ? {} : { serialId: position.serialId }),
+    ...(position.packagingRevisionId === undefined
+      ? {}
+      : { packagingRevisionId: position.packagingRevisionId }),
+    ...(position.containerId === undefined ? {} : { containerId: position.containerId }),
+    ...(position.statusId === undefined ? {} : { statusId: position.statusId }),
+    ...(position.ownerId === undefined ? {} : { ownerId: position.ownerId }),
+    ...(position.custodianId === undefined ? {} : { custodianId: position.custodianId }),
+    ...(position.dispositionAuthorityId === undefined
+      ? {}
+      : { dispositionAuthorityId: position.dispositionAuthorityId }),
+    ...(position.qualifiedDimensions === undefined
+      ? {}
+      : {
+          qualifiedDimensions: position.qualifiedDimensions.map(
+            /** Copy one caller-owned qualified dimension into request-owned position state. */
+            (dimension) => ({
+              dimensionId: dimension.dimensionId,
+              valueId: dimension.valueId,
+            })
+          ),
+        }),
+  };
 }
 
 /** One validated policy-request group belonging to a single application reference. */
@@ -7264,10 +7336,10 @@ export function defineInventoryPolicyBatchRequestGroup({
     ),
     label,
   });
-  /** Owned request snapshots whose nested selectors/amounts cannot be rewritten by the caller. */
+  /** Owned request snapshots whose documented kernel fields cannot be rewritten by the caller. */
   const retainedRequests: InventoryOncePolicyBatchRequest[] = [];
   for (const request of requests) {
-    retainedRequests.push(cloneInventoryRetainedData(request));
+    retainedRequests.push(snapshotInventoryPolicyBatchRequest(request));
   }
   return {
     reference,
@@ -7294,8 +7366,8 @@ export function combineInventoryPolicyBatchRequestGroups(
           `Inventory policy batch repeats requestId '${request.requestId}'.`
         );
       }
-      /** Own even structurally supplied groups instead of trusting their child-object lifetime. */
-      const retainedRequest = cloneInventoryRetainedData(request);
+      /** Own the documented request fields without imposing cloneability on structural application extensions. */
+      const retainedRequest = snapshotInventoryPolicyBatchRequest(request);
       requests.push(retainedRequest);
       const reference = group.referenceByRequestId.get(request.requestId);
       if (reference === undefined) {

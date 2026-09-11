@@ -31,21 +31,42 @@ function request(
 }
 
 describe("policy request groups and allocation reads", () => {
-  it("owns retained amount lines and policy requests instead of aliasing caller objects", () => {
+  it("preserves generic amount-line subtype behavior while copying only the grouping arrays", () => {
     const catalog = createTabletCatalog();
-    const mutableLine = {
-      itemRevisionId: "item-a-v2",
-      amount: stockAmount("1", "piece"),
-      applicationValue: "original",
-    };
+    const applicationSymbol = Symbol("application-line");
+    class ApplicationAmountLine {
+      readonly itemRevisionId = "item-a-v2";
+      readonly amount = stockAmount("1", "piece");
+      readonly callback = () => "called";
+      readonly [applicationSymbol] = "symbol-value";
+      #privateValue = "private-value";
+
+      /** Read application-owned private state that InventoryOnce must not erase. */
+      privateValue(): string {
+        return this.#privateValue;
+      }
+    }
+    const line = new ApplicationAmountLine();
+    const inputLines = [line];
     const amountGroup = defineInventoryAmountLineGroup({
       catalog,
       itemId: "item-a",
       expectedItemRevisionId: "item-a-v2",
       expectedAmount: stockAmount("1", "piece"),
-      lines: [mutableLine],
+      lines: inputLines,
     });
     const combinedAmounts = combineInventoryAmountLineGroups([amountGroup]);
+
+    expect(amountGroup).not.toBe(inputLines);
+    expect(amountGroup[0]).toBe(line);
+    expect(combinedAmounts[0]).toBe(line);
+    expect(amountGroup[0]?.callback()).toBe("called");
+    expect(amountGroup[0]?.[applicationSymbol]).toBe("symbol-value");
+    expect(amountGroup[0]?.privateValue()).toBe("private-value");
+  });
+
+  it("owns policy request fields without requiring structural application extensions to be cloneable", () => {
+    const catalog = createTabletCatalog();
     const callerLocationIds = ["store"];
     const mutableRequest = {
       requestId: "request-owned",
@@ -56,6 +77,7 @@ describe("policy request groups and allocation reads", () => {
       amount: stockAmount("1", "piece"),
       itemRevisionId: "item-a-v2",
       method: InventoryAllocationMethod.Fifo,
+      applicationCallback: () => "opaque-application-value",
     };
     const policyGroup = defineInventoryPolicyBatchRequestGroup({
       catalog,
@@ -67,19 +89,11 @@ describe("policy request groups and allocation reads", () => {
     });
     const combinedPolicy = combineInventoryPolicyBatchRequestGroups([policyGroup]);
 
-    expect(amountGroup[0]).not.toBe(mutableLine);
-    expect(combinedAmounts[0]).not.toBe(amountGroup[0]);
     expect(policyGroup.requests[0]).not.toBe(mutableRequest);
     expect(combinedPolicy.requests[0]).not.toBe(policyGroup.requests[0]);
-
-    mutableLine.itemRevisionId = "mutated-revision";
-    mutableLine.applicationValue = "mutated-application-data";
     mutableRequest.requestId = "mutated-request";
     callerLocationIds[0] = "other-location";
-    expect(amountGroup[0]?.itemRevisionId).toBe("item-a-v2");
-    expect(amountGroup[0]?.applicationValue).toBe("original");
-    expect(combinedAmounts[0]?.applicationValue).toBe("original");
-    expect(combinedAmounts[0]?.itemRevisionId).toBe("item-a-v2");
+    expect(mutableRequest.applicationCallback()).toBe("opaque-application-value");
     expect(policyGroup.requests[0]?.requestId).toBe("request-owned");
     expect(combinedPolicy.requests[0]?.requestId).toBe("request-owned");
     expect(policyGroup.requests[0]?.selector.locationIds).toEqual(["store"]);
@@ -88,6 +102,7 @@ describe("policy request groups and allocation reads", () => {
       "application-owned"
     );
   });
+
   it("freezes one application reference while proving child requests conserve the parent", () => {
     const catalog = createTabletCatalog();
     const group = defineInventoryPolicyBatchRequestGroup({
