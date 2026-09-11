@@ -1,7 +1,7 @@
 /**
  * @typedef {object} ApiAssuranceManifest
  * @property {string} surfaceSha256 Exact current public-surface digest shared by all same-run artifacts.
- * @property {Record<string, unknown>} entries Public API entries whose key cardinality is summarized.
+ * @property {Record<string, {signature: Record<string, unknown>}>} entries Public API entries whose key cardinality and signature cardinality are summarized.
  * @property {{callAndConstructSignatures:number,directExecutableApis:number,indirectCallChainApis:number,explicitGapApis:number,unreferencedPublicApis:number,maximumTypeDepth:number}} counts API execution/gap/type-depth counters consumed by assurance/reporting.
  */
 /**
@@ -121,6 +121,36 @@ function assertEntryMap(value, label) {
   }
 }
 
+/** Count exact call/construct signatures from the API rows using the producer's row semantics. */
+function apiSignatureCount(entries) {
+  let total = 0;
+  for (const [key, entry] of Object.entries(entries)) {
+    const signature = entry.signature;
+    if (signature === null || typeof signature !== "object" || Array.isArray(signature)) {
+      throw new Error(`API assurance entry '${key}' requires a signature object.`);
+    }
+    let count;
+    if (Object.hasOwn(signature, "signatures")) {
+      if (!Array.isArray(signature.signatures)) {
+        throw new Error(`API assurance entry '${key}' signatures must be an array.`);
+      }
+      count = signature.signatures.length;
+    } else {
+      for (const field of ["callSignatures", "constructSignatures"]) {
+        if (Object.hasOwn(signature, field) && !Array.isArray(signature[field])) {
+          throw new Error(`API assurance entry '${key}' ${field} must be an array.`);
+        }
+      }
+      count = (signature.callSignatures ?? []).length + (signature.constructSignatures ?? []).length;
+    }
+    if (count === 0) {
+      throw new Error(`API assurance entry '${key}' has no call or construct signature.`);
+    }
+    total += count;
+  }
+  return total;
+}
+
 /** Require every explicit formal gap to carry complete human-auditable release-impact text. */
 function assertGapEntries(gaps) {
   for (const [id, gap] of Object.entries(gaps)) {
@@ -152,7 +182,13 @@ function assertExecutableManifests(input) {
   assertTraceApiEntries(Object.values(input.traces.entries), input.api.entries);
   if (typeof input.api.surfaceSha256 !== "string" || input.api.surfaceSha256.length === 0) throw new Error("API assurance manifest surfaceSha256 must be a present non-empty string.");
   const apiCount = Object.keys(input.api.entries).length;
-  if (apiCount === 0 || input.api.counts.callAndConstructSignatures !== apiCount || input.api.counts.directExecutableApis + input.api.counts.indirectCallChainApis + input.api.counts.explicitGapApis + input.api.counts.unreferencedPublicApis !== apiCount) throw new Error("API assurance counters do not partition the actual nonempty API domain.");
+  const signatureCount = apiSignatureCount(input.api.entries);
+  if (apiCount === 0 || input.api.counts.callAndConstructSignatures !== signatureCount) {
+    throw new Error("API assurance signature counter differs from the actual call/construct signature domain.");
+  }
+  if (input.api.counts.directExecutableApis + input.api.counts.indirectCallChainApis + input.api.counts.explicitGapApis + input.api.counts.unreferencedPublicApis !== apiCount) {
+    throw new Error("API assurance disposition counters do not partition the actual nonempty API domain.");
+  }
   if (input.fields.counts.fields !== Object.keys(input.fields.entries).length) throw new Error("Field assurance counter differs from actual field domain.");
   const duplicatedCounters = [
     ["compilerCallGraphCallables", input.api.counts.compilerCallGraphCallables, input.callChains.counts.callables],

@@ -1,7 +1,7 @@
 {
   "counts": {
-    "callables": 2594,
-    "edges": 7123,
+    "callables": 2596,
+    "edges": 7128,
     "publicEntries": 510,
     "publicEntriesWithTargets": 510,
     "publicEntriesWithWitnesses": 510,
@@ -1815,10 +1815,10 @@
                 "column": 78,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:17314:<anonymous@460>",
+                "id": "test/review-hardening.test.ts:18005:<anonymous@478>",
                 "kind": "ArrowFunction",
-                "line": 460,
-                "name": "<anonymous@460>",
+                "line": 478,
+                "name": "<anonymous@478>",
                 "reason": "test-callback"
               },
               {
@@ -4099,10 +4099,10 @@
                 "column": 78,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:17314:<anonymous@460>",
+                "id": "test/review-hardening.test.ts:18005:<anonymous@478>",
                 "kind": "ArrowFunction",
-                "line": 460,
-                "name": "<anonymous@460>",
+                "line": 478,
+                "name": "<anonymous@478>",
                 "reason": "test-callback"
               },
               {
@@ -6398,10 +6398,10 @@
                 "column": 78,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:17314:<anonymous@460>",
+                "id": "test/review-hardening.test.ts:18005:<anonymous@478>",
                 "kind": "ArrowFunction",
-                "line": 460,
-                "name": "<anonymous@460>",
+                "line": 478,
+                "name": "<anonymous@478>",
                 "reason": "test-callback"
               },
               {
@@ -6956,10 +6956,10 @@
                 "column": 80,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:13920:<anonymous@366>",
+                "id": "test/review-hardening.test.ts:14611:<anonymous@384>",
                 "kind": "ArrowFunction",
-                "line": 366,
-                "name": "<anonymous@366>",
+                "line": 384,
+                "name": "<anonymous@384>",
                 "reason": "test-callback"
               },
               {
@@ -7098,10 +7098,10 @@
                 "column": 80,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:13920:<anonymous@366>",
+                "id": "test/review-hardening.test.ts:14611:<anonymous@384>",
                 "kind": "ArrowFunction",
-                "line": 366,
-                "name": "<anonymous@366>",
+                "line": 384,
+                "name": "<anonymous@384>",
                 "reason": "test-callback"
               },
               {
@@ -9114,10 +9114,10 @@
                 "column": 78,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:17314:<anonymous@460>",
+                "id": "test/review-hardening.test.ts:18005:<anonymous@478>",
                 "kind": "ArrowFunction",
-                "line": 460,
-                "name": "<anonymous@460>",
+                "line": 478,
+                "name": "<anonymous@478>",
                 "reason": "test-callback"
               },
               {
@@ -12270,10 +12270,10 @@
                 "column": 68,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:9608:<anonymous@264>",
+                "id": "test/review-hardening.test.ts:10299:<anonymous@282>",
                 "kind": "ArrowFunction",
-                "line": 264,
-                "name": "<anonymous@264>",
+                "line": 282,
+                "name": "<anonymous@282>",
                 "reason": "test-callback"
               },
               {
@@ -13383,9 +13383,9 @@
           "column": 1,
           "file": "src/model.ts",
           "hasBody": true,
-          "id": "src/model.ts:10064:inventoryStockPositionIdentity",
+          "id": "src/model.ts:10355:inventoryStockPositionIdentity",
           "kind": "FunctionDeclaration",
-          "line": 236,
+          "line": 243,
           "name": "inventoryStockPositionIdentity"
         }
       ],
@@ -13396,9 +13396,9 @@
             "column": 1,
             "file": "src/model.ts",
             "hasBody": true,
-            "id": "src/model.ts:10064:inventoryStockPositionIdentity",
+            "id": "src/model.ts:10355:inventoryStockPositionIdentity",
             "kind": "FunctionDeclaration",
-            "line": 236,
+            "line": 243,
             "name": "inventoryStockPositionIdentity"
           },
           "witness": {
@@ -13426,9 +13426,9 @@
                 "column": 1,
                 "file": "src/model.ts",
                 "hasBody": true,
-                "id": "src/model.ts:10064:inventoryStockPositionIdentity",
+                "id": "src/model.ts:10355:inventoryStockPositionIdentity",
                 "kind": "FunctionDeclaration",
-                "line": 236,
+                "line": 243,
                 "name": "inventoryStockPositionIdentity",
                 "reason": "resolved-call"
               }
@@ -13548,10 +13548,10 @@
                 "column": 80,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:13920:<anonymous@366>",
+                "id": "test/review-hardening.test.ts:14611:<anonymous@384>",
                 "kind": "ArrowFunction",
-                "line": 366,
-                "name": "<anonymous@366>",
+                "line": 384,
+                "name": "<anonymous@384>",
                 "reason": "test-callback"
               },
               {
@@ -13690,10 +13690,10 @@
                 "column": 80,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:13920:<anonymous@366>",
+                "id": "test/review-hardening.test.ts:14611:<anonymous@384>",
                 "kind": "ArrowFunction",
-                "line": 366,
-                "name": "<anonymous@366>",
+                "line": 384,
+                "name": "<anonymous@384>",
                 "reason": "test-callback"
               },
               {
@@ -13761,10 +13761,10 @@
                 "column": 80,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:13920:<anonymous@366>",
+                "id": "test/review-hardening.test.ts:14611:<anonymous@384>",
                 "kind": "ArrowFunction",
-                "line": 366,
-                "name": "<anonymous@366>",
+                "line": 384,
+                "name": "<anonymous@384>",
                 "reason": "test-callback"
               },
               {
@@ -13799,9 +13799,9 @@
           "column": 1,
           "file": "src/model.ts",
           "hasBody": true,
-          "id": "src/model.ts:10721:inventoryTraceabilityNodeIdentity",
+          "id": "src/model.ts:11012:inventoryTraceabilityNodeIdentity",
           "kind": "FunctionDeclaration",
-          "line": 258,
+          "line": 265,
           "name": "inventoryTraceabilityNodeIdentity"
         }
       ],
@@ -13812,9 +13812,9 @@
             "column": 1,
             "file": "src/model.ts",
             "hasBody": true,
-            "id": "src/model.ts:10721:inventoryTraceabilityNodeIdentity",
+            "id": "src/model.ts:11012:inventoryTraceabilityNodeIdentity",
             "kind": "FunctionDeclaration",
-            "line": 258,
+            "line": 265,
             "name": "inventoryTraceabilityNodeIdentity"
           },
           "witness": {
@@ -13842,9 +13842,9 @@
                 "column": 1,
                 "file": "src/model.ts",
                 "hasBody": true,
-                "id": "src/model.ts:10721:inventoryTraceabilityNodeIdentity",
+                "id": "src/model.ts:11012:inventoryTraceabilityNodeIdentity",
                 "kind": "FunctionDeclaration",
-                "line": 258,
+                "line": 265,
                 "name": "inventoryTraceabilityNodeIdentity",
                 "reason": "resolved-call"
               }
@@ -14207,10 +14207,10 @@
                 "column": 78,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:17314:<anonymous@460>",
+                "id": "test/review-hardening.test.ts:18005:<anonymous@478>",
                 "kind": "ArrowFunction",
-                "line": 460,
-                "name": "<anonymous@460>",
+                "line": 478,
+                "name": "<anonymous@478>",
                 "reason": "test-callback"
               },
               {
@@ -14329,10 +14329,10 @@
                 "column": 96,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:53704:<anonymous@1429>",
+                "id": "test/review-hardening.test.ts:54395:<anonymous@1447>",
                 "kind": "ArrowFunction",
-                "line": 1429,
-                "name": "<anonymous@1429>",
+                "line": 1447,
+                "name": "<anonymous@1447>",
                 "reason": "test-callback"
               },
               {
@@ -14461,10 +14461,10 @@
                 "column": 96,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:53704:<anonymous@1429>",
+                "id": "test/review-hardening.test.ts:54395:<anonymous@1447>",
                 "kind": "ArrowFunction",
-                "line": 1429,
-                "name": "<anonymous@1429>",
+                "line": 1447,
+                "name": "<anonymous@1447>",
                 "reason": "test-callback"
               },
               {
@@ -15698,10 +15698,10 @@
                 "column": 78,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:17314:<anonymous@460>",
+                "id": "test/review-hardening.test.ts:18005:<anonymous@478>",
                 "kind": "ArrowFunction",
-                "line": 460,
-                "name": "<anonymous@460>",
+                "line": 478,
+                "name": "<anonymous@478>",
                 "reason": "test-callback"
               },
               {
@@ -15992,10 +15992,10 @@
                 "column": 80,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:13920:<anonymous@366>",
+                "id": "test/review-hardening.test.ts:14611:<anonymous@384>",
                 "kind": "ArrowFunction",
-                "line": 366,
-                "name": "<anonymous@366>",
+                "line": 384,
+                "name": "<anonymous@384>",
                 "reason": "test-callback"
               },
               {
@@ -16134,10 +16134,10 @@
                 "column": 96,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:53704:<anonymous@1429>",
+                "id": "test/review-hardening.test.ts:54395:<anonymous@1447>",
                 "kind": "ArrowFunction",
-                "line": 1429,
-                "name": "<anonymous@1429>",
+                "line": 1447,
+                "name": "<anonymous@1447>",
                 "reason": "test-callback"
               },
               {
@@ -22325,10 +22325,10 @@
                 "column": 96,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:53704:<anonymous@1429>",
+                "id": "test/review-hardening.test.ts:54395:<anonymous@1447>",
                 "kind": "ArrowFunction",
-                "line": 1429,
-                "name": "<anonymous@1429>",
+                "line": 1447,
+                "name": "<anonymous@1447>",
                 "reason": "test-callback"
               },
               {
@@ -22457,10 +22457,10 @@
                 "column": 96,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:53704:<anonymous@1429>",
+                "id": "test/review-hardening.test.ts:54395:<anonymous@1447>",
                 "kind": "ArrowFunction",
-                "line": 1429,
-                "name": "<anonymous@1429>",
+                "line": 1447,
+                "name": "<anonymous@1447>",
                 "reason": "test-callback"
               },
               {
@@ -23542,10 +23542,10 @@
                 "column": 78,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:17314:<anonymous@460>",
+                "id": "test/review-hardening.test.ts:18005:<anonymous@478>",
                 "kind": "ArrowFunction",
-                "line": 460,
-                "name": "<anonymous@460>",
+                "line": 478,
+                "name": "<anonymous@478>",
                 "reason": "test-callback"
               },
               {
@@ -24019,10 +24019,10 @@
                 "column": 96,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:53704:<anonymous@1429>",
+                "id": "test/review-hardening.test.ts:54395:<anonymous@1447>",
                 "kind": "ArrowFunction",
-                "line": 1429,
-                "name": "<anonymous@1429>",
+                "line": 1447,
+                "name": "<anonymous@1447>",
                 "reason": "test-callback"
               },
               {
@@ -25559,10 +25559,10 @@
                 "column": 78,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:17314:<anonymous@460>",
+                "id": "test/review-hardening.test.ts:18005:<anonymous@478>",
                 "kind": "ArrowFunction",
-                "line": 460,
-                "name": "<anonymous@460>",
+                "line": 478,
+                "name": "<anonymous@478>",
                 "reason": "test-callback"
               },
               {
@@ -25681,10 +25681,10 @@
                 "column": 113,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:56760:<anonymous@1474>",
+                "id": "test/review-hardening.test.ts:57451:<anonymous@1492>",
                 "kind": "ArrowFunction",
-                "line": 1474,
-                "name": "<anonymous@1474>",
+                "line": 1492,
+                "name": "<anonymous@1492>",
                 "reason": "test-callback"
               },
               {
@@ -25752,10 +25752,10 @@
                 "column": 113,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:56760:<anonymous@1474>",
+                "id": "test/review-hardening.test.ts:57451:<anonymous@1492>",
                 "kind": "ArrowFunction",
-                "line": 1474,
-                "name": "<anonymous@1474>",
+                "line": 1492,
+                "name": "<anonymous@1492>",
                 "reason": "test-callback"
               },
               {
@@ -25935,10 +25935,10 @@
                 "column": 113,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:56760:<anonymous@1474>",
+                "id": "test/review-hardening.test.ts:57451:<anonymous@1492>",
                 "kind": "ArrowFunction",
-                "line": 1474,
-                "name": "<anonymous@1474>",
+                "line": 1492,
+                "name": "<anonymous@1492>",
                 "reason": "test-callback"
               },
               {
@@ -25996,10 +25996,10 @@
                 "column": 113,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:56760:<anonymous@1474>",
+                "id": "test/review-hardening.test.ts:57451:<anonymous@1492>",
                 "kind": "ArrowFunction",
-                "line": 1474,
-                "name": "<anonymous@1474>",
+                "line": 1492,
+                "name": "<anonymous@1492>",
                 "reason": "test-callback"
               },
               {
@@ -26057,10 +26057,10 @@
                 "column": 113,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:56760:<anonymous@1474>",
+                "id": "test/review-hardening.test.ts:57451:<anonymous@1492>",
                 "kind": "ArrowFunction",
-                "line": 1474,
-                "name": "<anonymous@1474>",
+                "line": 1492,
+                "name": "<anonymous@1492>",
                 "reason": "test-callback"
               },
               {

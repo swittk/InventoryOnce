@@ -201,7 +201,14 @@ export function normalizeInventoryStockPositionKey(
   const { qualifiedDimensions, ...withoutQualifiedDimensions } = key;
   // Empty qualified dimensions are semantic omission and must share one durable position identity.
   if (qualifiedDimensions.length === 0) return withoutQualifiedDimensions;
-  const dimensions = [...qualifiedDimensions];
+  // Copy each caller-owned element so later alias mutation cannot change retained position truth.
+  const dimensions = qualifiedDimensions.map(
+    /** Copy one item-defined dimension value into kernel-owned position truth. */
+    (dimension) => ({
+      dimensionId: dimension.dimensionId,
+      valueId: dimension.valueId,
+    })
+  );
   dimensions.sort(compareQualifiedDimension);
   let previousDimensionId: string | undefined;
   for (const dimension of dimensions) {

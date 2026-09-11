@@ -12,7 +12,10 @@ function fixtures() {
   const api = {
     schemaVersion: 2,
     surfaceSha256: "surface-a",
-    entries: { one: {}, two: {} },
+    entries: {
+      one: { signature: { signatures: [{}] } },
+      two: { signature: { signatures: [{}] } },
+    },
     counts: {
       callAndConstructSignatures: 2,
       directExecutableApis: 1,
@@ -168,6 +171,20 @@ test("exact full-report metadata is admitted but malformed wrapper fields fail c
   assert.throws(
     () => assertExecutableAssuranceMatchesManifests({ ...input, executable: { ...executable, wrapperDrift: true } }),
     /wrapperDrift.*unexpected executable assurance field/u,
+  );
+});
+
+test("API signature counter follows per-row signature cardinality rather than row count", () => {
+  const overloaded = fixtures();
+  overloaded.api.entries.one.signature.signatures.push({});
+  overloaded.api.counts.callAndConstructSignatures = 3;
+  assert.equal(executableAssuranceSummary(overloaded).callAndConstructSignatures, 3);
+
+  const staleCounter = structuredClone(overloaded);
+  staleCounter.api.counts.callAndConstructSignatures = 2;
+  assert.throws(
+    () => executableAssuranceSummary(staleCounter),
+    /signature counter differs/u,
   );
 });
 

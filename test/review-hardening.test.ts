@@ -110,6 +110,24 @@ describe("collision-free retry identity", () => {
     );
   });
 
+  it("copies qualified-dimension elements so caller mutation cannot rewrite retained position identity", () => {
+    const callerDimension = { dimensionId: "grade", valueId: "red" };
+    const normalized = normalizeInventoryStockPositionKey({
+      itemId: "item-a",
+      itemRevisionId: "item-a-v2",
+      locationId: "store",
+      qualifiedDimensions: [callerDimension],
+    });
+    const retainedIdentity = inventoryStockPositionIdentity(normalized);
+
+    callerDimension.valueId = "blue";
+
+    expect(normalized.qualifiedDimensions).toEqual([
+      { dimensionId: "grade", valueId: "red" },
+    ]);
+    expect(inventoryStockPositionIdentity(normalized)).toBe(retainedIdentity);
+  });
+
   it("treats an empty recorded-deficit location selection as all locations", async () => {
     const inventory = createTestInventory(
       undefined,
