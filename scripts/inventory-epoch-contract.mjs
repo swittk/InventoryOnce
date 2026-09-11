@@ -8,6 +8,8 @@ import { readAssuranceFile } from "./assurance-files.mjs";
 
 /** Independently established pre-epoch proof head; historical proof bytes never authenticate themselves. */
 export const EPOCH_PRIOR_PROOF_HEAD = "6983219e13295b8f6b073daefc3cbcd90b32ac35";
+/** Prior fully certified PR head before Review 5176369856 added malformed-input admission guards. */
+export const CURRENT_REVIEW_RUNTIME_PRIOR_HEAD = "1f4858d81b4ea6ef5d983b4e57fd680519c1e833";
 /** Exact temporal vocabulary migration. This map belongs to the proof, not the public runtime. */
 export const epochNames = Object.freeze({
   "occurredAt": "occurredAtEpochMs",
@@ -64,6 +66,14 @@ const inverse = new Map(Object.entries(epochNames).map(([before, after]) => [aft
 const nullableTimes = new Set(["adapterCertifiedAtEpochMs", "dualRunStartedAtEpochMs", "fenceStartedAtEpochMs", "activatedAtEpochMs"]);
 const sha256 = bytes => crypto.createHash("sha256").update(bytes).digest("hex");
 const historical = new Map();
+const currentReviewHistorical = new Map();
+
+/** Read one immutable ordinary Git blob from the prior certified review head. */
+function readCurrentReviewPriorFile(root, file) {
+  const key = `${root}:${file}`;
+  if (!currentReviewHistorical.has(key)) currentReviewHistorical.set(key, execFileSync("git", ["show", `${CURRENT_REVIEW_RUNTIME_PRIOR_HEAD}:${file}`], { cwd: root, maxBuffer: 64 * 1024 * 1024 }));
+  return Buffer.from(currentReviewHistorical.get(key));
+}
 
 /** Read one immutable ordinary Git blob exactly once per repository/proof pass. */
 export function readEpochPriorFile(root, file) {
@@ -168,16 +178,119 @@ function restoreNumericHelpers(file, current, prior) {
   return text;
 }
 
+/** Reverse only the reviewed malformed-input guards to the prior certified PR runtime. */
+function restoreCurrentReviewRuntimeGuards(file, current, prior) {
+  let text = current;
+  if (file === "src/commands.ts") {
+    text = replaceOnce(text, "if (!Array.isArray(lines) || lines.length === 0)", "if (lines.length === 0)", "movement-line malformed-array admission");
+    text = replaceOnce(text, 'if (typeof operationId !== "string" || operationId.trim().length === 0)', "if (operationId.trim().length === 0)", "operation-id malformed-string admission");
+  }
+  if (file === "src/model.ts") {
+    text = replaceOnce(text, '  if (typeof value !== "string") throw new Error(`${label} must be a string.`);\n', "", "inventory identity type admission");
+    text = replaceOnce(text, '  if (node === null || typeof node !== "object" || Array.isArray(node)) {\n    throw new Error("Traceability node must be an object.");\n  }\n', "", "traceability node shape admission");
+  }
+  if (file === "src/facade.ts") {
+    const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
+    const edits = [];
+    const edit = (node, replacement) => edits.push([node.getStart(source), node.getEnd(), replacement]);
+    const guardedOwners = new Set([
+      "changeStatus", "clearStatus", "changeOwner", "clearOwner", "changeCustodian", "clearCustodian",
+      "changeDispositionAuthority", "clearDispositionAuthority", "placeInContainer", "removeFromContainer",
+      "createPositionWithChangedQualifiedDimension", "createPositionWithoutQualifiedDimension",
+    ]);
+    const ownerName = node => {
+      if ((ts.isMethodDeclaration(node) || ts.isFunctionDeclaration(node)) && node.name !== undefined) return node.name.getText(source);
+      return undefined;
+    };
+    const isReferenceIdentifier = node => {
+      const parent = node.parent;
+      if (ts.isPropertyAccessExpression(parent) && parent.name === node) return false;
+      if ((ts.isPropertyAssignment(parent) || ts.isShorthandPropertyAssignment(parent)) && parent.name === node) return false;
+      if (ts.isVariableDeclaration(parent) && parent.name === node) return false;
+      return true;
+    };
+    const normalizedOwners = new Set();
+    function normalizeGuardedOwner(node) {
+      if (!node.body || !guardedOwners.has(ownerName(node))) return;
+      const declarations = node.body.statements.filter(statement => {
+        if (!ts.isVariableStatement(statement) || statement.declarationList.declarations.length !== 1) return false;
+        const declaration = statement.declarationList.declarations[0];
+        return ts.isIdentifier(declaration.name) && declaration.name.text === "from" &&
+          declaration.initializer !== undefined && ts.isCallExpression(declaration.initializer) &&
+          ts.isIdentifier(declaration.initializer.expression) && declaration.initializer.expression.text === "requireStockPositionInput" &&
+          declaration.initializer.arguments[0]?.getText(source) === "input.from";
+      });
+      if (declarations.length === 0) return;
+      assert.equal(declarations.length, 1, `Expected at most one reviewed source-position guard in ${ownerName(node)}.`);
+      assert(!normalizedOwners.has(ownerName(node)), `Duplicate reviewed source-position guard owner: ${ownerName(node)}`);
+      normalizedOwners.add(ownerName(node));
+      const declaration = declarations[0];
+      edit(declaration, "");
+      function replaceReferences(child) {
+        if (child === declaration) return;
+        if (ts.isIdentifier(child) && child.text === "from" && isReferenceIdentifier(child)) edit(child, "input.from");
+        ts.forEachChild(child, replaceReferences);
+      }
+      ts.forEachChild(node.body, replaceReferences);
+    }
+    function visit(node) {
+      if (ts.isFunctionDeclaration(node) && node.name?.text === "requireStockPositionInput") { edit(node, ""); return; }
+      if (ts.isMethodDeclaration(node) || ts.isFunctionDeclaration(node)) normalizeGuardedOwner(node);
+      ts.forEachChild(node, visit);
+    }
+    visit(source);
+    assert.deepEqual([...normalizedOwners].sort(), [...guardedOwners].sort(), "Reviewed source-position guard family changed.");
+    for (const [start, end, replacement] of edits.sort((a, b) => b[0] - a[0])) text = text.slice(0, start) + replacement + text.slice(end);
+    text = replaceOnce(text, 'if (typeof next !== "string" || next.trim().length === 0)', "if (next.trim().length === 0)", "changed-identity malformed-string admission");
+    text = replaceOnce(text, 'if (typeof value !== "string" || value.length === 0)', "if (value === undefined)", "clear-identity malformed-string admission");
+  }
+  assert.equal(syntax(text), syntax(prior), `Review runtime transport changed executable semantics outside validated guards: ${file}`);
+  assert.equal(syntax(text, false), syntax(prior, false), `Review runtime transport changed typed source outside validated guards: ${file}`);
+  return text;
+}
+
+/** Prove the current review runtime delta is exactly the audited guard-only family. */
+function verifyCurrentReviewRuntimeTransport(root) {
+  execFileSync("git", ["merge-base", "--is-ancestor", CURRENT_REVIEW_RUNTIME_PRIOR_HEAD, "HEAD"], { cwd: root, stdio: "ignore" });
+  const files = execFileSync("git", ["ls-tree", "-r", "--name-only", CURRENT_REVIEW_RUNTIME_PRIOR_HEAD, "--", "src"], { cwd: root, encoding: "utf8" }).trim().split("\n");
+  const currentFiles = execFileSync("git", ["ls-files", "--", "src"], { cwd: root, encoding: "utf8" }).trim().split("\n");
+  assert.deepEqual(currentFiles, files, "Current review changed the runtime module domain.");
+  const expectedChanged = ["src/commands.ts", "src/events.ts", "src/facade.ts", "src/model.ts"];
+  const changed = [], inputs = [], priorSources = new Map();
+  for (const file of files) {
+    const current = readAssuranceFile(root, file).toString("utf8");
+    const prior = readCurrentReviewPriorFile(root, file).toString("utf8");
+    inputs.push({ file, sha256: sha256(current) });
+    priorSources.set(file, prior);
+    if (current === prior) continue;
+    restoreCurrentReviewRuntimeGuards(file, current, prior);
+    changed.push(file);
+  }
+  assert.deepEqual(changed, expectedChanged, "Current review runtime delta escaped the audited malformed-input family.");
+  return {
+    priorCertifiedHead: CURRENT_REVIEW_RUNTIME_PRIOR_HEAD,
+    exactChangedRuntimeFiles: changed,
+    inputs,
+    priorSources,
+    laws: [
+      "The reviewed runtime delta adds only fail-closed malformed-input admission before existing valid-domain logic.",
+      "Every changed runtime module reverses exactly to the prior certified PR source in both emitted-runtime and typed AST form.",
+      "No runtime module may be added, removed, or changed outside the four audited review files.",
+    ],
+  };
+}
+
 /** Reverse only the declared temporal representation changes, rejecting any unrelated runtime delta. */
 export function verifyEpochRuntimeTransport(root) {
-  execFileSync("git", ["merge-base", "--is-ancestor", EPOCH_PRIOR_PROOF_HEAD, "HEAD"], { cwd: root, stdio: "ignore" });
+  execFileSync("git", ["merge-base", "--is-ancestor", EPOCH_PRIOR_PROOF_HEAD, CURRENT_REVIEW_RUNTIME_PRIOR_HEAD], { cwd: root, stdio: "ignore" });
+  const reviewTransition = verifyCurrentReviewRuntimeTransport(root);
   const files = execFileSync("git", ["ls-tree", "-r", "--name-only", EPOCH_PRIOR_PROOF_HEAD, "--", "src"], { cwd: root, encoding: "utf8" }).trim().split("\n");
-  const currentFiles = execFileSync("git", ["ls-files", "--", "src"], { cwd: root, encoding: "utf8" }).trim().split("\n");
-  assert.deepEqual(currentFiles, files, "Epoch transport changed the runtime module domain.");
-  const inputs = [], changes = [];
+  assert.deepEqual([...reviewTransition.priorSources.keys()], files, "Epoch transport changed the runtime module domain before the reviewed guard delta.");
+  const inputs = reviewTransition.inputs, changes = [];
   for (const file of files) {
-    const current = readAssuranceFile(root, file).toString("utf8"), prior = readEpochPriorFile(root, file).toString("utf8");
-    if (current === prior) { inputs.push({ file, sha256: sha256(current) }); continue; }
+    const current = reviewTransition.priorSources.get(file), prior = readEpochPriorFile(root, file).toString("utf8");
+    assert.equal(typeof current, "string", `Missing prior certified runtime source: ${file}`);
+    if (current === prior) continue;
     let text = restoreNumericHelpers(file, current, prior);
     const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
     const edits = [];
@@ -265,9 +378,13 @@ export function verifyEpochRuntimeTransport(root) {
       fs.writeFileSync(path.join(root,".chatgpt/epoch-incremental/restored-"+path.basename(file)),text);
       throw new Error(`Epoch transport contains an unproved runtime change: ${file}`);
     }
-    changes.push(file); inputs.push({ file, sha256: sha256(current) });
+    changes.push(file);
   }
-  return { priorProofHead: EPOCH_PRIOR_PROOF_HEAD, exactChangedRuntimeFiles: changes, inputs, laws: [
+  return { priorProofHead: EPOCH_PRIOR_PROOF_HEAD, currentReviewRuntimeTransport: {
+    priorCertifiedHead: reviewTransition.priorCertifiedHead,
+    exactChangedRuntimeFiles: reviewTransition.exactChangedRuntimeFiles,
+    laws: reviewTransition.laws,
+  }, exactChangedRuntimeFiles: changes, inputs, laws: [
     "Safe-integer epoch milliseconds form an exact totally ordered instant domain including zero and negative values.",
     "Relational numeric comparison preserves chronology; expiry is inclusive and absence is not a numeric sentinel.",
     "Canonical JSON encodes safe integers injectively up to signed zero, which denotes the same instant; intent arrays retain their field order.",
