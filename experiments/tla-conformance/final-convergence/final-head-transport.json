@@ -2,26 +2,42 @@
   "schemaVersion": 1,
   "status": "FINAL_HEAD_TRANSPORT_PROVED",
   "oldSourceHead": "6cafd49ff4b3729f80ae35d9fc0220f7a8a4b55a",
-  "finalSourceHead": "0e9214af91ecf326e94ec77b1e9727087be78eb9",
+  "finalSourceHead": "02d7b37c46bfe0f3129fa3f377960d740886a083",
   "oldSurfaceDigest": "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a",
-  "finalSurfaceDigest": "9cdd7329e0fcd9b0683315c8813c82e41f5ba3373dca8ef0f6e6b6c2a286cdcb",
+  "finalSurfaceDigest": "d86185fec12cb312c70a47b40ff313bff40ab9bdbca1f3bda908906c63957ab3",
   "callables": 535,
   "publicSignatureChanges": 0,
   "publicAstChanges": [
     "export:.#cutoverInventoryAuthority::call[0]",
     "export:.#parseQuantity::call[0]",
+    "export:.#resolveInventoryAmount::call[0]",
+    "export:./kernel#normalizeInventoryStockPositionKey::call[0]",
     "export:./kernel#parseQuantity::call[0]",
-    "export:./migrations#dryRunInventoryMigration::call[0]"
+    "export:./kernel#resolveInventoryAmount::call[0]",
+    "export:./migrations#dryRunInventoryMigration::call[0]",
+    "export:./storage#inventoryCountBookDigest::call[0]",
+    "export:./storage#inventoryDurableMigrationPlanDigest::call[0]",
+    "export:./storage#inventoryDurablePlanDigest::call[0]",
+    "export:./storage#inventoryProjectionDigest::call[0]",
+    "export:./storage#inventoryReservationBookDigest::call[0]",
+    "export:./storage#inventoryWorldContentRoots::call[0]"
   ],
   "exactSourceDelta": [
+    "src/amounts.ts",
     "src/authority-cutover.ts",
+    "src/catalog.ts",
+    "src/commands.ts",
     "src/coordinator.ts",
     "src/deficits.ts",
+    "src/facade.ts",
     "src/fungibility.ts",
     "src/integrity.ts",
     "src/migrations.ts",
+    "src/model.ts",
+    "src/picking.ts",
     "src/projection.ts",
     "src/quantity.ts",
+    "src/stock-amount-rules.ts",
     "src/storage.ts",
     "src/traceability-replay.ts",
     "src/transfers.ts"
@@ -70,9 +86,18 @@
     "integrityTransitions": {
       "changedRuntime": [
         "fn:assertAllowedCountTransition",
+        "fn:assertAllowedReservationTransition",
+        "fn:canonicalNormalizedJson",
+        "fn:inventoryCountBookDigest",
+        "fn:inventoryDurableMigrationPlanDigest",
+        "fn:inventoryDurablePlanDigest",
+        "fn:inventoryProjectionDigest",
+        "fn:inventoryReservationBookDigest",
+        "fn:inventoryWorldContentRoots",
         "fn:normalizedJsonObjectKeys",
         "fn:sameJson",
-        "fn:sameNormalizedJsonValue"
+        "fn:sameNormalizedJsonValue",
+        "fn:sortedRecordRows"
       ],
       "rule": "Integrity comparisons are recursively order-insensitive for object keys but preserve arrays exactly, and reconciliation event identity is admitted only by count completion."
     },
@@ -88,6 +113,102 @@
         "fn:parseQuantity"
       ],
       "rule": "Decimal quantity parsing rejects impossible safe-integer magnitudes before BigInt construction while preserving exact accepted values, leading zeros, decimal scale, and the existing safe-integer validation."
+    },
+    "systemicRuntimeTransition": {
+      "priorProofHead": "0141b46c18c60b03983081175bbfb5cd074eb8b1",
+      "exactFiles": [
+        "src/amounts.ts",
+        "src/catalog.ts",
+        "src/commands.ts",
+        "src/facade.ts",
+        "src/fungibility.ts",
+        "src/picking.ts",
+        "src/stock-amount-rules.ts",
+        "src/transfers.ts"
+      ],
+      "guardSites": [
+        {
+          "file": "src/amounts.ts",
+          "declaration": "resolveInventoryAmount"
+        },
+        {
+          "file": "src/catalog.ts",
+          "declaration": "normalizeInventoryCompositionOutput"
+        },
+        {
+          "file": "src/commands.ts",
+          "declaration": "findCommandItem"
+        },
+        {
+          "file": "src/facade.ts",
+          "declaration": "normalizeFacadeAmount"
+        },
+        {
+          "file": "src/picking.ts",
+          "declaration": "resolveAllocationItemAndSelector"
+        },
+        {
+          "file": "src/transfers.ts",
+          "declaration": "transferCommandItem"
+        },
+        {
+          "file": "src/transfers.ts",
+          "declaration": "inventoryTransferAmountIntentValue"
+        }
+      ],
+      "laws": [
+        "Closed Measured/Package unions are unchanged for every admitted typed value; all other discriminators reject before interpretation/effects.",
+        "Picking and fungibility execute one byte-equivalent extracted independent-measurement predicate.",
+        "The image of the product of stock-line identities equals the Cartesian product of their unique identity images; duplicate representations neither add nor remove a genealogy relation.",
+        "Every original stock line and all remaining runtime statements are retained exactly by the verified reverse transformation."
+      ],
+      "inputs": [
+        {
+          "file": "src/amounts.ts",
+          "sha256": "062a224eb36a4b3bce457293e53610db0f0cf1588f6aa935b4fac32fab7c9091"
+        },
+        {
+          "file": "src/catalog.ts",
+          "sha256": "bd282cbd2dd61b4ae21fc2fa391637f3bb450068c96dae94b6a96c03da905894"
+        },
+        {
+          "file": "src/commands.ts",
+          "sha256": "766000e709fa5cfa0551919103565b91b18b4dabf9fc8ab9c32d638748b1fd95"
+        },
+        {
+          "file": "src/facade.ts",
+          "sha256": "e642e24b4e1ef22bfb56bc90b3b068cc641e858da57e61995ab36a869a127b1f"
+        },
+        {
+          "file": "src/fungibility.ts",
+          "sha256": "74a49aa0babb1647556fc9001c2a4e1c6ae3edc2fabec901c3ab225e9982465b"
+        },
+        {
+          "file": "src/picking.ts",
+          "sha256": "d2f614e93ed0c3d2fa691542dd27f8fcf8a69126009d098dbc8bf0f9379831dd"
+        },
+        {
+          "file": "src/stock-amount-rules.ts",
+          "sha256": "9945e2784be603a670e6c9341cd26393e0ed1011a8b5886df535b62fe1417443"
+        },
+        {
+          "file": "src/transfers.ts",
+          "sha256": "d22a83241ed5d0afd421c7d81c66001b53a92e9f4db4f755d69b5b555426bd78"
+        }
+      ]
+    },
+    "systemicIntegrityTransition": {
+      "priorProofHead": "0141b46c18c60b03983081175bbfb5cd074eb8b1",
+      "exactFile": "src/integrity.ts",
+      "laws": [
+        "Nested object insertion order cannot change a durable content root; array order remains semantic.",
+        "A non-consumed reservation cannot carry a consumption event before a lifecycle operation is applied.",
+        "Reversing exactly those two repairs restores the frozen reviewed runtime byte-for-byte after TypeScript emission."
+      ],
+      "input": {
+        "file": "src/integrity.ts",
+        "sha256": "9664db06344f9a4fedb3249a36b0b424c0ff2f1377c719a95ff0b3537328ae4c"
+      }
     }
   },
   "evidence": {
@@ -97,8 +218,20 @@
     },
     "currentProductFiles": [
       {
+        "file": "src/amounts.ts",
+        "sha256": "062a224eb36a4b3bce457293e53610db0f0cf1588f6aa935b4fac32fab7c9091"
+      },
+      {
         "file": "src/authority-cutover.ts",
         "sha256": "d0f33f945f2997a22b99e94d973241ee6b21e49f27c42967c5de204d20307a86"
+      },
+      {
+        "file": "src/catalog.ts",
+        "sha256": "bd282cbd2dd61b4ae21fc2fa391637f3bb450068c96dae94b6a96c03da905894"
+      },
+      {
+        "file": "src/commands.ts",
+        "sha256": "766000e709fa5cfa0551919103565b91b18b4dabf9fc8ab9c32d638748b1fd95"
       },
       {
         "file": "src/coordinator.ts",
@@ -109,16 +242,28 @@
         "sha256": "5f6b4781b0f8764f571ec37fee734bb3e1e572ffcb9c7d5917f8dbda79c64ec6"
       },
       {
+        "file": "src/facade.ts",
+        "sha256": "e642e24b4e1ef22bfb56bc90b3b068cc641e858da57e61995ab36a869a127b1f"
+      },
+      {
         "file": "src/fungibility.ts",
-        "sha256": "5be7109a918becee7ba8880ae319f1566bf487597a7f650f53c25cb4955817f1"
+        "sha256": "74a49aa0babb1647556fc9001c2a4e1c6ae3edc2fabec901c3ab225e9982465b"
       },
       {
         "file": "src/integrity.ts",
-        "sha256": "f8fd7043c3a74875f00a3cbea897d022ccd70a5c28e23d564fd2f1f78fe1f1a1"
+        "sha256": "9664db06344f9a4fedb3249a36b0b424c0ff2f1377c719a95ff0b3537328ae4c"
       },
       {
         "file": "src/migrations.ts",
         "sha256": "da6ae27847698112ab23af8f22937914da852e61ff501a5dc2f3153f4446c478"
+      },
+      {
+        "file": "src/model.ts",
+        "sha256": "a8ce500812b1e9f83ef546d7773c8586c5e4763fe08ed18894c1412ff26ebc94"
+      },
+      {
+        "file": "src/picking.ts",
+        "sha256": "d2f614e93ed0c3d2fa691542dd27f8fcf8a69126009d098dbc8bf0f9379831dd"
       },
       {
         "file": "src/projection.ts",
@@ -127,6 +272,10 @@
       {
         "file": "src/quantity.ts",
         "sha256": "34b35abdb08602952d68f1026ff960cfd306d133c787fed188f1c2e229ac0f35"
+      },
+      {
+        "file": "src/stock-amount-rules.ts",
+        "sha256": "9945e2784be603a670e6c9341cd26393e0ed1011a8b5886df535b62fe1417443"
       },
       {
         "file": "src/storage.ts",
@@ -138,7 +287,7 @@
       },
       {
         "file": "src/transfers.ts",
-        "sha256": "e1f88a6479b80cf80d5651909965e8d453701db3623617a8f4716645cd7722d3"
+        "sha256": "d22a83241ed5d0afd421c7d81c66001b53a92e9f4db4f755d69b5b555426bd78"
       }
     ],
     "currentRegressionTests": [
@@ -152,15 +301,15 @@
       },
       {
         "file": "test/storage-conformance-suite.ts",
-        "sha256": "9b9d3beb9a80cbc04d1958b54caae1b2e168cb86b5b6e4203a2e5c6fd5f080b7"
+        "sha256": "e686273f69fdf39b54ab7df3aef1386ce45df45c43b2f7f03058d1aa85e5a657"
       },
       {
         "file": "test/storage-conformance.test.ts",
-        "sha256": "961f0b128a0700c63ea818ff073e8491af253e3e41daa6431875bd11cb1071b0"
+        "sha256": "bdf0b5a6210fe3678c9a8f8868d0278aa1b9fa95ec68749f25741ba83fb65342"
       },
       {
         "file": "test/review-hardening.test.ts",
-        "sha256": "c25477fe56e3fc833216b3f497eefdc0c54149e4b16b598303fc79de76aea49c"
+        "sha256": "815ce2c4325e578486c63b6a132e7b15ca4a18226ab9d23e0fbb941f2768b26e"
       },
       {
         "file": "test/fungibility.test.ts",
@@ -210,13 +359,13 @@
   },
   "currentReviewAssurance": {
     "file": "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json",
-    "sha256": "0a59c34ebcf836615d3cc1d8d42a1781db79fff8545824a7daead507cfd76b17",
-    "evidenceHead": "838dcdf01cbe58478562ea3ba1bafc16a37c231e",
-    "certifiedHead": "c88edc7578cd0897edc7a25a7a5b9751c371e010",
-    "repositoryStateSha256": "9f57db4e3ee1ad1c71e72c039fd46c4ffa2c2ae332e1789830d2dcaf57fe613c",
-    "fullLogSha256": "c23bef0f1206424e3dbcf924ab0be2118df5543d1ef25248c5195e5fba78eb0d",
-    "surfaceSha256": "dec827da4c576f7638a0f6f9777217b7f024beab7b9ec08cf0a26e8a45733964"
+    "sha256": "397f529a426da73ace00b6a638d949b9f0612dd486407f7cab7826280d5d0cc1",
+    "evidenceHead": "a27b15f90854112a94f75c418d744122e8eb7363",
+    "certifiedHead": "02d7b37c46bfe0f3129fa3f377960d740886a083",
+    "repositoryStateSha256": "ae4506d2f3da40c4d6e4fe95767a6f3570538be5c8cf24a59ce0489e0afd874a",
+    "fullLogSha256": "20d53f0cd97347b4df6fb93743c6e651e0753b5bc8f8538ff9b64fc465c5b432",
+    "surfaceSha256": "fe83db6e44a4d448decc7c2e16b0f88bb1d2d0ab4ad052c17a3b68d7c270cd22"
   },
   "creditExpansion": false,
-  "contentSha256": "2a0e269c2ccec855b98f0fcbe29ac476d82ecc93119774ffd086098a02bdeeac"
+  "contentSha256": "be22e202e3230a2c3fc0bfaf6a89de6c6825a9ae532649b2f626f27a3d0628b9"
 }

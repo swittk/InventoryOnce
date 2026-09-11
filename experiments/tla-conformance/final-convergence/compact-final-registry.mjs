@@ -1,7 +1,7 @@
 // experiments/tla-conformance/final-convergence/build-final-registry.mjs
 import assert from "node:assert/strict";
-import fs from "node:fs";
-import path2 from "node:path";
+import fs2 from "node:fs";
+import path3 from "node:path";
 
 // experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs
 import crypto from "node:crypto";
@@ -12,19 +12,41 @@ function sha256(value2) {
 }
 
 // experiments/tla-conformance/final-convergence/repository-root.mjs
+import path2 from "node:path";
+
+// scripts/assurance-files.mjs
+import fs from "node:fs";
 import path from "node:path";
+function assuranceRepositoryPath(repositoryRoot, relativePath) {
+  const root = path.resolve(repositoryRoot);
+  if (typeof relativePath !== "string" || relativePath.length === 0 || relativePath.includes("\0") || relativePath.includes("\\") || path.isAbsolute(relativePath)) throw new Error(`Invalid repository-relative assurance path: ${String(relativePath)}.`);
+  const components = relativePath.split("/");
+  if (components.some((part) => part === "" || part === "." || part === "..")) throw new Error(`Assurance path escapes repository root: ${relativePath}.`);
+  let current = root;
+  const rootStat = fs.lstatSync(root);
+  if (!rootStat.isDirectory() || rootStat.isSymbolicLink()) throw new Error("Assurance repository root is not an ordinary directory.");
+  for (let index = 0; index < components.length; index += 1) {
+    current = path.join(current, components[index]);
+    let stat;
+    try {
+      stat = fs.lstatSync(current);
+    } catch (error) {
+      if (error?.code === "ENOENT") continue;
+      throw error;
+    }
+    if (stat.isSymbolicLink()) throw new Error(`Assurance path crosses a symbolic link: ${relativePath}.`);
+    if (index < components.length - 1 && !stat.isDirectory()) throw new Error(`Assurance path ancestor is not a directory: ${relativePath}.`);
+  }
+  return current;
+}
+
+// experiments/tla-conformance/final-convergence/repository-root.mjs
 import { fileURLToPath } from "node:url";
 function finalConvergenceRepositoryRoot(moduleUrl) {
-  return path.resolve(path.dirname(fileURLToPath(moduleUrl)), "../../..");
+  return path2.resolve(path2.dirname(fileURLToPath(moduleUrl)), "../../..");
 }
 function finalConvergenceRepositoryPath(repositoryRoot, repositoryRelativePath) {
-  const root = path.resolve(repositoryRoot);
-  const target = path.resolve(root, repositoryRelativePath);
-  const relative = path.relative(root, target);
-  if (relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
-    throw new Error(`InventoryOnce final assurance path escapes repository root: ${repositoryRelativePath}.`);
-  }
-  return target;
+  return assuranceRepositoryPath(repositoryRoot, repositoryRelativePath);
 }
 
 // experiments/tla-conformance/final-convergence/build-final-registry.mjs
@@ -34,7 +56,7 @@ var VALUE = "experiments/tla-conformance/final-convergence/final-v309.json";
 var PRODUCER = "experiments/tla-conformance/final-convergence/final-a121-b58.json";
 var OUTPUT = "experiments/tla-conformance/final-convergence/final-surface-bindings.json";
 function read(file) {
-  return fs.readFileSync(path2.resolve(ROOT, file));
+  return fs2.readFileSync(path3.resolve(ROOT, file));
 }
 function json(file) {
   return JSON.parse(read(file).toString("utf8"));
@@ -78,6 +100,6 @@ var output = { schemaVersion: 1, owner: "final-convergence-0c94ee9", bindings };
 var text = `${JSON.stringify(output, null, 2)}
 `;
 var outputPath = finalConvergenceRepositoryPath(ROOT, OUTPUT);
-if (process.argv.includes("--check")) assert.equal(fs.readFileSync(outputPath, "utf8"), text, "Final 535 registry is stale.");
-else fs.writeFileSync(outputPath, text);
+if (process.argv.includes("--check")) assert.equal(fs2.readFileSync(outputPath, "utf8"), text, "Final 535 registry is stale.");
+else fs2.writeFileSync(outputPath, text);
 console.log(JSON.stringify({ status: "FINAL_535_REGISTRY_BUILT", counts, valueEvidence: valueRef, producerEvidence: producerRef, externalRows: external.length }, null, 2));
