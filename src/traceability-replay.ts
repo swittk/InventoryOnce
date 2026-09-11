@@ -50,8 +50,8 @@ export function projectInventoryTraceabilityEvents(
         }
         relations[identity] = {
           kind: change.kind,
-          from: change.from,
-          to: change.to,
+          from: { ...change.from },
+          to: { ...change.to },
           createdByEventId: event.eventId,
         };
         continue;

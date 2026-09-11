@@ -15,6 +15,7 @@ import {
   dryRunInventoryMigration,
 } from "../src/migrations-api.js";
 import { createInMemoryInventoryDurableStorage } from "../src/storage-api.js";
+import { createInventoryCorrectionEvent } from "../src/corrections.js";
 import { commitInventoryEvent, defineInventoryEvent } from "../src/events.js";
 import {
   inventoryGenealogyAncestors,
@@ -1210,5 +1211,197 @@ describe("transformation genealogy set semantics", () => {
         expect(await inventory.read.world()).toEqual(after);
       }
     }
+  });
+});
+
+
+describe("runtime discriminator and ownership hardening", () => {
+  it("rejects unsupported event, transfer, traceability, and node discriminators", async () => {
+    const catalog = createTabletCatalog();
+    const inventory = createTestInventory();
+    const received = await inventory.stock.receive({
+      operationId: "discriminator-receipt",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store"),
+      amount: stockAmount("1", "piece"),
+    });
+    expect(() =>
+      Reflect.apply(defineInventoryEvent, undefined, [
+        { catalog, event: { ...received.event, kind: "unsupported-event" } },
+      ])
+    ).toThrow(/Unsupported inventory event kind/u);
+    expect(() =>
+      Reflect.apply(defineInventoryEvent, undefined, [
+        {
+          catalog,
+          event: {
+            ...received.event,
+            transferLifecycle: {
+              action: "unsupported-transfer-action",
+              transferId: "TRANSFER-UNKNOWN-ACTION",
+            },
+          },
+        },
+      ])
+    ).toThrow(/Unsupported transfer lifecycle action/u);
+
+    const from = {
+      kind: InventoryTraceabilityNodeKind.Container,
+      id: "DISCRIMINATOR-FROM",
+    };
+    const to = {
+      kind: InventoryTraceabilityNodeKind.Container,
+      id: "DISCRIMINATOR-TO",
+    };
+    const traceabilityEvent = {
+      eventId: "discriminator-trace-event",
+      operationId: "discriminator-trace-operation",
+      kind: InventoryEventKind.Traceability,
+      occurredAtEpochMs: time0,
+      stockEffects: [],
+      traceabilityChanges: [
+        {
+          action: InventoryTraceabilityRelationAction.Add,
+          kind: InventoryTraceabilityRelationKind.Association,
+          from,
+          to,
+        },
+      ],
+    };
+    expect(() =>
+      Reflect.apply(defineInventoryEvent, undefined, [
+        {
+          catalog,
+          event: {
+            ...traceabilityEvent,
+            traceabilityChanges: [
+              { ...traceabilityEvent.traceabilityChanges[0], kind: "unsupported-relation" },
+            ],
+          },
+        },
+      ])
+    ).toThrow(/Unsupported traceability relation kind/u);
+    expect(() =>
+      Reflect.apply(defineInventoryEvent, undefined, [
+        {
+          catalog,
+          event: {
+            ...traceabilityEvent,
+            traceabilityChanges: [
+              { ...traceabilityEvent.traceabilityChanges[0], action: "unsupported-action" },
+            ],
+          },
+        },
+      ])
+    ).toThrow(/Unsupported traceability action/u);
+    expect(() =>
+      Reflect.apply(inventoryTraceabilityNodeIdentity, undefined, [
+        { kind: "unsupported-node", id: "NODE-UNKNOWN-KIND" },
+      ])
+    ).toThrow(/Unsupported traceability node kind/u);
+  });
+
+  it("detaches projected traceability relation nodes from caller and event objects", () => {
+    const from = {
+      kind: InventoryTraceabilityNodeKind.Container,
+      id: "OWNERSHIP-FROM",
+    };
+    const to = {
+      kind: InventoryTraceabilityNodeKind.Container,
+      id: "OWNERSHIP-TO",
+    };
+    const change = {
+      action: InventoryTraceabilityRelationAction.Add,
+      kind: InventoryTraceabilityRelationKind.Association,
+      from,
+      to,
+    };
+    const identity = inventoryTraceabilityRelationIdentity(
+      change.kind,
+      change.from,
+      change.to
+    );
+    const live = applyInventoryTraceabilityChanges({
+      state: { relations: {}, containmentChildContainerIdsByParentNodeIdentity: {} },
+      eventId: "ownership-live-event",
+      changes: [change],
+    });
+    from.id = "MUTATED-CALLER-FROM";
+    to.id = "MUTATED-CALLER-TO";
+    expect(live.relations[identity]?.from.id).toBe("OWNERSHIP-FROM");
+    expect(live.relations[identity]?.to.id).toBe("OWNERSHIP-TO");
+
+    const catalog = createTabletCatalog();
+    const draft = defineInventoryEvent({
+      catalog,
+      event: {
+        eventId: "ownership-replay-event",
+        operationId: "ownership-replay-operation",
+        kind: InventoryEventKind.Traceability,
+        occurredAtEpochMs: time0,
+        stockEffects: [],
+        traceabilityChanges: [
+          {
+            action: InventoryTraceabilityRelationAction.Add,
+            kind: InventoryTraceabilityRelationKind.Association,
+            from: {
+              kind: InventoryTraceabilityNodeKind.Container,
+              id: "REPLAY-FROM",
+            },
+            to: {
+              kind: InventoryTraceabilityNodeKind.Container,
+              id: "REPLAY-TO",
+            },
+          },
+        ],
+      },
+    });
+    const committed = commitInventoryEvent(draft, time1, 1);
+    const replayed = projectInventoryTraceabilityEvents([committed]);
+    const replayIdentity = Object.keys(replayed.relations)[0];
+    const committedChange = committed.traceabilityChanges[0];
+    expect(committedChange).toBeDefined();
+    Reflect.set(committedChange?.from ?? {}, "id", "MUTATED-COMMITTED-FROM");
+    Reflect.set(committedChange?.to ?? {}, "id", "MUTATED-COMMITTED-TO");
+    expect(replayed.relations[replayIdentity ?? ""]?.from.id).toBe("REPLAY-FROM");
+    expect(replayed.relations[replayIdentity ?? ""]?.to.id).toBe("REPLAY-TO");
+  });
+
+  it("replays a cross-kind metadata-root correction using the replacement physical kind", async () => {
+    const catalog = createTabletCatalog();
+    const inventory = createTestInventory(undefined, catalog);
+    const metadataRoot = await inventory.lots.define({
+      operationId: "cross-kind-lot-root",
+      occurredAtEpochMs: time0,
+      itemId: "item-a",
+      lotId: "CROSS-KIND-LOT",
+      lot: { expiresAtEpochMs: time3 + 86_400_000 },
+    });
+    const replacementInventory = createTestInventory(undefined, catalog);
+    const receipt = await replacementInventory.stock.receive({
+      operationId: "cross-kind-receipt-template",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store", { lotId: "CROSS-KIND-LOT" }),
+      amount: stockAmount("1", "piece"),
+      lot: { expiresAtEpochMs: time3 + 86_400_000 },
+    });
+    const world = await inventory.read.world();
+    const correction = createInventoryCorrectionEvent({
+      catalog,
+      projection: world.projection,
+      operationId: "cross-kind-correction",
+      occurredAtEpochMs: time3,
+      correctsEventId: metadataRoot.event.eventId,
+      replacement: {
+        ...receipt.event,
+        eventId: metadataRoot.event.eventId,
+        operationId: metadataRoot.event.operationId,
+      },
+      reason: "The retained root was a physical receipt, not metadata-only.",
+    });
+    expect(correction.stockEffects).toHaveLength(1);
+    expect(
+      correction.stockEffects[0]?.measurementsDelta.primary.quantity.amountMinor
+    ).toBe(1);
   });
 });

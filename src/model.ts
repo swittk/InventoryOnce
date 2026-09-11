@@ -262,6 +262,17 @@ export function inventoryTraceabilityNodeIdentity(
     throw new Error("Traceability node must be an object.");
   }
   assertInventoryIdentity(node.id, "traceability node id");
+  switch (node.kind) {
+    case InventoryTraceabilityNodeKind.Serial:
+    case InventoryTraceabilityNodeKind.Container:
+    case InventoryTraceabilityNodeKind.Lot:
+    case InventoryTraceabilityNodeKind.External:
+      break;
+    default:
+      throw new Error(
+        `Unsupported traceability node kind '${String(node.kind)}'.`
+      );
+  }
   if (node.kind === InventoryTraceabilityNodeKind.Lot) {
     if (node.itemId === undefined)
       throw new Error("Lot traceability node needs itemId.");

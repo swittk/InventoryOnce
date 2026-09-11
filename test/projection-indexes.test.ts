@@ -605,3 +605,34 @@ describe("rebuildable stock performance indexes", () => {
   });
 
 });
+
+
+describe("historical projection cut validation", () => {
+  it("rejects non-integer, non-finite, negative, and unsafe record-sequence cuts", () => {
+    const catalog = createTabletCatalog();
+    for (const throughRecordSequence of [
+      Number.NaN,
+      Number.POSITIVE_INFINITY,
+      -1,
+      0.5,
+      Number.MAX_SAFE_INTEGER + 1,
+    ]) {
+      expect(() =>
+        projectInventoryEvents({
+          catalog,
+          events: [],
+          deficitPolicy: InventoryDeficitPolicy.Reject,
+          throughRecordSequence,
+        })
+      ).toThrow(/throughRecordSequence must be a non-negative safe integer/u);
+    }
+    expect(
+      projectInventoryEvents({
+        catalog,
+        events: [],
+        deficitPolicy: InventoryDeficitPolicy.Reject,
+        throughRecordSequence: 0,
+      }).lastRecordSequence
+    ).toBe(0);
+  });
+});

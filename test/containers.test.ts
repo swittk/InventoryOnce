@@ -226,6 +226,15 @@ describe("native handling-unit masters", () => {
         (position) => position.key.statusId === "quarantine"
       )
     ).toBe(true);
+    expect(quarantined).toEqual(
+      [...movedRows, ...movedInstrumentRows].map(
+        /** Only status may differ after the whole-container status change. */
+        (position) => ({
+          ...position,
+          key: { ...position.key, statusId: "quarantine" },
+        })
+      )
+    );
     await inventory.containers.clearStatus({
       operationId: "clear-whole-pallet-status",
       occurredAtEpochMs: time3,
@@ -241,6 +250,7 @@ describe("native handling-unit masters", () => {
         (position) => position.key.statusId === undefined
       )
     ).toBe(true);
+    expect(cleared).toEqual([...movedRows, ...movedInstrumentRows]);
   });
 
   it("issues a whole container and records whole-container scrap shortage truth", async () => {

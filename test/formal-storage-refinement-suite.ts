@@ -625,6 +625,12 @@ export function runInventoryFormalStorageRefinementSuite(
         failpoint: receiveCrash.failpoint,
       });
       const receiveInventory = createRefinementInventory(receiveStorage);
+      const receiveControlStorage = await factory({
+        namespaceId: `${label}-fail-receive-control`,
+      });
+      const receiveControlInventory = createRefinementInventory(
+        receiveControlStorage
+      );
       const receiveCommand = {
         operationId: receiveOperationId,
         occurredAtEpochMs: time0,
@@ -635,6 +641,10 @@ export function runInventoryFormalStorageRefinementSuite(
           },
         ],
       };
+      const receiveControl = await receiveControlInventory.stock.receiveMany(
+        receiveCommand
+      );
+      const receiveControlWorld = await receiveControlInventory.read.world();
       const receiveBefore = await receiveInventory.read.world();
       await expect(
         receiveInventory.stock.receiveMany(receiveCommand)
@@ -649,9 +659,9 @@ export function runInventoryFormalStorageRefinementSuite(
       expect(
         abstractPrimaryBalance(receiveAfter, "item-a", "store", "piece")
       ).toBe(String(5));
-      expect(
-        (await receiveInventory.stock.receiveMany(receiveCommand)).replayed
-      ).toBe(true);
+      expect(receiveAfter).toEqual(receiveControlWorld);
+      const receiveReplay = await receiveInventory.stock.receiveMany(receiveCommand);
+      expect(receiveReplay).toEqual({ ...receiveControl, replayed: true });
     });
 
     it("repairs an issueManyByPolicy failure before publication", async () => {
@@ -666,7 +676,11 @@ export function runInventoryFormalStorageRefinementSuite(
         failpoint: issueCrash.failpoint,
       });
       const issueInventory = createRefinementInventory(issueStorage);
-      await issueInventory.stock.receiveMany({
+      const issueControlStorage = await factory({
+        namespaceId: `${label}-fail-issue-control`,
+      });
+      const issueControlInventory = createRefinementInventory(issueControlStorage);
+      const issueSeed = {
         operationId: `formal-fail-issue-seed-${label}`,
         occurredAtEpochMs: time0,
         lines: [
@@ -675,7 +689,9 @@ export function runInventoryFormalStorageRefinementSuite(
             amount: stockAmount("5", "piece"),
           },
         ],
-      });
+      };
+      await issueInventory.stock.receiveMany(issueSeed);
+      await issueControlInventory.stock.receiveMany(issueSeed);
       const issueCommand = {
         operationId: issueOperationId,
         occurredAtEpochMs: time1,
@@ -690,6 +706,10 @@ export function runInventoryFormalStorageRefinementSuite(
           },
         ],
       };
+      const issueControl = await issueControlInventory.stock.issueManyByPolicy(
+        issueCommand
+      );
+      const issueControlWorld = await issueControlInventory.read.world();
       const issueBefore = await issueInventory.read.world();
       await expect(
         issueInventory.stock.issueManyByPolicy(issueCommand)
@@ -704,9 +724,9 @@ export function runInventoryFormalStorageRefinementSuite(
       expect(
         abstractPrimaryBalance(issueAfter, "item-a", "store", "piece")
       ).toBe(String(3));
-      expect(
-        (await issueInventory.stock.issueManyByPolicy(issueCommand)).replayed
-      ).toBe(true);
+      expect(issueAfter).toEqual(issueControlWorld);
+      const issueReplay = await issueInventory.stock.issueManyByPolicy(issueCommand);
+      expect(issueReplay).toEqual({ ...issueControl, replayed: true });
     });
 
     it("repairs a transferManyByPolicy failure after publication", async () => {
@@ -721,7 +741,13 @@ export function runInventoryFormalStorageRefinementSuite(
         failpoint: transferCrash.failpoint,
       });
       const transferInventory = createRefinementInventory(transferStorage);
-      await transferInventory.stock.receiveMany({
+      const transferControlStorage = await factory({
+        namespaceId: `${label}-fail-transfer-control`,
+      });
+      const transferControlInventory = createRefinementInventory(
+        transferControlStorage
+      );
+      const transferSeed = {
         operationId: `formal-fail-transfer-seed-${label}`,
         occurredAtEpochMs: time0,
         lines: [
@@ -730,7 +756,9 @@ export function runInventoryFormalStorageRefinementSuite(
             amount: stockAmount("5", "piece"),
           },
         ],
-      });
+      };
+      await transferInventory.stock.receiveMany(transferSeed);
+      await transferControlInventory.stock.receiveMany(transferSeed);
       const transferCommand = {
         operationId: transferOperationId,
         occurredAtEpochMs: time1,
@@ -746,6 +774,9 @@ export function runInventoryFormalStorageRefinementSuite(
           },
         ],
       };
+      const transferControl =
+        await transferControlInventory.stock.transferManyByPolicy(transferCommand);
+      const transferControlWorld = await transferControlInventory.read.world();
       await expect(
         transferInventory.stock.transferManyByPolicy(transferCommand)
       ).rejects.toThrow("formal crash");
@@ -776,10 +807,10 @@ export function runInventoryFormalStorageRefinementSuite(
       expect(
         abstractPrimaryBalance(transferAfter, "item-a", "room", "piece")
       ).toBe(String(2));
-      expect(
-        (await transferInventory.stock.transferManyByPolicy(transferCommand))
-          .replayed
-      ).toBe(true);
+      expect(transferAfter).toEqual(transferControlWorld);
+      const transferReplay =
+        await transferInventory.stock.transferManyByPolicy(transferCommand);
+      expect(transferReplay).toEqual({ ...transferControl, replayed: true });
     });
 
     it("repairs a replaceAbsolute count failure after publication", async () => {
@@ -794,7 +825,11 @@ export function runInventoryFormalStorageRefinementSuite(
         failpoint: countCrash.failpoint,
       });
       const countInventory = createRefinementInventory(countStorage);
-      await countInventory.stock.receiveMany({
+      const countControlStorage = await factory({
+        namespaceId: `${label}-fail-count-control`,
+      });
+      const countControlInventory = createRefinementInventory(countControlStorage);
+      const countSeed = {
         operationId: `formal-fail-count-seed-${label}`,
         occurredAtEpochMs: time0,
         lines: [
@@ -803,7 +838,9 @@ export function runInventoryFormalStorageRefinementSuite(
             amount: stockAmount("5", "piece"),
           },
         ],
-      });
+      };
+      await countInventory.stock.receiveMany(countSeed);
+      await countControlInventory.stock.receiveMany(countSeed);
       const countCommand = {
         countId: countOperationId,
         operationId: countOperationId,
@@ -819,6 +856,10 @@ export function runInventoryFormalStorageRefinementSuite(
         occurredAtEpochMs: time2,
         reason: "Selected failpoint count",
       };
+      const countControl = await countControlInventory.counts.replaceAbsolute(
+        countCommand
+      );
+      const countControlWorld = await countControlInventory.read.world();
       await expect(
         countInventory.counts.replaceAbsolute(countCommand)
       ).rejects.toThrow("formal crash");
@@ -838,10 +879,11 @@ export function runInventoryFormalStorageRefinementSuite(
       expect(
         abstractPrimaryBalance(countAfter, "item-a", "store", "piece")
       ).toBe(String(3));
+      expect(countAfter).toEqual(countControlWorld);
       const countReplay = await countInventory.counts.replaceAbsolute(
         countCommand
       );
-      expect(countReplay.replayed).toBe(true);
+      expect(countReplay).toEqual({ ...countControl, replayed: true });
       expect(countReplay.count.status).toBe("completed");
     });
   });

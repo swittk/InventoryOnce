@@ -81,8 +81,8 @@ export function applyInventoryTraceabilityChanges({
       }
       relations[identity] = {
         kind: change.kind,
-        from: change.from,
-        to: change.to,
+        from: { ...change.from },
+        to: { ...change.to },
         createdByEventId: eventId,
       };
       continue;

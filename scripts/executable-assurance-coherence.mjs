@@ -255,10 +255,25 @@ export function assertExecutableAssuranceMatchesManifests(
   /** @type {ExecutableAssuranceInput} */ input,
 ) {
   const expected = executableAssuranceSummary(input);
+  const executable = input.executable;
+  if (
+    typeof executable !== "object" ||
+    executable === null ||
+    Array.isArray(executable) ||
+    (Object.getPrototypeOf(executable) !== Object.prototype &&
+      Object.getPrototypeOf(executable) !== null)
+  ) {
+    throw new Error("Executable assurance report must be a plain object.");
+  }
   const mismatches = [];
+  for (const key of Object.keys(executable)) {
+    if (!Object.hasOwn(expected, key)) {
+      mismatches.push(`${key}: unexpected executable assurance field`);
+    }
+  }
   for (const [key, value] of Object.entries(expected)) {
-    if (input.executable[key] !== value) {
-      mismatches.push(`${key}: executable=${JSON.stringify(input.executable[key])}, current=${JSON.stringify(value)}`);
+    if (executable[key] !== value) {
+      mismatches.push(`${key}: executable=${JSON.stringify(executable[key])}, current=${JSON.stringify(value)}`);
     }
   }
   if (mismatches.length !== 0) {

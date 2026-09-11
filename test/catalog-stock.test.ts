@@ -360,6 +360,7 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
     const inventory = createTestInventory();
     const source = loosePosition("room-a", {
       lotId: "lot-1",
+      containerId: "transfer-container",
       statusId: "usable",
       ownerId: "owner-a",
       custodianId: "custodian-a",
@@ -371,6 +372,7 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
       occurredAtEpochMs: time0,
       to: source,
       amount: stockAmount("10", "piece"),
+      container: { containerType: "transfer-bin" },
     });
     const moved = await inventory.stock.transfer({
       operationId: "move-loose",
@@ -385,8 +387,11 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
       (effect) => effect.measurementsDelta.primary.quantity.amountMinor > 0
     );
     expect(destinationEffect?.position).toMatchObject({
+      itemId: "item-a",
+      itemRevisionId: "item-a-v2",
       locationId: "room-b",
       lotId: "lot-1",
+      containerId: "transfer-container",
       statusId: "usable",
       ownerId: "owner-a",
       custodianId: "custodian-a",

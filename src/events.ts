@@ -74,6 +74,30 @@ export enum InventoryEventKind {
   Correction = "correction",
 }
 
+/** Reject a runtime event discriminator outside the closed durable event-kind set. */
+function assertSupportedInventoryEventKind(kind: InventoryEventKind): void {
+  switch (kind) {
+    case InventoryEventKind.Opening:
+    case InventoryEventKind.Receipt:
+    case InventoryEventKind.Issue:
+    case InventoryEventKind.Transfer:
+    case InventoryEventKind.Reclassification:
+    case InventoryEventKind.Pack:
+    case InventoryEventKind.Unpack:
+    case InventoryEventKind.Transformation:
+    case InventoryEventKind.Scrap:
+    case InventoryEventKind.CountAdjustment:
+    case InventoryEventKind.Traceability:
+    case InventoryEventKind.LotMetadata:
+    case InventoryEventKind.ContainerMetadata:
+    case InventoryEventKind.CatalogPublication:
+    case InventoryEventKind.Correction:
+      return;
+    default:
+      throw new Error(`Unsupported inventory event kind '${String(kind)}'.`);
+  }
+}
+
 /** Original human/package measurement retained beside exact item-axis truth. */
 export interface InventoryMeasurementEvidence {
   /** Measurements exactly as the source expressed/observed them. */
@@ -116,6 +140,36 @@ export enum InventoryTraceabilityRelationAction {
   Remove = "remove",
   /** Mark one earlier relationship assertion erroneous while retaining its event history. */
   Invalidate = "invalidate",
+}
+
+/** Reject a runtime traceability relation discriminator outside the closed relation-kind set. */
+function assertSupportedTraceabilityRelationKind(
+  kind: InventoryTraceabilityRelationKind
+): void {
+  switch (kind) {
+    case InventoryTraceabilityRelationKind.Containment:
+    case InventoryTraceabilityRelationKind.Association:
+    case InventoryTraceabilityRelationKind.Genealogy:
+      return;
+    default:
+      throw new Error(
+        `Unsupported traceability relation kind '${String(kind)}'.`
+      );
+  }
+}
+
+/** Reject a runtime traceability action discriminator outside the closed action set. */
+function assertSupportedTraceabilityRelationAction(
+  action: InventoryTraceabilityRelationAction
+): void {
+  switch (action) {
+    case InventoryTraceabilityRelationAction.Add:
+    case InventoryTraceabilityRelationAction.Remove:
+    case InventoryTraceabilityRelationAction.Invalidate:
+      return;
+    default:
+      throw new Error(`Unsupported traceability action '${String(action)}'.`);
+  }
 }
 
 /** One graph relationship change carried by an immutable event. */
@@ -164,6 +218,23 @@ export enum InventoryTransferLifecycleAction {
   /** Dispatch transfer-lifecycle state/action. */ Dispatch = "dispatch",
   /** Receive transfer-lifecycle state/action. */ Receive = "receive",
   /** Release transfer-lifecycle state/action. */ Release = "release",
+}
+
+/** Reject a runtime transfer-lifecycle discriminator outside the closed action set. */
+function assertSupportedInventoryTransferLifecycleAction(
+  action: InventoryTransferLifecycleAction
+): void {
+  switch (action) {
+    case InventoryTransferLifecycleAction.Prepare:
+    case InventoryTransferLifecycleAction.Dispatch:
+    case InventoryTransferLifecycleAction.Receive:
+    case InventoryTransferLifecycleAction.Release:
+      return;
+    default:
+      throw new Error(
+        `Unsupported transfer lifecycle action '${String(action)}'.`
+      );
+  }
 }
 
 /** Exact source line frozen when one transfer is prepared. */
@@ -273,6 +344,7 @@ export function defineInventoryEvent({
   assertInventoryIdentity(event.eventId, "eventId");
   assertInventoryIdentity(event.operationId, "operationId");
   assertInventoryEpochMilliseconds(event.occurredAtEpochMs, "occurredAtEpochMs");
+  assertSupportedInventoryEventKind(event.kind);
   if (event.kind === InventoryEventKind.CatalogPublication) {
     if (event.catalogSnapshot === undefined) {
       throw new Error(
@@ -514,6 +586,7 @@ function normalizeInventoryTransferLifecycleChange(
 ): InventoryTransferLifecycleChange | undefined {
   if (change === undefined) return undefined;
   assertInventoryIdentity(change.transferId, "transferId");
+  assertSupportedInventoryTransferLifecycleAction(change.action);
   if (
     (change.action === InventoryTransferLifecycleAction.Prepare ||
       change.action === InventoryTransferLifecycleAction.Release) &&
@@ -1176,9 +1249,17 @@ function compareContainerDefinition(
 function normalizeTraceabilityChanges(
   changes: readonly InventoryTraceabilityRelationChange[]
 ): readonly InventoryTraceabilityRelationChange[] {
-  const normalized = [...changes];
+  const normalized: InventoryTraceabilityRelationChange[] = [];
   const seen = new Set<string>();
-  for (const change of normalized) {
+  for (const rawChange of changes) {
+    assertSupportedTraceabilityRelationAction(rawChange.action);
+    assertSupportedTraceabilityRelationKind(rawChange.kind);
+    const change: InventoryTraceabilityRelationChange = {
+      ...rawChange,
+      from: { ...rawChange.from },
+      to: { ...rawChange.to },
+    };
+    normalized.push(change);
     if (
       inventoryTraceabilityNodeIdentity(change.from) ===
       inventoryTraceabilityNodeIdentity(change.to)

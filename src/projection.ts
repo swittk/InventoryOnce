@@ -744,6 +744,12 @@ export function projectInventoryEvents({
   deficitPolicy,
   throughRecordSequence,
 }: ProjectInventoryEventsInput): InventoryProjectionState {
+  if (
+    throughRecordSequence !== undefined &&
+    (!Number.isSafeInteger(throughRecordSequence) || throughRecordSequence < 0)
+  ) {
+    throw new Error("throughRecordSequence must be a non-negative safe integer.");
+  }
   const ordered = inventoryEventsInRecordSequence(events);
   let state = emptyInventoryProjectionState();
   /** Number of ordered events actually replayed into this requested historical cut. */

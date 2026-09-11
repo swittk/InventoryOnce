@@ -17,10 +17,11 @@ pnpm formal
 ```
 
 The runner uses the package-pinned `tla2tools.jar`, one unique metadata directory per model process, and
-keeps a failed model directory so a counterexample can be inspected. It also runs eleven deliberately bad
+keeps a failed model directory so a counterexample can be inspected. It also runs thirteen deliberately bad
 transitions: four snapshot-supersession mutations, one cross-transfer receive mutation, one correction-history
-erasure mutation, one split durable-transfer projection mutation, three use-by/reservation guard mutations, and one
-duplicate traceability-production mutation. TLC must reject every one through its named unchanged safety invariant.
+erasure mutation, one split durable-transfer projection mutation, four use-by/reservation guard mutations, one
+duplicate traceability-production mutation, and one implementation-conformance result-delta mutation. TLC must
+reject every one through its named unchanged safety invariant.
 
 ## Registered TLC checks
 
@@ -94,14 +95,15 @@ The exact seed/fingerprint values vary by run. The latest complete run explored:
 
 All reachable states in those finite configurations were checked by TLC.
 
-The normal safe-model rows above stay the positive system runs. Eleven extra mutation configs cover four
+The normal safe-model rows above stay the positive system runs. Thirteen extra mutation configs cover four
 snapshot-supersession violations (resume after disposition, physical disposition event, guessed completed
 outcome, and source movement after capture), one cross-transfer receive that violates transfer isolation, one
-correction-history erasure, one split durable-transfer projection, three use-by controls (stale shortage report,
-expired ordinary allocation, and expired ordinary consumption), and one duplicate traceability production. The
-traceability control uses a ghost production counter so a second production of the same set-valued identity is
-observable and must violate `ProducedIdentityWasCreatedOnce`. Those runs pass only when TLC finds the exact
-expected invariant violation; they are not folded into the safe models' state counts.
+correction-history erasure, one split durable-transfer projection, four use-by controls (epoch-zero reservation
+evidence, stale shortage report, expired ordinary allocation, and expired ordinary consumption), one duplicate
+traceability production, and one implementation-conformance replacement-delta mismatch. The traceability control
+uses a ghost production counter so a second production of the same set-valued identity is observable and must
+violate `ProducedIdentityWasCreatedOnce`. Those runs pass only when TLC finds the exact expected invariant
+violation; they are not folded into the safe models' state counts.
 
 ## What the claims mean
 

@@ -90,15 +90,16 @@ describe("append-only native catalogue publication", () => {
     ]);
     // Snapshot after both concurrent extensions, before the no-op publication below.
     const world = await storage.readWorld();
-    const finalCatalog = (
-      await publishInventoryCatalogExtension({
-        storage,
-        operationId: "catalog-concurrent-no-op",
-        occurredAtEpochMs: time1,
-        extension: {},
-      })
-    ).catalog;
+    const noOp = await publishInventoryCatalogExtension({
+      storage,
+      operationId: "catalog-concurrent-no-op",
+      occurredAtEpochMs: time1,
+      extension: {},
+    });
+    const finalCatalog = noOp.catalog;
     expect(world.revision).toBe(3);
+    expect(noOp.published).toBe(false);
+    expect((await storage.readWorld()).revision).toBe(3);
     expect(finalCatalog.activeItem("item-b").revisionId).toBe("item-b-v1");
     expect(finalCatalog.activeItem("item-c").revisionId).toBe("item-c-v1");
   });

@@ -25,6 +25,9 @@ function hashAssuranceEntries(entries) {
     writeLength(pathBytes.length);
     hash.update(pathBytes);
     hash.update(Buffer.from([entry.kind]));
+    const modeBytes = Buffer.from(entry.mode);
+    writeLength(modeBytes.length);
+    hash.update(modeBytes);
     writeLength(entry.payload.length);
     hash.update(entry.payload);
   }
@@ -41,24 +44,49 @@ export function repositoryAssuranceStateSha256(repositoryRoot) {
   if (listed.error !== undefined || listed.status !== 0) {
     throw new Error("Unable to enumerate the repository assurance state.");
   }
+  const indexed = spawnSync(
+    "git",
+    ["ls-files", "--stage", "-z"],
+    { cwd: repositoryRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }
+  );
+  if (indexed.error !== undefined || indexed.status !== 0) {
+    throw new Error("Unable to enumerate tracked repository assurance modes.");
+  }
+  const trackedModeByPath = new Map();
+  for (const record of indexed.stdout.split("\0")) {
+    if (record.length === 0) continue;
+    const tab = record.indexOf("\t");
+    const header = tab < 0 ? [] : record.slice(0, tab).split(" ");
+    if (tab < 0 || header.length !== 3 || header[2] !== "0") {
+      throw new Error("Malformed tracked assurance mode record.");
+    }
+    trackedModeByPath.set(record.slice(tab + 1), header[0]);
+  }
   const entries = [];
   for (const path of listed.stdout.split("\0").filter(includedPath)) {
     const absolute = resolve(repositoryRoot, path);
     let stat;
     let kind;
+    let mode;
     let payload;
     try {
       stat = lstatSync(absolute);
       if (stat.isSymbolicLink()) {
         kind = 1;
+        mode = "120000";
         payload = Buffer.from(readlinkSync(absolute));
       } else if (stat.isFile()) {
         kind = 0;
+        mode = (stat.mode & 0o111) === 0 ? "100644" : "100755";
         payload = readFileSync(absolute);
       }
     } catch (error) {
       if (error instanceof Error && error.code === "ENOENT") {
         kind = 2;
+        mode = trackedModeByPath.get(path);
+        if (mode === undefined) {
+          throw new Error(`Deleted assurance path '${path}' has no tracked Git mode.`);
+        }
         payload = Buffer.alloc(0);
       } else {
         throw error;
@@ -69,10 +97,10 @@ export function repositoryAssuranceStateSha256(repositoryRoot) {
         `Repository assurance path '${path}' is not a regular file or symbolic link.`
       );
     }
-    if (kind === undefined || payload === undefined) {
+    if (kind === undefined || mode === undefined || payload === undefined) {
       throw new Error(`Unable to frame repository assurance path '${path}'.`);
     }
-    entries.push({ path, kind, payload });
+    entries.push({ path, kind, mode, payload });
   }
   return hashAssuranceEntries(entries);
 }
@@ -98,7 +126,7 @@ export function repositoryAssuranceCommittedStateSha256(repositoryRoot, commit) 
     if (header.length !== 3 || header[1] !== "blob" || !/^[a-f0-9]{40,64}$/u.test(header[2])) throw new Error(`Unsupported committed assurance entry '${path}'.`);
     const kind = header[0] === "120000" ? 1 : header[0] === "100644" || header[0] === "100755" ? 0 : undefined;
     if (kind === undefined) throw new Error(`Unsupported committed assurance mode for '${path}'.`);
-    rows.push({ path, kind, objectId: header[2] });
+    rows.push({ path, kind, mode: header[0], objectId: header[2] });
   }
   const batch = spawnSync("git", ["cat-file", "--batch"], {
     cwd: repositoryRoot, input: rows.map(row => row.objectId + "\n").join(""), maxBuffer: 256 * 1024 * 1024,
@@ -113,7 +141,7 @@ export function repositoryAssuranceCommittedStateSha256(repositoryRoot, commit) 
     if (fields.length !== 3 || fields[0] !== row.objectId || fields[1] !== "blob" || !/^(0|[1-9][0-9]*)$/u.test(fields[2])) throw new Error("Committed assurance batch identity mismatch.");
     const size = Number(fields[2]); offset = end + 1;
     if (!Number.isSafeInteger(size) || offset + size >= batch.stdout.length || batch.stdout[offset + size] !== 10) throw new Error("Truncated committed assurance batch payload.");
-    entries.push({ path: row.path, kind: row.kind, payload: batch.stdout.subarray(offset, offset + size) });
+    entries.push({ path: row.path, kind: row.kind, mode: row.mode, payload: batch.stdout.subarray(offset, offset + size) });
     offset += size + 1;
   }
   if (offset !== batch.stdout.length) throw new Error("Unexpected trailing committed assurance batch output.");

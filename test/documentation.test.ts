@@ -63,9 +63,27 @@ function createDeclarationName(node: ts.Node): string {
   return ts.SyntaxKind[node.kind] ?? "declaration";
 }
 
-/** Return whether TypeScript attached a JSDoc block to this declaration. */
+/** Return whether this declaration has purpose prose and no redundant signature tags. */
 function declarationHasPurposeDoc(node: ts.Node): boolean {
-  return ts.getJSDocCommentsAndTags(node).length > 0;
+  let hasPurpose = false;
+  for (const attached of ts.getJSDocCommentsAndTags(node)) {
+    if (ts.isJSDocParameterTag(attached) || ts.isJSDocReturnTag(attached)) {
+      return false;
+    }
+    if (!ts.isJSDoc(attached)) continue;
+    if (
+      typeof attached.comment === "string" &&
+      attached.comment.trim().length > 0
+    ) {
+      hasPurpose = true;
+    }
+    for (const tag of attached.tags ?? []) {
+      if (ts.isJSDocParameterTag(tag) || ts.isJSDocReturnTag(tag)) {
+        return false;
+      }
+    }
+  }
+  return hasPurpose;
 }
 
 /** Parsed source cache shared by both repository-source guards. */

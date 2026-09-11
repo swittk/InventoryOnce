@@ -1,7 +1,7 @@
 {
   "counts": {
-    "callables": 2548,
-    "edges": 6982,
+    "callables": 2571,
+    "edges": 7030,
     "publicEntries": 510,
     "publicEntriesWithTargets": 510,
     "publicEntriesWithWitnesses": 510,
@@ -1886,10 +1886,10 @@
                 "column": 80,
                 "file": "test/catalog-extension.test.ts",
                 "hasBody": true,
-                "id": "test/catalog-extension.test.ts:4923:<anonymous@140>",
+                "id": "test/catalog-extension.test.ts:5020:<anonymous@141>",
                 "kind": "ArrowFunction",
-                "line": 140,
-                "name": "<anonymous@140>",
+                "line": 141,
+                "name": "<anonymous@141>",
                 "reason": "test-callback"
               },
               {
@@ -4170,10 +4170,10 @@
                 "column": 80,
                 "file": "test/catalog-extension.test.ts",
                 "hasBody": true,
-                "id": "test/catalog-extension.test.ts:4923:<anonymous@140>",
+                "id": "test/catalog-extension.test.ts:5020:<anonymous@141>",
                 "kind": "ArrowFunction",
-                "line": 140,
-                "name": "<anonymous@140>",
+                "line": 141,
+                "name": "<anonymous@141>",
                 "reason": "test-callback"
               },
               {
@@ -4879,10 +4879,10 @@
                 "column": 76,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:17400:<anonymous@492>",
+                "id": "test/containers.test.ts:17765:<anonymous@502>",
                 "kind": "ArrowFunction",
-                "line": 492,
-                "name": "<anonymous@492>",
+                "line": 502,
+                "name": "<anonymous@502>",
                 "reason": "test-callback"
               },
               {
@@ -5132,7 +5132,7 @@
                 "column": 72,
                 "file": "test/formal-implementation-refinement.test.ts",
                 "hasBody": true,
-                "id": "test/formal-implementation-refinement.test.ts:19262:<anonymous@528>",
+                "id": "test/formal-implementation-refinement.test.ts:19251:<anonymous@528>",
                 "kind": "ArrowFunction",
                 "line": 528,
                 "name": "<anonymous@528>",
@@ -5314,10 +5314,10 @@
                 "column": 93,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:20736:<anonymous@550>",
+                "id": "test/authority.test.ts:20841:<anonymous@554>",
                 "kind": "ArrowFunction",
-                "line": 550,
-                "name": "<anonymous@550>",
+                "line": 554,
+                "name": "<anonymous@554>",
                 "reason": "test-callback"
               },
               {
@@ -6459,10 +6459,10 @@
                 "column": 76,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:17400:<anonymous@492>",
+                "id": "test/containers.test.ts:17765:<anonymous@502>",
                 "kind": "ArrowFunction",
-                "line": 492,
-                "name": "<anonymous@492>",
+                "line": 502,
+                "name": "<anonymous@502>",
                 "reason": "test-callback"
               },
               {
@@ -6530,10 +6530,10 @@
                 "column": 79,
                 "file": "test/traceability-corrections.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-corrections.test.ts:6000:<anonymous@196>",
+                "id": "test/traceability-corrections.test.ts:6072:<anonymous@197>",
                 "kind": "ArrowFunction",
-                "line": 196,
-                "name": "<anonymous@196>",
+                "line": 197,
+                "name": "<anonymous@197>",
                 "reason": "test-callback"
               },
               {
@@ -6591,10 +6591,10 @@
                 "column": 92,
                 "file": "test/allocation-results.test.ts",
                 "hasBody": true,
-                "id": "test/allocation-results.test.ts:999:<anonymous@31>",
+                "id": "test/allocation-results.test.ts:1016:<anonymous@32>",
                 "kind": "ArrowFunction",
-                "line": 31,
-                "name": "<anonymous@31>",
+                "line": 32,
+                "name": "<anonymous@32>",
                 "reason": "test-callback"
               },
               {
@@ -6700,9 +6700,9 @@
           "column": 1,
           "file": "src/events.ts",
           "hasBody": true,
-          "id": "src/events.ts:56065:assertInventoryEpochMilliseconds",
+          "id": "src/events.ts:58981:assertInventoryEpochMilliseconds",
           "kind": "FunctionDeclaration",
-          "line": 1487,
+          "line": 1568,
           "name": "assertInventoryEpochMilliseconds"
         }
       ],
@@ -6713,9 +6713,9 @@
             "column": 1,
             "file": "src/events.ts",
             "hasBody": true,
-            "id": "src/events.ts:56065:assertInventoryEpochMilliseconds",
+            "id": "src/events.ts:58981:assertInventoryEpochMilliseconds",
             "kind": "FunctionDeclaration",
-            "line": 1487,
+            "line": 1568,
             "name": "assertInventoryEpochMilliseconds"
           },
           "witness": {
@@ -6753,9 +6753,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:56065:assertInventoryEpochMilliseconds",
+                "id": "src/events.ts:58981:assertInventoryEpochMilliseconds",
                 "kind": "FunctionDeclaration",
-                "line": 1487,
+                "line": 1568,
                 "name": "assertInventoryEpochMilliseconds",
                 "reason": "resolved-call"
               }
@@ -7169,19 +7169,19 @@
                 "column": 80,
                 "file": "test/traceability-corrections.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-corrections.test.ts:3630:<anonymous@119>",
+                "id": "test/traceability-corrections.test.ts:3702:<anonymous@120>",
                 "kind": "ArrowFunction",
-                "line": 119,
-                "name": "<anonymous@119>",
+                "line": 120,
+                "name": "<anonymous@120>",
                 "reason": "test-callback"
               },
               {
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:13712:defineInventoryEvent",
+                "id": "src/events.ts:16178:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 269,
+                "line": 340,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -7189,9 +7189,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:34740:normalizeStockEffects",
+                "id": "src/events.ts:37321:normalizeStockEffects",
                 "kind": "FunctionDeclaration",
-                "line": 853,
+                "line": 926,
                 "name": "normalizeStockEffects",
                 "reason": "resolved-call"
               },
@@ -7331,19 +7331,19 @@
                 "column": 80,
                 "file": "test/traceability-corrections.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-corrections.test.ts:3630:<anonymous@119>",
+                "id": "test/traceability-corrections.test.ts:3702:<anonymous@120>",
                 "kind": "ArrowFunction",
-                "line": 119,
-                "name": "<anonymous@119>",
+                "line": 120,
+                "name": "<anonymous@120>",
                 "reason": "test-callback"
               },
               {
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:13712:defineInventoryEvent",
+                "id": "src/events.ts:16178:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 269,
+                "line": 340,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -7351,9 +7351,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:34740:normalizeStockEffects",
+                "id": "src/events.ts:37321:normalizeStockEffects",
                 "kind": "FunctionDeclaration",
-                "line": 853,
+                "line": 926,
                 "name": "normalizeStockEffects",
                 "reason": "resolved-call"
               },
@@ -7379,7 +7379,7 @@
           "column": 1,
           "file": "src/traceability.ts",
           "hasBody": true,
-          "id": "src/traceability.ts:4382:buildContainmentChildContainerIndex",
+          "id": "src/traceability.ts:4396:buildContainmentChildContainerIndex",
           "kind": "FunctionDeclaration",
           "line": 123,
           "name": "buildContainmentChildContainerIndex"
@@ -7392,7 +7392,7 @@
             "column": 1,
             "file": "src/traceability.ts",
             "hasBody": true,
-            "id": "src/traceability.ts:4382:buildContainmentChildContainerIndex",
+            "id": "src/traceability.ts:4396:buildContainmentChildContainerIndex",
             "kind": "FunctionDeclaration",
             "line": 123,
             "name": "buildContainmentChildContainerIndex"
@@ -7412,10 +7412,10 @@
                 "column": 80,
                 "file": "test/traceability-corrections.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-corrections.test.ts:3630:<anonymous@119>",
+                "id": "test/traceability-corrections.test.ts:3702:<anonymous@120>",
                 "kind": "ArrowFunction",
-                "line": 119,
-                "name": "<anonymous@119>",
+                "line": 120,
+                "name": "<anonymous@120>",
                 "reason": "test-callback"
               },
               {
@@ -7432,7 +7432,7 @@
                 "column": 1,
                 "file": "src/traceability.ts",
                 "hasBody": true,
-                "id": "src/traceability.ts:4382:buildContainmentChildContainerIndex",
+                "id": "src/traceability.ts:4396:buildContainmentChildContainerIndex",
                 "kind": "FunctionDeclaration",
                 "line": 123,
                 "name": "buildContainmentChildContainerIndex",
@@ -7450,9 +7450,9 @@
           "column": 1,
           "file": "src/events.ts",
           "hasBody": true,
-          "id": "src/events.ts:18547:commitInventoryEvent",
+          "id": "src/events.ts:21062:commitInventoryEvent",
           "kind": "FunctionDeclaration",
-          "line": 418,
+          "line": 490,
           "name": "commitInventoryEvent"
         }
       ],
@@ -7463,9 +7463,9 @@
             "column": 1,
             "file": "src/events.ts",
             "hasBody": true,
-            "id": "src/events.ts:18547:commitInventoryEvent",
+            "id": "src/events.ts:21062:commitInventoryEvent",
             "kind": "FunctionDeclaration",
-            "line": 418,
+            "line": 490,
             "name": "commitInventoryEvent"
           },
           "witness": {
@@ -7483,19 +7483,19 @@
                 "column": 80,
                 "file": "test/traceability-corrections.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-corrections.test.ts:3630:<anonymous@119>",
+                "id": "test/traceability-corrections.test.ts:3702:<anonymous@120>",
                 "kind": "ArrowFunction",
-                "line": 119,
-                "name": "<anonymous@119>",
+                "line": 120,
+                "name": "<anonymous@120>",
                 "reason": "test-callback"
               },
               {
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:18547:commitInventoryEvent",
+                "id": "src/events.ts:21062:commitInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 418,
+                "line": 490,
                 "name": "commitInventoryEvent",
                 "reason": "resolved-call"
               }
@@ -7511,9 +7511,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:38000:compareCommittedEventSequence",
+          "id": "src/projection.ts:38223:compareCommittedEventSequence",
           "kind": "FunctionDeclaration",
-          "line": 1011,
+          "line": 1017,
           "name": "compareCommittedEventSequence"
         }
       ],
@@ -7524,9 +7524,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:38000:compareCommittedEventSequence",
+            "id": "src/projection.ts:38223:compareCommittedEventSequence",
             "kind": "FunctionDeclaration",
-            "line": 1011,
+            "line": 1017,
             "name": "compareCommittedEventSequence"
           },
           "witness": {
@@ -7564,9 +7564,9 @@
                 "column": 1,
                 "file": "src/projection.ts",
                 "hasBody": true,
-                "id": "src/projection.ts:29964:inventoryEventsInRecordSequence",
+                "id": "src/projection.ts:30187:inventoryEventsInRecordSequence",
                 "kind": "FunctionDeclaration",
-                "line": 776,
+                "line": 782,
                 "name": "inventoryEventsInRecordSequence",
                 "reason": "resolved-call"
               },
@@ -7574,9 +7574,9 @@
                 "column": 1,
                 "file": "src/projection.ts",
                 "hasBody": true,
-                "id": "src/projection.ts:38000:compareCommittedEventSequence",
+                "id": "src/projection.ts:38223:compareCommittedEventSequence",
                 "kind": "FunctionDeclaration",
-                "line": 1011,
+                "line": 1017,
                 "name": "compareCommittedEventSequence",
                 "reason": "external-callback-dispatch"
               }
@@ -8010,10 +8010,10 @@
                 "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:15729:<anonymous@423>",
+                "id": "test/authority.test.ts:15834:<anonymous@427>",
                 "kind": "ArrowFunction",
-                "line": 423,
-                "name": "<anonymous@423>",
+                "line": 427,
+                "name": "<anonymous@427>",
                 "reason": "test-callback"
               },
               {
@@ -8172,10 +8172,10 @@
                 "column": 92,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:13776:<anonymous@394>",
+                "id": "test/containers.test.ts:14141:<anonymous@404>",
                 "kind": "ArrowFunction",
-                "line": 394,
-                "name": "<anonymous@394>",
+                "line": 404,
+                "name": "<anonymous@404>",
                 "reason": "test-callback"
               },
               {
@@ -8242,42 +8242,22 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/formal-public-surface-completion.test.ts",
+                "file": "test/traceability-corrections.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/formal-public-surface-completion.test.ts",
+                "id": "test-root:test/traceability-corrections.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/formal-public-surface-completion.test.ts"
+                "name": "test/traceability-corrections.test.ts"
               },
               {
-                "column": 76,
-                "file": "test/formal-public-surface-completion.test.ts",
+                "column": 91,
+                "file": "test/traceability-corrections.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-completion.test.ts:2736:<anonymous@87>",
+                "id": "test/traceability-corrections.test.ts:47085:<anonymous@1370>",
                 "kind": "ArrowFunction",
-                "line": 87,
-                "name": "<anonymous@87>",
+                "line": 1370,
+                "name": "<anonymous@1370>",
                 "reason": "test-callback"
-              },
-              {
-                "column": 1,
-                "file": "test/formal-public-surface-completion.test.ts",
-                "hasBody": true,
-                "id": "test/formal-public-surface-completion.test.ts:1617:expectMalformedInputRejected",
-                "kind": "FunctionDeclaration",
-                "line": 53,
-                "name": "expectMalformedInputRejected",
-                "reason": "resolved-call"
-              },
-              {
-                "column": 34,
-                "file": "test/formal-public-surface-completion.test.ts",
-                "hasBody": true,
-                "id": "test/formal-public-surface-completion.test.ts:4187:<anonymous@130>",
-                "kind": "ArrowFunction",
-                "line": 130,
-                "name": "<anonymous@130>",
-                "reason": "callback-dispatch"
               },
               {
                 "column": 1,
@@ -8290,7 +8270,7 @@
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/formal-public-surface-completion.test.ts"
+            "test": "test/traceability-corrections.test.ts"
           }
         }
       ]
@@ -8415,10 +8395,10 @@
                 "column": 76,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:17400:<anonymous@492>",
+                "id": "test/containers.test.ts:17765:<anonymous@502>",
                 "kind": "ArrowFunction",
-                "line": 492,
-                "name": "<anonymous@492>",
+                "line": 502,
+                "name": "<anonymous@502>",
                 "reason": "test-callback"
               },
               {
@@ -8648,10 +8628,10 @@
                 "column": 76,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:17400:<anonymous@492>",
+                "id": "test/containers.test.ts:17765:<anonymous@502>",
                 "kind": "ArrowFunction",
-                "line": 492,
-                "name": "<anonymous@492>",
+                "line": 502,
+                "name": "<anonymous@502>",
                 "reason": "test-callback"
               },
               {
@@ -8719,10 +8699,10 @@
                 "column": 85,
                 "file": "test/catalog-stock.test.ts",
                 "hasBody": true,
-                "id": "test/catalog-stock.test.ts:14609:<anonymous@454>",
+                "id": "test/catalog-stock.test.ts:14802:<anonymous@459>",
                 "kind": "ArrowFunction",
-                "line": 454,
-                "name": "<anonymous@454>",
+                "line": 459,
+                "name": "<anonymous@459>",
                 "reason": "test-callback"
               },
               {
@@ -9357,10 +9337,10 @@
                 "column": 76,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:17400:<anonymous@492>",
+                "id": "test/containers.test.ts:17765:<anonymous@502>",
                 "kind": "ArrowFunction",
-                "line": 492,
-                "name": "<anonymous@492>",
+                "line": 502,
+                "name": "<anonymous@502>",
                 "reason": "test-callback"
               },
               {
@@ -9428,10 +9408,10 @@
                 "column": 79,
                 "file": "test/transfer-lifecycle.test.ts",
                 "hasBody": true,
-                "id": "test/transfer-lifecycle.test.ts:15138:<anonymous@457>",
+                "id": "test/transfer-lifecycle.test.ts:15255:<anonymous@459>",
                 "kind": "ArrowFunction",
-                "line": 457,
-                "name": "<anonymous@457>",
+                "line": 459,
+                "name": "<anonymous@459>",
                 "reason": "test-callback"
               },
               {
@@ -9712,10 +9692,10 @@
                 "column": 79,
                 "file": "test/transfer-lifecycle.test.ts",
                 "hasBody": true,
-                "id": "test/transfer-lifecycle.test.ts:15138:<anonymous@457>",
+                "id": "test/transfer-lifecycle.test.ts:15255:<anonymous@459>",
                 "kind": "ArrowFunction",
-                "line": 457,
-                "name": "<anonymous@457>",
+                "line": 459,
+                "name": "<anonymous@459>",
                 "reason": "test-callback"
               },
               {
@@ -9773,10 +9753,10 @@
                 "column": 86,
                 "file": "test/transfer-lifecycle.test.ts",
                 "hasBody": true,
-                "id": "test/transfer-lifecycle.test.ts:19527:<anonymous@583>",
+                "id": "test/transfer-lifecycle.test.ts:19644:<anonymous@585>",
                 "kind": "ArrowFunction",
-                "line": 583,
-                "name": "<anonymous@583>",
+                "line": 585,
+                "name": "<anonymous@585>",
                 "reason": "test-callback"
               },
               {
@@ -9834,10 +9814,10 @@
                 "column": 92,
                 "file": "test/traceability-corrections.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-corrections.test.ts:7711:<anonymous@250>",
+                "id": "test/traceability-corrections.test.ts:7783:<anonymous@251>",
                 "kind": "ArrowFunction",
-                "line": 250,
-                "name": "<anonymous@250>",
+                "line": 251,
+                "name": "<anonymous@251>",
                 "reason": "test-callback"
               },
               {
@@ -9915,10 +9895,10 @@
                 "column": 85,
                 "file": "test/catalog-stock.test.ts",
                 "hasBody": true,
-                "id": "test/catalog-stock.test.ts:14609:<anonymous@454>",
+                "id": "test/catalog-stock.test.ts:14802:<anonymous@459>",
                 "kind": "ArrowFunction",
-                "line": 454,
-                "name": "<anonymous@454>",
+                "line": 459,
+                "name": "<anonymous@459>",
                 "reason": "test-callback"
               },
               {
@@ -10156,9 +10136,9 @@
           "column": 1,
           "file": "src/events.ts",
           "hasBody": true,
-          "id": "src/events.ts:13712:defineInventoryEvent",
+          "id": "src/events.ts:16178:defineInventoryEvent",
           "kind": "FunctionDeclaration",
-          "line": 269,
+          "line": 340,
           "name": "defineInventoryEvent"
         }
       ],
@@ -10169,9 +10149,9 @@
             "column": 1,
             "file": "src/events.ts",
             "hasBody": true,
-            "id": "src/events.ts:13712:defineInventoryEvent",
+            "id": "src/events.ts:16178:defineInventoryEvent",
             "kind": "FunctionDeclaration",
-            "line": 269,
+            "line": 340,
             "name": "defineInventoryEvent"
           },
           "witness": {
@@ -10189,19 +10169,19 @@
                 "column": 80,
                 "file": "test/traceability-corrections.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-corrections.test.ts:3630:<anonymous@119>",
+                "id": "test/traceability-corrections.test.ts:3702:<anonymous@120>",
                 "kind": "ArrowFunction",
-                "line": 119,
-                "name": "<anonymous@119>",
+                "line": 120,
+                "name": "<anonymous@120>",
                 "reason": "test-callback"
               },
               {
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:13712:defineInventoryEvent",
+                "id": "src/events.ts:16178:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 269,
+                "line": 340,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               }
@@ -11233,9 +11213,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:30442:findInventoryPositions",
+          "id": "src/projection.ts:30665:findInventoryPositions",
           "kind": "FunctionDeclaration",
-          "line": 792,
+          "line": 798,
           "name": "findInventoryPositions"
         }
       ],
@@ -11246,9 +11226,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:30442:findInventoryPositions",
+            "id": "src/projection.ts:30665:findInventoryPositions",
             "kind": "FunctionDeclaration",
-            "line": 792,
+            "line": 798,
             "name": "findInventoryPositions"
           },
           "witness": {
@@ -11276,9 +11256,9 @@
                 "column": 1,
                 "file": "src/projection.ts",
                 "hasBody": true,
-                "id": "src/projection.ts:30442:findInventoryPositions",
+                "id": "src/projection.ts:30665:findInventoryPositions",
                 "kind": "FunctionDeclaration",
-                "line": 792,
+                "line": 798,
                 "name": "findInventoryPositions",
                 "reason": "resolved-call"
               }
@@ -11327,10 +11307,10 @@
                 "column": 83,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:8122:<anonymous@246>",
+                "id": "test/containers.test.ts:8487:<anonymous@256>",
                 "kind": "ArrowFunction",
-                "line": 246,
-                "name": "<anonymous@246>",
+                "line": 256,
+                "name": "<anonymous@256>",
                 "reason": "test-callback"
               },
               {
@@ -11904,41 +11884,31 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/transfer-lifecycle.test.ts",
+                "file": "test/traceability-corrections.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/transfer-lifecycle.test.ts",
+                "id": "test-root:test/traceability-corrections.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/transfer-lifecycle.test.ts"
+                "name": "test/traceability-corrections.test.ts"
               },
               {
-                "column": 78,
-                "file": "test/transfer-lifecycle.test.ts",
+                "column": 91,
+                "file": "test/traceability-corrections.test.ts",
                 "hasBody": true,
-                "id": "test/transfer-lifecycle.test.ts:2651:<anonymous@85>",
+                "id": "test/traceability-corrections.test.ts:47085:<anonymous@1370>",
                 "kind": "ArrowFunction",
-                "line": 85,
-                "name": "<anonymous@85>",
+                "line": 1370,
+                "name": "<anonymous@1370>",
                 "reason": "test-callback"
               },
               {
                 "column": 1,
-                "file": "src/transfers.ts",
+                "file": "src/corrections.ts",
                 "hasBody": true,
-                "id": "src/transfers.ts:22853:createInventoryTransferPrepareEvent",
+                "id": "src/corrections.ts:1993:createInventoryCorrectionEvent",
                 "kind": "FunctionDeclaration",
-                "line": 551,
-                "name": "createInventoryTransferPrepareEvent",
-                "reason": "resolved-call"
-              },
-              {
-                "column": 1,
-                "file": "src/transfers.ts",
-                "hasBody": true,
-                "id": "src/transfers.ts:39164:transferLifecycleEvent",
-                "kind": "FunctionDeclaration",
-                "line": 1006,
-                "name": "transferLifecycleEvent",
+                "line": 56,
+                "name": "createInventoryCorrectionEvent",
                 "reason": "resolved-call"
               },
               {
@@ -11952,7 +11922,7 @@
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/transfer-lifecycle.test.ts"
+            "test": "test/traceability-corrections.test.ts"
           }
         }
       ]
@@ -11963,9 +11933,9 @@
           "column": 1,
           "file": "src/events.ts",
           "hasBody": true,
-          "id": "src/events.ts:19864:inventoryEventIntentFingerprint",
+          "id": "src/events.ts:22379:inventoryEventIntentFingerprint",
           "kind": "FunctionDeclaration",
-          "line": 448,
+          "line": 520,
           "name": "inventoryEventIntentFingerprint"
         }
       ],
@@ -11976,9 +11946,9 @@
             "column": 1,
             "file": "src/events.ts",
             "hasBody": true,
-            "id": "src/events.ts:19864:inventoryEventIntentFingerprint",
+            "id": "src/events.ts:22379:inventoryEventIntentFingerprint",
             "kind": "FunctionDeclaration",
-            "line": 448,
+            "line": 520,
             "name": "inventoryEventIntentFingerprint"
           },
           "witness": {
@@ -11996,10 +11966,10 @@
                 "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:15729:<anonymous@423>",
+                "id": "test/authority.test.ts:15834:<anonymous@427>",
                 "kind": "ArrowFunction",
-                "line": 423,
-                "name": "<anonymous@423>",
+                "line": 427,
+                "name": "<anonymous@427>",
                 "reason": "test-callback"
               },
               {
@@ -12026,9 +11996,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:19864:inventoryEventIntentFingerprint",
+                "id": "src/events.ts:22379:inventoryEventIntentFingerprint",
                 "kind": "FunctionDeclaration",
-                "line": 448,
+                "line": 520,
                 "name": "inventoryEventIntentFingerprint",
                 "reason": "resolved-call"
               }
@@ -12044,9 +12014,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:29964:inventoryEventsInRecordSequence",
+          "id": "src/projection.ts:30187:inventoryEventsInRecordSequence",
           "kind": "FunctionDeclaration",
-          "line": 776,
+          "line": 782,
           "name": "inventoryEventsInRecordSequence"
         }
       ],
@@ -12057,9 +12027,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:29964:inventoryEventsInRecordSequence",
+            "id": "src/projection.ts:30187:inventoryEventsInRecordSequence",
             "kind": "FunctionDeclaration",
-            "line": 776,
+            "line": 782,
             "name": "inventoryEventsInRecordSequence"
           },
           "witness": {
@@ -12097,9 +12067,9 @@
                 "column": 1,
                 "file": "src/projection.ts",
                 "hasBody": true,
-                "id": "src/projection.ts:29964:inventoryEventsInRecordSequence",
+                "id": "src/projection.ts:30187:inventoryEventsInRecordSequence",
                 "kind": "FunctionDeclaration",
-                "line": 776,
+                "line": 782,
                 "name": "inventoryEventsInRecordSequence",
                 "reason": "resolved-call"
               }
@@ -12206,7 +12176,7 @@
           "column": 1,
           "file": "src/traceability.ts",
           "hasBody": true,
-          "id": "src/traceability.ts:6331:inventoryGenealogyAncestors",
+          "id": "src/traceability.ts:6345:inventoryGenealogyAncestors",
           "kind": "FunctionDeclaration",
           "line": 176,
           "name": "inventoryGenealogyAncestors"
@@ -12219,7 +12189,7 @@
             "column": 1,
             "file": "src/traceability.ts",
             "hasBody": true,
-            "id": "src/traceability.ts:6331:inventoryGenealogyAncestors",
+            "id": "src/traceability.ts:6345:inventoryGenealogyAncestors",
             "kind": "FunctionDeclaration",
             "line": 176,
             "name": "inventoryGenealogyAncestors"
@@ -12239,17 +12209,17 @@
                 "column": 77,
                 "file": "test/traceability-corrections.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-corrections.test.ts:9389:<anonymous@304>",
+                "id": "test/traceability-corrections.test.ts:9461:<anonymous@305>",
                 "kind": "ArrowFunction",
-                "line": 304,
-                "name": "<anonymous@304>",
+                "line": 305,
+                "name": "<anonymous@305>",
                 "reason": "test-callback"
               },
               {
                 "column": 1,
                 "file": "src/traceability.ts",
                 "hasBody": true,
-                "id": "src/traceability.ts:6331:inventoryGenealogyAncestors",
+                "id": "src/traceability.ts:6345:inventoryGenealogyAncestors",
                 "kind": "FunctionDeclaration",
                 "line": 176,
                 "name": "inventoryGenealogyAncestors",
@@ -12807,52 +12777,42 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/catalog-composition-publication.test.ts",
+                "file": "test/traceability-corrections.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/catalog-composition-publication.test.ts",
+                "id": "test-root:test/traceability-corrections.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/catalog-composition-publication.test.ts"
+                "name": "test/traceability-corrections.test.ts"
               },
               {
-                "column": 82,
-                "file": "test/catalog-composition-publication.test.ts",
+                "column": 91,
+                "file": "test/traceability-corrections.test.ts",
                 "hasBody": true,
-                "id": "test/catalog-composition-publication.test.ts:1590:<anonymous@44>",
+                "id": "test/traceability-corrections.test.ts:47085:<anonymous@1370>",
                 "kind": "ArrowFunction",
-                "line": 44,
-                "name": "<anonymous@44>",
+                "line": 1370,
+                "name": "<anonymous@1370>",
                 "reason": "test-callback"
               },
               {
                 "column": 1,
-                "file": "src/catalog.ts",
+                "file": "src/corrections.ts",
                 "hasBody": true,
-                "id": "src/catalog.ts:115412:extendInventoryCatalog",
+                "id": "src/corrections.ts:1993:createInventoryCorrectionEvent",
                 "kind": "FunctionDeclaration",
-                "line": 2893,
-                "name": "extendInventoryCatalog",
+                "line": 56,
+                "name": "createInventoryCorrectionEvent",
                 "reason": "resolved-call"
               },
               {
                 "column": 1,
-                "file": "src/catalog.ts",
+                "file": "src/corrections.ts",
                 "hasBody": true,
-                "id": "src/catalog.ts:118473:mergeInventoryCatalogRevisionFamily",
+                "id": "src/corrections.ts:14162:createCorrectionStockEffects",
                 "kind": "FunctionDeclaration",
-                "line": 2981,
-                "name": "mergeInventoryCatalogRevisionFamily",
+                "line": 374,
+                "name": "createCorrectionStockEffects",
                 "reason": "resolved-call"
-              },
-              {
-                "column": 1,
-                "file": "src/catalog.ts",
-                "hasBody": true,
-                "id": "src/catalog.ts:99400:inventoryPackagingRevisionDigest",
-                "kind": "FunctionDeclaration",
-                "line": 2437,
-                "name": "inventoryPackagingRevisionDigest",
-                "reason": "callback-dispatch"
               },
               {
                 "column": 1,
@@ -12865,7 +12825,7 @@
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/catalog-composition-publication.test.ts"
+            "test": "test/traceability-corrections.test.ts"
           }
         }
       ]
@@ -13527,9 +13487,9 @@
                 "column": 1,
                 "file": "src/projection.ts",
                 "hasBody": true,
-                "id": "src/projection.ts:30442:findInventoryPositions",
+                "id": "src/projection.ts:30665:findInventoryPositions",
                 "kind": "FunctionDeclaration",
-                "line": 792,
+                "line": 798,
                 "name": "findInventoryPositions",
                 "reason": "resolved-call"
               },
@@ -13872,10 +13832,10 @@
                 "column": 68,
                 "file": "test/traceability-corrections.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-corrections.test.ts:1374:<anonymous@46>",
+                "id": "test/traceability-corrections.test.ts:1446:<anonymous@47>",
                 "kind": "ArrowFunction",
-                "line": 46,
-                "name": "<anonymous@46>",
+                "line": 47,
+                "name": "<anonymous@47>",
                 "reason": "test-callback"
               },
               {
@@ -13900,7 +13860,7 @@
           "column": 1,
           "file": "src/traceability.ts",
           "hasBody": true,
-          "id": "src/traceability.ts:5474:inventoryTraceabilityRelationIdentity",
+          "id": "src/traceability.ts:5488:inventoryTraceabilityRelationIdentity",
           "kind": "FunctionDeclaration",
           "line": 150,
           "name": "inventoryTraceabilityRelationIdentity"
@@ -13913,7 +13873,7 @@
             "column": 1,
             "file": "src/traceability.ts",
             "hasBody": true,
-            "id": "src/traceability.ts:5474:inventoryTraceabilityRelationIdentity",
+            "id": "src/traceability.ts:5488:inventoryTraceabilityRelationIdentity",
             "kind": "FunctionDeclaration",
             "line": 150,
             "name": "inventoryTraceabilityRelationIdentity"
@@ -13933,17 +13893,17 @@
                 "column": 79,
                 "file": "test/traceability-corrections.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-corrections.test.ts:6000:<anonymous@196>",
+                "id": "test/traceability-corrections.test.ts:6072:<anonymous@197>",
                 "kind": "ArrowFunction",
-                "line": 196,
-                "name": "<anonymous@196>",
+                "line": 197,
+                "name": "<anonymous@197>",
                 "reason": "test-callback"
               },
               {
                 "column": 1,
                 "file": "src/traceability.ts",
                 "hasBody": true,
-                "id": "src/traceability.ts:5474:inventoryTraceabilityRelationIdentity",
+                "id": "src/traceability.ts:5488:inventoryTraceabilityRelationIdentity",
                 "kind": "FunctionDeclaration",
                 "line": 150,
                 "name": "inventoryTraceabilityRelationIdentity",
@@ -13961,7 +13921,7 @@
           "column": 1,
           "file": "src/traceability.ts",
           "hasBody": true,
-          "id": "src/traceability.ts:5852:inventoryTraceabilityRelationsOfKind",
+          "id": "src/traceability.ts:5866:inventoryTraceabilityRelationsOfKind",
           "kind": "FunctionDeclaration",
           "line": 163,
           "name": "inventoryTraceabilityRelationsOfKind"
@@ -13974,7 +13934,7 @@
             "column": 1,
             "file": "src/traceability.ts",
             "hasBody": true,
-            "id": "src/traceability.ts:5852:inventoryTraceabilityRelationsOfKind",
+            "id": "src/traceability.ts:5866:inventoryTraceabilityRelationsOfKind",
             "kind": "FunctionDeclaration",
             "line": 163,
             "name": "inventoryTraceabilityRelationsOfKind"
@@ -14004,7 +13964,7 @@
                 "column": 1,
                 "file": "src/traceability.ts",
                 "hasBody": true,
-                "id": "src/traceability.ts:5852:inventoryTraceabilityRelationsOfKind",
+                "id": "src/traceability.ts:5866:inventoryTraceabilityRelationsOfKind",
                 "kind": "FunctionDeclaration",
                 "line": 163,
                 "name": "inventoryTraceabilityRelationsOfKind",
@@ -14085,9 +14045,9 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:13166:planInventoryFungibilityAllocation",
+                "id": "src/fungibility.ts:13361:planInventoryFungibilityAllocation",
                 "kind": "FunctionDeclaration",
-                "line": 327,
+                "line": 331,
                 "name": "planInventoryFungibilityAllocation",
                 "reason": "resolved-call"
               },
@@ -14095,9 +14055,9 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:29252:addFungibilityCandidate",
+                "id": "src/fungibility.ts:29447:addFungibilityCandidate",
                 "kind": "FunctionDeclaration",
-                "line": 779,
+                "line": 783,
                 "name": "addFungibilityCandidate",
                 "reason": "resolved-call"
               },
@@ -14105,9 +14065,9 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:30736:fungibilityAllocationIncrement",
+                "id": "src/fungibility.ts:30931:fungibilityAllocationIncrement",
                 "kind": "FunctionDeclaration",
-                "line": 834,
+                "line": 838,
                 "name": "fungibilityAllocationIncrement",
                 "reason": "resolved-call"
               },
@@ -14967,10 +14927,10 @@
                 "column": 92,
                 "file": "test/allocation-results.test.ts",
                 "hasBody": true,
-                "id": "test/allocation-results.test.ts:999:<anonymous@31>",
+                "id": "test/allocation-results.test.ts:1016:<anonymous@32>",
                 "kind": "ArrowFunction",
-                "line": 31,
-                "name": "<anonymous@31>",
+                "line": 32,
+                "name": "<anonymous@32>",
                 "reason": "test-callback"
               },
               {
@@ -15169,21 +15129,21 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/allocation.test.ts",
+                "file": "test/allocation-results.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/allocation.test.ts",
+                "id": "test-root:test/allocation-results.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/allocation.test.ts"
+                "name": "test/allocation-results.test.ts"
               },
               {
-                "column": 86,
-                "file": "test/allocation.test.ts",
+                "column": 92,
+                "file": "test/allocation-results.test.ts",
                 "hasBody": true,
-                "id": "test/allocation.test.ts:1507:<anonymous@47>",
+                "id": "test/allocation-results.test.ts:1016:<anonymous@32>",
                 "kind": "ArrowFunction",
-                "line": 47,
-                "name": "<anonymous@47>",
+                "line": 32,
+                "name": "<anonymous@32>",
                 "reason": "test-callback"
               },
               {
@@ -15197,7 +15157,7 @@
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/allocation.test.ts"
+            "test": "test/allocation-results.test.ts"
           }
         }
       ]
@@ -15269,9 +15229,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:13166:planInventoryFungibilityAllocation",
+          "id": "src/fungibility.ts:13361:planInventoryFungibilityAllocation",
           "kind": "FunctionDeclaration",
-          "line": 327,
+          "line": 331,
           "name": "planInventoryFungibilityAllocation"
         }
       ],
@@ -15282,9 +15242,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:13166:planInventoryFungibilityAllocation",
+            "id": "src/fungibility.ts:13361:planInventoryFungibilityAllocation",
             "kind": "FunctionDeclaration",
-            "line": 327,
+            "line": 331,
             "name": "planInventoryFungibilityAllocation"
           },
           "witness": {
@@ -15332,9 +15292,9 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:13166:planInventoryFungibilityAllocation",
+                "id": "src/fungibility.ts:13361:planInventoryFungibilityAllocation",
                 "kind": "FunctionDeclaration",
-                "line": 327,
+                "line": 331,
                 "name": "planInventoryFungibilityAllocation",
                 "reason": "resolved-call"
               }
@@ -15575,21 +15535,21 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/allocation.test.ts",
+                "file": "test/allocation-results.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/allocation.test.ts",
+                "id": "test-root:test/allocation-results.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/allocation.test.ts"
+                "name": "test/allocation-results.test.ts"
               },
               {
-                "column": 86,
-                "file": "test/allocation.test.ts",
+                "column": 92,
+                "file": "test/allocation-results.test.ts",
                 "hasBody": true,
-                "id": "test/allocation.test.ts:1507:<anonymous@47>",
+                "id": "test/allocation-results.test.ts:1016:<anonymous@32>",
                 "kind": "ArrowFunction",
-                "line": 47,
-                "name": "<anonymous@47>",
+                "line": 32,
+                "name": "<anonymous@32>",
                 "reason": "test-callback"
               },
               {
@@ -15613,7 +15573,7 @@
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/allocation.test.ts"
+            "test": "test/allocation-results.test.ts"
           }
         }
       ]
@@ -16224,21 +16184,21 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/allocation.test.ts",
+                "file": "test/allocation-results.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/allocation.test.ts",
+                "id": "test-root:test/allocation-results.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/allocation.test.ts"
+                "name": "test/allocation-results.test.ts"
               },
               {
-                "column": 86,
-                "file": "test/allocation.test.ts",
+                "column": 92,
+                "file": "test/allocation-results.test.ts",
                 "hasBody": true,
-                "id": "test/allocation.test.ts:1507:<anonymous@47>",
+                "id": "test/allocation-results.test.ts:1016:<anonymous@32>",
                 "kind": "ArrowFunction",
-                "line": 47,
-                "name": "<anonymous@47>",
+                "line": 32,
+                "name": "<anonymous@32>",
                 "reason": "test-callback"
               },
               {
@@ -16262,7 +16222,7 @@
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/allocation.test.ts"
+            "test": "test/allocation-results.test.ts"
           }
         }
       ]
@@ -16448,10 +16408,10 @@
                 "column": 92,
                 "file": "test/allocation-results.test.ts",
                 "hasBody": true,
-                "id": "test/allocation-results.test.ts:999:<anonymous@31>",
+                "id": "test/allocation-results.test.ts:1016:<anonymous@32>",
                 "kind": "ArrowFunction",
-                "line": 31,
-                "name": "<anonymous@31>",
+                "line": 32,
+                "name": "<anonymous@32>",
                 "reason": "test-callback"
               },
               {
@@ -16996,10 +16956,10 @@
                 "column": 92,
                 "file": "test/allocation-results.test.ts",
                 "hasBody": true,
-                "id": "test/allocation-results.test.ts:999:<anonymous@31>",
+                "id": "test/allocation-results.test.ts:1016:<anonymous@32>",
                 "kind": "ArrowFunction",
-                "line": 31,
-                "name": "<anonymous@31>",
+                "line": 32,
+                "name": "<anonymous@32>",
                 "reason": "test-callback"
               },
               {
@@ -17148,10 +17108,10 @@
                 "column": 76,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:17400:<anonymous@492>",
+                "id": "test/containers.test.ts:17765:<anonymous@502>",
                 "kind": "ArrowFunction",
-                "line": 492,
-                "name": "<anonymous@492>",
+                "line": 502,
+                "name": "<anonymous@502>",
                 "reason": "test-callback"
               },
               {
@@ -17453,10 +17413,10 @@
                 "column": 76,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:17400:<anonymous@492>",
+                "id": "test/containers.test.ts:17765:<anonymous@502>",
                 "kind": "ArrowFunction",
-                "line": 492,
-                "name": "<anonymous@492>",
+                "line": 502,
+                "name": "<anonymous@502>",
                 "reason": "test-callback"
               },
               {
@@ -17636,10 +17596,10 @@
                 "column": 76,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:17400:<anonymous@492>",
+                "id": "test/containers.test.ts:17765:<anonymous@502>",
                 "kind": "ArrowFunction",
-                "line": 492,
-                "name": "<anonymous@492>",
+                "line": 502,
+                "name": "<anonymous@502>",
                 "reason": "test-callback"
               },
               {
@@ -17941,7 +17901,7 @@
                 "column": 72,
                 "file": "test/formal-implementation-refinement.test.ts",
                 "hasBody": true,
-                "id": "test/formal-implementation-refinement.test.ts:19262:<anonymous@528>",
+                "id": "test/formal-implementation-refinement.test.ts:19251:<anonymous@528>",
                 "kind": "ArrowFunction",
                 "line": 528,
                 "name": "<anonymous@528>",
@@ -18215,10 +18175,10 @@
                 "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:15729:<anonymous@423>",
+                "id": "test/authority.test.ts:15834:<anonymous@427>",
                 "kind": "ArrowFunction",
-                "line": 423,
-                "name": "<anonymous@423>",
+                "line": 427,
+                "name": "<anonymous@427>",
                 "reason": "test-callback"
               },
               {
@@ -18428,10 +18388,10 @@
                 "column": 92,
                 "file": "test/allocation-results.test.ts",
                 "hasBody": true,
-                "id": "test/allocation-results.test.ts:999:<anonymous@31>",
+                "id": "test/allocation-results.test.ts:1016:<anonymous@32>",
                 "kind": "ArrowFunction",
-                "line": 31,
-                "name": "<anonymous@31>",
+                "line": 32,
+                "name": "<anonymous@32>",
                 "reason": "test-callback"
               },
               {
@@ -18722,19 +18682,19 @@
                 "column": 80,
                 "file": "test/traceability-corrections.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-corrections.test.ts:3630:<anonymous@119>",
+                "id": "test/traceability-corrections.test.ts:3702:<anonymous@120>",
                 "kind": "ArrowFunction",
-                "line": 119,
-                "name": "<anonymous@119>",
+                "line": 120,
+                "name": "<anonymous@120>",
                 "reason": "test-callback"
               },
               {
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:13712:defineInventoryEvent",
+                "id": "src/events.ts:16178:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 269,
+                "line": 340,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -18742,9 +18702,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:34740:normalizeStockEffects",
+                "id": "src/events.ts:37321:normalizeStockEffects",
                 "kind": "FunctionDeclaration",
-                "line": 853,
+                "line": 926,
                 "name": "normalizeStockEffects",
                 "reason": "resolved-call"
               },
@@ -18884,19 +18844,19 @@
                 "column": 80,
                 "file": "test/traceability-corrections.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-corrections.test.ts:3630:<anonymous@119>",
+                "id": "test/traceability-corrections.test.ts:3702:<anonymous@120>",
                 "kind": "ArrowFunction",
-                "line": 119,
-                "name": "<anonymous@119>",
+                "line": 120,
+                "name": "<anonymous@120>",
                 "reason": "test-callback"
               },
               {
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:13712:defineInventoryEvent",
+                "id": "src/events.ts:16178:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 269,
+                "line": 340,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -18904,9 +18864,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:34740:normalizeStockEffects",
+                "id": "src/events.ts:37321:normalizeStockEffects",
                 "kind": "FunctionDeclaration",
-                "line": 853,
+                "line": 926,
                 "name": "normalizeStockEffects",
                 "reason": "resolved-call"
               },
@@ -19087,10 +19047,10 @@
                 "column": 92,
                 "file": "test/allocation-results.test.ts",
                 "hasBody": true,
-                "id": "test/allocation-results.test.ts:999:<anonymous@31>",
+                "id": "test/allocation-results.test.ts:1016:<anonymous@32>",
                 "kind": "ArrowFunction",
-                "line": 31,
-                "name": "<anonymous@31>",
+                "line": 32,
+                "name": "<anonymous@32>",
                 "reason": "test-callback"
               },
               {
@@ -19432,10 +19392,10 @@
                 "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:15729:<anonymous@423>",
+                "id": "test/authority.test.ts:15834:<anonymous@427>",
                 "kind": "ArrowFunction",
-                "line": 423,
-                "name": "<anonymous@423>",
+                "line": 427,
+                "name": "<anonymous@427>",
                 "reason": "test-callback"
               },
               {
@@ -20001,10 +19961,10 @@
                 "column": 92,
                 "file": "test/allocation-results.test.ts",
                 "hasBody": true,
-                "id": "test/allocation-results.test.ts:999:<anonymous@31>",
+                "id": "test/allocation-results.test.ts:1016:<anonymous@32>",
                 "kind": "ArrowFunction",
-                "line": 31,
-                "name": "<anonymous@31>",
+                "line": 32,
+                "name": "<anonymous@32>",
                 "reason": "test-callback"
               },
               {
@@ -21726,52 +21686,42 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/catalog-composition-publication.test.ts",
+                "file": "test/traceability-corrections.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/catalog-composition-publication.test.ts",
+                "id": "test-root:test/traceability-corrections.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/catalog-composition-publication.test.ts"
+                "name": "test/traceability-corrections.test.ts"
               },
               {
-                "column": 82,
-                "file": "test/catalog-composition-publication.test.ts",
+                "column": 91,
+                "file": "test/traceability-corrections.test.ts",
                 "hasBody": true,
-                "id": "test/catalog-composition-publication.test.ts:1590:<anonymous@44>",
+                "id": "test/traceability-corrections.test.ts:47085:<anonymous@1370>",
                 "kind": "ArrowFunction",
-                "line": 44,
-                "name": "<anonymous@44>",
+                "line": 1370,
+                "name": "<anonymous@1370>",
                 "reason": "test-callback"
               },
               {
                 "column": 1,
-                "file": "src/catalog.ts",
+                "file": "src/corrections.ts",
                 "hasBody": true,
-                "id": "src/catalog.ts:115412:extendInventoryCatalog",
+                "id": "src/corrections.ts:1993:createInventoryCorrectionEvent",
                 "kind": "FunctionDeclaration",
-                "line": 2893,
-                "name": "extendInventoryCatalog",
+                "line": 56,
+                "name": "createInventoryCorrectionEvent",
                 "reason": "resolved-call"
               },
               {
                 "column": 1,
-                "file": "src/catalog.ts",
+                "file": "src/corrections.ts",
                 "hasBody": true,
-                "id": "src/catalog.ts:118473:mergeInventoryCatalogRevisionFamily",
+                "id": "src/corrections.ts:14162:createCorrectionStockEffects",
                 "kind": "FunctionDeclaration",
-                "line": 2981,
-                "name": "mergeInventoryCatalogRevisionFamily",
+                "line": 374,
+                "name": "createCorrectionStockEffects",
                 "reason": "resolved-call"
-              },
-              {
-                "column": 1,
-                "file": "src/catalog.ts",
-                "hasBody": true,
-                "id": "src/catalog.ts:99400:inventoryPackagingRevisionDigest",
-                "kind": "FunctionDeclaration",
-                "line": 2437,
-                "name": "inventoryPackagingRevisionDigest",
-                "reason": "callback-dispatch"
               },
               {
                 "column": 1,
@@ -21784,7 +21734,7 @@
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/catalog-composition-publication.test.ts"
+            "test": "test/traceability-corrections.test.ts"
           }
         }
       ]
@@ -21828,10 +21778,10 @@
                 "column": 92,
                 "file": "test/allocation-results.test.ts",
                 "hasBody": true,
-                "id": "test/allocation-results.test.ts:999:<anonymous@31>",
+                "id": "test/allocation-results.test.ts:1016:<anonymous@32>",
                 "kind": "ArrowFunction",
-                "line": 31,
-                "name": "<anonymous@31>",
+                "line": 32,
+                "name": "<anonymous@32>",
                 "reason": "test-callback"
               },
               {
@@ -22152,9 +22102,9 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:13166:planInventoryFungibilityAllocation",
+                "id": "src/fungibility.ts:13361:planInventoryFungibilityAllocation",
                 "kind": "FunctionDeclaration",
-                "line": 327,
+                "line": 331,
                 "name": "planInventoryFungibilityAllocation",
                 "reason": "resolved-call"
               },
@@ -22162,9 +22112,9 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:29252:addFungibilityCandidate",
+                "id": "src/fungibility.ts:29447:addFungibilityCandidate",
                 "kind": "FunctionDeclaration",
-                "line": 779,
+                "line": 783,
                 "name": "addFungibilityCandidate",
                 "reason": "resolved-call"
               },
@@ -22172,9 +22122,9 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:30736:fungibilityAllocationIncrement",
+                "id": "src/fungibility.ts:30931:fungibilityAllocationIncrement",
                 "kind": "FunctionDeclaration",
-                "line": 834,
+                "line": 838,
                 "name": "fungibilityAllocationIncrement",
                 "reason": "resolved-call"
               },
@@ -22962,21 +22912,21 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/allocation.test.ts",
+                "file": "test/allocation-results.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/allocation.test.ts",
+                "id": "test-root:test/allocation-results.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/allocation.test.ts"
+                "name": "test/allocation-results.test.ts"
               },
               {
-                "column": 86,
-                "file": "test/allocation.test.ts",
+                "column": 92,
+                "file": "test/allocation-results.test.ts",
                 "hasBody": true,
-                "id": "test/allocation.test.ts:1507:<anonymous@47>",
+                "id": "test/allocation-results.test.ts:1016:<anonymous@32>",
                 "kind": "ArrowFunction",
-                "line": 47,
-                "name": "<anonymous@47>",
+                "line": 32,
+                "name": "<anonymous@32>",
                 "reason": "test-callback"
               },
               {
@@ -22990,7 +22940,7 @@
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/allocation.test.ts"
+            "test": "test/allocation-results.test.ts"
           }
         }
       ]
@@ -23062,9 +23012,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:13166:planInventoryFungibilityAllocation",
+          "id": "src/fungibility.ts:13361:planInventoryFungibilityAllocation",
           "kind": "FunctionDeclaration",
-          "line": 327,
+          "line": 331,
           "name": "planInventoryFungibilityAllocation"
         }
       ],
@@ -23075,9 +23025,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:13166:planInventoryFungibilityAllocation",
+            "id": "src/fungibility.ts:13361:planInventoryFungibilityAllocation",
             "kind": "FunctionDeclaration",
-            "line": 327,
+            "line": 331,
             "name": "planInventoryFungibilityAllocation"
           },
           "witness": {
@@ -23125,9 +23075,9 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:13166:planInventoryFungibilityAllocation",
+                "id": "src/fungibility.ts:13361:planInventoryFungibilityAllocation",
                 "kind": "FunctionDeclaration",
-                "line": 327,
+                "line": 331,
                 "name": "planInventoryFungibilityAllocation",
                 "reason": "resolved-call"
               }
@@ -23429,21 +23379,21 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/allocation.test.ts",
+                "file": "test/allocation-results.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/allocation.test.ts",
+                "id": "test-root:test/allocation-results.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/allocation.test.ts"
+                "name": "test/allocation-results.test.ts"
               },
               {
-                "column": 86,
-                "file": "test/allocation.test.ts",
+                "column": 92,
+                "file": "test/allocation-results.test.ts",
                 "hasBody": true,
-                "id": "test/allocation.test.ts:1507:<anonymous@47>",
+                "id": "test/allocation-results.test.ts:1016:<anonymous@32>",
                 "kind": "ArrowFunction",
-                "line": 47,
-                "name": "<anonymous@47>",
+                "line": 32,
+                "name": "<anonymous@32>",
                 "reason": "test-callback"
               },
               {
@@ -23467,7 +23417,7 @@
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/allocation.test.ts"
+            "test": "test/allocation-results.test.ts"
           }
         }
       ]
@@ -24008,10 +23958,10 @@
                 "column": 66,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:35404:<anonymous@933>",
+                "id": "test/authority.test.ts:35509:<anonymous@937>",
                 "kind": "ArrowFunction",
-                "line": 933,
-                "name": "<anonymous@933>",
+                "line": 937,
+                "name": "<anonymous@937>",
                 "reason": "test-callback"
               },
               {
@@ -24119,21 +24069,21 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/allocation.test.ts",
+                "file": "test/allocation-results.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/allocation.test.ts",
+                "id": "test-root:test/allocation-results.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/allocation.test.ts"
+                "name": "test/allocation-results.test.ts"
               },
               {
-                "column": 86,
-                "file": "test/allocation.test.ts",
+                "column": 92,
+                "file": "test/allocation-results.test.ts",
                 "hasBody": true,
-                "id": "test/allocation.test.ts:1507:<anonymous@47>",
+                "id": "test/allocation-results.test.ts:1016:<anonymous@32>",
                 "kind": "ArrowFunction",
-                "line": 47,
-                "name": "<anonymous@47>",
+                "line": 32,
+                "name": "<anonymous@32>",
                 "reason": "test-callback"
               },
               {
@@ -24157,7 +24107,7 @@
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/allocation.test.ts"
+            "test": "test/allocation-results.test.ts"
           }
         }
       ]
@@ -24262,10 +24212,10 @@
                 "column": 92,
                 "file": "test/allocation-results.test.ts",
                 "hasBody": true,
-                "id": "test/allocation-results.test.ts:999:<anonymous@31>",
+                "id": "test/allocation-results.test.ts:1016:<anonymous@32>",
                 "kind": "ArrowFunction",
-                "line": 31,
-                "name": "<anonymous@31>",
+                "line": 32,
+                "name": "<anonymous@32>",
                 "reason": "test-callback"
               },
               {
@@ -24749,10 +24699,10 @@
                 "column": 92,
                 "file": "test/allocation-results.test.ts",
                 "hasBody": true,
-                "id": "test/allocation-results.test.ts:999:<anonymous@31>",
+                "id": "test/allocation-results.test.ts:1016:<anonymous@32>",
                 "kind": "ArrowFunction",
-                "line": 31,
-                "name": "<anonymous@31>",
+                "line": 32,
+                "name": "<anonymous@32>",
                 "reason": "test-callback"
               },
               {
@@ -24901,10 +24851,10 @@
                 "column": 109,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:33005:<anonymous@867>",
+                "id": "test/authority.test.ts:33110:<anonymous@871>",
                 "kind": "ArrowFunction",
-                "line": 867,
-                "name": "<anonymous@867>",
+                "line": 871,
+                "name": "<anonymous@871>",
                 "reason": "test-callback"
               },
               {
@@ -24962,10 +24912,10 @@
                 "column": 76,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:17400:<anonymous@492>",
+                "id": "test/containers.test.ts:17765:<anonymous@502>",
                 "kind": "ArrowFunction",
-                "line": 492,
-                "name": "<anonymous@492>",
+                "line": 502,
+                "name": "<anonymous@502>",
                 "reason": "test-callback"
               },
               {
@@ -25083,10 +25033,10 @@
                 "column": 76,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:17400:<anonymous@492>",
+                "id": "test/containers.test.ts:17765:<anonymous@502>",
                 "kind": "ArrowFunction",
-                "line": 492,
-                "name": "<anonymous@492>",
+                "line": 502,
+                "name": "<anonymous@502>",
                 "reason": "test-callback"
               },
               {
@@ -26857,10 +26807,10 @@
                 "column": 74,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:15729:<anonymous@423>",
+                "id": "test/authority.test.ts:15834:<anonymous@427>",
                 "kind": "ArrowFunction",
-                "line": 423,
-                "name": "<anonymous@423>",
+                "line": 427,
+                "name": "<anonymous@427>",
                 "reason": "test-callback"
               },
               {
@@ -27567,10 +27517,10 @@
                 "column": 92,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:13776:<anonymous@394>",
+                "id": "test/containers.test.ts:14141:<anonymous@404>",
                 "kind": "ArrowFunction",
-                "line": 394,
-                "name": "<anonymous@394>",
+                "line": 404,
+                "name": "<anonymous@404>",
                 "reason": "test-callback"
               },
               {
@@ -27638,10 +27588,10 @@
                 "column": 92,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:13776:<anonymous@394>",
+                "id": "test/containers.test.ts:14141:<anonymous@404>",
                 "kind": "ArrowFunction",
-                "line": 394,
-                "name": "<anonymous@394>",
+                "line": 404,
+                "name": "<anonymous@404>",
                 "reason": "test-callback"
               },
               {
@@ -27709,10 +27659,10 @@
                 "column": 83,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:8122:<anonymous@246>",
+                "id": "test/containers.test.ts:8487:<anonymous@256>",
                 "kind": "ArrowFunction",
-                "line": 246,
-                "name": "<anonymous@246>",
+                "line": 256,
+                "name": "<anonymous@256>",
                 "reason": "test-callback"
               },
               {
@@ -27780,10 +27730,10 @@
                 "column": 83,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:8122:<anonymous@246>",
+                "id": "test/containers.test.ts:8487:<anonymous@256>",
                 "kind": "ArrowFunction",
-                "line": 246,
-                "name": "<anonymous@246>",
+                "line": 256,
+                "name": "<anonymous@256>",
                 "reason": "test-callback"
               },
               {
@@ -28720,13 +28670,13 @@
                 "name": "test/fungibility.test.ts"
               },
               {
-                "column": 89,
+                "column": 93,
                 "file": "test/fungibility.test.ts",
                 "hasBody": true,
-                "id": "test/fungibility.test.ts:26604:<anonymous@796>",
+                "id": "test/fungibility.test.ts:23312:<anonymous@703>",
                 "kind": "ArrowFunction",
-                "line": 796,
-                "name": "<anonymous@796>",
+                "line": 703,
+                "name": "<anonymous@703>",
                 "reason": "test-callback"
               },
               {
@@ -29007,10 +28957,10 @@
                 "column": 98,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:10365:<anonymous@309>",
+                "id": "test/containers.test.ts:10730:<anonymous@319>",
                 "kind": "ArrowFunction",
-                "line": 309,
-                "name": "<anonymous@309>",
+                "line": 319,
+                "name": "<anonymous@319>",
                 "reason": "test-callback"
               },
               {
@@ -29078,10 +29028,10 @@
                 "column": 76,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:19101:<anonymous@547>",
+                "id": "test/containers.test.ts:19466:<anonymous@557>",
                 "kind": "ArrowFunction",
-                "line": 547,
-                "name": "<anonymous@547>",
+                "line": 557,
+                "name": "<anonymous@557>",
                 "reason": "test-callback"
               },
               {
@@ -29362,10 +29312,10 @@
                 "column": 84,
                 "file": "test/lots.test.ts",
                 "hasBody": true,
-                "id": "test/lots.test.ts:5962:<anonymous@172>",
+                "id": "test/lots.test.ts:6418:<anonymous@179>",
                 "kind": "ArrowFunction",
-                "line": 172,
-                "name": "<anonymous@172>",
+                "line": 179,
+                "name": "<anonymous@179>",
                 "reason": "test-callback"
               },
               {
@@ -29504,10 +29454,10 @@
                 "column": 98,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:10365:<anonymous@309>",
+                "id": "test/containers.test.ts:10730:<anonymous@319>",
                 "kind": "ArrowFunction",
-                "line": 309,
-                "name": "<anonymous@309>",
+                "line": 319,
+                "name": "<anonymous@319>",
                 "reason": "test-callback"
               },
               {
@@ -29717,10 +29667,10 @@
                 "column": 83,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:8122:<anonymous@246>",
+                "id": "test/containers.test.ts:8487:<anonymous@256>",
                 "kind": "ArrowFunction",
-                "line": 246,
-                "name": "<anonymous@246>",
+                "line": 256,
+                "name": "<anonymous@256>",
                 "reason": "test-callback"
               },
               {
@@ -31745,10 +31695,10 @@
                 "column": 106,
                 "file": "test/catalog-stock.test.ts",
                 "hasBody": true,
-                "id": "test/catalog-stock.test.ts:15834:<anonymous@492>",
+                "id": "test/catalog-stock.test.ts:16027:<anonymous@497>",
                 "kind": "ArrowFunction",
-                "line": 492,
-                "name": "<anonymous@492>",
+                "line": 497,
+                "name": "<anonymous@497>",
                 "reason": "test-callback"
               },
               {
@@ -31816,10 +31766,10 @@
                 "column": 106,
                 "file": "test/catalog-stock.test.ts",
                 "hasBody": true,
-                "id": "test/catalog-stock.test.ts:15834:<anonymous@492>",
+                "id": "test/catalog-stock.test.ts:16027:<anonymous@497>",
                 "kind": "ArrowFunction",
-                "line": 492,
-                "name": "<anonymous@492>",
+                "line": 497,
+                "name": "<anonymous@497>",
                 "reason": "test-callback"
               },
               {
@@ -31887,10 +31837,10 @@
                 "column": 106,
                 "file": "test/catalog-stock.test.ts",
                 "hasBody": true,
-                "id": "test/catalog-stock.test.ts:15834:<anonymous@492>",
+                "id": "test/catalog-stock.test.ts:16027:<anonymous@497>",
                 "kind": "ArrowFunction",
-                "line": 492,
-                "name": "<anonymous@492>",
+                "line": 497,
+                "name": "<anonymous@497>",
                 "reason": "test-callback"
               },
               {
@@ -31958,10 +31908,10 @@
                 "column": 106,
                 "file": "test/catalog-stock.test.ts",
                 "hasBody": true,
-                "id": "test/catalog-stock.test.ts:15834:<anonymous@492>",
+                "id": "test/catalog-stock.test.ts:16027:<anonymous@497>",
                 "kind": "ArrowFunction",
-                "line": 492,
-                "name": "<anonymous@492>",
+                "line": 497,
+                "name": "<anonymous@497>",
                 "reason": "test-callback"
               },
               {
@@ -32930,10 +32880,10 @@
                 "column": 85,
                 "file": "test/catalog-stock.test.ts",
                 "hasBody": true,
-                "id": "test/catalog-stock.test.ts:14609:<anonymous@454>",
+                "id": "test/catalog-stock.test.ts:14802:<anonymous@459>",
                 "kind": "ArrowFunction",
-                "line": 454,
-                "name": "<anonymous@454>",
+                "line": 459,
+                "name": "<anonymous@459>",
                 "reason": "test-callback"
               },
               {
@@ -33001,10 +32951,10 @@
                 "column": 106,
                 "file": "test/catalog-stock.test.ts",
                 "hasBody": true,
-                "id": "test/catalog-stock.test.ts:15834:<anonymous@492>",
+                "id": "test/catalog-stock.test.ts:16027:<anonymous@497>",
                 "kind": "ArrowFunction",
-                "line": 492,
-                "name": "<anonymous@492>",
+                "line": 497,
+                "name": "<anonymous@497>",
                 "reason": "test-callback"
               },
               {
@@ -33285,10 +33235,10 @@
                 "column": 106,
                 "file": "test/catalog-stock.test.ts",
                 "hasBody": true,
-                "id": "test/catalog-stock.test.ts:15834:<anonymous@492>",
+                "id": "test/catalog-stock.test.ts:16027:<anonymous@497>",
                 "kind": "ArrowFunction",
-                "line": 492,
-                "name": "<anonymous@492>",
+                "line": 497,
+                "name": "<anonymous@497>",
                 "reason": "test-callback"
               },
               {
@@ -33842,10 +33792,10 @@
                 "column": 68,
                 "file": "test/formal-storage-refinement-suite.ts",
                 "hasBody": true,
-                "id": "test/formal-storage-refinement-suite.ts:23834:<anonymous@712>",
+                "id": "test/formal-storage-refinement-suite.ts:24929:<anonymous@732>",
                 "kind": "ArrowFunction",
-                "line": 712,
-                "name": "<anonymous@712>",
+                "line": 732,
+                "name": "<anonymous@732>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -33913,10 +33863,10 @@
                 "column": 92,
                 "file": "test/traceability-corrections.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-corrections.test.ts:7711:<anonymous@250>",
+                "id": "test/traceability-corrections.test.ts:7783:<anonymous@251>",
                 "kind": "ArrowFunction",
-                "line": 250,
-                "name": "<anonymous@250>",
+                "line": 251,
+                "name": "<anonymous@251>",
                 "reason": "test-callback"
               },
               {
@@ -33984,10 +33934,10 @@
                 "column": 85,
                 "file": "test/catalog-stock.test.ts",
                 "hasBody": true,
-                "id": "test/catalog-stock.test.ts:14609:<anonymous@454>",
+                "id": "test/catalog-stock.test.ts:14802:<anonymous@459>",
                 "kind": "ArrowFunction",
-                "line": 454,
-                "name": "<anonymous@454>",
+                "line": 459,
+                "name": "<anonymous@459>",
                 "reason": "test-callback"
               },
               {
@@ -34126,10 +34076,10 @@
                 "column": 86,
                 "file": "test/traceability-corrections.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-corrections.test.ts:1891:<anonymous@63>",
+                "id": "test/traceability-corrections.test.ts:1963:<anonymous@64>",
                 "kind": "ArrowFunction",
-                "line": 63,
-                "name": "<anonymous@63>",
+                "line": 64,
+                "name": "<anonymous@64>",
                 "reason": "test-callback"
               },
               {
@@ -34197,10 +34147,10 @@
                 "column": 86,
                 "file": "test/traceability-corrections.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-corrections.test.ts:1891:<anonymous@63>",
+                "id": "test/traceability-corrections.test.ts:1963:<anonymous@64>",
                 "kind": "ArrowFunction",
-                "line": 63,
-                "name": "<anonymous@63>",
+                "line": 64,
+                "name": "<anonymous@64>",
                 "reason": "test-callback"
               },
               {
@@ -34643,10 +34593,10 @@
                 "column": 86,
                 "file": "test/transfer-lifecycle.test.ts",
                 "hasBody": true,
-                "id": "test/transfer-lifecycle.test.ts:19527:<anonymous@583>",
+                "id": "test/transfer-lifecycle.test.ts:19644:<anonymous@585>",
                 "kind": "ArrowFunction",
-                "line": 583,
-                "name": "<anonymous@583>",
+                "line": 585,
+                "name": "<anonymous@585>",
                 "reason": "test-callback"
               },
               {
@@ -35474,10 +35424,10 @@
                 "column": 76,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:17400:<anonymous@492>",
+                "id": "test/containers.test.ts:17765:<anonymous@502>",
                 "kind": "ArrowFunction",
-                "line": 492,
-                "name": "<anonymous@492>",
+                "line": 502,
+                "name": "<anonymous@502>",
                 "reason": "test-callback"
               },
               {
@@ -35727,7 +35677,7 @@
                 "column": 72,
                 "file": "test/formal-implementation-refinement.test.ts",
                 "hasBody": true,
-                "id": "test/formal-implementation-refinement.test.ts:19262:<anonymous@528>",
+                "id": "test/formal-implementation-refinement.test.ts:19251:<anonymous@528>",
                 "kind": "ArrowFunction",
                 "line": 528,
                 "name": "<anonymous@528>",
@@ -35909,10 +35859,10 @@
                 "column": 93,
                 "file": "test/authority.test.ts",
                 "hasBody": true,
-                "id": "test/authority.test.ts:20736:<anonymous@550>",
+                "id": "test/authority.test.ts:20841:<anonymous@554>",
                 "kind": "ArrowFunction",
-                "line": 550,
-                "name": "<anonymous@550>",
+                "line": 554,
+                "name": "<anonymous@554>",
                 "reason": "test-callback"
               },
               {
@@ -36591,5 +36541,5 @@
     }
   },
   "schemaVersion": 1,
-  "surfaceSha256": "1d1d6bff865c89c5321f6816672724ba0993454dc6bcf04e9be51a14dd418f79"
+  "surfaceSha256": "7a65f233f884a14094b9e7003ce40d0a4a7e6c9d1c7a86316646992ff2fe95ff"
 }

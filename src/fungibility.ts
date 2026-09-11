@@ -233,6 +233,10 @@ export function summarizeInventoryFungibility({
       positions,
     });
   }
+  members.sort(
+    /** Keep the public member breakdown in exact item-revision identity order. */
+    (left, right) => left.member.itemRevisionId.localeCompare(right.member.itemRevisionId)
+  );
   return {
     definition,
     scope: normalizedScope,

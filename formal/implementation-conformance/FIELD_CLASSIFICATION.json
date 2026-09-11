@@ -53608,7 +53608,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/events.ts:184:5.action": {
+    "anonymous@src/events.ts:255:5.action": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -53634,7 +53634,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/events.ts:184:5.destinationCustodianId": {
+    "anonymous@src/events.ts:255:5.destinationCustodianId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -53660,7 +53660,7 @@
       "optional": true,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/events.ts:184:5.destinationLocationId": {
+    "anonymous@src/events.ts:255:5.destinationLocationId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -53686,7 +53686,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/events.ts:184:5.lines": {
+    "anonymous@src/events.ts:255:5.lines": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -53712,7 +53712,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/events.ts:184:5.sourceLocationId": {
+    "anonymous@src/events.ts:255:5.sourceLocationId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -53738,7 +53738,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/events.ts:184:5.transferId": {
+    "anonymous@src/events.ts:255:5.transferId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -53764,7 +53764,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/events.ts:184:5.transitLocationId": {
+    "anonymous@src/events.ts:255:5.transitLocationId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -53790,7 +53790,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/events.ts:193:5.action": {
+    "anonymous@src/events.ts:264:5.action": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -53816,7 +53816,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/events.ts:193:5.carrierCustodianId": {
+    "anonymous@src/events.ts:264:5.carrierCustodianId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -53842,7 +53842,7 @@
       "optional": true,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/events.ts:193:5.transferId": {
+    "anonymous@src/events.ts:264:5.transferId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -53868,7 +53868,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/events.ts:198:5.action": {
+    "anonymous@src/events.ts:269:5.action": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -53894,7 +53894,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/events.ts:198:5.lines": {
+    "anonymous@src/events.ts:269:5.lines": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -53920,7 +53920,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/events.ts:198:5.transferId": {
+    "anonymous@src/events.ts:269:5.transferId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -53946,7 +53946,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/events.ts:203:5.action": {
+    "anonymous@src/events.ts:274:5.action": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -53972,7 +53972,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/events.ts:203:5.transferId": {
+    "anonymous@src/events.ts:274:5.transferId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -54710,5 +54710,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "1d1d6bff865c89c5321f6816672724ba0993454dc6bcf04e9be51a14dd418f79"
+  "surfaceSha256": "7a65f233f884a14094b9e7003ce40d0a4a7e6c9d1c7a86316646992ff2fe95ff"
 }

@@ -437,6 +437,10 @@ describe("derived pool summaries and exact member movements", () => {
       physicalTotal: { amountMinor: 12, unit: "dose-equivalent" },
       deficitTotal: { amountMinor: 4, unit: "dose-equivalent" },
     });
+    expect(summary.members.map((entry) => entry.member.itemRevisionId)).toEqual([
+      "new-brand-v1",
+      "old-brand-v1",
+    ]);
     const oldMemberSummary = summary.members.find(
       /** Read the member whose late receipt is burdened by its own deficit. */
       (member) => member.member.itemRevisionId === "old-brand-v1"
@@ -791,6 +795,32 @@ describe("derived pool summaries and exact member movements", () => {
     });
     expect(fungible.shortfall.amountMinor).toBe(0);
     expect(fungible.incrementBlockedStock).toBe(false);
+
+    const transferred = await inventory.fungibility.transfer({
+      operationId: "transfer-fixed-measure-pack",
+      occurredAtEpochMs: time2,
+      fungibilityRevisionId: pool.revisionId,
+      requested: parseQuantity("2", "equivalent"),
+      method: InventoryAllocationMethod.Fifo,
+      scope: { locationIds: ["store"] },
+      toLocationId: "room",
+    });
+    expect(transferred.event.stockEffects).toHaveLength(2);
+    expect(
+      transferred.event.stockEffects.map((effect) => effect.position.packagingRevisionId)
+    ).toEqual([packagingRevisionId, packagingRevisionId]);
+    expect(
+      transferred.event.stockEffects.map((effect) =>
+        effect.measurementsDelta.independent.map((entry) => ({
+          axisId: entry.axisId,
+          amountMinor: entry.quantity.amountMinor,
+          unit: entry.quantity.unit,
+        }))
+      )
+    ).toEqual([
+      [{ axisId: "weight", amountMinor: 3, unit: "kg" }],
+      [{ axisId: "weight", amountMinor: -3, unit: "kg" }],
+    ]);
   });
 
   it("transfers selected member stock without rewriting its item/package/lot identity", async () => {

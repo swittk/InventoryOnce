@@ -105,6 +105,18 @@ test("one stale manifest-derived field rejects the executable report", () => {
   );
 });
 
+test("unexpected executable report fields fail closed", () => {
+  const input = fixtures();
+  const executable = {
+    ...executableAssuranceSummary(input),
+    staleExtraField: 1,
+  };
+  assert.throws(
+    () => assertExecutableAssuranceMatchesManifests({ ...input, executable }),
+    /staleExtraField.*unexpected executable assurance field/u,
+  );
+});
+
 test("duplicated manifest counters and call-chain domain partitions must agree", () => {
   const staleGraph = fixtures();
   staleGraph.api.counts.compilerCallGraphEdges += 1;

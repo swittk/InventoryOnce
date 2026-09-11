@@ -243,18 +243,18 @@ function projectHistoryWithReplacement(
     ) {
       continue;
     }
-    // Metadata-only events remain their own master assertions. Replaying them as
-    // stock/graph drafts would consume a physical sequence without changing stock truth.
-    if (
-      event.kind === InventoryEventKind.LotMetadata ||
-      event.kind === InventoryEventKind.ContainerMetadata
-    ) {
-      continue;
-    }
     if (event.eventId === rootEventId && replacementAtRoot === undefined)
       continue;
     const draft = event.eventId === rootEventId ? replacementAtRoot : event;
     if (draft === undefined) continue;
+    // The effective replacement kind controls whether this retained assertion is metadata-only.
+    // A corrected metadata root may legitimately become a physical stock/graph assertion.
+    if (
+      draft.kind === InventoryEventKind.LotMetadata ||
+      draft.kind === InventoryEventKind.ContainerMetadata
+    ) {
+      continue;
+    }
     // Lot-master replacement is carried directly by the correction event; stock/graph replay must not
     // reinterpret later duplicate lot confirmations as competing roots.
     const stockAndGraphDraft: InventoryEventDraft = {

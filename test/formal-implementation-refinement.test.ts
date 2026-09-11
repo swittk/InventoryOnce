@@ -391,17 +391,17 @@ describe("formal implementation state/result refinement", () => {
         authorizationId: "formal-cutover-authorization",
       })
     );
-    const beforeMismatch = await authority.read();
     await authority.recordDualRunMismatch({
       commandId: "formal-mismatch",
       legacyIntentDigest: "legacy-intent",
       authoritativeIntentDigest: "native-intent",
       recordedAtEpochMs: time2,
     });
+    const afterMismatch = await authority.read();
     await expect(
       authority.claimFence({ fenceToken: "blocked-fence", startedAtEpochMs: time2 })
     ).rejects.toThrow("mismatch evidence");
-    expect((await authority.read()).mode).toBe(beforeMismatch.mode);
+    expect(await authority.read()).toEqual(afterMismatch);
 
     const cleanAuthority = createInventoryAuthorityControl({
       store: new TestInventoryAuthorityStore(),

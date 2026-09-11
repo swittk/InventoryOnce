@@ -83,7 +83,11 @@ class ReorderedMigrationManifestStorage extends InMemoryInventoryDurableStorage 
         dispositionId: disposition.dispositionId,
         ...(disposition.evidence === undefined
           ? {}
-          : { evidence: disposition.evidence }),
+          : {
+              evidence: Object.fromEntries(
+                Object.entries(disposition.evidence).reverse()
+              ),
+            }),
       })),
     };
   }

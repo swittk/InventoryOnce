@@ -213,6 +213,7 @@ describe("first-class physical transfer lifecycle", () => {
     const before = await inventory.transfers.find({
       transferId: "DUP-RECEIVE",
     });
+    const worldBefore = await inventory.read.world();
     await expect(
       inventory.transfers.receive({
         operationId: "receive-duplicate-lines",
@@ -227,6 +228,7 @@ describe("first-class physical transfer lifecycle", () => {
     expect(
       await inventory.transfers.find({ transferId: "DUP-RECEIVE" })
     ).toEqual(before);
+    expect(await inventory.read.world()).toEqual(worldBefore);
   });
 
   it("rejects raw lifecycle-less events that touch transfer-bound stock", () => {

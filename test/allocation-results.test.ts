@@ -5,6 +5,7 @@ import {
   defineInventoryPolicyBatchRequestGroup,
   inventoryPolicyBatchAllocationLinesByReference,
   inventoryStockSelector,
+  parseQuantity,
   stockAmount,
   type InventoryOncePolicyBatchRequest,
 } from "../src/index.js";
@@ -46,14 +47,36 @@ describe("policy request groups and allocation reads", () => {
     expect(set.referenceByRequestId.get("request-a")).toBe(
       "application-line-a"
     );
+    const lineA = {
+      position: {
+        itemId: "item-a",
+        itemRevisionId: "item-a-v2",
+        locationId: "store",
+      },
+      positionIdentity: "allocation-position-a",
+      amount: stockAmount("10", "piece"),
+      allocatedPrimary: parseQuantity("10", "piece"),
+      layerStartedAtEpochMs: 10,
+    };
+    const lineB = {
+      position: {
+        itemId: "item-a",
+        itemRevisionId: "item-a-v2",
+        locationId: "store",
+      },
+      positionIdentity: "allocation-position-b",
+      amount: stockAmount("14", "piece"),
+      allocatedPrimary: parseQuantity("14", "piece"),
+      layerStartedAtEpochMs: 20,
+    };
     const allocations = inventoryPolicyBatchAllocationLinesByReference(
       [
-        { requestId: "request-a", lines: [] },
-        { requestId: "request-b", lines: [] },
+        { requestId: "request-a", lines: [lineA] },
+        { requestId: "request-b", lines: [lineB] },
       ],
       set.referenceByRequestId
     );
-    expect(allocations.get("application-line-a")).toEqual([]);
+    expect(allocations.get("application-line-a")).toEqual([lineA, lineB]);
   });
 
   it("rejects mismatched group totals, duplicate request ids, and unknown allocation evidence", () => {

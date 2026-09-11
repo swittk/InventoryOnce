@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdtempSync, readFileSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
@@ -135,6 +135,48 @@ describe("formal implementation conformance manifest", () => {
       expect(hashes[2]).not.toBe(hashes[3]);
     } finally {
       for (const root of roots) rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("binds regular-file Git mode into live and committed assurance state", () => {
+    const root = mkdtempSync(path.join(tmpdir(), "inventoryonce-assurance-mode-"));
+    try {
+      execFileSync("git", ["init", "-q"], { cwd: root });
+      writeFileSync(path.join(root, "tool.sh"), "#!/bin/sh\necho inventoryonce\n");
+      chmodSync(path.join(root, "tool.sh"), 0o644);
+      execFileSync("git", ["add", "tool.sh"], { cwd: root });
+      execFileSync(
+        "git",
+        ["-c", "user.name=InventoryOnce", "-c", "user.email=inventoryonce@example.invalid", "commit", "-q", "-m", "non-executable"],
+        { cwd: root }
+      );
+      const firstHead = execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
+      const script = [
+        'import { repositoryAssuranceCommittedStateSha256, repositoryAssuranceStateSha256 } from "./scripts/repository-assurance-state.mjs";',
+        "const root = process.argv[1];",
+        "const head = process.argv[2];",
+        "process.stdout.write(JSON.stringify([repositoryAssuranceStateSha256(root), repositoryAssuranceCommittedStateSha256(root, head)]));",
+      ].join("\n");
+      const first = JSON.parse(execFileSync(process.execPath, ["--input-type=module", "--eval", script, root, firstHead], { cwd: packageRoot, encoding: "utf8" })) as readonly [string, string];
+      expect(first[0]).toBe(first[1]);
+
+      chmodSync(path.join(root, "tool.sh"), 0o755);
+      const changedLive = JSON.parse(execFileSync(process.execPath, ["--input-type=module", "--eval", script, root, firstHead], { cwd: packageRoot, encoding: "utf8" })) as readonly [string, string];
+      expect(changedLive[0]).not.toBe(first[0]);
+      expect(changedLive[1]).toBe(first[1]);
+
+      execFileSync("git", ["add", "tool.sh"], { cwd: root });
+      execFileSync(
+        "git",
+        ["-c", "user.name=InventoryOnce", "-c", "user.email=inventoryonce@example.invalid", "commit", "-q", "-m", "executable"],
+        { cwd: root }
+      );
+      const secondHead = execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
+      const second = JSON.parse(execFileSync(process.execPath, ["--input-type=module", "--eval", script, root, secondHead], { cwd: packageRoot, encoding: "utf8" })) as readonly [string, string];
+      expect(second[0]).toBe(second[1]);
+      expect(second[1]).not.toBe(first[1]);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
     }
   });
 
