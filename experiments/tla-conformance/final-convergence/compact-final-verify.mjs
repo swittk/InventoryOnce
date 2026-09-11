@@ -16215,18 +16215,18 @@ function repositoryAssuranceCommittedStateSha256(repositoryRoot, commit) {
 var CURRENT_REVIEW_ASSURANCE_RECEIPT = "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json";
 var CURRENT_REVIEW_ASSURANCE_REPORT = "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json";
 var CURRENT_REVIEW_ASSURANCE_FULL_LOG = "experiments/tla-conformance/final-convergence/current-pr-review-full.log";
-var CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "9750cfda5927cd19ebf9ab1f43ac5a2779e3386a";
-var CURRENT_REVIEW_AUTHORITATIVE_PATHS = Object.freeze([
-  "src",
-  "formal",
-  "scripts",
-  "test",
-  "package.json",
-  "pnpm-lock.yaml",
-  "tsconfig.json",
-  "tsconfig.test.json"
+var CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "eb40a3b00c580499dd83ad38c02ae96a6375494a";
+var CURRENT_REVIEW_ASSURANCE_SELF = "experiments/tla-conformance/final-convergence/current-review-assurance.mjs";
+var COMPACT_MANIFEST = "experiments/tla-conformance/final-convergence/compact-support-manifest.json";
+var COMPACT_CLOSURE = "experiments/tla-conformance/final-convergence/authority-reference-manifest.json";
+var COMPACT_WRAPPER = "experiments/tla-conformance/final-convergence/run-compact-final-assurance.mjs";
+var POST_FULL_RUNTIME_TRANSPORT = "scripts/inventory-epoch-contract.mjs";
+var AGENT_DIARY = "AGENT_DIARY.md";
+var CURRENT_REVIEW_EVIDENCE_PATHS = Object.freeze([
+  CURRENT_REVIEW_ASSURANCE_RECEIPT,
+  CURRENT_REVIEW_ASSURANCE_REPORT,
+  CURRENT_REVIEW_ASSURANCE_FULL_LOG
 ]);
-var POST_FULL_PROOF_INTEGRATION_PATHS = Object.freeze(["scripts/inventory-epoch-contract.mjs"]);
 function sha2564(file) {
   return crypto4.createHash("sha256").update(fs38.readFileSync(file)).digest("hex");
 }
@@ -16257,6 +16257,49 @@ function committedFileSha256(repositoryRoot, commit, file) {
     maxBuffer: 64 * 1024 * 1024
   });
   return crypto4.createHash("sha256").update(bytes2).digest("hex");
+}
+function gitPathList(repositoryRoot, args) {
+  return execFileSync4("git", args, {
+    cwd: repositoryRoot,
+    encoding: "utf8",
+    maxBuffer: 64 * 1024 * 1024
+  }).split("\0").filter(Boolean).sort();
+}
+function currentReviewProofIntegrationPaths(repositoryRoot) {
+  const root3 = path42.resolve(repositoryRoot);
+  const manifest = JSON.parse(fs38.readFileSync(regularFile(root3, COMPACT_MANIFEST, "Compact support manifest"), "utf8"));
+  const paths = /* @__PURE__ */ new Set([
+    ...CURRENT_REVIEW_EVIDENCE_PATHS,
+    CURRENT_REVIEW_ASSURANCE_SELF,
+    POST_FULL_RUNTIME_TRANSPORT,
+    COMPACT_MANIFEST,
+    COMPACT_CLOSURE,
+    COMPACT_WRAPPER,
+    AGENT_DIARY
+  ]);
+  for (const row of manifest.bundles?.entries ?? []) {
+    assert40.equal(typeof row?.file, "string", "Compact bundle output path is invalid.");
+    paths.add(row.file);
+  }
+  if (typeof manifest.archive?.file === "string") paths.add(manifest.archive.file);
+  for (const node of manifest.graph ?? []) {
+    for (const row of node.outputs ?? []) {
+      assert40.equal(typeof row?.file, "string", "Compact graph output path is invalid.");
+      paths.add(row.file);
+    }
+  }
+  return paths;
+}
+function assertCurrentReviewTrackedDriftAllowed(changedPaths, allowedPaths) {
+  const unexpected = [...new Set(changedPaths)].filter((file) => !allowedPaths.has(file)).sort();
+  assert40.deepEqual(
+    unexpected,
+    [],
+    `Post-certification tracked drift escaped the proof-integration closure: ${unexpected.join(", ")}`
+  );
+}
+function currentReviewDirtyPaths(repositoryRoot) {
+  return gitPathList(repositoryRoot, ["diff", "--name-only", "-z", "HEAD", "--"]);
 }
 function assertCurrentReviewAssuranceContent({
   receipt,
@@ -16327,29 +16370,31 @@ function verifyCurrentReviewAssurance(repositoryRoot, context) {
     independentlyDerivedSurfaceSha256: currentReviewSurfaceSha256(root3, context),
     independentlyDerivedRepositoryStateSha256: repositoryAssuranceCommittedStateSha256(root3, receipt.certifiedHead)
   });
-  const dirtyAuthoritativePaths = execFileSync4(
-    "git",
-    ["status", "--porcelain=v1", "--untracked-files=all", "--", ...CURRENT_REVIEW_AUTHORITATIVE_PATHS],
-    { cwd: root3, encoding: "utf8" }
-  ).trim();
-  assert40.equal(
-    dirtyAuthoritativePaths,
-    "",
-    "Current review assurance requires a clean authoritative worktree."
-  );
-  const authoritativeDelta = execFileSync4(
-    "git",
-    ["diff", "--name-only", receipt.certifiedHead, "HEAD", "--", ...CURRENT_REVIEW_AUTHORITATIVE_PATHS],
-    { cwd: root3, encoding: "utf8" }
-  ).split(/\r?\n/u).filter(Boolean).sort();
-  const proofIntegrationDelta = POST_FULL_PROOF_INTEGRATION_PATHS.filter(
-    (file) => committedFileSha256(root3, receipt.certifiedHead, file) !== committedFileSha256(root3, "HEAD", file)
-  );
+  const allowedProofIntegrationPaths = currentReviewProofIntegrationPaths(root3);
+  const evidenceDelta = gitPathList(root3, [
+    "diff",
+    "--name-only",
+    "-z",
+    receipt.certifiedHead,
+    CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD,
+    "--"
+  ]);
   assert40.deepEqual(
-    authoritativeDelta,
-    [CURRENT_REVIEW_ASSURANCE_REPORT, ...proofIntegrationDelta].sort(),
-    "Proof integration changed authoritative product/full-assurance bytes outside the separately compact-certified proof bridge."
+    evidenceDelta,
+    [...CURRENT_REVIEW_EVIDENCE_PATHS].sort(),
+    "Immutable current-review evidence commit changed bytes outside its exact receipt/report/log payload."
   );
+  const trackedPostCertificationDelta = gitPathList(root3, [
+    "diff",
+    "--name-only",
+    "-z",
+    receipt.certifiedHead,
+    "HEAD",
+    "--"
+  ]);
+  assertCurrentReviewTrackedDriftAllowed(trackedPostCertificationDelta, allowedProofIntegrationPaths);
+  const dirtyPaths = currentReviewDirtyPaths(root3);
+  assertCurrentReviewTrackedDriftAllowed(dirtyPaths, allowedProofIntegrationPaths);
   return {
     receipt,
     reference: {
