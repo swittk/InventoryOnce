@@ -7,6 +7,12 @@ const vitestSemantics = require(
   "../scripts/formal-implementation-vitest-semantics.cjs",
 ) as {
   readonly vitestCallbackExecutes: (metadata: VitestExecutionMetadata) => boolean;
+  /** Visit only children that can execute under statically decidable control flow. */
+  readonly forEachStaticallyReachableChild: (
+    ts: typeof import("typescript"),
+    node: import("typescript").Node,
+    visit: (node: import("typescript").Node) => void,
+  ) => void;
   readonly vitestConditionalMetadata: (
     ts: typeof import("typescript"),
     expression: import("typescript").Expression,
@@ -99,7 +105,41 @@ function suiteChildrenExecute(metadata: VitestExecutionMetadata): boolean {
   return semanticsDecision("vitestSuiteChildrenExecute", metadata);
 }
 
+/** Collect calls reached by the exact static-control-flow traversal used for callgraph execution credit. */
+function staticallyReachableCalls(sourceText: string): readonly string[] {
+  const source = typescript.createSourceFile("control-flow.ts", sourceText, typescript.ScriptTarget.Latest, true, typescript.ScriptKind.TS);
+  const calls: string[] = [];
+  const visit = (node: import("typescript").Node): void => {
+    if (typescript.isCallExpression(node) && typescript.isIdentifier(node.expression)) calls.push(node.expression.text);
+    vitestSemantics.forEachStaticallyReachableChild(typescript, node, visit);
+  };
+  visit(source);
+  return calls;
+}
+
 describe("formal call-graph Vitest callback semantics", () => {
+  it("excludes statically unreachable branches, short circuits, loops, and post-abrupt calls", () => {
+    expect(staticallyReachableCalls(`
+      function callbackDead(cb: () => void) { return; cb(); }
+      function callbackLive(cb: () => void) { cb(); return; }
+      function probe() {
+        if (false) deadIf(); else liveElse();
+        if (true) liveIf(); else deadElse();
+        false ? deadTernary() : liveTernary();
+        false && deadAnd();
+        true || deadOr();
+        while (false) deadWhile();
+        for (const value of []) deadForOf();
+        for (const key in {}) deadForIn();
+        switch (0) { case 1: deadSwitch(); break; case 0: liveSwitch(); break; }
+        for (const value of [1]) liveForOf();
+        for (const key in { one: 1 }) liveForIn();
+        liveBeforeReturn();
+        return;
+        deadAfterReturn();
+      }
+    `)).toEqual(["cb", "liveElse", "liveIf", "liveTernary", "liveSwitch", "liveForOf", "liveForIn", "liveBeforeReturn"]);
+  });
   it("fails closed on computed Vitest option keys", () => {
     const source = typescript.createSourceFile(
       "computed-options.ts",

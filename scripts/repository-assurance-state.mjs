@@ -1,7 +1,8 @@
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
-import { lstatSync, readFileSync, readlinkSync } from "node:fs";
-import { resolve } from "node:path";
+import { existsSync, lstatSync, readFileSync, readlinkSync } from "node:fs";
+import { createRequire } from "node:module";
+import { relative, resolve, sep } from "node:path";
 
 const excludedPaths = new Set([
   "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
@@ -34,6 +35,62 @@ function hashAssuranceEntries(entries) {
   return hash.digest("hex");
 }
 
+/** Discover the exact Vitest files selected by the package's configured test root, independent of Git ignore rules. */
+export function repositoryVitestTestPaths(repositoryRoot) {
+  let packageJson;
+  try { packageJson = JSON.parse(readFileSync(resolve(repositoryRoot, "package.json"), "utf8")); }
+  catch (error) {
+    if (error instanceof Error && error.code === "ENOENT") return [];
+    throw error;
+  }
+  const testScript = packageJson?.scripts?.test;
+  if (typeof testScript !== "string") return [];
+  const vitestCommands = testScript.split("&&").map(command => command.trim()).filter(command => /^vitest(?:\s|$)/u.test(command));
+  if (vitestCommands.length === 0) return [];
+  if (vitestCommands.length !== 1 || vitestCommands[0] !== "vitest run --dir test") {
+    throw new Error("Repository assurance does not recognize the configured Vitest test command.");
+  }
+  const listed = spawnSync(
+    process.execPath,
+    [resolve(repositoryRoot, "node_modules/vitest/vitest.mjs"), "list", "--dir", "test", "--filesOnly", "--json"],
+    { cwd: repositoryRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024, env: { ...process.env, CI: "" } }
+  );
+  if (listed.error !== undefined || listed.status !== 0) {
+    throw new Error("Unable to discover the configured Vitest test domain.");
+  }
+  let decoded;
+  try { decoded = JSON.parse(listed.stdout); }
+  catch { throw new Error("Vitest test-domain discovery emitted malformed JSON."); }
+  if (!Array.isArray(decoded)) throw new Error("Vitest test-domain discovery did not emit a file array.");
+  const paths = [];
+  for (const row of decoded) {
+    if (row === null || typeof row !== "object" || typeof row.file !== "string") throw new Error("Vitest test-domain discovery emitted a malformed row.");
+    const path = relative(repositoryRoot, row.file).split(sep).join("/");
+    if (path === "" || path === ".." || path.startsWith("../") || !path.startsWith("test/")) throw new Error(`Vitest discovered a test outside the authoritative test root: ${path}`);
+    paths.push(path);
+  }
+  return [...new Set(paths)].sort();
+}
+
+/** Discover the exact TypeScript roots selected by tsconfig.test.json, independent of Git ignore rules. */
+export function repositoryTypeScriptInputPaths(repositoryRoot) {
+  const configPath = resolve(repositoryRoot, "tsconfig.test.json");
+  if (!existsSync(configPath)) return [];
+  const require = createRequire(resolve(repositoryRoot, "package.json"));
+  const ts = require("typescript");
+  const config = ts.readConfigFile(configPath, ts.sys.readFile);
+  if (config.error !== undefined) throw new Error("Repository TypeScript assurance config is invalid.");
+  const parsed = ts.parseJsonConfigFileContent(config.config, ts.sys, repositoryRoot, undefined, configPath);
+  if (parsed.errors.length !== 0) throw new Error("Repository TypeScript assurance config failed to parse.");
+  const paths = [];
+  for (const fileName of parsed.fileNames) {
+    const path = relative(repositoryRoot, fileName).split(sep).join("/");
+    if (path === "" || path === ".." || path.startsWith("../")) throw new Error(`TypeScript selected a source outside the repository: ${path}`);
+    paths.push(path);
+  }
+  return [...new Set(paths)].sort();
+}
+
 /** Enumerate one authoritative repository domain without ambient global/info excludes or local coordination. */
 export function repositoryAssuranceInputPaths(repositoryRoot, untrackedOnly = false) {
   const listed = spawnSync(
@@ -44,7 +101,16 @@ export function repositoryAssuranceInputPaths(repositoryRoot, untrackedOnly = fa
   if (listed.error !== undefined || listed.status !== 0) {
     throw new Error("Unable to enumerate the repository assurance state.");
   }
-  return [...new Set(listed.stdout.split("\0").filter(includedPath))].sort();
+  const paths = new Set(listed.stdout.split("\0").filter(includedPath));
+  const discovered = [...repositoryTypeScriptInputPaths(repositoryRoot), ...repositoryVitestTestPaths(repositoryRoot)];
+  let tracked;
+  if (untrackedOnly && discovered.length > 0) {
+    const cached = spawnSync("git", ["ls-files", "--cached", "-z"], { cwd: repositoryRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+    if (cached.error !== undefined || cached.status !== 0) throw new Error("Unable to enumerate tracked repository assurance state.");
+    tracked = new Set(cached.stdout.split("\0").filter(Boolean));
+  }
+  for (const path of discovered) if (includedPath(path) && (!untrackedOnly || !tracked.has(path))) paths.add(path);
+  return [...paths].sort();
 }
 
 /** Hash tracked plus repository-.gitignore-visible untracked state without ambient Git excludes or self-hashing the stored report. */

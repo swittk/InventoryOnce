@@ -3,6 +3,7 @@ const path = require("node:path");
 const { execFileSync } = require("node:child_process");
 const {
   expressionHasProperty,
+  forEachStaticallyReachableChild,
   staticBooleanValue,
   standardLibraryCallbackCanExecute,
   vitestCallbackExecutes,
@@ -481,9 +482,9 @@ function vitestSuiteHasRunnableTest(node) {
         }
       }
     }
-    ts.forEachChild(current, visit);
+    forEachStaticallyReachableChild(ts, current, visit);
   };
-  ts.forEachChild(executionRoot, visit);
+  forEachStaticallyReachableChild(ts, executionRoot, visit);
   vitestRunnableSuiteCache.set(executionRoot, found);
   return found;
 }
@@ -514,22 +515,6 @@ function vitestExecutionMetadata(
     suiteHasRunnableTest:
       insideNonExecutingSuite === true ? false : vitestSuiteHasRunnableTest(node),
   };
-}
-
-/** Return whether one test-runner callback is actually executed by Vitest. */
-function isTestCallback(node) {
-  if (!ts.isArrowFunction(node) && !ts.isFunctionExpression(node)) return false;
-  if (!ts.isCallExpression(node.parent)) return false;
-  const callbackIndex = node.parent.arguments.indexOf(node);
-  if (callbackIndex < 0) return false;
-  return vitestCallbackExecutes(
-    vitestExecutionMetadata(
-      node.parent,
-      callbackIndex,
-      isInsideNonExecutingSuite(node),
-      isInsideUncollectedSuite(node)
-    )
-  );
 }
 
 /** Resolve an aliased compiler symbol without changing package ownership. */
@@ -667,7 +652,7 @@ function callableInvokesParameter(callableId, parameterIndex) {
       }
     }
     let found = false;
-    ts.forEachChild(current, (child) => { if (!found && scan(child, callableRoot)) found = true; });
+    forEachStaticallyReachableChild(ts, current, (child) => { if (!found && scan(child, callableRoot)) found = true; });
     return found;
   }
   const result = scan(callable, callable);
@@ -687,16 +672,6 @@ function callInvokesArgument(node, argumentIndex) {
 /** Add statically resolved calls and only contract-proven callback dispatch. */
 for (const source of packageSources) {
   function visit(node) {
-    if (
-      isTestCallback(node) &&
-      normalizedPath(source.fileName).startsWith(`${testRoot}/`)
-    ) {
-      addEdge(
-        testRootFor(source),
-        declarationToCallable.get(node),
-        "test-callback"
-      );
-    }
     if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
       const caller =
         enclosingCallable(node) ??
@@ -722,7 +697,7 @@ for (const source of packageSources) {
         }
       }
     }
-    ts.forEachChild(node, visit);
+    forEachStaticallyReachableChild(ts, node, visit);
   }
   visit(source);
 }

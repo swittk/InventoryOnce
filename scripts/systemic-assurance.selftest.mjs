@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { repositoryAssuranceStateSha256, repositoryAssuranceCommittedStateSha256 } from "./repository-assurance-state.mjs";
+import { repositoryAssuranceInputPaths, repositoryAssuranceStateSha256, repositoryAssuranceCommittedStateSha256 } from "./repository-assurance-state.mjs";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -553,6 +553,41 @@ test("current-review admission and full state share the same domain despite ambi
   assert.deepEqual(currentReviewWorktreeDriftPaths(directory), files);
 }));
 
+
+test("configured TypeScript discovery exposes ignored compiler roots to assurance state", () => temporaryDirectory(directory => {
+  const git = args => execFileSync("git", ["-c", "user.name=InventoryOnce", "-c", "user.email=inventoryonce@example.invalid", "-c", "commit.gpgsign=false", "-c", "core.hooksPath=", ...args], { cwd: directory, encoding: "utf8", stdio: "pipe" });
+  git(["init", "-q"]);
+  fs.symlinkSync(path.join(root, "node_modules"), path.join(directory, "node_modules"), "dir");
+  fs.mkdirSync(path.join(directory, "src"), { recursive: true });
+  fs.writeFileSync(path.join(directory, "package.json"), "{}\n");
+  fs.writeFileSync(path.join(directory, "tsconfig.test.json"), JSON.stringify({ compilerOptions: { noEmit: true }, include: ["src/**/*.ts"] }) + "\n");
+  fs.writeFileSync(path.join(directory, ".gitignore"), "node_modules/\nsrc/hidden.ts\n");
+  fs.writeFileSync(path.join(directory, "src", "visible.ts"), "export const visible = true;\n");
+  git(["add", "package.json", "tsconfig.test.json", ".gitignore", "src/visible.ts"]); git(["commit", "-qm", "baseline"]);
+  const committed = repositoryAssuranceCommittedStateSha256(directory, "HEAD");
+  const hidden = "src/hidden.ts";
+  fs.writeFileSync(path.join(directory, hidden), "export const hidden = true;\n");
+  assert(repositoryAssuranceInputPaths(directory, true).includes(hidden));
+  assert.notEqual(repositoryAssuranceStateSha256(directory), committed);
+  assert(currentReviewWorktreeDriftPaths(directory).includes(hidden));
+}));
+
+test("configured Vitest discovery exposes ignored executable tests to assurance state", () => temporaryDirectory(directory => {
+  const git = args => execFileSync("git", ["-c", "user.name=InventoryOnce", "-c", "user.email=inventoryonce@example.invalid", "-c", "commit.gpgsign=false", "-c", "core.hooksPath=", ...args], { cwd: directory, encoding: "utf8", stdio: "pipe" });
+  git(["init", "-q"]);
+  fs.symlinkSync(path.join(root, "node_modules"), path.join(directory, "node_modules"), "dir");
+  fs.mkdirSync(path.join(directory, "test", "states"), { recursive: true });
+  fs.writeFileSync(path.join(directory, "package.json"), JSON.stringify({ scripts: { test: "vitest run --dir test" } }) + "\n");
+  fs.writeFileSync(path.join(directory, ".gitignore"), "states/\n");
+  fs.writeFileSync(path.join(directory, "test", "visible.test.js"), 'import { test } from "vitest"; test("visible", () => {});\n');
+  git(["add", "package.json", ".gitignore", "test/visible.test.js"]); git(["commit", "-qm", "baseline"]);
+  const committed = repositoryAssuranceCommittedStateSha256(directory, "HEAD");
+  const hidden = "test/states/hidden.test.js";
+  fs.writeFileSync(path.join(directory, hidden), 'import { test } from "vitest"; test("hidden", () => { throw new Error("sentinel"); });\n');
+  assert(repositoryAssuranceInputPaths(directory, true).includes(hidden));
+  assert.notEqual(repositoryAssuranceStateSha256(directory), committed);
+  assert(currentReviewWorktreeDriftPaths(directory).includes(hidden));
+}));
 
 test("literal array callback dispatch agrees with the real runtime including empty, sparse, and singleton cases", () => {
   const methods = ["map", "flatMap", "filter", "forEach", "some", "every", "find", "findIndex", "findLast", "findLastIndex", "reduce", "reduceRight", "sort", "toSorted"];

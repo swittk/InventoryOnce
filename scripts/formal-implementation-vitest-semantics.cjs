@@ -80,6 +80,167 @@ function staticBooleanValue(ts, valueNode) {
   return undefined;
 }
 
+/** Return an exact primitive literal value when runtime evaluation is statically decidable. */
+function staticPrimitiveValue(ts, expression) {
+  expression = unwrappedExpression(ts, expression);
+  if (expression.kind === ts.SyntaxKind.TrueKeyword) return { known: true, value: true };
+  if (expression.kind === ts.SyntaxKind.FalseKeyword) return { known: true, value: false };
+  if (expression.kind === ts.SyntaxKind.NullKeyword) return { known: true, value: null };
+  if (ts.isStringLiteral(expression) || ts.isNoSubstitutionTemplateLiteral(expression)) return { known: true, value: expression.text };
+  if (ts.isNumericLiteral(expression)) return { known: true, value: Number(expression.text) };
+  if (ts.isBigIntLiteral(expression)) return { known: true, value: BigInt(expression.text.slice(0, -1)) };
+  if (ts.isVoidExpression(expression)) return { known: true, value: undefined };
+  if (ts.isPrefixUnaryExpression(expression) && (expression.operator === ts.SyntaxKind.PlusToken || expression.operator === ts.SyntaxKind.MinusToken)) {
+    const operand = staticPrimitiveValue(ts, expression.operand);
+    if (!operand.known || typeof operand.value !== "number") return { known: false };
+    return { known: true, value: expression.operator === ts.SyntaxKind.MinusToken ? -operand.value : operand.value };
+  }
+  return { known: false };
+}
+
+/** Return whether one statement statically prevents later statements in the same block from executing. */
+function statementDefinitelyTerminates(ts, statement) {
+  if (
+    ts.isReturnStatement(statement) ||
+    ts.isThrowStatement(statement) ||
+    ts.isBreakStatement(statement) ||
+    ts.isContinueStatement(statement)
+  ) return true;
+  if (ts.isBlock(statement)) {
+    for (const child of statement.statements) {
+      if (statementDefinitelyTerminates(ts, child)) return true;
+    }
+    return false;
+  }
+  if (ts.isIfStatement(statement)) {
+    const condition = staticBooleanValue(ts, statement.expression);
+    if (condition === true) return statementDefinitelyTerminates(ts, statement.thenStatement);
+    if (condition === false) return statement.elseStatement !== undefined && statementDefinitelyTerminates(ts, statement.elseStatement);
+    return statement.elseStatement !== undefined && statementDefinitelyTerminates(ts, statement.thenStatement) && statementDefinitelyTerminates(ts, statement.elseStatement);
+  }
+  return false;
+}
+
+/** Return whether a loop body can reach its increment/condition phase on at least one static path. */
+function statementMayReachLoopNextPhase(ts, statement) {
+  if (ts.isReturnStatement(statement) || ts.isThrowStatement(statement) || ts.isBreakStatement(statement)) return false;
+  if (ts.isContinueStatement(statement)) return true;
+  if (ts.isBlock(statement)) {
+    for (const child of statement.statements) {
+      if (!statementDefinitelyTerminates(ts, child)) continue;
+      return statementMayReachLoopNextPhase(ts, child);
+    }
+    return true;
+  }
+  if (ts.isIfStatement(statement)) {
+    const condition = staticBooleanValue(ts, statement.expression);
+    if (condition === true) return statementMayReachLoopNextPhase(ts, statement.thenStatement);
+    if (condition === false) return statement.elseStatement === undefined || statementMayReachLoopNextPhase(ts, statement.elseStatement);
+    if (statement.elseStatement === undefined) return true;
+    return statementMayReachLoopNextPhase(ts, statement.thenStatement) || statementMayReachLoopNextPhase(ts, statement.elseStatement);
+  }
+  return true;
+}
+
+/** Visit only compiler children that can execute under statically decidable control flow. */
+function forEachStaticallyReachableChild(ts, node, visit) {
+  if (ts.isSourceFile(node) || ts.isBlock(node)) {
+    let terminated = false;
+    for (const statement of node.statements) {
+      // Function declarations are hoisted and may be called before a preceding abrupt completion.
+      if (terminated) {
+        if (ts.isFunctionDeclaration(statement)) visit(statement);
+        continue;
+      }
+      visit(statement);
+      if (statementDefinitelyTerminates(ts, statement)) terminated = true;
+    }
+    return;
+  }
+  if (ts.isIfStatement(node)) {
+    visit(node.expression);
+    const condition = staticBooleanValue(ts, node.expression);
+    if (condition !== false) visit(node.thenStatement);
+    if (condition !== true && node.elseStatement !== undefined) visit(node.elseStatement);
+    return;
+  }
+  if (ts.isConditionalExpression(node)) {
+    visit(node.condition);
+    const condition = staticBooleanValue(ts, node.condition);
+    if (condition !== false) visit(node.whenTrue);
+    if (condition !== true) visit(node.whenFalse);
+    return;
+  }
+  if (ts.isBinaryExpression(node) && (node.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken || node.operatorToken.kind === ts.SyntaxKind.BarBarToken)) {
+    visit(node.left);
+    const left = staticBooleanValue(ts, node.left);
+    if (node.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken ? left !== false : left !== true) visit(node.right);
+    return;
+  }
+  if (ts.isForOfStatement(node)) {
+    visit(node.expression);
+    const iterable = unwrappedExpression(ts, node.expression);
+    if (ts.isArrayLiteralExpression(iterable) && iterable.elements.length === 0) return;
+    visit(node.initializer);
+    visit(node.statement);
+    return;
+  }
+  if (ts.isForInStatement(node)) {
+    visit(node.expression);
+    const enumerable = unwrappedExpression(ts, node.expression);
+    if (ts.isObjectLiteralExpression(enumerable) && enumerable.properties.length === 0) return;
+    visit(node.initializer);
+    visit(node.statement);
+    return;
+  }
+  if (ts.isSwitchStatement(node)) {
+    visit(node.expression);
+    const discriminant = staticPrimitiveValue(ts, node.expression);
+    const clauses = [...node.caseBlock.clauses];
+    const caseValues = clauses.map(clause => ts.isCaseClause(clause) ? staticPrimitiveValue(ts, clause.expression) : undefined);
+    if (!discriminant.known || caseValues.some(value => value !== undefined && !value.known)) {
+      visit(node.caseBlock);
+      return;
+    }
+    let start = -1, fallback = -1;
+    for (let index = 0; index < clauses.length; index += 1) {
+      const clause = clauses[index];
+      if (ts.isDefaultClause(clause)) { fallback = index; continue; }
+      if (Object.is(caseValues[index]?.value, discriminant.value)) { start = index; break; }
+    }
+    if (start < 0) start = fallback;
+    if (start < 0) return;
+    for (let index = start; index < clauses.length; index += 1) {
+      const clause = clauses[index];
+      for (const statement of clause.statements) {
+        visit(statement);
+        if (statementDefinitelyTerminates(ts, statement)) return;
+      }
+    }
+    return;
+  }
+  if (ts.isWhileStatement(node)) {
+    visit(node.expression);
+    if (staticBooleanValue(ts, node.expression) !== false) visit(node.statement);
+    return;
+  }
+  if (ts.isForStatement(node)) {
+    if (node.initializer !== undefined) visit(node.initializer);
+    if (node.condition !== undefined) visit(node.condition);
+    if (node.condition === undefined || staticBooleanValue(ts, node.condition) !== false) {
+      visit(node.statement);
+      if (node.incrementor !== undefined && statementMayReachLoopNextPhase(ts, node.statement)) visit(node.incrementor);
+    }
+    return;
+  }
+  if (ts.isDoStatement(node)) {
+    visit(node.statement);
+    if (statementMayReachLoopNextPhase(ts, node.statement)) visit(node.expression);
+    return;
+  }
+  ts.forEachChild(node, visit);
+}
+
 /** Return one readable static object-property name, or undefined when the key requires runtime evaluation. */
 function staticObjectPropertyName(ts, property) {
   if (
@@ -260,6 +421,8 @@ module.exports = {
   vitestRegistrationMode,
   vitestRegistrationNameFromExpression,
   staticBooleanValue,
+  forEachStaticallyReachableChild,
+  statementDefinitelyTerminates,
   vitestCallbackExecutes,
   vitestObjectBooleanOptions,
   vitestConditionalMetadata,

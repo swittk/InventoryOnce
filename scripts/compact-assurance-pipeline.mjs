@@ -9,6 +9,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { gzipSync } from "node:zlib";
 import { performance } from "node:perf_hooks";
 import { assuranceRepositoryPath, readAssuranceFile, readCompactArchive, materializeAssuranceFiles, claimAssuranceWorkspace, withAssuranceReadSession } from "./assurance-files.mjs";
+import { repositoryVitestTestPaths } from "./repository-assurance-state.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const DIRECTORY = "experiments/tla-conformance/final-convergence/";
@@ -144,6 +145,18 @@ export function compactCompilerSourceSetIdentity(repositoryRoot = ROOT) {
   }).sort((left, right) => compare(left.file, right.file));
   assert.equal(new Set(rows.map(row => row.file)).size, rows.length, "Compiler source set contains duplicate roots.");
   return { key: compactCompilerSourceSetKey(rows), rows };
+}
+
+/** Hash the exact Vitest file set selected by the configured test root before any cache reuse. */
+export function compactVitestTestSetIdentity(repositoryRoot = ROOT) {
+  const root = path.resolve(repositoryRoot);
+  const tracked = trackedFiles(root);
+  const rows = repositoryVitestTestPaths(root).map(file => {
+    assert(tracked.has(file), `Vitest test set contains ambient/untracked file: ${file}`);
+    const bytes = ordinaryBytes(root, file);
+    return { file, sha256: sha(bytes), sizeBytes: bytes.length };
+  });
+  return { key: keyOf(rows), rows };
 }
 
 /** Content-address one compiler root set so membership changes invalidate every dependent cache. */
@@ -290,15 +303,15 @@ function outputRows(root, files) { return files.map(file => {const bytes=ordinar
 function manifestSemanticCore(manifest) { const {certification, ...core}=manifest; return core; }
 
 /** One exact closure is the key for artifacts and pristine certificates; HEAD/diary/time measurements are not semantic inputs. */
-function closureDocument(pass, manifest, graph, surfaceDigest, compilerRootSet, compilerSourceSet) {
+function closureDocument(pass, manifest, graph, surfaceDigest, compilerRootSet, compilerSourceSet, vitestTestSet) {
   const rows = pass.inputRows().filter(row=>!DERIVED.has(row.file));
   const outputs = outputRows(ROOT,[BUNDLE,DIRECTORY+"compact-final-selftest.mjs",DIRECTORY+"compact-final-registry.mjs",...graph.flatMap(node=>node.outputs.map(row=>row.file))]);
   const environment = {node:process.versions.node,platform:process.platform,arch:process.arch};
-  const key = keyOf({rows,outputs,environment,archive:manifest.archive,code:manifest.bundles,compilerRootSet,compilerSourceSet});
-  return {schemaVersion:2,status:"FINAL_LIVE_INPUT_CLOSURE",inputKey:key,surfaceDigest,inputs:rows.length,totalBytes:rows.reduce((sum,row)=>sum+row.sizeBytes,0),untrackedProofInputs:0,compilerRootSet,compilerSourceSet,rows,outputs,environment};
+  const key = keyOf({rows,outputs,environment,archive:manifest.archive,code:manifest.bundles,compilerRootSet,compilerSourceSet,vitestTestSet});
+  return {schemaVersion:3,status:"FINAL_LIVE_INPUT_CLOSURE",inputKey:key,surfaceDigest,inputs:rows.length,totalBytes:rows.reduce((sum,row)=>sum+row.sizeBytes,0),untrackedProofInputs:0,compilerRootSet,compilerSourceSet,vitestTestSet,rows,outputs,environment};
 }
 function assertClosure(root, closure, manifest) {
-  assert.equal(closure.schemaVersion,2);
+  assert.equal(closure.schemaVersion,3);
   assert.equal(closure.untrackedProofInputs,0);
   assert.equal(closure.inputs,closure.rows.length);
   const seen = new Set();
@@ -313,10 +326,13 @@ function assertClosure(root, closure, manifest) {
   const currentCompilerRootSet = compactCompilerSourceSetIdentity(root);
   assert.deepEqual(closure.compilerRootSet, currentCompilerRootSet, "Compact compiler root set is stale.");
   for(const row of currentCompilerRootSet.rows) assert(seen.has(row.file), `Unbound compiler source root: ${row.file}`);
+  const currentVitestTestSet = compactVitestTestSetIdentity(root);
+  assert.deepEqual(closure.vitestTestSet, currentVitestTestSet, "Compact Vitest test set is stale.");
+  for(const row of currentVitestTestSet.rows) assert(seen.has(row.file), `Unbound Vitest test input: ${row.file}`);
   assert(closure.compilerSourceSet !== null && typeof closure.compilerSourceSet === "object" && Array.isArray(closure.compilerSourceSet.rows), "Missing exact compiler source set.");
   for(const row of closure.compilerSourceSet.rows) assert(seen.has(row.file), `Unbound exact compiler source: ${row.file}`);
   assert.deepEqual(closure.environment,{node:process.versions.node,platform:process.platform,arch:process.arch});
-  assert.equal(keyOf({rows:closure.rows,outputs:closure.outputs,environment:closure.environment,archive:manifest.archive,code:manifest.bundles,compilerRootSet:closure.compilerRootSet,compilerSourceSet:closure.compilerSourceSet}),closure.inputKey,"Compact closure identity is stale.");
+  assert.equal(keyOf({rows:closure.rows,outputs:closure.outputs,environment:closure.environment,archive:manifest.archive,code:manifest.bundles,compilerRootSet:closure.compilerRootSet,compilerSourceSet:closure.compilerSourceSet,vitestTestSet:closure.vitestTestSet}),closure.inputKey,"Compact closure identity is stale.");
 }
 
 async function withSupport(root, manifest, run) {
@@ -337,6 +353,8 @@ async function currentize(root, manifest, anchor) {
   writeChanged(root,MANIFEST,encode(manifest));
   const pass=snapshot(root,manifest), graph=[];
   const compilerRootSet = compactCompilerSourceSetIdentity(root);
+  const vitestTestSet = compactVitestTestSetIdentity(root);
+  for (const row of vitestTestSet.rows) pass.hash(row.file);
   let compilerPasses=0, context, compilerSourceSet;
   const result=await pass.trace(async()=>{
     const library=await import(pathToFileURL(path.resolve(root,BUNDLE)).href+`?inputs=${manifest.bundles.entries[0].sha256}`);
@@ -380,7 +398,7 @@ async function currentize(root, manifest, anchor) {
   });
   pass.finish();
   manifest.graph=graph;delete manifest.certification;
-  const closure=closureDocument(pass,manifest,graph,result.surfaceDigest,compilerRootSet,compilerSourceSet);
+  const closure=closureDocument(pass,manifest,graph,result.surfaceDigest,compilerRootSet,compilerSourceSet,vitestTestSet);
   writeChanged(root,CLOSURE,encode(closure));writeChanged(root,MANIFEST,encode(manifest));
   const report={status:"COMPACT_CURRENTIZED",inputKey:closure.inputKey,bundleChanged,compilerPasses,elapsedMs:Math.round(performance.now()-started),surfaceDigest:result.surfaceDigest};
   console.log(JSON.stringify(report));return report;
@@ -487,10 +505,13 @@ export async function runCompactCommand({moduleUrl,mode,certificateCommit}={}) {
     if(prior!==undefined && native.existsSync(path.resolve(root,CLOSURE))){
       try{
         const closure=JSON.parse(ordinaryBytes(root,CLOSURE));
-        const compilerRootSet = compactCompilerSourceSetIdentity(root);
-        if(prior.certification.inputKey===closure.inputKey && closure.compilerRootSet?.key===compilerRootSet.key && JSON.stringify(manifestSemanticCore(prior))===JSON.stringify(manifestSemanticCore(manifest))){
-          await withSupport(root,manifest,async()=>assertClosure(root,closure,manifest));
-          console.log(JSON.stringify({status:"COMPACT_CURRENTIZATION_REUSED",inputKey:closure.inputKey,compilerPasses:0,elapsedMs:Math.round(performance.now()-started)}));return;
+        if (closure.schemaVersion === 3) {
+          const compilerRootSet = compactCompilerSourceSetIdentity(root);
+          const vitestTestSet = compactVitestTestSetIdentity(root);
+          if(prior.certification.inputKey===closure.inputKey && closure.compilerRootSet?.key===compilerRootSet.key && closure.vitestTestSet?.key===vitestTestSet.key && JSON.stringify(manifestSemanticCore(prior))===JSON.stringify(manifestSemanticCore(manifest))){
+            await withSupport(root,manifest,async()=>assertClosure(root,closure,manifest));
+            console.log(JSON.stringify({status:"COMPACT_CURRENTIZATION_REUSED",inputKey:closure.inputKey,compilerPasses:0,elapsedMs:Math.round(performance.now()-started)}));return;
+          }
         }
       }catch(error){if(!/Stale compact input (hash|size)|closure identity is stale|Unbound executable input/u.test(error.message))throw error;}
     }
