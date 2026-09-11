@@ -1,6 +1,6 @@
 import implementationSurface from "../../../scripts/formal-implementation-surface.cjs";
 import assert from "node:assert/strict";
-import { assuranceRepositoryPath } from "../../../scripts/assurance-files.mjs";
+import { assuranceRepositoryPath, readCompactArchive } from "../../../scripts/assurance-files.mjs";
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -56,14 +56,20 @@ function regularFile(repositoryRoot, file, label) {
   return target;
 }
 
-/** Hash one repository file exactly as stored in an immutable Git commit. */
-function committedFileSha256(repositoryRoot, commit, file) {
-  const bytes = execFileSync("git", ["show", `${commit}:${file}`], {
+/** Read one repository file's exact bytes from an immutable Git commit. */
+function committedFileBytes(repositoryRoot, commit, file) {
+  return execFileSync("git", ["show", `${commit}:${file}`], {
     cwd: repositoryRoot,
     encoding: null,
     maxBuffer: 64 * 1024 * 1024,
   });
-  return crypto.createHash("sha256").update(bytes).digest("hex");
+}
+
+/** Hash one repository file exactly as stored in an immutable Git commit. */
+function committedFileSha256(repositoryRoot, commit, file) {
+  return crypto.createHash("sha256").update(
+    committedFileBytes(repositoryRoot, commit, file)
+  ).digest("hex");
 }
 
 /** Return sorted nonempty NUL-delimited Git paths without interpreting file names as shell text. */
@@ -168,13 +174,27 @@ await runCompactCommand({ moduleUrl: import.meta.url, mode: process.argv[2] ?? "
   assert.equal(typeof manifest.archive?.file, "string", "Pinned compact archive path is invalid.");
   assert.match(manifest.archive?.sha256, /^[a-f0-9]{64}$/u, "Pinned compact archive digest is invalid.");
   assert(Array.isArray(manifest.archive?.files), "Pinned compact archive file manifest is invalid.");
+
+  // Currentization may legitimately replace archived proof support after a fresh full-assurance
+  // source certificate. Authenticate temporary materialization against that immutable full-certified
+  // tree, not against the older compact certificate whose support is precisely what is being replaced.
+  const fullManifest = JSON.parse(committedFileText(root, effectiveCertifiedHead, COMPACT_MANIFEST));
+  assert.equal(fullManifest.archive?.file, manifest.archive.file, "Full-certified compact archive path changed unexpectedly.");
+  assert.match(fullManifest.archive?.sha256, /^[a-f0-9]{64}$/u, "Full-certified compact archive digest is invalid.");
+  assert(Array.isArray(fullManifest.archive?.files), "Full-certified compact archive file manifest is invalid.");
+  const fullArchiveBytes = committedFileBytes(root, effectiveCertifiedHead, fullManifest.archive.file);
+  assert.equal(
+    crypto.createHash("sha256").update(fullArchiveBytes).digest("hex"),
+    fullManifest.archive.sha256,
+    "Full-certified compact archive bytes differ from its manifest.",
+  );
+  const fullSupport = readCompactArchive(fullArchiveBytes, fullManifest.archive.files);
   const temporarySupportRows = new Map();
-  for (const row of manifest.archive.files) {
-    assert.equal(typeof row?.file, "string", "Pinned compact support path is invalid.");
-    assert.match(row.sha256, /^[a-f0-9]{64}$/u, `Pinned compact support digest is invalid: ${row.file}`);
-    assert(Number.isSafeInteger(row.bytes) && row.bytes >= 0, `Pinned compact support size is invalid: ${row.file}`);
-    assert(!temporarySupportRows.has(row.file), `Pinned compact support path is duplicated: ${row.file}`);
-    temporarySupportRows.set(row.file, { sha256: row.sha256, bytes: row.bytes });
+  for (const [file, bytes] of fullSupport) {
+    temporarySupportRows.set(file, {
+      sha256: crypto.createHash("sha256").update(bytes).digest("hex"),
+      bytes: bytes.length,
+    });
   }
 
   const closure = JSON.parse(committedFileText(root, compactCertifiedHead, COMPACT_CLOSURE));
