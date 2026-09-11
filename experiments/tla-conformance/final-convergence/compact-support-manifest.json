@@ -448,8 +448,8 @@
       {
         "mode": "unified",
         "file": "experiments/tla-conformance/final-convergence/compact-final-verify.mjs",
-        "sha256": "bf1679c7a199079569849da18a2888780732bcf6a4f6652527e22dc26afb4446",
-        "bytes": 851702
+        "sha256": "819adcca9f93fb78c55d9af91fb87986c0b6249c1ec680f3665eb71c41905d8f",
+        "bytes": 852056
       }
     ],
     "sources": [
@@ -520,8 +520,8 @@
       },
       {
         "file": "experiments/tla-conformance/final-convergence/current-review-assurance.mjs",
-        "sha256": "3363f7e4381a03cd4b659c606d412390f07859b7cfad3fbbdf36801206d5b6fa",
-        "bytes": 9304
+        "sha256": "7e7f100d35a26227699aba4f241ca1dda2c342f7bb6b0fb8694093e834cac280",
+        "bytes": 9657
       },
       {
         "file": "experiments/tla-conformance/final-convergence/final-families.mjs",
@@ -1043,167 +1043,68 @@
   "graph": [
     {
       "id": "transport",
-      "codeSha256": "d6a6e493fe875d1497966eeffaca7801e8352dcd91f0f393fe929229ca2af19d",
-      "compilerSourceSetKey": "86484e2007064ed6a468c6dd83b6b25658c1f138987cdd25f28b94a69709adfb",
+      "codeSha256": "3683b78657470fd56cd0db495811328468aa9abe74167177216065812bd2fd74",
+      "compilerSourceSetKey": "0c182e3e31adcde2169c9e6688905a5acf4c808020f518899ddec899d1fabbcc",
       "inputs": [],
       "outputs": [
         {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c",
-          "sizeBytes": 15874
+          "sha256": "2bf0204915b9c6312640daf1aa7591bff081c4a346406cb97eaa43f4c2adf4f1",
+          "sizeBytes": 19790
         }
       ]
     },
     {
       "id": "values",
-      "codeSha256": "f80d8eec7f7cdbfbe7e51cd100cece8aebf362d80a23f24e5e8683b573952fea",
-      "compilerSourceSetKey": "86484e2007064ed6a468c6dd83b6b25658c1f138987cdd25f28b94a69709adfb",
+      "codeSha256": "1672782e338652f9b72cd19e0582a519350afd63e6e7222be8c6e5b5ffd3b6bf",
+      "compilerSourceSetKey": "0c182e3e31adcde2169c9e6688905a5acf4c808020f518899ddec899d1fabbcc",
       "inputs": [],
       "outputs": [
         {
           "file": "experiments/tla-conformance/final-convergence/final-v309.json",
-          "sha256": "65fab2f52823f4d1cbc8eb14ae92d7dacd20ea8a7d48c8b85a5ba046805efbce",
-          "sizeBytes": 2281444
+          "sha256": "3acc2b3fabdf38b3c7d5429d62e7d96752e0a7e6d28de3003e1c6c324a166d82",
+          "sizeBytes": 2598552
         }
       ]
     },
     {
       "id": "producers",
-      "codeSha256": "f80d8eec7f7cdbfbe7e51cd100cece8aebf362d80a23f24e5e8683b573952fea",
-      "compilerSourceSetKey": "86484e2007064ed6a468c6dd83b6b25658c1f138987cdd25f28b94a69709adfb",
+      "codeSha256": "1672782e338652f9b72cd19e0582a519350afd63e6e7222be8c6e5b5ffd3b6bf",
+      "compilerSourceSetKey": "0c182e3e31adcde2169c9e6688905a5acf4c808020f518899ddec899d1fabbcc",
       "inputs": [],
       "outputs": [
         {
           "file": "experiments/tla-conformance/final-convergence/final-a121-b58.json",
-          "sha256": "dc14a14754df5e857197342bf3f3f9774b294a1200f85d9e07264bf3e724cfcc",
-          "sizeBytes": 1830337
+          "sha256": "6ffa3d3bb556e6e4e93ee9e3c0de76605a5eb774244d2016e8b95880d593b4e5",
+          "sizeBytes": 2027372
         }
       ]
     },
     {
       "id": "registry",
-      "codeSha256": "7ba8949462f215707109921df157048936beebc7007b1d27aaf5c42c98431ebe",
-      "compilerSourceSetKey": "86484e2007064ed6a468c6dd83b6b25658c1f138987cdd25f28b94a69709adfb",
+      "codeSha256": "7ca7fee19f4edaede6dfa94dc9eb36592e1f59b067f8b416aaae33bcaa6f4145",
+      "compilerSourceSetKey": "0c182e3e31adcde2169c9e6688905a5acf4c808020f518899ddec899d1fabbcc",
       "inputs": [],
       "outputs": [
         {
           "file": "experiments/tla-conformance/final-convergence/final-surface-bindings.json",
-          "sha256": "0e21b5cd2649af21d83f7ec6dc37972f5f1e2a91a1ee148deed3600c445c8bba",
+          "sha256": "50f8350e2d641aa207a4e6726b515c8e5eefdc2bf00db2b36ba11564af1c96aa",
           "sizeBytes": 165554
         }
       ]
     },
     {
       "id": "binder",
-      "codeSha256": "3ae8fc81981d2dd89c9982f02877e8193e291a92325a097b26723269b99526e5",
-      "compilerSourceSetKey": "86484e2007064ed6a468c6dd83b6b25658c1f138987cdd25f28b94a69709adfb",
+      "codeSha256": "79cb37235ccd4f41fa0a148b1529b9306cee334492f7e95cf2ede106e49689f1",
+      "compilerSourceSetKey": "0c182e3e31adcde2169c9e6688905a5acf4c808020f518899ddec899d1fabbcc",
       "inputs": [],
       "outputs": [
         {
           "file": "experiments/tla-conformance/final-convergence/final-binder-report.json",
-          "sha256": "4522c775fbdee7117e9f7f417827e398fc7cb2703eb6e4c65eb65caaf6411a3f",
+          "sha256": "47a2f7301f24646bd5d3351d5d87a09528fba9186123bcc12705f3a2d4b17bb9",
           "sizeBytes": 348
         }
       ]
     }
-  ],
-  "certification": {
-    "schemaVersion": 1,
-    "certifiedHead": "9c95d79be6da37cd0db9245b9e59b7b29f908221",
-    "inputKey": "d0b033629ca76540e7991773ddca02bb205d0638c8cffc16ac38b2aa72b56137",
-    "processes": [
-      {
-        "mode": "registry",
-        "head": "9c95d79be6da37cd0db9245b9e59b7b29f908221",
-        "inputKey": "d0b033629ca76540e7991773ddca02bb205d0638c8cffc16ac38b2aa72b56137",
-        "exitCode": 0,
-        "signal": null,
-        "stdout": "{\"status\":\"FINAL_535_REGISTRY_BUILT\",\"counts\":{\"A\":121,\"B\":58,\"V\":309,\"HARD_RED\":47},\"mode\":\"registry\",\"inputKey\":\"d0b033629ca76540e7991773ddca02bb205d0638c8cffc16ac38b2aa72b56137\",\"head\":\"9c95d79be6da37cd0db9245b9e59b7b29f908221\",\"compilerPasses\":1,\"elapsedMs\":7835}\n",
-        "stderr": "",
-        "stdoutSha256": "7114aa794655d7d2670558e6c2110ed6ee884ace72a2452785cb3c213d138e94",
-        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "elapsedMs": 8355,
-        "report": {
-          "status": "FINAL_535_REGISTRY_BUILT",
-          "counts": {
-            "A": 121,
-            "B": 58,
-            "V": 309,
-            "HARD_RED": 47
-          },
-          "mode": "registry",
-          "inputKey": "d0b033629ca76540e7991773ddca02bb205d0638c8cffc16ac38b2aa72b56137",
-          "head": "9c95d79be6da37cd0db9245b9e59b7b29f908221",
-          "compilerPasses": 1,
-          "elapsedMs": 7835
-        }
-      },
-      {
-        "mode": "selftest",
-        "head": "9c95d79be6da37cd0db9245b9e59b7b29f908221",
-        "inputKey": "d0b033629ca76540e7991773ddca02bb205d0638c8cffc16ac38b2aa72b56137",
-        "exitCode": 0,
-        "signal": null,
-        "stdout": "{\"status\":\"FINAL_CONVERGENCE_ADVERSARIAL_PASS\",\"surfaceDigest\":\"c8c3bd71bc3bdeb96e6172dd0ebb55405f6eab98b65fe457c1f13dc8907544f0\",\"valueRows\":309,\"producerRows\":179,\"controls\":{\"honestValueAccepted\":true,\"wrongValueModeRejected\":true,\"resignedValueTamperRejected\":true,\"honestAandBAccepted\":true,\"wrongProducerModeRejected\":true,\"resignedProducerTamperRejected\":true,\"immutableHistoricalAuthorityTamperRejected\":true,\"sameMtimeEvidenceDriftRejected\":true},\"mode\":\"selftest\",\"inputKey\":\"d0b033629ca76540e7991773ddca02bb205d0638c8cffc16ac38b2aa72b56137\",\"head\":\"9c95d79be6da37cd0db9245b9e59b7b29f908221\",\"compilerPasses\":1,\"elapsedMs\":22989}\n",
-        "stderr": "",
-        "stdoutSha256": "b2b213c32d43bd3ca39f118dff8e9d5e0e288e71ac09c9632fd0487ee282fbf5",
-        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "elapsedMs": 23524,
-        "report": {
-          "status": "FINAL_CONVERGENCE_ADVERSARIAL_PASS",
-          "surfaceDigest": "c8c3bd71bc3bdeb96e6172dd0ebb55405f6eab98b65fe457c1f13dc8907544f0",
-          "valueRows": 309,
-          "producerRows": 179,
-          "controls": {
-            "honestValueAccepted": true,
-            "wrongValueModeRejected": true,
-            "resignedValueTamperRejected": true,
-            "honestAandBAccepted": true,
-            "wrongProducerModeRejected": true,
-            "resignedProducerTamperRejected": true,
-            "immutableHistoricalAuthorityTamperRejected": true,
-            "sameMtimeEvidenceDriftRejected": true
-          },
-          "mode": "selftest",
-          "inputKey": "d0b033629ca76540e7991773ddca02bb205d0638c8cffc16ac38b2aa72b56137",
-          "head": "9c95d79be6da37cd0db9245b9e59b7b29f908221",
-          "compilerPasses": 1,
-          "elapsedMs": 22989
-        }
-      },
-      {
-        "mode": "verify",
-        "head": "9c95d79be6da37cd0db9245b9e59b7b29f908221",
-        "inputKey": "d0b033629ca76540e7991773ddca02bb205d0638c8cffc16ac38b2aa72b56137",
-        "exitCode": 0,
-        "signal": null,
-        "stdout": "{\"status\":\"FINAL_BINDER_GREEN\",\"surfaceDigest\":\"c8c3bd71bc3bdeb96e6172dd0ebb55405f6eab98b65fe457c1f13dc8907544f0\",\"callables\":535,\"diagnostics\":47,\"byCode\":{\"EXPLICIT_HARD_RED\":47},\"hardRed\":47,\"unexpected\":0,\"unexpectedRows\":[],\"valueAccepted\":309,\"producerAccepted\":179,\"strictAccepted\":488,\"mode\":\"verify\",\"inputKey\":\"d0b033629ca76540e7991773ddca02bb205d0638c8cffc16ac38b2aa72b56137\",\"head\":\"9c95d79be6da37cd0db9245b9e59b7b29f908221\",\"compilerPasses\":1,\"elapsedMs\":22481}\n",
-        "stderr": "",
-        "stdoutSha256": "fbb79bb4527c6251b986459dc88344d399670c39b6355b40a443a81ef1bafd61",
-        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "elapsedMs": 23052,
-        "report": {
-          "status": "FINAL_BINDER_GREEN",
-          "surfaceDigest": "c8c3bd71bc3bdeb96e6172dd0ebb55405f6eab98b65fe457c1f13dc8907544f0",
-          "callables": 535,
-          "diagnostics": 47,
-          "byCode": {
-            "EXPLICIT_HARD_RED": 47
-          },
-          "hardRed": 47,
-          "unexpected": 0,
-          "unexpectedRows": [],
-          "valueAccepted": 309,
-          "producerAccepted": 179,
-          "strictAccepted": 488,
-          "mode": "verify",
-          "inputKey": "d0b033629ca76540e7991773ddca02bb205d0638c8cffc16ac38b2aa72b56137",
-          "head": "9c95d79be6da37cd0db9245b9e59b7b29f908221",
-          "compilerPasses": 1,
-          "elapsedMs": 22481
-        }
-      }
-    ],
-    "elapsedMs": 24937
-  }
+  ]
 }

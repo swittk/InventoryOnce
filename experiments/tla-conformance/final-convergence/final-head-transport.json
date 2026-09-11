@@ -2,10 +2,75 @@
   "schemaVersion": 2,
   "status": "FINAL_HEAD_TRANSPORT_PROVED",
   "priorProofHead": "6983219e13295b8f6b073daefc3cbcd90b32ac35",
-  "finalSurfaceDigest": "c8c3bd71bc3bdeb96e6172dd0ebb55405f6eab98b65fe457c1f13dc8907544f0",
+  "immediatePriorProofHead": "63f520f3bb21fcbb5da51c31ef9e5d327f8de51f",
+  "finalSurfaceDigest": "334397f78b71d8d59ea4fadadd6e8feec9e4f16b585b6c591c6b36f045a9e6e6",
   "callables": 535,
   "exactPrimitiveTransport": {
     "priorProofHead": "6983219e13295b8f6b073daefc3cbcd90b32ac35",
+    "latestReviewRuntimeTransport": {
+      "priorCertifiedHead": "63f520f3bb21fcbb5da51c31ef9e5d327f8de51f",
+      "certifiedRepairHead": "3ea1626f6e42533b018bd532626c421e9f9aa2a9",
+      "exactChangedRuntimeFiles": [
+        "src/corrections.ts",
+        "src/events.ts",
+        "src/fungibility.ts",
+        "src/model.ts",
+        "src/projection.ts",
+        "src/traceability-replay.ts",
+        "src/traceability.ts"
+      ],
+      "transitions": [
+        {
+          "file": "src/corrections.ts",
+          "patchSha256": "5219153ea745b0e06a32dfdaaa4a010133db282e58ca44a8915564abec06cfa0",
+          "priorSha256": "4aa9c8adc2568fd4a6ea3d44f05691929a90e2dd7eb959278bd90c0f7c99b87e",
+          "currentSha256": "439e67f78ef3676d24e5981b80fa9b09f32336ab79808bcea44d6df2f374638c"
+        },
+        {
+          "file": "src/events.ts",
+          "patchSha256": "b1b1518929ce88eb8fd21fdea227e177e5db283864e32683916f547890e9310a",
+          "priorSha256": "b30214304cd638a305b3d2dfb6ab7992b6c90c25c2dcfc0a001df3c9c333ec77",
+          "currentSha256": "00155761783c7396c3c06e0756e70eb4fc96b6caa936ef7106344ab00d05705d"
+        },
+        {
+          "file": "src/fungibility.ts",
+          "patchSha256": "bf19f876e1814bfe1dd3f60c9ac5995db2e752dcff26d6d9b27caf7599c58579",
+          "priorSha256": "6a4000cb79131cd5390c76a4e1235e72bbbee746279d719463d70d72cb17ae75",
+          "currentSha256": "3c6de2a463fb57aee417b442cfba202e13277cc0de80a49ee2020f12c65d47b7"
+        },
+        {
+          "file": "src/model.ts",
+          "patchSha256": "f54cf15eb00fd11240a58af847ee145a9ba53d2b9e7dc3c38cbaab65e7f0aebf",
+          "priorSha256": "634096c43e1f05a1960f741c64140bbac92f9605fdef1d2cfcb8232c02ab8f66",
+          "currentSha256": "9c4b76f4dd92022eaaee93552765d0b09898651aea3de6f4bffa6c41786b9dd6"
+        },
+        {
+          "file": "src/projection.ts",
+          "patchSha256": "2a2df4aada41ccacfb6b82124307d88e4373a71f4d45935ae448a2a65853edde",
+          "priorSha256": "eb95c0ce59d87fe84bd150289b5edc50c3900340a3025ecd17d22013bcd67569",
+          "currentSha256": "0f302d058f13f6fd501fb7f58a99074b8440858e221e7852e104478742b7e24e"
+        },
+        {
+          "file": "src/traceability-replay.ts",
+          "patchSha256": "ac3b0323c9ff1b0629e917c0ca2fc0a707860817ec98a32d8e5c049c90fe6217",
+          "priorSha256": "b7d8ebf3f50317b2e9229adb0235e486ef1e192ea8a4127316ec3c786e485b2a",
+          "currentSha256": "c7ec98f5c927516faa0f44a64b7419126687cad69a43affb3438ee631a4eb536"
+        },
+        {
+          "file": "src/traceability.ts",
+          "patchSha256": "3c6730fa1a6b80131d06ae433d2c44264eee0b4ab7d5417a85f07a5533989175",
+          "priorSha256": "7db0c39cb3262339e76790a7ba10569d67d205ab84f1adb078b6b6d95e93a59c",
+          "currentSha256": "20f6de5a795095c3ec401e456c7318c9967ccc192ad88070597530de926e3403"
+        }
+      ],
+      "laws": [
+        "The correction transition changes only metadata-root replay classification to use the effective replacement kind; retained history and all unrelated correction equations remain byte-identical.",
+        "Event/model/projection changes are fail-closed admission strengthenings over runtime values outside the declared enum/safe-integer domains; admitted typed-domain behavior is preserved.",
+        "Traceability live/replay changes copy caller node records before durable retention; the copied value identity is unchanged while post-call caller alias mutation can no longer rewrite stored truth.",
+        "Fungibility summary sorting is a deterministic permutation of the already-computed member rows by itemRevisionId; every member object and all physical/deficit/common-basis totals are preserved.",
+        "The exact seven-file patch is independently full-assurance certified at the named repair commit; no later runtime source drift is admitted."
+      ]
+    },
     "currentReviewRuntimeTransport": {
       "priorCertifiedHead": "1f4858d81b4ea6ef5d983b4e57fd680519c1e833",
       "exactChangedRuntimeFiles": [
@@ -96,7 +161,7 @@
       },
       {
         "file": "src/corrections.ts",
-        "sha256": "4aa9c8adc2568fd4a6ea3d44f05691929a90e2dd7eb959278bd90c0f7c99b87e"
+        "sha256": "439e67f78ef3676d24e5981b80fa9b09f32336ab79808bcea44d6df2f374638c"
       },
       {
         "file": "src/counts.ts",
@@ -112,7 +177,7 @@
       },
       {
         "file": "src/events.ts",
-        "sha256": "b30214304cd638a305b3d2dfb6ab7992b6c90c25c2dcfc0a001df3c9c333ec77"
+        "sha256": "00155761783c7396c3c06e0756e70eb4fc96b6caa936ef7106344ab00d05705d"
       },
       {
         "file": "src/facade.ts",
@@ -120,7 +185,7 @@
       },
       {
         "file": "src/fungibility.ts",
-        "sha256": "6a4000cb79131cd5390c76a4e1235e72bbbee746279d719463d70d72cb17ae75"
+        "sha256": "3c6de2a463fb57aee417b442cfba202e13277cc0de80a49ee2020f12c65d47b7"
       },
       {
         "file": "src/index.ts",
@@ -160,7 +225,7 @@
       },
       {
         "file": "src/model.ts",
-        "sha256": "634096c43e1f05a1960f741c64140bbac92f9605fdef1d2cfcb8232c02ab8f66"
+        "sha256": "9c4b76f4dd92022eaaee93552765d0b09898651aea3de6f4bffa6c41786b9dd6"
       },
       {
         "file": "src/ordering.ts",
@@ -172,7 +237,7 @@
       },
       {
         "file": "src/projection.ts",
-        "sha256": "eb95c0ce59d87fe84bd150289b5edc50c3900340a3025ecd17d22013bcd67569"
+        "sha256": "0f302d058f13f6fd501fb7f58a99074b8440858e221e7852e104478742b7e24e"
       },
       {
         "file": "src/quantity.ts",
@@ -208,11 +273,11 @@
       },
       {
         "file": "src/traceability-replay.ts",
-        "sha256": "b7d8ebf3f50317b2e9229adb0235e486ef1e192ea8a4127316ec3c786e485b2a"
+        "sha256": "c7ec98f5c927516faa0f44a64b7419126687cad69a43affb3438ee631a4eb536"
       },
       {
         "file": "src/traceability.ts",
-        "sha256": "7db0c39cb3262339e76790a7ba10569d67d205ab84f1adb078b6b6d95e93a59c"
+        "sha256": "20f6de5a795095c3ec401e456c7318c9967ccc192ad88070597530de926e3403"
       },
       {
         "file": "src/transfers.ts",
@@ -307,7 +372,7 @@
     },
     {
       "file": "src/corrections.ts",
-      "sha256": "4aa9c8adc2568fd4a6ea3d44f05691929a90e2dd7eb959278bd90c0f7c99b87e"
+      "sha256": "439e67f78ef3676d24e5981b80fa9b09f32336ab79808bcea44d6df2f374638c"
     },
     {
       "file": "src/counts.ts",
@@ -323,7 +388,7 @@
     },
     {
       "file": "src/events.ts",
-      "sha256": "b30214304cd638a305b3d2dfb6ab7992b6c90c25c2dcfc0a001df3c9c333ec77"
+      "sha256": "00155761783c7396c3c06e0756e70eb4fc96b6caa936ef7106344ab00d05705d"
     },
     {
       "file": "src/facade.ts",
@@ -331,7 +396,7 @@
     },
     {
       "file": "src/fungibility.ts",
-      "sha256": "6a4000cb79131cd5390c76a4e1235e72bbbee746279d719463d70d72cb17ae75"
+      "sha256": "3c6de2a463fb57aee417b442cfba202e13277cc0de80a49ee2020f12c65d47b7"
     },
     {
       "file": "src/index.ts",
@@ -371,7 +436,7 @@
     },
     {
       "file": "src/model.ts",
-      "sha256": "634096c43e1f05a1960f741c64140bbac92f9605fdef1d2cfcb8232c02ab8f66"
+      "sha256": "9c4b76f4dd92022eaaee93552765d0b09898651aea3de6f4bffa6c41786b9dd6"
     },
     {
       "file": "src/ordering.ts",
@@ -383,7 +448,7 @@
     },
     {
       "file": "src/projection.ts",
-      "sha256": "eb95c0ce59d87fe84bd150289b5edc50c3900340a3025ecd17d22013bcd67569"
+      "sha256": "0f302d058f13f6fd501fb7f58a99074b8440858e221e7852e104478742b7e24e"
     },
     {
       "file": "src/quantity.ts",
@@ -419,11 +484,11 @@
     },
     {
       "file": "src/traceability-replay.ts",
-      "sha256": "b7d8ebf3f50317b2e9229adb0235e486ef1e192ea8a4127316ec3c786e485b2a"
+      "sha256": "c7ec98f5c927516faa0f44a64b7419126687cad69a43affb3438ee631a4eb536"
     },
     {
       "file": "src/traceability.ts",
-      "sha256": "7db0c39cb3262339e76790a7ba10569d67d205ab84f1adb078b6b6d95e93a59c"
+      "sha256": "20f6de5a795095c3ec401e456c7318c9967ccc192ad88070597530de926e3403"
     },
     {
       "file": "src/transfers.ts",
@@ -439,7 +504,7 @@
     },
     {
       "file": "scripts/inventory-epoch-contract.mjs",
-      "sha256": "85ff15d7744c7a6d631f65b7467e3a0bddbe0f9ed371dad2c354f999b329fd64"
+      "sha256": "f2000fc740d0a3868848bf5e62b66cb0f72ded24369305ce7b10d8c9d73b28e5"
     },
     {
       "file": "formal/UseByReservation.tla",
@@ -455,5 +520,5 @@
     }
   ],
   "creditExpansion": false,
-  "contentSha256": "215c78e545ab61462637564815287cefbc918dfeee9ff769c414648c3a28fcf9"
+  "contentSha256": "3ab046ef5b79730f4acaf91eceed83b0893b9c7c3082ed42d7c3a360765e88e8"
 }
