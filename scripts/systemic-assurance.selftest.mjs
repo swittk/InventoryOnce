@@ -13,6 +13,7 @@ import { formalProofDescriptor, formalProofCacheKey, readFormalProofCache, write
 import { executableAssuranceSummary, assertExecutableAssuranceMatchesManifests } from "./executable-assurance-coherence.mjs";
 import { finalConvergenceRepositoryPath } from "../experiments/tla-conformance/final-convergence/repository-root.mjs";
 import { assertFormalPositiveReachabilityRegistration } from "./formal-models.mjs";
+import { compactCompilerSourceSetIdentity, compactCompilerSourceSetKey } from "./compact-assurance-pipeline.mjs";
 
 /** Repository inputs are rooted at this test module, never the invoking shell. */
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -24,6 +25,30 @@ function temporaryDirectory(run) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "inventoryonce-systemic-"));
   try { return run(directory); } finally { fs.rmSync(directory, { recursive: true, force: true }); }
 }
+
+test("compact source-set identity detects compiler roots before cache reuse", () => {
+  const identity = compactCompilerSourceSetIdentity(root);
+  assert(identity.rows.some(row => row.file === "src/events.ts"));
+  assert(identity.rows.some(row => row.file === "test/review-hardening.test.ts"));
+  const syntheticRows = [...identity.rows, {
+    file: "src/synthetic-tracked-compiler-root.ts",
+    sha256: "0".repeat(64),
+    sizeBytes: 1,
+  }];
+  assert.notEqual(compactCompilerSourceSetKey(identity.rows), compactCompilerSourceSetKey(syntheticRows));
+
+  const ambient = path.join(root, "src", "compact-source-set-ambient-selftest.ts");
+  assert(!fs.existsSync(ambient));
+  try {
+    fs.writeFileSync(ambient, "/** Synthetic ambient compiler root; proof admission must fail closed. */\nexport const compactSourceSetAmbientSelftest = true;\n");
+    assert.throws(
+      () => compactCompilerSourceSetIdentity(root),
+      /Compiler source set contains ambient\/untracked file/u,
+    );
+  } finally {
+    fs.rmSync(ambient, { force: true });
+  }
+});
 
 /** Parse one call without installing synthetic test files into the production test graph. */
 function call(text) {

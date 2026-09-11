@@ -6,7 +6,7 @@
 
 - Every stock position names an immutable item revision. Package-shaped stock also names the exact immutable package revision. Heterogeneous package compositions, read-only collections, and mutual-fungibility pools are separate immutable catalogue revisions. Catalogue construction deep-copies and freezes caller-owned revision values so later alias mutation cannot change replay.
 - Quantity is an exact vector: one primary stock axis plus independently measured axes such as actual weight. No epsilon math or guessed unit conversion is used.
-- Event `occurredAt` is the real-world time. Durable `recordedAt` and `recordSequence` say when/where the record was stored.
+- Event `occurredAtEpochMs` is the real-world time as safe-integer epoch milliseconds. Durable `recordedAtEpochMs` and `recordSequence` say when/where the record was stored.
 - Location, lot, serial, package revision, container, status, owner, custodian, disposition authority, and configured extra dimensions remain independent position fields.
 - Containment, association, and transformation genealogy are different graph relationships.
 - Corrections append a delta and point to the retained root event. They never edit or delete earlier events.
@@ -44,12 +44,12 @@ const inventory = createInventoryOnce({ catalog, storage });
 
 await inventory.catalog.publish({
   operationId: "publish-item-a-v1",
-  occurredAt: catalogueApprovedAt,
+  occurredAtEpochMs: catalogueApprovedAtEpochMs,
 });
 
 await inventory.stock.receive({
   operationId: delivery.id,
-  occurredAt: delivery.receivedAt,
+  occurredAtEpochMs: delivery.receivedAtEpochMs,
   to: {
     itemId: "item-a",
     locationId: "store",
@@ -60,7 +60,7 @@ await inventory.stock.receive({
 
 await inventory.stock.transfer({
   operationId: transfer.id,
-  occurredAt: transfer.movedAt,
+  occurredAtEpochMs: transfer.movedAtEpochMs,
   from: {
     itemId: "item-a",
     locationId: "store",
@@ -124,7 +124,7 @@ package revision, and opening asks the catalogue for the composition attached to
 ```ts
 await inventory.compositions.open({
   operationId: opening.id,
-  occurredAt: opening.occurredAt,
+  occurredAtEpochMs: opening.occurredAtEpochMs,
   from: {
     itemId: "brand-x-pack",
     locationId: "store",

@@ -17,6 +17,7 @@ const CLOSURE = DIRECTORY + "authority-reference-manifest.json";
 const WRAPPER = DIRECTORY + "run-compact-final-assurance.mjs";
 const BUNDLE = DIRECTORY + "compact-final-verify.mjs";
 const SOURCE_ENTRY = DIRECTORY + "run-final-verifier.mjs";
+const PIPELINE_SELF = "scripts/compact-assurance-pipeline.mjs";
 const DERIVED = new Set([MANIFEST, CLOSURE, WRAPPER, BUNDLE, DIRECTORY + "compact-final-selftest.mjs", DIRECTORY + "compact-final-registry.mjs", ...["final-head-transport.json", "final-v309.json", "final-a121-b58.json", "final-surface-bindings.json", "final-binder-report.json"].map(file => DIRECTORY + file)]);
 const NO_CERTIFICATE = "0".repeat(40);
 const native = Object.fromEntries(["readFileSync", "existsSync", "readdirSync", "openSync", "closeSync", "lstatSync", "statSync", "writeFileSync"].map(name => [name, fs[name]]));
@@ -88,6 +89,32 @@ function ordinaryBytes(root, file) {
   const fd = native.openSync(target, fs.constants.O_RDONLY | fs.constants.O_NOFOLLOW);
   try { return native.readFileSync(fd); } finally { native.closeSync(fd); }
 }
+
+/** Hash the exact compiler root file set selected by tsconfig.test.json before any cache reuse. */
+export function compactCompilerSourceSetIdentity(repositoryRoot = ROOT) {
+  const root = path.resolve(repositoryRoot);
+  const tracked = trackedFiles(root);
+  const require = createRequire(path.join(root, "package.json"));
+  const ts = require("typescript");
+  const configPath = path.join(root, "tsconfig.test.json");
+  const config = ts.readConfigFile(configPath, ts.sys.readFile);
+  assert.equal(config.error, undefined, "Compact compiler source-set config is invalid.");
+  const parsed = ts.parseJsonConfigFileContent(config.config, ts.sys, root, undefined, configPath);
+  assert.deepEqual(parsed.errors, [], "Compact compiler source-set config parse failed.");
+  const rows = parsed.fileNames.map(fileName => {
+    const file = relative(root, fileName);
+    assert(tracked.has(file), `Compiler source set contains ambient/untracked file: ${file}`);
+    const bytes = ordinaryBytes(root, file);
+    return { file, sha256: sha(bytes), sizeBytes: bytes.length };
+  }).sort((left, right) => compare(left.file, right.file));
+  assert.equal(new Set(rows.map(row => row.file)).size, rows.length, "Compiler source set contains duplicate roots.");
+  return { key: compactCompilerSourceSetKey(rows), rows };
+}
+
+/** Content-address one compiler root set so membership changes invalidate every dependent cache. */
+export function compactCompilerSourceSetKey(rows) {
+  return keyOf(rows);
+}
 function writeChanged(root, file, bytes) {
   const target = assuranceRepositoryPath(root, file);
   if (native.existsSync(target) && ordinaryBytes(root, file).equals(bytes)) return false;
@@ -149,6 +176,7 @@ function snapshot(root, manifest) {
    * Bundler imports, compiler sources, traced runtime reads and these compiler/config roots
    * form the authoritative live closure; unrelated historical executables cannot invalidate it. */
   function bindExecutableDomain() {
+    load(PIPELINE_SELF);
     for(const row of manifest.bundles.sources) if(!DERIVED.has(row.file)) load(row.file);
     for(const file of ["package.json", "pnpm-lock.yaml", "tsconfig.json", "tsconfig.test.json"]) load(file);
     const require = createRequire(path.join(root,"package.json"));
@@ -227,12 +255,12 @@ function outputRows(root, files) { return files.map(file => {const bytes=ordinar
 function manifestSemanticCore(manifest) { const {certification, ...core}=manifest; return core; }
 
 /** One exact closure is the key for artifacts and pristine certificates; HEAD/diary/time measurements are not semantic inputs. */
-function closureDocument(pass, manifest, graph, surfaceDigest) {
+function closureDocument(pass, manifest, graph, surfaceDigest, compilerRootSet, compilerSourceSet) {
   const rows = pass.inputRows().filter(row=>!DERIVED.has(row.file));
   const outputs = outputRows(ROOT,[BUNDLE,DIRECTORY+"compact-final-selftest.mjs",DIRECTORY+"compact-final-registry.mjs",...graph.flatMap(node=>node.outputs.map(row=>row.file))]);
   const environment = {node:process.versions.node,platform:process.platform,arch:process.arch};
-  const key = keyOf({rows,outputs,environment,archive:manifest.archive,code:manifest.bundles});
-  return {schemaVersion:2,status:"FINAL_LIVE_INPUT_CLOSURE",inputKey:key,surfaceDigest,inputs:rows.length,totalBytes:rows.reduce((sum,row)=>sum+row.sizeBytes,0),untrackedProofInputs:0,rows,outputs,environment};
+  const key = keyOf({rows,outputs,environment,archive:manifest.archive,code:manifest.bundles,compilerRootSet,compilerSourceSet});
+  return {schemaVersion:2,status:"FINAL_LIVE_INPUT_CLOSURE",inputKey:key,surfaceDigest,inputs:rows.length,totalBytes:rows.reduce((sum,row)=>sum+row.sizeBytes,0),untrackedProofInputs:0,compilerRootSet,compilerSourceSet,rows,outputs,environment};
 }
 function assertClosure(root, closure, manifest) {
   assert.equal(closure.schemaVersion,2);
@@ -246,9 +274,14 @@ function assertClosure(root, closure, manifest) {
     assert.equal(sha(bytes),row.sha256,`Stale compact input hash: ${row.file}`);
   }
   for(const row of manifest.bundles.sources) assert(seen.has(row.file), `Unbound bundled executable input: ${row.file}`);
-  for(const file of ["package.json", "pnpm-lock.yaml", "tsconfig.json", "tsconfig.test.json", manifest.archive.file]) assert(seen.has(file), `Unbound compact root input: ${file}`);
+  for(const file of [PIPELINE_SELF, "package.json", "pnpm-lock.yaml", "tsconfig.json", "tsconfig.test.json", manifest.archive.file]) assert(seen.has(file), `Unbound compact root input: ${file}`);
+  const currentCompilerRootSet = compactCompilerSourceSetIdentity(root);
+  assert.deepEqual(closure.compilerRootSet, currentCompilerRootSet, "Compact compiler root set is stale.");
+  for(const row of currentCompilerRootSet.rows) assert(seen.has(row.file), `Unbound compiler source root: ${row.file}`);
+  assert(closure.compilerSourceSet !== null && typeof closure.compilerSourceSet === "object" && Array.isArray(closure.compilerSourceSet.rows), "Missing exact compiler source set.");
+  for(const row of closure.compilerSourceSet.rows) assert(seen.has(row.file), `Unbound exact compiler source: ${row.file}`);
   assert.deepEqual(closure.environment,{node:process.versions.node,platform:process.platform,arch:process.arch});
-  assert.equal(keyOf({rows:closure.rows,outputs:closure.outputs,environment:closure.environment,archive:manifest.archive,code:manifest.bundles}),closure.inputKey,"Compact closure identity is stale.");
+  assert.equal(keyOf({rows:closure.rows,outputs:closure.outputs,environment:closure.environment,archive:manifest.archive,code:manifest.bundles,compilerRootSet:closure.compilerRootSet,compilerSourceSet:closure.compilerSourceSet}),closure.inputKey,"Compact closure identity is stale.");
 }
 
 async function withSupport(root, manifest, run) {
@@ -268,13 +301,20 @@ async function currentize(root, manifest, anchor) {
   const bundleChanged=await rebuildBundle(root,manifest);
   writeChanged(root,MANIFEST,encode(manifest));
   const pass=snapshot(root,manifest), graph=[];
-  let compilerPasses=0, context;
+  const compilerRootSet = compactCompilerSourceSetIdentity(root);
+  let compilerPasses=0, context, compilerSourceSet;
   const result=await pass.trace(async()=>{
     const library=await import(pathToFileURL(path.resolve(root,BUNDLE)).href+`?inputs=${manifest.bundles.entries[0].sha256}`);
     pass.bindExecutableDomain();
     context=library.createFinalCompilerContext(root);compilerPasses++;
-    // Bind the actual complete compiler source graph, not a hand-maintained helper-file list.
-    for(const source of context.program.getSourceFiles()) pass.compilerHash(relative(root,source.fileName),source.text);
+    // Bind the exact Program source graph once; node caches key this complete set, not only tsconfig roots.
+    const compilerFiles = context.program.getSourceFiles().map(source => {
+      const file = relative(root, source.fileName);
+      pass.compilerHash(file, source.text);
+      return file;
+    });
+    const compilerRows = pass.inputRows(compilerFiles);
+    compilerSourceSet = { key: compactCompilerSourceSetKey(compilerRows), rows: compilerRows };
     library.verifyFinalCurrentReview(root,context);
     const nodes=[
       ["transport","final-head-transport.json",()=>library.buildFinalTransport(root,context)],
@@ -287,15 +327,15 @@ async function currentize(root, manifest, anchor) {
       const nodeStarted=performance.now(),file=DIRECTORY+name;
       const cached=prior?.graph?.find(row=>row.id===id);
       const codeRoots = id === "transport" ? [DIRECTORY+"final-head-transport.mjs"] : id === "values" || id === "producers" ? [DIRECTORY+"final-families.mjs"] : id === "registry" ? [DIRECTORY+"build-final-registry.mjs"] : [DIRECTORY+"run-final-verifier.mjs"];
-      const codeSha256 = codeClosureKey(manifest, codeRoots);
+      const codeSha256 = keyOf({ bundleCode: codeClosureKey(manifest, codeRoots), pipeline: pass.hash(PIPELINE_SELF) });
       let reused=false,record;
-      if(cached!==undefined && cached.codeSha256===codeSha256 && cached.inputs.every(row=>pass.hash(row.file)===row.sha256) && cached.outputs.every(row=>native.existsSync(path.resolve(root,row.file))&&sha(ordinaryBytes(root,row.file))===row.sha256)){
+      if(cached!==undefined && cached.codeSha256===codeSha256 && cached.compilerSourceSetKey===compilerSourceSet.key && cached.inputs.every(row=>pass.hash(row.file)===row.sha256) && cached.outputs.every(row=>native.existsSync(path.resolve(root,row.file))&&sha(ordinaryBytes(root,row.file))===row.sha256)){
         record=cached;reused=true;
       }else{
         const artifact=pass.task(id,build),bytes=encode(artifact);
         writeChanged(root,file,bytes);pass.invalidate(file);
         const inputs=pass.taskRows(id);
-        record={id,codeSha256,inputs,outputs:outputRows(root,[file])};
+        record={id,codeSha256,compilerSourceSetKey:compilerSourceSet.key,inputs,outputs:outputRows(root,[file])};
       }
       graph.push(record);
       console.log(JSON.stringify({node:id,reused,elapsedMs:Math.round(performance.now()-nodeStarted)}));
@@ -305,7 +345,7 @@ async function currentize(root, manifest, anchor) {
   });
   pass.finish();
   manifest.graph=graph;delete manifest.certification;
-  const closure=closureDocument(pass,manifest,graph,result.surfaceDigest);
+  const closure=closureDocument(pass,manifest,graph,result.surfaceDigest,compilerRootSet,compilerSourceSet);
   writeChanged(root,CLOSURE,encode(closure));writeChanged(root,MANIFEST,encode(manifest));
   const report={status:"COMPACT_CURRENTIZED",inputKey:closure.inputKey,bundleChanged,compilerPasses,elapsedMs:Math.round(performance.now()-started),surfaceDigest:result.surfaceDigest};
   console.log(JSON.stringify(report));return report;
@@ -412,7 +452,8 @@ export async function runCompactCommand({moduleUrl,mode,certificateCommit}={}) {
     if(prior!==undefined && native.existsSync(path.resolve(root,CLOSURE))){
       try{
         const closure=JSON.parse(ordinaryBytes(root,CLOSURE));
-        if(prior.certification.inputKey===closure.inputKey && JSON.stringify(manifestSemanticCore(prior))===JSON.stringify(manifestSemanticCore(manifest))){
+        const compilerRootSet = compactCompilerSourceSetIdentity(root);
+        if(prior.certification.inputKey===closure.inputKey && closure.compilerRootSet?.key===compilerRootSet.key && JSON.stringify(manifestSemanticCore(prior))===JSON.stringify(manifestSemanticCore(manifest))){
           await withSupport(root,manifest,async()=>assertClosure(root,closure,manifest));
           console.log(JSON.stringify({status:"COMPACT_CURRENTIZATION_REUSED",inputKey:closure.inputKey,compilerPasses:0,elapsedMs:Math.round(performance.now()-started)}));return;
         }
