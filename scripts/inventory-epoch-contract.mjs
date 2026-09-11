@@ -354,7 +354,7 @@ export function verifyReview518257RuntimeTransport(root) {
     laws: [
       "Every normalized and committed event owns its complete JSON-friendly fact graph; typed caller mutation cannot rewrite lifecycle, measurement, correction, or metadata intent after retention.",
       "Count and reservation inputs own nested quantities, positions, and metadata; all populated raw-identity dictionaries preserve own-only lookup semantics through lifecycle changes.",
-      "The exact five-file source transition is hash-bound above the compact-certified predecessor; every other runtime module remains byte-identical and no later runtime drift is admitted.",
+      "The exact six-file source transition, including retained public-group ownership in src/facade.ts, is hash-bound above the compact-certified predecessor; every other runtime module remains byte-identical and no later runtime drift is admitted.",
     ],
   };
 }
