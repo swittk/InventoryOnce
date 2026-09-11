@@ -94,9 +94,9 @@ var require_formal_implementation_surface = __commonJS({
           );
           return `external:${externalPath}#${shortHash(source7.text)}`;
         }
-        const relative = path45.relative(root3, resolved);
-        if (relative !== ".." && !relative.startsWith(`..${path45.sep}`) && !path45.isAbsolute(relative)) {
-          return relative.split(path45.sep).join("/");
+        const relative2 = path45.relative(root3, resolved);
+        if (relative2 !== ".." && !relative2.startsWith(`..${path45.sep}`) && !path45.isAbsolute(relative2)) {
+          return relative2.split(path45.sep).join("/");
         }
         return `external-file:${path45.basename(resolved)}#${shortHash(source7.text)}`;
       }
@@ -770,11 +770,11 @@ function loadCompilerContext(repositoryRoot, suppliedProgram) {
 }
 function isPackageDeclaration(context, declaration) {
   if (declaration === void 0) return false;
-  const relative = path2.relative(
+  const relative2 = path2.relative(
     context.rootDirectory,
     path2.resolve(declaration.getSourceFile().fileName)
   );
-  return !relative.startsWith(`..${path2.sep}`) && !path2.isAbsolute(relative);
+  return !relative2.startsWith(`..${path2.sep}`) && !path2.isAbsolute(relative2);
 }
 function isPublicDeclaration(context, declaration) {
   if (!isPackageDeclaration(context, declaration)) return false;
@@ -1227,8 +1227,8 @@ function dependencyBody(context, call) {
   if (body === void 0 || !ts.isFunctionDeclaration(body) || body.body === void 0 || body.getSourceFile().isDeclarationFile) {
     fail("VALUE_SEMANTIC_UNBOUND_CALL", "Called value helper has no unique resolved source body.");
   }
-  const relative = path3.relative(context.repositoryRoot, body.getSourceFile().fileName).replaceAll("\\", "/");
-  if (!relative.startsWith("src/")) fail("VALUE_SEMANTIC_UNBOUND_CALL", "Dependency is not package source.");
+  const relative2 = path3.relative(context.repositoryRoot, body.getSourceFile().fileName).replaceAll("\\", "/");
+  if (!relative2.startsWith("src/")) fail("VALUE_SEMANTIC_UNBOUND_CALL", "Dependency is not package source.");
   return body;
 }
 function deriveValueReturnTerm(context, implementation) {
@@ -1258,8 +1258,8 @@ function deriveValueReturnTerm(context, implementation) {
     const source7 = spanOf(context, body);
     dependencies.set(`${source7.file}:${source7.start.offset}:${source7.end.offset}`, source7);
     function sparseEmptyRecordTerm(dependency2, call) {
-      const relative = path3.relative(context.repositoryRoot, dependency2.getSourceFile().fileName).replaceAll("\\", "/");
-      if (relative !== "src/sparse-record.ts" || dependency2.name?.text !== "createInventorySparseRecord") return void 0;
+      const relative2 = path3.relative(context.repositoryRoot, dependency2.getSourceFile().fileName).replaceAll("\\", "/");
+      if (relative2 !== "src/sparse-record.ts" || dependency2.name?.text !== "createInventorySparseRecord") return void 0;
       if (call.arguments.length !== 0 || dependency2.parameters.length !== 0 || dependency2.body === void 0 || dependency2.body.statements.length !== 1 || !ts.isReturnStatement(dependency2.body.statements[0]) || dependency2.body.statements[0].expression === void 0) {
         fail("VALUE_SEMANTIC_SPARSE_RECORD", "Sparse-record construction must remain one zero-argument return expression.");
       }
@@ -3345,9 +3345,9 @@ function verifyReview518257RuntimeTransport(root3) {
   const currentFiles = execFileSync2("git", ["ls-tree", "-r", "--name-only", REVIEW_518257_RUNTIME_CERTIFIED_HEAD, "--", "src"], { cwd: root3, encoding: "utf8" }).trim().split("\n");
   assert5.deepEqual(currentFiles, priorFiles, "Review 5182576645 changed the runtime module domain.");
   for (const file of ["final-head-transport.json", "final-v309.json", "final-a121-b58.json", "final-surface-bindings.json", "final-binder-report.json"]) {
-    const relative = `experiments/tla-conformance/final-convergence/${file}`;
-    const certified = execFileSync2("git", ["show", `${REVIEW_518257_PRIOR_COMPACT_CERTIFIED_HEAD}:${relative}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
-    const priorHead = execFileSync2("git", ["show", `${REVIEW_518257_RUNTIME_PRIOR_HEAD}:${relative}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
+    const relative2 = `experiments/tla-conformance/final-convergence/${file}`;
+    const certified = execFileSync2("git", ["show", `${REVIEW_518257_PRIOR_COMPACT_CERTIFIED_HEAD}:${relative2}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
+    const priorHead = execFileSync2("git", ["show", `${REVIEW_518257_RUNTIME_PRIOR_HEAD}:${relative2}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
     assert5.equal(sha2563(priorHead), sha2563(certified), `Prior compact-certified artifact drifted before Review 5182576645: ${file}`);
   }
   const changed = execFileSync2("git", ["diff", "--name-only", REVIEW_518257_RUNTIME_PRIOR_HEAD, REVIEW_518257_RUNTIME_CERTIFIED_HEAD, "--", "src"], { cwd: root3, encoding: "utf8" }).trim().split("\n").filter(Boolean);
@@ -3395,9 +3395,9 @@ function verifyReview518196RuntimeTransport(root3, currentSourceMap) {
   const currentFiles = currentSourceMap === void 0 ? execFileSync2("git", ["ls-tree", "-r", "--name-only", REVIEW_518196_RUNTIME_CERTIFIED_HEAD, "--", "src"], { cwd: root3, encoding: "utf8" }).trim().split("\n") : [...currentSourceMap.keys()];
   assert5.deepEqual(currentFiles, priorFiles, "Review 5181962020 changed the runtime module domain.");
   for (const file of ["final-head-transport.json", "final-v309.json", "final-a121-b58.json", "final-surface-bindings.json", "final-binder-report.json"]) {
-    const relative = `experiments/tla-conformance/final-convergence/${file}`;
-    const certified = execFileSync2("git", ["show", `${REVIEW_518196_PRIOR_COMPACT_CERTIFIED_HEAD}:${relative}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
-    const priorHead = execFileSync2("git", ["show", `${REVIEW_518196_RUNTIME_PRIOR_HEAD}:${relative}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
+    const relative2 = `experiments/tla-conformance/final-convergence/${file}`;
+    const certified = execFileSync2("git", ["show", `${REVIEW_518196_PRIOR_COMPACT_CERTIFIED_HEAD}:${relative2}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
+    const priorHead = execFileSync2("git", ["show", `${REVIEW_518196_RUNTIME_PRIOR_HEAD}:${relative2}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
     assert5.equal(sha2563(priorHead), sha2563(certified), `Prior compact-certified artifact drifted before Review 5181962020: ${file}`);
   }
   const changed = execFileSync2("git", ["diff", "--name-only", REVIEW_518196_RUNTIME_PRIOR_HEAD, REVIEW_518196_RUNTIME_CERTIFIED_HEAD, "--", "src"], { cwd: root3, encoding: "utf8" }).trim().split("\n").filter(Boolean);
@@ -3446,9 +3446,9 @@ function verifyReview518113RuntimeTransport(root3, currentSourceMap) {
   const currentFiles = currentSourceMap === void 0 ? execFileSync2("git", ["ls-tree", "-r", "--name-only", REVIEW_518113_RUNTIME_CERTIFIED_HEAD, "--", "src"], { cwd: root3, encoding: "utf8" }).trim().split("\n") : [...currentSourceMap.keys()];
   assert5.deepEqual(currentFiles, priorFiles, "Review 5181132010 changed the runtime module domain.");
   for (const file of ["final-head-transport.json", "final-v309.json", "final-a121-b58.json", "final-surface-bindings.json", "final-binder-report.json"]) {
-    const relative = `experiments/tla-conformance/final-convergence/${file}`;
-    const certified = execFileSync2("git", ["show", `${REVIEW_518113_PRIOR_COMPACT_CERTIFIED_HEAD}:${relative}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
-    const priorHead = execFileSync2("git", ["show", `${REVIEW_518113_RUNTIME_PRIOR_HEAD}:${relative}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
+    const relative2 = `experiments/tla-conformance/final-convergence/${file}`;
+    const certified = execFileSync2("git", ["show", `${REVIEW_518113_PRIOR_COMPACT_CERTIFIED_HEAD}:${relative2}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
+    const priorHead = execFileSync2("git", ["show", `${REVIEW_518113_RUNTIME_PRIOR_HEAD}:${relative2}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
     assert5.equal(sha2563(priorHead), sha2563(certified), `Prior compact-certified artifact drifted before Review 5181132010: ${file}`);
   }
   const changed = execFileSync2("git", ["diff", "--name-only", REVIEW_518113_RUNTIME_PRIOR_HEAD, REVIEW_518113_RUNTIME_CERTIFIED_HEAD, "--", "src"], { cwd: root3, encoding: "utf8" }).trim().split("\n").filter(Boolean);
@@ -3499,9 +3499,9 @@ function verifyReview518009RuntimeTransport(root3, currentSourceMap) {
   const currentFiles = currentSourceMap === void 0 ? execFileSync2("git", ["ls-tree", "-r", "--name-only", REVIEW_518009_RUNTIME_CERTIFIED_HEAD, "--", "src"], { cwd: root3, encoding: "utf8" }).trim().split("\n") : [...currentSourceMap.keys()];
   assert5.deepEqual(currentFiles, priorFiles, "Review 5180096971 changed the runtime module domain.");
   for (const file of ["final-head-transport.json", "final-v309.json", "final-a121-b58.json", "final-surface-bindings.json", "final-binder-report.json"]) {
-    const relative = `experiments/tla-conformance/final-convergence/${file}`;
-    const certified = execFileSync2("git", ["show", `${REVIEW_518009_PRIOR_COMPACT_CERTIFIED_HEAD}:${relative}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
-    const priorHead = execFileSync2("git", ["show", `${REVIEW_518009_RUNTIME_PRIOR_HEAD}:${relative}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
+    const relative2 = `experiments/tla-conformance/final-convergence/${file}`;
+    const certified = execFileSync2("git", ["show", `${REVIEW_518009_PRIOR_COMPACT_CERTIFIED_HEAD}:${relative2}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
+    const priorHead = execFileSync2("git", ["show", `${REVIEW_518009_RUNTIME_PRIOR_HEAD}:${relative2}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
     assert5.equal(sha2563(priorHead), sha2563(certified), `Prior compact-certified artifact drifted before Review 5180096971: ${file}`);
   }
   const changed = execFileSync2("git", ["diff", "--name-only", REVIEW_518009_RUNTIME_PRIOR_HEAD, REVIEW_518009_RUNTIME_CERTIFIED_HEAD, "--", "src"], { cwd: root3, encoding: "utf8" }).trim().split("\n").filter(Boolean);
@@ -3604,9 +3604,9 @@ function verifyReview517722RuntimeTransport(root3, currentSourceMap) {
     ["verify", "FINAL_BINDER_GREEN"]
   ], "Prior compact certificate does not contain the three required green modes.");
   for (const file of ["final-head-transport.json", "final-v309.json", "final-a121-b58.json", "final-surface-bindings.json", "final-binder-report.json"]) {
-    const relative = `experiments/tla-conformance/final-convergence/${file}`;
-    const certified = execFileSync2("git", ["show", `${REVIEW_517722_PRIOR_COMPACT_CERTIFIED_HEAD}:${relative}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
-    const priorHead = execFileSync2("git", ["show", `${REVIEW_517722_RUNTIME_PRIOR_HEAD}:${relative}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
+    const relative2 = `experiments/tla-conformance/final-convergence/${file}`;
+    const certified = execFileSync2("git", ["show", `${REVIEW_517722_PRIOR_COMPACT_CERTIFIED_HEAD}:${relative2}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
+    const priorHead = execFileSync2("git", ["show", `${REVIEW_517722_RUNTIME_PRIOR_HEAD}:${relative2}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 });
     assert5.equal(sha2563(priorHead), sha2563(certified), `Prior compact-certified artifact drifted before Review 5177225566: ${file}`);
   }
   if (currentSourceMap === void 0) {
@@ -16411,6 +16411,9 @@ import { execFileSync as execFileSync4 } from "node:child_process";
 // scripts/repository-assurance-state.mjs
 import { createHash as createHash2 } from "node:crypto";
 import { spawnSync } from "node:child_process";
+import { existsSync, lstatSync, readFileSync, readlinkSync } from "node:fs";
+import { createRequire } from "node:module";
+import { relative, resolve, sep } from "node:path";
 var excludedPaths = /* @__PURE__ */ new Set([
   "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json"
 ]);
@@ -16437,6 +16440,62 @@ function hashAssuranceEntries(entries) {
   }
   return hash.digest("hex");
 }
+function repositoryVitestTestPaths(repositoryRoot) {
+  let packageJson;
+  try {
+    packageJson = JSON.parse(readFileSync(resolve(repositoryRoot, "package.json"), "utf8"));
+  } catch (error) {
+    if (error instanceof Error && error.code === "ENOENT") return [];
+    throw error;
+  }
+  const testScript = packageJson?.scripts?.test;
+  if (typeof testScript !== "string") return [];
+  const vitestCommands = testScript.split("&&").map((command) => command.trim()).filter((command) => /^vitest(?:\s|$)/u.test(command));
+  if (vitestCommands.length === 0) return [];
+  if (vitestCommands.length !== 1 || vitestCommands[0] !== "vitest run --dir test") {
+    throw new Error("Repository assurance does not recognize the configured Vitest test command.");
+  }
+  const listed = spawnSync(
+    process.execPath,
+    [resolve(repositoryRoot, "node_modules/vitest/vitest.mjs"), "list", "--dir", "test", "--filesOnly", "--json"],
+    { cwd: repositoryRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024, env: { ...process.env, CI: "" } }
+  );
+  if (listed.error !== void 0 || listed.status !== 0) {
+    throw new Error("Unable to discover the configured Vitest test domain.");
+  }
+  let decoded;
+  try {
+    decoded = JSON.parse(listed.stdout);
+  } catch {
+    throw new Error("Vitest test-domain discovery emitted malformed JSON.");
+  }
+  if (!Array.isArray(decoded)) throw new Error("Vitest test-domain discovery did not emit a file array.");
+  const paths = [];
+  for (const row of decoded) {
+    if (row === null || typeof row !== "object" || typeof row.file !== "string") throw new Error("Vitest test-domain discovery emitted a malformed row.");
+    const path45 = relative(repositoryRoot, row.file).split(sep).join("/");
+    if (path45 === "" || path45 === ".." || path45.startsWith("../") || !path45.startsWith("test/")) throw new Error(`Vitest discovered a test outside the authoritative test root: ${path45}`);
+    paths.push(path45);
+  }
+  return [...new Set(paths)].sort();
+}
+function repositoryTypeScriptInputPaths(repositoryRoot) {
+  const configPath = resolve(repositoryRoot, "tsconfig.test.json");
+  if (!existsSync(configPath)) return [];
+  const require2 = createRequire(resolve(repositoryRoot, "package.json"));
+  const ts4 = require2("typescript");
+  const config = ts4.readConfigFile(configPath, ts4.sys.readFile);
+  if (config.error !== void 0) throw new Error("Repository TypeScript assurance config is invalid.");
+  const parsed = ts4.parseJsonConfigFileContent(config.config, ts4.sys, repositoryRoot, void 0, configPath);
+  if (parsed.errors.length !== 0) throw new Error("Repository TypeScript assurance config failed to parse.");
+  const paths = [];
+  for (const fileName of parsed.fileNames) {
+    const path45 = relative(repositoryRoot, fileName).split(sep).join("/");
+    if (path45 === "" || path45 === ".." || path45.startsWith("../")) throw new Error(`TypeScript selected a source outside the repository: ${path45}`);
+    paths.push(path45);
+  }
+  return [...new Set(paths)].sort();
+}
 function repositoryAssuranceInputPaths(repositoryRoot, untrackedOnly = false) {
   const listed = spawnSync(
     "git",
@@ -16446,7 +16505,16 @@ function repositoryAssuranceInputPaths(repositoryRoot, untrackedOnly = false) {
   if (listed.error !== void 0 || listed.status !== 0) {
     throw new Error("Unable to enumerate the repository assurance state.");
   }
-  return [...new Set(listed.stdout.split("\0").filter(includedPath))].sort();
+  const paths = new Set(listed.stdout.split("\0").filter(includedPath));
+  const discovered = [...repositoryTypeScriptInputPaths(repositoryRoot), ...repositoryVitestTestPaths(repositoryRoot)];
+  let tracked;
+  if (untrackedOnly && discovered.length > 0) {
+    const cached2 = spawnSync("git", ["ls-files", "--cached", "-z"], { cwd: repositoryRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+    if (cached2.error !== void 0 || cached2.status !== 0) throw new Error("Unable to enumerate tracked repository assurance state.");
+    tracked = new Set(cached2.stdout.split("\0").filter(Boolean));
+  }
+  for (const path45 of discovered) if (includedPath(path45) && (!untrackedOnly || !tracked.has(path45))) paths.add(path45);
+  return [...paths].sort();
 }
 function repositoryAssuranceCommittedStateSha256(repositoryRoot, commit) {
   const listed = spawnSync(
@@ -16497,7 +16565,7 @@ function repositoryAssuranceCommittedStateSha256(repositoryRoot, commit) {
 var CURRENT_REVIEW_ASSURANCE_RECEIPT = "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json";
 var CURRENT_REVIEW_ASSURANCE_REPORT = "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json";
 var CURRENT_REVIEW_ASSURANCE_FULL_LOG = "experiments/tla-conformance/final-convergence/current-pr-review-full.log";
-var CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "a575cb20ddd3f8aca3ce01c4286ef1e142fab945";
+var CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "86c28e668f6926acf1835539e388d1d942de7d36";
 var CURRENT_REVIEW_ASSURANCE_SELF = "experiments/tla-conformance/final-convergence/current-review-assurance.mjs";
 var COMPACT_MANIFEST = "experiments/tla-conformance/final-convergence/compact-support-manifest.json";
 var COMPACT_CLOSURE = "experiments/tla-conformance/final-convergence/authority-reference-manifest.json";
