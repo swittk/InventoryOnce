@@ -117,6 +117,8 @@ ReplaceAbsolute(op, quantity) ==
 ReplaceAbsoluteDeltaMutation(op, quantity) ==
   /\ Fresh(op)
   /\ quantity \in Quantities
+  \* The hostile result must accompany a real state change so zero-to-zero cannot pass vacuously.
+  /\ quantity # source
   /\ source' = quantity
   /\ destination' = destination
   /\ previousSource' = source
