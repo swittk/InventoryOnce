@@ -167,8 +167,9 @@ export interface InventoryTraceabilityNodeRef {
   readonly itemId?: ItemId;
 }
 
-/** Reject an empty or padded identity before it can become durable inventory truth. */
+/** Reject a malformed, empty, or padded identity before it can become durable inventory truth. */
 export function assertInventoryIdentity(value: string, label: string): void {
+  if (typeof value !== "string") throw new Error(`${label} must be a string.`);
   const trimmed = value.trim();
   if (trimmed.length === 0) throw new Error(`${label} must not be empty.`);
   if (trimmed !== value) {
@@ -257,6 +258,9 @@ export function inventoryStockPositionIdentity(
 export function inventoryTraceabilityNodeIdentity(
   node: InventoryTraceabilityNodeRef
 ): string {
+  if (node === null || typeof node !== "object" || Array.isArray(node)) {
+    throw new Error("Traceability node must be an object.");
+  }
   assertInventoryIdentity(node.id, "traceability node id");
   if (node.kind === InventoryTraceabilityNodeKind.Lot) {
     if (node.itemId === undefined)

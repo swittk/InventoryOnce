@@ -61,6 +61,7 @@ function expectMalformedInputRejected(action: () => unknown): void {
   if (!(failure instanceof Error)) {
     throw new Error("Malformed-input validator did not throw an Error.");
   }
+  expect(failure).not.toBeInstanceOf(TypeError);
   expect(failure.message.length).toBeGreaterThan(0);
 }
 
@@ -78,6 +79,7 @@ async function expectMalformedAsyncInputRejected(
   if (!(failure instanceof Error)) {
     throw new Error("Malformed-input façade did not reject with an Error.");
   }
+  expect(failure).not.toBeInstanceOf(TypeError);
   expect(failure.message.length).toBeGreaterThan(0);
 }
 
@@ -262,16 +264,37 @@ describe("remaining public implementation surfaces", () => {
       inventory.stock.scrapMany({} as never)
     );
     await expectMalformedAsyncInputRejected(() =>
+      inventory.stock.changeStatus({} as never)
+    );
+    await expectMalformedAsyncInputRejected(() =>
       inventory.stock.clearStatus({} as never)
+    );
+    await expectMalformedAsyncInputRejected(() =>
+      inventory.stock.changeOwner({} as never)
     );
     await expectMalformedAsyncInputRejected(() =>
       inventory.stock.clearOwner({} as never)
     );
     await expectMalformedAsyncInputRejected(() =>
+      inventory.stock.changeCustodian({} as never)
+    );
+    await expectMalformedAsyncInputRejected(() =>
       inventory.stock.clearCustodian({} as never)
     );
     await expectMalformedAsyncInputRejected(() =>
+      inventory.stock.changeDispositionAuthority({} as never)
+    );
+    await expectMalformedAsyncInputRejected(() =>
       inventory.stock.clearDispositionAuthority({} as never)
+    );
+    await expectMalformedAsyncInputRejected(() =>
+      inventory.stock.placeInContainer({} as never)
+    );
+    await expectMalformedAsyncInputRejected(() =>
+      inventory.stock.removeFromContainer({} as never)
+    );
+    await expectMalformedAsyncInputRejected(() =>
+      inventory.stock.changeQualifiedDimension({} as never)
     );
     await expectMalformedAsyncInputRejected(() =>
       inventory.stock.clearQualifiedDimension({} as never)
@@ -287,6 +310,20 @@ describe("remaining public implementation surfaces", () => {
     );
     await expectMalformedAsyncInputRejected(() =>
       inventory.traceability.disassociate({} as never)
+    );
+    await expectMalformedAsyncInputRejected(() =>
+      inventory.traceability.disassociate({
+        operationId: "surface-malformed-traceability-endpoints",
+        occurredAtEpochMs: time0,
+      } as never)
+    );
+    await expectMalformedAsyncInputRejected(() =>
+      inventory.traceability.disassociate({
+        operationId: "surface-malformed-traceability-node-id",
+        occurredAtEpochMs: time0,
+        from: { kind: InventoryTraceabilityNodeKind.External },
+        to: { kind: InventoryTraceabilityNodeKind.External, id: "target" },
+      } as never)
     );
     expect((await inventory.read.world()).revision).toBe(0);
   });

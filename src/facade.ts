@@ -2652,13 +2652,10 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
   async changeStatus(
     input: InventoryOnceChangeStatusInput
   ): Promise<InventoryOnceEventResult> {
+    const from = requireStockPositionInput(input.from, "change status");
     return this.commitReclassification(input, {
-      ...input.from,
-      statusId: requireChangedIdentity(
-        input.from.statusId,
-        input.toStatusId,
-        "status"
-      ),
+      ...from,
+      statusId: requireChangedIdentity(from.statusId, input.toStatusId, "status"),
     });
   }
 
@@ -2666,7 +2663,8 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
   async clearStatus(
     input: InventoryOnceClearStatusInput
   ): Promise<InventoryOnceEventResult> {
-    const { statusId, ...withoutStatus } = input.from;
+    const from = requireStockPositionInput(input.from, "clear status");
+    const { statusId, ...withoutStatus } = from;
     requirePresentIdentity(statusId, "status");
     return this.commitReclassification(input, withoutStatus);
   }
@@ -2675,13 +2673,10 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
   async changeOwner(
     input: InventoryOnceChangeOwnerInput
   ): Promise<InventoryOnceEventResult> {
+    const from = requireStockPositionInput(input.from, "change owner");
     return this.commitReclassification(input, {
-      ...input.from,
-      ownerId: requireChangedIdentity(
-        input.from.ownerId,
-        input.toOwnerId,
-        "owner"
-      ),
+      ...from,
+      ownerId: requireChangedIdentity(from.ownerId, input.toOwnerId, "owner"),
     });
   }
 
@@ -2689,7 +2684,8 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
   async clearOwner(
     input: InventoryOnceClearOwnerInput
   ): Promise<InventoryOnceEventResult> {
-    const { ownerId, ...withoutOwner } = input.from;
+    const from = requireStockPositionInput(input.from, "clear owner");
+    const { ownerId, ...withoutOwner } = from;
     requirePresentIdentity(ownerId, "owner");
     return this.commitReclassification(input, withoutOwner);
   }
@@ -2698,10 +2694,11 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
   async changeCustodian(
     input: InventoryOnceChangeCustodianInput
   ): Promise<InventoryOnceEventResult> {
+    const from = requireStockPositionInput(input.from, "change custodian");
     return this.commitReclassification(input, {
-      ...input.from,
+      ...from,
       custodianId: requireChangedIdentity(
-        input.from.custodianId,
+        from.custodianId,
         input.toCustodianId,
         "custodian"
       ),
@@ -2712,7 +2709,8 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
   async clearCustodian(
     input: InventoryOnceClearCustodianInput
   ): Promise<InventoryOnceEventResult> {
-    const { custodianId, ...withoutCustodian } = input.from;
+    const from = requireStockPositionInput(input.from, "clear custodian");
+    const { custodianId, ...withoutCustodian } = from;
     requirePresentIdentity(custodianId, "custodian");
     return this.commitReclassification(input, withoutCustodian);
   }
@@ -2721,10 +2719,14 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
   async changeDispositionAuthority(
     input: InventoryOnceChangeDispositionAuthorityInput
   ): Promise<InventoryOnceEventResult> {
+    const from = requireStockPositionInput(
+      input.from,
+      "change disposition authority"
+    );
     return this.commitReclassification(input, {
-      ...input.from,
+      ...from,
       dispositionAuthorityId: requireChangedIdentity(
-        input.from.dispositionAuthorityId,
+        from.dispositionAuthorityId,
         input.toDispositionAuthorityId,
         "disposition authority"
       ),
@@ -2735,7 +2737,11 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
   async clearDispositionAuthority(
     input: InventoryOnceClearDispositionAuthorityInput
   ): Promise<InventoryOnceEventResult> {
-    const { dispositionAuthorityId, ...withoutAuthority } = input.from;
+    const from = requireStockPositionInput(
+      input.from,
+      "clear disposition authority"
+    );
+    const { dispositionAuthorityId, ...withoutAuthority } = from;
     requirePresentIdentity(dispositionAuthorityId, "disposition authority");
     return this.commitReclassification(input, withoutAuthority);
   }
@@ -2744,10 +2750,11 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
   async placeInContainer(
     input: InventoryOncePlaceInContainerInput
   ): Promise<InventoryOnceEventResult> {
+    const from = requireStockPositionInput(input.from, "place in container");
     return this.commitReclassification(input, {
-      ...input.from,
+      ...from,
       containerId: requireChangedIdentity(
-        input.from.containerId,
+        from.containerId,
         input.toContainerId,
         "container"
       ),
@@ -2758,7 +2765,8 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
   async removeFromContainer(
     input: InventoryOnceRemoveFromContainerInput
   ): Promise<InventoryOnceEventResult> {
-    const { containerId, ...withoutContainer } = input.from;
+    const from = requireStockPositionInput(input.from, "remove from container");
+    const { containerId, ...withoutContainer } = from;
     if (containerId === undefined) {
       throw new Error("Stock is not currently inside a container.");
     }
@@ -4949,7 +4957,8 @@ function policyIssueLine(
 function createPositionWithChangedQualifiedDimension(
   input: Omit<InventoryOnceChangeQualifiedDimensionInput, "operationId">
 ): InventoryStockPositionInput {
-  const dimensions = [...(input.from.qualifiedDimensions ?? [])];
+  const from = requireStockPositionInput(input.from, "change qualified dimension");
+  const dimensions = [...(from.qualifiedDimensions ?? [])];
   let replaced = false;
   for (let index = 0; index < dimensions.length; index += 1) {
     const dimension = dimensions[index];
@@ -4973,7 +4982,7 @@ function createPositionWithChangedQualifiedDimension(
     });
   }
   return {
-    ...input.from,
+    ...from,
     qualifiedDimensions: dimensions,
   };
 }
@@ -4982,7 +4991,8 @@ function createPositionWithChangedQualifiedDimension(
 function createPositionWithoutQualifiedDimension(
   input: Omit<InventoryOnceClearQualifiedDimensionInput, "operationId">
 ): InventoryStockPositionInput {
-  const { qualifiedDimensions, ...withoutQualifiedDimensions } = input.from;
+  const from = requireStockPositionInput(input.from, "clear qualified dimension");
+  const { qualifiedDimensions, ...withoutQualifiedDimensions } = from;
   const dimensions = qualifiedDimensions ?? [];
   const kept = dimensions.filter(
     /** Keep every configured value except the one this verb explicitly removes. */
@@ -4998,13 +5008,24 @@ function createPositionWithoutQualifiedDimension(
     : { ...withoutQualifiedDimensions, qualifiedDimensions: kept };
 }
 
+/** Require one position-shaped source before a reclassification helper reads its fields. */
+function requireStockPositionInput(
+  value: InventoryStockPositionInput | null | undefined,
+  label: string
+): InventoryStockPositionInput {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error(`Inventory ${label} needs a source position.`);
+  }
+  return value;
+}
+
 /** Require a target dimension identity to differ and be non-empty. */
 function requireChangedIdentity(
   earlier: string | undefined,
   next: string,
   label: string
 ): string {
-  if (next.trim().length === 0)
+  if (typeof next !== "string" || next.trim().length === 0)
     throw new Error(`New ${label} identity must not be empty.`);
   if (earlier === next) throw new Error(`Stock already has that ${label}.`);
   return next;
@@ -5015,7 +5036,8 @@ function requirePresentIdentity(
   value: string | undefined,
   label: string
 ): string {
-  if (value === undefined) throw new Error(`Stock has no ${label} to clear.`);
+  if (typeof value !== "string" || value.length === 0)
+    throw new Error(`Stock has no ${label} to clear.`);
   return value;
 }
 

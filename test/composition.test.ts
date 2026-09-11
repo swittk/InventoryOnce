@@ -962,6 +962,7 @@ describe("composition amount discriminator admission", () => {
       compositionId: "boundary-composition", revisionId: "boundary-composition-v1", sourcePackagingRevisionId: fixture.oldPack.revisionId,
       outputs: [{ outputId: "boundary-output", itemRevisionId: outputItem.revisionId, lotPolicy: InventoryCompositionOutputLotPolicy.InheritSource, amount }],
     };
+    /** Recompile the shared definition so each mutated amount kind is re-validated. */
     const create = () => defineInventoryComposition({ definition, itemRevisions: fixture.catalog.itemRevisions, packagingRevisions: [...fixture.catalog.packagingRevisions, outputPackaging] });
     expect(create().outputs[0]?.amount.kind).toBe(InventoryCompositionOutputAmountKind.Package);
     for (const kind of ["future-composition-kind", "", undefined, null, 0]) {

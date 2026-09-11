@@ -53,8 +53,15 @@ const matrixFiles = [
 
 const candidates = new Map();
 const candidatePriority = new WeakMap();
+const rejectedModeMismatches = [];
 function add(surfaceKey, candidate, rootPriority) {
-  if (!strict.has(surfaceKey)) return;
+  const expectedMode = strict.get(surfaceKey);
+  if (expectedMode === undefined) return;
+  // Historical proof shapes can omit mode, but an explicit conflicting mode must never earn authority credit.
+  if (candidate.mode !== undefined && candidate.mode !== expectedMode) {
+    rejectedModeMismatches.push({ surfaceKey, expectedMode, candidateMode: candidate.mode, evidence: candidate.evidence });
+    return;
+  }
   const rows = candidates.get(surfaceKey) ?? [];
   rows.push(candidate);
   candidatePriority.set(candidate, rootPriority);
@@ -71,6 +78,7 @@ function inspect(file, rootPriority) {
       if (typeof proof?.surfaceKey !== "string") continue;
       add(proof.surfaceKey, {
         kind: "PROOF_ARTIFACT",
+        mode: proof.mode,
         proofKind: document.proofKind,
         surfaceDigest: document.surfaceDigest ?? document.sourceHub?.surfaceDigest ?? null,
         evidence,
@@ -145,6 +153,7 @@ const output = {
   official: { file: OFFICIAL, sha256: sha256(read(OFFICIAL)), strictRows: strict.size },
   selectedRows: selected.length,
   missingRows: missing.length,
+  rejectedModeMismatches,
   surfaceCounts,
   selected,
   missing,

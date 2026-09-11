@@ -1098,6 +1098,7 @@ function normalizeContainerIdentifiers(
         "Inventory container identifiers need non-empty keys and values."
       );
     }
+    // Direct assignment would invoke the inherited __proto__ setter instead of preserving an own identifier.
     Object.defineProperty(normalized, key, {
       value,
       enumerable: true,

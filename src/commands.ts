@@ -1224,12 +1224,12 @@ function createMovementEvent(
   });
 }
 
-/** Reject empty batch commands so one operation identity always means a real physical fact. */
+/** Reject malformed or empty batch commands so one operation identity always means a real physical fact. */
 function assertNonEmptyMovementLines(
   lines: readonly object[],
   label: string
 ): void {
-  if (lines.length === 0) {
+  if (!Array.isArray(lines) || lines.length === 0) {
     throw new Error(`Inventory ${label} needs at least one physical line.`);
   }
 }
@@ -1373,7 +1373,7 @@ function containerDefinitionsForPosition(
 
 /** Stable event id derived from one operation id without exposing event-id bookkeeping to callers. */
 export function inventoryEventIdForOperation(operationId: string): string {
-  if (operationId.trim().length === 0)
+  if (typeof operationId !== "string" || operationId.trim().length === 0)
     throw new Error("operationId must not be empty.");
   return `inventory:event:${encodeURIComponent(operationId)}`;
 }

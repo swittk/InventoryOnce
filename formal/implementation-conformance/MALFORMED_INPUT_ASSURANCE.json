@@ -50,6 +50,40 @@
       ],
       "id": "transfer-effect-lifecycle-binding",
       "invariant": "Every transfer-bound stock effect names the same transfer as the structured lifecycle transition."
+    },
+    {
+      "behaviorEvidence": [
+        {
+          "contains": "not.toBeInstanceOf(TypeError)",
+          "file": "test/formal-public-surface-completion.test.ts",
+          "testTitle": "executes every previously indirect pure and low-level kernel entry"
+        },
+        {
+          "contains": "not.toBeInstanceOf(TypeError)",
+          "file": "test/formal-public-surface-completion.test.ts",
+          "testTitle": "executes the remaining fail-closed facade mutation implementations"
+        }
+      ],
+      "guards": [
+        {
+          "contains": "if (typeof value !== \"string\") throw new Error(`${label} must be a string.`);",
+          "file": "src/model.ts"
+        },
+        {
+          "contains": "if (value === null || typeof value !== \"object\" || Array.isArray(value))",
+          "file": "src/facade.ts"
+        },
+        {
+          "contains": "if (!Array.isArray(lines) || lines.length === 0)",
+          "file": "src/commands.ts"
+        },
+        {
+          "contains": "if (typeof operationId !== \"string\" || operationId.trim().length === 0)",
+          "file": "src/commands.ts"
+        }
+      ],
+      "id": "public-malformed-input-deliberate-rejection",
+      "invariant": "Malformed public command and facade inputs fail through deliberate InventoryOnce validation rather than incidental JavaScript TypeError."
     }
   ],
   "schemaVersion": 1
