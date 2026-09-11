@@ -1251,6 +1251,7 @@ function normalizeTraceabilityChanges(
 ): readonly InventoryTraceabilityRelationChange[] {
   const normalized: InventoryTraceabilityRelationChange[] = [];
   const seen = new Set<string>();
+  const seenEdges = new Set<string>();
   for (const rawChange of changes) {
     assertSupportedTraceabilityRelationAction(rawChange.action);
     assertSupportedTraceabilityRelationKind(rawChange.kind);
@@ -1298,6 +1299,13 @@ function normalizeTraceabilityChanges(
       );
     }
     seen.add(identity);
+    const edgeIdentity = traceabilityEdgeIdentity(change);
+    if (seenEdges.has(edgeIdentity)) {
+      throw new Error(
+        `Inventory event asserts multiple traceability actions for one edge '${edgeIdentity}'.`
+      );
+    }
+    seenEdges.add(edgeIdentity);
   }
   normalized.sort(compareTraceabilityChange);
   return normalized;
@@ -1509,6 +1517,17 @@ function absoluteInventoryMeasurements(
   const absolute =
     primarySign(value) < 0 ? negateInventoryMeasurements(value) : value;
   return positiveInventoryMeasurements(absolute, "Inventory effect");
+}
+
+/** Stable action-independent identity for one relation edge inside an event. */
+function traceabilityEdgeIdentity(
+  change: InventoryTraceabilityRelationChange
+): string {
+  return inventoryIntentFingerprint([
+    change.kind,
+    inventoryTraceabilityNodeIdentity(change.from),
+    inventoryTraceabilityNodeIdentity(change.to),
+  ]);
 }
 
 /** Stable identity for one relation action/kind/edge. */

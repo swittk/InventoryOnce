@@ -14,6 +14,7 @@ import { executableAssuranceSummary, assertExecutableAssuranceMatchesManifests }
 import { finalConvergenceRepositoryPath } from "../experiments/tla-conformance/final-convergence/repository-root.mjs";
 import { assertFormalPositiveReachabilityRegistration } from "./formal-models.mjs";
 import { compactCompilerSourceSetIdentity, compactCompilerSourceSetKey } from "./compact-assurance-pipeline.mjs";
+import { CURRENT_REVIEW_AUTHORITATIVE_PATHS } from "../experiments/tla-conformance/final-convergence/current-review-assurance.mjs";
 
 /** Repository inputs are rooted at this test module, never the invoking shell. */
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -25,6 +26,11 @@ function temporaryDirectory(run) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "inventoryonce-systemic-"));
   try { return run(directory); } finally { fs.rmSync(directory, { recursive: true, force: true }); }
 }
+
+test("current-review full-assurance drift gate binds dependency resolution", () => {
+  assert(CURRENT_REVIEW_AUTHORITATIVE_PATHS.includes("package.json"));
+  assert(CURRENT_REVIEW_AUTHORITATIVE_PATHS.includes("pnpm-lock.yaml"));
+});
 
 test("compact source-set identity detects compiler roots before cache reuse", () => {
   const identity = compactCompilerSourceSetIdentity(root);

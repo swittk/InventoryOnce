@@ -44,6 +44,44 @@ export const FORMAL_IMPLEMENTATION_TRACE_IDS = [
 ] as const;
 
 describe("traceability graph meanings", () => {
+  it("rejects contradictory actions for the same relation edge in one event", () => {
+    const catalog = createTabletCatalog();
+    const child = {
+      kind: InventoryTraceabilityNodeKind.Container,
+      id: "same-edge-child",
+    };
+    const parent = {
+      kind: InventoryTraceabilityNodeKind.Container,
+      id: "same-edge-parent",
+    };
+
+    expect(() =>
+      defineInventoryEvent({
+        catalog,
+        event: {
+          eventId: "same-edge-conflict",
+          operationId: "same-edge-conflict",
+          kind: InventoryEventKind.Traceability,
+          occurredAtEpochMs: time0,
+          stockEffects: [],
+          traceabilityChanges: [
+            {
+              action: InventoryTraceabilityRelationAction.Add,
+              kind: InventoryTraceabilityRelationKind.Containment,
+              from: child,
+              to: parent,
+            },
+            {
+              action: InventoryTraceabilityRelationAction.Remove,
+              kind: InventoryTraceabilityRelationKind.Containment,
+              from: child,
+              to: parent,
+            },
+          ],
+        },
+      })
+    ).toThrow("multiple traceability actions for one edge");
+  });
   it("rejects item qualifiers on non-lot traceability identities", () => {
     expect(() =>
       inventoryTraceabilityNodeIdentity({

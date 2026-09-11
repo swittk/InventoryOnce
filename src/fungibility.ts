@@ -18,6 +18,7 @@ import {
   type InventoryItemDefinitionRevision,
 } from "./catalog.js";
 import { assertInventoryEpochMilliseconds } from "./events.js";
+import { compareInventoryIdentityText } from "./ordering.js";
 import {
   addInventoryMeasurements,
   inventoryMeasurementAt,
@@ -235,7 +236,11 @@ export function summarizeInventoryFungibility({
   }
   members.sort(
     /** Keep the public member breakdown in exact item-revision identity order. */
-    (left, right) => left.member.itemRevisionId.localeCompare(right.member.itemRevisionId)
+    (left, right) =>
+      compareInventoryIdentityText(
+        left.member.itemRevisionId,
+        right.member.itemRevisionId
+      )
   );
   return {
     definition,

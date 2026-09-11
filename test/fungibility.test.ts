@@ -210,6 +210,50 @@ describe("revision-frozen mutual-fungibility catalogue", () => {
 });
 
 describe("derived pool summaries and exact member movements", () => {
+  it("orders summary members by locale-independent exact revision identity", async () => {
+    const upper = defineScalarInventoryItem({
+      itemId: "identity-upper",
+      revisionId: "B",
+      axisId: "pieces",
+      unit: "piece",
+    });
+    const lower = defineScalarInventoryItem({
+      itemId: "identity-lower",
+      revisionId: "a",
+      axisId: "pieces",
+      unit: "piece",
+    });
+    const pool = defineScalarInventoryFungibilityPool({
+      poolId: "identity-order-pool",
+      revisionId: "identity-order-pool-v1",
+      basisUnit: "equivalent",
+      members: [{ item: lower }, { item: upper }],
+    });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [lower, upper],
+      activeItemRevisionIds: {
+        "identity-lower": lower.revisionId,
+        "identity-upper": upper.revisionId,
+      },
+      fungibilityRevisions: [pool],
+      activeFungibilityRevisionIds: {
+        "identity-order-pool": pool.revisionId,
+      },
+    });
+    const inventory = createInventoryOnce({
+      catalog,
+      storage: createInMemoryInventoryDurableStorage(),
+      clock: clockAt(time0),
+    });
+
+    const summary = await inventory.fungibility.summary({
+      fungibilityRevisionId: pool.revisionId,
+    });
+    expect(summary.members.map((entry) => entry.member.itemRevisionId)).toEqual([
+      "B",
+      "a",
+    ]);
+  });
   it("uses a sparse what-if overlay instead of enumerating unrelated positions", async () => {
     const catalog = fungibilityCatalog();
     const baseStorage = createInMemoryInventoryDurableStorage();
