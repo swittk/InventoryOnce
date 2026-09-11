@@ -3081,6 +3081,7 @@ import crypto3 from "node:crypto";
 import { execFileSync as execFileSync2 } from "node:child_process";
 import ts2 from "typescript";
 var EPOCH_PRIOR_PROOF_HEAD = "6983219e13295b8f6b073daefc3cbcd90b32ac35";
+var CURRENT_REVIEW_RUNTIME_PRIOR_HEAD = "1f4858d81b4ea6ef5d983b4e57fd680519c1e833";
 var epochNames = Object.freeze({
   "occurredAt": "occurredAtEpochMs",
   "recordedAt": "recordedAtEpochMs",
@@ -3136,6 +3137,12 @@ var inverse = new Map(Object.entries(epochNames).map(([before, after]) => [after
 var nullableTimes = /* @__PURE__ */ new Set(["adapterCertifiedAtEpochMs", "dualRunStartedAtEpochMs", "fenceStartedAtEpochMs", "activatedAtEpochMs"]);
 var sha2563 = (bytes2) => crypto3.createHash("sha256").update(bytes2).digest("hex");
 var historical = /* @__PURE__ */ new Map();
+var currentReviewHistorical = /* @__PURE__ */ new Map();
+function readCurrentReviewPriorFile(root3, file) {
+  const key = `${root3}:${file}`;
+  if (!currentReviewHistorical.has(key)) currentReviewHistorical.set(key, execFileSync2("git", ["show", `${CURRENT_REVIEW_RUNTIME_PRIOR_HEAD}:${file}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 }));
+  return Buffer.from(currentReviewHistorical.get(key));
+}
 function readEpochPriorFile(root3, file) {
   const key = `${root3}:${file}`;
   if (!historical.has(key)) historical.set(key, execFileSync2("git", ["show", `${EPOCH_PRIOR_PROOF_HEAD}:${file}`], { cwd: root3, maxBuffer: 64 * 1024 * 1024 }));
@@ -3233,12 +3240,119 @@ function restoreNumericHelpers(file, current, prior) {
   }
   return text;
 }
-function verifyEpochRuntimeTransport(root3) {
-  execFileSync2("git", ["merge-base", "--is-ancestor", EPOCH_PRIOR_PROOF_HEAD, "HEAD"], { cwd: root3, stdio: "ignore" });
-  const files = execFileSync2("git", ["ls-tree", "-r", "--name-only", EPOCH_PRIOR_PROOF_HEAD, "--", "src"], { cwd: root3, encoding: "utf8" }).trim().split("\n");
+function restoreCurrentReviewRuntimeGuards(file, current, prior) {
+  let text = current;
+  if (file === "src/commands.ts") {
+    text = replaceOnce(text, "if (!Array.isArray(lines) || lines.length === 0)", "if (lines.length === 0)", "movement-line malformed-array admission");
+    text = replaceOnce(text, 'if (typeof operationId !== "string" || operationId.trim().length === 0)', "if (operationId.trim().length === 0)", "operation-id malformed-string admission");
+  }
+  if (file === "src/model.ts") {
+    text = replaceOnce(text, '  if (typeof value !== "string") throw new Error(`${label} must be a string.`);\n', "", "inventory identity type admission");
+    text = replaceOnce(text, '  if (node === null || typeof node !== "object" || Array.isArray(node)) {\n    throw new Error("Traceability node must be an object.");\n  }\n', "", "traceability node shape admission");
+  }
+  if (file === "src/facade.ts") {
+    let normalizeGuardedOwner2 = function(node) {
+      if (!node.body || !guardedOwners.has(ownerName(node))) return;
+      const declarations = node.body.statements.filter((statement) => {
+        if (!ts2.isVariableStatement(statement) || statement.declarationList.declarations.length !== 1) return false;
+        const declaration2 = statement.declarationList.declarations[0];
+        return ts2.isIdentifier(declaration2.name) && declaration2.name.text === "from" && declaration2.initializer !== void 0 && ts2.isCallExpression(declaration2.initializer) && ts2.isIdentifier(declaration2.initializer.expression) && declaration2.initializer.expression.text === "requireStockPositionInput" && declaration2.initializer.arguments[0]?.getText(source7) === "input.from";
+      });
+      if (declarations.length === 0) return;
+      assert5.equal(declarations.length, 1, `Expected at most one reviewed source-position guard in ${ownerName(node)}.`);
+      assert5(!normalizedOwners.has(ownerName(node)), `Duplicate reviewed source-position guard owner: ${ownerName(node)}`);
+      normalizedOwners.add(ownerName(node));
+      const declaration = declarations[0];
+      edit(declaration, "");
+      function replaceReferences(child) {
+        if (child === declaration) return;
+        if (ts2.isIdentifier(child) && child.text === "from" && isReferenceIdentifier(child)) edit(child, "input.from");
+        ts2.forEachChild(child, replaceReferences);
+      }
+      ts2.forEachChild(node.body, replaceReferences);
+    }, visit2 = function(node) {
+      if (ts2.isFunctionDeclaration(node) && node.name?.text === "requireStockPositionInput") {
+        edit(node, "");
+        return;
+      }
+      if (ts2.isMethodDeclaration(node) || ts2.isFunctionDeclaration(node)) normalizeGuardedOwner2(node);
+      ts2.forEachChild(node, visit2);
+    };
+    var normalizeGuardedOwner = normalizeGuardedOwner2, visit = visit2;
+    const source7 = ts2.createSourceFile(file, text, ts2.ScriptTarget.Latest, true);
+    const edits = [];
+    const edit = (node, replacement) => edits.push([node.getStart(source7), node.getEnd(), replacement]);
+    const guardedOwners = /* @__PURE__ */ new Set([
+      "changeStatus",
+      "clearStatus",
+      "changeOwner",
+      "clearOwner",
+      "changeCustodian",
+      "clearCustodian",
+      "changeDispositionAuthority",
+      "clearDispositionAuthority",
+      "placeInContainer",
+      "removeFromContainer",
+      "createPositionWithChangedQualifiedDimension",
+      "createPositionWithoutQualifiedDimension"
+    ]);
+    const ownerName = (node) => {
+      if ((ts2.isMethodDeclaration(node) || ts2.isFunctionDeclaration(node)) && node.name !== void 0) return node.name.getText(source7);
+      return void 0;
+    };
+    const isReferenceIdentifier = (node) => {
+      const parent = node.parent;
+      if (ts2.isPropertyAccessExpression(parent) && parent.name === node) return false;
+      if ((ts2.isPropertyAssignment(parent) || ts2.isShorthandPropertyAssignment(parent)) && parent.name === node) return false;
+      if (ts2.isVariableDeclaration(parent) && parent.name === node) return false;
+      return true;
+    };
+    const normalizedOwners = /* @__PURE__ */ new Set();
+    visit2(source7);
+    assert5.deepEqual([...normalizedOwners].sort(), [...guardedOwners].sort(), "Reviewed source-position guard family changed.");
+    for (const [start, end, replacement] of edits.sort((a, b) => b[0] - a[0])) text = text.slice(0, start) + replacement + text.slice(end);
+    text = replaceOnce(text, 'if (typeof next !== "string" || next.trim().length === 0)', "if (next.trim().length === 0)", "changed-identity malformed-string admission");
+    text = replaceOnce(text, 'if (typeof value !== "string" || value.length === 0)', "if (value === undefined)", "clear-identity malformed-string admission");
+  }
+  assert5.equal(syntax(text), syntax(prior), `Review runtime transport changed executable semantics outside validated guards: ${file}`);
+  assert5.equal(syntax(text, false), syntax(prior, false), `Review runtime transport changed typed source outside validated guards: ${file}`);
+  return text;
+}
+function verifyCurrentReviewRuntimeTransport(root3) {
+  execFileSync2("git", ["merge-base", "--is-ancestor", CURRENT_REVIEW_RUNTIME_PRIOR_HEAD, "HEAD"], { cwd: root3, stdio: "ignore" });
+  const files = execFileSync2("git", ["ls-tree", "-r", "--name-only", CURRENT_REVIEW_RUNTIME_PRIOR_HEAD, "--", "src"], { cwd: root3, encoding: "utf8" }).trim().split("\n");
   const currentFiles = execFileSync2("git", ["ls-files", "--", "src"], { cwd: root3, encoding: "utf8" }).trim().split("\n");
-  assert5.deepEqual(currentFiles, files, "Epoch transport changed the runtime module domain.");
-  const inputs3 = [], changes = [];
+  assert5.deepEqual(currentFiles, files, "Current review changed the runtime module domain.");
+  const expectedChanged = ["src/commands.ts", "src/events.ts", "src/facade.ts", "src/model.ts"];
+  const changed = [], inputs3 = [], priorSources = /* @__PURE__ */ new Map();
+  for (const file of files) {
+    const current = readAssuranceFile(root3, file).toString("utf8");
+    const prior = readCurrentReviewPriorFile(root3, file).toString("utf8");
+    inputs3.push({ file, sha256: sha2563(current) });
+    priorSources.set(file, prior);
+    if (current === prior) continue;
+    restoreCurrentReviewRuntimeGuards(file, current, prior);
+    changed.push(file);
+  }
+  assert5.deepEqual(changed, expectedChanged, "Current review runtime delta escaped the audited malformed-input family.");
+  return {
+    priorCertifiedHead: CURRENT_REVIEW_RUNTIME_PRIOR_HEAD,
+    exactChangedRuntimeFiles: changed,
+    inputs: inputs3,
+    priorSources,
+    laws: [
+      "The reviewed runtime delta adds only fail-closed malformed-input admission before existing valid-domain logic.",
+      "Every changed runtime module reverses exactly to the prior certified PR source in both emitted-runtime and typed AST form.",
+      "No runtime module may be added, removed, or changed outside the four audited review files."
+    ]
+  };
+}
+function verifyEpochRuntimeTransport(root3) {
+  execFileSync2("git", ["merge-base", "--is-ancestor", EPOCH_PRIOR_PROOF_HEAD, CURRENT_REVIEW_RUNTIME_PRIOR_HEAD], { cwd: root3, stdio: "ignore" });
+  const reviewTransition = verifyCurrentReviewRuntimeTransport(root3);
+  const files = execFileSync2("git", ["ls-tree", "-r", "--name-only", EPOCH_PRIOR_PROOF_HEAD, "--", "src"], { cwd: root3, encoding: "utf8" }).trim().split("\n");
+  assert5.deepEqual([...reviewTransition.priorSources.keys()], files, "Epoch transport changed the runtime module domain before the reviewed guard delta.");
+  const inputs3 = reviewTransition.inputs, changes = [];
   for (const file of files) {
     let restoreType2 = function(type, removeNull = false) {
       if (removeNull && ts2.isUnionTypeNode(type)) {
@@ -3320,11 +3434,9 @@ function verifyEpochRuntimeTransport(root3) {
       ts2.forEachChild(node, collectPrior2);
     };
     var restoreType = restoreType2, visit = visit2, guardStatement = guardStatement2, priorGuard = priorGuard2, ownerName = ownerName2, collectPrior = collectPrior2;
-    const current = readAssuranceFile(root3, file).toString("utf8"), prior = readEpochPriorFile(root3, file).toString("utf8");
-    if (current === prior) {
-      inputs3.push({ file, sha256: sha2563(current) });
-      continue;
-    }
+    const current = reviewTransition.priorSources.get(file), prior = readEpochPriorFile(root3, file).toString("utf8");
+    assert5.equal(typeof current, "string", `Missing prior certified runtime source: ${file}`);
+    if (current === prior) continue;
     let text = restoreNumericHelpers(file, current, prior);
     const source7 = ts2.createSourceFile(file, text, ts2.ScriptTarget.Latest, true);
     const edits = [];
@@ -3343,9 +3455,12 @@ function verifyEpochRuntimeTransport(root3) {
       throw new Error(`Epoch transport contains an unproved runtime change: ${file}`);
     }
     changes.push(file);
-    inputs3.push({ file, sha256: sha2563(current) });
   }
-  return { priorProofHead: EPOCH_PRIOR_PROOF_HEAD, exactChangedRuntimeFiles: changes, inputs: inputs3, laws: [
+  return { priorProofHead: EPOCH_PRIOR_PROOF_HEAD, currentReviewRuntimeTransport: {
+    priorCertifiedHead: reviewTransition.priorCertifiedHead,
+    exactChangedRuntimeFiles: reviewTransition.exactChangedRuntimeFiles,
+    laws: reviewTransition.laws
+  }, exactChangedRuntimeFiles: changes, inputs: inputs3, laws: [
     "Safe-integer epoch milliseconds form an exact totally ordered instant domain including zero and negative values.",
     "Relational numeric comparison preserves chronology; expiry is inclusive and absence is not a numeric sentinel.",
     "Canonical JSON encodes safe integers injectively up to signed zero, which denotes the same instant; intent arrays retain their field order.",
@@ -15907,7 +16022,7 @@ function repositoryAssuranceCommittedStateSha256(repositoryRoot, commit) {
 var CURRENT_REVIEW_ASSURANCE_RECEIPT = "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json";
 var CURRENT_REVIEW_ASSURANCE_REPORT = "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json";
 var CURRENT_REVIEW_ASSURANCE_FULL_LOG = "experiments/tla-conformance/final-convergence/current-pr-review-full.log";
-var CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "60b72fc64ff0ea0393e92ae61416f9cdafa9a65a";
+var CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "1511bf1c6e7103f2dfb5b88b8b4bd905acc0a81e";
 var AUTHORITATIVE_PATHS = Object.freeze(["src", "formal", "scripts", "test", "package.json", "tsconfig.json", "tsconfig.test.json"]);
 function sha2564(file) {
   return crypto4.createHash("sha256").update(fs38.readFileSync(file)).digest("hex");

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "proofKind": "final-convergence-value-v309-v1",
   "family": "FinalConvergenceValueV309",
-  "surfaceDigest": "3ef3b72eed4ca0191f1136b18bc2a12d336ca4379afe1205c93b50ab89aae49b",
+  "surfaceDigest": "c8c3bd71bc3bdeb96e6172dd0ebb55405f6eab98b65fe457c1f13dc8907544f0",
   "domain": "Every admitted exact safe-integer epoch millisecond input, including signed instants and zero. The complete prior strict callable set is transported through the independently checked full TypeScript and emitted-syntax transformation; external ownership remains excluded.",
   "allAdmittedInputs": true,
   "sampledInputs": 0,
@@ -14,7 +14,7 @@
     },
     {
       "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-      "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+      "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
     },
     {
       "file": "src/allocation.ts",
@@ -54,7 +54,7 @@
     },
     {
       "file": "src/commands.ts",
-      "sha256": "969f1103fbe2bfe9c28e3fd1f0c8c2fab93022dbbadf06a37000fcf9927bee0a"
+      "sha256": "fc2f48062ed4f83633798b01e2780381ab034db7f3a83011556e3a30053f7255"
     },
     {
       "file": "src/composition.ts",
@@ -82,11 +82,11 @@
     },
     {
       "file": "src/events.ts",
-      "sha256": "0a71d0a73a32cf1b2616e2bf5fa45bee447d90a7e3417eb1f5673f069eb5c412"
+      "sha256": "b30214304cd638a305b3d2dfb6ab7992b6c90c25c2dcfc0a001df3c9c333ec77"
     },
     {
       "file": "src/facade.ts",
-      "sha256": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1"
+      "sha256": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e"
     },
     {
       "file": "src/fungibility.ts",
@@ -130,7 +130,7 @@
     },
     {
       "file": "src/model.ts",
-      "sha256": "21eb0b726b2f95d88e77e953eb77d94bd070d877a71a389d34e5ec8dc2d656d0"
+      "sha256": "634096c43e1f05a1960f741c64140bbac92f9605fdef1d2cfcb8232c02ab8f66"
     },
     {
       "file": "src/ordering.ts",
@@ -198,7 +198,7 @@
     },
     {
       "file": "scripts/inventory-epoch-contract.mjs",
-      "sha256": "8d4bb7239a581139a49a888808ede73da3685f79dc7ecee7811eb75020a076ff"
+      "sha256": "85ff15d7744c7a6d631f65b7467e3a0bddbe0f9ed371dad2c354f999b329fd64"
     },
     {
       "file": "formal/UseByReservation.tla",
@@ -516,7 +516,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -625,7 +625,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -734,7 +734,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -857,7 +857,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -1059,7 +1059,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -1071,16 +1071,16 @@
       "declaration": {
         "file": "src/events.ts",
         "start": {
-          "offset": 55955,
-          "line": 1486,
+          "offset": 56065,
+          "line": 1487,
           "column": 1
         },
         "end": {
-          "offset": 56159,
-          "line": 1490,
+          "offset": 56269,
+          "line": 1491,
           "column": 2
         },
-        "sourceHash": "0a71d0a73a32cf1b2616e2bf5fa45bee447d90a7e3417eb1f5673f069eb5c412",
+        "sourceHash": "b30214304cd638a305b3d2dfb6ab7992b6c90c25c2dcfc0a001df3c9c333ec77",
         "astHash": "17774d9e358e3861901083615777ae82fda27222a1036adcb9f0daa00f05cc50"
       },
       "semantics": {
@@ -1197,7 +1197,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -1328,7 +1328,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -1473,7 +1473,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -1485,17 +1485,17 @@
       "declaration": {
         "file": "src/model.ts",
         "start": {
-          "offset": 7301,
+          "offset": 7312,
           "line": 171,
           "column": 1
         },
         "end": {
-          "offset": 7593,
-          "line": 177,
+          "offset": 7684,
+          "line": 178,
           "column": 2
         },
-        "sourceHash": "21eb0b726b2f95d88e77e953eb77d94bd070d877a71a389d34e5ec8dc2d656d0",
-        "astHash": "49ee204a9b5196a95f60e0d297bc3591c673e47bcc7a463ecc8739b8b0e2c4b8"
+        "sourceHash": "634096c43e1f05a1960f741c64140bbac92f9605fdef1d2cfcb8232c02ab8f66",
+        "astHash": "1b79f5952effb9b67ab634ad27e5c24f9b169b779f35c2029a30ef72ec8cffa5"
       },
       "semantics": {
         "kind": "EXACT_EPOCH_MILLISECONDS_PRIMITIVE_TRANSPORT",
@@ -1604,7 +1604,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -1713,7 +1713,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -1786,7 +1786,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -1944,7 +1944,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -2078,7 +2078,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -2211,7 +2211,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -2320,7 +2320,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -2429,7 +2429,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -2503,7 +2503,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -2524,7 +2524,7 @@
           "line": 445,
           "column": 2
         },
-        "sourceHash": "0a71d0a73a32cf1b2616e2bf5fa45bee447d90a7e3417eb1f5673f069eb5c412",
+        "sourceHash": "b30214304cd638a305b3d2dfb6ab7992b6c90c25c2dcfc0a001df3c9c333ec77",
         "astHash": "f29bd34560739e0615a3216021a9ed9481692cf22cb0e51804ccb0094849211b"
       },
       "semantics": {
@@ -2585,7 +2585,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -2669,7 +2669,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -2804,7 +2804,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -2913,7 +2913,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -3028,7 +3028,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -3143,7 +3143,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -3164,7 +3164,7 @@
           "line": 1094,
           "column": 2
         },
-        "sourceHash": "969f1103fbe2bfe9c28e3fd1f0c8c2fab93022dbbadf06a37000fcf9927bee0a",
+        "sourceHash": "fc2f48062ed4f83633798b01e2780381ab034db7f3a83011556e3a30053f7255",
         "astHash": "be766a9a17f0480d6a5910373263f0451b4e1d246f83b3d0a650d3110baf71a0"
       },
       "semantics": {
@@ -3281,7 +3281,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -3674,7 +3674,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -3695,7 +3695,7 @@
           "line": 1124,
           "column": 2
         },
-        "sourceHash": "969f1103fbe2bfe9c28e3fd1f0c8c2fab93022dbbadf06a37000fcf9927bee0a",
+        "sourceHash": "fc2f48062ed4f83633798b01e2780381ab034db7f3a83011556e3a30053f7255",
         "astHash": "a7814ad246acc2400b948bcb87e0bdd5339847ea87dd5a6ba6410d2269670555"
       },
       "semantics": {
@@ -3885,7 +3885,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -4114,7 +4114,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -4135,7 +4135,7 @@
           "line": 487,
           "column": 2
         },
-        "sourceHash": "969f1103fbe2bfe9c28e3fd1f0c8c2fab93022dbbadf06a37000fcf9927bee0a",
+        "sourceHash": "fc2f48062ed4f83633798b01e2780381ab034db7f3a83011556e3a30053f7255",
         "astHash": "3f82ba792f0fc667d3a9d816a94c77ddb867894021ccda6bb8845a3ff936c3d8"
       },
       "semantics": {
@@ -4331,7 +4331,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -4352,7 +4352,7 @@
           "line": 701,
           "column": 2
         },
-        "sourceHash": "969f1103fbe2bfe9c28e3fd1f0c8c2fab93022dbbadf06a37000fcf9927bee0a",
+        "sourceHash": "fc2f48062ed4f83633798b01e2780381ab034db7f3a83011556e3a30053f7255",
         "astHash": "bcd9955f394dcbcb52d65b574a2ad26702585bd916ca037432bd9db8d30d8071"
       },
       "semantics": {
@@ -4549,7 +4549,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -4570,7 +4570,7 @@
           "line": 1109,
           "column": 2
         },
-        "sourceHash": "969f1103fbe2bfe9c28e3fd1f0c8c2fab93022dbbadf06a37000fcf9927bee0a",
+        "sourceHash": "fc2f48062ed4f83633798b01e2780381ab034db7f3a83011556e3a30053f7255",
         "astHash": "50e0341a16b13c3c55932311165fc5a044a26f523390268f4a56779a26779f98"
       },
       "semantics": {
@@ -4760,7 +4760,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -4781,7 +4781,7 @@
           "line": 443,
           "column": 2
         },
-        "sourceHash": "969f1103fbe2bfe9c28e3fd1f0c8c2fab93022dbbadf06a37000fcf9927bee0a",
+        "sourceHash": "fc2f48062ed4f83633798b01e2780381ab034db7f3a83011556e3a30053f7255",
         "astHash": "e5fd581e3c16153ed6aa96431493b7269a7d7faba0825a886138beca859321e3"
       },
       "semantics": {
@@ -4979,7 +4979,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -5000,7 +5000,7 @@
           "line": 894,
           "column": 2
         },
-        "sourceHash": "969f1103fbe2bfe9c28e3fd1f0c8c2fab93022dbbadf06a37000fcf9927bee0a",
+        "sourceHash": "fc2f48062ed4f83633798b01e2780381ab034db7f3a83011556e3a30053f7255",
         "astHash": "64e8ce0a531f38bc4b8db9a1fa7e41e85746d9a458bc85db2ddda5ab75984f69"
       },
       "semantics": {
@@ -5197,7 +5197,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -5218,7 +5218,7 @@
           "line": 466,
           "column": 2
         },
-        "sourceHash": "969f1103fbe2bfe9c28e3fd1f0c8c2fab93022dbbadf06a37000fcf9927bee0a",
+        "sourceHash": "fc2f48062ed4f83633798b01e2780381ab034db7f3a83011556e3a30053f7255",
         "astHash": "5451aaa9dcfe55ebbd614607cf315546f50a2140b7239d43b888dd7d89fe895b"
       },
       "semantics": {
@@ -5416,7 +5416,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -5437,7 +5437,7 @@
           "line": 633,
           "column": 2
         },
-        "sourceHash": "969f1103fbe2bfe9c28e3fd1f0c8c2fab93022dbbadf06a37000fcf9927bee0a",
+        "sourceHash": "fc2f48062ed4f83633798b01e2780381ab034db7f3a83011556e3a30053f7255",
         "astHash": "e78a1d4e4beff1a3f9461b2bffeb34190b5eb7b8b0f2c04a8b06f260a69d4a4a"
       },
       "semantics": {
@@ -5647,7 +5647,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -5667,7 +5667,7 @@
           "line": 790,
           "column": 2
         },
-        "sourceHash": "969f1103fbe2bfe9c28e3fd1f0c8c2fab93022dbbadf06a37000fcf9927bee0a",
+        "sourceHash": "fc2f48062ed4f83633798b01e2780381ab034db7f3a83011556e3a30053f7255",
         "astHash": "6426fd9acfc5bf6db735d169340028bbaef7d3c3004fb8870d2dc717a2079472"
       },
       "semantics": {
@@ -5870,7 +5870,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -5890,7 +5890,7 @@
           "line": 857,
           "column": 2
         },
-        "sourceHash": "969f1103fbe2bfe9c28e3fd1f0c8c2fab93022dbbadf06a37000fcf9927bee0a",
+        "sourceHash": "fc2f48062ed4f83633798b01e2780381ab034db7f3a83011556e3a30053f7255",
         "astHash": "c707390181cd74a2f5fad8fc758690d1bf5a8919f56fa232e519182bf8ab9d54"
       },
       "semantics": {
@@ -6093,7 +6093,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -6114,7 +6114,7 @@
           "line": 1045,
           "column": 2
         },
-        "sourceHash": "969f1103fbe2bfe9c28e3fd1f0c8c2fab93022dbbadf06a37000fcf9927bee0a",
+        "sourceHash": "fc2f48062ed4f83633798b01e2780381ab034db7f3a83011556e3a30053f7255",
         "astHash": "42003e20e3129928f18fa74df56f55a98b6856558c9ca9fc81ca986dd440af86"
       },
       "semantics": {
@@ -6310,7 +6310,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -6331,7 +6331,7 @@
           "line": 1077,
           "column": 2
         },
-        "sourceHash": "969f1103fbe2bfe9c28e3fd1f0c8c2fab93022dbbadf06a37000fcf9927bee0a",
+        "sourceHash": "fc2f48062ed4f83633798b01e2780381ab034db7f3a83011556e3a30053f7255",
         "astHash": "a99e7e9e5a2ae170c5373dbe4a65ce5669c73ff6441484d1e5ece2f937dba3fc"
       },
       "semantics": {
@@ -6528,7 +6528,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -6549,7 +6549,7 @@
           "line": 1137,
           "column": 2
         },
-        "sourceHash": "969f1103fbe2bfe9c28e3fd1f0c8c2fab93022dbbadf06a37000fcf9927bee0a",
+        "sourceHash": "fc2f48062ed4f83633798b01e2780381ab034db7f3a83011556e3a30053f7255",
         "astHash": "38eae0cd88e201aa567ef471bdace6ba5b8074501a8057a0ffc69429374145b8"
       },
       "semantics": {
@@ -6739,7 +6739,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -6962,7 +6962,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -6982,7 +6982,7 @@
           "line": 525,
           "column": 2
         },
-        "sourceHash": "969f1103fbe2bfe9c28e3fd1f0c8c2fab93022dbbadf06a37000fcf9927bee0a",
+        "sourceHash": "fc2f48062ed4f83633798b01e2780381ab034db7f3a83011556e3a30053f7255",
         "astHash": "937f0d9e42288dc6d3b74d7bf7f72c6f35f934ad020c90c0ba95155854df77dd"
       },
       "semantics": {
@@ -7185,7 +7185,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -7205,7 +7205,7 @@
           "line": 750,
           "column": 2
         },
-        "sourceHash": "969f1103fbe2bfe9c28e3fd1f0c8c2fab93022dbbadf06a37000fcf9927bee0a",
+        "sourceHash": "fc2f48062ed4f83633798b01e2780381ab034db7f3a83011556e3a30053f7255",
         "astHash": "11089eb9dabd20247a6288925b7775d7945995771b96e4c4ef770fa9466bb82d"
       },
       "semantics": {
@@ -7408,7 +7408,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -7631,7 +7631,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -7854,7 +7854,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -8077,7 +8077,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -8098,7 +8098,7 @@
           "line": 1021,
           "column": 2
         },
-        "sourceHash": "969f1103fbe2bfe9c28e3fd1f0c8c2fab93022dbbadf06a37000fcf9927bee0a",
+        "sourceHash": "fc2f48062ed4f83633798b01e2780381ab034db7f3a83011556e3a30053f7255",
         "astHash": "2351d98eb0f78d38561b1b870455193f47a4f5a56100f05be7339ad2c9605edb"
       },
       "semantics": {
@@ -8308,7 +8308,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -8329,7 +8329,7 @@
           "line": 944,
           "column": 2
         },
-        "sourceHash": "969f1103fbe2bfe9c28e3fd1f0c8c2fab93022dbbadf06a37000fcf9927bee0a",
+        "sourceHash": "fc2f48062ed4f83633798b01e2780381ab034db7f3a83011556e3a30053f7255",
         "astHash": "43ffd6c53e4df2eeab96324dc10e2aaca80ab838eb719bfeff91553f6a237cdf"
       },
       "semantics": {
@@ -8528,7 +8528,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -8655,7 +8655,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -8782,7 +8782,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -8914,7 +8914,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -8935,7 +8935,7 @@
           "line": 415,
           "column": 2
         },
-        "sourceHash": "0a71d0a73a32cf1b2616e2bf5fa45bee447d90a7e3417eb1f5673f069eb5c412",
+        "sourceHash": "b30214304cd638a305b3d2dfb6ab7992b6c90c25c2dcfc0a001df3c9c333ec77",
         "astHash": "7d6ac2ccde01c4a2f3a5cc1c7cf596d90b9370bfbe33b4480df46b2531559f27"
       },
       "semantics": {
@@ -9116,7 +9116,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -9250,7 +9250,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -9381,7 +9381,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -9517,7 +9517,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -9650,7 +9650,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -9779,7 +9779,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -9907,7 +9907,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -10037,7 +10037,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -10158,7 +10158,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -10274,7 +10274,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -10405,7 +10405,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -10521,7 +10521,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -10605,7 +10605,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -10732,7 +10732,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -10866,7 +10866,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -10927,7 +10927,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -11056,7 +11056,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -11165,7 +11165,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -11288,7 +11288,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -11420,7 +11420,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -11548,7 +11548,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -11675,7 +11675,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -11759,7 +11759,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -12066,7 +12066,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -12087,7 +12087,7 @@
           "line": 146,
           "column": 2
         },
-        "sourceHash": "21eb0b726b2f95d88e77e953eb77d94bd070d877a71a389d34e5ec8dc2d656d0",
+        "sourceHash": "634096c43e1f05a1960f741c64140bbac92f9605fdef1d2cfcb8232c02ab8f66",
         "astHash": "3e083a0793e9395ad0b5a8cd5c78fefca235c821d493156ddef1f9c01f0fc6d2"
       },
       "semantics": {
@@ -12193,7 +12193,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -12205,17 +12205,17 @@
       "declaration": {
         "file": "src/commands.ts",
         "start": {
-          "offset": 51061,
+          "offset": 51099,
           "line": 1375,
           "column": 1
         },
         "end": {
-          "offset": 51295,
+          "offset": 51368,
           "line": 1379,
           "column": 2
         },
-        "sourceHash": "969f1103fbe2bfe9c28e3fd1f0c8c2fab93022dbbadf06a37000fcf9927bee0a",
-        "astHash": "fc38acab9a593f22ec4f9c9f80d49eb91f5f7ff912283bbdf36ec68ee6a60fd5"
+        "sourceHash": "fc2f48062ed4f83633798b01e2780381ab034db7f3a83011556e3a30053f7255",
+        "astHash": "7632ca85895d076542620231592901bb61b8979281128cc6e7c2be8087f9cae2"
       },
       "semantics": {
         "kind": "EXACT_EPOCH_MILLISECONDS_PRIMITIVE_TRANSPORT",
@@ -12325,7 +12325,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -12346,7 +12346,7 @@
           "line": 508,
           "column": 2
         },
-        "sourceHash": "0a71d0a73a32cf1b2616e2bf5fa45bee447d90a7e3417eb1f5673f069eb5c412",
+        "sourceHash": "b30214304cd638a305b3d2dfb6ab7992b6c90c25c2dcfc0a001df3c9c333ec77",
         "astHash": "d43e58ace22af834b8aa0c0eab4e61d72d8702b8da3a4aa5e9a05c775ef527c9"
       },
       "semantics": {
@@ -12466,7 +12466,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -12773,7 +12773,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -12836,7 +12836,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -12910,7 +12910,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -13037,7 +13037,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -13058,7 +13058,7 @@
           "line": 124,
           "column": 2
         },
-        "sourceHash": "21eb0b726b2f95d88e77e953eb77d94bd070d877a71a389d34e5ec8dc2d656d0",
+        "sourceHash": "634096c43e1f05a1960f741c64140bbac92f9605fdef1d2cfcb8232c02ab8f66",
         "astHash": "8a89acef89e02b25eb172b43b2fc35c9a0fa0759cd09c1e9676b72f408f30e91"
       },
       "semantics": {
@@ -13170,7 +13170,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -13299,7 +13299,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -13408,7 +13408,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -13523,7 +13523,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -13626,7 +13626,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -13735,7 +13735,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -13838,7 +13838,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -13947,7 +13947,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -14074,7 +14074,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -14203,7 +14203,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -14337,7 +14337,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -14476,7 +14476,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -14497,7 +14497,7 @@
           "line": 103,
           "column": 2
         },
-        "sourceHash": "21eb0b726b2f95d88e77e953eb77d94bd070d877a71a389d34e5ec8dc2d656d0",
+        "sourceHash": "634096c43e1f05a1960f741c64140bbac92f9605fdef1d2cfcb8232c02ab8f66",
         "astHash": "d07f270a6c0e87bef15d3b3f155f2ce6ae4b0fb495e7955e1b1a1fca82eefda4"
       },
       "semantics": {
@@ -14609,7 +14609,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -14621,16 +14621,16 @@
       "declaration": {
         "file": "src/model.ts",
         "start": {
-          "offset": 9973,
-          "line": 235,
+          "offset": 10064,
+          "line": 236,
           "column": 1
         },
         "end": {
-          "offset": 10558,
-          "line": 254,
+          "offset": 10649,
+          "line": 255,
           "column": 2
         },
-        "sourceHash": "21eb0b726b2f95d88e77e953eb77d94bd070d877a71a389d34e5ec8dc2d656d0",
+        "sourceHash": "634096c43e1f05a1960f741c64140bbac92f9605fdef1d2cfcb8232c02ab8f66",
         "astHash": "48a12ead90339db24f8619b6cfe0efab9b170c72a8daf140a5fd1ee45b65e52a"
       },
       "semantics": {
@@ -14737,7 +14737,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -14872,7 +14872,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -15006,7 +15006,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -15139,7 +15139,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -15266,7 +15266,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -15402,7 +15402,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -15414,17 +15414,17 @@
       "declaration": {
         "file": "src/model.ts",
         "start": {
-          "offset": 10630,
-          "line": 257,
+          "offset": 10721,
+          "line": 258,
           "column": 1
         },
         "end": {
-          "offset": 11329,
-          "line": 272,
+          "offset": 11559,
+          "line": 276,
           "column": 2
         },
-        "sourceHash": "21eb0b726b2f95d88e77e953eb77d94bd070d877a71a389d34e5ec8dc2d656d0",
-        "astHash": "64c3736fb3fd8cabb77f634e68296d13877a7b9046c0fc85e1bc7ec504df2020"
+        "sourceHash": "634096c43e1f05a1960f741c64140bbac92f9605fdef1d2cfcb8232c02ab8f66",
+        "astHash": "c0a3e51128a5925b95b4b40a2b5eb5e092105e9c2b260b9c04b93e1aa6a88fe6"
       },
       "semantics": {
         "kind": "EXACT_EPOCH_MILLISECONDS_PRIMITIVE_TRANSPORT",
@@ -15529,7 +15529,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -15603,7 +15603,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -15677,7 +15677,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -15786,7 +15786,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -15909,7 +15909,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -16049,7 +16049,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -16158,7 +16158,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -16267,7 +16267,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -16376,7 +16376,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -16479,7 +16479,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -16582,7 +16582,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -16691,7 +16691,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -16911,7 +16911,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -16923,16 +16923,16 @@
       "declaration": {
         "file": "src/model.ts",
         "start": {
-          "offset": 7684,
-          "line": 180,
+          "offset": 7775,
+          "line": 181,
           "column": 1
         },
         "end": {
-          "offset": 9346,
-          "line": 217,
+          "offset": 9437,
+          "line": 218,
           "column": 2
         },
-        "sourceHash": "21eb0b726b2f95d88e77e953eb77d94bd070d877a71a389d34e5ec8dc2d656d0",
+        "sourceHash": "634096c43e1f05a1960f741c64140bbac92f9605fdef1d2cfcb8232c02ab8f66",
         "astHash": "3714a17544188fc86a72793e3a12a5ea3cf0830d39b3ca5fda6746113562532c"
       },
       "semantics": {
@@ -17039,7 +17039,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -17169,7 +17169,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -17308,7 +17308,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -17417,7 +17417,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -17540,7 +17540,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -18382,7 +18382,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -18491,7 +18491,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -18600,7 +18600,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -18814,7 +18814,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -18917,7 +18917,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -19026,7 +19026,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -19135,7 +19135,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -19244,7 +19244,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -19347,7 +19347,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -19456,7 +19456,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -19602,7 +19602,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -19711,7 +19711,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -19820,7 +19820,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -19953,7 +19953,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -20062,7 +20062,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -20171,7 +20171,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -20294,7 +20294,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -20417,7 +20417,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -20765,7 +20765,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -20888,7 +20888,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -20991,7 +20991,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -21094,7 +21094,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -21203,7 +21203,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -21311,7 +21311,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -21402,7 +21402,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -21493,7 +21493,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -21584,7 +21584,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -21683,7 +21683,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -21774,7 +21774,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -21847,7 +21847,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -21908,7 +21908,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -21981,7 +21981,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -22054,7 +22054,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -22115,7 +22115,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -22211,7 +22211,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -22284,7 +22284,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -23954,7 +23954,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -24027,7 +24027,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -24348,7 +24348,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -24421,7 +24421,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -24494,7 +24494,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -24590,7 +24590,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -24699,7 +24699,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -24808,7 +24808,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -24939,7 +24939,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -25084,7 +25084,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -25193,7 +25193,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -25351,7 +25351,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -25484,7 +25484,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -25593,7 +25593,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -25702,7 +25702,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -25714,16 +25714,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 260101,
-          "line": 7131,
+          "offset": 261368,
+          "line": 7153,
           "column": 1
         },
         "end": {
-          "offset": 260390,
-          "line": 7138,
+          "offset": 261657,
+          "line": 7160,
           "column": 2
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "01255908ed831e42977934eeebc3a3dfde0a4cecaf516dcb52069b019e4099be"
       },
       "semantics": {
@@ -26009,7 +26009,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -26021,16 +26021,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 264724,
-          "line": 7252,
+          "offset": 265991,
+          "line": 7274,
           "column": 1
         },
         "end": {
-          "offset": 265626,
-          "line": 7275,
+          "offset": 266893,
+          "line": 7297,
           "column": 2
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "482cdf878ab44ed03ae025390f726cf13b76238778ce0bf78a1c1db5ebf8a29d"
       },
       "semantics": {
@@ -26316,7 +26316,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -26425,7 +26425,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -26540,7 +26540,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -26655,7 +26655,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -26667,16 +26667,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 259574,
-          "line": 7109,
+          "offset": 260841,
+          "line": 7131,
           "column": 1
         },
         "end": {
-          "offset": 260000,
-          "line": 7128,
+          "offset": 261267,
+          "line": 7150,
           "column": 2
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "30923fb86124cf755ee93e0199e8446e21f2cc53035234470eadbb4dc77071da"
       },
       "semantics": {
@@ -26962,7 +26962,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -27089,7 +27089,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -27216,7 +27216,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -27348,7 +27348,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -27482,7 +27482,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -27613,7 +27613,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -27749,7 +27749,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -27761,16 +27761,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 262277,
-          "line": 7177,
+          "offset": 263544,
+          "line": 7199,
           "column": 1
         },
         "end": {
-          "offset": 264625,
-          "line": 7249,
+          "offset": 265892,
+          "line": 7271,
           "column": 2
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "d9d004cc07ff4a5a004f3b441b68d2aa81cf2398108219c830bc7f4a5847854e"
       },
       "semantics": {
@@ -28056,7 +28056,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -28189,7 +28189,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -28318,7 +28318,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -28446,7 +28446,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -28576,7 +28576,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -28697,7 +28697,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -28824,7 +28824,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -28958,7 +28958,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -29019,7 +29019,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -29128,7 +29128,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -29251,7 +29251,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -29383,7 +29383,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -29520,7 +29520,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -29714,7 +29714,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -29842,7 +29842,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -29969,7 +29969,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -30053,7 +30053,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -30074,7 +30074,7 @@
           "line": 146,
           "column": 2
         },
-        "sourceHash": "21eb0b726b2f95d88e77e953eb77d94bd070d877a71a389d34e5ec8dc2d656d0",
+        "sourceHash": "634096c43e1f05a1960f741c64140bbac92f9605fdef1d2cfcb8232c02ab8f66",
         "astHash": "3e083a0793e9395ad0b5a8cd5c78fefca235c821d493156ddef1f9c01f0fc6d2"
       },
       "semantics": {
@@ -30180,7 +30180,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -30243,7 +30243,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -30264,7 +30264,7 @@
           "line": 124,
           "column": 2
         },
-        "sourceHash": "21eb0b726b2f95d88e77e953eb77d94bd070d877a71a389d34e5ec8dc2d656d0",
+        "sourceHash": "634096c43e1f05a1960f741c64140bbac92f9605fdef1d2cfcb8232c02ab8f66",
         "astHash": "8a89acef89e02b25eb172b43b2fc35c9a0fa0759cd09c1e9676b72f408f30e91"
       },
       "semantics": {
@@ -30376,7 +30376,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -30505,7 +30505,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -30614,7 +30614,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -30729,7 +30729,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -30832,7 +30832,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -30941,7 +30941,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -31044,7 +31044,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -31153,7 +31153,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -31165,16 +31165,16 @@
       "declaration": {
         "file": "src/facade.ts",
         "start": {
-          "offset": 266123,
-          "line": 7286,
+          "offset": 267390,
+          "line": 7308,
           "column": 1
         },
         "end": {
-          "offset": 266865,
-          "line": 7303,
+          "offset": 268132,
+          "line": 7325,
           "column": 2
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "c05d2ccba3f4dd73066826aad4675a3cc3662e4d65026b3867ca080fc2b41395"
       },
       "semantics": {
@@ -31211,7 +31211,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -31345,7 +31345,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -31484,7 +31484,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -31617,7 +31617,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -31726,7 +31726,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -31849,7 +31849,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -31989,7 +31989,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -32098,7 +32098,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -32207,7 +32207,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -32316,7 +32316,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -32419,7 +32419,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -32522,7 +32522,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -32631,7 +32631,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -32851,7 +32851,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -32990,7 +32990,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -33099,7 +33099,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -33222,7 +33222,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -34064,7 +34064,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -34173,7 +34173,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -34282,7 +34282,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -34385,7 +34385,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -34494,7 +34494,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -34603,7 +34603,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -34712,7 +34712,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -34815,7 +34815,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -34924,7 +34924,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -35053,7 +35053,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -35199,7 +35199,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -35308,7 +35308,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -35417,7 +35417,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -35550,7 +35550,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -35659,7 +35659,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -35768,7 +35768,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -35891,7 +35891,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -36239,7 +36239,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -36362,7 +36362,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -36465,7 +36465,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -36568,7 +36568,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -36677,7 +36677,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -36876,7 +36876,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -37075,7 +37075,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -37200,7 +37200,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -37399,7 +37399,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -37598,7 +37598,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -37797,7 +37797,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -37996,7 +37996,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -38195,7 +38195,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -38394,7 +38394,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -38519,7 +38519,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -38718,7 +38718,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -38906,7 +38906,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -39153,7 +39153,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -39352,7 +39352,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -39551,7 +39551,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -39772,7 +39772,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -40025,7 +40025,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -40292,7 +40292,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -40559,7 +40559,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -40580,7 +40580,7 @@
           "line": 1678,
           "column": 35
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "cac04f806da5a7caab8d7b3923e1e1627c607f90ac9a37cf65521cae7df881b4"
       },
       "semantics": {
@@ -40811,7 +40811,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -40832,7 +40832,7 @@
           "line": 1707,
           "column": 33
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "a159f4e391306ee0b6b973800fb4a555d7504e3b5e67182c3f81ce2393ef1be0"
       },
       "semantics": {
@@ -41073,7 +41073,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -41094,7 +41094,7 @@
           "line": 1703,
           "column": 56
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "21b13fbd62ef795286e6e94bf6cca6bc3583fd2fc7359e307947aacc0194a45f"
       },
       "semantics": {
@@ -41349,7 +41349,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -41370,7 +41370,7 @@
           "line": 1690,
           "column": 56
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "3a17c6e8a234492596c93a7257c075361e6419d82f96ccba40d3eb22141ea5c0"
       },
       "semantics": {
@@ -41527,7 +41527,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -41548,7 +41548,7 @@
           "line": 1692,
           "column": 66
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "f37c1349e1bf73a52a6703ba5199bd31c1d165146ed67820e1c954b550eee60b"
       },
       "semantics": {
@@ -41726,7 +41726,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -41747,7 +41747,7 @@
           "line": 1717,
           "column": 54
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "7ead5d29872a077bd8f25fe42085020bef00df7bde155d24dfdfa45ea17b2eea"
       },
       "semantics": {
@@ -41900,7 +41900,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -41921,7 +41921,7 @@
           "line": 1713,
           "column": 63
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "0cc5f92564f3d034c35d365f8e8080bdc2d3bc8ef3c235cec09db94acc02a995"
       },
       "semantics": {
@@ -42074,7 +42074,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -42095,7 +42095,7 @@
           "line": 1711,
           "column": 34
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "150706bce814cc0dacd9565fe99b3432dd1d109b9bf9be51b36175e694cddeaa"
       },
       "semantics": {
@@ -42423,7 +42423,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -42444,7 +42444,7 @@
           "line": 1697,
           "column": 50
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "5d60f2ef88c76771569148313d8d5dbb13f41c45f21875354997663079435e91"
       },
       "semantics": {
@@ -42610,7 +42610,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -42631,7 +42631,7 @@
           "line": 1699,
           "column": 69
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "d890d388798b74087801b5c0ccdb2a04b1f9aec8c89eb63f2d9d191aa3de049f"
       },
       "semantics": {
@@ -42779,7 +42779,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -42800,7 +42800,7 @@
           "line": 1686,
           "column": 57
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "32459daac6fb46a2ac2ba7bf14d09f06ab50cd2bd0230c0da1fb4e031df949b1"
       },
       "semantics": {
@@ -42973,7 +42973,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -42994,7 +42994,7 @@
           "line": 1682,
           "column": 36
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "2f05e23fff3aa6774ccea45c6603558fb91e6c2c6c7d6c7aafa610775ce02a6a"
       },
       "semantics": {
@@ -43461,7 +43461,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -43482,7 +43482,7 @@
           "line": 1671,
           "column": 48
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "7ff1dcd3c6771f3f0c75cc02d8518d9192a4634b50e7c5c16baa944eaa9fd404"
       },
       "semantics": {
@@ -43648,7 +43648,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -43669,7 +43669,7 @@
           "line": 1673,
           "column": 68
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "d41d83f86d8d87cf2f66ebf95dfb241df3f449575c1dab9f5f5bcd6efa3ebadf"
       },
       "semantics": {
@@ -43860,7 +43860,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -43881,7 +43881,7 @@
           "line": 1071,
           "column": 35
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "a38c84cf573435c1dee036a7003c500513663f3876e75bfb5955f4a39f5fb2bb"
       },
       "semantics": {
@@ -44144,7 +44144,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -44165,7 +44165,7 @@
           "line": 1079,
           "column": 35
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "b94c81cf863f5a0d980edd26ada2dc75dfc69154318cc140f3c6f64ddb2ea29b"
       },
       "semantics": {
@@ -44428,7 +44428,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -44449,7 +44449,7 @@
           "line": 1007,
           "column": 35
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "02cc082c51b724021b5e9eda247d658838fb5a0ed8b7280de67955e49c43306f"
       },
       "semantics": {
@@ -44722,7 +44722,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -44743,7 +44743,7 @@
           "line": 1015,
           "column": 35
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "c2b3f94fe1bcce792f1831394d3372ed2da4c04ac73b3025a5501293882c577d"
       },
       "semantics": {
@@ -45016,7 +45016,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -45037,7 +45037,7 @@
           "line": 999,
           "column": 35
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "25e211b38723c3cf305715b208d30639d8910a19cb3e0cdfc936e0edc799e4ad"
       },
       "semantics": {
@@ -45310,7 +45310,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -45331,7 +45331,7 @@
           "line": 1031,
           "column": 35
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "65901d7e1b8b4437ea0f3f93bbd989e2e033c98f0a9c6248dee33a1bfb80656c"
       },
       "semantics": {
@@ -45604,7 +45604,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -45625,7 +45625,7 @@
           "line": 991,
           "column": 35
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "3b559eecf96dc2b0c098f5389b770de97864a96428444109ac27bba1bfd9169e"
       },
       "semantics": {
@@ -45898,7 +45898,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -45919,7 +45919,7 @@
           "line": 1011,
           "column": 35
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "b0bf54393a62331391dfb88b907230d0f94357e07474ab8d7c5e4081dbd8ca2e"
       },
       "semantics": {
@@ -46192,7 +46192,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -46213,7 +46213,7 @@
           "line": 1019,
           "column": 35
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "0a6d7444658830420e888023029ddc59f19de8cfc3bbc7ff8b35f6b74319e64c"
       },
       "semantics": {
@@ -46486,7 +46486,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -46507,7 +46507,7 @@
           "line": 1003,
           "column": 35
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "4a06dbf6128956f574185620157ff91354ab16381962ed6f248623754750ac5a"
       },
       "semantics": {
@@ -46780,7 +46780,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -46801,7 +46801,7 @@
           "line": 1035,
           "column": 35
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "febedad76382170f349c411c14e89f43487ff4c799408c3eefe41572da96405f"
       },
       "semantics": {
@@ -47074,7 +47074,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -47095,7 +47095,7 @@
           "line": 995,
           "column": 35
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "6f94cb02201b0fafcc239238772737d680da23d2464e7e9772f57c51532de26f"
       },
       "semantics": {
@@ -47368,7 +47368,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -47389,7 +47389,7 @@
           "line": 1059,
           "column": 35
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "5b1c9a73269c0789d95a10ab8a2007703fad025c41f3eb1b767382e4f57040f5"
       },
       "semantics": {
@@ -47648,7 +47648,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -47669,7 +47669,7 @@
           "line": 1067,
           "column": 35
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "1fb7cc479d63fd841cd2c0fc917a8c5d441a66ecfc472b9d7ded275e283096fc"
       },
       "semantics": {
@@ -47922,7 +47922,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -47943,7 +47943,7 @@
           "line": 1075,
           "column": 35
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "ce800aa22cb0682dd6baab7b57969a10ce53b408f3d08d78731f61c85e216b83"
       },
       "semantics": {
@@ -48206,7 +48206,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -48227,7 +48227,7 @@
           "line": 1083,
           "column": 35
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "dd23e4824265d8b34c292679aa99072d12f75d5d411f9f94e418fcc392754eae"
       },
       "semantics": {
@@ -48490,7 +48490,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -48511,7 +48511,7 @@
           "line": 983,
           "column": 35
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "e43a35d9e7cddfafda69f4cc500c98b405562b699f50d581cb6cec32f5c7d209"
       },
       "semantics": {
@@ -48776,7 +48776,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -48797,7 +48797,7 @@
           "line": 1063,
           "column": 35
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "080489a60ae266862703a0d56faaeabca07aef2a55b18be29ebf08b1b61dcb5a"
       },
       "semantics": {
@@ -49056,7 +49056,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -49077,7 +49077,7 @@
           "line": 971,
           "column": 40
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "8d0c190b6ce67704d823ea6f6415cc4e7288938e0404058ae0082198e863d492"
       },
       "semantics": {
@@ -49246,7 +49246,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -49267,7 +49267,7 @@
           "line": 975,
           "column": 35
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "ab9b789f8625f967239360a5812d1896658983fe2ef50599b92fdca3cedcd88b"
       },
       "semantics": {
@@ -49534,7 +49534,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -49555,7 +49555,7 @@
           "line": 1043,
           "column": 35
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "a83c39e2db6695ebdbdc2bd700162e2d0d79010a90724e820d4f4dd562be6bb1"
       },
       "semantics": {
@@ -49821,7 +49821,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -49842,7 +49842,7 @@
           "line": 1023,
           "column": 35
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "7eff657acffe26b1385433365ae4a2206852a6ce7771343f1ebbdb085ce6450b"
       },
       "semantics": {
@@ -50115,7 +50115,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -50136,7 +50136,7 @@
           "line": 979,
           "column": 35
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "066ad5abc4f59ec4df29c4d65cb1bfbf6092f330ef2520e969d2c3c138c7dfa2"
       },
       "semantics": {
@@ -50403,7 +50403,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -50423,7 +50423,7 @@
           "line": 1039,
           "column": 35
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "19569aa25492bba54540dbadef5680be0eee45322bba1743e0ce21818875f411"
       },
       "semantics": {
@@ -50626,7 +50626,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -50647,7 +50647,7 @@
           "line": 1027,
           "column": 35
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "07da2803911bfee2610f7d9b4e8c2a56251eddaf4caffbd9026483d84247bd72"
       },
       "semantics": {
@@ -50919,7 +50919,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -50940,7 +50940,7 @@
           "line": 1055,
           "column": 35
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "112a0e1cbe5a9b04a43d81e4bd5d980734de680c015870863dfa37767ea83652"
       },
       "semantics": {
@@ -51205,7 +51205,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -51225,7 +51225,7 @@
           "line": 987,
           "column": 35
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "57e06b6a5855da806b1cfa4f22defcd39ba58e7e66d0d2291d5a09768f5b0bb7"
       },
       "semantics": {
@@ -51428,7 +51428,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -51449,7 +51449,7 @@
           "line": 1051,
           "column": 35
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "67ed39856ce1a92958d2f729c0126e91db0f6300d35e8429a9c7db5ccfdb5adb"
       },
       "semantics": {
@@ -51728,7 +51728,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }
@@ -51749,7 +51749,7 @@
           "line": 1047,
           "column": 35
         },
-        "sourceHash": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1",
+        "sourceHash": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e",
         "astHash": "73b90bcc3574fab234068bdd34fb77a6ecf19ec85fff79841d64d25d9a144d8c"
       },
       "semantics": {
@@ -52017,7 +52017,7 @@
         },
         "primitiveTransport": {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
-          "sha256": "6c8e135d544ad9eb78296c260fff63eed9241765c0978b1285f885f963f5d198"
+          "sha256": "e9253854c3f720ecc125f55158a42eb82fa69fc7908077cbfd93b80e1087296c"
         },
         "creditExpansion": false
       }

@@ -2,10 +2,24 @@
   "schemaVersion": 2,
   "status": "FINAL_HEAD_TRANSPORT_PROVED",
   "priorProofHead": "6983219e13295b8f6b073daefc3cbcd90b32ac35",
-  "finalSurfaceDigest": "3ef3b72eed4ca0191f1136b18bc2a12d336ca4379afe1205c93b50ab89aae49b",
+  "finalSurfaceDigest": "c8c3bd71bc3bdeb96e6172dd0ebb55405f6eab98b65fe457c1f13dc8907544f0",
   "callables": 535,
   "exactPrimitiveTransport": {
     "priorProofHead": "6983219e13295b8f6b073daefc3cbcd90b32ac35",
+    "currentReviewRuntimeTransport": {
+      "priorCertifiedHead": "1f4858d81b4ea6ef5d983b4e57fd680519c1e833",
+      "exactChangedRuntimeFiles": [
+        "src/commands.ts",
+        "src/events.ts",
+        "src/facade.ts",
+        "src/model.ts"
+      ],
+      "laws": [
+        "The reviewed runtime delta adds only fail-closed malformed-input admission before existing valid-domain logic.",
+        "Every changed runtime module reverses exactly to the prior certified PR source in both emitted-runtime and typed AST form.",
+        "No runtime module may be added, removed, or changed outside the four audited review files."
+      ]
+    },
     "exactChangedRuntimeFiles": [
       "src/allocation.ts",
       "src/authority-cutover.ts",
@@ -70,7 +84,7 @@
       },
       {
         "file": "src/commands.ts",
-        "sha256": "969f1103fbe2bfe9c28e3fd1f0c8c2fab93022dbbadf06a37000fcf9927bee0a"
+        "sha256": "fc2f48062ed4f83633798b01e2780381ab034db7f3a83011556e3a30053f7255"
       },
       {
         "file": "src/composition.ts",
@@ -98,11 +112,11 @@
       },
       {
         "file": "src/events.ts",
-        "sha256": "0a71d0a73a32cf1b2616e2bf5fa45bee447d90a7e3417eb1f5673f069eb5c412"
+        "sha256": "b30214304cd638a305b3d2dfb6ab7992b6c90c25c2dcfc0a001df3c9c333ec77"
       },
       {
         "file": "src/facade.ts",
-        "sha256": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1"
+        "sha256": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e"
       },
       {
         "file": "src/fungibility.ts",
@@ -146,7 +160,7 @@
       },
       {
         "file": "src/model.ts",
-        "sha256": "21eb0b726b2f95d88e77e953eb77d94bd070d877a71a389d34e5ec8dc2d656d0"
+        "sha256": "634096c43e1f05a1960f741c64140bbac92f9605fdef1d2cfcb8232c02ab8f66"
       },
       {
         "file": "src/ordering.ts",
@@ -281,7 +295,7 @@
     },
     {
       "file": "src/commands.ts",
-      "sha256": "969f1103fbe2bfe9c28e3fd1f0c8c2fab93022dbbadf06a37000fcf9927bee0a"
+      "sha256": "fc2f48062ed4f83633798b01e2780381ab034db7f3a83011556e3a30053f7255"
     },
     {
       "file": "src/composition.ts",
@@ -309,11 +323,11 @@
     },
     {
       "file": "src/events.ts",
-      "sha256": "0a71d0a73a32cf1b2616e2bf5fa45bee447d90a7e3417eb1f5673f069eb5c412"
+      "sha256": "b30214304cd638a305b3d2dfb6ab7992b6c90c25c2dcfc0a001df3c9c333ec77"
     },
     {
       "file": "src/facade.ts",
-      "sha256": "6ff31400b5d6604446c199460642ffac7d4ff267b33e51c8c99400c29a01dff1"
+      "sha256": "b1eb1a36c0bec3cfdb35938b266dd768260bad17c1cd9b0fc85b022de2140a9e"
     },
     {
       "file": "src/fungibility.ts",
@@ -357,7 +371,7 @@
     },
     {
       "file": "src/model.ts",
-      "sha256": "21eb0b726b2f95d88e77e953eb77d94bd070d877a71a389d34e5ec8dc2d656d0"
+      "sha256": "634096c43e1f05a1960f741c64140bbac92f9605fdef1d2cfcb8232c02ab8f66"
     },
     {
       "file": "src/ordering.ts",
@@ -425,7 +439,7 @@
     },
     {
       "file": "scripts/inventory-epoch-contract.mjs",
-      "sha256": "8d4bb7239a581139a49a888808ede73da3685f79dc7ecee7811eb75020a076ff"
+      "sha256": "85ff15d7744c7a6d631f65b7467e3a0bddbe0f9ed371dad2c354f999b329fd64"
     },
     {
       "file": "formal/UseByReservation.tla",
@@ -441,5 +455,5 @@
     }
   ],
   "creditExpansion": false,
-  "contentSha256": "1574780cdf3807dc2a118651bffd8af395d045a27d7d47537862476ca5ea1dc8"
+  "contentSha256": "215c78e545ab61462637564815287cefbc918dfeee9ff769c414648c3a28fcf9"
 }
