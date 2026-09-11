@@ -40,21 +40,56 @@ function certificateAnchor(root) {
   assert.equal(text, wrapperSource(match[1]), "Compact certificate authority wrapper changed unexpectedly.");
   return match[1];
 }
+/** Fail closed unless one pinned compact certificate contains the exact three semantic verdicts. */
+export function assertTrustedCompactCertificateManifest(manifest) {
+  const certification=manifest?.certification;
+  assert.equal(certification?.schemaVersion,1,"Pinned compact certificate has an unsupported schema.");
+  assert.match(certification.certifiedHead,/^[a-f0-9]{40}$/u,"Pinned compact certificate head is invalid.");
+  assert.match(certification.inputKey,/^[a-f0-9]{64}$/u,"Pinned compact certificate input key is invalid.");
+  assert(Array.isArray(certification.processes),"Pinned compact certificate process evidence is missing.");
+  assert.deepEqual(certification.processes.map(row=>row.mode).sort(),["registry","selftest","verify"]);
+  for(const row of certification.processes){
+    assert.equal(row.exitCode,0,`Pinned compact certificate ${row.mode} process did not exit cleanly.`);
+    assert.equal(row.signal,null,`Pinned compact certificate ${row.mode} process was signalled.`);
+    assert.equal(row.stderr,"",`Pinned compact certificate ${row.mode} emitted stderr.`);
+    assert.match(row.stdoutSha256,/^[a-f0-9]{64}$/u);
+    assert.match(row.stderrSha256,/^[a-f0-9]{64}$/u);
+    assert.equal(sha(row.stdout),row.stdoutSha256,"Immutable certificate output hash is invalid.");
+    assert.equal(sha(row.stderr),row.stderrSha256,"Immutable certificate error hash is invalid.");
+    assert.equal(row.inputKey,certification.inputKey);
+    assert.equal(row.head,certification.certifiedHead);
+    const lines=row.stdout.trim().split(/\r?\n/u).filter(Boolean);
+    assert.equal(lines.length,1,`Pinned compact certificate ${row.mode} emitted unexpected stdout.`);
+    const emitted=JSON.parse(lines[0]);
+    assert.deepEqual(row.report,emitted,`Pinned compact certificate ${row.mode} report differs from exact stdout.`);
+    assert.equal(row.report.mode,row.mode);
+    assert.equal(row.report.inputKey,certification.inputKey);
+    assert.equal(row.report.head,certification.certifiedHead);
+    assert.equal(row.report.compilerPasses,1);
+    if(row.mode==="registry"){
+      assert.equal(row.report.status,"FINAL_535_REGISTRY_BUILT","Pinned compact certificate registry status is invalid.");
+      assert.deepEqual(row.report.counts,{A:121,B:58,V:309,HARD_RED:47},"Pinned compact registry partition is invalid.");
+    }else if(row.mode==="selftest"){
+      assert.equal(row.report.status,"FINAL_CONVERGENCE_ADVERSARIAL_PASS","Pinned compact certificate selftest status is invalid.");
+      assert.equal(row.report.valueRows,309);assert.equal(row.report.producerRows,179);
+      assert.match(row.report.surfaceDigest,/^[a-f0-9]{64}$/u);
+      assert.deepEqual(row.report.controls,{honestValueAccepted:true,wrongValueModeRejected:true,resignedValueTamperRejected:true,honestAandBAccepted:true,wrongProducerModeRejected:true,resignedProducerTamperRejected:true,immutableHistoricalAuthorityTamperRejected:true,sameMtimeEvidenceDriftRejected:true},"Pinned compact certificate adversarial controls are incomplete.");
+    }else{
+      assert.equal(row.report.status,"FINAL_BINDER_GREEN","Pinned compact certificate verifier status is invalid.");
+      assert.match(row.report.surfaceDigest,/^[a-f0-9]{64}$/u);
+      assert.equal(row.report.callables,535);assert.equal(row.report.diagnostics,47);
+      assert.deepEqual(row.report.byCode,{EXPLICIT_HARD_RED:47});assert.equal(row.report.hardRed,47);
+      assert.equal(row.report.unexpected,0);assert.deepEqual(row.report.unexpectedRows,[]);
+      assert.equal(row.report.valueAccepted,309);assert.equal(row.report.producerAccepted,179);assert.equal(row.report.strictAccepted,488);
+    }
+  }
+  return manifest;
+}
 function trustedManifest(root, anchor) {
   if (anchor === NO_CERTIFICATE) return undefined;
   git(root, ["merge-base", "--is-ancestor", anchor, "HEAD"]);
-  const manifest = JSON.parse(git(root, ["show", `${anchor}:${MANIFEST}`]));
-  assert.equal(manifest.certification?.schemaVersion, 1, "Pinned compact certificate has an unsupported schema.");
+  const manifest = assertTrustedCompactCertificateManifest(JSON.parse(git(root, ["show", `${anchor}:${MANIFEST}`])));
   assert.equal(git(root, ["rev-parse", `${anchor}^`]).trim(), manifest.certification.certifiedHead, "Compact certificate is not the direct child of its tested immutable tree.");
-  assert.deepEqual(manifest.certification.processes.map(row => row.mode).sort(), ["registry", "selftest", "verify"]);
-  for(const row of manifest.certification.processes) {
-    assert.equal(row.exitCode, 0); assert.equal(row.signal, null);
-    assert.match(row.stdoutSha256, /^[a-f0-9]{64}$/u);
-    assert.equal(sha(row.stdout),row.stdoutSha256,"Immutable certificate output hash is invalid.");
-    assert.equal(sha(row.stderr),row.stderrSha256,"Immutable certificate error hash is invalid.");
-    assert.equal(row.inputKey, manifest.certification.inputKey);
-    assert.equal(row.head, manifest.certification.certifiedHead);
-  }
   return manifest;
 }
 

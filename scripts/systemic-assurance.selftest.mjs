@@ -13,7 +13,7 @@ import { formalProofDescriptor, formalProofCacheKey, readFormalProofCache, write
 import { executableAssuranceSummary, assertExecutableAssuranceMatchesManifests } from "./executable-assurance-coherence.mjs";
 import { finalConvergenceRepositoryPath } from "../experiments/tla-conformance/final-convergence/repository-root.mjs";
 import { assertFormalPositiveReachabilityRegistration } from "./formal-models.mjs";
-import { compactCompilerSourceSetIdentity, compactCompilerSourceSetKey, runCompactCommand } from "./compact-assurance-pipeline.mjs";
+import { assertTrustedCompactCertificateManifest, compactCompilerSourceSetIdentity, compactCompilerSourceSetKey, runCompactCommand } from "./compact-assurance-pipeline.mjs";
 import { assertCurrentReviewTrackedDriftAllowed, currentReviewProofIntegrationPaths } from "../experiments/tla-conformance/final-convergence/current-review-assurance.mjs";
 
 /** Repository inputs are rooted at this test module, never the invoking shell. */
@@ -91,6 +91,32 @@ test("ordinary compact validation authenticates manifest and closure against its
     fs.writeFileSync(manifestPath, manifestOriginal);
     fs.writeFileSync(closurePath, closureOriginal);
   }
+});
+
+test("pinned compact certificate rejects re-signed semantic report forgeries", () => {
+  const manifest = JSON.parse(fs.readFileSync(path.join(root, "experiments/tla-conformance/final-convergence/compact-support-manifest.json"), "utf8"));
+  const resign = (row) => {
+    row.stdout = `${JSON.stringify(row.report)}\n`;
+    row.stdoutSha256 = assuranceBytesSha256(Buffer.from(row.stdout));
+  };
+
+  const forgedStatus = structuredClone(manifest);
+  const registry = forgedStatus.certification.processes.find((row) => row.mode === "registry");
+  registry.report.status = "FORGED_CERTIFICATE_FAILURE";
+  resign(registry);
+  assert.throws(() => assertTrustedCompactCertificateManifest(forgedStatus), /registry status is invalid/u);
+
+  const forgedBinder = structuredClone(manifest);
+  const verify = forgedBinder.certification.processes.find((row) => row.mode === "verify");
+  verify.report.callables = 534;
+  resign(verify);
+  assert.throws(() => assertTrustedCompactCertificateManifest(forgedBinder), /Expected values to be strictly equal/u);
+
+  const forgedControl = structuredClone(manifest);
+  const selftest = forgedControl.certification.processes.find((row) => row.mode === "selftest");
+  selftest.report.controls.sameMtimeEvidenceDriftRejected = false;
+  resign(selftest);
+  assert.throws(() => assertTrustedCompactCertificateManifest(forgedControl), /adversarial controls are incomplete/u);
 });
 
 test("compact source-set identity detects compiler roots before cache reuse", () => {
