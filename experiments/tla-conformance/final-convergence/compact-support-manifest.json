@@ -1106,5 +1106,104 @@
         }
       ]
     }
-  ]
+  ],
+  "certification": {
+    "schemaVersion": 1,
+    "certifiedHead": "c75d92d6cedfeaf90d15b80f01fb0275d83c8b54",
+    "inputKey": "ac7c06d5efc40ff447f3a092aa0e8b371db600e15dc2c72d3af2de6791b0f386",
+    "processes": [
+      {
+        "mode": "registry",
+        "head": "c75d92d6cedfeaf90d15b80f01fb0275d83c8b54",
+        "inputKey": "ac7c06d5efc40ff447f3a092aa0e8b371db600e15dc2c72d3af2de6791b0f386",
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "{\"status\":\"FINAL_535_REGISTRY_BUILT\",\"counts\":{\"A\":121,\"B\":58,\"V\":309,\"HARD_RED\":47},\"mode\":\"registry\",\"inputKey\":\"ac7c06d5efc40ff447f3a092aa0e8b371db600e15dc2c72d3af2de6791b0f386\",\"head\":\"c75d92d6cedfeaf90d15b80f01fb0275d83c8b54\",\"compilerPasses\":1,\"elapsedMs\":8214}\n",
+        "stderr": "",
+        "stdoutSha256": "ac2380e969a0211757689685f7595fa1751b7031d0621737230c3c9edd13222f",
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "elapsedMs": 8915,
+        "report": {
+          "status": "FINAL_535_REGISTRY_BUILT",
+          "counts": {
+            "A": 121,
+            "B": 58,
+            "V": 309,
+            "HARD_RED": 47
+          },
+          "mode": "registry",
+          "inputKey": "ac7c06d5efc40ff447f3a092aa0e8b371db600e15dc2c72d3af2de6791b0f386",
+          "head": "c75d92d6cedfeaf90d15b80f01fb0275d83c8b54",
+          "compilerPasses": 1,
+          "elapsedMs": 8214
+        }
+      },
+      {
+        "mode": "selftest",
+        "head": "c75d92d6cedfeaf90d15b80f01fb0275d83c8b54",
+        "inputKey": "ac7c06d5efc40ff447f3a092aa0e8b371db600e15dc2c72d3af2de6791b0f386",
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "{\"status\":\"FINAL_CONVERGENCE_ADVERSARIAL_PASS\",\"surfaceDigest\":\"7a74e02dc7f2e6e3227bd8f247fae7601a67df92bf79cae1687ecbde07de498b\",\"valueRows\":309,\"producerRows\":179,\"controls\":{\"honestValueAccepted\":true,\"wrongValueModeRejected\":true,\"resignedValueTamperRejected\":true,\"honestAandBAccepted\":true,\"wrongProducerModeRejected\":true,\"resignedProducerTamperRejected\":true,\"immutableHistoricalAuthorityTamperRejected\":true,\"sameMtimeEvidenceDriftRejected\":true},\"mode\":\"selftest\",\"inputKey\":\"ac7c06d5efc40ff447f3a092aa0e8b371db600e15dc2c72d3af2de6791b0f386\",\"head\":\"c75d92d6cedfeaf90d15b80f01fb0275d83c8b54\",\"compilerPasses\":1,\"elapsedMs\":43826}\n",
+        "stderr": "",
+        "stdoutSha256": "8b67dd07ac754058603628ba33a78a137eb5741da61173cf7aeb86112d6b78a2",
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "elapsedMs": 44498,
+        "report": {
+          "status": "FINAL_CONVERGENCE_ADVERSARIAL_PASS",
+          "surfaceDigest": "7a74e02dc7f2e6e3227bd8f247fae7601a67df92bf79cae1687ecbde07de498b",
+          "valueRows": 309,
+          "producerRows": 179,
+          "controls": {
+            "honestValueAccepted": true,
+            "wrongValueModeRejected": true,
+            "resignedValueTamperRejected": true,
+            "honestAandBAccepted": true,
+            "wrongProducerModeRejected": true,
+            "resignedProducerTamperRejected": true,
+            "immutableHistoricalAuthorityTamperRejected": true,
+            "sameMtimeEvidenceDriftRejected": true
+          },
+          "mode": "selftest",
+          "inputKey": "ac7c06d5efc40ff447f3a092aa0e8b371db600e15dc2c72d3af2de6791b0f386",
+          "head": "c75d92d6cedfeaf90d15b80f01fb0275d83c8b54",
+          "compilerPasses": 1,
+          "elapsedMs": 43826
+        }
+      },
+      {
+        "mode": "verify",
+        "head": "c75d92d6cedfeaf90d15b80f01fb0275d83c8b54",
+        "inputKey": "ac7c06d5efc40ff447f3a092aa0e8b371db600e15dc2c72d3af2de6791b0f386",
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "{\"status\":\"FINAL_BINDER_GREEN\",\"surfaceDigest\":\"7a74e02dc7f2e6e3227bd8f247fae7601a67df92bf79cae1687ecbde07de498b\",\"callables\":535,\"diagnostics\":47,\"byCode\":{\"EXPLICIT_HARD_RED\":47},\"hardRed\":47,\"unexpected\":0,\"unexpectedRows\":[],\"valueAccepted\":309,\"producerAccepted\":179,\"strictAccepted\":488,\"mode\":\"verify\",\"inputKey\":\"ac7c06d5efc40ff447f3a092aa0e8b371db600e15dc2c72d3af2de6791b0f386\",\"head\":\"c75d92d6cedfeaf90d15b80f01fb0275d83c8b54\",\"compilerPasses\":1,\"elapsedMs\":43271}\n",
+        "stderr": "",
+        "stdoutSha256": "fbfafb350389ebae9cf74285fbd1f6d95e68d085a7a517f6466186f88365fd42",
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "elapsedMs": 43969,
+        "report": {
+          "status": "FINAL_BINDER_GREEN",
+          "surfaceDigest": "7a74e02dc7f2e6e3227bd8f247fae7601a67df92bf79cae1687ecbde07de498b",
+          "callables": 535,
+          "diagnostics": 47,
+          "byCode": {
+            "EXPLICIT_HARD_RED": 47
+          },
+          "hardRed": 47,
+          "unexpected": 0,
+          "unexpectedRows": [],
+          "valueAccepted": 309,
+          "producerAccepted": 179,
+          "strictAccepted": 488,
+          "mode": "verify",
+          "inputKey": "ac7c06d5efc40ff447f3a092aa0e8b371db600e15dc2c72d3af2de6791b0f386",
+          "head": "c75d92d6cedfeaf90d15b80f01fb0275d83c8b54",
+          "compilerPasses": 1,
+          "elapsedMs": 43271
+        }
+      }
+    ],
+    "elapsedMs": 45881
+  }
 }
