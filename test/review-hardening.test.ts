@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  InventoryAllocationMethod,
+  resolveInventoryAmount,
   InventoryMeasurementAxisRole,
   InventoryMeasurementRequirement,
   InventoryReservationFeasibilityStatus,
@@ -32,6 +34,10 @@ import {
   applyInventoryCountBookDelta,
   applyInventoryReservationBookDelta,
   createInventoryReservationBookDelta,
+  inventoryCountBookDigest,
+  inventoryProjectionDigest,
+  inventoryReservationBookDigest,
+  inventoryWorldContentRoots,
 } from "../src/integrity.js";
 import {
   InventoryStorageWriteStage,
@@ -516,6 +522,24 @@ describe("durable planner output guards", () => {
       reservationId
     );
     if (consumeDelta === undefined) throw new Error("Expected reservation consume delta.");
+    const forgedActiveBook = {
+      ...allocated.book,
+      reservations: {
+        ...allocated.book.reservations,
+        [reservationId]: {
+          ...allocateDelta.reservation,
+          consumptionEventId: "forged-pre-consume-event",
+        },
+      },
+    };
+    expect(() =>
+      createInventoryReservationBookDelta(
+        forgedActiveBook,
+        consumed.book,
+        "consumption-evidence-consume",
+        reservationId
+      )
+    ).toThrow("Non-consumed reservation state cannot retain a consumption event");
     const {
       consumptionEventId: _consumptionEventId,
       ...missingConsumptionEvidence
@@ -1350,5 +1374,84 @@ describe("retained catalogue alias safety", () => {
     });
     expect(Object.values(replayed.positions)[0]?.measurements.primary.quantity.amountMinor)
       .toBe(20);
+  });
+});
+
+
+describe("runtime amount discriminator family", () => {
+  it("rejects malformed amount kinds through resolution and every ordinary planning boundary", async () => {
+    const catalog = createTabletCatalog();
+    const item = catalog.activeItem("item-a");
+    expect(resolveInventoryAmount(catalog, item, packageAmount(1, "item-a-box-24-v1")).packageCount).toBe(1);
+    for (const kind of ["future-amount-kind", "", undefined, null, 0]) {
+      const storage = createInMemoryInventoryDurableStorage();
+      const inventory = createTestInventory(storage, catalog);
+      const amount = { ...packageAmount(1, "item-a-box-24-v1") };
+      // Reflect models an untyped wire input without weakening the typed public API for applications.
+      Reflect.set(amount, "kind", kind);
+      expect(() => resolveInventoryAmount(catalog, item, amount)).toThrow("Inventory amount kind is invalid");
+      const before = await storage.readWorld();
+      for (const run of [
+        () => inventory.stock.receive({ operationId: "bad-amount", occurredAt: time0, to: loosePosition("store"), amount }),
+        () => inventory.stock.issue({ operationId: "bad-amount", occurredAt: time0, from: loosePosition("store"), amount }),
+        () => inventory.stock.transfer({ operationId: "bad-amount", occurredAt: time0, from: loosePosition("store"), toLocationId: "other", amount }),
+        () => inventory.read.planAllocation({ selector: { itemId: "item-a", locationIds: ["store"] }, amount, method: InventoryAllocationMethod.Fifo, at: time0 }),
+        () => inventory.stock.issueByPolicy({ operationId: "bad-amount", occurredAt: time0, selector: { itemId: "item-a", locationIds: ["store"] }, amount, method: InventoryAllocationMethod.Fifo }),
+        () => inventory.stock.transferByPolicy({ operationId: "bad-amount", occurredAt: time0, selector: { itemId: "item-a", locationIds: ["store"] }, toLocationId: "other", amount, method: InventoryAllocationMethod.Fifo }),
+      ]) {
+        await expect(run()).rejects.toThrow("Inventory amount kind is invalid");
+        expect(await storage.readWorld()).toEqual(before);
+        expect(await storage.readOperation("bad-amount")).toBeUndefined();
+      }
+    }
+  });
+});
+
+/** Serialize one JSON-safe value with every object key deliberately reversed to model storage rematerialization. */
+function reverseObjectInsertionJson(value: unknown): string {
+  if (value === undefined || value === null) return "null";
+  if (Array.isArray(value)) {
+    return `[${value.map((child) => reverseObjectInsertionJson(child)).join(",")}]`;
+  }
+  if (typeof value === "object") {
+    const entries = Object.entries(value).filter(([, child]) => child !== undefined);
+    entries.reverse();
+    return `{${entries.map(([key, child]) => `${JSON.stringify(key)}:${reverseObjectInsertionJson(child)}`).join(",")}}`;
+  }
+  const encoded = JSON.stringify(value);
+  if (encoded === undefined) throw new Error("Review fixture contains a non-JSON primitive.");
+  return encoded;
+}
+
+describe("durable content-root representation independence", () => {
+  it("keeps projection reservation count and world roots stable across recursive object-key rematerialization", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receive({
+      operationId: "digest-order-stock",
+      occurredAt: time0,
+      to: loosePosition("store"),
+      amount: stockAmount("3", "piece"),
+    });
+    await inventory.reservations.reserve({
+      reservationId: "digest-order-reservation",
+      operationId: "digest-order-reserve",
+      itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a", locationIds: ["store"] },
+      requested: parseQuantity("1", "piece"),
+      createdAt: time1,
+    });
+    await inventory.counts.start({
+      countId: "digest-order-count",
+      operationId: "digest-order-count-start",
+      itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a", locationIds: ["store"] },
+      startedAt: time2,
+    });
+    const original = await inventory.read.world();
+    const reordered: typeof original = JSON.parse(reverseObjectInsertionJson(original));
+    expect(inventoryProjectionDigest(reordered.projection)).toBe(inventoryProjectionDigest(original.projection));
+    expect(inventoryReservationBookDigest(reordered.reservations)).toBe(inventoryReservationBookDigest(original.reservations));
+    expect(inventoryCountBookDigest(reordered.counts)).toBe(inventoryCountBookDigest(original.counts));
+    expect(inventoryWorldContentRoots(reordered)).toEqual(inventoryWorldContentRoots(original));
   });
 });

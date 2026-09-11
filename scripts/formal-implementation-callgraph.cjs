@@ -8,7 +8,8 @@ const {
   vitestConditionalMetadata,
   vitestFocusedRegistrationNode,
   vitestObjectBooleanOptions,
-  vitestRegistrationName,
+  vitestRegistrationNameFromExpression,
+  vitestRegistrationMode: sharedVitestRegistrationMode,
   vitestRegistrationRuns,
   vitestSuiteChildrenExecute,
 } = require("./formal-implementation-vitest-semantics.cjs");
@@ -352,19 +353,7 @@ function testRootFor(source) {
 }
 /** Resolve the effective static mode for a test/suite registration callback argument. */
 function vitestRegistrationMode(node, callbackArgumentIndex) {
-  if (expressionHasProperty(ts, node.expression, "skip")) return "skip";
-  if (expressionHasProperty(ts, node.expression, "todo")) return "todo";
-  if (callbackArgumentIndex !== 2) return "run";
-  const options = node.arguments[1];
-  if (options === undefined || (ts.isIdentifier(options) && options.text === "undefined")) {
-    return "run";
-  }
-  if (!ts.isObjectLiteralExpression(options)) return "unknown";
-  const flags = vitestObjectBooleanOptions(ts, options);
-  if (flags.skip === true) return "skip";
-  if (flags.todo === true) return "todo";
-  if (flags.skip === undefined || flags.todo === undefined) return "unknown";
-  return "run";
+  return sharedVitestRegistrationMode(ts, node, callbackArgumentIndex, checker);
 }
 
 /** Return whether one call resolves to the installed Vitest registration contract. */
@@ -384,7 +373,7 @@ function vitestRegistrationMetadata(
 ) {
   const callee = node.expression.getText(node.getSourceFile());
   const registration = isVitestRegistrationCall(node)
-    ? vitestRegistrationName(callee)
+    ? vitestRegistrationNameFromExpression(ts, node.expression)
     : undefined;
   return {
     registration,
@@ -403,7 +392,7 @@ function isInsideTodoSuite(node) {
       const callbackIndex = current.parent.arguments.indexOf(current);
       if (callbackIndex >= 0) {
         const metadata = vitestRegistrationMetadata(current.parent, callbackIndex, false);
-        if (metadata.registration === "describe" && metadata.mode === "todo") return true;
+        if (metadata.registration === "describe" && (metadata.mode === "todo" || metadata.mode === "unknown")) return true;
       }
     }
     current = current.parent;
@@ -470,9 +459,7 @@ function vitestSuiteHasRunnableTest(node) {
   const visit = (current) => {
     if (found) return;
     if (ts.isCallExpression(current) && isVitestRegistrationCall(current)) {
-      const registration = vitestRegistrationName(
-        current.expression.getText(current.getSourceFile())
-      );
+      const registration = vitestRegistrationNameFromExpression(ts, current.expression);
       if (registration === "it" || registration === "test") {
         const callbackIndex = vitestTestCallbackArgumentIndex(current);
         if (callbackIndex >= 0) {
@@ -603,7 +590,7 @@ function externalCallbackArgumentIndexes(node) {
   if (
     sourcePath.startsWith(`${testRoot}/`) &&
     isVitestRegistrationCall(node) &&
-    vitestRegistrationName(expressionText) !== undefined
+    vitestRegistrationNameFromExpression(ts, node.expression) !== undefined
   ) {
     const insideNonExecutingSuite = isInsideNonExecutingSuite(node);
     const insideTodoSuite = isInsideTodoSuite(node);

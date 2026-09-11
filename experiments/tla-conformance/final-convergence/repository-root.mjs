@@ -1,4 +1,5 @@
 import path from "node:path";
+import { assuranceRepositoryPath } from "../../../scripts/assurance-files.mjs";
 import { fileURLToPath } from "node:url";
 
 /** Return the InventoryOnce repository root for a module stored in final-convergence. */
@@ -8,13 +9,7 @@ export function finalConvergenceRepositoryRoot(moduleUrl) {
 
 /** Return one contained absolute repository path without consulting the caller working directory. */
 export function finalConvergenceRepositoryPath(repositoryRoot, repositoryRelativePath) {
-  const root = path.resolve(repositoryRoot);
-  const target = path.resolve(root, repositoryRelativePath);
-  const relative = path.relative(root, target);
-  if (relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
-    throw new Error(`InventoryOnce final assurance path escapes repository root: ${repositoryRelativePath}.`);
-  }
-  return target;
+  return assuranceRepositoryPath(repositoryRoot, repositoryRelativePath);
 }
 
 /** Return whether this module is the process entrypoint independent of the caller working directory. */

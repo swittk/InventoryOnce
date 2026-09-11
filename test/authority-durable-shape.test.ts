@@ -61,18 +61,31 @@ class MutableAuthorityStore implements InventoryAuthorityStateStore {
 
 /** One finite semantic class in the durable AuthorityControl state-shape census. */
 interface DurableShapeCase {
+  /** Durable authority phase under test. */
   readonly mode: InventoryAuthorityMode;
+  /** Retained provenance of activation. */
   readonly activationKind: InventoryAuthorityActivationKind;
+  /** Durable compatibility projection phase. */
   readonly projectionStatus: InventoryCompatibilityProjectionStatus;
+  /** Whether the certification digest/time bundle is present. */
   readonly certified: boolean;
+  /** Whether legacy cutover authorization is present. */
   readonly cutoverAuthorized: boolean;
+  /** Whether greenfield authorization is present. */
   readonly greenfieldAuthorized: boolean;
+  /** Whether an admitted legacy writer is retained. */
   readonly activeWriter: boolean;
+  /** Whether the entire source snapshot evidence bundle is present. */
   readonly sourceBound: boolean;
+  /** Whether one unresolved DualRun mismatch exists. */
   readonly mismatchPresent: boolean;
+  /** Whether fence identity and start time are both retained. */
   readonly fenceBound: boolean;
+  /** Whether activation target and time are both retained. */
   readonly targetBound: boolean;
+  /** Whether the retained target world revision is nonzero. */
   readonly targetRevisionNonzero: boolean;
+  /** Whether the compatibility projection revision is nonzero. */
   readonly projectionRevisionNonzero: boolean;
 }
 
@@ -355,6 +368,11 @@ describe("InventoryAuthorityControl durable state shape", () => {
       compatibilityProjectionError: "projection-failed",
     };
 
+    // Every malformed row below changes one semantic dimension of an independently accepted phase fixture.
+    for (const validRow of [legacy, dualRun, authoritative, projectionFailed]) {
+      store.document = validRow;
+      await expect(authority.read()).resolves.toBeDefined();
+    }
     const rejectedRows: readonly InventoryAuthorityDocument[] = [
       { ...legacy, adapterCertifiedAt: time0 },
       { ...legacy, sourceRevision: 9 },
@@ -410,9 +428,26 @@ describe("InventoryAuthorityControl durable state shape", () => {
       },
     ];
 
-    for (const row of rejectedRows) {
+    const expectedReasons = [
+      "adapter certification digest/time must be retained together",
+      "cannot retain a source revision without complete source evidence",
+      "source evidence must be retained as one complete bundle",
+      "sourceRoot is not stored in canonical trimmed form",
+      "fence startedAt must be canonical UTC ISO time",
+      "activatedAt must be canonical UTC ISO time",
+      "non-failed compatibility projection cannot retain an error",
+      "compatibility projection error must not be empty",
+      "compatibility projection error exceeds its durable bound",
+      "mismatch commandId must not be empty",
+      "mismatch recordedAt must be canonical UTC ISO time",
+      "mismatch evidence repeats command",
+    ];
+    expect(expectedReasons).toHaveLength(rejectedRows.length);
+    for (const [index, row] of rejectedRows.entries()) {
+      const reason = expectedReasons[index];
+      if (reason === undefined) throw new Error("Malformed authority case has no discriminating assertion.");
       store.document = row;
-      await expect(authority.read()).rejects.toThrow();
+      await expect(authority.read()).rejects.toThrow(reason);
     }
   });
 

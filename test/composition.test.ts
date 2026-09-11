@@ -950,3 +950,23 @@ describe("revision-frozen heterogeneous package composition", () => {
     ).toBe(7);
   });
 });
+
+
+describe("composition amount discriminator admission", () => {
+  it("rejects unknown amount kinds before catalog normalization can reinterpret them as packages", () => {
+    const fixture = ocpCatalog();
+    const outputItem = fixture.catalog.itemRevision("active-a-v1");
+    const outputPackaging = defineScalarInventoryPackaging({ revisionId: "boundary-output-package", item: outputItem, packageUnit: "blister", contains: "1" });
+    const amount: InventoryCompositionDefinitionRevision["outputs"][number]["amount"] = { kind: InventoryCompositionOutputAmountKind.Package, packagingRevisionId: outputPackaging.revisionId, packageCount: 1 };
+    const definition: InventoryCompositionDefinitionRevision = {
+      compositionId: "boundary-composition", revisionId: "boundary-composition-v1", sourcePackagingRevisionId: fixture.oldPack.revisionId,
+      outputs: [{ outputId: "boundary-output", itemRevisionId: outputItem.revisionId, lotPolicy: InventoryCompositionOutputLotPolicy.InheritSource, amount }],
+    };
+    const create = () => defineInventoryComposition({ definition, itemRevisions: fixture.catalog.itemRevisions, packagingRevisions: [...fixture.catalog.packagingRevisions, outputPackaging] });
+    expect(create().outputs[0]?.amount.kind).toBe(InventoryCompositionOutputAmountKind.Package);
+    for (const kind of ["future-composition-kind", "", undefined, null, 0]) {
+      Reflect.set(amount, "kind", kind);
+      expect(create).toThrow("Inventory composition output amount kind is invalid");
+    }
+  });
+});

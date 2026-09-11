@@ -1,9 +1,15 @@
+import { verifyCurrentReviewAssurance } from "./current-review-assurance.mjs";
+import { assuranceProofReferencesExactPath, checkFrozenAssuranceTransport } from "../../../scripts/immutable-assurance-inputs.mjs";
+import { readAssuranceFile } from "../../../scripts/assurance-files.mjs";
+import { assertFinalConvergenceRepositoryRoot, finalConvergenceRepositoryPath, finalConvergenceRepositoryRoot } from "./repository-root.mjs";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
 import { canonicalJson, discoverCompilerSurface, sha256 } from "../surface-bindings/lib/compiler-surface.mjs";
+
+const ROOT = finalConvergenceRepositoryRoot(import.meta.url);
 
 export const PRIOR_HEAD = "d947e47af2502f2ed2f8ae6971ee639a91ff0867";
 export const CURRENT_HEAD = "e1759f756a9e7de5d67e7c03d563f6f574892e26";
@@ -37,12 +43,12 @@ const EXPECTED_AFFECTED = Object.freeze([
 ]);
 
 function git(args, repositoryRoot) { return execFileSync("git", args, { cwd: repositoryRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }).trim(); }
-function readJson(file, repositoryRoot) { return JSON.parse(fs.readFileSync(path.resolve(repositoryRoot, file), "utf8")); }
-function ref(file, repositoryRoot) { const bytes = fs.readFileSync(path.resolve(repositoryRoot, file)); return { file, sha256: sha256(bytes) }; }
+function readJson(file, repositoryRoot) { return JSON.parse(readAssuranceFile(repositoryRoot, file).toString("utf8")); }
+function ref(file, repositoryRoot) { const bytes = readAssuranceFile(repositoryRoot, file); return { file, sha256: sha256(bytes) }; }
 function rowsWith(artifactFile, file, repositoryRoot) {
   const artifact = readJson(artifactFile, repositoryRoot);
   return artifact.proofs
-    .filter((proof) => JSON.stringify(proof).includes(file))
+    .filter((proof) => assuranceProofReferencesExactPath(proof, file))
     .map((proof) => ({ surfaceKey: proof.surfaceKey, mode: proof.mode ?? "V" }))
     .sort((a, b) => a.surfaceKey.localeCompare(b.surfaceKey));
 }
@@ -50,8 +56,8 @@ function stripTlaLineComments(text) {
   return text.split(/\r?\n/u).filter((line) => !line.trimStart().startsWith("\\*")).join("\n");
 }
 
-export function buildR168AssuranceTransport({ repositoryRoot = process.cwd() } = {}) {
-  const root = path.resolve(repositoryRoot);
+export function buildR168AssuranceTransport({ repositoryRoot = ROOT } = {}) {
+  const root = assertFinalConvergenceRepositoryRoot(repositoryRoot, import.meta.url);
   const integrationHead = git(["rev-parse", "HEAD"], root);
   const reviewedDelta = git([
     "diff", "--name-only", PRIOR_HEAD, CURRENT_HEAD, "--",
@@ -113,7 +119,7 @@ export function buildR168AssuranceTransport({ repositoryRoot = process.cwd() } =
   }
 
   const beforeResource = execFileSync("git", ["show", `${PRIOR_HEAD}:${RESOURCE_DIMENSIONS}`], { cwd: root, encoding: "utf8" });
-  const afterResource = fs.readFileSync(path.resolve(root, RESOURCE_DIMENSIONS), "utf8");
+  const afterResource = readAssuranceFile(root, RESOURCE_DIMENSIONS).toString("utf8");
   assert.equal(
     stripTlaLineComments(beforeResource),
     stripTlaLineComments(afterResource),
@@ -169,15 +175,31 @@ export function buildR168AssuranceTransport({ repositoryRoot = process.cwd() } =
   return { ...core, contentSha256: sha256(canonicalJson(core)) };
 }
 
-if (process.argv[1] !== undefined && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
-  const artifact = buildR168AssuranceTransport({ repositoryRoot: root });
-  const target = path.resolve(root, "experiments/tla-conformance/final-convergence/r168-assurance-transport.json");
-  const text = `${JSON.stringify(artifact, null, 2)}\n`;
-  if (process.argv.includes("--check")) {
-    assert.equal(fs.readFileSync(target, "utf8"), text, "R168 assurance transport is stale.");
-  } else {
-    fs.writeFileSync(target, text);
+const directInvocation =
+  process.argv[1] !== undefined &&
+  path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (directInvocation) {
+  if (!process.argv.includes("--check")) {
+    throw new Error(
+      "R168 historical assurance transport is immutable; direct execution requires --check."
+    );
   }
-  console.log(JSON.stringify({ status: artifact.status, contentSha256: artifact.contentSha256, affectedStrictRows: artifact.affectedStrictRows }, null, 2));
+  const root = ROOT;
+  const current = verifyCurrentReviewAssurance(root);
+  const artifact = checkFrozenAssuranceTransport(
+    root,
+    "experiments/tla-conformance/final-convergence/r168-assurance-transport.json",
+    current.receipt.certifiedHead
+  );
+  console.log(
+    JSON.stringify(
+      {
+        status: artifact.status,
+        contentSha256: artifact.contentSha256,
+        historicalReceiptVerified: true,
+      },
+      null,
+      2
+    )
+  );
 }

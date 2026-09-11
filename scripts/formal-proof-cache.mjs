@@ -8,9 +8,11 @@ import {
   writeFileSync,
 } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
+import { formalCodeText } from "./formal-syntax.mjs";
+import { readAssuranceFile } from "./assurance-files.mjs";
 
 /** Bump only when the semantic proof invocation contract itself changes. */
-export const FORMAL_PROOF_CACHE_SCHEMA_VERSION = 2;
+export const FORMAL_PROOF_CACHE_SCHEMA_VERSION = 3;
 /** Pinned TLC 1.7.4 process exit for a completed safety-invariant violation. */
 export const TLC_INVARIANT_VIOLATION_EXIT_CODE = 12;
 /** Bump when mutation-child completion/witness acceptance becomes stricter. */
@@ -33,6 +35,7 @@ function repositoryPath(repositoryRoot, absolutePath) {
 
 /** Discover local TLA modules imported by EXTENDS or INSTANCE. */
 function localModuleNames(repositoryRoot, sourceText) {
+  sourceText = formalCodeText(sourceText);
   const names = new Set();
   const extendsPattern = /\bEXTENDS\s+([A-Za-z_][A-Za-z0-9_]*(?:\s*,\s*[A-Za-z_][A-Za-z0-9_]*)*)/gu;
   for (const match of sourceText.matchAll(extendsPattern)) {
@@ -56,6 +59,7 @@ function localModuleNames(repositoryRoot, sourceText) {
 
 /** Return the exact transitive package-local TLA source closure for one model. */
 export function transitiveLocalTlaFiles(repositoryRoot, model) {
+  assertFormalIdentity(model, "model");
   const absoluteRoot = resolve(repositoryRoot);
   const visited = new Set();
   const pending = [model];
@@ -67,7 +71,7 @@ export function transitiveLocalTlaFiles(repositoryRoot, model) {
       throw new Error(`Formal module '${moduleName}' is missing at ${file}.`);
     }
     visited.add(moduleName);
-    const sourceText = readFileSync(file, "utf8");
+    const sourceText = readAssuranceFile(absoluteRoot, repositoryPath(absoluteRoot, file)).toString("utf8");
     for (const dependency of localModuleNames(absoluteRoot, sourceText)) {
       if (!visited.has(dependency)) pending.push(dependency);
     }
@@ -87,6 +91,8 @@ export function formalProofDescriptor({
   tlaToolsSha256,
   tlcWorkers,
 }) {
+  assertFormalIdentity(model, "model");
+  assertFormalIdentity(config, "config");
   const absoluteRoot = resolve(repositoryRoot);
   if (outcome !== "model-passed" && outcome !== "mutation-rejected") {
     throw new Error(`Unsupported formal proof outcome '${outcome}'.`);
@@ -111,10 +117,10 @@ export function formalProofDescriptor({
     if (!existsSync(file)) throw new Error(`Formal proof input '${file}' is missing.`);
     return {
       path: repositoryPath(absoluteRoot, file),
-      sha256: sha256Bytes(readFileSync(file)),
+      sha256: sha256Bytes(readAssuranceFile(absoluteRoot, repositoryPath(absoluteRoot, file))),
     };
   });
-  return {
+  const descriptor = {
     schemaVersion: FORMAL_PROOF_CACHE_SCHEMA_VERSION,
     model,
     config,
@@ -127,6 +133,8 @@ export function formalProofDescriptor({
     tlcWorkers,
     inputs,
   };
+  assertFormalProofDescriptor(descriptor);
+  return descriptor;
 }
 
 /** Parse the exact terminal state/depth summary from one completed positive TLC run. */
@@ -153,10 +161,10 @@ function validFormalModelProofSummary(value) {
     Number.isSafeInteger(value.generated) &&
     value.generated >= 0 &&
     Number.isSafeInteger(value.distinct) &&
-    value.distinct >= 0 &&
+    value.distinct > 0 &&
     value.distinct <= value.generated &&
     Number.isSafeInteger(value.depth) &&
-    value.depth >= 0
+    value.depth > 0
   );
 }
 
@@ -170,7 +178,10 @@ export function formalMutationProcessProvesInvariantRejection({
   return (
     signal === null &&
     status === TLC_INVARIANT_VIOLATION_EXIT_CODE &&
-    output.includes(`Invariant ${invariant} is violated.`)
+    typeof output === "string" &&
+    typeof invariant === "string" &&
+    /^[A-Za-z_][A-Za-z0-9_]*$/u.test(invariant) &&
+    output.split(/\r?\n/u).filter(line => line === `Error: Invariant ${invariant} is violated.`).length === 1
   );
 }
 
@@ -189,18 +200,52 @@ function validFormalMutationProcessEvidence(value, invariant) {
   );
 }
 
+/** Require a TLA identifier rather than allowing filenames to escape the formal directory. */
+function assertFormalIdentity(value, label) {
+  if (typeof value !== "string" || !/^[A-Za-z_][A-Za-z0-9_]*$/u.test(value)) {
+    throw new Error(`Invalid formal proof ${label} identity.`);
+  }
+}
+
+/** Validate the descriptor at every publication/read/key boundary, not just at construction. */
+function assertFormalProofDescriptor(descriptor) {
+  if (descriptor === null || typeof descriptor !== "object" || Array.isArray(descriptor)) throw new Error("Invalid formal proof descriptor.");
+  const keys = ["schemaVersion", "model", "config", "outcome", "invariant", "tlaToolsSha256", "tlcWorkers", "inputs"];
+  if (descriptor.outcome === "mutation-rejected") keys.push("mutationProcessContractVersion");
+  if (Object.keys(descriptor).length !== keys.length || keys.some(key => !Object.hasOwn(descriptor, key))) throw new Error("Incomplete or unknown formal proof descriptor fields.");
+  if (descriptor.schemaVersion !== FORMAL_PROOF_CACHE_SCHEMA_VERSION) throw new Error("Invalid formal proof descriptor schema.");
+  assertFormalIdentity(descriptor.model, "model"); assertFormalIdentity(descriptor.config, "config");
+  if (descriptor.outcome === "mutation-rejected") {
+    assertFormalIdentity(descriptor.invariant, "invariant");
+    if (descriptor.mutationProcessContractVersion !== FORMAL_MUTATION_PROCESS_CONTRACT_VERSION) throw new Error("Invalid mutation proof process contract.");
+  } else if (descriptor.outcome !== "model-passed" || descriptor.invariant !== null) throw new Error("Invalid formal proof outcome or invariant.");
+  if (typeof descriptor.tlaToolsSha256 !== "string" || !/^[a-f0-9]{64}$/u.test(descriptor.tlaToolsSha256)) throw new Error("Invalid formal proof tool identity.");
+  if (typeof descriptor.tlcWorkers !== "string" || !/^(?:auto|[1-9][0-9]*)$/u.test(descriptor.tlcWorkers)) throw new Error("Invalid formal proof worker identity.");
+  if (!Array.isArray(descriptor.inputs) || descriptor.inputs.length < 2) throw new Error("Formal proof descriptor requires nonempty model/config input closure.");
+  const paths = new Set(); let previous = "";
+  for (const input of descriptor.inputs) {
+    if (input === null || typeof input !== "object" || Object.keys(input).length !== 2 || !Object.hasOwn(input, "path") || !Object.hasOwn(input, "sha256") || typeof input.path !== "string" || !/^formal\/[A-Za-z_][A-Za-z0-9_]*\.(?:tla|cfg)$/u.test(input.path) || typeof input.sha256 !== "string" || !/^[a-f0-9]{64}$/u.test(input.sha256)) throw new Error("Malformed formal proof input identity.");
+    if (input.path <= previous || paths.has(input.path)) throw new Error("Formal proof inputs must be unique and canonically ordered.");
+    previous = input.path; paths.add(input.path);
+  }
+  if (!paths.has(`formal/${descriptor.model}.tla`) || !paths.has(`formal/${descriptor.config}.cfg`)) throw new Error("Formal proof descriptor omits its model/config input.");
+}
+
 /** Return the stable content address of one exact proof descriptor. */
 export function formalProofCacheKey(descriptor) {
+  assertFormalProofDescriptor(descriptor);
   return sha256Bytes(JSON.stringify(descriptor));
 }
 
 /** Return the cache file path for one content-addressed proof. */
 export function formalProofCachePath(cacheDirectory, cacheKey) {
+  if (typeof cacheKey !== "string" || !/^[a-f0-9]{64}$/u.test(cacheKey)) throw new Error("Invalid formal proof cache key identity.");
   return join(cacheDirectory, `${cacheKey}.json`);
 }
 
 /** Validate and return a cached proof only when every descriptor field is exact. */
 export function readFormalProofCache(cacheDirectory, descriptor) {
+  try { assertFormalProofDescriptor(descriptor); } catch { return undefined; }
   const key = formalProofCacheKey(descriptor);
   const path = formalProofCachePath(cacheDirectory, key);
   if (!existsSync(path)) return undefined;
@@ -237,6 +282,7 @@ export function readFormalProofCache(cacheDirectory, descriptor) {
 
 /** Atomically publish a successful proof cache entry after TLC has exited as required. */
 export function writeFormalProofCache(cacheDirectory, descriptor, evidence = undefined) {
+  assertFormalProofDescriptor(descriptor);
   if (
     descriptor.outcome === "model-passed" &&
     !validFormalModelProofSummary(evidence)

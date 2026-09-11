@@ -1,3 +1,4 @@
+import { assertInventoryAmountKind } from "./stock-amount-rules.js";
 import {
   InventoryAmountKind,
   packageAmount,
@@ -1384,6 +1385,7 @@ function findCommandItem(
   amount: InventoryAmount,
   explicitItemRevisionId: string | undefined
 ): InventoryItemDefinitionRevision {
+  assertInventoryAmountKind(amount);
   if (amount.kind === InventoryAmountKind.Package) {
     const packaging = catalog.packagingRevision(amount.packagingRevisionId);
     if (packaging.itemId !== position.itemId) {
@@ -1528,9 +1530,12 @@ function createTransformationGenealogy(
       "Transformation lineage must name nodes on every input and output, or none."
     );
   }
+  // Several stock locations may describe one physical lot/container node. Form the product of identity sets, not line slots.
+  const uniqueConsumedNodes = uniqueTransformationGenealogyNodes(consumedNodes);
+  const uniqueProducedNodes = uniqueTransformationGenealogyNodes(producedNodes);
   const changes: InventoryTraceabilityRelationChange[] = [];
-  for (const inputNode of consumedNodes) {
-    for (const outputNode of producedNodes) {
+  for (const inputNode of uniqueConsumedNodes) {
+    for (const outputNode of uniqueProducedNodes) {
       if (inputNode === undefined || outputNode === undefined) {
         throw new Error("Complete transformation lineage lost one node.");
       }
@@ -1543,6 +1548,19 @@ function createTransformationGenealogy(
     }
   }
   return changes;
+}
+
+/** Deduplicate exact genealogy identities while retaining the first equivalent node and rejecting missing lineage. */
+function uniqueTransformationGenealogyNodes(
+  nodes: readonly (InventoryTraceabilityNodeRef | undefined)[]
+): readonly InventoryTraceabilityNodeRef[] {
+  const unique = new Map<string, InventoryTraceabilityNodeRef>();
+  for (const node of nodes) {
+    if (node === undefined) throw new Error("Complete transformation lineage lost one node.");
+    const identity = inventoryTraceabilityNodeIdentity(node);
+    if (!unique.has(identity)) unique.set(identity, node);
+  }
+  return [...unique.values()];
 }
 
 /** Derive one unambiguous stock node or check that a caller mapping names a real line identity. */

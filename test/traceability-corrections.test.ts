@@ -1177,3 +1177,38 @@ describe("append-only corrections", () => {
     expect(correctedRootKinds).toEqual(expectedCorrectableKinds);
   });
 });
+
+
+describe("transformation genealogy set semantics", () => {
+  it("deduplicates shared input/output nodes independently of stock location and line order", async () => {
+    for (const sharedInputLot of [false, true]) {
+      for (const sharedOutputLot of [false, true]) {
+        const inventory = createTestInventory();
+        const consume = [0, 1].map(index => ({
+          position: loosePosition(`source-${index}`, { lotId: sharedInputLot ? "input-shared" : `input-${index}` }),
+          amount: stockAmount("1", "piece"),
+        }));
+        const produce = [0, 1].map(index => ({
+          position: loosePosition(`output-${index}`, { lotId: sharedOutputLot ? "output-shared" : `output-${index}` }),
+          amount: stockAmount("1", "piece"),
+        }));
+        for (const [index, line] of consume.entries()) {
+          await inventory.stock.receive({ operationId: `genealogy-seed-${index}`, occurredAt: time0, to: line.position, amount: line.amount });
+        }
+        const command = { operationId: "genealogy-shared-nodes", occurredAt: time1, consume, produce };
+        const result = await inventory.stock.transform(command);
+        const after = await inventory.read.world();
+        const relations = Object.values(after.projection.traceability.relations);
+        const expectedEdges = (sharedInputLot ? 1 : 2) * (sharedOutputLot ? 1 : 2);
+        expect(result.event.traceabilityChanges).toHaveLength(expectedEdges);
+        expect(relations).toHaveLength(expectedEdges);
+        expect(new Set(relations.map(relation => inventoryTraceabilityRelationIdentity(relation.kind, relation.from, relation.to))).size).toBe(expectedEdges);
+        expect((await inventory.stock.transform(command)).replayed).toBe(true);
+        expect(await inventory.read.world()).toEqual(after);
+        const reordered = await inventory.stock.transform({ ...command, consume: [...consume].reverse(), produce: [...produce].reverse() });
+        expect(reordered.replayed).toBe(true);
+        expect(await inventory.read.world()).toEqual(after);
+      }
+    }
+  });
+});

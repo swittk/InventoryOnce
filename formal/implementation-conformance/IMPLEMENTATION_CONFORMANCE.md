@@ -4,7 +4,7 @@ This file is generated from the exact TypeScript surface plus the checked API, f
 
 Use the repository `.nvmrc` when one exists; otherwise run the assurance command with a Node version permitted by `package.json#engines`. Edit only checked source/manifests, run `pnpm assurance:generate` when generated evidence must change, then run `pnpm assurance --write-report`.
 
-Surface SHA-256: `dec827da4c576f7638a0f6f9777217b7f024beab7b9ec08cf0a26e8a45733964`
+Surface SHA-256: `fe83db6e44a4d448decc7c2e16b0f88bb1d2d0ab4ad052c17a3b68d7c270cd22`
 
 ## Mechanically covered surface
 
@@ -27,8 +27,8 @@ Surface SHA-256: `dec827da4c576f7638a0f6f9777217b7f024beab7b9ec08cf0a26e8a457339
 - Explicit undefined-union fields: 2
 - Explicit nullable fields: 0
 - Public call/construct overload signatures: 510
-- Directly executed public APIs: 193
-- Public APIs exercised through tested internal call chains: 313
+- Directly executed public APIs: 200
+- Public APIs exercised through tested internal call chains: 306
 - Explicit-gap public APIs: 4
 - Unreferenced public APIs: 0
 - Explicit recursive type edges: 3

@@ -70,7 +70,7 @@ export function inventoryWorldContentRoots(
     reservations,
     counts,
     world: inventorySha256(
-      JSON.stringify([
+      canonicalNormalizedJson([
         world.revision,
         catalog,
         projection,
@@ -115,7 +115,7 @@ export function inventoryProjectionDigest(
       projection.traceability.containmentChildContainerIdsByParentNodeIdentity
     ),
   ];
-  return inventorySha256(JSON.stringify(digestParts));
+  return inventorySha256(canonicalNormalizedJson(digestParts));
 }
 
 /** Hash the complete reservation book in stable identity order. */
@@ -123,7 +123,7 @@ export function inventoryReservationBookDigest(
   book: InventoryReservationBook
 ): string {
   return inventorySha256(
-    JSON.stringify([
+    canonicalNormalizedJson([
       sortedRecordRows(book.reservations),
       sortedRecordRows(book.operations),
     ])
@@ -133,7 +133,7 @@ export function inventoryReservationBookDigest(
 /** Hash the complete count book in stable identity order. */
 export function inventoryCountBookDigest(book: InventoryCountBook): string {
   return inventorySha256(
-    JSON.stringify([
+    canonicalNormalizedJson([
       sortedRecordRows(book.counts),
       sortedRecordRows(book.operations),
     ])
@@ -305,7 +305,7 @@ export function inventoryDurablePlanDigest(parts: {
   readonly nextRoots: InventoryWorldContentRoots;
 }): string {
   return inventorySha256(
-    JSON.stringify([
+    canonicalNormalizedJson([
       parts.baseWorldRoot,
       parts.catalogRoot,
       parts.deficitPolicy,
@@ -335,7 +335,7 @@ export function inventoryDurableMigrationPlanDigest(parts: {
   readonly nextRoots: InventoryWorldContentRoots;
 }): string {
   return inventorySha256(
-    JSON.stringify([
+    canonicalNormalizedJson([
       parts.baseWorldRoot,
       parts.catalogRoot,
       parts.deficitPolicy,
@@ -414,6 +414,11 @@ function assertAllowedReservationTransition(
   if (base === undefined || base.status !== InventoryReservationStatus.Active) {
     throw new Error(
       "Only an existing active reservation can receive another lifecycle operation."
+    );
+  }
+  if (base.consumptionEventId !== undefined) {
+    throw new Error(
+      "Non-consumed reservation state cannot retain a consumption event."
     );
   }
   if (!sameReservationCreationFacts(base, next)) {
@@ -710,13 +715,39 @@ function normalizedJsonObjectKeys(value: object): string[] {
   return result;
 }
 
-/** Turn one normalized typed record into stable key-sorted JSON rows while retaining canonical writer property order. */
+/** Serialize one normalized JSON value with recursively sorted object keys and ordinary JSON omission semantics. */
+function canonicalNormalizedJson(value: NormalizedJsonComparable): string {
+  if (value === undefined || value === null) return "null";
+  if (typeof value !== "object") {
+    const encoded = JSON.stringify(value);
+    if (encoded === undefined) {
+      throw new Error("Normalized durable JSON contains an unsupported primitive.");
+    }
+    return encoded;
+  }
+  if (Array.isArray(value)) {
+    return `[${value.map(
+      /** Canonicalize one array child without changing its position. */
+      (child) => canonicalNormalizedJson(child)
+    ).join(",")}]`;
+  }
+  const keys = normalizedJsonObjectKeys(value);
+  keys.sort();
+  const fields: string[] = [];
+  for (const key of keys) {
+    const child = Object.getOwnPropertyDescriptor(value, key)?.value;
+    fields.push(`${JSON.stringify(key)}:${canonicalNormalizedJson(child)}`);
+  }
+  return `{${fields.join(",")}}`;
+}
+
+/** Turn one normalized typed record into stable key-sorted rows independent of nested object insertion order. */
 function sortedRecordRows<T>(
   values: Readonly<Record<string, T>>
 ): readonly string[] {
   const keys = Object.keys(values);
   keys.sort();
   const rows: string[] = [];
-  for (const key of keys) rows.push(JSON.stringify([key, values[key]]));
+  for (const key of keys) rows.push(canonicalNormalizedJson([key, values[key]]));
   return rows;
 }

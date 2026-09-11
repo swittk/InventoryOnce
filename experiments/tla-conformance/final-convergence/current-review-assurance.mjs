@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { assuranceRepositoryPath } from "../../../scripts/assurance-files.mjs";
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -37,11 +38,7 @@ function currentSurfaceSha256(repositoryRoot) {
 
 /** Resolve one repository-relative path and fail closed on root escape. */
 function repositoryPath(repositoryRoot, file) {
-  const root = path.resolve(repositoryRoot);
-  const target = path.resolve(root, file);
-  const relative = path.relative(root, target);
-  assert(relative !== ".." && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative), `Current review assurance path escapes repository root: ${file}`);
-  return target;
+  return assuranceRepositoryPath(repositoryRoot, file);
 }
 
 /** Require one referenced proof artifact to be an ordinary file rather than a symlink or directory. */

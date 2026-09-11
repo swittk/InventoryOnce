@@ -79,7 +79,7 @@ describe("formal implementation conformance manifest", () => {
         ],
         { cwd: packageRoot, encoding: "utf8" }
       )
-    ).toThrow();
+    ).toThrow("Unsupported TLC check list entry 'TypeOK, ReportMatchesCurrentTruth'.");
   });
 
   it("classifies read declaration files as read-current by exact file identity", () => {

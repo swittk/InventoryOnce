@@ -1,3 +1,4 @@
+import { assertInventoryAmountKind } from "./stock-amount-rules.js";
 import {
   InventoryEventKind,
   InventoryTransferLifecycleAction,
@@ -882,6 +883,7 @@ function transferCommandItem(
   amount: InventoryAmount,
   explicitRevisionId: string | undefined
 ): InventoryItemDefinitionRevision {
+  assertInventoryAmountKind(amount);
   if (amount.kind === InventoryAmountKind.Package) {
     const packaging = catalog.packagingRevision(amount.packagingRevisionId);
     if (packaging.itemId !== position.itemId)
@@ -1116,6 +1118,7 @@ function inventoryTransferActionIntentFingerprint(
 function inventoryTransferAmountIntentValue(
   amount: InventoryAmount
 ): InventoryIntentFingerprintValue {
+  assertInventoryAmountKind(amount);
   const orderedIndependent = [...amount.independent];
   orderedIndependent.sort(
     /** Keep independently measured axes in deterministic identity order. */

@@ -1,3 +1,4 @@
+import { assertInventoryAmountKind, positionHasUnfixedIndependentMeasuredContents } from "./stock-amount-rules.js";
 import {
   allocateInventory,
   compareInventoryAllocationCandidates,
@@ -17,7 +18,6 @@ import {
   InventoryMeasurementRequirement,
   type InventoryCatalog,
   type InventoryItemDefinitionRevision,
-  type InventoryPackagingDefinitionRevision,
 } from "./catalog.js";
 import {
   applyInventoryRecordedDeficitBurden,
@@ -486,6 +486,7 @@ function resolveAllocationItemAndSelector(
   amount: InventoryAmount,
   explicitItemRevisionId: ItemRevisionId | undefined
 ): ResolvedAllocationSelection {
+  assertInventoryAmountKind(amount);
   const selector = normalizeInventoryStockSelector(rawSelector);
   const packageRevision =
     amount.kind === InventoryAmountKind.Package
@@ -732,36 +733,6 @@ function createExactPrimaryReservationSummary({
     reservedPrimaryByPositionIdentity,
     unallocatedReservationsPresent,
   };
-}
-
-/** Return whether automatic primary allocation would lose an unfixed independent measurement. */
-function positionHasUnfixedIndependentMeasuredContents(
-  position: InventoryStockPosition,
-  item: InventoryItemDefinitionRevision,
-  packaging?: InventoryPackagingDefinitionRevision
-): boolean {
-  for (const axis of item.independentAxes) {
-    if (
-      packaging?.fixedContents.independent.some(
-        /** Match one package-fixed independent axis by exact axis identity. */
-        (measured) => measured.axisId === axis.axisId
-      ) === true
-    ) {
-      continue;
-    }
-    const measured = inventoryMeasurementAt(
-      position.measurements,
-      axis.axisId,
-      axis.unit
-    );
-    if (
-      axis.requirement === InventoryMeasurementRequirement.Required ||
-      compareQuantity(measured, zeroQuantity(axis.unit, measured.decimals)) !== 0
-    ) {
-      return true;
-    }
-  }
-  return false;
 }
 
 /** Mark serial, measured, and intact-package rows with the smallest legal automatic issue increment. */

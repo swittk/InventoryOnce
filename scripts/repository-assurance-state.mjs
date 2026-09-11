@@ -7,10 +7,12 @@ const excludedPaths = new Set([
   "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
 ]);
 
+/** Return whether one repository path contributes to the assurance state digest. */
 function includedPath(path) {
   return path.length > 0 && !path.startsWith(".chatgpt/") && !excludedPaths.has(path);
 }
 
+/** Hash path/kind/payload tuples with explicit lengths so entry boundaries cannot collide. */
 function hashAssuranceEntries(entries) {
   const hash = createHash("sha256");
   const writeLength = (length) => {

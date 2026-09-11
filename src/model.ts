@@ -198,6 +198,7 @@ export function normalizeInventoryStockPositionKey(
   }
   if (key.qualifiedDimensions === undefined) return key;
   const { qualifiedDimensions, ...withoutQualifiedDimensions } = key;
+  // Empty qualified dimensions are semantic omission and must share one durable position identity.
   if (qualifiedDimensions.length === 0) return withoutQualifiedDimensions;
   const dimensions = [...qualifiedDimensions];
   dimensions.sort(compareQualifiedDimension);

@@ -1,3 +1,4 @@
+import { assertInventoryCompositionAmountKind } from "./stock-amount-rules.js";
 import { compareInventoryIdentityText } from "./ordering.js";
 import {
   inventoryIntentFingerprint,
@@ -891,6 +892,7 @@ function normalizeInventoryCompositionOutput(
     InventoryPackagingDefinitionRevision
   >
 ): InventoryCompositionOutputDefinition {
+  assertInventoryCompositionAmountKind(output.amount);
   assertCompositionOutputLotPolicy(output, item);
   if (output.amount.kind === InventoryCompositionOutputAmountKind.Measured) {
     assertMeasurementsMatchItem(item, output.amount.measurements);

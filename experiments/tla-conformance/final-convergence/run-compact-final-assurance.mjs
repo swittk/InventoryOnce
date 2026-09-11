@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { assuranceRepositoryPath, readAssuranceFile, readCompactArchive, materializeAssuranceFiles, claimAssuranceWorkspace } from "../../../scripts/assurance-files.mjs";
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -22,10 +23,7 @@ function assertRegularFile(file, label) {
 }
 /** Resolve one manifest path and reject any attempt to escape the repository root. */
 function repositoryPath(file) {
-  const target = path.resolve(root, file);
-  const relative = path.relative(root, target);
-  assert(relative !== ".." && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative), `Compact assurance path escapes repository root: ${file}`);
-  return target;
+  return assuranceRepositoryPath(root, file);
 }
 const mode = process.argv[2] ?? "verify";
 const bundle = manifest.bundles.entries.find((row) => row.mode === mode);
@@ -36,29 +34,12 @@ assert.equal(sha256(bundleFile), bundle.sha256, `Compact ${mode} bundle bytes ch
 const archiveFile = repositoryPath(manifest.archive.file);
 assertRegularFile(archiveFile, "Compact support archive");
 assert.equal(sha256(archiveFile), manifest.archive.sha256, "Compact support archive bytes changed.");
-const archiveMembers = execFileSync("tar", ["-tzf", archiveFile], { encoding: "utf8" })
-  .split("\n")
-  .map((member) => member.trim())
-  .filter((member) => member !== "");
-const declaredMembers = manifest.archive.files.map((row) => row.file);
-assert.deepEqual([...archiveMembers].sort(), [...declaredMembers].sort(), "Compact support archive members differ from the manifest.");
-for (const member of archiveMembers) {
-  assert(!path.isAbsolute(member) && !member.split("/").includes("..") && !member.endsWith("/"), `Unsafe compact support archive member: ${member}`);
-}
-for (const row of manifest.archive.files) {
-  assert.equal(fs.existsSync(path.join(root, row.file)), false, `Archived support path unexpectedly exists before materialization: ${row.file}`);
-}
-let materialized = false;
+// Validate every archive member/type/hash before any repository path can be written.
+const archiveFiles = readCompactArchive(readAssuranceFile(root, manifest.archive.file), manifest.archive.files);
+const releaseWorkspace = claimAssuranceWorkspace(root);
+let cleanupSupport;
 try {
-  // Cleanup must be armed before tar can leave any partially extracted member behind.
-  materialized = true;
-  execFileSync("tar", ["-xzf", archiveFile, "-C", root], { stdio: "inherit" });
-  for (const row of manifest.archive.files) {
-    const target = path.join(root, row.file);
-    const targetStat = assertRegularFile(target, `Archived support member '${row.file}'`);
-    assert.equal(targetStat.size, row.bytes, `Archived support size mismatch: ${row.file}`);
-    assert.equal(sha256(target), row.sha256, `Archived support hash mismatch: ${row.file}`);
-  }
+  cleanupSupport = materializeAssuranceFiles(root, archiveFiles);
   const liveClosure = JSON.parse(fs.readFileSync(path.join(here, "authority-reference-manifest.json"), "utf8"));
   assert.equal(liveClosure.rows.length, liveClosure.inputs, "Live-input closure row count is stale.");
   let liveBytes = 0;
@@ -165,5 +146,5 @@ try {
   }
   execFileSync(process.execPath, [bundleFile, ...process.argv.slice(3)], { cwd: root, stdio: "inherit" });
 } finally {
-  if (materialized) for (const row of [...manifest.archive.files].reverse()) fs.rmSync(path.join(root, row.file), { force: true });
+  try { cleanupSupport?.(); } finally { releaseWorkspace(); }
 }

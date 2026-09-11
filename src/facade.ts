@@ -1,3 +1,4 @@
+import { assertInventoryAmountKind } from "./stock-amount-rules.js";
 import { compareInventoryIdentityText } from "./ordering.js";
 import {
   summarizeInventoryAvailability,
@@ -6920,6 +6921,7 @@ function compareReservationFulfillmentLine(
 
 /** Return a stable amount copy with independently measured axes sorted/rejected if duplicated. */
 function normalizeFacadeAmount(amount: InventoryAmount): InventoryAmount {
+  assertInventoryAmountKind(amount);
   const independent = [...amount.independent];
   independent.sort(compareIndependentAmountAxis);
   let previousAxisId: string | undefined;

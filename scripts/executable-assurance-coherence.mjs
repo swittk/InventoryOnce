@@ -65,6 +65,15 @@
  * `executable` is the persisted generated report that must equal a fresh same-run summary field for field.
  */
 
+/** Exact checked schema versions admitted for the five executable-assurance manifests. */
+export const executableAssuranceSchemaVersions = Object.freeze({
+  api: 2,
+  fields: 2,
+  callChains: 1,
+  traces: 1,
+  gaps: 1,
+});
+
 /** Executable trace modes accepted by the current assurance schema. */
 const executableTraceModes = new Set([
   "state-result-refinement",
@@ -83,20 +92,55 @@ function assertKnownTraceModes(traceEntries) {
   }
 }
 
-/** Require every executable trace row to name an explicit array of string API identities. */
-function assertTraceApiEntries(traceEntries) {
+/** Require nonempty, unique trace members from the actual API domain. */
+function assertTraceApiEntries(traceEntries, apiEntries) {
   for (const entry of traceEntries) {
-    if (
-      typeof entry !== "object" ||
-      entry === null ||
-      !Array.isArray(entry.apiEntries) ||
-      entry.apiEntries.some((apiEntry) => typeof apiEntry !== "string")
-    ) {
-      throw new Error(
-        "Executable assurance trace apiEntries must be a present array of strings.",
-      );
+    if (typeof entry !== "object" || entry === null || Array.isArray(entry) || !Object.hasOwn(entry, "apiEntries") || !Array.isArray(entry.apiEntries) || entry.apiEntries.length === 0 || entry.apiEntries.some(apiEntry => typeof apiEntry !== "string" || apiEntry.trim() !== apiEntry || apiEntry.length === 0)) {
+      throw new Error("Executable assurance trace apiEntries must be a present array of strings with nonempty membership.");
+    }
+    const seen = new Set();
+    for (const apiEntry of entry.apiEntries) {
+      if (!Object.hasOwn(apiEntries, apiEntry) || seen.has(apiEntry)) throw new Error(`Executable assurance trace apiEntries contains duplicate or unknown API '${apiEntry}'.`);
+      seen.add(apiEntry);
     }
   }
+}
+
+/** Counter fields belonging to the current manifest schema, independent of supplied counter values. */
+export const executableAssuranceCounterKeys = Object.freeze({
+  api: Object.freeze(["authorityMethods", "callAndConstructSignatures", "classMethods", "compilerCallGraphCallables", "compilerCallGraphEdges", "compilerCallGraphTestRoots", "compilerCallGraphUnresolvedApis", "compilerCallGraphWitnessedApis", "directExecutableApis", "explicitGapApis", "facadeMethods", "indirectCallChainApis", "kernelCallables", "maximumTypeDepth", "migrationCallables", "reachableFields", "reachableTypes", "recursiveTypeReferences", "rootCallables", "storageCallables", "storageMethods", "truncatedTypes", "unreferencedPublicApis"]),
+  fields: Object.freeze(["callableFieldSignatures", "callableFields", "callbackArgumentFields", "callbackResultFields", "fields", "inputFields", "nullableFields", "optionalFields", "outputFields", "recursiveTypeReferences", "truncatedTypes", "types", "undefinedFields"]),
+  callChains: Object.freeze(["callables", "edges", "publicEntries", "publicEntriesWithTargets", "publicEntriesWithWitnesses", "testRoots", "unresolvedPublicEntries"]),
+});
+
+/** Reject arrays/null/missing maps before Object.keys could manufacture an empty domain. */
+function assertEntryMap(value, label) {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) throw new Error(`Malformed ${label} assurance entry map.`);
+  for (const [key, entry] of Object.entries(value)) {
+    if (key.length === 0 || entry === null || typeof entry !== "object" || Array.isArray(entry)) throw new Error(`Malformed ${label} assurance entry '${key}'.`);
+  }
+}
+
+/** Validate shape and domains before either producing or comparing a summary. */
+function assertExecutableManifests(input) {
+  for (const section of ["api", "fields", "callChains", "traces", "gaps"]) {
+    const manifest = input[section];
+    if (manifest === null || typeof manifest !== "object" || Array.isArray(manifest)) throw new Error(`Missing ${section} assurance manifest.`);
+    if (manifest.schemaVersion !== executableAssuranceSchemaVersions[section]) {
+      throw new Error(
+        `${section} assurance manifest schemaVersion must be ${executableAssuranceSchemaVersions[section]}.`
+      );
+    }
+    if (section === "api" || section === "fields" || section === "callChains") assertManifestCounters(section, manifest.counts, executableAssuranceCounterKeys[section]);
+  }
+  assertEntryMap(input.api.entries, "API"); assertEntryMap(input.fields.entries, "field"); assertEntryMap(input.gaps.gaps, "gap");
+  // Trace rows have a specific diagnostic and are validated before general map inspection.
+  if (input.traces.entries === null || typeof input.traces.entries !== "object" || Array.isArray(input.traces.entries)) throw new Error("Malformed trace assurance entry map.");
+  assertTraceApiEntries(Object.values(input.traces.entries), input.api.entries);
+  if (typeof input.api.surfaceSha256 !== "string" || input.api.surfaceSha256.length === 0) throw new Error("API assurance manifest surfaceSha256 must be a present non-empty string.");
+  const apiCount = Object.keys(input.api.entries).length;
+  if (apiCount === 0 || input.api.counts.callAndConstructSignatures !== apiCount || input.api.counts.directExecutableApis + input.api.counts.indirectCallChainApis + input.api.counts.explicitGapApis + input.api.counts.unreferencedPublicApis !== apiCount) throw new Error("API assurance counters do not partition the actual nonempty API domain.");
+  if (input.fields.counts.fields !== Object.keys(input.fields.entries).length) throw new Error("Field assurance counter differs from actual field domain.");
 }
 
 /** Reject implementation-model claims from any registered API, field, or trace manifest. */
@@ -119,8 +163,8 @@ export function assertNoManifestImplementationModelClaim(
 export function executableAssuranceSummary(
   /** @type {ExecutableAssuranceManifests} */ { api, fields, callChains, traces, gaps },
 ) {
+  assertExecutableManifests({ api, fields, callChains, traces, gaps });
   const traceEntries = Object.values(traces.entries);
-  assertTraceApiEntries(traceEntries);
   assertKnownTraceModes(traceEntries);
   return {
     surfaceSha256: api.surfaceSha256,
@@ -177,34 +221,6 @@ function assertManifestCounters(label, counts, keys) {
 export function assertExecutableAssuranceMatchesManifests(
   /** @type {ExecutableAssuranceInput} */ input,
 ) {
-  if (typeof input.api.surfaceSha256 !== "string" || input.api.surfaceSha256.length === 0) {
-    throw new Error("API assurance manifest surfaceSha256 must be a present non-empty string.");
-  }
-  assertManifestCounters("API", input.api.counts, [
-    "callAndConstructSignatures",
-    "directExecutableApis",
-    "indirectCallChainApis",
-    "explicitGapApis",
-    "unreferencedPublicApis",
-    "maximumTypeDepth",
-  ]);
-  assertManifestCounters("Field classification", input.fields.counts, [
-    "types",
-    "fields",
-    "inputFields",
-    "outputFields",
-    "optionalFields",
-    "callableFields",
-    "recursiveTypeReferences",
-    "truncatedTypes",
-  ]);
-  assertManifestCounters("Call-chain", input.callChains.counts, [
-    "callables",
-    "edges",
-    "testRoots",
-    "publicEntriesWithWitnesses",
-    "unresolvedPublicEntries",
-  ]);
   const expected = executableAssuranceSummary(input);
   const mismatches = [];
   for (const [key, value] of Object.entries(expected)) {

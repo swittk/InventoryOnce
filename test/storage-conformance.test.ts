@@ -7,7 +7,7 @@ import {
   stockAmount,
   type InventoryWorldState,
 } from "../src/index.js";
-import { inventoryDurablePlanDigest } from "../src/integrity.js";
+import { inventoryDurableMigrationPlanDigest, inventoryDurablePlanDigest } from "../src/integrity.js";
 import {
   InMemoryInventoryDurableStorage,
   createInMemoryInventoryDurableStorage,
@@ -22,6 +22,71 @@ import {
   time0,
   time3,
 } from "./test-fixtures.js";
+
+it("canonicalizes nested compact and migration plan values independently of object insertion order", () => {
+  const forwardRoots = {
+    world: "world-root",
+    catalog: "catalog-root",
+    projection: "projection-root",
+    reservations: "reservation-root",
+    counts: "count-root",
+  };
+  const reverseRoots = {
+    counts: "count-root",
+    reservations: "reservation-root",
+    projection: "projection-root",
+    catalog: "catalog-root",
+    world: "world-root",
+  };
+  const forwardReceipt = {
+    operationId: "canonical-plan",
+    recordedAt: time0,
+    worldRevision: 1,
+    eventId: "event-1",
+  };
+  const reverseReceipt = {
+    eventId: "event-1",
+    worldRevision: 1,
+    recordedAt: time0,
+    operationId: "canonical-plan",
+  };
+  expect(
+    inventoryDurablePlanDigest({
+      baseWorldRoot: "base-root",
+      catalogRoot: "catalog-root",
+      deficitPolicy: InventoryDeficitPolicy.Record,
+      receipt: forwardReceipt,
+      nextRoots: forwardRoots,
+    })
+  ).toBe(
+    inventoryDurablePlanDigest({
+      baseWorldRoot: "base-root",
+      catalogRoot: "catalog-root",
+      deficitPolicy: InventoryDeficitPolicy.Record,
+      receipt: reverseReceipt,
+      nextRoots: reverseRoots,
+    })
+  );
+  expect(
+    inventoryDurableMigrationPlanDigest({
+      baseWorldRoot: "base-root",
+      catalogRoot: "catalog-root",
+      deficitPolicy: InventoryDeficitPolicy.Record,
+      events: [],
+      sourceDispositions: [{ sourceId: "source-a", state: { accepted: true, reason: "same" } }],
+      nextRoots: forwardRoots,
+    })
+  ).toBe(
+    inventoryDurableMigrationPlanDigest({
+      baseWorldRoot: "base-root",
+      catalogRoot: "catalog-root",
+      deficitPolicy: InventoryDeficitPolicy.Record,
+      events: [],
+      sourceDispositions: [{ state: { reason: "same", accepted: true }, sourceId: "source-a" }],
+      nextRoots: reverseRoots,
+    })
+  );
+});
 
 it("binds deficit policy into the durable compact-plan digest", () => {
   const common = {

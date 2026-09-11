@@ -194,6 +194,7 @@ const head = spawnSync("git", ["rev-parse", "HEAD"], {
 if (head.status !== 0) {
   throw new Error("Unable to record the certified repository HEAD.");
 }
+const currentSummary = executableAssuranceSummary({ api, fields, callChains, traces, gaps });
 const successMessage = "\nFormal implementation conformance production assurance passed.\n";
 writeAssuranceOutput(process.stdout, successMessage);
 await closeFullLog();
@@ -204,7 +205,7 @@ const report = {
   repositoryStateSha256: repositoryAssuranceStateSha256(repositoryRoot),
   fullFormal,
   ...(fullFormal ? { fullLogSha256: fullLogSha256() } : {}),
-  ...executableAssuranceSummary({ api, fields, callChains, traces, gaps }),
+  ...currentSummary,
   packageTraceTests,
   steps: steps.map((step) => ({ id: step.id, status: "passed" })),
 };

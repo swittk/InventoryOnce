@@ -4,11 +4,13 @@ import {
   assertExecutableAssuranceMatchesManifests,
   assertNoManifestImplementationModelClaim,
   executableAssuranceSummary,
+  executableAssuranceCounterKeys,
 } from "./executable-assurance-coherence.mjs";
 
 /** Build same-run fixture manifests using the exact production summary input shape. */
 function fixtures() {
   const api = {
+    schemaVersion: 2,
     surfaceSha256: "surface-a",
     entries: { one: {}, two: {} },
     counts: {
@@ -21,6 +23,7 @@ function fixtures() {
     },
   };
   const fields = {
+    schemaVersion: 2,
     entries: { a: {}, b: {}, c: {} },
     counts: {
       types: 2,
@@ -34,18 +37,23 @@ function fixtures() {
     },
   };
   const callChains = {
+    schemaVersion: 1,
     counts: { callables: 4, edges: 5, testRoots: 2, publicEntriesWithWitnesses: 2, unresolvedPublicEntries: 0 },
   };
   const traces = {
+    schemaVersion: 1,
     entries: {
       a: { apiEntries: ["one"], refinementMode: "state-result-refinement" },
       b: { apiEntries: ["one", "two"], refinementMode: "bounded-property" },
       c: { apiEntries: ["two"], refinementMode: "direct-property" },
     },
   };
-  const gaps = { gaps: { external: {} } };
+  const gaps = { schemaVersion: 1, gaps: { external: {} } };
   /** @type {Parameters<typeof executableAssuranceSummary>[0]} */
   const manifests = { api, fields, callChains, traces, gaps };
+  for (const section of ["api", "fields", "callChains"]) {
+    for (const key of executableAssuranceCounterKeys[section]) if (!Object.hasOwn(manifests[section].counts, key)) manifests[section].counts[key] = 0;
+  }
   return manifests;
 }
 
@@ -60,10 +68,21 @@ test("missing or empty API surface digests fail closed", () => {
     const input = fixtures();
     if (invalid === undefined) delete input.api.surfaceSha256;
     else input.api.surfaceSha256 = invalid;
-    const executable = executableAssuranceSummary(input);
     assert.throws(
-      () => assertExecutableAssuranceMatchesManifests({ ...input, executable }),
+      () => executableAssuranceSummary(input),
       /surfaceSha256 must be a present non-empty string/u,
+    );
+  }
+});
+
+test("every executable assurance manifest requires its exact schema version", () => {
+  const expected = { api: 2, fields: 2, callChains: 1, traces: 1, gaps: 1 };
+  for (const [section, version] of Object.entries(expected)) {
+    const input = fixtures();
+    input[section].schemaVersion = version + 1;
+    assert.throws(
+      () => executableAssuranceSummary(input),
+      new RegExp(`${section} assurance manifest schemaVersion must be ${version}`),
     );
   }
 });

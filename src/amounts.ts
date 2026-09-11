@@ -1,3 +1,4 @@
+import { assertInventoryAmountKind } from "./stock-amount-rules.js";
 import {
   assertMeasurementsMatchItem,
   type InventoryCatalog,
@@ -288,6 +289,7 @@ export function resolveInventoryAmount(
   item: InventoryItemDefinitionRevision,
   amount: InventoryAmount
 ): ResolvedInventoryAmount {
+  assertInventoryAmountKind(amount);
   if (amount.kind === InventoryAmountKind.Measured) {
     const measurements = createMeasuredVector(item, amount);
     positiveInventoryMeasurements(measurements, "Inventory amount");

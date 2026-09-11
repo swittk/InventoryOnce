@@ -1,3 +1,4 @@
+import { positionHasUnfixedIndependentMeasuredContents as hasUnfixedIndependentMeasuredContents } from "./stock-amount-rules.js";
 import {
   allocateInventory,
   InventoryAllocationMethod,
@@ -10,7 +11,6 @@ import {
   type InventoryAmount,
 } from "./amounts.js";
 import {
-  InventoryMeasurementRequirement,
   type InventoryCatalog,
   type InventoryFungibilityMemberDefinition,
   type InventoryFungibilityPoolDefinitionRevision,
@@ -892,29 +892,7 @@ function positionHasUnfixedIndependentMeasuredContents(
   const packaging = packagingRevisionId === undefined
     ? undefined
     : catalog.packagingRevision(packagingRevisionId);
-  for (const axis of item.independentAxes) {
-    if (
-      packaging?.fixedContents.independent.some(
-        /** Match one package-fixed independent axis by exact axis identity. */
-        (measured) => measured.axisId === axis.axisId
-      ) === true
-    ) {
-      continue;
-    }
-    const measured = inventoryMeasurementAt(
-      position.measurements,
-      axis.axisId,
-      axis.unit
-    );
-    if (
-      axis.requirement === InventoryMeasurementRequirement.Required ||
-      compareQuantity(measured, zeroQuantity(axis.unit, measured.decimals)) !==
-        0
-    ) {
-      return true;
-    }
-  }
-  return false;
+  return hasUnfixedIndependentMeasuredContents(position, item, packaging);
 }
 
 /** Build one exact member selector from common orthogonal dimensions. */

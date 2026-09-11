@@ -18,6 +18,8 @@ import {
   assertFormalMutationRegistrationConsistency,
   formalInvariantMutationChecks,
   formalModels,
+  formalPositiveReachabilityChecks,
+  assertFormalPositiveReachabilityRegistration,
 } from "./formal-models.mjs";
 import {
   formalModelProofSummary,
@@ -245,8 +247,8 @@ async function runModel(model) {
   }
 }
 
-/** Run one forbidden transition and require TLC to reject its named invariant. */
-async function runInvariantMutationCheck(model, config, invariant) {
+/** Verify one exact TLC counterexample: either a forbidden transition or absence of required ordinary reachability. */
+async function runInvariantMutationCheck(model, config, invariant, positiveWitness = false) {
   const descriptor = formalProofDescriptor({
     repositoryRoot: process.cwd(),
     model,
@@ -256,7 +258,7 @@ async function runInvariantMutationCheck(model, config, invariant) {
     tlaToolsSha256: TLA_SHA256,
     tlcWorkers: requestedWorkers,
   });
-  const hit = cachedProof(descriptor);
+  const hit = positiveWitness ? undefined : cachedProof(descriptor);
   if (hit !== undefined) {
     return {
       status: 0,
@@ -310,7 +312,7 @@ async function runInvariantMutationCheck(model, config, invariant) {
     }
     mutationRejected = true;
     let successOutput = `${output}TLC rejected '${config}' through '${invariant}'.\n`;
-    const written = cacheVerifiedProof(descriptor, mutationEvidence);
+    const written = positiveWitness ? undefined : cacheVerifiedProof(descriptor, mutationEvidence);
     if (written !== undefined) {
       successOutput +=
         `Cached verified TLC mutation proof for '${config}' (${written.key.slice(0, 12)}).\n`;
@@ -323,6 +325,7 @@ async function runInvariantMutationCheck(model, config, invariant) {
   }
 }
 
+assertFormalPositiveReachabilityRegistration(readdirSync(join(process.cwd(), "formal")));
 assertFormalMutationRegistrationCompleteness(
   readdirSync(join(process.cwd(), "formal")),
 );
@@ -360,7 +363,12 @@ if (modelRun.status !== 0) {
     // Preserve mutation failure while allowing the just-emitted witness sections to flush.
     process.exitCode = mutationRun.status;
   } else {
-    console.log(
+    const witnessRun = await runBoundedPool(formalPositiveReachabilityChecks, ([model, config, invariant]) => runInvariantMutationCheck(model, config, invariant, true));
+    for (let index = 0; index < witnessRun.results.length; index += 1) {
+      emitProofSection(`=== TLC positive reachability witness: ${formalPositiveReachabilityChecks[index][1]} ===`, witnessRun.results[index]);
+    }
+    if (witnessRun.status !== 0) process.exitCode = witnessRun.status;
+    else console.log(
       "\nAll InventoryOnce TLA+ models passed, and every registered forbidden transition was rejected by its safety invariant."
     );
   }

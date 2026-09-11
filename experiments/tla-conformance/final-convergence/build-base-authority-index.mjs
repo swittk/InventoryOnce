@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import { readAssuranceFile } from "../../../scripts/assurance-files.mjs";
 import path from "node:path";
 import { createHash } from "node:crypto";
 import {
@@ -18,7 +19,7 @@ if (process.argv.includes("--check-root")) {
 }
 
 function sha256(bytes) { return createHash("sha256").update(bytes).digest("hex"); }
-function read(file) { return fs.readFileSync(path.resolve(ROOT, file)); }
+function read(file) { return readAssuranceFile(ROOT, file); }
 function json(file) { return JSON.parse(read(file).toString("utf8")); }
 function canonical(value) {
   if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;

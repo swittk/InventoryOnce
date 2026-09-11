@@ -1,3 +1,7 @@
+import { verifyCurrentReviewAssurance } from "./current-review-assurance.mjs";
+import { assuranceProofReferencesExactPath, checkFrozenAssuranceTransport } from "../../../scripts/immutable-assurance-inputs.mjs";
+import { readAssuranceFile } from "../../../scripts/assurance-files.mjs";
+import { assertFinalConvergenceRepositoryRoot, finalConvergenceRepositoryPath, finalConvergenceRepositoryRoot } from "./repository-root.mjs";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -42,7 +46,7 @@ const POST_R165_ASSURANCE_ONLY = Object.freeze(POST_R165_TRACKED_DELTA.filter((f
 const AFFECTED_ROW = "type:src/facade.ts#InventoryOnceStockApi.reclassifyMany::call[0]";
 const REPORT_AFFECTED_ROW = "export:.#cutoverInventoryAuthority::call[0]";
 /** Repository tree containing this module and its statically imported historical/current formal registries. */
-const MODULE_REPOSITORY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
+const MODULE_REPOSITORY_ROOT = finalConvergenceRepositoryRoot(import.meta.url);
 /** Bind every R165 Git/file lookup to one explicitly selected repository tree. */
 function repositoryEvidence(repositoryRoot) {
   const root = path.resolve(repositoryRoot);
@@ -50,20 +54,19 @@ function repositoryEvidence(repositoryRoot) {
     /** Run one Git query against the selected repository tree. */
     git(args) { return execFileSync("git", args, { cwd: root, encoding: "utf8", maxBuffer: 16 * 1024 * 1024 }).trim(); },
     /** Hash one repository-relative evidence file from the selected tree. */
-    ref(file) { const bytes = fs.readFileSync(path.resolve(root, file)); return { file, sha256: sha256(bytes) }; },
+    ref(file) { const bytes = readAssuranceFile(root, file); return { file, sha256: sha256(bytes) }; },
     /** Read one repository-relative JSON artifact from the selected tree. */
-    readJson(file) { return JSON.parse(fs.readFileSync(path.resolve(root, file), "utf8")); },
+    readJson(file) { return JSON.parse(readAssuranceFile(root, file).toString("utf8")); },
     /** Find strict rows whose frozen proof semantics reference one selected-tree file. */
-    rowsWith(file, needle) { const a = JSON.parse(fs.readFileSync(path.resolve(root, file), "utf8")); return a.proofs.filter((proof) => JSON.stringify(proof).includes(needle)).map((proof) => ({ surfaceKey: proof.surfaceKey, mode: proof.mode ?? "V" })).sort((a, b) => a.surfaceKey.localeCompare(b.surfaceKey)); },
+    rowsWith(file, needle) { const a = JSON.parse(readAssuranceFile(root, file).toString("utf8")); return a.proofs.filter((proof) => assuranceProofReferencesExactPath(proof, needle)).map((proof) => ({ surfaceKey: proof.surfaceKey, mode: proof.mode ?? "V" })).sort((a, b) => a.surfaceKey.localeCompare(b.surfaceKey)); },
     /** Recompute registered TLA config checks from the selected tree. */
-    cfgSemantics(module) { const formalRoot = path.resolve(root, "formal"); const files = fs.readdirSync(formalRoot).filter((file) => file.endsWith(".cfg")).sort(); return files.map((file) => ({ file, checks: module.formalConfigCheckNames(fs.readFileSync(path.join(formalRoot, file), "utf8")) })); },
+    cfgSemantics(module) { const formalRoot = finalConvergenceRepositoryPath(root, "formal"); const files = fs.readdirSync(formalRoot).filter((file) => file.endsWith(".cfg")).sort(); return files.map((file) => ({ file, checks: module.formalConfigCheckNames(readAssuranceFile(root, `formal/${file}`).toString("utf8")) })); },
   };
 }
 
 /** Rebuild the frozen R165/R167 assurance transport from one explicit repository root. */
 export function buildR165AssuranceTransport({ repositoryRoot = MODULE_REPOSITORY_ROOT } = {}){
-  const root = path.resolve(repositoryRoot);
-  assert.equal(root, MODULE_REPOSITORY_ROOT, "R165 assurance transport repositoryRoot must match its imported evidence tree.");
+  const root = assertFinalConvergenceRepositoryRoot(repositoryRoot, import.meta.url);
   const { git, ref, readJson, rowsWith, cfgSemantics } = repositoryEvidence(root);
   const integrationHead=git(["rev-parse","HEAD"]);
   try { git(["merge-base","--is-ancestor",CURRENT_HEAD,integrationHead]); } catch { throw new Error("Integrated proof commit no longer descends from the R165 PR head."); }
@@ -78,14 +81,14 @@ export function buildR165AssuranceTransport({ repositoryRoot = MODULE_REPOSITORY
   const srcChanged=git(["diff","--name-only",PRIOR_HEAD,CURRENT_HEAD,"--","src"]).split(/\r?\n/u).filter(Boolean);
   assert.deepEqual(srcChanged,[],"R165 unexpectedly changed product source.");
   assert.equal(discoverCompilerSurface(root).digest,SURFACE_DIGEST,"R165 changed the 535-callable semantic surface.");
-  const priorBytes=fs.readFileSync(path.resolve(root, PRIOR_FORMAL),"utf8"),currentBytes=fs.readFileSync(path.resolve(root, CURRENT_FORMAL),"utf8");
+  const priorBytes=readAssuranceFile(root, PRIOR_FORMAL).toString("utf8"),currentBytes=readAssuranceFile(root, CURRENT_FORMAL).toString("utf8");
   assert(currentBytes.startsWith(priorBytes),"R165 formal registry is not an exact prior-byte prefix plus maintenance validation.");
   assert(currentBytes.slice(priorBytes.length).includes("assertFormalMutationRegistrationConsistency"));
   assert.deepEqual(current.formalModels,before.formalModels);
   assert.deepEqual(current.formalInvariantMutationChecks,before.formalInvariantMutationChecks);
   assert.deepEqual(current.statefulOperationFamilyIds,before.statefulOperationFamilyIds);
   assert.deepEqual(cfgSemantics(current),cfgSemantics(before));
-  current.assertFormalMutationRegistrationConsistency((config)=>fs.readFileSync(path.join(root,"formal",`${config}.cfg`),"utf8"));
+  current.assertFormalMutationRegistrationConsistency((config)=>readAssuranceFile(root, `formal/${config}.cfg`).toString("utf8"));
   const valueAffected=rowsWith(BASE_VALUE,CURRENT_FORMAL);
   const producerAffected=rowsWith(BASE_PRODUCER,CURRENT_FORMAL);
   assert.deepEqual(valueAffected,[]);
@@ -122,9 +125,31 @@ export function buildR165AssuranceTransport({ repositoryRoot = MODULE_REPOSITORY
   const core={schemaVersion:1,status:"R165_PLUS_R167_ASSURANCE_TRANSPORT_PROVED",priorHead:PRIOR_HEAD,currentHead:CURRENT_HEAD,surfaceDigest:SURFACE_DIGEST,exactChangedFiles:EXPECTED_DELTA,productSourceChanged:false,formalRegistry:{before:ref(PRIOR_FORMAL),after:ref(CURRENT_FORMAL),priorBytesAreExactPrefix:true,formalModels:structuredClone(current.formalModels),formalInvariantMutationChecks:structuredClone(current.formalInvariantMutationChecks),statefulOperationFamilyIds:structuredClone(current.statefulOperationFamilyIds),formalConfigCheckNamesAcrossCfgs:cfgSemantics(current),rule:"R165 appends only fail-fast mutation tuple consistency validation; registered models, mutation tuples, stateful families, and cfg check parsing remain identical."},affectedStrictRows,affectedValueRows:valueAffected,otherR165ProofInputs:[],postR165ReviewedDelta:{head:POST_R165_REVIEW_HEAD,tree:POST_R165_REVIEW_TREE,trackedFiles:POST_R165_TRACKED_DELTA,assuranceFilesWithStrictProofInputs:[{file:REPORT_FILE,rows:reportAffectedProducer,evidence:ref(R167_ASSURANCE_RECEIPT),fullLog:ref(R167_ASSURANCE_LOG)}],productSourceFileHandledByFinalHeadTransport:"src/deficits.ts"},producerGraphRuns:0,producerReplayRuns:0,reverseReruns:0,tlcRuns:0,creditExpansion:false,baselineArtifacts:[ref(BASE_VALUE),ref(BASE_PRODUCER),ref(R167_ASSURANCE_RECEIPT),ref(R167_ASSURANCE_LOG)]};
   return{...core,contentSha256:sha256(canonicalJson(core))};
 }
-if(process.argv[1]!==undefined&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
-  const root=MODULE_REPOSITORY_ROOT;
-  const a=buildR165AssuranceTransport({repositoryRoot:root}),file=path.resolve(root,"experiments/tla-conformance/final-convergence/r165-assurance-transport.json"),text=`${JSON.stringify(a,null,2)}\n`;
-  if(process.argv.includes("--check"))assert.equal(fs.readFileSync(file,"utf8"),text,"R165 assurance transport is stale.");else fs.writeFileSync(file,text);
-  console.log(JSON.stringify({status:a.status,contentSha256:a.contentSha256,affectedStrictRows:a.affectedStrictRows,affectedValueRows:a.affectedValueRows},null,2));
+const directInvocation =
+  process.argv[1] !== undefined &&
+  path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (directInvocation) {
+  if (!process.argv.includes("--check")) {
+    throw new Error(
+      "R165 historical assurance transport is immutable; direct execution requires --check."
+    );
+  }
+  const root = MODULE_REPOSITORY_ROOT;
+  const current = verifyCurrentReviewAssurance(root);
+  const artifact = checkFrozenAssuranceTransport(
+    root,
+    "experiments/tla-conformance/final-convergence/r165-assurance-transport.json",
+    current.receipt.certifiedHead
+  );
+  console.log(
+    JSON.stringify(
+      {
+        status: artifact.status,
+        contentSha256: artifact.contentSha256,
+        historicalReceiptVerified: true,
+      },
+      null,
+      2
+    )
+  );
 }

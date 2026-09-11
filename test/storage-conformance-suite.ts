@@ -71,7 +71,7 @@ interface StorageFailureCase {
 }
 
 /** Every required physical boundary and both crash sides. */
-const storageFailureCases: readonly StorageFailureCase[] = [
+const storageFailureCases: readonly StorageFailureCase[] = Object.freeze([
   { stage: InventoryStorageWriteStage.Begin, timing: "before" },
   { stage: InventoryStorageWriteStage.Begin, timing: "after" },
   { stage: InventoryStorageWriteStage.Event, timing: "before" },
@@ -90,7 +90,7 @@ const storageFailureCases: readonly StorageFailureCase[] = [
   { stage: InventoryStorageWriteStage.CompactOperation, timing: "before" },
   { stage: InventoryStorageWriteStage.CompactOperation, timing: "after" },
   { stage: InventoryStorageWriteStage.Complete, timing: "after" },
-];
+]);
 
 /** Return whether this crash side happens after the complete next world became visible. */
 function inventoryStorageFailurePublishesWorld(
@@ -134,7 +134,7 @@ interface StoragePlanShape {
 }
 
 /** Real stock/reservation/count combinations covered by every applicable write failpoint. */
-const storagePlanShapes: readonly StoragePlanShape[] = [
+const storagePlanShapes: readonly StoragePlanShape[] = Object.freeze([
   {
     name: "catalog-only",
     operationId: "shape-catalog",
@@ -537,7 +537,7 @@ const storagePlanShapes: readonly StoragePlanShape[] = [
       );
     },
   },
-];
+]);
 
 /** Run the same exact component assertion used by the crash matrix for one named plan shape. */
 export function assertInventoryStoragePlanShapePublished(
@@ -553,20 +553,20 @@ export function assertInventoryStoragePlanShapePublished(
 }
 
 /** Every operation abort boundary and both crash sides. */
-const abortFailureCases: readonly StorageFailureCase[] = [
+const abortFailureCases: readonly StorageFailureCase[] = Object.freeze([
   { stage: InventoryStorageWriteStage.ClaimAbort, timing: "before" },
   { stage: InventoryStorageWriteStage.ClaimAbort, timing: "after" },
   { stage: InventoryStorageWriteStage.Abort, timing: "before" },
   { stage: InventoryStorageWriteStage.Abort, timing: "after" },
-];
+]);
 
 /** Every migration abort boundary and both crash sides. */
-const migrationAbortFailureCases: readonly StorageFailureCase[] = [
+const migrationAbortFailureCases: readonly StorageFailureCase[] = Object.freeze([
   { stage: InventoryStorageWriteStage.MigrationClaimAbort, timing: "before" },
   { stage: InventoryStorageWriteStage.MigrationClaimAbort, timing: "after" },
   { stage: InventoryStorageWriteStage.MigrationAbort, timing: "before" },
   { stage: InventoryStorageWriteStage.MigrationAbort, timing: "after" },
-];
+]);
 
 /** Operation states allowed after failure at one abort boundary. */
 function allowedOperationAbortStatesAfterFailure(
@@ -589,7 +589,7 @@ function allowedMigrationAbortStatesAfterFailure(
 }
 
 /** Every whole-migration write boundary except abort, which has its own terminal matrix. */
-const migrationStorageFailureCases: readonly StorageFailureCase[] = [
+const migrationStorageFailureCases: readonly StorageFailureCase[] = Object.freeze([
   { stage: InventoryStorageWriteStage.MigrationBegin, timing: "before" },
   { stage: InventoryStorageWriteStage.MigrationBegin, timing: "after" },
   { stage: InventoryStorageWriteStage.MigrationWorld, timing: "before" },
@@ -606,7 +606,7 @@ const migrationStorageFailureCases: readonly StorageFailureCase[] = [
     timing: "after",
   },
   { stage: InventoryStorageWriteStage.MigrationComplete, timing: "after" },
-];
+]);
 
 /** Return whether this migration crash side happens after the reviewed batch became visible. */
 function inventoryMigrationStorageFailurePublishesWorld(

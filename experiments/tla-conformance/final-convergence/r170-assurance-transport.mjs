@@ -1,3 +1,6 @@
+import { assuranceProofReferencesExactPath, assertAssuranceCommitChain, checkFrozenAssuranceTransport } from "../../../scripts/immutable-assurance-inputs.mjs";
+import { readAssuranceFile } from "../../../scripts/assurance-files.mjs";
+import { assertFinalConvergenceRepositoryRoot, finalConvergenceRepositoryPath, finalConvergenceRepositoryRoot } from "./repository-root.mjs";
 import assert from "node:assert/strict";
 import crypto from "node:crypto";
 import fs from "node:fs";
@@ -6,6 +9,8 @@ import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { discoverCompilerSurface, sha256 } from "../surface-bindings/lib/compiler-surface.mjs";
 import { verifyCurrentReviewAssurance } from "./current-review-assurance.mjs";
+
+const ROOT = finalConvergenceRepositoryRoot(import.meta.url);
 
 const PRIOR_HEAD = "e2c1ccb3be53809b8b935cf4882137a08fa08576";
 const CURRENT_HEAD = "f430b5141b0afc0b2796e38bc90ef45df4c0dcd9";
@@ -38,11 +43,11 @@ function git(args, repositoryRoot) {
 }
 /** Read one repository-relative JSON artifact. */
 function readJson(file, repositoryRoot) {
-  return JSON.parse(fs.readFileSync(path.resolve(repositoryRoot, file), "utf8"));
+  return JSON.parse(readAssuranceFile(repositoryRoot, file).toString("utf8"));
 }
 /** Hash one repository-relative artifact. */
 function ref(file, repositoryRoot) {
-  const bytes = fs.readFileSync(path.resolve(repositoryRoot, file));
+  const bytes = readAssuranceFile(repositoryRoot, file);
   return { file, sha256: sha256(bytes) };
 }
 /** Canonicalize a transport payload before content hashing. */
@@ -60,14 +65,14 @@ function contentSha(value) {
 /** Find strict baseline rows whose frozen proof semantics consume one changed file. */
 function rowsWith(artifactFile, file, repositoryRoot) {
   return readJson(artifactFile, repositoryRoot).proofs
-    .filter((proof) => JSON.stringify(proof).includes(file))
+    .filter((proof) => assuranceProofReferencesExactPath(proof, file))
     .map((proof) => ({ surfaceKey: proof.surfaceKey, mode: proof.mode ?? "V" }))
     .sort((left, right) => left.surfaceKey.localeCompare(right.surfaceKey));
 }
 
 /** Prove the exact R170 review repair and the narrow strict-row dependency closure it invalidated. */
-export function buildR170AssuranceTransport({ repositoryRoot = process.cwd() } = {}) {
-  const root = path.resolve(repositoryRoot);
+export function buildR170AssuranceTransport({ repositoryRoot = ROOT } = {}) {
+  const root = assertFinalConvergenceRepositoryRoot(repositoryRoot, import.meta.url);
   const integrationHead = git(["rev-parse", "HEAD"], root);
   try {
     git(["merge-base", "--is-ancestor", CURRENT_HEAD, integrationHead], root);
@@ -85,6 +90,7 @@ export function buildR170AssuranceTransport({ repositoryRoot = process.cwd() } =
 
   const currentReviewAssurance = verifyCurrentReviewAssurance(root);
   const certifiedHead = currentReviewAssurance.receipt.certifiedHead;
+  assertAssuranceCommitChain(root, [PRIOR_HEAD, CURRENT_HEAD, certifiedHead]);
   try {
     git(["merge-base", "--is-ancestor", CURRENT_HEAD, certifiedHead], root);
   } catch {
@@ -118,7 +124,7 @@ export function buildR170AssuranceTransport({ repositoryRoot = process.cwd() } =
 
   // Full-run validity is supplied by the current review receipt above; historical report hashes are not proof credit.
 
-  const traceabilityModel = fs.readFileSync(path.resolve(root, TRACEABILITY_MODEL), "utf8");
+  const traceabilityModel = readAssuranceFile(root, TRACEABILITY_MODEL).toString("utf8");
   assert(traceabilityModel.includes("productionCount \\in 0..2"), "TraceabilityGraph lost the independent duplicate-production state.");
 
   const core = {
@@ -153,12 +159,31 @@ export function buildR170AssuranceTransport({ repositoryRoot = process.cwd() } =
   return { ...core, contentSha256: contentSha(core) };
 }
 
-if (process.argv[1] !== undefined && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
-  const artifact = buildR170AssuranceTransport({ repositoryRoot: root });
-  const target = path.resolve(root, "experiments/tla-conformance/final-convergence/r170-assurance-transport.json");
-  const text = `${JSON.stringify(artifact, null, 2)}\n`;
-  if (process.argv.includes("--check")) assert.equal(fs.readFileSync(target, "utf8"), text, "R170 assurance transport is stale.");
-  else fs.writeFileSync(target, text);
-  console.log(JSON.stringify({ status: artifact.status, contentSha256: artifact.contentSha256, affectedStrictRows: artifact.affectedStrictRows, affectedValueRows: artifact.affectedValueRows }, null, 2));
+const directInvocation =
+  process.argv[1] !== undefined &&
+  path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (directInvocation) {
+  if (!process.argv.includes("--check")) {
+    throw new Error(
+      "R170 historical assurance transport is immutable; direct execution requires --check."
+    );
+  }
+  const root = ROOT;
+  const current = verifyCurrentReviewAssurance(root);
+  const artifact = checkFrozenAssuranceTransport(
+    root,
+    "experiments/tla-conformance/final-convergence/r170-assurance-transport.json",
+    current.receipt.certifiedHead
+  );
+  console.log(
+    JSON.stringify(
+      {
+        status: artifact.status,
+        contentSha256: artifact.contentSha256,
+        historicalReceiptVerified: true,
+      },
+      null,
+      2
+    )
+  );
 }

@@ -1,3 +1,5 @@
+import { formalCodeText } from "./formal-syntax.mjs";
+
 /** Registered InventoryOnce TLC models in deterministic execution order. */
 export const formalModels = Object.freeze(
   ["AuthorityWriterFence", "PublishedHeadCAS", "CompositionRevision", "CollectionView", "FungibilityPool", "CatalogPublication", "ReclassificationConservation", "UseByReservation", "ResourceDimensions", "ReservationScope", "ReservationScopeAllocationReplacement", "TraceabilityContainment", "TraceabilityAssociation", "TraceabilityGraph", "PhysicalCount", "DualMeasure", "DistributedRights", "CorrectionHistory", "DurableTransferRefinement", "TransferLifecycle", "RepairLiveness", "RecordedDeficit", "SnapshotSupersededWorkflow", "InventoryOperation", "ImplementationConformance", "ReservationSafety", "PackagingIdentity"]
@@ -38,7 +40,7 @@ const formalConfigSectionKeyword = /^(?:CONSTANTS?|SPECIFICATION|INIT|NEXT|SYMME
 export function formalConfigCheckNames(config) {
   const names = [];
   let block = false;
-  for (const rawLine of config.split(/\r?\n/u)) {
+  for (const rawLine of formalCodeText(config).split(/\r?\n/u)) {
     const line = rawLine.trim();
     const inline = /^(?:INVARIANT|PROPERTY)\s+([A-Za-z][A-Za-z0-9_]*)$/u.exec(line);
     if (inline !== null) {
@@ -190,4 +192,20 @@ export function assertFormalMutationRegistrationConsistency(
       );
     }
   }
+}
+
+
+/** Named false absence claims that ordinary positive models must refute with concrete reachable states. */
+export const formalPositiveReachabilityChecks = Object.freeze([
+  ["SnapshotSupersededWorkflow", "SnapshotSupersededWorkflowNonzeroWitness", "NonzeroSnapshotIsUnreachable"],
+]);
+
+/** Prevent missing, duplicate, or unregistered positive reachability witnesses from silently dropping coverage. */
+export function assertFormalPositiveReachabilityRegistration(configFileNames) {
+  const expected = configFileNames.filter(file => file.endsWith("Witness.cfg")).sort();
+  const registered = formalPositiveReachabilityChecks.map(([model, config, invariant]) => {
+    if (!formalModels.includes(model) || !/^[A-Za-z_][A-Za-z0-9_]*$/u.test(invariant)) throw new Error("Invalid positive formal witness registration.");
+    return `${config}.cfg`;
+  }).sort();
+  if (new Set(registered).size !== registered.length || JSON.stringify(expected) !== JSON.stringify(registered)) throw new Error("Positive formal witness registration is incomplete or duplicated.");
 }

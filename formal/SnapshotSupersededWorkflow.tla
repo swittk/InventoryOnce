@@ -36,6 +36,16 @@ ClaimFence ==
                   publishedRevision, resumeAttempts, resumedAfterFence,
                   workflowOutcome>>
 
+\* Ordinary legacy writes before the fence make the captured source revision a distinguishing value.
+AdvanceSourceRevisionBeforeFence ==
+  /\ fence = "open"
+  /\ sourceRevision < 2
+  /\ sourceRevision' = sourceRevision + 1
+  /\ UNCHANGED <<fence, snapshotCaptured, snapshotRevision,
+                  dispositions, dispositionEventCount, published,
+                  publishedRevision, resumeAttempts, resumedAfterFence,
+                  workflowOutcome>>
+
 CaptureOpeningSnapshot ==
   /\ fence = "closed"
   /\ ~snapshotCaptured
@@ -112,6 +122,7 @@ TerminalStutter ==
   /\ UNCHANGED vars
 
 Next ==
+  \/ AdvanceSourceRevisionBeforeFence
   \/ ClaimFence
   \/ CaptureOpeningSnapshot
   \/ DisposeAny
@@ -172,6 +183,9 @@ PublishedWorldMatchesSnapshot ==
 \* proves any post-snapshot source movement is rejected at that transition.
 ResumeAttemptCannotChangeSourceTruth ==
   snapshotCaptured => sourceRevision = snapshotRevision
+
+\* The separate reachability witness config must falsify this claim using the unchanged ordinary Next relation.
+NonzeroSnapshotIsUnreachable == ~(snapshotCaptured /\ snapshotRevision > 0)
 
 FencedSnapshotEventuallyPublishes ==
   (fence = "closed" /\ snapshotCaptured) ~> published
