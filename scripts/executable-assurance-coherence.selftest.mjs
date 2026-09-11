@@ -134,6 +134,20 @@ test("duplicated manifest counters and call-chain domain partitions must agree",
     () => executableAssuranceSummary(incompletePartition),
     /do not partition the API domain/u,
   );
+
+  const targetsBelowWitnesses = fixtures();
+  targetsBelowWitnesses.callChains.counts.publicEntriesWithTargets = 1;
+  assert.throws(
+    () => executableAssuranceSummary(targetsBelowWitnesses),
+    /target counters do not fit/u,
+  );
+
+  const targetsOutsideApiDomain = fixtures();
+  targetsOutsideApiDomain.callChains.counts.publicEntriesWithTargets = 3;
+  assert.throws(
+    () => executableAssuranceSummary(targetsOutsideApiDomain),
+    /target counters do not fit/u,
+  );
 });
 test("report-only manifest counters fail closed when missing or invalid", () => {
   const input = fixtures();

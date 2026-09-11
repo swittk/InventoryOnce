@@ -169,6 +169,7 @@ if (directInvocation) {
   const artifact = checkFrozenAssuranceTransport(
     root,
     "experiments/tla-conformance/final-convergence/r170-pristine-repro-transport.json",
+    "R170_PRISTINE_REPRO_ASSURANCE_TRANSPORT_PROVED",
     current.receipt.certifiedHead
   );
   console.log(

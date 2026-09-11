@@ -89,8 +89,11 @@ export function assuranceProofReferencesExactPath(proof, file) {
   if (typeof file !== "string" || file.length === 0) {
     throw new Error("Assurance dependency path must be a nonempty string.");
   }
-  const pathBearingKey = key =>
-    typeof key === "string" && /(?:file|path|source|dependenc|input)/iu.test(key);
+  const pathBearingKey = key => {
+    if (typeof key !== "string") return false;
+    if (/^(?:file|path|source|dependency|dependencies|input|inputs)$/u.test(key)) return true;
+    return /(?:File|Path|Source|Dependency|Dependencies|Input|Inputs)$/u.test(key);
+  };
   const visit = (value, key) => {
     if (typeof value === "string") return pathBearingKey(key) && value === file;
     if (Array.isArray(value)) return value.some(child => visit(child, key));
@@ -102,11 +105,22 @@ export function assuranceProofReferencesExactPath(proof, file) {
   return visit(proof, undefined);
 }
 
-/** Verify a historical receipt against immutable bytes and the current independently certified descendant. */
-export function checkFrozenAssuranceTransport(repositoryRoot, file, certifiedHead) {
+/** Verify a historical receipt's exact status against immutable bytes and the current independently certified descendant. */
+export function checkFrozenAssuranceTransport(repositoryRoot, file, expectedStatus, certifiedHead) {
+  if (typeof expectedStatus !== "string" || expectedStatus.length === 0) {
+    throw new Error("Historical assurance transport expected status must be a nonempty string.");
+  }
   const reader = createImmutableAssuranceReader(repositoryRoot);
   const artifact = reader.json(file);
-  if (artifact.schemaVersion !== 1 || typeof artifact.status !== "string" || !artifact.status.endsWith("_PROVED")) throw new Error("Malformed historical assurance transport.");
+  if (
+    artifact === null ||
+    typeof artifact !== "object" ||
+    Array.isArray(artifact) ||
+    artifact.schemaVersion !== 1 ||
+    artifact.status !== expectedStatus
+  ) {
+    throw new Error("Malformed historical assurance transport.");
+  }
   assertAssuranceCommitChain(repositoryRoot, [artifact.priorHead, artifact.currentHead, certifiedHead]);
   return artifact;
 }

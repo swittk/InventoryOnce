@@ -2,9 +2,8 @@ import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
   existsSync,
-  readFileSync,
+  lstatSync,
   readdirSync,
-  statSync,
   writeFileSync,
 } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
@@ -177,19 +176,13 @@ function readFormalVocabulary() {
   const invariantNames = new Set();
   const invariantNamesByModel = new Map();
   for (const name of modelNames) {
-    const modulePath = resolve(packageRoot, `formal/${name}.tla`);
-    const configPath = resolve(packageRoot, `formal/${name}.cfg`);
-    if (!existsSync(modulePath)) {
-      throw new Error(
-        `Registered formal model '${name}' is missing '${modulePath}'.`
-      );
-    }
-    if (!existsSync(configPath)) {
-      throw new Error(
-        `Registered formal model '${name}' is missing '${configPath}'.`
-      );
-    }
-    const checks = formalConfigCheckNames(readFileSync(configPath, "utf8"));
+    const moduleFile = `formal/${name}.tla`;
+    const configFile = `formal/${name}.cfg`;
+    // Both registered model files are proof inputs and must be ordinary contained files.
+    readAssuranceFile(repositoryRoot, moduleFile);
+    const checks = formalConfigCheckNames(
+      readAssuranceFile(repositoryRoot, configFile).toString("utf8")
+    );
     invariantNamesByModel.set(name, new Set(checks));
     for (const check of checks) invariantNames.add(check);
   }
@@ -207,8 +200,11 @@ function listTypeScriptSources(root) {
   const result = [];
   for (const name of readdirSync(root)) {
     const path = join(root, name);
-    if (statSync(path).isDirectory())
-      result.push(...listTypeScriptSources(path));
+    const stat = lstatSync(path);
+    if (stat.isSymbolicLink()) {
+      throw new Error(`Executable assurance source discovery crosses a symbolic link: ${relative(repositoryRoot, path)}.`);
+    }
+    if (stat.isDirectory()) result.push(...listTypeScriptSources(path));
     else if (/\.tsx?$/u.test(name)) result.push(path);
   }
   return result;
@@ -239,14 +235,15 @@ function discoverTraceDeclarations() {
   const declarations = new Map();
   const files = listTypeScriptSources(resolve(packageRoot, "test"));
   for (const path of files) {
-    const source = readFileSync(path, "utf8");
+    const sourceFile = relative(repositoryRoot, path).replaceAll("\\", "/");
+    const source = readAssuranceFile(repositoryRoot, sourceFile).toString("utf8");
     for (const block of source.matchAll(
       /FORMAL_IMPLEMENTATION_TRACE_IDS\s*=\s*\[([\s\S]*?)\]\s*as const/gu
     )) {
       for (const match of block[1].matchAll(/["'](TRACE-[A-Z0-9-]+)["']/gu)) {
         const traceId = match[1];
         const rows = declarations.get(traceId) ?? [];
-        rows.push(relative(repositoryRoot, path).replaceAll("\\", "/"));
+        rows.push(sourceFile);
         declarations.set(traceId, rows);
       }
     }
@@ -584,10 +581,8 @@ function validateApiEntry(
         `${key} witness '${witness.test}' is not a test entrypoint.`
       );
     }
-    const testPath = evidencePath(witness.test);
-    if (!existsSync(testPath)) {
-      throw new Error(`${key} witness test '${witness.test}' is missing.`);
-    }
+    // Witness test source is proof input; require a contained ordinary file before granting chain credit.
+    readAssuranceFile(repositoryRoot, witness.test);
     if (witness.chain.length < 2 || witness.chain[0]?.kind !== "TestRoot") {
       throw new Error(
         `${key} witness does not begin at a registered test root.`
@@ -606,9 +601,8 @@ function validateApiEntry(
           `${key} witness contains a node without a source file.`
         );
       }
-      if (!existsSync(resolve(packageRoot, node.file))) {
-        throw new Error(`${key} witness source '${node.file}' is missing.`);
-      }
+      // Every compiler witness node must name a contained ordinary source file.
+      readAssuranceFile(repositoryRoot, node.file);
       if (
         index > 0 &&
         (typeof node.reason !== "string" || node.reason.length === 0)
@@ -1046,16 +1040,11 @@ if (
   throw new Error("Checked diagnostics do not match public type discovery.");
 }
 
-const abstractionSourcePath = resolve(
-  packageRoot,
-  "test/formal-implementation-abstraction.ts"
-);
-if (!existsSync(abstractionSourcePath)) {
-  throw new Error(
-    "Missing executable formal implementation abstraction helpers."
-  );
-}
-const abstractionSource = readFileSync(abstractionSourcePath, "utf8");
+const abstractionSourceFile = "test/formal-implementation-abstraction.ts";
+const abstractionSource = readAssuranceFile(
+  repositoryRoot,
+  abstractionSourceFile
+).toString("utf8");
 for (const helper of [
   "abstractInventoryState",
   "abstractReservationState",
@@ -1120,16 +1109,23 @@ try {
 }
 
 const report = coverageReport(apiManifest, fieldManifest, gaps);
-const reportPath = resolve(manifestRoot, "IMPLEMENTATION_CONFORMANCE.md");
+const reportFile = "formal/implementation-conformance/IMPLEMENTATION_CONFORMANCE.md";
+const reportPath = assuranceRepositoryPath(repositoryRoot, reportFile);
 if (process.argv.includes("--write-report")) {
+  // Generated assurance reports may never follow a replaced output symlink.
   writeFileSync(reportPath, report);
-} else if (
-  !existsSync(reportPath) ||
-  readFileSync(reportPath, "utf8") !== report
-) {
-  throw new Error(
-    "Generated IMPLEMENTATION_CONFORMANCE.md is stale; run `pnpm assurance --write-report` after intentional manifest changes."
-  );
+} else {
+  let checkedReport;
+  try {
+    checkedReport = readAssuranceFile(repositoryRoot, reportFile).toString("utf8");
+  } catch (error) {
+    if (error?.code !== "ENOENT") throw error;
+  }
+  if (checkedReport !== report) {
+    throw new Error(
+      "Generated IMPLEMENTATION_CONFORMANCE.md is stale; run `pnpm assurance --write-report` after intentional manifest changes."
+    );
+  }
 }
 
 /** Field count per classification, tallied in one pass for emitted metrics. */

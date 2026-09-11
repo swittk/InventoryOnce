@@ -11,7 +11,7 @@
  */
 /**
  * @typedef {object} CallChainManifest
- * @property {{callables:number,edges:number,testRoots:number,publicEntriesWithWitnesses:number,unresolvedPublicEntries:number}} counts Compiler call-graph counters consumed by the executable report.
+ * @property {{callables:number,edges:number,testRoots:number,publicEntries:number,publicEntriesWithTargets:number,publicEntriesWithWitnesses:number,unresolvedPublicEntries:number}} counts Compiler call-graph counters consumed by the executable report.
  */
 /**
  * @typedef {object} TraceEntry
@@ -159,6 +159,13 @@ function assertExecutableManifests(input) {
   }
   if (input.callChains.counts.publicEntries !== apiCount) {
     throw new Error("Call-chain public entry counter differs from the actual API domain.");
+  }
+  if (
+    input.callChains.counts.publicEntriesWithWitnesses >
+      input.callChains.counts.publicEntriesWithTargets ||
+    input.callChains.counts.publicEntriesWithTargets > apiCount
+  ) {
+    throw new Error("Call-chain target counters do not fit the witnessed/API domains.");
   }
   if (
     input.callChains.counts.publicEntriesWithWitnesses +

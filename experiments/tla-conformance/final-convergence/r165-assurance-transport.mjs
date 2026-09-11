@@ -139,6 +139,7 @@ if (directInvocation) {
   const artifact = checkFrozenAssuranceTransport(
     root,
     "experiments/tla-conformance/final-convergence/r165-assurance-transport.json",
+    "R165_PLUS_R167_ASSURANCE_TRANSPORT_PROVED",
     current.receipt.certifiedHead
   );
   console.log(

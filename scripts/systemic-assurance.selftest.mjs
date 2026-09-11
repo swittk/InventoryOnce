@@ -7,7 +7,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
 import { execFileSync } from "node:child_process";
-import { createImmutableAssuranceReader, assertAssuranceCommitChain, assuranceProofReferencesExactPath } from "./immutable-assurance-inputs.mjs";
+import { createImmutableAssuranceReader, assertAssuranceCommitChain, assuranceProofReferencesExactPath, checkFrozenAssuranceTransport } from "./immutable-assurance-inputs.mjs";
 import { readCompactArchive, materializeAssuranceFiles, claimAssuranceWorkspace, assuranceBytesSha256 } from "./assurance-files.mjs";
 import { formalProofDescriptor, formalProofCacheKey, readFormalProofCache, writeFormalProofCache } from "./formal-proof-cache.mjs";
 import { executableAssuranceSummary, assertExecutableAssuranceMatchesManifests } from "./executable-assurance-coherence.mjs";
@@ -278,13 +278,29 @@ test("empty parameter tables and dynamic modifiers never manufacture executable 
 });
 
 
-test("proof dependency matching requires an exact structured path rather than a substring occurrence", () => {
+test("proof dependency matching requires an exact structured path token rather than a substring occurrence", () => {
   const file = "formal/ImplementationConformance.tla";
   assert.equal(assuranceProofReferencesExactPath({ semantics: { formal: { source: file } } }, file), true);
   assert.equal(assuranceProofReferencesExactPath({ dependencies: [file] }, file), true);
+  assert.equal(assuranceProofReferencesExactPath({ sourceFile: file }, file), true);
+  assert.equal(assuranceProofReferencesExactPath({ inputs: [{ file }] }, file), true);
+  assert.equal(assuranceProofReferencesExactPath({ profile: file }, file), false);
+  assert.equal(assuranceProofReferencesExactPath({ sourceProfile: file }, file), false);
+  assert.equal(assuranceProofReferencesExactPath({ fileSha256: file }, file), false);
   assert.equal(assuranceProofReferencesExactPath({ note: file }, file), false);
   assert.equal(assuranceProofReferencesExactPath({ note: `diagnostic mentions ${file} but is not a dependency` }, file), false);
   assert.equal(assuranceProofReferencesExactPath({ evidence: { file: `${file}.bak` } }, file), false);
+});
+
+test("frozen transport admission requires the caller's exact proved status", () => {
+  const currentHead = execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
+  const file = "experiments/tla-conformance/final-convergence/r165-assurance-transport.json";
+  const exactStatus = "R165_PLUS_R167_ASSURANCE_TRANSPORT_PROVED";
+  assert.equal(checkFrozenAssuranceTransport(root, file, exactStatus, currentHead).status, exactStatus);
+  assert.throws(
+    () => checkFrozenAssuranceTransport(root, file, "NOT_PROVED", currentHead),
+    /Malformed historical assurance transport/u,
+  );
 });
 
 test("frozen evidence cannot be re-signed or hidden behind unchanged mtime after a cached read", () => temporaryDirectory(directory => {
