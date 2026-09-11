@@ -54,9 +54,21 @@ test("current-review drift enumeration includes untracked authoritative inputs b
   execFileSync("git", ["commit", "-qm", "baseline"], { cwd: directory });
   fs.mkdirSync(path.join(directory, "test"));
   fs.mkdirSync(path.join(directory, ".chatgpt"));
+  const supportRelative = "experiments/tla-conformance/final-convergence/materialized-support.mjs";
+  fs.mkdirSync(path.dirname(path.join(directory, supportRelative)), { recursive: true });
+  const supportBytes = Buffer.from("export {};\n");
+  fs.writeFileSync(path.join(directory, supportRelative), supportBytes);
   fs.writeFileSync(path.join(directory, "test", "untracked-proof-input.test.ts"), "throw new Error('probe');\n");
   fs.writeFileSync(path.join(directory, ".chatgpt", "local.json"), "{}\n");
-  assert.deepEqual(currentReviewWorktreeDriftPaths(directory), ["test/untracked-proof-input.test.ts"]);
+  const authenticatedSupport = new Map([[supportRelative, {
+    sha256: assuranceBytesSha256(supportBytes), bytes: supportBytes.length,
+  }]]);
+  assert.deepEqual(currentReviewWorktreeDriftPaths(directory, authenticatedSupport), ["test/untracked-proof-input.test.ts"]);
+  fs.writeFileSync(path.join(directory, supportRelative), "export const forged = true;\n");
+  assert.throws(
+    () => currentReviewWorktreeDriftPaths(directory, authenticatedSupport),
+    /Authenticated temporary compact support (?:size|hash) changed/u,
+  );
 }));
 
 test("mutable current-review receipt cannot choose proof-integration authority", () => {

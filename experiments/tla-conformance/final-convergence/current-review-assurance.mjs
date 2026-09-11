@@ -123,8 +123,8 @@ function immutableCurrentReviewCertifiedHead(repositoryRoot) {
   return receipt.certifiedHead;
 }
 
-/** Derive compact outputs from the immutable compact certificate pinned by the full-assurance certified head. */
-export function currentReviewProofIntegrationPaths(repositoryRoot, certifiedHead) {
+/** Derive exact proof-output and temporary-support authority from the immutable compact certificate. */
+function currentReviewProofIntegrationAuthority(repositoryRoot, certifiedHead) {
   const root = path.resolve(repositoryRoot);
   const effectiveCertifiedHead =
     certifiedHead ?? immutableCurrentReviewCertifiedHead(root);
@@ -165,6 +165,18 @@ await runCompactCommand({ moduleUrl: import.meta.url, mode: process.argv[2] ?? "
     assert.equal(row.report?.status, expectedModes.get(row.mode), `Pinned compact ${row.mode} status is invalid.`);
   }
 
+  assert.equal(typeof manifest.archive?.file, "string", "Pinned compact archive path is invalid.");
+  assert.match(manifest.archive?.sha256, /^[a-f0-9]{64}$/u, "Pinned compact archive digest is invalid.");
+  assert(Array.isArray(manifest.archive?.files), "Pinned compact archive file manifest is invalid.");
+  const temporarySupportRows = new Map();
+  for (const row of manifest.archive.files) {
+    assert.equal(typeof row?.file, "string", "Pinned compact support path is invalid.");
+    assert.match(row.sha256, /^[a-f0-9]{64}$/u, `Pinned compact support digest is invalid: ${row.file}`);
+    assert(Number.isSafeInteger(row.bytes) && row.bytes >= 0, `Pinned compact support size is invalid: ${row.file}`);
+    assert(!temporarySupportRows.has(row.file), `Pinned compact support path is duplicated: ${row.file}`);
+    temporarySupportRows.set(row.file, { sha256: row.sha256, bytes: row.bytes });
+  }
+
   const closure = JSON.parse(committedFileText(root, compactCertifiedHead, COMPACT_CLOSURE));
   assert.equal(closure.schemaVersion, 2, "Pinned compact closure schema is unsupported.");
   assert.equal(closure.status, "FINAL_LIVE_INPUT_CLOSURE", "Pinned compact closure status is invalid.");
@@ -183,7 +195,12 @@ await runCompactCommand({ moduleUrl: import.meta.url, mode: process.argv[2] ?? "
     assert.equal(typeof row?.file, "string", "Pinned compact output path is invalid.");
     paths.add(row.file);
   }
-  return paths;
+  return { paths, temporarySupportRows };
+}
+
+/** Derive compact outputs from the immutable compact certificate pinned by the full-assurance certified head. */
+export function currentReviewProofIntegrationPaths(repositoryRoot, certifiedHead) {
+  return currentReviewProofIntegrationAuthority(repositoryRoot, certifiedHead).paths;
 }
 
 /** Default-deny any tracked drift that is not one of the exact proof-integration outputs. */
@@ -212,12 +229,22 @@ function currentReviewAuthoritativeUntrackedPath(file) {
   );
 }
 
-/** Return current tracked drift plus untracked authoritative inputs; local coordination files stay ambient. */
-export function currentReviewWorktreeDriftPaths(repositoryRoot) {
+/** Return current tracked drift plus unauthenticated untracked authoritative inputs; local coordination stays ambient. */
+export function currentReviewWorktreeDriftPaths(repositoryRoot, authenticatedTemporarySupportRows = new Map()) {
   const modified = gitPathList(repositoryRoot, ["diff", "--name-only", "-z", "HEAD", "--"]);
-  const untracked = gitPathList(repositoryRoot, [
+  const untracked = [];
+  for (const file of gitPathList(repositoryRoot, [
     "ls-files", "--others", "--exclude-standard", "-z", "--",
-  ]).filter(currentReviewAuthoritativeUntrackedPath);
+  ]).filter(currentReviewAuthoritativeUntrackedPath)) {
+    const expected = authenticatedTemporarySupportRows.get(file);
+    if (expected === undefined) {
+      untracked.push(file);
+      continue;
+    }
+    const target = regularFile(repositoryRoot, file, `Authenticated temporary compact support '${file}'`);
+    assert.equal(fs.statSync(target).size, expected.bytes, `Authenticated temporary compact support size changed: ${file}`);
+    assert.equal(sha256(target), expected.sha256, `Authenticated temporary compact support hash changed: ${file}`);
+  }
   return [...new Set([...modified, ...untracked])].sort();
 }
 
@@ -293,7 +320,8 @@ export function verifyCurrentReviewAssurance(repositoryRoot, context) {
     independentlyDerivedSurfaceSha256: currentReviewSurfaceSha256(root, context),
     independentlyDerivedRepositoryStateSha256: repositoryAssuranceCommittedStateSha256(root, receipt.certifiedHead),
   });
-  const allowedProofIntegrationPaths = currentReviewProofIntegrationPaths(root, receipt.certifiedHead);
+  const proofIntegrationAuthority = currentReviewProofIntegrationAuthority(root, receipt.certifiedHead);
+  const allowedProofIntegrationPaths = proofIntegrationAuthority.paths;
   const evidenceDelta = gitPathList(root, [
     "diff", "--name-only", "-z", receipt.certifiedHead, CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD, "--",
   ]);
@@ -306,7 +334,7 @@ export function verifyCurrentReviewAssurance(repositoryRoot, context) {
     "diff", "--name-only", "-z", receipt.certifiedHead, "HEAD", "--",
   ]);
   assertCurrentReviewTrackedDriftAllowed(trackedPostCertificationDelta, allowedProofIntegrationPaths);
-  const dirtyPaths = currentReviewWorktreeDriftPaths(root);
+  const dirtyPaths = currentReviewWorktreeDriftPaths(root, proofIntegrationAuthority.temporarySupportRows);
   assertCurrentReviewTrackedDriftAllowed(dirtyPaths, allowedProofIntegrationPaths);
   return {
     receipt,
