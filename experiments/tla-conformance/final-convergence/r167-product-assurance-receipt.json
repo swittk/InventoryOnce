@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "status": "D947_EXACT_PRODUCT_ASSURANCE_VERIFIED",
+  "reviewedHead": "d947e47af2502f2ed2f8ae6971ee639a91ff0867",
+  "parentHead": "0c94ee9925a0785a883241b2e6ed843e50aeb5ac",
+  "evidenceWorktreeHead": "d947e47af2502f2ed2f8ae6971ee639a91ff0867",
+  "trackedProductWorktreeClean": true,
+  "report": {
+    "file": "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
+    "sha256": "9355a380467e38404daab04a45ae7d54fa4fb1ec2a40c6a4c09f93159fd6f520",
+    "repositoryHead": "0c94ee9925a0785a883241b2e6ed843e50aeb5ac",
+    "repositoryStateSha256": "47aab407f797c76a5abe8b5878cd6de8c659c06f2987f76760757111906a9e7b",
+    "fullLogSha256": "224e0722b55c28f48858ef87c41f3de815ba070d51d0a872466d1ac1986523ec",
+    "fullFormal": true,
+    "surfaceSha256": "038148aff0911f3610c74d440fde4bff8f7ebbe0026b2d6cfe91604c7d33f5c5",
+    "apiEntries": 510,
+    "compilerCallGraphWitnessedApis": 510,
+    "compilerCallGraphUnresolvedApis": 0
+  },
+  "fullLog": {
+    "file": "experiments/tla-conformance/final-convergence/product-assurance-full-d947.log",
+    "sha256": "224e0722b55c28f48858ef87c41f3de815ba070d51d0a872466d1ac1986523ec"
+  },
+  "observedRepositoryStateSha256": "47aab407f797c76a5abe8b5878cd6de8c659c06f2987f76760757111906a9e7b"
+}

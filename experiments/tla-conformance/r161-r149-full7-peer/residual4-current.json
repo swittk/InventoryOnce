@@ -1,0 +1,201 @@
+{
+  "schemaVersion": 1,
+  "proofKind": "residual-core-pure-aliases-v4-v1",
+  "surfaceDigest": "ec078013972d9ee2b4ba84d28cfa7449a18dc29679d81766e314db6a6139b81e",
+  "domain": "All typed inputs of the exact current findInventoryEventByOperationId implementation plus exact empty-world and catalog-snapshot-digest helpers. The two reused helpers are checked directly against their historical complete equations so unrelated storage/materialization declaration drift cannot create false dependency blockage.",
+  "allAdmittedInputs": true,
+  "sampledInputs": 0,
+  "inputs": [
+    {
+      "file": "experiments/tla-conformance/materialize1-r8/roots-and-wrapper.expected.ts.txt",
+      "sha256": "84b29a6ca0e74568af2c91edea135a21bbaee539ca9802507dadefce339558d2"
+    },
+    {
+      "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/sparse-record-certificate.json",
+      "sha256": "408f9d834cb0f58153d6af9b0b3a7149163f45d6dca390a42b3d16f5c8c44d48"
+    },
+    {
+      "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/sparse-record-certificate.mjs",
+      "sha256": "87d1873ad8385aa4a2672500d083810bc6c7c877d1885471effb76309ea105b4"
+    },
+    {
+      "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/expected/residual-current.ts.txt",
+      "sha256": "0a4ea41f60db16fa4ef956d1de51251d2400cf8920a6f8be3da4eb859c657405"
+    },
+    {
+      "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/residual-core.mjs",
+      "sha256": "74b834783a50278cbdb3302279f1c67147d20f65d213ca39ea6cf4b12cfee2d8"
+    },
+    {
+      "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/transition.mjs",
+      "sha256": "5de47c3cdba5527995921bc571abbe52e147b8010b5d4bc48e1b7df582a8fbe1"
+    },
+    {
+      "file": "experiments/tla-conformance/r161-r149-full7-peer/family.mjs",
+      "sha256": "c006ee2f62e4221d529f561302c5154111e4f10b3138a994a16150d62f5b8a1e"
+    },
+    {
+      "file": "experiments/tla-conformance/residual-core-v4-r10/find.expected.ts.txt",
+      "sha256": "eea2ec6bbf2920755346c44cea9cd2754f6083dd7b3557637b72573c5fd19a47"
+    },
+    {
+      "file": "experiments/tla-conformance/storage-protocol-r7/value-equations.expected.ts.txt",
+      "sha256": "c7cc91a0a63e30cea9c27fbedada297e04681991e7f3be0b5cabbc2a74955858"
+    },
+    {
+      "file": "experiments/tla-conformance/throughput-r7/registered-value-family.mjs",
+      "sha256": "1926bfc82e8cc608904d8a2785c2ae6775d2905186b4d9fb8b137a0696b821b3"
+    },
+    {
+      "file": "node_modules/typescript/package.json",
+      "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+    },
+    {
+      "file": "src/integrity.ts",
+      "sha256": "238ccd616e791b60b523b89517479585f2d9aabe83198464a44f654cd7058037"
+    },
+    {
+      "file": "src/read-model.ts",
+      "sha256": "8b1db302ecf22895f1d6458a8be27ec606066e88fd77ebba0cfadbd0452a97f4"
+    },
+    {
+      "file": "src/sparse-record.ts",
+      "sha256": "272a1f63afe9ed4c84cd76a4ce051b210b52e6e0a54cf47ec4f11a29979ada71"
+    },
+    {
+      "file": "src/world.ts",
+      "sha256": "2f1bd43c85fcdda332ad16ebdb73d367b0ed502a7145c085c7a7433ff26063c1"
+    }
+  ],
+  "proofs": [
+    {
+      "surfaceKey": "export:.#findInventoryEventByOperationId::call[0]",
+      "signatureHash": "7a8a6a8978868333992a12a8dd26fcb0c1430e8832a6f6d6842cb14924907311",
+      "declaration": {
+        "file": "src/read-model.ts",
+        "start": {
+          "offset": 4773,
+          "line": 103,
+          "column": 1
+        },
+        "end": {
+          "offset": 5590,
+          "line": 127,
+          "column": 2
+        },
+        "sourceHash": "8b1db302ecf22895f1d6458a8be27ec606066e88fd77ebba0cfadbd0452a97f4",
+        "astHash": "ccebb859f6e71025e655978bff3022ab225595761bb48fe563986dff0f16f5f5"
+      },
+      "semantics": {
+        "kind": "R148_CURRENT_COMPLETE_SOURCE_EQUATION",
+        "equation": {
+          "id": "src/read-model.ts#findInventoryEventByOperationId",
+          "completeExpectedTerm": true,
+          "termSha256": "d9c84abde07174cae93f0503a9b969f487ea4bd03106e219589cf540c4248f7b"
+        }
+      }
+    },
+    {
+      "surfaceKey": "export:./kernel#findInventoryEventByOperationId::call[0]",
+      "signatureHash": "7a8a6a8978868333992a12a8dd26fcb0c1430e8832a6f6d6842cb14924907311",
+      "declaration": {
+        "file": "src/read-model.ts",
+        "start": {
+          "offset": 4773,
+          "line": 103,
+          "column": 1
+        },
+        "end": {
+          "offset": 5590,
+          "line": 127,
+          "column": 2
+        },
+        "sourceHash": "8b1db302ecf22895f1d6458a8be27ec606066e88fd77ebba0cfadbd0452a97f4",
+        "astHash": "ccebb859f6e71025e655978bff3022ab225595761bb48fe563986dff0f16f5f5"
+      },
+      "semantics": {
+        "kind": "R148_CURRENT_COMPLETE_SOURCE_EQUATION",
+        "equation": {
+          "id": "src/read-model.ts#findInventoryEventByOperationId",
+          "completeExpectedTerm": true,
+          "termSha256": "d9c84abde07174cae93f0503a9b969f487ea4bd03106e219589cf540c4248f7b"
+        }
+      }
+    },
+    {
+      "surfaceKey": "export:./storage#emptyInventoryWorldState::call[0]",
+      "signatureHash": "4c6792320833aaa2c8b26ccda0489322b667ace6dc6a8ea6c876a3212b59b1c2",
+      "declaration": {
+        "file": "src/world.ts",
+        "start": {
+          "offset": 1162,
+          "line": 33,
+          "column": 1
+        },
+        "end": {
+          "offset": 1447,
+          "line": 41,
+          "column": 2
+        },
+        "sourceHash": "2f1bd43c85fcdda332ad16ebdb73d367b0ed502a7145c085c7a7433ff26063c1",
+        "astHash": "095773ae9c97eac998910f614bd1af4134491c7df35dcab040b2162667e08961"
+      },
+      "semantics": {
+        "kind": "R148_CURRENT_COMPLETE_SOURCE_EQUATION",
+        "equation": {
+          "id": "src/world.ts#emptyInventoryWorldState",
+          "completeExpectedTerm": true,
+          "termSha256": "4a63005c737391392bff4c9bf48b0bbe6a15cbd427ab6021e6f568c51f34b2c5"
+        }
+      }
+    },
+    {
+      "surfaceKey": "export:./storage#inventoryCatalogSnapshotDigest::call[0]",
+      "signatureHash": "6122912cdd19ba96a8a4593a0b875615d0ecde1546ebc70d394665f0ada7e6a6",
+      "declaration": {
+        "file": "src/integrity.ts",
+        "start": {
+          "offset": 2985,
+          "line": 85,
+          "column": 1
+        },
+        "end": {
+          "offset": 3139,
+          "line": 89,
+          "column": 2
+        },
+        "sourceHash": "238ccd616e791b60b523b89517479585f2d9aabe83198464a44f654cd7058037",
+        "astHash": "3adf57c4698537bff32393411b68fdac18c1e439314ba87d73ad65e19c80ce63"
+      },
+      "semantics": {
+        "kind": "R148_CURRENT_COMPLETE_SOURCE_EQUATION",
+        "equation": {
+          "id": "src/integrity.ts#inventoryCatalogSnapshotDigest",
+          "completeExpectedTerm": true,
+          "termSha256": "011c34fd5964dc82d517a56aed32b0fa22e748ccb158d76562143a81d89cfd56"
+        }
+      }
+    }
+  ],
+  "currentization": {
+    "schemaVersion": 1,
+    "group": "residual",
+    "sourceBase": "6cafd49ff4b3729f80ae35d9fc0220f7a8a4b55a",
+    "surfaceDigest": "ec078013972d9ee2b4ba84d28cfa7449a18dc29679d81766e314db6a6139b81e",
+    "changedDeclarations": [
+      {
+        "id": "src/read-model.ts#findInventoryEventByOperationId",
+        "oldTermSha256": "32c52739f2c015e933739df0618b98118258232131f37394577f9855bf078040",
+        "currentTermSha256": "d9c84abde07174cae93f0503a9b969f487ea4bd03106e219589cf540c4248f7b"
+      }
+    ],
+    "unchangedDeclarations": 0,
+    "sparseRecordCertificate": {
+      "contentSha256": "4355a5d36f3d8972055df7652b2ba7c2af2001dd1d63bd907f3790e1b91715ef",
+      "laws": [
+        "src/sparse-record.ts#inventorySparseRecordHas",
+        "src/sparse-record.ts#inventorySparseRecordValue"
+      ]
+    }
+  }
+}

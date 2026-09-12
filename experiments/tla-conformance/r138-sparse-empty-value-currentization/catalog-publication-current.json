@@ -1,0 +1,364 @@
+{
+  "schemaVersion": 1,
+  "proofKind": "catalog-publication-event-complete-value-v1",
+  "surfaceDigest": "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a",
+  "domain": "Every typed CreateInventoryCatalogPublicationInput. The complete public wrapper equation delegates to the independently rederived Event45 createMovementEvent/defineInventoryEvent closure with exact CatalogPublication enum semantics and the current complete inventoryCatalogSnapshot value proof; there is no sampled runtime domain.",
+  "allAdmittedInputs": true,
+  "sampledInputs": 0,
+  "inputs": [
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-published-source-contracts.mjs",
+      "sha256": "d05ecad078de891073c82f4c523090382b608204269281464ca9a325ca3208b2"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-published-source-equations.mjs",
+      "sha256": "243e06ade88446247ab26d1bcec53fb70cccab6c5929f2013dc2aa995ae73ce8"
+    },
+    {
+      "file": "experiments/tla-conformance/catalog-foundation-r7/contracts.mjs",
+      "sha256": "e6efabb603807c5728d958ced0a5ce671e41249e0342bf22db55494ea253b504"
+    },
+    {
+      "file": "experiments/tla-conformance/catalog-foundation-r7/equations.expected.ts.txt",
+      "sha256": "a880afa7fc5a707bff3052d07e0504f878acf4f463c6e760f33e558f33e81bb3"
+    },
+    {
+      "file": "experiments/tla-conformance/catalog-foundation-r7/family.mjs",
+      "sha256": "932cb060a2dff23d2866849c925ac1c5ce5e028533f875e8cc125fcfb2feee76"
+    },
+    {
+      "file": "experiments/tla-conformance/catalog-foundation-r7/normalize.mjs",
+      "sha256": "7675175f5f4cd88f853a3b49530bbb4e1e625112fd3bd45786ff81210a9fee26"
+    },
+    {
+      "file": "experiments/tla-conformance/catalog-public-lifecycle7-r9/publication-core-r10/equations.expected.ts.txt",
+      "sha256": "60500baba7aa8d0324c7a3f9f28717944a4125ae882789d44ecdca2d4842116d"
+    },
+    {
+      "file": "experiments/tla-conformance/catalog-public-lifecycle7-r9/publication-core-r10/value-family.mjs",
+      "sha256": "04af0af1f385abe7fcd5f18421f6f91ba681c440de752f0df0cf044f97402eec"
+    },
+    {
+      "file": "experiments/tla-conformance/identity-values-r7/contracts.mjs",
+      "sha256": "dea23f4b3f929ac1bcf9b50cd41517c1b3fc4e3d879904aa6c4d83263ba7b2ce"
+    },
+    {
+      "file": "experiments/tla-conformance/identity-values-r7/equations.ts.txt",
+      "sha256": "f4b3b7a3fa1dbf3338f295c3d97f73cf753cba7741d69f272e91db7fa5079844"
+    },
+    {
+      "file": "experiments/tla-conformance/identity-values-r7/family.mjs",
+      "sha256": "493486e43054dd4613091e973558f2c0463e96ff83347080a3f32e636dde6709"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/certificate.mjs",
+      "sha256": "8099926f527d391571e57c0828a27f24c57d4a7b59843684f9bda4c69f50cb26"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/contracts.mjs",
+      "sha256": "e45e82682ab647b80c0897e666b5b5b6b84f6cac990c785a925f307cabc7c239"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/equations.expected.ts.txt",
+      "sha256": "3e00aeaaeaf11b516fdf3418a8c227dbb053cce05038863d7d41addbd2c158d8"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/event-values/catalog-foundation-dependency-reference.json",
+      "sha256": "e435dcb656e450807eaf7b642889879de4f10dd20967ad7732515e1d9463333f"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/event-values/certificate.mjs",
+      "sha256": "db0ad0a8e79777a6fe2b2e6fabfd550a87486d784aaf966b089f537dab505881"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/event-values/contracts.mjs",
+      "sha256": "1609151cfa525cda65407af221122a1b8db04e81482713aef227c4c0784efbd9"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/event-values/equations.expected.ts.txt",
+      "sha256": "d2fcad75ea97d835a070a51367e7458bd596d098e56d82d639fdbcd318ef84e3"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/event-values/registered-family-adapter.mjs",
+      "sha256": "e9ab67e6ac85cccce060b1b047c890593270222bab6184c076ab1596588116d8"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/quantity-values-certificate.json",
+      "sha256": "446f80ae24e8b146839e27e31667d0a533db4d04cf202002354866cd6a2f7599"
+    },
+    {
+      "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+      "sha256": "8d8854032e38a0df1044e5596c66d9a2b672277f357e361102b0b12c3d6952a0"
+    },
+    {
+      "file": "experiments/tla-conformance/throughput-r7/registered-value-family.mjs",
+      "sha256": "1926bfc82e8cc608904d8a2785c2ae6775d2905186b4d9fb8b137a0696b821b3"
+    },
+    {
+      "file": "experiments/tla-conformance/value-contracts/catalog-family.mjs",
+      "sha256": "32439d061232e266f53acd3b33025b97b172769ffe418964319177b8041cab9a"
+    },
+    {
+      "file": "experiments/tla-conformance/value-contracts/contracts.json",
+      "sha256": "e2f76cf32cbfb04fed4f64c402294cd9d30c04be411b4caff88708eb8afe7b2b"
+    },
+    {
+      "file": "experiments/tla-conformance/value-contracts/surface-binding.mjs",
+      "sha256": "619b37fe3a9bc9be22e8a0c2167187cfce987c7856280c6df0c36c5a230c3618"
+    },
+    {
+      "file": "experiments/tla-conformance/value-contracts/verify.mjs",
+      "sha256": "8a851ab3a5f532feb344674f69445797b3f873450e8c044ec7646505a308acad"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2015.collection.d.ts",
+      "sha256": "dc2df20b1bcdc8c2d34af4926e2c3ab15ffe1160a63e58b7e09833f616efff44"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2015.core.d.ts",
+      "sha256": "c57796738e7f83dbc4b8e65132f11a377649c00dd3eee333f672b8f0a6bea671"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2015.iterable.d.ts",
+      "sha256": "0559b1f683ac7505ae451f9a96ce4c3c92bdc71411651ca6ddb0e88baaaad6a3"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2015.symbol.wellknown.d.ts",
+      "sha256": "fb0f136d372979348d59b3f5020b4cdb81b5504192b1cacff5d1fbba29378aa1"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2017.string.d.ts",
+      "sha256": "2f11ff796926e0832f9ae148008138ad583bd181899ab7dd768a2666700b1893"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2020.bigint.d.ts",
+      "sha256": "d6d7ae4d1f1f3772e2a3cde568ed08991a8ae34a080ff1151af28b7f798e22ca"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2022.error.d.ts",
+      "sha256": "0a3d63ef2b853447ec4f749d3f368ce642264246e02911fcb1590d8c161b8005"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
+      "sha256": "c430d44666289dae81f30fa7b2edebf186ecc91a2d4c71266ea6ae76388792e1"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2015.collection.d.ts",
+      "sha256": "dc2df20b1bcdc8c2d34af4926e2c3ab15ffe1160a63e58b7e09833f616efff44"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2015.core.d.ts",
+      "sha256": "c57796738e7f83dbc4b8e65132f11a377649c00dd3eee333f672b8f0a6bea671"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2015.iterable.d.ts",
+      "sha256": "0559b1f683ac7505ae451f9a96ce4c3c92bdc71411651ca6ddb0e88baaaad6a3"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2016.array.include.d.ts",
+      "sha256": "d15bea3d62cbbdb9797079416b8ac375ae99162a7fba5de2c6c505446486ac0a"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2017.string.d.ts",
+      "sha256": "2f11ff796926e0832f9ae148008138ad583bd181899ab7dd768a2666700b1893"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2020.bigint.d.ts",
+      "sha256": "d6d7ae4d1f1f3772e2a3cde568ed08991a8ae34a080ff1151af28b7f798e22ca"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2022.error.d.ts",
+      "sha256": "0a3d63ef2b853447ec4f749d3f368ce642264246e02911fcb1590d8c161b8005"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es5.d.ts",
+      "sha256": "c430d44666289dae81f30fa7b2edebf186ecc91a2d4c71266ea6ae76388792e1"
+    },
+    {
+      "file": "node_modules/typescript/package.json",
+      "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+    },
+    {
+      "file": "package.json",
+      "sha256": "f068ac4f83c2984a38d439b90159e48b7fdf42ee4792f7ccde56230c7ecf1a7c"
+    },
+    {
+      "file": "src/amounts.ts",
+      "sha256": "98ddc0fa8d80b2ca244a207f4eb8b55d86131c2ccfd77620da5c85248d03ef57"
+    },
+    {
+      "file": "src/canonical.ts",
+      "sha256": "eb2981c629182525c6742d2a67f513f0daec88507e5861f475d5de04984a2d56"
+    },
+    {
+      "file": "src/catalog.ts",
+      "sha256": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56"
+    },
+    {
+      "file": "src/commands.ts",
+      "sha256": "c40c66fc3e5d3e60022534a561d44280cda205f3cc10be759f8efdc97038a98b"
+    },
+    {
+      "file": "src/digest.ts",
+      "sha256": "5fa667c59dd65a667d8cceddd9bf8c25eb46d3787a22ad7db797fd3722d5f833"
+    },
+    {
+      "file": "src/events.ts",
+      "sha256": "8d076ee8f426c011d7df3f205dd014f0e835f71798b3684ca56844b691ba2370"
+    },
+    {
+      "file": "src/facade.ts",
+      "sha256": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d"
+    },
+    {
+      "file": "src/index.ts",
+      "sha256": "2e0587666ff20d57a757c0576fddf8badf36c2901735db7225a0cebda829b555"
+    },
+    {
+      "file": "src/kernel.ts",
+      "sha256": "f336d22a07d6018dc5528bd2a13a33c5aa9f1a72b0c0ed048cb73219b9b0c06c"
+    },
+    {
+      "file": "src/measurements.ts",
+      "sha256": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5"
+    },
+    {
+      "file": "src/model.ts",
+      "sha256": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122"
+    },
+    {
+      "file": "src/ordering.ts",
+      "sha256": "e72ac94e99b1b4914f3f6dec55583e401484a41ecadd051be788724c88f24cb9"
+    },
+    {
+      "file": "src/projection.ts",
+      "sha256": "f2a9747cfc7c63615347c48383ae7f58ee7df007411cc8de3dd5bb6afaca21d5"
+    },
+    {
+      "file": "src/quantity.ts",
+      "sha256": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6"
+    },
+    {
+      "file": "src/selectors.ts",
+      "sha256": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957"
+    },
+    {
+      "file": "src/sparse-record.ts",
+      "sha256": "272a1f63afe9ed4c84cd76a4ce051b210b52e6e0a54cf47ec4f11a29979ada71"
+    },
+    {
+      "file": "src/usability.ts",
+      "sha256": "bb4cf272fd01be5c4866b388f2af63e9fdd7286c208600fb635ca10d30f0ad51"
+    },
+    {
+      "file": "tsconfig.json",
+      "sha256": "b46c6324e4819ea54c9824d2e0f4c28f9304aa54e39d7f8afbac65f744eed464"
+    }
+  ],
+  "proofs": [
+    {
+      "surfaceKey": "export:./kernel#createInventoryCatalogPublicationEvent::call[0]",
+      "signatureHash": "28d8100f30c8dd40b71aa7ff60be2f31b9c89effccddd3f7c7bec3b877d28939",
+      "declaration": {
+        "file": "src/commands.ts",
+        "start": {
+          "offset": 40584,
+          "line": 1079,
+          "column": 1
+        },
+        "end": {
+          "offset": 40924,
+          "line": 1093,
+          "column": 2
+        },
+        "sourceHash": "c40c66fc3e5d3e60022534a561d44280cda205f3cc10be759f8efdc97038a98b",
+        "astHash": "be766a9a17f0480d6a5910373263f0451b4e1d246f83b3d0a650d3110baf71a0"
+      },
+      "semantics": {
+        "completeExpectedTerm": {
+          "normalizedTermSha256": "84e2f35cc72421f6ae2b638a3170710f4cae414158e23c4dc11ceefa28f249ae",
+          "eventKind": "catalog-publication",
+          "completeBranchesChecked": true,
+          "allValidatedInputs": true,
+          "sampledInputs": 0
+        },
+        "eventMovementClosure": {
+          "proofKind": "inventoryonce-event-replacement-complete-source-equations-v1",
+          "certificateId": "VALUE_CERTIFICATE_FAMILY:sha256:d7b78d210a92c923a457a5ea0038c90929bf125ec9a2031033d5d375f9cac11c",
+          "helperId": "src/commands.ts#createMovementEvent",
+          "equationSha256": "80a5df1b93bbf3a4eeeaf9708a0ce63c2f10af4908c27528b93ad7743bc80cd7",
+          "declaration": {
+            "file": "src/commands.ts",
+            "start": {
+              "offset": 43977,
+              "line": 1186,
+              "column": 1
+            },
+            "end": {
+              "offset": 45482,
+              "line": 1224,
+              "column": 2
+            },
+            "sourceHash": "c40c66fc3e5d3e60022534a561d44280cda205f3cc10be759f8efdc97038a98b",
+            "astHash": "40cf160c0c52a26518f4ee9c19e3e677157861e8e7bc710bf1f0df9c62db7f28"
+          },
+          "dependencies": [
+            "src/commands.ts#inventoryEventIdForOperation",
+            "src/events.ts#defineInventoryEvent"
+          ]
+        },
+        "catalogSnapshot": {
+          "proofKind": "independent-closed-return-equations-v1",
+          "surfaceKey": "export:.#inventoryCatalogSnapshot::call[0]",
+          "signatureHash": "2ff85b12b453d0d8b9716025713360b1f908a571da3782a759b7e33e2b9aeb6c",
+          "declaration": {
+            "file": "src/catalog.ts",
+            "start": {
+              "offset": 77828,
+              "line": 1876,
+              "column": 1
+            },
+            "end": {
+              "offset": 78645,
+              "line": 1893,
+              "column": 2
+            },
+            "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+            "astHash": "befb1cdc322c466ed941bdc8e9b130178e18b44d206891f3ab9217d53aee7227"
+          },
+          "semantics": {
+            "contractId": "inventoryCatalogSnapshot",
+            "domain": "DECLARED_IMMUTABLE_DATA_VALUES_V2",
+            "engine": "closed-return-term-identity-v2",
+            "allAdmittedInputs": true,
+            "sampledInputs": 0,
+            "independentContract": true,
+            "contractFile": "experiments/tla-conformance/value-contracts/contracts.json",
+            "contractSha256": "e2f76cf32cbfb04fed4f64c402294cd9d30c04be411b4caff88708eb8afe7b2b",
+            "verifierFile": "experiments/tla-conformance/value-contracts/verify.mjs",
+            "verifierSha256": "8a851ab3a5f532feb344674f69445797b3f873450e8c044ec7646505a308acad",
+            "equationSha256": "cba8df31808ae396730b45ae5aa9e079f87f79a522ccfe538ac4c8dc4093949e",
+            "dependencies": [
+              {
+                "file": "src/catalog.ts",
+                "start": {
+                  "offset": 77828,
+                  "line": 1876,
+                  "column": 1
+                },
+                "end": {
+                  "offset": 78645,
+                  "line": 1893,
+                  "column": 2
+                },
+                "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+                "astHash": "befb1cdc322c466ed941bdc8e9b130178e18b44d206891f3ab9217d53aee7227"
+              }
+            ],
+            "standardDependencies": []
+          }
+        }
+      }
+    }
+  ]
+}

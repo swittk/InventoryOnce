@@ -1,0 +1,312 @@
+{
+  "schemaVersion": 1,
+  "mode": "V",
+  "proofKind": "inventoryonce-reservation-feasibility-guard-value-v1",
+  "sourceBase": "6cafd49ff4b3729f80ae35d9fc0220f7a8a4b55a",
+  "surfaceDigest": "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a",
+  "allAdmittedInputs": true,
+  "sampledInputs": 0,
+  "domain": {
+    "observableContract": "All feasibility reports admitted by the current independent reservation-feasibility equation; exact feasible void return and deterministic sorted nonzero-shortage error."
+  },
+  "currentDependency": {
+    "proofKind": "independent-catalog-read-semantic-closure-equations-v2",
+    "equationId": "src/reservations.ts#inspectInventoryReservationFeasibility",
+    "expectedTermSha256": "86c876f2e06ec82c19b60483da1ff20f149617fdc9fff5ed2b6d904a141a885b",
+    "declaration": {
+      "file": "src/reservations.ts",
+      "start": {
+        "offset": 12832,
+        "line": 350,
+        "column": 1
+      },
+      "end": {
+        "offset": 15136,
+        "line": 417,
+        "column": 2
+      },
+      "sourceHash": "fd0bfe707583a7952e4301cafd9ab5d702059b9174f18b5c5e30ae0d6cf85113",
+      "astHash": "106aecc071750bb2946dc9b637ffb654c55130d572565aebbd88cdfd527e9a46"
+    },
+    "directPackageDependencies": [
+      "src/catalog.ts#InventoryCatalog.itemRevision",
+      "src/catalog.ts#InventoryCatalog.measurementAxis",
+      "src/events.ts#assertCanonicalInventoryTime",
+      "src/quantity.ts#quantity",
+      "src/reservations.ts#compareReservationFeasibilityGroup",
+      "src/reservations.ts#enum:InventoryReservationFeasibilityStatus",
+      "src/reservations.ts#groupReservationsByCompetingAxis",
+      "src/reservations.ts#inventoryReservationIsActiveAt",
+      "src/reservations.ts#inventoryReservationsAt",
+      "src/reservations.ts#reservationGroupFeasibility",
+      "src/reservations.ts#safeNumberFromBigInt"
+    ]
+  },
+  "equations": [
+    {
+      "id": "src/reservations.ts#assertInventoryReservationsFeasible",
+      "equationSha256": "fd8206801be39d7bcdd11627ebd1f8d5ca91b6859ac7b11070c16d65bbade130",
+      "canonicalSource": "export function assertInventoryReservationsFeasible({ catalog, projection, book, at, }: AssertInventoryReservationsFeasibleInput): void {\n    const report = inspectInventoryReservationFeasibility({\n        catalog,\n        projection,\n        book,\n        at,\n    });\n    if (report.status === InventoryReservationFeasibilityStatus.Feasible)\n        return;\n    const shortReservationIds: string[] = [];\n    for (const group of report.groups) {\n        if (group.shortage.amountMinor === 0)\n            continue;\n        shortReservationIds.push(...group.reservationIds);\n    }\n    shortReservationIds.sort();\n    throw new Error(`Inventory reservations cannot all be fulfilled simultaneously: ${shortReservationIds.join(\", \")}.`);\n}"
+    }
+  ],
+  "inputs": [
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-published-source-contracts.mjs",
+      "sha256": "d05ecad078de891073c82f4c523090382b608204269281464ca9a325ca3208b2"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-published-source-equations.json",
+      "sha256": "e767440999da004ef44d685d55c27fa1769d225e0539be990a379c283dfe597a"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-published-source-equations.mjs",
+      "sha256": "243e06ade88446247ab26d1bcec53fb70cccab6c5929f2013dc2aa995ae73ce8"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-read-dependency-closure-contracts.mjs",
+      "sha256": "5954cda55045d1bc447cc5a02e7ab1b85f067d065a56dcfb0d5cc94e1b9e6581"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-read-dependency-closure-current-r134.mjs",
+      "sha256": "394d694e586ad10eb737e01fecb854b22bb691d774a6f6a8d6267ba5e4eb78c8"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-read-laws/allocation.expected.ts.txt",
+      "sha256": "8cac3f80fcc97e3807e327d6dd463da90d1fda32e0b20791c04726c208a7fd7e"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-read-laws/availability.expected.ts.txt",
+      "sha256": "8bad17adc368a03e730f6a627d046e30e94eee6301655f2d2a6b0bdfd013af39"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-read-laws/catalog-extension.expected.ts.txt",
+      "sha256": "82def6081863bbb29e41a581c8cb455b14651dd6cccb319eda757ed4251c677e"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-read-laws/collections.expected.ts.txt",
+      "sha256": "1b75d23925adddfefb0971b6fc6ce7dfb800237a027639390ea8c5b509a7e087"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-read-laws/deficits.expected.ts.txt",
+      "sha256": "a6823fadc82aa6f5ab3b1201be02690b42d5b29fe492146a6ecbbdc0c5efd39b"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-read-laws/events.expected.ts.txt",
+      "sha256": "1069d75e6c38040409b9e94e741064589823e4cf051b9866b3c774948f029df4"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-read-laws/measurement-schema.expected.ts.txt",
+      "sha256": "ad608ea58d319e32f62b9312604141a4afd5b06ab5d3c494092f7e46095f54f9"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-read-laws/picking.expected.ts.txt",
+      "sha256": "c67b822d392e0a118602f698adfa663bd2f8ad510d71bde8e24ae4dda42cbc86"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-read-laws/projection.expected.ts.txt",
+      "sha256": "a7c8aa8a6072c521a2f6df5121301d6adc38d466b9a56c6eb7389fc208c5edff"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-read-laws/read-model.expected.ts.txt",
+      "sha256": "28c013fe7a22174ae7c07a51cb372f66283883ceed62ece1b385a67e58e27716"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-read-laws/reservations.expected.ts.txt",
+      "sha256": "2e1ce5002149ee4e8b8c97b22713e6f21081b3829e4b7a579fe4f5c94a0414fe"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-read-reused-dependencies.json",
+      "sha256": "e4492422eb0934ce9ad713441944645cf894e3ab0c57ef3048dbc4bd323322f9"
+    },
+    {
+      "file": "experiments/tla-conformance/boundary-adjudication-r18/equations.expected.ts.txt",
+      "sha256": "f9dadf6275a5a1452dbed94c680901f867284795a84b2df0fd1c3855f334cecd"
+    },
+    {
+      "file": "experiments/tla-conformance/r131-current-source-family-rederive/catalog-read-reused-currentization.json",
+      "sha256": "9e479cc844c1e0a9f2f1b8306afbfb7e0b476e6e7601d58b5b3c836cf8d1ff66"
+    },
+    {
+      "file": "experiments/tla-conformance/r131-current-source-family-rederive/catalog-read-reused-currentizer.mjs",
+      "sha256": "04e965d6466cef403547568f193ec319cb7e69d7ecbe88c29297a224400c781f"
+    },
+    {
+      "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/build-catalog-read-current.mjs",
+      "sha256": "a4d3b12e4da28c972ca19fa290a9651b365cec42568d20291728cd998deca74c"
+    },
+    {
+      "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/sparse-record-certificate.json",
+      "sha256": "6ecd861755e963798a2cd077813cd3c412997121b16e6f1cdea337baa2fe7815"
+    },
+    {
+      "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/sparse-record-certificate.mjs",
+      "sha256": "5a1c4bb5dc41ff18939471d54f430601e456f603fa9ebdebb09ac0414bd35a95"
+    },
+    {
+      "file": "experiments/tla-conformance/r157-singleton4-currentization/reservation-current.mjs",
+      "sha256": "47daf05c51d5572ffd92b0c8bb1888cab26de6b0654ba9f7e73ad91723133bfd"
+    },
+    {
+      "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+      "sha256": "8d8854032e38a0df1044e5596c66d9a2b672277f357e361102b0b12c3d6952a0"
+    },
+    {
+      "file": "experiments/tla-conformance/throughput-r7/registered-value-family.mjs",
+      "sha256": "1926bfc82e8cc608904d8a2785c2ae6775d2905186b4d9fb8b137a0696b821b3"
+    },
+    {
+      "file": "experiments/tla-conformance/value-contracts/surface-binding.mjs",
+      "sha256": "619b37fe3a9bc9be22e8a0c2167187cfce987c7856280c6df0c36c5a230c3618"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2015.collection.d.ts",
+      "sha256": "dc2df20b1bcdc8c2d34af4926e2c3ab15ffe1160a63e58b7e09833f616efff44"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2015.core.d.ts",
+      "sha256": "c57796738e7f83dbc4b8e65132f11a377649c00dd3eee333f672b8f0a6bea671"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2015.iterable.d.ts",
+      "sha256": "0559b1f683ac7505ae451f9a96ce4c3c92bdc71411651ca6ddb0e88baaaad6a3"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2016.array.include.d.ts",
+      "sha256": "d15bea3d62cbbdb9797079416b8ac375ae99162a7fba5de2c6c505446486ac0a"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2017.object.d.ts",
+      "sha256": "69ab18c3b76cd9b1be3d188eaf8bba06112ebbe2f47f6c322b5105a6fbc45a2e"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2017.string.d.ts",
+      "sha256": "2f11ff796926e0832f9ae148008138ad583bd181899ab7dd768a2666700b1893"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2020.bigint.d.ts",
+      "sha256": "d6d7ae4d1f1f3772e2a3cde568ed08991a8ae34a080ff1151af28b7f798e22ca"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2022.error.d.ts",
+      "sha256": "0a3d63ef2b853447ec4f749d3f368ce642264246e02911fcb1590d8c161b8005"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
+      "sha256": "c430d44666289dae81f30fa7b2edebf186ecc91a2d4c71266ea6ae76388792e1"
+    },
+    {
+      "file": "node_modules/typescript/package.json",
+      "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+    },
+    {
+      "file": "src/allocation.ts",
+      "sha256": "2721b6f412aa3abb55ffa9d929eaefc2d8982973c4ee862479b3af9988d3112d"
+    },
+    {
+      "file": "src/amounts.ts",
+      "sha256": "98ddc0fa8d80b2ca244a207f4eb8b55d86131c2ccfd77620da5c85248d03ef57"
+    },
+    {
+      "file": "src/availability.ts",
+      "sha256": "b029f2b17c1c0f8a3923969e2cd30b57b0af3a185d1391fdb8aa3895c3de83c8"
+    },
+    {
+      "file": "src/canonical.ts",
+      "sha256": "eb2981c629182525c6742d2a67f513f0daec88507e5861f475d5de04984a2d56"
+    },
+    {
+      "file": "src/catalog.ts",
+      "sha256": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56"
+    },
+    {
+      "file": "src/collections.ts",
+      "sha256": "c18dd56e7167b25239fb825319ce2ae2d736f8d9cbe70296201ab675228daf37"
+    },
+    {
+      "file": "src/deficits.ts",
+      "sha256": "6dee9447ad000ae2f9576aed35f80d1ad1bdae753f4802c4104db2f2712d2819"
+    },
+    {
+      "file": "src/events.ts",
+      "sha256": "8d076ee8f426c011d7df3f205dd014f0e835f71798b3684ca56844b691ba2370"
+    },
+    {
+      "file": "src/facade.ts",
+      "sha256": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d"
+    },
+    {
+      "file": "src/measurement-schema.ts",
+      "sha256": "747f064996c12b3a9b324779bd748362b49b2563e303b2599243bc8a630d144e"
+    },
+    {
+      "file": "src/measurements.ts",
+      "sha256": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5"
+    },
+    {
+      "file": "src/model.ts",
+      "sha256": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122"
+    },
+    {
+      "file": "src/ordering.ts",
+      "sha256": "e72ac94e99b1b4914f3f6dec55583e401484a41ecadd051be788724c88f24cb9"
+    },
+    {
+      "file": "src/picking.ts",
+      "sha256": "172dc19f4987ad392106a1b9cf32400e73f5bed0fb6b9344aa5eb1319afc5006"
+    },
+    {
+      "file": "src/projection.ts",
+      "sha256": "f2a9747cfc7c63615347c48383ae7f58ee7df007411cc8de3dd5bb6afaca21d5"
+    },
+    {
+      "file": "src/quantity.ts",
+      "sha256": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6"
+    },
+    {
+      "file": "src/read-model.ts",
+      "sha256": "8b1db302ecf22895f1d6458a8be27ec606066e88fd77ebba0cfadbd0452a97f4"
+    },
+    {
+      "file": "src/reservations.ts",
+      "sha256": "fd0bfe707583a7952e4301cafd9ab5d702059b9174f18b5c5e30ae0d6cf85113"
+    },
+    {
+      "file": "src/selectors.ts",
+      "sha256": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957"
+    },
+    {
+      "file": "src/sparse-record.ts",
+      "sha256": "272a1f63afe9ed4c84cd76a4ce051b210b52e6e0a54cf47ec4f11a29979ada71"
+    },
+    {
+      "file": "src/storage.ts",
+      "sha256": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d"
+    },
+    {
+      "file": "src/usability.ts",
+      "sha256": "bb4cf272fd01be5c4866b388f2af63e9fdd7286c208600fb635ca10d30f0ad51"
+    }
+  ],
+  "proofs": [
+    {
+      "surfaceKey": "export:./kernel#assertInventoryReservationsFeasible::call[0]",
+      "signatureHash": "312f1fad6805836cecdab05e4ee35692c7cfc35a17f1abb8c14e59f0455c8077",
+      "declaration": {
+        "file": "src/reservations.ts",
+        "start": {
+          "offset": 12025,
+          "line": 323,
+          "column": 1
+        },
+        "end": {
+          "offset": 12727,
+          "line": 347,
+          "column": 2
+        },
+        "sourceHash": "fd0bfe707583a7952e4301cafd9ab5d702059b9174f18b5c5e30ae0d6cf85113",
+        "astHash": "db073f73c7956293e4f2334b48e996533581eec3d31ce9899c3c7f4d6865e416"
+      },
+      "equationId": "src/reservations.ts#assertInventoryReservationsFeasible"
+    }
+  ]
+}

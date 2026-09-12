@@ -1,0 +1,15 @@
+{
+  "status": "FINAL_BINDER_GREEN",
+  "surfaceDigest": "4a8ad47f98456d925da04b54eae03ed7afbdcaccb7781d96b7f56e8448c81c1b",
+  "callables": 535,
+  "diagnostics": 47,
+  "byCode": {
+    "EXPLICIT_HARD_RED": 47
+  },
+  "hardRed": 47,
+  "unexpected": 0,
+  "unexpectedRows": [],
+  "valueAccepted": 309,
+  "producerAccepted": 179,
+  "strictAccepted": 488
+}

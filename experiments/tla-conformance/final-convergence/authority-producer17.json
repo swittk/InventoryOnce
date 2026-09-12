@@ -1,0 +1,3452 @@
+{
+  "schemaVersion": 1,
+  "route": "REGISTERED_CERTIFIED_PRODUCER",
+  "proofKind": "final-convergence-authority-a16-b1-v1",
+  "family": "FinalConvergenceAuthorityA16B1",
+  "surfaceDigest": "ec078013972d9ee2b4ba84d28cfa7449a18dc29679d81766e314db6a6139b81e",
+  "domain": "Exact 17 package-owned authority/catalog producer rows: R113 authority-control semantics are byte-current; bootstrap is AST-current; catalog-scalar receives only the reviewed R118 sparse-record own-key transition; cutover receives only the R144 durable-target-evidence strengthening proven by the final-head transport and current regression/assurance evidence.",
+  "allAdmittedInputs": true,
+  "sampledInputs": 0,
+  "producerGraphRuns": 0,
+  "producerReplayRuns": 0,
+  "reverseReruns": 0,
+  "creditExpansion": false,
+  "inputs": [
+    {
+      "file": "experiments/tla-conformance/authority-contract-composition-r113/evidence.json",
+      "sha256": "e3ab9476d94052307b4b0d0542a43c21a30ea9f9513d034b95014f66222f64c1"
+    },
+    {
+      "file": "experiments/tla-conformance/catalog-scalar-contract-r34/evidence.json",
+      "sha256": "d04b9221cbbeb9be770ff00a4bf884682a866b7082b3de7f8a29c92a7a6c5bc4"
+    },
+    {
+      "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
+      "sha256": "4f97bb139e09506a9875a579f4547676df0f3ee4a8efeb8b187aca76b813b0bb"
+    },
+    {
+      "file": "experiments/tla-conformance/r114-final-rabbit-currentization/compact-evidence.json",
+      "sha256": "f85ac0f97f90c613711d506e01a607ddbc99d8bb715a04f74cb90d6a46678093"
+    },
+    {
+      "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/sparse-record-certificate.json",
+      "sha256": "408f9d834cb0f58153d6af9b0b3a7149163f45d6dca390a42b3d16f5c8c44d48"
+    },
+    {
+      "file": "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
+      "sha256": "6d763a8a4b1f4bd0ab6bbed5e6e052107b6fa4e5c348cb177dd4c4ba48ace609"
+    },
+    {
+      "file": "src/authority-cutover.ts",
+      "sha256": "38244b4a8c937ae6b3c84f78412704ffb485afe757eeca84463dd8e2990bc2b8"
+    },
+    {
+      "file": "src/authority.ts",
+      "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+    },
+    {
+      "file": "src/catalog-lifecycle.ts",
+      "sha256": "8a97eb13db1d8dfb9503a60c6075984e93792ace1abb473a70ac8221809c5096"
+    },
+    {
+      "file": "src/storage.ts",
+      "sha256": "abf1cd6af9898121e5841ff9f79af36682e9c0187b64db8de8f7d3f3da030ee1"
+    },
+    {
+      "file": "test/authority.test.ts",
+      "sha256": "eda26579f5b484e6082f536de48f4d96b07fdf736daeb0e6dc0a8486dab28eaf"
+    },
+    {
+      "file": "test/storage-conformance-suite.ts",
+      "sha256": "9b9d3beb9a80cbc04d1958b54caae1b2e168cb86b5b6e4203a2e5c6fd5f080b7"
+    },
+    {
+      "file": "test/storage-conformance.test.ts",
+      "sha256": "961f0b128a0700c63ea818ff073e8491af253e3e41daa6431875bd11cb1071b0"
+    }
+  ],
+  "proofs": [
+    {
+      "surfaceKey": "export:.#bootstrapGreenfieldInventoryAuthority::call[0]",
+      "mode": "A",
+      "signatureHash": "8e5803450b26e880f447348989e6095dcf04695eb006e61b12ea725f8a675a2e",
+      "declaration": {
+        "file": "src/authority-cutover.ts",
+        "start": {
+          "offset": 9053,
+          "line": 224,
+          "column": 1
+        },
+        "end": {
+          "offset": 11456,
+          "line": 297,
+          "column": 2
+        },
+        "sourceHash": "38244b4a8c937ae6b3c84f78412704ffb485afe757eeca84463dd8e2990bc2b8",
+        "astHash": "a0ae153a43e93b0b7e56271939a52c9c6454ff22b6c9555611005fca06fd4611"
+      },
+      "fullEvidence": {
+        "file": "experiments/tla-conformance/final-orchestrator-a2-r50/evidence.json",
+        "sha256": "8ba7db874214d1cbf74cffa792471fdc6af4c71e15b45ed776ac41b20773753a"
+      },
+      "runtimeMatrixSha256": "66d906471d9177440b5ec7383218742e92b629632c297c6003b419940f76ad35",
+      "portContractId": "sha256:26724c6ee6b9237d9d8109b6a365f868e527a8f49232dc31ddbd7d7d518d83c7",
+      "storageContractId": "sha256:725c0bc92d37ba688cf775784356cbd60d2a1fe1aa95c528ce13551b5e37d1ba",
+      "clockContractId": "sha256:3db0a4c1c6a379426ccba5e4544f8168f040d041122b275e146bebc0ea3289c6",
+      "documentationTriviaCurrentization": {
+        "authority": {
+          "file": "experiments/tla-conformance/r99-doc-trivia-equivalence/receipt.json",
+          "sha256": "2b5cd5a73a0328c7586c9a14bb5be83c364eabe52238707b383a7872b649c089",
+          "contentSha256": "392dfc2f0edc740b7eb0104a55fc4108c8afbb09b636b566891a4b883e5b6c42"
+        },
+        "oldDeclaration": {
+          "file": "src/authority-cutover.ts",
+          "start": {
+            "offset": 8702,
+            "line": 216,
+            "column": 1
+          },
+          "end": {
+            "offset": 11105,
+            "line": 289,
+            "column": 2
+          },
+          "sourceHash": "99691a913d3958d7ef1b4177d9c4dc877b07f0b608b8ae861ba3c41e55f9478f",
+          "astHash": "a0ae153a43e93b0b7e56271939a52c9c6454ff22b6c9555611005fca06fd4611"
+        },
+        "newDeclaration": {
+          "file": "src/authority-cutover.ts",
+          "start": {
+            "offset": 8702,
+            "line": 216,
+            "column": 1
+          },
+          "end": {
+            "offset": 11105,
+            "line": 289,
+            "column": 2
+          },
+          "sourceHash": "abb8065eb94de7a19b67af8e8154ba49aeee0b6cfa07bdd68f5473dd2557ab53",
+          "astHash": "a0ae153a43e93b0b7e56271939a52c9c6454ff22b6c9555611005fca06fd4611"
+        },
+        "runtimeEmitByteIdentical": true,
+        "creditExpansion": false
+      },
+      "currentization": {
+        "kind": "R114_EXACT_CURRENT_CALLABLE_RECORD_WITH_REVIEWED_NONPRODUCT_INPUT_SUBSTITUTIONS",
+        "historical6dfcEvidence": {
+          "file": "experiments/tla-conformance/r105-layered-6dfc-currentization/compact-evidence.json",
+          "sha256": "b680e134ed6d68904bc41821f76982e4d406776bd4fa41f3261b5e1187130af6"
+        },
+        "creditExpansion": false
+      },
+      "finalCurrentization": {
+        "kind": "EXACT_AST_CARRY_FORWARD",
+        "historicalEvidence": {
+          "file": "experiments/tla-conformance/r114-final-rabbit-currentization/compact-evidence.json",
+          "sha256": "f85ac0f97f90c613711d506e01a607ddbc99d8bb715a04f74cb90d6a46678093"
+        },
+        "finalHeadTransport": {
+          "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
+          "sha256": "4f97bb139e09506a9875a579f4547676df0f3ee4a8efeb8b187aca76b813b0bb",
+          "contentSha256": "195da88c26d3beae0ddcc5652a114949d3b8cb5f7c182e49b31e9407eae8683e"
+        }
+      }
+    },
+    {
+      "surfaceKey": "export:.#cutoverInventoryAuthority::call[0]",
+      "mode": "A",
+      "signatureHash": "f3e251dae264e846f2ec23859233d50788c27da576dbc2216d530c00ba4c8609",
+      "declaration": {
+        "file": "src/authority-cutover.ts",
+        "start": {
+          "offset": 11649,
+          "line": 303,
+          "column": 1
+        },
+        "end": {
+          "offset": 20696,
+          "line": 552,
+          "column": 2
+        },
+        "sourceHash": "38244b4a8c937ae6b3c84f78412704ffb485afe757eeca84463dd8e2990bc2b8",
+        "astHash": "5554993d56fb32714f4df7d54d9c017a7ba72179bf283b4eae7fdc68b6a6c419"
+      },
+      "fullEvidence": {
+        "file": "experiments/tla-conformance/final-orchestrator-a2-r50/evidence.json",
+        "sha256": "8ba7db874214d1cbf74cffa792471fdc6af4c71e15b45ed776ac41b20773753a"
+      },
+      "runtimeMatrixSha256": "66d906471d9177440b5ec7383218742e92b629632c297c6003b419940f76ad35",
+      "portContractId": "sha256:26724c6ee6b9237d9d8109b6a365f868e527a8f49232dc31ddbd7d7d518d83c7",
+      "storageContractId": "sha256:725c0bc92d37ba688cf775784356cbd60d2a1fe1aa95c528ce13551b5e37d1ba",
+      "clockContractId": "sha256:3db0a4c1c6a379426ccba5e4544f8168f040d041122b275e146bebc0ea3289c6",
+      "documentationTriviaCurrentization": {
+        "authority": {
+          "file": "experiments/tla-conformance/r99-doc-trivia-equivalence/receipt.json",
+          "sha256": "2b5cd5a73a0328c7586c9a14bb5be83c364eabe52238707b383a7872b649c089",
+          "contentSha256": "392dfc2f0edc740b7eb0104a55fc4108c8afbb09b636b566891a4b883e5b6c42"
+        },
+        "oldDeclaration": {
+          "file": "src/authority-cutover.ts",
+          "start": {
+            "offset": 11298,
+            "line": 295,
+            "column": 1
+          },
+          "end": {
+            "offset": 20369,
+            "line": 554,
+            "column": 2
+          },
+          "sourceHash": "99691a913d3958d7ef1b4177d9c4dc877b07f0b608b8ae861ba3c41e55f9478f",
+          "astHash": "ddb2026882986dfd9fee5e9010d400f317f0562b1b525dd7cdbc952e124464f2"
+        },
+        "newDeclaration": {
+          "file": "src/authority-cutover.ts",
+          "start": {
+            "offset": 11298,
+            "line": 295,
+            "column": 1
+          },
+          "end": {
+            "offset": 20464,
+            "line": 554,
+            "column": 2
+          },
+          "sourceHash": "abb8065eb94de7a19b67af8e8154ba49aeee0b6cfa07bdd68f5473dd2557ab53",
+          "astHash": "700717606687f0b931ca44a60c2450d0b8862e8f82d9bcb810483ddedad64f02"
+        },
+        "runtimeEmitByteIdentical": true,
+        "creditExpansion": false
+      },
+      "currentization": {
+        "kind": "R114_EXACT_CURRENT_CALLABLE_RECORD_WITH_REVIEWED_NONPRODUCT_INPUT_SUBSTITUTIONS",
+        "historical6dfcEvidence": {
+          "file": "experiments/tla-conformance/r105-layered-6dfc-currentization/compact-evidence.json",
+          "sha256": "b680e134ed6d68904bc41821f76982e4d406776bd4fa41f3261b5e1187130af6"
+        },
+        "creditExpansion": false
+      },
+      "finalCurrentization": {
+        "kind": "R144_DURABLE_TARGET_EVIDENCE_STRENGTHENING",
+        "historicalEvidence": {
+          "file": "experiments/tla-conformance/r114-final-rabbit-currentization/compact-evidence.json",
+          "sha256": "f85ac0f97f90c613711d506e01a607ddbc99d8bb715a04f74cb90d6a46678093"
+        },
+        "finalHeadTransport": {
+          "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
+          "sha256": "4f97bb139e09506a9875a579f4547676df0f3ee4a8efeb8b187aca76b813b0bb",
+          "contentSha256": "195da88c26d3beae0ddcc5652a114949d3b8cb5f7c182e49b31e9407eae8683e"
+        },
+        "currentSource": {
+          "file": "src/authority-cutover.ts",
+          "sha256": "38244b4a8c937ae6b3c84f78412704ffb485afe757eeca84463dd8e2990bc2b8"
+        },
+        "regressionTests": [
+          {
+            "file": "test/authority.test.ts",
+            "sha256": "eda26579f5b484e6082f536de48f4d96b07fdf736daeb0e6dc0a8486dab28eaf"
+          },
+          {
+            "file": "test/storage-conformance-suite.ts",
+            "sha256": "9b9d3beb9a80cbc04d1958b54caae1b2e168cb86b5b6e4203a2e5c6fd5f080b7"
+          },
+          {
+            "file": "test/storage-conformance.test.ts",
+            "sha256": "961f0b128a0700c63ea818ff073e8491af253e3e41daa6431875bd11cb1071b0"
+          }
+        ],
+        "assurance": {
+          "file": "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
+          "sha256": "6d763a8a4b1f4bd0ab6bbed5e6e052107b6fa4e5c348cb177dd4c4ba48ace609"
+        }
+      }
+    },
+    {
+      "surfaceKey": "export:.#ensureInventoryScalarCatalogRevision::call[0]",
+      "mode": "A",
+      "signatureHash": "53f4487eda571de5a5c9161757c1b1bb7ddcc61526e5b0f7b6b421d3375691ad",
+      "declaration": {
+        "file": "src/catalog-lifecycle.ts",
+        "start": {
+          "offset": 4778,
+          "line": 110,
+          "column": 1
+        },
+        "end": {
+          "offset": 9323,
+          "line": 260,
+          "column": 2
+        },
+        "sourceHash": "8a97eb13db1d8dfb9503a60c6075984e93792ace1abb473a70ac8221809c5096",
+        "astHash": "5bdf2a0a13ea183160524ff373e33e14ff26ce477e0584fdadbd9d499c2dbf98"
+      },
+      "directProducer": {
+        "kind": "PACKAGE_COMPOSITION_UNDER_NO_CREDIT_CALLBACK_AND_STORAGE_CONTRACTS",
+        "completeSourceClosureDigest": "264a88ce2d4350f411f559637e219f4690ee1ee2d7d0d13ac59ceb3900940e4a",
+        "completeSourceFunctions": 19,
+        "callbackContractId": "sha256:159d03af5b3d3267f7c5d9e52f2b0f6f1bd2dea9200b91d7e72b09694d33716a",
+        "storageContractId": "sha256:725c0bc92d37ba688cf775784356cbd60d2a1fe1aa95c528ce13551b5e37d1ba",
+        "runtimeBranchMatrix": {
+          "file": "experiments/tla-conformance/catalog-scalar-contract-r34/runtime-evidence.json",
+          "sha256": "baf326c650befcd86659a72aa70ca94fca5d3cf16265a2ed2ded0a7b7cea4a0e",
+          "caseCount": 12,
+          "publicationKinds": [
+            "activate-existing",
+            "append-and-activate",
+            "append-only",
+            "first-revision"
+          ]
+        }
+      },
+      "finalCurrentization": {
+        "kind": "R118_SPARSE_RECORD_VALUE_TRANSITION",
+        "historicalAstHash": "83a7f4959fdcf1bef1e586b662903f90a8fc21a074a406dea3cc007e3c9911c6",
+        "currentAstHash": "5bdf2a0a13ea183160524ff373e33e14ff26ce477e0584fdadbd9d499c2dbf98",
+        "sparseRecordValue": {
+          "proofKind": "r134-current-independent-sparse-record-equations-v1",
+          "valueTermSha256": "80c4cf4ebb11ccea712a0252cede61d6b7dd69caf07ad7f4b6607298c0cc900f",
+          "evidence": {
+            "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/sparse-record-certificate.json",
+            "sha256": "408f9d834cb0f58153d6af9b0b3a7149163f45d6dca390a42b3d16f5c8c44d48"
+          }
+        },
+        "source": {
+          "file": "src/catalog-lifecycle.ts",
+          "sha256": "8a97eb13db1d8dfb9503a60c6075984e93792ace1abb473a70ac8221809c5096"
+        }
+      }
+    },
+    {
+      "surfaceKey": "type:src/authority.ts#InventoryAuthorityControl.activate::call[0]",
+      "mode": "A",
+      "signatureHash": "25fae7402f572a92b4d291e44934e2dea187bd6442433012316d9dd86310f1bf",
+      "declaration": {
+        "file": "src/authority.ts",
+        "start": {
+          "offset": 32998,
+          "line": 869,
+          "column": 3
+        },
+        "end": {
+          "offset": 36573,
+          "line": 980,
+          "column": 4
+        },
+        "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+        "astHash": "665105b0b9961b15a733c44fc44d3c938a74425db8d518160bd23584497b1338"
+      },
+      "semantics": {
+        "formal": {
+          "model": "AuthorityControllerQuotient",
+          "source": "experiments/tla-conformance/authority-projection-r113/AuthorityControllerQuotient.tla",
+          "sourceHash": "7beaedd0500e339c812e6ff0f48b6776332d4d9bcadb7f56ab6e1b52341ab28e",
+          "actions": [
+            "ActivateAuthority",
+            "RetryAuthority"
+          ],
+          "completeStates": 212,
+          "completeEdgeOccurrences": 1900
+        },
+        "forwardReplay": {
+          "file": "experiments/tla-conformance/authority-projection-r113/graph-replay.json",
+          "sha256": "4aa693502d17d2fcdc57795d4bae81018e1e378b8c0be060dfd6d1d524809a9f"
+        },
+        "reverseAndDisabledDomain": {
+          "file": "experiments/tla-conformance/authority-projection-r113/reverse-domain.json",
+          "sha256": "39079338f116707e0b681fa9b325668838fa8fcf23379d9f8b8ab86b81b676b1",
+          "commandAttempts": 13616,
+          "accepted": 3776,
+          "rejected": 9840
+        },
+        "nativeBoundaryAndRevisionExhaustion": {
+          "file": "experiments/tla-conformance/authority-projection-r113/runtime-evidence.json",
+          "sha256": "1d3455d226a0d1469ac2ba4edf416a7019e7a96979a6ec2c40067ea4734ae001",
+          "rows": 78
+        },
+        "environment": {
+          "stateStore": {
+            "proofKind": "authority-state-store-environment-contract-v1",
+            "kind": "NO_SURFACE_CREDIT_ENVIRONMENT_CONTRACT",
+            "surfaceCredit": 0,
+            "currentContractSha256": "4a05796f24c4b25e56c6f4f2c4ee1dbb124051174311e0948b6f04c07de8dc60",
+            "externalSurfaces": [
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.compareAndSet::call[0]",
+                "signatureHash": "7641c8fdd5489564f876b29b1739fe004a812f16eaa8bb365144375cc79d3b33",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1512,
+                    "line": 39,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1635,
+                    "line": 42,
+                    "column": 23
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "6093bf9522a52474b23856826730a8ba35a4b4e9c181f7b6bf9886e890d96b45"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.create::call[0]",
+                "signatureHash": "bc461f97c1cf245c94c75c7d9ffb667ddf2655e12d22094651df7a7a2a90efce",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1335,
+                    "line": 35,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1429,
+                    "line": 37,
+                    "column": 46
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "13378644d84c01f29b1bd332fb56643185a3d8331ded19c868c94f2c5481c846"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.ensure::call[0]",
+                "signatureHash": "6d18d45b0313378eaf9187bcf3ef8bea265de20d6c7c80e5723b3b59da93e6c6",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1125,
+                    "line": 31,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1181,
+                    "line": 31,
+                    "column": 59
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "70d55fcfc99480b6e28b11fe92db3908582021ed04398dc6ac0e74287ed68d70"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.read::call[0]",
+                "signatureHash": "ea6c30a4f8940f7228a392bdfaab7dab25e4f6ba70c2f9e13f03d3135f5d86a6",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1230,
+                    "line": 33,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1286,
+                    "line": 33,
+                    "column": 59
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "3b868af0a7e1fab77119d42ae377d06edd8440ecefa43f5bc70b9c4344116423"
+                }
+              }
+            ],
+            "sourceImpliedGuarantees": [
+              "read returns the current primary-stored logical row at one linearization point",
+              "create is idempotent: absent row -> exact initial row + Created; existing row -> unchanged + Existing",
+              "compareAndSet atomically applies the replacement only when every expected scalar matches",
+              "ensure establishes the requested scalar schema before package use"
+            ],
+            "requiredAdapterPreconditions": [
+              "operations are linearizable with respect to one row-scoped logical state",
+              "ensure does not rewrite the authority row",
+              "compareAndSet false leaves the row unchanged and means the expected scalars did not all match at its linearization point",
+              "a successful compareAndSet persists the complete replacement patch before returning true",
+              "a rejected ensure/read/create/compareAndSet exposes no partial schema/row mutation to subsequent package operations"
+            ],
+            "finiteOracle": {
+              "logicalStates": 9,
+              "commandShapes": 33,
+              "successfulSteps": 297,
+              "failureAtomicRejectionSteps": 297,
+              "corruptAfterStepsRejected": 297,
+              "wrongResultStepsRejected": 270,
+              "rejectionMutationStepsRejected": 297,
+              "directKnownCounterexamplesRejected": 4
+            },
+            "consumerValidation": {
+              "realInventoryAuthorityControl": true,
+              "paths": [
+                "initialization ensure/create/read",
+                "certifyAdapter CAS/read",
+                "enterShadow CAS/read",
+                "enterDualRun CAS/read",
+                "authorizeCutover CAS/read",
+                "legacy writer admit/release CAS/read",
+                "claimFence CAS/read",
+                "failure-atomic CAS rejection propagation"
+              ]
+            },
+            "explicitNonClaims": [
+              "No InventoryAuthorityStateStore interface callable receives A/B/V surface credit.",
+              "No arbitrary application adapter implementation is certified by testing the reference/contract-backed store.",
+              "Package-owned AuthorityControl credit remains conditional until each consumer family explicitly binds this contract and its own complete semantics."
+            ],
+            "inputs": [
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/contract.test.ts",
+                "sha256": "039686c0ff931e76e391b4a3f8e088044f803a604fd0e7ff12071bcdcf3bf62e"
+              },
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/contract.ts",
+                "sha256": "705e3a8d2e26e6e6a9dfabe0c4821ef0db09612e8fa0180b44849d2c1a8a57df"
+              },
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/family.mjs",
+                "sha256": "12aa44c70a0047b174e63922656712f009673ad435bd67c6a434e5a79fc8e3db"
+              },
+              {
+                "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+                "sha256": "8d8854032e38a0df1044e5596c66d9a2b672277f357e361102b0b12c3d6952a0"
+              },
+              {
+                "file": "node_modules/typescript/package.json",
+                "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+              },
+              {
+                "file": "src/authority.ts",
+                "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+              }
+            ]
+          },
+          "successfulOrIdempotentTransitionsCoveredByR28": true,
+          "lostCasInterferenceCoveredByR28": true,
+          "contractAllowedStoreRejection": "failure-atomic method rejection with no package-owned durable transition",
+          "arbitraryStoreImplementationClaimed": false
+        }
+      },
+      "finalCurrentization": {
+        "kind": "EXACT_SOURCE_AND_AST_CARRY_FORWARD",
+        "source": {
+          "file": "src/authority.ts",
+          "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+        },
+        "authorityEvidence": {
+          "file": "experiments/tla-conformance/authority-contract-composition-r113/evidence.json",
+          "sha256": "e3ab9476d94052307b4b0d0542a43c21a30ea9f9513d034b95014f66222f64c1"
+        },
+        "finalHeadTransport": {
+          "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
+          "sha256": "4f97bb139e09506a9875a579f4547676df0f3ee4a8efeb8b187aca76b813b0bb",
+          "contentSha256": "195da88c26d3beae0ddcc5652a114949d3b8cb5f7c182e49b31e9407eae8683e"
+        }
+      }
+    },
+    {
+      "surfaceKey": "type:src/authority.ts#InventoryAuthorityControl.activateGreenfield::call[0]",
+      "mode": "A",
+      "signatureHash": "dfed13cbc715a9f80c3da66c2fbacb2f40590992e49d69efb57c7f5498d3e61a",
+      "declaration": {
+        "file": "src/authority.ts",
+        "start": {
+          "offset": 36665,
+          "line": 983,
+          "column": 3
+        },
+        "end": {
+          "offset": 40429,
+          "line": 1093,
+          "column": 4
+        },
+        "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+        "astHash": "699f1667c6f313e1f09679ffdceb13ba523c0767d91c4127a2a290f4d0a6825f"
+      },
+      "semantics": {
+        "formal": {
+          "model": "AuthorityControllerQuotient",
+          "source": "experiments/tla-conformance/authority-projection-r113/AuthorityControllerQuotient.tla",
+          "sourceHash": "7beaedd0500e339c812e6ff0f48b6776332d4d9bcadb7f56ab6e1b52341ab28e",
+          "actions": [
+            "ActivateGreenfield",
+            "RetryAuthority"
+          ],
+          "completeStates": 212,
+          "completeEdgeOccurrences": 1900
+        },
+        "forwardReplay": {
+          "file": "experiments/tla-conformance/authority-projection-r113/graph-replay.json",
+          "sha256": "4aa693502d17d2fcdc57795d4bae81018e1e378b8c0be060dfd6d1d524809a9f"
+        },
+        "reverseAndDisabledDomain": {
+          "file": "experiments/tla-conformance/authority-projection-r113/reverse-domain.json",
+          "sha256": "39079338f116707e0b681fa9b325668838fa8fcf23379d9f8b8ab86b81b676b1",
+          "commandAttempts": 13616,
+          "accepted": 3776,
+          "rejected": 9840
+        },
+        "nativeBoundaryAndRevisionExhaustion": {
+          "file": "experiments/tla-conformance/authority-projection-r113/runtime-evidence.json",
+          "sha256": "1d3455d226a0d1469ac2ba4edf416a7019e7a96979a6ec2c40067ea4734ae001",
+          "rows": 78
+        },
+        "environment": {
+          "stateStore": {
+            "proofKind": "authority-state-store-environment-contract-v1",
+            "kind": "NO_SURFACE_CREDIT_ENVIRONMENT_CONTRACT",
+            "surfaceCredit": 0,
+            "currentContractSha256": "4a05796f24c4b25e56c6f4f2c4ee1dbb124051174311e0948b6f04c07de8dc60",
+            "externalSurfaces": [
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.compareAndSet::call[0]",
+                "signatureHash": "7641c8fdd5489564f876b29b1739fe004a812f16eaa8bb365144375cc79d3b33",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1512,
+                    "line": 39,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1635,
+                    "line": 42,
+                    "column": 23
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "6093bf9522a52474b23856826730a8ba35a4b4e9c181f7b6bf9886e890d96b45"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.create::call[0]",
+                "signatureHash": "bc461f97c1cf245c94c75c7d9ffb667ddf2655e12d22094651df7a7a2a90efce",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1335,
+                    "line": 35,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1429,
+                    "line": 37,
+                    "column": 46
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "13378644d84c01f29b1bd332fb56643185a3d8331ded19c868c94f2c5481c846"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.ensure::call[0]",
+                "signatureHash": "6d18d45b0313378eaf9187bcf3ef8bea265de20d6c7c80e5723b3b59da93e6c6",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1125,
+                    "line": 31,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1181,
+                    "line": 31,
+                    "column": 59
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "70d55fcfc99480b6e28b11fe92db3908582021ed04398dc6ac0e74287ed68d70"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.read::call[0]",
+                "signatureHash": "ea6c30a4f8940f7228a392bdfaab7dab25e4f6ba70c2f9e13f03d3135f5d86a6",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1230,
+                    "line": 33,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1286,
+                    "line": 33,
+                    "column": 59
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "3b868af0a7e1fab77119d42ae377d06edd8440ecefa43f5bc70b9c4344116423"
+                }
+              }
+            ],
+            "sourceImpliedGuarantees": [
+              "read returns the current primary-stored logical row at one linearization point",
+              "create is idempotent: absent row -> exact initial row + Created; existing row -> unchanged + Existing",
+              "compareAndSet atomically applies the replacement only when every expected scalar matches",
+              "ensure establishes the requested scalar schema before package use"
+            ],
+            "requiredAdapterPreconditions": [
+              "operations are linearizable with respect to one row-scoped logical state",
+              "ensure does not rewrite the authority row",
+              "compareAndSet false leaves the row unchanged and means the expected scalars did not all match at its linearization point",
+              "a successful compareAndSet persists the complete replacement patch before returning true",
+              "a rejected ensure/read/create/compareAndSet exposes no partial schema/row mutation to subsequent package operations"
+            ],
+            "finiteOracle": {
+              "logicalStates": 9,
+              "commandShapes": 33,
+              "successfulSteps": 297,
+              "failureAtomicRejectionSteps": 297,
+              "corruptAfterStepsRejected": 297,
+              "wrongResultStepsRejected": 270,
+              "rejectionMutationStepsRejected": 297,
+              "directKnownCounterexamplesRejected": 4
+            },
+            "consumerValidation": {
+              "realInventoryAuthorityControl": true,
+              "paths": [
+                "initialization ensure/create/read",
+                "certifyAdapter CAS/read",
+                "enterShadow CAS/read",
+                "enterDualRun CAS/read",
+                "authorizeCutover CAS/read",
+                "legacy writer admit/release CAS/read",
+                "claimFence CAS/read",
+                "failure-atomic CAS rejection propagation"
+              ]
+            },
+            "explicitNonClaims": [
+              "No InventoryAuthorityStateStore interface callable receives A/B/V surface credit.",
+              "No arbitrary application adapter implementation is certified by testing the reference/contract-backed store.",
+              "Package-owned AuthorityControl credit remains conditional until each consumer family explicitly binds this contract and its own complete semantics."
+            ],
+            "inputs": [
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/contract.test.ts",
+                "sha256": "039686c0ff931e76e391b4a3f8e088044f803a604fd0e7ff12071bcdcf3bf62e"
+              },
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/contract.ts",
+                "sha256": "705e3a8d2e26e6e6a9dfabe0c4821ef0db09612e8fa0180b44849d2c1a8a57df"
+              },
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/family.mjs",
+                "sha256": "12aa44c70a0047b174e63922656712f009673ad435bd67c6a434e5a79fc8e3db"
+              },
+              {
+                "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+                "sha256": "8d8854032e38a0df1044e5596c66d9a2b672277f357e361102b0b12c3d6952a0"
+              },
+              {
+                "file": "node_modules/typescript/package.json",
+                "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+              },
+              {
+                "file": "src/authority.ts",
+                "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+              }
+            ]
+          },
+          "successfulOrIdempotentTransitionsCoveredByR28": true,
+          "lostCasInterferenceCoveredByR28": true,
+          "contractAllowedStoreRejection": "failure-atomic method rejection with no package-owned durable transition",
+          "arbitraryStoreImplementationClaimed": false
+        }
+      },
+      "finalCurrentization": {
+        "kind": "EXACT_SOURCE_AND_AST_CARRY_FORWARD",
+        "source": {
+          "file": "src/authority.ts",
+          "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+        },
+        "authorityEvidence": {
+          "file": "experiments/tla-conformance/authority-contract-composition-r113/evidence.json",
+          "sha256": "e3ab9476d94052307b4b0d0542a43c21a30ea9f9513d034b95014f66222f64c1"
+        },
+        "finalHeadTransport": {
+          "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
+          "sha256": "4f97bb139e09506a9875a579f4547676df0f3ee4a8efeb8b187aca76b813b0bb",
+          "contentSha256": "195da88c26d3beae0ddcc5652a114949d3b8cb5f7c182e49b31e9407eae8683e"
+        }
+      }
+    },
+    {
+      "surfaceKey": "type:src/authority.ts#InventoryAuthorityControl.admitLegacyWriter::call[0]",
+      "mode": "A",
+      "signatureHash": "8ca3375568fc9163eafc4b41550cb205526a88fe3c0b741d361938a779b82cf8",
+      "declaration": {
+        "file": "src/authority.ts",
+        "start": {
+          "offset": 25077,
+          "line": 645,
+          "column": 3
+        },
+        "end": {
+          "offset": 27284,
+          "line": 709,
+          "column": 4
+        },
+        "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+        "astHash": "3bda4253271d6dd0fa8507cdb493ac5d8bd319e27a73cc6cdddbac5edad29f45"
+      },
+      "semantics": {
+        "formal": {
+          "model": "AuthorityControllerQuotient",
+          "source": "experiments/tla-conformance/authority-projection-r113/AuthorityControllerQuotient.tla",
+          "sourceHash": "7beaedd0500e339c812e6ff0f48b6776332d4d9bcadb7f56ab6e1b52341ab28e",
+          "actions": [
+            "AdmitWriter",
+            "RetryWriter",
+            "AdmitWriterAuthoritative"
+          ],
+          "completeStates": 212,
+          "completeEdgeOccurrences": 1900
+        },
+        "forwardReplay": {
+          "file": "experiments/tla-conformance/authority-projection-r113/graph-replay.json",
+          "sha256": "4aa693502d17d2fcdc57795d4bae81018e1e378b8c0be060dfd6d1d524809a9f"
+        },
+        "reverseAndDisabledDomain": {
+          "file": "experiments/tla-conformance/authority-projection-r113/reverse-domain.json",
+          "sha256": "39079338f116707e0b681fa9b325668838fa8fcf23379d9f8b8ab86b81b676b1",
+          "commandAttempts": 13616,
+          "accepted": 3776,
+          "rejected": 9840
+        },
+        "nativeBoundaryAndRevisionExhaustion": {
+          "file": "experiments/tla-conformance/authority-projection-r113/runtime-evidence.json",
+          "sha256": "1d3455d226a0d1469ac2ba4edf416a7019e7a96979a6ec2c40067ea4734ae001",
+          "rows": 78
+        },
+        "environment": {
+          "stateStore": {
+            "proofKind": "authority-state-store-environment-contract-v1",
+            "kind": "NO_SURFACE_CREDIT_ENVIRONMENT_CONTRACT",
+            "surfaceCredit": 0,
+            "currentContractSha256": "4a05796f24c4b25e56c6f4f2c4ee1dbb124051174311e0948b6f04c07de8dc60",
+            "externalSurfaces": [
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.compareAndSet::call[0]",
+                "signatureHash": "7641c8fdd5489564f876b29b1739fe004a812f16eaa8bb365144375cc79d3b33",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1512,
+                    "line": 39,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1635,
+                    "line": 42,
+                    "column": 23
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "6093bf9522a52474b23856826730a8ba35a4b4e9c181f7b6bf9886e890d96b45"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.create::call[0]",
+                "signatureHash": "bc461f97c1cf245c94c75c7d9ffb667ddf2655e12d22094651df7a7a2a90efce",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1335,
+                    "line": 35,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1429,
+                    "line": 37,
+                    "column": 46
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "13378644d84c01f29b1bd332fb56643185a3d8331ded19c868c94f2c5481c846"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.ensure::call[0]",
+                "signatureHash": "6d18d45b0313378eaf9187bcf3ef8bea265de20d6c7c80e5723b3b59da93e6c6",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1125,
+                    "line": 31,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1181,
+                    "line": 31,
+                    "column": 59
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "70d55fcfc99480b6e28b11fe92db3908582021ed04398dc6ac0e74287ed68d70"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.read::call[0]",
+                "signatureHash": "ea6c30a4f8940f7228a392bdfaab7dab25e4f6ba70c2f9e13f03d3135f5d86a6",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1230,
+                    "line": 33,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1286,
+                    "line": 33,
+                    "column": 59
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "3b868af0a7e1fab77119d42ae377d06edd8440ecefa43f5bc70b9c4344116423"
+                }
+              }
+            ],
+            "sourceImpliedGuarantees": [
+              "read returns the current primary-stored logical row at one linearization point",
+              "create is idempotent: absent row -> exact initial row + Created; existing row -> unchanged + Existing",
+              "compareAndSet atomically applies the replacement only when every expected scalar matches",
+              "ensure establishes the requested scalar schema before package use"
+            ],
+            "requiredAdapterPreconditions": [
+              "operations are linearizable with respect to one row-scoped logical state",
+              "ensure does not rewrite the authority row",
+              "compareAndSet false leaves the row unchanged and means the expected scalars did not all match at its linearization point",
+              "a successful compareAndSet persists the complete replacement patch before returning true",
+              "a rejected ensure/read/create/compareAndSet exposes no partial schema/row mutation to subsequent package operations"
+            ],
+            "finiteOracle": {
+              "logicalStates": 9,
+              "commandShapes": 33,
+              "successfulSteps": 297,
+              "failureAtomicRejectionSteps": 297,
+              "corruptAfterStepsRejected": 297,
+              "wrongResultStepsRejected": 270,
+              "rejectionMutationStepsRejected": 297,
+              "directKnownCounterexamplesRejected": 4
+            },
+            "consumerValidation": {
+              "realInventoryAuthorityControl": true,
+              "paths": [
+                "initialization ensure/create/read",
+                "certifyAdapter CAS/read",
+                "enterShadow CAS/read",
+                "enterDualRun CAS/read",
+                "authorizeCutover CAS/read",
+                "legacy writer admit/release CAS/read",
+                "claimFence CAS/read",
+                "failure-atomic CAS rejection propagation"
+              ]
+            },
+            "explicitNonClaims": [
+              "No InventoryAuthorityStateStore interface callable receives A/B/V surface credit.",
+              "No arbitrary application adapter implementation is certified by testing the reference/contract-backed store.",
+              "Package-owned AuthorityControl credit remains conditional until each consumer family explicitly binds this contract and its own complete semantics."
+            ],
+            "inputs": [
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/contract.test.ts",
+                "sha256": "039686c0ff931e76e391b4a3f8e088044f803a604fd0e7ff12071bcdcf3bf62e"
+              },
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/contract.ts",
+                "sha256": "705e3a8d2e26e6e6a9dfabe0c4821ef0db09612e8fa0180b44849d2c1a8a57df"
+              },
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/family.mjs",
+                "sha256": "12aa44c70a0047b174e63922656712f009673ad435bd67c6a434e5a79fc8e3db"
+              },
+              {
+                "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+                "sha256": "8d8854032e38a0df1044e5596c66d9a2b672277f357e361102b0b12c3d6952a0"
+              },
+              {
+                "file": "node_modules/typescript/package.json",
+                "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+              },
+              {
+                "file": "src/authority.ts",
+                "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+              }
+            ]
+          },
+          "successfulOrIdempotentTransitionsCoveredByR28": true,
+          "lostCasInterferenceCoveredByR28": true,
+          "contractAllowedStoreRejection": "failure-atomic method rejection with no package-owned durable transition",
+          "arbitraryStoreImplementationClaimed": false
+        }
+      },
+      "finalCurrentization": {
+        "kind": "EXACT_SOURCE_AND_AST_CARRY_FORWARD",
+        "source": {
+          "file": "src/authority.ts",
+          "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+        },
+        "authorityEvidence": {
+          "file": "experiments/tla-conformance/authority-contract-composition-r113/evidence.json",
+          "sha256": "e3ab9476d94052307b4b0d0542a43c21a30ea9f9513d034b95014f66222f64c1"
+        },
+        "finalHeadTransport": {
+          "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
+          "sha256": "4f97bb139e09506a9875a579f4547676df0f3ee4a8efeb8b187aca76b813b0bb",
+          "contentSha256": "195da88c26d3beae0ddcc5652a114949d3b8cb5f7c182e49b31e9407eae8683e"
+        }
+      }
+    },
+    {
+      "surfaceKey": "type:src/authority.ts#InventoryAuthorityControl.authorizeCutover::call[0]",
+      "mode": "A",
+      "signatureHash": "ed32737103f67a03cab4fa18f153105de63ec1378ace987eeecf93eb8a4d5e8f",
+      "declaration": {
+        "file": "src/authority.ts",
+        "start": {
+          "offset": 23357,
+          "line": 596,
+          "column": 3
+        },
+        "end": {
+          "offset": 24994,
+          "line": 642,
+          "column": 4
+        },
+        "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+        "astHash": "d719bbdf2d842c3268b8bdfffd72f62b0a01c22ccfc543cdeac613920736c9e4"
+      },
+      "semantics": {
+        "formal": {
+          "model": "AuthorityControllerQuotient",
+          "source": "experiments/tla-conformance/authority-projection-r113/AuthorityControllerQuotient.tla",
+          "sourceHash": "7beaedd0500e339c812e6ff0f48b6776332d4d9bcadb7f56ab6e1b52341ab28e",
+          "actions": [
+            "AuthorizeCutover",
+            "RetryAuthorization"
+          ],
+          "completeStates": 212,
+          "completeEdgeOccurrences": 1900
+        },
+        "forwardReplay": {
+          "file": "experiments/tla-conformance/authority-projection-r113/graph-replay.json",
+          "sha256": "4aa693502d17d2fcdc57795d4bae81018e1e378b8c0be060dfd6d1d524809a9f"
+        },
+        "reverseAndDisabledDomain": {
+          "file": "experiments/tla-conformance/authority-projection-r113/reverse-domain.json",
+          "sha256": "39079338f116707e0b681fa9b325668838fa8fcf23379d9f8b8ab86b81b676b1",
+          "commandAttempts": 13616,
+          "accepted": 3776,
+          "rejected": 9840
+        },
+        "nativeBoundaryAndRevisionExhaustion": {
+          "file": "experiments/tla-conformance/authority-projection-r113/runtime-evidence.json",
+          "sha256": "1d3455d226a0d1469ac2ba4edf416a7019e7a96979a6ec2c40067ea4734ae001",
+          "rows": 78
+        },
+        "environment": {
+          "stateStore": {
+            "proofKind": "authority-state-store-environment-contract-v1",
+            "kind": "NO_SURFACE_CREDIT_ENVIRONMENT_CONTRACT",
+            "surfaceCredit": 0,
+            "currentContractSha256": "4a05796f24c4b25e56c6f4f2c4ee1dbb124051174311e0948b6f04c07de8dc60",
+            "externalSurfaces": [
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.compareAndSet::call[0]",
+                "signatureHash": "7641c8fdd5489564f876b29b1739fe004a812f16eaa8bb365144375cc79d3b33",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1512,
+                    "line": 39,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1635,
+                    "line": 42,
+                    "column": 23
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "6093bf9522a52474b23856826730a8ba35a4b4e9c181f7b6bf9886e890d96b45"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.create::call[0]",
+                "signatureHash": "bc461f97c1cf245c94c75c7d9ffb667ddf2655e12d22094651df7a7a2a90efce",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1335,
+                    "line": 35,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1429,
+                    "line": 37,
+                    "column": 46
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "13378644d84c01f29b1bd332fb56643185a3d8331ded19c868c94f2c5481c846"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.ensure::call[0]",
+                "signatureHash": "6d18d45b0313378eaf9187bcf3ef8bea265de20d6c7c80e5723b3b59da93e6c6",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1125,
+                    "line": 31,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1181,
+                    "line": 31,
+                    "column": 59
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "70d55fcfc99480b6e28b11fe92db3908582021ed04398dc6ac0e74287ed68d70"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.read::call[0]",
+                "signatureHash": "ea6c30a4f8940f7228a392bdfaab7dab25e4f6ba70c2f9e13f03d3135f5d86a6",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1230,
+                    "line": 33,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1286,
+                    "line": 33,
+                    "column": 59
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "3b868af0a7e1fab77119d42ae377d06edd8440ecefa43f5bc70b9c4344116423"
+                }
+              }
+            ],
+            "sourceImpliedGuarantees": [
+              "read returns the current primary-stored logical row at one linearization point",
+              "create is idempotent: absent row -> exact initial row + Created; existing row -> unchanged + Existing",
+              "compareAndSet atomically applies the replacement only when every expected scalar matches",
+              "ensure establishes the requested scalar schema before package use"
+            ],
+            "requiredAdapterPreconditions": [
+              "operations are linearizable with respect to one row-scoped logical state",
+              "ensure does not rewrite the authority row",
+              "compareAndSet false leaves the row unchanged and means the expected scalars did not all match at its linearization point",
+              "a successful compareAndSet persists the complete replacement patch before returning true",
+              "a rejected ensure/read/create/compareAndSet exposes no partial schema/row mutation to subsequent package operations"
+            ],
+            "finiteOracle": {
+              "logicalStates": 9,
+              "commandShapes": 33,
+              "successfulSteps": 297,
+              "failureAtomicRejectionSteps": 297,
+              "corruptAfterStepsRejected": 297,
+              "wrongResultStepsRejected": 270,
+              "rejectionMutationStepsRejected": 297,
+              "directKnownCounterexamplesRejected": 4
+            },
+            "consumerValidation": {
+              "realInventoryAuthorityControl": true,
+              "paths": [
+                "initialization ensure/create/read",
+                "certifyAdapter CAS/read",
+                "enterShadow CAS/read",
+                "enterDualRun CAS/read",
+                "authorizeCutover CAS/read",
+                "legacy writer admit/release CAS/read",
+                "claimFence CAS/read",
+                "failure-atomic CAS rejection propagation"
+              ]
+            },
+            "explicitNonClaims": [
+              "No InventoryAuthorityStateStore interface callable receives A/B/V surface credit.",
+              "No arbitrary application adapter implementation is certified by testing the reference/contract-backed store.",
+              "Package-owned AuthorityControl credit remains conditional until each consumer family explicitly binds this contract and its own complete semantics."
+            ],
+            "inputs": [
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/contract.test.ts",
+                "sha256": "039686c0ff931e76e391b4a3f8e088044f803a604fd0e7ff12071bcdcf3bf62e"
+              },
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/contract.ts",
+                "sha256": "705e3a8d2e26e6e6a9dfabe0c4821ef0db09612e8fa0180b44849d2c1a8a57df"
+              },
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/family.mjs",
+                "sha256": "12aa44c70a0047b174e63922656712f009673ad435bd67c6a434e5a79fc8e3db"
+              },
+              {
+                "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+                "sha256": "8d8854032e38a0df1044e5596c66d9a2b672277f357e361102b0b12c3d6952a0"
+              },
+              {
+                "file": "node_modules/typescript/package.json",
+                "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+              },
+              {
+                "file": "src/authority.ts",
+                "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+              }
+            ]
+          },
+          "successfulOrIdempotentTransitionsCoveredByR28": true,
+          "lostCasInterferenceCoveredByR28": true,
+          "contractAllowedStoreRejection": "failure-atomic method rejection with no package-owned durable transition",
+          "arbitraryStoreImplementationClaimed": false
+        }
+      },
+      "finalCurrentization": {
+        "kind": "EXACT_SOURCE_AND_AST_CARRY_FORWARD",
+        "source": {
+          "file": "src/authority.ts",
+          "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+        },
+        "authorityEvidence": {
+          "file": "experiments/tla-conformance/authority-contract-composition-r113/evidence.json",
+          "sha256": "e3ab9476d94052307b4b0d0542a43c21a30ea9f9513d034b95014f66222f64c1"
+        },
+        "finalHeadTransport": {
+          "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
+          "sha256": "4f97bb139e09506a9875a579f4547676df0f3ee4a8efeb8b187aca76b813b0bb",
+          "contentSha256": "195da88c26d3beae0ddcc5652a114949d3b8cb5f7c182e49b31e9407eae8683e"
+        }
+      }
+    },
+    {
+      "surfaceKey": "type:src/authority.ts#InventoryAuthorityControl.certifyAdapter::call[0]",
+      "mode": "A",
+      "signatureHash": "3849d48fdd9ce6135a9bf466b16cde60d83f6815e2b4d430900d42d05f6b5dbe",
+      "declaration": {
+        "file": "src/authority.ts",
+        "start": {
+          "offset": 15763,
+          "line": 374,
+          "column": 3
+        },
+        "end": {
+          "offset": 17412,
+          "line": 421,
+          "column": 4
+        },
+        "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+        "astHash": "b2fb01be97e6496acd0bb17ad038dbbfbb5c79168fba4170f378a8f16a9a4c0c"
+      },
+      "semantics": {
+        "formal": {
+          "model": "AuthorityControllerQuotient",
+          "source": "experiments/tla-conformance/authority-projection-r113/AuthorityControllerQuotient.tla",
+          "sourceHash": "7beaedd0500e339c812e6ff0f48b6776332d4d9bcadb7f56ab6e1b52341ab28e",
+          "actions": [
+            "CertifyAdapter",
+            "RetryCertified"
+          ],
+          "completeStates": 212,
+          "completeEdgeOccurrences": 1900
+        },
+        "forwardReplay": {
+          "file": "experiments/tla-conformance/authority-projection-r113/graph-replay.json",
+          "sha256": "4aa693502d17d2fcdc57795d4bae81018e1e378b8c0be060dfd6d1d524809a9f"
+        },
+        "reverseAndDisabledDomain": {
+          "file": "experiments/tla-conformance/authority-projection-r113/reverse-domain.json",
+          "sha256": "39079338f116707e0b681fa9b325668838fa8fcf23379d9f8b8ab86b81b676b1",
+          "commandAttempts": 13616,
+          "accepted": 3776,
+          "rejected": 9840
+        },
+        "nativeBoundaryAndRevisionExhaustion": {
+          "file": "experiments/tla-conformance/authority-projection-r113/runtime-evidence.json",
+          "sha256": "1d3455d226a0d1469ac2ba4edf416a7019e7a96979a6ec2c40067ea4734ae001",
+          "rows": 78
+        },
+        "environment": {
+          "stateStore": {
+            "proofKind": "authority-state-store-environment-contract-v1",
+            "kind": "NO_SURFACE_CREDIT_ENVIRONMENT_CONTRACT",
+            "surfaceCredit": 0,
+            "currentContractSha256": "4a05796f24c4b25e56c6f4f2c4ee1dbb124051174311e0948b6f04c07de8dc60",
+            "externalSurfaces": [
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.compareAndSet::call[0]",
+                "signatureHash": "7641c8fdd5489564f876b29b1739fe004a812f16eaa8bb365144375cc79d3b33",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1512,
+                    "line": 39,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1635,
+                    "line": 42,
+                    "column": 23
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "6093bf9522a52474b23856826730a8ba35a4b4e9c181f7b6bf9886e890d96b45"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.create::call[0]",
+                "signatureHash": "bc461f97c1cf245c94c75c7d9ffb667ddf2655e12d22094651df7a7a2a90efce",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1335,
+                    "line": 35,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1429,
+                    "line": 37,
+                    "column": 46
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "13378644d84c01f29b1bd332fb56643185a3d8331ded19c868c94f2c5481c846"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.ensure::call[0]",
+                "signatureHash": "6d18d45b0313378eaf9187bcf3ef8bea265de20d6c7c80e5723b3b59da93e6c6",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1125,
+                    "line": 31,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1181,
+                    "line": 31,
+                    "column": 59
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "70d55fcfc99480b6e28b11fe92db3908582021ed04398dc6ac0e74287ed68d70"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.read::call[0]",
+                "signatureHash": "ea6c30a4f8940f7228a392bdfaab7dab25e4f6ba70c2f9e13f03d3135f5d86a6",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1230,
+                    "line": 33,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1286,
+                    "line": 33,
+                    "column": 59
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "3b868af0a7e1fab77119d42ae377d06edd8440ecefa43f5bc70b9c4344116423"
+                }
+              }
+            ],
+            "sourceImpliedGuarantees": [
+              "read returns the current primary-stored logical row at one linearization point",
+              "create is idempotent: absent row -> exact initial row + Created; existing row -> unchanged + Existing",
+              "compareAndSet atomically applies the replacement only when every expected scalar matches",
+              "ensure establishes the requested scalar schema before package use"
+            ],
+            "requiredAdapterPreconditions": [
+              "operations are linearizable with respect to one row-scoped logical state",
+              "ensure does not rewrite the authority row",
+              "compareAndSet false leaves the row unchanged and means the expected scalars did not all match at its linearization point",
+              "a successful compareAndSet persists the complete replacement patch before returning true",
+              "a rejected ensure/read/create/compareAndSet exposes no partial schema/row mutation to subsequent package operations"
+            ],
+            "finiteOracle": {
+              "logicalStates": 9,
+              "commandShapes": 33,
+              "successfulSteps": 297,
+              "failureAtomicRejectionSteps": 297,
+              "corruptAfterStepsRejected": 297,
+              "wrongResultStepsRejected": 270,
+              "rejectionMutationStepsRejected": 297,
+              "directKnownCounterexamplesRejected": 4
+            },
+            "consumerValidation": {
+              "realInventoryAuthorityControl": true,
+              "paths": [
+                "initialization ensure/create/read",
+                "certifyAdapter CAS/read",
+                "enterShadow CAS/read",
+                "enterDualRun CAS/read",
+                "authorizeCutover CAS/read",
+                "legacy writer admit/release CAS/read",
+                "claimFence CAS/read",
+                "failure-atomic CAS rejection propagation"
+              ]
+            },
+            "explicitNonClaims": [
+              "No InventoryAuthorityStateStore interface callable receives A/B/V surface credit.",
+              "No arbitrary application adapter implementation is certified by testing the reference/contract-backed store.",
+              "Package-owned AuthorityControl credit remains conditional until each consumer family explicitly binds this contract and its own complete semantics."
+            ],
+            "inputs": [
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/contract.test.ts",
+                "sha256": "039686c0ff931e76e391b4a3f8e088044f803a604fd0e7ff12071bcdcf3bf62e"
+              },
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/contract.ts",
+                "sha256": "705e3a8d2e26e6e6a9dfabe0c4821ef0db09612e8fa0180b44849d2c1a8a57df"
+              },
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/family.mjs",
+                "sha256": "12aa44c70a0047b174e63922656712f009673ad435bd67c6a434e5a79fc8e3db"
+              },
+              {
+                "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+                "sha256": "8d8854032e38a0df1044e5596c66d9a2b672277f357e361102b0b12c3d6952a0"
+              },
+              {
+                "file": "node_modules/typescript/package.json",
+                "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+              },
+              {
+                "file": "src/authority.ts",
+                "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+              }
+            ]
+          },
+          "successfulOrIdempotentTransitionsCoveredByR28": true,
+          "lostCasInterferenceCoveredByR28": true,
+          "contractAllowedStoreRejection": "failure-atomic method rejection with no package-owned durable transition",
+          "arbitraryStoreImplementationClaimed": false
+        }
+      },
+      "finalCurrentization": {
+        "kind": "EXACT_SOURCE_AND_AST_CARRY_FORWARD",
+        "source": {
+          "file": "src/authority.ts",
+          "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+        },
+        "authorityEvidence": {
+          "file": "experiments/tla-conformance/authority-contract-composition-r113/evidence.json",
+          "sha256": "e3ab9476d94052307b4b0d0542a43c21a30ea9f9513d034b95014f66222f64c1"
+        },
+        "finalHeadTransport": {
+          "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
+          "sha256": "4f97bb139e09506a9875a579f4547676df0f3ee4a8efeb8b187aca76b813b0bb",
+          "contentSha256": "195da88c26d3beae0ddcc5652a114949d3b8cb5f7c182e49b31e9407eae8683e"
+        }
+      }
+    },
+    {
+      "surfaceKey": "type:src/authority.ts#InventoryAuthorityControl.claimFence::call[0]",
+      "mode": "A",
+      "signatureHash": "56e092d18a007dab8334c227f394ca6d421574db912a77aef2704ad7fd8abdf1",
+      "declaration": {
+        "file": "src/authority.ts",
+        "start": {
+          "offset": 29336,
+          "line": 763,
+          "column": 3
+        },
+        "end": {
+          "offset": 32907,
+          "line": 866,
+          "column": 4
+        },
+        "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+        "astHash": "2765e9bcd99073592b8ea9645ff783a351189c692b7984fe73a8a3e0a6618ec3"
+      },
+      "semantics": {
+        "formal": {
+          "model": "AuthorityControllerQuotient",
+          "source": "experiments/tla-conformance/authority-projection-r113/AuthorityControllerQuotient.tla",
+          "sourceHash": "7beaedd0500e339c812e6ff0f48b6776332d4d9bcadb7f56ab6e1b52341ab28e",
+          "actions": [
+            "ClaimFence",
+            "RetrySameFenceToken"
+          ],
+          "completeStates": 212,
+          "completeEdgeOccurrences": 1900
+        },
+        "forwardReplay": {
+          "file": "experiments/tla-conformance/authority-projection-r113/graph-replay.json",
+          "sha256": "4aa693502d17d2fcdc57795d4bae81018e1e378b8c0be060dfd6d1d524809a9f"
+        },
+        "reverseAndDisabledDomain": {
+          "file": "experiments/tla-conformance/authority-projection-r113/reverse-domain.json",
+          "sha256": "39079338f116707e0b681fa9b325668838fa8fcf23379d9f8b8ab86b81b676b1",
+          "commandAttempts": 13616,
+          "accepted": 3776,
+          "rejected": 9840
+        },
+        "nativeBoundaryAndRevisionExhaustion": {
+          "file": "experiments/tla-conformance/authority-projection-r113/runtime-evidence.json",
+          "sha256": "1d3455d226a0d1469ac2ba4edf416a7019e7a96979a6ec2c40067ea4734ae001",
+          "rows": 78
+        },
+        "environment": {
+          "stateStore": {
+            "proofKind": "authority-state-store-environment-contract-v1",
+            "kind": "NO_SURFACE_CREDIT_ENVIRONMENT_CONTRACT",
+            "surfaceCredit": 0,
+            "currentContractSha256": "4a05796f24c4b25e56c6f4f2c4ee1dbb124051174311e0948b6f04c07de8dc60",
+            "externalSurfaces": [
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.compareAndSet::call[0]",
+                "signatureHash": "7641c8fdd5489564f876b29b1739fe004a812f16eaa8bb365144375cc79d3b33",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1512,
+                    "line": 39,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1635,
+                    "line": 42,
+                    "column": 23
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "6093bf9522a52474b23856826730a8ba35a4b4e9c181f7b6bf9886e890d96b45"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.create::call[0]",
+                "signatureHash": "bc461f97c1cf245c94c75c7d9ffb667ddf2655e12d22094651df7a7a2a90efce",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1335,
+                    "line": 35,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1429,
+                    "line": 37,
+                    "column": 46
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "13378644d84c01f29b1bd332fb56643185a3d8331ded19c868c94f2c5481c846"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.ensure::call[0]",
+                "signatureHash": "6d18d45b0313378eaf9187bcf3ef8bea265de20d6c7c80e5723b3b59da93e6c6",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1125,
+                    "line": 31,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1181,
+                    "line": 31,
+                    "column": 59
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "70d55fcfc99480b6e28b11fe92db3908582021ed04398dc6ac0e74287ed68d70"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.read::call[0]",
+                "signatureHash": "ea6c30a4f8940f7228a392bdfaab7dab25e4f6ba70c2f9e13f03d3135f5d86a6",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1230,
+                    "line": 33,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1286,
+                    "line": 33,
+                    "column": 59
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "3b868af0a7e1fab77119d42ae377d06edd8440ecefa43f5bc70b9c4344116423"
+                }
+              }
+            ],
+            "sourceImpliedGuarantees": [
+              "read returns the current primary-stored logical row at one linearization point",
+              "create is idempotent: absent row -> exact initial row + Created; existing row -> unchanged + Existing",
+              "compareAndSet atomically applies the replacement only when every expected scalar matches",
+              "ensure establishes the requested scalar schema before package use"
+            ],
+            "requiredAdapterPreconditions": [
+              "operations are linearizable with respect to one row-scoped logical state",
+              "ensure does not rewrite the authority row",
+              "compareAndSet false leaves the row unchanged and means the expected scalars did not all match at its linearization point",
+              "a successful compareAndSet persists the complete replacement patch before returning true",
+              "a rejected ensure/read/create/compareAndSet exposes no partial schema/row mutation to subsequent package operations"
+            ],
+            "finiteOracle": {
+              "logicalStates": 9,
+              "commandShapes": 33,
+              "successfulSteps": 297,
+              "failureAtomicRejectionSteps": 297,
+              "corruptAfterStepsRejected": 297,
+              "wrongResultStepsRejected": 270,
+              "rejectionMutationStepsRejected": 297,
+              "directKnownCounterexamplesRejected": 4
+            },
+            "consumerValidation": {
+              "realInventoryAuthorityControl": true,
+              "paths": [
+                "initialization ensure/create/read",
+                "certifyAdapter CAS/read",
+                "enterShadow CAS/read",
+                "enterDualRun CAS/read",
+                "authorizeCutover CAS/read",
+                "legacy writer admit/release CAS/read",
+                "claimFence CAS/read",
+                "failure-atomic CAS rejection propagation"
+              ]
+            },
+            "explicitNonClaims": [
+              "No InventoryAuthorityStateStore interface callable receives A/B/V surface credit.",
+              "No arbitrary application adapter implementation is certified by testing the reference/contract-backed store.",
+              "Package-owned AuthorityControl credit remains conditional until each consumer family explicitly binds this contract and its own complete semantics."
+            ],
+            "inputs": [
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/contract.test.ts",
+                "sha256": "039686c0ff931e76e391b4a3f8e088044f803a604fd0e7ff12071bcdcf3bf62e"
+              },
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/contract.ts",
+                "sha256": "705e3a8d2e26e6e6a9dfabe0c4821ef0db09612e8fa0180b44849d2c1a8a57df"
+              },
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/family.mjs",
+                "sha256": "12aa44c70a0047b174e63922656712f009673ad435bd67c6a434e5a79fc8e3db"
+              },
+              {
+                "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+                "sha256": "8d8854032e38a0df1044e5596c66d9a2b672277f357e361102b0b12c3d6952a0"
+              },
+              {
+                "file": "node_modules/typescript/package.json",
+                "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+              },
+              {
+                "file": "src/authority.ts",
+                "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+              }
+            ]
+          },
+          "successfulOrIdempotentTransitionsCoveredByR28": true,
+          "lostCasInterferenceCoveredByR28": true,
+          "contractAllowedStoreRejection": "failure-atomic method rejection with no package-owned durable transition",
+          "arbitraryStoreImplementationClaimed": false
+        }
+      },
+      "finalCurrentization": {
+        "kind": "EXACT_SOURCE_AND_AST_CARRY_FORWARD",
+        "source": {
+          "file": "src/authority.ts",
+          "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+        },
+        "authorityEvidence": {
+          "file": "experiments/tla-conformance/authority-contract-composition-r113/evidence.json",
+          "sha256": "e3ab9476d94052307b4b0d0542a43c21a30ea9f9513d034b95014f66222f64c1"
+        },
+        "finalHeadTransport": {
+          "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
+          "sha256": "4f97bb139e09506a9875a579f4547676df0f3ee4a8efeb8b187aca76b813b0bb",
+          "contentSha256": "195da88c26d3beae0ddcc5652a114949d3b8cb5f7c182e49b31e9407eae8683e"
+        }
+      }
+    },
+    {
+      "surfaceKey": "type:src/authority.ts#InventoryAuthorityControl.enterDualRun::call[0]",
+      "mode": "A",
+      "signatureHash": "fe7ab0724a6dfe045b8697eb2c6f09684ff437f86b82137eb4c8dba281fc56c9",
+      "declaration": {
+        "file": "src/authority.ts",
+        "start": {
+          "offset": 19139,
+          "line": 470,
+          "column": 3
+        },
+        "end": {
+          "offset": 21245,
+          "line": 532,
+          "column": 4
+        },
+        "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+        "astHash": "5db9f20efc6a10ac17c63005fe9fdc987a1c8566202d0a24546b03363c7724bb"
+      },
+      "semantics": {
+        "formal": {
+          "model": "AuthorityControllerQuotient",
+          "source": "experiments/tla-conformance/authority-projection-r113/AuthorityControllerQuotient.tla",
+          "sourceHash": "7beaedd0500e339c812e6ff0f48b6776332d4d9bcadb7f56ab6e1b52341ab28e",
+          "actions": [
+            "EnterDualRun",
+            "CompetingEnterDualRun",
+            "RetryDualRun"
+          ],
+          "completeStates": 212,
+          "completeEdgeOccurrences": 1900
+        },
+        "forwardReplay": {
+          "file": "experiments/tla-conformance/authority-projection-r113/graph-replay.json",
+          "sha256": "4aa693502d17d2fcdc57795d4bae81018e1e378b8c0be060dfd6d1d524809a9f"
+        },
+        "reverseAndDisabledDomain": {
+          "file": "experiments/tla-conformance/authority-projection-r113/reverse-domain.json",
+          "sha256": "39079338f116707e0b681fa9b325668838fa8fcf23379d9f8b8ab86b81b676b1",
+          "commandAttempts": 13616,
+          "accepted": 3776,
+          "rejected": 9840
+        },
+        "nativeBoundaryAndRevisionExhaustion": {
+          "file": "experiments/tla-conformance/authority-projection-r113/runtime-evidence.json",
+          "sha256": "1d3455d226a0d1469ac2ba4edf416a7019e7a96979a6ec2c40067ea4734ae001",
+          "rows": 78
+        },
+        "environment": {
+          "stateStore": {
+            "proofKind": "authority-state-store-environment-contract-v1",
+            "kind": "NO_SURFACE_CREDIT_ENVIRONMENT_CONTRACT",
+            "surfaceCredit": 0,
+            "currentContractSha256": "4a05796f24c4b25e56c6f4f2c4ee1dbb124051174311e0948b6f04c07de8dc60",
+            "externalSurfaces": [
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.compareAndSet::call[0]",
+                "signatureHash": "7641c8fdd5489564f876b29b1739fe004a812f16eaa8bb365144375cc79d3b33",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1512,
+                    "line": 39,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1635,
+                    "line": 42,
+                    "column": 23
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "6093bf9522a52474b23856826730a8ba35a4b4e9c181f7b6bf9886e890d96b45"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.create::call[0]",
+                "signatureHash": "bc461f97c1cf245c94c75c7d9ffb667ddf2655e12d22094651df7a7a2a90efce",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1335,
+                    "line": 35,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1429,
+                    "line": 37,
+                    "column": 46
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "13378644d84c01f29b1bd332fb56643185a3d8331ded19c868c94f2c5481c846"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.ensure::call[0]",
+                "signatureHash": "6d18d45b0313378eaf9187bcf3ef8bea265de20d6c7c80e5723b3b59da93e6c6",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1125,
+                    "line": 31,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1181,
+                    "line": 31,
+                    "column": 59
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "70d55fcfc99480b6e28b11fe92db3908582021ed04398dc6ac0e74287ed68d70"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.read::call[0]",
+                "signatureHash": "ea6c30a4f8940f7228a392bdfaab7dab25e4f6ba70c2f9e13f03d3135f5d86a6",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1230,
+                    "line": 33,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1286,
+                    "line": 33,
+                    "column": 59
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "3b868af0a7e1fab77119d42ae377d06edd8440ecefa43f5bc70b9c4344116423"
+                }
+              }
+            ],
+            "sourceImpliedGuarantees": [
+              "read returns the current primary-stored logical row at one linearization point",
+              "create is idempotent: absent row -> exact initial row + Created; existing row -> unchanged + Existing",
+              "compareAndSet atomically applies the replacement only when every expected scalar matches",
+              "ensure establishes the requested scalar schema before package use"
+            ],
+            "requiredAdapterPreconditions": [
+              "operations are linearizable with respect to one row-scoped logical state",
+              "ensure does not rewrite the authority row",
+              "compareAndSet false leaves the row unchanged and means the expected scalars did not all match at its linearization point",
+              "a successful compareAndSet persists the complete replacement patch before returning true",
+              "a rejected ensure/read/create/compareAndSet exposes no partial schema/row mutation to subsequent package operations"
+            ],
+            "finiteOracle": {
+              "logicalStates": 9,
+              "commandShapes": 33,
+              "successfulSteps": 297,
+              "failureAtomicRejectionSteps": 297,
+              "corruptAfterStepsRejected": 297,
+              "wrongResultStepsRejected": 270,
+              "rejectionMutationStepsRejected": 297,
+              "directKnownCounterexamplesRejected": 4
+            },
+            "consumerValidation": {
+              "realInventoryAuthorityControl": true,
+              "paths": [
+                "initialization ensure/create/read",
+                "certifyAdapter CAS/read",
+                "enterShadow CAS/read",
+                "enterDualRun CAS/read",
+                "authorizeCutover CAS/read",
+                "legacy writer admit/release CAS/read",
+                "claimFence CAS/read",
+                "failure-atomic CAS rejection propagation"
+              ]
+            },
+            "explicitNonClaims": [
+              "No InventoryAuthorityStateStore interface callable receives A/B/V surface credit.",
+              "No arbitrary application adapter implementation is certified by testing the reference/contract-backed store.",
+              "Package-owned AuthorityControl credit remains conditional until each consumer family explicitly binds this contract and its own complete semantics."
+            ],
+            "inputs": [
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/contract.test.ts",
+                "sha256": "039686c0ff931e76e391b4a3f8e088044f803a604fd0e7ff12071bcdcf3bf62e"
+              },
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/contract.ts",
+                "sha256": "705e3a8d2e26e6e6a9dfabe0c4821ef0db09612e8fa0180b44849d2c1a8a57df"
+              },
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/family.mjs",
+                "sha256": "12aa44c70a0047b174e63922656712f009673ad435bd67c6a434e5a79fc8e3db"
+              },
+              {
+                "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+                "sha256": "8d8854032e38a0df1044e5596c66d9a2b672277f357e361102b0b12c3d6952a0"
+              },
+              {
+                "file": "node_modules/typescript/package.json",
+                "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+              },
+              {
+                "file": "src/authority.ts",
+                "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+              }
+            ]
+          },
+          "successfulOrIdempotentTransitionsCoveredByR28": true,
+          "lostCasInterferenceCoveredByR28": true,
+          "contractAllowedStoreRejection": "failure-atomic method rejection with no package-owned durable transition",
+          "arbitraryStoreImplementationClaimed": false
+        }
+      },
+      "finalCurrentization": {
+        "kind": "EXACT_SOURCE_AND_AST_CARRY_FORWARD",
+        "source": {
+          "file": "src/authority.ts",
+          "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+        },
+        "authorityEvidence": {
+          "file": "experiments/tla-conformance/authority-contract-composition-r113/evidence.json",
+          "sha256": "e3ab9476d94052307b4b0d0542a43c21a30ea9f9513d034b95014f66222f64c1"
+        },
+        "finalHeadTransport": {
+          "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
+          "sha256": "4f97bb139e09506a9875a579f4547676df0f3ee4a8efeb8b187aca76b813b0bb",
+          "contentSha256": "195da88c26d3beae0ddcc5652a114949d3b8cb5f7c182e49b31e9407eae8683e"
+        }
+      }
+    },
+    {
+      "surfaceKey": "type:src/authority.ts#InventoryAuthorityControl.enterShadow::call[0]",
+      "mode": "A",
+      "signatureHash": "b1280d1d1c2355137bc09042e483a9b3045ccaca395d44493b227d6aaff262f0",
+      "declaration": {
+        "file": "src/authority.ts",
+        "start": {
+          "offset": 17501,
+          "line": 424,
+          "column": 3
+        },
+        "end": {
+          "offset": 19052,
+          "line": 467,
+          "column": 4
+        },
+        "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+        "astHash": "817d2ba53d77514a5803f7851d175244cf84f82fa9a15f000960ce3e08d9f42a"
+      },
+      "semantics": {
+        "formal": {
+          "model": "AuthorityControllerQuotient",
+          "source": "experiments/tla-conformance/authority-projection-r113/AuthorityControllerQuotient.tla",
+          "sourceHash": "7beaedd0500e339c812e6ff0f48b6776332d4d9bcadb7f56ab6e1b52341ab28e",
+          "actions": [
+            "EnterShadow",
+            "RetryShadow"
+          ],
+          "completeStates": 212,
+          "completeEdgeOccurrences": 1900
+        },
+        "forwardReplay": {
+          "file": "experiments/tla-conformance/authority-projection-r113/graph-replay.json",
+          "sha256": "4aa693502d17d2fcdc57795d4bae81018e1e378b8c0be060dfd6d1d524809a9f"
+        },
+        "reverseAndDisabledDomain": {
+          "file": "experiments/tla-conformance/authority-projection-r113/reverse-domain.json",
+          "sha256": "39079338f116707e0b681fa9b325668838fa8fcf23379d9f8b8ab86b81b676b1",
+          "commandAttempts": 13616,
+          "accepted": 3776,
+          "rejected": 9840
+        },
+        "nativeBoundaryAndRevisionExhaustion": {
+          "file": "experiments/tla-conformance/authority-projection-r113/runtime-evidence.json",
+          "sha256": "1d3455d226a0d1469ac2ba4edf416a7019e7a96979a6ec2c40067ea4734ae001",
+          "rows": 78
+        },
+        "environment": {
+          "stateStore": {
+            "proofKind": "authority-state-store-environment-contract-v1",
+            "kind": "NO_SURFACE_CREDIT_ENVIRONMENT_CONTRACT",
+            "surfaceCredit": 0,
+            "currentContractSha256": "4a05796f24c4b25e56c6f4f2c4ee1dbb124051174311e0948b6f04c07de8dc60",
+            "externalSurfaces": [
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.compareAndSet::call[0]",
+                "signatureHash": "7641c8fdd5489564f876b29b1739fe004a812f16eaa8bb365144375cc79d3b33",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1512,
+                    "line": 39,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1635,
+                    "line": 42,
+                    "column": 23
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "6093bf9522a52474b23856826730a8ba35a4b4e9c181f7b6bf9886e890d96b45"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.create::call[0]",
+                "signatureHash": "bc461f97c1cf245c94c75c7d9ffb667ddf2655e12d22094651df7a7a2a90efce",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1335,
+                    "line": 35,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1429,
+                    "line": 37,
+                    "column": 46
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "13378644d84c01f29b1bd332fb56643185a3d8331ded19c868c94f2c5481c846"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.ensure::call[0]",
+                "signatureHash": "6d18d45b0313378eaf9187bcf3ef8bea265de20d6c7c80e5723b3b59da93e6c6",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1125,
+                    "line": 31,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1181,
+                    "line": 31,
+                    "column": 59
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "70d55fcfc99480b6e28b11fe92db3908582021ed04398dc6ac0e74287ed68d70"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.read::call[0]",
+                "signatureHash": "ea6c30a4f8940f7228a392bdfaab7dab25e4f6ba70c2f9e13f03d3135f5d86a6",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1230,
+                    "line": 33,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1286,
+                    "line": 33,
+                    "column": 59
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "3b868af0a7e1fab77119d42ae377d06edd8440ecefa43f5bc70b9c4344116423"
+                }
+              }
+            ],
+            "sourceImpliedGuarantees": [
+              "read returns the current primary-stored logical row at one linearization point",
+              "create is idempotent: absent row -> exact initial row + Created; existing row -> unchanged + Existing",
+              "compareAndSet atomically applies the replacement only when every expected scalar matches",
+              "ensure establishes the requested scalar schema before package use"
+            ],
+            "requiredAdapterPreconditions": [
+              "operations are linearizable with respect to one row-scoped logical state",
+              "ensure does not rewrite the authority row",
+              "compareAndSet false leaves the row unchanged and means the expected scalars did not all match at its linearization point",
+              "a successful compareAndSet persists the complete replacement patch before returning true",
+              "a rejected ensure/read/create/compareAndSet exposes no partial schema/row mutation to subsequent package operations"
+            ],
+            "finiteOracle": {
+              "logicalStates": 9,
+              "commandShapes": 33,
+              "successfulSteps": 297,
+              "failureAtomicRejectionSteps": 297,
+              "corruptAfterStepsRejected": 297,
+              "wrongResultStepsRejected": 270,
+              "rejectionMutationStepsRejected": 297,
+              "directKnownCounterexamplesRejected": 4
+            },
+            "consumerValidation": {
+              "realInventoryAuthorityControl": true,
+              "paths": [
+                "initialization ensure/create/read",
+                "certifyAdapter CAS/read",
+                "enterShadow CAS/read",
+                "enterDualRun CAS/read",
+                "authorizeCutover CAS/read",
+                "legacy writer admit/release CAS/read",
+                "claimFence CAS/read",
+                "failure-atomic CAS rejection propagation"
+              ]
+            },
+            "explicitNonClaims": [
+              "No InventoryAuthorityStateStore interface callable receives A/B/V surface credit.",
+              "No arbitrary application adapter implementation is certified by testing the reference/contract-backed store.",
+              "Package-owned AuthorityControl credit remains conditional until each consumer family explicitly binds this contract and its own complete semantics."
+            ],
+            "inputs": [
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/contract.test.ts",
+                "sha256": "039686c0ff931e76e391b4a3f8e088044f803a604fd0e7ff12071bcdcf3bf62e"
+              },
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/contract.ts",
+                "sha256": "705e3a8d2e26e6e6a9dfabe0c4821ef0db09612e8fa0180b44849d2c1a8a57df"
+              },
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/family.mjs",
+                "sha256": "12aa44c70a0047b174e63922656712f009673ad435bd67c6a434e5a79fc8e3db"
+              },
+              {
+                "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+                "sha256": "8d8854032e38a0df1044e5596c66d9a2b672277f357e361102b0b12c3d6952a0"
+              },
+              {
+                "file": "node_modules/typescript/package.json",
+                "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+              },
+              {
+                "file": "src/authority.ts",
+                "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+              }
+            ]
+          },
+          "successfulOrIdempotentTransitionsCoveredByR28": true,
+          "lostCasInterferenceCoveredByR28": true,
+          "contractAllowedStoreRejection": "failure-atomic method rejection with no package-owned durable transition",
+          "arbitraryStoreImplementationClaimed": false
+        }
+      },
+      "finalCurrentization": {
+        "kind": "EXACT_SOURCE_AND_AST_CARRY_FORWARD",
+        "source": {
+          "file": "src/authority.ts",
+          "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+        },
+        "authorityEvidence": {
+          "file": "experiments/tla-conformance/authority-contract-composition-r113/evidence.json",
+          "sha256": "e3ab9476d94052307b4b0d0542a43c21a30ea9f9513d034b95014f66222f64c1"
+        },
+        "finalHeadTransport": {
+          "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
+          "sha256": "4f97bb139e09506a9875a579f4547676df0f3ee4a8efeb8b187aca76b813b0bb",
+          "contentSha256": "195da88c26d3beae0ddcc5652a114949d3b8cb5f7c182e49b31e9407eae8683e"
+        }
+      }
+    },
+    {
+      "surfaceKey": "type:src/authority.ts#InventoryAuthorityControl.markCompatibilityProjectionApplied::call[0]",
+      "mode": "A",
+      "signatureHash": "7bfc5d78f8838ba20afc3394113998674a4ce6148815ae8ed71704641590fe8e",
+      "declaration": {
+        "file": "src/authority.ts",
+        "start": {
+          "offset": 41780,
+          "line": 1132,
+          "column": 3
+        },
+        "end": {
+          "offset": 42280,
+          "line": 1145,
+          "column": 4
+        },
+        "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+        "astHash": "4b04e78787c1cfc19e6b4354a94b9e4a7ea0e4e8bea87e7320b00caeaa93372b"
+      },
+      "semantics": {
+        "formal": {
+          "model": "AuthorityControllerQuotient",
+          "source": "experiments/tla-conformance/authority-projection-r113/AuthorityControllerQuotient.tla",
+          "sourceHash": "7beaedd0500e339c812e6ff0f48b6776332d4d9bcadb7f56ab6e1b52341ab28e",
+          "actions": [
+            "ProjectionApplied",
+            "ProjectionStale"
+          ],
+          "completeStates": 212,
+          "completeEdgeOccurrences": 1900
+        },
+        "forwardReplay": {
+          "file": "experiments/tla-conformance/authority-projection-r113/graph-replay.json",
+          "sha256": "4aa693502d17d2fcdc57795d4bae81018e1e378b8c0be060dfd6d1d524809a9f"
+        },
+        "reverseAndDisabledDomain": {
+          "file": "experiments/tla-conformance/authority-projection-r113/reverse-domain.json",
+          "sha256": "39079338f116707e0b681fa9b325668838fa8fcf23379d9f8b8ab86b81b676b1",
+          "commandAttempts": 13616,
+          "accepted": 3776,
+          "rejected": 9840
+        },
+        "nativeBoundaryAndRevisionExhaustion": {
+          "file": "experiments/tla-conformance/authority-projection-r113/runtime-evidence.json",
+          "sha256": "1d3455d226a0d1469ac2ba4edf416a7019e7a96979a6ec2c40067ea4734ae001",
+          "rows": 78
+        },
+        "environment": {
+          "stateStore": {
+            "proofKind": "authority-state-store-environment-contract-v1",
+            "kind": "NO_SURFACE_CREDIT_ENVIRONMENT_CONTRACT",
+            "surfaceCredit": 0,
+            "currentContractSha256": "4a05796f24c4b25e56c6f4f2c4ee1dbb124051174311e0948b6f04c07de8dc60",
+            "externalSurfaces": [
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.compareAndSet::call[0]",
+                "signatureHash": "7641c8fdd5489564f876b29b1739fe004a812f16eaa8bb365144375cc79d3b33",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1512,
+                    "line": 39,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1635,
+                    "line": 42,
+                    "column": 23
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "6093bf9522a52474b23856826730a8ba35a4b4e9c181f7b6bf9886e890d96b45"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.create::call[0]",
+                "signatureHash": "bc461f97c1cf245c94c75c7d9ffb667ddf2655e12d22094651df7a7a2a90efce",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1335,
+                    "line": 35,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1429,
+                    "line": 37,
+                    "column": 46
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "13378644d84c01f29b1bd332fb56643185a3d8331ded19c868c94f2c5481c846"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.ensure::call[0]",
+                "signatureHash": "6d18d45b0313378eaf9187bcf3ef8bea265de20d6c7c80e5723b3b59da93e6c6",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1125,
+                    "line": 31,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1181,
+                    "line": 31,
+                    "column": 59
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "70d55fcfc99480b6e28b11fe92db3908582021ed04398dc6ac0e74287ed68d70"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.read::call[0]",
+                "signatureHash": "ea6c30a4f8940f7228a392bdfaab7dab25e4f6ba70c2f9e13f03d3135f5d86a6",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1230,
+                    "line": 33,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1286,
+                    "line": 33,
+                    "column": 59
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "3b868af0a7e1fab77119d42ae377d06edd8440ecefa43f5bc70b9c4344116423"
+                }
+              }
+            ],
+            "sourceImpliedGuarantees": [
+              "read returns the current primary-stored logical row at one linearization point",
+              "create is idempotent: absent row -> exact initial row + Created; existing row -> unchanged + Existing",
+              "compareAndSet atomically applies the replacement only when every expected scalar matches",
+              "ensure establishes the requested scalar schema before package use"
+            ],
+            "requiredAdapterPreconditions": [
+              "operations are linearizable with respect to one row-scoped logical state",
+              "ensure does not rewrite the authority row",
+              "compareAndSet false leaves the row unchanged and means the expected scalars did not all match at its linearization point",
+              "a successful compareAndSet persists the complete replacement patch before returning true",
+              "a rejected ensure/read/create/compareAndSet exposes no partial schema/row mutation to subsequent package operations"
+            ],
+            "finiteOracle": {
+              "logicalStates": 9,
+              "commandShapes": 33,
+              "successfulSteps": 297,
+              "failureAtomicRejectionSteps": 297,
+              "corruptAfterStepsRejected": 297,
+              "wrongResultStepsRejected": 270,
+              "rejectionMutationStepsRejected": 297,
+              "directKnownCounterexamplesRejected": 4
+            },
+            "consumerValidation": {
+              "realInventoryAuthorityControl": true,
+              "paths": [
+                "initialization ensure/create/read",
+                "certifyAdapter CAS/read",
+                "enterShadow CAS/read",
+                "enterDualRun CAS/read",
+                "authorizeCutover CAS/read",
+                "legacy writer admit/release CAS/read",
+                "claimFence CAS/read",
+                "failure-atomic CAS rejection propagation"
+              ]
+            },
+            "explicitNonClaims": [
+              "No InventoryAuthorityStateStore interface callable receives A/B/V surface credit.",
+              "No arbitrary application adapter implementation is certified by testing the reference/contract-backed store.",
+              "Package-owned AuthorityControl credit remains conditional until each consumer family explicitly binds this contract and its own complete semantics."
+            ],
+            "inputs": [
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/contract.test.ts",
+                "sha256": "039686c0ff931e76e391b4a3f8e088044f803a604fd0e7ff12071bcdcf3bf62e"
+              },
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/contract.ts",
+                "sha256": "705e3a8d2e26e6e6a9dfabe0c4821ef0db09612e8fa0180b44849d2c1a8a57df"
+              },
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/family.mjs",
+                "sha256": "12aa44c70a0047b174e63922656712f009673ad435bd67c6a434e5a79fc8e3db"
+              },
+              {
+                "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+                "sha256": "8d8854032e38a0df1044e5596c66d9a2b672277f357e361102b0b12c3d6952a0"
+              },
+              {
+                "file": "node_modules/typescript/package.json",
+                "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+              },
+              {
+                "file": "src/authority.ts",
+                "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+              }
+            ]
+          },
+          "successfulOrIdempotentTransitionsCoveredByR28": true,
+          "lostCasInterferenceCoveredByR28": true,
+          "contractAllowedStoreRejection": "failure-atomic method rejection with no package-owned durable transition",
+          "arbitraryStoreImplementationClaimed": false
+        }
+      },
+      "finalCurrentization": {
+        "kind": "EXACT_SOURCE_AND_AST_CARRY_FORWARD",
+        "source": {
+          "file": "src/authority.ts",
+          "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+        },
+        "authorityEvidence": {
+          "file": "experiments/tla-conformance/authority-contract-composition-r113/evidence.json",
+          "sha256": "e3ab9476d94052307b4b0d0542a43c21a30ea9f9513d034b95014f66222f64c1"
+        },
+        "finalHeadTransport": {
+          "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
+          "sha256": "4f97bb139e09506a9875a579f4547676df0f3ee4a8efeb8b187aca76b813b0bb",
+          "contentSha256": "195da88c26d3beae0ddcc5652a114949d3b8cb5f7c182e49b31e9407eae8683e"
+        }
+      }
+    },
+    {
+      "surfaceKey": "type:src/authority.ts#InventoryAuthorityControl.markCompatibilityProjectionFailed::call[0]",
+      "mode": "A",
+      "signatureHash": "e77e4d9e8e48d9d58f34dac9394839f0293d77b81542deea613d998e2e5806ae",
+      "declaration": {
+        "file": "src/authority.ts",
+        "start": {
+          "offset": 42365,
+          "line": 1148,
+          "column": 3
+        },
+        "end": {
+          "offset": 43008,
+          "line": 1167,
+          "column": 4
+        },
+        "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+        "astHash": "6b398d6acbfb1ee34a0c68b4eae2d42e12599765a440ebe23818803a791328f0"
+      },
+      "semantics": {
+        "formal": {
+          "model": "AuthorityControllerQuotient",
+          "source": "experiments/tla-conformance/authority-projection-r113/AuthorityControllerQuotient.tla",
+          "sourceHash": "7beaedd0500e339c812e6ff0f48b6776332d4d9bcadb7f56ab6e1b52341ab28e",
+          "actions": [
+            "ProjectionFailed",
+            "ProjectionStale"
+          ],
+          "completeStates": 212,
+          "completeEdgeOccurrences": 1900
+        },
+        "forwardReplay": {
+          "file": "experiments/tla-conformance/authority-projection-r113/graph-replay.json",
+          "sha256": "4aa693502d17d2fcdc57795d4bae81018e1e378b8c0be060dfd6d1d524809a9f"
+        },
+        "reverseAndDisabledDomain": {
+          "file": "experiments/tla-conformance/authority-projection-r113/reverse-domain.json",
+          "sha256": "39079338f116707e0b681fa9b325668838fa8fcf23379d9f8b8ab86b81b676b1",
+          "commandAttempts": 13616,
+          "accepted": 3776,
+          "rejected": 9840
+        },
+        "nativeBoundaryAndRevisionExhaustion": {
+          "file": "experiments/tla-conformance/authority-projection-r113/runtime-evidence.json",
+          "sha256": "1d3455d226a0d1469ac2ba4edf416a7019e7a96979a6ec2c40067ea4734ae001",
+          "rows": 78
+        },
+        "environment": {
+          "stateStore": {
+            "proofKind": "authority-state-store-environment-contract-v1",
+            "kind": "NO_SURFACE_CREDIT_ENVIRONMENT_CONTRACT",
+            "surfaceCredit": 0,
+            "currentContractSha256": "4a05796f24c4b25e56c6f4f2c4ee1dbb124051174311e0948b6f04c07de8dc60",
+            "externalSurfaces": [
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.compareAndSet::call[0]",
+                "signatureHash": "7641c8fdd5489564f876b29b1739fe004a812f16eaa8bb365144375cc79d3b33",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1512,
+                    "line": 39,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1635,
+                    "line": 42,
+                    "column": 23
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "6093bf9522a52474b23856826730a8ba35a4b4e9c181f7b6bf9886e890d96b45"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.create::call[0]",
+                "signatureHash": "bc461f97c1cf245c94c75c7d9ffb667ddf2655e12d22094651df7a7a2a90efce",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1335,
+                    "line": 35,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1429,
+                    "line": 37,
+                    "column": 46
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "13378644d84c01f29b1bd332fb56643185a3d8331ded19c868c94f2c5481c846"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.ensure::call[0]",
+                "signatureHash": "6d18d45b0313378eaf9187bcf3ef8bea265de20d6c7c80e5723b3b59da93e6c6",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1125,
+                    "line": 31,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1181,
+                    "line": 31,
+                    "column": 59
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "70d55fcfc99480b6e28b11fe92db3908582021ed04398dc6ac0e74287ed68d70"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.read::call[0]",
+                "signatureHash": "ea6c30a4f8940f7228a392bdfaab7dab25e4f6ba70c2f9e13f03d3135f5d86a6",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1230,
+                    "line": 33,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1286,
+                    "line": 33,
+                    "column": 59
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "3b868af0a7e1fab77119d42ae377d06edd8440ecefa43f5bc70b9c4344116423"
+                }
+              }
+            ],
+            "sourceImpliedGuarantees": [
+              "read returns the current primary-stored logical row at one linearization point",
+              "create is idempotent: absent row -> exact initial row + Created; existing row -> unchanged + Existing",
+              "compareAndSet atomically applies the replacement only when every expected scalar matches",
+              "ensure establishes the requested scalar schema before package use"
+            ],
+            "requiredAdapterPreconditions": [
+              "operations are linearizable with respect to one row-scoped logical state",
+              "ensure does not rewrite the authority row",
+              "compareAndSet false leaves the row unchanged and means the expected scalars did not all match at its linearization point",
+              "a successful compareAndSet persists the complete replacement patch before returning true",
+              "a rejected ensure/read/create/compareAndSet exposes no partial schema/row mutation to subsequent package operations"
+            ],
+            "finiteOracle": {
+              "logicalStates": 9,
+              "commandShapes": 33,
+              "successfulSteps": 297,
+              "failureAtomicRejectionSteps": 297,
+              "corruptAfterStepsRejected": 297,
+              "wrongResultStepsRejected": 270,
+              "rejectionMutationStepsRejected": 297,
+              "directKnownCounterexamplesRejected": 4
+            },
+            "consumerValidation": {
+              "realInventoryAuthorityControl": true,
+              "paths": [
+                "initialization ensure/create/read",
+                "certifyAdapter CAS/read",
+                "enterShadow CAS/read",
+                "enterDualRun CAS/read",
+                "authorizeCutover CAS/read",
+                "legacy writer admit/release CAS/read",
+                "claimFence CAS/read",
+                "failure-atomic CAS rejection propagation"
+              ]
+            },
+            "explicitNonClaims": [
+              "No InventoryAuthorityStateStore interface callable receives A/B/V surface credit.",
+              "No arbitrary application adapter implementation is certified by testing the reference/contract-backed store.",
+              "Package-owned AuthorityControl credit remains conditional until each consumer family explicitly binds this contract and its own complete semantics."
+            ],
+            "inputs": [
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/contract.test.ts",
+                "sha256": "039686c0ff931e76e391b4a3f8e088044f803a604fd0e7ff12071bcdcf3bf62e"
+              },
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/contract.ts",
+                "sha256": "705e3a8d2e26e6e6a9dfabe0c4821ef0db09612e8fa0180b44849d2c1a8a57df"
+              },
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/family.mjs",
+                "sha256": "12aa44c70a0047b174e63922656712f009673ad435bd67c6a434e5a79fc8e3db"
+              },
+              {
+                "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+                "sha256": "8d8854032e38a0df1044e5596c66d9a2b672277f357e361102b0b12c3d6952a0"
+              },
+              {
+                "file": "node_modules/typescript/package.json",
+                "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+              },
+              {
+                "file": "src/authority.ts",
+                "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+              }
+            ]
+          },
+          "successfulOrIdempotentTransitionsCoveredByR28": true,
+          "lostCasInterferenceCoveredByR28": true,
+          "contractAllowedStoreRejection": "failure-atomic method rejection with no package-owned durable transition",
+          "arbitraryStoreImplementationClaimed": false
+        }
+      },
+      "finalCurrentization": {
+        "kind": "EXACT_SOURCE_AND_AST_CARRY_FORWARD",
+        "source": {
+          "file": "src/authority.ts",
+          "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+        },
+        "authorityEvidence": {
+          "file": "experiments/tla-conformance/authority-contract-composition-r113/evidence.json",
+          "sha256": "e3ab9476d94052307b4b0d0542a43c21a30ea9f9513d034b95014f66222f64c1"
+        },
+        "finalHeadTransport": {
+          "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
+          "sha256": "4f97bb139e09506a9875a579f4547676df0f3ee4a8efeb8b187aca76b813b0bb",
+          "contentSha256": "195da88c26d3beae0ddcc5652a114949d3b8cb5f7c182e49b31e9407eae8683e"
+        }
+      }
+    },
+    {
+      "surfaceKey": "type:src/authority.ts#InventoryAuthorityControl.read::call[0]",
+      "mode": "B",
+      "signatureHash": "77dad7389d86f59274a290b3068da9bd24c13844b35f38e2be153d72462ca289",
+      "declaration": {
+        "file": "src/authority.ts",
+        "start": {
+          "offset": 15413,
+          "line": 365,
+          "column": 3
+        },
+        "end": {
+          "offset": 15675,
+          "line": 371,
+          "column": 4
+        },
+        "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+        "astHash": "ead9ce63311d78c91ecfd9a0bb0299a987ef2a7cf2231aef45ee38d48e1c2412"
+      },
+      "semantics": {
+        "formal": {
+          "model": "AuthorityControllerQuotient",
+          "source": "experiments/tla-conformance/authority-projection-r113/AuthorityControllerQuotient.tla",
+          "sourceHash": "7beaedd0500e339c812e6ff0f48b6776332d4d9bcadb7f56ab6e1b52341ab28e",
+          "variables": [
+            "mode",
+            "adapterCertified",
+            "cutoverAuthorized",
+            "activeAttempt",
+            "fenceToken",
+            "revisionClass",
+            "mismatchPresent",
+            "sourceBound",
+            "projectionStatus",
+            "projectionRevisionPositive",
+            "activationKind",
+            "authorityEverActivated"
+          ]
+        },
+        "source": {
+          "sourceFile": "src/authority.ts",
+          "sourceSha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+          "normalizedBodySha256": "8a1b62ff43419af3a9f4b88c36d76a6d6bfb4c2bffcebb2e6990f34fd6a45225",
+          "orderedBoundary": [
+            "await ready",
+            "store.read",
+            "missing-row reject",
+            "parseState(row, namespaceId)"
+          ]
+        },
+        "completeFormalProjection": {
+          "file": "experiments/tla-conformance/authority-contract-composition-r113/read-runtime.json",
+          "sha256": "d5771371fc5a79b9ed23b2260d0bb5ccdaaf08f8f93b9a62e529efa13b0d7a4a",
+          "formalStates": 212,
+          "storeReadCalls": 424
+        },
+        "completeDurableShapeDomain": {
+          "receipt": {
+            "file": "experiments/tla-conformance/authority-durable-shape-r113/receipt.json",
+            "sha256": "10699b876e98cad61c640ff7aab90aec321b6e6a3fe72775fd739f8114b0f271"
+          },
+          "oracle": {
+            "file": "test/authority-durable-shape.test.ts",
+            "sha256": "ba01b8edd9a5e932cb49eb273f7447e786658175e5352335d3f49239fca4e899"
+          },
+          "totalClasses": 46080,
+          "acceptedClasses": 35,
+          "rejectedClasses": 46045
+        },
+        "environment": {
+          "stateStore": {
+            "proofKind": "authority-state-store-environment-contract-v1",
+            "kind": "NO_SURFACE_CREDIT_ENVIRONMENT_CONTRACT",
+            "surfaceCredit": 0,
+            "currentContractSha256": "4a05796f24c4b25e56c6f4f2c4ee1dbb124051174311e0948b6f04c07de8dc60",
+            "externalSurfaces": [
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.compareAndSet::call[0]",
+                "signatureHash": "7641c8fdd5489564f876b29b1739fe004a812f16eaa8bb365144375cc79d3b33",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1512,
+                    "line": 39,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1635,
+                    "line": 42,
+                    "column": 23
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "6093bf9522a52474b23856826730a8ba35a4b4e9c181f7b6bf9886e890d96b45"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.create::call[0]",
+                "signatureHash": "bc461f97c1cf245c94c75c7d9ffb667ddf2655e12d22094651df7a7a2a90efce",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1335,
+                    "line": 35,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1429,
+                    "line": 37,
+                    "column": 46
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "13378644d84c01f29b1bd332fb56643185a3d8331ded19c868c94f2c5481c846"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.ensure::call[0]",
+                "signatureHash": "6d18d45b0313378eaf9187bcf3ef8bea265de20d6c7c80e5723b3b59da93e6c6",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1125,
+                    "line": 31,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1181,
+                    "line": 31,
+                    "column": 59
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "70d55fcfc99480b6e28b11fe92db3908582021ed04398dc6ac0e74287ed68d70"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.read::call[0]",
+                "signatureHash": "ea6c30a4f8940f7228a392bdfaab7dab25e4f6ba70c2f9e13f03d3135f5d86a6",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1230,
+                    "line": 33,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1286,
+                    "line": 33,
+                    "column": 59
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "3b868af0a7e1fab77119d42ae377d06edd8440ecefa43f5bc70b9c4344116423"
+                }
+              }
+            ],
+            "sourceImpliedGuarantees": [
+              "read returns the current primary-stored logical row at one linearization point",
+              "create is idempotent: absent row -> exact initial row + Created; existing row -> unchanged + Existing",
+              "compareAndSet atomically applies the replacement only when every expected scalar matches",
+              "ensure establishes the requested scalar schema before package use"
+            ],
+            "requiredAdapterPreconditions": [
+              "operations are linearizable with respect to one row-scoped logical state",
+              "ensure does not rewrite the authority row",
+              "compareAndSet false leaves the row unchanged and means the expected scalars did not all match at its linearization point",
+              "a successful compareAndSet persists the complete replacement patch before returning true",
+              "a rejected ensure/read/create/compareAndSet exposes no partial schema/row mutation to subsequent package operations"
+            ],
+            "finiteOracle": {
+              "logicalStates": 9,
+              "commandShapes": 33,
+              "successfulSteps": 297,
+              "failureAtomicRejectionSteps": 297,
+              "corruptAfterStepsRejected": 297,
+              "wrongResultStepsRejected": 270,
+              "rejectionMutationStepsRejected": 297,
+              "directKnownCounterexamplesRejected": 4
+            },
+            "consumerValidation": {
+              "realInventoryAuthorityControl": true,
+              "paths": [
+                "initialization ensure/create/read",
+                "certifyAdapter CAS/read",
+                "enterShadow CAS/read",
+                "enterDualRun CAS/read",
+                "authorizeCutover CAS/read",
+                "legacy writer admit/release CAS/read",
+                "claimFence CAS/read",
+                "failure-atomic CAS rejection propagation"
+              ]
+            },
+            "explicitNonClaims": [
+              "No InventoryAuthorityStateStore interface callable receives A/B/V surface credit.",
+              "No arbitrary application adapter implementation is certified by testing the reference/contract-backed store.",
+              "Package-owned AuthorityControl credit remains conditional until each consumer family explicitly binds this contract and its own complete semantics."
+            ],
+            "inputs": [
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/contract.test.ts",
+                "sha256": "039686c0ff931e76e391b4a3f8e088044f803a604fd0e7ff12071bcdcf3bf62e"
+              },
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/contract.ts",
+                "sha256": "705e3a8d2e26e6e6a9dfabe0c4821ef0db09612e8fa0180b44849d2c1a8a57df"
+              },
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/family.mjs",
+                "sha256": "12aa44c70a0047b174e63922656712f009673ad435bd67c6a434e5a79fc8e3db"
+              },
+              {
+                "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+                "sha256": "8d8854032e38a0df1044e5596c66d9a2b672277f357e361102b0b12c3d6952a0"
+              },
+              {
+                "file": "node_modules/typescript/package.json",
+                "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+              },
+              {
+                "file": "src/authority.ts",
+                "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+              }
+            ]
+          },
+          "readGuarantee": "read returns the current primary-stored logical row at one linearization point",
+          "storeRejection": "propagates before a package read result and is failure-atomic under the contract",
+          "arbitraryStoreImplementationClaimed": false
+        }
+      },
+      "finalCurrentization": {
+        "kind": "EXACT_SOURCE_AND_AST_CARRY_FORWARD",
+        "source": {
+          "file": "src/authority.ts",
+          "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+        },
+        "authorityEvidence": {
+          "file": "experiments/tla-conformance/authority-contract-composition-r113/evidence.json",
+          "sha256": "e3ab9476d94052307b4b0d0542a43c21a30ea9f9513d034b95014f66222f64c1"
+        },
+        "finalHeadTransport": {
+          "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
+          "sha256": "4f97bb139e09506a9875a579f4547676df0f3ee4a8efeb8b187aca76b813b0bb",
+          "contentSha256": "195da88c26d3beae0ddcc5652a114949d3b8cb5f7c182e49b31e9407eae8683e"
+        }
+      }
+    },
+    {
+      "surfaceKey": "type:src/authority.ts#InventoryAuthorityControl.recordDualRunMismatch::call[0]",
+      "mode": "A",
+      "signatureHash": "da7cd0f656db093d0145304875009601b2b6284bf670468b2b1c07aeb56de217",
+      "declaration": {
+        "file": "src/authority.ts",
+        "start": {
+          "offset": 21333,
+          "line": 535,
+          "column": 3
+        },
+        "end": {
+          "offset": 23272,
+          "line": 593,
+          "column": 4
+        },
+        "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+        "astHash": "fadfd1e10a1c2cca7c50458c8718268a5e95976560f1730963dd5b6a774436ff"
+      },
+      "semantics": {
+        "formal": {
+          "model": "AuthorityControllerQuotient",
+          "source": "experiments/tla-conformance/authority-projection-r113/AuthorityControllerQuotient.tla",
+          "sourceHash": "7beaedd0500e339c812e6ff0f48b6776332d4d9bcadb7f56ab6e1b52341ab28e",
+          "actions": [
+            "RecordMismatch",
+            "ReplayMismatch"
+          ],
+          "completeStates": 212,
+          "completeEdgeOccurrences": 1900
+        },
+        "forwardReplay": {
+          "file": "experiments/tla-conformance/authority-projection-r113/graph-replay.json",
+          "sha256": "4aa693502d17d2fcdc57795d4bae81018e1e378b8c0be060dfd6d1d524809a9f"
+        },
+        "reverseAndDisabledDomain": {
+          "file": "experiments/tla-conformance/authority-projection-r113/reverse-domain.json",
+          "sha256": "39079338f116707e0b681fa9b325668838fa8fcf23379d9f8b8ab86b81b676b1",
+          "commandAttempts": 13616,
+          "accepted": 3776,
+          "rejected": 9840
+        },
+        "nativeBoundaryAndRevisionExhaustion": {
+          "file": "experiments/tla-conformance/authority-projection-r113/runtime-evidence.json",
+          "sha256": "1d3455d226a0d1469ac2ba4edf416a7019e7a96979a6ec2c40067ea4734ae001",
+          "rows": 78
+        },
+        "environment": {
+          "stateStore": {
+            "proofKind": "authority-state-store-environment-contract-v1",
+            "kind": "NO_SURFACE_CREDIT_ENVIRONMENT_CONTRACT",
+            "surfaceCredit": 0,
+            "currentContractSha256": "4a05796f24c4b25e56c6f4f2c4ee1dbb124051174311e0948b6f04c07de8dc60",
+            "externalSurfaces": [
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.compareAndSet::call[0]",
+                "signatureHash": "7641c8fdd5489564f876b29b1739fe004a812f16eaa8bb365144375cc79d3b33",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1512,
+                    "line": 39,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1635,
+                    "line": 42,
+                    "column": 23
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "6093bf9522a52474b23856826730a8ba35a4b4e9c181f7b6bf9886e890d96b45"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.create::call[0]",
+                "signatureHash": "bc461f97c1cf245c94c75c7d9ffb667ddf2655e12d22094651df7a7a2a90efce",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1335,
+                    "line": 35,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1429,
+                    "line": 37,
+                    "column": 46
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "13378644d84c01f29b1bd332fb56643185a3d8331ded19c868c94f2c5481c846"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.ensure::call[0]",
+                "signatureHash": "6d18d45b0313378eaf9187bcf3ef8bea265de20d6c7c80e5723b3b59da93e6c6",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1125,
+                    "line": 31,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1181,
+                    "line": 31,
+                    "column": 59
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "70d55fcfc99480b6e28b11fe92db3908582021ed04398dc6ac0e74287ed68d70"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.read::call[0]",
+                "signatureHash": "ea6c30a4f8940f7228a392bdfaab7dab25e4f6ba70c2f9e13f03d3135f5d86a6",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1230,
+                    "line": 33,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1286,
+                    "line": 33,
+                    "column": 59
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "3b868af0a7e1fab77119d42ae377d06edd8440ecefa43f5bc70b9c4344116423"
+                }
+              }
+            ],
+            "sourceImpliedGuarantees": [
+              "read returns the current primary-stored logical row at one linearization point",
+              "create is idempotent: absent row -> exact initial row + Created; existing row -> unchanged + Existing",
+              "compareAndSet atomically applies the replacement only when every expected scalar matches",
+              "ensure establishes the requested scalar schema before package use"
+            ],
+            "requiredAdapterPreconditions": [
+              "operations are linearizable with respect to one row-scoped logical state",
+              "ensure does not rewrite the authority row",
+              "compareAndSet false leaves the row unchanged and means the expected scalars did not all match at its linearization point",
+              "a successful compareAndSet persists the complete replacement patch before returning true",
+              "a rejected ensure/read/create/compareAndSet exposes no partial schema/row mutation to subsequent package operations"
+            ],
+            "finiteOracle": {
+              "logicalStates": 9,
+              "commandShapes": 33,
+              "successfulSteps": 297,
+              "failureAtomicRejectionSteps": 297,
+              "corruptAfterStepsRejected": 297,
+              "wrongResultStepsRejected": 270,
+              "rejectionMutationStepsRejected": 297,
+              "directKnownCounterexamplesRejected": 4
+            },
+            "consumerValidation": {
+              "realInventoryAuthorityControl": true,
+              "paths": [
+                "initialization ensure/create/read",
+                "certifyAdapter CAS/read",
+                "enterShadow CAS/read",
+                "enterDualRun CAS/read",
+                "authorizeCutover CAS/read",
+                "legacy writer admit/release CAS/read",
+                "claimFence CAS/read",
+                "failure-atomic CAS rejection propagation"
+              ]
+            },
+            "explicitNonClaims": [
+              "No InventoryAuthorityStateStore interface callable receives A/B/V surface credit.",
+              "No arbitrary application adapter implementation is certified by testing the reference/contract-backed store.",
+              "Package-owned AuthorityControl credit remains conditional until each consumer family explicitly binds this contract and its own complete semantics."
+            ],
+            "inputs": [
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/contract.test.ts",
+                "sha256": "039686c0ff931e76e391b4a3f8e088044f803a604fd0e7ff12071bcdcf3bf62e"
+              },
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/contract.ts",
+                "sha256": "705e3a8d2e26e6e6a9dfabe0c4821ef0db09612e8fa0180b44849d2c1a8a57df"
+              },
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/family.mjs",
+                "sha256": "12aa44c70a0047b174e63922656712f009673ad435bd67c6a434e5a79fc8e3db"
+              },
+              {
+                "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+                "sha256": "8d8854032e38a0df1044e5596c66d9a2b672277f357e361102b0b12c3d6952a0"
+              },
+              {
+                "file": "node_modules/typescript/package.json",
+                "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+              },
+              {
+                "file": "src/authority.ts",
+                "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+              }
+            ]
+          },
+          "successfulOrIdempotentTransitionsCoveredByR28": true,
+          "lostCasInterferenceCoveredByR28": true,
+          "contractAllowedStoreRejection": "failure-atomic method rejection with no package-owned durable transition",
+          "arbitraryStoreImplementationClaimed": false
+        }
+      },
+      "finalCurrentization": {
+        "kind": "EXACT_SOURCE_AND_AST_CARRY_FORWARD",
+        "source": {
+          "file": "src/authority.ts",
+          "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+        },
+        "authorityEvidence": {
+          "file": "experiments/tla-conformance/authority-contract-composition-r113/evidence.json",
+          "sha256": "e3ab9476d94052307b4b0d0542a43c21a30ea9f9513d034b95014f66222f64c1"
+        },
+        "finalHeadTransport": {
+          "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
+          "sha256": "4f97bb139e09506a9875a579f4547676df0f3ee4a8efeb8b187aca76b813b0bb",
+          "contentSha256": "195da88c26d3beae0ddcc5652a114949d3b8cb5f7c182e49b31e9407eae8683e"
+        }
+      }
+    },
+    {
+      "surfaceKey": "type:src/authority.ts#InventoryAuthorityControl.releaseFence::call[0]",
+      "mode": "A",
+      "signatureHash": "24842b55246d24b56f4bbd15257aaa469b51b264e8a51ab5277a2a76ccbba7d7",
+      "declaration": {
+        "file": "src/authority.ts",
+        "start": {
+          "offset": 40514,
+          "line": 1096,
+          "column": 3
+        },
+        "end": {
+          "offset": 41683,
+          "line": 1129,
+          "column": 4
+        },
+        "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+        "astHash": "5d102efdf8ced963ed01af6c60d788fe67834c89086d1f0aec211a5781012cc1"
+      },
+      "semantics": {
+        "formal": {
+          "model": "AuthorityControllerQuotient",
+          "source": "experiments/tla-conformance/authority-projection-r113/AuthorityControllerQuotient.tla",
+          "sourceHash": "7beaedd0500e339c812e6ff0f48b6776332d4d9bcadb7f56ab6e1b52341ab28e",
+          "actions": [
+            "ReleaseFence",
+            "ReleaseFenceLegacy"
+          ],
+          "completeStates": 212,
+          "completeEdgeOccurrences": 1900
+        },
+        "forwardReplay": {
+          "file": "experiments/tla-conformance/authority-projection-r113/graph-replay.json",
+          "sha256": "4aa693502d17d2fcdc57795d4bae81018e1e378b8c0be060dfd6d1d524809a9f"
+        },
+        "reverseAndDisabledDomain": {
+          "file": "experiments/tla-conformance/authority-projection-r113/reverse-domain.json",
+          "sha256": "39079338f116707e0b681fa9b325668838fa8fcf23379d9f8b8ab86b81b676b1",
+          "commandAttempts": 13616,
+          "accepted": 3776,
+          "rejected": 9840
+        },
+        "nativeBoundaryAndRevisionExhaustion": {
+          "file": "experiments/tla-conformance/authority-projection-r113/runtime-evidence.json",
+          "sha256": "1d3455d226a0d1469ac2ba4edf416a7019e7a96979a6ec2c40067ea4734ae001",
+          "rows": 78
+        },
+        "environment": {
+          "stateStore": {
+            "proofKind": "authority-state-store-environment-contract-v1",
+            "kind": "NO_SURFACE_CREDIT_ENVIRONMENT_CONTRACT",
+            "surfaceCredit": 0,
+            "currentContractSha256": "4a05796f24c4b25e56c6f4f2c4ee1dbb124051174311e0948b6f04c07de8dc60",
+            "externalSurfaces": [
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.compareAndSet::call[0]",
+                "signatureHash": "7641c8fdd5489564f876b29b1739fe004a812f16eaa8bb365144375cc79d3b33",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1512,
+                    "line": 39,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1635,
+                    "line": 42,
+                    "column": 23
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "6093bf9522a52474b23856826730a8ba35a4b4e9c181f7b6bf9886e890d96b45"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.create::call[0]",
+                "signatureHash": "bc461f97c1cf245c94c75c7d9ffb667ddf2655e12d22094651df7a7a2a90efce",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1335,
+                    "line": 35,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1429,
+                    "line": 37,
+                    "column": 46
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "13378644d84c01f29b1bd332fb56643185a3d8331ded19c868c94f2c5481c846"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.ensure::call[0]",
+                "signatureHash": "6d18d45b0313378eaf9187bcf3ef8bea265de20d6c7c80e5723b3b59da93e6c6",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1125,
+                    "line": 31,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1181,
+                    "line": 31,
+                    "column": 59
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "70d55fcfc99480b6e28b11fe92db3908582021ed04398dc6ac0e74287ed68d70"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.read::call[0]",
+                "signatureHash": "ea6c30a4f8940f7228a392bdfaab7dab25e4f6ba70c2f9e13f03d3135f5d86a6",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1230,
+                    "line": 33,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1286,
+                    "line": 33,
+                    "column": 59
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "3b868af0a7e1fab77119d42ae377d06edd8440ecefa43f5bc70b9c4344116423"
+                }
+              }
+            ],
+            "sourceImpliedGuarantees": [
+              "read returns the current primary-stored logical row at one linearization point",
+              "create is idempotent: absent row -> exact initial row + Created; existing row -> unchanged + Existing",
+              "compareAndSet atomically applies the replacement only when every expected scalar matches",
+              "ensure establishes the requested scalar schema before package use"
+            ],
+            "requiredAdapterPreconditions": [
+              "operations are linearizable with respect to one row-scoped logical state",
+              "ensure does not rewrite the authority row",
+              "compareAndSet false leaves the row unchanged and means the expected scalars did not all match at its linearization point",
+              "a successful compareAndSet persists the complete replacement patch before returning true",
+              "a rejected ensure/read/create/compareAndSet exposes no partial schema/row mutation to subsequent package operations"
+            ],
+            "finiteOracle": {
+              "logicalStates": 9,
+              "commandShapes": 33,
+              "successfulSteps": 297,
+              "failureAtomicRejectionSteps": 297,
+              "corruptAfterStepsRejected": 297,
+              "wrongResultStepsRejected": 270,
+              "rejectionMutationStepsRejected": 297,
+              "directKnownCounterexamplesRejected": 4
+            },
+            "consumerValidation": {
+              "realInventoryAuthorityControl": true,
+              "paths": [
+                "initialization ensure/create/read",
+                "certifyAdapter CAS/read",
+                "enterShadow CAS/read",
+                "enterDualRun CAS/read",
+                "authorizeCutover CAS/read",
+                "legacy writer admit/release CAS/read",
+                "claimFence CAS/read",
+                "failure-atomic CAS rejection propagation"
+              ]
+            },
+            "explicitNonClaims": [
+              "No InventoryAuthorityStateStore interface callable receives A/B/V surface credit.",
+              "No arbitrary application adapter implementation is certified by testing the reference/contract-backed store.",
+              "Package-owned AuthorityControl credit remains conditional until each consumer family explicitly binds this contract and its own complete semantics."
+            ],
+            "inputs": [
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/contract.test.ts",
+                "sha256": "039686c0ff931e76e391b4a3f8e088044f803a604fd0e7ff12071bcdcf3bf62e"
+              },
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/contract.ts",
+                "sha256": "705e3a8d2e26e6e6a9dfabe0c4821ef0db09612e8fa0180b44849d2c1a8a57df"
+              },
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/family.mjs",
+                "sha256": "12aa44c70a0047b174e63922656712f009673ad435bd67c6a434e5a79fc8e3db"
+              },
+              {
+                "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+                "sha256": "8d8854032e38a0df1044e5596c66d9a2b672277f357e361102b0b12c3d6952a0"
+              },
+              {
+                "file": "node_modules/typescript/package.json",
+                "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+              },
+              {
+                "file": "src/authority.ts",
+                "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+              }
+            ]
+          },
+          "successfulOrIdempotentTransitionsCoveredByR28": true,
+          "lostCasInterferenceCoveredByR28": true,
+          "contractAllowedStoreRejection": "failure-atomic method rejection with no package-owned durable transition",
+          "arbitraryStoreImplementationClaimed": false
+        }
+      },
+      "finalCurrentization": {
+        "kind": "EXACT_SOURCE_AND_AST_CARRY_FORWARD",
+        "source": {
+          "file": "src/authority.ts",
+          "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+        },
+        "authorityEvidence": {
+          "file": "experiments/tla-conformance/authority-contract-composition-r113/evidence.json",
+          "sha256": "e3ab9476d94052307b4b0d0542a43c21a30ea9f9513d034b95014f66222f64c1"
+        },
+        "finalHeadTransport": {
+          "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
+          "sha256": "4f97bb139e09506a9875a579f4547676df0f3ee4a8efeb8b187aca76b813b0bb",
+          "contentSha256": "195da88c26d3beae0ddcc5652a114949d3b8cb5f7c182e49b31e9407eae8683e"
+        }
+      }
+    },
+    {
+      "surfaceKey": "type:src/authority.ts#InventoryAuthorityControl.releaseLegacyWriter::call[0]",
+      "mode": "A",
+      "signatureHash": "c5ecc3e61f9b1024ac4ca69b0755d054f39a50679688a2ddbbd1789ca8b59a14",
+      "declaration": {
+        "file": "src/authority.ts",
+        "start": {
+          "offset": 27367,
+          "line": 712,
+          "column": 3
+        },
+        "end": {
+          "offset": 29280,
+          "line": 760,
+          "column": 4
+        },
+        "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+        "astHash": "1173e677c6d4fa3ac8bd44a538ec1fed579cd7020a4193f8d0dde69de8e522f0"
+      },
+      "semantics": {
+        "formal": {
+          "model": "AuthorityControllerQuotient",
+          "source": "experiments/tla-conformance/authority-projection-r113/AuthorityControllerQuotient.tla",
+          "sourceHash": "7beaedd0500e339c812e6ff0f48b6776332d4d9bcadb7f56ab6e1b52341ab28e",
+          "actions": [
+            "ReleaseWriter",
+            "ReleaseMissingWriter"
+          ],
+          "completeStates": 212,
+          "completeEdgeOccurrences": 1900
+        },
+        "forwardReplay": {
+          "file": "experiments/tla-conformance/authority-projection-r113/graph-replay.json",
+          "sha256": "4aa693502d17d2fcdc57795d4bae81018e1e378b8c0be060dfd6d1d524809a9f"
+        },
+        "reverseAndDisabledDomain": {
+          "file": "experiments/tla-conformance/authority-projection-r113/reverse-domain.json",
+          "sha256": "39079338f116707e0b681fa9b325668838fa8fcf23379d9f8b8ab86b81b676b1",
+          "commandAttempts": 13616,
+          "accepted": 3776,
+          "rejected": 9840
+        },
+        "nativeBoundaryAndRevisionExhaustion": {
+          "file": "experiments/tla-conformance/authority-projection-r113/runtime-evidence.json",
+          "sha256": "1d3455d226a0d1469ac2ba4edf416a7019e7a96979a6ec2c40067ea4734ae001",
+          "rows": 78
+        },
+        "environment": {
+          "stateStore": {
+            "proofKind": "authority-state-store-environment-contract-v1",
+            "kind": "NO_SURFACE_CREDIT_ENVIRONMENT_CONTRACT",
+            "surfaceCredit": 0,
+            "currentContractSha256": "4a05796f24c4b25e56c6f4f2c4ee1dbb124051174311e0948b6f04c07de8dc60",
+            "externalSurfaces": [
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.compareAndSet::call[0]",
+                "signatureHash": "7641c8fdd5489564f876b29b1739fe004a812f16eaa8bb365144375cc79d3b33",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1512,
+                    "line": 39,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1635,
+                    "line": 42,
+                    "column": 23
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "6093bf9522a52474b23856826730a8ba35a4b4e9c181f7b6bf9886e890d96b45"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.create::call[0]",
+                "signatureHash": "bc461f97c1cf245c94c75c7d9ffb667ddf2655e12d22094651df7a7a2a90efce",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1335,
+                    "line": 35,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1429,
+                    "line": 37,
+                    "column": 46
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "13378644d84c01f29b1bd332fb56643185a3d8331ded19c868c94f2c5481c846"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.ensure::call[0]",
+                "signatureHash": "6d18d45b0313378eaf9187bcf3ef8bea265de20d6c7c80e5723b3b59da93e6c6",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1125,
+                    "line": 31,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1181,
+                    "line": 31,
+                    "column": 59
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "70d55fcfc99480b6e28b11fe92db3908582021ed04398dc6ac0e74287ed68d70"
+                }
+              },
+              {
+                "surfaceKey": "type:src/authority.ts#InventoryAuthorityStateStore.read::call[0]",
+                "signatureHash": "ea6c30a4f8940f7228a392bdfaab7dab25e4f6ba70c2f9e13f03d3135f5d86a6",
+                "declaration": {
+                  "file": "src/authority.ts",
+                  "start": {
+                    "offset": 1230,
+                    "line": 33,
+                    "column": 3
+                  },
+                  "end": {
+                    "offset": 1286,
+                    "line": 33,
+                    "column": 59
+                  },
+                  "sourceHash": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76",
+                  "astHash": "3b868af0a7e1fab77119d42ae377d06edd8440ecefa43f5bc70b9c4344116423"
+                }
+              }
+            ],
+            "sourceImpliedGuarantees": [
+              "read returns the current primary-stored logical row at one linearization point",
+              "create is idempotent: absent row -> exact initial row + Created; existing row -> unchanged + Existing",
+              "compareAndSet atomically applies the replacement only when every expected scalar matches",
+              "ensure establishes the requested scalar schema before package use"
+            ],
+            "requiredAdapterPreconditions": [
+              "operations are linearizable with respect to one row-scoped logical state",
+              "ensure does not rewrite the authority row",
+              "compareAndSet false leaves the row unchanged and means the expected scalars did not all match at its linearization point",
+              "a successful compareAndSet persists the complete replacement patch before returning true",
+              "a rejected ensure/read/create/compareAndSet exposes no partial schema/row mutation to subsequent package operations"
+            ],
+            "finiteOracle": {
+              "logicalStates": 9,
+              "commandShapes": 33,
+              "successfulSteps": 297,
+              "failureAtomicRejectionSteps": 297,
+              "corruptAfterStepsRejected": 297,
+              "wrongResultStepsRejected": 270,
+              "rejectionMutationStepsRejected": 297,
+              "directKnownCounterexamplesRejected": 4
+            },
+            "consumerValidation": {
+              "realInventoryAuthorityControl": true,
+              "paths": [
+                "initialization ensure/create/read",
+                "certifyAdapter CAS/read",
+                "enterShadow CAS/read",
+                "enterDualRun CAS/read",
+                "authorizeCutover CAS/read",
+                "legacy writer admit/release CAS/read",
+                "claimFence CAS/read",
+                "failure-atomic CAS rejection propagation"
+              ]
+            },
+            "explicitNonClaims": [
+              "No InventoryAuthorityStateStore interface callable receives A/B/V surface credit.",
+              "No arbitrary application adapter implementation is certified by testing the reference/contract-backed store.",
+              "Package-owned AuthorityControl credit remains conditional until each consumer family explicitly binds this contract and its own complete semantics."
+            ],
+            "inputs": [
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/contract.test.ts",
+                "sha256": "039686c0ff931e76e391b4a3f8e088044f803a604fd0e7ff12071bcdcf3bf62e"
+              },
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/contract.ts",
+                "sha256": "705e3a8d2e26e6e6a9dfabe0c4821ef0db09612e8fa0180b44849d2c1a8a57df"
+              },
+              {
+                "file": "experiments/tla-conformance/authority-store-contract-r31/family.mjs",
+                "sha256": "12aa44c70a0047b174e63922656712f009673ad435bd67c6a434e5a79fc8e3db"
+              },
+              {
+                "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+                "sha256": "8d8854032e38a0df1044e5596c66d9a2b672277f357e361102b0b12c3d6952a0"
+              },
+              {
+                "file": "node_modules/typescript/package.json",
+                "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+              },
+              {
+                "file": "src/authority.ts",
+                "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+              }
+            ]
+          },
+          "successfulOrIdempotentTransitionsCoveredByR28": true,
+          "lostCasInterferenceCoveredByR28": true,
+          "contractAllowedStoreRejection": "failure-atomic method rejection with no package-owned durable transition",
+          "arbitraryStoreImplementationClaimed": false
+        }
+      },
+      "finalCurrentization": {
+        "kind": "EXACT_SOURCE_AND_AST_CARRY_FORWARD",
+        "source": {
+          "file": "src/authority.ts",
+          "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+        },
+        "authorityEvidence": {
+          "file": "experiments/tla-conformance/authority-contract-composition-r113/evidence.json",
+          "sha256": "e3ab9476d94052307b4b0d0542a43c21a30ea9f9513d034b95014f66222f64c1"
+        },
+        "finalHeadTransport": {
+          "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
+          "sha256": "4f97bb139e09506a9875a579f4547676df0f3ee4a8efeb8b187aca76b813b0bb",
+          "contentSha256": "195da88c26d3beae0ddcc5652a114949d3b8cb5f7c182e49b31e9407eae8683e"
+        }
+      }
+    }
+  ]
+}

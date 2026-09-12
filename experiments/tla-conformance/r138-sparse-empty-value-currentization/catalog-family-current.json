@@ -1,0 +1,5094 @@
+{
+  "schemaVersion": 1,
+  "mode": "V",
+  "proofKind": "independent-catalog-snapshot-closed-equations-v1",
+  "surfaceDigest": "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a",
+  "domain": "Exact unmodified validated InventoryCatalog receivers and already-frozen native snapshot receivers; immutable plain data and standard unmodified ECMAScript built-ins.",
+  "excluded": "Storage acquisition, catalog construction/publication, unproved delegated summaries/allocation/packaging and mutable/proxied/custom receivers are not certified by these equations.",
+  "allAdmittedInputs": true,
+  "sampledInputs": 0,
+  "inputs": [
+    {
+      "file": "src/catalog.ts",
+      "sha256": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56"
+    },
+    {
+      "file": "src/facade.ts",
+      "sha256": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d"
+    },
+    {
+      "file": "src/model.ts",
+      "sha256": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122"
+    },
+    {
+      "file": "src/ordering.ts",
+      "sha256": "e72ac94e99b1b4914f3f6dec55583e401484a41ecadd051be788724c88f24cb9"
+    },
+    {
+      "file": "src/sparse-record.ts",
+      "sha256": "272a1f63afe9ed4c84cd76a4ce051b210b52e6e0a54cf47ec4f11a29979ada71"
+    },
+    {
+      "file": "experiments/tla-conformance/value-contracts/catalog-family.mjs",
+      "sha256": "32439d061232e266f53acd3b33025b97b172769ffe418964319177b8041cab9a"
+    },
+    {
+      "file": "experiments/tla-conformance/value-contracts/surface-binding.mjs",
+      "sha256": "619b37fe3a9bc9be22e8a0c2167187cfce987c7856280c6df0c36c5a230c3618"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-published-source-contracts.mjs",
+      "sha256": "d05ecad078de891073c82f4c523090382b608204269281464ca9a325ca3208b2"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-published-source-equations.mjs",
+      "sha256": "243e06ade88446247ab26d1bcec53fb70cccab6c5929f2013dc2aa995ae73ce8"
+    },
+    {
+      "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+      "sha256": "8d8854032e38a0df1044e5596c66d9a2b672277f357e361102b0b12c3d6952a0"
+    },
+    {
+      "file": "node_modules/typescript/package.json",
+      "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+    }
+  ],
+  "helperEquations": [
+    {
+      "key": "src/ordering.ts#compareInventoryIdentityText",
+      "declaration": {
+        "file": "src/ordering.ts",
+        "start": {
+          "offset": 89,
+          "line": 2,
+          "column": 1
+        },
+        "end": {
+          "offset": 225,
+          "line": 4,
+          "column": 2
+        },
+        "sourceHash": "e72ac94e99b1b4914f3f6dec55583e401484a41ecadd051be788724c88f24cb9",
+        "astHash": "039120ec7ddb7041a3b5cf7e9aada34a11c3822e591d42e95e1d8d2da6ed09a7"
+      },
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          },
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "return",
+              [
+                "conditional",
+                [
+                  "binary",
+                  "<",
+                  [
+                    "reference",
+                    "parameter:0"
+                  ],
+                  [
+                    "reference",
+                    "parameter:1"
+                  ]
+                ],
+                [
+                  "prefix",
+                  "-",
+                  [
+                    "number",
+                    "1"
+                  ]
+                ],
+                [
+                  "conditional",
+                  [
+                    "binary",
+                    ">",
+                    [
+                      "reference",
+                      "parameter:0"
+                    ],
+                    [
+                      "reference",
+                      "parameter:1"
+                    ]
+                  ],
+                  [
+                    "number",
+                    "1"
+                  ],
+                  [
+                    "number",
+                    "0"
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "key": "src/catalog.ts#compareTransformationRevision",
+      "declaration": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 128097,
+          "line": 3260,
+          "column": 1
+        },
+        "end": {
+          "offset": 128491,
+          "line": 3268,
+          "column": 2
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "5b8138deb65323c55b93c1f13c4a2a25240f6d1c9881b15f3cf6c691306dfa00"
+      },
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          },
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "bind",
+              "local:0",
+              [
+                "call",
+                [
+                  "reference",
+                  "source:compareInventoryIdentityText"
+                ],
+                [
+                  [
+                    "property",
+                    [
+                      "reference",
+                      "parameter:0"
+                    ],
+                    "transformationId",
+                    "required"
+                  ],
+                  [
+                    "property",
+                    [
+                      "reference",
+                      "parameter:1"
+                    ],
+                    "transformationId",
+                    "required"
+                  ]
+                ],
+                "required"
+              ]
+            ],
+            [
+              "return",
+              [
+                "conditional",
+                [
+                  "binary",
+                  "===",
+                  [
+                    "reference",
+                    "local:0"
+                  ],
+                  [
+                    "number",
+                    "0"
+                  ]
+                ],
+                [
+                  "call",
+                  [
+                    "reference",
+                    "source:compareInventoryIdentityText"
+                  ],
+                  [
+                    [
+                      "property",
+                      [
+                        "reference",
+                        "parameter:0"
+                      ],
+                      "revisionId",
+                      "required"
+                    ],
+                    [
+                      "property",
+                      [
+                        "reference",
+                        "parameter:1"
+                      ],
+                      "revisionId",
+                      "required"
+                    ]
+                  ],
+                  "required"
+                ],
+                [
+                  "reference",
+                  "local:0"
+                ]
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "key": "src/model.ts#assertInventoryIdentity",
+      "declaration": {
+        "file": "src/model.ts",
+        "start": {
+          "offset": 7257,
+          "line": 171,
+          "column": 1
+        },
+        "end": {
+          "offset": 7549,
+          "line": 177,
+          "column": 2
+        },
+        "sourceHash": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
+        "astHash": "49ee204a9b5196a95f60e0d297bc3591c673e47bcc7a463ecc8739b8b0e2c4b8"
+      },
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          },
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "bind",
+              "local:0",
+              [
+                "call",
+                [
+                  "property",
+                  [
+                    "reference",
+                    "parameter:0"
+                  ],
+                  "trim",
+                  "required"
+                ],
+                [],
+                "required"
+              ]
+            ],
+            [
+              "if",
+              [
+                "binary",
+                "===",
+                [
+                  "property",
+                  [
+                    "reference",
+                    "local:0"
+                  ],
+                  "length",
+                  "required"
+                ],
+                [
+                  "number",
+                  "0"
+                ]
+              ],
+              [
+                "throw",
+                [
+                  "new",
+                  [
+                    "reference",
+                    "source:Error"
+                  ],
+                  [
+                    [
+                      "template",
+                      "",
+                      [
+                        [
+                          [
+                            "reference",
+                            "parameter:1"
+                          ],
+                          " must not be empty."
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ],
+              [
+                "no-else"
+              ]
+            ],
+            [
+              "if",
+              [
+                "binary",
+                "!==",
+                [
+                  "reference",
+                  "local:0"
+                ],
+                [
+                  "reference",
+                  "parameter:0"
+                ]
+              ],
+              [
+                "throw",
+                [
+                  "new",
+                  [
+                    "reference",
+                    "source:Error"
+                  ],
+                  [
+                    [
+                      "template",
+                      "",
+                      [
+                        [
+                          [
+                            "reference",
+                            "parameter:1"
+                          ],
+                          " must not contain surrounding whitespace."
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ],
+              [
+                "no-else"
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "key": "src/model.ts#inventoryContainerIdentity",
+      "declaration": {
+        "file": "src/model.ts",
+        "start": {
+          "offset": 6169,
+          "line": 143,
+          "column": 1
+        },
+        "end": {
+          "offset": 6344,
+          "line": 146,
+          "column": 2
+        },
+        "sourceHash": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
+        "astHash": "3e083a0793e9395ad0b5a8cd5c78fefca235c821d493156ddef1f9c01f0fc6d2"
+      },
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "expression",
+              [
+                "call",
+                [
+                  "reference",
+                  "source:assertInventoryIdentity"
+                ],
+                [
+                  [
+                    "reference",
+                    "parameter:0"
+                  ],
+                  [
+                    "string",
+                    "containerId"
+                  ]
+                ],
+                "required"
+              ]
+            ],
+            [
+              "return",
+              [
+                "call",
+                [
+                  "property",
+                  [
+                    "reference",
+                    "source:JSON"
+                  ],
+                  "stringify",
+                  "required"
+                ],
+                [
+                  [
+                    "array",
+                    [
+                      [
+                        "reference",
+                        "parameter:0"
+                      ]
+                    ]
+                  ]
+                ],
+                "required"
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "key": "src/model.ts#inventoryLotIdentity",
+      "declaration": {
+        "file": "src/model.ts",
+        "start": {
+          "offset": 5064,
+          "line": 120,
+          "column": 1
+        },
+        "end": {
+          "offset": 5276,
+          "line": 124,
+          "column": 2
+        },
+        "sourceHash": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
+        "astHash": "8a89acef89e02b25eb172b43b2fc35c9a0fa0759cd09c1e9676b72f408f30e91"
+      },
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          },
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "expression",
+              [
+                "call",
+                [
+                  "reference",
+                  "source:assertInventoryIdentity"
+                ],
+                [
+                  [
+                    "reference",
+                    "parameter:0"
+                  ],
+                  [
+                    "string",
+                    "lot itemId"
+                  ]
+                ],
+                "required"
+              ]
+            ],
+            [
+              "expression",
+              [
+                "call",
+                [
+                  "reference",
+                  "source:assertInventoryIdentity"
+                ],
+                [
+                  [
+                    "reference",
+                    "parameter:1"
+                  ],
+                  [
+                    "string",
+                    "lotId"
+                  ]
+                ],
+                "required"
+              ]
+            ],
+            [
+              "return",
+              [
+                "call",
+                [
+                  "property",
+                  [
+                    "reference",
+                    "source:JSON"
+                  ],
+                  "stringify",
+                  "required"
+                ],
+                [
+                  [
+                    "array",
+                    [
+                      [
+                        "reference",
+                        "parameter:0"
+                      ],
+                      [
+                        "reference",
+                        "parameter:1"
+                      ]
+                    ]
+                  ]
+                ],
+                "required"
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "key": "src/facade.ts#compareInventoryCompositionRevision",
+      "declaration": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 311410,
+          "line": 8594,
+          "column": 1
+        },
+        "end": {
+          "offset": 311639,
+          "line": 8599,
+          "column": 2
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "3afd8e85c19ddba08db844167552810cd83326230f803e8b5adcb24b90492375"
+      },
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          },
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "return",
+              [
+                "call",
+                [
+                  "reference",
+                  "source:compareInventoryIdentityText"
+                ],
+                [
+                  [
+                    "property",
+                    [
+                      "reference",
+                      "parameter:0"
+                    ],
+                    "revisionId",
+                    "required"
+                  ],
+                  [
+                    "property",
+                    [
+                      "reference",
+                      "parameter:1"
+                    ],
+                    "revisionId",
+                    "required"
+                  ]
+                ],
+                "required"
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "key": "src/facade.ts#compareProjectedContainerDefinition",
+      "declaration": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 311712,
+          "line": 8602,
+          "column": 1
+        },
+        "end": {
+          "offset": 312019,
+          "line": 8607,
+          "column": 2
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "de2e92107aed43f309044c0c045784946da31e13535f5637629ab5bac4936cff"
+      },
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          },
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "return",
+              [
+                "call",
+                [
+                  "reference",
+                  "source:compareInventoryIdentityText"
+                ],
+                [
+                  [
+                    "call",
+                    [
+                      "reference",
+                      "source:inventoryContainerIdentity"
+                    ],
+                    [
+                      [
+                        "property",
+                        [
+                          "property",
+                          [
+                            "reference",
+                            "parameter:0"
+                          ],
+                          "definition",
+                          "required"
+                        ],
+                        "containerId",
+                        "required"
+                      ]
+                    ],
+                    "required"
+                  ],
+                  [
+                    "call",
+                    [
+                      "reference",
+                      "source:inventoryContainerIdentity"
+                    ],
+                    [
+                      [
+                        "property",
+                        [
+                          "property",
+                          [
+                            "reference",
+                            "parameter:1"
+                          ],
+                          "definition",
+                          "required"
+                        ],
+                        "containerId",
+                        "required"
+                      ]
+                    ],
+                    "required"
+                  ]
+                ],
+                "required"
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "key": "src/facade.ts#compareProjectedLotDefinition",
+      "declaration": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 313069,
+          "line": 8638,
+          "column": 1
+        },
+        "end": {
+          "offset": 313395,
+          "line": 8646,
+          "column": 2
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "26516c6aba27796dadc770cef6216792873b23fed5ae20ab564d6b64b4998eed"
+      },
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          },
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "return",
+              [
+                "call",
+                [
+                  "reference",
+                  "source:compareInventoryIdentityText"
+                ],
+                [
+                  [
+                    "call",
+                    [
+                      "reference",
+                      "source:inventoryLotIdentity"
+                    ],
+                    [
+                      [
+                        "property",
+                        [
+                          "property",
+                          [
+                            "reference",
+                            "parameter:0"
+                          ],
+                          "definition",
+                          "required"
+                        ],
+                        "itemId",
+                        "required"
+                      ],
+                      [
+                        "property",
+                        [
+                          "property",
+                          [
+                            "reference",
+                            "parameter:0"
+                          ],
+                          "definition",
+                          "required"
+                        ],
+                        "lotId",
+                        "required"
+                      ]
+                    ],
+                    "required"
+                  ],
+                  [
+                    "call",
+                    [
+                      "reference",
+                      "source:inventoryLotIdentity"
+                    ],
+                    [
+                      [
+                        "property",
+                        [
+                          "property",
+                          [
+                            "reference",
+                            "parameter:1"
+                          ],
+                          "definition",
+                          "required"
+                        ],
+                        "itemId",
+                        "required"
+                      ],
+                      [
+                        "property",
+                        [
+                          "property",
+                          [
+                            "reference",
+                            "parameter:1"
+                          ],
+                          "definition",
+                          "required"
+                        ],
+                        "lotId",
+                        "required"
+                      ]
+                    ],
+                    "required"
+                  ]
+                ],
+                "required"
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "key": "src/sparse-record.ts#inventorySparseRecordHas",
+      "declaration": {
+        "file": "src/sparse-record.ts",
+        "start": {
+          "offset": 291,
+          "line": 7,
+          "column": 1
+        },
+        "end": {
+          "offset": 466,
+          "line": 12,
+          "column": 2
+        },
+        "sourceHash": "272a1f63afe9ed4c84cd76a4ce051b210b52e6e0a54cf47ec4f11a29979ada71",
+        "astHash": "52fa70d221b333079c781ce72fab1167d30de9d2820945d932613a1f9078fbb9"
+      },
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          },
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "return",
+              [
+                "call",
+                [
+                  "property",
+                  [
+                    "property",
+                    [
+                      "property",
+                      [
+                        "reference",
+                        "source:Object"
+                      ],
+                      "prototype",
+                      "required"
+                    ],
+                    "hasOwnProperty",
+                    "required"
+                  ],
+                  "call",
+                  "required"
+                ],
+                [
+                  [
+                    "reference",
+                    "parameter:0"
+                  ],
+                  [
+                    "reference",
+                    "parameter:1"
+                  ]
+                ],
+                "required"
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "key": "src/sparse-record.ts#inventorySparseRecordValue",
+      "declaration": {
+        "file": "src/sparse-record.ts",
+        "start": {
+          "offset": 565,
+          "line": 15,
+          "column": 1
+        },
+        "end": {
+          "offset": 759,
+          "line": 20,
+          "column": 2
+        },
+        "sourceHash": "272a1f63afe9ed4c84cd76a4ce051b210b52e6e0a54cf47ec4f11a29979ada71",
+        "astHash": "11564b7d6fbe362292c30c78794c284f736a4b6d1b4af22550206794b32aff8f"
+      },
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          },
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "return",
+              [
+                "conditional",
+                [
+                  "call",
+                  [
+                    "reference",
+                    "source:inventorySparseRecordHas"
+                  ],
+                  [
+                    [
+                      "reference",
+                      "parameter:0"
+                    ],
+                    [
+                      "reference",
+                      "parameter:1"
+                    ]
+                  ],
+                  "required"
+                ],
+                [
+                  "element",
+                  [
+                    "reference",
+                    "parameter:0"
+                  ],
+                  [
+                    "reference",
+                    "parameter:1"
+                  ],
+                  "required"
+                ],
+                [
+                  "reference",
+                  "source:undefined"
+                ]
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "key": "src/facade.ts#inventoryProjectedLots",
+      "declaration": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 312118,
+          "line": 8610,
+          "column": 1
+        },
+        "end": {
+          "offset": 312995,
+          "line": 8635,
+          "column": 2
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "6f7027cceaee58baf80e1d8146e7351abf8725e634a4092a09830e5cf5135098"
+      },
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          },
+          {
+            "optional": true,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "bind",
+              "local:0",
+              [
+                "conditional",
+                [
+                  "binary",
+                  "===",
+                  [
+                    "reference",
+                    "parameter:1"
+                  ],
+                  [
+                    "reference",
+                    "source:undefined"
+                  ]
+                ],
+                [
+                  "call",
+                  [
+                    "property",
+                    [
+                      "reference",
+                      "source:Object"
+                    ],
+                    "keys",
+                    "required"
+                  ],
+                  [
+                    [
+                      "property",
+                      [
+                        "reference",
+                        "parameter:0"
+                      ],
+                      "lots",
+                      "required"
+                    ]
+                  ],
+                  "required"
+                ],
+                [
+                  "binary",
+                  "??",
+                  [
+                    "call",
+                    [
+                      "reference",
+                      "source:inventorySparseRecordValue"
+                    ],
+                    [
+                      [
+                        "property",
+                        [
+                          "reference",
+                          "parameter:0"
+                        ],
+                        "lotIdentitiesByItemId",
+                        "required"
+                      ],
+                      [
+                        "reference",
+                        "parameter:1"
+                      ]
+                    ],
+                    "required"
+                  ],
+                  [
+                    "array",
+                    []
+                  ]
+                ]
+              ]
+            ],
+            [
+              "bind",
+              "local:1",
+              [
+                "array",
+                []
+              ]
+            ],
+            [
+              "for-of",
+              "local:2",
+              [
+                "reference",
+                "local:0"
+              ],
+              [
+                "sequence",
+                [
+                  [
+                    "bind",
+                    "local:3",
+                    [
+                      "element",
+                      [
+                        "property",
+                        [
+                          "reference",
+                          "parameter:0"
+                        ],
+                        "lots",
+                        "required"
+                      ],
+                      [
+                        "reference",
+                        "local:2"
+                      ],
+                      "required"
+                    ]
+                  ],
+                  [
+                    "if",
+                    [
+                      "binary",
+                      "===",
+                      [
+                        "reference",
+                        "local:3"
+                      ],
+                      [
+                        "reference",
+                        "source:undefined"
+                      ]
+                    ],
+                    [
+                      "throw",
+                      [
+                        "new",
+                        [
+                          "reference",
+                          "source:Error"
+                        ],
+                        [
+                          [
+                            "template",
+                            "Inventory lot index references missing lot '",
+                            [
+                              [
+                                [
+                                  "reference",
+                                  "local:2"
+                                ],
+                                "'."
+                              ]
+                            ]
+                          ]
+                        ]
+                      ]
+                    ],
+                    [
+                      "no-else"
+                    ]
+                  ],
+                  [
+                    "if",
+                    [
+                      "binary",
+                      "&&",
+                      [
+                        "binary",
+                        "!==",
+                        [
+                          "reference",
+                          "parameter:1"
+                        ],
+                        [
+                          "reference",
+                          "source:undefined"
+                        ]
+                      ],
+                      [
+                        "binary",
+                        "!==",
+                        [
+                          "property",
+                          [
+                            "property",
+                            [
+                              "reference",
+                              "local:3"
+                            ],
+                            "definition",
+                            "required"
+                          ],
+                          "itemId",
+                          "required"
+                        ],
+                        [
+                          "reference",
+                          "parameter:1"
+                        ]
+                      ]
+                    ],
+                    [
+                      "throw",
+                      [
+                        "new",
+                        [
+                          "reference",
+                          "source:Error"
+                        ],
+                        [
+                          [
+                            "template",
+                            "Inventory lot index '",
+                            [
+                              [
+                                [
+                                  "reference",
+                                  "parameter:1"
+                                ],
+                                "' contains foreign lot '"
+                              ],
+                              [
+                                [
+                                  "reference",
+                                  "local:2"
+                                ],
+                                "'."
+                              ]
+                            ]
+                          ]
+                        ]
+                      ]
+                    ],
+                    [
+                      "no-else"
+                    ]
+                  ],
+                  [
+                    "expression",
+                    [
+                      "call",
+                      [
+                        "property",
+                        [
+                          "reference",
+                          "local:1"
+                        ],
+                        "push",
+                        "required"
+                      ],
+                      [
+                        [
+                          "reference",
+                          "local:3"
+                        ]
+                      ],
+                      "required"
+                    ]
+                  ]
+                ]
+              ]
+            ],
+            [
+              "expression",
+              [
+                "call",
+                [
+                  "property",
+                  [
+                    "reference",
+                    "local:1"
+                  ],
+                  "sort",
+                  "required"
+                ],
+                [
+                  [
+                    "reference",
+                    "source:compareProjectedLotDefinition"
+                  ]
+                ],
+                "required"
+              ]
+            ],
+            [
+              "return",
+              [
+                "reference",
+                "local:1"
+              ]
+            ]
+          ]
+        ]
+      }
+    }
+  ],
+  "proofs": [
+    {
+      "surfaceKey": "type:src/catalog.ts#InventoryCatalog.activeItem::call[0]",
+      "signatureHash": "028f073b6e2b9421b3da06523c4778b9214ffd2cf17b811cd61b87d8ea6452e1",
+      "declaration": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 65879,
+          "line": 1567,
+          "column": 3
+        },
+        "end": {
+          "offset": 66108,
+          "line": 1572,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "74eb782e7efc2c248811c568a216a34a49214805bf532cdc5bbcef6ca2468b6d"
+      },
+      "implementation": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 65879,
+          "line": 1567,
+          "column": 3
+        },
+        "end": {
+          "offset": 66108,
+          "line": 1572,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "74eb782e7efc2c248811c568a216a34a49214805bf532cdc5bbcef6ca2468b6d"
+      },
+      "relation": {
+        "kind": "EXACT_CLASS_METHOD",
+        "implementation": {
+          "file": "src/catalog.ts",
+          "start": {
+            "offset": 65879,
+            "line": 1567,
+            "column": 3
+          },
+          "end": {
+            "offset": 66108,
+            "line": 1572,
+            "column": 4
+          },
+          "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+          "astHash": "74eb782e7efc2c248811c568a216a34a49214805bf532cdc5bbcef6ca2468b6d"
+        }
+      },
+      "equation": "result = activeItemById[key] when present; otherwise throw the declared key-specific error",
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "bind",
+              "local:0",
+              [
+                "call",
+                [
+                  "property",
+                  [
+                    "property",
+                    [
+                      "this"
+                    ],
+                    "activeItemById",
+                    "required"
+                  ],
+                  "get",
+                  "required"
+                ],
+                [
+                  [
+                    "reference",
+                    "parameter:0"
+                  ]
+                ],
+                "required"
+              ]
+            ],
+            [
+              "if",
+              [
+                "binary",
+                "===",
+                [
+                  "reference",
+                  "local:0"
+                ],
+                [
+                  "reference",
+                  "source:undefined"
+                ]
+              ],
+              [
+                "throw",
+                [
+                  "new",
+                  [
+                    "reference",
+                    "source:Error"
+                  ],
+                  [
+                    [
+                      "template",
+                      "Unknown active inventory item '",
+                      [
+                        [
+                          [
+                            "reference",
+                            "parameter:0"
+                          ],
+                          "'."
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ],
+              [
+                "no-else"
+              ]
+            ],
+            [
+              "return",
+              [
+                "reference",
+                "local:0"
+              ]
+            ]
+          ]
+        ]
+      },
+      "dependencies": []
+    },
+    {
+      "surfaceKey": "type:src/catalog.ts#InventoryCatalog.itemRevision::call[0]",
+      "signatureHash": "d41fb26bbd9d81122bf2187a22667b2b5efd5813c20af70380d1b54c864966c5",
+      "declaration": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 66198,
+          "line": 1575,
+          "column": 3
+        },
+        "end": {
+          "offset": 66453,
+          "line": 1580,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "ed486f2e0f9444fa04e761884a3ad98049e510f5c155279e93f0eb0def14f13b"
+      },
+      "implementation": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 66198,
+          "line": 1575,
+          "column": 3
+        },
+        "end": {
+          "offset": 66453,
+          "line": 1580,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "ed486f2e0f9444fa04e761884a3ad98049e510f5c155279e93f0eb0def14f13b"
+      },
+      "relation": {
+        "kind": "EXACT_CLASS_METHOD",
+        "implementation": {
+          "file": "src/catalog.ts",
+          "start": {
+            "offset": 66198,
+            "line": 1575,
+            "column": 3
+          },
+          "end": {
+            "offset": 66453,
+            "line": 1580,
+            "column": 4
+          },
+          "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+          "astHash": "ed486f2e0f9444fa04e761884a3ad98049e510f5c155279e93f0eb0def14f13b"
+        }
+      },
+      "equation": "result = itemByRevisionId[key] when present; otherwise throw the declared key-specific error",
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "bind",
+              "local:0",
+              [
+                "call",
+                [
+                  "property",
+                  [
+                    "property",
+                    [
+                      "this"
+                    ],
+                    "itemByRevisionId",
+                    "required"
+                  ],
+                  "get",
+                  "required"
+                ],
+                [
+                  [
+                    "reference",
+                    "parameter:0"
+                  ]
+                ],
+                "required"
+              ]
+            ],
+            [
+              "if",
+              [
+                "binary",
+                "===",
+                [
+                  "reference",
+                  "local:0"
+                ],
+                [
+                  "reference",
+                  "source:undefined"
+                ]
+              ],
+              [
+                "throw",
+                [
+                  "new",
+                  [
+                    "reference",
+                    "source:Error"
+                  ],
+                  [
+                    [
+                      "template",
+                      "Unknown inventory item revision '",
+                      [
+                        [
+                          [
+                            "reference",
+                            "parameter:0"
+                          ],
+                          "'."
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ],
+              [
+                "no-else"
+              ]
+            ],
+            [
+              "return",
+              [
+                "reference",
+                "local:0"
+              ]
+            ]
+          ]
+        ]
+      },
+      "dependencies": []
+    },
+    {
+      "surfaceKey": "type:src/catalog.ts#InventoryCatalog.itemRevisionsForItem::call[0]",
+      "signatureHash": "b244d2bdee6222de79d2dd3f32532699be74aa4ba3ecf257b369a2ccbf9b805b",
+      "declaration": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 66545,
+          "line": 1583,
+          "column": 3
+        },
+        "end": {
+          "offset": 66844,
+          "line": 1591,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "4c86658a5d60b0dba97d5b55919de528432cc2768ff8f6b832bd97ad63850b7f"
+      },
+      "implementation": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 66545,
+          "line": 1583,
+          "column": 3
+        },
+        "end": {
+          "offset": 66844,
+          "line": 1591,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "4c86658a5d60b0dba97d5b55919de528432cc2768ff8f6b832bd97ad63850b7f"
+      },
+      "relation": {
+        "kind": "EXACT_CLASS_METHOD",
+        "implementation": {
+          "file": "src/catalog.ts",
+          "start": {
+            "offset": 66545,
+            "line": 1583,
+            "column": 3
+          },
+          "end": {
+            "offset": 66844,
+            "line": 1591,
+            "column": 4
+          },
+          "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+          "astHash": "4c86658a5d60b0dba97d5b55919de528432cc2768ff8f6b832bd97ad63850b7f"
+        }
+      },
+      "equation": "result = freeze(itemRevisions filtered by exact stable itemId)",
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "bind",
+              "local:0",
+              [
+                "call",
+                [
+                  "property",
+                  [
+                    "property",
+                    [
+                      "this"
+                    ],
+                    "itemRevisions",
+                    "required"
+                  ],
+                  "filter",
+                  "required"
+                ],
+                [
+                  [
+                    "lambda",
+                    1,
+                    [
+                      "binary",
+                      "===",
+                      [
+                        "property",
+                        [
+                          "reference",
+                          "lambda:0:0"
+                        ],
+                        "itemId",
+                        "required"
+                      ],
+                      [
+                        "reference",
+                        "parameter:0"
+                      ]
+                    ]
+                  ]
+                ],
+                "required"
+              ]
+            ],
+            [
+              "return",
+              [
+                "call",
+                [
+                  "property",
+                  [
+                    "reference",
+                    "source:Object"
+                  ],
+                  "freeze",
+                  "required"
+                ],
+                [
+                  [
+                    "reference",
+                    "local:0"
+                  ]
+                ],
+                "required"
+              ]
+            ]
+          ]
+        ]
+      },
+      "dependencies": []
+    },
+    {
+      "surfaceKey": "type:src/catalog.ts#InventoryCatalog.measurementAxis::call[0]",
+      "signatureHash": "7615045119b9e902217d95482a4ed1ccf11e3d5eaa6525fcfb599fea8f146cad",
+      "declaration": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 74182,
+          "line": 1794,
+          "column": 3
+        },
+        "end": {
+          "offset": 74603,
+          "line": 1805,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "1f71507a98ce05a8ed1eeeffc117372ece98c87e842d4eb45cba96613fc79943"
+      },
+      "implementation": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 74182,
+          "line": 1794,
+          "column": 3
+        },
+        "end": {
+          "offset": 74603,
+          "line": 1805,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "1f71507a98ce05a8ed1eeeffc117372ece98c87e842d4eb45cba96613fc79943"
+      },
+      "relation": {
+        "kind": "EXACT_CLASS_METHOD",
+        "implementation": {
+          "file": "src/catalog.ts",
+          "start": {
+            "offset": 74182,
+            "line": 1794,
+            "column": 3
+          },
+          "end": {
+            "offset": 74603,
+            "line": 1805,
+            "column": 4
+          },
+          "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+          "astHash": "1f71507a98ce05a8ed1eeeffc117372ece98c87e842d4eb45cba96613fc79943"
+        }
+      },
+      "equation": "result = primary axis when ids match, else first matching independent axis, else throw",
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          },
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "if",
+              [
+                "binary",
+                "===",
+                [
+                  "property",
+                  [
+                    "property",
+                    [
+                      "reference",
+                      "parameter:0"
+                    ],
+                    "primaryAxis",
+                    "required"
+                  ],
+                  "axisId",
+                  "required"
+                ],
+                [
+                  "reference",
+                  "parameter:1"
+                ]
+              ],
+              [
+                "return",
+                [
+                  "property",
+                  [
+                    "reference",
+                    "parameter:0"
+                  ],
+                  "primaryAxis",
+                  "required"
+                ]
+              ],
+              [
+                "no-else"
+              ]
+            ],
+            [
+              "for-of",
+              "local:0",
+              [
+                "property",
+                [
+                  "reference",
+                  "parameter:0"
+                ],
+                "independentAxes",
+                "required"
+              ],
+              [
+                "if",
+                [
+                  "binary",
+                  "===",
+                  [
+                    "property",
+                    [
+                      "reference",
+                      "local:0"
+                    ],
+                    "axisId",
+                    "required"
+                  ],
+                  [
+                    "reference",
+                    "parameter:1"
+                  ]
+                ],
+                [
+                  "return",
+                  [
+                    "reference",
+                    "local:0"
+                  ]
+                ],
+                [
+                  "no-else"
+                ]
+              ]
+            ],
+            [
+              "throw",
+              [
+                "new",
+                [
+                  "reference",
+                  "source:Error"
+                ],
+                [
+                  [
+                    "template",
+                    "Item revision '",
+                    [
+                      [
+                        [
+                          "property",
+                          [
+                            "reference",
+                            "parameter:0"
+                          ],
+                          "revisionId",
+                          "required"
+                        ],
+                        "' has no measurement axis '"
+                      ],
+                      [
+                        [
+                          "reference",
+                          "parameter:1"
+                        ],
+                        "'."
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      },
+      "dependencies": []
+    },
+    {
+      "surfaceKey": "type:src/catalog.ts#InventoryCatalog.packagingRevision::call[0]",
+      "signatureHash": "5dd6711cbc44d5431b8fc99e9971742928de303eb3ffe2f67c58f31c716e2141",
+      "declaration": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 66918,
+          "line": 1594,
+          "column": 3
+        },
+        "end": {
+          "offset": 67208,
+          "line": 1600,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "252017c83dce2889e9e24724c8c34097c8134c07a9fe9cef02135c71d52caa4e"
+      },
+      "implementation": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 66918,
+          "line": 1594,
+          "column": 3
+        },
+        "end": {
+          "offset": 67208,
+          "line": 1600,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "252017c83dce2889e9e24724c8c34097c8134c07a9fe9cef02135c71d52caa4e"
+      },
+      "relation": {
+        "kind": "EXACT_CLASS_METHOD",
+        "implementation": {
+          "file": "src/catalog.ts",
+          "start": {
+            "offset": 66918,
+            "line": 1594,
+            "column": 3
+          },
+          "end": {
+            "offset": 67208,
+            "line": 1600,
+            "column": 4
+          },
+          "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+          "astHash": "252017c83dce2889e9e24724c8c34097c8134c07a9fe9cef02135c71d52caa4e"
+        }
+      },
+      "equation": "result = packagingByRevisionId[key] when present; otherwise throw the declared key-specific error",
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "bind",
+              "local:0",
+              [
+                "call",
+                [
+                  "property",
+                  [
+                    "property",
+                    [
+                      "this"
+                    ],
+                    "packagingByRevisionId",
+                    "required"
+                  ],
+                  "get",
+                  "required"
+                ],
+                [
+                  [
+                    "reference",
+                    "parameter:0"
+                  ]
+                ],
+                "required"
+              ]
+            ],
+            [
+              "if",
+              [
+                "binary",
+                "===",
+                [
+                  "reference",
+                  "local:0"
+                ],
+                [
+                  "reference",
+                  "source:undefined"
+                ]
+              ],
+              [
+                "throw",
+                [
+                  "new",
+                  [
+                    "reference",
+                    "source:Error"
+                  ],
+                  [
+                    [
+                      "template",
+                      "Unknown inventory packaging revision '",
+                      [
+                        [
+                          [
+                            "reference",
+                            "parameter:0"
+                          ],
+                          "'."
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ],
+              [
+                "no-else"
+              ]
+            ],
+            [
+              "return",
+              [
+                "reference",
+                "local:0"
+              ]
+            ]
+          ]
+        ]
+      },
+      "dependencies": []
+    },
+    {
+      "surfaceKey": "type:src/catalog.ts#InventoryCatalog.activeComposition::call[0]",
+      "signatureHash": "bcd5b962dcbe79089c0591698ed17207d1d80915f2e561240a80960560b6515b",
+      "declaration": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 67302,
+          "line": 1603,
+          "column": 3
+        },
+        "end": {
+          "offset": 67649,
+          "line": 1613,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "e75fc9ee3600eb97487201475e530deafeb3188ff1404458e23e91501f96ca5c"
+      },
+      "implementation": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 67302,
+          "line": 1603,
+          "column": 3
+        },
+        "end": {
+          "offset": 67649,
+          "line": 1613,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "e75fc9ee3600eb97487201475e530deafeb3188ff1404458e23e91501f96ca5c"
+      },
+      "relation": {
+        "kind": "EXACT_CLASS_METHOD",
+        "implementation": {
+          "file": "src/catalog.ts",
+          "start": {
+            "offset": 67302,
+            "line": 1603,
+            "column": 3
+          },
+          "end": {
+            "offset": 67649,
+            "line": 1613,
+            "column": 4
+          },
+          "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+          "astHash": "e75fc9ee3600eb97487201475e530deafeb3188ff1404458e23e91501f96ca5c"
+        }
+      },
+      "equation": "result = activeCompositionById[key] when present; otherwise throw the declared key-specific error",
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "bind",
+              "local:0",
+              [
+                "call",
+                [
+                  "property",
+                  [
+                    "property",
+                    [
+                      "this"
+                    ],
+                    "activeCompositionById",
+                    "required"
+                  ],
+                  "get",
+                  "required"
+                ],
+                [
+                  [
+                    "reference",
+                    "parameter:0"
+                  ]
+                ],
+                "required"
+              ]
+            ],
+            [
+              "if",
+              [
+                "binary",
+                "===",
+                [
+                  "reference",
+                  "local:0"
+                ],
+                [
+                  "reference",
+                  "source:undefined"
+                ]
+              ],
+              [
+                "throw",
+                [
+                  "new",
+                  [
+                    "reference",
+                    "source:Error"
+                  ],
+                  [
+                    [
+                      "template",
+                      "Unknown active inventory composition '",
+                      [
+                        [
+                          [
+                            "reference",
+                            "parameter:0"
+                          ],
+                          "'."
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ],
+              [
+                "no-else"
+              ]
+            ],
+            [
+              "return",
+              [
+                "reference",
+                "local:0"
+              ]
+            ]
+          ]
+        ]
+      },
+      "dependencies": []
+    },
+    {
+      "surfaceKey": "type:src/catalog.ts#InventoryCatalog.compositionRevision::call[0]",
+      "signatureHash": "54b37d3814b77e1e7d3c6082f969408841bd02599b49dc206a67da344d73ced5",
+      "declaration": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 67734,
+          "line": 1616,
+          "column": 3
+        },
+        "end": {
+          "offset": 68086,
+          "line": 1626,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "6c41be96907c176f09fb7097978d07321f2bda19e236108fef8edb41ded05a76"
+      },
+      "implementation": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 67734,
+          "line": 1616,
+          "column": 3
+        },
+        "end": {
+          "offset": 68086,
+          "line": 1626,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "6c41be96907c176f09fb7097978d07321f2bda19e236108fef8edb41ded05a76"
+      },
+      "relation": {
+        "kind": "EXACT_CLASS_METHOD",
+        "implementation": {
+          "file": "src/catalog.ts",
+          "start": {
+            "offset": 67734,
+            "line": 1616,
+            "column": 3
+          },
+          "end": {
+            "offset": 68086,
+            "line": 1626,
+            "column": 4
+          },
+          "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+          "astHash": "6c41be96907c176f09fb7097978d07321f2bda19e236108fef8edb41ded05a76"
+        }
+      },
+      "equation": "result = compositionByRevisionId[key] when present; otherwise throw the declared key-specific error",
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "bind",
+              "local:0",
+              [
+                "call",
+                [
+                  "property",
+                  [
+                    "property",
+                    [
+                      "this"
+                    ],
+                    "compositionByRevisionId",
+                    "required"
+                  ],
+                  "get",
+                  "required"
+                ],
+                [
+                  [
+                    "reference",
+                    "parameter:0"
+                  ]
+                ],
+                "required"
+              ]
+            ],
+            [
+              "if",
+              [
+                "binary",
+                "===",
+                [
+                  "reference",
+                  "local:0"
+                ],
+                [
+                  "reference",
+                  "source:undefined"
+                ]
+              ],
+              [
+                "throw",
+                [
+                  "new",
+                  [
+                    "reference",
+                    "source:Error"
+                  ],
+                  [
+                    [
+                      "template",
+                      "Unknown inventory composition revision '",
+                      [
+                        [
+                          [
+                            "reference",
+                            "parameter:0"
+                          ],
+                          "'."
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ],
+              [
+                "no-else"
+              ]
+            ],
+            [
+              "return",
+              [
+                "reference",
+                "local:0"
+              ]
+            ]
+          ]
+        ]
+      },
+      "dependencies": []
+    },
+    {
+      "surfaceKey": "type:src/catalog.ts#InventoryCatalog.compositionForSourcePackagingRevision::call[0]",
+      "signatureHash": "328ee7f0ee40d8c49c9e0681bdb30040e0397062c2080c1e00b33f4c70f37053",
+      "declaration": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 68171,
+          "line": 1629,
+          "column": 3
+        },
+        "end": {
+          "offset": 68588,
+          "line": 1640,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "004a12c902aa876ea98c44565c0d41aa8ca6e3cc68b1eaa225a32582c076fa59"
+      },
+      "implementation": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 68171,
+          "line": 1629,
+          "column": 3
+        },
+        "end": {
+          "offset": 68588,
+          "line": 1640,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "004a12c902aa876ea98c44565c0d41aa8ca6e3cc68b1eaa225a32582c076fa59"
+      },
+      "relation": {
+        "kind": "EXACT_CLASS_METHOD",
+        "implementation": {
+          "file": "src/catalog.ts",
+          "start": {
+            "offset": 68171,
+            "line": 1629,
+            "column": 3
+          },
+          "end": {
+            "offset": 68588,
+            "line": 1640,
+            "column": 4
+          },
+          "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+          "astHash": "004a12c902aa876ea98c44565c0d41aa8ca6e3cc68b1eaa225a32582c076fa59"
+        }
+      },
+      "equation": "result = compositionBySourcePackagingRevisionId[key] when present; otherwise throw the declared key-specific error",
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "bind",
+              "local:0",
+              [
+                "call",
+                [
+                  "property",
+                  [
+                    "property",
+                    [
+                      "this"
+                    ],
+                    "compositionBySourcePackagingRevisionId",
+                    "required"
+                  ],
+                  "get",
+                  "required"
+                ],
+                [
+                  [
+                    "reference",
+                    "parameter:0"
+                  ]
+                ],
+                "required"
+              ]
+            ],
+            [
+              "if",
+              [
+                "binary",
+                "===",
+                [
+                  "reference",
+                  "local:0"
+                ],
+                [
+                  "reference",
+                  "source:undefined"
+                ]
+              ],
+              [
+                "throw",
+                [
+                  "new",
+                  [
+                    "reference",
+                    "source:Error"
+                  ],
+                  [
+                    [
+                      "template",
+                      "Inventory packaging revision '",
+                      [
+                        [
+                          [
+                            "reference",
+                            "parameter:0"
+                          ],
+                          "' has no heterogeneous composition."
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ],
+              [
+                "no-else"
+              ]
+            ],
+            [
+              "return",
+              [
+                "reference",
+                "local:0"
+              ]
+            ]
+          ]
+        ]
+      },
+      "dependencies": []
+    },
+    {
+      "surfaceKey": "type:src/catalog.ts#InventoryCatalog.activeTransformation::call[0]",
+      "signatureHash": "58e7361e4332222308ae438b7438d5bdba270a41e02dead8273eb58691fa56f9",
+      "declaration": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 68688,
+          "line": 1643,
+          "column": 3
+        },
+        "end": {
+          "offset": 69056,
+          "line": 1653,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "b99ea0f56a26c5eefcec765399245dd92bfd06724a22820a62a91a68bf4c02e1"
+      },
+      "implementation": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 68688,
+          "line": 1643,
+          "column": 3
+        },
+        "end": {
+          "offset": 69056,
+          "line": 1653,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "b99ea0f56a26c5eefcec765399245dd92bfd06724a22820a62a91a68bf4c02e1"
+      },
+      "relation": {
+        "kind": "EXACT_CLASS_METHOD",
+        "implementation": {
+          "file": "src/catalog.ts",
+          "start": {
+            "offset": 68688,
+            "line": 1643,
+            "column": 3
+          },
+          "end": {
+            "offset": 69056,
+            "line": 1653,
+            "column": 4
+          },
+          "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+          "astHash": "b99ea0f56a26c5eefcec765399245dd92bfd06724a22820a62a91a68bf4c02e1"
+        }
+      },
+      "equation": "result = activeTransformationById[key] when present; otherwise throw the declared key-specific error",
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "bind",
+              "local:0",
+              [
+                "call",
+                [
+                  "property",
+                  [
+                    "property",
+                    [
+                      "this"
+                    ],
+                    "activeTransformationById",
+                    "required"
+                  ],
+                  "get",
+                  "required"
+                ],
+                [
+                  [
+                    "reference",
+                    "parameter:0"
+                  ]
+                ],
+                "required"
+              ]
+            ],
+            [
+              "if",
+              [
+                "binary",
+                "===",
+                [
+                  "reference",
+                  "local:0"
+                ],
+                [
+                  "reference",
+                  "source:undefined"
+                ]
+              ],
+              [
+                "throw",
+                [
+                  "new",
+                  [
+                    "reference",
+                    "source:Error"
+                  ],
+                  [
+                    [
+                      "template",
+                      "Unknown active inventory transformation '",
+                      [
+                        [
+                          [
+                            "reference",
+                            "parameter:0"
+                          ],
+                          "'."
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ],
+              [
+                "no-else"
+              ]
+            ],
+            [
+              "return",
+              [
+                "reference",
+                "local:0"
+              ]
+            ]
+          ]
+        ]
+      },
+      "dependencies": []
+    },
+    {
+      "surfaceKey": "type:src/catalog.ts#InventoryCatalog.transformationRevision::call[0]",
+      "signatureHash": "e4f57c0aafa5ddb01e35e629a49cd8525db02e0d61f95d7dc54cfa9a71607e0c",
+      "declaration": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 69141,
+          "line": 1656,
+          "column": 3
+        },
+        "end": {
+          "offset": 69505,
+          "line": 1666,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "7a7c2bba43e5da650d3988ff10660bfb1e0ae8606deb6bf2a76c8942b5a55478"
+      },
+      "implementation": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 69141,
+          "line": 1656,
+          "column": 3
+        },
+        "end": {
+          "offset": 69505,
+          "line": 1666,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "7a7c2bba43e5da650d3988ff10660bfb1e0ae8606deb6bf2a76c8942b5a55478"
+      },
+      "relation": {
+        "kind": "EXACT_CLASS_METHOD",
+        "implementation": {
+          "file": "src/catalog.ts",
+          "start": {
+            "offset": 69141,
+            "line": 1656,
+            "column": 3
+          },
+          "end": {
+            "offset": 69505,
+            "line": 1666,
+            "column": 4
+          },
+          "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+          "astHash": "7a7c2bba43e5da650d3988ff10660bfb1e0ae8606deb6bf2a76c8942b5a55478"
+        }
+      },
+      "equation": "result = transformationByRevisionId[key] when present; otherwise throw the declared key-specific error",
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "bind",
+              "local:0",
+              [
+                "call",
+                [
+                  "property",
+                  [
+                    "property",
+                    [
+                      "this"
+                    ],
+                    "transformationByRevisionId",
+                    "required"
+                  ],
+                  "get",
+                  "required"
+                ],
+                [
+                  [
+                    "reference",
+                    "parameter:0"
+                  ]
+                ],
+                "required"
+              ]
+            ],
+            [
+              "if",
+              [
+                "binary",
+                "===",
+                [
+                  "reference",
+                  "local:0"
+                ],
+                [
+                  "reference",
+                  "source:undefined"
+                ]
+              ],
+              [
+                "throw",
+                [
+                  "new",
+                  [
+                    "reference",
+                    "source:Error"
+                  ],
+                  [
+                    [
+                      "template",
+                      "Unknown inventory transformation revision '",
+                      [
+                        [
+                          [
+                            "reference",
+                            "parameter:0"
+                          ],
+                          "'."
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ],
+              [
+                "no-else"
+              ]
+            ],
+            [
+              "return",
+              [
+                "reference",
+                "local:0"
+              ]
+            ]
+          ]
+        ]
+      },
+      "dependencies": []
+    },
+    {
+      "surfaceKey": "type:src/catalog.ts#InventoryCatalog.transformationsForItem::call[0]",
+      "signatureHash": "a7dadafbf709b7ce7edc3e3e9eb8d5f9631206f3237acb3839c4af865ca74145",
+      "declaration": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 69587,
+          "line": 1669,
+          "column": 3
+        },
+        "end": {
+          "offset": 70118,
+          "line": 1681,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "67a0ea83d3ebba02e67e52b9aae82a2309d308c87867efc3f696af29aaef9b6f"
+      },
+      "implementation": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 69587,
+          "line": 1669,
+          "column": 3
+        },
+        "end": {
+          "offset": 70118,
+          "line": 1681,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "67a0ea83d3ebba02e67e52b9aae82a2309d308c87867efc3f696af29aaef9b6f"
+      },
+      "relation": {
+        "kind": "EXACT_CLASS_METHOD",
+        "implementation": {
+          "file": "src/catalog.ts",
+          "start": {
+            "offset": 69587,
+            "line": 1669,
+            "column": 3
+          },
+          "end": {
+            "offset": 70118,
+            "line": 1681,
+            "column": 4
+          },
+          "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+          "astHash": "67a0ea83d3ebba02e67e52b9aae82a2309d308c87867efc3f696af29aaef9b6f"
+        }
+      },
+      "equation": "result = freeze(all retained transformations with any input/output revision owned by itemId)",
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "bind",
+              "local:0",
+              [
+                "call",
+                [
+                  "property",
+                  [
+                    "property",
+                    [
+                      "this"
+                    ],
+                    "transformationRevisions",
+                    "required"
+                  ],
+                  "filter",
+                  "required"
+                ],
+                [
+                  [
+                    "lambda",
+                    1,
+                    [
+                      "call",
+                      [
+                        "property",
+                        [
+                          "array",
+                          [
+                            [
+                              "spread",
+                              [
+                                "property",
+                                [
+                                  "reference",
+                                  "lambda:0:0"
+                                ],
+                                "inputs",
+                                "required"
+                              ]
+                            ],
+                            [
+                              "spread",
+                              [
+                                "property",
+                                [
+                                  "reference",
+                                  "lambda:0:0"
+                                ],
+                                "outputs",
+                                "required"
+                              ]
+                            ]
+                          ]
+                        ],
+                        "some",
+                        "required"
+                      ],
+                      [
+                        [
+                          "lambda",
+                          1,
+                          [
+                            "binary",
+                            "===",
+                            [
+                              "property",
+                              [
+                                "call",
+                                [
+                                  "property",
+                                  [
+                                    "this"
+                                  ],
+                                  "itemRevision",
+                                  "required"
+                                ],
+                                [
+                                  [
+                                    "property",
+                                    [
+                                      "reference",
+                                      "lambda:1:0"
+                                    ],
+                                    "itemRevisionId",
+                                    "required"
+                                  ]
+                                ],
+                                "required"
+                              ],
+                              "itemId",
+                              "required"
+                            ],
+                            [
+                              "reference",
+                              "parameter:0"
+                            ]
+                          ]
+                        ]
+                      ],
+                      "required"
+                    ]
+                  ]
+                ],
+                "required"
+              ]
+            ],
+            [
+              "return",
+              [
+                "call",
+                [
+                  "property",
+                  [
+                    "reference",
+                    "source:Object"
+                  ],
+                  "freeze",
+                  "required"
+                ],
+                [
+                  [
+                    "reference",
+                    "local:0"
+                  ]
+                ],
+                "required"
+              ]
+            ]
+          ]
+        ]
+      },
+      "dependencies": [
+        "src/catalog.ts#InventoryCatalog.itemRevision"
+      ]
+    },
+    {
+      "surfaceKey": "type:src/catalog.ts#InventoryCatalog.transformationsFromRevision::call[0]",
+      "signatureHash": "46622ff4d2958f9fb2109eafeab6cef555e1ed5f2789d38e0fb1550286cefc2e",
+      "declaration": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 70206,
+          "line": 1684,
+          "column": 3
+        },
+        "end": {
+          "offset": 70767,
+          "line": 1699,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "d61375666c34f3956ea056bf595c61e960aabc40cca7c8bc455500b96a7aeeac"
+      },
+      "implementation": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 70206,
+          "line": 1684,
+          "column": 3
+        },
+        "end": {
+          "offset": 70767,
+          "line": 1699,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "d61375666c34f3956ea056bf595c61e960aabc40cca7c8bc455500b96a7aeeac"
+      },
+      "relation": {
+        "kind": "EXACT_CLASS_METHOD",
+        "implementation": {
+          "file": "src/catalog.ts",
+          "start": {
+            "offset": 70206,
+            "line": 1684,
+            "column": 3
+          },
+          "end": {
+            "offset": 70767,
+            "line": 1699,
+            "column": 4
+          },
+          "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+          "astHash": "d61375666c34f3956ea056bf595c61e960aabc40cca7c8bc455500b96a7aeeac"
+        }
+      },
+      "equation": "result = freeze(sorted active transformations with an input matching the exact revision)",
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "bind",
+              "local:0",
+              [
+                "array",
+                []
+              ]
+            ],
+            [
+              "for-of",
+              "local:1",
+              [
+                "call",
+                [
+                  "property",
+                  [
+                    "property",
+                    [
+                      "this"
+                    ],
+                    "activeTransformationById",
+                    "required"
+                  ],
+                  "values",
+                  "required"
+                ],
+                [],
+                "required"
+              ],
+              [
+                "if",
+                [
+                  "call",
+                  [
+                    "property",
+                    [
+                      "property",
+                      [
+                        "reference",
+                        "local:1"
+                      ],
+                      "inputs",
+                      "required"
+                    ],
+                    "some",
+                    "required"
+                  ],
+                  [
+                    [
+                      "lambda",
+                      1,
+                      [
+                        "binary",
+                        "===",
+                        [
+                          "property",
+                          [
+                            "reference",
+                            "lambda:0:0"
+                          ],
+                          "itemRevisionId",
+                          "required"
+                        ],
+                        [
+                          "reference",
+                          "parameter:0"
+                        ]
+                      ]
+                    ]
+                  ],
+                  "required"
+                ],
+                [
+                  "expression",
+                  [
+                    "call",
+                    [
+                      "property",
+                      [
+                        "reference",
+                        "local:0"
+                      ],
+                      "push",
+                      "required"
+                    ],
+                    [
+                      [
+                        "reference",
+                        "local:1"
+                      ]
+                    ],
+                    "required"
+                  ]
+                ],
+                [
+                  "no-else"
+                ]
+              ]
+            ],
+            [
+              "expression",
+              [
+                "call",
+                [
+                  "property",
+                  [
+                    "reference",
+                    "local:0"
+                  ],
+                  "sort",
+                  "required"
+                ],
+                [
+                  [
+                    "reference",
+                    "source:compareTransformationRevision"
+                  ]
+                ],
+                "required"
+              ]
+            ],
+            [
+              "return",
+              [
+                "call",
+                [
+                  "property",
+                  [
+                    "reference",
+                    "source:Object"
+                  ],
+                  "freeze",
+                  "required"
+                ],
+                [
+                  [
+                    "reference",
+                    "local:0"
+                  ]
+                ],
+                "required"
+              ]
+            ]
+          ]
+        ]
+      },
+      "dependencies": [
+        "src/catalog.ts#compareTransformationRevision"
+      ]
+    },
+    {
+      "surfaceKey": "type:src/catalog.ts#InventoryCatalog.transformationsToRevision::call[0]",
+      "signatureHash": "46622ff4d2958f9fb2109eafeab6cef555e1ed5f2789d38e0fb1550286cefc2e",
+      "declaration": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 70855,
+          "line": 1702,
+          "column": 3
+        },
+        "end": {
+          "offset": 71416,
+          "line": 1717,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "8ae86e6037074bef0cee787762fbd0abbd021c4da81195e663b63d4e68c443d3"
+      },
+      "implementation": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 70855,
+          "line": 1702,
+          "column": 3
+        },
+        "end": {
+          "offset": 71416,
+          "line": 1717,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "8ae86e6037074bef0cee787762fbd0abbd021c4da81195e663b63d4e68c443d3"
+      },
+      "relation": {
+        "kind": "EXACT_CLASS_METHOD",
+        "implementation": {
+          "file": "src/catalog.ts",
+          "start": {
+            "offset": 70855,
+            "line": 1702,
+            "column": 3
+          },
+          "end": {
+            "offset": 71416,
+            "line": 1717,
+            "column": 4
+          },
+          "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+          "astHash": "8ae86e6037074bef0cee787762fbd0abbd021c4da81195e663b63d4e68c443d3"
+        }
+      },
+      "equation": "result = freeze(sorted active transformations with an output matching the exact revision)",
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "bind",
+              "local:0",
+              [
+                "array",
+                []
+              ]
+            ],
+            [
+              "for-of",
+              "local:1",
+              [
+                "call",
+                [
+                  "property",
+                  [
+                    "property",
+                    [
+                      "this"
+                    ],
+                    "activeTransformationById",
+                    "required"
+                  ],
+                  "values",
+                  "required"
+                ],
+                [],
+                "required"
+              ],
+              [
+                "if",
+                [
+                  "call",
+                  [
+                    "property",
+                    [
+                      "property",
+                      [
+                        "reference",
+                        "local:1"
+                      ],
+                      "outputs",
+                      "required"
+                    ],
+                    "some",
+                    "required"
+                  ],
+                  [
+                    [
+                      "lambda",
+                      1,
+                      [
+                        "binary",
+                        "===",
+                        [
+                          "property",
+                          [
+                            "reference",
+                            "lambda:0:0"
+                          ],
+                          "itemRevisionId",
+                          "required"
+                        ],
+                        [
+                          "reference",
+                          "parameter:0"
+                        ]
+                      ]
+                    ]
+                  ],
+                  "required"
+                ],
+                [
+                  "expression",
+                  [
+                    "call",
+                    [
+                      "property",
+                      [
+                        "reference",
+                        "local:0"
+                      ],
+                      "push",
+                      "required"
+                    ],
+                    [
+                      [
+                        "reference",
+                        "local:1"
+                      ]
+                    ],
+                    "required"
+                  ]
+                ],
+                [
+                  "no-else"
+                ]
+              ]
+            ],
+            [
+              "expression",
+              [
+                "call",
+                [
+                  "property",
+                  [
+                    "reference",
+                    "local:0"
+                  ],
+                  "sort",
+                  "required"
+                ],
+                [
+                  [
+                    "reference",
+                    "source:compareTransformationRevision"
+                  ]
+                ],
+                "required"
+              ]
+            ],
+            [
+              "return",
+              [
+                "call",
+                [
+                  "property",
+                  [
+                    "reference",
+                    "source:Object"
+                  ],
+                  "freeze",
+                  "required"
+                ],
+                [
+                  [
+                    "reference",
+                    "local:0"
+                  ]
+                ],
+                "required"
+              ]
+            ]
+          ]
+        ]
+      },
+      "dependencies": [
+        "src/catalog.ts#compareTransformationRevision"
+      ]
+    },
+    {
+      "surfaceKey": "type:src/catalog.ts#InventoryCatalog.transformationsBetweenRevisions::call[0]",
+      "signatureHash": "914c52eb63e6288341bbc40119d69e2177a217badc1f81b767a2fae9e5cb5d03",
+      "declaration": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 71508,
+          "line": 1720,
+          "column": 3
+        },
+        "end": {
+          "offset": 72051,
+          "line": 1734,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "1a081ea378497d39b38cf014d0a7bc0b0e49ec6a5e6878c1a9acbfd1e7679278"
+      },
+      "implementation": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 71508,
+          "line": 1720,
+          "column": 3
+        },
+        "end": {
+          "offset": 72051,
+          "line": 1734,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "1a081ea378497d39b38cf014d0a7bc0b0e49ec6a5e6878c1a9acbfd1e7679278"
+      },
+      "relation": {
+        "kind": "EXACT_CLASS_METHOD",
+        "implementation": {
+          "file": "src/catalog.ts",
+          "start": {
+            "offset": 71508,
+            "line": 1720,
+            "column": 3
+          },
+          "end": {
+            "offset": 72051,
+            "line": 1734,
+            "column": 4
+          },
+          "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+          "astHash": "1a081ea378497d39b38cf014d0a7bc0b0e49ec6a5e6878c1a9acbfd1e7679278"
+        }
+      },
+      "equation": "result = freeze(transformationsFromRevision(from) filtered by an exact matching output revision)",
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          },
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "return",
+              [
+                "call",
+                [
+                  "property",
+                  [
+                    "reference",
+                    "source:Object"
+                  ],
+                  "freeze",
+                  "required"
+                ],
+                [
+                  [
+                    "call",
+                    [
+                      "property",
+                      [
+                        "call",
+                        [
+                          "property",
+                          [
+                            "this"
+                          ],
+                          "transformationsFromRevision",
+                          "required"
+                        ],
+                        [
+                          [
+                            "reference",
+                            "parameter:0"
+                          ]
+                        ],
+                        "required"
+                      ],
+                      "filter",
+                      "required"
+                    ],
+                    [
+                      [
+                        "lambda",
+                        1,
+                        [
+                          "call",
+                          [
+                            "property",
+                            [
+                              "property",
+                              [
+                                "reference",
+                                "lambda:0:0"
+                              ],
+                              "outputs",
+                              "required"
+                            ],
+                            "some",
+                            "required"
+                          ],
+                          [
+                            [
+                              "lambda",
+                              1,
+                              [
+                                "binary",
+                                "===",
+                                [
+                                  "property",
+                                  [
+                                    "reference",
+                                    "lambda:1:0"
+                                  ],
+                                  "itemRevisionId",
+                                  "required"
+                                ],
+                                [
+                                  "reference",
+                                  "parameter:1"
+                                ]
+                              ]
+                            ]
+                          ],
+                          "required"
+                        ]
+                      ]
+                    ],
+                    "required"
+                  ]
+                ],
+                "required"
+              ]
+            ]
+          ]
+        ]
+      },
+      "dependencies": [
+        "src/catalog.ts#InventoryCatalog.transformationsFromRevision"
+      ]
+    },
+    {
+      "surfaceKey": "type:src/catalog.ts#InventoryCatalog.activeCollection::call[0]",
+      "signatureHash": "c7d585609b7c48f90c10c050834ad57963a2e10e166395e1140a2737db7d8044",
+      "declaration": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 72139,
+          "line": 1737,
+          "column": 3
+        },
+        "end": {
+          "offset": 72459,
+          "line": 1745,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "d44ef2de1d5f23b29ed36f99ce1a45bb781e53aefb3fba1dadf648478cd56271"
+      },
+      "implementation": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 72139,
+          "line": 1737,
+          "column": 3
+        },
+        "end": {
+          "offset": 72459,
+          "line": 1745,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "d44ef2de1d5f23b29ed36f99ce1a45bb781e53aefb3fba1dadf648478cd56271"
+      },
+      "relation": {
+        "kind": "EXACT_CLASS_METHOD",
+        "implementation": {
+          "file": "src/catalog.ts",
+          "start": {
+            "offset": 72139,
+            "line": 1737,
+            "column": 3
+          },
+          "end": {
+            "offset": 72459,
+            "line": 1745,
+            "column": 4
+          },
+          "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+          "astHash": "d44ef2de1d5f23b29ed36f99ce1a45bb781e53aefb3fba1dadf648478cd56271"
+        }
+      },
+      "equation": "result = activeCollectionById[key] when present; otherwise throw the declared key-specific error",
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "bind",
+              "local:0",
+              [
+                "call",
+                [
+                  "property",
+                  [
+                    "property",
+                    [
+                      "this"
+                    ],
+                    "activeCollectionById",
+                    "required"
+                  ],
+                  "get",
+                  "required"
+                ],
+                [
+                  [
+                    "reference",
+                    "parameter:0"
+                  ]
+                ],
+                "required"
+              ]
+            ],
+            [
+              "if",
+              [
+                "binary",
+                "===",
+                [
+                  "reference",
+                  "local:0"
+                ],
+                [
+                  "reference",
+                  "source:undefined"
+                ]
+              ],
+              [
+                "throw",
+                [
+                  "new",
+                  [
+                    "reference",
+                    "source:Error"
+                  ],
+                  [
+                    [
+                      "template",
+                      "Unknown active inventory collection '",
+                      [
+                        [
+                          [
+                            "reference",
+                            "parameter:0"
+                          ],
+                          "'."
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ],
+              [
+                "no-else"
+              ]
+            ],
+            [
+              "return",
+              [
+                "reference",
+                "local:0"
+              ]
+            ]
+          ]
+        ]
+      },
+      "dependencies": []
+    },
+    {
+      "surfaceKey": "type:src/catalog.ts#InventoryCatalog.collectionRevision::call[0]",
+      "signatureHash": "a52b87e592937a4e17eff756763f18d22bd7c40693ffe334fe6cc5447437856f",
+      "declaration": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 72539,
+          "line": 1748,
+          "column": 3
+        },
+        "end": {
+          "offset": 72867,
+          "line": 1756,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "24f6e965f9e11f1061f83a26b181da0c15bb56dc0bb1ffb8acd82ad53db32527"
+      },
+      "implementation": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 72539,
+          "line": 1748,
+          "column": 3
+        },
+        "end": {
+          "offset": 72867,
+          "line": 1756,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "24f6e965f9e11f1061f83a26b181da0c15bb56dc0bb1ffb8acd82ad53db32527"
+      },
+      "relation": {
+        "kind": "EXACT_CLASS_METHOD",
+        "implementation": {
+          "file": "src/catalog.ts",
+          "start": {
+            "offset": 72539,
+            "line": 1748,
+            "column": 3
+          },
+          "end": {
+            "offset": 72867,
+            "line": 1756,
+            "column": 4
+          },
+          "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+          "astHash": "24f6e965f9e11f1061f83a26b181da0c15bb56dc0bb1ffb8acd82ad53db32527"
+        }
+      },
+      "equation": "result = collectionByRevisionId[key] when present; otherwise throw the declared key-specific error",
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "bind",
+              "local:0",
+              [
+                "call",
+                [
+                  "property",
+                  [
+                    "property",
+                    [
+                      "this"
+                    ],
+                    "collectionByRevisionId",
+                    "required"
+                  ],
+                  "get",
+                  "required"
+                ],
+                [
+                  [
+                    "reference",
+                    "parameter:0"
+                  ]
+                ],
+                "required"
+              ]
+            ],
+            [
+              "if",
+              [
+                "binary",
+                "===",
+                [
+                  "reference",
+                  "local:0"
+                ],
+                [
+                  "reference",
+                  "source:undefined"
+                ]
+              ],
+              [
+                "throw",
+                [
+                  "new",
+                  [
+                    "reference",
+                    "source:Error"
+                  ],
+                  [
+                    [
+                      "template",
+                      "Unknown inventory collection revision '",
+                      [
+                        [
+                          [
+                            "reference",
+                            "parameter:0"
+                          ],
+                          "'."
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ],
+              [
+                "no-else"
+              ]
+            ],
+            [
+              "return",
+              [
+                "reference",
+                "local:0"
+              ]
+            ]
+          ]
+        ]
+      },
+      "dependencies": []
+    },
+    {
+      "surfaceKey": "type:src/catalog.ts#InventoryCatalog.collectionItemRevisionIds::call[0]",
+      "signatureHash": "4412a21c4c3b6e5125894b2ec489e443f254129673cf683ea3862eca607c43a5",
+      "declaration": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 72951,
+          "line": 1759,
+          "column": 3
+        },
+        "end": {
+          "offset": 73280,
+          "line": 1767,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "b059c90bc8b74f6afb04ce380d7d5b8db7779f97562d4622fab94dd6c22dfb14"
+      },
+      "implementation": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 72951,
+          "line": 1759,
+          "column": 3
+        },
+        "end": {
+          "offset": 73280,
+          "line": 1767,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "b059c90bc8b74f6afb04ce380d7d5b8db7779f97562d4622fab94dd6c22dfb14"
+      },
+      "relation": {
+        "kind": "EXACT_CLASS_METHOD",
+        "implementation": {
+          "file": "src/catalog.ts",
+          "start": {
+            "offset": 72951,
+            "line": 1759,
+            "column": 3
+          },
+          "end": {
+            "offset": 73280,
+            "line": 1767,
+            "column": 4
+          },
+          "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+          "astHash": "b059c90bc8b74f6afb04ce380d7d5b8db7779f97562d4622fab94dd6c22dfb14"
+        }
+      },
+      "equation": "result = collectionItemRevisionIdsByRevisionId[key] when present; otherwise throw the declared key-specific error",
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "bind",
+              "local:0",
+              [
+                "call",
+                [
+                  "property",
+                  [
+                    "property",
+                    [
+                      "this"
+                    ],
+                    "collectionItemRevisionIdsByRevisionId",
+                    "required"
+                  ],
+                  "get",
+                  "required"
+                ],
+                [
+                  [
+                    "reference",
+                    "parameter:0"
+                  ]
+                ],
+                "required"
+              ]
+            ],
+            [
+              "if",
+              [
+                "binary",
+                "===",
+                [
+                  "reference",
+                  "local:0"
+                ],
+                [
+                  "reference",
+                  "source:undefined"
+                ]
+              ],
+              [
+                "throw",
+                [
+                  "new",
+                  [
+                    "reference",
+                    "source:Error"
+                  ],
+                  [
+                    [
+                      "template",
+                      "Unknown inventory collection revision '",
+                      [
+                        [
+                          [
+                            "reference",
+                            "parameter:0"
+                          ],
+                          "'."
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ],
+              [
+                "no-else"
+              ]
+            ],
+            [
+              "return",
+              [
+                "reference",
+                "local:0"
+              ]
+            ]
+          ]
+        ]
+      },
+      "dependencies": []
+    },
+    {
+      "surfaceKey": "type:src/facade.ts#InventoryOnceReadSnapshotApi.container::call[0]",
+      "signatureHash": "7642c88bd690b81e04cf6363731a5527cddb84bfd74f2753179ccfc0ab18defd",
+      "declaration": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 69123,
+          "line": 1686,
+          "column": 3
+        },
+        "end": {
+          "offset": 69213,
+          "line": 1688,
+          "column": 56
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "3a17c6e8a234492596c93a7257c075361e6419d82f96ccba40d3eb22141ea5c0"
+      },
+      "implementation": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 301039,
+          "line": 8310,
+          "column": 3
+        },
+        "end": {
+          "offset": 301232,
+          "line": 8316,
+          "column": 4
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "295a7f7de1462b4ed0b0c9aafbf7326d39f1c0b1d415b5d11a692f3256a9de96"
+      },
+      "relation": {
+        "kind": "COMPILER_RESOLVED_IMPLEMENTS",
+        "interface": {
+          "file": "src/facade.ts",
+          "start": {
+            "offset": 69123,
+            "line": 1686,
+            "column": 3
+          },
+          "end": {
+            "offset": 69213,
+            "line": 1688,
+            "column": 56
+          },
+          "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+          "astHash": "3a17c6e8a234492596c93a7257c075361e6419d82f96ccba40d3eb22141ea5c0"
+        },
+        "implementation": {
+          "file": "src/facade.ts",
+          "start": {
+            "offset": 301039,
+            "line": 8310,
+            "column": 3
+          },
+          "end": {
+            "offset": 301232,
+            "line": 8316,
+            "column": 4
+          },
+          "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+          "astHash": "295a7f7de1462b4ed0b0c9aafbf7326d39f1c0b1d415b5d11a692f3256a9de96"
+        }
+      },
+      "equation": "result = this.world.projection.containers[inventoryContainerIdentity(p0)]",
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "return",
+              [
+                "element",
+                [
+                  "property",
+                  [
+                    "property",
+                    [
+                      "property",
+                      [
+                        "this"
+                      ],
+                      "world",
+                      "required"
+                    ],
+                    "projection",
+                    "required"
+                  ],
+                  "containers",
+                  "required"
+                ],
+                [
+                  "call",
+                  [
+                    "reference",
+                    "source:inventoryContainerIdentity"
+                  ],
+                  [
+                    [
+                      "reference",
+                      "parameter:0"
+                    ]
+                  ],
+                  "required"
+                ],
+                "required"
+              ]
+            ]
+          ]
+        ]
+      },
+      "dependencies": [
+        "src/model.ts#inventoryContainerIdentity"
+      ]
+    },
+    {
+      "surfaceKey": "type:src/facade.ts#InventoryOnceReadSnapshotApi.containers::call[0]",
+      "signatureHash": "fbe7e2a4a74547a190081ba16a12911bd7739cd48435b218695720c668eb77d9",
+      "declaration": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 69302,
+          "line": 1690,
+          "column": 3
+        },
+        "end": {
+          "offset": 69365,
+          "line": 1690,
+          "column": 66
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "f37c1349e1bf73a52a6703ba5199bd31c1d165146ed67820e1c954b550eee60b"
+      },
+      "implementation": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 301315,
+          "line": 8319,
+          "column": 3
+        },
+        "end": {
+          "offset": 301524,
+          "line": 8323,
+          "column": 4
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "309325ac29538f52ddcf764b6ea202a1fdbaaa7d4ff9534f47339a0aa1c09eef"
+      },
+      "relation": {
+        "kind": "COMPILER_RESOLVED_IMPLEMENTS",
+        "interface": {
+          "file": "src/facade.ts",
+          "start": {
+            "offset": 69302,
+            "line": 1690,
+            "column": 3
+          },
+          "end": {
+            "offset": 69365,
+            "line": 1690,
+            "column": 66
+          },
+          "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+          "astHash": "f37c1349e1bf73a52a6703ba5199bd31c1d165146ed67820e1c954b550eee60b"
+        },
+        "implementation": {
+          "file": "src/facade.ts",
+          "start": {
+            "offset": 301315,
+            "line": 8319,
+            "column": 3
+          },
+          "end": {
+            "offset": 301524,
+            "line": 8323,
+            "column": 4
+          },
+          "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+          "astHash": "309325ac29538f52ddcf764b6ea202a1fdbaaa7d4ff9534f47339a0aa1c09eef"
+        }
+      },
+      "equation": "result = Object.values(frozen projection containers) sorted by exact container identity",
+      "term": {
+        "async": false,
+        "parameters": [],
+        "body": [
+          "sequence",
+          [
+            [
+              "bind",
+              "local:0",
+              [
+                "call",
+                [
+                  "property",
+                  [
+                    "reference",
+                    "source:Object"
+                  ],
+                  "values",
+                  "required"
+                ],
+                [
+                  [
+                    "property",
+                    [
+                      "property",
+                      [
+                        "property",
+                        [
+                          "this"
+                        ],
+                        "world",
+                        "required"
+                      ],
+                      "projection",
+                      "required"
+                    ],
+                    "containers",
+                    "required"
+                  ]
+                ],
+                "required"
+              ]
+            ],
+            [
+              "expression",
+              [
+                "call",
+                [
+                  "property",
+                  [
+                    "reference",
+                    "local:0"
+                  ],
+                  "sort",
+                  "required"
+                ],
+                [
+                  [
+                    "reference",
+                    "source:compareProjectedContainerDefinition"
+                  ]
+                ],
+                "required"
+              ]
+            ],
+            [
+              "return",
+              [
+                "reference",
+                "local:0"
+              ]
+            ]
+          ]
+        ]
+      },
+      "dependencies": [
+        "src/facade.ts#compareProjectedContainerDefinition"
+      ]
+    },
+    {
+      "surfaceKey": "type:src/facade.ts#InventoryOnceReadSnapshotApi.lot::call[0]",
+      "signatureHash": "63389f2939c741cab33290e3993a2d56d8e9da6dc394710ca7aca38d5f485d2a",
+      "declaration": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 69442,
+          "line": 1692,
+          "column": 3
+        },
+        "end": {
+          "offset": 69534,
+          "line": 1695,
+          "column": 50
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "5d60f2ef88c76771569148313d8d5dbb13f41c45f21875354997663079435e91"
+      },
+      "implementation": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 301596,
+          "line": 8326,
+          "column": 3
+        },
+        "end": {
+          "offset": 301769,
+          "line": 8331,
+          "column": 4
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "0139ebedbe268cbfe492a6388e1adbc0624d9cef37ed29ecfc0e74f0bea9b967"
+      },
+      "relation": {
+        "kind": "COMPILER_RESOLVED_IMPLEMENTS",
+        "interface": {
+          "file": "src/facade.ts",
+          "start": {
+            "offset": 69442,
+            "line": 1692,
+            "column": 3
+          },
+          "end": {
+            "offset": 69534,
+            "line": 1695,
+            "column": 50
+          },
+          "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+          "astHash": "5d60f2ef88c76771569148313d8d5dbb13f41c45f21875354997663079435e91"
+        },
+        "implementation": {
+          "file": "src/facade.ts",
+          "start": {
+            "offset": 301596,
+            "line": 8326,
+            "column": 3
+          },
+          "end": {
+            "offset": 301769,
+            "line": 8331,
+            "column": 4
+          },
+          "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+          "astHash": "0139ebedbe268cbfe492a6388e1adbc0624d9cef37ed29ecfc0e74f0bea9b967"
+        }
+      },
+      "equation": "result = this.world.projection.lots[inventoryLotIdentity(p0, p1)]",
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          },
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "return",
+              [
+                "element",
+                [
+                  "property",
+                  [
+                    "property",
+                    [
+                      "property",
+                      [
+                        "this"
+                      ],
+                      "world",
+                      "required"
+                    ],
+                    "projection",
+                    "required"
+                  ],
+                  "lots",
+                  "required"
+                ],
+                [
+                  "call",
+                  [
+                    "reference",
+                    "source:inventoryLotIdentity"
+                  ],
+                  [
+                    [
+                      "reference",
+                      "parameter:0"
+                    ],
+                    [
+                      "reference",
+                      "parameter:1"
+                    ]
+                  ],
+                  "required"
+                ],
+                "required"
+              ]
+            ]
+          ]
+        ]
+      },
+      "dependencies": [
+        "src/model.ts#inventoryLotIdentity"
+      ]
+    },
+    {
+      "surfaceKey": "type:src/facade.ts#InventoryOnceReadSnapshotApi.lots::call[0]",
+      "signatureHash": "f047b55da9ffcdbea50c6f9c3390ea47cff4378e291f4c3ef61d59458f4e7d7f",
+      "declaration": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 69608,
+          "line": 1697,
+          "column": 3
+        },
+        "end": {
+          "offset": 69674,
+          "line": 1697,
+          "column": 69
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "d890d388798b74087801b5c0ccdb2a04b1f9aec8c89eb63f2d9d191aa3de049f"
+      },
+      "implementation": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 301833,
+          "line": 8334,
+          "column": 3
+        },
+        "end": {
+          "offset": 301970,
+          "line": 8336,
+          "column": 4
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "1ee8bf683c8cd66d649ff17b9dedebece4dbe2c4b4f6f59a4351abddb2f33d51"
+      },
+      "relation": {
+        "kind": "COMPILER_RESOLVED_IMPLEMENTS",
+        "interface": {
+          "file": "src/facade.ts",
+          "start": {
+            "offset": 69608,
+            "line": 1697,
+            "column": 3
+          },
+          "end": {
+            "offset": 69674,
+            "line": 1697,
+            "column": 69
+          },
+          "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+          "astHash": "d890d388798b74087801b5c0ccdb2a04b1f9aec8c89eb63f2d9d191aa3de049f"
+        },
+        "implementation": {
+          "file": "src/facade.ts",
+          "start": {
+            "offset": 301833,
+            "line": 8334,
+            "column": 3
+          },
+          "end": {
+            "offset": 301970,
+            "line": 8336,
+            "column": 4
+          },
+          "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+          "astHash": "1ee8bf683c8cd66d649ff17b9dedebece4dbe2c4b4f6f59a4351abddb2f33d51"
+        }
+      },
+      "equation": "result = inventoryProjectedLots(this.world.projection, p0)",
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": true,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "return",
+              [
+                "call",
+                [
+                  "reference",
+                  "source:inventoryProjectedLots"
+                ],
+                [
+                  [
+                    "property",
+                    [
+                      "property",
+                      [
+                        "this"
+                      ],
+                      "world",
+                      "required"
+                    ],
+                    "projection",
+                    "required"
+                  ],
+                  [
+                    "reference",
+                    "parameter:0"
+                  ]
+                ],
+                "required"
+              ]
+            ]
+          ]
+        ]
+      },
+      "dependencies": [
+        "src/facade.ts#inventoryProjectedLots"
+      ]
+    },
+    {
+      "surfaceKey": "type:src/facade.ts#InventoryOnceReadSnapshotApi.compositionRevisionsForItem::call[0]",
+      "signatureHash": "e0d8bd872371db62857e853e1424ccab20fe664883f34afbe016400ce459afcb",
+      "declaration": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 69762,
+          "line": 1699,
+          "column": 3
+        },
+        "end": {
+          "offset": 69865,
+          "line": 1701,
+          "column": 56
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "21b13fbd62ef795286e6e94bf6cca6bc3583fd2fc7359e307947aacc0194a45f"
+      },
+      "implementation": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 302056,
+          "line": 8339,
+          "column": 3
+        },
+        "end": {
+          "offset": 302551,
+          "line": 8351,
+          "column": 4
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "3f8b4ce7268df9ddb026e96e3904b5f96bcd0ffff69c1fcb88e8ea28d717ce72"
+      },
+      "relation": {
+        "kind": "COMPILER_RESOLVED_IMPLEMENTS",
+        "interface": {
+          "file": "src/facade.ts",
+          "start": {
+            "offset": 69762,
+            "line": 1699,
+            "column": 3
+          },
+          "end": {
+            "offset": 69865,
+            "line": 1701,
+            "column": 56
+          },
+          "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+          "astHash": "21b13fbd62ef795286e6e94bf6cca6bc3583fd2fc7359e307947aacc0194a45f"
+        },
+        "implementation": {
+          "file": "src/facade.ts",
+          "start": {
+            "offset": 302056,
+            "line": 8339,
+            "column": 3
+          },
+          "end": {
+            "offset": 302551,
+            "line": 8351,
+            "column": 4
+          },
+          "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+          "astHash": "3f8b4ce7268df9ddb026e96e3904b5f96bcd0ffff69c1fcb88e8ea28d717ce72"
+        }
+      },
+      "equation": "result = exact catalog compositions whose source package belongs to itemId, sorted by revision identity",
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "bind",
+              "local:0",
+              [
+                "array",
+                []
+              ]
+            ],
+            [
+              "for-of",
+              "local:1",
+              [
+                "property",
+                [
+                  "property",
+                  [
+                    "this"
+                  ],
+                  "catalog",
+                  "required"
+                ],
+                "compositionRevisions",
+                "required"
+              ],
+              [
+                "sequence",
+                [
+                  [
+                    "bind",
+                    "local:2",
+                    [
+                      "call",
+                      [
+                        "property",
+                        [
+                          "property",
+                          [
+                            "this"
+                          ],
+                          "catalog",
+                          "required"
+                        ],
+                        "packagingRevision",
+                        "required"
+                      ],
+                      [
+                        [
+                          "property",
+                          [
+                            "reference",
+                            "local:1"
+                          ],
+                          "sourcePackagingRevisionId",
+                          "required"
+                        ]
+                      ],
+                      "required"
+                    ]
+                  ],
+                  [
+                    "if",
+                    [
+                      "binary",
+                      "===",
+                      [
+                        "property",
+                        [
+                          "reference",
+                          "local:2"
+                        ],
+                        "itemId",
+                        "required"
+                      ],
+                      [
+                        "reference",
+                        "parameter:0"
+                      ]
+                    ],
+                    [
+                      "expression",
+                      [
+                        "call",
+                        [
+                          "property",
+                          [
+                            "reference",
+                            "local:0"
+                          ],
+                          "push",
+                          "required"
+                        ],
+                        [
+                          [
+                            "reference",
+                            "local:1"
+                          ]
+                        ],
+                        "required"
+                      ]
+                    ],
+                    [
+                      "no-else"
+                    ]
+                  ]
+                ]
+              ]
+            ],
+            [
+              "expression",
+              [
+                "call",
+                [
+                  "property",
+                  [
+                    "reference",
+                    "local:0"
+                  ],
+                  "sort",
+                  "required"
+                ],
+                [
+                  [
+                    "reference",
+                    "source:compareInventoryCompositionRevision"
+                  ]
+                ],
+                "required"
+              ]
+            ],
+            [
+              "return",
+              [
+                "reference",
+                "local:0"
+              ]
+            ]
+          ]
+        ]
+      },
+      "dependencies": [
+        "src/catalog.ts#InventoryCatalog.packagingRevision",
+        "src/facade.ts#compareInventoryCompositionRevision"
+      ]
+    },
+    {
+      "surfaceKey": "type:src/facade.ts#InventoryOnceReadSnapshotApi.event::call[0]",
+      "signatureHash": "813f3aa7f3e0c76fb7f2abd221540e1552ea67732961edc53df7cb1755f064d2",
+      "declaration": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 70265,
+          "line": 1711,
+          "column": 3
+        },
+        "end": {
+          "offset": 70325,
+          "line": 1711,
+          "column": 63
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "0cc5f92564f3d034c35d365f8e8080bdc2d3bc8ef3c235cec09db94acc02a995"
+      },
+      "implementation": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 303465,
+          "line": 8378,
+          "column": 3
+        },
+        "end": {
+          "offset": 303608,
+          "line": 8380,
+          "column": 4
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "ff2ac60339d9cba260f170204908644c0415b3816a686f47cd9ddcb2315f1988"
+      },
+      "relation": {
+        "kind": "COMPILER_RESOLVED_IMPLEMENTS",
+        "interface": {
+          "file": "src/facade.ts",
+          "start": {
+            "offset": 70265,
+            "line": 1711,
+            "column": 3
+          },
+          "end": {
+            "offset": 70325,
+            "line": 1711,
+            "column": 63
+          },
+          "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+          "astHash": "0cc5f92564f3d034c35d365f8e8080bdc2d3bc8ef3c235cec09db94acc02a995"
+        },
+        "implementation": {
+          "file": "src/facade.ts",
+          "start": {
+            "offset": 303465,
+            "line": 8378,
+            "column": 3
+          },
+          "end": {
+            "offset": 303608,
+            "line": 8380,
+            "column": 4
+          },
+          "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+          "astHash": "ff2ac60339d9cba260f170204908644c0415b3816a686f47cd9ddcb2315f1988"
+        }
+      },
+      "equation": "result = inventorySparseRecordValue(this.world.projection.events, p0)",
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "return",
+              [
+                "call",
+                [
+                  "reference",
+                  "source:inventorySparseRecordValue"
+                ],
+                [
+                  [
+                    "property",
+                    [
+                      "property",
+                      [
+                        "property",
+                        [
+                          "this"
+                        ],
+                        "world",
+                        "required"
+                      ],
+                      "projection",
+                      "required"
+                    ],
+                    "events",
+                    "required"
+                  ],
+                  [
+                    "reference",
+                    "parameter:0"
+                  ]
+                ],
+                "required"
+              ]
+            ]
+          ]
+        ]
+      },
+      "dependencies": [
+        "src/sparse-record.ts#inventorySparseRecordValue"
+      ]
+    },
+    {
+      "surfaceKey": "type:src/facade.ts#InventoryOnceReadSnapshotApi.count::call[0]",
+      "signatureHash": "73bfbdb5f4acbb9c444065874486a0194c2bc185743d9d3dc9e034a6085cbfae",
+      "declaration": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 70505,
+          "line": 1715,
+          "column": 3
+        },
+        "end": {
+          "offset": 70556,
+          "line": 1715,
+          "column": 54
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "7ead5d29872a077bd8f25fe42085020bef00df7bde155d24dfdfa45ea17b2eea"
+      },
+      "implementation": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 303887,
+          "line": 8388,
+          "column": 3
+        },
+        "end": {
+          "offset": 304017,
+          "line": 8390,
+          "column": 4
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "c9922dc492b6abb876b5530092c5df014225515355f4a0e263d65651deeaa2c2"
+      },
+      "relation": {
+        "kind": "COMPILER_RESOLVED_IMPLEMENTS",
+        "interface": {
+          "file": "src/facade.ts",
+          "start": {
+            "offset": 70505,
+            "line": 1715,
+            "column": 3
+          },
+          "end": {
+            "offset": 70556,
+            "line": 1715,
+            "column": 54
+          },
+          "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+          "astHash": "7ead5d29872a077bd8f25fe42085020bef00df7bde155d24dfdfa45ea17b2eea"
+        },
+        "implementation": {
+          "file": "src/facade.ts",
+          "start": {
+            "offset": 303887,
+            "line": 8388,
+            "column": 3
+          },
+          "end": {
+            "offset": 304017,
+            "line": 8390,
+            "column": 4
+          },
+          "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+          "astHash": "c9922dc492b6abb876b5530092c5df014225515355f4a0e263d65651deeaa2c2"
+        }
+      },
+      "equation": "result = inventorySparseRecordValue(this.world.counts.counts, p0)",
+      "term": {
+        "async": false,
+        "parameters": [
+          {
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "body": [
+          "sequence",
+          [
+            [
+              "return",
+              [
+                "call",
+                [
+                  "reference",
+                  "source:inventorySparseRecordValue"
+                ],
+                [
+                  [
+                    "property",
+                    [
+                      "property",
+                      [
+                        "property",
+                        [
+                          "this"
+                        ],
+                        "world",
+                        "required"
+                      ],
+                      "counts",
+                      "required"
+                    ],
+                    "counts",
+                    "required"
+                  ],
+                  [
+                    "reference",
+                    "parameter:0"
+                  ]
+                ],
+                "required"
+              ]
+            ]
+          ]
+        ]
+      },
+      "dependencies": [
+        "src/sparse-record.ts#inventorySparseRecordValue"
+      ]
+    }
+  ]
+}

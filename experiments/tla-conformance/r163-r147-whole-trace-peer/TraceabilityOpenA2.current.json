@@ -1,0 +1,1274 @@
+{
+  "schemaVersion": 1,
+  "route": "REGISTERED_CERTIFIED_PRODUCER",
+  "proofKind": "traceability-open-relations-formal-correction-a2-v1",
+  "family": "R163TraceabilityOpenA2CurrentPeer",
+  "surfaceDigest": "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a",
+  "domain": "Every validated aggregate/associate traceability call. Public wrapper and reducer source equations remain exact current bytes; retained containment/association formal specs/configs/manifests/reverse certificates are byte-current and are reused without rerun; event-result/commit dependencies are rebound to current R134/R147/R139 authorities.",
+  "allAdmittedInputs": true,
+  "sampledInputs": 0,
+  "producerGraphRuns": 0,
+  "producerReplayRuns": 0,
+  "formalGraphRuns": 0,
+  "nativeReplayRuns": 0,
+  "sourceFlow": {
+    "equations": [
+      {
+        "name": "aggregate",
+        "termSha256": "bc72367ee95b6647471b73cc2b721a28df00442148b8362e790ca237044eba61",
+        "declaration": {
+          "file": "src/facade.ts",
+          "start": {
+            "offset": 295403,
+            "line": 8141,
+            "column": 3
+          },
+          "end": {
+            "offset": 295653,
+            "line": 8149,
+            "column": 4
+          },
+          "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+          "astHash": "e677b9d50f340e3e759ecf0f85255687b0def9a2521d90fd8bd9b7e1bc0e2e78"
+        }
+      },
+      {
+        "name": "associate",
+        "termSha256": "42c08e897c10f4def34084fce3558780e34ef25f77130195aa3d95781766e57c",
+        "declaration": {
+          "file": "src/facade.ts",
+          "start": {
+            "offset": 296050,
+            "line": 8163,
+            "column": 3
+          },
+          "end": {
+            "offset": 296300,
+            "line": 8171,
+            "column": 4
+          },
+          "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+          "astHash": "45bd0d54a3cde069392809467c77937a89d5d7b135bac1f601db719e8352742a"
+        }
+      },
+      {
+        "name": "commitRelation",
+        "termSha256": "466de9c99a69ae97c8be74daba756b9baefffb61984b418e049a2ca32c11ea8e",
+        "declaration": {
+          "file": "src/facade.ts",
+          "start": {
+            "offset": 296720,
+            "line": 8185,
+            "column": 3
+          },
+          "end": {
+            "offset": 297861,
+            "line": 8212,
+            "column": 4
+          },
+          "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+          "astHash": "17d89a0f8352b808d424038ecaaad422d32266d72fd4418b8e56ac573f8f07b9"
+        }
+      }
+    ],
+    "relations": [
+      {
+        "surfaceKey": "type:src/facade.ts#InventoryOnceTraceabilityApi.aggregate::call[0]",
+        "publicDeclaration": {
+          "file": "src/facade.ts",
+          "start": {
+            "offset": 67351,
+            "line": 1645,
+            "column": 3
+          },
+          "end": {
+            "offset": 67439,
+            "line": 1647,
+            "column": 40
+          },
+          "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+          "astHash": "fb0fa3ed06dd0f03bcac5084dae388a4a513dc1287536ce683da6c5cc91dfa49"
+        },
+        "implementation": {
+          "file": "src/facade.ts",
+          "start": {
+            "offset": 295403,
+            "line": 8141,
+            "column": 3
+          },
+          "end": {
+            "offset": 295653,
+            "line": 8149,
+            "column": 4
+          },
+          "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+          "astHash": "e677b9d50f340e3e759ecf0f85255687b0def9a2521d90fd8bd9b7e1bc0e2e78"
+        }
+      },
+      {
+        "surfaceKey": "type:src/facade.ts#InventoryOnceTraceabilityApi.associate::call[0]",
+        "publicDeclaration": {
+          "file": "src/facade.ts",
+          "start": {
+            "offset": 67669,
+            "line": 1653,
+            "column": 3
+          },
+          "end": {
+            "offset": 67757,
+            "line": 1655,
+            "column": 40
+          },
+          "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+          "astHash": "f35e6e9c4ae223131eebae57e1dcb3ac2ae9b380fdd0c7801920ab37963c9060"
+        },
+        "implementation": {
+          "file": "src/facade.ts",
+          "start": {
+            "offset": 296050,
+            "line": 8163,
+            "column": 3
+          },
+          "end": {
+            "offset": 296300,
+            "line": 8171,
+            "column": 4
+          },
+          "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+          "astHash": "45bd0d54a3cde069392809467c77937a89d5d7b135bac1f601db719e8352742a"
+        }
+      }
+    ],
+    "support": {
+      "actionAdd": "add",
+      "containment": "containment",
+      "association": "association"
+    }
+  },
+  "formal": {
+    "containment": {
+      "model": "TraceabilityContainment",
+      "manifest": {
+        "file": "experiments/tla-conformance/traceability-open-relations-r15/certificates/TraceabilityContainment.manifest.json",
+        "sha256": "e4e0c9f200e9222663f20aaf62121390e02247c25be21bd5658b51bdbf673b65",
+        "counts": {
+          "byOperator": {
+            "Aggregate": 23760,
+            "Disaggregate": 300
+          },
+          "edgeOccurrences": 24060,
+          "initialStates": 1,
+          "selfLoops": 0,
+          "states": 125
+        }
+      },
+      "reverse": {
+        "file": "experiments/tla-conformance/traceability-open-relations-r15/certificates/TraceabilityContainment.reverse.json",
+        "sha256": "538e4de24f138e0db94aa856bc09be42a9dbad1adb1a94627b7a8505436117bc",
+        "edgeOccurrences": 24060,
+        "directNextCertificate": {
+          "sanySha256": "e7a714e5625afdf38bad68d230e694dac8ab45f460a26a96549a701c68281c34",
+          "nextLocation": {
+            "beginLine": 36,
+            "endLine": 38
+          },
+          "branches": [
+            {
+              "operator": "Aggregate",
+              "parameters": [
+                "child",
+                "container"
+              ],
+              "domains": [
+                "Original!Objects",
+                "Original!Objects"
+              ]
+            },
+            {
+              "operator": "Disaggregate",
+              "parameters": [
+                "child"
+              ],
+              "domains": [
+                "Original!Objects"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "association": {
+      "model": "TraceabilityAssociation",
+      "manifest": {
+        "file": "experiments/tla-conformance/traceability-open-relations-r15/certificates/TraceabilityAssociation.manifest.json",
+        "sha256": "827dda445f39e6cacd7ed39bb1a5b92ff90107669b4046484984be740d6f72b6",
+        "counts": {
+          "byOperator": {
+            "Associate": 24576,
+            "Disassociate": 24576
+          },
+          "edgeOccurrences": 49152,
+          "initialStates": 1,
+          "selfLoops": 0,
+          "states": 4096
+        }
+      },
+      "reverse": {
+        "file": "experiments/tla-conformance/traceability-open-relations-r15/certificates/TraceabilityAssociation.reverse.json",
+        "sha256": "3bc5fdf9f18cff75f535259248c374353c3609a1383443bee16640f0bbfd67f4",
+        "edgeOccurrences": 49152,
+        "directNextCertificate": {
+          "sanySha256": "bb04ddb33bdb26f4ed73e5b79a7056c2d301d4f24dd0debf405918c329bd205d",
+          "nextLocation": {
+            "beginLine": 23,
+            "endLine": 25
+          },
+          "branches": [
+            {
+              "operator": "Associate",
+              "parameters": [
+                "child",
+                "durableParent"
+              ],
+              "domains": [
+                "Original!Objects",
+                "Original!Objects"
+              ]
+            },
+            {
+              "operator": "Disassociate",
+              "parameters": [
+                "child",
+                "durableParent"
+              ],
+              "domains": [
+                "Original!Objects",
+                "Original!Objects"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "publicDomain": {
+    "file": "experiments/tla-conformance/traceability-open-relations-r15/public-domain-reclassification.json",
+    "sha256": "7dc8a018b22b5f1fce62fadcc205bc33a51d943e8a48f95d74ea5abaf424bfe1",
+    "rows": 57344,
+    "mismatchCount": 0,
+    "counts": {
+      "Aggregate:disabled:rejected": 15360,
+      "Aggregate:enabled:returned": 13312,
+      "Associate:disabled:rejected": 13312,
+      "Associate:enabled:returned": 15360
+    },
+    "broadPinsReplacedByCurrentTermReceipts": [
+      "src/facade.ts",
+      "src/events.ts"
+    ]
+  },
+  "inputs": [
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-published-source-contracts.mjs",
+      "sha256": "d05ecad078de891073c82f4c523090382b608204269281464ca9a325ca3208b2"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-published-source-equations.mjs",
+      "sha256": "243e06ade88446247ab26d1bcec53fb70cccab6c5929f2013dc2aa995ae73ce8"
+    },
+    {
+      "file": "experiments/tla-conformance/catalog-foundation-r7/contracts.mjs",
+      "sha256": "e6efabb603807c5728d958ced0a5ce671e41249e0342bf22db55494ea253b504"
+    },
+    {
+      "file": "experiments/tla-conformance/catalog-foundation-r7/equations.expected.ts.txt",
+      "sha256": "a880afa7fc5a707bff3052d07e0504f878acf4f463c6e760f33e558f33e81bb3"
+    },
+    {
+      "file": "experiments/tla-conformance/catalog-foundation-r7/family.mjs",
+      "sha256": "932cb060a2dff23d2866849c925ac1c5ce5e028533f875e8cc125fcfb2feee76"
+    },
+    {
+      "file": "experiments/tla-conformance/catalog-foundation-r7/normalize.mjs",
+      "sha256": "7675175f5f4cd88f853a3b49530bbb4e1e625112fd3bd45786ff81210a9fee26"
+    },
+    {
+      "file": "experiments/tla-conformance/clock-environment-contract-r32/clock-boundary.expected.ts.txt",
+      "sha256": "0a728ff2a722e271a4d87d6ddaf3ac5e37af09298efb7daf3d9d6736778bf68c"
+    },
+    {
+      "file": "experiments/tla-conformance/clock-environment-contract-r32/contract.mjs",
+      "sha256": "cfa9fb1e158f977c0be79a5db619fd974f0864230b2b9652a9afeaa5691d417d"
+    },
+    {
+      "file": "experiments/tla-conformance/clock-environment-contract-r32/runtime-evidence.json",
+      "sha256": "b7145e7938d7967bae336f96db03abd939f01bd3002f9976d9c3f7c2192ef00d"
+    },
+    {
+      "file": "experiments/tla-conformance/external-membership-rehearsal-r35/durable-helpers.expected.ts.txt",
+      "sha256": "8f5230bc5d1fdef45424ca86c506c881d46137045323d67c32449b11c1df940c"
+    },
+    {
+      "file": "experiments/tla-conformance/identity-values-r7/contracts.mjs",
+      "sha256": "dea23f4b3f929ac1bcf9b50cd41517c1b3fc4e3d879904aa6c4d83263ba7b2ce"
+    },
+    {
+      "file": "experiments/tla-conformance/identity-values-r7/equations.ts.txt",
+      "sha256": "f4b3b7a3fa1dbf3338f295c3d97f73cf753cba7741d69f272e91db7fa5079844"
+    },
+    {
+      "file": "experiments/tla-conformance/identity-values-r7/family.mjs",
+      "sha256": "493486e43054dd4613091e973558f2c0463e96ff83347080a3f32e636dde6709"
+    },
+    {
+      "file": "experiments/tla-conformance/migration-r5/artifacts/TraceabilityGraph/add-gap.json",
+      "sha256": "7455ef6e32cfe6dc413f061744516849c81d47838e4b863093ee7f408bfedce1"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/certificate.mjs",
+      "sha256": "8099926f527d391571e57c0828a27f24c57d4a7b59843684f9bda4c69f50cb26"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/contracts.mjs",
+      "sha256": "e45e82682ab647b80c0897e666b5b5b6b84f6cac990c785a925f307cabc7c239"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/equations.expected.ts.txt",
+      "sha256": "3e00aeaaeaf11b516fdf3418a8c227dbb053cce05038863d7d41addbd2c158d8"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/event-values/catalog-foundation-dependency-reference.json",
+      "sha256": "e435dcb656e450807eaf7b642889879de4f10dd20967ad7732515e1d9463333f"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/event-values/certificate.mjs",
+      "sha256": "db0ad0a8e79777a6fe2b2e6fabfd550a87486d784aaf966b089f537dab505881"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/event-values/contracts.mjs",
+      "sha256": "1609151cfa525cda65407af221122a1b8db04e81482713aef227c4c0784efbd9"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/event-values/equations.expected.ts.txt",
+      "sha256": "d2fcad75ea97d835a070a51367e7458bd596d098e56d82d639fdbcd318ef84e3"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/event-values/registered-family-adapter.mjs",
+      "sha256": "e9ab67e6ac85cccce060b1b047c890593270222bab6184c076ab1596588116d8"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/quantity-values-certificate.json",
+      "sha256": "446f80ae24e8b146839e27e31667d0a533db4d04cf202002354866cd6a2f7599"
+    },
+    {
+      "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/event-result-current.json",
+      "sha256": "2e693f359c16a93a9853da5653378c77523ae19aed5d63f76acdbd415347ae87"
+    },
+    {
+      "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/event-result-current.mjs",
+      "sha256": "c6f80004c3dac2e23c9a6087feb6082cb2fba2339fd2003fcb67e654c25a7299"
+    },
+    {
+      "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/sparse-record-certificate.json",
+      "sha256": "6ecd861755e963798a2cd077813cd3c412997121b16e6f1cdea337baa2fe7815"
+    },
+    {
+      "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/sparse-record-certificate.mjs",
+      "sha256": "5a1c4bb5dc41ff18939471d54f430601e456f603fa9ebdebb09ac0414bd35a95"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/downstream43-current/commit-current.json",
+      "sha256": "052ae807f0da4706e361f6128c0812e98031811d128ac26717f96ffe8702757e"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/downstream43-current/commit-current.mjs",
+      "sha256": "07b32bae8f3818255dbfc4838e846c9aa0bf90d7f36630ec2a7159a474ea6277"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/downstream43-current/current-authorities.mjs",
+      "sha256": "490915f73e470e54a8b4c3893dcc1cbbd236803b895e6efb7da1874c95b03be3"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/downstream43-current/durable-helpers-current.json",
+      "sha256": "7a8cbc027f90433377ef57b1c96314026bc8cf293bfb3f04821b555724cc4339"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/downstream43-current/durable-helpers-current.mjs",
+      "sha256": "7b08dc1eb39a9e09cd322bb45b72f7092c2802c33b684195195bf07753194e9d"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-evidence.mjs",
+      "sha256": "cfb59838895c41ce731b8e2c479558f37eaf9d3dc02c09faa561b3fad2a102d5"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/checkpoint-equivalence.json",
+      "sha256": "32a2ecd9b082205521d74a7f8931a88a8a2458affae9213d9fe5d1cf72334aa3"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/material-observations.json",
+      "sha256": "6ecd0681b5331b3a25e56f223c86dbb776ab2e73775be1c2a1ff75ecf2cf6abe"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/original-next-reverse-report.json",
+      "sha256": "bba580102780bd342e4a95abfd161d11e174364300dbb2f01049e42f0034ab58"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/replay.json",
+      "sha256": "57e449b000a8bf54f24cb82c7794b4fd2da64db625ad87035cde8dd12bc3c066"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/surface-execution-v2.json",
+      "sha256": "5a0e02945de1f5b5dc1b82666fad9e1dd8f0bbf5db0f65bfe0212f385a36b698"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage26-current-bindings.json",
+      "sha256": "5764246f696787790bf3905cea6c492bf19f7b9c48e1d24f422a4ab603388793"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage26-current-receipt.json",
+      "sha256": "45f48215595cf127cdd829d53665d781a40819563edd78e45d23f6d1c0240fb6"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage26-portable-execution.json",
+      "sha256": "fb219eec761e6ea84cb51e29cac8558f22e7e38aff3d9e8202ae8ff864889c9b"
+    },
+    {
+      "file": "experiments/tla-conformance/r147-event-result30-currentization/CommitEventDraftA5.current.json",
+      "sha256": "510a4d916941df5124d0f83fec705298d82adfd36f9e9f2a7a39cd6485b5f5af"
+    },
+    {
+      "file": "experiments/tla-conformance/r147-event-result30-currentization/family.mjs",
+      "sha256": "5f34d231ce0b07d76eb7ff478083f3cee1573a0864a76732f67a79e5de29023c"
+    },
+    {
+      "file": "experiments/tla-conformance/r147-event-result30-currentization/receipt.json",
+      "sha256": "877521fb1c7832b40665b9f54d5ced85cba47c30b8de790f78c78314211c150a"
+    },
+    {
+      "file": "experiments/tla-conformance/r163-r147-whole-trace-peer/family.mjs",
+      "sha256": "59db9cefe9e318adebbc26ecb33faebe4906aca111f8d1b6e5e29a7f3145e7bb"
+    },
+    {
+      "file": "experiments/tla-conformance/storage-protocol-r7/export-original-graph.py",
+      "sha256": "4d0c333a156fd69961b541e02ed7e4debdbf73a89f57f54bd4ecdb4999175ff7"
+    },
+    {
+      "file": "experiments/tla-conformance/storage-protocol-r7/protocol-driver.ts",
+      "sha256": "98994791a982f916066b14e1e3b8658f2f05217c9d91ff056bdb0f6f116c2f32"
+    },
+    {
+      "file": "experiments/tla-conformance/storage-protocol-r7/replay.ts",
+      "sha256": "dc281134934bd249e41a3c2c5ad163771ef1f006141e8d0ca6cbd953e2351cf8"
+    },
+    {
+      "file": "experiments/tla-conformance/storage-protocol-r7/reverse-next.mjs",
+      "sha256": "d13d61fae13b63025195c3bd55d847b0229eb1417070f909843d02e0ab0b0b90"
+    },
+    {
+      "file": "experiments/tla-conformance/surface-bindings/lib/binding-checker.mjs",
+      "sha256": "4dd6bbf135ebb5a5da86b714e0d9b9d3550547a7df7b39aec1a471bf1ef3f88e"
+    },
+    {
+      "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+      "sha256": "8d8854032e38a0df1044e5596c66d9a2b672277f357e361102b0b12c3d6952a0"
+    },
+    {
+      "file": "experiments/tla-conformance/surface-residual-r8/commit-draft-a5/equations.expected.ts.txt",
+      "sha256": "70f1909c57a2ac22278883c17a7d6d933394d50a0ef73f7ae71dcc9102d4cd0e"
+    },
+    {
+      "file": "experiments/tla-conformance/surface-residual-r8/commit-draft-a5/family.mjs",
+      "sha256": "8c8045dfc56917409b0709e841496abdd7c58e3eec0a54c78c47e048f326a7ec"
+    },
+    {
+      "file": "experiments/tla-conformance/throughput-r7/evidence/event-values.json",
+      "sha256": "0f3b2942b93bed09c08ac34d66ee3297859592f1862d7afc44937f2b83857ab8"
+    },
+    {
+      "file": "experiments/tla-conformance/throughput-r7/evidence/queue-surface-commit-draft-a5-producer.json",
+      "sha256": "4f402bad2f69bbaeea45f1d248ca399b754311669fc14c2de8644e3a8f561bd6"
+    },
+    {
+      "file": "experiments/tla-conformance/throughput-r7/evidence/queue-traceability-apply-v1-values.json",
+      "sha256": "d427ba40d5197369bace3c26a2d6611025f6a69baebce0c8833e211a27165dd7"
+    },
+    {
+      "file": "experiments/tla-conformance/throughput-r7/registered-families.mjs",
+      "sha256": "8ce9ded52a49d1bc34a9299c0bb0caf03bbf3c5634873a8deef9ed0b95b884da"
+    },
+    {
+      "file": "experiments/tla-conformance/throughput-r7/registered-producer-family.mjs",
+      "sha256": "e8c9fcbbf669de7a68a76984da27d179b81b49ccba4fe645faf50790405dd655"
+    },
+    {
+      "file": "experiments/tla-conformance/throughput-r7/registered-value-family.mjs",
+      "sha256": "1926bfc82e8cc608904d8a2785c2ae6775d2905186b4d9fb8b137a0696b821b3"
+    },
+    {
+      "file": "experiments/tla-conformance/traceability-open-relations-r15/certificates/TraceabilityAssociation.manifest.json",
+      "sha256": "827dda445f39e6cacd7ed39bb1a5b92ff90107669b4046484984be740d6f72b6"
+    },
+    {
+      "file": "experiments/tla-conformance/traceability-open-relations-r15/certificates/TraceabilityAssociation.reverse.json",
+      "sha256": "3bc5fdf9f18cff75f535259248c374353c3609a1383443bee16640f0bbfd67f4"
+    },
+    {
+      "file": "experiments/tla-conformance/traceability-open-relations-r15/certificates/TraceabilityContainment.manifest.json",
+      "sha256": "e4e0c9f200e9222663f20aaf62121390e02247c25be21bd5658b51bdbf673b65"
+    },
+    {
+      "file": "experiments/tla-conformance/traceability-open-relations-r15/certificates/TraceabilityContainment.reverse.json",
+      "sha256": "538e4de24f138e0db94aa856bc09be42a9dbad1adb1a94627b7a8505436117bc"
+    },
+    {
+      "file": "experiments/tla-conformance/traceability-open-relations-r15/equations.expected.ts.txt",
+      "sha256": "ea051d37470bd72335475eb203f63557f52d9ab911615cdb51fd3719eeca3a2e"
+    },
+    {
+      "file": "experiments/tla-conformance/traceability-open-relations-r15/family.mjs",
+      "sha256": "f750b8330b8726e060a133f23ee879f67eb43e81ce7461cfcb049084f763a57e"
+    },
+    {
+      "file": "experiments/tla-conformance/traceability-open-relations-r15/public-domain-reclassification.json",
+      "sha256": "7dc8a018b22b5f1fce62fadcc205bc33a51d943e8a48f95d74ea5abaf424bfe1"
+    },
+    {
+      "file": "experiments/tla-conformance/value-contracts/catalog-family.mjs",
+      "sha256": "32439d061232e266f53acd3b33025b97b172769ffe418964319177b8041cab9a"
+    },
+    {
+      "file": "experiments/tla-conformance/value-contracts/surface-binding.mjs",
+      "sha256": "619b37fe3a9bc9be22e8a0c2167187cfce987c7856280c6df0c36c5a230c3618"
+    },
+    {
+      "file": "formal/InventoryOperation.cfg",
+      "sha256": "1b13f2a1df74c2c011462769e81796de8d9afd105fa1c39fb0a1ee85725c9718"
+    },
+    {
+      "file": "formal/InventoryOperation.tla",
+      "sha256": "f8e1901d7631f3113309b58e73f18dd9e9f2cc564b7c24a6b64755f8c45982ad"
+    },
+    {
+      "file": "formal/TraceabilityAssociation.cfg",
+      "sha256": "1adc5ba3489f5b34b624dfb3dbe59acc6f00fc3bba8961fdd1e9d837ff2c4019"
+    },
+    {
+      "file": "formal/TraceabilityAssociation.tla",
+      "sha256": "e6c77dd0245d2779a2788c393e6000751aca9a419a985f9511674fdbd231d57d"
+    },
+    {
+      "file": "formal/TraceabilityContainment.cfg",
+      "sha256": "778ef0332a2b8a2f6ec69e1dc1bdf893ead66c041e5dab0196def02145d60b2b"
+    },
+    {
+      "file": "formal/TraceabilityContainment.tla",
+      "sha256": "b8792817f06c2357d2416e498fbfd0f13c87e7415ed426b728c5ba9d68d7991e"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2015.collection.d.ts",
+      "sha256": "dc2df20b1bcdc8c2d34af4926e2c3ab15ffe1160a63e58b7e09833f616efff44"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2015.core.d.ts",
+      "sha256": "c57796738e7f83dbc4b8e65132f11a377649c00dd3eee333f672b8f0a6bea671"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2015.iterable.d.ts",
+      "sha256": "0559b1f683ac7505ae451f9a96ce4c3c92bdc71411651ca6ddb0e88baaaad6a3"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2015.symbol.wellknown.d.ts",
+      "sha256": "fb0f136d372979348d59b3f5020b4cdb81b5504192b1cacff5d1fbba29378aa1"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2017.string.d.ts",
+      "sha256": "2f11ff796926e0832f9ae148008138ad583bd181899ab7dd768a2666700b1893"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2020.bigint.d.ts",
+      "sha256": "d6d7ae4d1f1f3772e2a3cde568ed08991a8ae34a080ff1151af28b7f798e22ca"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es2022.error.d.ts",
+      "sha256": "0a3d63ef2b853447ec4f749d3f368ce642264246e02911fcb1590d8c161b8005"
+    },
+    {
+      "file": "node_modules/.pnpm/typescript@5.9.3/node_modules/typescript/lib/lib.es5.d.ts",
+      "sha256": "c430d44666289dae81f30fa7b2edebf186ecc91a2d4c71266ea6ae76388792e1"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2015.collection.d.ts",
+      "sha256": "dc2df20b1bcdc8c2d34af4926e2c3ab15ffe1160a63e58b7e09833f616efff44"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2015.core.d.ts",
+      "sha256": "c57796738e7f83dbc4b8e65132f11a377649c00dd3eee333f672b8f0a6bea671"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2015.iterable.d.ts",
+      "sha256": "0559b1f683ac7505ae451f9a96ce4c3c92bdc71411651ca6ddb0e88baaaad6a3"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2015.symbol.wellknown.d.ts",
+      "sha256": "fb0f136d372979348d59b3f5020b4cdb81b5504192b1cacff5d1fbba29378aa1"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2016.array.include.d.ts",
+      "sha256": "d15bea3d62cbbdb9797079416b8ac375ae99162a7fba5de2c6c505446486ac0a"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2017.string.d.ts",
+      "sha256": "2f11ff796926e0832f9ae148008138ad583bd181899ab7dd768a2666700b1893"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2020.bigint.d.ts",
+      "sha256": "d6d7ae4d1f1f3772e2a3cde568ed08991a8ae34a080ff1151af28b7f798e22ca"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2022.error.d.ts",
+      "sha256": "0a3d63ef2b853447ec4f749d3f368ce642264246e02911fcb1590d8c161b8005"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es5.d.ts",
+      "sha256": "c430d44666289dae81f30fa7b2edebf186ecc91a2d4c71266ea6ae76388792e1"
+    },
+    {
+      "file": "node_modules/typescript/package.json",
+      "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+    },
+    {
+      "file": "package.json",
+      "sha256": "f068ac4f83c2984a38d439b90159e48b7fdf42ee4792f7ccde56230c7ecf1a7c"
+    },
+    {
+      "file": "src/amounts.ts",
+      "sha256": "98ddc0fa8d80b2ca244a207f4eb8b55d86131c2ccfd77620da5c85248d03ef57"
+    },
+    {
+      "file": "src/canonical.ts",
+      "sha256": "eb2981c629182525c6742d2a67f513f0daec88507e5861f475d5de04984a2d56"
+    },
+    {
+      "file": "src/catalog.ts",
+      "sha256": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56"
+    },
+    {
+      "file": "src/commands.ts",
+      "sha256": "c40c66fc3e5d3e60022534a561d44280cda205f3cc10be759f8efdc97038a98b"
+    },
+    {
+      "file": "src/coordinator.ts",
+      "sha256": "4bc44f2c38578991a137d9e363b7677c23a788dd9cc5c4129074f1a95a14e3a2"
+    },
+    {
+      "file": "src/digest.ts",
+      "sha256": "5fa667c59dd65a667d8cceddd9bf8c25eb46d3787a22ad7db797fd3722d5f833"
+    },
+    {
+      "file": "src/events.ts",
+      "sha256": "8d076ee8f426c011d7df3f205dd014f0e835f71798b3684ca56844b691ba2370"
+    },
+    {
+      "file": "src/facade.ts",
+      "sha256": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d"
+    },
+    {
+      "file": "src/index.ts",
+      "sha256": "2e0587666ff20d57a757c0576fddf8badf36c2901735db7225a0cebda829b555"
+    },
+    {
+      "file": "src/integrity.ts",
+      "sha256": "238ccd616e791b60b523b89517479585f2d9aabe83198464a44f654cd7058037"
+    },
+    {
+      "file": "src/kernel.ts",
+      "sha256": "f336d22a07d6018dc5528bd2a13a33c5aa9f1a72b0c0ed048cb73219b9b0c06c"
+    },
+    {
+      "file": "src/measurements.ts",
+      "sha256": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5"
+    },
+    {
+      "file": "src/model.ts",
+      "sha256": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122"
+    },
+    {
+      "file": "src/ordering.ts",
+      "sha256": "e72ac94e99b1b4914f3f6dec55583e401484a41ecadd051be788724c88f24cb9"
+    },
+    {
+      "file": "src/projection.ts",
+      "sha256": "f2a9747cfc7c63615347c48383ae7f58ee7df007411cc8de3dd5bb6afaca21d5"
+    },
+    {
+      "file": "src/quantity.ts",
+      "sha256": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6"
+    },
+    {
+      "file": "src/selectors.ts",
+      "sha256": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957"
+    },
+    {
+      "file": "src/sparse-record.ts",
+      "sha256": "272a1f63afe9ed4c84cd76a4ce051b210b52e6e0a54cf47ec4f11a29979ada71"
+    },
+    {
+      "file": "src/storage.ts",
+      "sha256": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d"
+    },
+    {
+      "file": "src/traceability.ts",
+      "sha256": "7db0c39cb3262339e76790a7ba10569d67d205ab84f1adb078b6b6d95e93a59c"
+    },
+    {
+      "file": "src/usability.ts",
+      "sha256": "bb4cf272fd01be5c4866b388f2af63e9fdd7286c208600fb635ca10d30f0ad51"
+    },
+    {
+      "file": "tsconfig.json",
+      "sha256": "b46c6324e4819ea54c9824d2e0f4c28f9304aa54e39d7f8afbac65f744eed464"
+    }
+  ],
+  "proofs": [
+    {
+      "surfaceKey": "type:src/facade.ts#InventoryOnceTraceabilityApi.aggregate::call[0]",
+      "mode": "A",
+      "signatureHash": "f7f66da0a95483ff46c65b6173782683831b7cebdbb5c62401dcbbd788e24a0b",
+      "declaration": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 67351,
+          "line": 1645,
+          "column": 3
+        },
+        "end": {
+          "offset": 67439,
+          "line": 1647,
+          "column": 40
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "fb0fa3ed06dd0f03bcac5084dae388a4a513dc1287536ce683da6c5cc91dfa49"
+      },
+      "semantics": {
+        "source": {
+          "surfaceKey": "type:src/facade.ts#InventoryOnceTraceabilityApi.aggregate::call[0]",
+          "publicDeclaration": {
+            "file": "src/facade.ts",
+            "start": {
+              "offset": 67351,
+              "line": 1645,
+              "column": 3
+            },
+            "end": {
+              "offset": 67439,
+              "line": 1647,
+              "column": 40
+            },
+            "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+            "astHash": "fb0fa3ed06dd0f03bcac5084dae388a4a513dc1287536ce683da6c5cc91dfa49"
+          },
+          "implementation": {
+            "file": "src/facade.ts",
+            "start": {
+              "offset": 295403,
+              "line": 8141,
+              "column": 3
+            },
+            "end": {
+              "offset": 295653,
+              "line": 8149,
+              "column": 4
+            },
+            "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+            "astHash": "e677b9d50f340e3e759ecf0f85255687b0def9a2521d90fd8bd9b7e1bc0e2e78"
+          }
+        },
+        "wrapperEquation": {
+          "name": "aggregate",
+          "termSha256": "bc72367ee95b6647471b73cc2b721a28df00442148b8362e790ca237044eba61",
+          "declaration": {
+            "file": "src/facade.ts",
+            "start": {
+              "offset": 295403,
+              "line": 8141,
+              "column": 3
+            },
+            "end": {
+              "offset": 295653,
+              "line": 8149,
+              "column": 4
+            },
+            "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+            "astHash": "e677b9d50f340e3e759ecf0f85255687b0def9a2521d90fd8bd9b7e1bc0e2e78"
+          }
+        },
+        "sharedCommitRelationEquation": {
+          "name": "commitRelation",
+          "termSha256": "466de9c99a69ae97c8be74daba756b9baefffb61984b418e049a2ca32c11ea8e",
+          "declaration": {
+            "file": "src/facade.ts",
+            "start": {
+              "offset": 296720,
+              "line": 8185,
+              "column": 3
+            },
+            "end": {
+              "offset": 297861,
+              "line": 8212,
+              "column": 4
+            },
+            "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+            "astHash": "17d89a0f8352b808d424038ecaaad422d32266d72fd4418b8e56ac573f8f07b9"
+          }
+        },
+        "eventLiterals": {
+          "actionAdd": "add",
+          "containment": "containment",
+          "association": "association"
+        },
+        "currentCommitDraft": {
+          "proofKind": "surface-residual-commit-event-draft-a5-v1",
+          "artifact": {
+            "file": "experiments/tla-conformance/r147-event-result30-currentization/CommitEventDraftA5.current.json",
+            "sha256": "510a4d916941df5124d0f83fec705298d82adfd36f9e9f2a7a39cd6485b5f5af"
+          },
+          "currentEventResult": {
+            "proofKind": "r134-current-event-result-sparse-lookup-equation-v1",
+            "equationId": "src/facade.ts#createInventoryOnceEventResult",
+            "normalizedTermSha256": "66a9e8c79a8faef8b1f2c65c17cceb93a4265d0d0ad6fd3ac18131f1d8ea107b",
+            "dependency": {
+              "key": "src/sparse-record.ts#inventorySparseRecordValue",
+              "termSha256": "80c4cf4ebb11ccea712a0252cede61d6b7dd69caf07ad7f4b6607298c0cc900f",
+              "evidence": {
+                "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/sparse-record-certificate.json",
+                "sha256": "6ecd861755e963798a2cd077813cd3c412997121b16e6f1cdea337baa2fe7815"
+              }
+            },
+            "evidence": {
+              "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/event-result-current.json",
+              "sha256": "2e693f359c16a93a9853da5653378c77523ae19aed5d63f76acdbd415347ae87"
+            }
+          }
+        },
+        "currentDependencies": [
+          {
+            "proofKind": "inventoryonce-event-replacement-complete-source-equations-v1",
+            "surfaceKey": "export:./kernel#createInventoryTraceabilityEvent::call[0]",
+            "mode": "V",
+            "signatureHash": "e1a9688c1a2c42c4c1be79e16312c789ff769e31f6095b467b2083918e1f0d27",
+            "declaration": {
+              "file": "src/commands.ts",
+              "start": {
+                "offset": 41812,
+                "line": 1126,
+                "column": 1
+              },
+              "end": {
+                "offset": 42058,
+                "line": 1136,
+                "column": 2
+              },
+              "sourceHash": "c40c66fc3e5d3e60022534a561d44280cda205f3cc10be759f8efdc97038a98b",
+              "astHash": "38eae0cd88e201aa567ef471bdace6ba5b8074501a8057a0ffc69429374145b8"
+            },
+            "memberSha256": "d3e4bfe013173e69d68e91f48f1589e852d605f9d6ba8cf0f0f63f5c612a234c"
+          },
+          {
+            "proofKind": "inventoryonce-event-replacement-complete-source-equations-v1",
+            "surfaceKey": "export:./kernel#inventoryEventIntentFingerprint::call[0]",
+            "mode": "V",
+            "signatureHash": "e525932aea75782aa8e8dd5b53848d5a1ac176cac39fdd2a60b945c4e6f3a90d",
+            "declaration": {
+              "file": "src/events.ts",
+              "start": {
+                "offset": 19495,
+                "line": 444,
+                "column": 1
+              },
+              "end": {
+                "offset": 21710,
+                "line": 504,
+                "column": 2
+              },
+              "sourceHash": "8d076ee8f426c011d7df3f205dd014f0e835f71798b3684ca56844b691ba2370",
+              "astHash": "721608fe9cb5d924b7ea827d0aceaec267e1298d0a94d864734b9632154dcc46"
+            },
+            "memberSha256": "70ea08c3ef7127ddf08d8329681987d30b87585b6ed33140abf2dad03ca37c7a"
+          },
+          {
+            "proofKind": "commit-inventory-operation-environment-contract-a1-current-r139-v1",
+            "surfaceKey": "export:./storage#commitInventoryOperation::call[0]",
+            "mode": "A",
+            "memberSha256": "39133544fe8192af2f3becddfbdddf46535cf632073910f313865fb3baff4843",
+            "authority": {
+              "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/downstream43-current/commit-current.json",
+              "sha256": "052ae807f0da4706e361f6128c0812e98031811d128ac26717f96ffe8702757e"
+            }
+          }
+        ],
+        "universalReducer": {
+          "proofKind": "traceability-apply-changes-complete-value-v1",
+          "surfaceKey": "export:./kernel#applyInventoryTraceabilityChanges::call[0]",
+          "mode": "V",
+          "signatureHash": "7ba308e40591fca9d781ed542756257c11e3c78df8f27349f6f61d64fd8a85fe",
+          "declaration": {
+            "file": "src/traceability.ts",
+            "start": {
+              "offset": 2019,
+              "line": 54,
+              "column": 1
+            },
+            "end": {
+              "offset": 4278,
+              "line": 120,
+              "column": 2
+            },
+            "sourceHash": "7db0c39cb3262339e76790a7ba10569d67d205ab84f1adb078b6b6d95e93a59c",
+            "astHash": "11e473aaabe0dec1b27bd46f752d324ce7b4e07e7eea385f83718c21642e5b20"
+          },
+          "equationId": "src/traceability.ts#applyInventoryTraceabilityChanges",
+          "equationSha256": "2485c5479790fc473ab6935b61016943ef2fb06a59ad43d2cc8a43fa3494bbff",
+          "completeSourceEquation": true
+        },
+        "formalAction": {
+          "model": "TraceabilityContainment",
+          "manifest": {
+            "file": "experiments/tla-conformance/traceability-open-relations-r15/certificates/TraceabilityContainment.manifest.json",
+            "sha256": "e4e0c9f200e9222663f20aaf62121390e02247c25be21bd5658b51bdbf673b65",
+            "counts": {
+              "byOperator": {
+                "Aggregate": 23760,
+                "Disaggregate": 300
+              },
+              "edgeOccurrences": 24060,
+              "initialStates": 1,
+              "selfLoops": 0,
+              "states": 125
+            }
+          },
+          "reverse": {
+            "file": "experiments/tla-conformance/traceability-open-relations-r15/certificates/TraceabilityContainment.reverse.json",
+            "sha256": "538e4de24f138e0db94aa856bc09be42a9dbad1adb1a94627b7a8505436117bc",
+            "edgeOccurrences": 24060,
+            "directNextCertificate": {
+              "sanySha256": "e7a714e5625afdf38bad68d230e694dac8ab45f460a26a96549a701c68281c34",
+              "nextLocation": {
+                "beginLine": 36,
+                "endLine": 38
+              },
+              "branches": [
+                {
+                  "operator": "Aggregate",
+                  "parameters": [
+                    "child",
+                    "container"
+                  ],
+                  "domains": [
+                    "Original!Objects",
+                    "Original!Objects"
+                  ]
+                },
+                {
+                  "operator": "Disaggregate",
+                  "parameters": [
+                    "child"
+                  ],
+                  "domains": [
+                    "Original!Objects"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        "retainedPublicDomain": {
+          "file": "experiments/tla-conformance/traceability-open-relations-r15/public-domain-reclassification.json",
+          "sha256": "7dc8a018b22b5f1fce62fadcc205bc33a51d943e8a48f95d74ea5abaf424bfe1",
+          "rows": 57344,
+          "mismatchCount": 0,
+          "counts": {
+            "Aggregate:disabled:rejected": 15360,
+            "Aggregate:enabled:returned": 13312,
+            "Associate:disabled:rejected": 13312,
+            "Associate:enabled:returned": 15360
+          },
+          "broadPinsReplacedByCurrentTermReceipts": [
+            "src/facade.ts",
+            "src/events.ts"
+          ]
+        }
+      }
+    },
+    {
+      "surfaceKey": "type:src/facade.ts#InventoryOnceTraceabilityApi.associate::call[0]",
+      "mode": "A",
+      "signatureHash": "f7f66da0a95483ff46c65b6173782683831b7cebdbb5c62401dcbbd788e24a0b",
+      "declaration": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 67669,
+          "line": 1653,
+          "column": 3
+        },
+        "end": {
+          "offset": 67757,
+          "line": 1655,
+          "column": 40
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "f35e6e9c4ae223131eebae57e1dcb3ac2ae9b380fdd0c7801920ab37963c9060"
+      },
+      "semantics": {
+        "source": {
+          "surfaceKey": "type:src/facade.ts#InventoryOnceTraceabilityApi.associate::call[0]",
+          "publicDeclaration": {
+            "file": "src/facade.ts",
+            "start": {
+              "offset": 67669,
+              "line": 1653,
+              "column": 3
+            },
+            "end": {
+              "offset": 67757,
+              "line": 1655,
+              "column": 40
+            },
+            "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+            "astHash": "f35e6e9c4ae223131eebae57e1dcb3ac2ae9b380fdd0c7801920ab37963c9060"
+          },
+          "implementation": {
+            "file": "src/facade.ts",
+            "start": {
+              "offset": 296050,
+              "line": 8163,
+              "column": 3
+            },
+            "end": {
+              "offset": 296300,
+              "line": 8171,
+              "column": 4
+            },
+            "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+            "astHash": "45bd0d54a3cde069392809467c77937a89d5d7b135bac1f601db719e8352742a"
+          }
+        },
+        "wrapperEquation": {
+          "name": "associate",
+          "termSha256": "42c08e897c10f4def34084fce3558780e34ef25f77130195aa3d95781766e57c",
+          "declaration": {
+            "file": "src/facade.ts",
+            "start": {
+              "offset": 296050,
+              "line": 8163,
+              "column": 3
+            },
+            "end": {
+              "offset": 296300,
+              "line": 8171,
+              "column": 4
+            },
+            "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+            "astHash": "45bd0d54a3cde069392809467c77937a89d5d7b135bac1f601db719e8352742a"
+          }
+        },
+        "sharedCommitRelationEquation": {
+          "name": "commitRelation",
+          "termSha256": "466de9c99a69ae97c8be74daba756b9baefffb61984b418e049a2ca32c11ea8e",
+          "declaration": {
+            "file": "src/facade.ts",
+            "start": {
+              "offset": 296720,
+              "line": 8185,
+              "column": 3
+            },
+            "end": {
+              "offset": 297861,
+              "line": 8212,
+              "column": 4
+            },
+            "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+            "astHash": "17d89a0f8352b808d424038ecaaad422d32266d72fd4418b8e56ac573f8f07b9"
+          }
+        },
+        "eventLiterals": {
+          "actionAdd": "add",
+          "containment": "containment",
+          "association": "association"
+        },
+        "currentCommitDraft": {
+          "proofKind": "surface-residual-commit-event-draft-a5-v1",
+          "artifact": {
+            "file": "experiments/tla-conformance/r147-event-result30-currentization/CommitEventDraftA5.current.json",
+            "sha256": "510a4d916941df5124d0f83fec705298d82adfd36f9e9f2a7a39cd6485b5f5af"
+          },
+          "currentEventResult": {
+            "proofKind": "r134-current-event-result-sparse-lookup-equation-v1",
+            "equationId": "src/facade.ts#createInventoryOnceEventResult",
+            "normalizedTermSha256": "66a9e8c79a8faef8b1f2c65c17cceb93a4265d0d0ad6fd3ac18131f1d8ea107b",
+            "dependency": {
+              "key": "src/sparse-record.ts#inventorySparseRecordValue",
+              "termSha256": "80c4cf4ebb11ccea712a0252cede61d6b7dd69caf07ad7f4b6607298c0cc900f",
+              "evidence": {
+                "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/sparse-record-certificate.json",
+                "sha256": "6ecd861755e963798a2cd077813cd3c412997121b16e6f1cdea337baa2fe7815"
+              }
+            },
+            "evidence": {
+              "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/event-result-current.json",
+              "sha256": "2e693f359c16a93a9853da5653378c77523ae19aed5d63f76acdbd415347ae87"
+            }
+          }
+        },
+        "currentDependencies": [
+          {
+            "proofKind": "inventoryonce-event-replacement-complete-source-equations-v1",
+            "surfaceKey": "export:./kernel#createInventoryTraceabilityEvent::call[0]",
+            "mode": "V",
+            "signatureHash": "e1a9688c1a2c42c4c1be79e16312c789ff769e31f6095b467b2083918e1f0d27",
+            "declaration": {
+              "file": "src/commands.ts",
+              "start": {
+                "offset": 41812,
+                "line": 1126,
+                "column": 1
+              },
+              "end": {
+                "offset": 42058,
+                "line": 1136,
+                "column": 2
+              },
+              "sourceHash": "c40c66fc3e5d3e60022534a561d44280cda205f3cc10be759f8efdc97038a98b",
+              "astHash": "38eae0cd88e201aa567ef471bdace6ba5b8074501a8057a0ffc69429374145b8"
+            },
+            "memberSha256": "d3e4bfe013173e69d68e91f48f1589e852d605f9d6ba8cf0f0f63f5c612a234c"
+          },
+          {
+            "proofKind": "inventoryonce-event-replacement-complete-source-equations-v1",
+            "surfaceKey": "export:./kernel#inventoryEventIntentFingerprint::call[0]",
+            "mode": "V",
+            "signatureHash": "e525932aea75782aa8e8dd5b53848d5a1ac176cac39fdd2a60b945c4e6f3a90d",
+            "declaration": {
+              "file": "src/events.ts",
+              "start": {
+                "offset": 19495,
+                "line": 444,
+                "column": 1
+              },
+              "end": {
+                "offset": 21710,
+                "line": 504,
+                "column": 2
+              },
+              "sourceHash": "8d076ee8f426c011d7df3f205dd014f0e835f71798b3684ca56844b691ba2370",
+              "astHash": "721608fe9cb5d924b7ea827d0aceaec267e1298d0a94d864734b9632154dcc46"
+            },
+            "memberSha256": "70ea08c3ef7127ddf08d8329681987d30b87585b6ed33140abf2dad03ca37c7a"
+          },
+          {
+            "proofKind": "commit-inventory-operation-environment-contract-a1-current-r139-v1",
+            "surfaceKey": "export:./storage#commitInventoryOperation::call[0]",
+            "mode": "A",
+            "memberSha256": "39133544fe8192af2f3becddfbdddf46535cf632073910f313865fb3baff4843",
+            "authority": {
+              "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/downstream43-current/commit-current.json",
+              "sha256": "052ae807f0da4706e361f6128c0812e98031811d128ac26717f96ffe8702757e"
+            }
+          }
+        ],
+        "universalReducer": {
+          "proofKind": "traceability-apply-changes-complete-value-v1",
+          "surfaceKey": "export:./kernel#applyInventoryTraceabilityChanges::call[0]",
+          "mode": "V",
+          "signatureHash": "7ba308e40591fca9d781ed542756257c11e3c78df8f27349f6f61d64fd8a85fe",
+          "declaration": {
+            "file": "src/traceability.ts",
+            "start": {
+              "offset": 2019,
+              "line": 54,
+              "column": 1
+            },
+            "end": {
+              "offset": 4278,
+              "line": 120,
+              "column": 2
+            },
+            "sourceHash": "7db0c39cb3262339e76790a7ba10569d67d205ab84f1adb078b6b6d95e93a59c",
+            "astHash": "11e473aaabe0dec1b27bd46f752d324ce7b4e07e7eea385f83718c21642e5b20"
+          },
+          "equationId": "src/traceability.ts#applyInventoryTraceabilityChanges",
+          "equationSha256": "2485c5479790fc473ab6935b61016943ef2fb06a59ad43d2cc8a43fa3494bbff",
+          "completeSourceEquation": true
+        },
+        "formalAction": {
+          "model": "TraceabilityAssociation",
+          "manifest": {
+            "file": "experiments/tla-conformance/traceability-open-relations-r15/certificates/TraceabilityAssociation.manifest.json",
+            "sha256": "827dda445f39e6cacd7ed39bb1a5b92ff90107669b4046484984be740d6f72b6",
+            "counts": {
+              "byOperator": {
+                "Associate": 24576,
+                "Disassociate": 24576
+              },
+              "edgeOccurrences": 49152,
+              "initialStates": 1,
+              "selfLoops": 0,
+              "states": 4096
+            }
+          },
+          "reverse": {
+            "file": "experiments/tla-conformance/traceability-open-relations-r15/certificates/TraceabilityAssociation.reverse.json",
+            "sha256": "3bc5fdf9f18cff75f535259248c374353c3609a1383443bee16640f0bbfd67f4",
+            "edgeOccurrences": 49152,
+            "directNextCertificate": {
+              "sanySha256": "bb04ddb33bdb26f4ed73e5b79a7056c2d301d4f24dd0debf405918c329bd205d",
+              "nextLocation": {
+                "beginLine": 23,
+                "endLine": 25
+              },
+              "branches": [
+                {
+                  "operator": "Associate",
+                  "parameters": [
+                    "child",
+                    "durableParent"
+                  ],
+                  "domains": [
+                    "Original!Objects",
+                    "Original!Objects"
+                  ]
+                },
+                {
+                  "operator": "Disassociate",
+                  "parameters": [
+                    "child",
+                    "durableParent"
+                  ],
+                  "domains": [
+                    "Original!Objects",
+                    "Original!Objects"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        "retainedPublicDomain": {
+          "file": "experiments/tla-conformance/traceability-open-relations-r15/public-domain-reclassification.json",
+          "sha256": "7dc8a018b22b5f1fce62fadcc205bc33a51d943e8a48f95d74ea5abaf424bfe1",
+          "rows": 57344,
+          "mismatchCount": 0,
+          "counts": {
+            "Aggregate:disabled:rejected": 15360,
+            "Aggregate:enabled:returned": 13312,
+            "Associate:disabled:rejected": 13312,
+            "Associate:enabled:returned": 15360
+          },
+          "broadPinsReplacedByCurrentTermReceipts": [
+            "src/facade.ts",
+            "src/events.ts"
+          ]
+        }
+      }
+    }
+  ]
+}

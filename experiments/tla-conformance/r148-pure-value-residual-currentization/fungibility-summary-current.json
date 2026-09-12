@@ -1,0 +1,1501 @@
+{
+  "schemaVersion": 1,
+  "proofKind": "fungibility-summary-complete-values-v1",
+  "route": "CERTIFIED_VALUE_EQUATION",
+  "family": "FungibilitySummary",
+  "surfaceDigest": "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a",
+  "domain": "All inputs admitted by the two direct summary exports plus the genuine frozen-snapshot fungibilitySummary signature. The full summary declaration and its two private selector helpers are checked against complete independent declaration terms; every external helper is either live-current strict V or the separately verified queued FungibilityValue5 normalize equation. No runtime samples, graph replay, or stateful action credit is used.",
+  "allAdmittedInputs": true,
+  "sampledInputs": 0,
+  "graphRuns": 0,
+  "replayRuns": 0,
+  "inputs": [
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-published-source-contracts.mjs",
+      "sha256": "d05ecad078de891073c82f4c523090382b608204269281464ca9a325ca3208b2"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-published-source-equations.mjs",
+      "sha256": "243e06ade88446247ab26d1bcec53fb70cccab6c5929f2013dc2aa995ae73ce8"
+    },
+    {
+      "file": "experiments/tla-conformance/fungibility-read-r9/equations.expected.ts.txt",
+      "sha256": "b7ecdcd0dbcbc9bc484243ebde0771510a6637b3395b768d5141238657421047"
+    },
+    {
+      "file": "experiments/tla-conformance/fungibility-values5-r8/equations.expected.ts.txt",
+      "sha256": "2cd2c41e8dcfc87de7626b270c1f234a43a11339b50f7a5483341642b2d95349"
+    },
+    {
+      "file": "experiments/tla-conformance/fungibility-values5-r8/family.mjs",
+      "sha256": "5a79e3667f41b0bdbb99bb9b53ff16b50fb383126494037a45b4281479434ba4"
+    },
+    {
+      "file": "experiments/tla-conformance/identity-values-r7/contracts.mjs",
+      "sha256": "dea23f4b3f929ac1bcf9b50cd41517c1b3fc4e3d879904aa6c4d83263ba7b2ce"
+    },
+    {
+      "file": "experiments/tla-conformance/identity-values-r7/equations.ts.txt",
+      "sha256": "f4b3b7a3fa1dbf3338f295c3d97f73cf753cba7741d69f272e91db7fa5079844"
+    },
+    {
+      "file": "experiments/tla-conformance/identity-values-r7/family.mjs",
+      "sha256": "493486e43054dd4613091e973558f2c0463e96ff83347080a3f32e636dde6709"
+    },
+    {
+      "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/current-dependency-receipt.mjs",
+      "sha256": "d77fce2908bd047bba4f612c69217138610941558683b09a18ec68717c8953fe"
+    },
+    {
+      "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/fungibility-summary-current.mjs",
+      "sha256": "367718f19843efe4cb61034fe69607040a329cdf4c99cb8e60095cbd77e2f801"
+    },
+    {
+      "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/value5-current.json",
+      "sha256": "f7806a25bd3729810fdf50e8b424f5b13c12f856fa817795dc0d62fff04394ba"
+    },
+    {
+      "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+      "sha256": "8d8854032e38a0df1044e5596c66d9a2b672277f357e361102b0b12c3d6952a0"
+    },
+    {
+      "file": "experiments/tla-conformance/value-contracts/catalog-family.mjs",
+      "sha256": "32439d061232e266f53acd3b33025b97b172769ffe418964319177b8041cab9a"
+    },
+    {
+      "file": "experiments/tla-conformance/value-contracts/surface-binding.mjs",
+      "sha256": "619b37fe3a9bc9be22e8a0c2167187cfce987c7856280c6df0c36c5a230c3618"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2015.collection.d.ts",
+      "sha256": "dc2df20b1bcdc8c2d34af4926e2c3ab15ffe1160a63e58b7e09833f616efff44"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2015.core.d.ts",
+      "sha256": "c57796738e7f83dbc4b8e65132f11a377649c00dd3eee333f672b8f0a6bea671"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2015.iterable.d.ts",
+      "sha256": "0559b1f683ac7505ae451f9a96ce4c3c92bdc71411651ca6ddb0e88baaaad6a3"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2016.array.include.d.ts",
+      "sha256": "d15bea3d62cbbdb9797079416b8ac375ae99162a7fba5de2c6c505446486ac0a"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2017.string.d.ts",
+      "sha256": "2f11ff796926e0832f9ae148008138ad583bd181899ab7dd768a2666700b1893"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2020.bigint.d.ts",
+      "sha256": "d6d7ae4d1f1f3772e2a3cde568ed08991a8ae34a080ff1151af28b7f798e22ca"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2022.error.d.ts",
+      "sha256": "0a3d63ef2b853447ec4f749d3f368ce642264246e02911fcb1590d8c161b8005"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es5.d.ts",
+      "sha256": "c430d44666289dae81f30fa7b2edebf186ecc91a2d4c71266ea6ae76388792e1"
+    },
+    {
+      "file": "node_modules/typescript/package.json",
+      "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+    },
+    {
+      "file": "package.json",
+      "sha256": "f068ac4f83c2984a38d439b90159e48b7fdf42ee4792f7ccde56230c7ecf1a7c"
+    },
+    {
+      "file": "src/amounts.ts",
+      "sha256": "98ddc0fa8d80b2ca244a207f4eb8b55d86131c2ccfd77620da5c85248d03ef57"
+    },
+    {
+      "file": "src/canonical.ts",
+      "sha256": "eb2981c629182525c6742d2a67f513f0daec88507e5861f475d5de04984a2d56"
+    },
+    {
+      "file": "src/catalog.ts",
+      "sha256": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56"
+    },
+    {
+      "file": "src/facade.ts",
+      "sha256": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d"
+    },
+    {
+      "file": "src/fungibility.ts",
+      "sha256": "483741a2e0f8e3cdf38e358929cce5f8b29ffb41494b1268cafa1d38a2197344"
+    },
+    {
+      "file": "src/index.ts",
+      "sha256": "2e0587666ff20d57a757c0576fddf8badf36c2901735db7225a0cebda829b555"
+    },
+    {
+      "file": "src/kernel.ts",
+      "sha256": "f336d22a07d6018dc5528bd2a13a33c5aa9f1a72b0c0ed048cb73219b9b0c06c"
+    },
+    {
+      "file": "src/measurements.ts",
+      "sha256": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5"
+    },
+    {
+      "file": "src/model.ts",
+      "sha256": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122"
+    },
+    {
+      "file": "src/ordering.ts",
+      "sha256": "e72ac94e99b1b4914f3f6dec55583e401484a41ecadd051be788724c88f24cb9"
+    },
+    {
+      "file": "src/projection.ts",
+      "sha256": "f2a9747cfc7c63615347c48383ae7f58ee7df007411cc8de3dd5bb6afaca21d5"
+    },
+    {
+      "file": "src/quantity.ts",
+      "sha256": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6"
+    },
+    {
+      "file": "src/selectors.ts",
+      "sha256": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957"
+    },
+    {
+      "file": "src/sparse-record.ts",
+      "sha256": "272a1f63afe9ed4c84cd76a4ce051b210b52e6e0a54cf47ec4f11a29979ada71"
+    },
+    {
+      "file": "src/usability.ts",
+      "sha256": "bb4cf272fd01be5c4866b388f2af63e9fdd7286c208600fb635ca10d30f0ad51"
+    },
+    {
+      "file": "tsconfig.json",
+      "sha256": "b46c6324e4819ea54c9824d2e0f4c28f9304aa54e39d7f8afbac65f744eed464"
+    }
+  ],
+  "equations": [
+    {
+      "id": "src/fungibility.ts#selectorForFungibilityMember",
+      "law": "Create exactly one normalized selector for the member item/revision while preserving every common orthogonal scope dimension.",
+      "dependencies": [
+        "export:./kernel#normalizeInventoryStockSelector::call[0]"
+      ],
+      "termSha256": "fe35a02e7cbfdf57e83a7674793a31feef3777b26fa9f819444b31467fd821a5",
+      "implementation": {
+        "file": "src/fungibility.ts",
+        "start": {
+          "offset": 32714,
+          "line": 904,
+          "column": 1
+        },
+        "end": {
+          "offset": 32986,
+          "line": 913,
+          "column": 2
+        },
+        "sourceHash": "483741a2e0f8e3cdf38e358929cce5f8b29ffb41494b1268cafa1d38a2197344",
+        "astHash": "e7bb81622e23b09d766608c581edcd4a53c812c95b656d7d5a0ed6b314ff138a"
+      }
+    },
+    {
+      "id": "src/fungibility.ts#selectedFungibilityPositions",
+      "law": "Return exactly the current projection positions selected by the normalized member selector in canonical position-search order.",
+      "dependencies": [
+        "export:./kernel#findInventoryPositions::call[0]"
+      ],
+      "termSha256": "1e1e0cfda50e03e01202b53e9444b01737fe08eb1abd8740e73261fbb7a94522",
+      "implementation": {
+        "file": "src/fungibility.ts",
+        "start": {
+          "offset": 33060,
+          "line": 916,
+          "column": 1
+        },
+        "end": {
+          "offset": 33269,
+          "line": 921,
+          "column": 2
+        },
+        "sourceHash": "483741a2e0f8e3cdf38e358929cce5f8b29ffb41494b1268cafa1d38a2197344",
+        "astHash": "3e68c0c89edb21a36adf5e880f7df9379d4a51387010967c83e4f2cfe21f1c33"
+      }
+    },
+    {
+      "id": "src/fungibility.ts#summarizeInventoryFungibility",
+      "law": "For the exact frozen pool revision and normalized scope, sum every member measurement exactly, split physical and deficit magnitudes by sign, convert all three totals through the frozen member-to-pool ratio, preserve each member breakdown, and return exact common-basis totals without altering item identity.",
+      "dependencies": [
+        "type:src/catalog.ts#InventoryCatalog.fungibilityRevision::call[0]",
+        "type:src/catalog.ts#InventoryCatalog.itemRevision::call[0]",
+        "export:.#normalizeInventoryFungibilityScope::call[0]",
+        "src/fungibility.ts#selectorForFungibilityMember",
+        "src/fungibility.ts#selectedFungibilityPositions",
+        "export:.#zeroQuantity::call[0]",
+        "export:.#inventoryMeasurementAt::call[0]",
+        "export:.#addQuantity::call[0]",
+        "export:.#compareQuantity::call[0]",
+        "export:.#negateQuantity::call[0]",
+        "export:.#convertQuantityByReferenceExact::call[0]"
+      ],
+      "termSha256": "9c3eaaee2eadeaa2e8c91c86f255001ada8ce2c127f195597620a6fe37b67d56",
+      "implementation": {
+        "file": "src/fungibility.ts",
+        "start": {
+          "offset": 6101,
+          "line": 166,
+          "column": 1
+        },
+        "end": {
+          "offset": 8755,
+          "line": 244,
+          "column": 2
+        },
+        "sourceHash": "483741a2e0f8e3cdf38e358929cce5f8b29ffb41494b1268cafa1d38a2197344",
+        "astHash": "a567160c7347fd0c5285909e89b15eed973cbe2a2b62e0c6fb3bf60c65ffebd8"
+      }
+    },
+    {
+      "id": "src/facade.ts#InventoryOnceReadSnapshotImplementation.fungibilitySummary",
+      "law": "result = summarizeInventoryFungibility({ catalog: this.catalog, projection: this.world.projection, fungibilityRevisionId: p0.fungibilityRevisionId, ...(p0.scope === undefined ? {} : { scope: p0.scope }) })",
+      "dependencies": [
+        "src/fungibility.ts#summarizeInventoryFungibility"
+      ],
+      "termSha256": "fec5a47e86ce8b1e26666b09fb76680f5efff466d79458db3b67be796ecb57c1",
+      "implementation": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 303061,
+          "line": 8366,
+          "column": 3
+        },
+        "end": {
+          "offset": 303414,
+          "line": 8375,
+          "column": 4
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "d8553e691f7a1be33b590da23e29ea111d3033c5bd11d54960ba2ca6395562e6"
+      }
+    }
+  ],
+  "currentStrictDependencies": [
+    {
+      "surfaceKey": "type:src/catalog.ts#InventoryCatalog.fungibilityRevision::call[0]",
+      "mode": "V",
+      "proofKind": "independent-catalog-foundation-closed-equations-v1",
+      "signatureHash": "aa0b016e91b5e7a5c6b17303572205599e955f6f1658362f8144bf0ec23e3291",
+      "declaration": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 73774,
+          "line": 1781,
+          "column": 3
+        },
+        "end": {
+          "offset": 74109,
+          "line": 1791,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "96ab5a48ab62a2864ad1ecc5ce0c5b73617299e75f1b7f7ca6594bf431aa58ca"
+      },
+      "evidence": {
+        "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/independent-catalog-foundation-closed-equations-v1.json",
+        "sha256": "c6cdd7aa724de109242d9527b2c0a901c99fd28efed808ec0420742d687111c7"
+      },
+      "semanticIdentity": "cdc2ea07d46fade18772d1025da7ac82cc35d8fc64e72638abd7f9449a76a597"
+    },
+    {
+      "surfaceKey": "type:src/catalog.ts#InventoryCatalog.itemRevision::call[0]",
+      "mode": "V",
+      "proofKind": "r148-current-item-revision-direct-equation-v1",
+      "signatureHash": "d41fb26bbd9d81122bf2187a22667b2b5efd5813c20af70380d1b54c864966c5",
+      "declaration": {
+        "file": "src/catalog.ts",
+        "start": {
+          "offset": 66198,
+          "line": 1575,
+          "column": 3
+        },
+        "end": {
+          "offset": 66453,
+          "line": 1580,
+          "column": 4
+        },
+        "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+        "astHash": "ed486f2e0f9444fa04e761884a3ad98049e510f5c155279e93f0eb0def14f13b"
+      },
+      "semanticIdentity": "e8aa51173f5dc9831a81be6777a36e6eafcbcb70f7bb94fa290f8d71cdb7f035",
+      "source": {
+        "file": "src/catalog.ts",
+        "sha256": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56"
+      },
+      "law": "result = itemByRevisionId[key] when present; otherwise throw the declared key-specific error"
+    },
+    {
+      "surfaceKey": "export:./kernel#normalizeInventoryStockSelector::call[0]",
+      "mode": "V",
+      "proofKind": "independent-identity-values-closed-equations-v1",
+      "signatureHash": "ab49dafdbf57b266c3536065f5dee4ca876a90aef379655c8f0249ee1ca580a8",
+      "declaration": {
+        "file": "src/selectors.ts",
+        "start": {
+          "offset": 4855,
+          "line": 101,
+          "column": 1
+        },
+        "end": {
+          "offset": 7087,
+          "line": 170,
+          "column": 2
+        },
+        "sourceHash": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957",
+        "astHash": "90198be5327afb1a881d93183b9180068a4773e2322a9d86cc7d7bd8b2c31ef1"
+      },
+      "evidence": {
+        "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/independent-identity-values-closed-equations-v1.json",
+        "sha256": "da5b8beec9ee92f82ac5561639f6d0d510ca1e773b6c1ab381bb71f234ee9b5c"
+      },
+      "semanticIdentity": "7c39cec1073248480375df337280371ec5b2722fae9d7eae017013c4fecbf5fd"
+    },
+    {
+      "surfaceKey": "export:./kernel#findInventoryPositions::call[0]",
+      "mode": "V",
+      "proofKind": "independent-catalog-read-semantic-closure-equations-v2",
+      "signatureHash": "ad8aece92cdbbe9be952213d6b0d58ccbf4d6c62104c234dd53138ca59d12272",
+      "declaration": {
+        "file": "src/projection.ts",
+        "start": {
+          "offset": 30259,
+          "line": 792,
+          "column": 1
+        },
+        "end": {
+          "offset": 31481,
+          "line": 827,
+          "column": 2
+        },
+        "sourceHash": "f2a9747cfc7c63615347c48383ae7f58ee7df007411cc8de3dd5bb6afaca21d5",
+        "astHash": "f3d43a472158b958941b74b56255f7263748ec3b07cfd88f38847c12d0d6f9ef"
+      },
+      "evidence": {
+        "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/independent-catalog-read-semantic-closure-equations-v2.json",
+        "sha256": "346be0b0d9acd5c504470523e91b93635ac4b5d22253e506097010c8f6a35174"
+      },
+      "semanticIdentity": "c920e87f853a17029483f32b4f944b43c71e98ed95d4e6400dcb80b208f8f693"
+    },
+    {
+      "surfaceKey": "export:.#zeroQuantity::call[0]",
+      "mode": "V",
+      "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+      "signatureHash": "d49393cfab161dec1afb5aa6b0ff3a0a21b2f54910fffc870df48df4872b6512",
+      "declaration": {
+        "file": "src/quantity.ts",
+        "start": {
+          "offset": 3632,
+          "line": 90,
+          "column": 1
+        },
+        "end": {
+          "offset": 3757,
+          "line": 92,
+          "column": 2
+        },
+        "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+        "astHash": "799ab6145e82ab948f63276455ec76e0621271d245e176f2dd1e4529d1d9de6b"
+      },
+      "evidence": {
+        "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+        "sha256": "9ce68b539ae40716ef3fe91d54dcefdc5790a19b81bcf67997fb4466c75cbb5a"
+      },
+      "semanticIdentity": "cb7507c285e228d17e56b79849a209c07f107679ef2aadb6e2918976da292639"
+    },
+    {
+      "surfaceKey": "export:.#inventoryMeasurementAt::call[0]",
+      "mode": "V",
+      "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+      "signatureHash": "8f3d288c4d4809d76759209643db939d620ee9cda16199c53c63777c545fa24e",
+      "declaration": {
+        "file": "src/measurements.ts",
+        "start": {
+          "offset": 3513,
+          "line": 96,
+          "column": 1
+        },
+        "end": {
+          "offset": 4160,
+          "line": 115,
+          "column": 2
+        },
+        "sourceHash": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5",
+        "astHash": "2c84b38ce35dd712fb33bee685a616e2427078ee8e4ed255dfcf0a8bffe50941"
+      },
+      "evidence": {
+        "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+        "sha256": "9ce68b539ae40716ef3fe91d54dcefdc5790a19b81bcf67997fb4466c75cbb5a"
+      },
+      "semanticIdentity": "86b1bf32e2cc3af70288a214a29f328675f35df8731136de6c0124fbf2371064"
+    },
+    {
+      "surfaceKey": "export:.#addQuantity::call[0]",
+      "mode": "V",
+      "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+      "signatureHash": "08d96c65dff49521b3ffe026da2a09d0e729d8ac46f1feb6979117e0aac06066",
+      "declaration": {
+        "file": "src/quantity.ts",
+        "start": {
+          "offset": 5036,
+          "line": 122,
+          "column": 1
+        },
+        "end": {
+          "offset": 5403,
+          "line": 133,
+          "column": 2
+        },
+        "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+        "astHash": "41de671ae9083373361e703dce52f969d588fa4b6210fe21abb94c0c530bb04e"
+      },
+      "evidence": {
+        "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+        "sha256": "9ce68b539ae40716ef3fe91d54dcefdc5790a19b81bcf67997fb4466c75cbb5a"
+      },
+      "semanticIdentity": "4124e0038dfd48aafaddf74aaa79a7aacade11384f5c9416192ac610529d8971"
+    },
+    {
+      "surfaceKey": "export:.#compareQuantity::call[0]",
+      "mode": "V",
+      "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+      "signatureHash": "260f6181ad43d59a536f032b3ee71047b7cbbba907cc2a132b62240bbb6cdfbe",
+      "declaration": {
+        "file": "src/quantity.ts",
+        "start": {
+          "offset": 4340,
+          "line": 106,
+          "column": 1
+        },
+        "end": {
+          "offset": 4728,
+          "line": 114,
+          "column": 2
+        },
+        "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+        "astHash": "1db799552387f77a3ce886fe98189cbc57657d19dcfc522167d792851cd6af4d"
+      },
+      "evidence": {
+        "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+        "sha256": "9ce68b539ae40716ef3fe91d54dcefdc5790a19b81bcf67997fb4466c75cbb5a"
+      },
+      "semanticIdentity": "9b07201c2c74ab1ed0372b11f11db6b466200ac79678fa9b3c242357939234ac"
+    },
+    {
+      "surfaceKey": "export:.#negateQuantity::call[0]",
+      "mode": "V",
+      "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+      "signatureHash": "6294a0c2f94616e55721e1ae20e98acb2ff30adf01d879e89cd34a3d916fafd1",
+      "declaration": {
+        "file": "src/quantity.ts",
+        "start": {
+          "offset": 5940,
+          "line": 150,
+          "column": 1
+        },
+        "end": {
+          "offset": 6116,
+          "line": 156,
+          "column": 2
+        },
+        "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+        "astHash": "3b9039f8b375115202d14060df7b70a204620c6942d69c5dc8f1b77d5fc697da"
+      },
+      "evidence": {
+        "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+        "sha256": "9ce68b539ae40716ef3fe91d54dcefdc5790a19b81bcf67997fb4466c75cbb5a"
+      },
+      "semanticIdentity": "24bd8f440095be0c79eccdc447f278962f5fe24e3d27e9ef1f79e0bbabd52110"
+    },
+    {
+      "surfaceKey": "export:.#convertQuantityByReferenceExact::call[0]",
+      "mode": "V",
+      "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+      "signatureHash": "77c7f081afb804272e09b8bd6554bc72ab102a9fd3ee57e8157230e1b2a2345a",
+      "declaration": {
+        "file": "src/quantity.ts",
+        "start": {
+          "offset": 10543,
+          "line": 275,
+          "column": 1
+        },
+        "end": {
+          "offset": 11265,
+          "line": 297,
+          "column": 2
+        },
+        "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+        "astHash": "f4e71ba41fbb52ef092b0d17113b4ba77abb7d01b623d3897f3304fc952c2540"
+      },
+      "evidence": {
+        "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+        "sha256": "9ce68b539ae40716ef3fe91d54dcefdc5790a19b81bcf67997fb4466c75cbb5a"
+      },
+      "semanticIdentity": "3658161a9f482fcf51499d768db47f8318ff3eec040e2d18e31069f1c8cf8334"
+    }
+  ],
+  "queuedDependencies": [
+    {
+      "surfaceKey": "export:.#normalizeInventoryFungibilityScope::call[0]",
+      "mode": "V",
+      "proofKind": "fungibility-scope-policy-batch-complete-values-v1",
+      "evidence": {
+        "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/value5-current.json",
+        "sha256": "f7806a25bd3729810fdf50e8b424f5b13c12f856fa817795dc0d62fff04394ba"
+      },
+      "equationId": "src/fungibility.ts#normalizeInventoryFungibilityScope"
+    }
+  ],
+  "proofs": [
+    {
+      "surfaceKey": "export:.#summarizeInventoryFungibility::call[0]",
+      "signatureHash": "c5d6890d8ae70be78b9577ffc41c7800d7262d448c57684db9a63b61a8d41da7",
+      "declaration": {
+        "file": "src/fungibility.ts",
+        "start": {
+          "offset": 6101,
+          "line": 166,
+          "column": 1
+        },
+        "end": {
+          "offset": 8755,
+          "line": 244,
+          "column": 2
+        },
+        "sourceHash": "483741a2e0f8e3cdf38e358929cce5f8b29ffb41494b1268cafa1d38a2197344",
+        "astHash": "a567160c7347fd0c5285909e89b15eed973cbe2a2b62e0c6fb3bf60c65ffebd8"
+      },
+      "equationId": "src/fungibility.ts#summarizeInventoryFungibility",
+      "semantics": {
+        "law": "For the exact frozen pool revision and normalized scope, sum every member measurement exactly, split physical and deficit magnitudes by sign, convert all three totals through the frozen member-to-pool ratio, preserve each member breakdown, and return exact common-basis totals without altering item identity.",
+        "completeExpectedTermSha256": "9c3eaaee2eadeaa2e8c91c86f255001ada8ce2c127f195597620a6fe37b67d56",
+        "localEquations": [
+          {
+            "id": "src/fungibility.ts#selectorForFungibilityMember",
+            "termSha256": "fe35a02e7cbfdf57e83a7674793a31feef3777b26fa9f819444b31467fd821a5"
+          },
+          {
+            "id": "src/fungibility.ts#selectedFungibilityPositions",
+            "termSha256": "1e1e0cfda50e03e01202b53e9444b01737fe08eb1abd8740e73261fbb7a94522"
+          },
+          {
+            "id": "src/fungibility.ts#summarizeInventoryFungibility",
+            "termSha256": "9c3eaaee2eadeaa2e8c91c86f255001ada8ce2c127f195597620a6fe37b67d56"
+          },
+          {
+            "id": "src/facade.ts#InventoryOnceReadSnapshotImplementation.fungibilitySummary",
+            "termSha256": "fec5a47e86ce8b1e26666b09fb76680f5efff466d79458db3b67be796ecb57c1"
+          }
+        ],
+        "currentStrictDependencies": [
+          {
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.fungibilityRevision::call[0]",
+            "mode": "V",
+            "proofKind": "independent-catalog-foundation-closed-equations-v1",
+            "signatureHash": "aa0b016e91b5e7a5c6b17303572205599e955f6f1658362f8144bf0ec23e3291",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 73774,
+                "line": 1781,
+                "column": 3
+              },
+              "end": {
+                "offset": 74109,
+                "line": 1791,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "96ab5a48ab62a2864ad1ecc5ce0c5b73617299e75f1b7f7ca6594bf431aa58ca"
+            },
+            "evidence": {
+              "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/independent-catalog-foundation-closed-equations-v1.json",
+              "sha256": "c6cdd7aa724de109242d9527b2c0a901c99fd28efed808ec0420742d687111c7"
+            },
+            "semanticIdentity": "cdc2ea07d46fade18772d1025da7ac82cc35d8fc64e72638abd7f9449a76a597"
+          },
+          {
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.itemRevision::call[0]",
+            "mode": "V",
+            "proofKind": "r148-current-item-revision-direct-equation-v1",
+            "signatureHash": "d41fb26bbd9d81122bf2187a22667b2b5efd5813c20af70380d1b54c864966c5",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 66198,
+                "line": 1575,
+                "column": 3
+              },
+              "end": {
+                "offset": 66453,
+                "line": 1580,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "ed486f2e0f9444fa04e761884a3ad98049e510f5c155279e93f0eb0def14f13b"
+            },
+            "semanticIdentity": "e8aa51173f5dc9831a81be6777a36e6eafcbcb70f7bb94fa290f8d71cdb7f035",
+            "source": {
+              "file": "src/catalog.ts",
+              "sha256": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56"
+            },
+            "law": "result = itemByRevisionId[key] when present; otherwise throw the declared key-specific error"
+          },
+          {
+            "surfaceKey": "export:./kernel#normalizeInventoryStockSelector::call[0]",
+            "mode": "V",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "signatureHash": "ab49dafdbf57b266c3536065f5dee4ca876a90aef379655c8f0249ee1ca580a8",
+            "declaration": {
+              "file": "src/selectors.ts",
+              "start": {
+                "offset": 4855,
+                "line": 101,
+                "column": 1
+              },
+              "end": {
+                "offset": 7087,
+                "line": 170,
+                "column": 2
+              },
+              "sourceHash": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957",
+              "astHash": "90198be5327afb1a881d93183b9180068a4773e2322a9d86cc7d7bd8b2c31ef1"
+            },
+            "evidence": {
+              "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/independent-identity-values-closed-equations-v1.json",
+              "sha256": "da5b8beec9ee92f82ac5561639f6d0d510ca1e773b6c1ab381bb71f234ee9b5c"
+            },
+            "semanticIdentity": "7c39cec1073248480375df337280371ec5b2722fae9d7eae017013c4fecbf5fd"
+          },
+          {
+            "surfaceKey": "export:./kernel#findInventoryPositions::call[0]",
+            "mode": "V",
+            "proofKind": "independent-catalog-read-semantic-closure-equations-v2",
+            "signatureHash": "ad8aece92cdbbe9be952213d6b0d58ccbf4d6c62104c234dd53138ca59d12272",
+            "declaration": {
+              "file": "src/projection.ts",
+              "start": {
+                "offset": 30259,
+                "line": 792,
+                "column": 1
+              },
+              "end": {
+                "offset": 31481,
+                "line": 827,
+                "column": 2
+              },
+              "sourceHash": "f2a9747cfc7c63615347c48383ae7f58ee7df007411cc8de3dd5bb6afaca21d5",
+              "astHash": "f3d43a472158b958941b74b56255f7263748ec3b07cfd88f38847c12d0d6f9ef"
+            },
+            "evidence": {
+              "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/independent-catalog-read-semantic-closure-equations-v2.json",
+              "sha256": "346be0b0d9acd5c504470523e91b93635ac4b5d22253e506097010c8f6a35174"
+            },
+            "semanticIdentity": "c920e87f853a17029483f32b4f944b43c71e98ed95d4e6400dcb80b208f8f693"
+          },
+          {
+            "surfaceKey": "export:.#zeroQuantity::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "signatureHash": "d49393cfab161dec1afb5aa6b0ff3a0a21b2f54910fffc870df48df4872b6512",
+            "declaration": {
+              "file": "src/quantity.ts",
+              "start": {
+                "offset": 3632,
+                "line": 90,
+                "column": 1
+              },
+              "end": {
+                "offset": 3757,
+                "line": 92,
+                "column": 2
+              },
+              "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+              "astHash": "799ab6145e82ab948f63276455ec76e0621271d245e176f2dd1e4529d1d9de6b"
+            },
+            "evidence": {
+              "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "9ce68b539ae40716ef3fe91d54dcefdc5790a19b81bcf67997fb4466c75cbb5a"
+            },
+            "semanticIdentity": "cb7507c285e228d17e56b79849a209c07f107679ef2aadb6e2918976da292639"
+          },
+          {
+            "surfaceKey": "export:.#inventoryMeasurementAt::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "signatureHash": "8f3d288c4d4809d76759209643db939d620ee9cda16199c53c63777c545fa24e",
+            "declaration": {
+              "file": "src/measurements.ts",
+              "start": {
+                "offset": 3513,
+                "line": 96,
+                "column": 1
+              },
+              "end": {
+                "offset": 4160,
+                "line": 115,
+                "column": 2
+              },
+              "sourceHash": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5",
+              "astHash": "2c84b38ce35dd712fb33bee685a616e2427078ee8e4ed255dfcf0a8bffe50941"
+            },
+            "evidence": {
+              "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "9ce68b539ae40716ef3fe91d54dcefdc5790a19b81bcf67997fb4466c75cbb5a"
+            },
+            "semanticIdentity": "86b1bf32e2cc3af70288a214a29f328675f35df8731136de6c0124fbf2371064"
+          },
+          {
+            "surfaceKey": "export:.#addQuantity::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "signatureHash": "08d96c65dff49521b3ffe026da2a09d0e729d8ac46f1feb6979117e0aac06066",
+            "declaration": {
+              "file": "src/quantity.ts",
+              "start": {
+                "offset": 5036,
+                "line": 122,
+                "column": 1
+              },
+              "end": {
+                "offset": 5403,
+                "line": 133,
+                "column": 2
+              },
+              "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+              "astHash": "41de671ae9083373361e703dce52f969d588fa4b6210fe21abb94c0c530bb04e"
+            },
+            "evidence": {
+              "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "9ce68b539ae40716ef3fe91d54dcefdc5790a19b81bcf67997fb4466c75cbb5a"
+            },
+            "semanticIdentity": "4124e0038dfd48aafaddf74aaa79a7aacade11384f5c9416192ac610529d8971"
+          },
+          {
+            "surfaceKey": "export:.#compareQuantity::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "signatureHash": "260f6181ad43d59a536f032b3ee71047b7cbbba907cc2a132b62240bbb6cdfbe",
+            "declaration": {
+              "file": "src/quantity.ts",
+              "start": {
+                "offset": 4340,
+                "line": 106,
+                "column": 1
+              },
+              "end": {
+                "offset": 4728,
+                "line": 114,
+                "column": 2
+              },
+              "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+              "astHash": "1db799552387f77a3ce886fe98189cbc57657d19dcfc522167d792851cd6af4d"
+            },
+            "evidence": {
+              "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "9ce68b539ae40716ef3fe91d54dcefdc5790a19b81bcf67997fb4466c75cbb5a"
+            },
+            "semanticIdentity": "9b07201c2c74ab1ed0372b11f11db6b466200ac79678fa9b3c242357939234ac"
+          },
+          {
+            "surfaceKey": "export:.#negateQuantity::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "signatureHash": "6294a0c2f94616e55721e1ae20e98acb2ff30adf01d879e89cd34a3d916fafd1",
+            "declaration": {
+              "file": "src/quantity.ts",
+              "start": {
+                "offset": 5940,
+                "line": 150,
+                "column": 1
+              },
+              "end": {
+                "offset": 6116,
+                "line": 156,
+                "column": 2
+              },
+              "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+              "astHash": "3b9039f8b375115202d14060df7b70a204620c6942d69c5dc8f1b77d5fc697da"
+            },
+            "evidence": {
+              "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "9ce68b539ae40716ef3fe91d54dcefdc5790a19b81bcf67997fb4466c75cbb5a"
+            },
+            "semanticIdentity": "24bd8f440095be0c79eccdc447f278962f5fe24e3d27e9ef1f79e0bbabd52110"
+          },
+          {
+            "surfaceKey": "export:.#convertQuantityByReferenceExact::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "signatureHash": "77c7f081afb804272e09b8bd6554bc72ab102a9fd3ee57e8157230e1b2a2345a",
+            "declaration": {
+              "file": "src/quantity.ts",
+              "start": {
+                "offset": 10543,
+                "line": 275,
+                "column": 1
+              },
+              "end": {
+                "offset": 11265,
+                "line": 297,
+                "column": 2
+              },
+              "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+              "astHash": "f4e71ba41fbb52ef092b0d17113b4ba77abb7d01b623d3897f3304fc952c2540"
+            },
+            "evidence": {
+              "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "9ce68b539ae40716ef3fe91d54dcefdc5790a19b81bcf67997fb4466c75cbb5a"
+            },
+            "semanticIdentity": "3658161a9f482fcf51499d768db47f8318ff3eec040e2d18e31069f1c8cf8334"
+          }
+        ],
+        "queuedDependency": {
+          "surfaceKey": "export:.#normalizeInventoryFungibilityScope::call[0]",
+          "mode": "V",
+          "proofKind": "fungibility-scope-policy-batch-complete-values-v1",
+          "evidence": {
+            "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/value5-current.json",
+            "sha256": "f7806a25bd3729810fdf50e8b424f5b13c12f856fa817795dc0d62fff04394ba"
+          },
+          "equationId": "src/fungibility.ts#normalizeInventoryFungibilityScope"
+        }
+      }
+    },
+    {
+      "surfaceKey": "export:./kernel#summarizeInventoryFungibility::call[0]",
+      "signatureHash": "c5d6890d8ae70be78b9577ffc41c7800d7262d448c57684db9a63b61a8d41da7",
+      "declaration": {
+        "file": "src/fungibility.ts",
+        "start": {
+          "offset": 6101,
+          "line": 166,
+          "column": 1
+        },
+        "end": {
+          "offset": 8755,
+          "line": 244,
+          "column": 2
+        },
+        "sourceHash": "483741a2e0f8e3cdf38e358929cce5f8b29ffb41494b1268cafa1d38a2197344",
+        "astHash": "a567160c7347fd0c5285909e89b15eed973cbe2a2b62e0c6fb3bf60c65ffebd8"
+      },
+      "equationId": "src/fungibility.ts#summarizeInventoryFungibility",
+      "semantics": {
+        "law": "For the exact frozen pool revision and normalized scope, sum every member measurement exactly, split physical and deficit magnitudes by sign, convert all three totals through the frozen member-to-pool ratio, preserve each member breakdown, and return exact common-basis totals without altering item identity.",
+        "completeExpectedTermSha256": "9c3eaaee2eadeaa2e8c91c86f255001ada8ce2c127f195597620a6fe37b67d56",
+        "localEquations": [
+          {
+            "id": "src/fungibility.ts#selectorForFungibilityMember",
+            "termSha256": "fe35a02e7cbfdf57e83a7674793a31feef3777b26fa9f819444b31467fd821a5"
+          },
+          {
+            "id": "src/fungibility.ts#selectedFungibilityPositions",
+            "termSha256": "1e1e0cfda50e03e01202b53e9444b01737fe08eb1abd8740e73261fbb7a94522"
+          },
+          {
+            "id": "src/fungibility.ts#summarizeInventoryFungibility",
+            "termSha256": "9c3eaaee2eadeaa2e8c91c86f255001ada8ce2c127f195597620a6fe37b67d56"
+          },
+          {
+            "id": "src/facade.ts#InventoryOnceReadSnapshotImplementation.fungibilitySummary",
+            "termSha256": "fec5a47e86ce8b1e26666b09fb76680f5efff466d79458db3b67be796ecb57c1"
+          }
+        ],
+        "currentStrictDependencies": [
+          {
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.fungibilityRevision::call[0]",
+            "mode": "V",
+            "proofKind": "independent-catalog-foundation-closed-equations-v1",
+            "signatureHash": "aa0b016e91b5e7a5c6b17303572205599e955f6f1658362f8144bf0ec23e3291",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 73774,
+                "line": 1781,
+                "column": 3
+              },
+              "end": {
+                "offset": 74109,
+                "line": 1791,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "96ab5a48ab62a2864ad1ecc5ce0c5b73617299e75f1b7f7ca6594bf431aa58ca"
+            },
+            "evidence": {
+              "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/independent-catalog-foundation-closed-equations-v1.json",
+              "sha256": "c6cdd7aa724de109242d9527b2c0a901c99fd28efed808ec0420742d687111c7"
+            },
+            "semanticIdentity": "cdc2ea07d46fade18772d1025da7ac82cc35d8fc64e72638abd7f9449a76a597"
+          },
+          {
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.itemRevision::call[0]",
+            "mode": "V",
+            "proofKind": "r148-current-item-revision-direct-equation-v1",
+            "signatureHash": "d41fb26bbd9d81122bf2187a22667b2b5efd5813c20af70380d1b54c864966c5",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 66198,
+                "line": 1575,
+                "column": 3
+              },
+              "end": {
+                "offset": 66453,
+                "line": 1580,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "ed486f2e0f9444fa04e761884a3ad98049e510f5c155279e93f0eb0def14f13b"
+            },
+            "semanticIdentity": "e8aa51173f5dc9831a81be6777a36e6eafcbcb70f7bb94fa290f8d71cdb7f035",
+            "source": {
+              "file": "src/catalog.ts",
+              "sha256": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56"
+            },
+            "law": "result = itemByRevisionId[key] when present; otherwise throw the declared key-specific error"
+          },
+          {
+            "surfaceKey": "export:./kernel#normalizeInventoryStockSelector::call[0]",
+            "mode": "V",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "signatureHash": "ab49dafdbf57b266c3536065f5dee4ca876a90aef379655c8f0249ee1ca580a8",
+            "declaration": {
+              "file": "src/selectors.ts",
+              "start": {
+                "offset": 4855,
+                "line": 101,
+                "column": 1
+              },
+              "end": {
+                "offset": 7087,
+                "line": 170,
+                "column": 2
+              },
+              "sourceHash": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957",
+              "astHash": "90198be5327afb1a881d93183b9180068a4773e2322a9d86cc7d7bd8b2c31ef1"
+            },
+            "evidence": {
+              "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/independent-identity-values-closed-equations-v1.json",
+              "sha256": "da5b8beec9ee92f82ac5561639f6d0d510ca1e773b6c1ab381bb71f234ee9b5c"
+            },
+            "semanticIdentity": "7c39cec1073248480375df337280371ec5b2722fae9d7eae017013c4fecbf5fd"
+          },
+          {
+            "surfaceKey": "export:./kernel#findInventoryPositions::call[0]",
+            "mode": "V",
+            "proofKind": "independent-catalog-read-semantic-closure-equations-v2",
+            "signatureHash": "ad8aece92cdbbe9be952213d6b0d58ccbf4d6c62104c234dd53138ca59d12272",
+            "declaration": {
+              "file": "src/projection.ts",
+              "start": {
+                "offset": 30259,
+                "line": 792,
+                "column": 1
+              },
+              "end": {
+                "offset": 31481,
+                "line": 827,
+                "column": 2
+              },
+              "sourceHash": "f2a9747cfc7c63615347c48383ae7f58ee7df007411cc8de3dd5bb6afaca21d5",
+              "astHash": "f3d43a472158b958941b74b56255f7263748ec3b07cfd88f38847c12d0d6f9ef"
+            },
+            "evidence": {
+              "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/independent-catalog-read-semantic-closure-equations-v2.json",
+              "sha256": "346be0b0d9acd5c504470523e91b93635ac4b5d22253e506097010c8f6a35174"
+            },
+            "semanticIdentity": "c920e87f853a17029483f32b4f944b43c71e98ed95d4e6400dcb80b208f8f693"
+          },
+          {
+            "surfaceKey": "export:.#zeroQuantity::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "signatureHash": "d49393cfab161dec1afb5aa6b0ff3a0a21b2f54910fffc870df48df4872b6512",
+            "declaration": {
+              "file": "src/quantity.ts",
+              "start": {
+                "offset": 3632,
+                "line": 90,
+                "column": 1
+              },
+              "end": {
+                "offset": 3757,
+                "line": 92,
+                "column": 2
+              },
+              "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+              "astHash": "799ab6145e82ab948f63276455ec76e0621271d245e176f2dd1e4529d1d9de6b"
+            },
+            "evidence": {
+              "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "9ce68b539ae40716ef3fe91d54dcefdc5790a19b81bcf67997fb4466c75cbb5a"
+            },
+            "semanticIdentity": "cb7507c285e228d17e56b79849a209c07f107679ef2aadb6e2918976da292639"
+          },
+          {
+            "surfaceKey": "export:.#inventoryMeasurementAt::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "signatureHash": "8f3d288c4d4809d76759209643db939d620ee9cda16199c53c63777c545fa24e",
+            "declaration": {
+              "file": "src/measurements.ts",
+              "start": {
+                "offset": 3513,
+                "line": 96,
+                "column": 1
+              },
+              "end": {
+                "offset": 4160,
+                "line": 115,
+                "column": 2
+              },
+              "sourceHash": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5",
+              "astHash": "2c84b38ce35dd712fb33bee685a616e2427078ee8e4ed255dfcf0a8bffe50941"
+            },
+            "evidence": {
+              "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "9ce68b539ae40716ef3fe91d54dcefdc5790a19b81bcf67997fb4466c75cbb5a"
+            },
+            "semanticIdentity": "86b1bf32e2cc3af70288a214a29f328675f35df8731136de6c0124fbf2371064"
+          },
+          {
+            "surfaceKey": "export:.#addQuantity::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "signatureHash": "08d96c65dff49521b3ffe026da2a09d0e729d8ac46f1feb6979117e0aac06066",
+            "declaration": {
+              "file": "src/quantity.ts",
+              "start": {
+                "offset": 5036,
+                "line": 122,
+                "column": 1
+              },
+              "end": {
+                "offset": 5403,
+                "line": 133,
+                "column": 2
+              },
+              "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+              "astHash": "41de671ae9083373361e703dce52f969d588fa4b6210fe21abb94c0c530bb04e"
+            },
+            "evidence": {
+              "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "9ce68b539ae40716ef3fe91d54dcefdc5790a19b81bcf67997fb4466c75cbb5a"
+            },
+            "semanticIdentity": "4124e0038dfd48aafaddf74aaa79a7aacade11384f5c9416192ac610529d8971"
+          },
+          {
+            "surfaceKey": "export:.#compareQuantity::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "signatureHash": "260f6181ad43d59a536f032b3ee71047b7cbbba907cc2a132b62240bbb6cdfbe",
+            "declaration": {
+              "file": "src/quantity.ts",
+              "start": {
+                "offset": 4340,
+                "line": 106,
+                "column": 1
+              },
+              "end": {
+                "offset": 4728,
+                "line": 114,
+                "column": 2
+              },
+              "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+              "astHash": "1db799552387f77a3ce886fe98189cbc57657d19dcfc522167d792851cd6af4d"
+            },
+            "evidence": {
+              "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "9ce68b539ae40716ef3fe91d54dcefdc5790a19b81bcf67997fb4466c75cbb5a"
+            },
+            "semanticIdentity": "9b07201c2c74ab1ed0372b11f11db6b466200ac79678fa9b3c242357939234ac"
+          },
+          {
+            "surfaceKey": "export:.#negateQuantity::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "signatureHash": "6294a0c2f94616e55721e1ae20e98acb2ff30adf01d879e89cd34a3d916fafd1",
+            "declaration": {
+              "file": "src/quantity.ts",
+              "start": {
+                "offset": 5940,
+                "line": 150,
+                "column": 1
+              },
+              "end": {
+                "offset": 6116,
+                "line": 156,
+                "column": 2
+              },
+              "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+              "astHash": "3b9039f8b375115202d14060df7b70a204620c6942d69c5dc8f1b77d5fc697da"
+            },
+            "evidence": {
+              "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "9ce68b539ae40716ef3fe91d54dcefdc5790a19b81bcf67997fb4466c75cbb5a"
+            },
+            "semanticIdentity": "24bd8f440095be0c79eccdc447f278962f5fe24e3d27e9ef1f79e0bbabd52110"
+          },
+          {
+            "surfaceKey": "export:.#convertQuantityByReferenceExact::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "signatureHash": "77c7f081afb804272e09b8bd6554bc72ab102a9fd3ee57e8157230e1b2a2345a",
+            "declaration": {
+              "file": "src/quantity.ts",
+              "start": {
+                "offset": 10543,
+                "line": 275,
+                "column": 1
+              },
+              "end": {
+                "offset": 11265,
+                "line": 297,
+                "column": 2
+              },
+              "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+              "astHash": "f4e71ba41fbb52ef092b0d17113b4ba77abb7d01b623d3897f3304fc952c2540"
+            },
+            "evidence": {
+              "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "9ce68b539ae40716ef3fe91d54dcefdc5790a19b81bcf67997fb4466c75cbb5a"
+            },
+            "semanticIdentity": "3658161a9f482fcf51499d768db47f8318ff3eec040e2d18e31069f1c8cf8334"
+          }
+        ],
+        "queuedDependency": {
+          "surfaceKey": "export:.#normalizeInventoryFungibilityScope::call[0]",
+          "mode": "V",
+          "proofKind": "fungibility-scope-policy-batch-complete-values-v1",
+          "evidence": {
+            "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/value5-current.json",
+            "sha256": "f7806a25bd3729810fdf50e8b424f5b13c12f856fa817795dc0d62fff04394ba"
+          },
+          "equationId": "src/fungibility.ts#normalizeInventoryFungibilityScope"
+        }
+      }
+    },
+    {
+      "surfaceKey": "type:src/facade.ts#InventoryOnceReadSnapshotApi.fungibilitySummary::call[0]",
+      "signatureHash": "63e0aecff0efb20eed0ad3c9200d5b1461eab177085402cb4b6d9f96f58fa700",
+      "declaration": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 70114,
+          "line": 1707,
+          "column": 3
+        },
+        "end": {
+          "offset": 70215,
+          "line": 1709,
+          "column": 34
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "150706bce814cc0dacd9565fe99b3432dd1d109b9bf9be51b36175e694cddeaa"
+      },
+      "equationId": "src/facade.ts#InventoryOnceReadSnapshotImplementation.fungibilitySummary",
+      "semantics": {
+        "law": "result = summarizeInventoryFungibility({ catalog: this.catalog, projection: this.world.projection, fungibilityRevisionId: p0.fungibilityRevisionId, ...(p0.scope === undefined ? {} : { scope: p0.scope }) })",
+        "completeExpectedTermSha256": "fec5a47e86ce8b1e26666b09fb76680f5efff466d79458db3b67be796ecb57c1",
+        "localEquations": [
+          {
+            "id": "src/fungibility.ts#selectorForFungibilityMember",
+            "termSha256": "fe35a02e7cbfdf57e83a7674793a31feef3777b26fa9f819444b31467fd821a5"
+          },
+          {
+            "id": "src/fungibility.ts#selectedFungibilityPositions",
+            "termSha256": "1e1e0cfda50e03e01202b53e9444b01737fe08eb1abd8740e73261fbb7a94522"
+          },
+          {
+            "id": "src/fungibility.ts#summarizeInventoryFungibility",
+            "termSha256": "9c3eaaee2eadeaa2e8c91c86f255001ada8ce2c127f195597620a6fe37b67d56"
+          },
+          {
+            "id": "src/facade.ts#InventoryOnceReadSnapshotImplementation.fungibilitySummary",
+            "termSha256": "fec5a47e86ce8b1e26666b09fb76680f5efff466d79458db3b67be796ecb57c1"
+          }
+        ],
+        "currentStrictDependencies": [
+          {
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.fungibilityRevision::call[0]",
+            "mode": "V",
+            "proofKind": "independent-catalog-foundation-closed-equations-v1",
+            "signatureHash": "aa0b016e91b5e7a5c6b17303572205599e955f6f1658362f8144bf0ec23e3291",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 73774,
+                "line": 1781,
+                "column": 3
+              },
+              "end": {
+                "offset": 74109,
+                "line": 1791,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "96ab5a48ab62a2864ad1ecc5ce0c5b73617299e75f1b7f7ca6594bf431aa58ca"
+            },
+            "evidence": {
+              "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/independent-catalog-foundation-closed-equations-v1.json",
+              "sha256": "c6cdd7aa724de109242d9527b2c0a901c99fd28efed808ec0420742d687111c7"
+            },
+            "semanticIdentity": "cdc2ea07d46fade18772d1025da7ac82cc35d8fc64e72638abd7f9449a76a597"
+          },
+          {
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.itemRevision::call[0]",
+            "mode": "V",
+            "proofKind": "r148-current-item-revision-direct-equation-v1",
+            "signatureHash": "d41fb26bbd9d81122bf2187a22667b2b5efd5813c20af70380d1b54c864966c5",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 66198,
+                "line": 1575,
+                "column": 3
+              },
+              "end": {
+                "offset": 66453,
+                "line": 1580,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "ed486f2e0f9444fa04e761884a3ad98049e510f5c155279e93f0eb0def14f13b"
+            },
+            "semanticIdentity": "e8aa51173f5dc9831a81be6777a36e6eafcbcb70f7bb94fa290f8d71cdb7f035",
+            "source": {
+              "file": "src/catalog.ts",
+              "sha256": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56"
+            },
+            "law": "result = itemByRevisionId[key] when present; otherwise throw the declared key-specific error"
+          },
+          {
+            "surfaceKey": "export:./kernel#normalizeInventoryStockSelector::call[0]",
+            "mode": "V",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "signatureHash": "ab49dafdbf57b266c3536065f5dee4ca876a90aef379655c8f0249ee1ca580a8",
+            "declaration": {
+              "file": "src/selectors.ts",
+              "start": {
+                "offset": 4855,
+                "line": 101,
+                "column": 1
+              },
+              "end": {
+                "offset": 7087,
+                "line": 170,
+                "column": 2
+              },
+              "sourceHash": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957",
+              "astHash": "90198be5327afb1a881d93183b9180068a4773e2322a9d86cc7d7bd8b2c31ef1"
+            },
+            "evidence": {
+              "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/independent-identity-values-closed-equations-v1.json",
+              "sha256": "da5b8beec9ee92f82ac5561639f6d0d510ca1e773b6c1ab381bb71f234ee9b5c"
+            },
+            "semanticIdentity": "7c39cec1073248480375df337280371ec5b2722fae9d7eae017013c4fecbf5fd"
+          },
+          {
+            "surfaceKey": "export:./kernel#findInventoryPositions::call[0]",
+            "mode": "V",
+            "proofKind": "independent-catalog-read-semantic-closure-equations-v2",
+            "signatureHash": "ad8aece92cdbbe9be952213d6b0d58ccbf4d6c62104c234dd53138ca59d12272",
+            "declaration": {
+              "file": "src/projection.ts",
+              "start": {
+                "offset": 30259,
+                "line": 792,
+                "column": 1
+              },
+              "end": {
+                "offset": 31481,
+                "line": 827,
+                "column": 2
+              },
+              "sourceHash": "f2a9747cfc7c63615347c48383ae7f58ee7df007411cc8de3dd5bb6afaca21d5",
+              "astHash": "f3d43a472158b958941b74b56255f7263748ec3b07cfd88f38847c12d0d6f9ef"
+            },
+            "evidence": {
+              "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/independent-catalog-read-semantic-closure-equations-v2.json",
+              "sha256": "346be0b0d9acd5c504470523e91b93635ac4b5d22253e506097010c8f6a35174"
+            },
+            "semanticIdentity": "c920e87f853a17029483f32b4f944b43c71e98ed95d4e6400dcb80b208f8f693"
+          },
+          {
+            "surfaceKey": "export:.#zeroQuantity::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "signatureHash": "d49393cfab161dec1afb5aa6b0ff3a0a21b2f54910fffc870df48df4872b6512",
+            "declaration": {
+              "file": "src/quantity.ts",
+              "start": {
+                "offset": 3632,
+                "line": 90,
+                "column": 1
+              },
+              "end": {
+                "offset": 3757,
+                "line": 92,
+                "column": 2
+              },
+              "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+              "astHash": "799ab6145e82ab948f63276455ec76e0621271d245e176f2dd1e4529d1d9de6b"
+            },
+            "evidence": {
+              "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "9ce68b539ae40716ef3fe91d54dcefdc5790a19b81bcf67997fb4466c75cbb5a"
+            },
+            "semanticIdentity": "cb7507c285e228d17e56b79849a209c07f107679ef2aadb6e2918976da292639"
+          },
+          {
+            "surfaceKey": "export:.#inventoryMeasurementAt::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "signatureHash": "8f3d288c4d4809d76759209643db939d620ee9cda16199c53c63777c545fa24e",
+            "declaration": {
+              "file": "src/measurements.ts",
+              "start": {
+                "offset": 3513,
+                "line": 96,
+                "column": 1
+              },
+              "end": {
+                "offset": 4160,
+                "line": 115,
+                "column": 2
+              },
+              "sourceHash": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5",
+              "astHash": "2c84b38ce35dd712fb33bee685a616e2427078ee8e4ed255dfcf0a8bffe50941"
+            },
+            "evidence": {
+              "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "9ce68b539ae40716ef3fe91d54dcefdc5790a19b81bcf67997fb4466c75cbb5a"
+            },
+            "semanticIdentity": "86b1bf32e2cc3af70288a214a29f328675f35df8731136de6c0124fbf2371064"
+          },
+          {
+            "surfaceKey": "export:.#addQuantity::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "signatureHash": "08d96c65dff49521b3ffe026da2a09d0e729d8ac46f1feb6979117e0aac06066",
+            "declaration": {
+              "file": "src/quantity.ts",
+              "start": {
+                "offset": 5036,
+                "line": 122,
+                "column": 1
+              },
+              "end": {
+                "offset": 5403,
+                "line": 133,
+                "column": 2
+              },
+              "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+              "astHash": "41de671ae9083373361e703dce52f969d588fa4b6210fe21abb94c0c530bb04e"
+            },
+            "evidence": {
+              "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "9ce68b539ae40716ef3fe91d54dcefdc5790a19b81bcf67997fb4466c75cbb5a"
+            },
+            "semanticIdentity": "4124e0038dfd48aafaddf74aaa79a7aacade11384f5c9416192ac610529d8971"
+          },
+          {
+            "surfaceKey": "export:.#compareQuantity::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "signatureHash": "260f6181ad43d59a536f032b3ee71047b7cbbba907cc2a132b62240bbb6cdfbe",
+            "declaration": {
+              "file": "src/quantity.ts",
+              "start": {
+                "offset": 4340,
+                "line": 106,
+                "column": 1
+              },
+              "end": {
+                "offset": 4728,
+                "line": 114,
+                "column": 2
+              },
+              "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+              "astHash": "1db799552387f77a3ce886fe98189cbc57657d19dcfc522167d792851cd6af4d"
+            },
+            "evidence": {
+              "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "9ce68b539ae40716ef3fe91d54dcefdc5790a19b81bcf67997fb4466c75cbb5a"
+            },
+            "semanticIdentity": "9b07201c2c74ab1ed0372b11f11db6b466200ac79678fa9b3c242357939234ac"
+          },
+          {
+            "surfaceKey": "export:.#negateQuantity::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "signatureHash": "6294a0c2f94616e55721e1ae20e98acb2ff30adf01d879e89cd34a3d916fafd1",
+            "declaration": {
+              "file": "src/quantity.ts",
+              "start": {
+                "offset": 5940,
+                "line": 150,
+                "column": 1
+              },
+              "end": {
+                "offset": 6116,
+                "line": 156,
+                "column": 2
+              },
+              "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+              "astHash": "3b9039f8b375115202d14060df7b70a204620c6942d69c5dc8f1b77d5fc697da"
+            },
+            "evidence": {
+              "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "9ce68b539ae40716ef3fe91d54dcefdc5790a19b81bcf67997fb4466c75cbb5a"
+            },
+            "semanticIdentity": "24bd8f440095be0c79eccdc447f278962f5fe24e3d27e9ef1f79e0bbabd52110"
+          },
+          {
+            "surfaceKey": "export:.#convertQuantityByReferenceExact::call[0]",
+            "mode": "V",
+            "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+            "signatureHash": "77c7f081afb804272e09b8bd6554bc72ab102a9fd3ee57e8157230e1b2a2345a",
+            "declaration": {
+              "file": "src/quantity.ts",
+              "start": {
+                "offset": 10543,
+                "line": 275,
+                "column": 1
+              },
+              "end": {
+                "offset": 11265,
+                "line": 297,
+                "column": 2
+              },
+              "sourceHash": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6",
+              "astHash": "f4e71ba41fbb52ef092b0d17113b4ba77abb7d01b623d3897f3304fc952c2540"
+            },
+            "evidence": {
+              "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/dependency-artifacts/inventoryonce-quantity-measurement-complete-source-equations-v1.json",
+              "sha256": "9ce68b539ae40716ef3fe91d54dcefdc5790a19b81bcf67997fb4466c75cbb5a"
+            },
+            "semanticIdentity": "3658161a9f482fcf51499d768db47f8318ff3eec040e2d18e31069f1c8cf8334"
+          }
+        ],
+        "queuedDependency": {
+          "surfaceKey": "export:.#normalizeInventoryFungibilityScope::call[0]",
+          "mode": "V",
+          "proofKind": "fungibility-scope-policy-batch-complete-values-v1",
+          "evidence": {
+            "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/value5-current.json",
+            "sha256": "f7806a25bd3729810fdf50e8b424f5b13c12f856fa817795dc0d62fff04394ba"
+          },
+          "equationId": "src/fungibility.ts#normalizeInventoryFungibilityScope"
+        },
+        "sameFamilyDependency": "src/fungibility.ts#summarizeInventoryFungibility"
+      }
+    }
+  ]
+}

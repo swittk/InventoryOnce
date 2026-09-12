@@ -1,0 +1,4417 @@
+{
+  "schemaVersion": 1,
+  "mode": "V",
+  "proofKind": "storage-protocol-construction-and-plan-closed-equations-v1",
+  "sourceBase": "6cafd49ff4b3729f80ae35d9fc0220f7a8a4b55a",
+  "surfaceDigest": "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a",
+  "allAdmittedInputs": true,
+  "sampledInputs": 0,
+  "domain": {
+    "constructors": "all accepted constructor inputs plus every explicit guard",
+    "digest": "all structural plan parts with exact ordered JSON fields",
+    "validation": "all begin inputs through every source guard and catalog/event identity dependency",
+    "materialization": "all compact plans through exact base/root/digest and component-delta checks"
+  },
+  "reusedCertificates": [
+    {
+      "proofKind": "inventoryonce-quantity-measurement-complete-source-equations-v1",
+      "proofs": 76,
+      "semanticIdentity": "2f0cf40b526802108c25c0f28ce58c2133339be7b06435d5591d5b2b8d134368"
+    },
+    {
+      "proofKind": "independent-identity-values-closed-equations-v1",
+      "proofs": 40,
+      "semanticIdentity": "218658e214d2a096cb1e06e59af6540008d3a426d2278c10b520900230923c27"
+    },
+    {
+      "proofKind": "independent-catalog-foundation-closed-equations-v1",
+      "proofs": 36,
+      "semanticIdentity": "686527877e8427fcc83112c36327e575876aa0801470a5bcb6cb58d5de080ccd"
+    },
+    {
+      "proofKind": "inventoryonce-event-replacement-complete-source-equations-v1",
+      "proofs": 45,
+      "semanticIdentity": "6b60d35ff4d67da64128a7ac4c8d93baa8f3dfaf680137bbd590b78e57237432"
+    },
+    {
+      "proofKind": "migration-plugin-helper-independent-source-closed-values-v3",
+      "proofs": 6,
+      "semanticIdentity": "9875a6e3f95d779c1380e1f23208bcbc085815dd87d977629031a62dfd7ca48b"
+    },
+    {
+      "proofKind": "independent-catalog-read-semantic-closure-equations-v2",
+      "proofs": 20,
+      "semanticIdentity": "c45b40de12820927daf13f9613ad755a0017a1187e92d983471353f79b9edf4f"
+    },
+    {
+      "proofKind": "r137-current-transfer-correction-sparse-transition-v1",
+      "semanticIdentity": "9e1b26971424db8e3277769cd7a1b35dbffead09dabeaa80089f203c29ed5821",
+      "equations": 76,
+      "transitioned": 10,
+      "cloneInventorySparseRecordAstTextSha256": "a09fb72fc1dce1e461bc5a94b9fe0e97adb839653a90a58a7f21e8151a97e8f1"
+    },
+    {
+      "proofKind": "r139-current-concrete-readworld-behavioral-corroboration-v1",
+      "surfaceKey": "type:src/storage.ts#InMemoryInventoryDurableStorage.readWorld::call[0]",
+      "mode": "B",
+      "execution": {
+        "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/surface-execution-v2.json",
+        "sha256": "5a0e02945de1f5b5dc1b82666fad9e1dd8f0bbf5db0f65bfe0212f385a36b698"
+      },
+      "semanticIdentity": "518028d5ae002e7c99cda9cda0db817157fec19f59dc4dcbb75fcaa20bf16ead"
+    }
+  ],
+  "currentization": {
+    "kind": "R162_SINGLE_EQUATION_STORAGE_VALUE_CURRENTIZATION",
+    "changedEquation": "src/storage.ts#InMemoryInventoryDurableStorage.constructor",
+    "currentHelper": "src/storage.ts#cloneInventoryPublishedWorld",
+    "sparseDictionaryCount": 16,
+    "currentDependencies": "R162_CURRENT_STORAGE_VALUE_DEPENDENCIES"
+  },
+  "equations": [
+    {
+      "id": "src/storage.ts#InventoryWorldRevisionConflictError.constructor",
+      "implementation": {
+        "file": "src/storage.ts",
+        "start": {
+          "offset": 19074,
+          "line": 397,
+          "column": 3
+        },
+        "end": {
+          "offset": 19413,
+          "line": 404,
+          "column": 4
+        },
+        "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+        "astHash": "6f65c071290efe60efd812dca1d7bf2babcdaaa82729377d16b1e72144ad554e"
+      },
+      "equationSha256": "c7bd1a42c5fbf1494b4604dd55831f1b91d660e2dc25551d84bab8489be15798",
+      "term": {
+        "parameters": [
+          {
+            "identity": "parameter:0",
+            "type": "number",
+            "default": null
+          },
+          {
+            "identity": "parameter:1",
+            "type": "number",
+            "default": null
+          }
+        ],
+        "body": [
+          [
+            "call",
+            [
+              "super"
+            ],
+            [
+              [
+                "template",
+                "Inventory world changed from revision ",
+                [
+                  [
+                    [
+                      "reference",
+                      "parameter:0"
+                    ],
+                    " to "
+                  ],
+                  [
+                    [
+                      "reference",
+                      "parameter:1"
+                    ],
+                    " before operation begin."
+                  ]
+                ]
+              ]
+            ]
+          ],
+          [
+            "binary",
+            "=",
+            [
+              "property",
+              [
+                "this"
+              ],
+              "name"
+            ],
+            [
+              "string",
+              "InventoryWorldRevisionConflictError"
+            ]
+          ],
+          [
+            "binary",
+            "=",
+            [
+              "property",
+              [
+                "this"
+              ],
+              "expectedRevision"
+            ],
+            [
+              "reference",
+              "parameter:0"
+            ]
+          ],
+          [
+            "binary",
+            "=",
+            [
+              "property",
+              [
+                "this"
+              ],
+              "actualRevision"
+            ],
+            [
+              "reference",
+              "parameter:1"
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "id": "src/storage.ts#InventoryApplyingOperationConflictError.constructor",
+      "implementation": {
+        "file": "src/storage.ts",
+        "start": {
+          "offset": 19733,
+          "line": 413,
+          "column": 3
+        },
+        "end": {
+          "offset": 20034,
+          "line": 419,
+          "column": 4
+        },
+        "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+        "astHash": "0c0a3f32660a2a6a8e44c3b6071befe4bf8cb7a2fabf5fd123344d09153afd8e"
+      },
+      "equationSha256": "ef401dc3d2d1b92d8ed24c0aa5d9bdbbbe0bffb76ede2e26fa3ff35fa13d7563",
+      "term": {
+        "parameters": [
+          {
+            "identity": "parameter:0",
+            "type": "string",
+            "default": null
+          }
+        ],
+        "body": [
+          [
+            "call",
+            [
+              "super"
+            ],
+            [
+              [
+                "template",
+                "Inventory operation '",
+                [
+                  [
+                    [
+                      "reference",
+                      "parameter:0"
+                    ],
+                    "' is still applying and must finish before another reference-world commit."
+                  ]
+                ]
+              ]
+            ]
+          ],
+          [
+            "binary",
+            "=",
+            [
+              "property",
+              [
+                "this"
+              ],
+              "name"
+            ],
+            [
+              "string",
+              "InventoryApplyingOperationConflictError"
+            ]
+          ],
+          [
+            "binary",
+            "=",
+            [
+              "property",
+              [
+                "this"
+              ],
+              "applyingOperationId"
+            ],
+            [
+              "reference",
+              "parameter:0"
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "id": "src/storage.ts#InMemoryInventoryDurableStorage.constructor",
+      "implementation": {
+        "file": "src/storage.ts",
+        "start": {
+          "offset": 21728,
+          "line": 459,
+          "column": 3
+        },
+        "end": {
+          "offset": 22085,
+          "line": 467,
+          "column": 4
+        },
+        "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+        "astHash": "0ae24136a9a6d103b0aa073cdfe8b21df0a233a8dcbc20988795651b8d405fd0"
+      },
+      "equationSha256": "1a6574d5098c5f15c44d727ce626085a4ad33285804a44b1f7af5e319881ffd3",
+      "term": {
+        "parameters": [
+          {
+            "identity": "parameter:0",
+            "type": "InMemoryInventoryDurableStorageInput",
+            "default": [
+              "record",
+              0
+            ]
+          }
+        ],
+        "body": [
+          [
+            "binary",
+            "=",
+            [
+              "property",
+              [
+                "this"
+              ],
+              "guarantee"
+            ],
+            [
+              "binary",
+              "??",
+              [
+                "property",
+                [
+                  "reference",
+                  "parameter:0"
+                ],
+                "guarantee"
+              ],
+              [
+                "property",
+                [
+                  "reference",
+                  "source:InventoryStorageGuarantee"
+                ],
+                "OptimisticRepairable"
+              ]
+            ]
+          ],
+          [
+            "binary",
+            "=",
+            [
+              "property",
+              [
+                "this"
+              ],
+              "world"
+            ],
+            [
+              "call",
+              [
+                "reference",
+                "source:cloneInventoryPublishedWorld"
+              ],
+              [
+                [
+                  "binary",
+                  "??",
+                  [
+                    "property",
+                    [
+                      "reference",
+                      "parameter:0"
+                    ],
+                    "initialWorld"
+                  ],
+                  [
+                    "call",
+                    [
+                      "reference",
+                      "source:emptyInventoryWorldState"
+                    ],
+                    []
+                  ]
+                ]
+              ]
+            ]
+          ],
+          [
+            "call",
+            [
+              "reference",
+              "source:validatePublishedInventoryWorld"
+            ],
+            [
+              [
+                "property",
+                [
+                  "this"
+                ],
+                "world"
+              ]
+            ]
+          ],
+          [
+            "binary",
+            "=",
+            [
+              "property",
+              [
+                "this"
+              ],
+              "failpoint"
+            ],
+            [
+              "property",
+              [
+                "reference",
+                "parameter:0"
+              ],
+              "failpoint"
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "id": "src/storage.ts#createInMemoryInventoryDurableStorage",
+      "implementation": {
+        "file": "src/storage.ts",
+        "start": {
+          "offset": 50367,
+          "line": 1206,
+          "column": 1
+        },
+        "end": {
+          "offset": 50564,
+          "line": 1210,
+          "column": 2
+        },
+        "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+        "astHash": "09b630e526fe2c394324fdaff57ca71f483440156137d33e8546e3c05b13333e"
+      },
+      "equationSha256": "5cdd84e47c054adc632c5b4433f0d859d336f67b8244bef3eb65e2cb1f1cd27b",
+      "term": {
+        "parameters": [
+          {
+            "identity": "parameter:0",
+            "type": "InMemoryInventoryDurableStorageInput",
+            "optional": false,
+            "rest": false,
+            "default": [
+              "record",
+              []
+            ]
+          }
+        ],
+        "returnType": "InMemoryInventoryDurableStorage",
+        "body": [
+          "sequence",
+          [
+            [
+              "return",
+              [
+                "new",
+                [
+                  "reference",
+                  "source:InMemoryInventoryDurableStorage"
+                ],
+                [],
+                [
+                  [
+                    "reference",
+                    "parameter:0"
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "id": "src/integrity.ts#inventoryDurablePlanDigest",
+      "implementation": {
+        "file": "src/integrity.ts",
+        "start": {
+          "offset": 9755,
+          "line": 276,
+          "column": 1
+        },
+        "end": {
+          "offset": 11354,
+          "line": 319,
+          "column": 2
+        },
+        "sourceHash": "238ccd616e791b60b523b89517479585f2d9aabe83198464a44f654cd7058037",
+        "astHash": "46925542cfce387b58876ef7fa1e79a836103a462e3074621f5350bf8cf4c5b0"
+      },
+      "equationSha256": "f252b6042a78b1337760873dd2f6e9d9cdf15545be071b78d5e7d5fe3b93a6ca",
+      "term": {
+        "parameters": [
+          {
+            "identity": "parameter:0",
+            "type": "{readonlybaseWorldRoot:string;readonlycatalogRoot:string;readonlydeficitPolicy:InventoryDeficitPolicy;readonlyevent?:InventoryCommittedEvent;readonlyreservationDelta?:InventoryReservationBookDelta;readonlycountDelta?:InventoryCountBookDelta;readonlyreceipt:{readonlyoperationId:string;readonlyrecordedAt:string;readonlyworldRevision:number;readonlyeventId?:string;readonlyreservationId?:string;readonlycountId?:string;};readonlynextRoots:InventoryWorldContentRoots;}",
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "returnType": "string",
+        "body": [
+          "sequence",
+          [
+            [
+              "return",
+              [
+                "call",
+                [
+                  "reference",
+                  "source:inventorySha256"
+                ],
+                [],
+                [
+                  [
+                    "call",
+                    [
+                      "property",
+                      [
+                        "reference",
+                        "source:JSON"
+                      ],
+                      "stringify",
+                      "required"
+                    ],
+                    [],
+                    [
+                      [
+                        "array",
+                        [
+                          [
+                            "property",
+                            [
+                              "reference",
+                              "parameter:0"
+                            ],
+                            "baseWorldRoot",
+                            "required"
+                          ],
+                          [
+                            "property",
+                            [
+                              "reference",
+                              "parameter:0"
+                            ],
+                            "catalogRoot",
+                            "required"
+                          ],
+                          [
+                            "property",
+                            [
+                              "reference",
+                              "parameter:0"
+                            ],
+                            "deficitPolicy",
+                            "required"
+                          ],
+                          [
+                            "binary",
+                            "??",
+                            [
+                              "property",
+                              [
+                                "reference",
+                                "parameter:0"
+                              ],
+                              "event",
+                              "required"
+                            ],
+                            [
+                              "null"
+                            ]
+                          ],
+                          [
+                            "binary",
+                            "??",
+                            [
+                              "property",
+                              [
+                                "reference",
+                                "parameter:0"
+                              ],
+                              "reservationDelta",
+                              "required"
+                            ],
+                            [
+                              "null"
+                            ]
+                          ],
+                          [
+                            "binary",
+                            "??",
+                            [
+                              "property",
+                              [
+                                "reference",
+                                "parameter:0"
+                              ],
+                              "countDelta",
+                              "required"
+                            ],
+                            [
+                              "null"
+                            ]
+                          ],
+                          [
+                            "property",
+                            [
+                              "reference",
+                              "parameter:0"
+                            ],
+                            "receipt",
+                            "required"
+                          ],
+                          [
+                            "property",
+                            [
+                              "reference",
+                              "parameter:0"
+                            ],
+                            "nextRoots",
+                            "required"
+                          ]
+                        ]
+                      ]
+                    ],
+                    "required"
+                  ]
+                ],
+                "required"
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "id": "src/storage.ts#validateInventoryDurableOperationBeginInput",
+      "implementation": {
+        "file": "src/storage.ts",
+        "start": {
+          "offset": 50650,
+          "line": 1213,
+          "column": 1
+        },
+        "end": {
+          "offset": 50809,
+          "line": 1217,
+          "column": 2
+        },
+        "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+        "astHash": "165be9171e102945367ab4a5fa714e1d1e4756790c97d6ce187cf441e8f2392b"
+      },
+      "equationSha256": "786113d6a3be26a2b287176773cef4ad87b1d9485a249044243e00170fd27ab6",
+      "term": {
+        "parameters": [
+          {
+            "identity": "parameter:0",
+            "type": "BeginInventoryDurableOperationInput",
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "returnType": "void",
+        "body": [
+          "sequence",
+          [
+            [
+              "expression",
+              [
+                "call",
+                [
+                  "reference",
+                  "source:validateBeginInventoryOperation"
+                ],
+                [],
+                [
+                  [
+                    "reference",
+                    "parameter:0"
+                  ]
+                ],
+                "required"
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "id": "src/storage.ts#materializeInventoryDurableOperationWorld",
+      "implementation": {
+        "file": "src/storage.ts",
+        "start": {
+          "offset": 50896,
+          "line": 1220,
+          "column": 1
+        },
+        "end": {
+          "offset": 51110,
+          "line": 1225,
+          "column": 2
+        },
+        "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+        "astHash": "1b5d28a86e96ce044c153ebbebeff41d3a9f7800e0f0c138fa7ecd8eb99e2c1e"
+      },
+      "equationSha256": "45758bf15d4f6d08c5c2ab17162f3dea268bec5f4708cfa1d4eef4e7d7306e2b",
+      "term": {
+        "parameters": [
+          {
+            "identity": "parameter:0",
+            "type": "InventoryWorldState",
+            "optional": false,
+            "rest": false,
+            "default": null
+          },
+          {
+            "identity": "parameter:1",
+            "type": "InventoryDurableOperationPlan",
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "returnType": "InventoryWorldState",
+        "body": [
+          "sequence",
+          [
+            [
+              "return",
+              [
+                "call",
+                [
+                  "reference",
+                  "source:validateInventoryDurablePlanAgainstBase"
+                ],
+                [],
+                [
+                  [
+                    "reference",
+                    "parameter:0"
+                  ],
+                  [
+                    "reference",
+                    "parameter:1"
+                  ]
+                ],
+                "required"
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "id": "src/world.ts#emptyInventoryWorldState",
+      "implementation": {
+        "file": "src/world.ts",
+        "start": {
+          "offset": 1162,
+          "line": 33,
+          "column": 1
+        },
+        "end": {
+          "offset": 1447,
+          "line": 41,
+          "column": 2
+        },
+        "sourceHash": "2f1bd43c85fcdda332ad16ebdb73d367b0ed502a7145c085c7a7433ff26063c1",
+        "astHash": "095773ae9c97eac998910f614bd1af4134491c7df35dcab040b2162667e08961"
+      },
+      "equationSha256": "3ec210791ada8f4c1780fa9c6b4bdf2591e91c7297fa48a5970287093f2e8826",
+      "term": {
+        "parameters": [],
+        "returnType": "InventoryWorldState",
+        "body": [
+          "sequence",
+          [
+            [
+              "return",
+              [
+                "record",
+                [
+                  [
+                    "field",
+                    "revision",
+                    [
+                      "number",
+                      "0"
+                    ]
+                  ],
+                  [
+                    "field",
+                    "catalog",
+                    [
+                      "call",
+                      [
+                        "reference",
+                        "source:emptyInventoryCatalogSnapshot"
+                      ],
+                      [],
+                      [],
+                      "required"
+                    ]
+                  ],
+                  [
+                    "field",
+                    "projection",
+                    [
+                      "call",
+                      [
+                        "reference",
+                        "source:emptyInventoryProjectionState"
+                      ],
+                      [],
+                      [],
+                      "required"
+                    ]
+                  ],
+                  [
+                    "field",
+                    "reservations",
+                    [
+                      "call",
+                      [
+                        "reference",
+                        "source:emptyInventoryReservationBook"
+                      ],
+                      [],
+                      [],
+                      "required"
+                    ]
+                  ],
+                  [
+                    "field",
+                    "counts",
+                    [
+                      "call",
+                      [
+                        "reference",
+                        "source:emptyInventoryCountBook"
+                      ],
+                      [],
+                      [],
+                      "required"
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "id": "src/storage.ts#validateBeginInventoryOperation",
+      "implementation": {
+        "file": "src/storage.ts",
+        "start": {
+          "offset": 52213,
+          "line": 1258,
+          "column": 1
+        },
+        "end": {
+          "offset": 54834,
+          "line": 1338,
+          "column": 2
+        },
+        "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+        "astHash": "4e38960527de1e2a18e0ec3f08954598f9f1508ccfe012dd15163182e5b7a8bf"
+      },
+      "equationSha256": "c9c3c234a30c9063b2692dde807f72080126fb6db487fa6377b3cc1026045454",
+      "term": {
+        "parameters": [
+          {
+            "identity": "parameter:0",
+            "type": "BeginInventoryDurableOperationInput",
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "returnType": "void",
+        "body": [
+          "sequence",
+          [
+            [
+              "if",
+              [
+                "binary",
+                "===",
+                [
+                  "property",
+                  [
+                    "call",
+                    [
+                      "property",
+                      [
+                        "property",
+                        [
+                          "reference",
+                          "parameter:0"
+                        ],
+                        "operationId",
+                        "required"
+                      ],
+                      "trim",
+                      "required"
+                    ],
+                    [],
+                    [],
+                    "required"
+                  ],
+                  "length",
+                  "required"
+                ],
+                [
+                  "number",
+                  "0"
+                ]
+              ],
+              [
+                "sequence",
+                [
+                  [
+                    "throw",
+                    [
+                      "new",
+                      [
+                        "reference",
+                        "source:Error"
+                      ],
+                      [],
+                      [
+                        [
+                          "string",
+                          "Inventory durable operationId must not be empty."
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ],
+              [
+                "no-else"
+              ]
+            ],
+            [
+              "if",
+              [
+                "binary",
+                "===",
+                [
+                  "property",
+                  [
+                    "call",
+                    [
+                      "property",
+                      [
+                        "property",
+                        [
+                          "reference",
+                          "parameter:0"
+                        ],
+                        "intentFingerprint",
+                        "required"
+                      ],
+                      "trim",
+                      "required"
+                    ],
+                    [],
+                    [],
+                    "required"
+                  ],
+                  "length",
+                  "required"
+                ],
+                [
+                  "number",
+                  "0"
+                ]
+              ],
+              [
+                "sequence",
+                [
+                  [
+                    "throw",
+                    [
+                      "new",
+                      [
+                        "reference",
+                        "source:Error"
+                      ],
+                      [],
+                      [
+                        [
+                          "string",
+                          "Inventory durable intent fingerprint must not be empty."
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ],
+              [
+                "no-else"
+              ]
+            ],
+            [
+              "if",
+              [
+                "binary",
+                "||",
+                [
+                  "prefix",
+                  "!",
+                  [
+                    "call",
+                    [
+                      "property",
+                      [
+                        "reference",
+                        "source:Number"
+                      ],
+                      "isSafeInteger",
+                      "required"
+                    ],
+                    [],
+                    [
+                      [
+                        "property",
+                        [
+                          "reference",
+                          "parameter:0"
+                        ],
+                        "baseRevision",
+                        "required"
+                      ]
+                    ],
+                    "required"
+                  ]
+                ],
+                [
+                  "binary",
+                  "<",
+                  [
+                    "property",
+                    [
+                      "reference",
+                      "parameter:0"
+                    ],
+                    "baseRevision",
+                    "required"
+                  ],
+                  [
+                    "number",
+                    "0"
+                  ]
+                ]
+              ],
+              [
+                "sequence",
+                [
+                  [
+                    "throw",
+                    [
+                      "new",
+                      [
+                        "reference",
+                        "source:Error"
+                      ],
+                      [],
+                      [
+                        [
+                          "string",
+                          "Inventory durable baseRevision must be a non-negative safe integer."
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ],
+              [
+                "no-else"
+              ]
+            ],
+            [
+              "expression",
+              [
+                "call",
+                [
+                  "reference",
+                  "source:assertCanonicalInventoryTime"
+                ],
+                [],
+                [
+                  [
+                    "property",
+                    [
+                      "reference",
+                      "parameter:0"
+                    ],
+                    "recordedAt",
+                    "required"
+                  ],
+                  [
+                    "string",
+                    "inventory operation recordedAt"
+                  ]
+                ],
+                "required"
+              ]
+            ],
+            [
+              "if",
+              [
+                "binary",
+                "!==",
+                [
+                  "property",
+                  [
+                    "property",
+                    [
+                      "reference",
+                      "parameter:0"
+                    ],
+                    "plan",
+                    "required"
+                  ],
+                  "format",
+                  "required"
+                ],
+                [
+                  "string",
+                  "inventoryonce-compact-plan-v1"
+                ]
+              ],
+              [
+                "sequence",
+                [
+                  [
+                    "throw",
+                    [
+                      "new",
+                      [
+                        "reference",
+                        "source:Error"
+                      ],
+                      [],
+                      [
+                        [
+                          "string",
+                          "Inventory durable adapter does not support this compact plan format."
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ],
+              [
+                "no-else"
+              ]
+            ],
+            [
+              "declarations",
+              "const",
+              [
+                [
+                  [
+                    "binding",
+                    "local:0"
+                  ],
+                  null,
+                  [
+                    "call",
+                    [
+                      "reference",
+                      "source:inventoryCatalogFromSnapshot"
+                    ],
+                    [],
+                    [
+                      [
+                        "property",
+                        [
+                          "property",
+                          [
+                            "reference",
+                            "parameter:0"
+                          ],
+                          "plan",
+                          "required"
+                        ],
+                        "catalog",
+                        "required"
+                      ]
+                    ],
+                    "required"
+                  ]
+                ]
+              ]
+            ],
+            [
+              "if",
+              [
+                "binary",
+                "!==",
+                [
+                  "property",
+                  [
+                    "reference",
+                    "local:0"
+                  ],
+                  "digest",
+                  "required"
+                ],
+                [
+                  "property",
+                  [
+                    "property",
+                    [
+                      "reference",
+                      "parameter:0"
+                    ],
+                    "plan",
+                    "required"
+                  ],
+                  "catalogRoot",
+                  "required"
+                ]
+              ],
+              [
+                "sequence",
+                [
+                  [
+                    "throw",
+                    [
+                      "new",
+                      [
+                        "reference",
+                        "source:Error"
+                      ],
+                      [],
+                      [
+                        [
+                          "string",
+                          "Inventory durable plan catalogue root does not match its definitions."
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ],
+              [
+                "no-else"
+              ]
+            ],
+            [
+              "declarations",
+              "const",
+              [
+                [
+                  [
+                    "binding",
+                    "local:1"
+                  ],
+                  null,
+                  [
+                    "property",
+                    [
+                      "property",
+                      [
+                        "reference",
+                        "parameter:0"
+                      ],
+                      "plan",
+                      "required"
+                    ],
+                    "receipt",
+                    "required"
+                  ]
+                ]
+              ]
+            ],
+            [
+              "if",
+              [
+                "binary",
+                "!==",
+                [
+                  "property",
+                  [
+                    "reference",
+                    "local:1"
+                  ],
+                  "operationId",
+                  "required"
+                ],
+                [
+                  "property",
+                  [
+                    "reference",
+                    "parameter:0"
+                  ],
+                  "operationId",
+                  "required"
+                ]
+              ],
+              [
+                "sequence",
+                [
+                  [
+                    "throw",
+                    [
+                      "new",
+                      [
+                        "reference",
+                        "source:Error"
+                      ],
+                      [],
+                      [
+                        [
+                          "string",
+                          "Inventory operation receipt must use the frozen operationId."
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ],
+              [
+                "no-else"
+              ]
+            ],
+            [
+              "if",
+              [
+                "binary",
+                "!==",
+                [
+                  "property",
+                  [
+                    "reference",
+                    "local:1"
+                  ],
+                  "recordedAt",
+                  "required"
+                ],
+                [
+                  "property",
+                  [
+                    "reference",
+                    "parameter:0"
+                  ],
+                  "recordedAt",
+                  "required"
+                ]
+              ],
+              [
+                "sequence",
+                [
+                  [
+                    "throw",
+                    [
+                      "new",
+                      [
+                        "reference",
+                        "source:Error"
+                      ],
+                      [],
+                      [
+                        [
+                          "string",
+                          "Inventory operation receipt must use the frozen recordedAt."
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ],
+              [
+                "no-else"
+              ]
+            ],
+            [
+              "if",
+              [
+                "binary",
+                "!==",
+                [
+                  "property",
+                  [
+                    "reference",
+                    "local:1"
+                  ],
+                  "worldRevision",
+                  "required"
+                ],
+                [
+                  "binary",
+                  "+",
+                  [
+                    "property",
+                    [
+                      "reference",
+                      "parameter:0"
+                    ],
+                    "baseRevision",
+                    "required"
+                  ],
+                  [
+                    "number",
+                    "1"
+                  ]
+                ]
+              ],
+              [
+                "sequence",
+                [
+                  [
+                    "throw",
+                    [
+                      "new",
+                      [
+                        "reference",
+                        "source:Error"
+                      ],
+                      [],
+                      [
+                        [
+                          "string",
+                          "Inventory operation receipt worldRevision must be baseRevision + 1."
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ],
+              [
+                "no-else"
+              ]
+            ],
+            [
+              "declarations",
+              "const",
+              [
+                [
+                  [
+                    "binding",
+                    "local:2"
+                  ],
+                  null,
+                  [
+                    "property",
+                    [
+                      "property",
+                      [
+                        "reference",
+                        "parameter:0"
+                      ],
+                      "plan",
+                      "required"
+                    ],
+                    "event",
+                    "required"
+                  ]
+                ]
+              ]
+            ],
+            [
+              "if",
+              [
+                "binary",
+                "!==",
+                [
+                  "reference",
+                  "local:2"
+                ],
+                [
+                  "reference",
+                  "source:undefined"
+                ]
+              ],
+              [
+                "sequence",
+                [
+                  [
+                    "if",
+                    [
+                      "binary",
+                      "!==",
+                      [
+                        "property",
+                        [
+                          "reference",
+                          "local:2"
+                        ],
+                        "operationId",
+                        "required"
+                      ],
+                      [
+                        "property",
+                        [
+                          "reference",
+                          "parameter:0"
+                        ],
+                        "operationId",
+                        "required"
+                      ]
+                    ],
+                    [
+                      "sequence",
+                      [
+                        [
+                          "throw",
+                          [
+                            "new",
+                            [
+                              "reference",
+                              "source:Error"
+                            ],
+                            [],
+                            [
+                              [
+                                "string",
+                                "Inventory committed event must use the frozen operationId."
+                              ]
+                            ]
+                          ]
+                        ]
+                      ]
+                    ],
+                    [
+                      "no-else"
+                    ]
+                  ],
+                  [
+                    "if",
+                    [
+                      "binary",
+                      "!==",
+                      [
+                        "property",
+                        [
+                          "reference",
+                          "local:2"
+                        ],
+                        "recordedAt",
+                        "required"
+                      ],
+                      [
+                        "property",
+                        [
+                          "reference",
+                          "parameter:0"
+                        ],
+                        "recordedAt",
+                        "required"
+                      ]
+                    ],
+                    [
+                      "sequence",
+                      [
+                        [
+                          "throw",
+                          [
+                            "new",
+                            [
+                              "reference",
+                              "source:Error"
+                            ],
+                            [],
+                            [
+                              [
+                                "string",
+                                "Inventory committed event must use the frozen recordedAt."
+                              ]
+                            ]
+                          ]
+                        ]
+                      ]
+                    ],
+                    [
+                      "no-else"
+                    ]
+                  ],
+                  [
+                    "if",
+                    [
+                      "binary",
+                      "!==",
+                      [
+                        "property",
+                        [
+                          "reference",
+                          "local:1"
+                        ],
+                        "eventId",
+                        "required"
+                      ],
+                      [
+                        "property",
+                        [
+                          "reference",
+                          "local:2"
+                        ],
+                        "eventId",
+                        "required"
+                      ]
+                    ],
+                    [
+                      "sequence",
+                      [
+                        [
+                          "throw",
+                          [
+                            "new",
+                            [
+                              "reference",
+                              "source:Error"
+                            ],
+                            [],
+                            [
+                              [
+                                "string",
+                                "Inventory receipt eventId must match the frozen committed event."
+                              ]
+                            ]
+                          ]
+                        ]
+                      ]
+                    ],
+                    [
+                      "no-else"
+                    ]
+                  ]
+                ]
+              ],
+              [
+                "if",
+                [
+                  "binary",
+                  "!==",
+                  [
+                    "property",
+                    [
+                      "reference",
+                      "local:1"
+                    ],
+                    "eventId",
+                    "required"
+                  ],
+                  [
+                    "reference",
+                    "source:undefined"
+                  ]
+                ],
+                [
+                  "sequence",
+                  [
+                    [
+                      "throw",
+                      [
+                        "new",
+                        [
+                          "reference",
+                          "source:Error"
+                        ],
+                        [],
+                        [
+                          [
+                            "string",
+                            "Inventory receipt cannot name an event when the plan has none."
+                          ]
+                        ]
+                      ]
+                    ]
+                  ]
+                ],
+                [
+                  "no-else"
+                ]
+              ]
+            ],
+            [
+              "if",
+              [
+                "binary",
+                "!==",
+                [
+                  "property",
+                  [
+                    "property",
+                    [
+                      "property",
+                      [
+                        "property",
+                        [
+                          "reference",
+                          "parameter:0"
+                        ],
+                        "plan",
+                        "required"
+                      ],
+                      "reservationDelta",
+                      "required"
+                    ],
+                    "reservation",
+                    "optional"
+                  ],
+                  "reservationId",
+                  "required"
+                ],
+                [
+                  "property",
+                  [
+                    "reference",
+                    "local:1"
+                  ],
+                  "reservationId",
+                  "required"
+                ]
+              ],
+              [
+                "sequence",
+                [
+                  [
+                    "throw",
+                    [
+                      "new",
+                      [
+                        "reference",
+                        "source:Error"
+                      ],
+                      [],
+                      [
+                        [
+                          "string",
+                          "Inventory receipt reservationId must match the compact reservation delta."
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ],
+              [
+                "no-else"
+              ]
+            ],
+            [
+              "if",
+              [
+                "binary",
+                "!==",
+                [
+                  "property",
+                  [
+                    "property",
+                    [
+                      "property",
+                      [
+                        "property",
+                        [
+                          "reference",
+                          "parameter:0"
+                        ],
+                        "plan",
+                        "required"
+                      ],
+                      "countDelta",
+                      "required"
+                    ],
+                    "count",
+                    "optional"
+                  ],
+                  "countId",
+                  "required"
+                ],
+                [
+                  "property",
+                  [
+                    "reference",
+                    "local:1"
+                  ],
+                  "countId",
+                  "required"
+                ]
+              ],
+              [
+                "sequence",
+                [
+                  [
+                    "throw",
+                    [
+                      "new",
+                      [
+                        "reference",
+                        "source:Error"
+                      ],
+                      [],
+                      [
+                        [
+                          "string",
+                          "Inventory receipt countId must match the compact count delta."
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ],
+              [
+                "no-else"
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "id": "src/storage.ts#validateInventoryDurablePlanAgainstBase",
+      "implementation": {
+        "file": "src/storage.ts",
+        "start": {
+          "offset": 54938,
+          "line": 1341,
+          "column": 1
+        },
+        "end": {
+          "offset": 57066,
+          "line": 1404,
+          "column": 2
+        },
+        "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+        "astHash": "e5bd2f7839c24ffc8d19192346f4bd70acd0181a8ac9f5d8ca39827daf9392a0"
+      },
+      "equationSha256": "b7f49d02444f3d35e51491019485e20a97ae6d3039cf3f713e9318a67d263a07",
+      "term": {
+        "parameters": [
+          {
+            "identity": "parameter:0",
+            "type": "InventoryWorldState",
+            "optional": false,
+            "rest": false,
+            "default": null
+          },
+          {
+            "identity": "parameter:1",
+            "type": "InventoryDurableOperationPlan",
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "returnType": "InventoryWorldState",
+        "body": [
+          "sequence",
+          [
+            [
+              "declarations",
+              "const",
+              [
+                [
+                  [
+                    "binding",
+                    "local:0"
+                  ],
+                  null,
+                  [
+                    "call",
+                    [
+                      "reference",
+                      "source:inventoryWorldContentRoots"
+                    ],
+                    [],
+                    [
+                      [
+                        "reference",
+                        "parameter:0"
+                      ]
+                    ],
+                    "required"
+                  ]
+                ]
+              ]
+            ],
+            [
+              "if",
+              [
+                "binary",
+                "!==",
+                [
+                  "property",
+                  [
+                    "reference",
+                    "local:0"
+                  ],
+                  "world",
+                  "required"
+                ],
+                [
+                  "property",
+                  [
+                    "reference",
+                    "parameter:1"
+                  ],
+                  "baseWorldRoot",
+                  "required"
+                ]
+              ],
+              [
+                "sequence",
+                [
+                  [
+                    "throw",
+                    [
+                      "new",
+                      [
+                        "reference",
+                        "source:Error"
+                      ],
+                      [],
+                      [
+                        [
+                          "string",
+                          "Inventory durable plan is not bound to this exact base world."
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ],
+              [
+                "no-else"
+              ]
+            ],
+            [
+              "declarations",
+              "const",
+              [
+                [
+                  [
+                    "binding",
+                    "local:1"
+                  ],
+                  null,
+                  [
+                    "call",
+                    [
+                      "reference",
+                      "source:inventoryCatalogFromSnapshot"
+                    ],
+                    [],
+                    [
+                      [
+                        "property",
+                        [
+                          "reference",
+                          "parameter:1"
+                        ],
+                        "catalog",
+                        "required"
+                      ]
+                    ],
+                    "required"
+                  ]
+                ]
+              ]
+            ],
+            [
+              "if",
+              [
+                "binary",
+                ">",
+                [
+                  "property",
+                  [
+                    "reference",
+                    "parameter:0"
+                  ],
+                  "revision",
+                  "required"
+                ],
+                [
+                  "number",
+                  "0"
+                ]
+              ],
+              [
+                "expression",
+                [
+                  "call",
+                  [
+                    "reference",
+                    "source:assertInventoryCatalogRetainsSnapshot"
+                  ],
+                  [],
+                  [
+                    [
+                      "reference",
+                      "local:1"
+                    ],
+                    [
+                      "property",
+                      [
+                        "reference",
+                        "parameter:0"
+                      ],
+                      "catalog",
+                      "required"
+                    ]
+                  ],
+                  "required"
+                ]
+              ],
+              [
+                "no-else"
+              ]
+            ],
+            [
+              "if",
+              [
+                "binary",
+                "!==",
+                [
+                  "property",
+                  [
+                    "reference",
+                    "local:1"
+                  ],
+                  "digest",
+                  "required"
+                ],
+                [
+                  "property",
+                  [
+                    "reference",
+                    "parameter:1"
+                  ],
+                  "catalogRoot",
+                  "required"
+                ]
+              ],
+              [
+                "sequence",
+                [
+                  [
+                    "throw",
+                    [
+                      "new",
+                      [
+                        "reference",
+                        "source:Error"
+                      ],
+                      [],
+                      [
+                        [
+                          "string",
+                          "Inventory durable plan catalogue root does not match its definitions."
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ],
+              [
+                "no-else"
+              ]
+            ],
+            [
+              "declarations",
+              "const",
+              [
+                [
+                  [
+                    "binding",
+                    "local:2"
+                  ],
+                  null,
+                  [
+                    "conditional",
+                    [
+                      "binary",
+                      "===",
+                      [
+                        "property",
+                        [
+                          "reference",
+                          "parameter:1"
+                        ],
+                        "event",
+                        "required"
+                      ],
+                      [
+                        "reference",
+                        "source:undefined"
+                      ]
+                    ],
+                    [
+                      "property",
+                      [
+                        "reference",
+                        "parameter:0"
+                      ],
+                      "projection",
+                      "required"
+                    ],
+                    [
+                      "property",
+                      [
+                        "call",
+                        [
+                          "reference",
+                          "source:applyInventoryCommittedEvent"
+                        ],
+                        [],
+                        [
+                          [
+                            "record",
+                            [
+                              [
+                                "field",
+                                "catalog",
+                                [
+                                  "reference",
+                                  "local:1"
+                                ]
+                              ],
+                              [
+                                "field",
+                                "state",
+                                [
+                                  "property",
+                                  [
+                                    "reference",
+                                    "parameter:0"
+                                  ],
+                                  "projection",
+                                  "required"
+                                ]
+                              ],
+                              [
+                                "field",
+                                "event",
+                                [
+                                  "property",
+                                  [
+                                    "reference",
+                                    "parameter:1"
+                                  ],
+                                  "event",
+                                  "required"
+                                ]
+                              ],
+                              [
+                                "field",
+                                "deficitPolicy",
+                                [
+                                  "property",
+                                  [
+                                    "reference",
+                                    "parameter:1"
+                                  ],
+                                  "deficitPolicy",
+                                  "required"
+                                ]
+                              ]
+                            ]
+                          ]
+                        ],
+                        "required"
+                      ],
+                      "state",
+                      "required"
+                    ]
+                  ]
+                ]
+              ]
+            ],
+            [
+              "declarations",
+              "const",
+              [
+                [
+                  [
+                    "binding",
+                    "local:3"
+                  ],
+                  null,
+                  [
+                    "call",
+                    [
+                      "reference",
+                      "source:applyInventoryReservationBookDelta"
+                    ],
+                    [],
+                    [
+                      [
+                        "property",
+                        [
+                          "reference",
+                          "parameter:0"
+                        ],
+                        "reservations",
+                        "required"
+                      ],
+                      [
+                        "property",
+                        [
+                          "reference",
+                          "parameter:1"
+                        ],
+                        "reservationDelta",
+                        "required"
+                      ]
+                    ],
+                    "required"
+                  ]
+                ]
+              ]
+            ],
+            [
+              "declarations",
+              "const",
+              [
+                [
+                  [
+                    "binding",
+                    "local:4"
+                  ],
+                  null,
+                  [
+                    "call",
+                    [
+                      "reference",
+                      "source:applyInventoryCountBookDelta"
+                    ],
+                    [],
+                    [
+                      [
+                        "property",
+                        [
+                          "reference",
+                          "parameter:0"
+                        ],
+                        "counts",
+                        "required"
+                      ],
+                      [
+                        "property",
+                        [
+                          "reference",
+                          "parameter:1"
+                        ],
+                        "countDelta",
+                        "required"
+                      ]
+                    ],
+                    "required"
+                  ]
+                ]
+              ]
+            ],
+            [
+              "declarations",
+              "const",
+              [
+                [
+                  [
+                    "binding",
+                    "local:5"
+                  ],
+                  "InventoryWorldState",
+                  [
+                    "record",
+                    [
+                      [
+                        "field",
+                        "revision",
+                        [
+                          "binary",
+                          "+",
+                          [
+                            "property",
+                            [
+                              "reference",
+                              "parameter:0"
+                            ],
+                            "revision",
+                            "required"
+                          ],
+                          [
+                            "number",
+                            "1"
+                          ]
+                        ]
+                      ],
+                      [
+                        "field",
+                        "catalog",
+                        [
+                          "property",
+                          [
+                            "reference",
+                            "parameter:1"
+                          ],
+                          "catalog",
+                          "required"
+                        ]
+                      ],
+                      [
+                        "field",
+                        "projection",
+                        [
+                          "reference",
+                          "local:2"
+                        ]
+                      ],
+                      [
+                        "field",
+                        "reservations",
+                        [
+                          "reference",
+                          "local:3"
+                        ]
+                      ],
+                      [
+                        "field",
+                        "counts",
+                        [
+                          "reference",
+                          "local:4"
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ],
+            [
+              "declarations",
+              "const",
+              [
+                [
+                  [
+                    "binding",
+                    "local:6"
+                  ],
+                  null,
+                  [
+                    "call",
+                    [
+                      "reference",
+                      "source:inventoryWorldContentRoots"
+                    ],
+                    [],
+                    [
+                      [
+                        "reference",
+                        "local:5"
+                      ]
+                    ],
+                    "required"
+                  ]
+                ]
+              ]
+            ],
+            [
+              "if",
+              [
+                "prefix",
+                "!",
+                [
+                  "call",
+                  [
+                    "reference",
+                    "source:inventoryWorldContentRootsEqual"
+                  ],
+                  [],
+                  [
+                    [
+                      "reference",
+                      "local:6"
+                    ],
+                    [
+                      "property",
+                      [
+                        "reference",
+                        "parameter:1"
+                      ],
+                      "nextRoots",
+                      "required"
+                    ]
+                  ],
+                  "required"
+                ]
+              ],
+              [
+                "sequence",
+                [
+                  [
+                    "throw",
+                    [
+                      "new",
+                      [
+                        "reference",
+                        "source:Error"
+                      ],
+                      [],
+                      [
+                        [
+                          "string",
+                          "Inventory durable plan next-world roots do not match its compact deltas."
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ],
+              [
+                "no-else"
+              ]
+            ],
+            [
+              "declarations",
+              "const",
+              [
+                [
+                  [
+                    "binding",
+                    "local:7"
+                  ],
+                  null,
+                  [
+                    "call",
+                    [
+                      "reference",
+                      "source:inventoryDurablePlanDigest"
+                    ],
+                    [],
+                    [
+                      [
+                        "record",
+                        [
+                          [
+                            "field",
+                            "baseWorldRoot",
+                            [
+                              "property",
+                              [
+                                "reference",
+                                "parameter:1"
+                              ],
+                              "baseWorldRoot",
+                              "required"
+                            ]
+                          ],
+                          [
+                            "field",
+                            "catalogRoot",
+                            [
+                              "property",
+                              [
+                                "reference",
+                                "parameter:1"
+                              ],
+                              "catalogRoot",
+                              "required"
+                            ]
+                          ],
+                          [
+                            "field",
+                            "deficitPolicy",
+                            [
+                              "property",
+                              [
+                                "reference",
+                                "parameter:1"
+                              ],
+                              "deficitPolicy",
+                              "required"
+                            ]
+                          ],
+                          [
+                            "spread",
+                            [
+                              "conditional",
+                              [
+                                "binary",
+                                "===",
+                                [
+                                  "property",
+                                  [
+                                    "reference",
+                                    "parameter:1"
+                                  ],
+                                  "event",
+                                  "required"
+                                ],
+                                [
+                                  "reference",
+                                  "source:undefined"
+                                ]
+                              ],
+                              [
+                                "record",
+                                []
+                              ],
+                              [
+                                "record",
+                                [
+                                  [
+                                    "field",
+                                    "event",
+                                    [
+                                      "property",
+                                      [
+                                        "reference",
+                                        "parameter:1"
+                                      ],
+                                      "event",
+                                      "required"
+                                    ]
+                                  ]
+                                ]
+                              ]
+                            ]
+                          ],
+                          [
+                            "spread",
+                            [
+                              "conditional",
+                              [
+                                "binary",
+                                "===",
+                                [
+                                  "property",
+                                  [
+                                    "reference",
+                                    "parameter:1"
+                                  ],
+                                  "reservationDelta",
+                                  "required"
+                                ],
+                                [
+                                  "reference",
+                                  "source:undefined"
+                                ]
+                              ],
+                              [
+                                "record",
+                                []
+                              ],
+                              [
+                                "record",
+                                [
+                                  [
+                                    "field",
+                                    "reservationDelta",
+                                    [
+                                      "property",
+                                      [
+                                        "reference",
+                                        "parameter:1"
+                                      ],
+                                      "reservationDelta",
+                                      "required"
+                                    ]
+                                  ]
+                                ]
+                              ]
+                            ]
+                          ],
+                          [
+                            "spread",
+                            [
+                              "conditional",
+                              [
+                                "binary",
+                                "===",
+                                [
+                                  "property",
+                                  [
+                                    "reference",
+                                    "parameter:1"
+                                  ],
+                                  "countDelta",
+                                  "required"
+                                ],
+                                [
+                                  "reference",
+                                  "source:undefined"
+                                ]
+                              ],
+                              [
+                                "record",
+                                []
+                              ],
+                              [
+                                "record",
+                                [
+                                  [
+                                    "field",
+                                    "countDelta",
+                                    [
+                                      "property",
+                                      [
+                                        "reference",
+                                        "parameter:1"
+                                      ],
+                                      "countDelta",
+                                      "required"
+                                    ]
+                                  ]
+                                ]
+                              ]
+                            ]
+                          ],
+                          [
+                            "field",
+                            "receipt",
+                            [
+                              "property",
+                              [
+                                "reference",
+                                "parameter:1"
+                              ],
+                              "receipt",
+                              "required"
+                            ]
+                          ],
+                          [
+                            "field",
+                            "nextRoots",
+                            [
+                              "property",
+                              [
+                                "reference",
+                                "parameter:1"
+                              ],
+                              "nextRoots",
+                              "required"
+                            ]
+                          ]
+                        ]
+                      ]
+                    ],
+                    "required"
+                  ]
+                ]
+              ]
+            ],
+            [
+              "if",
+              [
+                "binary",
+                "!==",
+                [
+                  "reference",
+                  "local:7"
+                ],
+                [
+                  "property",
+                  [
+                    "reference",
+                    "parameter:1"
+                  ],
+                  "planDigest",
+                  "required"
+                ]
+              ],
+              [
+                "sequence",
+                [
+                  [
+                    "throw",
+                    [
+                      "new",
+                      [
+                        "reference",
+                        "source:Error"
+                      ],
+                      [],
+                      [
+                        [
+                          "string",
+                          "Inventory durable plan digest does not match its frozen compact manifest."
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ],
+              [
+                "no-else"
+              ]
+            ],
+            [
+              "return",
+              [
+                "reference",
+                "local:5"
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "id": "src/storage.ts#inventoryWorldContentRootsEqual",
+      "implementation": {
+        "file": "src/storage.ts",
+        "start": {
+          "offset": 57161,
+          "line": 1407,
+          "column": 1
+        },
+        "end": {
+          "offset": 57502,
+          "line": 1418,
+          "column": 2
+        },
+        "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+        "astHash": "9e21cdf971d1c920fbb6ce3e4bf7f75baef0b20d4eb5450a3213536ed99de9d4"
+      },
+      "equationSha256": "566bb311ae775ef69b2cb3175b6a0c3f723a2ac3db2f6b7ee311e35fec774281",
+      "term": {
+        "parameters": [
+          {
+            "identity": "parameter:0",
+            "type": "InventoryWorldContentRoots",
+            "optional": false,
+            "rest": false,
+            "default": null
+          },
+          {
+            "identity": "parameter:1",
+            "type": "InventoryWorldContentRoots",
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "returnType": "boolean",
+        "body": [
+          "sequence",
+          [
+            [
+              "return",
+              [
+                "binary",
+                "&&",
+                [
+                  "binary",
+                  "&&",
+                  [
+                    "binary",
+                    "&&",
+                    [
+                      "binary",
+                      "&&",
+                      [
+                        "binary",
+                        "===",
+                        [
+                          "property",
+                          [
+                            "reference",
+                            "parameter:0"
+                          ],
+                          "world",
+                          "required"
+                        ],
+                        [
+                          "property",
+                          [
+                            "reference",
+                            "parameter:1"
+                          ],
+                          "world",
+                          "required"
+                        ]
+                      ],
+                      [
+                        "binary",
+                        "===",
+                        [
+                          "property",
+                          [
+                            "reference",
+                            "parameter:0"
+                          ],
+                          "catalog",
+                          "required"
+                        ],
+                        [
+                          "property",
+                          [
+                            "reference",
+                            "parameter:1"
+                          ],
+                          "catalog",
+                          "required"
+                        ]
+                      ]
+                    ],
+                    [
+                      "binary",
+                      "===",
+                      [
+                        "property",
+                        [
+                          "reference",
+                          "parameter:0"
+                        ],
+                        "projection",
+                        "required"
+                      ],
+                      [
+                        "property",
+                        [
+                          "reference",
+                          "parameter:1"
+                        ],
+                        "projection",
+                        "required"
+                      ]
+                    ]
+                  ],
+                  [
+                    "binary",
+                    "===",
+                    [
+                      "property",
+                      [
+                        "reference",
+                        "parameter:0"
+                      ],
+                      "reservations",
+                      "required"
+                    ],
+                    [
+                      "property",
+                      [
+                        "reference",
+                        "parameter:1"
+                      ],
+                      "reservations",
+                      "required"
+                    ]
+                  ]
+                ],
+                [
+                  "binary",
+                  "===",
+                  [
+                    "property",
+                    [
+                      "reference",
+                      "parameter:0"
+                    ],
+                    "counts",
+                    "required"
+                  ],
+                  [
+                    "property",
+                    [
+                      "reference",
+                      "parameter:1"
+                    ],
+                    "counts",
+                    "required"
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "id": "src/storage.ts#validatePublishedInventoryWorld",
+      "implementation": {
+        "file": "src/storage.ts",
+        "start": {
+          "offset": 57605,
+          "line": 1421,
+          "column": 1
+        },
+        "end": {
+          "offset": 58315,
+          "line": 1437,
+          "column": 2
+        },
+        "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+        "astHash": "00d4d96629dad9bd6ddd6218450e59e1e5820ba4e1d0a0b03ef8bab50df993bb"
+      },
+      "equationSha256": "ac5b8e6800eb38ba6bbd88a0020c7e3a04844b8cd2526ab89eef1a446da9aeea",
+      "term": {
+        "parameters": [
+          {
+            "identity": "parameter:0",
+            "type": "InventoryWorldState",
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "returnType": "void",
+        "body": [
+          "sequence",
+          [
+            [
+              "if",
+              [
+                "binary",
+                "||",
+                [
+                  "prefix",
+                  "!",
+                  [
+                    "call",
+                    [
+                      "property",
+                      [
+                        "reference",
+                        "source:Number"
+                      ],
+                      "isSafeInteger",
+                      "required"
+                    ],
+                    [],
+                    [
+                      [
+                        "property",
+                        [
+                          "reference",
+                          "parameter:0"
+                        ],
+                        "revision",
+                        "required"
+                      ]
+                    ],
+                    "required"
+                  ]
+                ],
+                [
+                  "binary",
+                  "<",
+                  [
+                    "property",
+                    [
+                      "reference",
+                      "parameter:0"
+                    ],
+                    "revision",
+                    "required"
+                  ],
+                  [
+                    "number",
+                    "0"
+                  ]
+                ]
+              ],
+              [
+                "sequence",
+                [
+                  [
+                    "throw",
+                    [
+                      "new",
+                      [
+                        "reference",
+                        "source:Error"
+                      ],
+                      [],
+                      [
+                        [
+                          "string",
+                          "Published inventory world revision must be a non-negative safe integer."
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ],
+              [
+                "no-else"
+              ]
+            ],
+            [
+              "declarations",
+              "const",
+              [
+                [
+                  [
+                    "binding",
+                    "local:0"
+                  ],
+                  null,
+                  [
+                    "call",
+                    [
+                      "reference",
+                      "source:inventoryCatalogFromSnapshot"
+                    ],
+                    [],
+                    [
+                      [
+                        "property",
+                        [
+                          "reference",
+                          "parameter:0"
+                        ],
+                        "catalog",
+                        "required"
+                      ]
+                    ],
+                    "required"
+                  ]
+                ]
+              ]
+            ],
+            [
+              "if",
+              [
+                "binary",
+                "&&",
+                [
+                  "binary",
+                  "===",
+                  [
+                    "property",
+                    [
+                      "reference",
+                      "parameter:0"
+                    ],
+                    "revision",
+                    "required"
+                  ],
+                  [
+                    "number",
+                    "0"
+                  ]
+                ],
+                [
+                  "binary",
+                  "===",
+                  [
+                    "property",
+                    [
+                      "property",
+                      [
+                        "reference",
+                        "parameter:0"
+                      ],
+                      "projection",
+                      "required"
+                    ],
+                    "lastRecordSequence",
+                    "required"
+                  ],
+                  [
+                    "number",
+                    "0"
+                  ]
+                ]
+              ],
+              [
+                "return",
+                [
+                  "undefined"
+                ]
+              ],
+              [
+                "no-else"
+              ]
+            ],
+            [
+              "for-of",
+              [
+                "declarations",
+                "const",
+                [
+                  [
+                    [
+                      "binding",
+                      "local:1"
+                    ],
+                    null,
+                    [
+                      "undefined"
+                    ]
+                  ]
+                ]
+              ],
+              [
+                "call",
+                [
+                  "property",
+                  [
+                    "reference",
+                    "source:Object"
+                  ],
+                  "values",
+                  "required"
+                ],
+                [],
+                [
+                  [
+                    "property",
+                    [
+                      "property",
+                      [
+                        "reference",
+                        "parameter:0"
+                      ],
+                      "projection",
+                      "required"
+                    ],
+                    "positions",
+                    "required"
+                  ]
+                ],
+                "required"
+              ],
+              [
+                "sequence",
+                [
+                  [
+                    "declarations",
+                    "const",
+                    [
+                      [
+                        [
+                          "binding",
+                          "local:2"
+                        ],
+                        null,
+                        [
+                          "call",
+                          [
+                            "property",
+                            [
+                              "reference",
+                              "local:0"
+                            ],
+                            "itemRevision",
+                            "required"
+                          ],
+                          [],
+                          [
+                            [
+                              "property",
+                              [
+                                "property",
+                                [
+                                  "reference",
+                                  "local:1"
+                                ],
+                                "key",
+                                "required"
+                              ],
+                              "itemRevisionId",
+                              "required"
+                            ]
+                          ],
+                          "required"
+                        ]
+                      ]
+                    ]
+                  ],
+                  [
+                    "if",
+                    [
+                      "binary",
+                      "!==",
+                      [
+                        "property",
+                        [
+                          "reference",
+                          "local:2"
+                        ],
+                        "itemId",
+                        "required"
+                      ],
+                      [
+                        "property",
+                        [
+                          "property",
+                          [
+                            "reference",
+                            "local:1"
+                          ],
+                          "key",
+                          "required"
+                        ],
+                        "itemId",
+                        "required"
+                      ]
+                    ],
+                    [
+                      "sequence",
+                      [
+                        [
+                          "throw",
+                          [
+                            "new",
+                            [
+                              "reference",
+                              "source:Error"
+                            ],
+                            [],
+                            [
+                              [
+                                "string",
+                                "Published inventory position item differs from its retained revision."
+                              ]
+                            ]
+                          ]
+                        ]
+                      ]
+                    ],
+                    [
+                      "no-else"
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "id": "src/storage.ts#cloneInventoryPublishedWorld",
+      "implementation": {
+        "file": "src/storage.ts",
+        "start": {
+          "offset": 1201,
+          "line": 35,
+          "column": 1
+        },
+        "end": {
+          "offset": 3024,
+          "line": 68,
+          "column": 2
+        },
+        "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+        "astHash": "9cd2d08abd6e0b6bc7e8e24720ad7f4b4dd1ff91f3e0705ed82a6df47ba05dc1"
+      },
+      "equationSha256": "83911eeb0e56e274e20f63ae4275aa705cd8b7cfb5665e57b1dae34036344bda",
+      "term": {
+        "parameters": [
+          {
+            "identity": "parameter:0",
+            "type": "InventoryWorldState",
+            "optional": false,
+            "rest": false,
+            "default": null
+          }
+        ],
+        "returnType": "InventoryWorldState",
+        "body": [
+          "sequence",
+          [
+            [
+              "declarations",
+              "const",
+              [
+                [
+                  [
+                    "binding",
+                    "local:0"
+                  ],
+                  null,
+                  [
+                    "call",
+                    [
+                      "reference",
+                      "source:structuredClone"
+                    ],
+                    [],
+                    [
+                      [
+                        "reference",
+                        "parameter:0"
+                      ]
+                    ],
+                    "required"
+                  ]
+                ]
+              ]
+            ],
+            [
+              "return",
+              [
+                "record",
+                [
+                  [
+                    "spread",
+                    [
+                      "reference",
+                      "local:0"
+                    ]
+                  ],
+                  [
+                    "field",
+                    "catalog",
+                    [
+                      "record",
+                      [
+                        [
+                          "spread",
+                          [
+                            "property",
+                            [
+                              "reference",
+                              "local:0"
+                            ],
+                            "catalog",
+                            "required"
+                          ]
+                        ],
+                        [
+                          "field",
+                          "activeItemRevisionIds",
+                          [
+                            "call",
+                            [
+                              "reference",
+                              "source:cloneInventorySparseRecord"
+                            ],
+                            [],
+                            [
+                              [
+                                "property",
+                                [
+                                  "property",
+                                  [
+                                    "reference",
+                                    "local:0"
+                                  ],
+                                  "catalog",
+                                  "required"
+                                ],
+                                "activeItemRevisionIds",
+                                "required"
+                              ]
+                            ],
+                            "required"
+                          ]
+                        ],
+                        [
+                          "field",
+                          "activeCompositionRevisionIds",
+                          [
+                            "call",
+                            [
+                              "reference",
+                              "source:cloneInventorySparseRecord"
+                            ],
+                            [],
+                            [
+                              [
+                                "property",
+                                [
+                                  "property",
+                                  [
+                                    "reference",
+                                    "local:0"
+                                  ],
+                                  "catalog",
+                                  "required"
+                                ],
+                                "activeCompositionRevisionIds",
+                                "required"
+                              ]
+                            ],
+                            "required"
+                          ]
+                        ],
+                        [
+                          "field",
+                          "activeTransformationRevisionIds",
+                          [
+                            "call",
+                            [
+                              "reference",
+                              "source:cloneInventorySparseRecord"
+                            ],
+                            [],
+                            [
+                              [
+                                "property",
+                                [
+                                  "property",
+                                  [
+                                    "reference",
+                                    "local:0"
+                                  ],
+                                  "catalog",
+                                  "required"
+                                ],
+                                "activeTransformationRevisionIds",
+                                "required"
+                              ]
+                            ],
+                            "required"
+                          ]
+                        ],
+                        [
+                          "field",
+                          "activeCollectionRevisionIds",
+                          [
+                            "call",
+                            [
+                              "reference",
+                              "source:cloneInventorySparseRecord"
+                            ],
+                            [],
+                            [
+                              [
+                                "property",
+                                [
+                                  "property",
+                                  [
+                                    "reference",
+                                    "local:0"
+                                  ],
+                                  "catalog",
+                                  "required"
+                                ],
+                                "activeCollectionRevisionIds",
+                                "required"
+                              ]
+                            ],
+                            "required"
+                          ]
+                        ],
+                        [
+                          "field",
+                          "activeFungibilityRevisionIds",
+                          [
+                            "call",
+                            [
+                              "reference",
+                              "source:cloneInventorySparseRecord"
+                            ],
+                            [],
+                            [
+                              [
+                                "property",
+                                [
+                                  "property",
+                                  [
+                                    "reference",
+                                    "local:0"
+                                  ],
+                                  "catalog",
+                                  "required"
+                                ],
+                                "activeFungibilityRevisionIds",
+                                "required"
+                              ]
+                            ],
+                            "required"
+                          ]
+                        ]
+                      ]
+                    ]
+                  ],
+                  [
+                    "field",
+                    "projection",
+                    [
+                      "record",
+                      [
+                        [
+                          "spread",
+                          [
+                            "property",
+                            [
+                              "reference",
+                              "local:0"
+                            ],
+                            "projection",
+                            "required"
+                          ]
+                        ],
+                        [
+                          "field",
+                          "positionIdsByItemId",
+                          [
+                            "call",
+                            [
+                              "reference",
+                              "source:cloneInventorySparseRecord"
+                            ],
+                            [],
+                            [
+                              [
+                                "property",
+                                [
+                                  "property",
+                                  [
+                                    "reference",
+                                    "local:0"
+                                  ],
+                                  "projection",
+                                  "required"
+                                ],
+                                "positionIdsByItemId",
+                                "required"
+                              ]
+                            ],
+                            "required"
+                          ]
+                        ],
+                        [
+                          "field",
+                          "positionIdsByItemRevisionId",
+                          [
+                            "call",
+                            [
+                              "reference",
+                              "source:cloneInventorySparseRecord"
+                            ],
+                            [],
+                            [
+                              [
+                                "property",
+                                [
+                                  "property",
+                                  [
+                                    "reference",
+                                    "local:0"
+                                  ],
+                                  "projection",
+                                  "required"
+                                ],
+                                "positionIdsByItemRevisionId",
+                                "required"
+                              ]
+                            ],
+                            "required"
+                          ]
+                        ],
+                        [
+                          "field",
+                          "lotIdentitiesByItemId",
+                          [
+                            "call",
+                            [
+                              "reference",
+                              "source:cloneInventorySparseRecord"
+                            ],
+                            [],
+                            [
+                              [
+                                "property",
+                                [
+                                  "property",
+                                  [
+                                    "reference",
+                                    "local:0"
+                                  ],
+                                  "projection",
+                                  "required"
+                                ],
+                                "lotIdentitiesByItemId",
+                                "required"
+                              ]
+                            ],
+                            "required"
+                          ]
+                        ],
+                        [
+                          "field",
+                          "transfers",
+                          [
+                            "call",
+                            [
+                              "reference",
+                              "source:cloneInventorySparseRecord"
+                            ],
+                            [],
+                            [
+                              [
+                                "property",
+                                [
+                                  "property",
+                                  [
+                                    "reference",
+                                    "local:0"
+                                  ],
+                                  "projection",
+                                  "required"
+                                ],
+                                "transfers",
+                                "required"
+                              ]
+                            ],
+                            "required"
+                          ]
+                        ],
+                        [
+                          "field",
+                          "events",
+                          [
+                            "call",
+                            [
+                              "reference",
+                              "source:cloneInventorySparseRecord"
+                            ],
+                            [],
+                            [
+                              [
+                                "property",
+                                [
+                                  "property",
+                                  [
+                                    "reference",
+                                    "local:0"
+                                  ],
+                                  "projection",
+                                  "required"
+                                ],
+                                "events",
+                                "required"
+                              ]
+                            ],
+                            "required"
+                          ]
+                        ],
+                        [
+                          "field",
+                          "eventIdByOperationId",
+                          [
+                            "call",
+                            [
+                              "reference",
+                              "source:cloneInventorySparseRecord"
+                            ],
+                            [],
+                            [
+                              [
+                                "property",
+                                [
+                                  "property",
+                                  [
+                                    "reference",
+                                    "local:0"
+                                  ],
+                                  "projection",
+                                  "required"
+                                ],
+                                "eventIdByOperationId",
+                                "required"
+                              ]
+                            ],
+                            "required"
+                          ]
+                        ],
+                        [
+                          "field",
+                          "correctionEventIdByCorrectedEventId",
+                          [
+                            "call",
+                            [
+                              "reference",
+                              "source:cloneInventorySparseRecord"
+                            ],
+                            [],
+                            [
+                              [
+                                "property",
+                                [
+                                  "property",
+                                  [
+                                    "reference",
+                                    "local:0"
+                                  ],
+                                  "projection",
+                                  "required"
+                                ],
+                                "correctionEventIdByCorrectedEventId",
+                                "required"
+                              ]
+                            ],
+                            "required"
+                          ]
+                        ]
+                      ]
+                    ]
+                  ],
+                  [
+                    "field",
+                    "reservations",
+                    [
+                      "record",
+                      [
+                        [
+                          "field",
+                          "reservations",
+                          [
+                            "call",
+                            [
+                              "reference",
+                              "source:cloneInventorySparseRecord"
+                            ],
+                            [],
+                            [
+                              [
+                                "property",
+                                [
+                                  "property",
+                                  [
+                                    "reference",
+                                    "local:0"
+                                  ],
+                                  "reservations",
+                                  "required"
+                                ],
+                                "reservations",
+                                "required"
+                              ]
+                            ],
+                            "required"
+                          ]
+                        ],
+                        [
+                          "field",
+                          "operations",
+                          [
+                            "call",
+                            [
+                              "reference",
+                              "source:cloneInventorySparseRecord"
+                            ],
+                            [],
+                            [
+                              [
+                                "property",
+                                [
+                                  "property",
+                                  [
+                                    "reference",
+                                    "local:0"
+                                  ],
+                                  "reservations",
+                                  "required"
+                                ],
+                                "operations",
+                                "required"
+                              ]
+                            ],
+                            "required"
+                          ]
+                        ]
+                      ]
+                    ]
+                  ],
+                  [
+                    "field",
+                    "counts",
+                    [
+                      "record",
+                      [
+                        [
+                          "field",
+                          "counts",
+                          [
+                            "call",
+                            [
+                              "reference",
+                              "source:cloneInventorySparseRecord"
+                            ],
+                            [],
+                            [
+                              [
+                                "property",
+                                [
+                                  "property",
+                                  [
+                                    "reference",
+                                    "local:0"
+                                  ],
+                                  "counts",
+                                  "required"
+                                ],
+                                "counts",
+                                "required"
+                              ]
+                            ],
+                            "required"
+                          ]
+                        ],
+                        [
+                          "field",
+                          "operations",
+                          [
+                            "call",
+                            [
+                              "reference",
+                              "source:cloneInventorySparseRecord"
+                            ],
+                            [],
+                            [
+                              [
+                                "property",
+                                [
+                                  "property",
+                                  [
+                                    "reference",
+                                    "local:0"
+                                  ],
+                                  "counts",
+                                  "required"
+                                ],
+                                "operations",
+                                "required"
+                              ]
+                            ],
+                            "required"
+                          ]
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "file": "experiments/tla-conformance/admission-audit/bank-current/canonical-535.json",
+      "sha256": "b745d1746bd1d4c436b1bd6c84c96e567b015adeaff8167ddb9471d15dac76d1"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-published-source-contracts.mjs",
+      "sha256": "d05ecad078de891073c82f4c523090382b608204269281464ca9a325ca3208b2"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-published-source-equations.json",
+      "sha256": "e767440999da004ef44d685d55c27fa1769d225e0539be990a379c283dfe597a"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-published-source-equations.mjs",
+      "sha256": "243e06ade88446247ab26d1bcec53fb70cccab6c5929f2013dc2aa995ae73ce8"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-read-dependency-closure-contracts.mjs",
+      "sha256": "5954cda55045d1bc447cc5a02e7ab1b85f067d065a56dcfb0d5cc94e1b9e6581"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-read-dependency-closure-current-r134.mjs",
+      "sha256": "394d694e586ad10eb737e01fecb854b22bb691d774a6f6a8d6267ba5e4eb78c8"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-read-laws/allocation.expected.ts.txt",
+      "sha256": "8cac3f80fcc97e3807e327d6dd463da90d1fda32e0b20791c04726c208a7fd7e"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-read-laws/availability.expected.ts.txt",
+      "sha256": "8bad17adc368a03e730f6a627d046e30e94eee6301655f2d2a6b0bdfd013af39"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-read-laws/catalog-extension.expected.ts.txt",
+      "sha256": "82def6081863bbb29e41a581c8cb455b14651dd6cccb319eda757ed4251c677e"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-read-laws/collections.expected.ts.txt",
+      "sha256": "1b75d23925adddfefb0971b6fc6ce7dfb800237a027639390ea8c5b509a7e087"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-read-laws/deficits.expected.ts.txt",
+      "sha256": "a6823fadc82aa6f5ab3b1201be02690b42d5b29fe492146a6ecbbdc0c5efd39b"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-read-laws/events.expected.ts.txt",
+      "sha256": "1069d75e6c38040409b9e94e741064589823e4cf051b9866b3c774948f029df4"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-read-laws/measurement-schema.expected.ts.txt",
+      "sha256": "ad608ea58d319e32f62b9312604141a4afd5b06ab5d3c494092f7e46095f54f9"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-read-laws/picking.expected.ts.txt",
+      "sha256": "c67b822d392e0a118602f698adfa663bd2f8ad510d71bde8e24ae4dda42cbc86"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-read-laws/projection.expected.ts.txt",
+      "sha256": "a7c8aa8a6072c521a2f6df5121301d6adc38d466b9a56c6eb7389fc208c5edff"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-read-laws/read-model.expected.ts.txt",
+      "sha256": "28c013fe7a22174ae7c07a51cb372f66283883ceed62ece1b385a67e58e27716"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-read-laws/reservations.expected.ts.txt",
+      "sha256": "2e1ce5002149ee4e8b8c97b22713e6f21081b3829e4b7a579fe4f5c94a0414fe"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-read-reused-dependencies.json",
+      "sha256": "e4492422eb0934ce9ad713441944645cf894e3ab0c57ef3048dbc4bd323322f9"
+    },
+    {
+      "file": "experiments/tla-conformance/catalog-foundation-r7/contracts.mjs",
+      "sha256": "e6efabb603807c5728d958ced0a5ce671e41249e0342bf22db55494ea253b504"
+    },
+    {
+      "file": "experiments/tla-conformance/catalog-foundation-r7/equations.expected.ts.txt",
+      "sha256": "a880afa7fc5a707bff3052d07e0504f878acf4f463c6e760f33e558f33e81bb3"
+    },
+    {
+      "file": "experiments/tla-conformance/catalog-foundation-r7/family.mjs",
+      "sha256": "932cb060a2dff23d2866849c925ac1c5ce5e028533f875e8cc125fcfb2feee76"
+    },
+    {
+      "file": "experiments/tla-conformance/catalog-foundation-r7/normalize.mjs",
+      "sha256": "7675175f5f4cd88f853a3b49530bbb4e1e625112fd3bd45786ff81210a9fee26"
+    },
+    {
+      "file": "experiments/tla-conformance/identity-values-r7/contracts.mjs",
+      "sha256": "dea23f4b3f929ac1bcf9b50cd41517c1b3fc4e3d879904aa6c4d83263ba7b2ce"
+    },
+    {
+      "file": "experiments/tla-conformance/identity-values-r7/equations.ts.txt",
+      "sha256": "f4b3b7a3fa1dbf3338f295c3d97f73cf753cba7741d69f272e91db7fa5079844"
+    },
+    {
+      "file": "experiments/tla-conformance/identity-values-r7/family.mjs",
+      "sha256": "493486e43054dd4613091e973558f2c0463e96ff83347080a3f32e636dde6709"
+    },
+    {
+      "file": "experiments/tla-conformance/migration-helper-causal-r7/artifacts/runtime-causal.json",
+      "sha256": "db76e559e9019216bf38f2b284c20a14faf878b216132a9f504d03e75624a263"
+    },
+    {
+      "file": "experiments/tla-conformance/migration-helper-causal-r7/import-source-receipt.json",
+      "sha256": "1e4e014e7efa4afc763e2c9a35f729ae7bdf8c8260ca4ab85713dfefdd021913"
+    },
+    {
+      "file": "experiments/tla-conformance/migration-helper-causal-r7/independent-v9-laws.mjs",
+      "sha256": "1b8d045b8a12c6e04ce1ffc8864e437d050fa9ba06ea7dd2f888a0c221fd22d7"
+    },
+    {
+      "file": "experiments/tla-conformance/migration-helper-causal-r7/registered-value-family.mjs",
+      "sha256": "2740e8daa4881b604e551607bcb202229b366169c05e8cac830d4e2ba34729d4"
+    },
+    {
+      "file": "experiments/tla-conformance/migration-helper-causal-r7/v9.expected.ts.txt",
+      "sha256": "fb93d6b0cad4c29156d438b5c8c180bac0aae26730d652859a9a7f372dabf097"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/certificate.mjs",
+      "sha256": "8099926f527d391571e57c0828a27f24c57d4a7b59843684f9bda4c69f50cb26"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/contracts.mjs",
+      "sha256": "e45e82682ab647b80c0897e666b5b5b6b84f6cac990c785a925f307cabc7c239"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/equations.expected.ts.txt",
+      "sha256": "3e00aeaaeaf11b516fdf3418a8c227dbb053cce05038863d7d41addbd2c158d8"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/event-values/catalog-foundation-dependency-reference.json",
+      "sha256": "e435dcb656e450807eaf7b642889879de4f10dd20967ad7732515e1d9463333f"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/event-values/certificate.mjs",
+      "sha256": "db0ad0a8e79777a6fe2b2e6fabfd550a87486d784aaf966b089f537dab505881"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/event-values/contracts.mjs",
+      "sha256": "1609151cfa525cda65407af221122a1b8db04e81482713aef227c4c0784efbd9"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/event-values/equations.expected.ts.txt",
+      "sha256": "d2fcad75ea97d835a070a51367e7458bd596d098e56d82d639fdbcd318ef84e3"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/event-values/registered-family-adapter.mjs",
+      "sha256": "e9ab67e6ac85cccce060b1b047c890593270222bab6184c076ab1596588116d8"
+    },
+    {
+      "file": "experiments/tla-conformance/quantity-values-r7/quantity-values-certificate.json",
+      "sha256": "446f80ae24e8b146839e27e31667d0a533db4d04cf202002354866cd6a2f7599"
+    },
+    {
+      "file": "experiments/tla-conformance/r131-current-source-family-rederive/catalog-read-reused-currentization.json",
+      "sha256": "9e479cc844c1e0a9f2f1b8306afbfb7e0b476e6e7601d58b5b3c836cf8d1ff66"
+    },
+    {
+      "file": "experiments/tla-conformance/r131-current-source-family-rederive/catalog-read-reused-currentizer.mjs",
+      "sha256": "04e965d6466cef403547568f193ec319cb7e69d7ecbe88c29297a224400c781f"
+    },
+    {
+      "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/sparse-record-certificate.json",
+      "sha256": "6ecd861755e963798a2cd077813cd3c412997121b16e6f1cdea337baa2fe7815"
+    },
+    {
+      "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/sparse-record-certificate.mjs",
+      "sha256": "5a1c4bb5dc41ff18939471d54f430601e456f603fa9ebdebb09ac0414bd35a95"
+    },
+    {
+      "file": "experiments/tla-conformance/r137-transfer-correction-r118-currentization/r134-sparse-record-certificate.json",
+      "sha256": "6ecd861755e963798a2cd077813cd3c412997121b16e6f1cdea337baa2fe7815"
+    },
+    {
+      "file": "experiments/tla-conformance/r137-transfer-correction-r118-currentization/transition-classification.json",
+      "sha256": "c224c27f77476f3ce9e621d5fa6d423613827003dd2cc7663f8a2e58deb9eaa0"
+    },
+    {
+      "file": "experiments/tla-conformance/r137-transfer-correction-r118-currentization/validation.json",
+      "sha256": "87bb93fdc2e1ec5c3cde5ad7177237644d53bca98afec936936cbb887d53eefd"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage-current-replay/surface-execution-v2.json",
+      "sha256": "5a0e02945de1f5b5dc1b82666fad9e1dd8f0bbf5db0f65bfe0212f385a36b698"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage26-current-bindings.json",
+      "sha256": "5764246f696787790bf3905cea6c492bf19f7b9c48e1d24f422a4ab603388793"
+    },
+    {
+      "file": "experiments/tla-conformance/r139-storage-environment-no-builder-currentization/storage26-current-receipt.json",
+      "sha256": "45f48215595cf127cdd829d53665d781a40819563edd78e45d23f6d1c0240fb6"
+    },
+    {
+      "file": "experiments/tla-conformance/r162-r152-storage-value7-peer/current-dependencies.mjs",
+      "sha256": "04fe1adc842a87b3ffe307bfe7f662f8083d88eb96bf5de5590f69a566859593"
+    },
+    {
+      "file": "experiments/tla-conformance/r162-r152-storage-value7-peer/value-current.mjs",
+      "sha256": "e6f0281593ba1447fce878b5c9d8cae985e5c52caa08543dc271567e6f54121b"
+    },
+    {
+      "file": "experiments/tla-conformance/r162-r152-storage-value7-peer/value-equations-current.expected.ts.txt",
+      "sha256": "eaecbe147c9cfa806856f374ab8fb18e6b0af22ad0fa6999e85acbfb88c4923b"
+    },
+    {
+      "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+      "sha256": "8d8854032e38a0df1044e5596c66d9a2b672277f357e361102b0b12c3d6952a0"
+    },
+    {
+      "file": "experiments/tla-conformance/throughput-r7/registered-value-family.mjs",
+      "sha256": "1926bfc82e8cc608904d8a2785c2ae6775d2905186b4d9fb8b137a0696b821b3"
+    },
+    {
+      "file": "experiments/tla-conformance/value-contracts/catalog-family.mjs",
+      "sha256": "32439d061232e266f53acd3b33025b97b172769ffe418964319177b8041cab9a"
+    },
+    {
+      "file": "experiments/tla-conformance/value-contracts/surface-binding.mjs",
+      "sha256": "619b37fe3a9bc9be22e8a0c2167187cfce987c7856280c6df0c36c5a230c3618"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2015.collection.d.ts",
+      "sha256": "dc2df20b1bcdc8c2d34af4926e2c3ab15ffe1160a63e58b7e09833f616efff44"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2015.core.d.ts",
+      "sha256": "c57796738e7f83dbc4b8e65132f11a377649c00dd3eee333f672b8f0a6bea671"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2015.iterable.d.ts",
+      "sha256": "0559b1f683ac7505ae451f9a96ce4c3c92bdc71411651ca6ddb0e88baaaad6a3"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2015.symbol.wellknown.d.ts",
+      "sha256": "fb0f136d372979348d59b3f5020b4cdb81b5504192b1cacff5d1fbba29378aa1"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2016.array.include.d.ts",
+      "sha256": "d15bea3d62cbbdb9797079416b8ac375ae99162a7fba5de2c6c505446486ac0a"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2017.object.d.ts",
+      "sha256": "69ab18c3b76cd9b1be3d188eaf8bba06112ebbe2f47f6c322b5105a6fbc45a2e"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2017.string.d.ts",
+      "sha256": "2f11ff796926e0832f9ae148008138ad583bd181899ab7dd768a2666700b1893"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2020.bigint.d.ts",
+      "sha256": "d6d7ae4d1f1f3772e2a3cde568ed08991a8ae34a080ff1151af28b7f798e22ca"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2022.error.d.ts",
+      "sha256": "0a3d63ef2b853447ec4f749d3f368ce642264246e02911fcb1590d8c161b8005"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es5.d.ts",
+      "sha256": "c430d44666289dae81f30fa7b2edebf186ecc91a2d4c71266ea6ae76388792e1"
+    },
+    {
+      "file": "node_modules/typescript/package.json",
+      "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+    },
+    {
+      "file": "package.json",
+      "sha256": "f068ac4f83c2984a38d439b90159e48b7fdf42ee4792f7ccde56230c7ecf1a7c"
+    },
+    {
+      "file": "src/allocation.ts",
+      "sha256": "2721b6f412aa3abb55ffa9d929eaefc2d8982973c4ee862479b3af9988d3112d"
+    },
+    {
+      "file": "src/amounts.ts",
+      "sha256": "98ddc0fa8d80b2ca244a207f4eb8b55d86131c2ccfd77620da5c85248d03ef57"
+    },
+    {
+      "file": "src/authority-cutover.ts",
+      "sha256": "009c9a609221b5a276fe494a9fb6c059e02c2634d3a4a5e1cd997047b3b4b1c1"
+    },
+    {
+      "file": "src/authority.ts",
+      "sha256": "f9f62c06b4499e97868f892ed6184a6a68a8c64d978a263fc8aada3633d9ae76"
+    },
+    {
+      "file": "src/availability.ts",
+      "sha256": "b029f2b17c1c0f8a3923969e2cd30b57b0af3a185d1391fdb8aa3895c3de83c8"
+    },
+    {
+      "file": "src/canonical.ts",
+      "sha256": "eb2981c629182525c6742d2a67f513f0daec88507e5861f475d5de04984a2d56"
+    },
+    {
+      "file": "src/catalog-lifecycle.ts",
+      "sha256": "8a97eb13db1d8dfb9503a60c6075984e93792ace1abb473a70ac8221809c5096"
+    },
+    {
+      "file": "src/catalog.ts",
+      "sha256": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56"
+    },
+    {
+      "file": "src/collections.ts",
+      "sha256": "c18dd56e7167b25239fb825319ce2ae2d736f8d9cbe70296201ab675228daf37"
+    },
+    {
+      "file": "src/commands.ts",
+      "sha256": "c40c66fc3e5d3e60022534a561d44280cda205f3cc10be759f8efdc97038a98b"
+    },
+    {
+      "file": "src/composition.ts",
+      "sha256": "87d7e004cc2432587c82a238cd2fd9976a3d1f8850771365168e5d33ba6cb24c"
+    },
+    {
+      "file": "src/coordinator.ts",
+      "sha256": "4bc44f2c38578991a137d9e363b7677c23a788dd9cc5c4129074f1a95a14e3a2"
+    },
+    {
+      "file": "src/corrections.ts",
+      "sha256": "0c3e11dc88a035aa89598cffb54d538b1c6cc4280ed5d27bd7bf67e9d5757183"
+    },
+    {
+      "file": "src/counts.ts",
+      "sha256": "5db9ad8d5a6f1a82c594562b66f4be7c677d17bd31d9d10afb11eae781d78f13"
+    },
+    {
+      "file": "src/deficits.ts",
+      "sha256": "6dee9447ad000ae2f9576aed35f80d1ad1bdae753f4802c4104db2f2712d2819"
+    },
+    {
+      "file": "src/digest.ts",
+      "sha256": "5fa667c59dd65a667d8cceddd9bf8c25eb46d3787a22ad7db797fd3722d5f833"
+    },
+    {
+      "file": "src/events.ts",
+      "sha256": "8d076ee8f426c011d7df3f205dd014f0e835f71798b3684ca56844b691ba2370"
+    },
+    {
+      "file": "src/facade.ts",
+      "sha256": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d"
+    },
+    {
+      "file": "src/fungibility.ts",
+      "sha256": "483741a2e0f8e3cdf38e358929cce5f8b29ffb41494b1268cafa1d38a2197344"
+    },
+    {
+      "file": "src/index.ts",
+      "sha256": "2e0587666ff20d57a757c0576fddf8badf36c2901735db7225a0cebda829b555"
+    },
+    {
+      "file": "src/integrity.ts",
+      "sha256": "238ccd616e791b60b523b89517479585f2d9aabe83198464a44f654cd7058037"
+    },
+    {
+      "file": "src/kernel.ts",
+      "sha256": "f336d22a07d6018dc5528bd2a13a33c5aa9f1a72b0c0ed048cb73219b9b0c06c"
+    },
+    {
+      "file": "src/measurement-schema.ts",
+      "sha256": "747f064996c12b3a9b324779bd748362b49b2563e303b2599243bc8a630d144e"
+    },
+    {
+      "file": "src/measurements.ts",
+      "sha256": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5"
+    },
+    {
+      "file": "src/migration-evidence.ts",
+      "sha256": "8d8f6dd0b6a83546633e5c360a1769e9a49ff8708f3737e14a79fa965604d037"
+    },
+    {
+      "file": "src/migration-plugin.ts",
+      "sha256": "4b271d6398ba1b0eeb4a5b1cb48523a062f9bcf1c5b427755ec5e1f0fdebe5e6"
+    },
+    {
+      "file": "src/migrations-api.ts",
+      "sha256": "0d1358ee90d4b39d3b59da0d27dcb9798e5699e02bbba325132f734c1322fed1"
+    },
+    {
+      "file": "src/migrations.ts",
+      "sha256": "0e837a12fa171f3029b3931f0c2c0d12d83edbd4b12d86e9ec810ec7ede77384"
+    },
+    {
+      "file": "src/model.ts",
+      "sha256": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122"
+    },
+    {
+      "file": "src/ordering.ts",
+      "sha256": "e72ac94e99b1b4914f3f6dec55583e401484a41ecadd051be788724c88f24cb9"
+    },
+    {
+      "file": "src/picking.ts",
+      "sha256": "172dc19f4987ad392106a1b9cf32400e73f5bed0fb6b9344aa5eb1319afc5006"
+    },
+    {
+      "file": "src/projection.ts",
+      "sha256": "f2a9747cfc7c63615347c48383ae7f58ee7df007411cc8de3dd5bb6afaca21d5"
+    },
+    {
+      "file": "src/quantity.ts",
+      "sha256": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6"
+    },
+    {
+      "file": "src/read-model.ts",
+      "sha256": "8b1db302ecf22895f1d6458a8be27ec606066e88fd77ebba0cfadbd0452a97f4"
+    },
+    {
+      "file": "src/reservations.ts",
+      "sha256": "fd0bfe707583a7952e4301cafd9ab5d702059b9174f18b5c5e30ae0d6cf85113"
+    },
+    {
+      "file": "src/selectors.ts",
+      "sha256": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957"
+    },
+    {
+      "file": "src/sparse-record.ts",
+      "sha256": "272a1f63afe9ed4c84cd76a4ce051b210b52e6e0a54cf47ec4f11a29979ada71"
+    },
+    {
+      "file": "src/storage-api.ts",
+      "sha256": "9d135bd7c1925f3b7ab533a45958e57287383f4016e7077e8ede2c35144202b1"
+    },
+    {
+      "file": "src/storage.ts",
+      "sha256": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d"
+    },
+    {
+      "file": "src/traceability-replay.ts",
+      "sha256": "3bef97ca89c6530721b2552089e124c3a8943b5a0ceea8b799aaccd79c629c0b"
+    },
+    {
+      "file": "src/traceability.ts",
+      "sha256": "7db0c39cb3262339e76790a7ba10569d67d205ab84f1adb078b6b6d95e93a59c"
+    },
+    {
+      "file": "src/transfers.ts",
+      "sha256": "2dc34bdb44557cbe45d0b88091c7f4d0e4f6bcd44bbbe8430b61d51e43910833"
+    },
+    {
+      "file": "src/usability.ts",
+      "sha256": "bb4cf272fd01be5c4866b388f2af63e9fdd7286c208600fb635ca10d30f0ad51"
+    },
+    {
+      "file": "src/world.ts",
+      "sha256": "2f1bd43c85fcdda332ad16ebdb73d367b0ed502a7145c085c7a7433ff26063c1"
+    },
+    {
+      "file": "tsconfig.json",
+      "sha256": "b46c6324e4819ea54c9824d2e0f4c28f9304aa54e39d7f8afbac65f744eed464"
+    }
+  ],
+  "proofs": [
+    {
+      "surfaceKey": "export:./storage#InMemoryInventoryDurableStorage::construct[0]",
+      "signatureHash": "0c6b2630aeb219768271b47522ce53831fda6287a32a0715e52dd66566c04176",
+      "declaration": {
+        "file": "src/storage.ts",
+        "start": {
+          "offset": 21728,
+          "line": 459,
+          "column": 3
+        },
+        "end": {
+          "offset": 22085,
+          "line": 467,
+          "column": 4
+        },
+        "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+        "astHash": "0ae24136a9a6d103b0aa073cdfe8b21df0a233a8dcbc20988795651b8d405fd0"
+      },
+      "equationId": "src/storage.ts#InMemoryInventoryDurableStorage.constructor"
+    },
+    {
+      "surfaceKey": "export:./storage#InventoryApplyingOperationConflictError::construct[0]",
+      "signatureHash": "893e1a714a5c2d0b709582ff5614a73023c7e7fa3eb5db0a40e390243769c144",
+      "declaration": {
+        "file": "src/storage.ts",
+        "start": {
+          "offset": 19733,
+          "line": 413,
+          "column": 3
+        },
+        "end": {
+          "offset": 20034,
+          "line": 419,
+          "column": 4
+        },
+        "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+        "astHash": "0c0a3f32660a2a6a8e44c3b6071befe4bf8cb7a2fabf5fd123344d09153afd8e"
+      },
+      "equationId": "src/storage.ts#InventoryApplyingOperationConflictError.constructor"
+    },
+    {
+      "surfaceKey": "export:./storage#InventoryWorldRevisionConflictError::construct[0]",
+      "signatureHash": "c4d84f8cd0ef8a805b2a62109047e414d035eab98d0e4122c1c5abce0a1564ac",
+      "declaration": {
+        "file": "src/storage.ts",
+        "start": {
+          "offset": 19074,
+          "line": 397,
+          "column": 3
+        },
+        "end": {
+          "offset": 19413,
+          "line": 404,
+          "column": 4
+        },
+        "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+        "astHash": "6f65c071290efe60efd812dca1d7bf2babcdaaa82729377d16b1e72144ad554e"
+      },
+      "equationId": "src/storage.ts#InventoryWorldRevisionConflictError.constructor"
+    },
+    {
+      "surfaceKey": "export:./storage#createInMemoryInventoryDurableStorage::call[0]",
+      "signatureHash": "0c6b2630aeb219768271b47522ce53831fda6287a32a0715e52dd66566c04176",
+      "declaration": {
+        "file": "src/storage.ts",
+        "start": {
+          "offset": 50367,
+          "line": 1206,
+          "column": 1
+        },
+        "end": {
+          "offset": 50564,
+          "line": 1210,
+          "column": 2
+        },
+        "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+        "astHash": "09b630e526fe2c394324fdaff57ca71f483440156137d33e8546e3c05b13333e"
+      },
+      "equationId": "src/storage.ts#createInMemoryInventoryDurableStorage"
+    },
+    {
+      "surfaceKey": "export:./storage#inventoryDurablePlanDigest::call[0]",
+      "signatureHash": "f392333287309d8676042ecb5d62de8e2cb601c94888f34c395fac3b665e1552",
+      "declaration": {
+        "file": "src/integrity.ts",
+        "start": {
+          "offset": 9755,
+          "line": 276,
+          "column": 1
+        },
+        "end": {
+          "offset": 11354,
+          "line": 319,
+          "column": 2
+        },
+        "sourceHash": "238ccd616e791b60b523b89517479585f2d9aabe83198464a44f654cd7058037",
+        "astHash": "46925542cfce387b58876ef7fa1e79a836103a462e3074621f5350bf8cf4c5b0"
+      },
+      "equationId": "src/integrity.ts#inventoryDurablePlanDigest"
+    },
+    {
+      "surfaceKey": "export:./storage#materializeInventoryDurableOperationWorld::call[0]",
+      "signatureHash": "a33deedd69272d195aea8872552db17969c4e2ad065d190c4b722c0849434b98",
+      "declaration": {
+        "file": "src/storage.ts",
+        "start": {
+          "offset": 50896,
+          "line": 1220,
+          "column": 1
+        },
+        "end": {
+          "offset": 51110,
+          "line": 1225,
+          "column": 2
+        },
+        "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+        "astHash": "1b5d28a86e96ce044c153ebbebeff41d3a9f7800e0f0c138fa7ecd8eb99e2c1e"
+      },
+      "equationId": "src/storage.ts#materializeInventoryDurableOperationWorld"
+    },
+    {
+      "surfaceKey": "export:./storage#validateInventoryDurableOperationBeginInput::call[0]",
+      "signatureHash": "e5d9c9c20226e9026ba155ad5f3edf00b120ff5d864db52f92282d27735f4cd8",
+      "declaration": {
+        "file": "src/storage.ts",
+        "start": {
+          "offset": 50650,
+          "line": 1213,
+          "column": 1
+        },
+        "end": {
+          "offset": 50809,
+          "line": 1217,
+          "column": 2
+        },
+        "sourceHash": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d",
+        "astHash": "165be9171e102945367ab4a5fa714e1d1e4756790c97d6ce187cf441e8f2392b"
+      },
+      "equationId": "src/storage.ts#validateInventoryDurableOperationBeginInput"
+    }
+  ]
+}

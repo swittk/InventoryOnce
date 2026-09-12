@@ -1,0 +1,1608 @@
+import { describe, expect, it } from "vitest";
+import {
+  InventoryAllocationMethod,
+  resolveInventoryAmount,
+  InventoryMeasurementAxisRole,
+  InventoryMeasurementRequirement,
+  InventoryReservationFeasibilityStatus,
+  InventoryTrackingRequirement,
+  createInventoryOnce,
+  defineInventoryCatalog,
+  packageAmount,
+  parseQuantity,
+  stockAmount,
+  unitCode,
+  type InventoryMetadataValue,
+} from "../src/index.js";
+import {
+  defineInventoryEvent,
+  commitInventoryEvent,
+  inventoryEventIntentFingerprint,
+  InventoryEventKind,
+  InventoryTransferLifecycleAction,
+  type InventoryEventDraft,
+  InventoryCountOperationKind,
+  InventoryCountStatus,
+  InventoryDeficitPolicy,
+  allocateInventoryReservation,
+  createInventoryReservation,
+  defineScalarInventoryItem,
+  inventoryIntentFingerprint,
+  inventoryStockPositionIdentity,
+  normalizeInventoryStockPositionKey,
+  projectInventoryEvents,
+  refineInventoryReservation,
+  markInventoryReservationConsumed,
+  assertInventoryEpochMilliseconds,
+} from "../src/kernel.js";
+import type { InventoryIntentFingerprintValue } from "../src/canonical.js";
+import { applyInventoryRecordedDeficitBurden } from "../src/deficits.js";
+import {
+  applyInventoryCountBookDelta,
+  applyInventoryReservationBookDelta,
+  createInventoryReservationBookDelta,
+  inventoryCountBookDigest,
+  inventoryProjectionDigest,
+  inventoryReservationBookDigest,
+  inventoryWorldContentRoots,
+} from "../src/integrity.js";
+import {
+  InventoryStorageWriteStage,
+  createInMemoryInventoryDurableStorage,
+  type InventoryDurableStorage,
+} from "../src/storage-api.js";
+import {
+  createTabletCatalog,
+  createTestInventory,
+  clockAt,
+  loosePosition,
+  time0,
+  time1,
+  time2,
+  time3,
+} from "./test-fixtures.js";
+
+describe("quantity parser input bounds", () => {
+  it("rejects oversized significant digit text while preserving leading zeros", () => {
+    expect(parseQuantity("0000000000000000000000001", "piece")).toMatchObject({
+      amountMinor: 1,
+      decimals: 0,
+    });
+    expect(() => parseQuantity(`1${"0".repeat(10_000)}`, "piece")).toThrow(
+      "Quantity text exceeds the safe integer storage range."
+    );
+  });
+});
+
+describe("collision-free retry identity", () => {
+  it("stores and replays exact signed epoch instants without text conversion or secondary clocks", async () => {
+    for (const instant of [Number.MIN_SAFE_INTEGER, -11, -2, -1, 0, 2, 10, Number.MAX_SAFE_INTEGER]) {
+      const storage = createInMemoryInventoryDurableStorage();
+      const inventory = createTestInventory(storage, createTabletCatalog(), clockAt(instant));
+      const command = { operationId: "epoch-receive", occurredAtEpochMs: instant, to: loosePosition("store"), amount: stockAmount("1", "piece") };
+      const first = await inventory.stock.receive(command);
+      expect(first.event.occurredAtEpochMs).toBe(instant);
+      expect(first.event.recordedAtEpochMs).toBe(instant);
+      expect(Object.hasOwn(first.event, "occurredAt")).toBe(false);
+      expect(Object.hasOwn(first.event, "recordedAt")).toBe(false);
+      const replay = await inventory.stock.receive(command);
+      expect(replay.replayed).toBe(true);
+      expect(replay.event.recordedAtEpochMs).toBe(instant);
+      expect((await storage.readWorld()).revision).toBe(1);
+    }
+  });
+
+  it("rejects invalid epoch values before any durable stock operation is admitted", async () => {
+    for (const instant of ["2026-08-24T00:00:00.000Z", undefined, null, NaN, Infinity, 0.25, Number.MAX_SAFE_INTEGER + 1]) {
+      const storage = createInMemoryInventoryDurableStorage();
+      const inventory = createTestInventory(storage, createTabletCatalog(), clockAt(0));
+      const command = { operationId: "invalid-epoch", occurredAtEpochMs: instant, to: loosePosition("store"), amount: stockAmount("1", "piece") };
+      // Deliberately untyped input models a storage/import boundary without adding a compatibility union to the API.
+      await expect(Reflect.apply(inventory.stock.receive, inventory.stock, [command])).rejects.toThrow("safe-integer epoch milliseconds");
+      expect((await storage.readWorld()).revision).toBe(0);
+    }
+  });
+
+  it("canonicalizes an empty qualified-dimension set to the same position identity as omission", () => {
+    const base = {
+      itemId: "item-a",
+      itemRevisionId: "item-a-v2",
+      locationId: "store",
+    };
+    const withEmptyDimensions = { ...base, qualifiedDimensions: [] };
+    expect(normalizeInventoryStockPositionKey(withEmptyDimensions)).toEqual(base);
+    expect(inventoryStockPositionIdentity(withEmptyDimensions)).toBe(
+      inventoryStockPositionIdentity(base)
+    );
+  });
+
+  it("copies a dimensionless caller-owned key so later mutation cannot rewrite retained position identity", () => {
+    const callerKey = {
+      itemId: "item-a",
+      itemRevisionId: "item-a-v2",
+      locationId: "store",
+    };
+    const normalized = normalizeInventoryStockPositionKey(callerKey);
+    const retainedIdentity = inventoryStockPositionIdentity(normalized);
+
+    callerKey.locationId = "other-store";
+
+    expect(normalized.locationId).toBe("store");
+    expect(inventoryStockPositionIdentity(normalized)).toBe(retainedIdentity);
+  });
+
+  it("copies qualified-dimension elements so caller mutation cannot rewrite retained position identity", () => {
+    const callerDimension = { dimensionId: "grade", valueId: "red" };
+    const normalized = normalizeInventoryStockPositionKey({
+      itemId: "item-a",
+      itemRevisionId: "item-a-v2",
+      locationId: "store",
+      qualifiedDimensions: [callerDimension],
+    });
+    const retainedIdentity = inventoryStockPositionIdentity(normalized);
+
+    callerDimension.valueId = "blue";
+
+    expect(normalized.qualifiedDimensions).toEqual([
+      { dimensionId: "grade", valueId: "red" },
+    ]);
+    expect(inventoryStockPositionIdentity(normalized)).toBe(retainedIdentity);
+  });
+
+  it("treats an empty recorded-deficit location selection as all locations", async () => {
+    const inventory = createTestInventory(
+      undefined,
+      undefined,
+      undefined,
+      InventoryDeficitPolicy.Record
+    );
+    await inventory.stock.issue({
+      operationId: "all-location-deficit-a",
+      occurredAtEpochMs: time0,
+      from: loosePosition("store-a"),
+      amount: stockAmount("1", "piece"),
+    });
+    await inventory.stock.issue({
+      operationId: "all-location-deficit-b",
+      occurredAtEpochMs: time1,
+      from: loosePosition("store-b"),
+      amount: stockAmount("2", "piece"),
+    });
+    await inventory.stock.issue({
+      operationId: "all-location-deficit-c",
+      occurredAtEpochMs: time2,
+      from: loosePosition("store-c"),
+      amount: stockAmount("3", "piece"),
+    });
+    const positionA = {
+      ...loosePosition("store-a", { lotId: "ALL-LOCATION-A" }),
+      itemRevisionId: "item-a-v2",
+    };
+    const positionB = {
+      ...loosePosition("store-b", { lotId: "ALL-LOCATION-B" }),
+      itemRevisionId: "item-a-v2",
+    };
+    const world = await inventory.read.world();
+    const allLocations = applyInventoryRecordedDeficitBurden({
+      projection: world.projection,
+      itemRevisionId: "item-a-v2",
+      axisId: "pieces",
+      unit: unitCode("piece"),
+      locationIds: [],
+      lines: [
+        { position: positionA, capacity: parseQuantity("3", "piece") },
+        { position: positionB, capacity: parseQuantity("4", "piece") },
+      ],
+    });
+    expect(allLocations.recordedDeficit.amountMinor).toBe(6);
+    expect(allLocations.uncoveredDeficit.amountMinor).toBe(3);
+    expect(
+      allLocations.capacityByPositionIdentity.get(
+        inventoryStockPositionIdentity(positionA)
+      )?.amountMinor
+    ).toBe(2);
+    expect(
+      allLocations.capacityByPositionIdentity.get(
+        inventoryStockPositionIdentity(positionB)
+      )?.amountMinor
+    ).toBe(2);
+
+    const storeAOnly = applyInventoryRecordedDeficitBurden({
+      projection: world.projection,
+      itemRevisionId: "item-a-v2",
+      axisId: "pieces",
+      unit: unitCode("piece"),
+      locationIds: ["store-a"],
+      lines: [{ position: positionA, capacity: parseQuantity("3", "piece") }],
+    });
+    expect(storeAOnly.recordedDeficit.amountMinor).toBe(1);
+    expect(storeAOnly.uncoveredDeficit.amountMinor).toBe(0);
+    expect(() =>
+      applyInventoryRecordedDeficitBurden({
+        projection: world.projection,
+        itemRevisionId: "item-a-v2",
+        axisId: "pieces",
+        unit: unitCode("piece"),
+        locationIds: ["store-a"],
+        lines: [{ position: positionB, capacity: parseQuantity("4", "piece") }],
+      })
+    ).toThrow("unselected location");
+  });
+
+  it("floors recorded-deficit capacity to exact BigInt allocation increments", async () => {
+    const inventory = createTestInventory(
+      undefined,
+      undefined,
+      undefined,
+      InventoryDeficitPolicy.Record
+    );
+    await inventory.stock.issue({
+      operationId: "bigint-deficit-floor",
+      occurredAtEpochMs: time0,
+      from: loosePosition("store"),
+      amount: stockAmount("1", "piece"),
+    });
+    const position = {
+      ...loosePosition("store", { lotId: "BIGINT-FLOOR" }),
+      itemRevisionId: "item-a-v2",
+    };
+    const adjusted = applyInventoryRecordedDeficitBurden({
+      projection: (await inventory.read.world()).projection,
+      itemRevisionId: "item-a-v2",
+      axisId: "pieces",
+      unit: unitCode("piece"),
+      locationIds: ["store"],
+      lines: [
+        {
+          position,
+          capacity: parseQuantity("6", "piece"),
+          allocationIncrement: parseQuantity("2", "piece"),
+        },
+      ],
+    });
+    expect(
+      adjusted.capacityByPositionIdentity.get(
+        inventoryStockPositionIdentity(position)
+      )?.amountMinor
+    ).toBe(4);
+    expect(adjusted.uncoveredDeficit.amountMinor).toBe(0);
+  });
+  it("rejects storage mutation re-entry from an async failpoint instead of deadlocking", async () => {
+    let storage: InventoryDurableStorage | undefined;
+    let attemptedReentry = false;
+    storage = createInMemoryInventoryDurableStorage({
+      failpoint: async ({ stage, timing }) => {
+        if (
+          attemptedReentry ||
+          stage !== InventoryStorageWriteStage.Begin ||
+          timing !== "before"
+        ) {
+          return;
+        }
+        attemptedReentry = true;
+        await Promise.resolve();
+        if (storage === undefined) throw new Error("Missing failpoint storage.");
+        await storage.abort("nested-failpoint-mutation");
+      },
+    });
+    const inventory = createTestInventory(storage);
+    await expect(
+      inventory.stock.receive({
+        operationId: "failpoint-reentry",
+        occurredAtEpochMs: time0,
+        to: loosePosition("store"),
+        amount: stockAmount("1", "piece"),
+      })
+    ).rejects.toThrow(
+      "Inventory storage failpoint callbacks must not invoke storage mutations."
+    );
+    expect(attemptedReentry).toBe(true);
+    expect((await storage.readWorld()).revision).toBe(0);
+  });
+
+  it("keeps delimiter, empty, and null field boundaries distinct", () => {
+    expect(inventoryIntentFingerprint(["actor|", "source"]))
+      .not.toBe(inventoryIntentFingerprint(["actor", "|source"]));
+    expect(inventoryIntentFingerprint(["axis:", "unit"]))
+      .not.toBe(inventoryIntentFingerprint(["axis", ":unit"]));
+    expect(inventoryIntentFingerprint(["reason", ""]))
+      .not.toBe(inventoryIntentFingerprint(["reason", null]));
+    // Deliberately escape the static contract so the public runtime guard is exercised.
+    expect(() =>
+      inventoryIntentFingerprint(
+        ["reason", undefined] as unknown as readonly InventoryIntentFingerprintValue[]
+      )
+    ).toThrow("must not be undefined");
+    // Nested undefined must fail at the same runtime boundary rather than canonicalizing away.
+    expect(() =>
+      inventoryIntentFingerprint(
+        [["nested", undefined]] as unknown as readonly InventoryIntentFingerprintValue[]
+      )
+    ).toThrow("must not be undefined");
+    for (const invalid of [{ nested: "object" }, 1n, () => "function"]) {
+      expect(() =>
+        inventoryIntentFingerprint(
+          [invalid] as unknown as readonly InventoryIntentFingerprintValue[]
+        )
+      ).toThrow("only null, booleans, finite numbers, strings, and arrays");
+    }
+  });
+
+  it("admits all exact epoch milliseconds and rejects every nonnumeric or inexact instant", () => {
+    for (const epochMs of [Number.MIN_SAFE_INTEGER, -1, 0, 1, time0, Number.MAX_SAFE_INTEGER]) {
+      expect(() => assertInventoryEpochMilliseconds(epochMs, "instant")).not.toThrow();
+    }
+    for (const invalid of ["2026-08-24T00:00:00.000Z", "+275760-09-13T00:00:00.000Z", null, undefined, NaN, Infinity, -Infinity, 0.5, Number.MAX_SAFE_INTEGER + 1]) {
+      // Deliberate untyped adapter input exercises the public runtime numeric boundary.
+      expect(() => Reflect.apply(assertInventoryEpochMilliseconds, undefined, [invalid, "instant"]))
+        .toThrow("must be safe-integer epoch milliseconds");
+    }
+  });
+
+  it("rejects delimiter-shifted header identities before another world revision is planned", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage);
+    await inventory.stock.receive({
+      operationId: "delimiter-retry",
+      occurredAtEpochMs: time0,
+      actorId: "actor|",
+      sourcePartyId: "source",
+      destinationPartyId: "destination",
+      sourceReference: "fixed-source",
+      reason: "fixed-reason",
+      to: loosePosition("store"),
+      amount: stockAmount("1", "piece"),
+    });
+
+    await expect(inventory.stock.receive({
+      operationId: "delimiter-retry",
+      occurredAtEpochMs: time0,
+      actorId: "actor",
+      sourcePartyId: "|source",
+      destinationPartyId: "destination",
+      sourceReference: "fixed-source",
+      reason: "fixed-reason",
+      to: loosePosition("store"),
+      amount: stockAmount("1", "piece"),
+    })).rejects.toThrow("changed intent");
+    expect((await storage.readWorld()).revision).toBe(1);
+  });
+
+  it("rejects delimiter-shifted reservation source and actor identities", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage);
+    await inventory.stock.receive({
+      operationId: "retry-reservation-stock",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store"),
+      amount: stockAmount("2", "piece"),
+    });
+    await inventory.reservations.reserve({
+      reservationId: "claim|one",
+      operationId: "delimiter-reservation",
+      itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a" },
+      requested: parseQuantity("1", "piece"),
+      createdAtEpochMs: time1,
+      sourceReference: "source|",
+      actorId: "actor",
+    });
+    await expect(inventory.reservations.reserve({
+      reservationId: "claim|one",
+      operationId: "delimiter-reservation",
+      itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a" },
+      requested: parseQuantity("1", "piece"),
+      createdAtEpochMs: time1,
+      sourceReference: "source",
+      actorId: "|actor",
+    })).rejects.toThrow("changed intent");
+    expect((await storage.readWorld()).revision).toBe(2);
+  });
+});
+
+describe("durable planner output guards", () => {
+  it("rejects a lifecycle planner that changes the frozen expired-stock rule", async () => {
+    const catalog = createTabletCatalog();
+    const inventory = createTestInventory(undefined, catalog);
+    await inventory.stock.receive({
+      operationId: "receive-for-planner-guard",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store"),
+      amount: stockAmount("2", "piece"),
+    });
+    await inventory.reservations.reserve({
+      reservationId: "planner-guard-claim",
+      operationId: "create-planner-guard-claim",
+      itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a" },
+      requested: parseQuantity("1", "piece"),
+      createdAtEpochMs: time1,
+    });
+    const world = await inventory.read.world();
+    const refined = refineInventoryReservation({
+      catalog,
+      projection: world.projection,
+      book: world.reservations,
+      operationId: "malicious-refine-output",
+      reservationId: "planner-guard-claim",
+      selector: { itemId: "item-a", locationIds: ["store"] },
+      occurredAtEpochMs: time2,
+    });
+    /** Fake planner row that changes a creation-time rule during a later lifecycle action. */
+    const changedReservation = {
+      ...refined.reservation,
+      allowExpiredStock: true,
+    };
+    /** Fake planner book retaining the real operation evidence but swapping its current row. */
+    const changedBook = {
+      reservations: {
+        ...refined.book.reservations,
+        [changedReservation.reservationId]: changedReservation,
+      },
+      operations: refined.book.operations,
+    };
+    expect(() => createInventoryReservationBookDelta(
+      world.reservations,
+      changedBook,
+      "malicious-refine-output",
+      "planner-guard-claim",
+    )).toThrow("changed frozen creation facts");
+  });
+
+  it("rejects a direct refine delta that widens the frozen selector", async () => {
+    const catalog = createTabletCatalog();
+    const inventory = createTestInventory(undefined, catalog);
+    await inventory.stock.receive({
+      operationId: "receive-for-selector-guard",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store"),
+      amount: stockAmount("2", "piece"),
+    });
+    await inventory.reservations.reserve({
+      reservationId: "selector-guard-claim",
+      operationId: "create-selector-guard-claim",
+      itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a", locationIds: ["store"] },
+      requested: parseQuantity("1", "piece"),
+      createdAtEpochMs: time1,
+    });
+    const world = await inventory.read.world();
+    const refined = refineInventoryReservation({
+      catalog,
+      projection: world.projection,
+      book: world.reservations,
+      operationId: "widened-refine-output",
+      reservationId: "selector-guard-claim",
+      selector: { itemId: "item-a", locationIds: ["store"] },
+      occurredAtEpochMs: time2,
+    });
+    const widenedReservation = {
+      ...refined.reservation,
+      selector: { itemId: "item-a" },
+    };
+    const widenedBook = {
+      reservations: {
+        ...refined.book.reservations,
+        [widenedReservation.reservationId]: widenedReservation,
+      },
+      operations: refined.book.operations,
+    };
+    expect(() => createInventoryReservationBookDelta(
+      world.reservations,
+      widenedBook,
+      "widened-refine-output",
+      "selector-guard-claim",
+    )).toThrow("may only narrow its selector");
+  });
+
+  it("requires consumption evidence exactly on consumed reservation deltas", async () => {
+    const catalog = createTabletCatalog();
+    const inventory = createTestInventory(undefined, catalog);
+    await inventory.stock.receive({
+      operationId: "receive-for-consumption-evidence-guard",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store"),
+      amount: stockAmount("2", "piece"),
+    });
+    const base = await inventory.read.world();
+    const reservationId = "consumption-evidence-claim";
+    const created = createInventoryReservation({
+      catalog,
+      projection: base.projection,
+      book: base.reservations,
+      reservation: {
+        reservationId,
+        operationId: "consumption-evidence-create",
+        itemRevisionId: "item-a-v2",
+        selector: { itemId: "item-a", locationIds: ["store"] },
+        requested: parseQuantity("1", "piece"),
+        createdAtEpochMs: time1,
+      },
+      nowEpochMs: time1,
+    });
+    const createDelta = createInventoryReservationBookDelta(
+      base.reservations,
+      created.book,
+      "consumption-evidence-create",
+      reservationId
+    );
+    if (createDelta === undefined) throw new Error("Expected reservation create delta.");
+    expect(() =>
+      applyInventoryReservationBookDelta(base.reservations, {
+        ...createDelta,
+        reservation: {
+          ...createDelta.reservation,
+          consumptionEventId: "forged-create-event",
+        },
+      })
+    ).toThrow("Only reservation consumption may attach a consumption event");
+
+    const refined = refineInventoryReservation({
+      catalog,
+      projection: base.projection,
+      book: created.book,
+      operationId: "consumption-evidence-refine",
+      reservationId,
+      selector: { itemId: "item-a", locationIds: ["store"] },
+      occurredAtEpochMs: time2,
+    });
+    const refineDelta = createInventoryReservationBookDelta(
+      created.book,
+      refined.book,
+      "consumption-evidence-refine",
+      reservationId
+    );
+    if (refineDelta === undefined) throw new Error("Expected reservation refine delta.");
+    expect(() =>
+      applyInventoryReservationBookDelta(created.book, {
+        ...refineDelta,
+        reservation: {
+          ...refineDelta.reservation,
+          consumptionEventId: "forged-refine-event",
+        },
+      })
+    ).toThrow("Only reservation consumption may attach a consumption event");
+
+    const position = Object.values(base.projection.positions)[0];
+    if (position === undefined) throw new Error("Expected stock position.");
+    const allocated = allocateInventoryReservation({
+      catalog,
+      projection: base.projection,
+      book: refined.book,
+      operationId: "consumption-evidence-allocate",
+      reservationId,
+      allocations: [
+        { position: position.key, quantity: parseQuantity("1", "piece") },
+      ],
+      occurredAtEpochMs: time2,
+    });
+    const allocateDelta = createInventoryReservationBookDelta(
+      refined.book,
+      allocated.book,
+      "consumption-evidence-allocate",
+      reservationId
+    );
+    if (allocateDelta === undefined) throw new Error("Expected reservation allocation delta.");
+    expect(() =>
+      applyInventoryReservationBookDelta(refined.book, {
+        ...allocateDelta,
+        reservation: {
+          ...allocateDelta.reservation,
+          consumptionEventId: "forged-allocate-event",
+        },
+      })
+    ).toThrow("Only reservation consumption may attach a consumption event");
+
+    const consumed = markInventoryReservationConsumed({
+      book: allocated.book,
+      operationId: "consumption-evidence-consume",
+      reservationId,
+      consumptionEventId: "real-consumption-event",
+      occurredAtEpochMs: time3,
+    });
+    const consumeDelta = createInventoryReservationBookDelta(
+      allocated.book,
+      consumed.book,
+      "consumption-evidence-consume",
+      reservationId
+    );
+    if (consumeDelta === undefined) throw new Error("Expected reservation consume delta.");
+    const forgedActiveBook = {
+      ...allocated.book,
+      reservations: {
+        ...allocated.book.reservations,
+        [reservationId]: {
+          ...allocateDelta.reservation,
+          consumptionEventId: "forged-pre-consume-event",
+        },
+      },
+    };
+    expect(() =>
+      createInventoryReservationBookDelta(
+        forgedActiveBook,
+        consumed.book,
+        "consumption-evidence-consume",
+        reservationId
+      )
+    ).toThrow("Non-consumed reservation state cannot retain a consumption event");
+    const {
+      consumptionEventId: _consumptionEventId,
+      ...missingConsumptionEvidence
+    } = consumeDelta.reservation;
+    expect(() =>
+      applyInventoryReservationBookDelta(allocated.book, {
+        ...consumeDelta,
+        reservation: missingConsumptionEvidence,
+      })
+    ).toThrow("Consumed reservation must attach a consumption event");
+  });
+});
+
+describe("package and serial reservation granularity", () => {
+  it("does not call one loose piece feasible when only one intact box-20 exists", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receive({
+      operationId: "receive-intact-box",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store"),
+      amount: packageAmount(1, "item-a-box-20-v1"),
+    });
+    await expect(inventory.reservations.reserve({
+      reservationId: "claim-one-from-box",
+      operationId: "reserve-one-from-box",
+      itemRevisionId: "item-a-v1",
+      selector: { itemId: "item-a" },
+      requested: parseQuantity("1", "piece"),
+      createdAtEpochMs: time1,
+    })).rejects.toThrow("cannot all be fulfilled");
+    expect((await inventory.read.reservationFeasibility()).status).toBe(
+      InventoryReservationFeasibilityStatus.Feasible,
+    );
+  });
+
+  it("accepts and consumes one whole package allocation but rejects a partial package binding", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receive({
+      operationId: "receive-whole-box",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store"),
+      amount: packageAmount(1, "item-a-box-20-v1"),
+    });
+    await inventory.stock.receive({
+      operationId: "receive-one-loose-beside-box",
+      occurredAtEpochMs: time0,
+      to: loosePosition("loose-store"),
+      itemRevisionId: "item-a-v1",
+      amount: stockAmount("1", "piece"),
+    });
+    await inventory.reservations.reserve({
+      reservationId: "claim-whole-box",
+      operationId: "reserve-whole-box",
+      itemRevisionId: "item-a-v1",
+      selector: { itemId: "item-a" },
+      requested: parseQuantity("20", "piece"),
+      createdAtEpochMs: time1,
+    });
+    const position = (await inventory.read.positions({
+      itemId: "item-a",
+      packagingRevisionIds: ["item-a-box-20-v1"],
+    }))[0];
+    const loose = (await inventory.read.positions({
+      itemId: "item-a",
+      locationIds: ["loose-store"],
+    }))[0];
+    if (position === undefined || loose === undefined) {
+      throw new Error("Expected intact and loose package-allocation stock.");
+    }
+    await expect(inventory.reservations.allocate({
+      operationId: "allocate-part-box",
+      reservationId: "claim-whole-box",
+      occurredAtEpochMs: time1,
+      allocations: [
+        { position: position.key, quantity: parseQuantity("19", "piece") },
+        { position: loose.key, quantity: parseQuantity("1", "piece") },
+      ],
+    })).rejects.toThrow("whole number of exact packages");
+    await inventory.reservations.allocate({
+      operationId: "allocate-whole-box",
+      reservationId: "claim-whole-box",
+      occurredAtEpochMs: time1,
+      allocations: [{ position: position.key, quantity: parseQuantity("20", "piece") }],
+    });
+    await inventory.reservations.consume({
+      operationId: "consume-whole-box",
+      reservationId: "claim-whole-box",
+      occurredAtEpochMs: time2,
+      fulfillment: [{
+        from: position.key,
+        amount: packageAmount(1, "item-a-box-20-v1"),
+      }],
+    });
+    expect(await inventory.read.positions({
+      itemId: "item-a",
+      packagingRevisionIds: ["item-a-box-20-v1"],
+    })).toEqual([]);
+  });
+
+  it("lets only one competing claim own one package and blocks unpacking its exact allocation", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receive({
+      operationId: "receive-competing-box",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store"),
+      amount: packageAmount(1, "item-a-box-20-v1"),
+    });
+    await inventory.reservations.reserve({
+      reservationId: "first-box-claim",
+      operationId: "reserve-first-box",
+      itemRevisionId: "item-a-v1",
+      selector: { itemId: "item-a" },
+      requested: parseQuantity("20", "piece"),
+      createdAtEpochMs: time1,
+    });
+    await expect(inventory.reservations.reserve({
+      reservationId: "second-box-claim",
+      operationId: "reserve-second-box",
+      itemRevisionId: "item-a-v1",
+      selector: { itemId: "item-a" },
+      requested: parseQuantity("20", "piece"),
+      createdAtEpochMs: time1,
+    })).rejects.toThrow("cannot all be fulfilled");
+    const position = (await inventory.read.positions({
+      itemId: "item-a",
+      packagingRevisionIds: ["item-a-box-20-v1"],
+    }))[0];
+    if (position === undefined) throw new Error("Expected competing package stock.");
+    await inventory.reservations.allocate({
+      operationId: "allocate-first-box",
+      reservationId: "first-box-claim",
+      occurredAtEpochMs: time2,
+      allocations: [{ position: position.key, quantity: parseQuantity("20", "piece") }],
+    });
+    await expect(inventory.stock.unpack({
+      operationId: "unpack-allocated-box",
+      occurredAtEpochMs: time2,
+      from: position.key,
+      packageCount: 1,
+    })).rejects.toThrow("cannot all be fulfilled");
+  });
+
+  it("defines one serial identity as exactly one primary resource", async () => {
+    const inventory = createTestInventory();
+    await expect(inventory.stock.receive({
+      operationId: "receive-bad-serial",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store", { serialId: "serial-one" }),
+      amount: stockAmount("2", "piece"),
+    })).rejects.toThrow("exactly one primary resource");
+    await inventory.stock.receive({
+      operationId: "receive-one-serial",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store", { serialId: "serial-one" }),
+      amount: stockAmount("1", "piece"),
+    });
+    await expect(inventory.reservations.reserve({
+      reservationId: "half-serial",
+      operationId: "reserve-half-serial",
+      itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a", serialIds: ["serial-one"] },
+      requested: parseQuantity("0.5", "piece"),
+      createdAtEpochMs: time1,
+    })).rejects.toThrow("cannot all be fulfilled");
+    await inventory.reservations.reserve({
+      reservationId: "whole-serial",
+      operationId: "reserve-whole-serial",
+      itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a", serialIds: ["serial-one"] },
+      requested: parseQuantity("1", "piece"),
+      createdAtEpochMs: time1,
+    });
+    const serialPosition = (await inventory.read.positions({
+      itemId: "item-a",
+      serialIds: ["serial-one"],
+    }))[0];
+    if (serialPosition === undefined) throw new Error("Expected whole serial stock.");
+    await inventory.reservations.allocate({
+      operationId: "allocate-whole-serial",
+      reservationId: "whole-serial",
+      occurredAtEpochMs: time1,
+      allocations: [{ position: serialPosition.key, quantity: parseQuantity("1", "piece") }],
+    });
+    await inventory.reservations.consume({
+      operationId: "consume-whole-serial",
+      reservationId: "whole-serial",
+      occurredAtEpochMs: time2,
+      fulfillment: [{ from: serialPosition.key, amount: stockAmount("1", "piece") }],
+    });
+    expect(await inventory.read.positions({ itemId: "item-a" })).toEqual([]);
+  });
+
+  it("handles an exact row containing well over twenty intact packages without expanding slots", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receive({
+      operationId: "receive-many-boxes",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store"),
+      amount: packageAmount(50_000, "item-a-box-20-v1"),
+    });
+    await inventory.reservations.reserve({
+      reservationId: "many-box-scope",
+      operationId: "reserve-many-box-scope",
+      itemRevisionId: "item-a-v1",
+      selector: {
+        itemId: "item-a",
+        itemRevisionIds: ["item-a-v1"],
+        locationIds: ["store"],
+        packagingRevisionIds: ["item-a-box-20-v1"],
+      },
+      requested: parseQuantity("1000", "piece"),
+      createdAtEpochMs: time1,
+    });
+    const availability = await inventory.read.availability({
+      itemId: "item-a",
+      itemRevisionIds: ["item-a-v1"],
+      locationIds: ["store"],
+      packagingRevisionIds: ["item-a-box-20-v1"],
+    });
+    expect(availability.reservationFeasibility.status).toBe(
+      InventoryReservationFeasibilityStatus.Feasible,
+    );
+    expect(availability.reservationFeasibility.groups[0]?.fulfillable.amountMinor)
+      .toBe(1000);
+  });
+
+  it("solves competing broad package claims well above twenty pieces exactly", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receiveMany({
+      operationId: "receive-competing-many-boxes",
+      occurredAtEpochMs: time0,
+      lines: [
+        {
+          to: loosePosition("store-a"),
+          amount: packageAmount(40, "item-a-box-20-v1"),
+        },
+        {
+          to: loosePosition("store-b"),
+          amount: packageAmount(35, "item-a-box-20-v1"),
+        },
+      ],
+    });
+    await inventory.reservations.reserve({
+      reservationId: "store-a-package-claim",
+      operationId: "reserve-store-a-packages",
+      itemRevisionId: "item-a-v1",
+      selector: { itemId: "item-a", locationIds: ["store-a"] },
+      requested: parseQuantity("600", "piece"),
+      createdAtEpochMs: time1,
+    });
+    await inventory.reservations.reserve({
+      reservationId: "broad-package-claim",
+      operationId: "reserve-broad-packages",
+      itemRevisionId: "item-a-v1",
+      selector: { itemId: "item-a" },
+      requested: parseQuantity("900", "piece"),
+      createdAtEpochMs: time1,
+    });
+    const feasible = await inventory.read.reservationFeasibility();
+    expect(feasible.status).toBe(InventoryReservationFeasibilityStatus.Feasible);
+    expect(feasible.groups[0]).toMatchObject({
+      reservationIds: ["broad-package-claim", "store-a-package-claim"],
+      requested: { amountMinor: 1500, unit: "piece" },
+      fulfillable: { amountMinor: 1500, unit: "piece" },
+      shortage: { amountMinor: 0, unit: "piece" },
+    });
+    await expect(inventory.reservations.reserve({
+      reservationId: "one-package-too-many",
+      operationId: "reserve-one-package-too-many",
+      itemRevisionId: "item-a-v1",
+      selector: { itemId: "item-a" },
+      requested: parseQuantity("20", "piece"),
+      createdAtEpochMs: time1,
+    })).rejects.toThrow("cannot all be fulfilled");
+  });
+});
+
+describe("historical reservation authority and one-revision counts", () => {
+  it("rejects a physical event dated after its durable record time", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createInventoryOnce({
+      catalog: createTabletCatalog(),
+      storage,
+      clock: clockAt(time1),
+    });
+    await expect(inventory.stock.receive({
+      operationId: "future-physical-receipt",
+      occurredAtEpochMs: time2,
+      to: loosePosition("store"),
+      amount: stockAmount("1", "piece"),
+    })).rejects.toThrow("after its durable recordedAtEpochMs time");
+    expect(await storage.readOperation("future-physical-receipt")).toBeUndefined();
+  });
+
+  it("rejects a reservation created after its durable record time", async () => {
+    const inventory = createInventoryOnce({
+      catalog: createTabletCatalog(),
+      storage: createInMemoryInventoryDurableStorage(),
+      clock: clockAt(time1),
+    });
+    await expect(inventory.reservations.reserve({
+      reservationId: "future-created-claim",
+      operationId: "future-created-reserve",
+      itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a" },
+      requested: parseQuantity("1", "piece"),
+      createdAtEpochMs: time2,
+    })).rejects.toThrow("after its durable record time");
+  });
+
+  it("rejects out-of-order lifecycle facts and uses creation/terminal intervals", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receive({
+      operationId: "historical-stock",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store"),
+      amount: stockAmount("1", "piece"),
+    });
+    await inventory.reservations.reserve({
+      reservationId: "historical-claim",
+      operationId: "historical-reserve",
+      itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a" },
+      requested: parseQuantity("1", "piece"),
+      createdAtEpochMs: time1,
+    });
+    await expect(inventory.reservations.refine({
+      operationId: "refine-before-create",
+      reservationId: "historical-claim",
+      selector: { itemId: "item-a", locationIds: ["store"] },
+      occurredAtEpochMs: time0,
+    })).rejects.toThrow("before creation");
+    await inventory.reservations.release({
+      operationId: "historical-release",
+      reservationId: "historical-claim",
+      occurredAtEpochMs: time2,
+    });
+    expect((await inventory.read.reservationFeasibility(time0)).groups).toEqual([]);
+    expect((await inventory.read.reservationFeasibility(time1)).groups[0]?.reservationIds)
+      .toEqual(["historical-claim"]);
+    expect((await inventory.read.reservationFeasibility(time2)).groups).toEqual([]);
+    expect((await inventory.read.reservationFeasibility()).groups).toEqual([]);
+    await expect(inventory.reservations.refine({
+      operationId: "backdated-refine",
+      reservationId: "historical-claim",
+      selector: { itemId: "item-a", locationIds: ["store"] },
+      occurredAtEpochMs: time1,
+    })).rejects.toThrow("no longer active");
+  });
+
+  it("stops an otherwise active claim at its declared expiry boundary", async () => {
+    const inventory = createTestInventory(
+      undefined,
+      undefined,
+      clockAt(time1),
+    );
+    await inventory.stock.receive({
+      operationId: "expiry-stock",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store"),
+      amount: stockAmount("1", "piece"),
+    });
+    await inventory.reservations.reserve({
+      reservationId: "expiring-claim",
+      operationId: "expiring-reserve",
+      itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a" },
+      requested: parseQuantity("1", "piece"),
+      createdAtEpochMs: time1,
+      expiresAtEpochMs: time2,
+    });
+    expect((await inventory.read.reservationFeasibility(time1)).groups[0]?.reservationIds)
+      .toEqual(["expiring-claim"]);
+    expect((await inventory.read.reservationFeasibility(time2)).groups).toEqual([]);
+  });
+
+  it("narrows item-wide counts to one frozen revision and rejects earlier lifecycle times", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receive({
+      operationId: "count-old-revision",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store"),
+      itemRevisionId: "item-a-v1",
+      amount: stockAmount("1", "piece"),
+    });
+    await inventory.stock.receive({
+      operationId: "count-current-revision",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store"),
+      itemRevisionId: "item-a-v2",
+      amount: stockAmount("1", "piece"),
+    });
+    const started = await inventory.counts.start({
+      countId: "one-revision-count",
+      operationId: "one-revision-count-start",
+      selector: { itemId: "item-a" },
+      startedAtEpochMs: time1,
+    });
+    expect(started.count.selector.itemRevisionIds).toEqual(["item-a-v2"]);
+    const oldPosition = (await inventory.read.positions({
+      itemId: "item-a",
+      itemRevisionIds: ["item-a-v1"],
+    }))[0];
+    if (oldPosition === undefined) throw new Error("Expected old revision stock.");
+    await expect(inventory.counts.observe({
+      operationId: "observe-old-row",
+      countId: "one-revision-count",
+      observedAtEpochMs: time2,
+      observations: [{ position: oldPosition.key, measurements: oldPosition.measurements }],
+    })).rejects.toThrow("outside the declared selector");
+    await expect(inventory.counts.observe({
+      operationId: "observe-before-start",
+      countId: "one-revision-count",
+      observedAtEpochMs: time0,
+      observations: [],
+    })).rejects.toThrow("before the count started");
+    await inventory.counts.observe({
+      operationId: "observe-current-revision",
+      countId: "one-revision-count",
+      observedAtEpochMs: time2,
+      observations: [],
+    });
+    await expect(inventory.counts.reconcile({
+      operationId: "complete-before-observation",
+      countId: "one-revision-count",
+      completedAtEpochMs: time1,
+      reason: "Invalid earlier completion.",
+    })).rejects.toThrow("before the observation");
+  });
+
+  it("does not mix retained revisions with different measurement schemas in one count", async () => {
+    const pieceV1 = defineScalarInventoryItem({
+      itemId: "mixed-item",
+      revisionId: "mixed-item-piece-v1",
+      axisId: "pieces",
+      unit: "piece",
+    });
+    const volumeV2 = defineScalarInventoryItem({
+      itemId: "mixed-item",
+      revisionId: "mixed-item-volume-v2",
+      axisId: "volume",
+      unit: "mL",
+    });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [pieceV1, volumeV2],
+      activeItemRevisionIds: { "mixed-item": volumeV2.revisionId },
+      packagingRevisions: [],
+    });
+    const inventory = createTestInventory(undefined, catalog);
+    await inventory.stock.receive({
+      operationId: "receive-mixed-old-piece",
+      occurredAtEpochMs: time0,
+      to: { itemId: "mixed-item", locationId: "store" },
+      itemRevisionId: pieceV1.revisionId,
+      amount: stockAmount("1", "piece"),
+    });
+    await inventory.stock.receive({
+      operationId: "receive-mixed-current-volume",
+      occurredAtEpochMs: time0,
+      to: { itemId: "mixed-item", locationId: "store" },
+      itemRevisionId: volumeV2.revisionId,
+      amount: stockAmount("10", "mL"),
+    });
+    const started = await inventory.counts.start({
+      countId: "mixed-schema-count",
+      operationId: "mixed-schema-count-start",
+      selector: { itemId: "mixed-item" },
+      startedAtEpochMs: time1,
+    });
+    expect(started.count.selector.itemRevisionIds).toEqual([volumeV2.revisionId]);
+    const oldPosition = (await inventory.read.positions({
+      itemId: "mixed-item",
+      itemRevisionIds: [pieceV1.revisionId],
+    }))[0];
+    if (oldPosition === undefined) throw new Error("Expected retained piece revision stock.");
+    await expect(inventory.counts.observe({
+      operationId: "observe-mixed-old-piece",
+      countId: "mixed-schema-count",
+      observedAtEpochMs: time2,
+      observations: [{ position: oldPosition.key, measurements: oldPosition.measurements }],
+    })).rejects.toThrow("outside the declared selector");
+  });
+});
+
+describe("count delta integrity", () => {
+  it("accepts semantically identical count selector keys in a different insertion order", () => {
+    const observedCount = {
+      countId: "reordered-count-selector",
+      operationId: "reordered-count-selector-start",
+      itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a", itemRevisionIds: ["item-a-v2"] },
+      startedAtEpochMs: time0,
+      snapshotRecordSequence: 1,
+      status: InventoryCountStatus.Observed,
+      observedAtEpochMs: time1,
+      observedThroughRecordSequence: 1,
+      observations: [],
+    };
+    const base = {
+      counts: { [observedCount.countId]: observedCount },
+      operations: {},
+    };
+    expect(() =>
+      applyInventoryCountBookDelta(base, {
+        count: {
+          ...observedCount,
+          selector: { itemRevisionIds: ["item-a-v2"], itemId: "item-a" },
+          status: InventoryCountStatus.Abandoned,
+          statusAtEpochMs: time2,
+        },
+        operation: {
+          operationId: "reordered-count-selector-abandon",
+          countId: observedCount.countId,
+          kind: InventoryCountOperationKind.Abandon,
+          intentFingerprint: "reordered-count-selector-abandon",
+        },
+      })
+    ).not.toThrow();
+  });
+  it("rejects reconciliation events on non-complete count deltas", () => {
+    const startedCount = {
+      countId: "forged-reconciliation-count",
+      operationId: "forged-reconciliation-count-start",
+      itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a", itemRevisionIds: ["item-a-v2"] },
+      startedAtEpochMs: time0,
+      snapshotRecordSequence: 1,
+      status: InventoryCountStatus.Started,
+      observations: [],
+    };
+    const startedBase = {
+      counts: { [startedCount.countId]: startedCount },
+      operations: {},
+    };
+    expect(() =>
+      applyInventoryCountBookDelta({ counts: {}, operations: {} }, {
+        count: {
+          ...startedCount,
+          reconciliationEventId: "forged-start-reconciliation",
+        },
+        operation: {
+          operationId: startedCount.operationId,
+          countId: startedCount.countId,
+          kind: InventoryCountOperationKind.Start,
+          intentFingerprint: "forged-reconciliation-start",
+        },
+      })
+    ).toThrow("Only count completion may attach a reconciliation event.");
+    expect(() =>
+      applyInventoryCountBookDelta(startedBase, {
+        count: {
+          ...startedCount,
+          status: InventoryCountStatus.Observed,
+          observedAtEpochMs: time1,
+          observedThroughRecordSequence: 1,
+          reconciliationEventId: "forged-observe-reconciliation",
+        },
+        operation: {
+          operationId: "forged-reconciliation-observe",
+          countId: startedCount.countId,
+          kind: InventoryCountOperationKind.Observe,
+          intentFingerprint: "forged-reconciliation-observe",
+        },
+      })
+    ).toThrow("Only count completion may attach a reconciliation event.");
+
+    const observedCount = {
+      ...startedCount,
+      status: InventoryCountStatus.Observed,
+      observedAtEpochMs: time1,
+      observedThroughRecordSequence: 1,
+    };
+    const observedBase = {
+      counts: { [observedCount.countId]: observedCount },
+      operations: {},
+    };
+    expect(() =>
+      applyInventoryCountBookDelta(observedBase, {
+        count: {
+          ...observedCount,
+          status: InventoryCountStatus.Abandoned,
+          statusAtEpochMs: time2,
+          reconciliationEventId: "forged-abandon-reconciliation",
+        },
+        operation: {
+          operationId: "forged-reconciliation-abandon",
+          countId: observedCount.countId,
+          kind: InventoryCountOperationKind.Abandon,
+          intentFingerprint: "forged-reconciliation-abandon",
+        },
+      })
+    ).toThrow("Only count completion may attach a reconciliation event.");
+  });
+
+  it("rejects forged completion and abandonment deltas that rewrite observation evidence", () => {
+    const observedCount = {
+      countId: "forged-observation-count",
+      operationId: "forged-observation-count-start",
+      itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a", itemRevisionIds: ["item-a-v2"] },
+      startedAtEpochMs: time0,
+      snapshotRecordSequence: 1,
+      status: InventoryCountStatus.Observed,
+      observedAtEpochMs: time1,
+      observedThroughRecordSequence: 2,
+      observations: [],
+    };
+    const base = {
+      counts: { [observedCount.countId]: observedCount },
+      operations: {},
+    };
+
+    expect(() =>
+      applyInventoryCountBookDelta(base, {
+        count: {
+          ...observedCount,
+          status: InventoryCountStatus.Completed,
+          statusAtEpochMs: time2,
+          observedThroughRecordSequence: 3,
+        },
+        operation: {
+          operationId: "forged-observation-complete",
+          countId: observedCount.countId,
+          kind: InventoryCountOperationKind.Complete,
+          intentFingerprint: "forged-observation-complete",
+        },
+      })
+    ).toThrow("Count completion cannot replace the physical observation.");
+
+    expect(() =>
+      applyInventoryCountBookDelta(base, {
+        count: {
+          ...observedCount,
+          status: InventoryCountStatus.Abandoned,
+          statusAtEpochMs: time2,
+          observedAtEpochMs: time0,
+        },
+        operation: {
+          operationId: "forged-observation-abandon",
+          countId: observedCount.countId,
+          kind: InventoryCountOperationKind.Abandon,
+          intentFingerprint: "forged-observation-abandon",
+        },
+      })
+    ).toThrow("Count abandonment cannot replace the physical observation.");
+  });
+});
+
+describe("prototype-safe retained catalogue records", () => {
+  it("preserves own __proto__ item keys and recursive metadata fields", () => {
+    const activeItemRevisionIds = JSON.parse(
+      '{"__proto__":"proto-item-v1"}'
+    ) as Record<string, string>;
+    const metadata = JSON.parse(
+      '{"__proto__":{"__proto__":"nested-value"},"ordinary":"kept"}'
+    ) as Record<string, InventoryMetadataValue>;
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [{
+        itemId: "__proto__",
+        revisionId: "proto-item-v1",
+        primaryAxis: {
+          axisId: "pieces",
+          role: InventoryMeasurementAxisRole.Primary,
+          unit: unitCode("piece"),
+          requirement: InventoryMeasurementRequirement.Required,
+        },
+        independentAxes: [],
+        reservationAxisId: "pieces",
+        tracking: {
+          lot: InventoryTrackingRequirement.Forbidden,
+          serial: InventoryTrackingRequirement.Forbidden,
+        },
+        qualifiedDimensions: [],
+        metadata,
+      }],
+      activeItemRevisionIds,
+      packagingRevisions: [],
+    });
+    expect(Object.prototype.hasOwnProperty.call(catalog.activeItemRevisionIds, "__proto__"))
+      .toBe(true);
+    expect(catalog.activeItemRevisionIds["__proto__"]).toBe("proto-item-v1");
+    expect(catalog.activeItem("__proto__").revisionId).toBe("proto-item-v1");
+    const retained = catalog.itemRevision("proto-item-v1").metadata;
+    expect(Object.prototype.hasOwnProperty.call(retained, "__proto__")).toBe(true);
+    const nested = retained?.["__proto__"];
+    expect(typeof nested).toBe("object");
+    expect(nested).not.toBeNull();
+    expect(Object.prototype.hasOwnProperty.call(nested, "__proto__")).toBe(true);
+    expect((nested as Readonly<Record<string, InventoryMetadataValue>>)["__proto__"])
+      .toBe("nested-value");
+    expect(retained?.ordinary).toBe("kept");
+  });
+});
+
+describe("retained catalogue alias safety", () => {
+  it("deep-copies and freezes caller-owned revision/package values before event replay", async () => {
+    const primaryAxis = {
+      axisId: "pieces",
+      role: InventoryMeasurementAxisRole.Primary,
+      unit: unitCode("piece"),
+      requirement: InventoryMeasurementRequirement.Required,
+    };
+    const independentAxes: {
+      axisId: string;
+      role: InventoryMeasurementAxisRole;
+      unit: ReturnType<typeof unitCode>;
+      requirement: InventoryMeasurementRequirement;
+    }[] = [];
+    const tracking = {
+      lot: InventoryTrackingRequirement.Optional,
+      serial: InventoryTrackingRequirement.Optional,
+    };
+    const qualifiedDimensions = [{ dimensionId: "grade", description: "Grade." }];
+    const itemIdentifiers: Record<string, string> = { sku: "sku-one" };
+    const itemMetadataTags: InventoryMetadataValue[] = ["original"];
+    const itemMetadata = { tags: itemMetadataTags };
+    const fixedPrimaryQuantity = {
+      amountMinor: 20,
+      decimals: 0,
+      unit: unitCode("piece"),
+    };
+    const fixedIndependent: never[] = [];
+    const innerPackage = { packagingRevisionId: "inner-one", count: 2 };
+    const packageIdentifiers: Record<string, string> = { gtin: "gtin-one" };
+    const packageMetadataTags: InventoryMetadataValue[] = ["sealed"];
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [{
+        itemId: "alias-item",
+        revisionId: "alias-item-v1",
+        primaryAxis,
+        independentAxes,
+        reservationAxisId: "pieces",
+        tracking,
+        qualifiedDimensions,
+        identifiers: itemIdentifiers,
+        metadata: itemMetadata,
+      }],
+      activeItemRevisionIds: { "alias-item": "alias-item-v1" },
+      packagingRevisions: [{
+        revisionId: "alias-box-v1",
+        itemId: "alias-item",
+        itemRevisionId: "alias-item-v1",
+        packageUnit: unitCode("box"),
+        fixedContents: {
+          primary: { axisId: "pieces", quantity: fixedPrimaryQuantity },
+          independent: fixedIndependent,
+        },
+        innerPackage,
+        identifiers: packageIdentifiers,
+        metadata: { tags: packageMetadataTags },
+      }, {
+        revisionId: "inner-one",
+        itemId: "alias-item",
+        itemRevisionId: "alias-item-v1",
+        packageUnit: unitCode("inner"),
+        fixedContents: {
+          primary: {
+            axisId: "pieces",
+            quantity: { amountMinor: 10, decimals: 0, unit: unitCode("piece") },
+          },
+          independent: [],
+        },
+      }],
+    });
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage, catalog);
+    const received = await inventory.stock.receive({
+      operationId: "alias-receipt",
+      occurredAtEpochMs: time0,
+      to: { itemId: "alias-item", locationId: "store" },
+      amount: packageAmount(1, "alias-box-v1"),
+    });
+
+    primaryAxis.unit = unitCode("poison-piece");
+    independentAxes.push({
+      axisId: "poison-axis",
+      role: InventoryMeasurementAxisRole.Independent,
+      unit: unitCode("poison-unit"),
+      requirement: InventoryMeasurementRequirement.Optional,
+    });
+    tracking.serial = InventoryTrackingRequirement.Required;
+    const originalQualifiedDimension = qualifiedDimensions[0];
+    if (originalQualifiedDimension === undefined) {
+      throw new Error("Qualified dimension fixture disappeared.");
+    }
+    originalQualifiedDimension.description = "Poison.";
+    qualifiedDimensions[0] = { dimensionId: "poison", description: "Poison." };
+    itemIdentifiers.sku = "poison-sku";
+    itemMetadataTags.push("poison");
+    fixedPrimaryQuantity.amountMinor = 999;
+    innerPackage.count = 99;
+    packageIdentifiers.gtin = "poison-gtin";
+    packageMetadataTags.push("poison");
+
+    expect(catalog.itemRevision("alias-item-v1").primaryAxis.unit).toBe("piece");
+    expect(catalog.itemRevision("alias-item-v1").independentAxes).toEqual([]);
+    expect(catalog.itemRevision("alias-item-v1").metadata).toEqual({ tags: ["original"] });
+    expect(catalog.itemRevision("alias-item-v1").tracking.serial).toBe(
+      InventoryTrackingRequirement.Optional
+    );
+    expect(catalog.itemRevision("alias-item-v1").qualifiedDimensions).toEqual([
+      { dimensionId: "grade", description: "Grade." },
+    ]);
+    expect(catalog.itemRevision("alias-item-v1").identifiers).toEqual({
+      sku: "sku-one",
+    });
+    expect(catalog.packagingRevision("alias-box-v1").identifiers).toEqual({
+      gtin: "gtin-one",
+    });
+    expect(catalog.packagingRevision("alias-box-v1").metadata).toEqual({
+      tags: ["sealed"],
+    });
+    expect(catalog.packagingRevision("alias-box-v1").fixedContents.primary.quantity.amountMinor)
+      .toBe(20);
+    expect(catalog.packagingRevision("alias-box-v1").innerPackage?.count).toBe(2);
+    expect(Object.isFrozen(catalog.packagingRevision("alias-box-v1").fixedContents.primary.quantity))
+      .toBe(true);
+    expect(Reflect.set(
+      catalog.itemRevision("alias-item-v1").primaryAxis,
+      "unit",
+      unitCode("poison-piece"),
+    )).toBe(false);
+    expect(Reflect.set(
+      catalog.packagingRevision("alias-box-v1").fixedContents.primary.quantity,
+      "amountMinor",
+      999,
+    )).toBe(false);
+    const replayed = projectInventoryEvents({
+      catalog,
+      events: [received.event],
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+    });
+    expect(Object.values(replayed.positions)[0]?.measurements.primary.quantity.amountMinor)
+      .toBe(20);
+  });
+});
+
+
+describe("runtime amount discriminator family", () => {
+  it("rejects malformed amount kinds through resolution and every ordinary planning boundary", async () => {
+    const catalog = createTabletCatalog();
+    const item = catalog.activeItem("item-a");
+    expect(resolveInventoryAmount(catalog, item, packageAmount(1, "item-a-box-24-v1")).packageCount).toBe(1);
+    for (const kind of ["future-amount-kind", "", undefined, null, 0]) {
+      const storage = createInMemoryInventoryDurableStorage();
+      const inventory = createTestInventory(storage, catalog);
+      const amount = { ...packageAmount(1, "item-a-box-24-v1") };
+      // Reflect models an untyped wire input without weakening the typed public API for applications.
+      Reflect.set(amount, "kind", kind);
+      expect(() => resolveInventoryAmount(catalog, item, amount)).toThrow("Inventory amount kind is invalid");
+      const before = await storage.readWorld();
+      for (const run of [
+        () => inventory.stock.receive({ operationId: "bad-amount", occurredAtEpochMs: time0, to: loosePosition("store"), amount }),
+        () => inventory.stock.issue({ operationId: "bad-amount", occurredAtEpochMs: time0, from: loosePosition("store"), amount }),
+        () => inventory.stock.transfer({ operationId: "bad-amount", occurredAtEpochMs: time0, from: loosePosition("store"), toLocationId: "other", amount }),
+        () => inventory.read.planAllocation({ selector: { itemId: "item-a", locationIds: ["store"] }, amount, method: InventoryAllocationMethod.Fifo, atEpochMs: time0 }),
+        () => inventory.stock.issueByPolicy({ operationId: "bad-amount", occurredAtEpochMs: time0, selector: { itemId: "item-a", locationIds: ["store"] }, amount, method: InventoryAllocationMethod.Fifo }),
+        () => inventory.stock.transferByPolicy({ operationId: "bad-amount", occurredAtEpochMs: time0, selector: { itemId: "item-a", locationIds: ["store"] }, toLocationId: "other", amount, method: InventoryAllocationMethod.Fifo }),
+      ]) {
+        await expect(run()).rejects.toThrow("Inventory amount kind is invalid");
+        expect(await storage.readWorld()).toEqual(before);
+        expect(await storage.readOperation("bad-amount")).toBeUndefined();
+      }
+    }
+  });
+});
+
+/** Serialize one JSON-safe value with every object key deliberately reversed to model storage rematerialization. */
+function reverseObjectInsertionJson(value: unknown): string {
+  if (value === undefined || value === null) return "null";
+  if (Array.isArray(value)) {
+    return `[${value.map((child) => reverseObjectInsertionJson(child)).join(",")}]`;
+  }
+  if (typeof value === "object") {
+    const entries = Object.entries(value).filter(([, child]) => child !== undefined);
+    entries.reverse();
+    return `{${entries.map(([key, child]) => `${JSON.stringify(key)}:${reverseObjectInsertionJson(child)}`).join(",")}}`;
+  }
+  const encoded = JSON.stringify(value);
+  if (encoded === undefined) throw new Error("Review fixture contains a non-JSON primitive.");
+  return encoded;
+}
+
+describe("durable content-root representation independence", () => {
+  it("keeps projection reservation count and world roots stable across recursive object-key rematerialization", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receive({
+      operationId: "digest-order-stock",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store"),
+      amount: stockAmount("3", "piece"),
+    });
+    await inventory.reservations.reserve({
+      reservationId: "digest-order-reservation",
+      operationId: "digest-order-reserve",
+      itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a", locationIds: ["store"] },
+      requested: parseQuantity("1", "piece"),
+      createdAtEpochMs: time1,
+    });
+    await inventory.counts.start({
+      countId: "digest-order-count",
+      operationId: "digest-order-count-start",
+      itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a", locationIds: ["store"] },
+      startedAtEpochMs: time2,
+    });
+    const original = await inventory.read.world();
+    const reordered: typeof original = JSON.parse(reverseObjectInsertionJson(original));
+    expect(inventoryProjectionDigest(reordered.projection)).toBe(inventoryProjectionDigest(original.projection));
+    expect(inventoryReservationBookDigest(reordered.reservations)).toBe(inventoryReservationBookDigest(original.reservations));
+    expect(inventoryCountBookDigest(reordered.counts)).toBe(inventoryCountBookDigest(original.counts));
+    expect(inventoryWorldContentRoots(reordered)).toEqual(inventoryWorldContentRoots(original));
+  });
+});
+
+
+describe("retained event ownership across every lifecycle branch", () => {
+  it("detaches the full event graph, including optional metadata, measurements, and correction references", () => {
+    const catalog = createTabletCatalog();
+    const metadata = { nested: [{ note: "original" }] };
+    const amount = { amountMinor: 2, decimals: 0, unit: unitCode("piece") };
+    const measurements = { primary: { axisId: "pieces", quantity: amount }, independent: [] };
+    const correction = { correctsEventId: "earlier", reason: "retain reason" };
+    const raw: InventoryEventDraft = {
+      eventId: "ownership-event", operationId: "ownership-event", kind: InventoryEventKind.Correction,
+      occurredAtEpochMs: time0, metadata, correction,
+      stockEffects: [{ itemRevisionId: "item-a-v2", position: { itemId: "item-a", itemRevisionId: "item-a-v2", locationId: "A" },
+        measurementsDelta: measurements, evidence: { transactedMeasurements: measurements }, metadata }],
+      traceabilityChanges: [],
+    };
+    const retained = defineInventoryEvent({ catalog, event: raw });
+    const fingerprint = inventoryEventIntentFingerprint(retained);
+    amount.amountMinor = 3; metadata.nested[0]!.note = "changed"; correction.reason = "changed";
+    expect(inventoryEventIntentFingerprint(retained)).toBe(fingerprint);
+    expect(retained.stockEffects[0]?.measurementsDelta.primary.quantity.amountMinor).toBe(2);
+  });
+
+  it.each([
+    InventoryTransferLifecycleAction.Prepare, InventoryTransferLifecycleAction.Dispatch,
+    InventoryTransferLifecycleAction.Receive, InventoryTransferLifecycleAction.Release,
+  ])("detaches %s lifecycle records including both measurement vectors", async action => {
+    const catalog = createTabletCatalog();
+    const inventory = createTestInventory(undefined, catalog);
+    await inventory.stock.receive({ operationId: "seed", occurredAtEpochMs: time0, to: loosePosition("A"), amount: stockAmount("2", "piece") });
+    const prepared = await inventory.transfers.prepare({ operationId: "prepare", occurredAtEpochMs: time0, transferId: "ownership-transfer", transitLocationId: "T", destinationLocationId: "B",
+      lines: [{ lineId: "line", from: loosePosition("A"), amount: stockAmount("2", "piece") }] });
+    let event: InventoryEventDraft = prepared.event;
+    if (action === InventoryTransferLifecycleAction.Dispatch || action === InventoryTransferLifecycleAction.Receive) {
+      event = (await inventory.transfers.dispatch({ operationId: "dispatch", occurredAtEpochMs: time0, transferId: "ownership-transfer", carrierCustodianId: "carrier" })).event;
+    }
+    if (action === InventoryTransferLifecycleAction.Receive) {
+      event = (await inventory.transfers.receive({ operationId: "receive", occurredAtEpochMs: time0, transferId: "ownership-transfer" })).event;
+    }
+    if (action === InventoryTransferLifecycleAction.Release) {
+      event = (await inventory.transfers.release({ operationId: "release", occurredAtEpochMs: time0, transferId: "ownership-transfer" })).event;
+    }
+    const change = event.transferLifecycle;
+    if (change === undefined) throw new Error("The real lifecycle operation must produce its lifecycle evidence.");
+    const measurements = { primary: { axisId: "pieces", quantity: { amountMinor: 2, decimals: 0, unit: unitCode("piece") } }, independent: [] };
+    const first = change.action === InventoryTransferLifecycleAction.Prepare || change.action === InventoryTransferLifecycleAction.Receive ? change.lines[0] : undefined;
+    const line = { ...first, lineId: "line", sourcePosition: { itemId: "item-a", itemRevisionId: "item-a-v2", locationId: "A" }, preparedMeasurements: measurements, receivedMeasurements: measurements };
+    const lifecycle = { ...change, lines: [line] };
+    const retained = defineInventoryEvent({ catalog, event: { ...event, transferLifecycle: lifecycle } });
+    const fingerprint = inventoryEventIntentFingerprint(retained);
+    lifecycle.transferId = "changed-transfer";
+    line.lineId = "changed-line"; measurements.primary.quantity.amountMinor = 3;
+    expect(inventoryEventIntentFingerprint(retained)).toBe(fingerprint);
+    expect(retained.transferLifecycle?.transferId).toBe("ownership-transfer");
+  });
+
+  it("commits a detached record rather than retaining a caller-created draft graph", () => {
+    const metadata = { list: ["before"] };
+    const event: InventoryEventDraft = { eventId: "commit-copy", operationId: "commit-copy", kind: InventoryEventKind.Receipt,
+      occurredAtEpochMs: time0, metadata, stockEffects: [{ itemRevisionId: "item-a-v2", position: { itemId: "item-a", itemRevisionId: "item-a-v2", locationId: "A" }, measurementsDelta: { primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") }, independent: [] } }], traceabilityChanges: [] };
+    const committed = commitInventoryEvent(event, time1, 1);
+    metadata.list[0] = "after";
+    expect(committed.metadata).toEqual({ list: ["before"] });
+  });
+});

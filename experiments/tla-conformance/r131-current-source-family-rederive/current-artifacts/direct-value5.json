@@ -1,0 +1,710 @@
+{
+  "schemaVersion": 1,
+  "proofKind": "fungibility-scope-policy-batch-complete-values-v1",
+  "surfaceDigest": "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a",
+  "domain": "All inputs admitted by the exact five public TypeScript signatures. Three pure implementations are checked against separately authored complete declaration terms; selector normalization is recursively tied to the independent identity-selector equation. No runtime samples or stateful action credit.",
+  "allAdmittedInputs": true,
+  "sampledInputs": 0,
+  "inputs": [
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-published-source-contracts.mjs",
+      "sha256": "d05ecad078de891073c82f4c523090382b608204269281464ca9a325ca3208b2"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-published-source-equations.mjs",
+      "sha256": "975eeaed462c420cbe05e597997d14b24945de59e2716be2d3bdffc3638f07e9"
+    },
+    {
+      "file": "experiments/tla-conformance/fungibility-values5-r8/equations.expected.ts.txt",
+      "sha256": "2cd2c41e8dcfc87de7626b270c1f234a43a11339b50f7a5483341642b2d95349"
+    },
+    {
+      "file": "experiments/tla-conformance/fungibility-values5-r8/family.mjs",
+      "sha256": "5a79e3667f41b0bdbb99bb9b53ff16b50fb383126494037a45b4281479434ba4"
+    },
+    {
+      "file": "experiments/tla-conformance/identity-values-r7/contracts.mjs",
+      "sha256": "dea23f4b3f929ac1bcf9b50cd41517c1b3fc4e3d879904aa6c4d83263ba7b2ce"
+    },
+    {
+      "file": "experiments/tla-conformance/identity-values-r7/equations.ts.txt",
+      "sha256": "f4b3b7a3fa1dbf3338f295c3d97f73cf753cba7741d69f272e91db7fa5079844"
+    },
+    {
+      "file": "experiments/tla-conformance/identity-values-r7/family.mjs",
+      "sha256": "493486e43054dd4613091e973558f2c0463e96ff83347080a3f32e636dde6709"
+    },
+    {
+      "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+      "sha256": "8d8854032e38a0df1044e5596c66d9a2b672277f357e361102b0b12c3d6952a0"
+    },
+    {
+      "file": "experiments/tla-conformance/value-contracts/catalog-family.mjs",
+      "sha256": "32439d061232e266f53acd3b33025b97b172769ffe418964319177b8041cab9a"
+    },
+    {
+      "file": "experiments/tla-conformance/value-contracts/surface-binding.mjs",
+      "sha256": "619b37fe3a9bc9be22e8a0c2167187cfce987c7856280c6df0c36c5a230c3618"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2015.collection.d.ts",
+      "sha256": "dc2df20b1bcdc8c2d34af4926e2c3ab15ffe1160a63e58b7e09833f616efff44"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2015.core.d.ts",
+      "sha256": "c57796738e7f83dbc4b8e65132f11a377649c00dd3eee333f672b8f0a6bea671"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2015.iterable.d.ts",
+      "sha256": "0559b1f683ac7505ae451f9a96ce4c3c92bdc71411651ca6ddb0e88baaaad6a3"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2016.array.include.d.ts",
+      "sha256": "d15bea3d62cbbdb9797079416b8ac375ae99162a7fba5de2c6c505446486ac0a"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2017.string.d.ts",
+      "sha256": "2f11ff796926e0832f9ae148008138ad583bd181899ab7dd768a2666700b1893"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2020.bigint.d.ts",
+      "sha256": "d6d7ae4d1f1f3772e2a3cde568ed08991a8ae34a080ff1151af28b7f798e22ca"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2022.error.d.ts",
+      "sha256": "0a3d63ef2b853447ec4f749d3f368ce642264246e02911fcb1590d8c161b8005"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es5.d.ts",
+      "sha256": "c430d44666289dae81f30fa7b2edebf186ecc91a2d4c71266ea6ae76388792e1"
+    },
+    {
+      "file": "node_modules/typescript/package.json",
+      "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+    },
+    {
+      "file": "package.json",
+      "sha256": "f068ac4f83c2984a38d439b90159e48b7fdf42ee4792f7ccde56230c7ecf1a7c"
+    },
+    {
+      "file": "src/amounts.ts",
+      "sha256": "98ddc0fa8d80b2ca244a207f4eb8b55d86131c2ccfd77620da5c85248d03ef57"
+    },
+    {
+      "file": "src/canonical.ts",
+      "sha256": "eb2981c629182525c6742d2a67f513f0daec88507e5861f475d5de04984a2d56"
+    },
+    {
+      "file": "src/catalog.ts",
+      "sha256": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56"
+    },
+    {
+      "file": "src/facade.ts",
+      "sha256": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d"
+    },
+    {
+      "file": "src/fungibility.ts",
+      "sha256": "483741a2e0f8e3cdf38e358929cce5f8b29ffb41494b1268cafa1d38a2197344"
+    },
+    {
+      "file": "src/index.ts",
+      "sha256": "2e0587666ff20d57a757c0576fddf8badf36c2901735db7225a0cebda829b555"
+    },
+    {
+      "file": "src/kernel.ts",
+      "sha256": "f336d22a07d6018dc5528bd2a13a33c5aa9f1a72b0c0ed048cb73219b9b0c06c"
+    },
+    {
+      "file": "src/measurements.ts",
+      "sha256": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5"
+    },
+    {
+      "file": "src/model.ts",
+      "sha256": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122"
+    },
+    {
+      "file": "src/ordering.ts",
+      "sha256": "e72ac94e99b1b4914f3f6dec55583e401484a41ecadd051be788724c88f24cb9"
+    },
+    {
+      "file": "src/projection.ts",
+      "sha256": "f2a9747cfc7c63615347c48383ae7f58ee7df007411cc8de3dd5bb6afaca21d5"
+    },
+    {
+      "file": "src/quantity.ts",
+      "sha256": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6"
+    },
+    {
+      "file": "src/selectors.ts",
+      "sha256": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957"
+    },
+    {
+      "file": "src/sparse-record.ts",
+      "sha256": "272a1f63afe9ed4c84cd76a4ce051b210b52e6e0a54cf47ec4f11a29979ada71"
+    },
+    {
+      "file": "src/usability.ts",
+      "sha256": "bb4cf272fd01be5c4866b388f2af63e9fdd7286c208600fb635ca10d30f0ad51"
+    },
+    {
+      "file": "tsconfig.json",
+      "sha256": "b46c6324e4819ea54c9824d2e0f4c28f9304aa54e39d7f8afbac65f744eed464"
+    }
+  ],
+  "equations": [
+    {
+      "id": "src/fungibility.ts#normalizeInventoryFungibilityScope",
+      "law": "Normalize all common pool scope dimensions through the exact stock-selector normalization equation, inject only the synthetic item discriminator for validation, then remove item and item-revision dimensions from the returned common scope.",
+      "dependencies": [
+        "src/selectors.ts#normalizeInventoryStockSelector"
+      ],
+      "termSha256": "8d1bbfab0706701b14e467481fc2c2ed01c42a5f3c01784486ca02660b21bba7",
+      "implementation": {
+        "file": "src/fungibility.ts",
+        "start": {
+          "offset": 2892,
+          "line": 95,
+          "column": 1
+        },
+        "end": {
+          "offset": 3250,
+          "line": 106,
+          "column": 2
+        },
+        "sourceHash": "483741a2e0f8e3cdf38e358929cce5f8b29ffb41494b1268cafa1d38a2197344",
+        "astHash": "c6a1a356b1f08abb1438590bcb18b1d8e1ec9f7282b10df472736c74133f2e58"
+      }
+    },
+    {
+      "id": "src/fungibility.ts#inventoryFungibilityScopeIdentity",
+      "law": "Serialize exactly the normalized fungibility scope with JSON.stringify and no caller-form representation.",
+      "dependencies": [
+        "src/fungibility.ts#normalizeInventoryFungibilityScope"
+      ],
+      "termSha256": "ac8fdb5fbfa4a605918c0fbc1f2526b7e62e134db855b7a3c494fbd2da0e1160",
+      "implementation": {
+        "file": "src/fungibility.ts",
+        "start": {
+          "offset": 3331,
+          "line": 109,
+          "column": 1
+        },
+        "end": {
+          "offset": 3498,
+          "line": 113,
+          "column": 2
+        },
+        "sourceHash": "483741a2e0f8e3cdf38e358929cce5f8b29ffb41494b1268cafa1d38a2197344",
+        "astHash": "62c33fde465a10437fc85b7586f30e291d09bb1ca4ec8429b3ea00966ca2a7c9"
+      }
+    },
+    {
+      "id": "src/facade.ts#inventoryPolicyBatchAllocationLinesByReference",
+      "law": "Visit allocations in order, require every native request id to have an application reference, append every native allocation line in input order to that reference, and return the resulting reference map without rebuilding allocation truth.",
+      "dependencies": [],
+      "termSha256": "9cce337bfe06a68adbc46246c5dad38b4cc32984f34a9b6c4773bbb8dacfe5bd",
+      "implementation": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 264799,
+          "line": 7283,
+          "column": 1
+        },
+        "end": {
+          "offset": 265541,
+          "line": 7300,
+          "column": 2
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "c05d2ccba3f4dd73066826aad4675a3cc3662e4d65026b3867ca080fc2b41395"
+      }
+    }
+  ],
+  "identityDependency": {
+    "id": "src/selectors.ts#normalizeInventoryStockSelector",
+    "lawId": "selector-normalization-v1",
+    "declaration": {
+      "file": "src/selectors.ts",
+      "start": {
+        "offset": 4855,
+        "line": 101,
+        "column": 1
+      },
+      "end": {
+        "offset": 7087,
+        "line": 170,
+        "column": 2
+      },
+      "sourceHash": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957",
+      "astHash": "90198be5327afb1a881d93183b9180068a4773e2322a9d86cc7d7bd8b2c31ef1"
+    },
+    "termSha256": "3d7096346aae366e9b82ece038e6603e1845f147ca9678404341b60650958bb1",
+    "dependencies": [
+      "src/model.ts#assertInventoryIdentity",
+      "src/selectors.ts#normalizeOptionalIdentityConstraint",
+      "src/selectors.ts#normalizeOptionalIdentitySet",
+      "src/selectors.ts#normalizeQualifiedDimensionSelectors"
+    ]
+  },
+  "proofs": [
+    {
+      "surfaceKey": "export:.#inventoryFungibilityScopeIdentity::call[0]",
+      "signatureHash": "1e020dc9fe2d5b5d256e03bcde093a138325f2925a220db18d61430e01c499d7",
+      "declaration": {
+        "file": "src/fungibility.ts",
+        "start": {
+          "offset": 3331,
+          "line": 109,
+          "column": 1
+        },
+        "end": {
+          "offset": 3498,
+          "line": 113,
+          "column": 2
+        },
+        "sourceHash": "483741a2e0f8e3cdf38e358929cce5f8b29ffb41494b1268cafa1d38a2197344",
+        "astHash": "62c33fde465a10437fc85b7586f30e291d09bb1ca4ec8429b3ea00966ca2a7c9"
+      },
+      "equationId": "src/fungibility.ts#inventoryFungibilityScopeIdentity",
+      "semantics": {
+        "law": "Serialize exactly the normalized fungibility scope with JSON.stringify and no caller-form representation.",
+        "completeExpectedTermSha256": "ac8fdb5fbfa4a605918c0fbc1f2526b7e62e134db855b7a3c494fbd2da0e1160",
+        "dependencies": [
+          {
+            "kind": "SAME_FAMILY_COMPLETE_EQUATION",
+            "id": "src/fungibility.ts#normalizeInventoryFungibilityScope"
+          }
+        ]
+      }
+    },
+    {
+      "surfaceKey": "export:.#inventoryPolicyBatchAllocationLinesByReference::call[0]",
+      "signatureHash": "60627e97ad681be42e04cf78ae39a3079c9ac0b487d3e3d399a2dadc1d6acd91",
+      "declaration": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 264799,
+          "line": 7283,
+          "column": 1
+        },
+        "end": {
+          "offset": 265541,
+          "line": 7300,
+          "column": 2
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "c05d2ccba3f4dd73066826aad4675a3cc3662e4d65026b3867ca080fc2b41395"
+      },
+      "equationId": "src/facade.ts#inventoryPolicyBatchAllocationLinesByReference",
+      "semantics": {
+        "law": "Visit allocations in order, require every native request id to have an application reference, append every native allocation line in input order to that reference, and return the resulting reference map without rebuilding allocation truth.",
+        "completeExpectedTermSha256": "9cce337bfe06a68adbc46246c5dad38b4cc32984f34a9b6c4773bbb8dacfe5bd",
+        "dependencies": []
+      }
+    },
+    {
+      "surfaceKey": "export:.#normalizeInventoryFungibilityScope::call[0]",
+      "signatureHash": "2ab34dda1062cbb7f412fadc5b7d7ee0079f5abe078a62f7d608547b19e7fa0a",
+      "declaration": {
+        "file": "src/fungibility.ts",
+        "start": {
+          "offset": 2892,
+          "line": 95,
+          "column": 1
+        },
+        "end": {
+          "offset": 3250,
+          "line": 106,
+          "column": 2
+        },
+        "sourceHash": "483741a2e0f8e3cdf38e358929cce5f8b29ffb41494b1268cafa1d38a2197344",
+        "astHash": "c6a1a356b1f08abb1438590bcb18b1d8e1ec9f7282b10df472736c74133f2e58"
+      },
+      "equationId": "src/fungibility.ts#normalizeInventoryFungibilityScope",
+      "semantics": {
+        "law": "Normalize all common pool scope dimensions through the exact stock-selector normalization equation, inject only the synthetic item discriminator for validation, then remove item and item-revision dimensions from the returned common scope.",
+        "completeExpectedTermSha256": "8d1bbfab0706701b14e467481fc2c2ed01c42a5f3c01784486ca02660b21bba7",
+        "dependencies": [
+          {
+            "kind": "INDEPENDENT_IDENTITY_EQUATION",
+            "id": "src/selectors.ts#normalizeInventoryStockSelector",
+            "lawId": "selector-normalization-v1",
+            "declaration": {
+              "file": "src/selectors.ts",
+              "start": {
+                "offset": 4855,
+                "line": 101,
+                "column": 1
+              },
+              "end": {
+                "offset": 7087,
+                "line": 170,
+                "column": 2
+              },
+              "sourceHash": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957",
+              "astHash": "90198be5327afb1a881d93183b9180068a4773e2322a9d86cc7d7bd8b2c31ef1"
+            },
+            "termSha256": "3d7096346aae366e9b82ece038e6603e1845f147ca9678404341b60650958bb1",
+            "dependencies": [
+              "src/model.ts#assertInventoryIdentity",
+              "src/selectors.ts#normalizeOptionalIdentityConstraint",
+              "src/selectors.ts#normalizeOptionalIdentitySet",
+              "src/selectors.ts#normalizeQualifiedDimensionSelectors"
+            ],
+            "inputs": [
+              {
+                "file": "experiments/tla-conformance/authority-r5/catalog-published-source-contracts.mjs",
+                "sha256": "d05ecad078de891073c82f4c523090382b608204269281464ca9a325ca3208b2"
+              },
+              {
+                "file": "experiments/tla-conformance/authority-r5/catalog-published-source-equations.mjs",
+                "sha256": "975eeaed462c420cbe05e597997d14b24945de59e2716be2d3bdffc3638f07e9"
+              },
+              {
+                "file": "experiments/tla-conformance/identity-values-r7/contracts.mjs",
+                "sha256": "dea23f4b3f929ac1bcf9b50cd41517c1b3fc4e3d879904aa6c4d83263ba7b2ce"
+              },
+              {
+                "file": "experiments/tla-conformance/identity-values-r7/equations.ts.txt",
+                "sha256": "f4b3b7a3fa1dbf3338f295c3d97f73cf753cba7741d69f272e91db7fa5079844"
+              },
+              {
+                "file": "experiments/tla-conformance/identity-values-r7/family.mjs",
+                "sha256": "493486e43054dd4613091e973558f2c0463e96ff83347080a3f32e636dde6709"
+              },
+              {
+                "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+                "sha256": "8d8854032e38a0df1044e5596c66d9a2b672277f357e361102b0b12c3d6952a0"
+              },
+              {
+                "file": "experiments/tla-conformance/value-contracts/catalog-family.mjs",
+                "sha256": "32439d061232e266f53acd3b33025b97b172769ffe418964319177b8041cab9a"
+              },
+              {
+                "file": "experiments/tla-conformance/value-contracts/surface-binding.mjs",
+                "sha256": "619b37fe3a9bc9be22e8a0c2167187cfce987c7856280c6df0c36c5a230c3618"
+              },
+              {
+                "file": "node_modules/typescript/lib/lib.es2015.collection.d.ts",
+                "sha256": "dc2df20b1bcdc8c2d34af4926e2c3ab15ffe1160a63e58b7e09833f616efff44"
+              },
+              {
+                "file": "node_modules/typescript/lib/lib.es2015.core.d.ts",
+                "sha256": "c57796738e7f83dbc4b8e65132f11a377649c00dd3eee333f672b8f0a6bea671"
+              },
+              {
+                "file": "node_modules/typescript/lib/lib.es2015.iterable.d.ts",
+                "sha256": "0559b1f683ac7505ae451f9a96ce4c3c92bdc71411651ca6ddb0e88baaaad6a3"
+              },
+              {
+                "file": "node_modules/typescript/lib/lib.es2016.array.include.d.ts",
+                "sha256": "d15bea3d62cbbdb9797079416b8ac375ae99162a7fba5de2c6c505446486ac0a"
+              },
+              {
+                "file": "node_modules/typescript/lib/lib.es2017.string.d.ts",
+                "sha256": "2f11ff796926e0832f9ae148008138ad583bd181899ab7dd768a2666700b1893"
+              },
+              {
+                "file": "node_modules/typescript/lib/lib.es2020.bigint.d.ts",
+                "sha256": "d6d7ae4d1f1f3772e2a3cde568ed08991a8ae34a080ff1151af28b7f798e22ca"
+              },
+              {
+                "file": "node_modules/typescript/lib/lib.es2022.error.d.ts",
+                "sha256": "0a3d63ef2b853447ec4f749d3f368ce642264246e02911fcb1590d8c161b8005"
+              },
+              {
+                "file": "node_modules/typescript/lib/lib.es5.d.ts",
+                "sha256": "c430d44666289dae81f30fa7b2edebf186ecc91a2d4c71266ea6ae76388792e1"
+              },
+              {
+                "file": "node_modules/typescript/package.json",
+                "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+              },
+              {
+                "file": "package.json",
+                "sha256": "f068ac4f83c2984a38d439b90159e48b7fdf42ee4792f7ccde56230c7ecf1a7c"
+              },
+              {
+                "file": "src/amounts.ts",
+                "sha256": "98ddc0fa8d80b2ca244a207f4eb8b55d86131c2ccfd77620da5c85248d03ef57"
+              },
+              {
+                "file": "src/canonical.ts",
+                "sha256": "eb2981c629182525c6742d2a67f513f0daec88507e5861f475d5de04984a2d56"
+              },
+              {
+                "file": "src/catalog.ts",
+                "sha256": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56"
+              },
+              {
+                "file": "src/facade.ts",
+                "sha256": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d"
+              },
+              {
+                "file": "src/index.ts",
+                "sha256": "2e0587666ff20d57a757c0576fddf8badf36c2901735db7225a0cebda829b555"
+              },
+              {
+                "file": "src/kernel.ts",
+                "sha256": "f336d22a07d6018dc5528bd2a13a33c5aa9f1a72b0c0ed048cb73219b9b0c06c"
+              },
+              {
+                "file": "src/measurements.ts",
+                "sha256": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5"
+              },
+              {
+                "file": "src/model.ts",
+                "sha256": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122"
+              },
+              {
+                "file": "src/ordering.ts",
+                "sha256": "e72ac94e99b1b4914f3f6dec55583e401484a41ecadd051be788724c88f24cb9"
+              },
+              {
+                "file": "src/projection.ts",
+                "sha256": "f2a9747cfc7c63615347c48383ae7f58ee7df007411cc8de3dd5bb6afaca21d5"
+              },
+              {
+                "file": "src/quantity.ts",
+                "sha256": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6"
+              },
+              {
+                "file": "src/selectors.ts",
+                "sha256": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957"
+              },
+              {
+                "file": "src/sparse-record.ts",
+                "sha256": "272a1f63afe9ed4c84cd76a4ce051b210b52e6e0a54cf47ec4f11a29979ada71"
+              },
+              {
+                "file": "src/usability.ts",
+                "sha256": "bb4cf272fd01be5c4866b388f2af63e9fdd7286c208600fb635ca10d30f0ad51"
+              },
+              {
+                "file": "tsconfig.json",
+                "sha256": "b46c6324e4819ea54c9824d2e0f4c28f9304aa54e39d7f8afbac65f744eed464"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "surfaceKey": "export:./kernel#inventoryFungibilityScopeIdentity::call[0]",
+      "signatureHash": "1e020dc9fe2d5b5d256e03bcde093a138325f2925a220db18d61430e01c499d7",
+      "declaration": {
+        "file": "src/fungibility.ts",
+        "start": {
+          "offset": 3331,
+          "line": 109,
+          "column": 1
+        },
+        "end": {
+          "offset": 3498,
+          "line": 113,
+          "column": 2
+        },
+        "sourceHash": "483741a2e0f8e3cdf38e358929cce5f8b29ffb41494b1268cafa1d38a2197344",
+        "astHash": "62c33fde465a10437fc85b7586f30e291d09bb1ca4ec8429b3ea00966ca2a7c9"
+      },
+      "equationId": "src/fungibility.ts#inventoryFungibilityScopeIdentity",
+      "semantics": {
+        "law": "Serialize exactly the normalized fungibility scope with JSON.stringify and no caller-form representation.",
+        "completeExpectedTermSha256": "ac8fdb5fbfa4a605918c0fbc1f2526b7e62e134db855b7a3c494fbd2da0e1160",
+        "dependencies": [
+          {
+            "kind": "SAME_FAMILY_COMPLETE_EQUATION",
+            "id": "src/fungibility.ts#normalizeInventoryFungibilityScope"
+          }
+        ]
+      }
+    },
+    {
+      "surfaceKey": "export:./kernel#normalizeInventoryFungibilityScope::call[0]",
+      "signatureHash": "2ab34dda1062cbb7f412fadc5b7d7ee0079f5abe078a62f7d608547b19e7fa0a",
+      "declaration": {
+        "file": "src/fungibility.ts",
+        "start": {
+          "offset": 2892,
+          "line": 95,
+          "column": 1
+        },
+        "end": {
+          "offset": 3250,
+          "line": 106,
+          "column": 2
+        },
+        "sourceHash": "483741a2e0f8e3cdf38e358929cce5f8b29ffb41494b1268cafa1d38a2197344",
+        "astHash": "c6a1a356b1f08abb1438590bcb18b1d8e1ec9f7282b10df472736c74133f2e58"
+      },
+      "equationId": "src/fungibility.ts#normalizeInventoryFungibilityScope",
+      "semantics": {
+        "law": "Normalize all common pool scope dimensions through the exact stock-selector normalization equation, inject only the synthetic item discriminator for validation, then remove item and item-revision dimensions from the returned common scope.",
+        "completeExpectedTermSha256": "8d1bbfab0706701b14e467481fc2c2ed01c42a5f3c01784486ca02660b21bba7",
+        "dependencies": [
+          {
+            "kind": "INDEPENDENT_IDENTITY_EQUATION",
+            "id": "src/selectors.ts#normalizeInventoryStockSelector",
+            "lawId": "selector-normalization-v1",
+            "declaration": {
+              "file": "src/selectors.ts",
+              "start": {
+                "offset": 4855,
+                "line": 101,
+                "column": 1
+              },
+              "end": {
+                "offset": 7087,
+                "line": 170,
+                "column": 2
+              },
+              "sourceHash": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957",
+              "astHash": "90198be5327afb1a881d93183b9180068a4773e2322a9d86cc7d7bd8b2c31ef1"
+            },
+            "termSha256": "3d7096346aae366e9b82ece038e6603e1845f147ca9678404341b60650958bb1",
+            "dependencies": [
+              "src/model.ts#assertInventoryIdentity",
+              "src/selectors.ts#normalizeOptionalIdentityConstraint",
+              "src/selectors.ts#normalizeOptionalIdentitySet",
+              "src/selectors.ts#normalizeQualifiedDimensionSelectors"
+            ],
+            "inputs": [
+              {
+                "file": "experiments/tla-conformance/authority-r5/catalog-published-source-contracts.mjs",
+                "sha256": "d05ecad078de891073c82f4c523090382b608204269281464ca9a325ca3208b2"
+              },
+              {
+                "file": "experiments/tla-conformance/authority-r5/catalog-published-source-equations.mjs",
+                "sha256": "975eeaed462c420cbe05e597997d14b24945de59e2716be2d3bdffc3638f07e9"
+              },
+              {
+                "file": "experiments/tla-conformance/identity-values-r7/contracts.mjs",
+                "sha256": "dea23f4b3f929ac1bcf9b50cd41517c1b3fc4e3d879904aa6c4d83263ba7b2ce"
+              },
+              {
+                "file": "experiments/tla-conformance/identity-values-r7/equations.ts.txt",
+                "sha256": "f4b3b7a3fa1dbf3338f295c3d97f73cf753cba7741d69f272e91db7fa5079844"
+              },
+              {
+                "file": "experiments/tla-conformance/identity-values-r7/family.mjs",
+                "sha256": "493486e43054dd4613091e973558f2c0463e96ff83347080a3f32e636dde6709"
+              },
+              {
+                "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+                "sha256": "8d8854032e38a0df1044e5596c66d9a2b672277f357e361102b0b12c3d6952a0"
+              },
+              {
+                "file": "experiments/tla-conformance/value-contracts/catalog-family.mjs",
+                "sha256": "32439d061232e266f53acd3b33025b97b172769ffe418964319177b8041cab9a"
+              },
+              {
+                "file": "experiments/tla-conformance/value-contracts/surface-binding.mjs",
+                "sha256": "619b37fe3a9bc9be22e8a0c2167187cfce987c7856280c6df0c36c5a230c3618"
+              },
+              {
+                "file": "node_modules/typescript/lib/lib.es2015.collection.d.ts",
+                "sha256": "dc2df20b1bcdc8c2d34af4926e2c3ab15ffe1160a63e58b7e09833f616efff44"
+              },
+              {
+                "file": "node_modules/typescript/lib/lib.es2015.core.d.ts",
+                "sha256": "c57796738e7f83dbc4b8e65132f11a377649c00dd3eee333f672b8f0a6bea671"
+              },
+              {
+                "file": "node_modules/typescript/lib/lib.es2015.iterable.d.ts",
+                "sha256": "0559b1f683ac7505ae451f9a96ce4c3c92bdc71411651ca6ddb0e88baaaad6a3"
+              },
+              {
+                "file": "node_modules/typescript/lib/lib.es2016.array.include.d.ts",
+                "sha256": "d15bea3d62cbbdb9797079416b8ac375ae99162a7fba5de2c6c505446486ac0a"
+              },
+              {
+                "file": "node_modules/typescript/lib/lib.es2017.string.d.ts",
+                "sha256": "2f11ff796926e0832f9ae148008138ad583bd181899ab7dd768a2666700b1893"
+              },
+              {
+                "file": "node_modules/typescript/lib/lib.es2020.bigint.d.ts",
+                "sha256": "d6d7ae4d1f1f3772e2a3cde568ed08991a8ae34a080ff1151af28b7f798e22ca"
+              },
+              {
+                "file": "node_modules/typescript/lib/lib.es2022.error.d.ts",
+                "sha256": "0a3d63ef2b853447ec4f749d3f368ce642264246e02911fcb1590d8c161b8005"
+              },
+              {
+                "file": "node_modules/typescript/lib/lib.es5.d.ts",
+                "sha256": "c430d44666289dae81f30fa7b2edebf186ecc91a2d4c71266ea6ae76388792e1"
+              },
+              {
+                "file": "node_modules/typescript/package.json",
+                "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+              },
+              {
+                "file": "package.json",
+                "sha256": "f068ac4f83c2984a38d439b90159e48b7fdf42ee4792f7ccde56230c7ecf1a7c"
+              },
+              {
+                "file": "src/amounts.ts",
+                "sha256": "98ddc0fa8d80b2ca244a207f4eb8b55d86131c2ccfd77620da5c85248d03ef57"
+              },
+              {
+                "file": "src/canonical.ts",
+                "sha256": "eb2981c629182525c6742d2a67f513f0daec88507e5861f475d5de04984a2d56"
+              },
+              {
+                "file": "src/catalog.ts",
+                "sha256": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56"
+              },
+              {
+                "file": "src/facade.ts",
+                "sha256": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d"
+              },
+              {
+                "file": "src/index.ts",
+                "sha256": "2e0587666ff20d57a757c0576fddf8badf36c2901735db7225a0cebda829b555"
+              },
+              {
+                "file": "src/kernel.ts",
+                "sha256": "f336d22a07d6018dc5528bd2a13a33c5aa9f1a72b0c0ed048cb73219b9b0c06c"
+              },
+              {
+                "file": "src/measurements.ts",
+                "sha256": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5"
+              },
+              {
+                "file": "src/model.ts",
+                "sha256": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122"
+              },
+              {
+                "file": "src/ordering.ts",
+                "sha256": "e72ac94e99b1b4914f3f6dec55583e401484a41ecadd051be788724c88f24cb9"
+              },
+              {
+                "file": "src/projection.ts",
+                "sha256": "f2a9747cfc7c63615347c48383ae7f58ee7df007411cc8de3dd5bb6afaca21d5"
+              },
+              {
+                "file": "src/quantity.ts",
+                "sha256": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6"
+              },
+              {
+                "file": "src/selectors.ts",
+                "sha256": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957"
+              },
+              {
+                "file": "src/sparse-record.ts",
+                "sha256": "272a1f63afe9ed4c84cd76a4ce051b210b52e6e0a54cf47ec4f11a29979ada71"
+              },
+              {
+                "file": "src/usability.ts",
+                "sha256": "bb4cf272fd01be5c4866b388f2af63e9fdd7286c208600fb635ca10d30f0ad51"
+              },
+              {
+                "file": "tsconfig.json",
+                "sha256": "b46c6324e4819ea54c9824d2e0f4c28f9304aa54e39d7f8afbac65f744eed464"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

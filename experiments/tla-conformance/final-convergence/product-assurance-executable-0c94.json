@@ -1,0 +1,82 @@
+{
+  "version": 5,
+  "repositoryHead": "0c94ee9925a0785a883241b2e6ed843e50aeb5ac",
+  "repositoryStateSha256": "1cf72048e9a6279876fbbaca066bc245f53dd422d4137525b374e16a749bcb1a",
+  "fullFormal": true,
+  "fullLogSha256": "f582d1eebcea603b8e40bc9c89800939037ba0292987bbd228862684bcc4e8dd",
+  "surfaceSha256": "038148aff0911f3610c74d440fde4bff8f7ebbe0026b2d6cfe91604c7d33f5c5",
+  "apiEntries": 510,
+  "callAndConstructSignatures": 510,
+  "directExecutableApis": 193,
+  "indirectCallChainApis": 313,
+  "explicitGapApis": 4,
+  "unreferencedPublicApis": 0,
+  "compilerCallGraphCallables": 2453,
+  "compilerCallGraphEdges": 6730,
+  "compilerCallGraphTestRoots": 44,
+  "compilerCallGraphWitnessedApis": 510,
+  "compilerCallGraphUnresolvedApis": 0,
+  "fieldEntries": 2291,
+  "inputFields": 1971,
+  "outputFields": 849,
+  "recursiveTypeReferences": 3,
+  "truncatedTypes": 0,
+  "boundedTraceEntries": 26,
+  "tracedPublicApis": 506,
+  "stateResultTraceEntries": 10,
+  "boundedPropertyTraceEntries": 14,
+  "directPropertyTraceEntries": 2,
+  "explicitGapEntries": 18,
+  "packageTraceTests": [
+    "test/authority.test.ts",
+    "test/catalog-publication.test.ts",
+    "test/collections.test.ts",
+    "test/composition.test.ts",
+    "test/containers.test.ts",
+    "test/formal-implementation-conformance.test.ts",
+    "test/formal-implementation-refinement.test.ts",
+    "test/formal-public-surface-completion.test.ts",
+    "test/formal-public-surface-direct.test.ts",
+    "test/formal-storage-refinement.test.ts",
+    "test/fungibility.test.ts",
+    "test/lots.test.ts",
+    "test/migrations.test.ts",
+    "test/projection-index-scale.test.ts",
+    "test/read-snapshot.test.ts",
+    "test/reclassification.test.ts",
+    "test/reservations-counts.test.ts",
+    "test/traceability-corrections.test.ts",
+    "test/transfer-lifecycle.test.ts",
+    "test/transformations.test.ts"
+  ],
+  "steps": [
+    {
+      "id": "generate-current-surface",
+      "status": "passed"
+    },
+    {
+      "id": "audit-api-field-trace-gap-correspondence",
+      "status": "passed"
+    },
+    {
+      "id": "package-strict-types",
+      "status": "passed"
+    },
+    {
+      "id": "memory-trace-property-and-authority-evidence",
+      "status": "passed"
+    },
+    {
+      "id": "complete-package-tests",
+      "status": "passed"
+    },
+    {
+      "id": "package-production-build",
+      "status": "passed"
+    },
+    {
+      "id": "registered-tlc-model-suite",
+      "status": "passed"
+    }
+  ]
+}

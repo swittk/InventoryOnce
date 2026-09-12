@@ -1,0 +1,619 @@
+{
+  "schemaVersion": 1,
+  "status": "R165_PLUS_R167_ASSURANCE_TRANSPORT_PROVED",
+  "priorHead": "428f50a0abdf1dec0d96d36419d51df106247044",
+  "currentHead": "0c94ee9925a0785a883241b2e6ed843e50aeb5ac",
+  "surfaceDigest": "ec078013972d9ee2b4ba84d28cfa7449a18dc29679d81766e314db6a6139b81e",
+  "exactChangedFiles": [
+    "AGENT_DIARY.md",
+    "scripts/formal-models.mjs",
+    "scripts/formal-proof-cache.selftest.mjs",
+    "scripts/run-formal.mjs",
+    "test/transfer-lifecycle.test.ts"
+  ],
+  "productSourceChanged": false,
+  "formalRegistry": {
+    "before": {
+      "file": "experiments/tla-conformance/final-convergence/formal-models-428f50a.mjs",
+      "sha256": "f76ff5f3e2da45ad7d7828e328dea2e157e483fe7d42485228c037a169564c3c"
+    },
+    "after": {
+      "file": "scripts/formal-models.mjs",
+      "sha256": "ada8bf88a50668d04006a5c174178cea8bb52efdfd460fa41f4972e8d94e2fa0"
+    },
+    "priorBytesAreExactPrefix": true,
+    "formalModels": [
+      "AuthorityWriterFence",
+      "PublishedHeadCAS",
+      "CompositionRevision",
+      "CollectionView",
+      "FungibilityPool",
+      "CatalogPublication",
+      "ReclassificationConservation",
+      "UseByReservation",
+      "ResourceDimensions",
+      "ReservationScope",
+      "ReservationScopeAllocationReplacement",
+      "TraceabilityContainment",
+      "TraceabilityAssociation",
+      "TraceabilityGraph",
+      "PhysicalCount",
+      "DualMeasure",
+      "DistributedRights",
+      "CorrectionHistory",
+      "DurableTransferRefinement",
+      "TransferLifecycle",
+      "RepairLiveness",
+      "RecordedDeficit",
+      "SnapshotSupersededWorkflow",
+      "InventoryOperation",
+      "ImplementationConformance",
+      "ReservationSafety",
+      "PackagingIdentity"
+    ],
+    "formalInvariantMutationChecks": [
+      [
+        "SnapshotSupersededWorkflow",
+        "SnapshotSupersededWorkflowResumeMutation",
+        "SupersededRowsNeverResume"
+      ],
+      [
+        "SnapshotSupersededWorkflow",
+        "SnapshotSupersededWorkflowDispositionEventMutation",
+        "DispositionGeneratesNoPhysicalEvent"
+      ],
+      [
+        "SnapshotSupersededWorkflow",
+        "SnapshotSupersededWorkflowOutcomeMutation",
+        "UnknownOutcomeNeverGuessed"
+      ],
+      [
+        "SnapshotSupersededWorkflow",
+        "SnapshotSupersededWorkflowSourceAdvanceMutation",
+        "ResumeAttemptCannotChangeSourceTruth"
+      ],
+      [
+        "TransferLifecycle",
+        "TransferLifecycleIsolationMutation",
+        "TransferIsolation"
+      ],
+      [
+        "CorrectionHistory",
+        "CorrectionHistoryErasureMutation",
+        "OriginalHistoryIsNeverErased"
+      ],
+      [
+        "DurableTransferRefinement",
+        "DurableTransferRefinementSplitProjectionMutation",
+        "ProjectionWriteIsAtomic"
+      ],
+      [
+        "UseByReservation",
+        "UseByReservationStaleReportMutation",
+        "ReportMatchesCurrentTruth"
+      ],
+      [
+        "UseByReservation",
+        "UseByReservationExpiredAllocationMutation",
+        "OrdinaryAllocationWasUsable"
+      ],
+      [
+        "UseByReservation",
+        "UseByReservationExpiredConsumptionMutation",
+        "OrdinaryConsumptionWasUsable"
+      ],
+      [
+        "TraceabilityGraph",
+        "TraceabilityGraphDuplicateProductionMutation",
+        "ProducedIdentityWasCreatedOnce"
+      ]
+    ],
+    "statefulOperationFamilyIds": [
+      "authority-control",
+      "authority-cutover",
+      "catalog-publication",
+      "composition-open",
+      "fungibility-movement",
+      "stock-receipt",
+      "stock-issue",
+      "stock-policy-issue",
+      "stock-transfer",
+      "stock-policy-transfer",
+      "transfer-lifecycle",
+      "dimension-reclassification",
+      "packaging-reclassification",
+      "transformation",
+      "scrap",
+      "correction",
+      "container-command",
+      "lot-command",
+      "reservation",
+      "count",
+      "traceability",
+      "durable-protocol",
+      "migration-publication"
+    ],
+    "formalConfigCheckNamesAcrossCfgs": [
+      {
+        "file": "AuthorityWriterFence.cfg",
+        "checks": [
+          "TypeOK",
+          "ModeMatchesMonotonicPhase",
+          "CertificationPrecedesCutover",
+          "ExplicitAuthorizationPrecedesFence",
+          "AdmissionOwnership",
+          "FenceExcludesLegacyWriters",
+          "NoLegacyPhysicalWriteAfterFence",
+          "UnfencedStateIsClean",
+          "FencedReadsAreStable",
+          "PublishedTargetMatchesStableSource",
+          "MismatchCannotBeBypassed",
+          "AuthorityRequiresAllEvidence",
+          "ActivationProvenanceIsExact",
+          "GreenfieldCannotFabricateLegacyEvidence",
+          "AuthorityIsIrreversible",
+          "ShadowCannotPublishPhysicalTruth",
+          "OnePublicationPerCommand",
+          "ReplayReferencesPublishedTruth",
+          "ChangedRetryRequiresFrozenIntent",
+          "BlockedLegacyAttemptsRequireFencePhase",
+          "ProjectionCannotMutateAuthoritativeTruth",
+          "CrashBeforePublicationIsInvisible",
+          "CrashStateIsExplicitlyRepairable",
+          "CrashRepairLiveness",
+          "PublishedActivationLiveness",
+          "GreenfieldActivationRaceResolution",
+          "ProjectionRepairLiveness"
+        ]
+      },
+      {
+        "file": "CatalogPublication.cfg",
+        "checks": [
+          "TypeOK",
+          "ActiveIsRetained",
+          "RetainedRevisionsHaveMeaning",
+          "UnretainedRevisionsHaveNoMeaning",
+          "PublishedSnapshotsRemainRetained",
+          "PublishedMeaningsNeverChange",
+          "PublishedActiveRevisionWasRetained",
+          "ExactRetryEvidenceMatchesFrozenPublication",
+          "ChangedRetryEvidenceConflictsWithFrozenPublication"
+        ]
+      },
+      {
+        "file": "CollectionView.cfg",
+        "checks": [
+          "TypeOK",
+          "ReportsMatchExactPhysicalIdentity",
+          "NonMembersNeverAppearInAView",
+          "ActivePointerDoesNotRewriteRetainedViews",
+          "ViewMembershipNeverChangesItemIdentity",
+          "IssuedTokensDisappearOnlyFromTheirExactItemBucket"
+        ]
+      },
+      {
+        "file": "CompositionRevision.cfg",
+        "checks": [
+          "TypeOK",
+          "RegisteredCompositionVectorsAreExact",
+          "SourcePackageConservationPerRevision",
+          "FrozenCompletedOpenVector",
+          "ExactComponentProductionFromOpenedRevisions",
+          "ComponentsStayAtTheirOpeningLocation",
+          "ComponentPotentialIsConserved",
+          "ComponentIdentitiesNeverMerge",
+          "ReportIsDerivedOnly",
+          "OpenedPackHasExactlyOneCompletedOperation",
+          "OperationIdentityContributesAtMostOneOpen",
+          "OpenedCountMatchesCompletedOperationCount",
+          "ActivePointerNeverReinterpretsOpenedIntent",
+          "CompletedOperationIntentNeverChanges"
+        ]
+      },
+      {
+        "file": "CorrectionHistory.cfg",
+        "checks": [
+          "TypeOK",
+          "OriginalHistoryIsNeverErased",
+          "PartialCorrectionDoesNotRewriteCurrentTruth",
+          "CorrectedVisibilityRequiresBothNewFacts",
+          "VisibleProjectionMatchesLogicalRecordVersion"
+        ]
+      },
+      {
+        "file": "CorrectionHistoryErasureMutation.cfg",
+        "checks": [
+          "OriginalHistoryIsNeverErased"
+        ]
+      },
+      {
+        "file": "DistributedRights.cfg",
+        "checks": [
+          "TypeOK",
+          "RightsExactlyBackRemainingStock",
+          "PhysicalQuantityAccounting",
+          "HeldRightsRemainPhysicallyBacked"
+        ]
+      },
+      {
+        "file": "DualMeasure.cfg",
+        "checks": [
+          "TypeOK",
+          "PrimaryQuantityConserved",
+          "SecondaryMeasureHasExplicitCause",
+          "CatchWeightToleranceHeld"
+        ]
+      },
+      {
+        "file": "DurableTransferRefinement.cfg",
+        "checks": [
+          "TypeOK",
+          "AbstractTypeOK",
+          "AbstractConserved",
+          "PartialWritesRefineToStuttering",
+          "ProjectionWriteIsAtomic",
+          "RefinesAbstractTransfer"
+        ]
+      },
+      {
+        "file": "DurableTransferRefinementSplitProjectionMutation.cfg",
+        "checks": [
+          "ProjectionWriteIsAtomic"
+        ]
+      },
+      {
+        "file": "FungibilityPool.cfg",
+        "checks": [
+          "TypeOK",
+          "PoolReportMatchesExactPhysicalTruth",
+          "PoolViewsConserveActualIssuedTokens",
+          "ClaimsFreezeOneExactRevision",
+          "AllocatedClaimsUseOnlyFrozenRevisionMembers",
+          "AllocatedClaimsMatchFrozenRevisionBasis",
+          "AllocatedClaimsRemainInEligibleLocations",
+          "ActiveAllocationsRemainDisjoint",
+          "IssuedTokensCannotBackActiveClaims",
+          "AllActiveClaimsRemainFeasible"
+        ]
+      },
+      {
+        "file": "ImplementationConformance.cfg",
+        "checks": [
+          "TypeOK",
+          "NonNegative",
+          "ReplayIsStuttering",
+          "ChangedIntentIsStuttering",
+          "TransferConserves",
+          "ReceiveResultAgrees",
+          "IssueResultAgrees",
+          "ReplaceResultAgrees",
+          "SeenIntentConsistent",
+          "ResultFlagsAgree"
+        ]
+      },
+      {
+        "file": "InventoryOperation.cfg",
+        "checks": [
+          "TypeOK",
+          "FrozenIntentNeverChanges",
+          "RetryOutcomeMatchesFrozenIntent",
+          "ApplyingHasCompletePlan",
+          "EventlessPlansSkipMissingWrites",
+          "PartialWritesStayInvisible",
+          "PublishedMeansEveryWriteExists",
+          "CompletedMeansPublished",
+          "VisibleQuantityConserved",
+          "PublishedWorldMatchesFrozenPlan",
+          "PlanRetainedOnlyWhileApplying",
+          "PublishedWorldCannotAbort"
+        ]
+      },
+      {
+        "file": "PackagingIdentity.cfg",
+        "checks": [
+          "TypeOK",
+          "PhysicalQuantityConserved",
+          "EveryIntact20BoxIsWhole",
+          "EveryIntact24BoxIsWhole"
+        ]
+      },
+      {
+        "file": "PhysicalCount.cfg",
+        "checks": [
+          "TypeOK",
+          "RecordedMovementAccounting",
+          "CompletedCountMatchesPhysicalReality"
+        ]
+      },
+      {
+        "file": "PublishedHeadCAS.cfg",
+        "checks": [
+          "TypeOK",
+          "HeadReferencesCompleteWorld",
+          "FenceRetainsExactPreparedPlan",
+          "PartialWritesAreInvisible",
+          "PublishedFencePointsAtExactTarget",
+          "OnePublicationPerOperation",
+          "CompletedHistoryHasPublishedAttempt",
+          "AbortedHistoryNeverPublished",
+          "AbortMarkerBlocksPublication",
+          "FenceEventuallyClears"
+        ]
+      },
+      {
+        "file": "ReclassificationConservation.cfg",
+        "checks": [
+          "TypeOK",
+          "ItemQuantityConserved",
+          "PackagingBucketConserved"
+        ]
+      },
+      {
+        "file": "RecordedDeficit.cfg",
+        "checks": [
+          "TypeOK",
+          "SignedNetIsPhysicalMinusDeficit",
+          "RecordedDeficitNeverBecomesPhysical",
+          "IssueConsumesOnlyAvailableCapacity",
+          "SeenIntentAndResultAreDurable",
+          "ReceiptPreservesDeficit",
+          "RecordShortageIsExplicit",
+          "RejectShortagePreservesTruth",
+          "FullIssueNeverCreatesDeficit",
+          "ReplayPreservesTruthAndResult",
+          "ChangedIntentRejectsAndStutters"
+        ]
+      },
+      {
+        "file": "RepairLiveness.cfg",
+        "checks": [
+          "TypeOK",
+          "ApplyingHasFrozenPlan",
+          "TerminalDropsFullPlan",
+          "PublishedWorldCannotAbort",
+          "TerminalNeverReopens",
+          "ApplyingEventuallyTerminates"
+        ]
+      },
+      {
+        "file": "ReservationSafety.cfg",
+        "checks": [
+          "TypeOK",
+          "NoOverReservation",
+          "NoDoubleConsume",
+          "ConsumedCountMatchesStock",
+          "ConsumedLifecycleMatchesCount",
+          "ReleasedOrExpiredWasNeverConsumed"
+        ]
+      },
+      {
+        "file": "ReservationScope.cfg",
+        "checks": [
+          "TypeOK",
+          "ReportMatchesCurrentPhysicalTruth",
+          "AllocatedClaimsRespectScope",
+          "ShortageRequiresExplicitPhysicalLoss",
+          "ConsumedTokenNoLongerOnHand"
+        ]
+      },
+      {
+        "file": "ReservationScopeAllocationReplacement.cfg",
+        "checks": [
+          "TypeOK",
+          "ReportMatchesCurrentPhysicalTruth",
+          "AllocatedClaimsRespectScope",
+          "ShortageRequiresExplicitPhysicalLoss",
+          "ConsumedTokenNoLongerOnHand"
+        ]
+      },
+      {
+        "file": "ResourceDimensions.cfg",
+        "checks": [
+          "TypeOK",
+          "ResourceAccounting",
+          "InTransitStillExists",
+          "ActiveTokensHaveExactlyOneRealLocation"
+        ]
+      },
+      {
+        "file": "SnapshotSupersededWorkflow.cfg",
+        "checks": [
+          "TypeOK",
+          "DispositionRequiresFencedSnapshot",
+          "DispositionGeneratesNoPhysicalEvent",
+          "SupersededRowsNeverResume",
+          "UnknownOutcomeNeverGuessed",
+          "PublishedRetainsAllDispositions",
+          "PublishedWorldMatchesSnapshot",
+          "ResumeAttemptCannotChangeSourceTruth",
+          "FencedSnapshotEventuallyPublishes"
+        ]
+      },
+      {
+        "file": "SnapshotSupersededWorkflowDispositionEventMutation.cfg",
+        "checks": [
+          "TypeOK",
+          "DispositionGeneratesNoPhysicalEvent"
+        ]
+      },
+      {
+        "file": "SnapshotSupersededWorkflowOutcomeMutation.cfg",
+        "checks": [
+          "TypeOK",
+          "UnknownOutcomeNeverGuessed"
+        ]
+      },
+      {
+        "file": "SnapshotSupersededWorkflowResumeMutation.cfg",
+        "checks": [
+          "TypeOK",
+          "SupersededRowsNeverResume"
+        ]
+      },
+      {
+        "file": "SnapshotSupersededWorkflowSourceAdvanceMutation.cfg",
+        "checks": [
+          "TypeOK",
+          "ResumeAttemptCannotChangeSourceTruth"
+        ]
+      },
+      {
+        "file": "TraceabilityAssociation.cfg",
+        "checks": [
+          "TypeOK",
+          "NoSelfAssociation"
+        ]
+      },
+      {
+        "file": "TraceabilityContainment.cfg",
+        "checks": [
+          "TypeOK",
+          "ContainmentIsAcyclic"
+        ]
+      },
+      {
+        "file": "TraceabilityGraph.cfg",
+        "checks": [
+          "TypeOK",
+          "ContainmentIsAcyclic",
+          "ConsumedIdentityIsNotStillActive",
+          "ProducedIdentityWasCreatedOnce",
+          "GenealogyOnlyPointsFromConsumedToProduced",
+          "AssociationEndpointsRemainKnown",
+          "AggregationNeverConsumesIdentity"
+        ]
+      },
+      {
+        "file": "TraceabilityGraphDuplicateProductionMutation.cfg",
+        "checks": [
+          "ProducedIdentityWasCreatedOnce"
+        ]
+      },
+      {
+        "file": "TransferLifecycle.cfg",
+        "checks": [
+          "TypeOK",
+          "TransferQuantityConserved",
+          "ReceivedNeverExceedsDispatched",
+          "TransferIsolation",
+          "PreparedIsUnavailableAtSource",
+          "DispatchedIsNotPrepared",
+          "BeforeReceiptDestinationIsEmpty",
+          "PartialReceiptLeavesTransit",
+          "CompletedReceiptLeavesNoTransit",
+          "ReleasedReturnsCommitment",
+          "IntentNeverChanges",
+          "OwnershipIsOrthogonal",
+          "TransitCustodyDoesNotChangeOwnership"
+        ]
+      },
+      {
+        "file": "TransferLifecycleIsolationMutation.cfg",
+        "checks": [
+          "TransferIsolation"
+        ]
+      },
+      {
+        "file": "UseByReservation.cfg",
+        "checks": [
+          "TypeOK",
+          "ReportMatchesCurrentTruth",
+          "OrdinaryAllocationWasUsable",
+          "OrdinaryConsumptionWasUsable",
+          "AllocationEvidenceIsPaired",
+          "ConsumedClaimHasEvidence"
+        ]
+      },
+      {
+        "file": "UseByReservationExpiredAllocationMutation.cfg",
+        "checks": [
+          "OrdinaryAllocationWasUsable"
+        ]
+      },
+      {
+        "file": "UseByReservationExpiredConsumptionMutation.cfg",
+        "checks": [
+          "OrdinaryConsumptionWasUsable"
+        ]
+      },
+      {
+        "file": "UseByReservationStaleReportMutation.cfg",
+        "checks": [
+          "ReportMatchesCurrentTruth"
+        ]
+      }
+    ],
+    "rule": "R165 appends only fail-fast mutation tuple consistency validation; registered models, mutation tuples, stateful families, and cfg check parsing remain identical."
+  },
+  "affectedStrictRows": [
+    {
+      "surfaceKey": "export:.#cutoverInventoryAuthority::call[0]",
+      "mode": "A"
+    },
+    {
+      "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.reclassifyMany::call[0]",
+      "mode": "A"
+    }
+  ],
+  "affectedValueRows": [],
+  "otherR165ProofInputs": [],
+  "postR165ReviewedDelta": {
+    "head": "d947e47af2502f2ed2f8ae6971ee639a91ff0867",
+    "tree": "d9b245e426193de5d36282087f7e4df8bb3fdeea",
+    "trackedFiles": [
+      "formal/FOUNDATIONS.md",
+      "formal/implementation-conformance/API_ASSURANCE.json",
+      "formal/implementation-conformance/CALL_CHAIN_ASSURANCE.json",
+      "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
+      "scripts/formal-proof-cache.mjs",
+      "scripts/formal-proof-cache.selftest.mjs",
+      "scripts/run-formal.mjs",
+      "src/deficits.ts",
+      "test/review-hardening.test.ts"
+    ],
+    "assuranceFilesWithStrictProofInputs": [
+      {
+        "file": "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
+        "rows": [
+          {
+            "surfaceKey": "export:.#cutoverInventoryAuthority::call[0]",
+            "mode": "A"
+          }
+        ],
+        "evidence": {
+          "file": "experiments/tla-conformance/final-convergence/r167-product-assurance-receipt.json",
+          "sha256": "3f1a8814ad0260a87e4ef85d20858753f66ff28b6335346539c90d313b254877"
+        },
+        "fullLog": {
+          "file": "experiments/tla-conformance/final-convergence/product-assurance-full-d947.log",
+          "sha256": "224e0722b55c28f48858ef87c41f3de815ba070d51d0a872466d1ac1986523ec"
+        }
+      }
+    ],
+    "productSourceFileHandledByFinalHeadTransport": "src/deficits.ts"
+  },
+  "producerGraphRuns": 0,
+  "producerReplayRuns": 0,
+  "reverseReruns": 0,
+  "tlcRuns": 0,
+  "creditExpansion": false,
+  "baselineArtifacts": [
+    {
+      "file": "experiments/tla-conformance/final-convergence/baseline-v309-before-r165-transport.json",
+      "sha256": "cae24bf8c46d8bf38664aa3ee8bea5ab07c1b42b4d0ad03d796fc3d207a7969e"
+    },
+    {
+      "file": "experiments/tla-conformance/final-convergence/baseline-a121-b58-before-r165-transport.json",
+      "sha256": "e1716cf06cbadb54eedf735cf44b64d09df001b458c99796d5a31d1539d8ae7f"
+    },
+    {
+      "file": "experiments/tla-conformance/final-convergence/r167-product-assurance-receipt.json",
+      "sha256": "3f1a8814ad0260a87e4ef85d20858753f66ff28b6335346539c90d313b254877"
+    },
+    {
+      "file": "experiments/tla-conformance/final-convergence/product-assurance-full-d947.log",
+      "sha256": "224e0722b55c28f48858ef87c41f3de815ba070d51d0a872466d1ac1986523ec"
+    }
+  ],
+  "contentSha256": "448d5cb7c16cb3a952c48ab4dc5543ec3d45cc3e07bae5dfa00daa6e983e268e"
+}

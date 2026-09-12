@@ -1,0 +1,738 @@
+{
+  "schemaVersion": 1,
+  "proofKind": "physical-count-registered-certified-producer-v1",
+  "route": "REGISTERED_CERTIFIED_PRODUCER",
+  "family": "PhysicalCount",
+  "sourceBase": "6cafd49ff4b3729f80ae35d9fc0220f7a8a4b55a",
+  "surfaceDigest": "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a",
+  "domain": "Every original PhysicalCount.Next occurrence across the frozen 1794-state/5271-edge graph, re-executed once on current source with byte-identical persisted behavioral artifacts; explicit post-Observe unrecorded physical drift remains outside the proved domain.",
+  "allAdmittedInputs": true,
+  "sampledInputs": 0,
+  "producerGraphRuns": 0,
+  "producerReplayRuns": 0,
+  "currentization": {
+    "implementationReplayRuns": 1,
+    "graphExportRuns": 0,
+    "tlcRuns": 0,
+    "edgeOccurrences": 5271,
+    "nativeOccurrences": 5079,
+    "environmentOccurrences": 192,
+    "behavioralArtifactsByteIdenticalToFrozenProducer": true,
+    "receipt": {
+      "file": "experiments/tla-conformance/r142-physical-count-currentization/current-replay-receipt.json",
+      "sha256": "6ec02995b791c84677fcc3d2011784a5a7049c770dd27e8b60ca298f85038403"
+    }
+  },
+  "inheritedSemanticAuthority": {
+    "artifact": {
+      "file": "experiments/tla-conformance/throughput-r7/evidence/physical-count-producer.json",
+      "sha256": "2eef840cb9c209feaae59e8530b4310822f599035f39322501f0dde70e70ca54"
+    },
+    "proofKind": "physical-count-registered-certified-producer-v1",
+    "namedGapPreserved": "ORIGINAL_NEXT_EXCLUDES_UNRECORDED_POST_OBSERVE_PHYSICAL_DRIFT"
+  },
+  "implementationAstTransition": {
+    "unchangedDeclarations": 13,
+    "replayJustifiedChangedImplementations": [
+      "export:./kernel#completeInventoryCount::call[0]",
+      "export:./kernel#createInventoryCountReconciliationPlan::call[0]",
+      "export:./kernel#observeInventoryCount::call[0]",
+      "export:./kernel#startInventoryCount::call[0]",
+      "export:./storage#createInventoryCountBookDelta::call[0]"
+    ]
+  },
+  "proofs": [
+    {
+      "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.issue::call[0]",
+      "mode": "A",
+      "signatureHash": "91d301ea59ca7341b07d2ab62a0ea204a0f9d98d9711ba5f3461df3729b29213",
+      "declaration": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 57281,
+          "line": 1415,
+          "column": 3
+        },
+        "end": {
+          "offset": 57354,
+          "line": 1415,
+          "column": 76
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "78b5b6738e0ff944ad003fd712f43896798b25be997089d79c30005f8391571d"
+      },
+      "compilerAssociatedCalls": [
+        {
+          "file": "experiments/tla-conformance/fungibility-r6/physical-count-driver.ts",
+          "start": 15196,
+          "end": 15484,
+          "sourceHash": "c749faafa28ae488c52d0a23deadc42d5b3f1840b5697def8454c1bdb4d975af",
+          "astHash": "170fd42ccce56fbaa9ab15e6ff7979bc7d2779b18ce7226b2fc364a3235a6313"
+        }
+      ]
+    },
+    {
+      "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.receive::call[0]",
+      "mode": "A",
+      "signatureHash": "ed65b14af3c254a8ff4ff23c381a4ae576f5605c7fd0bfc1916812f2516bf1df",
+      "declaration": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 56960,
+          "line": 1409,
+          "column": 3
+        },
+        "end": {
+          "offset": 57037,
+          "line": 1409,
+          "column": 80
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "2534b7c3383e41c43d1b9f38dfab6716cb658d73e2efd53580b216a83f8ea608"
+      },
+      "compilerAssociatedCalls": [
+        {
+          "file": "experiments/tla-conformance/fungibility-r6/physical-count-driver.ts",
+          "start": 15921,
+          "end": 16209,
+          "sourceHash": "c749faafa28ae488c52d0a23deadc42d5b3f1840b5697def8454c1bdb4d975af",
+          "astHash": "caaa856c9907a7b13fd15b0bc03a423304d08dca5736876ef1eb83f5ca4cdc7c"
+        },
+        {
+          "file": "experiments/tla-conformance/fungibility-r6/physical-count-driver.ts",
+          "start": 25603,
+          "end": 25847,
+          "sourceHash": "c749faafa28ae488c52d0a23deadc42d5b3f1840b5697def8454c1bdb4d975af",
+          "astHash": "dcbfe3497ef16ba15c9470d259aec505f2d00a69fb787d798c5b028065390258"
+        }
+      ]
+    },
+    {
+      "surfaceKey": "type:src/facade.ts#InventoryOnceCountsApi.start::call[0]",
+      "mode": "A",
+      "signatureHash": "5bc46441ca850834470cd61c168618e11fb9cccc2eb1d5a29ad11b832759b97b",
+      "declaration": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 66606,
+          "line": 1627,
+          "column": 3
+        },
+        "end": {
+          "offset": 66684,
+          "line": 1627,
+          "column": 81
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "fa48fee50f9d3d8855bbfbcb37d1b934256df3aaf43b2f071de58d27ba19879a"
+      },
+      "compilerAssociatedCalls": [
+        {
+          "file": "experiments/tla-conformance/fungibility-r6/physical-count-driver.ts",
+          "start": 16705,
+          "end": 17119,
+          "sourceHash": "c749faafa28ae488c52d0a23deadc42d5b3f1840b5697def8454c1bdb4d975af",
+          "astHash": "db2093e9c65876f54b397c783083fc624cf815c905148a59b1997525ef4f8922"
+        }
+      ]
+    },
+    {
+      "surfaceKey": "type:src/facade.ts#InventoryOnceCountsApi.observe::call[0]",
+      "mode": "A",
+      "signatureHash": "2fbbfc226eb633d2455270f9bc4c8ef547929eae670342b0d0ec32f47ed4b2a9",
+      "declaration": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 66761,
+          "line": 1629,
+          "column": 3
+        },
+        "end": {
+          "offset": 66851,
+          "line": 1631,
+          "column": 40
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "6dcdb18318b294b06e381cf4b4c3cdca3febef75b921638874803393b456a78a"
+      },
+      "compilerAssociatedCalls": [
+        {
+          "file": "experiments/tla-conformance/fungibility-r6/physical-count-driver.ts",
+          "start": 17445,
+          "end": 18237,
+          "sourceHash": "c749faafa28ae488c52d0a23deadc42d5b3f1840b5697def8454c1bdb4d975af",
+          "astHash": "7e99c5b659164132af9f5e29cd280e1d68b0d66a9411f9e7e031c58f3ce5e200"
+        }
+      ]
+    },
+    {
+      "surfaceKey": "type:src/facade.ts#InventoryOnceCountsApi.reconcile::call[0]",
+      "mode": "A",
+      "signatureHash": "7b391d0e9cfcd36f0240e2cb371f4e6be4ffdbd06a1a6c14991ceffc5e7975b4",
+      "declaration": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 66928,
+          "line": 1633,
+          "column": 3
+        },
+        "end": {
+          "offset": 67022,
+          "line": 1635,
+          "column": 40
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "377b2d494fac838e21fffe1c38718dece77335c982cf5f6d9c758fc9f6926a2d"
+      },
+      "compilerAssociatedCalls": [
+        {
+          "file": "experiments/tla-conformance/fungibility-r6/physical-count-driver.ts",
+          "start": 18678,
+          "end": 18879,
+          "sourceHash": "c749faafa28ae488c52d0a23deadc42d5b3f1840b5697def8454c1bdb4d975af",
+          "astHash": "731d3b9266b1bbedb7b20449c04ba49d617e6a051ed6ff3f5911b5cb61705b0c"
+        }
+      ]
+    },
+    {
+      "surfaceKey": "export:./kernel#startInventoryCount::call[0]",
+      "mode": "A",
+      "signatureHash": "e4c45a2a8356eaca27f3bb8fa1177cd8a5289ecc8e4751cd9f9020387a00387e",
+      "declaration": {
+        "file": "src/counts.ts",
+        "start": {
+          "offset": 6553,
+          "line": 183,
+          "column": 1
+        },
+        "end": {
+          "offset": 9095,
+          "line": 250,
+          "column": 2
+        },
+        "sourceHash": "5db9ad8d5a6f1a82c594562b66f4be7c677d17bd31d9d10afb11eae781d78f13",
+        "astHash": "b1f8e8da04d0ff43ccbb1dbc0a207f83f8e29a768b719b6fad3cf954121e78c2"
+      },
+      "compilerAssociatedCalls": [
+        {
+          "file": "experiments/tla-conformance/fungibility-r6/physical-count-proof.ts",
+          "start": 16803,
+          "end": 17266,
+          "sourceHash": "0d00970bf2742306d4675d3bfc04359288ee262b6d7e1db1cea1c707c3354983",
+          "astHash": "2041edb8483c60ca0c5b70eddcf9042562e5167ec64f0dbfc705d9a90c24b12a"
+        }
+      ]
+    },
+    {
+      "surfaceKey": "export:./kernel#observeInventoryCount::call[0]",
+      "mode": "A",
+      "signatureHash": "ec1cd9f0e86445f3352e9eddc785b9f07d999b92e3349336e7b404c7a7cf5025",
+      "declaration": {
+        "file": "src/counts.ts",
+        "start": {
+          "offset": 9962,
+          "line": 271,
+          "column": 1
+        },
+        "end": {
+          "offset": 11840,
+          "line": 324,
+          "column": 2
+        },
+        "sourceHash": "5db9ad8d5a6f1a82c594562b66f4be7c677d17bd31d9d10afb11eae781d78f13",
+        "astHash": "fcfb2bed24b908dfe0b51a4ba77d8c5e1984d53f1d2e58d791b416308a4eb04a"
+      },
+      "compilerAssociatedCalls": [
+        {
+          "file": "experiments/tla-conformance/fungibility-r6/physical-count-proof.ts",
+          "start": 17375,
+          "end": 17649,
+          "sourceHash": "0d00970bf2742306d4675d3bfc04359288ee262b6d7e1db1cea1c707c3354983",
+          "astHash": "c8ab059d6b3563c6c2ccda7ecd83cb516075bce9772c35960f6979a84c9ee2bc"
+        }
+      ]
+    },
+    {
+      "surfaceKey": "export:./kernel#createInventoryCountReconciliationPlan::call[0]",
+      "mode": "A",
+      "signatureHash": "9af0b1167ef7a4208619442e4eeb2cabc4d7c91a3ac576fff5586060bf22411e",
+      "declaration": {
+        "file": "src/counts.ts",
+        "start": {
+          "offset": 13386,
+          "line": 361,
+          "column": 1
+        },
+        "end": {
+          "offset": 18030,
+          "line": 490,
+          "column": 2
+        },
+        "sourceHash": "5db9ad8d5a6f1a82c594562b66f4be7c677d17bd31d9d10afb11eae781d78f13",
+        "astHash": "46a97a9a1dd032e4dd7b7ee1f4b474544bdbc416abde342bd0ebebe83b0fab26"
+      },
+      "compilerAssociatedCalls": [
+        {
+          "file": "experiments/tla-conformance/fungibility-r6/physical-count-proof.ts",
+          "start": 17841,
+          "end": 18147,
+          "sourceHash": "0d00970bf2742306d4675d3bfc04359288ee262b6d7e1db1cea1c707c3354983",
+          "astHash": "0e8cec78453bd412d65bae18e3a24e3c27c13cbbfe4c867badac4d3674909036"
+        }
+      ]
+    },
+    {
+      "surfaceKey": "export:./kernel#completeInventoryCount::call[0]",
+      "mode": "A",
+      "signatureHash": "484e00adfa5cd3cf28fd25914384c0f24b088561567ace46ec65db87b68b3c61",
+      "declaration": {
+        "file": "src/counts.ts",
+        "start": {
+          "offset": 20627,
+          "line": 554,
+          "column": 1
+        },
+        "end": {
+          "offset": 22008,
+          "line": 589,
+          "column": 2
+        },
+        "sourceHash": "5db9ad8d5a6f1a82c594562b66f4be7c677d17bd31d9d10afb11eae781d78f13",
+        "astHash": "dfb4174c3474f3d6dde985a40d466d51fe91fa8d210a17e6dd2e3e3aeb42450c"
+      },
+      "compilerAssociatedCalls": [
+        {
+          "file": "experiments/tla-conformance/fungibility-r6/physical-count-proof.ts",
+          "start": 18172,
+          "end": 18488,
+          "sourceHash": "0d00970bf2742306d4675d3bfc04359288ee262b6d7e1db1cea1c707c3354983",
+          "astHash": "d9adb0d228ec2bc273982f7693e0377eb8fd5a5574cf84845c6c980ffeeaa456"
+        }
+      ]
+    },
+    {
+      "surfaceKey": "export:./storage#createInventoryCountBookDelta::call[0]",
+      "mode": "A",
+      "signatureHash": "d25a193a10869cfbde3e7f1735a8d5973c29cc5b1d25a91134afeca8c303a226",
+      "declaration": {
+        "file": "src/integrity.ts",
+        "start": {
+          "offset": 7588,
+          "line": 212,
+          "column": 1
+        },
+        "end": {
+          "offset": 9024,
+          "line": 251,
+          "column": 2
+        },
+        "sourceHash": "238ccd616e791b60b523b89517479585f2d9aabe83198464a44f654cd7058037",
+        "astHash": "dc01e95d7d25406756882122c5264b4d22f75bfcf0166da244c41e3225df5521"
+      },
+      "compilerAssociatedCalls": [
+        {
+          "file": "experiments/tla-conformance/fungibility-r6/physical-count-proof.ts",
+          "start": 20765,
+          "end": 20902,
+          "sourceHash": "0d00970bf2742306d4675d3bfc04359288ee262b6d7e1db1cea1c707c3354983",
+          "astHash": "4e16f132089999a89004459ac30bd1dddcb2f0e6d26d93e456626ab26ee9305e"
+        },
+        {
+          "file": "experiments/tla-conformance/fungibility-r6/physical-count-proof.ts",
+          "start": 30278,
+          "end": 30415,
+          "sourceHash": "0d00970bf2742306d4675d3bfc04359288ee262b6d7e1db1cea1c707c3354983",
+          "astHash": "4e16f132089999a89004459ac30bd1dddcb2f0e6d26d93e456626ab26ee9305e"
+        }
+      ]
+    },
+    {
+      "surfaceKey": "export:./storage#applyInventoryCountBookDelta::call[0]",
+      "mode": "A",
+      "signatureHash": "fe5f28003141d238c4efcebb80916d8e1ba7f687587fc28e7fc4032d4dbb45dd",
+      "declaration": {
+        "file": "src/integrity.ts",
+        "start": {
+          "offset": 9118,
+          "line": 254,
+          "column": 1
+        },
+        "end": {
+          "offset": 9647,
+          "line": 273,
+          "column": 2
+        },
+        "sourceHash": "238ccd616e791b60b523b89517479585f2d9aabe83198464a44f654cd7058037",
+        "astHash": "a2ceb35b49f76982f84ba07cc27d885fba3eb4d6a9194972664b4f1fe10aa39b"
+      },
+      "compilerAssociatedCalls": [
+        {
+          "file": "experiments/tla-conformance/fungibility-r6/physical-count-proof.ts",
+          "start": 20971,
+          "end": 21026,
+          "sourceHash": "0d00970bf2742306d4675d3bfc04359288ee262b6d7e1db1cea1c707c3354983",
+          "astHash": "fa406dba17b65ce8b17e642247be1dbf251b86eb23876031f391c199cca37ca8"
+        }
+      ]
+    },
+    {
+      "surfaceKey": "export:./kernel#commitInventoryEvent::call[0]",
+      "mode": "A",
+      "signatureHash": "660e19c74a2255c39e233b75bf075f2396916ebc2a6b21e8de83a045e33c1e9d",
+      "declaration": {
+        "file": "src/events.ts",
+        "start": {
+          "offset": 18500,
+          "line": 418,
+          "column": 1
+        },
+        "end": {
+          "offset": 19419,
+          "line": 441,
+          "column": 2
+        },
+        "sourceHash": "8d076ee8f426c011d7df3f205dd014f0e835f71798b3684ca56844b691ba2370",
+        "astHash": "24902995357d734772f7de46ca881e929e5bd73ea668e171b852e05de226af96"
+      },
+      "compilerAssociatedCalls": [
+        {
+          "file": "experiments/tla-conformance/fungibility-r6/physical-count-proof.ts",
+          "start": 21425,
+          "end": 21552,
+          "sourceHash": "0d00970bf2742306d4675d3bfc04359288ee262b6d7e1db1cea1c707c3354983",
+          "astHash": "9817de2808d5476a231aed56addaebc9b49af019b96c9c4da834c53b08117046"
+        }
+      ]
+    },
+    {
+      "surfaceKey": "export:./kernel#applyInventoryCommittedEvent::call[0]",
+      "mode": "A",
+      "signatureHash": "53d8c3166e53e3447d2c99004764708cc2181a3b076d4c16b752235dcf034741",
+      "declaration": {
+        "file": "src/projection.ts",
+        "start": {
+          "offset": 8253,
+          "line": 192,
+          "column": 1
+        },
+        "end": {
+          "offset": 8450,
+          "line": 196,
+          "column": 2
+        },
+        "sourceHash": "f2a9747cfc7c63615347c48383ae7f58ee7df007411cc8de3dd5bb6afaca21d5",
+        "astHash": "344d37faa645c681b448066f464d8b89ea5b8680f8580e6139266511b75b7e8d"
+      },
+      "compilerAssociatedCalls": [
+        {
+          "file": "experiments/tla-conformance/fungibility-r6/physical-count-proof.ts",
+          "start": 19879,
+          "end": 20045,
+          "sourceHash": "0d00970bf2742306d4675d3bfc04359288ee262b6d7e1db1cea1c707c3354983",
+          "astHash": "169269830878aee2a9e037e2b70c3312041dec3df874ebb5d7898cb7ed7cb1c6"
+        },
+        {
+          "file": "experiments/tla-conformance/fungibility-r6/physical-count-proof.ts",
+          "start": 21574,
+          "end": 21780,
+          "sourceHash": "0d00970bf2742306d4675d3bfc04359288ee262b6d7e1db1cea1c707c3354983",
+          "astHash": "02eb59d7988c8c35ba48092561c441ec184d3c565f7292b49d60fb20cb386d52"
+        }
+      ]
+    },
+    {
+      "surfaceKey": "export:./storage#inventoryCountBookDigest::call[0]",
+      "mode": "B",
+      "signatureHash": "8535ab3117b1feee066751139fa7580095a8707e5d9b04c3778375c86998ff4d",
+      "declaration": {
+        "file": "src/integrity.ts",
+        "start": {
+          "offset": 4877,
+          "line": 134,
+          "column": 1
+        },
+        "end": {
+          "offset": 5092,
+          "line": 141,
+          "column": 2
+        },
+        "sourceHash": "238ccd616e791b60b523b89517479585f2d9aabe83198464a44f654cd7058037",
+        "astHash": "d1f06a20d7f5964d366ea4e04bb9427131c812c004eb836a5c6719b2964890f5"
+      },
+      "compilerAssociatedCalls": [
+        {
+          "file": "experiments/tla-conformance/fungibility-r6/physical-count-proof.ts",
+          "start": 21099,
+          "end": 21139,
+          "sourceHash": "0d00970bf2742306d4675d3bfc04359288ee262b6d7e1db1cea1c707c3354983",
+          "astHash": "cb358555af79aee7ed136f645f7c52f0b6d157d7c1980bafbc5379f2623ba8b8"
+        },
+        {
+          "file": "experiments/tla-conformance/fungibility-r6/physical-count-proof.ts",
+          "start": 21145,
+          "end": 21184,
+          "sourceHash": "0d00970bf2742306d4675d3bfc04359288ee262b6d7e1db1cea1c707c3354983",
+          "astHash": "10e09b509c778194bdb80265fa4e19cd1c52983b63474889b15351ccd7d5d63e"
+        }
+      ]
+    },
+    {
+      "surfaceKey": "export:./storage#inventoryWorldContentRoots::call[0]",
+      "mode": "B",
+      "signatureHash": "8d69d4636c62725d1504535431a68984fbe13fc7492093d22638181b0fbdb0f1",
+      "declaration": {
+        "file": "src/integrity.ts",
+        "start": {
+          "offset": 2282,
+          "line": 60,
+          "column": 1
+        },
+        "end": {
+          "offset": 2892,
+          "line": 82,
+          "column": 2
+        },
+        "sourceHash": "238ccd616e791b60b523b89517479585f2d9aabe83198464a44f654cd7058037",
+        "astHash": "5e50a83fe42c750cafba79d72d38c0c5aa29b629b2e1ff25b6792996accc3c0b"
+      },
+      "compilerAssociatedCalls": [
+        {
+          "file": "experiments/tla-conformance/fungibility-r6/physical-count-proof.ts",
+          "start": 30579,
+          "end": 30613,
+          "sourceHash": "0d00970bf2742306d4675d3bfc04359288ee262b6d7e1db1cea1c707c3354983",
+          "astHash": "13f88ba8484b736e24c8bdb78b5e18704072b0c1da44395a511c61b6a2f4da8a"
+        }
+      ]
+    },
+    {
+      "surfaceKey": "type:src/facade.ts#InventoryOnceReadApi.count::call[0]",
+      "mode": "B",
+      "signatureHash": "ba476eb302cbae86f33a71f2c9951663ffae5687602869a61ebf127f2766b80a",
+      "declaration": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 73007,
+          "line": 1763,
+          "column": 3
+        },
+        "end": {
+          "offset": 73067,
+          "line": 1763,
+          "column": 63
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "919a374c91792f46a4c952b5a1ee96606e371e5056cf5ee5eee5a04a5b7c8b8a"
+      },
+      "compilerAssociatedCalls": [
+        {
+          "file": "experiments/tla-conformance/fungibility-r6/physical-count-driver.ts",
+          "start": 11662,
+          "end": 11737,
+          "sourceHash": "c749faafa28ae488c52d0a23deadc42d5b3f1840b5697def8454c1bdb4d975af",
+          "astHash": "d9526d6796856c871002f8d08c1bdac0845d8a80a0f01c32237f2d0ebe378109"
+        },
+        {
+          "file": "experiments/tla-conformance/fungibility-r6/physical-count-driver.ts",
+          "start": 21535,
+          "end": 21590,
+          "sourceHash": "c749faafa28ae488c52d0a23deadc42d5b3f1840b5697def8454c1bdb4d975af",
+          "astHash": "6eacffef006c99edf5373d5d79391f85ef576630d4c04761b834ed65ad425b08"
+        },
+        {
+          "file": "experiments/tla-conformance/fungibility-r6/physical-count-driver.ts",
+          "start": 24141,
+          "end": 24204,
+          "sourceHash": "c749faafa28ae488c52d0a23deadc42d5b3f1840b5697def8454c1bdb4d975af",
+          "astHash": "c20838143bf909ce80156921fed7239e7a453b5f5eab73b50f80957269f7011e"
+        },
+        {
+          "file": "experiments/tla-conformance/fungibility-r6/physical-count-driver.ts",
+          "start": 24583,
+          "end": 24646,
+          "sourceHash": "c749faafa28ae488c52d0a23deadc42d5b3f1840b5697def8454c1bdb4d975af",
+          "astHash": "c20838143bf909ce80156921fed7239e7a453b5f5eab73b50f80957269f7011e"
+        }
+      ]
+    },
+    {
+      "surfaceKey": "type:src/facade.ts#InventoryOnceReadApi.event::call[0]",
+      "mode": "B",
+      "signatureHash": "6aaa6161a53acc46749ceb46631cccdf9049b69733ad58272f8b767343e990bd",
+      "declaration": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 72749,
+          "line": 1759,
+          "column": 3
+        },
+        "end": {
+          "offset": 72818,
+          "line": 1759,
+          "column": 72
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "0b74535d0c2b664d330f2d6f04328d46c398229c6e8f7eae2383b519a32e867b"
+      },
+      "compilerAssociatedCalls": [
+        {
+          "file": "experiments/tla-conformance/fungibility-r6/physical-count-driver.ts",
+          "start": 19568,
+          "end": 19623,
+          "sourceHash": "c749faafa28ae488c52d0a23deadc42d5b3f1840b5697def8454c1bdb4d975af",
+          "astHash": "b4ef853164232b72fa672e92f31880cdf087e2f8e03828a2be2c649e8b68dc72"
+        },
+        {
+          "file": "experiments/tla-conformance/fungibility-r6/physical-count-driver.ts",
+          "start": 22315,
+          "end": 22370,
+          "sourceHash": "c749faafa28ae488c52d0a23deadc42d5b3f1840b5697def8454c1bdb4d975af",
+          "astHash": "b4ef853164232b72fa672e92f31880cdf087e2f8e03828a2be2c649e8b68dc72"
+        }
+      ]
+    },
+    {
+      "surfaceKey": "type:src/facade.ts#InventoryOnceReadApi.snapshot::call[0]",
+      "mode": "B",
+      "signatureHash": "d87cc7d83d623da2619dcbe55bbe0899847633e8167a7a91d09cd7cd0e2e7b76",
+      "declaration": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 70887,
+          "line": 1723,
+          "column": 3
+        },
+        "end": {
+          "offset": 70937,
+          "line": 1723,
+          "column": 53
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "5c53def143ebab66aa06b102919bb93da424c6aad8ab3682a7985957466380d4"
+      },
+      "compilerAssociatedCalls": [
+        {
+          "file": "experiments/tla-conformance/fungibility-r6/physical-count-driver.ts",
+          "start": 21619,
+          "end": 21657,
+          "sourceHash": "c749faafa28ae488c52d0a23deadc42d5b3f1840b5697def8454c1bdb4d975af",
+          "astHash": "0ff1729a2cdfe2caeea7825d7dca5b9c7f99ffb32b03840c506818b0ebfede33"
+        }
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "file": "experiments/tla-conformance/fungibility-r6/artifacts/PhysicalCount/producer/physical-count-failpoints-b8404094e939d00d622f8cbd1d7878ff239f91698e2e930f154b7c1712621ddd.json",
+      "sha256": "b8404094e939d00d622f8cbd1d7878ff239f91698e2e930f154b7c1712621ddd"
+    },
+    {
+      "file": "experiments/tla-conformance/fungibility-r6/artifacts/PhysicalCount/producer/physical-count-history-representatives-0ba08a33405be8f707703bb444fd743fae4c4393e791c744d6e51cbe7e6b63d7.ndjson",
+      "sha256": "0ba08a33405be8f707703bb444fd743fae4c4393e791c744d6e51cbe7e6b63d7"
+    },
+    {
+      "file": "experiments/tla-conformance/fungibility-r6/artifacts/PhysicalCount/producer/physical-count-literal-original-next-c154db1e9e7e77d3bb96582bcb7a754da426c14a02c0f2b65ca21d478dff2bbe.json",
+      "sha256": "c154db1e9e7e77d3bb96582bcb7a754da426c14a02c0f2b65ca21d478dff2bbe"
+    },
+    {
+      "file": "experiments/tla-conformance/fungibility-r6/artifacts/PhysicalCount/producer/physical-count-model-boundaries-4b2018c355262e68d6146c601c057450f592e79fb60d90009b092ebb8b53c43f.ndjson",
+      "sha256": "4b2018c355262e68d6146c601c057450f592e79fb60d90009b092ebb8b53c43f"
+    },
+    {
+      "file": "experiments/tla-conformance/fungibility-r6/artifacts/PhysicalCount/producer/physical-count-occurrences-3fd4b22aefeaecb2780f6be34844c33ab0325d4e8fbdc5de8c79921c59b39c89.ndjson",
+      "sha256": "3fd4b22aefeaecb2780f6be34844c33ab0325d4e8fbdc5de8c79921c59b39c89"
+    },
+    {
+      "file": "experiments/tla-conformance/fungibility-r6/artifacts/PhysicalCount/producer/physical-count-post-observation-environment-boundary-0f9e6c8c461c5d222d22be10198b33930b55febcf9fd7e41488cab02b2ce9147.json",
+      "sha256": "0f9e6c8c461c5d222d22be10198b33930b55febcf9fd7e41488cab02b2ce9147"
+    },
+    {
+      "file": "experiments/tla-conformance/fungibility-r6/physical-count-driver.ts",
+      "sha256": "c749faafa28ae488c52d0a23deadc42d5b3f1840b5697def8454c1bdb4d975af"
+    },
+    {
+      "file": "experiments/tla-conformance/fungibility-r6/physical-count-graph.ts",
+      "sha256": "69395ece6a9042ed0e239bffdf04a152363a449ca1b3f9ecd4087e384124a02a"
+    },
+    {
+      "file": "experiments/tla-conformance/fungibility-r6/physical-count-proof.ts",
+      "sha256": "0d00970bf2742306d4675d3bfc04359288ee262b6d7e1db1cea1c707c3354983"
+    },
+    {
+      "file": "experiments/tla-conformance/fungibility-r6/physical-count-reverse.ts",
+      "sha256": "b2d49fa15e5ce414e771b11a4a02e3b0afe4ca86c2f3ff81ef858467a613dbdc"
+    },
+    {
+      "file": "experiments/tla-conformance/r142-physical-count-currentization/current-proof.ts",
+      "sha256": "71d43b884e38e9d31e6d8036c4ec01249b6b494c8c496baca088ec3d0838a153"
+    },
+    {
+      "file": "experiments/tla-conformance/r142-physical-count-currentization/current-replay-receipt.json",
+      "sha256": "6ec02995b791c84677fcc3d2011784a5a7049c770dd27e8b60ca298f85038403"
+    },
+    {
+      "file": "experiments/tla-conformance/r142-physical-count-currentization/current-replay.test.ts",
+      "sha256": "527779dfb60e81ec7140b6b9ee8cb1ce1b36d398310825f88e9c433cb206cfc1"
+    },
+    {
+      "file": "experiments/tla-conformance/r142-physical-count-currentization/registered-producer-current.mjs",
+      "sha256": "97616026f1f48d19a792e1dc4fee8464c41d2041e3c919e513a9fd3532a2dadc"
+    },
+    {
+      "file": "experiments/tla-conformance/surface-bindings/lib/binding-checker.mjs",
+      "sha256": "4dd6bbf135ebb5a5da86b714e0d9b9d3550547a7df7b39aec1a471bf1ef3f88e"
+    },
+    {
+      "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+      "sha256": "8d8854032e38a0df1044e5596c66d9a2b672277f357e361102b0b12c3d6952a0"
+    },
+    {
+      "file": "experiments/tla-conformance/throughput-r7/evidence/physical-count-producer.json",
+      "sha256": "2eef840cb9c209feaae59e8530b4310822f599035f39322501f0dde70e70ca54"
+    },
+    {
+      "file": "experiments/tla-conformance/throughput-r7/registered-producer-family.mjs",
+      "sha256": "e8c9fcbbf669de7a68a76984da27d179b81b49ccba4fe645faf50790405dd655"
+    },
+    {
+      "file": "formal/PhysicalCount.cfg",
+      "sha256": "e1f9df37aa86d581fed5829f64cb004cdb511be1db3159dcc164cbd9d57774ca"
+    },
+    {
+      "file": "formal/PhysicalCount.tla",
+      "sha256": "4102cf388b36904056d20dbba8758f77de10f203caf5bedab5eaa6698832e03c"
+    },
+    {
+      "file": "package.json",
+      "sha256": "f068ac4f83c2984a38d439b90159e48b7fdf42ee4792f7ccde56230c7ecf1a7c"
+    },
+    {
+      "file": "pnpm-lock.yaml",
+      "sha256": "8e9b914db4c2eaa6cf8da0f51d25ddd9ce5158292675ba525501860cec36eb64"
+    },
+    {
+      "file": "src/coordinator.ts",
+      "sha256": "4bc44f2c38578991a137d9e363b7677c23a788dd9cc5c4129074f1a95a14e3a2"
+    },
+    {
+      "file": "src/counts.ts",
+      "sha256": "5db9ad8d5a6f1a82c594562b66f4be7c677d17bd31d9d10afb11eae781d78f13"
+    },
+    {
+      "file": "src/facade.ts",
+      "sha256": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d"
+    },
+    {
+      "file": "src/integrity.ts",
+      "sha256": "238ccd616e791b60b523b89517479585f2d9aabe83198464a44f654cd7058037"
+    },
+    {
+      "file": "src/sparse-record.ts",
+      "sha256": "272a1f63afe9ed4c84cd76a4ce051b210b52e6e0a54cf47ec4f11a29979ada71"
+    },
+    {
+      "file": "src/storage.ts",
+      "sha256": "0ed07611ce2e50ae477e4d1acba848eec1fa301708b094ab5cd5d60531978f9d"
+    }
+  ]
+}

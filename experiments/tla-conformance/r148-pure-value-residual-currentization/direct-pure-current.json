@@ -1,0 +1,2083 @@
+{
+  "schemaVersion": 1,
+  "proofKind": "surface-residual-direct-pure-complete-values-v7-v1",
+  "surfaceDigest": "cc97e53a60ad9a4a700ee0c21f926e05b3a09dbd1ee739d94354a228fc47877a",
+  "domain": "Seven direct deterministic public functions over plain application inputs: four amount/policy grouping helpers, count abandonment, composition-open retry fingerprinting, and committed-event sequence normalization. Complete public/private source terms, count enum values, and exact Identity/Catalog semantic dependencies are rederived; constructors, application callbacks, event reducers, composition execution, and projection digest are excluded.",
+  "allAdmittedInputs": true,
+  "sampledInputs": 0,
+  "inputs": [
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-published-source-contracts.mjs",
+      "sha256": "d05ecad078de891073c82f4c523090382b608204269281464ca9a325ca3208b2"
+    },
+    {
+      "file": "experiments/tla-conformance/authority-r5/catalog-published-source-equations.mjs",
+      "sha256": "243e06ade88446247ab26d1bcec53fb70cccab6c5929f2013dc2aa995ae73ce8"
+    },
+    {
+      "file": "experiments/tla-conformance/identity-values-r7/contracts.mjs",
+      "sha256": "dea23f4b3f929ac1bcf9b50cd41517c1b3fc4e3d879904aa6c4d83263ba7b2ce"
+    },
+    {
+      "file": "experiments/tla-conformance/identity-values-r7/equations.ts.txt",
+      "sha256": "f4b3b7a3fa1dbf3338f295c3d97f73cf753cba7741d69f272e91db7fa5079844"
+    },
+    {
+      "file": "experiments/tla-conformance/identity-values-r7/family.mjs",
+      "sha256": "493486e43054dd4613091e973558f2c0463e96ff83347080a3f32e636dde6709"
+    },
+    {
+      "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/sparse-record-certificate.json",
+      "sha256": "6ecd861755e963798a2cd077813cd3c412997121b16e6f1cdea337baa2fe7815"
+    },
+    {
+      "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/sparse-record-certificate.mjs",
+      "sha256": "5a1c4bb5dc41ff18939471d54f430601e456f603fa9ebdebb09ac0414bd35a95"
+    },
+    {
+      "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/direct-pure-current.expected.ts.txt",
+      "sha256": "843122169b7570501c82a44d3aae58246415f68e72161474facdba2994003faa"
+    },
+    {
+      "file": "experiments/tla-conformance/r148-pure-value-residual-currentization/direct-pure-current.mjs",
+      "sha256": "3424188dbe2095f90f0c177905f696afd8e94ddcb3cd392d85fb2a1dec97354b"
+    },
+    {
+      "file": "experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs",
+      "sha256": "8d8854032e38a0df1044e5596c66d9a2b672277f357e361102b0b12c3d6952a0"
+    },
+    {
+      "file": "experiments/tla-conformance/value-contracts/catalog-family.mjs",
+      "sha256": "32439d061232e266f53acd3b33025b97b172769ffe418964319177b8041cab9a"
+    },
+    {
+      "file": "experiments/tla-conformance/value-contracts/surface-binding.mjs",
+      "sha256": "619b37fe3a9bc9be22e8a0c2167187cfce987c7856280c6df0c36c5a230c3618"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2015.collection.d.ts",
+      "sha256": "dc2df20b1bcdc8c2d34af4926e2c3ab15ffe1160a63e58b7e09833f616efff44"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2015.core.d.ts",
+      "sha256": "c57796738e7f83dbc4b8e65132f11a377649c00dd3eee333f672b8f0a6bea671"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2015.iterable.d.ts",
+      "sha256": "0559b1f683ac7505ae451f9a96ce4c3c92bdc71411651ca6ddb0e88baaaad6a3"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2016.array.include.d.ts",
+      "sha256": "d15bea3d62cbbdb9797079416b8ac375ae99162a7fba5de2c6c505446486ac0a"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2017.string.d.ts",
+      "sha256": "2f11ff796926e0832f9ae148008138ad583bd181899ab7dd768a2666700b1893"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2020.bigint.d.ts",
+      "sha256": "d6d7ae4d1f1f3772e2a3cde568ed08991a8ae34a080ff1151af28b7f798e22ca"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es2022.error.d.ts",
+      "sha256": "0a3d63ef2b853447ec4f749d3f368ce642264246e02911fcb1590d8c161b8005"
+    },
+    {
+      "file": "node_modules/typescript/lib/lib.es5.d.ts",
+      "sha256": "c430d44666289dae81f30fa7b2edebf186ecc91a2d4c71266ea6ae76388792e1"
+    },
+    {
+      "file": "node_modules/typescript/package.json",
+      "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+    },
+    {
+      "file": "package.json",
+      "sha256": "f068ac4f83c2984a38d439b90159e48b7fdf42ee4792f7ccde56230c7ecf1a7c"
+    },
+    {
+      "file": "src/amounts.ts",
+      "sha256": "98ddc0fa8d80b2ca244a207f4eb8b55d86131c2ccfd77620da5c85248d03ef57"
+    },
+    {
+      "file": "src/canonical.ts",
+      "sha256": "eb2981c629182525c6742d2a67f513f0daec88507e5861f475d5de04984a2d56"
+    },
+    {
+      "file": "src/catalog.ts",
+      "sha256": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56"
+    },
+    {
+      "file": "src/composition.ts",
+      "sha256": "87d7e004cc2432587c82a238cd2fd9976a3d1f8850771365168e5d33ba6cb24c"
+    },
+    {
+      "file": "src/counts.ts",
+      "sha256": "5db9ad8d5a6f1a82c594562b66f4be7c677d17bd31d9d10afb11eae781d78f13"
+    },
+    {
+      "file": "src/events.ts",
+      "sha256": "8d076ee8f426c011d7df3f205dd014f0e835f71798b3684ca56844b691ba2370"
+    },
+    {
+      "file": "src/facade.ts",
+      "sha256": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d"
+    },
+    {
+      "file": "src/index.ts",
+      "sha256": "2e0587666ff20d57a757c0576fddf8badf36c2901735db7225a0cebda829b555"
+    },
+    {
+      "file": "src/kernel.ts",
+      "sha256": "f336d22a07d6018dc5528bd2a13a33c5aa9f1a72b0c0ed048cb73219b9b0c06c"
+    },
+    {
+      "file": "src/measurements.ts",
+      "sha256": "3d627e4ff13b55e84c09dbd5bb4f624d1bac0acbdc1fabd28bbd92fa0228f7e5"
+    },
+    {
+      "file": "src/model.ts",
+      "sha256": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122"
+    },
+    {
+      "file": "src/ordering.ts",
+      "sha256": "e72ac94e99b1b4914f3f6dec55583e401484a41ecadd051be788724c88f24cb9"
+    },
+    {
+      "file": "src/projection.ts",
+      "sha256": "f2a9747cfc7c63615347c48383ae7f58ee7df007411cc8de3dd5bb6afaca21d5"
+    },
+    {
+      "file": "src/quantity.ts",
+      "sha256": "8c0be7d29d08fef1daa83fd987896c1c1a015c4f70cd329261987fcc907382a6"
+    },
+    {
+      "file": "src/selectors.ts",
+      "sha256": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957"
+    },
+    {
+      "file": "src/sparse-record.ts",
+      "sha256": "272a1f63afe9ed4c84cd76a4ce051b210b52e6e0a54cf47ec4f11a29979ada71"
+    },
+    {
+      "file": "src/usability.ts",
+      "sha256": "bb4cf272fd01be5c4866b388f2af63e9fdd7286c208600fb635ca10d30f0ad51"
+    },
+    {
+      "file": "tsconfig.json",
+      "sha256": "b46c6324e4819ea54c9824d2e0f4c28f9304aa54e39d7f8afbac65f744eed464"
+    }
+  ],
+  "proofs": [
+    {
+      "surfaceKey": "export:.#defineInventoryAmountLineGroup::call[0]",
+      "signatureHash": "f55a371b9fb9727ab31cbfecd6dee38342120c4d47f62066543378bb9691721c",
+      "declaration": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 258250,
+          "line": 7106,
+          "column": 1
+        },
+        "end": {
+          "offset": 258676,
+          "line": 7125,
+          "column": 2
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "30923fb86124cf755ee93e0199e8446e21f2cc53035234470eadbb4dc77071da"
+      },
+      "semantics": {
+        "completeExpectedTerm": {
+          "label": "defineInventoryAmountLineGroup",
+          "normalizedTermSha256": "20d810bb3a33225256ed3999f2b54155962c35901cdb63fbd2639bf3407df04f",
+          "completeBranchesChecked": true
+        },
+        "privateEquations": [
+          {
+            "label": "assertCanonicalInventoryTime",
+            "normalizedTermSha256": "084a0190543cdcdd656e67aa1e956dc1fe9afe206625d12058081d2df6887c49",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "findCountOperationReplay",
+            "normalizedTermSha256": "ae63358cf7548c330cc8ef0c8908766e392f6c0b690233b985cc69862ddc0fc0",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "replaceCountWithOperation",
+            "normalizedTermSha256": "922e817aaf020d325727083de841a1f20c2fddd3d66b4ae2a59176a2f27431b8",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "compositionQualifiedDimensionFingerprint",
+            "normalizedTermSha256": "27863265dc9869cb7582edcfa093c74cbaaf3c32a504ba0760afa6be84335e43",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "compareCompositionQualifiedDimensionFingerprint",
+            "normalizedTermSha256": "a0b0964ab96f5d05b75dd25b08d7ca336dd6337f16ec54a799c6e9fd14039ebf",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "compareInventoryIdentityText",
+            "normalizedTermSha256": "01edb7fe6d788057baac39ed3619a4505c0a6baeccb4f1d023077bc0adc948cd",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "compareCommittedEventSequence",
+            "normalizedTermSha256": "5f4841cc4caf7a942ed828a43e797e36b4c396de7acce30f9258fd23c5e302b7",
+            "completeBranchesChecked": true
+          }
+        ],
+        "supportingValues": {
+          "InventoryCountOperationKind": {
+            "Abandon": "abandon"
+          },
+          "InventoryCountStatus": {
+            "Completed": "completed",
+            "Abandoned": "abandoned"
+          }
+        },
+        "dependencyReceipts": [
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#assertInventoryAmountSum::call[0]",
+            "signatureHash": "1894f791e227a88ec24769693e1449e3d881b416ab6b86c09a7b34434038ee96",
+            "declaration": {
+              "file": "src/amounts.ts",
+              "start": {
+                "offset": 8936,
+                "line": 243,
+                "column": 1
+              },
+              "end": {
+                "offset": 10170,
+                "line": 283,
+                "column": 2
+              },
+              "sourceHash": "98ddc0fa8d80b2ca244a207f4eb8b55d86131c2ccfd77620da5c85248d03ef57",
+              "astHash": "73d2fe3f6988a9f023a25ead829994e3f2663c7749d39e5b0609d667f76ab62f"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#normalizeInventoryStockSelector::call[0]",
+            "signatureHash": "ab49dafdbf57b266c3536065f5dee4ca876a90aef379655c8f0249ee1ca580a8",
+            "declaration": {
+              "file": "src/selectors.ts",
+              "start": {
+                "offset": 4855,
+                "line": 101,
+                "column": 1
+              },
+              "end": {
+                "offset": 7087,
+                "line": 170,
+                "column": 2
+              },
+              "sourceHash": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957",
+              "astHash": "90198be5327afb1a881d93183b9180068a4773e2322a9d86cc7d7bd8b2c31ef1"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#inventoryStockPositionIdentity::call[0]",
+            "signatureHash": "31b440f046506143b96b758bddbf593688d5fc367f19fda0c5ca1ca2d9a56c0d",
+            "declaration": {
+              "file": "src/model.ts",
+              "start": {
+                "offset": 9829,
+                "line": 234,
+                "column": 1
+              },
+              "end": {
+                "offset": 10414,
+                "line": 253,
+                "column": 2
+              },
+              "sourceHash": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
+              "astHash": "48a12ead90339db24f8619b6cfe0efab9b170c72a8daf140a5fd1ee45b65e52a"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#inventoryIntentFingerprint::call[0]",
+            "signatureHash": "30446d887279831195010055b86ddbd717b9ce5eca6afb07ba32e58c360c496c",
+            "declaration": {
+              "file": "src/canonical.ts",
+              "start": {
+                "offset": 440,
+                "line": 15,
+                "column": 1
+              },
+              "end": {
+                "offset": 641,
+                "line": 20,
+                "column": 2
+              },
+              "sourceHash": "eb2981c629182525c6742d2a67f513f0daec88507e5861f475d5de04984a2d56",
+              "astHash": "83f480c4201f729de318e75d5acaa5102e82fa7ff0576de789c636e0971a3b4e"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#inventoryMetadataFingerprint::call[0]",
+            "signatureHash": "5d6a232938119057cfd2242e10952b8f6235a8c1c8c7a4df327f7740724038a1",
+            "declaration": {
+              "file": "src/canonical.ts",
+              "start": {
+                "offset": 713,
+                "line": 23,
+                "column": 1
+              },
+              "end": {
+                "offset": 1198,
+                "line": 36,
+                "column": 2
+              },
+              "sourceHash": "eb2981c629182525c6742d2a67f513f0daec88507e5861f475d5de04984a2d56",
+              "astHash": "6a962979d68d912cbfc776cdf25e013bce11167da7b8f52e6ccf3de585d4bba1"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#inventoryTraceabilityNodeIdentity::call[0]",
+            "signatureHash": "8f022d5a12dbe83d80447da3798fed75c1b76cdc5237fe4888eaef8d56d22d3a",
+            "declaration": {
+              "file": "src/model.ts",
+              "start": {
+                "offset": 10486,
+                "line": 256,
+                "column": 1
+              },
+              "end": {
+                "offset": 11185,
+                "line": 271,
+                "column": 2
+              },
+              "sourceHash": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
+              "astHash": "64c3736fb3fd8cabb77f634e68296d13877a7b9046c0fc85e1bc7ec504df2020"
+            }
+          },
+          {
+            "family": "catalog",
+            "proofKind": "independent-catalog-snapshot-closed-equations-v1",
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.itemRevision::call[0]",
+            "signatureHash": "d41fb26bbd9d81122bf2187a22667b2b5efd5813c20af70380d1b54c864966c5",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 66198,
+                "line": 1575,
+                "column": 3
+              },
+              "end": {
+                "offset": 66453,
+                "line": 1580,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "ed486f2e0f9444fa04e761884a3ad98049e510f5c155279e93f0eb0def14f13b"
+            }
+          },
+          {
+            "family": "catalog",
+            "proofKind": "independent-catalog-snapshot-closed-equations-v1",
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.packagingRevision::call[0]",
+            "signatureHash": "5dd6711cbc44d5431b8fc99e9971742928de303eb3ffe2f67c58f31c716e2141",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 66918,
+                "line": 1594,
+                "column": 3
+              },
+              "end": {
+                "offset": 67208,
+                "line": 1600,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "252017c83dce2889e9e24724c8c34097c8134c07a9fe9cef02135c71d52caa4e"
+            }
+          },
+          {
+            "family": "catalog",
+            "proofKind": "independent-catalog-snapshot-closed-equations-v1",
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.compositionForSourcePackagingRevision::call[0]",
+            "signatureHash": "328ee7f0ee40d8c49c9e0681bdb30040e0397062c2080c1e00b33f4c70f37053",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 68171,
+                "line": 1629,
+                "column": 3
+              },
+              "end": {
+                "offset": 68588,
+                "line": 1640,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "004a12c902aa876ea98c44565c0d41aa8ca6e3cc68b1eaa225a32582c076fa59"
+            }
+          },
+          {
+            "family": "r134-sparse-record",
+            "proofKind": "r134-current-independent-sparse-record-equations-v1",
+            "surfaceKey": "src/sparse-record.ts#inventorySparseRecordValue",
+            "termSha256": "80c4cf4ebb11ccea712a0252cede61d6b7dd69caf07ad7f4b6607298c0cc900f",
+            "evidence": {
+              "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/sparse-record-certificate.json",
+              "sha256": "6ecd861755e963798a2cd077813cd3c412997121b16e6f1cdea337baa2fe7815"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "surfaceKey": "export:.#combineInventoryAmountLineGroups::call[0]",
+      "signatureHash": "309badedaeb4d4a4e63235a428133dcb9d7e2639a56ff580a4709c667aa9abbf",
+      "declaration": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 258777,
+          "line": 7128,
+          "column": 1
+        },
+        "end": {
+          "offset": 259066,
+          "line": 7135,
+          "column": 2
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "01255908ed831e42977934eeebc3a3dfde0a4cecaf516dcb52069b019e4099be"
+      },
+      "semantics": {
+        "completeExpectedTerm": {
+          "label": "combineInventoryAmountLineGroups",
+          "normalizedTermSha256": "a4c286580f6c59003840c402e2291af9243d4189bc6aa59aa41b928a7958d03e",
+          "completeBranchesChecked": true
+        },
+        "privateEquations": [
+          {
+            "label": "assertCanonicalInventoryTime",
+            "normalizedTermSha256": "084a0190543cdcdd656e67aa1e956dc1fe9afe206625d12058081d2df6887c49",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "findCountOperationReplay",
+            "normalizedTermSha256": "ae63358cf7548c330cc8ef0c8908766e392f6c0b690233b985cc69862ddc0fc0",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "replaceCountWithOperation",
+            "normalizedTermSha256": "922e817aaf020d325727083de841a1f20c2fddd3d66b4ae2a59176a2f27431b8",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "compositionQualifiedDimensionFingerprint",
+            "normalizedTermSha256": "27863265dc9869cb7582edcfa093c74cbaaf3c32a504ba0760afa6be84335e43",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "compareCompositionQualifiedDimensionFingerprint",
+            "normalizedTermSha256": "a0b0964ab96f5d05b75dd25b08d7ca336dd6337f16ec54a799c6e9fd14039ebf",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "compareInventoryIdentityText",
+            "normalizedTermSha256": "01edb7fe6d788057baac39ed3619a4505c0a6baeccb4f1d023077bc0adc948cd",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "compareCommittedEventSequence",
+            "normalizedTermSha256": "5f4841cc4caf7a942ed828a43e797e36b4c396de7acce30f9258fd23c5e302b7",
+            "completeBranchesChecked": true
+          }
+        ],
+        "supportingValues": {
+          "InventoryCountOperationKind": {
+            "Abandon": "abandon"
+          },
+          "InventoryCountStatus": {
+            "Completed": "completed",
+            "Abandoned": "abandoned"
+          }
+        },
+        "dependencyReceipts": [
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#assertInventoryAmountSum::call[0]",
+            "signatureHash": "1894f791e227a88ec24769693e1449e3d881b416ab6b86c09a7b34434038ee96",
+            "declaration": {
+              "file": "src/amounts.ts",
+              "start": {
+                "offset": 8936,
+                "line": 243,
+                "column": 1
+              },
+              "end": {
+                "offset": 10170,
+                "line": 283,
+                "column": 2
+              },
+              "sourceHash": "98ddc0fa8d80b2ca244a207f4eb8b55d86131c2ccfd77620da5c85248d03ef57",
+              "astHash": "73d2fe3f6988a9f023a25ead829994e3f2663c7749d39e5b0609d667f76ab62f"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#normalizeInventoryStockSelector::call[0]",
+            "signatureHash": "ab49dafdbf57b266c3536065f5dee4ca876a90aef379655c8f0249ee1ca580a8",
+            "declaration": {
+              "file": "src/selectors.ts",
+              "start": {
+                "offset": 4855,
+                "line": 101,
+                "column": 1
+              },
+              "end": {
+                "offset": 7087,
+                "line": 170,
+                "column": 2
+              },
+              "sourceHash": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957",
+              "astHash": "90198be5327afb1a881d93183b9180068a4773e2322a9d86cc7d7bd8b2c31ef1"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#inventoryStockPositionIdentity::call[0]",
+            "signatureHash": "31b440f046506143b96b758bddbf593688d5fc367f19fda0c5ca1ca2d9a56c0d",
+            "declaration": {
+              "file": "src/model.ts",
+              "start": {
+                "offset": 9829,
+                "line": 234,
+                "column": 1
+              },
+              "end": {
+                "offset": 10414,
+                "line": 253,
+                "column": 2
+              },
+              "sourceHash": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
+              "astHash": "48a12ead90339db24f8619b6cfe0efab9b170c72a8daf140a5fd1ee45b65e52a"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#inventoryIntentFingerprint::call[0]",
+            "signatureHash": "30446d887279831195010055b86ddbd717b9ce5eca6afb07ba32e58c360c496c",
+            "declaration": {
+              "file": "src/canonical.ts",
+              "start": {
+                "offset": 440,
+                "line": 15,
+                "column": 1
+              },
+              "end": {
+                "offset": 641,
+                "line": 20,
+                "column": 2
+              },
+              "sourceHash": "eb2981c629182525c6742d2a67f513f0daec88507e5861f475d5de04984a2d56",
+              "astHash": "83f480c4201f729de318e75d5acaa5102e82fa7ff0576de789c636e0971a3b4e"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#inventoryMetadataFingerprint::call[0]",
+            "signatureHash": "5d6a232938119057cfd2242e10952b8f6235a8c1c8c7a4df327f7740724038a1",
+            "declaration": {
+              "file": "src/canonical.ts",
+              "start": {
+                "offset": 713,
+                "line": 23,
+                "column": 1
+              },
+              "end": {
+                "offset": 1198,
+                "line": 36,
+                "column": 2
+              },
+              "sourceHash": "eb2981c629182525c6742d2a67f513f0daec88507e5861f475d5de04984a2d56",
+              "astHash": "6a962979d68d912cbfc776cdf25e013bce11167da7b8f52e6ccf3de585d4bba1"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#inventoryTraceabilityNodeIdentity::call[0]",
+            "signatureHash": "8f022d5a12dbe83d80447da3798fed75c1b76cdc5237fe4888eaef8d56d22d3a",
+            "declaration": {
+              "file": "src/model.ts",
+              "start": {
+                "offset": 10486,
+                "line": 256,
+                "column": 1
+              },
+              "end": {
+                "offset": 11185,
+                "line": 271,
+                "column": 2
+              },
+              "sourceHash": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
+              "astHash": "64c3736fb3fd8cabb77f634e68296d13877a7b9046c0fc85e1bc7ec504df2020"
+            }
+          },
+          {
+            "family": "catalog",
+            "proofKind": "independent-catalog-snapshot-closed-equations-v1",
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.itemRevision::call[0]",
+            "signatureHash": "d41fb26bbd9d81122bf2187a22667b2b5efd5813c20af70380d1b54c864966c5",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 66198,
+                "line": 1575,
+                "column": 3
+              },
+              "end": {
+                "offset": 66453,
+                "line": 1580,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "ed486f2e0f9444fa04e761884a3ad98049e510f5c155279e93f0eb0def14f13b"
+            }
+          },
+          {
+            "family": "catalog",
+            "proofKind": "independent-catalog-snapshot-closed-equations-v1",
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.packagingRevision::call[0]",
+            "signatureHash": "5dd6711cbc44d5431b8fc99e9971742928de303eb3ffe2f67c58f31c716e2141",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 66918,
+                "line": 1594,
+                "column": 3
+              },
+              "end": {
+                "offset": 67208,
+                "line": 1600,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "252017c83dce2889e9e24724c8c34097c8134c07a9fe9cef02135c71d52caa4e"
+            }
+          },
+          {
+            "family": "catalog",
+            "proofKind": "independent-catalog-snapshot-closed-equations-v1",
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.compositionForSourcePackagingRevision::call[0]",
+            "signatureHash": "328ee7f0ee40d8c49c9e0681bdb30040e0397062c2080c1e00b33f4c70f37053",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 68171,
+                "line": 1629,
+                "column": 3
+              },
+              "end": {
+                "offset": 68588,
+                "line": 1640,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "004a12c902aa876ea98c44565c0d41aa8ca6e3cc68b1eaa225a32582c076fa59"
+            }
+          },
+          {
+            "family": "r134-sparse-record",
+            "proofKind": "r134-current-independent-sparse-record-equations-v1",
+            "surfaceKey": "src/sparse-record.ts#inventorySparseRecordValue",
+            "termSha256": "80c4cf4ebb11ccea712a0252cede61d6b7dd69caf07ad7f4b6607298c0cc900f",
+            "evidence": {
+              "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/sparse-record-certificate.json",
+              "sha256": "6ecd861755e963798a2cd077813cd3c412997121b16e6f1cdea337baa2fe7815"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "surfaceKey": "export:.#defineInventoryPolicyBatchRequestGroup::call[0]",
+      "signatureHash": "f377198020c13f82bdecbb7707ce6a021cf299749e7228c789908eb592f5c021",
+      "declaration": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 260953,
+          "line": 7174,
+          "column": 1
+        },
+        "end": {
+          "offset": 263301,
+          "line": 7246,
+          "column": 2
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "d9d004cc07ff4a5a004f3b441b68d2aa81cf2398108219c830bc7f4a5847854e"
+      },
+      "semantics": {
+        "completeExpectedTerm": {
+          "label": "defineInventoryPolicyBatchRequestGroup",
+          "normalizedTermSha256": "2e4fef00917d1a9f54f954a3b5557204e4af025cec5a8c18bad23644463849fe",
+          "completeBranchesChecked": true
+        },
+        "privateEquations": [
+          {
+            "label": "assertCanonicalInventoryTime",
+            "normalizedTermSha256": "084a0190543cdcdd656e67aa1e956dc1fe9afe206625d12058081d2df6887c49",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "findCountOperationReplay",
+            "normalizedTermSha256": "ae63358cf7548c330cc8ef0c8908766e392f6c0b690233b985cc69862ddc0fc0",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "replaceCountWithOperation",
+            "normalizedTermSha256": "922e817aaf020d325727083de841a1f20c2fddd3d66b4ae2a59176a2f27431b8",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "compositionQualifiedDimensionFingerprint",
+            "normalizedTermSha256": "27863265dc9869cb7582edcfa093c74cbaaf3c32a504ba0760afa6be84335e43",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "compareCompositionQualifiedDimensionFingerprint",
+            "normalizedTermSha256": "a0b0964ab96f5d05b75dd25b08d7ca336dd6337f16ec54a799c6e9fd14039ebf",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "compareInventoryIdentityText",
+            "normalizedTermSha256": "01edb7fe6d788057baac39ed3619a4505c0a6baeccb4f1d023077bc0adc948cd",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "compareCommittedEventSequence",
+            "normalizedTermSha256": "5f4841cc4caf7a942ed828a43e797e36b4c396de7acce30f9258fd23c5e302b7",
+            "completeBranchesChecked": true
+          }
+        ],
+        "supportingValues": {
+          "InventoryCountOperationKind": {
+            "Abandon": "abandon"
+          },
+          "InventoryCountStatus": {
+            "Completed": "completed",
+            "Abandoned": "abandoned"
+          }
+        },
+        "dependencyReceipts": [
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#assertInventoryAmountSum::call[0]",
+            "signatureHash": "1894f791e227a88ec24769693e1449e3d881b416ab6b86c09a7b34434038ee96",
+            "declaration": {
+              "file": "src/amounts.ts",
+              "start": {
+                "offset": 8936,
+                "line": 243,
+                "column": 1
+              },
+              "end": {
+                "offset": 10170,
+                "line": 283,
+                "column": 2
+              },
+              "sourceHash": "98ddc0fa8d80b2ca244a207f4eb8b55d86131c2ccfd77620da5c85248d03ef57",
+              "astHash": "73d2fe3f6988a9f023a25ead829994e3f2663c7749d39e5b0609d667f76ab62f"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#normalizeInventoryStockSelector::call[0]",
+            "signatureHash": "ab49dafdbf57b266c3536065f5dee4ca876a90aef379655c8f0249ee1ca580a8",
+            "declaration": {
+              "file": "src/selectors.ts",
+              "start": {
+                "offset": 4855,
+                "line": 101,
+                "column": 1
+              },
+              "end": {
+                "offset": 7087,
+                "line": 170,
+                "column": 2
+              },
+              "sourceHash": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957",
+              "astHash": "90198be5327afb1a881d93183b9180068a4773e2322a9d86cc7d7bd8b2c31ef1"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#inventoryStockPositionIdentity::call[0]",
+            "signatureHash": "31b440f046506143b96b758bddbf593688d5fc367f19fda0c5ca1ca2d9a56c0d",
+            "declaration": {
+              "file": "src/model.ts",
+              "start": {
+                "offset": 9829,
+                "line": 234,
+                "column": 1
+              },
+              "end": {
+                "offset": 10414,
+                "line": 253,
+                "column": 2
+              },
+              "sourceHash": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
+              "astHash": "48a12ead90339db24f8619b6cfe0efab9b170c72a8daf140a5fd1ee45b65e52a"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#inventoryIntentFingerprint::call[0]",
+            "signatureHash": "30446d887279831195010055b86ddbd717b9ce5eca6afb07ba32e58c360c496c",
+            "declaration": {
+              "file": "src/canonical.ts",
+              "start": {
+                "offset": 440,
+                "line": 15,
+                "column": 1
+              },
+              "end": {
+                "offset": 641,
+                "line": 20,
+                "column": 2
+              },
+              "sourceHash": "eb2981c629182525c6742d2a67f513f0daec88507e5861f475d5de04984a2d56",
+              "astHash": "83f480c4201f729de318e75d5acaa5102e82fa7ff0576de789c636e0971a3b4e"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#inventoryMetadataFingerprint::call[0]",
+            "signatureHash": "5d6a232938119057cfd2242e10952b8f6235a8c1c8c7a4df327f7740724038a1",
+            "declaration": {
+              "file": "src/canonical.ts",
+              "start": {
+                "offset": 713,
+                "line": 23,
+                "column": 1
+              },
+              "end": {
+                "offset": 1198,
+                "line": 36,
+                "column": 2
+              },
+              "sourceHash": "eb2981c629182525c6742d2a67f513f0daec88507e5861f475d5de04984a2d56",
+              "astHash": "6a962979d68d912cbfc776cdf25e013bce11167da7b8f52e6ccf3de585d4bba1"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#inventoryTraceabilityNodeIdentity::call[0]",
+            "signatureHash": "8f022d5a12dbe83d80447da3798fed75c1b76cdc5237fe4888eaef8d56d22d3a",
+            "declaration": {
+              "file": "src/model.ts",
+              "start": {
+                "offset": 10486,
+                "line": 256,
+                "column": 1
+              },
+              "end": {
+                "offset": 11185,
+                "line": 271,
+                "column": 2
+              },
+              "sourceHash": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
+              "astHash": "64c3736fb3fd8cabb77f634e68296d13877a7b9046c0fc85e1bc7ec504df2020"
+            }
+          },
+          {
+            "family": "catalog",
+            "proofKind": "independent-catalog-snapshot-closed-equations-v1",
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.itemRevision::call[0]",
+            "signatureHash": "d41fb26bbd9d81122bf2187a22667b2b5efd5813c20af70380d1b54c864966c5",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 66198,
+                "line": 1575,
+                "column": 3
+              },
+              "end": {
+                "offset": 66453,
+                "line": 1580,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "ed486f2e0f9444fa04e761884a3ad98049e510f5c155279e93f0eb0def14f13b"
+            }
+          },
+          {
+            "family": "catalog",
+            "proofKind": "independent-catalog-snapshot-closed-equations-v1",
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.packagingRevision::call[0]",
+            "signatureHash": "5dd6711cbc44d5431b8fc99e9971742928de303eb3ffe2f67c58f31c716e2141",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 66918,
+                "line": 1594,
+                "column": 3
+              },
+              "end": {
+                "offset": 67208,
+                "line": 1600,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "252017c83dce2889e9e24724c8c34097c8134c07a9fe9cef02135c71d52caa4e"
+            }
+          },
+          {
+            "family": "catalog",
+            "proofKind": "independent-catalog-snapshot-closed-equations-v1",
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.compositionForSourcePackagingRevision::call[0]",
+            "signatureHash": "328ee7f0ee40d8c49c9e0681bdb30040e0397062c2080c1e00b33f4c70f37053",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 68171,
+                "line": 1629,
+                "column": 3
+              },
+              "end": {
+                "offset": 68588,
+                "line": 1640,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "004a12c902aa876ea98c44565c0d41aa8ca6e3cc68b1eaa225a32582c076fa59"
+            }
+          },
+          {
+            "family": "r134-sparse-record",
+            "proofKind": "r134-current-independent-sparse-record-equations-v1",
+            "surfaceKey": "src/sparse-record.ts#inventorySparseRecordValue",
+            "termSha256": "80c4cf4ebb11ccea712a0252cede61d6b7dd69caf07ad7f4b6607298c0cc900f",
+            "evidence": {
+              "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/sparse-record-certificate.json",
+              "sha256": "6ecd861755e963798a2cd077813cd3c412997121b16e6f1cdea337baa2fe7815"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "surfaceKey": "export:.#combineInventoryPolicyBatchRequestGroups::call[0]",
+      "signatureHash": "d32981632098dafd1123251bdb259654cab2b1084957474eba2a5c0482f72afe",
+      "declaration": {
+        "file": "src/facade.ts",
+        "start": {
+          "offset": 263400,
+          "line": 7249,
+          "column": 1
+        },
+        "end": {
+          "offset": 264302,
+          "line": 7272,
+          "column": 2
+        },
+        "sourceHash": "a89805b56aa4b238b54168403b016c7e264ab664f405805fbf1de877cb026e5d",
+        "astHash": "482cdf878ab44ed03ae025390f726cf13b76238778ce0bf78a1c1db5ebf8a29d"
+      },
+      "semantics": {
+        "completeExpectedTerm": {
+          "label": "combineInventoryPolicyBatchRequestGroups",
+          "normalizedTermSha256": "843759be9b84b9c1fdc74825f4f53c75732e0ba756e4bd9f83df104ab5bbf8e7",
+          "completeBranchesChecked": true
+        },
+        "privateEquations": [
+          {
+            "label": "assertCanonicalInventoryTime",
+            "normalizedTermSha256": "084a0190543cdcdd656e67aa1e956dc1fe9afe206625d12058081d2df6887c49",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "findCountOperationReplay",
+            "normalizedTermSha256": "ae63358cf7548c330cc8ef0c8908766e392f6c0b690233b985cc69862ddc0fc0",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "replaceCountWithOperation",
+            "normalizedTermSha256": "922e817aaf020d325727083de841a1f20c2fddd3d66b4ae2a59176a2f27431b8",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "compositionQualifiedDimensionFingerprint",
+            "normalizedTermSha256": "27863265dc9869cb7582edcfa093c74cbaaf3c32a504ba0760afa6be84335e43",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "compareCompositionQualifiedDimensionFingerprint",
+            "normalizedTermSha256": "a0b0964ab96f5d05b75dd25b08d7ca336dd6337f16ec54a799c6e9fd14039ebf",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "compareInventoryIdentityText",
+            "normalizedTermSha256": "01edb7fe6d788057baac39ed3619a4505c0a6baeccb4f1d023077bc0adc948cd",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "compareCommittedEventSequence",
+            "normalizedTermSha256": "5f4841cc4caf7a942ed828a43e797e36b4c396de7acce30f9258fd23c5e302b7",
+            "completeBranchesChecked": true
+          }
+        ],
+        "supportingValues": {
+          "InventoryCountOperationKind": {
+            "Abandon": "abandon"
+          },
+          "InventoryCountStatus": {
+            "Completed": "completed",
+            "Abandoned": "abandoned"
+          }
+        },
+        "dependencyReceipts": [
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#assertInventoryAmountSum::call[0]",
+            "signatureHash": "1894f791e227a88ec24769693e1449e3d881b416ab6b86c09a7b34434038ee96",
+            "declaration": {
+              "file": "src/amounts.ts",
+              "start": {
+                "offset": 8936,
+                "line": 243,
+                "column": 1
+              },
+              "end": {
+                "offset": 10170,
+                "line": 283,
+                "column": 2
+              },
+              "sourceHash": "98ddc0fa8d80b2ca244a207f4eb8b55d86131c2ccfd77620da5c85248d03ef57",
+              "astHash": "73d2fe3f6988a9f023a25ead829994e3f2663c7749d39e5b0609d667f76ab62f"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#normalizeInventoryStockSelector::call[0]",
+            "signatureHash": "ab49dafdbf57b266c3536065f5dee4ca876a90aef379655c8f0249ee1ca580a8",
+            "declaration": {
+              "file": "src/selectors.ts",
+              "start": {
+                "offset": 4855,
+                "line": 101,
+                "column": 1
+              },
+              "end": {
+                "offset": 7087,
+                "line": 170,
+                "column": 2
+              },
+              "sourceHash": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957",
+              "astHash": "90198be5327afb1a881d93183b9180068a4773e2322a9d86cc7d7bd8b2c31ef1"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#inventoryStockPositionIdentity::call[0]",
+            "signatureHash": "31b440f046506143b96b758bddbf593688d5fc367f19fda0c5ca1ca2d9a56c0d",
+            "declaration": {
+              "file": "src/model.ts",
+              "start": {
+                "offset": 9829,
+                "line": 234,
+                "column": 1
+              },
+              "end": {
+                "offset": 10414,
+                "line": 253,
+                "column": 2
+              },
+              "sourceHash": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
+              "astHash": "48a12ead90339db24f8619b6cfe0efab9b170c72a8daf140a5fd1ee45b65e52a"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#inventoryIntentFingerprint::call[0]",
+            "signatureHash": "30446d887279831195010055b86ddbd717b9ce5eca6afb07ba32e58c360c496c",
+            "declaration": {
+              "file": "src/canonical.ts",
+              "start": {
+                "offset": 440,
+                "line": 15,
+                "column": 1
+              },
+              "end": {
+                "offset": 641,
+                "line": 20,
+                "column": 2
+              },
+              "sourceHash": "eb2981c629182525c6742d2a67f513f0daec88507e5861f475d5de04984a2d56",
+              "astHash": "83f480c4201f729de318e75d5acaa5102e82fa7ff0576de789c636e0971a3b4e"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#inventoryMetadataFingerprint::call[0]",
+            "signatureHash": "5d6a232938119057cfd2242e10952b8f6235a8c1c8c7a4df327f7740724038a1",
+            "declaration": {
+              "file": "src/canonical.ts",
+              "start": {
+                "offset": 713,
+                "line": 23,
+                "column": 1
+              },
+              "end": {
+                "offset": 1198,
+                "line": 36,
+                "column": 2
+              },
+              "sourceHash": "eb2981c629182525c6742d2a67f513f0daec88507e5861f475d5de04984a2d56",
+              "astHash": "6a962979d68d912cbfc776cdf25e013bce11167da7b8f52e6ccf3de585d4bba1"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#inventoryTraceabilityNodeIdentity::call[0]",
+            "signatureHash": "8f022d5a12dbe83d80447da3798fed75c1b76cdc5237fe4888eaef8d56d22d3a",
+            "declaration": {
+              "file": "src/model.ts",
+              "start": {
+                "offset": 10486,
+                "line": 256,
+                "column": 1
+              },
+              "end": {
+                "offset": 11185,
+                "line": 271,
+                "column": 2
+              },
+              "sourceHash": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
+              "astHash": "64c3736fb3fd8cabb77f634e68296d13877a7b9046c0fc85e1bc7ec504df2020"
+            }
+          },
+          {
+            "family": "catalog",
+            "proofKind": "independent-catalog-snapshot-closed-equations-v1",
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.itemRevision::call[0]",
+            "signatureHash": "d41fb26bbd9d81122bf2187a22667b2b5efd5813c20af70380d1b54c864966c5",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 66198,
+                "line": 1575,
+                "column": 3
+              },
+              "end": {
+                "offset": 66453,
+                "line": 1580,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "ed486f2e0f9444fa04e761884a3ad98049e510f5c155279e93f0eb0def14f13b"
+            }
+          },
+          {
+            "family": "catalog",
+            "proofKind": "independent-catalog-snapshot-closed-equations-v1",
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.packagingRevision::call[0]",
+            "signatureHash": "5dd6711cbc44d5431b8fc99e9971742928de303eb3ffe2f67c58f31c716e2141",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 66918,
+                "line": 1594,
+                "column": 3
+              },
+              "end": {
+                "offset": 67208,
+                "line": 1600,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "252017c83dce2889e9e24724c8c34097c8134c07a9fe9cef02135c71d52caa4e"
+            }
+          },
+          {
+            "family": "catalog",
+            "proofKind": "independent-catalog-snapshot-closed-equations-v1",
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.compositionForSourcePackagingRevision::call[0]",
+            "signatureHash": "328ee7f0ee40d8c49c9e0681bdb30040e0397062c2080c1e00b33f4c70f37053",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 68171,
+                "line": 1629,
+                "column": 3
+              },
+              "end": {
+                "offset": 68588,
+                "line": 1640,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "004a12c902aa876ea98c44565c0d41aa8ca6e3cc68b1eaa225a32582c076fa59"
+            }
+          },
+          {
+            "family": "r134-sparse-record",
+            "proofKind": "r134-current-independent-sparse-record-equations-v1",
+            "surfaceKey": "src/sparse-record.ts#inventorySparseRecordValue",
+            "termSha256": "80c4cf4ebb11ccea712a0252cede61d6b7dd69caf07ad7f4b6607298c0cc900f",
+            "evidence": {
+              "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/sparse-record-certificate.json",
+              "sha256": "6ecd861755e963798a2cd077813cd3c412997121b16e6f1cdea337baa2fe7815"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "surfaceKey": "export:./kernel#abandonInventoryCount::call[0]",
+      "signatureHash": "2e97637f26371f1d6626cad68f887144f8d391973f53c1a2b8f276b3afdd352d",
+      "declaration": {
+        "file": "src/counts.ts",
+        "start": {
+          "offset": 22561,
+          "line": 606,
+          "column": 1
+        },
+        "end": {
+          "offset": 24209,
+          "line": 655,
+          "column": 2
+        },
+        "sourceHash": "5db9ad8d5a6f1a82c594562b66f4be7c677d17bd31d9d10afb11eae781d78f13",
+        "astHash": "150643aa7a4cd9e17f243cc7343f096f4812265a635c9d6219f72f0a4d2454a3"
+      },
+      "semantics": {
+        "completeExpectedTerm": {
+          "label": "abandonInventoryCount",
+          "normalizedTermSha256": "eaffd6a4dfe53ebbbf8d27d9e7380bdf4c953c0472ae4a4a4ceced8b27845d69",
+          "completeBranchesChecked": true
+        },
+        "privateEquations": [
+          {
+            "label": "assertCanonicalInventoryTime",
+            "normalizedTermSha256": "084a0190543cdcdd656e67aa1e956dc1fe9afe206625d12058081d2df6887c49",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "findCountOperationReplay",
+            "normalizedTermSha256": "ae63358cf7548c330cc8ef0c8908766e392f6c0b690233b985cc69862ddc0fc0",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "replaceCountWithOperation",
+            "normalizedTermSha256": "922e817aaf020d325727083de841a1f20c2fddd3d66b4ae2a59176a2f27431b8",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "compositionQualifiedDimensionFingerprint",
+            "normalizedTermSha256": "27863265dc9869cb7582edcfa093c74cbaaf3c32a504ba0760afa6be84335e43",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "compareCompositionQualifiedDimensionFingerprint",
+            "normalizedTermSha256": "a0b0964ab96f5d05b75dd25b08d7ca336dd6337f16ec54a799c6e9fd14039ebf",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "compareInventoryIdentityText",
+            "normalizedTermSha256": "01edb7fe6d788057baac39ed3619a4505c0a6baeccb4f1d023077bc0adc948cd",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "compareCommittedEventSequence",
+            "normalizedTermSha256": "5f4841cc4caf7a942ed828a43e797e36b4c396de7acce30f9258fd23c5e302b7",
+            "completeBranchesChecked": true
+          }
+        ],
+        "supportingValues": {
+          "InventoryCountOperationKind": {
+            "Abandon": "abandon"
+          },
+          "InventoryCountStatus": {
+            "Completed": "completed",
+            "Abandoned": "abandoned"
+          }
+        },
+        "dependencyReceipts": [
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#assertInventoryAmountSum::call[0]",
+            "signatureHash": "1894f791e227a88ec24769693e1449e3d881b416ab6b86c09a7b34434038ee96",
+            "declaration": {
+              "file": "src/amounts.ts",
+              "start": {
+                "offset": 8936,
+                "line": 243,
+                "column": 1
+              },
+              "end": {
+                "offset": 10170,
+                "line": 283,
+                "column": 2
+              },
+              "sourceHash": "98ddc0fa8d80b2ca244a207f4eb8b55d86131c2ccfd77620da5c85248d03ef57",
+              "astHash": "73d2fe3f6988a9f023a25ead829994e3f2663c7749d39e5b0609d667f76ab62f"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#normalizeInventoryStockSelector::call[0]",
+            "signatureHash": "ab49dafdbf57b266c3536065f5dee4ca876a90aef379655c8f0249ee1ca580a8",
+            "declaration": {
+              "file": "src/selectors.ts",
+              "start": {
+                "offset": 4855,
+                "line": 101,
+                "column": 1
+              },
+              "end": {
+                "offset": 7087,
+                "line": 170,
+                "column": 2
+              },
+              "sourceHash": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957",
+              "astHash": "90198be5327afb1a881d93183b9180068a4773e2322a9d86cc7d7bd8b2c31ef1"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#inventoryStockPositionIdentity::call[0]",
+            "signatureHash": "31b440f046506143b96b758bddbf593688d5fc367f19fda0c5ca1ca2d9a56c0d",
+            "declaration": {
+              "file": "src/model.ts",
+              "start": {
+                "offset": 9829,
+                "line": 234,
+                "column": 1
+              },
+              "end": {
+                "offset": 10414,
+                "line": 253,
+                "column": 2
+              },
+              "sourceHash": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
+              "astHash": "48a12ead90339db24f8619b6cfe0efab9b170c72a8daf140a5fd1ee45b65e52a"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#inventoryIntentFingerprint::call[0]",
+            "signatureHash": "30446d887279831195010055b86ddbd717b9ce5eca6afb07ba32e58c360c496c",
+            "declaration": {
+              "file": "src/canonical.ts",
+              "start": {
+                "offset": 440,
+                "line": 15,
+                "column": 1
+              },
+              "end": {
+                "offset": 641,
+                "line": 20,
+                "column": 2
+              },
+              "sourceHash": "eb2981c629182525c6742d2a67f513f0daec88507e5861f475d5de04984a2d56",
+              "astHash": "83f480c4201f729de318e75d5acaa5102e82fa7ff0576de789c636e0971a3b4e"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#inventoryMetadataFingerprint::call[0]",
+            "signatureHash": "5d6a232938119057cfd2242e10952b8f6235a8c1c8c7a4df327f7740724038a1",
+            "declaration": {
+              "file": "src/canonical.ts",
+              "start": {
+                "offset": 713,
+                "line": 23,
+                "column": 1
+              },
+              "end": {
+                "offset": 1198,
+                "line": 36,
+                "column": 2
+              },
+              "sourceHash": "eb2981c629182525c6742d2a67f513f0daec88507e5861f475d5de04984a2d56",
+              "astHash": "6a962979d68d912cbfc776cdf25e013bce11167da7b8f52e6ccf3de585d4bba1"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#inventoryTraceabilityNodeIdentity::call[0]",
+            "signatureHash": "8f022d5a12dbe83d80447da3798fed75c1b76cdc5237fe4888eaef8d56d22d3a",
+            "declaration": {
+              "file": "src/model.ts",
+              "start": {
+                "offset": 10486,
+                "line": 256,
+                "column": 1
+              },
+              "end": {
+                "offset": 11185,
+                "line": 271,
+                "column": 2
+              },
+              "sourceHash": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
+              "astHash": "64c3736fb3fd8cabb77f634e68296d13877a7b9046c0fc85e1bc7ec504df2020"
+            }
+          },
+          {
+            "family": "catalog",
+            "proofKind": "independent-catalog-snapshot-closed-equations-v1",
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.itemRevision::call[0]",
+            "signatureHash": "d41fb26bbd9d81122bf2187a22667b2b5efd5813c20af70380d1b54c864966c5",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 66198,
+                "line": 1575,
+                "column": 3
+              },
+              "end": {
+                "offset": 66453,
+                "line": 1580,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "ed486f2e0f9444fa04e761884a3ad98049e510f5c155279e93f0eb0def14f13b"
+            }
+          },
+          {
+            "family": "catalog",
+            "proofKind": "independent-catalog-snapshot-closed-equations-v1",
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.packagingRevision::call[0]",
+            "signatureHash": "5dd6711cbc44d5431b8fc99e9971742928de303eb3ffe2f67c58f31c716e2141",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 66918,
+                "line": 1594,
+                "column": 3
+              },
+              "end": {
+                "offset": 67208,
+                "line": 1600,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "252017c83dce2889e9e24724c8c34097c8134c07a9fe9cef02135c71d52caa4e"
+            }
+          },
+          {
+            "family": "catalog",
+            "proofKind": "independent-catalog-snapshot-closed-equations-v1",
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.compositionForSourcePackagingRevision::call[0]",
+            "signatureHash": "328ee7f0ee40d8c49c9e0681bdb30040e0397062c2080c1e00b33f4c70f37053",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 68171,
+                "line": 1629,
+                "column": 3
+              },
+              "end": {
+                "offset": 68588,
+                "line": 1640,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "004a12c902aa876ea98c44565c0d41aa8ca6e3cc68b1eaa225a32582c076fa59"
+            }
+          },
+          {
+            "family": "r134-sparse-record",
+            "proofKind": "r134-current-independent-sparse-record-equations-v1",
+            "surfaceKey": "src/sparse-record.ts#inventorySparseRecordValue",
+            "termSha256": "80c4cf4ebb11ccea712a0252cede61d6b7dd69caf07ad7f4b6607298c0cc900f",
+            "evidence": {
+              "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/sparse-record-certificate.json",
+              "sha256": "6ecd861755e963798a2cd077813cd3c412997121b16e6f1cdea337baa2fe7815"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "surfaceKey": "export:./kernel#inventoryCompositionOpenIntentFingerprint::call[0]",
+      "signatureHash": "9ae2361aab15d18f79a96a8b9f5920494f8391640e2dba3e1ca49c3e48e3c21e",
+      "declaration": {
+        "file": "src/composition.ts",
+        "start": {
+          "offset": 3989,
+          "line": 99,
+          "column": 1
+        },
+        "end": {
+          "offset": 6295,
+          "line": 158,
+          "column": 2
+        },
+        "sourceHash": "87d7e004cc2432587c82a238cd2fd9976a3d1f8850771365168e5d33ba6cb24c",
+        "astHash": "8d4a829af4692591ac4d056bfa1e4cae345283fdb11d2259b98b98eb607d57af"
+      },
+      "semantics": {
+        "completeExpectedTerm": {
+          "label": "inventoryCompositionOpenIntentFingerprint",
+          "normalizedTermSha256": "8fc07364e171882bd876e3d7f91daa5367de7aed5309e3effdf429340c44882c",
+          "completeBranchesChecked": true
+        },
+        "privateEquations": [
+          {
+            "label": "assertCanonicalInventoryTime",
+            "normalizedTermSha256": "084a0190543cdcdd656e67aa1e956dc1fe9afe206625d12058081d2df6887c49",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "findCountOperationReplay",
+            "normalizedTermSha256": "ae63358cf7548c330cc8ef0c8908766e392f6c0b690233b985cc69862ddc0fc0",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "replaceCountWithOperation",
+            "normalizedTermSha256": "922e817aaf020d325727083de841a1f20c2fddd3d66b4ae2a59176a2f27431b8",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "compositionQualifiedDimensionFingerprint",
+            "normalizedTermSha256": "27863265dc9869cb7582edcfa093c74cbaaf3c32a504ba0760afa6be84335e43",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "compareCompositionQualifiedDimensionFingerprint",
+            "normalizedTermSha256": "a0b0964ab96f5d05b75dd25b08d7ca336dd6337f16ec54a799c6e9fd14039ebf",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "compareInventoryIdentityText",
+            "normalizedTermSha256": "01edb7fe6d788057baac39ed3619a4505c0a6baeccb4f1d023077bc0adc948cd",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "compareCommittedEventSequence",
+            "normalizedTermSha256": "5f4841cc4caf7a942ed828a43e797e36b4c396de7acce30f9258fd23c5e302b7",
+            "completeBranchesChecked": true
+          }
+        ],
+        "supportingValues": {
+          "InventoryCountOperationKind": {
+            "Abandon": "abandon"
+          },
+          "InventoryCountStatus": {
+            "Completed": "completed",
+            "Abandoned": "abandoned"
+          }
+        },
+        "dependencyReceipts": [
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#assertInventoryAmountSum::call[0]",
+            "signatureHash": "1894f791e227a88ec24769693e1449e3d881b416ab6b86c09a7b34434038ee96",
+            "declaration": {
+              "file": "src/amounts.ts",
+              "start": {
+                "offset": 8936,
+                "line": 243,
+                "column": 1
+              },
+              "end": {
+                "offset": 10170,
+                "line": 283,
+                "column": 2
+              },
+              "sourceHash": "98ddc0fa8d80b2ca244a207f4eb8b55d86131c2ccfd77620da5c85248d03ef57",
+              "astHash": "73d2fe3f6988a9f023a25ead829994e3f2663c7749d39e5b0609d667f76ab62f"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#normalizeInventoryStockSelector::call[0]",
+            "signatureHash": "ab49dafdbf57b266c3536065f5dee4ca876a90aef379655c8f0249ee1ca580a8",
+            "declaration": {
+              "file": "src/selectors.ts",
+              "start": {
+                "offset": 4855,
+                "line": 101,
+                "column": 1
+              },
+              "end": {
+                "offset": 7087,
+                "line": 170,
+                "column": 2
+              },
+              "sourceHash": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957",
+              "astHash": "90198be5327afb1a881d93183b9180068a4773e2322a9d86cc7d7bd8b2c31ef1"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#inventoryStockPositionIdentity::call[0]",
+            "signatureHash": "31b440f046506143b96b758bddbf593688d5fc367f19fda0c5ca1ca2d9a56c0d",
+            "declaration": {
+              "file": "src/model.ts",
+              "start": {
+                "offset": 9829,
+                "line": 234,
+                "column": 1
+              },
+              "end": {
+                "offset": 10414,
+                "line": 253,
+                "column": 2
+              },
+              "sourceHash": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
+              "astHash": "48a12ead90339db24f8619b6cfe0efab9b170c72a8daf140a5fd1ee45b65e52a"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#inventoryIntentFingerprint::call[0]",
+            "signatureHash": "30446d887279831195010055b86ddbd717b9ce5eca6afb07ba32e58c360c496c",
+            "declaration": {
+              "file": "src/canonical.ts",
+              "start": {
+                "offset": 440,
+                "line": 15,
+                "column": 1
+              },
+              "end": {
+                "offset": 641,
+                "line": 20,
+                "column": 2
+              },
+              "sourceHash": "eb2981c629182525c6742d2a67f513f0daec88507e5861f475d5de04984a2d56",
+              "astHash": "83f480c4201f729de318e75d5acaa5102e82fa7ff0576de789c636e0971a3b4e"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#inventoryMetadataFingerprint::call[0]",
+            "signatureHash": "5d6a232938119057cfd2242e10952b8f6235a8c1c8c7a4df327f7740724038a1",
+            "declaration": {
+              "file": "src/canonical.ts",
+              "start": {
+                "offset": 713,
+                "line": 23,
+                "column": 1
+              },
+              "end": {
+                "offset": 1198,
+                "line": 36,
+                "column": 2
+              },
+              "sourceHash": "eb2981c629182525c6742d2a67f513f0daec88507e5861f475d5de04984a2d56",
+              "astHash": "6a962979d68d912cbfc776cdf25e013bce11167da7b8f52e6ccf3de585d4bba1"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#inventoryTraceabilityNodeIdentity::call[0]",
+            "signatureHash": "8f022d5a12dbe83d80447da3798fed75c1b76cdc5237fe4888eaef8d56d22d3a",
+            "declaration": {
+              "file": "src/model.ts",
+              "start": {
+                "offset": 10486,
+                "line": 256,
+                "column": 1
+              },
+              "end": {
+                "offset": 11185,
+                "line": 271,
+                "column": 2
+              },
+              "sourceHash": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
+              "astHash": "64c3736fb3fd8cabb77f634e68296d13877a7b9046c0fc85e1bc7ec504df2020"
+            }
+          },
+          {
+            "family": "catalog",
+            "proofKind": "independent-catalog-snapshot-closed-equations-v1",
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.itemRevision::call[0]",
+            "signatureHash": "d41fb26bbd9d81122bf2187a22667b2b5efd5813c20af70380d1b54c864966c5",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 66198,
+                "line": 1575,
+                "column": 3
+              },
+              "end": {
+                "offset": 66453,
+                "line": 1580,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "ed486f2e0f9444fa04e761884a3ad98049e510f5c155279e93f0eb0def14f13b"
+            }
+          },
+          {
+            "family": "catalog",
+            "proofKind": "independent-catalog-snapshot-closed-equations-v1",
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.packagingRevision::call[0]",
+            "signatureHash": "5dd6711cbc44d5431b8fc99e9971742928de303eb3ffe2f67c58f31c716e2141",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 66918,
+                "line": 1594,
+                "column": 3
+              },
+              "end": {
+                "offset": 67208,
+                "line": 1600,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "252017c83dce2889e9e24724c8c34097c8134c07a9fe9cef02135c71d52caa4e"
+            }
+          },
+          {
+            "family": "catalog",
+            "proofKind": "independent-catalog-snapshot-closed-equations-v1",
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.compositionForSourcePackagingRevision::call[0]",
+            "signatureHash": "328ee7f0ee40d8c49c9e0681bdb30040e0397062c2080c1e00b33f4c70f37053",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 68171,
+                "line": 1629,
+                "column": 3
+              },
+              "end": {
+                "offset": 68588,
+                "line": 1640,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "004a12c902aa876ea98c44565c0d41aa8ca6e3cc68b1eaa225a32582c076fa59"
+            }
+          },
+          {
+            "family": "r134-sparse-record",
+            "proofKind": "r134-current-independent-sparse-record-equations-v1",
+            "surfaceKey": "src/sparse-record.ts#inventorySparseRecordValue",
+            "termSha256": "80c4cf4ebb11ccea712a0252cede61d6b7dd69caf07ad7f4b6607298c0cc900f",
+            "evidence": {
+              "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/sparse-record-certificate.json",
+              "sha256": "6ecd861755e963798a2cd077813cd3c412997121b16e6f1cdea337baa2fe7815"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "surfaceKey": "export:./kernel#inventoryEventsInRecordSequence::call[0]",
+      "signatureHash": "39a2b128f3bc4488bd426a22497bd5ecb8fc8c1b6e34fc0b0760e54a37085fac",
+      "declaration": {
+        "file": "src/projection.ts",
+        "start": {
+          "offset": 29781,
+          "line": 776,
+          "column": 1
+        },
+        "end": {
+          "offset": 30184,
+          "line": 789,
+          "column": 2
+        },
+        "sourceHash": "f2a9747cfc7c63615347c48383ae7f58ee7df007411cc8de3dd5bb6afaca21d5",
+        "astHash": "b0be6d7b50a12af9483fb2cda2cbf1d97b29f2870e49eb78cb7f62cfd39162de"
+      },
+      "semantics": {
+        "completeExpectedTerm": {
+          "label": "inventoryEventsInRecordSequence",
+          "normalizedTermSha256": "c2c7e32a5777a35c156900b36800a02f1bf99eea2d3b9132ef0ff48b9ca07315",
+          "completeBranchesChecked": true
+        },
+        "privateEquations": [
+          {
+            "label": "assertCanonicalInventoryTime",
+            "normalizedTermSha256": "084a0190543cdcdd656e67aa1e956dc1fe9afe206625d12058081d2df6887c49",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "findCountOperationReplay",
+            "normalizedTermSha256": "ae63358cf7548c330cc8ef0c8908766e392f6c0b690233b985cc69862ddc0fc0",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "replaceCountWithOperation",
+            "normalizedTermSha256": "922e817aaf020d325727083de841a1f20c2fddd3d66b4ae2a59176a2f27431b8",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "compositionQualifiedDimensionFingerprint",
+            "normalizedTermSha256": "27863265dc9869cb7582edcfa093c74cbaaf3c32a504ba0760afa6be84335e43",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "compareCompositionQualifiedDimensionFingerprint",
+            "normalizedTermSha256": "a0b0964ab96f5d05b75dd25b08d7ca336dd6337f16ec54a799c6e9fd14039ebf",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "compareInventoryIdentityText",
+            "normalizedTermSha256": "01edb7fe6d788057baac39ed3619a4505c0a6baeccb4f1d023077bc0adc948cd",
+            "completeBranchesChecked": true
+          },
+          {
+            "label": "compareCommittedEventSequence",
+            "normalizedTermSha256": "5f4841cc4caf7a942ed828a43e797e36b4c396de7acce30f9258fd23c5e302b7",
+            "completeBranchesChecked": true
+          }
+        ],
+        "supportingValues": {
+          "InventoryCountOperationKind": {
+            "Abandon": "abandon"
+          },
+          "InventoryCountStatus": {
+            "Completed": "completed",
+            "Abandoned": "abandoned"
+          }
+        },
+        "dependencyReceipts": [
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#assertInventoryAmountSum::call[0]",
+            "signatureHash": "1894f791e227a88ec24769693e1449e3d881b416ab6b86c09a7b34434038ee96",
+            "declaration": {
+              "file": "src/amounts.ts",
+              "start": {
+                "offset": 8936,
+                "line": 243,
+                "column": 1
+              },
+              "end": {
+                "offset": 10170,
+                "line": 283,
+                "column": 2
+              },
+              "sourceHash": "98ddc0fa8d80b2ca244a207f4eb8b55d86131c2ccfd77620da5c85248d03ef57",
+              "astHash": "73d2fe3f6988a9f023a25ead829994e3f2663c7749d39e5b0609d667f76ab62f"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#normalizeInventoryStockSelector::call[0]",
+            "signatureHash": "ab49dafdbf57b266c3536065f5dee4ca876a90aef379655c8f0249ee1ca580a8",
+            "declaration": {
+              "file": "src/selectors.ts",
+              "start": {
+                "offset": 4855,
+                "line": 101,
+                "column": 1
+              },
+              "end": {
+                "offset": 7087,
+                "line": 170,
+                "column": 2
+              },
+              "sourceHash": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957",
+              "astHash": "90198be5327afb1a881d93183b9180068a4773e2322a9d86cc7d7bd8b2c31ef1"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#inventoryStockPositionIdentity::call[0]",
+            "signatureHash": "31b440f046506143b96b758bddbf593688d5fc367f19fda0c5ca1ca2d9a56c0d",
+            "declaration": {
+              "file": "src/model.ts",
+              "start": {
+                "offset": 9829,
+                "line": 234,
+                "column": 1
+              },
+              "end": {
+                "offset": 10414,
+                "line": 253,
+                "column": 2
+              },
+              "sourceHash": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
+              "astHash": "48a12ead90339db24f8619b6cfe0efab9b170c72a8daf140a5fd1ee45b65e52a"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#inventoryIntentFingerprint::call[0]",
+            "signatureHash": "30446d887279831195010055b86ddbd717b9ce5eca6afb07ba32e58c360c496c",
+            "declaration": {
+              "file": "src/canonical.ts",
+              "start": {
+                "offset": 440,
+                "line": 15,
+                "column": 1
+              },
+              "end": {
+                "offset": 641,
+                "line": 20,
+                "column": 2
+              },
+              "sourceHash": "eb2981c629182525c6742d2a67f513f0daec88507e5861f475d5de04984a2d56",
+              "astHash": "83f480c4201f729de318e75d5acaa5102e82fa7ff0576de789c636e0971a3b4e"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#inventoryMetadataFingerprint::call[0]",
+            "signatureHash": "5d6a232938119057cfd2242e10952b8f6235a8c1c8c7a4df327f7740724038a1",
+            "declaration": {
+              "file": "src/canonical.ts",
+              "start": {
+                "offset": 713,
+                "line": 23,
+                "column": 1
+              },
+              "end": {
+                "offset": 1198,
+                "line": 36,
+                "column": 2
+              },
+              "sourceHash": "eb2981c629182525c6742d2a67f513f0daec88507e5861f475d5de04984a2d56",
+              "astHash": "6a962979d68d912cbfc776cdf25e013bce11167da7b8f52e6ccf3de585d4bba1"
+            }
+          },
+          {
+            "family": "identity",
+            "proofKind": "independent-identity-values-closed-equations-v1",
+            "surfaceKey": "export:./kernel#inventoryTraceabilityNodeIdentity::call[0]",
+            "signatureHash": "8f022d5a12dbe83d80447da3798fed75c1b76cdc5237fe4888eaef8d56d22d3a",
+            "declaration": {
+              "file": "src/model.ts",
+              "start": {
+                "offset": 10486,
+                "line": 256,
+                "column": 1
+              },
+              "end": {
+                "offset": 11185,
+                "line": 271,
+                "column": 2
+              },
+              "sourceHash": "df2f15e918a5f349ade6fcfc33393a520f2b74c7221a2e0eca83f7647341d122",
+              "astHash": "64c3736fb3fd8cabb77f634e68296d13877a7b9046c0fc85e1bc7ec504df2020"
+            }
+          },
+          {
+            "family": "catalog",
+            "proofKind": "independent-catalog-snapshot-closed-equations-v1",
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.itemRevision::call[0]",
+            "signatureHash": "d41fb26bbd9d81122bf2187a22667b2b5efd5813c20af70380d1b54c864966c5",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 66198,
+                "line": 1575,
+                "column": 3
+              },
+              "end": {
+                "offset": 66453,
+                "line": 1580,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "ed486f2e0f9444fa04e761884a3ad98049e510f5c155279e93f0eb0def14f13b"
+            }
+          },
+          {
+            "family": "catalog",
+            "proofKind": "independent-catalog-snapshot-closed-equations-v1",
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.packagingRevision::call[0]",
+            "signatureHash": "5dd6711cbc44d5431b8fc99e9971742928de303eb3ffe2f67c58f31c716e2141",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 66918,
+                "line": 1594,
+                "column": 3
+              },
+              "end": {
+                "offset": 67208,
+                "line": 1600,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "252017c83dce2889e9e24724c8c34097c8134c07a9fe9cef02135c71d52caa4e"
+            }
+          },
+          {
+            "family": "catalog",
+            "proofKind": "independent-catalog-snapshot-closed-equations-v1",
+            "surfaceKey": "type:src/catalog.ts#InventoryCatalog.compositionForSourcePackagingRevision::call[0]",
+            "signatureHash": "328ee7f0ee40d8c49c9e0681bdb30040e0397062c2080c1e00b33f4c70f37053",
+            "declaration": {
+              "file": "src/catalog.ts",
+              "start": {
+                "offset": 68171,
+                "line": 1629,
+                "column": 3
+              },
+              "end": {
+                "offset": 68588,
+                "line": 1640,
+                "column": 4
+              },
+              "sourceHash": "00b2e80984f1fa48dfdba87e4b810f2fe80a03d339399f2d7dff12190e611f56",
+              "astHash": "004a12c902aa876ea98c44565c0d41aa8ca6e3cc68b1eaa225a32582c076fa59"
+            }
+          },
+          {
+            "family": "r134-sparse-record",
+            "proofKind": "r134-current-independent-sparse-record-equations-v1",
+            "surfaceKey": "src/sparse-record.ts#inventorySparseRecordValue",
+            "termSha256": "80c4cf4ebb11ccea712a0252cede61d6b7dd69caf07ad7f4b6607298c0cc900f",
+            "evidence": {
+              "file": "experiments/tla-conformance/r134-sparse-record-shared-currentization/sparse-record-certificate.json",
+              "sha256": "6ecd861755e963798a2cd077813cd3c412997121b16e6f1cdea337baa2fe7815"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

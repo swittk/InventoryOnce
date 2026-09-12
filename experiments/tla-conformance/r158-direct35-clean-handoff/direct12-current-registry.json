@@ -1,0 +1,728 @@
+{
+  "schemaVersion": 1,
+  "owner": "r158-direct12-current-source-handoff",
+  "bindings": [
+    {
+      "surfaceKey": "export:./migrations#applyInventoryMigrationPlan::call[0]",
+      "mode": "A",
+      "formal": {
+        "model": "SnapshotSupersededWorkflow",
+        "source": "formal/SnapshotSupersededWorkflow.tla",
+        "sourceHash": "f8df9e18844ebcbb23fa851a38ce48bd089157864d17c9533583de584e292aa2",
+        "variables": [
+          "fence",
+          "snapshotCaptured",
+          "snapshotRevision",
+          "sourceRevision",
+          "dispositions",
+          "dispositionEventCount",
+          "published",
+          "publishedRevision",
+          "resumeAttempts",
+          "resumedAfterFence",
+          "workflowOutcome"
+        ],
+        "actions": [
+          "PublishOpeningSnapshot"
+        ]
+      },
+      "source": {
+        "actionCall": {
+          "file": "experiments/tla-conformance/migration-r5/native-snapshot-superseded-driver.ts",
+          "start": 36223,
+          "end": 36421,
+          "sourceHash": "291efea42ec228887ede3ac9b0f961b263638a38a653c41d11f9110e6567e55e",
+          "astHash": "ab7f06408986abaa361e0677e0b69d5e5673ab5968f25d8086c406184b80655a"
+        },
+        "stateCheckCall": {
+          "file": "experiments/tla-conformance/migration-r5/snapshot-superseded-proof.ts",
+          "start": 47302,
+          "end": 47365,
+          "sourceHash": "0405440584da0f5fcf585c498175b6265c23cf1f83f47c3149fc609676db54c5",
+          "astHash": "11a2c69f00b409261bfa501d4db958b5bd36157ad6953c59aa9d087de0562c76"
+        },
+        "resultCheckCall": {
+          "file": "experiments/tla-conformance/migration-r5/native-snapshot-superseded-driver.ts",
+          "start": 36186,
+          "end": 36446,
+          "sourceHash": "291efea42ec228887ede3ac9b0f961b263638a38a653c41d11f9110e6567e55e",
+          "astHash": "8cf98ec1c30b7c939373fb551d42f66d144fae867cb7bda4e5d3b13169742ec4"
+        },
+        "enablednessCheckCall": {
+          "file": "experiments/tla-conformance/migration-r5/snapshot-superseded-proof.ts",
+          "start": 46649,
+          "end": 46725,
+          "sourceHash": "0405440584da0f5fcf585c498175b6265c23cf1f83f47c3149fc609676db54c5",
+          "astHash": "f8a903bf584190655f925296f31dce09410c2c23afd56ab3171acf7705b51ba6"
+        },
+        "reverseNextCheckCall": {
+          "file": "experiments/tla-conformance/migration-r5/snapshot-surface-evidence.ts",
+          "start": 18250,
+          "end": 18313,
+          "sourceHash": "3adc4aa0b45c3c8663d53c5170bde8206ac7429be0ecbacb7bf9d9c2900f1e10",
+          "astHash": "d38fe1d7580e10ffcd5e1f6a68214e2c9e445b971dba9479a4f2734fd4709e8c"
+        }
+      },
+      "execution": {
+        "file": "experiments/tla-conformance/r158-direct35-clean-handoff/artifacts/direct12-snapshot-execution.json",
+        "sha256": "d112ec12c2594df13ae36e6b5a4775e2c32004561ea94dc612593c997163cc45"
+      }
+    },
+    {
+      "surfaceKey": "export:./migrations#defineInventoryMigration::call[0]",
+      "mode": "A",
+      "formal": {
+        "model": "SnapshotSupersededWorkflow",
+        "source": "formal/SnapshotSupersededWorkflow.tla",
+        "sourceHash": "f8df9e18844ebcbb23fa851a38ce48bd089157864d17c9533583de584e292aa2",
+        "variables": [
+          "fence",
+          "snapshotCaptured",
+          "snapshotRevision",
+          "sourceRevision",
+          "dispositions",
+          "dispositionEventCount",
+          "published",
+          "publishedRevision",
+          "resumeAttempts",
+          "resumedAfterFence",
+          "workflowOutcome"
+        ],
+        "actions": [
+          "CaptureOpeningSnapshot",
+          "DisposeSnapshotRow"
+        ]
+      },
+      "source": {
+        "actionCall": {
+          "file": "experiments/tla-conformance/migration-r5/native-snapshot-superseded-driver.ts",
+          "start": 11469,
+          "end": 12122,
+          "sourceHash": "291efea42ec228887ede3ac9b0f961b263638a38a653c41d11f9110e6567e55e",
+          "astHash": "0df456f553458b713f12e3419181264ba5e185d71d55854cae064153de3c7a15"
+        },
+        "stateCheckCall": {
+          "file": "experiments/tla-conformance/migration-r5/snapshot-superseded-proof.ts",
+          "start": 47302,
+          "end": 47365,
+          "sourceHash": "0405440584da0f5fcf585c498175b6265c23cf1f83f47c3149fc609676db54c5",
+          "astHash": "11a2c69f00b409261bfa501d4db958b5bd36157ad6953c59aa9d087de0562c76"
+        },
+        "resultCheckCall": {
+          "file": "experiments/tla-conformance/migration-r5/native-snapshot-superseded-driver.ts",
+          "start": 11439,
+          "end": 12127,
+          "sourceHash": "291efea42ec228887ede3ac9b0f961b263638a38a653c41d11f9110e6567e55e",
+          "astHash": "fef6bdd86d95e18c917f517d35a25c0b9a279a527efde2d1aa4f3ea3de9ef650"
+        },
+        "enablednessCheckCall": {
+          "file": "experiments/tla-conformance/migration-r5/snapshot-superseded-proof.ts",
+          "start": 46649,
+          "end": 46725,
+          "sourceHash": "0405440584da0f5fcf585c498175b6265c23cf1f83f47c3149fc609676db54c5",
+          "astHash": "f8a903bf584190655f925296f31dce09410c2c23afd56ab3171acf7705b51ba6"
+        },
+        "reverseNextCheckCall": {
+          "file": "experiments/tla-conformance/migration-r5/snapshot-surface-evidence.ts",
+          "start": 18250,
+          "end": 18313,
+          "sourceHash": "3adc4aa0b45c3c8663d53c5170bde8206ac7429be0ecbacb7bf9d9c2900f1e10",
+          "astHash": "d38fe1d7580e10ffcd5e1f6a68214e2c9e445b971dba9479a4f2734fd4709e8c"
+        }
+      },
+      "execution": {
+        "file": "experiments/tla-conformance/r158-direct35-clean-handoff/artifacts/direct12-snapshot-execution.json",
+        "sha256": "d112ec12c2594df13ae36e6b5a4775e2c32004561ea94dc612593c997163cc45"
+      }
+    },
+    {
+      "surfaceKey": "export:./migrations#dryRunInventoryMigration::call[0]",
+      "mode": "A",
+      "formal": {
+        "model": "SnapshotSupersededWorkflow",
+        "source": "formal/SnapshotSupersededWorkflow.tla",
+        "sourceHash": "f8df9e18844ebcbb23fa851a38ce48bd089157864d17c9533583de584e292aa2",
+        "variables": [
+          "fence",
+          "snapshotCaptured",
+          "snapshotRevision",
+          "sourceRevision",
+          "dispositions",
+          "dispositionEventCount",
+          "published",
+          "publishedRevision",
+          "resumeAttempts",
+          "resumedAfterFence",
+          "workflowOutcome"
+        ],
+        "actions": [
+          "PublishOpeningSnapshot"
+        ]
+      },
+      "source": {
+        "actionCall": {
+          "file": "experiments/tla-conformance/migration-r5/native-snapshot-superseded-driver.ts",
+          "start": 35952,
+          "end": 36080,
+          "sourceHash": "291efea42ec228887ede3ac9b0f961b263638a38a653c41d11f9110e6567e55e",
+          "astHash": "2b397987230e8b2ce20294d6d1f5893ccbbd0798ab1e920654f3e9b37988cedb"
+        },
+        "stateCheckCall": {
+          "file": "experiments/tla-conformance/migration-r5/snapshot-superseded-proof.ts",
+          "start": 47302,
+          "end": 47365,
+          "sourceHash": "0405440584da0f5fcf585c498175b6265c23cf1f83f47c3149fc609676db54c5",
+          "astHash": "11a2c69f00b409261bfa501d4db958b5bd36157ad6953c59aa9d087de0562c76"
+        },
+        "resultCheckCall": {
+          "file": "experiments/tla-conformance/migration-r5/native-snapshot-superseded-driver.ts",
+          "start": 35919,
+          "end": 36130,
+          "sourceHash": "291efea42ec228887ede3ac9b0f961b263638a38a653c41d11f9110e6567e55e",
+          "astHash": "0ff1a4d56054d490251ae5057c8634dbdc4236388636d9135962783c75dcb089"
+        },
+        "enablednessCheckCall": {
+          "file": "experiments/tla-conformance/migration-r5/snapshot-superseded-proof.ts",
+          "start": 46649,
+          "end": 46725,
+          "sourceHash": "0405440584da0f5fcf585c498175b6265c23cf1f83f47c3149fc609676db54c5",
+          "astHash": "f8a903bf584190655f925296f31dce09410c2c23afd56ab3171acf7705b51ba6"
+        },
+        "reverseNextCheckCall": {
+          "file": "experiments/tla-conformance/migration-r5/snapshot-surface-evidence.ts",
+          "start": 18250,
+          "end": 18313,
+          "sourceHash": "3adc4aa0b45c3c8663d53c5170bde8206ac7429be0ecbacb7bf9d9c2900f1e10",
+          "astHash": "d38fe1d7580e10ffcd5e1f6a68214e2c9e445b971dba9479a4f2734fd4709e8c"
+        }
+      },
+      "execution": {
+        "file": "experiments/tla-conformance/r158-direct35-clean-handoff/artifacts/direct12-snapshot-execution.json",
+        "sha256": "d112ec12c2594df13ae36e6b5a4775e2c32004561ea94dc612593c997163cc45"
+      }
+    },
+    {
+      "surfaceKey": "export:./migrations#inventoryMigrationSnapshotSupersededDisposition::call[0]",
+      "mode": "A",
+      "formal": {
+        "model": "SnapshotSupersededWorkflow",
+        "source": "formal/SnapshotSupersededWorkflow.tla",
+        "sourceHash": "f8df9e18844ebcbb23fa851a38ce48bd089157864d17c9533583de584e292aa2",
+        "variables": [
+          "fence",
+          "snapshotCaptured",
+          "snapshotRevision",
+          "sourceRevision",
+          "dispositions",
+          "dispositionEventCount",
+          "published",
+          "publishedRevision",
+          "resumeAttempts",
+          "resumedAfterFence",
+          "workflowOutcome"
+        ],
+        "actions": [
+          "DisposeSnapshotRow"
+        ]
+      },
+      "source": {
+        "actionCall": {
+          "file": "experiments/tla-conformance/migration-r5/native-snapshot-superseded-driver.ts",
+          "start": 10415,
+          "end": 10827,
+          "sourceHash": "291efea42ec228887ede3ac9b0f961b263638a38a653c41d11f9110e6567e55e",
+          "astHash": "a3fb1def3f7326da9b32931de40f6687785140e70725cea65881382afd790cac"
+        },
+        "stateCheckCall": {
+          "file": "experiments/tla-conformance/migration-r5/snapshot-superseded-proof.ts",
+          "start": 47302,
+          "end": 47365,
+          "sourceHash": "0405440584da0f5fcf585c498175b6265c23cf1f83f47c3149fc609676db54c5",
+          "astHash": "11a2c69f00b409261bfa501d4db958b5bd36157ad6953c59aa9d087de0562c76"
+        },
+        "resultCheckCall": {
+          "file": "experiments/tla-conformance/migration-r5/native-snapshot-superseded-driver.ts",
+          "start": 10383,
+          "end": 10832,
+          "sourceHash": "291efea42ec228887ede3ac9b0f961b263638a38a653c41d11f9110e6567e55e",
+          "astHash": "2d07d9a73a9a8ce01cb0fe879430c8d8b4d5a23e36bea2b2cd6845999d581e8f"
+        },
+        "enablednessCheckCall": {
+          "file": "experiments/tla-conformance/migration-r5/snapshot-superseded-proof.ts",
+          "start": 46649,
+          "end": 46725,
+          "sourceHash": "0405440584da0f5fcf585c498175b6265c23cf1f83f47c3149fc609676db54c5",
+          "astHash": "f8a903bf584190655f925296f31dce09410c2c23afd56ab3171acf7705b51ba6"
+        },
+        "reverseNextCheckCall": {
+          "file": "experiments/tla-conformance/migration-r5/snapshot-surface-evidence.ts",
+          "start": 18250,
+          "end": 18313,
+          "sourceHash": "3adc4aa0b45c3c8663d53c5170bde8206ac7429be0ecbacb7bf9d9c2900f1e10",
+          "astHash": "d38fe1d7580e10ffcd5e1f6a68214e2c9e445b971dba9479a4f2734fd4709e8c"
+        }
+      },
+      "execution": {
+        "file": "experiments/tla-conformance/r158-direct35-clean-handoff/artifacts/direct12-snapshot-execution.json",
+        "sha256": "d112ec12c2594df13ae36e6b5a4775e2c32004561ea94dc612593c997163cc45"
+      }
+    },
+    {
+      "surfaceKey": "type:src/facade.ts#InventoryOnceStockApi.transfer::call[0]",
+      "mode": "A",
+      "formal": {
+        "model": "DurableTransferRefinement",
+        "source": "formal/DurableTransferRefinement.tla",
+        "sourceHash": "319a26169d268f529bbfe489746cf57f18f4daeb4157161b2948b2ebd3349b1d",
+        "variables": [
+          "phase",
+          "transactionWritten",
+          "sourceProjectionWritten",
+          "destinationProjectionWritten",
+          "visibleSource",
+          "visibleDestination"
+        ],
+        "action": "Start"
+      },
+      "source": {
+        "actionCall": {
+          "file": "experiments/tla-conformance/transfer-surface-r6/small-model-surface.ts",
+          "start": 13433,
+          "end": 13704,
+          "sourceHash": "479fd9bbf81461c2b6d36836bbd4168461b7f92e6f5651b22983e4782a3e6563",
+          "astHash": "02f116b089509664576abcbf433912fdcb6b7a680d8a8608460f4296c3997179"
+        },
+        "stateCheckCall": {
+          "file": "experiments/tla-conformance/transfer-surface-r6/small-model-surface.ts",
+          "start": 13921,
+          "end": 13969,
+          "sourceHash": "479fd9bbf81461c2b6d36836bbd4168461b7f92e6f5651b22983e4782a3e6563",
+          "astHash": "182f2a9975115d69cf2ba35cd61c625393d54dbe407f9a79667ecc29b725a1c7"
+        },
+        "resultCheckCall": {
+          "file": "experiments/tla-conformance/transfer-surface-r6/small-model-surface.ts",
+          "start": 13404,
+          "end": 13730,
+          "sourceHash": "479fd9bbf81461c2b6d36836bbd4168461b7f92e6f5651b22983e4782a3e6563",
+          "astHash": "59f4323096ccae3221d7a0504423d569a00ddff74aba401b81df9cc19c375f16"
+        },
+        "enablednessCheckCall": {
+          "file": "experiments/tla-conformance/transfer-surface-r6/small-model-surface.ts",
+          "start": 13973,
+          "end": 14018,
+          "sourceHash": "479fd9bbf81461c2b6d36836bbd4168461b7f92e6f5651b22983e4782a3e6563",
+          "astHash": "4bee407253a571709568fb4b1ae2e201ab729f16b87eb5814d3dd4b9b8366caa"
+        },
+        "reverseNextCheckCall": {
+          "file": "experiments/tla-conformance/transfer-surface-r6/small-model-surface.ts",
+          "start": 14022,
+          "end": 14089,
+          "sourceHash": "479fd9bbf81461c2b6d36836bbd4168461b7f92e6f5651b22983e4782a3e6563",
+          "astHash": "e38c4825553312e8a1e6f81cb8f6322344493254275719b5c3c8073bed30f35e"
+        }
+      },
+      "execution": {
+        "file": "experiments/tla-conformance/r158-direct35-clean-handoff/artifacts/direct12-durable-transfer-execution.json",
+        "sha256": "e31dc2c5fc8f03857b6f267de4c11648ce79cfc624d1517650e36baa713b1077"
+      }
+    },
+    {
+      "surfaceKey": "type:src/facade.ts#InventoryOnceTransfersApi.dispatch::call[0]",
+      "mode": "A",
+      "formal": {
+        "model": "TransferLifecycle",
+        "source": "formal/TransferLifecycle.tla",
+        "sourceHash": "e968c0b2c2caa5d0a394dff68580cb952cf15da241517c968d45363bec98eac4",
+        "variables": [
+          "sourceFree",
+          "phase",
+          "intent",
+          "prepared",
+          "dispatched",
+          "transit",
+          "received",
+          "owner",
+          "transitCustodian",
+          "destinationCustodian"
+        ],
+        "actions": [
+          "Dispatch"
+        ]
+      },
+      "source": {
+        "actionCall": {
+          "file": "experiments/tla-conformance/transfer-surface-r6/lifecycle-driver.ts",
+          "start": 26617,
+          "end": 26818,
+          "sourceHash": "66e01cee4ce1743f25e9cb56d7a0e6d7027f7427862533a124acd1f41b6654d8",
+          "astHash": "2fa9ede64b20e5acd15b24ad13e13aa6e351cd98ad6587ec9fc36064607831f5"
+        },
+        "stateCheckCall": {
+          "file": "experiments/tla-conformance/transfer-surface-r6/lifecycle-driver.ts",
+          "start": 21192,
+          "end": 21247,
+          "sourceHash": "66e01cee4ce1743f25e9cb56d7a0e6d7027f7427862533a124acd1f41b6654d8",
+          "astHash": "268e8ffe8fb9ccdcf0a3c0acdaab596dc7164316bf9d6d0ee915b23d68522cd3"
+        },
+        "resultCheckCall": {
+          "file": "experiments/tla-conformance/transfer-surface-r6/lifecycle-driver.ts",
+          "start": 26563,
+          "end": 26825,
+          "sourceHash": "66e01cee4ce1743f25e9cb56d7a0e6d7027f7427862533a124acd1f41b6654d8",
+          "astHash": "e2d79723802637cf1c01476fca147db8d55291452f3e5d4ab9af2d3259f65bbf"
+        },
+        "enablednessCheckCall": {
+          "file": "experiments/tla-conformance/transfer-surface-r6/lifecycle-driver.ts",
+          "start": 34619,
+          "end": 34670,
+          "sourceHash": "66e01cee4ce1743f25e9cb56d7a0e6d7027f7427862533a124acd1f41b6654d8",
+          "astHash": "f619d7090973def56c174fe62b52e3ab3790098432909bff7d1f66bf5a3be304"
+        },
+        "reverseNextCheckCall": {
+          "file": "experiments/tla-conformance/transfer-surface-r6/surface-finalize.ts",
+          "start": 12342,
+          "end": 12454,
+          "sourceHash": "b61be76c7617a84a1b0a22394a7c45100555eeb189574b921fe5387013590e71",
+          "astHash": "6e3f463490980d09dbc1ea4f3ad1ce633fc7890acc7bd0fa0f88afb08e9a8ebc"
+        }
+      },
+      "execution": {
+        "file": "experiments/tla-conformance/r158-direct35-clean-handoff/artifacts/direct12-transfer-lifecycle-execution.json",
+        "sha256": "7e41aa8ac638dd92a47a3545c3237a1fcd90e89674621b7e7d6aa19ac6cb969d"
+      }
+    },
+    {
+      "surfaceKey": "type:src/facade.ts#InventoryOnceTransfersApi.find::call[0]",
+      "mode": "B",
+      "formal": {
+        "model": "TransferLifecycle",
+        "source": "formal/TransferLifecycle.tla",
+        "sourceHash": "e968c0b2c2caa5d0a394dff68580cb952cf15da241517c968d45363bec98eac4",
+        "variables": [
+          "sourceFree",
+          "phase",
+          "intent",
+          "prepared",
+          "dispatched",
+          "transit",
+          "received",
+          "owner",
+          "transitCustodian",
+          "destinationCustodian"
+        ]
+      },
+      "source": {
+        "readCalls": [
+          {
+            "file": "experiments/tla-conformance/transfer-surface-r6/lifecycle-driver.ts",
+            "start": 21000,
+            "end": 21046,
+            "sourceHash": "66e01cee4ce1743f25e9cb56d7a0e6d7027f7427862533a124acd1f41b6654d8",
+            "astHash": "4588e2c205055d42fa4affec8b8a95e43cc58fdbcbfe620ff9e9ba883a5ffcce"
+          },
+          {
+            "file": "experiments/tla-conformance/transfer-surface-r6/lifecycle-driver.ts",
+            "start": 21071,
+            "end": 21117,
+            "sourceHash": "66e01cee4ce1743f25e9cb56d7a0e6d7027f7427862533a124acd1f41b6654d8",
+            "astHash": "adbfe02cdf85575cd7d2d876f94b15788669f5b6cf8ba539e245305597cd2dc6"
+          }
+        ],
+        "projectionCall": {
+          "file": "experiments/tla-conformance/transfer-surface-r6/lifecycle-driver.ts",
+          "start": 21140,
+          "end": 21181,
+          "sourceHash": "66e01cee4ce1743f25e9cb56d7a0e6d7027f7427862533a124acd1f41b6654d8",
+          "astHash": "a391b1230db49b8502b9e03d30b013922b9a24e71d4c64048654517096b01617"
+        },
+        "projectionCheckCall": {
+          "file": "experiments/tla-conformance/transfer-surface-r6/lifecycle-driver.ts",
+          "start": 21192,
+          "end": 21247,
+          "sourceHash": "66e01cee4ce1743f25e9cb56d7a0e6d7027f7427862533a124acd1f41b6654d8",
+          "astHash": "268e8ffe8fb9ccdcf0a3c0acdaab596dc7164316bf9d6d0ee915b23d68522cd3"
+        }
+      },
+      "execution": {
+        "file": "experiments/tla-conformance/r158-direct35-clean-handoff/artifacts/direct12-transfer-lifecycle-execution.json",
+        "sha256": "7e41aa8ac638dd92a47a3545c3237a1fcd90e89674621b7e7d6aa19ac6cb969d"
+      }
+    },
+    {
+      "surfaceKey": "type:src/facade.ts#InventoryOnceTransfersApi.prepare::call[0]",
+      "mode": "A",
+      "formal": {
+        "model": "TransferLifecycle",
+        "source": "formal/TransferLifecycle.tla",
+        "sourceHash": "e968c0b2c2caa5d0a394dff68580cb952cf15da241517c968d45363bec98eac4",
+        "variables": [
+          "sourceFree",
+          "phase",
+          "intent",
+          "prepared",
+          "dispatched",
+          "transit",
+          "received",
+          "owner",
+          "transitCustodian",
+          "destinationCustodian"
+        ],
+        "actions": [
+          "Prepare",
+          "Retry"
+        ]
+      },
+      "source": {
+        "actionCall": {
+          "file": "experiments/tla-conformance/transfer-surface-r6/lifecycle-driver.ts",
+          "start": 25824,
+          "end": 26330,
+          "sourceHash": "66e01cee4ce1743f25e9cb56d7a0e6d7027f7427862533a124acd1f41b6654d8",
+          "astHash": "8557b675e35fbc9b0850e13346929eca25dbde5391c84e48eed1494cf94d14da"
+        },
+        "stateCheckCall": {
+          "file": "experiments/tla-conformance/transfer-surface-r6/lifecycle-driver.ts",
+          "start": 21192,
+          "end": 21247,
+          "sourceHash": "66e01cee4ce1743f25e9cb56d7a0e6d7027f7427862533a124acd1f41b6654d8",
+          "astHash": "268e8ffe8fb9ccdcf0a3c0acdaab596dc7164316bf9d6d0ee915b23d68522cd3"
+        },
+        "resultCheckCall": {
+          "file": "experiments/tla-conformance/transfer-surface-r6/lifecycle-driver.ts",
+          "start": 25770,
+          "end": 26337,
+          "sourceHash": "66e01cee4ce1743f25e9cb56d7a0e6d7027f7427862533a124acd1f41b6654d8",
+          "astHash": "dc8103a5dddb1d91110d830190778e0ff27a2d31196f698c8f1b2129a68b7e3d"
+        },
+        "enablednessCheckCall": {
+          "file": "experiments/tla-conformance/transfer-surface-r6/lifecycle-driver.ts",
+          "start": 34619,
+          "end": 34670,
+          "sourceHash": "66e01cee4ce1743f25e9cb56d7a0e6d7027f7427862533a124acd1f41b6654d8",
+          "astHash": "f619d7090973def56c174fe62b52e3ab3790098432909bff7d1f66bf5a3be304"
+        },
+        "reverseNextCheckCall": {
+          "file": "experiments/tla-conformance/transfer-surface-r6/surface-finalize.ts",
+          "start": 12342,
+          "end": 12454,
+          "sourceHash": "b61be76c7617a84a1b0a22394a7c45100555eeb189574b921fe5387013590e71",
+          "astHash": "6e3f463490980d09dbc1ea4f3ad1ce633fc7890acc7bd0fa0f88afb08e9a8ebc"
+        }
+      },
+      "execution": {
+        "file": "experiments/tla-conformance/r158-direct35-clean-handoff/artifacts/direct12-transfer-lifecycle-execution.json",
+        "sha256": "7e41aa8ac638dd92a47a3545c3237a1fcd90e89674621b7e7d6aa19ac6cb969d"
+      }
+    },
+    {
+      "surfaceKey": "type:src/facade.ts#InventoryOnceTransfersApi.receive::call[0]",
+      "mode": "A",
+      "formal": {
+        "model": "TransferLifecycle",
+        "source": "formal/TransferLifecycle.tla",
+        "sourceHash": "e968c0b2c2caa5d0a394dff68580cb952cf15da241517c968d45363bec98eac4",
+        "variables": [
+          "sourceFree",
+          "phase",
+          "intent",
+          "prepared",
+          "dispatched",
+          "transit",
+          "received",
+          "owner",
+          "transitCustodian",
+          "destinationCustodian"
+        ],
+        "actions": [
+          "Receive"
+        ]
+      },
+      "source": {
+        "actionCall": {
+          "file": "experiments/tla-conformance/transfer-surface-r6/lifecycle-driver.ts",
+          "start": 27228,
+          "end": 27559,
+          "sourceHash": "66e01cee4ce1743f25e9cb56d7a0e6d7027f7427862533a124acd1f41b6654d8",
+          "astHash": "89021054ae309f673cfe6e7e5745cc53a33b54b06ca55661c169cb25742c0a9c"
+        },
+        "stateCheckCall": {
+          "file": "experiments/tla-conformance/transfer-surface-r6/lifecycle-driver.ts",
+          "start": 21192,
+          "end": 21247,
+          "sourceHash": "66e01cee4ce1743f25e9cb56d7a0e6d7027f7427862533a124acd1f41b6654d8",
+          "astHash": "268e8ffe8fb9ccdcf0a3c0acdaab596dc7164316bf9d6d0ee915b23d68522cd3"
+        },
+        "resultCheckCall": {
+          "file": "experiments/tla-conformance/transfer-surface-r6/lifecycle-driver.ts",
+          "start": 27174,
+          "end": 27566,
+          "sourceHash": "66e01cee4ce1743f25e9cb56d7a0e6d7027f7427862533a124acd1f41b6654d8",
+          "astHash": "aa1f9284cc347c5ceba0722d02e7a27e12c253d202f7f6c0d784dfaf4b865c32"
+        },
+        "enablednessCheckCall": {
+          "file": "experiments/tla-conformance/transfer-surface-r6/lifecycle-driver.ts",
+          "start": 34619,
+          "end": 34670,
+          "sourceHash": "66e01cee4ce1743f25e9cb56d7a0e6d7027f7427862533a124acd1f41b6654d8",
+          "astHash": "f619d7090973def56c174fe62b52e3ab3790098432909bff7d1f66bf5a3be304"
+        },
+        "reverseNextCheckCall": {
+          "file": "experiments/tla-conformance/transfer-surface-r6/surface-finalize.ts",
+          "start": 12342,
+          "end": 12454,
+          "sourceHash": "b61be76c7617a84a1b0a22394a7c45100555eeb189574b921fe5387013590e71",
+          "astHash": "6e3f463490980d09dbc1ea4f3ad1ce633fc7890acc7bd0fa0f88afb08e9a8ebc"
+        }
+      },
+      "execution": {
+        "file": "experiments/tla-conformance/r158-direct35-clean-handoff/artifacts/direct12-transfer-lifecycle-execution.json",
+        "sha256": "7e41aa8ac638dd92a47a3545c3237a1fcd90e89674621b7e7d6aa19ac6cb969d"
+      }
+    },
+    {
+      "surfaceKey": "type:src/facade.ts#InventoryOnceTransfersApi.release::call[0]",
+      "mode": "A",
+      "formal": {
+        "model": "TransferLifecycle",
+        "source": "formal/TransferLifecycle.tla",
+        "sourceHash": "e968c0b2c2caa5d0a394dff68580cb952cf15da241517c968d45363bec98eac4",
+        "variables": [
+          "sourceFree",
+          "phase",
+          "intent",
+          "prepared",
+          "dispatched",
+          "transit",
+          "received",
+          "owner",
+          "transitCustodian",
+          "destinationCustodian"
+        ],
+        "actions": [
+          "Release"
+        ]
+      },
+      "source": {
+        "actionCall": {
+          "file": "experiments/tla-conformance/transfer-surface-r6/lifecycle-driver.ts",
+          "start": 27674,
+          "end": 27826,
+          "sourceHash": "66e01cee4ce1743f25e9cb56d7a0e6d7027f7427862533a124acd1f41b6654d8",
+          "astHash": "448c79031e0bcee6a7a9704cf0dd98caa3c90b562580eb36ca291f590aebf1a6"
+        },
+        "stateCheckCall": {
+          "file": "experiments/tla-conformance/transfer-surface-r6/lifecycle-driver.ts",
+          "start": 21192,
+          "end": 21247,
+          "sourceHash": "66e01cee4ce1743f25e9cb56d7a0e6d7027f7427862533a124acd1f41b6654d8",
+          "astHash": "268e8ffe8fb9ccdcf0a3c0acdaab596dc7164316bf9d6d0ee915b23d68522cd3"
+        },
+        "resultCheckCall": {
+          "file": "experiments/tla-conformance/transfer-surface-r6/lifecycle-driver.ts",
+          "start": 27624,
+          "end": 27831,
+          "sourceHash": "66e01cee4ce1743f25e9cb56d7a0e6d7027f7427862533a124acd1f41b6654d8",
+          "astHash": "bc51ebf799df5dca50599d52e5d85940d581db3a4a6b9e36b14d6e3cee0467f4"
+        },
+        "enablednessCheckCall": {
+          "file": "experiments/tla-conformance/transfer-surface-r6/lifecycle-driver.ts",
+          "start": 34619,
+          "end": 34670,
+          "sourceHash": "66e01cee4ce1743f25e9cb56d7a0e6d7027f7427862533a124acd1f41b6654d8",
+          "astHash": "f619d7090973def56c174fe62b52e3ab3790098432909bff7d1f66bf5a3be304"
+        },
+        "reverseNextCheckCall": {
+          "file": "experiments/tla-conformance/transfer-surface-r6/surface-finalize.ts",
+          "start": 12342,
+          "end": 12454,
+          "sourceHash": "b61be76c7617a84a1b0a22394a7c45100555eeb189574b921fe5387013590e71",
+          "astHash": "6e3f463490980d09dbc1ea4f3ad1ce633fc7890acc7bd0fa0f88afb08e9a8ebc"
+        }
+      },
+      "execution": {
+        "file": "experiments/tla-conformance/r158-direct35-clean-handoff/artifacts/direct12-transfer-lifecycle-execution.json",
+        "sha256": "7e41aa8ac638dd92a47a3545c3237a1fcd90e89674621b7e7d6aa19ac6cb969d"
+      }
+    },
+    {
+      "surfaceKey": "type:src/storage.ts#InMemoryInventoryDurableStorage.listApplyingMigrationManifests::call[0]",
+      "mode": "B",
+      "formal": {
+        "model": "SnapshotSupersededWorkflow",
+        "source": "formal/SnapshotSupersededWorkflow.tla",
+        "sourceHash": "f8df9e18844ebcbb23fa851a38ce48bd089157864d17c9533583de584e292aa2",
+        "variables": [
+          "published",
+          "publishedRevision"
+        ]
+      },
+      "source": {
+        "readCall": {
+          "file": "experiments/tla-conformance/migration-r5/native-snapshot-superseded-driver.ts",
+          "start": 20500,
+          "end": 20568,
+          "sourceHash": "291efea42ec228887ede3ac9b0f961b263638a38a653c41d11f9110e6567e55e",
+          "astHash": "dd6b804aeceb80b631f5a52e494e9df8945c057d90f4a2a0b64c2d6e9c11228a"
+        },
+        "projectionCall": {
+          "file": "experiments/tla-conformance/migration-r5/native-snapshot-superseded-driver.ts",
+          "start": 20750,
+          "end": 20965,
+          "sourceHash": "291efea42ec228887ede3ac9b0f961b263638a38a653c41d11f9110e6567e55e",
+          "astHash": "4d0a17f04a464652ee2dc69e3d3014e556f33f0c3086ee6ef7bc962d0f74b390"
+        },
+        "projectionCheckCall": {
+          "file": "experiments/tla-conformance/migration-r5/native-snapshot-superseded-driver.ts",
+          "start": 20709,
+          "end": 20972,
+          "sourceHash": "291efea42ec228887ede3ac9b0f961b263638a38a653c41d11f9110e6567e55e",
+          "astHash": "c21aa554054a65caac0420ad92427aa4d8c778d91d040ac240b5b3906a72f45a"
+        }
+      },
+      "execution": {
+        "file": "experiments/tla-conformance/r158-direct35-clean-handoff/artifacts/direct12-snapshot-execution.json",
+        "sha256": "d112ec12c2594df13ae36e6b5a4775e2c32004561ea94dc612593c997163cc45"
+      }
+    },
+    {
+      "surfaceKey": "type:src/storage.ts#InMemoryInventoryDurableStorage.readMigrationManifest::call[0]",
+      "mode": "B",
+      "formal": {
+        "model": "SnapshotSupersededWorkflow",
+        "source": "formal/SnapshotSupersededWorkflow.tla",
+        "sourceHash": "f8df9e18844ebcbb23fa851a38ce48bd089157864d17c9533583de584e292aa2",
+        "variables": [
+          "published",
+          "publishedRevision"
+        ]
+      },
+      "source": {
+        "readCall": {
+          "file": "experiments/tla-conformance/migration-r5/native-snapshot-superseded-driver.ts",
+          "start": 20269,
+          "end": 20346,
+          "sourceHash": "291efea42ec228887ede3ac9b0f961b263638a38a653c41d11f9110e6567e55e",
+          "astHash": "0a585dbefbe4adc9f904612b52372648a0314c861efda6f7763e8c2348b993ad"
+        },
+        "projectionCall": {
+          "file": "experiments/tla-conformance/migration-r5/native-snapshot-superseded-driver.ts",
+          "start": 20750,
+          "end": 20965,
+          "sourceHash": "291efea42ec228887ede3ac9b0f961b263638a38a653c41d11f9110e6567e55e",
+          "astHash": "4d0a17f04a464652ee2dc69e3d3014e556f33f0c3086ee6ef7bc962d0f74b390"
+        },
+        "projectionCheckCall": {
+          "file": "experiments/tla-conformance/migration-r5/native-snapshot-superseded-driver.ts",
+          "start": 20709,
+          "end": 20972,
+          "sourceHash": "291efea42ec228887ede3ac9b0f961b263638a38a653c41d11f9110e6567e55e",
+          "astHash": "c21aa554054a65caac0420ad92427aa4d8c778d91d040ac240b5b3906a72f45a"
+        }
+      },
+      "execution": {
+        "file": "experiments/tla-conformance/r158-direct35-clean-handoff/artifacts/direct12-snapshot-execution.json",
+        "sha256": "d112ec12c2594df13ae36e6b5a4775e2c32004561ea94dc612593c997163cc45"
+      }
+    }
+  ]
+}
