@@ -192,8 +192,8 @@ function assertGapEntries(gaps) {
   }
 }
 
-/** Validate shape and domains before either producing or comparing a summary. */
-function assertExecutableManifests(input) {
+/** Validate every shared executable-assurance manifest shape and cross-manifest domain before granting proof credit. */
+export function assertExecutableAssuranceManifests(input) {
   for (const section of ["api", "fields", "callChains", "traces", "gaps"]) {
     const manifest = input[section];
     if (manifest === null || typeof manifest !== "object" || Array.isArray(manifest)) throw new Error(`Missing ${section} assurance manifest.`);
@@ -274,7 +274,7 @@ export function assertNoManifestImplementationModelClaim(
 export function executableAssuranceSummary(
   /** @type {ExecutableAssuranceManifests} */ { api, fields, callChains, traces, gaps },
 ) {
-  assertExecutableManifests({ api, fields, callChains, traces, gaps });
+  assertExecutableAssuranceManifests({ api, fields, callChains, traces, gaps });
   const traceEntries = Object.values(traces.entries);
   assertKnownTraceModes(traceEntries);
   return {

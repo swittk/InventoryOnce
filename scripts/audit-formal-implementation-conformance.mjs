@@ -15,6 +15,7 @@ import {
   statefulOperationFamilyIds,
 } from "./formal-models.mjs";
 import {
+  assertExecutableAssuranceManifests,
   assertNoManifestImplementationModelClaim,
 } from "./executable-assurance-coherence.mjs";
 import {
@@ -858,6 +859,14 @@ const fieldManifest = readJson("FIELD_CLASSIFICATION.json");
 const callGraphManifest = readJson("CALL_CHAIN_ASSURANCE.json");
 const gapManifest = readJson("FORMAL_COVERAGE_GAPS.json");
 const traceManifest = readJson("TRACE_REPLAY_ASSURANCE.json");
+// Standalone `pnpm assurance` must admit the exact same manifest schemas and cross-manifest domains as full assurance.
+assertExecutableAssuranceManifests({
+  api: apiManifest,
+  fields: fieldManifest,
+  callChains: callGraphManifest,
+  traces: traceManifest,
+  gaps: gapManifest,
+});
 const gaps = gapManifest.gaps;
 const methodMap = discoveredMethodMap(surface);
 const fieldMap = discoveredFieldMap(surface);
