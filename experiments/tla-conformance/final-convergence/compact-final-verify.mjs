@@ -17380,7 +17380,7 @@ var CURRENT_REVIEW_ASSURANCE_MANIFESTS = Object.freeze({
   traces: "formal/implementation-conformance/TRACE_REPLAY_ASSURANCE.json",
   gaps: "formal/implementation-conformance/FORMAL_COVERAGE_GAPS.json"
 });
-var CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "8fd95732b8a9f0d617cf0e1c1e420617be2ad1c8";
+var CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "90d6ff26879299cea67e5987ae991d0436af24ea";
 var CURRENT_REVIEW_ASSURANCE_SELF = "experiments/tla-conformance/final-convergence/current-review-assurance.mjs";
 var COMPACT_MANIFEST = "experiments/tla-conformance/final-convergence/compact-support-manifest.json";
 var COMPACT_CLOSURE = "experiments/tla-conformance/final-convergence/authority-reference-manifest.json";
