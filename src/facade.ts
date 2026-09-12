@@ -3430,7 +3430,7 @@ async function commitInventoryPolicyBatch(
         allocations.push(
           policyBatchAllocation(request, allocation.lines, deficit?.evidence)
         );
-        selectedLines.push(...allocation.lines);
+        for (const line of allocation.lines) selectedLines.push(line);
         applyPolicyAllocationToPlanningPositions(
           internals.catalog,
           planningPositions,
@@ -7403,7 +7403,7 @@ export function inventoryPolicyBatchAllocationLinesByReference(
       );
     }
     const lines = result.get(reference) ?? [];
-    lines.push(...allocation.lines);
+    for (const line of allocation.lines) lines.push(line);
     result.set(reference, lines);
   }
   return result;

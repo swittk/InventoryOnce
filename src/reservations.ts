@@ -335,7 +335,7 @@ export function assertInventoryReservationsFeasible({
   const shortReservationIds: string[] = [];
   for (const group of report.groups) {
     if (group.shortage.amountMinor === 0) continue;
-    shortReservationIds.push(...group.reservationIds);
+    for (const reservationId of group.reservationIds) shortReservationIds.push(reservationId);
   }
   shortReservationIds.sort();
   throw new Error(

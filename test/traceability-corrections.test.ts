@@ -16,7 +16,11 @@ import {
 } from "../src/migrations-api.js";
 import { createInMemoryInventoryDurableStorage } from "../src/storage-api.js";
 import { createInventoryCorrectionEvent } from "../src/corrections.js";
-import { commitInventoryEvent, defineInventoryEvent } from "../src/events.js";
+import {
+  commitInventoryEvent,
+  defineInventoryEvent,
+  type InventoryTraceabilityRelationChange,
+} from "../src/events.js";
 import {
   inventoryGenealogyAncestors,
   inventoryTraceabilityNodeIdentity,
@@ -97,6 +101,70 @@ describe("traceability graph meanings", () => {
         itemId: "item-a",
       })
     ).toContain("item-a");
+  });
+
+  it("replays a wide valid genealogy without argument-list overflow", () => {
+    const catalog = createTabletCatalog();
+    const source = {
+      kind: InventoryTraceabilityNodeKind.Container,
+      id: "WIDE-GENEALOGY-SOURCE",
+    };
+    const changes: InventoryTraceabilityRelationChange[] = [];
+    for (let index = 0; index < 160_000; index += 1) {
+      changes.push({
+        action: InventoryTraceabilityRelationAction.Add,
+        kind: InventoryTraceabilityRelationKind.Genealogy,
+        from: source,
+        to: {
+          kind: InventoryTraceabilityNodeKind.Container,
+          id: `WIDE-GENEALOGY-OUTPUT-${index}`,
+        },
+      });
+    }
+    const fanOut = commitInventoryEvent(
+      defineInventoryEvent({
+        catalog,
+        event: {
+          eventId: "wide-genealogy-fan-out",
+          operationId: "wide-genealogy-fan-out",
+          kind: InventoryEventKind.Traceability,
+          occurredAtEpochMs: time0,
+          stockEffects: [],
+          traceabilityChanges: changes,
+        },
+      }),
+      time1,
+      1
+    );
+    const predecessor = commitInventoryEvent(
+      defineInventoryEvent({
+        catalog,
+        event: {
+          eventId: "wide-genealogy-predecessor",
+          operationId: "wide-genealogy-predecessor",
+          kind: InventoryEventKind.Traceability,
+          occurredAtEpochMs: time0,
+          stockEffects: [],
+          traceabilityChanges: [
+            {
+              action: InventoryTraceabilityRelationAction.Add,
+              kind: InventoryTraceabilityRelationKind.Genealogy,
+              from: {
+                kind: InventoryTraceabilityNodeKind.Container,
+                id: "WIDE-GENEALOGY-PREDECESSOR",
+              },
+              to: source,
+            },
+          ],
+        },
+      }),
+      time1,
+      2
+    );
+
+    expect(() =>
+      projectInventoryTraceabilityEvents([fanOut, predecessor])
+    ).not.toThrow();
   });
 
   it("keeps containment and association independent and rejects containment cycles", async () => {

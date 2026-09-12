@@ -181,6 +181,6 @@ function assertNoGenealogyPath(
     }
     if (visited.has(current)) continue;
     visited.add(current);
-    pending.push(...(outputsByInput.get(current) ?? []));
+    for (const output of outputsByInput.get(current) ?? []) pending.push(output);
   }
 }
