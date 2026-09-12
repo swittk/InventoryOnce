@@ -2,3 +2,4 @@ dist/
 states/
 
 node_modules/
+.chatgpt/
