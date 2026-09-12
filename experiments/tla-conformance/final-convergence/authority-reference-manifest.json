@@ -1,13 +1,13 @@
 {
   "schemaVersion": 2,
   "status": "FINAL_LIVE_INPUT_CLOSURE",
-  "inputKey": "8f2d5ef719bc1508ab16823298f1ee1983a32da88f51e015d2075f8c00953005",
+  "inputKey": "e67e42d7c5a140fca1d4f29ac4b3cc3d2c72b008e4bd5eac5394c7a2473f94c3",
   "surfaceDigest": "7a74e02dc7f2e6e3227bd8f247fae7601a67df92bf79cae1687ecbde07de498b",
   "inputs": 463,
-  "totalBytes": 34785173,
+  "totalBytes": 34800053,
   "untrackedProofInputs": 0,
   "compilerRootSet": {
-    "key": "13062e6af1e54909d52e0ce367e112b1b7f5ee6ede0fb25145e145ec5db8f28d",
+    "key": "71ced579246e695c37014d01f06a85159a1192c197d7f00fdad6d18caf60aa5e",
     "rows": [
       {
         "file": "src/allocation.ts",
@@ -331,8 +331,8 @@
       },
       {
         "file": "test/formal-implementation-refinement.test.ts",
-        "sha256": "df33cffc755b02bd2d9df6f97aa9155b3fbed23a52d578e6608c88ff43bc3725",
-        "sizeBytes": 31199
+        "sha256": "4de31e7474f67b19ffecf52d9a2d161c3485105ddd6b6771428216c805adc42f",
+        "sizeBytes": 37876
       },
       {
         "file": "test/formal-public-surface-completion.test.ts",
@@ -457,7 +457,7 @@
     ]
   },
   "compilerSourceSet": {
-    "key": "2803466454c4ac6f69fe1192e360fb1b8c27d74c6a1a05a4797409578777ec51",
+    "key": "afbfa4f52cc4715b7b75a50e3ccb0b4ff02436b5a90a337261b5bb5d3d83d558",
     "rows": [
       {
         "file": "node_modules/.pnpm/@standard-schema+spec@1.1.0/node_modules/@standard-schema/spec/dist/index.d.ts",
@@ -2124,8 +2124,8 @@
       {
         "file": "test/formal-implementation-abstraction.ts",
         "kind": "tracked",
-        "sha256": "6198fc2f47aa2edc3c01d46faaac20ec87afaafdf5da42a539d0f6bccfa90130",
-        "sizeBytes": 52450
+        "sha256": "0a5a36559fe8a63ab8a9a1c6badd92871fa8bee8b3b27f37d6d4237675d3df7c",
+        "sizeBytes": 59336
       },
       {
         "file": "test/formal-implementation-conformance.test.ts",
@@ -2136,8 +2136,8 @@
       {
         "file": "test/formal-implementation-refinement.test.ts",
         "kind": "tracked",
-        "sha256": "df33cffc755b02bd2d9df6f97aa9155b3fbed23a52d578e6608c88ff43bc3725",
-        "sizeBytes": 31199
+        "sha256": "4de31e7474f67b19ffecf52d9a2d161c3485105ddd6b6771428216c805adc42f",
+        "sizeBytes": 37876
       },
       {
         "file": "test/formal-public-surface-completion.test.ts",
@@ -2427,20 +2427,20 @@
     {
       "file": "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json",
       "kind": "tracked",
-      "sha256": "34ac1556b4f4d32ca051dfe0fbb8ac625332d06954991a3991eed40e204f53e4",
+      "sha256": "4ce93211eb64a26a65206a76ca60e4af48c8a8f47a34e115740de9f5154c3105",
       "sizeBytes": 698
     },
     {
       "file": "experiments/tla-conformance/final-convergence/current-pr-review-full.log",
       "kind": "tracked",
-      "sha256": "69f0285f15978227e626c64778d0defd8862cf5c714436b104f5c648a77a7bc9",
-      "sizeBytes": 36771
+      "sha256": "4cff4c177cd851aa37601436a09d96a032d0daa5e56ef97073c7eec5f6799bb7",
+      "sizeBytes": 37545
     },
     {
       "file": "experiments/tla-conformance/final-convergence/current-review-assurance.mjs",
       "kind": "tracked",
-      "sha256": "114dfb148ec645b2308d39b8a98e9ce2a8ab92e582ed93941cdb1cdd32f7e489",
-      "sizeBytes": 19529
+      "sha256": "8be6323a100b63e6293580d148ad43db7e7726d457bef86ffd9b7a5578b5e683",
+      "sizeBytes": 20072
     },
     {
       "file": "experiments/tla-conformance/final-convergence/epoch-prior-producer.json",
@@ -2865,7 +2865,7 @@
     {
       "file": "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
       "kind": "tracked",
-      "sha256": "39d5ad096c2e626d4fce6f415fca64f09109032b0a94cc54b8f1858bb94e0f42",
+      "sha256": "6926098e878c9247aa6b4188a99ac0b72356da8fb5955a99b301eaf23430ad86",
       "sizeBytes": 2459
     },
     {
@@ -4893,8 +4893,8 @@
     {
       "file": "test/formal-implementation-abstraction.ts",
       "kind": "tracked",
-      "sha256": "6198fc2f47aa2edc3c01d46faaac20ec87afaafdf5da42a539d0f6bccfa90130",
-      "sizeBytes": 52450
+      "sha256": "0a5a36559fe8a63ab8a9a1c6badd92871fa8bee8b3b27f37d6d4237675d3df7c",
+      "sizeBytes": 59336
     },
     {
       "file": "test/formal-implementation-conformance.test.ts",
@@ -4905,8 +4905,8 @@
     {
       "file": "test/formal-implementation-refinement.test.ts",
       "kind": "tracked",
-      "sha256": "df33cffc755b02bd2d9df6f97aa9155b3fbed23a52d578e6608c88ff43bc3725",
-      "sizeBytes": 31199
+      "sha256": "4de31e7474f67b19ffecf52d9a2d161c3485105ddd6b6771428216c805adc42f",
+      "sizeBytes": 37876
     },
     {
       "file": "test/formal-public-surface-completion.test.ts",
@@ -5092,8 +5092,8 @@
   "outputs": [
     {
       "file": "experiments/tla-conformance/final-convergence/compact-final-verify.mjs",
-      "sha256": "52b1e117384c47a98d0bc4721c684f1cdb786ec1bc638819eb086f9d82e2fa3f",
-      "sizeBytes": 916391
+      "sha256": "b1aff438190b5a33abe1374e9aafd83d8324c7b0d1aca6346e4fe0ba95d001e6",
+      "sizeBytes": 916806
     },
     {
       "file": "experiments/tla-conformance/final-convergence/compact-final-selftest.mjs",

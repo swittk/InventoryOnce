@@ -16860,7 +16860,7 @@ function repositoryAssuranceCommittedStateSha256(repositoryRoot, commit) {
 var CURRENT_REVIEW_ASSURANCE_RECEIPT = "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json";
 var CURRENT_REVIEW_ASSURANCE_REPORT = "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json";
 var CURRENT_REVIEW_ASSURANCE_FULL_LOG = "experiments/tla-conformance/final-convergence/current-pr-review-full.log";
-var CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "7a780c9656a65a5e550fb1e7dd556f598d4c5422";
+var CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "ee8af9ddcb374f604d4a532e38219a591d5a8047";
 var CURRENT_REVIEW_ASSURANCE_SELF = "experiments/tla-conformance/final-convergence/current-review-assurance.mjs";
 var COMPACT_MANIFEST = "experiments/tla-conformance/final-convergence/compact-support-manifest.json";
 var COMPACT_CLOSURE = "experiments/tla-conformance/final-convergence/authority-reference-manifest.json";
@@ -16958,6 +16958,26 @@ function immutableCurrentReviewCertifiedHead(repositoryRoot) {
   );
   return receipt.certifiedHead;
 }
+function assertCurrentReviewCompactCertificateProcesses(certification, compactCertifiedHead = certification?.certifiedHead) {
+  const expectedModes = /* @__PURE__ */ new Map([
+    ["registry", "FINAL_535_REGISTRY_BUILT"],
+    ["selftest", "FINAL_CONVERGENCE_ADVERSARIAL_PASS"],
+    ["verify", "FINAL_BINDER_GREEN"]
+  ]);
+  assert40(Array.isArray(certification?.processes), "Pinned compact certificate process evidence is missing.");
+  assert40.deepEqual(
+    certification.processes.map((row) => row.mode).sort(),
+    [...expectedModes.keys()].sort(),
+    "Pinned compact certificate does not carry exactly one registry, selftest, and verify process."
+  );
+  for (const row of certification.processes) {
+    assert40.equal(row.exitCode, 0, `Pinned compact ${row.mode} process failed.`);
+    assert40.equal(row.signal, null, `Pinned compact ${row.mode} process was signalled.`);
+    assert40.equal(row.inputKey, certification.inputKey, `Pinned compact ${row.mode} input key differs.`);
+    assert40.equal(row.head, compactCertifiedHead, `Pinned compact ${row.mode} tested the wrong head.`);
+    assert40.equal(row.report?.status, expectedModes.get(row.mode), `Pinned compact ${row.mode} status is invalid.`);
+  }
+}
 function currentReviewProofIntegrationAuthority(repositoryRoot, certifiedHead) {
   const root3 = path42.resolve(repositoryRoot);
   const effectiveCertifiedHead = certifiedHead ?? immutableCurrentReviewCertifiedHead(root3);
@@ -16982,19 +17002,10 @@ await runCompactCommand({ moduleUrl: import.meta.url, mode: process.argv[2] ?? "
     compactCertifiedHead,
     "Pinned compact certificate evidence is not the direct child of its tested head."
   );
-  const expectedModes = /* @__PURE__ */ new Map([
-    ["registry", "FINAL_535_REGISTRY_BUILT"],
-    ["selftest", "FINAL_CONVERGENCE_ADVERSARIAL_PASS"],
-    ["verify", "FINAL_BINDER_GREEN"]
-  ]);
-  assert40.equal(manifest.certification.processes?.length, expectedModes.size, "Pinned compact certificate has the wrong process count.");
-  for (const row of manifest.certification.processes) {
-    assert40.equal(row.exitCode, 0, `Pinned compact ${row.mode} process failed.`);
-    assert40.equal(row.signal, null, `Pinned compact ${row.mode} process was signalled.`);
-    assert40.equal(row.inputKey, manifest.certification.inputKey, `Pinned compact ${row.mode} input key differs.`);
-    assert40.equal(row.head, compactCertifiedHead, `Pinned compact ${row.mode} tested the wrong head.`);
-    assert40.equal(row.report?.status, expectedModes.get(row.mode), `Pinned compact ${row.mode} status is invalid.`);
-  }
+  assertCurrentReviewCompactCertificateProcesses(
+    manifest.certification,
+    compactCertifiedHead
+  );
   assert40.equal(typeof manifest.archive?.file, "string", "Pinned compact archive path is invalid.");
   assert40.match(manifest.archive?.sha256, /^[a-f0-9]{64}$/u, "Pinned compact archive digest is invalid.");
   assert40(Array.isArray(manifest.archive?.files), "Pinned compact archive file manifest is invalid.");
