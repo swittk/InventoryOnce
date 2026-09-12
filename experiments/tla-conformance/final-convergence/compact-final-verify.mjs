@@ -17163,6 +17163,18 @@ function hashAssuranceEntries(entries) {
   return hash.digest("hex");
 }
 function repositoryAssuranceInputPaths(repositoryRoot, untrackedOnly = false) {
+  const untrackedIgnoreFiles = spawnSync(
+    "git",
+    ["-c", "core.excludesFile=/dev/null", "ls-files", "--others", "-z", "--", "*.gitignore", ".gitignore"],
+    { cwd: repositoryRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }
+  );
+  if (untrackedIgnoreFiles.error !== void 0 || untrackedIgnoreFiles.status !== 0) {
+    throw new Error("Unable to enumerate untracked repository ignore files.");
+  }
+  const ambientIgnoreFiles = untrackedIgnoreFiles.stdout.split("\0").filter(includedPath);
+  if (ambientIgnoreFiles.length !== 0) {
+    throw new Error(`Untracked ignore files must not narrow the assurance domain: ${ambientIgnoreFiles.join(", ")}.`);
+  }
   const listed = spawnSync(
     "git",
     ["-c", "core.excludesFile=/dev/null", "ls-files", ...untrackedOnly ? [] : ["--cached"], "--others", "--exclude-per-directory=.gitignore", "-z"],
@@ -17295,7 +17307,7 @@ var CURRENT_REVIEW_ASSURANCE_MANIFESTS = Object.freeze({
   traces: "formal/implementation-conformance/TRACE_REPLAY_ASSURANCE.json",
   gaps: "formal/implementation-conformance/FORMAL_COVERAGE_GAPS.json"
 });
-var CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "b2dd2b2df2a312875bd2f1bcc4f09dca64d73a92";
+var CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "c9167d45dc5641b75f971587625cabb92fac3f38";
 var CURRENT_REVIEW_ASSURANCE_SELF = "experiments/tla-conformance/final-convergence/current-review-assurance.mjs";
 var COMPACT_MANIFEST = "experiments/tla-conformance/final-convergence/compact-support-manifest.json";
 var COMPACT_CLOSURE = "experiments/tla-conformance/final-convergence/authority-reference-manifest.json";

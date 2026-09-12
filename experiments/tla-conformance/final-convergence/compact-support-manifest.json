@@ -448,8 +448,8 @@
       {
         "mode": "unified",
         "file": "experiments/tla-conformance/final-convergence/compact-final-verify.mjs",
-        "sha256": "244d47d248de08ebb003f9b6fbe477b21935513975e65dc0a3aea5bcc47b1067",
-        "bytes": 942054
+        "sha256": "82c07abfb8b09adb7badd576c3324122d73b59c2166ebb348808bfa8f77dcac0",
+        "bytes": 942717
       }
     ],
     "sources": [
@@ -520,7 +520,7 @@
       },
       {
         "file": "experiments/tla-conformance/final-convergence/current-review-assurance.mjs",
-        "sha256": "b54b2afb6e937ea7d53fea1d92909086ad7f274f4b0286c4f50547e4bd175047",
+        "sha256": "a3e2037483b0f2ff4ad774c4df08aae7515b5fbc5b7c8745161633ecae0d4d18",
         "bytes": 21373
       },
       {
@@ -765,8 +765,8 @@
       },
       {
         "file": "scripts/repository-assurance-state.mjs",
-        "sha256": "65d2e38b40076d8467895546fb78d8aa165c5b49f177c3e5dbde54b8804c3244",
-        "bytes": 7593
+        "sha256": "9f71bbdce89fe935fe0d782bf5a09f197ea40ee72337e73f7849e4998db330ae",
+        "bytes": 8366
       }
     ],
     "moduleGraph": {
@@ -1515,7 +1515,7 @@
     },
     {
       "id": "binder",
-      "codeSha256": "b5c37058343d717b45a612aee7cfcb5d901ab2203b07e259cbebcfeccf2e0b8a",
+      "codeSha256": "34412c4586653de32109b0bd7675a13d713abe3e41f5c6f713f2231b08977b7b",
       "compilerSourceSetKey": "563928b6f4f011b855f2a34d818e4023fc757d014ab60aa252ec6ff6f3b0407f",
       "inputs": [
         {
@@ -1893,104 +1893,5 @@
         }
       ]
     }
-  ],
-  "certification": {
-    "schemaVersion": 1,
-    "certifiedHead": "f8c81f35a72dcf6c3a56c82d65b60cf448fa63f8",
-    "inputKey": "938db3232698dfc1880bba28fdde112a813e507229fb5aed02dc16a2f76ed181",
-    "processes": [
-      {
-        "mode": "registry",
-        "head": "f8c81f35a72dcf6c3a56c82d65b60cf448fa63f8",
-        "inputKey": "938db3232698dfc1880bba28fdde112a813e507229fb5aed02dc16a2f76ed181",
-        "exitCode": 0,
-        "signal": null,
-        "stdout": "{\"status\":\"FINAL_535_REGISTRY_BUILT\",\"counts\":{\"A\":121,\"B\":58,\"V\":309,\"HARD_RED\":47},\"mode\":\"registry\",\"inputKey\":\"938db3232698dfc1880bba28fdde112a813e507229fb5aed02dc16a2f76ed181\",\"head\":\"f8c81f35a72dcf6c3a56c82d65b60cf448fa63f8\",\"compilerPasses\":1,\"elapsedMs\":9189}\n",
-        "stderr": "",
-        "stdoutSha256": "ad43cea90fba0a7305100e79019fb8a2e2e228f8903d21a54cfeb3aa8eaeea93",
-        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "elapsedMs": 9910,
-        "report": {
-          "status": "FINAL_535_REGISTRY_BUILT",
-          "counts": {
-            "A": 121,
-            "B": 58,
-            "V": 309,
-            "HARD_RED": 47
-          },
-          "mode": "registry",
-          "inputKey": "938db3232698dfc1880bba28fdde112a813e507229fb5aed02dc16a2f76ed181",
-          "head": "f8c81f35a72dcf6c3a56c82d65b60cf448fa63f8",
-          "compilerPasses": 1,
-          "elapsedMs": 9189
-        }
-      },
-      {
-        "mode": "selftest",
-        "head": "f8c81f35a72dcf6c3a56c82d65b60cf448fa63f8",
-        "inputKey": "938db3232698dfc1880bba28fdde112a813e507229fb5aed02dc16a2f76ed181",
-        "exitCode": 0,
-        "signal": null,
-        "stdout": "{\"status\":\"FINAL_CONVERGENCE_ADVERSARIAL_PASS\",\"surfaceDigest\":\"7a74e02dc7f2e6e3227bd8f247fae7601a67df92bf79cae1687ecbde07de498b\",\"valueRows\":309,\"producerRows\":179,\"controls\":{\"honestValueAccepted\":true,\"wrongValueModeRejected\":true,\"resignedValueTamperRejected\":true,\"honestAandBAccepted\":true,\"wrongProducerModeRejected\":true,\"resignedProducerTamperRejected\":true,\"immutableHistoricalAuthorityTamperRejected\":true,\"sameMtimeEvidenceDriftRejected\":true},\"mode\":\"selftest\",\"inputKey\":\"938db3232698dfc1880bba28fdde112a813e507229fb5aed02dc16a2f76ed181\",\"head\":\"f8c81f35a72dcf6c3a56c82d65b60cf448fa63f8\",\"compilerPasses\":1,\"elapsedMs\":49663}\n",
-        "stderr": "",
-        "stdoutSha256": "d8bc75dd95f777816e63113cd5cd1faa94990232b490f69c6268c1673ec592ba",
-        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "elapsedMs": 50395,
-        "report": {
-          "status": "FINAL_CONVERGENCE_ADVERSARIAL_PASS",
-          "surfaceDigest": "7a74e02dc7f2e6e3227bd8f247fae7601a67df92bf79cae1687ecbde07de498b",
-          "valueRows": 309,
-          "producerRows": 179,
-          "controls": {
-            "honestValueAccepted": true,
-            "wrongValueModeRejected": true,
-            "resignedValueTamperRejected": true,
-            "honestAandBAccepted": true,
-            "wrongProducerModeRejected": true,
-            "resignedProducerTamperRejected": true,
-            "immutableHistoricalAuthorityTamperRejected": true,
-            "sameMtimeEvidenceDriftRejected": true
-          },
-          "mode": "selftest",
-          "inputKey": "938db3232698dfc1880bba28fdde112a813e507229fb5aed02dc16a2f76ed181",
-          "head": "f8c81f35a72dcf6c3a56c82d65b60cf448fa63f8",
-          "compilerPasses": 1,
-          "elapsedMs": 49663
-        }
-      },
-      {
-        "mode": "verify",
-        "head": "f8c81f35a72dcf6c3a56c82d65b60cf448fa63f8",
-        "inputKey": "938db3232698dfc1880bba28fdde112a813e507229fb5aed02dc16a2f76ed181",
-        "exitCode": 0,
-        "signal": null,
-        "stdout": "{\"status\":\"FINAL_BINDER_GREEN\",\"surfaceDigest\":\"7a74e02dc7f2e6e3227bd8f247fae7601a67df92bf79cae1687ecbde07de498b\",\"callables\":535,\"diagnostics\":47,\"byCode\":{\"EXPLICIT_HARD_RED\":47},\"hardRed\":47,\"unexpected\":0,\"unexpectedRows\":[],\"valueAccepted\":309,\"producerAccepted\":179,\"strictAccepted\":488,\"mode\":\"verify\",\"inputKey\":\"938db3232698dfc1880bba28fdde112a813e507229fb5aed02dc16a2f76ed181\",\"head\":\"f8c81f35a72dcf6c3a56c82d65b60cf448fa63f8\",\"compilerPasses\":1,\"elapsedMs\":47874}\n",
-        "stderr": "",
-        "stdoutSha256": "8c7d09272ddf6d623ba0b07ea9c2bdbd469c362e54e5d34b09e43a98dd079f12",
-        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "elapsedMs": 48656,
-        "report": {
-          "status": "FINAL_BINDER_GREEN",
-          "surfaceDigest": "7a74e02dc7f2e6e3227bd8f247fae7601a67df92bf79cae1687ecbde07de498b",
-          "callables": 535,
-          "diagnostics": 47,
-          "byCode": {
-            "EXPLICIT_HARD_RED": 47
-          },
-          "hardRed": 47,
-          "unexpected": 0,
-          "unexpectedRows": [],
-          "valueAccepted": 309,
-          "producerAccepted": 179,
-          "strictAccepted": 488,
-          "mode": "verify",
-          "inputKey": "938db3232698dfc1880bba28fdde112a813e507229fb5aed02dc16a2f76ed181",
-          "head": "f8c81f35a72dcf6c3a56c82d65b60cf448fa63f8",
-          "compilerPasses": 1,
-          "elapsedMs": 47874
-        }
-      }
-    ],
-    "elapsedMs": 51750
-  }
+  ]
 }
