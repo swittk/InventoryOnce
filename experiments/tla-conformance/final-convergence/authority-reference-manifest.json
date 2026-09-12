@@ -1,10 +1,10 @@
 {
   "schemaVersion": 2,
   "status": "FINAL_LIVE_INPUT_CLOSURE",
-  "inputKey": "e67e42d7c5a140fca1d4f29ac4b3cc3d2c72b008e4bd5eac5394c7a2473f94c3",
+  "inputKey": "68d6841364a06a1bffcb6269757ec719bb05bbe7b7ef3d5689a8d29cc720fc5f",
   "surfaceDigest": "7a74e02dc7f2e6e3227bd8f247fae7601a67df92bf79cae1687ecbde07de498b",
   "inputs": 463,
-  "totalBytes": 34800053,
+  "totalBytes": 34799761,
   "untrackedProofInputs": 0,
   "compilerRootSet": {
     "key": "71ced579246e695c37014d01f06a85159a1192c197d7f00fdad6d18caf60aa5e",
@@ -2427,19 +2427,19 @@
     {
       "file": "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json",
       "kind": "tracked",
-      "sha256": "4ce93211eb64a26a65206a76ca60e4af48c8a8f47a34e115740de9f5154c3105",
+      "sha256": "99db049060a4d4ad6e90b75c49199fcd9228ce457ea1e7aadbd432fefa1947ad",
       "sizeBytes": 698
     },
     {
       "file": "experiments/tla-conformance/final-convergence/current-pr-review-full.log",
       "kind": "tracked",
-      "sha256": "4cff4c177cd851aa37601436a09d96a032d0daa5e56ef97073c7eec5f6799bb7",
-      "sizeBytes": 37545
+      "sha256": "05988101b6182a2071a087908c12adf7c2471453664adc75d061c908c7f7ef9c",
+      "sizeBytes": 37253
     },
     {
       "file": "experiments/tla-conformance/final-convergence/current-review-assurance.mjs",
       "kind": "tracked",
-      "sha256": "8be6323a100b63e6293580d148ad43db7e7726d457bef86ffd9b7a5578b5e683",
+      "sha256": "e138f57de35c4abec39b500379fd50888536c5dd2d3554566b7e8977a96651e2",
       "sizeBytes": 20072
     },
     {
@@ -2865,7 +2865,7 @@
     {
       "file": "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
       "kind": "tracked",
-      "sha256": "6926098e878c9247aa6b4188a99ac0b72356da8fb5955a99b301eaf23430ad86",
+      "sha256": "95b47448ab324c5d7a8f5c07842ae5b96355283c94bd9dbcbd434f6989680d0f",
       "sizeBytes": 2459
     },
     {
@@ -5092,7 +5092,7 @@
   "outputs": [
     {
       "file": "experiments/tla-conformance/final-convergence/compact-final-verify.mjs",
-      "sha256": "b1aff438190b5a33abe1374e9aafd83d8324c7b0d1aca6346e4fe0ba95d001e6",
+      "sha256": "fec1b0b63f82f18833aa6b654b919d657141755b4815236fe01cdd1833638552",
       "sizeBytes": 916806
     },
     {
