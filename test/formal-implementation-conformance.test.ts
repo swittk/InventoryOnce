@@ -123,7 +123,7 @@ describe("formal implementation conformance manifest", () => {
 
       const script = [
         'import { repositoryAssuranceStateSha256 } from "./scripts/repository-assurance-state.mjs";',
-        "process.stdout.write(JSON.stringify(process.argv.slice(1).map(repositoryAssuranceStateSha256)));",
+        "process.stdout.write(JSON.stringify(process.argv.slice(1).map(root => repositoryAssuranceStateSha256(root))));",
       ].join("\n");
       const output = execFileSync(
         process.execPath,
