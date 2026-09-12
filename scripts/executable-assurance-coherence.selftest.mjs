@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   assertExecutableAssuranceMatchesManifests,
+  executableAssuranceRequiredStepIds,
   assertNoManifestImplementationModelClaim,
   executableAssuranceSummary,
   executableAssuranceCounterKeys,
@@ -158,15 +159,23 @@ test("exact full-report metadata is admitted but malformed wrapper fields fail c
     fullLogSha256: "c".repeat(64),
     ...summary,
     packageTraceTests: ["test/example.test.ts"],
-    steps: [{ id: "example-step", status: "passed" }],
+    steps: executableAssuranceRequiredStepIds(true).map((id) => ({ id, status: "passed" })),
   };
   assert.deepEqual(
     assertExecutableAssuranceMatchesManifests({ ...input, executable }),
     summary,
   );
   assert.throws(
-    () => assertExecutableAssuranceMatchesManifests({ ...input, executable: { ...executable, steps: [{ id: "example-step", status: "failed" }] } }),
+    () => assertExecutableAssuranceMatchesManifests({ ...input, executable: { ...executable, steps: [{ id: executable.steps[0].id, status: "failed" }] } }),
     /steps.*unique exact/u,
+  );
+  assert.throws(
+    () => assertExecutableAssuranceMatchesManifests({ ...input, executable: { ...executable, steps: executable.steps.slice(0, 1) } }),
+    /steps.*exact authoritative ordered step set/u,
+  );
+  assert.throws(
+    () => assertExecutableAssuranceMatchesManifests({ ...input, executable: { ...executable, steps: [...executable.steps.slice(0, -1), { id: "unknown-step", status: "passed" }] } }),
+    /steps.*exact authoritative ordered step set/u,
   );
   assert.throws(
     () => assertExecutableAssuranceMatchesManifests({ ...input, executable: { ...executable, wrapperDrift: true } }),

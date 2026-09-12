@@ -5,7 +5,7 @@ import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { repositoryAssuranceStateSha256 } from "./repository-assurance-state.mjs";
-import { executableAssuranceSummary } from "./executable-assurance-coherence.mjs";
+import { executableAssuranceStepIds, executableAssuranceSummary } from "./executable-assurance-coherence.mjs";
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repositoryRoot = packageRoot;
@@ -112,22 +112,22 @@ function relativeEvidence(path, workingRoot) {
 /** Ordered deterministic assurance commands. */
 const steps = [
   {
-    id: "generate-current-surface",
+    id: executableAssuranceStepIds.generateCurrentSurface,
     command: "pnpm",
     args: ["--dir", packageRoot, "assurance:generate"],
   },
   {
-    id: "audit-api-field-trace-gap-correspondence",
+    id: executableAssuranceStepIds.auditCorrespondence,
     command: "pnpm",
     args: ["--dir", packageRoot, "assurance", "--write-report"],
   },
   {
-    id: "package-strict-types",
+    id: executableAssuranceStepIds.packageStrictTypes,
     command: "pnpm",
     args: ["--dir", packageRoot, "check"],
   },
   {
-    id: "memory-trace-property-and-authority-evidence",
+    id: executableAssuranceStepIds.memoryEvidence,
     command: "pnpm",
     args: undefined,
   },
@@ -136,17 +136,17 @@ const steps = [
 if (fullFormal) {
   steps.push(
     {
-      id: "complete-package-tests",
+      id: executableAssuranceStepIds.completePackageTests,
       command: "pnpm",
       args: ["--dir", packageRoot, "test"],
     },
     {
-      id: "package-production-build",
+      id: executableAssuranceStepIds.packageProductionBuild,
       command: "pnpm",
       args: ["--dir", packageRoot, "build"],
     },
     {
-      id: "registered-tlc-model-suite",
+      id: executableAssuranceStepIds.registeredTlcModelSuite,
       command: "pnpm",
       args: ["--dir", packageRoot, "formal"],
     }
@@ -159,7 +159,7 @@ let packageTraceTests = [];
 const childProcessEnvironment = { ...process.env };
 delete childProcessEnvironment.CI;
 for (const step of steps) {
-  if (step.id === "memory-trace-property-and-authority-evidence") {
+  if (step.id === executableAssuranceStepIds.memoryEvidence) {
     traces = readManifest("TRACE_REPLAY_ASSURANCE.json");
     packageTraceTests = [
       ...new Set([

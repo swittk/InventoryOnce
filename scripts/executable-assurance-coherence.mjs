@@ -74,6 +74,35 @@ export const executableAssuranceSchemaVersions = Object.freeze({
   gaps: 1,
 });
 
+/** Stable assurance step identities shared by the runner and persisted-report validator. */
+export const executableAssuranceStepIds = Object.freeze({
+  generateCurrentSurface: "generate-current-surface",
+  auditCorrespondence: "audit-api-field-trace-gap-correspondence",
+  packageStrictTypes: "package-strict-types",
+  memoryEvidence: "memory-trace-property-and-authority-evidence",
+  completePackageTests: "complete-package-tests",
+  packageProductionBuild: "package-production-build",
+  registeredTlcModelSuite: "registered-tlc-model-suite",
+});
+
+/** Exact ordered assurance step set required by one partial or full report. */
+export function executableAssuranceRequiredStepIds(fullFormal) {
+  const common = [
+    executableAssuranceStepIds.generateCurrentSurface,
+    executableAssuranceStepIds.auditCorrespondence,
+    executableAssuranceStepIds.packageStrictTypes,
+    executableAssuranceStepIds.memoryEvidence,
+  ];
+  return fullFormal
+    ? [
+        ...common,
+        executableAssuranceStepIds.completePackageTests,
+        executableAssuranceStepIds.packageProductionBuild,
+        executableAssuranceStepIds.registeredTlcModelSuite,
+      ]
+    : common;
+}
+
 /** Executable trace modes accepted by the current assurance schema. */
 const executableTraceModes = new Set([
   "state-result-refinement",
@@ -342,12 +371,20 @@ export function assertExecutableAssuranceMatchesManifests(
       mismatches.push("steps: executable assurance report must contain passed step evidence");
     } else {
       const stepIds = new Set();
+      let rowsValid = true;
       for (const step of executable.steps) {
         if (step === null || typeof step !== "object" || Array.isArray(step) || Object.keys(step).sort().join(",") !== "id,status" || typeof step.id !== "string" || step.id.length === 0 || step.status !== "passed" || stepIds.has(step.id)) {
           mismatches.push("steps: executable assurance steps must be unique exact {id,status:passed} rows");
+          rowsValid = false;
           break;
         }
         stepIds.add(step.id);
+      }
+      if (rowsValid) {
+        const expectedStepIds = executableAssuranceRequiredStepIds(executable.fullFormal);
+        if (executable.steps.length !== expectedStepIds.length || executable.steps.some((step, index) => step.id !== expectedStepIds[index])) {
+          mismatches.push("steps: executable assurance report does not contain the exact authoritative ordered step set");
+        }
       }
     }
   }
