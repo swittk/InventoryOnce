@@ -18,7 +18,7 @@ const CURRENT_REVIEW_ASSURANCE_MANIFESTS = Object.freeze({
   traces: "formal/implementation-conformance/TRACE_REPLAY_ASSURANCE.json",
   gaps: "formal/implementation-conformance/FORMAL_COVERAGE_GAPS.json",
 });
-const CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "c9167d45dc5641b75f971587625cabb92fac3f38";
+const CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "b51735af4e11c588548c77301930893fbac58a6c";
 const CURRENT_REVIEW_ASSURANCE_SELF = "experiments/tla-conformance/final-convergence/current-review-assurance.mjs";
 const COMPACT_MANIFEST = "experiments/tla-conformance/final-convergence/compact-support-manifest.json";
 const COMPACT_CLOSURE = "experiments/tla-conformance/final-convergence/authority-reference-manifest.json";
