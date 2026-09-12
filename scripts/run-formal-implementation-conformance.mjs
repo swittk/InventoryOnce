@@ -5,7 +5,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { repositoryAssuranceStateSha256 } from "./repository-assurance-state.mjs";
-import { executableAssuranceStepIds, executableAssuranceSummary, executableAssuranceTraceTests } from "./executable-assurance-coherence.mjs";
+import { assertExecutableAssuranceMatchesManifests, executableAssuranceStepIds, executableAssuranceSummary, executableAssuranceTraceTests } from "./executable-assurance-coherence.mjs";
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repositoryRoot = packageRoot;
@@ -181,6 +181,14 @@ const report = {
   packageTraceTests,
   steps: steps.map((step) => ({ id: step.id, status: "passed" })),
 };
+assertExecutableAssuranceMatchesManifests({
+  executable: report,
+  api,
+  fields,
+  callChains,
+  traces,
+  gaps,
+});
 const reportPath = fullFormal
   ? join(manifestRoot, "EXECUTABLE_ASSURANCE_REPORT.json")
   : join(

@@ -171,6 +171,12 @@ describe("formal implementation state/result refinement", () => {
     };
     const identity = relationIdentity(relation);
     const parentIdentity = nodeIdentity(parent);
+    expect(() => assertAbstractTraceabilityInvariants({
+      relations: { [identity]: relation },
+      containmentChildContainerIdsByParentNodeIdentity: {
+        [parentIdentity]: [child.id],
+      },
+    })).not.toThrow();
 
     expect(() =>
       assertAbstractTraceabilityInvariants({
@@ -928,6 +934,49 @@ describe("operation-result refinement authority", () => {
           transfer: { ...result.transfer, transferId: "wrong-transfer" },
         })
       ).toThrow("Result transfer disagrees with published transfer truth");
+    }
+  });
+
+  it("binds receipt selectors and lifecycle operation identity to the returned result kind", async () => {
+    {
+      const inventory = createTestInventory();
+      await inventory.stock.receive({ operationId: "result-receipt-reservation-seed", occurredAtEpochMs: time0, to: loosePosition("store"), amount: stockAmount("2", "piece") });
+      const before = await inventory.read.world();
+      const result = await inventory.reservations.reserve({ reservationId: "result-receipt-reservation", operationId: "result-receipt-reservation:create", itemRevisionId: "item-a-v2", selector: { itemId: "item-a", locationIds: ["store"] }, requested: parseQuantity("1", "piece"), createdAtEpochMs: time1 });
+      const after = await inventory.read.world();
+      expect(() => assertStateResultRefinement(before, after, result)).not.toThrow();
+      const mutations = [
+        [{ ...result.receipt, operationId: "forged-operation" }, /operation identity disagrees with reservation lifecycle truth/u],
+        [{ ...result.receipt, eventId: "forged-event" }, /event selector disagrees/u],
+        [{ ...result.receipt, countId: "forged-count" }, /count selector disagrees/u],
+      ] as const;
+      for (const [receipt, diagnostic] of mutations) expect.soft(() => assertStateResultRefinement(before, after, { ...result, receipt })).toThrow(diagnostic);
+    }
+
+    {
+      const inventory = createTestInventory();
+      const before = await inventory.read.world();
+      const result = await inventory.counts.start({ countId: "result-receipt-count", operationId: "result-receipt-count:start", itemRevisionId: "item-a-v2", selector: { itemId: "item-a" }, startedAtEpochMs: time0 });
+      const after = await inventory.read.world();
+      expect(() => assertStateResultRefinement(before, after, result)).not.toThrow();
+      const mutations = [
+        [{ ...result.receipt, operationId: "forged-operation" }, /operation identity disagrees with count lifecycle truth/u],
+        [{ ...result.receipt, eventId: "forged-event" }, /event selector disagrees/u],
+        [{ ...result.receipt, reservationId: "forged-reservation" }, /reservation selector disagrees/u],
+      ] as const;
+      for (const [receipt, diagnostic] of mutations) expect.soft(() => assertStateResultRefinement(before, after, { ...result, receipt })).toThrow(diagnostic);
+    }
+
+    {
+      const inventory = createTestInventory();
+      const before = await inventory.read.world();
+      const result = await inventory.stock.receive({ operationId: "result-receipt-event", occurredAtEpochMs: time0, to: loosePosition("store"), amount: stockAmount("1", "piece") });
+      const after = await inventory.read.world();
+      expect(() => assertStateResultRefinement(before, after, result)).not.toThrow();
+      for (const [receipt, diagnostic] of [
+        [{ ...result.receipt, reservationId: "forged-reservation" }, /reservation selector disagrees/u],
+        [{ ...result.receipt, countId: "forged-count" }, /count selector disagrees/u],
+      ] as const) expect.soft(() => assertStateResultRefinement(before, after, { ...result, receipt })).toThrow(diagnostic);
     }
   });
 

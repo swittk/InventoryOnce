@@ -221,6 +221,7 @@ test("ordinary compact validation authenticates manifest and closure against its
 test("pinned compact certificate rejects re-signed semantic report forgeries", () => {
   const expected = compactCertificateExpectedTruth();
   const manifest = JSON.parse(fs.readFileSync(path.join(root, "experiments/tla-conformance/final-convergence/compact-support-manifest.json"), "utf8"));
+  assert.doesNotThrow(() => assertTrustedCompactCertificateManifest(manifest, expected));
   const resign = (row) => {
     row.stdout = `${JSON.stringify(row.report)}\n`;
     row.stdoutSha256 = assuranceBytesSha256(Buffer.from(row.stdout));

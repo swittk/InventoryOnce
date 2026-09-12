@@ -1,4 +1,4 @@
-import { assertCompactAssuranceCertificate } from "../../../scripts/executable-assurance-coherence.mjs";
+import { assertCompactAssuranceCertificate, assertExecutableAssuranceMatchesManifests } from "../../../scripts/executable-assurance-coherence.mjs";
 import implementationSurface from "../../../scripts/formal-implementation-surface.cjs";
 import assert from "node:assert/strict";
 import { assuranceRepositoryPath, readCompactArchive } from "../../../scripts/assurance-files.mjs";
@@ -11,6 +11,13 @@ import { repositoryAssuranceCommittedStateSha256, repositoryAssuranceInputPaths,
 export const CURRENT_REVIEW_ASSURANCE_RECEIPT = "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json";
 const CURRENT_REVIEW_ASSURANCE_REPORT = "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json";
 const CURRENT_REVIEW_ASSURANCE_FULL_LOG = "experiments/tla-conformance/final-convergence/current-pr-review-full.log";
+const CURRENT_REVIEW_ASSURANCE_MANIFESTS = Object.freeze({
+  api: "formal/implementation-conformance/API_ASSURANCE.json",
+  fields: "formal/implementation-conformance/FIELD_CLASSIFICATION.json",
+  callChains: "formal/implementation-conformance/CALL_CHAIN_ASSURANCE.json",
+  traces: "formal/implementation-conformance/TRACE_REPLAY_ASSURANCE.json",
+  gaps: "formal/implementation-conformance/FORMAL_COVERAGE_GAPS.json",
+});
 const CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "e05b342c625b9693139ba48d4b9b56ccdcb8cc42";
 const CURRENT_REVIEW_ASSURANCE_SELF = "experiments/tla-conformance/final-convergence/current-review-assurance.mjs";
 const COMPACT_MANIFEST = "experiments/tla-conformance/final-convergence/compact-support-manifest.json";
@@ -277,6 +284,7 @@ export function assertCurrentReviewAssuranceContent({
   fullLogSha256,
   independentlyDerivedSurfaceSha256,
   independentlyDerivedRepositoryStateSha256,
+  manifests,
 }) {
   assert.equal(receipt.schemaVersion, 1, "Current review assurance receipt schema is unsupported.");
   assert.equal(receipt.status, "CURRENT_PR_REVIEW_FULL_ASSURANCE_VERIFIED", "Current review assurance receipt status is invalid.");
@@ -296,6 +304,10 @@ export function assertCurrentReviewAssuranceContent({
   assert.equal(report.repositoryStateSha256, receipt.repositoryStateSha256, "Current review assurance state receipt disagrees with the report.");
   assert.equal(independentlyDerivedRepositoryStateSha256, receipt.repositoryStateSha256, "Current review assurance was not produced from the exact clean committed evidence state.");
   assert.equal(report.fullLogSha256, receipt.fullLog.sha256, "Current review assurance report is not bound to the tracked full log.");
+  assertExecutableAssuranceMatchesManifests({
+    executable: report,
+    ...manifests,
+  });
 }
 
 /** Verify the exact reviewed commit against independently recomputed committed state and tracked full-run log bytes. */
@@ -333,6 +345,12 @@ export function verifyCurrentReviewAssurance(repositoryRoot, context) {
   const reportSha256 = sha256(reportPath);
   const fullLogSha256 = sha256(logPath);
   const report = JSON.parse(fs.readFileSync(reportPath, "utf8"));
+  const manifests = Object.fromEntries(
+    Object.entries(CURRENT_REVIEW_ASSURANCE_MANIFESTS).map(([name, file]) => [
+      name,
+      JSON.parse(committedFileText(root, receipt.certifiedHead, file)),
+    ]),
+  );
   assertCurrentReviewAssuranceContent({
     receipt,
     report,
@@ -340,6 +358,7 @@ export function verifyCurrentReviewAssurance(repositoryRoot, context) {
     fullLogSha256,
     independentlyDerivedSurfaceSha256: currentReviewSurfaceSha256(root, context),
     independentlyDerivedRepositoryStateSha256: repositoryAssuranceCommittedStateSha256(root, receipt.certifiedHead),
+    manifests,
   });
   const proofIntegrationAuthority = currentReviewProofIntegrationAuthority(root, receipt.certifiedHead);
   const allowedProofIntegrationPaths = proofIntegrationAuthority.paths;

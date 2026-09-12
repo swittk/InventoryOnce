@@ -1498,6 +1498,18 @@ export function assertStateResultRefinement(
   assertAbstractReservationInvariants(after.reservations);
   assertAbstractCountInvariants(after.counts);
   const observation = abstractOperationResult(result);
+  const resultEvent = "event" in result ? result.event : undefined;
+  const resultReservation = "reservation" in result ? result.reservation : undefined;
+  const resultCount = "count" in result ? result.count : undefined;
+  if ((resultEvent === undefined) !== (result.receipt.eventId === undefined)) {
+    throw new Error("Result receipt event selector disagrees with the returned result kind.");
+  }
+  if ((resultReservation === undefined) !== (result.receipt.reservationId === undefined)) {
+    throw new Error("Result receipt reservation selector disagrees with the returned result kind.");
+  }
+  if ((resultCount === undefined) !== (result.receipt.countId === undefined)) {
+    throw new Error("Result receipt count selector disagrees with the returned result kind.");
+  }
   if (observation.worldRevision !== after.revision) {
     throw new Error(
       "Operation receipt revision disagrees with published world."
@@ -1561,6 +1573,21 @@ export function assertStateResultRefinement(
     if (result.receipt.reservationId !== reservationId) {
       throw new Error("Result receipt and reservation identity disagree.");
     }
+    const receiptOperation = after.reservations.operations[observation.operationId];
+    if (
+      !Object.hasOwn(after.reservations.operations, observation.operationId) ||
+      receiptOperation === undefined ||
+      receiptOperation.reservationId !== reservationId
+    ) {
+      throw new Error("Result receipt operation identity disagrees with reservation lifecycle truth.");
+    }
+    const operationExistedBefore = Object.hasOwn(
+      before.reservations.operations,
+      observation.operationId
+    );
+    if (operationExistedBefore !== result.replayed) {
+      throw new Error("Result reservation replay flag disagrees with lifecycle operation history.");
+    }
   }
   if (observation.count !== undefined) {
     const countId = String(observation.count.countId);
@@ -1575,6 +1602,21 @@ export function assertStateResultRefinement(
     }
     if (result.receipt.countId !== countId) {
       throw new Error("Result receipt and count identity disagree.");
+    }
+    const receiptOperation = after.counts.operations[observation.operationId];
+    if (
+      !Object.hasOwn(after.counts.operations, observation.operationId) ||
+      receiptOperation === undefined ||
+      receiptOperation.countId !== countId
+    ) {
+      throw new Error("Result receipt operation identity disagrees with count lifecycle truth.");
+    }
+    const operationExistedBefore = Object.hasOwn(
+      before.counts.operations,
+      observation.operationId
+    );
+    if (operationExistedBefore !== result.replayed) {
+      throw new Error("Result count replay flag disagrees with lifecycle operation history.");
     }
   }
   if (observation.transfer !== undefined) {
