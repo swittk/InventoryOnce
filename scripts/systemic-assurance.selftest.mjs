@@ -23,9 +23,9 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const require = createRequire(import.meta.url), ts = require("typescript"), semantics = require("./formal-implementation-vitest-semantics.cjs");
 
 /** Give one control a disposable directory and always remove its own files. */
-function temporaryDirectory(run) {
+async function temporaryDirectory(run) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "inventoryonce-systemic-"));
-  try { return run(directory); } finally { fs.rmSync(directory, { recursive: true, force: true }); }
+  try { return await run(directory); } finally { fs.rmSync(directory, { recursive: true, force: true }); }
 }
 
 /** Read the independent tested head and source surface from immutable Git evidence, never the mutable report. */
