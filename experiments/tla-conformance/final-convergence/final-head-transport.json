@@ -3,10 +3,43 @@
   "status": "FINAL_HEAD_TRANSPORT_PROVED",
   "priorProofHead": "6983219e13295b8f6b073daefc3cbcd90b32ac35",
   "immediatePriorProofHead": "63f520f3bb21fcbb5da51c31ef9e5d327f8de51f",
-  "finalSurfaceDigest": "7a74e02dc7f2e6e3227bd8f247fae7601a67df92bf79cae1687ecbde07de498b",
+  "finalSurfaceDigest": "4a8ad47f98456d925da04b54eae03ed7afbdcaccb7781d96b7f56e8448c81c1b",
   "callables": 535,
   "exactPrimitiveTransport": {
     "priorProofHead": "6983219e13295b8f6b073daefc3cbcd90b32ac35",
+    "review518646RuntimeTransport": {
+      "priorCertifiedHead": "4b3f8be27400a99e80e56200b1be4a7430f009b3",
+      "certifiedRepairHead": "c10f5c690a8e0e59b347160c95e98af3132c5659",
+      "exactChangedRuntimeFiles": [
+        "src/facade.ts",
+        "src/reservations.ts",
+        "src/traceability-replay.ts"
+      ],
+      "transitions": [
+        {
+          "file": "src/facade.ts",
+          "patchSha256": "ed96a6d4c5ac7242db614da891b0c05f951c8c66dc830551b5981580d8d5eb98",
+          "priorSha256": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
+          "currentSha256": "85db8d3dfeed239a71286a1d488f8003409a67fe60c3b6d05aa09a8b4c68723c"
+        },
+        {
+          "file": "src/reservations.ts",
+          "patchSha256": "5fd0b304623b50dc7cfb32b273102d14d500ce1c5291b39ecdb35a427d49cb17",
+          "priorSha256": "e7f70033edaa5620109c3de4254077f0b70381098cb2657c608019a9e48b90aa",
+          "currentSha256": "dffc5c3189e48a465fc65e904e96d97966098d34b9325aa7a9811aca3a3f553f"
+        },
+        {
+          "file": "src/traceability-replay.ts",
+          "patchSha256": "7ab83bcdf64021dcc20640affea0af5adf696198c3ae2961773437ae729916f0",
+          "priorSha256": "c7ec98f5c927516faa0f44a64b7419126687cad69a43affb3438ee631a4eb536",
+          "currentSha256": "6818651f177f2a452aa9e1c987162534bf4c8bffdb02b703fccf36f020d7c3a5"
+        }
+      ],
+      "laws": [
+        "Valid wide runtime collections are aggregated iteratively so JavaScript argument-count limits cannot reject otherwise supported inventory state.",
+        "The exact three-file source transition is hash-bound above the compact-certified reviewed predecessor; every other runtime module remains byte-identical."
+      ]
+    },
     "review518257RuntimeTransport": {
       "priorCertifiedHead": "edcab7f37362137eb4f2766772740164a4f5ba09",
       "certifiedRepairHead": "ccc724a7aa6d8a03131a13bb0c9d673d648d8f96",
@@ -321,7 +354,7 @@
       },
       {
         "file": "src/facade.ts",
-        "sha256": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e"
+        "sha256": "85db8d3dfeed239a71286a1d488f8003409a67fe60c3b6d05aa09a8b4c68723c"
       },
       {
         "file": "src/fungibility.ts",
@@ -389,7 +422,7 @@
       },
       {
         "file": "src/reservations.ts",
-        "sha256": "e7f70033edaa5620109c3de4254077f0b70381098cb2657c608019a9e48b90aa"
+        "sha256": "dffc5c3189e48a465fc65e904e96d97966098d34b9325aa7a9811aca3a3f553f"
       },
       {
         "file": "src/selectors.ts",
@@ -413,7 +446,7 @@
       },
       {
         "file": "src/traceability-replay.ts",
-        "sha256": "c7ec98f5c927516faa0f44a64b7419126687cad69a43affb3438ee631a4eb536"
+        "sha256": "6818651f177f2a452aa9e1c987162534bf4c8bffdb02b703fccf36f020d7c3a5"
       },
       {
         "file": "src/traceability.ts",
@@ -532,7 +565,7 @@
     },
     {
       "file": "src/facade.ts",
-      "sha256": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e"
+      "sha256": "85db8d3dfeed239a71286a1d488f8003409a67fe60c3b6d05aa09a8b4c68723c"
     },
     {
       "file": "src/fungibility.ts",
@@ -600,7 +633,7 @@
     },
     {
       "file": "src/reservations.ts",
-      "sha256": "e7f70033edaa5620109c3de4254077f0b70381098cb2657c608019a9e48b90aa"
+      "sha256": "dffc5c3189e48a465fc65e904e96d97966098d34b9325aa7a9811aca3a3f553f"
     },
     {
       "file": "src/selectors.ts",
@@ -624,7 +657,7 @@
     },
     {
       "file": "src/traceability-replay.ts",
-      "sha256": "c7ec98f5c927516faa0f44a64b7419126687cad69a43affb3438ee631a4eb536"
+      "sha256": "6818651f177f2a452aa9e1c987162534bf4c8bffdb02b703fccf36f020d7c3a5"
     },
     {
       "file": "src/traceability.ts",
@@ -644,7 +677,7 @@
     },
     {
       "file": "scripts/inventory-epoch-contract.mjs",
-      "sha256": "0514bb44e329905d8ef18a5af41d0d0ba8f4478aecae33e20d9147165525f879"
+      "sha256": "7b845b04e0051883de359c140a7d414355168e781c68e68fd8879c618bdfc803"
     },
     {
       "file": "formal/UseByReservation.tla",
@@ -660,5 +693,5 @@
     }
   ],
   "creditExpansion": false,
-  "contentSha256": "bf3b5afb57100c77a601888abcd57dde2fbc9813c3f4c4f0790aeb22fc02c43a"
+  "contentSha256": "5dbc8c5061780256a03079f9f6d879786c8d9de48097d3a74c1b2b5ac59550da"
 }
