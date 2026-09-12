@@ -263,6 +263,30 @@ export function abstractPositionIdentity(
   return JSON.stringify(abstractPositionKey(key));
 }
 
+/** Independently derive the concrete projection dictionary identity without calling the producer helper. */
+function abstractProjectionPositionIdentity(key: InventoryStockPositionKey): string {
+  const qualifiedDimensions = key.qualifiedDimensions === undefined || key.qualifiedDimensions.length === 0
+    ? null
+    : key.qualifiedDimensions
+      .map((dimension) => [dimension.dimensionId, dimension.valueId] as const)
+      .sort((left, right) => compareAbstractIdentityText(left[0], right[0]));
+  return JSON.stringify([
+    key.itemId,
+    key.itemRevisionId,
+    key.locationId,
+    key.lotId ?? null,
+    key.serialId ?? null,
+    key.packagingRevisionId ?? null,
+    key.containerId ?? null,
+    key.statusId ?? null,
+    key.ownerId ?? null,
+    key.custodianId ?? null,
+    key.dispositionAuthorityId ?? null,
+    key.transferId ?? null,
+    qualifiedDimensions,
+  ]);
+}
+
 /** Convert one projected physical bucket to the finite model resource record. */
 function abstractBucket(
   position: InventoryStockPosition
@@ -830,6 +854,9 @@ function addAbstractIndexMember(groups: Map<string, string[]>, key: string, iden
 
 /** Independently derive current position, serial, positive-layer, and lot index domains. */
 function assertAbstractPositionIndexes(p: InventoryWorldState["projection"]): void {
+  assertAbstractRecordIdentities(p.positions, row => abstractProjectionPositionIdentity(row.key), "Position");
+  assertAbstractRecordIdentities(p.lots, row => JSON.stringify([row.definition.itemId, row.definition.lotId]), "Lot");
+  assertAbstractRecordIdentities(p.containers, row => JSON.stringify([row.definition.containerId]), "Container");
   const byItem = new Map<string, string[]>(), byRevision = new Map<string, string[]>(), byContainer = new Map<string, string[]>();
   const serials = new Map<string, string>(), positiveLayers = new Set<string>();
   for (const [identity, position] of Object.entries(p.positions)) {

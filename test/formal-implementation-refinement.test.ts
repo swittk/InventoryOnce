@@ -582,6 +582,64 @@ describe("formal implementation state/result refinement", () => {
 
 
 describe("independent projection index bijections", () => {
+  it("rejects primary dictionary keys that disagree with independently derived identities", async () => {
+    const inventory = createTestInventory();
+    await inventory.lots.define({
+      operationId: "primary-key-lot",
+      occurredAtEpochMs: time0,
+      itemId: "item-a",
+      lotId: "primary-key-lot",
+      lot: { expiresAtEpochMs: time3 },
+    });
+    await inventory.containers.define({
+      operationId: "primary-key-container",
+      occurredAtEpochMs: time0,
+      containerId: "primary-key-container",
+      container: { containerType: "tray", useByEpochMs: time3 },
+    });
+    await inventory.stock.receive({
+      operationId: "primary-key-position",
+      occurredAtEpochMs: time0,
+      to: loosePosition("A"),
+      amount: stockAmount("1", "piece"),
+    });
+    const world = await inventory.read.world();
+    const p = world.projection;
+    const positionEntry = Object.entries(p.positions)[0];
+    const lotEntry = Object.entries(p.lots)[0];
+    const containerEntry = Object.entries(p.containers)[0];
+    if (positionEntry === undefined || lotEntry === undefined || containerEntry === undefined) {
+      throw new Error("Expected position, lot, and container fixtures for primary-key controls.");
+    }
+    const [positionIdentity, position] = positionEntry;
+    const wrongPositionIdentity = "wrong-position-identity";
+    const replaceMember = (values: readonly string[]): readonly string[] =>
+      values.map((value) => value === positionIdentity ? wrongPositionIdentity : value);
+    const positionProjection = {
+      ...p,
+      positions: { [wrongPositionIdentity]: position },
+      positionIdsByItemId: Object.fromEntries(Object.entries(p.positionIdsByItemId).map(([key, values]) => [key, replaceMember(values)])),
+      positionIdsByItemRevisionId: Object.fromEntries(Object.entries(p.positionIdsByItemRevisionId).map(([key, values]) => [key, replaceMember(values)])),
+      positionIdsByContainerIdentity: Object.fromEntries(Object.entries(p.positionIdsByContainerIdentity).map(([key, values]) => [key, replaceMember(values)])),
+      positiveLayerStartedAtEpochMsByPositionId: {
+        [wrongPositionIdentity]: p.positiveLayerStartedAtEpochMsByPositionId[positionIdentity] ?? time0,
+      },
+      positivePositionIdBySerialIdentity: Object.fromEntries(Object.entries(p.positivePositionIdBySerialIdentity).map(([key, value]) => [key, value === positionIdentity ? wrongPositionIdentity : value])),
+    };
+    const [lotIdentity, lot] = lotEntry;
+    const wrongLotIdentity = "wrong-lot-identity";
+    const lotProjection = {
+      ...p,
+      lots: { [wrongLotIdentity]: lot },
+      lotIdentitiesByItemId: Object.fromEntries(Object.entries(p.lotIdentitiesByItemId).map(([key, values]) => [key, values.map((value) => value === lotIdentity ? wrongLotIdentity : value)])),
+    };
+    const [, container] = containerEntry;
+    const containerProjection = { ...p, containers: { "wrong-container-identity": container } };
+    for (const projection of [positionProjection, lotProjection, containerProjection]) {
+      expect(() => assertAbstractInventoryInvariants({ ...world, projection })).toThrow(/dictionary key disagrees with its primary identity/u);
+    }
+  });
+
   it("rejects surplus sequence and operation index rows on an otherwise honest published world", async () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({ operationId: "index-control", occurredAtEpochMs: time0, to: loosePosition("A"), amount: stockAmount("1", "piece") });

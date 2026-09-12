@@ -87,22 +87,26 @@ async function legacyCase(phase: Phase, foreign: boolean) {
   const storage = createInMemoryInventoryDurableStorage();
   /** Number of peer hooks attempted; only the first may execute the injected cutover. */
   let injected = 0;
+  /** Rejection from the injected peer, kept separate from the primary cutover result. */
+  let peerError: Error | undefined;
   shared.on(phasePredicate[phase], async () => {
     if (injected++) return;
     const authorizationId = foreign && phase === "cert" ? "other-auth" : "auth";
     const fenceToken = foreign ? "other-fence" : "f";
-    await cutoverInventoryAuthority({
-      authority: secondary,
-      storage,
-      migrationId: "m",
-      fenceToken,
-      authorizationId,
-      adapterCertificationDigest: "cert",
-      cutoverAtEpochMs: time,
-      compileSource: async () => compiled(),
-      drainLegacyWriters: async () => {},
-      clock: { nowEpochMs: () => time },
-    });
+    try {
+      await cutoverInventoryAuthority({
+        authority: secondary,
+        storage,
+        migrationId: "m",
+        fenceToken,
+        authorizationId,
+        adapterCertificationDigest: "cert",
+        cutoverAtEpochMs: time,
+        compileSource: async () => compiled(),
+        drainLegacyWriters: async () => {},
+        clock: { nowEpochMs: () => time },
+      });
+    } catch (e) { peerError = e as Error; }
   });
   let result: Awaited<ReturnType<typeof cutoverInventoryAuthority>> | undefined;
   let error: Error | undefined;
@@ -121,6 +125,17 @@ async function legacyCase(phase: Phase, foreign: boolean) {
     });
   } catch (e) { error = e as Error; }
   assert.equal(injected > 0, true, `${phase}/${foreign}: hook did not fire`);
+  if (foreign && phase === "fence") {
+    assert(peerError, "fence: foreign peer unexpectedly acquired the primary fence");
+    assert.match(peerError.message, /another fence token|authorization differs|retained fence ownership belongs to another cutover request/u);
+    assert.ifError(error);
+    assert(result);
+    assert.equal(result.authority.mode, InventoryAuthorityMode.Authoritative);
+    assert.equal(result.authorizationId, "auth");
+    assert.equal(result.authority.fenceToken, "f");
+    return { phase, foreign, outcome: "primary-completed", revision: result.authority.revision };
+  }
+  assert.ifError(peerError);
   if (foreign) {
     assert(error, `${phase}: foreign completion unexpectedly joined`);
     assert.match(error.message, /another fence token|authorization differs|retained fence ownership belongs to another cutover request/u);
