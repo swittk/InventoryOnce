@@ -448,8 +448,8 @@
       {
         "mode": "unified",
         "file": "experiments/tla-conformance/final-convergence/compact-final-verify.mjs",
-        "sha256": "82c07abfb8b09adb7badd576c3324122d73b59c2166ebb348808bfa8f77dcac0",
-        "bytes": 942717
+        "sha256": "23babd45cce589ae78089c60b84dce718c6ce21238b03e0d58fa4bffda92c92d",
+        "bytes": 943025
       }
     ],
     "sources": [
@@ -520,7 +520,7 @@
       },
       {
         "file": "experiments/tla-conformance/final-convergence/current-review-assurance.mjs",
-        "sha256": "a3e2037483b0f2ff4ad774c4df08aae7515b5fbc5b7c8745161633ecae0d4d18",
+        "sha256": "97b290ebdba6ed7bddf4a9ec3ac477b3ec28574262d2a149236ec5c750e35d9e",
         "bytes": 21373
       },
       {
@@ -750,8 +750,8 @@
       },
       {
         "file": "scripts/formal-implementation-vitest-semantics.cjs",
-        "sha256": "907cca71a7837f2001cd39791ff14b2a59c9aa83c13dc872fc4c79bab76396dd",
-        "bytes": 19327
+        "sha256": "5f31cda0ed1311e6a905afad0fa6d5839cce26420bdb34a47609805d98f4ab28",
+        "bytes": 19712
       },
       {
         "file": "scripts/immutable-assurance-inputs.mjs",
@@ -1058,7 +1058,7 @@
     {
       "id": "transport",
       "codeSha256": "29297f1e8203668344995eb3f6c189dbb0da548e8d387c5da77951e8987be0be",
-      "compilerSourceSetKey": "563928b6f4f011b855f2a34d818e4023fc757d014ab60aa252ec6ff6f3b0407f",
+      "compilerSourceSetKey": "c9d4cbd675dcfd889020256c801f5cbf795d5d5070b9479c26c5c463a846fe34",
       "inputs": [
         {
           "file": "formal/UseByReservation.cfg",
@@ -1366,7 +1366,7 @@
     {
       "id": "values",
       "codeSha256": "11f511c527af7eac53bcec73155cdf3f66078a4148d9cfe52849cd03ae7fc23a",
-      "compilerSourceSetKey": "563928b6f4f011b855f2a34d818e4023fc757d014ab60aa252ec6ff6f3b0407f",
+      "compilerSourceSetKey": "c9d4cbd675dcfd889020256c801f5cbf795d5d5070b9479c26c5c463a846fe34",
       "inputs": [
         {
           "file": "experiments/tla-conformance/final-convergence/authority-producer17.json",
@@ -1428,7 +1428,7 @@
     {
       "id": "producers",
       "codeSha256": "11f511c527af7eac53bcec73155cdf3f66078a4148d9cfe52849cd03ae7fc23a",
-      "compilerSourceSetKey": "563928b6f4f011b855f2a34d818e4023fc757d014ab60aa252ec6ff6f3b0407f",
+      "compilerSourceSetKey": "c9d4cbd675dcfd889020256c801f5cbf795d5d5070b9479c26c5c463a846fe34",
       "inputs": [
         {
           "file": "experiments/tla-conformance/final-convergence/authority-producer17.json",
@@ -1490,7 +1490,7 @@
     {
       "id": "registry",
       "codeSha256": "46167ea4c4b3a6379ee14252fd2c7a34b102a946d5628469d44cc38ce87c7688",
-      "compilerSourceSetKey": "563928b6f4f011b855f2a34d818e4023fc757d014ab60aa252ec6ff6f3b0407f",
+      "compilerSourceSetKey": "c9d4cbd675dcfd889020256c801f5cbf795d5d5070b9479c26c5c463a846fe34",
       "inputs": [
         {
           "file": "experiments/tla-conformance/final-convergence/final-a121-b58.json",
@@ -1515,8 +1515,8 @@
     },
     {
       "id": "binder",
-      "codeSha256": "34412c4586653de32109b0bd7675a13d713abe3e41f5c6f713f2231b08977b7b",
-      "compilerSourceSetKey": "563928b6f4f011b855f2a34d818e4023fc757d014ab60aa252ec6ff6f3b0407f",
+      "codeSha256": "28e94ba9db6ebb4f04d54a63103c129a7698f6752f03000c2146c64e91098652",
+      "compilerSourceSetKey": "c9d4cbd675dcfd889020256c801f5cbf795d5d5070b9479c26c5c463a846fe34",
       "inputs": [
         {
           "file": "experiments/tla-conformance/final-convergence/authority-producer17.json",
@@ -1893,104 +1893,5 @@
         }
       ]
     }
-  ],
-  "certification": {
-    "schemaVersion": 1,
-    "certifiedHead": "6f89c05473653acad8b74fefe78102c990d40770",
-    "inputKey": "b4187db551c1b2062b8f5a79158a6352b83282013064df1852d08a79ad84baa7",
-    "processes": [
-      {
-        "mode": "registry",
-        "head": "6f89c05473653acad8b74fefe78102c990d40770",
-        "inputKey": "b4187db551c1b2062b8f5a79158a6352b83282013064df1852d08a79ad84baa7",
-        "exitCode": 0,
-        "signal": null,
-        "stdout": "{\"status\":\"FINAL_535_REGISTRY_BUILT\",\"counts\":{\"A\":121,\"B\":58,\"V\":309,\"HARD_RED\":47},\"mode\":\"registry\",\"inputKey\":\"b4187db551c1b2062b8f5a79158a6352b83282013064df1852d08a79ad84baa7\",\"head\":\"6f89c05473653acad8b74fefe78102c990d40770\",\"compilerPasses\":1,\"elapsedMs\":9687}\n",
-        "stderr": "",
-        "stdoutSha256": "5eab0f1a804372af7deeb0bbf04d5760f1b71ece93ed3e8449fdfdae976f8474",
-        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "elapsedMs": 10474,
-        "report": {
-          "status": "FINAL_535_REGISTRY_BUILT",
-          "counts": {
-            "A": 121,
-            "B": 58,
-            "V": 309,
-            "HARD_RED": 47
-          },
-          "mode": "registry",
-          "inputKey": "b4187db551c1b2062b8f5a79158a6352b83282013064df1852d08a79ad84baa7",
-          "head": "6f89c05473653acad8b74fefe78102c990d40770",
-          "compilerPasses": 1,
-          "elapsedMs": 9687
-        }
-      },
-      {
-        "mode": "selftest",
-        "head": "6f89c05473653acad8b74fefe78102c990d40770",
-        "inputKey": "b4187db551c1b2062b8f5a79158a6352b83282013064df1852d08a79ad84baa7",
-        "exitCode": 0,
-        "signal": null,
-        "stdout": "{\"status\":\"FINAL_CONVERGENCE_ADVERSARIAL_PASS\",\"surfaceDigest\":\"7a74e02dc7f2e6e3227bd8f247fae7601a67df92bf79cae1687ecbde07de498b\",\"valueRows\":309,\"producerRows\":179,\"controls\":{\"honestValueAccepted\":true,\"wrongValueModeRejected\":true,\"resignedValueTamperRejected\":true,\"honestAandBAccepted\":true,\"wrongProducerModeRejected\":true,\"resignedProducerTamperRejected\":true,\"immutableHistoricalAuthorityTamperRejected\":true,\"sameMtimeEvidenceDriftRejected\":true},\"mode\":\"selftest\",\"inputKey\":\"b4187db551c1b2062b8f5a79158a6352b83282013064df1852d08a79ad84baa7\",\"head\":\"6f89c05473653acad8b74fefe78102c990d40770\",\"compilerPasses\":1,\"elapsedMs\":50083}\n",
-        "stderr": "",
-        "stdoutSha256": "4def1c93989945e219b064901485a2745fd178ad27b8d88c570477a956351fb5",
-        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "elapsedMs": 50896,
-        "report": {
-          "status": "FINAL_CONVERGENCE_ADVERSARIAL_PASS",
-          "surfaceDigest": "7a74e02dc7f2e6e3227bd8f247fae7601a67df92bf79cae1687ecbde07de498b",
-          "valueRows": 309,
-          "producerRows": 179,
-          "controls": {
-            "honestValueAccepted": true,
-            "wrongValueModeRejected": true,
-            "resignedValueTamperRejected": true,
-            "honestAandBAccepted": true,
-            "wrongProducerModeRejected": true,
-            "resignedProducerTamperRejected": true,
-            "immutableHistoricalAuthorityTamperRejected": true,
-            "sameMtimeEvidenceDriftRejected": true
-          },
-          "mode": "selftest",
-          "inputKey": "b4187db551c1b2062b8f5a79158a6352b83282013064df1852d08a79ad84baa7",
-          "head": "6f89c05473653acad8b74fefe78102c990d40770",
-          "compilerPasses": 1,
-          "elapsedMs": 50083
-        }
-      },
-      {
-        "mode": "verify",
-        "head": "6f89c05473653acad8b74fefe78102c990d40770",
-        "inputKey": "b4187db551c1b2062b8f5a79158a6352b83282013064df1852d08a79ad84baa7",
-        "exitCode": 0,
-        "signal": null,
-        "stdout": "{\"status\":\"FINAL_BINDER_GREEN\",\"surfaceDigest\":\"7a74e02dc7f2e6e3227bd8f247fae7601a67df92bf79cae1687ecbde07de498b\",\"callables\":535,\"diagnostics\":47,\"byCode\":{\"EXPLICIT_HARD_RED\":47},\"hardRed\":47,\"unexpected\":0,\"unexpectedRows\":[],\"valueAccepted\":309,\"producerAccepted\":179,\"strictAccepted\":488,\"mode\":\"verify\",\"inputKey\":\"b4187db551c1b2062b8f5a79158a6352b83282013064df1852d08a79ad84baa7\",\"head\":\"6f89c05473653acad8b74fefe78102c990d40770\",\"compilerPasses\":1,\"elapsedMs\":49578}\n",
-        "stderr": "",
-        "stdoutSha256": "4ae132b625947b337b469a3f6b4d8f44833c2f249144855251797b1246435c2d",
-        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "elapsedMs": 50386,
-        "report": {
-          "status": "FINAL_BINDER_GREEN",
-          "surfaceDigest": "7a74e02dc7f2e6e3227bd8f247fae7601a67df92bf79cae1687ecbde07de498b",
-          "callables": 535,
-          "diagnostics": 47,
-          "byCode": {
-            "EXPLICIT_HARD_RED": 47
-          },
-          "hardRed": 47,
-          "unexpected": 0,
-          "unexpectedRows": [],
-          "valueAccepted": 309,
-          "producerAccepted": 179,
-          "strictAccepted": 488,
-          "mode": "verify",
-          "inputKey": "b4187db551c1b2062b8f5a79158a6352b83282013064df1852d08a79ad84baa7",
-          "head": "6f89c05473653acad8b74fefe78102c990d40770",
-          "compilerPasses": 1,
-          "elapsedMs": 49578
-        }
-      }
-    ],
-    "elapsedMs": 52289
-  }
+  ]
 }

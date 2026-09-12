@@ -1,13 +1,13 @@
 {
   "schemaVersion": 2,
   "status": "FINAL_LIVE_INPUT_CLOSURE",
-  "inputKey": "b4187db551c1b2062b8f5a79158a6352b83282013064df1852d08a79ad84baa7",
+  "inputKey": "2f35da29988234a4430f44638359acfd3b8c217ade3a0750577c9ad0b124d259",
   "surfaceDigest": "7a74e02dc7f2e6e3227bd8f247fae7601a67df92bf79cae1687ecbde07de498b",
   "inputs": 639,
-  "totalBytes": 72798411,
+  "totalBytes": 72800166,
   "untrackedProofInputs": 0,
   "compilerRootSet": {
-    "key": "db67a9d2bfda1e6e71ffeba75434193ab0911678f5480952e8c44a26b6704624",
+    "key": "eadfda177116d62a8379e4d24d370610276a6af22a821b36fc97a1ce5bdce8ee",
     "rows": [
       {
         "file": "src/allocation.ts",
@@ -321,8 +321,8 @@
       },
       {
         "file": "test/formal-callgraph-semantics.test.ts",
-        "sha256": "8255ad320968fecb15c68f485237a3900dc58e6347cc83d4a984266ce708dc7d",
-        "sizeBytes": 15967
+        "sha256": "6b3b38f736b326237a4429294f12bd5b3685ae7a5dc0a6b18e30c3ff17ae7e54",
+        "sizeBytes": 16685
       },
       {
         "file": "test/formal-implementation-conformance.test.ts",
@@ -457,7 +457,7 @@
     ]
   },
   "compilerSourceSet": {
-    "key": "563928b6f4f011b855f2a34d818e4023fc757d014ab60aa252ec6ff6f3b0407f",
+    "key": "c9d4cbd675dcfd889020256c801f5cbf795d5d5070b9479c26c5c463a846fe34",
     "rows": [
       {
         "file": "node_modules/.pnpm/@standard-schema+spec@1.1.0/node_modules/@standard-schema/spec/dist/index.d.ts",
@@ -2118,8 +2118,8 @@
       {
         "file": "test/formal-callgraph-semantics.test.ts",
         "kind": "tracked",
-        "sha256": "8255ad320968fecb15c68f485237a3900dc58e6347cc83d4a984266ce708dc7d",
-        "sizeBytes": 15967
+        "sha256": "6b3b38f736b326237a4429294f12bd5b3685ae7a5dc0a6b18e30c3ff17ae7e54",
+        "sizeBytes": 16685
       },
       {
         "file": "test/formal-implementation-abstraction.ts",
@@ -2535,19 +2535,19 @@
     {
       "file": "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json",
       "kind": "tracked",
-      "sha256": "c25aa4c3341c9bd5e4225af32fb93e2772de099a9ea93215c5435b710190468f",
+      "sha256": "5244b6d9ebab571bfa00fab73c79d1b3a7436ea058feac9669cbee72177bff9b",
       "sizeBytes": 698
     },
     {
       "file": "experiments/tla-conformance/final-convergence/current-pr-review-full.log",
       "kind": "tracked",
-      "sha256": "82f5254f296e9f5fa1dcf676def72c0ec0e7b40943cc78f32eb449f454c2db57",
-      "sizeBytes": 38172
+      "sha256": "c68c735405ca46e9394c20c3e81e5342360a5ba1b5822965fd207e1393de2f89",
+      "sizeBytes": 38661
     },
     {
       "file": "experiments/tla-conformance/final-convergence/current-review-assurance.mjs",
       "kind": "tracked",
-      "sha256": "a3e2037483b0f2ff4ad774c4df08aae7515b5fbc5b7c8745161633ecae0d4d18",
+      "sha256": "97b290ebdba6ed7bddf4a9ec3ac477b3ec28574262d2a149236ec5c750e35d9e",
       "sizeBytes": 21373
     },
     {
@@ -3801,19 +3801,19 @@
     {
       "file": "formal/implementation-conformance/API_ASSURANCE.json",
       "kind": "tracked",
-      "sha256": "430f3e57e1344d7f5ef8c19509405b01acf2212d78ac7fb6fcbca1b8a027b9a4",
+      "sha256": "d234d16c2b7c3d318a6f320a7c7e342b6190ae8a8c988eac59bf6f10c9b55448",
       "sizeBytes": 2683743
     },
     {
       "file": "formal/implementation-conformance/CALL_CHAIN_ASSURANCE.json",
       "kind": "tracked",
-      "sha256": "56b9c935c0e2cb40303f7e2d4d3f2aeabea06c1701992f832e583141c290dcbf",
+      "sha256": "4f20a815040616607799b4385bb3717587603005bbbbb0e3c3677d466d97ed81",
       "sizeBytes": 1411116
     },
     {
       "file": "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
       "kind": "tracked",
-      "sha256": "7084a0c762503ef9f14493ee77f3be4c08d69ac77235f474d8c600569aeac03d",
+      "sha256": "9f1df7e0b2fcaba3295596b77847a9601d2611aafea47b5f978cea21afdeeca0",
       "sizeBytes": 2459
     },
     {
@@ -5481,8 +5481,8 @@
     {
       "file": "scripts/formal-implementation-callgraph.cjs",
       "kind": "tracked",
-      "sha256": "9d4fc1c72621361b6200ebbe3b98e95620615dfce162a92af4fdc7a788f02931",
-      "sizeBytes": 33276
+      "sha256": "e03945aa027bfcebcf586953a944da7eb4469d02b630bc742e739d9db8f19ceb",
+      "sizeBytes": 33439
     },
     {
       "file": "scripts/formal-implementation-surface.cjs",
@@ -5493,8 +5493,8 @@
     {
       "file": "scripts/formal-implementation-vitest-semantics.cjs",
       "kind": "tracked",
-      "sha256": "907cca71a7837f2001cd39791ff14b2a59c9aa83c13dc872fc4c79bab76396dd",
-      "sizeBytes": 19327
+      "sha256": "5f31cda0ed1311e6a905afad0fa6d5839cce26420bdb34a47609805d98f4ab28",
+      "sizeBytes": 19712
     },
     {
       "file": "scripts/formal-models.mjs",
@@ -5943,8 +5943,8 @@
     {
       "file": "test/formal-callgraph-semantics.test.ts",
       "kind": "tracked",
-      "sha256": "8255ad320968fecb15c68f485237a3900dc58e6347cc83d4a984266ce708dc7d",
-      "sizeBytes": 15967
+      "sha256": "6b3b38f736b326237a4429294f12bd5b3685ae7a5dc0a6b18e30c3ff17ae7e54",
+      "sizeBytes": 16685
     },
     {
       "file": "test/formal-implementation-abstraction.ts",
@@ -6148,8 +6148,8 @@
   "outputs": [
     {
       "file": "experiments/tla-conformance/final-convergence/compact-final-verify.mjs",
-      "sha256": "82c07abfb8b09adb7badd576c3324122d73b59c2166ebb348808bfa8f77dcac0",
-      "sizeBytes": 942717
+      "sha256": "23babd45cce589ae78089c60b84dce718c6ce21238b03e0d58fa4bffda92c92d",
+      "sizeBytes": 943025
     },
     {
       "file": "experiments/tla-conformance/final-convergence/compact-final-selftest.mjs",

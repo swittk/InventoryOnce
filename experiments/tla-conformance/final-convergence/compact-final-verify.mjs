@@ -314,6 +314,11 @@ var require_formal_implementation_vitest_semantics = __commonJS({
     function vitestSuiteChildrenExecute(metadata) {
       return metadata.registration === "describe" && vitestRegistrationRuns(metadata);
     }
+    function standardLibraryPromiseCallbackCanExecute(methodName, argumentIndex) {
+      if (methodName === "then") return argumentIndex === 0;
+      if (methodName === "catch") return false;
+      return methodName === "finally" && argumentIndex === 0;
+    }
     function standardLibraryCallbackCanExecute(ts4, node, methodName, checker) {
       const access = unwrappedExpression(ts4, node.expression);
       const receiver = methodName === "from" ? node.arguments[0] : ts4.isPropertyAccessExpression(access) || ts4.isElementAccessExpression(access) ? access.expression : void 0;
@@ -340,6 +345,7 @@ var require_formal_implementation_vitest_semantics = __commonJS({
     }
     module.exports = {
       standardLibraryCallbackCanExecute,
+      standardLibraryPromiseCallbackCanExecute,
       expressionHasProperty,
       vitestRegistrationMode,
       vitestRegistrationNameFromExpression,
@@ -17307,7 +17313,7 @@ var CURRENT_REVIEW_ASSURANCE_MANIFESTS = Object.freeze({
   traces: "formal/implementation-conformance/TRACE_REPLAY_ASSURANCE.json",
   gaps: "formal/implementation-conformance/FORMAL_COVERAGE_GAPS.json"
 });
-var CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "c9167d45dc5641b75f971587625cabb92fac3f38";
+var CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "b51735af4e11c588548c77301930893fbac58a6c";
 var CURRENT_REVIEW_ASSURANCE_SELF = "experiments/tla-conformance/final-convergence/current-review-assurance.mjs";
 var COMPACT_MANIFEST = "experiments/tla-conformance/final-convergence/compact-support-manifest.json";
 var COMPACT_CLOSURE = "experiments/tla-conformance/final-convergence/authority-reference-manifest.json";
