@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "status": "CURRENT_PR_REVIEW_FULL_ASSURANCE_VERIFIED",
-  "certifiedHead": "97fd856b869d16b0ca587b4411a35e2640667827",
-  "repositoryStateSha256": "5fd4041bbd57c4373edccfe2c0183a4d66ce95c627b3a43e614d6b94165aa2d1",
+  "certifiedHead": "6886a8aadeffa3bc92ef8bd7289a4081b896eff6",
+  "repositoryStateSha256": "bd2a87621980390b63d37530b547f7da26851f7c573027041509ca0f70c8faf0",
   "surfaceSha256": "8f5c70dc8948bc7190dda978b9cf622b44d632b82ffb0c09a9b5ec755a8d596f",
   "report": {
     "file": "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
-    "sha256": "94defd51cadaba41289dc480fcaab1e2b9fe538e6aa88340cb97e1aae75d1786"
+    "sha256": "34e566a7f4d08c046eaf6007ffc33f3a73d0a349a1d9d1ecc90fd4f22b059c49"
   },
   "fullLog": {
     "file": "experiments/tla-conformance/final-convergence/current-pr-review-full.log",
-    "sha256": "6fd1bee37d10f7513b68db6a432f73458f610c01a6a699bad7adfe96df50a776"
+    "sha256": "cac8ec6ca54ab734dff49543d56c35d43f025ab17051829ad33a12e52e1aa906"
   }
 }
