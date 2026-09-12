@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
 import { execFileSync } from "node:child_process";
 import { createImmutableAssuranceReader, assertAssuranceCommitChain, assuranceProofReferencesExactPath, checkFrozenAssuranceTransport } from "./immutable-assurance-inputs.mjs";
-import { readAssuranceFile, readCompactArchive, materializeAssuranceFiles, claimAssuranceWorkspace, assuranceBytesSha256, withAssuranceFileObservation } from "./assurance-files.mjs";
+import { readAssuranceFile, readCompactArchive, materializeAssuranceFiles, claimAssuranceWorkspace, assuranceBytesSha256, withAssuranceFileObservation, runWithoutAssuranceFileObservation } from "./assurance-files.mjs";
 import { formalProofDescriptor, formalProofCacheKey, readFormalProofCache, writeFormalProofCache } from "./formal-proof-cache.mjs";
 import { executableAssuranceSummary, assertExecutableAssuranceMatchesManifests } from "./executable-assurance-coherence.mjs";
 import { finalConvergenceRepositoryPath } from "../experiments/tla-conformance/final-convergence/repository-root.mjs";
@@ -726,6 +726,29 @@ test("actual descriptor reads cannot escape file observation and mutation reads 
     assert.equal(fs.readFileSync, original);
   } finally { fs.rmSync(directory, { recursive: true, force: true }); }
 });
+
+
+test("internal snapshot descriptor reads require explicit observation suppression while unknown verifier descriptors fail closed", async () => temporaryDirectory(async directory => {
+  const target = path.join(directory, "proof.txt");
+  fs.writeFileSync(target, "proof");
+  const descriptor = fs.openSync(target, "r");
+  try {
+    await assert.rejects(
+      () => withAssuranceFileObservation({ repositoryRoot: directory, onRead: () => undefined }, () => {
+        const byte = Buffer.alloc(1);
+        fs.readSync(descriptor, byte, 0, 1, null);
+      }),
+      /Unbound assurance file descriptor/u,
+    );
+    await withAssuranceFileObservation({ repositoryRoot: directory, onRead: () => { throw new Error("suppressed internal read was observed"); } }, () =>
+      runWithoutAssuranceFileObservation(() => {
+        const byte = Buffer.alloc(1);
+        fs.readSync(descriptor, byte, 0, 1, 0);
+        assert.equal(byte.toString(), "p");
+      })
+    );
+  } finally { fs.closeSync(descriptor); }
+}));
 
 
 test("actual source comparison ignores index hiding flags but only omits independently selected generated outputs", () => temporaryDirectory(directory => {

@@ -10,7 +10,7 @@ import { gzipSync } from "node:zlib";
 import { performance } from "node:perf_hooks";
 import { assertCompactAssuranceCertificate } from "./executable-assurance-coherence.mjs";
 import { verifyCurrentReviewLiveSource } from "../experiments/tla-conformance/final-convergence/current-review-assurance.mjs";
-import { assuranceRepositoryPath, readAssuranceFile, readCompactArchive, materializeAssuranceFiles, claimAssuranceWorkspace, withAssuranceReadSession, withAssuranceFileObservation } from "./assurance-files.mjs";
+import { assuranceRepositoryPath, readAssuranceFile, readCompactArchive, materializeAssuranceFiles, claimAssuranceWorkspace, withAssuranceReadSession, withAssuranceFileObservation, runWithoutAssuranceFileObservation } from "./assurance-files.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const DIRECTORY = "experiments/tla-conformance/final-convergence/";
@@ -136,10 +136,10 @@ function snapshot(root, manifest) {
     if (file.startsWith("node_modules/")) {
       const target = path.resolve(root, file);
       assert(native.statSync(target).isFile(), `Invalid toolchain input ${file}`);
-      bytes = native.readFileSync(target); kind = "toolchain";
+      bytes = runWithoutAssuranceFileObservation(() => native.readFileSync(target)); kind = "toolchain";
     } else {
       assert(tracked.has(file) || archived.has(file) || outputs.has(file), `Ambient/untracked proof input is forbidden: ${file}`);
-      bytes = ordinaryBytes(root, file); kind = archived.has(file) && !tracked.has(file) ? "archived" : "tracked";
+      bytes = runWithoutAssuranceFileObservation(() => ordinaryBytes(root, file)); kind = archived.has(file) && !tracked.has(file) ? "archived" : "tracked";
       if (kind === "archived") assert.equal(sha(bytes), archived.get(file).sha256, `Materialized support changed without a tracked archive update: ${file}`);
     }
     const entry = { file, kind, bytes, sha256: sha(bytes), sizeBytes: bytes.length };

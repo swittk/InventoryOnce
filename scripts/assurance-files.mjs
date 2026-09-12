@@ -188,6 +188,15 @@ export function assuranceCompilerSourceSha256(repositoryRoot, file, text) {
 
 /** Unwrapped filesystem calls keep observing a read from recursively observing its own snapshot load. */
 const ordinaryFileCalls = Object.fromEntries(["openSync", "closeSync", "readFileSync", "readSync", "writeFileSync", "writeSync", "existsSync"].map(name => [name, fs[name]]));
+/** Explicit depth for the pipeline's own already-accounted immutable snapshot reads. */
+let assuranceFileObservationSuppressionDepth = 0;
+
+/** Run one synchronous internal snapshot read without recursively treating its native descriptor as verifier input. */
+export function runWithoutAssuranceFileObservation(run) {
+  assuranceFileObservationSuppressionDepth += 1;
+  try { return run(); }
+  finally { assuranceFileObservationSuppressionDepth -= 1; }
+}
 
 /** Observe actual path and descriptor I/O, including bundled copies of the safe reader, without hiding mutation bytes. */
 export async function withAssuranceFileObservation({
@@ -222,7 +231,7 @@ export async function withAssuranceFileObservation({
   };
   const previous = Object.fromEntries(Object.keys(ordinaryFileCalls).map(name => [name, fs[name]]));
   fs.openSync = (file, flags, ...rest) => {
-    if (observing) return ordinaryFileCalls.openSync(file, flags, ...rest);
+    if (observing || assuranceFileObservationSuppressionDepth > 0) return ordinaryFileCalls.openSync(file, flags, ...rest);
     const relative = relativeFile(file);
     const writable = typeof flags === "string" ? /[wa+]/u.test(flags) : (flags & (fs.constants.O_WRONLY | fs.constants.O_RDWR | fs.constants.O_CREAT | fs.constants.O_TRUNC)) !== 0;
     if (writable) invoke(onWrite, relative);
@@ -231,11 +240,11 @@ export async function withAssuranceFileObservation({
     return descriptor;
   };
   fs.closeSync = descriptor => {
-    if (!observing) descriptors.delete(descriptor);
+    if (!observing && assuranceFileObservationSuppressionDepth === 0) descriptors.delete(descriptor);
     return ordinaryFileCalls.closeSync(descriptor);
   };
   fs.readFileSync = (file, options) => {
-    if (observing) return ordinaryFileCalls.readFileSync(file, options);
+    if (observing || assuranceFileObservationSuppressionDepth > 0) return ordinaryFileCalls.readFileSync(file, options);
     const bytes = invoke(onRead, relativeFile(file));
     // A descriptor read must retain its native cursor semantics; it is observed but never replayed from byte zero.
     if (bytes !== undefined && typeof file !== "number") {
@@ -245,19 +254,19 @@ export async function withAssuranceFileObservation({
     return ordinaryFileCalls.readFileSync(file, options);
   };
   fs.readSync = (descriptor, ...args) => {
-    if (!observing) invoke(onRead, relativeFile(descriptor));
+    if (!observing && assuranceFileObservationSuppressionDepth === 0) invoke(onRead, relativeFile(descriptor));
     return ordinaryFileCalls.readSync(descriptor, ...args);
   };
   fs.writeFileSync = (file, ...args) => {
-    if (!observing) invoke(onWrite, relativeFile(file));
+    if (!observing && assuranceFileObservationSuppressionDepth === 0) invoke(onWrite, relativeFile(file));
     return ordinaryFileCalls.writeFileSync(file, ...args);
   };
   fs.writeSync = (descriptor, ...args) => {
-    if (!observing) invoke(onWrite, relativeFile(descriptor));
+    if (!observing && assuranceFileObservationSuppressionDepth === 0) invoke(onWrite, relativeFile(descriptor));
     return ordinaryFileCalls.writeSync(descriptor, ...args);
   };
   fs.existsSync = file => {
-    if (observing || onExists === undefined) return ordinaryFileCalls.existsSync(file);
+    if (observing || assuranceFileObservationSuppressionDepth > 0 || onExists === undefined) return ordinaryFileCalls.existsSync(file);
     return invoke(onExists, relativeFile(file));
   };
   syncBuiltinESMExports();
