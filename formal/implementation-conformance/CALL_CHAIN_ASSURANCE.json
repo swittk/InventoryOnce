@@ -1,7 +1,7 @@
 {
   "counts": {
-    "callables": 2641,
-    "edges": 6932,
+    "callables": 2657,
+    "edges": 6959,
     "publicEntries": 510,
     "publicEntriesWithTargets": 510,
     "publicEntriesWithWitnesses": 510,
@@ -17930,9 +17930,9 @@
                 "column": 1,
                 "file": "test/formal-implementation-abstraction.ts",
                 "hasBody": true,
-                "id": "test/formal-implementation-abstraction.ts:47754:abstractPrimaryBalance",
+                "id": "test/formal-implementation-abstraction.ts:48982:abstractPrimaryBalance",
                 "kind": "FunctionDeclaration",
-                "line": 1193,
+                "line": 1220,
                 "name": "abstractPrimaryBalance",
                 "reason": "resolved-call"
               },
@@ -26824,9 +26824,9 @@
                 "column": 1,
                 "file": "test/formal-implementation-abstraction.ts",
                 "hasBody": true,
-                "id": "test/formal-implementation-abstraction.ts:47754:abstractPrimaryBalance",
+                "id": "test/formal-implementation-abstraction.ts:48982:abstractPrimaryBalance",
                 "kind": "FunctionDeclaration",
-                "line": 1193,
+                "line": 1220,
                 "name": "abstractPrimaryBalance",
                 "reason": "resolved-call"
               },
