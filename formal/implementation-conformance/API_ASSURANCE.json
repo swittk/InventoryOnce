@@ -3,8 +3,8 @@
     "authorityMethods": 14,
     "callAndConstructSignatures": 510,
     "classMethods": 71,
-    "compilerCallGraphCallables": 2668,
-    "compilerCallGraphEdges": 6977,
+    "compilerCallGraphCallables": 2687,
+    "compilerCallGraphEdges": 7027,
     "compilerCallGraphTestRoots": 44,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 510,
@@ -11715,20 +11715,20 @@
               "column": 59,
               "file": "test/formal-implementation-refinement.test.ts",
               "hasBody": true,
-              "id": "test/formal-implementation-refinement.test.ts:2760:<anonymous@89>",
+              "id": "test/formal-implementation-refinement.test.ts:2777:<anonymous@90>",
               "kind": "ArrowFunction",
-              "line": 89,
-              "name": "<anonymous@89>",
+              "line": 90,
+              "name": "<anonymous@90>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 72,
               "file": "test/formal-implementation-refinement.test.ts",
               "hasBody": true,
-              "id": "test/formal-implementation-refinement.test.ts:23880:<anonymous@673>",
+              "id": "test/formal-implementation-refinement.test.ts:23897:<anonymous@674>",
               "kind": "ArrowFunction",
-              "line": 673,
-              "name": "<anonymous@673>",
+              "line": 674,
+              "name": "<anonymous@674>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -34313,29 +34313,29 @@
               "column": 59,
               "file": "test/formal-implementation-refinement.test.ts",
               "hasBody": true,
-              "id": "test/formal-implementation-refinement.test.ts:2760:<anonymous@89>",
+              "id": "test/formal-implementation-refinement.test.ts:2777:<anonymous@90>",
               "kind": "ArrowFunction",
-              "line": 89,
-              "name": "<anonymous@89>",
+              "line": 90,
+              "name": "<anonymous@90>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 90,
               "file": "test/formal-implementation-refinement.test.ts",
               "hasBody": true,
-              "id": "test/formal-implementation-refinement.test.ts:10278:<anonymous@309>",
+              "id": "test/formal-implementation-refinement.test.ts:10295:<anonymous@310>",
               "kind": "ArrowFunction",
-              "line": 309,
-              "name": "<anonymous@309>",
+              "line": 310,
+              "name": "<anonymous@310>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 1,
               "file": "test/formal-implementation-abstraction.ts",
               "hasBody": true,
-              "id": "test/formal-implementation-abstraction.ts:51694:abstractPrimaryBalance",
+              "id": "test/formal-implementation-abstraction.ts:58580:abstractPrimaryBalance",
               "kind": "FunctionDeclaration",
-              "line": 1298,
+              "line": 1481,
               "name": "abstractPrimaryBalance",
               "reason": "resolved-call"
             },
@@ -38372,20 +38372,20 @@
               "column": 59,
               "file": "test/formal-implementation-refinement.test.ts",
               "hasBody": true,
-              "id": "test/formal-implementation-refinement.test.ts:2760:<anonymous@89>",
+              "id": "test/formal-implementation-refinement.test.ts:2777:<anonymous@90>",
               "kind": "ArrowFunction",
-              "line": 89,
-              "name": "<anonymous@89>",
+              "line": 90,
+              "name": "<anonymous@90>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 79,
               "file": "test/formal-implementation-refinement.test.ts",
               "hasBody": true,
-              "id": "test/formal-implementation-refinement.test.ts:8730:<anonymous@271>",
+              "id": "test/formal-implementation-refinement.test.ts:8747:<anonymous@272>",
               "kind": "ArrowFunction",
-              "line": 271,
-              "name": "<anonymous@271>",
+              "line": 272,
+              "name": "<anonymous@272>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -38633,20 +38633,20 @@
               "column": 59,
               "file": "test/formal-implementation-refinement.test.ts",
               "hasBody": true,
-              "id": "test/formal-implementation-refinement.test.ts:2760:<anonymous@89>",
+              "id": "test/formal-implementation-refinement.test.ts:2777:<anonymous@90>",
               "kind": "ArrowFunction",
-              "line": 89,
-              "name": "<anonymous@89>",
+              "line": 90,
+              "name": "<anonymous@90>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 72,
               "file": "test/formal-implementation-refinement.test.ts",
               "hasBody": true,
-              "id": "test/formal-implementation-refinement.test.ts:23880:<anonymous@673>",
+              "id": "test/formal-implementation-refinement.test.ts:23897:<anonymous@674>",
               "kind": "ArrowFunction",
-              "line": 673,
-              "name": "<anonymous@673>",
+              "line": 674,
+              "name": "<anonymous@674>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -50979,29 +50979,29 @@
               "column": 59,
               "file": "test/formal-implementation-refinement.test.ts",
               "hasBody": true,
-              "id": "test/formal-implementation-refinement.test.ts:2760:<anonymous@89>",
+              "id": "test/formal-implementation-refinement.test.ts:2777:<anonymous@90>",
               "kind": "ArrowFunction",
-              "line": 89,
-              "name": "<anonymous@89>",
+              "line": 90,
+              "name": "<anonymous@90>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 90,
               "file": "test/formal-implementation-refinement.test.ts",
               "hasBody": true,
-              "id": "test/formal-implementation-refinement.test.ts:10278:<anonymous@309>",
+              "id": "test/formal-implementation-refinement.test.ts:10295:<anonymous@310>",
               "kind": "ArrowFunction",
-              "line": 309,
-              "name": "<anonymous@309>",
+              "line": 310,
+              "name": "<anonymous@310>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 1,
               "file": "test/formal-implementation-abstraction.ts",
               "hasBody": true,
-              "id": "test/formal-implementation-abstraction.ts:51694:abstractPrimaryBalance",
+              "id": "test/formal-implementation-abstraction.ts:58580:abstractPrimaryBalance",
               "kind": "FunctionDeclaration",
-              "line": 1298,
+              "line": 1481,
               "name": "abstractPrimaryBalance",
               "reason": "resolved-call"
             },
@@ -71497,31 +71497,31 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/policy-operations.test.ts",
+              "file": "test/formal-implementation-refinement.test.ts",
               "hasBody": true,
-              "id": "test-root:test/policy-operations.test.ts",
+              "id": "test-root:test/formal-implementation-refinement.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/policy-operations.test.ts"
+              "name": "test/formal-implementation-refinement.test.ts"
             },
             {
-              "column": 46,
-              "file": "test/policy-operations.test.ts",
+              "column": 51,
+              "file": "test/formal-implementation-refinement.test.ts",
               "hasBody": true,
-              "id": "test/policy-operations.test.ts:1509:<anonymous@54>",
+              "id": "test/formal-implementation-refinement.test.ts:31267:<anonymous@824>",
               "kind": "ArrowFunction",
-              "line": 54,
-              "name": "<anonymous@54>",
+              "line": 824,
+              "name": "<anonymous@824>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 79,
-              "file": "test/policy-operations.test.ts",
+              "column": 110,
+              "file": "test/formal-implementation-refinement.test.ts",
               "hasBody": true,
-              "id": "test/policy-operations.test.ts:17544:<anonymous@503>",
+              "id": "test/formal-implementation-refinement.test.ts:34873:<anonymous@925>",
               "kind": "ArrowFunction",
-              "line": 503,
-              "name": "<anonymous@503>",
+              "line": 925,
+              "name": "<anonymous@925>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -71554,7 +71554,7 @@
             "line": 2589,
             "name": "issueManyByPolicy"
           },
-          "test": "test/policy-operations.test.ts"
+          "test": "test/formal-implementation-refinement.test.ts"
         }
       ],
       "directExecutableEntrypoints": [],
@@ -73213,20 +73213,20 @@
               "column": 59,
               "file": "test/formal-implementation-refinement.test.ts",
               "hasBody": true,
-              "id": "test/formal-implementation-refinement.test.ts:2760:<anonymous@89>",
+              "id": "test/formal-implementation-refinement.test.ts:2777:<anonymous@90>",
               "kind": "ArrowFunction",
-              "line": 89,
-              "name": "<anonymous@89>",
+              "line": 90,
+              "name": "<anonymous@90>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 90,
               "file": "test/formal-implementation-refinement.test.ts",
               "hasBody": true,
-              "id": "test/formal-implementation-refinement.test.ts:10278:<anonymous@309>",
+              "id": "test/formal-implementation-refinement.test.ts:10295:<anonymous@310>",
               "kind": "ArrowFunction",
-              "line": 309,
-              "name": "<anonymous@309>",
+              "line": 310,
+              "name": "<anonymous@310>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -74912,31 +74912,31 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/fungibility.test.ts",
+              "file": "test/formal-implementation-refinement.test.ts",
               "hasBody": true,
-              "id": "test-root:test/fungibility.test.ts",
+              "id": "test-root:test/formal-implementation-refinement.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/fungibility.test.ts"
+              "name": "test/formal-implementation-refinement.test.ts"
             },
             {
-              "column": 63,
-              "file": "test/fungibility.test.ts",
+              "column": 51,
+              "file": "test/formal-implementation-refinement.test.ts",
               "hasBody": true,
-              "id": "test/fungibility.test.ts:6683:<anonymous@212>",
+              "id": "test/formal-implementation-refinement.test.ts:31267:<anonymous@824>",
               "kind": "ArrowFunction",
-              "line": 212,
-              "name": "<anonymous@212>",
+              "line": 824,
+              "name": "<anonymous@824>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 87,
-              "file": "test/fungibility.test.ts",
+              "column": 110,
+              "file": "test/formal-implementation-refinement.test.ts",
               "hasBody": true,
-              "id": "test/fungibility.test.ts:10465:<anonymous@320>",
+              "id": "test/formal-implementation-refinement.test.ts:31384:<anonymous@825>",
               "kind": "ArrowFunction",
-              "line": 320,
-              "name": "<anonymous@320>",
+              "line": 825,
+              "name": "<anonymous@825>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -74969,7 +74969,7 @@
             "line": 6277,
             "name": "prepare"
           },
-          "test": "test/fungibility.test.ts"
+          "test": "test/formal-implementation-refinement.test.ts"
         }
       ],
       "directExecutableEntrypoints": [],
@@ -77697,20 +77697,20 @@
               "column": 59,
               "file": "test/formal-implementation-refinement.test.ts",
               "hasBody": true,
-              "id": "test/formal-implementation-refinement.test.ts:2760:<anonymous@89>",
+              "id": "test/formal-implementation-refinement.test.ts:2777:<anonymous@90>",
               "kind": "ArrowFunction",
-              "line": 89,
-              "name": "<anonymous@89>",
+              "line": 90,
+              "name": "<anonymous@90>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 72,
               "file": "test/formal-implementation-refinement.test.ts",
               "hasBody": true,
-              "id": "test/formal-implementation-refinement.test.ts:23880:<anonymous@673>",
+              "id": "test/formal-implementation-refinement.test.ts:23897:<anonymous@674>",
               "kind": "ArrowFunction",
-              "line": 673,
-              "name": "<anonymous@673>",
+              "line": 674,
+              "name": "<anonymous@674>",
               "reason": "external-callback-dispatch"
             },
             {

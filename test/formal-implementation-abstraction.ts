@@ -6,7 +6,10 @@ import type {
   InventoryOnceCountResult,
   InventoryOnceEventResult,
   InventoryOnceOperationResult,
+  InventoryOncePolicyBatchAllocation,
+  InventoryOncePolicyBatchAllocationGroup,
   InventoryOncePolicyBatchResult,
+  InventoryOnceRecordedDeficit,
   InventoryOnceReservationResult,
   InventoryOnceTransferResult,
   InventoryReservation,
@@ -140,8 +143,16 @@ export interface AbstractTraceabilityState {
 export interface AbstractOperationResult {
   /** Stable retry identity. */
   readonly operationId: string;
+  /** Durable record time frozen with the operation receipt. */
+  readonly recordedAtEpochMs: number;
   /** Published world revision. */
   readonly worldRevision: number;
+  /** Committed event identity retained by the receipt when present. */
+  readonly receiptEventId?: string;
+  /** Reservation identity retained by the receipt when present. */
+  readonly receiptReservationId?: string;
+  /** Count identity retained by the receipt when present. */
+  readonly receiptCountId?: string;
   /** True only for an exact replay. */
   readonly replayed: boolean;
   /** Optional committed event observation. */
@@ -156,6 +167,8 @@ export interface AbstractOperationResult {
   readonly deficit?: Readonly<Record<string, unknown>>;
   /** Exact per-request policy allocation evidence. */
   readonly allocations?: readonly Readonly<Record<string, unknown>>[];
+  /** Exact caller-grouped policy allocation evidence. */
+  readonly allocationGroups?: readonly Readonly<Record<string, unknown>>[];
 }
 
 /** Monotonic writer-fence state observation used by authority refinement. */
@@ -581,6 +594,111 @@ export function abstractTraceabilityState(
   return { relations };
 }
 
+/** Project one recorded deficit into the exact immutable event-metadata shape. */
+function abstractPolicyDeficitMetadata(
+  deficit: InventoryOnceRecordedDeficit
+): Readonly<Record<string, unknown>> {
+  return canonicalRecord({
+    version: 1,
+    positionIdentity: abstractProjectionPositionIdentity(deficit.position),
+    amount: deficit.amount,
+    primary: deficit.primary,
+  });
+}
+
+/** Project one policy allocation into public result-refinement evidence. */
+function abstractPolicyAllocation(
+  allocation: InventoryOncePolicyBatchAllocation
+): Readonly<Record<string, unknown>> {
+  return canonicalRecord({
+    requestId: allocation.requestId,
+    groupId: allocation.groupId,
+    lines: allocation.lines.map((line) => ({
+      position: abstractPositionKey(line.position),
+      positionIdentity: line.positionIdentity,
+      amount: line.amount,
+      allocatedPrimary: line.allocatedPrimary,
+      layerStartedAtEpochMs: line.layerStartedAtEpochMs,
+      expiresAtEpochMs: line.expiresAtEpochMs,
+    })),
+    deficit:
+      allocation.deficit === undefined
+        ? undefined
+        : canonicalRecord({
+            position: abstractPositionKey(allocation.deficit.position),
+            amount: allocation.deficit.amount,
+            primary: allocation.deficit.primary,
+          }),
+  });
+}
+
+/** Project one grouped policy allocation into replay-visible result evidence. */
+function abstractPolicyAllocationGroup(
+  group: InventoryOncePolicyBatchAllocationGroup
+): Readonly<Record<string, unknown>> {
+  return canonicalRecord({
+    groupId: group.groupId,
+    requestIds: group.requestIds,
+    lines: group.lines.map((line) => ({
+      position: abstractPositionKey(line.position),
+      positionIdentity: line.positionIdentity,
+      amount: line.amount,
+      allocatedPrimary: line.allocatedPrimary,
+      layerStartedAtEpochMs: line.layerStartedAtEpochMs,
+      expiresAtEpochMs: line.expiresAtEpochMs,
+    })),
+  });
+}
+
+/** Independently regroup exact policy allocations by stable caller result identity. */
+function abstractExpectedPolicyAllocationGroups(
+  allocations: readonly InventoryOncePolicyBatchAllocation[]
+): readonly Readonly<Record<string, unknown>>[] {
+  const groups = new Map<string, InventoryOncePolicyBatchAllocationGroup>();
+  for (const allocation of allocations) {
+    const current = groups.get(allocation.groupId);
+    groups.set(
+      allocation.groupId,
+      current === undefined
+        ? {
+            groupId: allocation.groupId,
+            requestIds: [allocation.requestId],
+            lines: allocation.lines,
+          }
+        : {
+            groupId: current.groupId,
+            requestIds: [...current.requestIds, allocation.requestId],
+            lines: [...current.lines, ...allocation.lines],
+          }
+    );
+  }
+  return [...groups.values()].map(abstractPolicyAllocationGroup);
+}
+
+/** Encode exact policy allocations into the independently expected event-metadata shape. */
+function abstractPolicyBatchMetadata(
+  allocations: readonly InventoryOncePolicyBatchAllocation[]
+): Readonly<Record<string, unknown>> {
+  return canonicalRecord({
+    version: 2,
+    allocations: allocations.map((allocation) => ({
+      requestId: allocation.requestId,
+      groupId: allocation.groupId,
+      lines: allocation.lines.map((line) => ({
+        positionIdentity: line.positionIdentity,
+        amount: line.amount,
+        allocatedPrimary: line.allocatedPrimary,
+        layerStartedAtEpochMs: line.layerStartedAtEpochMs,
+        expiresAtEpochMs: line.expiresAtEpochMs,
+      })),
+      deficit:
+        allocation.deficit === undefined
+          ? undefined
+          : abstractPolicyDeficitMetadata(allocation.deficit),
+    })),
+  });
+}
+
 /** Project one durable command result to event/book/allocation observations. */
 export function abstractOperationResult(
   result:
@@ -597,9 +715,21 @@ export function abstractOperationResult(
   const transfer = "transfer" in result ? result.transfer : undefined;
   const deficit = "deficit" in result ? result.deficit : undefined;
   const allocations = "allocations" in result ? result.allocations : undefined;
+  const allocationGroups =
+    "allocationGroups" in result ? result.allocationGroups : undefined;
   return {
     operationId: result.receipt.operationId,
+    recordedAtEpochMs: result.receipt.recordedAtEpochMs,
     worldRevision: result.receipt.worldRevision,
+    ...(result.receipt.eventId === undefined
+      ? {}
+      : { receiptEventId: result.receipt.eventId }),
+    ...(result.receipt.reservationId === undefined
+      ? {}
+      : { receiptReservationId: result.receipt.reservationId }),
+    ...(result.receipt.countId === undefined
+      ? {}
+      : { receiptCountId: result.receipt.countId }),
     replayed: result.replayed,
     ...(event === undefined ? {} : { event: abstractEvent(event) }),
     ...(reservation === undefined
@@ -618,32 +748,10 @@ export function abstractOperationResult(
         }),
     ...(allocations === undefined
       ? {}
-      : {
-          allocations: allocations.map((allocation) =>
-            canonicalRecord({
-              requestId: allocation.requestId,
-              groupId: allocation.groupId,
-              lines: allocation.lines.map((line) => ({
-                position: abstractPositionKey(line.position),
-                positionIdentity: line.positionIdentity,
-                amount: line.amount,
-                allocatedPrimary: abstractQuantity(line.allocatedPrimary),
-                layerStartedAtEpochMs: line.layerStartedAtEpochMs,
-                expiresAtEpochMs: line.expiresAtEpochMs,
-              })),
-              deficit:
-                allocation.deficit === undefined
-                  ? undefined
-                  : {
-                      position: abstractPositionKey(
-                        allocation.deficit.position
-                      ),
-                      amount: allocation.deficit.amount,
-                      primary: abstractQuantity(allocation.deficit.primary),
-                    },
-            })
-          ),
-        }),
+      : { allocations: allocations.map(abstractPolicyAllocation) }),
+    ...(allocationGroups === undefined
+      ? {}
+      : { allocationGroups: allocationGroups.map(abstractPolicyAllocationGroup) }),
   };
 }
 
@@ -1290,6 +1398,81 @@ export function assertStateResultRefinement(
     }
     if (result.receipt.eventId !== observation.event.eventId) {
       throw new Error("Result receipt and event identity disagree.");
+    }
+    const publishedEvent = after.projection.events[observation.event.eventId];
+    if (
+      publishedEvent === undefined ||
+      JSON.stringify(abstractEvent(publishedEvent)) !==
+        JSON.stringify(observation.event)
+    ) {
+      throw new Error("Result event disagrees with published event truth.");
+    }
+  }
+  if (observation.reservation !== undefined) {
+    const reservationId = String(observation.reservation.reservationId);
+    const publishedReservation = after.reservations.reservations[reservationId];
+    if (
+      publishedReservation === undefined ||
+      JSON.stringify(abstractReservation(publishedReservation)) !==
+        JSON.stringify(observation.reservation)
+    ) {
+      throw new Error("Result reservation disagrees with published reservation truth.");
+    }
+    if (result.receipt.reservationId !== reservationId) {
+      throw new Error("Result receipt and reservation identity disagree.");
+    }
+  }
+  if (observation.count !== undefined) {
+    const countId = String(observation.count.countId);
+    const publishedCount = after.counts.counts[countId];
+    if (
+      publishedCount === undefined ||
+      JSON.stringify(abstractCount(publishedCount)) !==
+        JSON.stringify(observation.count)
+    ) {
+      throw new Error("Result count disagrees with published count truth.");
+    }
+    if (result.receipt.countId !== countId) {
+      throw new Error("Result receipt and count identity disagree.");
+    }
+  }
+  if (observation.transfer !== undefined) {
+    const transferId = String(observation.transfer.transferId);
+    const publishedTransfer = after.projection.transfers[transferId];
+    if (
+      publishedTransfer === undefined ||
+      JSON.stringify(abstractTransfer(publishedTransfer)) !==
+        JSON.stringify(observation.transfer)
+    ) {
+      throw new Error("Result transfer disagrees with published transfer truth.");
+    }
+  }
+  if ("deficit" in result && result.deficit !== undefined) {
+    const metadata = canonicalValue(
+      result.event.metadata?.inventoryOncePolicyDeficit
+    );
+    if (
+      JSON.stringify(metadata) !==
+      JSON.stringify(abstractPolicyDeficitMetadata(result.deficit))
+    ) {
+      throw new Error("Result deficit disagrees with immutable event evidence.");
+    }
+  }
+  if ("allocations" in result) {
+    const metadata = canonicalValue(
+      result.event.metadata?.inventoryOncePolicyBatch
+    );
+    if (
+      JSON.stringify(metadata) !==
+      JSON.stringify(abstractPolicyBatchMetadata(result.allocations))
+    ) {
+      throw new Error("Policy allocations disagree with immutable event evidence.");
+    }
+    if (
+      JSON.stringify(result.allocationGroups.map(abstractPolicyAllocationGroup)) !==
+      JSON.stringify(abstractExpectedPolicyAllocationGroups(result.allocations))
+    ) {
+      throw new Error("Policy allocation groups disagree with exact allocations.");
     }
   }
 }

@@ -7,6 +7,7 @@ import {
   InventoryTraceabilityRelationKind,
   createInventoryAuthorityControl,
   inventoryStockSelector,
+  parseQuantity,
   stockAmount,
 } from "../src/index.js";
 import { createInMemoryInventoryDurableStorage } from "../src/storage-api.js";
@@ -817,5 +818,194 @@ describe("all projection secondary-index domains", () => {
       { ...p, correctionEventIdByCorrectedEventId: { ...p.correctionEventIdByCorrectedEventId, orphan: "missing" } },
     ];
     for (const projection of variants) expect.soft(() => assertAbstractInventoryInvariants({ ...world, projection })).toThrow();
+  });
+});
+
+describe("operation-result refinement authority", () => {
+  it("rejects returned event, reservation, count, and transfer payloads that disagree with published truth", async () => {
+    {
+      const inventory = createTestInventory();
+      const before = await inventory.read.world();
+      const result = await inventory.stock.receive({
+        operationId: "result-event-authority",
+        occurredAtEpochMs: time0,
+        to: loosePosition("store"),
+        amount: stockAmount("1", "piece"),
+      });
+      const after = await inventory.read.world();
+      expect(() =>
+        assertStateResultRefinement(before, after, {
+          ...result,
+          event: { ...result.event, occurredAtEpochMs: time1 },
+        })
+      ).toThrow("Result event disagrees with published event truth");
+    }
+
+    {
+      const inventory = createTestInventory();
+      await inventory.stock.receive({
+        operationId: "result-reservation-seed",
+        occurredAtEpochMs: time0,
+        to: loosePosition("store"),
+        amount: stockAmount("1", "piece"),
+      });
+      const before = await inventory.read.world();
+      const result = await inventory.reservations.reserve({
+        reservationId: "result-reservation",
+        operationId: "result-reservation:create",
+        itemRevisionId: "item-a-v2",
+        selector: { itemId: "item-a", locationIds: ["store"] },
+        requested: parseQuantity("1", "piece"),
+        createdAtEpochMs: time1,
+      });
+      const after = await inventory.read.world();
+      expect(() =>
+        assertStateResultRefinement(before, after, {
+          ...result,
+          reservation: {
+            ...result.reservation,
+            reservationId: "wrong-reservation",
+          },
+        })
+      ).toThrow("Result reservation disagrees with published reservation truth");
+    }
+
+    {
+      const inventory = createTestInventory();
+      const before = await inventory.read.world();
+      const result = await inventory.counts.start({
+        countId: "result-count",
+        operationId: "result-count:start",
+        itemRevisionId: "item-a-v2",
+        selector: { itemId: "item-a", locationIds: ["store"] },
+        startedAtEpochMs: time0,
+      });
+      const after = await inventory.read.world();
+      expect(() =>
+        assertStateResultRefinement(before, after, {
+          ...result,
+          count: { ...result.count, countId: "wrong-count" },
+        })
+      ).toThrow("Result count disagrees with published count truth");
+    }
+
+    {
+      const inventory = createTestInventory();
+      await inventory.stock.receive({
+        operationId: "result-transfer-seed",
+        occurredAtEpochMs: time0,
+        to: loosePosition("A"),
+        amount: stockAmount("1", "piece"),
+      });
+      const before = await inventory.read.world();
+      const result = await inventory.transfers.prepare({
+        operationId: "result-transfer:prepare",
+        occurredAtEpochMs: time1,
+        transferId: "result-transfer",
+        transitLocationId: "TRANSIT",
+        destinationLocationId: "B",
+        lines: [
+          {
+            lineId: "line",
+            from: loosePosition("A"),
+            amount: stockAmount("1", "piece"),
+          },
+        ],
+      });
+      const after = await inventory.read.world();
+      expect(() =>
+        assertStateResultRefinement(before, after, {
+          ...result,
+          transfer: { ...result.transfer, transferId: "wrong-transfer" },
+        })
+      ).toThrow("Result transfer disagrees with published transfer truth");
+    }
+  });
+
+  it("rejects policy allocation, grouping, and deficit results that disagree with immutable event evidence", async () => {
+    {
+      const inventory = createTestInventory();
+      await inventory.stock.receive({
+        operationId: "result-policy-seed",
+        occurredAtEpochMs: time0,
+        to: loosePosition("store", { lotId: "RESULT-POLICY" }),
+        amount: stockAmount("5", "piece"),
+      });
+      const before = await inventory.read.world();
+      const result = await inventory.stock.issueManyByPolicy({
+        operationId: "result-policy",
+        occurredAtEpochMs: time1,
+        requests: [
+          {
+            requestId: "a",
+            groupId: "group",
+            selector: inventoryStockSelector("item-a", {
+              locationIds: ["store"],
+            }),
+            amount: stockAmount("2", "piece"),
+            method: InventoryAllocationMethod.Fifo,
+          },
+          {
+            requestId: "b",
+            groupId: "group",
+            selector: inventoryStockSelector("item-a", {
+              locationIds: ["store"],
+            }),
+            amount: stockAmount("2", "piece"),
+            method: InventoryAllocationMethod.Fifo,
+          },
+        ],
+      });
+      const after = await inventory.read.world();
+      expect(() => assertStateResultRefinement(before, after, result)).not.toThrow();
+      expect(() =>
+        assertStateResultRefinement(before, after, {
+          ...result,
+          allocations: [
+            { ...result.allocations[0]!, requestId: "wrong-request" },
+            ...result.allocations.slice(1),
+          ],
+        })
+      ).toThrow("Policy allocations disagree with immutable event evidence");
+      expect(() =>
+        assertStateResultRefinement(before, after, {
+          ...result,
+          allocationGroups: [],
+        })
+      ).toThrow("Policy allocation groups disagree with exact allocations");
+    }
+
+    {
+      const inventory = createTestInventory(
+        createInMemoryInventoryDurableStorage(),
+        createTabletCatalog(),
+        clockAt(),
+        InventoryDeficitPolicy.Record
+      );
+      const before = await inventory.read.world();
+      const result = await inventory.stock.issueByPolicy({
+        operationId: "result-deficit",
+        occurredAtEpochMs: time0,
+        selector: inventoryStockSelector("item-a", { locationIds: ["store"] }),
+        amount: stockAmount("1", "piece"),
+        method: InventoryAllocationMethod.Fifo,
+      });
+      const after = await inventory.read.world();
+      const deficit = result.deficit;
+      if (deficit === undefined) throw new Error("Expected recorded deficit.");
+      expect(() => assertStateResultRefinement(before, after, result)).not.toThrow();
+      expect(() =>
+        assertStateResultRefinement(before, after, {
+          ...result,
+          deficit: {
+            ...deficit,
+            primary: {
+              ...deficit.primary,
+              amountMinor: deficit.primary.amountMinor + 1,
+            },
+          },
+        })
+      ).toThrow("Result deficit disagrees with immutable event evidence");
+    }
   });
 });

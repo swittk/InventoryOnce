@@ -129,6 +129,31 @@ function immutableCurrentReviewCertifiedHead(repositoryRoot) {
   return receipt.certifiedHead;
 }
 
+/** Require exactly one successful registry, selftest, and verifier process from the pinned compact certificate. */
+export function assertCurrentReviewCompactCertificateProcesses(
+  certification,
+  compactCertifiedHead = certification?.certifiedHead
+) {
+  const expectedModes = new Map([
+    ["registry", "FINAL_535_REGISTRY_BUILT"],
+    ["selftest", "FINAL_CONVERGENCE_ADVERSARIAL_PASS"],
+    ["verify", "FINAL_BINDER_GREEN"],
+  ]);
+  assert(Array.isArray(certification?.processes), "Pinned compact certificate process evidence is missing.");
+  assert.deepEqual(
+    certification.processes.map((row) => row.mode).sort(),
+    [...expectedModes.keys()].sort(),
+    "Pinned compact certificate does not carry exactly one registry, selftest, and verify process."
+  );
+  for (const row of certification.processes) {
+    assert.equal(row.exitCode, 0, `Pinned compact ${row.mode} process failed.`);
+    assert.equal(row.signal, null, `Pinned compact ${row.mode} process was signalled.`);
+    assert.equal(row.inputKey, certification.inputKey, `Pinned compact ${row.mode} input key differs.`);
+    assert.equal(row.head, compactCertifiedHead, `Pinned compact ${row.mode} tested the wrong head.`);
+    assert.equal(row.report?.status, expectedModes.get(row.mode), `Pinned compact ${row.mode} status is invalid.`);
+  }
+}
+
 /** Derive exact proof-output and temporary-support authority from the immutable compact certificate. */
 function currentReviewProofIntegrationAuthority(repositoryRoot, certifiedHead) {
   const root = path.resolve(repositoryRoot);
@@ -157,19 +182,10 @@ await runCompactCommand({ moduleUrl: import.meta.url, mode: process.argv[2] ?? "
     compactCertifiedHead,
     "Pinned compact certificate evidence is not the direct child of its tested head.",
   );
-  const expectedModes = new Map([
-    ["registry", "FINAL_535_REGISTRY_BUILT"],
-    ["selftest", "FINAL_CONVERGENCE_ADVERSARIAL_PASS"],
-    ["verify", "FINAL_BINDER_GREEN"],
-  ]);
-  assert.equal(manifest.certification.processes?.length, expectedModes.size, "Pinned compact certificate has the wrong process count.");
-  for (const row of manifest.certification.processes) {
-    assert.equal(row.exitCode, 0, `Pinned compact ${row.mode} process failed.`);
-    assert.equal(row.signal, null, `Pinned compact ${row.mode} process was signalled.`);
-    assert.equal(row.inputKey, manifest.certification.inputKey, `Pinned compact ${row.mode} input key differs.`);
-    assert.equal(row.head, compactCertifiedHead, `Pinned compact ${row.mode} tested the wrong head.`);
-    assert.equal(row.report?.status, expectedModes.get(row.mode), `Pinned compact ${row.mode} status is invalid.`);
-  }
+  assertCurrentReviewCompactCertificateProcesses(
+    manifest.certification,
+    compactCertifiedHead
+  );
 
   assert.equal(typeof manifest.archive?.file, "string", "Pinned compact archive path is invalid.");
   assert.match(manifest.archive?.sha256, /^[a-f0-9]{64}$/u, "Pinned compact archive digest is invalid.");

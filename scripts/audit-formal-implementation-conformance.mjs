@@ -485,7 +485,9 @@ function validateApiEntry(
     throw new Error(`${key} lacks executable refinement evidence.`);
   }
   for (const evidence of entry.executableEvidence) {
-    if (!existsSync(evidencePath(evidence))) {
+    try {
+      readAssuranceFile(repositoryRoot, evidence);
+    } catch {
       throw new Error(
         `${key} cites missing executable evidence '${evidence}'.`
       );
@@ -710,7 +712,9 @@ function validateFieldEntry(key, entry, discovered, vocabulary, gaps) {
     throw new Error(`${key} lacks field-level executable evidence.`);
   }
   for (const evidence of entry.executableEvidence) {
-    if (!existsSync(evidencePath(evidence))) {
+    try {
+      readAssuranceFile(repositoryRoot, evidence);
+    } catch {
       throw new Error(`${key} cites missing field evidence '${evidence}'.`);
     }
   }

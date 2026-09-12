@@ -9,13 +9,13 @@ import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
 import { execFileSync } from "node:child_process";
 import { createImmutableAssuranceReader, assertAssuranceCommitChain, assuranceProofReferencesExactPath, checkFrozenAssuranceTransport } from "./immutable-assurance-inputs.mjs";
-import { readCompactArchive, materializeAssuranceFiles, claimAssuranceWorkspace, assuranceBytesSha256 } from "./assurance-files.mjs";
+import { readAssuranceFile, readCompactArchive, materializeAssuranceFiles, claimAssuranceWorkspace, assuranceBytesSha256 } from "./assurance-files.mjs";
 import { formalProofDescriptor, formalProofCacheKey, readFormalProofCache, writeFormalProofCache } from "./formal-proof-cache.mjs";
 import { executableAssuranceSummary, assertExecutableAssuranceMatchesManifests } from "./executable-assurance-coherence.mjs";
 import { finalConvergenceRepositoryPath } from "../experiments/tla-conformance/final-convergence/repository-root.mjs";
 import { assertFormalPositiveReachabilityRegistration } from "./formal-models.mjs";
 import { assertTrustedCompactCertificateManifest, compactCompilerSourceSetIdentity, compactCompilerSourceSetKey, runCompactCommand } from "./compact-assurance-pipeline.mjs";
-import { assertCurrentReviewTrackedDriftAllowed, currentReviewProofIntegrationPaths, currentReviewWorktreeDriftPaths } from "../experiments/tla-conformance/final-convergence/current-review-assurance.mjs";
+import { assertCurrentReviewCompactCertificateProcesses, assertCurrentReviewTrackedDriftAllowed, currentReviewProofIntegrationPaths, currentReviewWorktreeDriftPaths } from "../experiments/tla-conformance/final-convergence/current-review-assurance.mjs";
 
 /** Repository inputs are rooted at this test module, never the invoking shell. */
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -110,6 +110,39 @@ test("mutable compact manifest cannot expand the current-review proof-output all
   } finally {
     fs.writeFileSync(manifestPath, original);
   }
+});
+
+test("current-review compact authority requires the exact certified process mode set", () => {
+  const manifest = JSON.parse(fs.readFileSync(path.join(root, "experiments/tla-conformance/final-convergence/compact-support-manifest.json"), "utf8"));
+  assert.doesNotThrow(() =>
+    assertCurrentReviewCompactCertificateProcesses(manifest.certification)
+  );
+
+  const duplicateVerify = structuredClone(manifest.certification);
+  duplicateVerify.processes = duplicateVerify.processes.map((row) => ({
+    ...row,
+    mode: "verify",
+    report: { ...row.report, mode: "verify", status: "FINAL_BINDER_GREEN" },
+  }));
+  assert.throws(
+    () => assertCurrentReviewCompactCertificateProcesses(duplicateVerify),
+    /exactly one registry, selftest, and verify process/u
+  );
+
+  const unknownMode = structuredClone(manifest.certification);
+  unknownMode.processes[0] = { ...unknownMode.processes[0], mode: "unknown-mode" };
+  delete unknownMode.processes[0].report;
+  assert.throws(
+    () => assertCurrentReviewCompactCertificateProcesses(unknownMode),
+    /exactly one registry, selftest, and verify process/u
+  );
+});
+
+test("assurance evidence admission rejects directories rather than treating existence as evidence", () => {
+  assert.throws(
+    () => readAssuranceFile(root, "test"),
+    /ordinary file|regular file|directory/u
+  );
 });
 
 test("ordinary compact validation authenticates manifest and closure against its pinned certificate", async () => {
