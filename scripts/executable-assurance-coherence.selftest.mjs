@@ -3,6 +3,7 @@ import { test } from "node:test";
 import {
   assertExecutableAssuranceMatchesManifests,
   executableAssuranceRequiredStepIds,
+  executableAssuranceTraceTests,
   assertNoManifestImplementationModelClaim,
   executableAssuranceSummary,
   executableAssuranceCounterKeys,
@@ -56,9 +57,9 @@ function fixtures() {
   const traces = {
     schemaVersion: 1,
     entries: {
-      a: { apiEntries: ["one"], refinementMode: "state-result-refinement" },
-      b: { apiEntries: ["one", "two"], refinementMode: "bounded-property" },
-      c: { apiEntries: ["two"], refinementMode: "direct-property" },
+      a: { apiEntries: ["one"], refinementMode: "state-result-refinement", adapters: ["memory"], evidence: ["test/example.test.ts"] },
+      b: { apiEntries: ["one", "two"], refinementMode: "bounded-property", adapters: ["memory"], evidence: ["test/example.test.ts"] },
+      c: { apiEntries: ["two"], refinementMode: "direct-property", adapters: ["memory"], evidence: ["test/example.test.ts"] },
     },
   };
   const gaps = {
@@ -158,7 +159,7 @@ test("exact full-report metadata is admitted but malformed wrapper fields fail c
     fullFormal: true,
     fullLogSha256: "c".repeat(64),
     ...summary,
-    packageTraceTests: ["test/example.test.ts"],
+    packageTraceTests: executableAssuranceTraceTests(input.traces),
     steps: executableAssuranceRequiredStepIds(true).map((id) => ({ id, status: "passed" })),
   };
   assert.deepEqual(
@@ -316,5 +317,22 @@ test("implementation model non-claims cover API, field, and trace manifests", ()
       () => assertNoManifestImplementationModelClaim(candidate, "DistributedRights"),
       /must not claim DistributedRights/u,
     );
+  }
+});
+
+
+test("persisted reports cannot omit substitute duplicate or reorder the runner-selected trace tests", () => {
+  const input = fixtures();
+  input.traces.entries.b.evidence.push("test/second.spec.ts");
+  const selected = executableAssuranceTraceTests(input.traces);
+  assert.deepEqual(selected, ["test/example.test.ts", "test/formal-implementation-conformance.test.ts", "test/second.spec.ts"]);
+  for (const fullFormal of [false, true]) {
+    const honest = { ...executableAssuranceSummary(input), version: 5, repositoryHead: "a".repeat(40), repositoryStateSha256: "b".repeat(64), fullFormal,
+      ...(fullFormal ? { fullLogSha256: "c".repeat(64) } : {}), packageTraceTests: selected,
+      steps: executableAssuranceRequiredStepIds(fullFormal).map(id => ({ id, status: "passed" })) };
+    assert.doesNotThrow(() => assertExecutableAssuranceMatchesManifests({ ...input, executable: honest }));
+    for (const packageTraceTests of [[], selected.slice(1), ["test/never-run.test.ts"], [...selected].reverse(), [...selected, selected[0]]]) {
+      assert.throws(() => assertExecutableAssuranceMatchesManifests({ ...input, executable: { ...honest, packageTraceTests } }), /exact authoritative trace-test selection/u);
+    }
   }
 });

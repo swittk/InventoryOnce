@@ -1,11 +1,11 @@
 import { createHash } from "node:crypto";
 import { spawn, spawnSync } from "node:child_process";
 import { createWriteStream, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join, relative, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { repositoryAssuranceStateSha256 } from "./repository-assurance-state.mjs";
-import { executableAssuranceStepIds, executableAssuranceSummary } from "./executable-assurance-coherence.mjs";
+import { executableAssuranceStepIds, executableAssuranceSummary, executableAssuranceTraceTests } from "./executable-assurance-coherence.mjs";
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repositoryRoot = packageRoot;
@@ -88,27 +88,6 @@ function readManifest(name) {
   return JSON.parse(readFileSync(join(manifestRoot, name), "utf8"));
 }
 
-/** Return every executable evidence path selected for one adapter scope. */
-function traceEvidenceTests(traces, adapter) {
-  const paths = new Set();
-  for (const entry of Object.values(traces.entries)) {
-    if (adapter !== undefined && !entry.adapters.includes(adapter)) continue;
-    for (const evidence of entry.evidence) {
-      if (!/\.(?:test|spec)\.tsx?$/u.test(evidence)) continue;
-      paths.add(evidence);
-    }
-  }
-  return [...paths].sort();
-}
-
-/** Convert repository-relative evidence to one package working-directory path. */
-function relativeEvidence(path, workingRoot) {
-  return relative(workingRoot, resolve(repositoryRoot, path)).replaceAll(
-    "\\",
-    "/"
-  );
-}
-
 /** Ordered deterministic assurance commands. */
 const steps = [
   {
@@ -161,14 +140,7 @@ delete childProcessEnvironment.CI;
 for (const step of steps) {
   if (step.id === executableAssuranceStepIds.memoryEvidence) {
     traces = readManifest("TRACE_REPLAY_ASSURANCE.json");
-    packageTraceTests = [
-      ...new Set([
-        "test/formal-implementation-conformance.test.ts",
-        ...traceEvidenceTests(traces, "memory")
-          .filter((path) => path.startsWith("test/"))
-          .map((path) => relativeEvidence(path, packageRoot)),
-      ]),
-    ].sort();
+    packageTraceTests = executableAssuranceTraceTests(traces);
     step.args = [
       "--dir",
       packageRoot,

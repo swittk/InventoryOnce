@@ -1,3 +1,6 @@
+import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
+
 /**
  * @typedef {object} ApiAssuranceManifest
  * @property {string} surfaceSha256 Exact current public-surface digest shared by all same-run artifacts.
@@ -16,6 +19,8 @@
 /**
  * @typedef {object} TraceEntry
  * @property {string[]} apiEntries Public API identities witnessed by this executable trace/property row.
+ * @property {string[]} adapters Adapter scopes whose executions witness this trace.
+ * @property {string[]} evidence Repository-relative executable evidence paths.
  * @property {"state-result-refinement"|"bounded-property"|"direct-property"|string} refinementMode Executable evidence mode used for summary partitioning.
  */
 /**
@@ -101,6 +106,21 @@ export function executableAssuranceRequiredStepIds(fullFormal) {
         executableAssuranceStepIds.registeredTlcModelSuite,
       ]
     : common;
+}
+
+/** Derive the exact sorted memory-trace test selection used by both the runner and report admission. */
+export function executableAssuranceTraceTests(traces) {
+  const tests = new Set(["test/formal-implementation-conformance.test.ts"]);
+  for (const [id, entry] of Object.entries(traces.entries)) {
+    if (!Array.isArray(entry.adapters) || entry.adapters.some(adapter => typeof adapter !== "string" || adapter.length === 0) || !Array.isArray(entry.evidence) || entry.evidence.some(file => typeof file !== "string" || file.length === 0)) {
+      throw new Error(`Executable trace '${id}' lacks its adapter/evidence selection.`);
+    }
+    if (!entry.adapters.includes("memory")) continue;
+    for (const file of entry.evidence) {
+      if (file.startsWith("test/") && /\.(?:test|spec)\.tsx?$/u.test(file)) tests.add(file);
+    }
+  }
+  return [...tests].sort();
 }
 
 /** Executable trace modes accepted by the current assurance schema. */
@@ -367,6 +387,10 @@ export function assertExecutableAssuranceMatchesManifests(
     if (!Array.isArray(executable.packageTraceTests) || executable.packageTraceTests.some((file) => typeof file !== "string" || file.length === 0) || new Set(executable.packageTraceTests).size !== executable.packageTraceTests.length) {
       mismatches.push("packageTraceTests: executable assurance trace-test list must contain unique nonempty paths");
     }
+    const expectedTraceTests = executableAssuranceTraceTests(input.traces);
+    if (JSON.stringify(executable.packageTraceTests) !== JSON.stringify(expectedTraceTests)) {
+      mismatches.push("packageTraceTests: executable assurance report does not contain the exact authoritative trace-test selection");
+    }
     if (!Array.isArray(executable.steps) || executable.steps.length === 0) {
       mismatches.push("steps: executable assurance report must contain passed step evidence");
     } else {
@@ -405,3 +429,62 @@ export function assertExecutableAssuranceMatchesManifests(
   }
   return expected;
 }
+/** Fail closed unless one pinned compact certificate contains the exact three semantic verdicts. */
+export function assertCompactAssuranceCertificate(certification, {
+  /** Certified tree head obtained from the immutable evidence commit parent. */
+  head,
+  /** Content identity read from that independently pinned tree's closure. */
+  inputKey,
+  /** Compiler-discovered callable surface read from that pinned closure. */
+  surfaceDigest,
+}) {
+  assert.match(head, /^[a-f0-9]{40}$/u, "Independent compact tested head is invalid.");
+  assert.match(inputKey, /^[a-f0-9]{64}$/u, "Independent compact closure key is invalid.");
+  assert.match(surfaceDigest, /^[a-f0-9]{64}$/u, "Independent compact surface digest is invalid.");
+  assert.equal(certification?.schemaVersion,1,"Pinned compact certificate has an unsupported schema.");
+  assert.match(certification.certifiedHead,/^[a-f0-9]{40}$/u,"Pinned compact certificate head is invalid.");
+  assert.match(certification.inputKey,/^[a-f0-9]{64}$/u,"Pinned compact certificate input key is invalid.");
+  assert.equal(certification.certifiedHead, head, "Compact certificate tested the wrong head.");
+  assert.equal(certification.inputKey, inputKey, "Compact certificate names the wrong independent closure.");
+  assert(Array.isArray(certification.processes),"Pinned compact certificate process evidence is missing.");
+  assert.deepEqual(certification.processes.map(row=>row.mode).sort(),["registry","selftest","verify"], "Pinned compact certificate does not carry exactly one registry, selftest, and verify process.");
+  for(const row of certification.processes){
+    assert.equal(row.exitCode,0,`Pinned compact certificate ${row.mode} process did not exit cleanly.`);
+    assert.equal(row.signal,null,`Pinned compact certificate ${row.mode} process was signalled.`);
+    assert.equal(row.stderr,"",`Pinned compact certificate ${row.mode} emitted stderr.`);
+    assert.match(row.stdoutSha256,/^[a-f0-9]{64}$/u);
+    assert.match(row.stderrSha256,/^[a-f0-9]{64}$/u);
+    assert.equal(compactOutputSha256(row.stdout),row.stdoutSha256,"Immutable certificate output hash is invalid.");
+    assert.equal(compactOutputSha256(row.stderr),row.stderrSha256,"Immutable certificate error hash is invalid.");
+    assert.equal(row.inputKey,certification.inputKey);
+    assert.equal(row.head,certification.certifiedHead);
+    const lines=row.stdout.trim().split(/\r?\n/u).filter(Boolean);
+    assert.equal(lines.length,1,`Pinned compact certificate ${row.mode} emitted unexpected stdout.`);
+    const emitted=JSON.parse(lines[0]);
+    assert.deepEqual(row.report,emitted,`Pinned compact certificate ${row.mode} report differs from exact stdout.`);
+    assert.equal(row.report.mode,row.mode);
+    assert.equal(row.report.inputKey,certification.inputKey);
+    assert.equal(row.report.head,certification.certifiedHead);
+    assert.equal(row.report.compilerPasses,1);
+    if(row.mode==="registry"){
+      assert.equal(row.report.status,"FINAL_535_REGISTRY_BUILT","Pinned compact certificate registry status is invalid.");
+      assert.deepEqual(row.report.counts,{A:121,B:58,V:309,HARD_RED:47},"Pinned compact registry partition is invalid.");
+    }else if(row.mode==="selftest"){
+      assert.equal(row.report.status,"FINAL_CONVERGENCE_ADVERSARIAL_PASS","Pinned compact certificate selftest status is invalid.");
+      assert.equal(row.report.valueRows,309);assert.equal(row.report.producerRows,179);
+      assert.equal(row.report.surfaceDigest, surfaceDigest, "Compact process surface differs from its independent certified closure.");
+      assert.deepEqual(row.report.controls,{honestValueAccepted:true,wrongValueModeRejected:true,resignedValueTamperRejected:true,honestAandBAccepted:true,wrongProducerModeRejected:true,resignedProducerTamperRejected:true,immutableHistoricalAuthorityTamperRejected:true,sameMtimeEvidenceDriftRejected:true},"Pinned compact certificate adversarial controls are incomplete.");
+    }else{
+      assert.equal(row.report.status,"FINAL_BINDER_GREEN","Pinned compact certificate verifier status is invalid.");
+      assert.equal(row.report.surfaceDigest, surfaceDigest, "Compact process surface differs from its independent certified closure.");
+      assert.equal(row.report.callables,535);assert.equal(row.report.diagnostics,47);
+      assert.deepEqual(row.report.byCode,{EXPLICIT_HARD_RED:47});assert.equal(row.report.hardRed,47);
+      assert.equal(row.report.unexpected,0);assert.deepEqual(row.report.unexpectedRows,[]);
+      assert.equal(row.report.valueAccepted,309);assert.equal(row.report.producerAccepted,179);assert.equal(row.report.strictAccepted,488);
+    }
+  }
+  return certification;
+}
+
+/** Hash the exact process output, never the reserialized claimed report. */
+function compactOutputSha256(value) { return createHash("sha256").update(value).digest("hex"); }

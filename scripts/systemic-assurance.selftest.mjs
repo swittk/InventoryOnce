@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
 import { execFileSync } from "node:child_process";
 import { createImmutableAssuranceReader, assertAssuranceCommitChain, assuranceProofReferencesExactPath, checkFrozenAssuranceTransport } from "./immutable-assurance-inputs.mjs";
-import { readAssuranceFile, readCompactArchive, materializeAssuranceFiles, claimAssuranceWorkspace, assuranceBytesSha256 } from "./assurance-files.mjs";
+import { readAssuranceFile, readCompactArchive, materializeAssuranceFiles, claimAssuranceWorkspace, assuranceBytesSha256, withAssuranceFileObservation } from "./assurance-files.mjs";
 import { formalProofDescriptor, formalProofCacheKey, readFormalProofCache, writeFormalProofCache } from "./formal-proof-cache.mjs";
 import { executableAssuranceSummary, assertExecutableAssuranceMatchesManifests } from "./executable-assurance-coherence.mjs";
 import { finalConvergenceRepositoryPath } from "../experiments/tla-conformance/final-convergence/repository-root.mjs";
@@ -26,6 +26,17 @@ const require = createRequire(import.meta.url), ts = require("typescript"), sema
 function temporaryDirectory(run) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "inventoryonce-systemic-"));
   try { return run(directory); } finally { fs.rmSync(directory, { recursive: true, force: true }); }
+}
+
+/** Read the independent tested head and source surface from immutable Git evidence, never the mutable report. */
+function compactCertificateExpectedTruth() {
+  const directory = "experiments/tla-conformance/final-convergence";
+  const wrapper = fs.readFileSync(path.join(root, directory, "run-compact-final-assurance.mjs"), "utf8");
+  const anchor = wrapper.match(/COMPACT_CERTIFICATE_COMMIT = "([0-9a-f]{40})"/u)?.[1];
+  assert.notEqual(anchor, undefined);
+  const head = execFileSync("git", ["rev-parse", `${anchor}^`], { cwd: root, encoding: "utf8" }).trim();
+  const closure = JSON.parse(execFileSync("git", ["show", `${head}:${directory}/authority-reference-manifest.json`], { cwd: root, encoding: "utf8" }));
+  return { head, inputKey: closure.inputKey, surfaceDigest: closure.surfaceDigest };
 }
 
 test("current-review full-assurance drift gate default-denies tracked inputs outside proof outputs", () => {
@@ -123,8 +134,9 @@ test("current-review compact authority requires the exact certified process mode
     ["rev-parse", `${certificateEvidenceHead}^`],
     { cwd: root, encoding: "utf8" },
   ).trim();
+  const expected = compactCertificateExpectedTruth();
   assert.doesNotThrow(() =>
-    assertCurrentReviewCompactCertificateProcesses(manifest.certification, compactCertifiedHead)
+    assertCurrentReviewCompactCertificateProcesses(manifest.certification, compactCertifiedHead, expected)
   );
 
   const forgedHead = structuredClone(manifest.certification);
@@ -132,7 +144,7 @@ test("current-review compact authority requires the exact certified process mode
   forgedHead.certifiedHead = selfCorrelatedHead;
   forgedHead.processes = forgedHead.processes.map((row) => ({ ...row, head: selfCorrelatedHead }));
   assert.throws(
-    () => assertCurrentReviewCompactCertificateProcesses(forgedHead, compactCertifiedHead),
+    () => assertCurrentReviewCompactCertificateProcesses(forgedHead, compactCertifiedHead, expected),
     /tested the wrong head/u
   );
 
@@ -143,7 +155,7 @@ test("current-review compact authority requires the exact certified process mode
     report: { ...row.report, mode: "verify", status: "FINAL_BINDER_GREEN" },
   }));
   assert.throws(
-    () => assertCurrentReviewCompactCertificateProcesses(duplicateVerify, compactCertifiedHead),
+    () => assertCurrentReviewCompactCertificateProcesses(duplicateVerify, compactCertifiedHead, expected),
     /exactly one registry, selftest, and verify process/u
   );
 
@@ -151,7 +163,7 @@ test("current-review compact authority requires the exact certified process mode
   unknownMode.processes[0] = { ...unknownMode.processes[0], mode: "unknown-mode" };
   delete unknownMode.processes[0].report;
   assert.throws(
-    () => assertCurrentReviewCompactCertificateProcesses(unknownMode, compactCertifiedHead),
+    () => assertCurrentReviewCompactCertificateProcesses(unknownMode, compactCertifiedHead, expected),
     /exactly one registry, selftest, and verify process/u
   );
 });
@@ -207,6 +219,7 @@ test("ordinary compact validation authenticates manifest and closure against its
 });
 
 test("pinned compact certificate rejects re-signed semantic report forgeries", () => {
+  const expected = compactCertificateExpectedTruth();
   const manifest = JSON.parse(fs.readFileSync(path.join(root, "experiments/tla-conformance/final-convergence/compact-support-manifest.json"), "utf8"));
   const resign = (row) => {
     row.stdout = `${JSON.stringify(row.report)}\n`;
@@ -217,19 +230,19 @@ test("pinned compact certificate rejects re-signed semantic report forgeries", (
   const registry = forgedStatus.certification.processes.find((row) => row.mode === "registry");
   registry.report.status = "FORGED_CERTIFICATE_FAILURE";
   resign(registry);
-  assert.throws(() => assertTrustedCompactCertificateManifest(forgedStatus), /registry status is invalid/u);
+  assert.throws(() => assertTrustedCompactCertificateManifest(forgedStatus, expected), /registry status is invalid/u);
 
   const forgedBinder = structuredClone(manifest);
   const verify = forgedBinder.certification.processes.find((row) => row.mode === "verify");
   verify.report.callables = 534;
   resign(verify);
-  assert.throws(() => assertTrustedCompactCertificateManifest(forgedBinder), /Expected values to be strictly equal/u);
+  assert.throws(() => assertTrustedCompactCertificateManifest(forgedBinder, expected), /Expected values to be strictly equal/u);
 
   const forgedControl = structuredClone(manifest);
   const selftest = forgedControl.certification.processes.find((row) => row.mode === "selftest");
   selftest.report.controls.sameMtimeEvidenceDriftRejected = false;
   resign(selftest);
-  assert.throws(() => assertTrustedCompactCertificateManifest(forgedControl), /adversarial controls are incomplete/u);
+  assert.throws(() => assertTrustedCompactCertificateManifest(forgedControl, expected), /adversarial controls are incomplete/u);
 });
 
 test("compact source-set identity detects compiler roots before cache reuse", () => {
@@ -653,3 +666,89 @@ test("strict source references reuse the exact compiler execution gate used by t
   assert.doesNotMatch(checker, /function isStaticallyUnreachable/u);
   assert.match(JSON.stringify(manifest.bundles), /scripts\/formal-implementation-vitest-semantics\.cjs/u);
 });
+
+
+test("both certificate admission routes bind every verdict to independent tested head closure and surface", () => {
+  const expected = compactCertificateExpectedTruth();
+  const manifest = JSON.parse(fs.readFileSync(path.join(root, "experiments/tla-conformance/final-convergence/compact-support-manifest.json"), "utf8"));
+  const routes = [
+    candidate => assertTrustedCompactCertificateManifest(candidate, expected),
+    candidate => assertCurrentReviewCompactCertificateProcesses(candidate.certification, expected.head, expected),
+  ];
+  const changes = [
+    ["selftest", row => { row.report.surfaceDigest = "0".repeat(64); }],
+    ["verify", row => { row.report.surfaceDigest = "1".repeat(64); }],
+    ["verify", row => { row.report.head = "2".repeat(40); }],
+    ["verify", row => { row.report.strictAccepted = 487; }],
+    ["verify", row => { row.report.inputKey = "3".repeat(64); }],
+    ["selftest", row => { row.report.controls.wrongValueModeRejected = false; }],
+  ];
+  for (const admit of routes) {
+    assert.doesNotThrow(() => admit(manifest));
+    for (const [mode, change] of changes) {
+      const candidate = structuredClone(manifest);
+      const row = candidate.certification.processes.find(process => process.mode === mode);
+      change(row);
+      row.stdout = `${JSON.stringify(row.report)}\n`;
+      row.stdoutSha256 = assuranceBytesSha256(Buffer.from(row.stdout));
+      assert.throws(() => admit(candidate), assert.AssertionError);
+    }
+  }
+});
+
+test("actual descriptor reads cannot escape file observation and mutation reads remain live", async () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "inventoryonce-descriptor-observer-"));
+  const target = path.join(directory, "proof.txt");
+  fs.writeFileSync(target, "before");
+  const reads = [], writes = [];
+  const original = fs.readFileSync;
+  try {
+    await withAssuranceFileObservation({ repositoryRoot: directory, onRead: file => { reads.push(file); }, onWrite: file => { writes.push(file); } }, () => {
+      // This is the exact safe-reader path used by independently bundled verifier modules.
+      assert.equal(readAssuranceFile(directory, "proof.txt").toString(), "before");
+      const descriptor = fs.openSync(target, "r");
+      try {
+        const prefix = Buffer.alloc(2);
+        assert.equal(fs.readSync(descriptor, prefix, 0, 2, null), 2);
+        assert.equal(prefix.toString(), "be");
+        assert.equal(fs.readFileSync(descriptor, "utf8"), "fore");
+      } finally { fs.closeSync(descriptor); }
+      fs.writeFileSync(target, "mutated");
+      assert.equal(readAssuranceFile(directory, "proof.txt").toString(), "mutated");
+      fs.writeFileSync(target, "before");
+      assert.equal(readAssuranceFile(directory, "proof.txt").toString(), "before");
+    });
+    assert(reads.length >= 4 && reads.every(file => file === "proof.txt"));
+    assert(writes.length >= 2 && writes.every(file => file === "proof.txt"));
+    assert.equal(fs.readFileSync, original);
+    await assert.rejects(() => withAssuranceFileObservation({ repositoryRoot: directory, onRead: () => { throw new Error("unadmitted input"); } }, () => readAssuranceFile(directory, "proof.txt")), /unadmitted input/u);
+    assert.equal(fs.readFileSync, original);
+  } finally { fs.rmSync(directory, { recursive: true, force: true }); }
+});
+
+
+test("actual source comparison ignores index hiding flags but only omits independently selected generated outputs", () => temporaryDirectory(directory => {
+  const git = args => execFileSync("git", ["-c", "user.name=InventoryOnce", "-c", "user.email=inventoryonce@example.invalid", "-c", "commit.gpgsign=false", "-c", "core.hooksPath=", ...args], { cwd: directory, encoding: "utf8" }).trim();
+  git(["init", "-q"]);
+  fs.writeFileSync(path.join(directory, "model.tla"), "Safety == x = 1\n");
+  fs.writeFileSync(path.join(directory, "derived.json"), "{}\n");
+  git(["add", "."]); git(["commit", "-qm", "exact source"]);
+  const omitted = new Set(["derived.json"]);
+  const expected = repositoryAssuranceCommittedStateSha256(directory, "HEAD", omitted);
+  assert.equal(repositoryAssuranceStateSha256(directory, omitted), expected);
+  fs.writeFileSync(path.join(directory, "derived.json"), "{\"updatedOutput\":true}\n");
+  assert.equal(repositoryAssuranceStateSha256(directory, omitted), expected);
+  git(["checkout", "--", "derived.json"]);
+  for (const flag of ["assume-unchanged", "skip-worktree"]) {
+    git(["update-index", `--${flag}`, "model.tla"]);
+    try {
+      fs.writeFileSync(path.join(directory, "model.tla"), "Safety == TRUE\n");
+      assert.equal(git(["status", "--porcelain"]), "");
+      assert.notEqual(repositoryAssuranceStateSha256(directory, omitted), expected);
+    } finally {
+      fs.writeFileSync(path.join(directory, "model.tla"), "Safety == x = 1\n");
+      git(["update-index", `--no-${flag}`, "model.tla"]);
+    }
+    assert.equal(repositoryAssuranceStateSha256(directory, omitted), expected);
+  }
+}));

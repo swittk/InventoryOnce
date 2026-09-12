@@ -1,3 +1,4 @@
+import { assertCompactAssuranceCertificate } from "../../../scripts/executable-assurance-coherence.mjs";
 import implementationSurface from "../../../scripts/formal-implementation-surface.cjs";
 import assert from "node:assert/strict";
 import { assuranceRepositoryPath, readCompactArchive } from "../../../scripts/assurance-files.mjs";
@@ -5,7 +6,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
-import { repositoryAssuranceCommittedStateSha256, repositoryAssuranceInputPaths } from "../../../scripts/repository-assurance-state.mjs";
+import { repositoryAssuranceCommittedStateSha256, repositoryAssuranceInputPaths, repositoryAssuranceStateSha256 } from "../../../scripts/repository-assurance-state.mjs";
 
 export const CURRENT_REVIEW_ASSURANCE_RECEIPT = "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json";
 const CURRENT_REVIEW_ASSURANCE_REPORT = "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json";
@@ -130,33 +131,12 @@ function immutableCurrentReviewCertifiedHead(repositoryRoot) {
 }
 
 /** Require exactly one successful registry, selftest, and verifier process from the pinned compact certificate. */
-export function assertCurrentReviewCompactCertificateProcesses(
-  certification,
-  compactCertifiedHead
-) {
-  assert.match(
-    compactCertifiedHead,
-    /^[a-f0-9]{40}$/u,
-    "Independent compact certified head is invalid."
-  );
-  const expectedModes = new Map([
-    ["registry", "FINAL_535_REGISTRY_BUILT"],
-    ["selftest", "FINAL_CONVERGENCE_ADVERSARIAL_PASS"],
-    ["verify", "FINAL_BINDER_GREEN"],
-  ]);
-  assert(Array.isArray(certification?.processes), "Pinned compact certificate process evidence is missing.");
-  assert.deepEqual(
-    certification.processes.map((row) => row.mode).sort(),
-    [...expectedModes.keys()].sort(),
-    "Pinned compact certificate does not carry exactly one registry, selftest, and verify process."
-  );
-  for (const row of certification.processes) {
-    assert.equal(row.exitCode, 0, `Pinned compact ${row.mode} process failed.`);
-    assert.equal(row.signal, null, `Pinned compact ${row.mode} process was signalled.`);
-    assert.equal(row.inputKey, certification.inputKey, `Pinned compact ${row.mode} input key differs.`);
-    assert.equal(row.head, compactCertifiedHead, `Pinned compact ${row.mode} tested the wrong head.`);
-    assert.equal(row.report?.status, expectedModes.get(row.mode), `Pinned compact ${row.mode} status is invalid.`);
-  }
+export function assertCurrentReviewCompactCertificateProcesses(certification, compactCertifiedHead, independentlyDerivedClosure) {
+  assertCompactAssuranceCertificate(certification, {
+    head: compactCertifiedHead,
+    inputKey: independentlyDerivedClosure.inputKey,
+    surfaceDigest: independentlyDerivedClosure.surfaceDigest,
+  });
 }
 
 /** Derive exact proof-output and temporary-support authority from the immutable compact certificate. */
@@ -187,10 +167,8 @@ await runCompactCommand({ moduleUrl: import.meta.url, mode: process.argv[2] ?? "
     compactCertifiedHead,
     "Pinned compact certificate evidence is not the direct child of its tested head.",
   );
-  assertCurrentReviewCompactCertificateProcesses(
-    manifest.certification,
-    compactCertifiedHead
-  );
+  const closure = JSON.parse(committedFileText(root, compactCertifiedHead, COMPACT_CLOSURE));
+  assertCurrentReviewCompactCertificateProcesses(manifest.certification, compactCertifiedHead, closure);
 
   assert.equal(typeof manifest.archive?.file, "string", "Pinned compact archive path is invalid.");
   assert.match(manifest.archive?.sha256, /^[a-f0-9]{64}$/u, "Pinned compact archive digest is invalid.");
@@ -218,7 +196,7 @@ await runCompactCommand({ moduleUrl: import.meta.url, mode: process.argv[2] ?? "
     });
   }
 
-  const closure = JSON.parse(committedFileText(root, compactCertifiedHead, COMPACT_CLOSURE));
+
   assert.equal(closure.schemaVersion, 2, "Pinned compact closure schema is unsupported.");
   assert.equal(closure.status, "FINAL_LIVE_INPUT_CLOSURE", "Pinned compact closure status is invalid.");
   assert.equal(closure.inputKey, manifest.certification.inputKey, "Pinned compact closure and certificate input keys differ.");
@@ -269,6 +247,26 @@ export function currentReviewWorktreeDriftPaths(repositoryRoot, authenticatedTem
     assert.equal(sha256(target), expected.sha256, `Authenticated temporary compact support hash changed: ${file}`);
   }
   return [...new Set([...modified, ...untracked])].sort();
+}
+
+/** Compare every full-assurance source byte/mode, not Git's potentially hidden diff, outside pinned generated outputs. */
+function assertCurrentReviewLiveSourceBytes(root, certifiedHead, authority) {
+  // Temporary support is excluded only after its complete path/size/hash has been authenticated by the same gate.
+  const dirtyPaths = currentReviewWorktreeDriftPaths(root, authority.temporarySupportRows);
+  assertCurrentReviewTrackedDriftAllowed(dirtyPaths, authority.paths);
+  const omitted = new Set([...authority.paths, ...authority.temporarySupportRows.keys()]);
+  const current = repositoryAssuranceStateSha256(root, omitted);
+  const expected = repositoryAssuranceCommittedStateSha256(root, certifiedHead, omitted);
+  assert.equal(current, expected, "Live full-assurance source bytes or modes differ from the independently certified tree.");
+  return current;
+}
+
+/** Cheap source admission for certificate reuse; it deliberately constructs no TypeScript compiler context. */
+export function verifyCurrentReviewLiveSource(repositoryRoot) {
+  const root = path.resolve(repositoryRoot);
+  const certifiedHead = immutableCurrentReviewCertifiedHead(root);
+  const authority = currentReviewProofIntegrationAuthority(root, certifiedHead);
+  return assertCurrentReviewLiveSourceBytes(root, certifiedHead, authority);
 }
 
 /** Validate report/receipt semantic bindings independently of immutable Git-byte anchoring. */
@@ -357,8 +355,7 @@ export function verifyCurrentReviewAssurance(repositoryRoot, context) {
     "diff", "--name-only", "-z", receipt.certifiedHead, "HEAD", "--",
   ]);
   assertCurrentReviewTrackedDriftAllowed(trackedPostCertificationDelta, allowedProofIntegrationPaths);
-  const dirtyPaths = currentReviewWorktreeDriftPaths(root, proofIntegrationAuthority.temporarySupportRows);
-  assertCurrentReviewTrackedDriftAllowed(dirtyPaths, allowedProofIntegrationPaths);
+  assertCurrentReviewLiveSourceBytes(root, receipt.certifiedHead, proofIntegrationAuthority);
   return {
     receipt,
     reference: {

@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
+import { syncBuiltinESMExports } from "node:module";
+import { fileURLToPath } from "node:url";
 import { gunzipSync } from "node:zlib";
 
 /** Resolve a proof input/output inside one repository, rejecting links at every existing path component. */
@@ -181,4 +183,84 @@ export async function withAssuranceReadSession(repositoryRoot, session, run) {
 export function assuranceCompilerSourceSha256(repositoryRoot, file, text) {
   const session = proofReadSessions.get(path.resolve(repositoryRoot));
   return session === undefined ? assuranceBytesSha256(text) : session.compilerHash(file, text);
+}
+
+
+/** Unwrapped filesystem calls keep observing a read from recursively observing its own snapshot load. */
+const ordinaryFileCalls = Object.fromEntries(["openSync", "closeSync", "readFileSync", "readSync", "writeFileSync", "writeSync", "existsSync"].map(name => [name, fs[name]]));
+
+/** Observe actual path and descriptor I/O, including bundled copies of the safe reader, without hiding mutation bytes. */
+export async function withAssuranceFileObservation({
+  /** Explicit root which every observed path must remain inside. */
+  repositoryRoot,
+  /** Register the read; an optional immutable buffer replaces only path-based reads. */
+  onRead,
+  /** Record an existence observation independently of file contents. */
+  onExists,
+  /** Register pre-write bytes or ownership of newly created mutation probes. */
+  onWrite,
+}, run) {
+  const root = path.resolve(repositoryRoot);
+  // Descriptor ownership is scoped to this observer; unknown pre-opened descriptors cannot hide inputs.
+  const descriptors = new Map();
+  let observing = false;
+  const invoke = (callback, file) => {
+    if (observing || callback === undefined) return undefined;
+    observing = true;
+    try { return callback(file); } finally { observing = false; }
+  };
+  const relativeFile = file => {
+    if (typeof file === "number") {
+      const known = descriptors.get(file);
+      assert.notEqual(known, undefined, "Unbound assurance file descriptor.");
+      return known;
+    }
+    const absolute = file instanceof URL ? fileURLToPath(file) : path.resolve(Buffer.isBuffer(file) ? file.toString() : file);
+    const relative = path.relative(root, absolute).split(path.sep).join("/");
+    assert(relative !== ".." && !relative.startsWith("../") && !path.isAbsolute(relative), "Assurance I/O escaped its repository.");
+    return relative;
+  };
+  const previous = Object.fromEntries(Object.keys(ordinaryFileCalls).map(name => [name, fs[name]]));
+  fs.openSync = (file, flags, ...rest) => {
+    if (observing) return ordinaryFileCalls.openSync(file, flags, ...rest);
+    const relative = relativeFile(file);
+    const writable = typeof flags === "string" ? /[wa+]/u.test(flags) : (flags & (fs.constants.O_WRONLY | fs.constants.O_RDWR | fs.constants.O_CREAT | fs.constants.O_TRUNC)) !== 0;
+    if (writable) invoke(onWrite, relative);
+    const descriptor = ordinaryFileCalls.openSync(file, flags, ...rest);
+    descriptors.set(descriptor, relative);
+    return descriptor;
+  };
+  fs.closeSync = descriptor => {
+    if (!observing) descriptors.delete(descriptor);
+    return ordinaryFileCalls.closeSync(descriptor);
+  };
+  fs.readFileSync = (file, options) => {
+    if (observing) return ordinaryFileCalls.readFileSync(file, options);
+    const bytes = invoke(onRead, relativeFile(file));
+    // A descriptor read must retain its native cursor semantics; it is observed but never replayed from byte zero.
+    if (bytes !== undefined && typeof file !== "number") {
+      const encoding = typeof options === "string" ? options : options?.encoding;
+      return encoding ? bytes.toString(encoding) : Buffer.from(bytes);
+    }
+    return ordinaryFileCalls.readFileSync(file, options);
+  };
+  fs.readSync = (descriptor, ...args) => {
+    if (!observing) invoke(onRead, relativeFile(descriptor));
+    return ordinaryFileCalls.readSync(descriptor, ...args);
+  };
+  fs.writeFileSync = (file, ...args) => {
+    if (!observing) invoke(onWrite, relativeFile(file));
+    return ordinaryFileCalls.writeFileSync(file, ...args);
+  };
+  fs.writeSync = (descriptor, ...args) => {
+    if (!observing) invoke(onWrite, relativeFile(descriptor));
+    return ordinaryFileCalls.writeSync(descriptor, ...args);
+  };
+  fs.existsSync = file => {
+    if (observing || onExists === undefined) return ordinaryFileCalls.existsSync(file);
+    return invoke(onExists, relativeFile(file));
+  };
+  syncBuiltinESMExports();
+  try { return await run(); }
+  finally { Object.assign(fs, previous); syncBuiltinESMExports(); }
 }

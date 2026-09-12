@@ -32,6 +32,8 @@ import {
   abstractPrimaryBalance,
   assertAbstractAuthorityInvariants,
   assertAbstractInventoryInvariants,
+  assertAbstractReservationInvariants,
+  assertAbstractCountInvariants,
   assertAbstractMigrationInvariants,
   assertAbstractTraceabilityInvariants,
   assertStateResultRefinement,
@@ -750,6 +752,7 @@ describe("independent projection index bijections", () => {
       amount: stockAmount("1", "piece"),
     });
     const world = await inventory.read.world();
+    expect(() => assertAbstractInventoryInvariants(world)).not.toThrow();
     const p = world.projection;
     const positionEntry = Object.entries(p.positions)[0];
     const lotEntry = Object.entries(p.lots)[0];
@@ -806,18 +809,20 @@ describe("all projection secondary-index domains", () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({ operationId: "index-domains", occurredAtEpochMs: time0, to: loosePosition("A"), amount: stockAmount("1", "piece") });
     const world = await inventory.read.world(), p = world.projection;
+    expect(() => assertAbstractInventoryInvariants(world)).not.toThrow();
+    // Every corruption must reach its own index check rather than piggyback on an unrelated rejection.
     const variants = [
-      { ...p, positionIdsByItemId: { ...p.positionIdsByItemId, orphan: [] } },
-      { ...p, positionIdsByItemRevisionId: { ...p.positionIdsByItemRevisionId, orphan: [] } },
-      { ...p, positionIdsByContainerIdentity: { ...p.positionIdsByContainerIdentity, orphan: [] } },
-      { ...p, positivePositionIdBySerialIdentity: { ...p.positivePositionIdBySerialIdentity, orphan: "missing" } },
-      { ...p, positiveLayerStartedAtEpochMsByPositionId: { ...p.positiveLayerStartedAtEpochMsByPositionId, orphan: 0 } },
-      { ...p, lotIdentitiesByItemId: { ...p.lotIdentitiesByItemId, orphan: [] } },
-      { ...p, lotRootEventIdByIdentity: { ...p.lotRootEventIdByIdentity, orphan: "missing" } },
-      { ...p, containerRootEventIdByIdentity: { ...p.containerRootEventIdByIdentity, orphan: "missing" } },
-      { ...p, correctionEventIdByCorrectedEventId: { ...p.correctionEventIdByCorrectedEventId, orphan: "missing" } },
-    ];
-    for (const projection of variants) expect.soft(() => assertAbstractInventoryInvariants({ ...world, projection })).toThrow();
+      [{ ...p, positionIdsByItemId: { ...p.positionIdsByItemId, orphan: [] } }, /Item position index/u],
+      [{ ...p, positionIdsByItemRevisionId: { ...p.positionIdsByItemRevisionId, orphan: [] } }, /Revision position index/u],
+      [{ ...p, positionIdsByContainerIdentity: { ...p.positionIdsByContainerIdentity, orphan: [] } }, /Container position index/u],
+      [{ ...p, positivePositionIdBySerialIdentity: { ...p.positivePositionIdBySerialIdentity, orphan: "missing" } }, /Positive serial index/u],
+      [{ ...p, positiveLayerStartedAtEpochMsByPositionId: { ...p.positiveLayerStartedAtEpochMsByPositionId, orphan: 0 } }, /Positive layer index/u],
+      [{ ...p, lotIdentitiesByItemId: { ...p.lotIdentitiesByItemId, orphan: [] } }, /Item lot index/u],
+      [{ ...p, lotRootEventIdByIdentity: { ...p.lotRootEventIdByIdentity, orphan: "missing" } }, /Lot root ownership index/u],
+      [{ ...p, containerRootEventIdByIdentity: { ...p.containerRootEventIdByIdentity, orphan: "missing" } }, /Container root ownership index/u],
+      [{ ...p, correctionEventIdByCorrectedEventId: { ...p.correctionEventIdByCorrectedEventId, orphan: "missing" } }, /Current correction index/u],
+    ] as const;
+    for (const [projection, diagnostic] of variants) expect.soft(() => assertAbstractInventoryInvariants({ ...world, projection })).toThrow(diagnostic);
   });
 });
 
@@ -833,6 +838,7 @@ describe("operation-result refinement authority", () => {
         amount: stockAmount("1", "piece"),
       });
       const after = await inventory.read.world();
+      expect(() => assertStateResultRefinement(before, after, result)).not.toThrow();
       expect(() =>
         assertStateResultRefinement(before, after, {
           ...result,
@@ -859,6 +865,7 @@ describe("operation-result refinement authority", () => {
         createdAtEpochMs: time1,
       });
       const after = await inventory.read.world();
+      expect(() => assertStateResultRefinement(before, after, result)).not.toThrow();
       expect(() =>
         assertStateResultRefinement(before, after, {
           ...result,
@@ -881,6 +888,7 @@ describe("operation-result refinement authority", () => {
         startedAtEpochMs: time0,
       });
       const after = await inventory.read.world();
+      expect(() => assertStateResultRefinement(before, after, result)).not.toThrow();
       expect(() =>
         assertStateResultRefinement(before, after, {
           ...result,
@@ -913,6 +921,7 @@ describe("operation-result refinement authority", () => {
         ],
       });
       const after = await inventory.read.world();
+      expect(() => assertStateResultRefinement(before, after, result)).not.toThrow();
       expect(() =>
         assertStateResultRefinement(before, after, {
           ...result,
@@ -957,6 +966,7 @@ describe("operation-result refinement authority", () => {
         ],
       });
       const after = await inventory.read.world();
+      expect(() => assertStateResultRefinement(before, after, result)).not.toThrow();
       expect(() => assertStateResultRefinement(before, after, result)).not.toThrow();
       expect(() =>
         assertStateResultRefinement(before, after, {
@@ -1007,5 +1017,63 @@ describe("operation-result refinement authority", () => {
         })
       ).toThrow("Result deficit disagrees with immutable event evidence");
     }
+  });
+});
+
+
+describe("systemic producer-result falsification", () => {
+  it("rejects finite but incorrect stock quantity and layer time independently", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receive({ operationId: "oracle-stock", occurredAtEpochMs: time0, to: loosePosition("A"), amount: stockAmount("1", "piece") });
+    const world = await inventory.read.world();
+    expect(() => assertAbstractInventoryInvariants(world)).not.toThrow();
+    const entry = Object.entries(world.projection.positions)[0];
+    if (entry === undefined) throw new Error("Expected the producer's stock row.");
+    const [id, position] = entry;
+    const wrongQuantity = { ...position, measurements: { ...position.measurements, primary: { ...position.measurements.primary, quantity: parseQuantity("2", "piece") } } };
+    expect.soft(() => assertAbstractInventoryInvariants({ ...world, projection: { ...world.projection, positions: { ...world.projection.positions, [id]: wrongQuantity } } })).toThrow(/stock quantity differs from committed effects/u);
+    expect.soft(() => assertAbstractInventoryInvariants({ ...world, projection: { ...world.projection, positiveLayerStartedAtEpochMsByPositionId: { ...world.projection.positiveLayerStartedAtEpochMsByPositionId, [id]: time0 + 1 } } })).toThrow(/Positive layer history index/u);
+  });
+
+  it("rejects reservation and count operations whose row is only inherited", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receive({ operationId: "oracle-book-stock", occurredAtEpochMs: time0, to: loosePosition("A"), amount: stockAmount("2", "piece") });
+    await inventory.reservations.reserve({ reservationId: "oracle-claim", operationId: "oracle-reserve", itemRevisionId: "item-a-v2", selector: { itemId: "item-a" }, requested: parseQuantity("1", "piece"), createdAtEpochMs: time1 });
+    await inventory.counts.start({ countId: "oracle-count", operationId: "oracle-count-start", itemRevisionId: "item-a-v2", selector: { itemId: "item-a" }, startedAtEpochMs: time1 });
+    const world = await inventory.read.world();
+    expect(() => assertAbstractReservationInvariants(world.reservations)).not.toThrow();
+    expect(() => assertAbstractCountInvariants(world.counts)).not.toThrow();
+    const reservationOperation = world.reservations.operations["oracle-reserve"];
+    const countOperation = world.counts.operations["oracle-count-start"];
+    if (reservationOperation === undefined || countOperation === undefined) throw new Error("Expected both producer lifecycle operations.");
+    expect.soft(() => assertAbstractReservationInvariants({ reservations: { ...world.reservations.reservations }, operations: { ...world.reservations.operations, "oracle-reserve": { ...reservationOperation, reservationId: "toString" } } })).toThrow(/Reservation operation lost/u);
+    expect.soft(() => assertAbstractCountInvariants({ counts: { ...world.counts.counts }, operations: { ...world.counts.operations, "oracle-count-start": { ...countOperation, countId: "constructor" } } })).toThrow(/Count operation lost/u);
+  });
+
+  it("rejects producer allocation total and selector corruption", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receive({ operationId: "oracle-allocation-stock", occurredAtEpochMs: time0, to: loosePosition("A"), amount: stockAmount("2", "piece") });
+    await inventory.reservations.reserve({ reservationId: "oracle-allocation", operationId: "oracle-allocation-reserve", itemRevisionId: "item-a-v2", selector: { itemId: "item-a", locationIds: ["A"] }, requested: parseQuantity("1", "piece"), createdAtEpochMs: time1 });
+    const position = (await inventory.read.positions({ itemId: "item-a" }))[0];
+    if (position === undefined) throw new Error("Expected real stock for allocation.");
+    await inventory.reservations.allocate({ reservationId: "oracle-allocation", operationId: "oracle-allocate", occurredAtEpochMs: time1, allocations: [{ position: position.key, quantity: parseQuantity("1", "piece") }] });
+    const book = (await inventory.read.world()).reservations;
+    expect(() => assertAbstractReservationInvariants(book)).not.toThrow();
+    const reservation = book.reservations["oracle-allocation"];
+    const allocation = reservation?.allocations[0];
+    if (reservation === undefined || allocation === undefined) throw new Error("Expected the actual allocated producer record.");
+    for (const changed of [{ ...allocation, quantity: parseQuantity("2", "piece") }, { ...allocation, position: { ...allocation.position, locationId: "B" } }]) {
+      expect.soft(() => assertAbstractReservationInvariants({ ...book, reservations: { ...book.reservations, [reservation.reservationId]: { ...reservation, allocations: [changed] } } })).toThrow(/Reservation allocation (?:total differs|lies outside)/u);
+    }
+  });
+
+  it("binds the result receipt record time to its committed event", async () => {
+    const inventory = createTestInventory();
+    const before = await inventory.read.world();
+    const result = await inventory.stock.receive({ operationId: "oracle-receipt", occurredAtEpochMs: time0, to: loosePosition("A"), amount: stockAmount("1", "piece") });
+    const after = await inventory.read.world();
+    expect(() => assertStateResultRefinement(before, after, result)).not.toThrow();
+    expect(() => assertStateResultRefinement(before, after, { ...result, receipt: { ...result.receipt, recordedAtEpochMs: result.receipt.recordedAtEpochMs + 1 } })).toThrow(/receipt record time disagrees/u);
+    expect(() => assertStateResultRefinement(before, after, { ...result, event: { ...result.event, metadata: { oracleForgedField: "not in committed event" } } })).toThrow(/Result event disagrees/u);
   });
 });

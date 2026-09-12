@@ -1,3 +1,4 @@
+import { assertAbstractInventoryInvariants } from "./formal-implementation-abstraction.js";
 import { describe, expect, it } from "vitest";
 import {
   InventoryAllocationMethod,
@@ -87,6 +88,7 @@ describe("rebuildable stock performance indexes", () => {
       amount: stockAmount("3", "piece"),
     });
     const world = await inventory.read.world();
+    assertAbstractInventoryInvariants(world);
     const projection = {
       ...world.projection,
       positions: nonEnumerableRecord(world.projection.positions),
@@ -106,6 +108,7 @@ describe("rebuildable stock performance indexes", () => {
       amount: stockAmount("2", "piece"),
     });
     const world = await inventory.read.world();
+    assertAbstractInventoryInvariants(world);
     const projection = {
       ...world.projection,
       positionIdsByItemId: unreadableHistory(
@@ -183,6 +186,7 @@ describe("rebuildable stock performance indexes", () => {
       amount: stockAmount("1", "piece"),
     });
     const world = await inventory.read.world();
+    assertAbstractInventoryInvariants(world);
     const destination = loosePosition("serial-b", { serialId: "SERIAL-1" });
     const destinationId = inventoryStockPositionIdentity({
       ...destination,
@@ -216,6 +220,7 @@ describe("rebuildable stock performance indexes", () => {
       to: { kind: InventoryTraceabilityNodeKind.Container, id: "cut-parent" },
     });
     const world = await inventory.read.world();
+    assertAbstractInventoryInvariants(world);
     const filtered = Object.values(world.projection.events).filter(
       (event) => event.recordSequence === 1 || event.recordSequence === 5
     );
@@ -260,6 +265,7 @@ describe("rebuildable stock performance indexes", () => {
       },
     });
     const world = await inventory.read.world();
+    assertAbstractInventoryInvariants(world);
     const rebuilt = projectInventoryEvents({
       catalog: createTabletCatalog(),
       events: Object.values(world.projection.events),
@@ -304,6 +310,7 @@ describe("rebuildable stock performance indexes", () => {
       amount: stockAmount("1", "piece"),
     });
     const world = await inventory.read.world();
+    assertAbstractInventoryInvariants(world);
     const historyFreeWorld = {
       ...world,
       projection: {
@@ -391,6 +398,7 @@ describe("rebuildable stock performance indexes", () => {
     });
 
     const world = await inventory.read.world();
+    assertAbstractInventoryInvariants(world);
     expect(Object.keys(world.projection.events)).toHaveLength(38);
     const resetPositionId = inventoryStockPositionIdentity({
       ...loosePosition("stress-store", { lotId: "RESET" }),
@@ -471,6 +479,7 @@ describe("rebuildable stock performance indexes", () => {
       amount: stockAmount("2", "piece"),
     });
     const world = await inventory.read.world();
+    assertAbstractInventoryInvariants(world);
     const destinationId = inventoryStockPositionIdentity({
       ...destination,
       itemRevisionId: "item-a-v2",
@@ -591,6 +600,7 @@ describe("rebuildable stock performance indexes", () => {
       reason: "The batch has no declared source-to-destination lineage pairs.",
     });
     const world = await inventory.read.world();
+    assertAbstractInventoryInvariants(world);
     for (const [lotId, statusId] of [
       ["MULTI-A", "quarantine"],
       ["MULTI-B", "inspection"],

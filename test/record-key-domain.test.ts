@@ -68,6 +68,25 @@ describe("string-keyed inventory records", () => {
     expect(world.counts.operations["valueOf"]).toBeUndefined();
   });
 
+  it("preserves own-only book maps after ordinary publication and replay", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receive({ operationId: "book-map-stock", occurredAtEpochMs: time0, to: loosePosition("store"), amount: stockAmount("2", "piece") });
+    const reserve = { reservationId: "book-map-claim", operationId: "book-map-reserve", itemRevisionId: "item-a-v2", selector: { itemId: "item-a", locationIds: ["store"] }, requested: parseQuantity("1", "piece"), createdAtEpochMs: time1 };
+    const count = { countId: "book-map-count", operationId: "book-map-start", itemRevisionId: "item-a-v2", selector: { itemId: "item-a", locationIds: ["store"] }, startedAtEpochMs: time1 };
+    for (let replay = 0; replay < 2; replay += 1) {
+      await inventory.reservations.reserve(reserve);
+      await inventory.counts.start(count);
+      const world = await inventory.read.world();
+      for (const record of [world.reservations.reservations, world.reservations.operations, world.counts.counts, world.counts.operations]) {
+        for (const absent of ["toString", "constructor", "__proto__", "hasOwnProperty"]) {
+          expect.soft(record[absent]).toBeUndefined();
+        }
+      }
+      expect(world.reservations.reservations[reserve.reservationId]?.reservationId).toBe(reserve.reservationId);
+      expect(world.counts.counts[count.countId]?.countId).toBe(count.countId);
+    }
+  });
+
   it("retains prototype-named item and revision ids through active and projection indexes", async () => {
     const item = defineInventoryItem({
       itemId: "valueOf",

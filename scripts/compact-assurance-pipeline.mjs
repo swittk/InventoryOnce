@@ -4,11 +4,13 @@ import path from "node:path";
 import os from "node:os";
 import crypto from "node:crypto";
 import { execFileSync, spawnSync, spawn } from "node:child_process";
-import { createRequire, syncBuiltinESMExports } from "node:module";
+import { createRequire } from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { gzipSync } from "node:zlib";
 import { performance } from "node:perf_hooks";
-import { assuranceRepositoryPath, readAssuranceFile, readCompactArchive, materializeAssuranceFiles, claimAssuranceWorkspace, withAssuranceReadSession } from "./assurance-files.mjs";
+import { assertCompactAssuranceCertificate } from "./executable-assurance-coherence.mjs";
+import { verifyCurrentReviewLiveSource } from "../experiments/tla-conformance/final-convergence/current-review-assurance.mjs";
+import { assuranceRepositoryPath, readAssuranceFile, readCompactArchive, materializeAssuranceFiles, claimAssuranceWorkspace, withAssuranceReadSession, withAssuranceFileObservation } from "./assurance-files.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const DIRECTORY = "experiments/tla-conformance/final-convergence/";
@@ -19,15 +21,6 @@ const BUNDLE = DIRECTORY + "compact-final-verify.mjs";
 const SOURCE_ENTRY = DIRECTORY + "run-final-verifier.mjs";
 const PIPELINE_SELF = "scripts/compact-assurance-pipeline.mjs";
 const DERIVED = new Set([MANIFEST, CLOSURE, WRAPPER, BUNDLE, DIRECTORY + "compact-final-selftest.mjs", DIRECTORY + "compact-final-registry.mjs", ...["final-head-transport.json", "final-v309.json", "final-a121-b58.json", "final-surface-bindings.json", "final-binder-report.json"].map(file => DIRECTORY + file)]);
-/** Tracked immutable baselines consumed by adversarial selftest after the traced read session. */
-const ADVERSARIAL_BASELINE_INPUTS = [
-  "authority-producer17.json",
-  "authority-value3.json",
-  "r137-v15.json",
-  "readworld-producer24.json",
-  "wrapper-producer11.json",
-  "r170-pristine-repro-transport.json",
-].map(file => DIRECTORY + file);
 const NO_CERTIFICATE = "0".repeat(40);
 const native = Object.fromEntries(["readFileSync", "existsSync", "readdirSync", "openSync", "closeSync", "lstatSync", "statSync", "writeFileSync"].map(name => [name, fs[name]]));
 const sha = bytes => crypto.createHash("sha256").update(bytes).digest("hex");
@@ -50,55 +43,16 @@ function certificateAnchor(root) {
   return match[1];
 }
 /** Fail closed unless one pinned compact certificate contains the exact three semantic verdicts. */
-export function assertTrustedCompactCertificateManifest(manifest) {
-  const certification=manifest?.certification;
-  assert.equal(certification?.schemaVersion,1,"Pinned compact certificate has an unsupported schema.");
-  assert.match(certification.certifiedHead,/^[a-f0-9]{40}$/u,"Pinned compact certificate head is invalid.");
-  assert.match(certification.inputKey,/^[a-f0-9]{64}$/u,"Pinned compact certificate input key is invalid.");
-  assert(Array.isArray(certification.processes),"Pinned compact certificate process evidence is missing.");
-  assert.deepEqual(certification.processes.map(row=>row.mode).sort(),["registry","selftest","verify"]);
-  for(const row of certification.processes){
-    assert.equal(row.exitCode,0,`Pinned compact certificate ${row.mode} process did not exit cleanly.`);
-    assert.equal(row.signal,null,`Pinned compact certificate ${row.mode} process was signalled.`);
-    assert.equal(row.stderr,"",`Pinned compact certificate ${row.mode} emitted stderr.`);
-    assert.match(row.stdoutSha256,/^[a-f0-9]{64}$/u);
-    assert.match(row.stderrSha256,/^[a-f0-9]{64}$/u);
-    assert.equal(sha(row.stdout),row.stdoutSha256,"Immutable certificate output hash is invalid.");
-    assert.equal(sha(row.stderr),row.stderrSha256,"Immutable certificate error hash is invalid.");
-    assert.equal(row.inputKey,certification.inputKey);
-    assert.equal(row.head,certification.certifiedHead);
-    const lines=row.stdout.trim().split(/\r?\n/u).filter(Boolean);
-    assert.equal(lines.length,1,`Pinned compact certificate ${row.mode} emitted unexpected stdout.`);
-    const emitted=JSON.parse(lines[0]);
-    assert.deepEqual(row.report,emitted,`Pinned compact certificate ${row.mode} report differs from exact stdout.`);
-    assert.equal(row.report.mode,row.mode);
-    assert.equal(row.report.inputKey,certification.inputKey);
-    assert.equal(row.report.head,certification.certifiedHead);
-    assert.equal(row.report.compilerPasses,1);
-    if(row.mode==="registry"){
-      assert.equal(row.report.status,"FINAL_535_REGISTRY_BUILT","Pinned compact certificate registry status is invalid.");
-      assert.deepEqual(row.report.counts,{A:121,B:58,V:309,HARD_RED:47},"Pinned compact registry partition is invalid.");
-    }else if(row.mode==="selftest"){
-      assert.equal(row.report.status,"FINAL_CONVERGENCE_ADVERSARIAL_PASS","Pinned compact certificate selftest status is invalid.");
-      assert.equal(row.report.valueRows,309);assert.equal(row.report.producerRows,179);
-      assert.match(row.report.surfaceDigest,/^[a-f0-9]{64}$/u);
-      assert.deepEqual(row.report.controls,{honestValueAccepted:true,wrongValueModeRejected:true,resignedValueTamperRejected:true,honestAandBAccepted:true,wrongProducerModeRejected:true,resignedProducerTamperRejected:true,immutableHistoricalAuthorityTamperRejected:true,sameMtimeEvidenceDriftRejected:true},"Pinned compact certificate adversarial controls are incomplete.");
-    }else{
-      assert.equal(row.report.status,"FINAL_BINDER_GREEN","Pinned compact certificate verifier status is invalid.");
-      assert.match(row.report.surfaceDigest,/^[a-f0-9]{64}$/u);
-      assert.equal(row.report.callables,535);assert.equal(row.report.diagnostics,47);
-      assert.deepEqual(row.report.byCode,{EXPLICIT_HARD_RED:47});assert.equal(row.report.hardRed,47);
-      assert.equal(row.report.unexpected,0);assert.deepEqual(row.report.unexpectedRows,[]);
-      assert.equal(row.report.valueAccepted,309);assert.equal(row.report.producerAccepted,179);assert.equal(row.report.strictAccepted,488);
-    }
-  }
+export function assertTrustedCompactCertificateManifest(manifest, expected) {
+  assertCompactAssuranceCertificate(manifest?.certification, expected);
   return manifest;
 }
 function trustedManifest(root, anchor) {
   if (anchor === NO_CERTIFICATE) return undefined;
   git(root, ["merge-base", "--is-ancestor", anchor, "HEAD"]);
-  const manifest = assertTrustedCompactCertificateManifest(JSON.parse(git(root, ["show", `${anchor}:${MANIFEST}`])));
-  assert.equal(git(root, ["rev-parse", `${anchor}^`]).trim(), manifest.certification.certifiedHead, "Compact certificate is not the direct child of its tested immutable tree.");
+  const head = git(root, ["rev-parse", `${anchor}^`]).trim();
+  const closure = JSON.parse(git(root, ["show", `${head}:${CLOSURE}`]));
+  const manifest = assertTrustedCompactCertificateManifest(JSON.parse(git(root, ["show", `${anchor}:${MANIFEST}`])), { head, inputKey: closure.inputKey, surfaceDigest: closure.surfaceDigest });
   return manifest;
 }
 
@@ -228,25 +182,33 @@ function snapshot(root, manifest) {
     load(manifest.archive.file);
     for(const row of manifest.bundles.entries) load(row.file);
   }
-  async function trace(run) {
-    function localFile(value) {
-      if (typeof value === "number") return undefined;
-      const absolute = value instanceof URL ? fileURLToPath(value) : path.resolve(Buffer.isBuffer(value) ? value.toString() : value);
-      const file = relative(root,absolute);
-      if (file === ".." || file.startsWith("../") || path.isAbsolute(file)) throw new Error(`Assurance attempted an external file read: ${absolute}`);
-      return file;
-    }
-    fs.readFileSync = (file, options) => {
-      if (typeof file === "number") return native.readFileSync(file,options);
-      const rel = localFile(file);
-      if (!native.existsSync(path.resolve(root,rel))) { probes.set(rel,false); return native.readFileSync(file,options); }
-      const bytes = read(rel), encoding = typeof options === "string" ? options : options?.encoding;
-      return encoding ? bytes.toString(encoding) : bytes;
+  async function trace(run, mutating = false) {
+    // Only files created by this exact adversarial run may be read without becoming baseline inputs.
+    const temporaryFiles = new Set();
+    const known = file => tracked.has(file) || archived.has(file) || outputs.has(file) || file.startsWith("node_modules/");
+    const onRead = file => {
+      if (temporaryFiles.has(file)) return undefined;
+      if (!native.existsSync(path.resolve(root, file))) { probes.set(file, false); return undefined; }
+      const bytes = read(file);
+      return mutating ? undefined : bytes;
     };
-    fs.existsSync = file => probe(localFile(file));
-    syncBuiltinESMExports();
-    try { return await withAssuranceReadSession(root, { read, hash, compilerHash }, run); }
-    finally { fs.readFileSync=native.readFileSync; fs.existsSync=native.existsSync; syncBuiltinESMExports(); }
+    const onWrite = file => {
+      if (!mutating) { assert(outputs.has(file), `Proof attempted to mutate an input: ${file}`); return; }
+      if (temporaryFiles.has(file)) return;
+      if (known(file)) { load(file); return; }
+      assert(!native.existsSync(path.resolve(root, file)), `Mutation probe cannot overwrite an ambient input: ${file}`);
+      assuranceRepositoryPath(root, file);
+      temporaryFiles.add(file);
+    };
+    const observed = () => withAssuranceFileObservation({
+      repositoryRoot: root,
+      onRead,
+      onExists: file => temporaryFiles.has(file) ? native.existsSync(path.resolve(root, file)) : probe(file),
+      onWrite,
+    }, run);
+    const result = mutating ? await observed() : await withAssuranceReadSession(root, { read, hash, compilerHash }, observed);
+    for (const file of temporaryFiles) assert(!native.existsSync(path.resolve(root, file)), `Adversarial probe was not removed: ${file}`);
+    return result;
   }
   return { read, hash, compilerHash, invalidate, inputRows, records, probes, tracked, bindExecutableDomain, trace, finish,
     task(id, run) { tasks.set(id,new Set()); assert.equal(activeTask,undefined); activeTask=id; try{return run();}finally{activeTask=undefined;} },
@@ -318,7 +280,6 @@ function assertClosure(root, closure, manifest) {
     assert.equal(sha(bytes),row.sha256,`Stale compact input hash: ${row.file}`);
   }
   for(const row of manifest.bundles.sources) assert(seen.has(row.file), `Unbound bundled executable input: ${row.file}`);
-  for(const file of ADVERSARIAL_BASELINE_INPUTS) assert(seen.has(file), `Unbound adversarial baseline input: ${file}`);
   for(const file of [PIPELINE_SELF, "package.json", "pnpm-lock.yaml", "tsconfig.json", "tsconfig.test.json", manifest.archive.file]) assert(seen.has(file), `Unbound compact root input: ${file}`);
   const currentCompilerRootSet = compactCompilerSourceSetIdentity(root);
   assert.deepEqual(closure.compilerRootSet, currentCompilerRootSet, "Compact compiler root set is stale.");
@@ -347,9 +308,9 @@ async function currentize(root, manifest, anchor) {
   writeChanged(root,MANIFEST,encode(manifest));
   const pass=snapshot(root,manifest), graph=[];
   const compilerRootSet = compactCompilerSourceSetIdentity(root);
-  let compilerPasses=0, context, compilerSourceSet;
+  let compilerPasses=0, context, compilerSourceSet, library;
   const result=await pass.trace(async()=>{
-    const library=await import(pathToFileURL(path.resolve(root,BUNDLE)).href+`?inputs=${manifest.bundles.entries[0].sha256}`);
+    library=await import(pathToFileURL(path.resolve(root,BUNDLE)).href+`?inputs=${manifest.bundles.entries[0].sha256}`);
     pass.bindExecutableDomain();
     context=library.createFinalCompilerContext(root);compilerPasses++;
     // Bind the exact Program source graph once; node caches key this complete set, not only tsconfig roots.
@@ -388,8 +349,8 @@ async function currentize(root, manifest, anchor) {
     // Independent central admission remains mandatory when there is no authenticated node cache.
     return {surfaceDigest:context.surface.digest};
   });
-  // Selftest mutates these files only after tracing; bind their pristine tracked bytes into every closure first.
-  for(const file of ADVERSARIAL_BASELINE_INPUTS) pass.hash(file);
+  // Discover every real adversarial read (including descriptor-only reads) while preserving post-write visibility.
+  await pass.trace(() => library.verifyFinalAdversarial(root, context), true);
   pass.finish();
   manifest.graph=graph;delete manifest.certification;
   const closure=closureDocument(pass,manifest,graph,result.surfaceDigest,compilerRootSet,compilerSourceSet);
@@ -409,15 +370,13 @@ async function validateMode(root,manifest,mode) {
     library.verifyFinalCurrentReview(root,context);
     result=mode==="registry"?library.verifyFinalRegistry(root):library.verifyFinalBindings(root,context);
   });
-  // The adversarial runner intentionally writes/restores baselines outside trace; freeze their pre-run bytes explicitly.
-  if(mode==="selftest") for(const file of ADVERSARIAL_BASELINE_INPUTS) pass.hash(file);
+  if(mode==="selftest") result=await pass.trace(() => library.verifyFinalAdversarial(root,context), true);
   pass.finish();
   const bound = new Map([...closure.rows,...closure.outputs].map(row=>[row.file,row]));
   for(const row of pass.inputRows()) {
     assert(bound.has(row.file), `Unbound executed proof input: ${row.file}`);
     assert.equal(row.sha256,bound.get(row.file).sha256,`Executed proof input differs from the closure: ${row.file}`);
   }
-  if(mode==="selftest") result=library.verifyFinalAdversarial(root,context);
   assertClosure(root,closure,manifest);
   return {...result,mode,inputKey:closure.inputKey,head:git(root,["rev-parse","HEAD"]).trim(),compilerPasses:1,elapsedMs:Math.round(performance.now()-start)};
 }
@@ -444,7 +403,7 @@ async function certify(root,manifest,anchor) {
   cleanTree(root);
   const prior=trustedManifest(root,anchor),closure=JSON.parse(ordinaryBytes(root,CLOSURE));
   if(prior!==undefined && prior.certification.inputKey===closure.inputKey && JSON.stringify(manifestSemanticCore(prior))===JSON.stringify(manifestSemanticCore(manifest))){
-    await withSupport(root,manifest,async()=>assertClosure(root,closure,manifest));
+    await withSupport(root,manifest,async()=>{ assertClosure(root,closure,manifest); verifyCurrentReviewLiveSource(root); });
     console.log(JSON.stringify({status:"COMPACT_CERTIFICATE_REUSED",inputKey:closure.inputKey,evidenceCommit:anchor,compilerPasses:0}));return;
   }
   const head=git(root,["rev-parse","HEAD"]).trim(),start=performance.now(),parent=fs.mkdtempSync(path.join(os.tmpdir(),"inventoryonce-compact-cert-"));
@@ -503,7 +462,7 @@ export async function runCompactCommand({moduleUrl,mode,certificateCommit}={}) {
         const closure=JSON.parse(ordinaryBytes(root,CLOSURE));
         const compilerRootSet = compactCompilerSourceSetIdentity(root);
         if(prior.certification.inputKey===closure.inputKey && closure.compilerRootSet?.key===compilerRootSet.key && JSON.stringify(manifestSemanticCore(prior))===JSON.stringify(manifestSemanticCore(manifest))){
-          await withSupport(root,manifest,async()=>assertClosure(root,closure,manifest));
+          await withSupport(root,manifest,async()=>{ assertClosure(root,closure,manifest); verifyCurrentReviewLiveSource(root); });
           console.log(JSON.stringify({status:"COMPACT_CURRENTIZATION_REUSED",inputKey:closure.inputKey,compilerPasses:0,elapsedMs:Math.round(performance.now()-started)}));return;
         }
       }catch(error){if(!/Stale compact input (hash|size)|closure identity is stale|Unbound executable input/u.test(error.message))throw error;}

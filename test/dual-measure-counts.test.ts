@@ -1,3 +1,4 @@
+import { assertAbstractInventoryInvariants } from "./formal-implementation-abstraction.js";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -193,5 +194,25 @@ describe("independent physical count reconciliation", () => {
       occurredAtEpochMs,
     })).rejects.toThrow("does not match the same whole package count");
     expect(await inventory.read.world()).toEqual(before);
+  });
+});
+
+
+describe("independent exact-axis assurance", () => {
+  it("reconciles both primary and independent axes and rejects omitted or changed weight", async () => {
+    const inventory = inventoryFor();
+    await inventory.stock.receive({ operationId: "oracle-measured", occurredAtEpochMs, to: { itemId, locationId: "store" }, amount: measuredStockAmount("2", "piece", [{ axisId: "weight", value: "20.25", unit: "kg" }]) });
+    await inventory.counts.replaceAbsolute({ countId: "oracle-reweigh", operationId: "oracle-reweigh", itemRevisionId, selector: { itemId, locationIds: ["store"] }, observedMeasurements: measuredVector("2", "21.125"), occurredAtEpochMs, reason: "Physical reweigh." });
+    const world = await inventory.read.world();
+    expect(() => assertAbstractInventoryInvariants(world)).not.toThrow();
+    const entry = Object.entries(world.projection.positions)[0];
+    if (entry === undefined) throw new Error("Expected the independently measured producer position.");
+    const [identity, position] = entry;
+    for (const independent of [[], [{ axisId: "weight", quantity: parseQuantity("21.126", "kg") }]]) {
+      expect(() => assertAbstractInventoryInvariants({ ...world, projection: { ...world.projection, positions: { ...world.projection.positions, [identity]: { ...position, measurements: { ...position.measurements, independent } } } } })).toThrow(/Published stock (?:omitted|quantity differs)/u);
+    }
+    // Numeric equivalence must not be mistaken for a corrupt representation of the same exact quantity.
+    const equivalent = [{ axisId: "weight", quantity: parseQuantity("21.1250", "kg") }];
+    expect(() => assertAbstractInventoryInvariants({ ...world, projection: { ...world.projection, positions: { ...world.projection.positions, [identity]: { ...position, measurements: { ...position.measurements, independent: equivalent } } } } })).not.toThrow();
   });
 });

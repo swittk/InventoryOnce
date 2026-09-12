@@ -47,9 +47,9 @@ export function repositoryAssuranceInputPaths(repositoryRoot, untrackedOnly = fa
   return [...new Set(listed.stdout.split("\0").filter(includedPath))].sort();
 }
 
-/** Hash tracked plus repository-.gitignore-visible untracked state without ambient Git excludes or self-hashing the stored report. */
-export function repositoryAssuranceStateSha256(repositoryRoot) {
-  const paths = repositoryAssuranceInputPaths(repositoryRoot);
+/** Hash actual bytes/modes, optionally omitting only outputs independently authorized by a pinned certificate. */
+export function repositoryAssuranceStateSha256(repositoryRoot, omittedPaths = new Set()) {
+  const paths = repositoryAssuranceInputPaths(repositoryRoot).filter(file => !omittedPaths.has(file));
   const indexed = spawnSync(
     "git",
     ["ls-files", "--stage", "-z"],
@@ -118,7 +118,7 @@ export function repositoryAssuranceStateSha256(repositoryRoot) {
 }
 
 /** Hash one committed repository tree with exactly the same framing as a clean assurance run. */
-export function repositoryAssuranceCommittedStateSha256(repositoryRoot, commit) {
+export function repositoryAssuranceCommittedStateSha256(repositoryRoot, commit, omittedPaths = new Set()) {
   const listed = spawnSync(
     "git",
     ["ls-tree", "-rz", "--full-tree", commit],
@@ -134,7 +134,7 @@ export function repositoryAssuranceCommittedStateSha256(repositoryRoot, commit) 
     if (tab < 0) throw new Error("Malformed git ls-tree assurance record.");
     const header = record.slice(0, tab).split(" ");
     const path = record.slice(tab + 1);
-    if (!includedPath(path)) continue;
+    if (!includedPath(path) || omittedPaths.has(path)) continue;
     if (header.length !== 3 || header[1] !== "blob" || !/^[a-f0-9]{40,64}$/u.test(header[2])) throw new Error(`Unsupported committed assurance entry '${path}'.`);
     const kind = header[0] === "120000" ? 1 : header[0] === "100644" || header[0] === "100755" ? 0 : undefined;
     if (kind === undefined) throw new Error(`Unsupported committed assurance mode for '${path}'.`);

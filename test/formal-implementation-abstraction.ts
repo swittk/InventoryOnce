@@ -16,6 +16,7 @@ import type {
   InventoryReservationBook,
   InventoryStockPosition,
   InventoryStockPositionKey,
+  InventoryStockSelector,
   InventoryTransfer,
   InventoryWorldState,
   Quantity,
@@ -942,6 +943,7 @@ export function assertAbstractInventoryInvariants(
   }
   assertAbstractPositionIndexes(world.projection);
   assertAbstractHistoryIndexes(world.projection);
+  assertAbstractCommittedStock(world.projection);
   assertAbstractTraceabilityInvariants(world.projection.traceability);
 }
 
@@ -1024,6 +1026,135 @@ function assertAbstractRecordIdentities<T>(rows: Readonly<Record<string, T>>, id
   for (const [key, value] of Object.entries(rows)) if (key !== identityOf(value)) throw new Error(`${label} dictionary key disagrees with its primary identity.`);
 }
 
+/** Exact test-only signed amount; no producer quantity arithmetic is reused. */
+interface AbstractExactAmount {
+  /** Signed integer coefficient accumulated from committed effects. */
+  readonly amount: bigint;
+  /** Decimal exponent of the integer coefficient. */
+  readonly decimals: number;
+  /** Physical unit frozen for this measurement axis. */
+  readonly unit: string;
+}
+
+/** Add a committed measurement with independent scaled-integer arithmetic. */
+function addAbstractExactAmount(previous: AbstractExactAmount | undefined, value: Quantity): AbstractExactAmount {
+  if (previous !== undefined && previous.unit !== value.unit) throw new Error("Committed measurement history changed the unit of an axis.");
+  const decimals = Math.max(previous?.decimals ?? 0, value.decimals);
+  return {
+    amount: (previous?.amount ?? 0n) * 10n ** BigInt(decimals - (previous?.decimals ?? 0)) + BigInt(value.amountMinor) * 10n ** BigInt(decimals - value.decimals),
+    decimals,
+    unit: value.unit,
+  };
+}
+
+/** Compare an observed measurement to its independently accumulated history. */
+function abstractExactAmountMatches(expected: AbstractExactAmount | undefined, actual: Quantity): boolean {
+  if (expected === undefined) return actual.amountMinor === 0;
+  if (expected.unit !== actual.unit) return false;
+  const decimals = Math.max(expected.decimals, actual.decimals);
+  return expected.amount * 10n ** BigInt(decimals - expected.decimals) === BigInt(actual.amountMinor) * 10n ** BigInt(decimals - actual.decimals);
+}
+
+/** Reconstruct every signed stock axis and FIFO age from committed effects, never from projection values. */
+function assertAbstractCommittedStock(p: InventoryWorldState["projection"]): void {
+  // Journal effects include compensating correction deltas; they are summed, not silently replaced.
+  const amounts = new Map<string, Map<string, AbstractExactAmount>>();
+  const primaryAxes = new Map<string, string>();
+  const layers = new Map<string, number>();
+  const orderedEvents = Object.values(p.events).sort((left, right) => left.recordSequence - right.recordSequence);
+  for (const event of orderedEvents) {
+    // Conserved movement carries the source age that existed before any leg was applied.
+    const movedAges = new Map<string, number>();
+    for (const transfer of event.positiveLayerProvenanceTransfers ?? []) {
+      const source = abstractProjectionPositionIdentity(transfer.from);
+      const target = abstractProjectionPositionIdentity(transfer.to);
+      const sourceAge = layers.get(source);
+      if (sourceAge === undefined) throw new Error("FIFO movement lost its positive source layer.");
+      const targetAge = layers.get(target);
+      movedAges.set(target, targetAge === undefined ? sourceAge : Math.min(sourceAge, targetAge));
+    }
+    for (const effect of event.stockEffects) {
+      const identity = abstractProjectionPositionIdentity(effect.position);
+      let axes = amounts.get(identity);
+      if (axes === undefined) { axes = new Map(); amounts.set(identity, axes); }
+      const primaryId = effect.measurementsDelta.primary.axisId;
+      const retainedPrimary = primaryAxes.get(identity);
+      if (retainedPrimary !== undefined && retainedPrimary !== primaryId) throw new Error("Committed stock history changed its primary measurement axis.");
+      primaryAxes.set(identity, primaryId);
+      const wasPositive = (axes.get(primaryId)?.amount ?? 0n) > 0n;
+      for (const measurement of [effect.measurementsDelta.primary, ...effect.measurementsDelta.independent]) {
+        axes.set(measurement.axisId, addAbstractExactAmount(axes.get(measurement.axisId), measurement.quantity));
+      }
+      const isPositive = (axes.get(primaryId)?.amount ?? 0n) > 0n;
+      if (!wasPositive && isPositive) layers.set(identity, event.occurredAtEpochMs);
+      if (!isPositive) layers.delete(identity);
+      if ([...axes.values()].every(value => value.amount === 0n)) { amounts.delete(identity); primaryAxes.delete(identity); }
+    }
+    for (const [identity, age] of movedAges) {
+      if (!layers.has(identity)) throw new Error("FIFO movement has no positive destination layer.");
+      layers.set(identity, age);
+    }
+    // Corrections carry explicit historical-age replacement evidence even when quantity did not change.
+    for (const override of event.positiveLayerProvenanceOverrides ?? []) {
+      const identity = abstractProjectionPositionIdentity(override.position);
+      if (override.startedAtEpochMs === undefined) {
+        if (layers.has(identity)) throw new Error("FIFO correction removed the age of positive stock.");
+      } else {
+        if (!layers.has(identity)) throw new Error("FIFO correction assigned age to nonpositive stock.");
+        layers.set(identity, override.startedAtEpochMs);
+      }
+    }
+  }
+  if (Object.keys(p.positions).length !== amounts.size) throw new Error("Published stock domain differs from committed effects.");
+  for (const [identity, axes] of amounts) {
+    const position = p.positions[identity];
+    if (position === undefined || !Object.hasOwn(p.positions, identity)) throw new Error("Published stock is missing a committed position.");
+    if (position.measurements.primary.axisId !== primaryAxes.get(identity)) throw new Error("Published primary axis differs from committed effects.");
+    const observedAxes = new Set<string>();
+    for (const measurement of [position.measurements.primary, ...position.measurements.independent]) {
+      observedAxes.add(measurement.axisId);
+      if (!abstractExactAmountMatches(axes.get(measurement.axisId), measurement.quantity)) throw new Error("Published stock quantity differs from committed effects.");
+    }
+    for (const [axis, amount] of axes) {
+      if (amount.amount !== 0n && !observedAxes.has(axis)) throw new Error("Published stock omitted a committed measurement axis.");
+    }
+  }
+  assertAbstractScalarIndex(p.positiveLayerStartedAtEpochMsByPositionId, layers, "Positive layer history");
+}
+
+/** Match one optional identity from the declarative presence or membership meaning. */
+function abstractOptionalIdentityMatches(value: string | undefined, kind: "present" | "absent" | "allowed", allowed: readonly string[] | undefined): boolean {
+  if (kind === "absent") return value === undefined;
+  if (kind === "present") return value !== undefined;
+  return value !== undefined && allowed !== undefined && allowed.includes(value);
+}
+
+/** Independently interpret all frozen selector dimensions without calling the production matcher. */
+function abstractPositionMatchesSelector(position: InventoryStockPositionKey, selector: InventoryStockSelector): boolean {
+  if (position.itemId !== selector.itemId) return false;
+  if (selector.itemRevisionIds !== undefined && selector.itemRevisionIds.length !== 0 && !selector.itemRevisionIds.includes(position.itemRevisionId)) return false;
+  if (selector.locationIds !== undefined && selector.locationIds.length !== 0 && !selector.locationIds.includes(position.locationId)) return false;
+  const identities = [
+    [selector.lot, selector.lotIds, position.lotId],
+    [selector.serial, selector.serialIds, position.serialId],
+    [selector.packagingRevision, selector.packagingRevisionIds, position.packagingRevisionId],
+    [selector.container, selector.containerIds, position.containerId],
+    [selector.status, selector.statusIds, position.statusId],
+    [selector.owner, selector.ownerIds, position.ownerId],
+    [selector.custodian, selector.custodianIds, position.custodianId],
+    [selector.dispositionAuthority, selector.dispositionAuthorityIds, position.dispositionAuthorityId],
+  ] as const;
+  for (const [constraint, shorthand, value] of identities) {
+    if (constraint !== undefined && !abstractOptionalIdentityMatches(value, constraint.kind, constraint.valueIds)) return false;
+    if (shorthand !== undefined && shorthand.length !== 0 && (value === undefined || !shorthand.includes(value))) return false;
+  }
+  for (const dimension of selector.qualifiedDimensions ?? []) {
+    const value = position.qualifiedDimensions?.find(row => row.dimensionId === dimension.dimensionId)?.valueId;
+    if (!abstractOptionalIdentityMatches(value, dimension.kind ?? "allowed", dimension.valueIds)) return false;
+  }
+  return true;
+}
+
 /** Independently check claim lifecycle/allocation evidence. */
 export function assertAbstractReservationInvariants(
   book: InventoryReservationBook
@@ -1045,7 +1176,7 @@ export function assertAbstractReservationInvariants(
       );
     }
     lifecycleSequences.add(operation.lifecycleSequence);
-    if (book.reservations[operation.reservationId] === undefined) {
+    if (!Object.hasOwn(book.reservations, operation.reservationId)) {
       throw new Error(
         `Reservation operation lost '${operation.reservationId}'.`
       );
@@ -1058,7 +1189,10 @@ export function assertAbstractReservationInvariants(
       );
     }
     const positions = new Set<string>();
+    let allocatedTotal: AbstractExactAmount | undefined;
     for (const allocation of reservation.allocations) {
+      if (!abstractPositionMatchesSelector(allocation.position, reservation.selector)) throw new Error("Reservation allocation lies outside its frozen selector.");
+      allocatedTotal = addAbstractExactAmount(allocatedTotal, allocation.quantity);
       if (allocation.quantity.amountMinor <= 0) {
         throw new Error(
           `Reservation '${reservation.reservationId}' has nonpositive allocation.`
@@ -1072,6 +1206,7 @@ export function assertAbstractReservationInvariants(
       }
       positions.add(identity);
     }
+    if (reservation.allocations.length !== 0 && !abstractExactAmountMatches(allocatedTotal, reservation.requested)) throw new Error("Reservation allocation total differs from its frozen request.");
     if (
       reservation.status === "consumed" &&
       reservation.consumptionEventId === undefined
@@ -1096,7 +1231,7 @@ export function assertAbstractCountInvariants(book: InventoryCountBook): void {
   assertAbstractRecordIdentities(book.counts, row => row.countId, "Count");
   assertAbstractRecordIdentities(book.operations, row => row.operationId, "Count operation");
   for (const operation of Object.values(book.operations)) {
-    if (book.counts[operation.countId] === undefined) {
+    if (!Object.hasOwn(book.counts, operation.countId)) {
       throw new Error(`Count operation lost '${operation.countId}'.`);
     }
   }
@@ -1402,10 +1537,14 @@ export function assertStateResultRefinement(
     const publishedEvent = after.projection.events[observation.event.eventId];
     if (
       publishedEvent === undefined ||
-      JSON.stringify(abstractEvent(publishedEvent)) !==
-        JSON.stringify(observation.event)
+      !("event" in result) ||
+      JSON.stringify(canonicalValue(publishedEvent)) !==
+        JSON.stringify(canonicalValue(result.event))
     ) {
       throw new Error("Result event disagrees with published event truth.");
+    }
+    if (result.receipt.recordedAtEpochMs !== publishedEvent.recordedAtEpochMs) {
+      throw new Error("Result receipt record time disagrees with committed event truth.");
     }
   }
   if (observation.reservation !== undefined) {
@@ -1413,8 +1552,9 @@ export function assertStateResultRefinement(
     const publishedReservation = after.reservations.reservations[reservationId];
     if (
       publishedReservation === undefined ||
-      JSON.stringify(abstractReservation(publishedReservation)) !==
-        JSON.stringify(observation.reservation)
+      !("reservation" in result) ||
+      JSON.stringify(canonicalValue(publishedReservation)) !==
+        JSON.stringify(canonicalValue(result.reservation))
     ) {
       throw new Error("Result reservation disagrees with published reservation truth.");
     }
@@ -1427,8 +1567,9 @@ export function assertStateResultRefinement(
     const publishedCount = after.counts.counts[countId];
     if (
       publishedCount === undefined ||
-      JSON.stringify(abstractCount(publishedCount)) !==
-        JSON.stringify(observation.count)
+      !("count" in result) ||
+      JSON.stringify(canonicalValue(publishedCount)) !==
+        JSON.stringify(canonicalValue(result.count))
     ) {
       throw new Error("Result count disagrees with published count truth.");
     }
@@ -1441,8 +1582,9 @@ export function assertStateResultRefinement(
     const publishedTransfer = after.projection.transfers[transferId];
     if (
       publishedTransfer === undefined ||
-      JSON.stringify(abstractTransfer(publishedTransfer)) !==
-        JSON.stringify(observation.transfer)
+      !("transfer" in result) ||
+      JSON.stringify(canonicalValue(publishedTransfer)) !==
+        JSON.stringify(canonicalValue(result.transfer))
     ) {
       throw new Error("Result transfer disagrees with published transfer truth.");
     }
