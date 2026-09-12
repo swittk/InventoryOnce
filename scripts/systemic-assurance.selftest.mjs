@@ -113,9 +113,27 @@ test("mutable compact manifest cannot expand the current-review proof-output all
 });
 
 test("current-review compact authority requires the exact certified process mode set", () => {
-  const manifest = JSON.parse(fs.readFileSync(path.join(root, "experiments/tla-conformance/final-convergence/compact-support-manifest.json"), "utf8"));
+  const directory = "experiments/tla-conformance/final-convergence";
+  const manifest = JSON.parse(fs.readFileSync(path.join(root, directory, "compact-support-manifest.json"), "utf8"));
+  const wrapper = fs.readFileSync(path.join(root, directory, "run-compact-final-assurance.mjs"), "utf8");
+  const certificateEvidenceHead = wrapper.match(/COMPACT_CERTIFICATE_COMMIT = "([0-9a-f]{40})"/u)?.[1];
+  assert.notEqual(certificateEvidenceHead, undefined, "Compact certificate anchor is missing.");
+  const compactCertifiedHead = execFileSync(
+    "git",
+    ["rev-parse", `${certificateEvidenceHead}^`],
+    { cwd: root, encoding: "utf8" },
+  ).trim();
   assert.doesNotThrow(() =>
-    assertCurrentReviewCompactCertificateProcesses(manifest.certification)
+    assertCurrentReviewCompactCertificateProcesses(manifest.certification, compactCertifiedHead)
+  );
+
+  const forgedHead = structuredClone(manifest.certification);
+  const selfCorrelatedHead = "1".repeat(40);
+  forgedHead.certifiedHead = selfCorrelatedHead;
+  forgedHead.processes = forgedHead.processes.map((row) => ({ ...row, head: selfCorrelatedHead }));
+  assert.throws(
+    () => assertCurrentReviewCompactCertificateProcesses(forgedHead, compactCertifiedHead),
+    /tested the wrong head/u
   );
 
   const duplicateVerify = structuredClone(manifest.certification);
@@ -125,7 +143,7 @@ test("current-review compact authority requires the exact certified process mode
     report: { ...row.report, mode: "verify", status: "FINAL_BINDER_GREEN" },
   }));
   assert.throws(
-    () => assertCurrentReviewCompactCertificateProcesses(duplicateVerify),
+    () => assertCurrentReviewCompactCertificateProcesses(duplicateVerify, compactCertifiedHead),
     /exactly one registry, selftest, and verify process/u
   );
 
@@ -133,7 +151,7 @@ test("current-review compact authority requires the exact certified process mode
   unknownMode.processes[0] = { ...unknownMode.processes[0], mode: "unknown-mode" };
   delete unknownMode.processes[0].report;
   assert.throws(
-    () => assertCurrentReviewCompactCertificateProcesses(unknownMode),
+    () => assertCurrentReviewCompactCertificateProcesses(unknownMode, compactCertifiedHead),
     /exactly one registry, selftest, and verify process/u
   );
 });

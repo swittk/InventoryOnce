@@ -132,8 +132,13 @@ function immutableCurrentReviewCertifiedHead(repositoryRoot) {
 /** Require exactly one successful registry, selftest, and verifier process from the pinned compact certificate. */
 export function assertCurrentReviewCompactCertificateProcesses(
   certification,
-  compactCertifiedHead = certification?.certifiedHead
+  compactCertifiedHead
 ) {
+  assert.match(
+    compactCertifiedHead,
+    /^[a-f0-9]{40}$/u,
+    "Independent compact certified head is invalid."
+  );
   const expectedModes = new Map([
     ["registry", "FINAL_535_REGISTRY_BUILT"],
     ["selftest", "FINAL_CONVERGENCE_ADVERSARIAL_PASS"],
