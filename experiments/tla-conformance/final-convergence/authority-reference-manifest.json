@@ -1,10 +1,10 @@
 {
   "schemaVersion": 2,
   "status": "FINAL_LIVE_INPUT_CLOSURE",
-  "inputKey": "68d6841364a06a1bffcb6269757ec719bb05bbe7b7ef3d5689a8d29cc720fc5f",
+  "inputKey": "c63a6d65a7c447be3266a2f39951553d220ce35a11580d1c15a187e905742597",
   "surfaceDigest": "7a74e02dc7f2e6e3227bd8f247fae7601a67df92bf79cae1687ecbde07de498b",
   "inputs": 463,
-  "totalBytes": 34799761,
+  "totalBytes": 34799711,
   "untrackedProofInputs": 0,
   "compilerRootSet": {
     "key": "71ced579246e695c37014d01f06a85159a1192c197d7f00fdad6d18caf60aa5e",
@@ -2427,20 +2427,20 @@
     {
       "file": "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json",
       "kind": "tracked",
-      "sha256": "99db049060a4d4ad6e90b75c49199fcd9228ce457ea1e7aadbd432fefa1947ad",
+      "sha256": "2b0d42779a4b9d464039d4fbe4187b4b59cbbeb02054f98b589036fd4f10d776",
       "sizeBytes": 698
     },
     {
       "file": "experiments/tla-conformance/final-convergence/current-pr-review-full.log",
       "kind": "tracked",
-      "sha256": "05988101b6182a2071a087908c12adf7c2471453664adc75d061c908c7f7ef9c",
-      "sizeBytes": 37253
+      "sha256": "635bd99854a92d1924911e923cb905692e54b9c5f30f261fe3a23b894ca7571d",
+      "sizeBytes": 37111
     },
     {
       "file": "experiments/tla-conformance/final-convergence/current-review-assurance.mjs",
       "kind": "tracked",
-      "sha256": "e138f57de35c4abec39b500379fd50888536c5dd2d3554566b7e8977a96651e2",
-      "sizeBytes": 20072
+      "sha256": "7c6e7dc3de2445f485133599e780233398351f55771f7634fd7207776d9155b7",
+      "sizeBytes": 20164
     },
     {
       "file": "experiments/tla-conformance/final-convergence/epoch-prior-producer.json",
@@ -2865,7 +2865,7 @@
     {
       "file": "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
       "kind": "tracked",
-      "sha256": "95b47448ab324c5d7a8f5c07842ae5b96355283c94bd9dbcbd434f6989680d0f",
+      "sha256": "01048bebc703eeee2139b7e16f2a4d6dcf8b5622578aa97e89c15fa4099a4fec",
       "sizeBytes": 2459
     },
     {
@@ -5092,8 +5092,8 @@
   "outputs": [
     {
       "file": "experiments/tla-conformance/final-convergence/compact-final-verify.mjs",
-      "sha256": "fec1b0b63f82f18833aa6b654b919d657141755b4815236fe01cdd1833638552",
-      "sizeBytes": 916806
+      "sha256": "cd9beaaacaf2592c1c8c2d062dc60bc3931c28e3604ce2110965c5b58fe55c0a",
+      "sizeBytes": 916900
     },
     {
       "file": "experiments/tla-conformance/final-convergence/compact-final-selftest.mjs",
