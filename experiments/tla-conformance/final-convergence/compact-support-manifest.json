@@ -448,8 +448,8 @@
       {
         "mode": "unified",
         "file": "experiments/tla-conformance/final-convergence/compact-final-verify.mjs",
-        "sha256": "db99b66a9c4dab48a8ad87d6b20cceea965018c5b13734b25e4fb8ab30f59db5",
-        "bytes": 916900
+        "sha256": "e3877118918202bdd78897dc6c5b2abd6abf4df8a0fd7c4d710db91889ba643b",
+        "bytes": 942054
       }
     ],
     "sources": [
@@ -520,8 +520,8 @@
       },
       {
         "file": "experiments/tla-conformance/final-convergence/current-review-assurance.mjs",
-        "sha256": "50aa439bf503f1e868ef36078f599a09dcbc89ca778ae5b94f6045eb8718a050",
-        "bytes": 20164
+        "sha256": "e4347b885b64d4217a2851be853b61c4cda4a34166a6edb9adbbd82073a9c33b",
+        "bytes": 21373
       },
       {
         "file": "experiments/tla-conformance/final-convergence/final-families.mjs",
@@ -735,8 +735,13 @@
       },
       {
         "file": "scripts/assurance-files.mjs",
-        "sha256": "d0af1ab80ddccfc665cc9534217e95ee11b5c36c2b437044b395cd6850552fd9",
-        "bytes": 11444
+        "sha256": "2e1622ea187fa3eb138186346ed291ee3a924a5e107d5862ee51fd54183942d4",
+        "bytes": 16296
+      },
+      {
+        "file": "scripts/executable-assurance-coherence.mjs",
+        "sha256": "b43c430d56d0639d5868b1e339f7789e8b12467df14436b72e94aed6c5d4d407",
+        "bytes": 28827
       },
       {
         "file": "scripts/formal-implementation-surface.cjs",
@@ -760,8 +765,8 @@
       },
       {
         "file": "scripts/repository-assurance-state.mjs",
-        "sha256": "96ad5019c073f2e7794ad1ca7080c93f077dcc28505872dd51bb930c78c287a0",
-        "bytes": 7495
+        "sha256": "65d2e38b40076d8467895546fb78d8aa165c5b49f177c3e5dbde54b8804c3244",
+        "bytes": 7593
       }
     ],
     "moduleGraph": {
@@ -1016,10 +1021,12 @@
         "experiments/tla-conformance/value-contracts/surface-binding.mjs",
         "scripts/formal-implementation-vitest-semantics.cjs"
       ],
+      "scripts/executable-assurance-coherence.mjs": [],
       "scripts/formal-implementation-surface.cjs": [],
       "scripts/repository-assurance-state.mjs": [],
       "experiments/tla-conformance/final-convergence/current-review-assurance.mjs": [
         "scripts/assurance-files.mjs",
+        "scripts/executable-assurance-coherence.mjs",
         "scripts/formal-implementation-surface.cjs",
         "scripts/repository-assurance-state.mjs"
       ],
@@ -1050,9 +1057,304 @@
   "graph": [
     {
       "id": "transport",
-      "codeSha256": "40407388514524451bd380f266d0fb08a47d4b35d8b77a53d3d5d4510de34dcd",
-      "compilerSourceSetKey": "afbfa4f52cc4715b7b75a50e3ccb0b4ff02436b5a90a337261b5bb5d3d83d558",
-      "inputs": [],
+      "codeSha256": "29297f1e8203668344995eb3f6c189dbb0da548e8d387c5da77951e8987be0be",
+      "compilerSourceSetKey": "563928b6f4f011b855f2a34d818e4023fc757d014ab60aa252ec6ff6f3b0407f",
+      "inputs": [
+        {
+          "file": "formal/UseByReservation.cfg",
+          "kind": "tracked",
+          "sha256": "276c4fa8ebdaace217bae1ba1873d20540f271188b8f53bab79b1536a03b1f18",
+          "sizeBytes": 206
+        },
+        {
+          "file": "formal/UseByReservation.tla",
+          "kind": "tracked",
+          "sha256": "6c7fbef3a4ce759fd2b55e785d4c6d61bfc5bc373fa1361a652004f137724fb5",
+          "sizeBytes": 8279
+        },
+        {
+          "file": "formal/UseByReservationEpochZeroMutation.cfg",
+          "kind": "tracked",
+          "sha256": "bb52cbcec2b079259816ac41de679f603f309c5f287a6e8d6fb74846a4cbf651",
+          "sizeBytes": 94
+        },
+        {
+          "file": "scripts/inventory-epoch-contract.mjs",
+          "kind": "tracked",
+          "sha256": "0514bb44e329905d8ef18a5af41d0d0ba8f4478aecae33e20d9147165525f879",
+          "sizeBytes": 73884
+        },
+        {
+          "file": "src/allocation.ts",
+          "kind": "tracked",
+          "sha256": "78d97aa9adb12209dc504281b2a193b3e1de6952351bdc938627dd80b944c485",
+          "sizeBytes": 16445
+        },
+        {
+          "file": "src/amounts.ts",
+          "kind": "tracked",
+          "sha256": "baafd8185575085919dd5e79e4dddfcbd2e0d527300d8390682228a545096f03",
+          "sizeBytes": 13307
+        },
+        {
+          "file": "src/authority-cutover.ts",
+          "kind": "tracked",
+          "sha256": "cb5a2e749c3ff529928be674e70a9c10d2fc6c7dcca9958bd7a4c47095af6419",
+          "sizeBytes": 46086
+        },
+        {
+          "file": "src/authority.ts",
+          "kind": "tracked",
+          "sha256": "f056a8a25b889ac6ea93d6abf8307659832ea11ef255c7a8c9b5f7dc5f3b6a35",
+          "sizeBytes": 74429
+        },
+        {
+          "file": "src/availability.ts",
+          "kind": "tracked",
+          "sha256": "1fae2e085ef831bc6dcba75f3a69e7b71ae3554a308f34b29e51ba99d629cbaf",
+          "sizeBytes": 31959
+        },
+        {
+          "file": "src/canonical.ts",
+          "kind": "tracked",
+          "sha256": "ea07b9d783173577bb019572c6dc438ae286234de9214d75191d33634ab1153e",
+          "sizeBytes": 3198
+        },
+        {
+          "file": "src/catalog-lifecycle.ts",
+          "kind": "tracked",
+          "sha256": "436966d65ca78cd9e0b40b4e0b92a0948cc8f3ba9c7ded0765f66dabdd9b7010",
+          "sizeBytes": 23502
+        },
+        {
+          "file": "src/catalog.ts",
+          "kind": "tracked",
+          "sha256": "bd282cbd2dd61b4ae21fc2fa391637f3bb450068c96dae94b6a96c03da905894",
+          "sizeBytes": 132117
+        },
+        {
+          "file": "src/collections.ts",
+          "kind": "tracked",
+          "sha256": "c18dd56e7167b25239fb825319ce2ae2d736f8d9cbe70296201ab675228daf37",
+          "sizeBytes": 10905
+        },
+        {
+          "file": "src/commands.ts",
+          "kind": "tracked",
+          "sha256": "28b89e567e0c3619d9d9bca10cc501342f31e4bea91645efda4f180c7cec0621",
+          "sizeBytes": 74293
+        },
+        {
+          "file": "src/composition.ts",
+          "kind": "tracked",
+          "sha256": "8f20884d81b941279c163829ff2e87f947e6215c9145975bb81910dc41534437",
+          "sizeBytes": 22110
+        },
+        {
+          "file": "src/coordinator.ts",
+          "kind": "tracked",
+          "sha256": "f6c77d1af47cc075ebd52577eca5b81dee6ead50a423e95f61cc3a10d5252178",
+          "sizeBytes": 27392
+        },
+        {
+          "file": "src/corrections.ts",
+          "kind": "tracked",
+          "sha256": "439e67f78ef3676d24e5981b80fa9b09f32336ab79808bcea44d6df2f374638c",
+          "sizeBytes": 18516
+        },
+        {
+          "file": "src/counts.ts",
+          "kind": "tracked",
+          "sha256": "b5dc5df39a7f6bc0924da4d726b66900938de5249d64ebe3e2a1f1c69a09304f",
+          "sizeBytes": 29624
+        },
+        {
+          "file": "src/deficits.ts",
+          "kind": "tracked",
+          "sha256": "5f6b4781b0f8764f571ec37fee734bb3e1e572ffcb9c7d5917f8dbda79c64ec6",
+          "sizeBytes": 11866
+        },
+        {
+          "file": "src/digest.ts",
+          "kind": "tracked",
+          "sha256": "5fa667c59dd65a667d8cceddd9bf8c25eb46d3787a22ad7db797fd3722d5f833",
+          "sizeBytes": 4265
+        },
+        {
+          "file": "src/events.ts",
+          "kind": "tracked",
+          "sha256": "8fb399818de841504257cb39c89688b25567280b36712e4acdc6fcc56d6e8633",
+          "sizeBytes": 60050
+        },
+        {
+          "file": "src/facade.ts",
+          "kind": "tracked",
+          "sha256": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
+          "sizeBytes": 320930
+        },
+        {
+          "file": "src/fungibility.ts",
+          "kind": "tracked",
+          "sha256": "6f8c2e715b4edf11d8a2d466af44276cc8a55653de54b81af5fa342d59aff34f",
+          "sizeBytes": 34724
+        },
+        {
+          "file": "src/index.ts",
+          "kind": "tracked",
+          "sha256": "2e0587666ff20d57a757c0576fddf8badf36c2901735db7225a0cebda829b555",
+          "sizeBytes": 4665
+        },
+        {
+          "file": "src/integrity.ts",
+          "kind": "tracked",
+          "sha256": "c78d5c52243a59670449f8bd8f24108bc6c2d75e66fe761e523cf8ff3825d221",
+          "sizeBytes": 25975
+        },
+        {
+          "file": "src/kernel.ts",
+          "kind": "tracked",
+          "sha256": "f336d22a07d6018dc5528bd2a13a33c5aa9f1a72b0c0ed048cb73219b9b0c06c",
+          "sizeBytes": 2489
+        },
+        {
+          "file": "src/measurement-schema.ts",
+          "kind": "tracked",
+          "sha256": "747f064996c12b3a9b324779bd748362b49b2563e303b2599243bc8a630d144e",
+          "sizeBytes": 889
+        },
+        {
+          "file": "src/measurements.ts",
+          "kind": "tracked",
+          "sha256": "1f7ddb78819ce940cfaf1b17d0a44d88ad79bd9d8d5770bc08cb26584c568b20",
+          "sizeBytes": 14436
+        },
+        {
+          "file": "src/migration-evidence.ts",
+          "kind": "tracked",
+          "sha256": "5d92da78f12304380fb6215d65d6ed7f15948583fef8c738fdf90abf547a7755",
+          "sizeBytes": 2099
+        },
+        {
+          "file": "src/migration-plugin.ts",
+          "kind": "tracked",
+          "sha256": "4b271d6398ba1b0eeb4a5b1cb48523a062f9bcf1c5b427755ec5e1f0fdebe5e6",
+          "sizeBytes": 9247
+        },
+        {
+          "file": "src/migrations-api.ts",
+          "kind": "tracked",
+          "sha256": "0d1358ee90d4b39d3b59da0d27dcb9798e5699e02bbba325132f734c1322fed1",
+          "sizeBytes": 252
+        },
+        {
+          "file": "src/migrations.ts",
+          "kind": "tracked",
+          "sha256": "8fcaa652d89cbeba7b2d6ca65395ff13b2ffac9325f95eee7a49149f400ae2ea",
+          "sizeBytes": 40324
+        },
+        {
+          "file": "src/model.ts",
+          "kind": "tracked",
+          "sha256": "3edf36474afb9ba9fcfb825a3b6dcb4579fc0438963166caed7f588311ba71bc",
+          "sizeBytes": 12290
+        },
+        {
+          "file": "src/ordering.ts",
+          "kind": "tracked",
+          "sha256": "e72ac94e99b1b4914f3f6dec55583e401484a41ecadd051be788724c88f24cb9",
+          "sizeBytes": 226
+        },
+        {
+          "file": "src/picking.ts",
+          "kind": "tracked",
+          "sha256": "c78ffd31ebcc285d1fd739356ec17c1e36180290ebde67a412c9dad49fc6fc4c",
+          "sizeBytes": 35548
+        },
+        {
+          "file": "src/projection.ts",
+          "kind": "tracked",
+          "sha256": "0f302d058f13f6fd501fb7f58a99074b8440858e221e7852e104478742b7e24e",
+          "sizeBytes": 38403
+        },
+        {
+          "file": "src/quantity.ts",
+          "kind": "tracked",
+          "sha256": "34b35abdb08602952d68f1026ff960cfd306d133c787fed188f1c2e229ac0f35",
+          "sizeBytes": 14544
+        },
+        {
+          "file": "src/read-model.ts",
+          "kind": "tracked",
+          "sha256": "8b1db302ecf22895f1d6458a8be27ec606066e88fd77ebba0cfadbd0452a97f4",
+          "sizeBytes": 15547
+        },
+        {
+          "file": "src/reservations.ts",
+          "kind": "tracked",
+          "sha256": "e7f70033edaa5620109c3de4254077f0b70381098cb2657c608019a9e48b90aa",
+          "sizeBytes": 74575
+        },
+        {
+          "file": "src/selectors.ts",
+          "kind": "tracked",
+          "sha256": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957",
+          "sizeBytes": 19802
+        },
+        {
+          "file": "src/sparse-record.ts",
+          "kind": "tracked",
+          "sha256": "5a48ffb609fbe6c1830c3b8526d1a0f0b7b12ba1384b57dd115ba97507d39ff2",
+          "sizeBytes": 2362
+        },
+        {
+          "file": "src/stock-amount-rules.ts",
+          "kind": "tracked",
+          "sha256": "9945e2784be603a670e6c9341cd26393e0ed1011a8b5886df535b62fe1417443",
+          "sizeBytes": 2392
+        },
+        {
+          "file": "src/storage-api.ts",
+          "kind": "tracked",
+          "sha256": "9d135bd7c1925f3b7ab533a45958e57287383f4016e7077e8ede2c35144202b1",
+          "sizeBytes": 455
+        },
+        {
+          "file": "src/storage.ts",
+          "kind": "tracked",
+          "sha256": "df926d8f96c3beebd32be1fbf2c487f74ab56bb13cefc99133f958c4cb4fa373",
+          "sizeBytes": 67825
+        },
+        {
+          "file": "src/traceability-replay.ts",
+          "kind": "tracked",
+          "sha256": "c7ec98f5c927516faa0f44a64b7419126687cad69a43affb3438ee631a4eb536",
+          "sizeBytes": 7028
+        },
+        {
+          "file": "src/traceability.ts",
+          "kind": "tracked",
+          "sha256": "20f6de5a795095c3ec401e456c7318c9967ccc192ad88070597530de926e3403",
+          "sizeBytes": 11928
+        },
+        {
+          "file": "src/transfers.ts",
+          "kind": "tracked",
+          "sha256": "5ec7bd42d63fed3827201437a820a4c39d65001e9f381b4376bf3356b2414287",
+          "sizeBytes": 43626
+        },
+        {
+          "file": "src/usability.ts",
+          "kind": "tracked",
+          "sha256": "f0470a392be3e6f0142d6589de66d4bbb34831aa2c1e958467e49a9c57737942",
+          "sizeBytes": 1866
+        },
+        {
+          "file": "src/world.ts",
+          "kind": "tracked",
+          "sha256": "2f1bd43c85fcdda332ad16ebdb73d367b0ed502a7145c085c7a7433ff26063c1",
+          "sizeBytes": 1448
+        }
+      ],
       "outputs": [
         {
           "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
@@ -1063,9 +1365,58 @@
     },
     {
       "id": "values",
-      "codeSha256": "1bddf1bf856f20dbc4e50ce6bdeb31f4c691ec96ae555d85440486e33582d655",
-      "compilerSourceSetKey": "afbfa4f52cc4715b7b75a50e3ccb0b4ff02436b5a90a337261b5bb5d3d83d558",
-      "inputs": [],
+      "codeSha256": "11f511c527af7eac53bcec73155cdf3f66078a4148d9cfe52849cd03ae7fc23a",
+      "compilerSourceSetKey": "563928b6f4f011b855f2a34d818e4023fc757d014ab60aa252ec6ff6f3b0407f",
+      "inputs": [
+        {
+          "file": "experiments/tla-conformance/final-convergence/authority-producer17.json",
+          "kind": "tracked",
+          "sha256": "8c804b02d20a3ee73552c91b430a9c2062011804be1b513bfeecaf6c68f79e6c",
+          "sizeBytes": 160740
+        },
+        {
+          "file": "experiments/tla-conformance/final-convergence/authority-value3.json",
+          "kind": "tracked",
+          "sha256": "8a752513bd7ffc5b2dea82a86262101601ba8db4ba61faaccdc11a4e28237852",
+          "sizeBytes": 20871
+        },
+        {
+          "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
+          "kind": "tracked",
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e",
+          "sizeBytes": 27716
+        },
+        {
+          "file": "experiments/tla-conformance/final-convergence/r137-v15.json",
+          "kind": "tracked",
+          "sha256": "2af6f62f683924bb158c7db612b2dfb8fdc2d7e29f547a333040f95d66284a25",
+          "sizeBytes": 215822
+        },
+        {
+          "file": "experiments/tla-conformance/final-convergence/r170-pristine-repro-transport.json",
+          "kind": "tracked",
+          "sha256": "d5ce8887d5cc6aa2a4a78eb0be3c093dcbbcf1134073af46b01387de14f145c8",
+          "sizeBytes": 4347
+        },
+        {
+          "file": "experiments/tla-conformance/final-convergence/readworld-producer24.json",
+          "kind": "tracked",
+          "sha256": "23f36b9ee3eab9130a4e258a6680258e6ad48a41e5bfd24935c37490952c46a3",
+          "sizeBytes": 394121
+        },
+        {
+          "file": "experiments/tla-conformance/final-convergence/review-517722-prior-value.json",
+          "kind": "archived",
+          "sha256": "65fab2f52823f4d1cbc8eb14ae92d7dacd20ea8a7d48c8b85a5ba046805efbce",
+          "sizeBytes": 2281444
+        },
+        {
+          "file": "experiments/tla-conformance/final-convergence/wrapper-producer11.json",
+          "kind": "tracked",
+          "sha256": "83298863e47b03947942e596cf1ee011a51b70fe6d0ef6e678d35c09495dc205",
+          "sizeBytes": 190825
+        }
+      ],
       "outputs": [
         {
           "file": "experiments/tla-conformance/final-convergence/final-v309.json",
@@ -1076,9 +1427,58 @@
     },
     {
       "id": "producers",
-      "codeSha256": "1bddf1bf856f20dbc4e50ce6bdeb31f4c691ec96ae555d85440486e33582d655",
-      "compilerSourceSetKey": "afbfa4f52cc4715b7b75a50e3ccb0b4ff02436b5a90a337261b5bb5d3d83d558",
-      "inputs": [],
+      "codeSha256": "11f511c527af7eac53bcec73155cdf3f66078a4148d9cfe52849cd03ae7fc23a",
+      "compilerSourceSetKey": "563928b6f4f011b855f2a34d818e4023fc757d014ab60aa252ec6ff6f3b0407f",
+      "inputs": [
+        {
+          "file": "experiments/tla-conformance/final-convergence/authority-producer17.json",
+          "kind": "tracked",
+          "sha256": "8c804b02d20a3ee73552c91b430a9c2062011804be1b513bfeecaf6c68f79e6c",
+          "sizeBytes": 160740
+        },
+        {
+          "file": "experiments/tla-conformance/final-convergence/authority-value3.json",
+          "kind": "tracked",
+          "sha256": "8a752513bd7ffc5b2dea82a86262101601ba8db4ba61faaccdc11a4e28237852",
+          "sizeBytes": 20871
+        },
+        {
+          "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
+          "kind": "tracked",
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e",
+          "sizeBytes": 27716
+        },
+        {
+          "file": "experiments/tla-conformance/final-convergence/r137-v15.json",
+          "kind": "tracked",
+          "sha256": "2af6f62f683924bb158c7db612b2dfb8fdc2d7e29f547a333040f95d66284a25",
+          "sizeBytes": 215822
+        },
+        {
+          "file": "experiments/tla-conformance/final-convergence/r170-pristine-repro-transport.json",
+          "kind": "tracked",
+          "sha256": "d5ce8887d5cc6aa2a4a78eb0be3c093dcbbcf1134073af46b01387de14f145c8",
+          "sizeBytes": 4347
+        },
+        {
+          "file": "experiments/tla-conformance/final-convergence/readworld-producer24.json",
+          "kind": "tracked",
+          "sha256": "23f36b9ee3eab9130a4e258a6680258e6ad48a41e5bfd24935c37490952c46a3",
+          "sizeBytes": 394121
+        },
+        {
+          "file": "experiments/tla-conformance/final-convergence/review-517722-prior-producer.json",
+          "kind": "archived",
+          "sha256": "dc14a14754df5e857197342bf3f3f9774b294a1200f85d9e07264bf3e724cfcc",
+          "sizeBytes": 1830337
+        },
+        {
+          "file": "experiments/tla-conformance/final-convergence/wrapper-producer11.json",
+          "kind": "tracked",
+          "sha256": "83298863e47b03947942e596cf1ee011a51b70fe6d0ef6e678d35c09495dc205",
+          "sizeBytes": 190825
+        }
+      ],
       "outputs": [
         {
           "file": "experiments/tla-conformance/final-convergence/final-a121-b58.json",
@@ -1089,9 +1489,22 @@
     },
     {
       "id": "registry",
-      "codeSha256": "20d057f2389d7855103fdee96394f86cc41d8889ad24699a3a0e0232b11aa3dc",
-      "compilerSourceSetKey": "afbfa4f52cc4715b7b75a50e3ccb0b4ff02436b5a90a337261b5bb5d3d83d558",
-      "inputs": [],
+      "codeSha256": "46167ea4c4b3a6379ee14252fd2c7a34b102a946d5628469d44cc38ce87c7688",
+      "compilerSourceSetKey": "563928b6f4f011b855f2a34d818e4023fc757d014ab60aa252ec6ff6f3b0407f",
+      "inputs": [
+        {
+          "file": "experiments/tla-conformance/final-convergence/final-a121-b58.json",
+          "kind": "tracked",
+          "sha256": "563d48ed2536a33db3cbdf72dd0844209cbe166f6819bf741955e52b5a2f030c",
+          "sizeBytes": 2027372
+        },
+        {
+          "file": "experiments/tla-conformance/final-convergence/final-v309.json",
+          "kind": "tracked",
+          "sha256": "d7ba6fc172971bf961300aa142593298fef40685f994e64ce4fed83e755e467f",
+          "sizeBytes": 2598560
+        }
+      ],
       "outputs": [
         {
           "file": "experiments/tla-conformance/final-convergence/final-surface-bindings.json",
@@ -1102,9 +1515,376 @@
     },
     {
       "id": "binder",
-      "codeSha256": "4cbf51f0866c0b08637556a1f5a7d93405fc8485f0bf0e4fde37be766f767eb1",
-      "compilerSourceSetKey": "afbfa4f52cc4715b7b75a50e3ccb0b4ff02436b5a90a337261b5bb5d3d83d558",
-      "inputs": [],
+      "codeSha256": "3c9e2e9e337ad98728f94a6af2271d656424586bf07b15e162c3a55011397396",
+      "compilerSourceSetKey": "563928b6f4f011b855f2a34d818e4023fc757d014ab60aa252ec6ff6f3b0407f",
+      "inputs": [
+        {
+          "file": "experiments/tla-conformance/final-convergence/authority-producer17.json",
+          "kind": "tracked",
+          "sha256": "8c804b02d20a3ee73552c91b430a9c2062011804be1b513bfeecaf6c68f79e6c",
+          "sizeBytes": 160740
+        },
+        {
+          "file": "experiments/tla-conformance/final-convergence/authority-value3.json",
+          "kind": "tracked",
+          "sha256": "8a752513bd7ffc5b2dea82a86262101601ba8db4ba61faaccdc11a4e28237852",
+          "sizeBytes": 20871
+        },
+        {
+          "file": "experiments/tla-conformance/final-convergence/final-a121-b58.json",
+          "kind": "tracked",
+          "sha256": "563d48ed2536a33db3cbdf72dd0844209cbe166f6819bf741955e52b5a2f030c",
+          "sizeBytes": 2027372
+        },
+        {
+          "file": "experiments/tla-conformance/final-convergence/final-head-transport.json",
+          "kind": "tracked",
+          "sha256": "4712cb9a6d45ec2ae0fff8a2f1ee272c5c6ac1b526936c40f98a32e960b1494e",
+          "sizeBytes": 27716
+        },
+        {
+          "file": "experiments/tla-conformance/final-convergence/final-surface-bindings.json",
+          "kind": "tracked",
+          "sha256": "a68f800e497fc67037fa1db7bc870fcd02ffef9b57660a839eabbaf6a23895a7",
+          "sizeBytes": 165554
+        },
+        {
+          "file": "experiments/tla-conformance/final-convergence/final-v309.json",
+          "kind": "tracked",
+          "sha256": "d7ba6fc172971bf961300aa142593298fef40685f994e64ce4fed83e755e467f",
+          "sizeBytes": 2598560
+        },
+        {
+          "file": "experiments/tla-conformance/final-convergence/r137-v15.json",
+          "kind": "tracked",
+          "sha256": "2af6f62f683924bb158c7db612b2dfb8fdc2d7e29f547a333040f95d66284a25",
+          "sizeBytes": 215822
+        },
+        {
+          "file": "experiments/tla-conformance/final-convergence/r170-pristine-repro-transport.json",
+          "kind": "tracked",
+          "sha256": "d5ce8887d5cc6aa2a4a78eb0be3c093dcbbcf1134073af46b01387de14f145c8",
+          "sizeBytes": 4347
+        },
+        {
+          "file": "experiments/tla-conformance/final-convergence/readworld-producer24.json",
+          "kind": "tracked",
+          "sha256": "23f36b9ee3eab9130a4e258a6680258e6ad48a41e5bfd24935c37490952c46a3",
+          "sizeBytes": 394121
+        },
+        {
+          "file": "experiments/tla-conformance/final-convergence/review-517722-prior-producer.json",
+          "kind": "archived",
+          "sha256": "dc14a14754df5e857197342bf3f3f9774b294a1200f85d9e07264bf3e724cfcc",
+          "sizeBytes": 1830337
+        },
+        {
+          "file": "experiments/tla-conformance/final-convergence/review-517722-prior-value.json",
+          "kind": "archived",
+          "sha256": "65fab2f52823f4d1cbc8eb14ae92d7dacd20ea8a7d48c8b85a5ba046805efbce",
+          "sizeBytes": 2281444
+        },
+        {
+          "file": "experiments/tla-conformance/final-convergence/wrapper-producer11.json",
+          "kind": "tracked",
+          "sha256": "83298863e47b03947942e596cf1ee011a51b70fe6d0ef6e678d35c09495dc205",
+          "sizeBytes": 190825
+        },
+        {
+          "file": "formal/UseByReservation.cfg",
+          "kind": "tracked",
+          "sha256": "276c4fa8ebdaace217bae1ba1873d20540f271188b8f53bab79b1536a03b1f18",
+          "sizeBytes": 206
+        },
+        {
+          "file": "formal/UseByReservation.tla",
+          "kind": "tracked",
+          "sha256": "6c7fbef3a4ce759fd2b55e785d4c6d61bfc5bc373fa1361a652004f137724fb5",
+          "sizeBytes": 8279
+        },
+        {
+          "file": "formal/UseByReservationEpochZeroMutation.cfg",
+          "kind": "tracked",
+          "sha256": "bb52cbcec2b079259816ac41de679f603f309c5f287a6e8d6fb74846a4cbf651",
+          "sizeBytes": 94
+        },
+        {
+          "file": "scripts/inventory-epoch-contract.mjs",
+          "kind": "tracked",
+          "sha256": "0514bb44e329905d8ef18a5af41d0d0ba8f4478aecae33e20d9147165525f879",
+          "sizeBytes": 73884
+        },
+        {
+          "file": "src/allocation.ts",
+          "kind": "tracked",
+          "sha256": "78d97aa9adb12209dc504281b2a193b3e1de6952351bdc938627dd80b944c485",
+          "sizeBytes": 16445
+        },
+        {
+          "file": "src/amounts.ts",
+          "kind": "tracked",
+          "sha256": "baafd8185575085919dd5e79e4dddfcbd2e0d527300d8390682228a545096f03",
+          "sizeBytes": 13307
+        },
+        {
+          "file": "src/authority-cutover.ts",
+          "kind": "tracked",
+          "sha256": "cb5a2e749c3ff529928be674e70a9c10d2fc6c7dcca9958bd7a4c47095af6419",
+          "sizeBytes": 46086
+        },
+        {
+          "file": "src/authority.ts",
+          "kind": "tracked",
+          "sha256": "f056a8a25b889ac6ea93d6abf8307659832ea11ef255c7a8c9b5f7dc5f3b6a35",
+          "sizeBytes": 74429
+        },
+        {
+          "file": "src/availability.ts",
+          "kind": "tracked",
+          "sha256": "1fae2e085ef831bc6dcba75f3a69e7b71ae3554a308f34b29e51ba99d629cbaf",
+          "sizeBytes": 31959
+        },
+        {
+          "file": "src/canonical.ts",
+          "kind": "tracked",
+          "sha256": "ea07b9d783173577bb019572c6dc438ae286234de9214d75191d33634ab1153e",
+          "sizeBytes": 3198
+        },
+        {
+          "file": "src/catalog-lifecycle.ts",
+          "kind": "tracked",
+          "sha256": "436966d65ca78cd9e0b40b4e0b92a0948cc8f3ba9c7ded0765f66dabdd9b7010",
+          "sizeBytes": 23502
+        },
+        {
+          "file": "src/catalog.ts",
+          "kind": "tracked",
+          "sha256": "bd282cbd2dd61b4ae21fc2fa391637f3bb450068c96dae94b6a96c03da905894",
+          "sizeBytes": 132117
+        },
+        {
+          "file": "src/collections.ts",
+          "kind": "tracked",
+          "sha256": "c18dd56e7167b25239fb825319ce2ae2d736f8d9cbe70296201ab675228daf37",
+          "sizeBytes": 10905
+        },
+        {
+          "file": "src/commands.ts",
+          "kind": "tracked",
+          "sha256": "28b89e567e0c3619d9d9bca10cc501342f31e4bea91645efda4f180c7cec0621",
+          "sizeBytes": 74293
+        },
+        {
+          "file": "src/composition.ts",
+          "kind": "tracked",
+          "sha256": "8f20884d81b941279c163829ff2e87f947e6215c9145975bb81910dc41534437",
+          "sizeBytes": 22110
+        },
+        {
+          "file": "src/coordinator.ts",
+          "kind": "tracked",
+          "sha256": "f6c77d1af47cc075ebd52577eca5b81dee6ead50a423e95f61cc3a10d5252178",
+          "sizeBytes": 27392
+        },
+        {
+          "file": "src/corrections.ts",
+          "kind": "tracked",
+          "sha256": "439e67f78ef3676d24e5981b80fa9b09f32336ab79808bcea44d6df2f374638c",
+          "sizeBytes": 18516
+        },
+        {
+          "file": "src/counts.ts",
+          "kind": "tracked",
+          "sha256": "b5dc5df39a7f6bc0924da4d726b66900938de5249d64ebe3e2a1f1c69a09304f",
+          "sizeBytes": 29624
+        },
+        {
+          "file": "src/deficits.ts",
+          "kind": "tracked",
+          "sha256": "5f6b4781b0f8764f571ec37fee734bb3e1e572ffcb9c7d5917f8dbda79c64ec6",
+          "sizeBytes": 11866
+        },
+        {
+          "file": "src/digest.ts",
+          "kind": "tracked",
+          "sha256": "5fa667c59dd65a667d8cceddd9bf8c25eb46d3787a22ad7db797fd3722d5f833",
+          "sizeBytes": 4265
+        },
+        {
+          "file": "src/events.ts",
+          "kind": "tracked",
+          "sha256": "8fb399818de841504257cb39c89688b25567280b36712e4acdc6fcc56d6e8633",
+          "sizeBytes": 60050
+        },
+        {
+          "file": "src/facade.ts",
+          "kind": "tracked",
+          "sha256": "00d954da85617c849254e4b1678c4a0172bdd2dd3518d02dcdf6cd3ef0f81c1e",
+          "sizeBytes": 320930
+        },
+        {
+          "file": "src/fungibility.ts",
+          "kind": "tracked",
+          "sha256": "6f8c2e715b4edf11d8a2d466af44276cc8a55653de54b81af5fa342d59aff34f",
+          "sizeBytes": 34724
+        },
+        {
+          "file": "src/index.ts",
+          "kind": "tracked",
+          "sha256": "2e0587666ff20d57a757c0576fddf8badf36c2901735db7225a0cebda829b555",
+          "sizeBytes": 4665
+        },
+        {
+          "file": "src/integrity.ts",
+          "kind": "tracked",
+          "sha256": "c78d5c52243a59670449f8bd8f24108bc6c2d75e66fe761e523cf8ff3825d221",
+          "sizeBytes": 25975
+        },
+        {
+          "file": "src/kernel.ts",
+          "kind": "tracked",
+          "sha256": "f336d22a07d6018dc5528bd2a13a33c5aa9f1a72b0c0ed048cb73219b9b0c06c",
+          "sizeBytes": 2489
+        },
+        {
+          "file": "src/measurement-schema.ts",
+          "kind": "tracked",
+          "sha256": "747f064996c12b3a9b324779bd748362b49b2563e303b2599243bc8a630d144e",
+          "sizeBytes": 889
+        },
+        {
+          "file": "src/measurements.ts",
+          "kind": "tracked",
+          "sha256": "1f7ddb78819ce940cfaf1b17d0a44d88ad79bd9d8d5770bc08cb26584c568b20",
+          "sizeBytes": 14436
+        },
+        {
+          "file": "src/migration-evidence.ts",
+          "kind": "tracked",
+          "sha256": "5d92da78f12304380fb6215d65d6ed7f15948583fef8c738fdf90abf547a7755",
+          "sizeBytes": 2099
+        },
+        {
+          "file": "src/migration-plugin.ts",
+          "kind": "tracked",
+          "sha256": "4b271d6398ba1b0eeb4a5b1cb48523a062f9bcf1c5b427755ec5e1f0fdebe5e6",
+          "sizeBytes": 9247
+        },
+        {
+          "file": "src/migrations-api.ts",
+          "kind": "tracked",
+          "sha256": "0d1358ee90d4b39d3b59da0d27dcb9798e5699e02bbba325132f734c1322fed1",
+          "sizeBytes": 252
+        },
+        {
+          "file": "src/migrations.ts",
+          "kind": "tracked",
+          "sha256": "8fcaa652d89cbeba7b2d6ca65395ff13b2ffac9325f95eee7a49149f400ae2ea",
+          "sizeBytes": 40324
+        },
+        {
+          "file": "src/model.ts",
+          "kind": "tracked",
+          "sha256": "3edf36474afb9ba9fcfb825a3b6dcb4579fc0438963166caed7f588311ba71bc",
+          "sizeBytes": 12290
+        },
+        {
+          "file": "src/ordering.ts",
+          "kind": "tracked",
+          "sha256": "e72ac94e99b1b4914f3f6dec55583e401484a41ecadd051be788724c88f24cb9",
+          "sizeBytes": 226
+        },
+        {
+          "file": "src/picking.ts",
+          "kind": "tracked",
+          "sha256": "c78ffd31ebcc285d1fd739356ec17c1e36180290ebde67a412c9dad49fc6fc4c",
+          "sizeBytes": 35548
+        },
+        {
+          "file": "src/projection.ts",
+          "kind": "tracked",
+          "sha256": "0f302d058f13f6fd501fb7f58a99074b8440858e221e7852e104478742b7e24e",
+          "sizeBytes": 38403
+        },
+        {
+          "file": "src/quantity.ts",
+          "kind": "tracked",
+          "sha256": "34b35abdb08602952d68f1026ff960cfd306d133c787fed188f1c2e229ac0f35",
+          "sizeBytes": 14544
+        },
+        {
+          "file": "src/read-model.ts",
+          "kind": "tracked",
+          "sha256": "8b1db302ecf22895f1d6458a8be27ec606066e88fd77ebba0cfadbd0452a97f4",
+          "sizeBytes": 15547
+        },
+        {
+          "file": "src/reservations.ts",
+          "kind": "tracked",
+          "sha256": "e7f70033edaa5620109c3de4254077f0b70381098cb2657c608019a9e48b90aa",
+          "sizeBytes": 74575
+        },
+        {
+          "file": "src/selectors.ts",
+          "kind": "tracked",
+          "sha256": "8a81513eaa6fad8f9ce5adf2d1e6a7d0471b27d2eab1d91437da0d77d236f957",
+          "sizeBytes": 19802
+        },
+        {
+          "file": "src/sparse-record.ts",
+          "kind": "tracked",
+          "sha256": "5a48ffb609fbe6c1830c3b8526d1a0f0b7b12ba1384b57dd115ba97507d39ff2",
+          "sizeBytes": 2362
+        },
+        {
+          "file": "src/stock-amount-rules.ts",
+          "kind": "tracked",
+          "sha256": "9945e2784be603a670e6c9341cd26393e0ed1011a8b5886df535b62fe1417443",
+          "sizeBytes": 2392
+        },
+        {
+          "file": "src/storage-api.ts",
+          "kind": "tracked",
+          "sha256": "9d135bd7c1925f3b7ab533a45958e57287383f4016e7077e8ede2c35144202b1",
+          "sizeBytes": 455
+        },
+        {
+          "file": "src/storage.ts",
+          "kind": "tracked",
+          "sha256": "df926d8f96c3beebd32be1fbf2c487f74ab56bb13cefc99133f958c4cb4fa373",
+          "sizeBytes": 67825
+        },
+        {
+          "file": "src/traceability-replay.ts",
+          "kind": "tracked",
+          "sha256": "c7ec98f5c927516faa0f44a64b7419126687cad69a43affb3438ee631a4eb536",
+          "sizeBytes": 7028
+        },
+        {
+          "file": "src/traceability.ts",
+          "kind": "tracked",
+          "sha256": "20f6de5a795095c3ec401e456c7318c9967ccc192ad88070597530de926e3403",
+          "sizeBytes": 11928
+        },
+        {
+          "file": "src/transfers.ts",
+          "kind": "tracked",
+          "sha256": "5ec7bd42d63fed3827201437a820a4c39d65001e9f381b4376bf3356b2414287",
+          "sizeBytes": 43626
+        },
+        {
+          "file": "src/usability.ts",
+          "kind": "tracked",
+          "sha256": "f0470a392be3e6f0142d6589de66d4bbb34831aa2c1e958467e49a9c57737942",
+          "sizeBytes": 1866
+        },
+        {
+          "file": "src/world.ts",
+          "kind": "tracked",
+          "sha256": "2f1bd43c85fcdda332ad16ebdb73d367b0ed502a7145c085c7a7433ff26063c1",
+          "sizeBytes": 1448
+        }
+      ],
       "outputs": [
         {
           "file": "experiments/tla-conformance/final-convergence/final-binder-report.json",
@@ -1113,104 +1893,5 @@
         }
       ]
     }
-  ],
-  "certification": {
-    "schemaVersion": 1,
-    "certifiedHead": "6d8a940528a2b48a36cf2063c18dd14c316d325b",
-    "inputKey": "374caed1f8b6e79e75178a280202d22138a6d5b31f841bcb2da4bac972a16328",
-    "processes": [
-      {
-        "mode": "registry",
-        "head": "6d8a940528a2b48a36cf2063c18dd14c316d325b",
-        "inputKey": "374caed1f8b6e79e75178a280202d22138a6d5b31f841bcb2da4bac972a16328",
-        "exitCode": 0,
-        "signal": null,
-        "stdout": "{\"status\":\"FINAL_535_REGISTRY_BUILT\",\"counts\":{\"A\":121,\"B\":58,\"V\":309,\"HARD_RED\":47},\"mode\":\"registry\",\"inputKey\":\"374caed1f8b6e79e75178a280202d22138a6d5b31f841bcb2da4bac972a16328\",\"head\":\"6d8a940528a2b48a36cf2063c18dd14c316d325b\",\"compilerPasses\":1,\"elapsedMs\":7952}\n",
-        "stderr": "",
-        "stdoutSha256": "7e10fbafe151f3a6af4944030dc2729c7704cdbfccdc3bb1dd94a147da10d541",
-        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "elapsedMs": 8588,
-        "report": {
-          "status": "FINAL_535_REGISTRY_BUILT",
-          "counts": {
-            "A": 121,
-            "B": 58,
-            "V": 309,
-            "HARD_RED": 47
-          },
-          "mode": "registry",
-          "inputKey": "374caed1f8b6e79e75178a280202d22138a6d5b31f841bcb2da4bac972a16328",
-          "head": "6d8a940528a2b48a36cf2063c18dd14c316d325b",
-          "compilerPasses": 1,
-          "elapsedMs": 7952
-        }
-      },
-      {
-        "mode": "selftest",
-        "head": "6d8a940528a2b48a36cf2063c18dd14c316d325b",
-        "inputKey": "374caed1f8b6e79e75178a280202d22138a6d5b31f841bcb2da4bac972a16328",
-        "exitCode": 0,
-        "signal": null,
-        "stdout": "{\"status\":\"FINAL_CONVERGENCE_ADVERSARIAL_PASS\",\"surfaceDigest\":\"7a74e02dc7f2e6e3227bd8f247fae7601a67df92bf79cae1687ecbde07de498b\",\"valueRows\":309,\"producerRows\":179,\"controls\":{\"honestValueAccepted\":true,\"wrongValueModeRejected\":true,\"resignedValueTamperRejected\":true,\"honestAandBAccepted\":true,\"wrongProducerModeRejected\":true,\"resignedProducerTamperRejected\":true,\"immutableHistoricalAuthorityTamperRejected\":true,\"sameMtimeEvidenceDriftRejected\":true},\"mode\":\"selftest\",\"inputKey\":\"374caed1f8b6e79e75178a280202d22138a6d5b31f841bcb2da4bac972a16328\",\"head\":\"6d8a940528a2b48a36cf2063c18dd14c316d325b\",\"compilerPasses\":1,\"elapsedMs\":42642}\n",
-        "stderr": "",
-        "stdoutSha256": "3340e12d5fc199481f9b1d4a55ae95f99b717e41c66b9181185677afbc568f8b",
-        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "elapsedMs": 43280,
-        "report": {
-          "status": "FINAL_CONVERGENCE_ADVERSARIAL_PASS",
-          "surfaceDigest": "7a74e02dc7f2e6e3227bd8f247fae7601a67df92bf79cae1687ecbde07de498b",
-          "valueRows": 309,
-          "producerRows": 179,
-          "controls": {
-            "honestValueAccepted": true,
-            "wrongValueModeRejected": true,
-            "resignedValueTamperRejected": true,
-            "honestAandBAccepted": true,
-            "wrongProducerModeRejected": true,
-            "resignedProducerTamperRejected": true,
-            "immutableHistoricalAuthorityTamperRejected": true,
-            "sameMtimeEvidenceDriftRejected": true
-          },
-          "mode": "selftest",
-          "inputKey": "374caed1f8b6e79e75178a280202d22138a6d5b31f841bcb2da4bac972a16328",
-          "head": "6d8a940528a2b48a36cf2063c18dd14c316d325b",
-          "compilerPasses": 1,
-          "elapsedMs": 42642
-        }
-      },
-      {
-        "mode": "verify",
-        "head": "6d8a940528a2b48a36cf2063c18dd14c316d325b",
-        "inputKey": "374caed1f8b6e79e75178a280202d22138a6d5b31f841bcb2da4bac972a16328",
-        "exitCode": 0,
-        "signal": null,
-        "stdout": "{\"status\":\"FINAL_BINDER_GREEN\",\"surfaceDigest\":\"7a74e02dc7f2e6e3227bd8f247fae7601a67df92bf79cae1687ecbde07de498b\",\"callables\":535,\"diagnostics\":47,\"byCode\":{\"EXPLICIT_HARD_RED\":47},\"hardRed\":47,\"unexpected\":0,\"unexpectedRows\":[],\"valueAccepted\":309,\"producerAccepted\":179,\"strictAccepted\":488,\"mode\":\"verify\",\"inputKey\":\"374caed1f8b6e79e75178a280202d22138a6d5b31f841bcb2da4bac972a16328\",\"head\":\"6d8a940528a2b48a36cf2063c18dd14c316d325b\",\"compilerPasses\":1,\"elapsedMs\":42086}\n",
-        "stderr": "",
-        "stdoutSha256": "4b4ddb413becdd6d6a095c392a6b360e2e7871e4a6aea04a1af975b3cd3c7c86",
-        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "elapsedMs": 42787,
-        "report": {
-          "status": "FINAL_BINDER_GREEN",
-          "surfaceDigest": "7a74e02dc7f2e6e3227bd8f247fae7601a67df92bf79cae1687ecbde07de498b",
-          "callables": 535,
-          "diagnostics": 47,
-          "byCode": {
-            "EXPLICIT_HARD_RED": 47
-          },
-          "hardRed": 47,
-          "unexpected": 0,
-          "unexpectedRows": [],
-          "valueAccepted": 309,
-          "producerAccepted": 179,
-          "strictAccepted": 488,
-          "mode": "verify",
-          "inputKey": "374caed1f8b6e79e75178a280202d22138a6d5b31f841bcb2da4bac972a16328",
-          "head": "6d8a940528a2b48a36cf2063c18dd14c316d325b",
-          "compilerPasses": 1,
-          "elapsedMs": 42086
-        }
-      }
-    ],
-    "elapsedMs": 44680
-  }
+  ]
 }

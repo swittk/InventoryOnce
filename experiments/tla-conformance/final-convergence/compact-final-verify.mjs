@@ -899,7 +899,7 @@ var require_formal_implementation_surface = __commonJS({
 });
 
 // experiments/tla-conformance/final-convergence/run-final-verifier.mjs
-import assert43 from "node:assert/strict";
+import assert44 from "node:assert/strict";
 import path44 from "node:path";
 import ts3 from "typescript";
 
@@ -1021,6 +1021,7 @@ function assuranceCompilerSourceSha256(repositoryRoot, file, text) {
   const session = proofReadSessions.get(path.resolve(repositoryRoot));
   return session === void 0 ? assuranceBytesSha256(text) : session.compilerHash(file, text);
 }
+var ordinaryFileCalls = Object.fromEntries(["openSync", "closeSync", "readFileSync", "readSync", "writeFileSync", "writeSync", "existsSync"].map((name) => [name, fs[name]]));
 
 // experiments/tla-conformance/surface-bindings/lib/compiler-surface.mjs
 import crypto2 from "node:crypto";
@@ -16763,17 +16764,378 @@ function sourceReferenceForCall(context, call) {
   };
 }
 
+// scripts/executable-assurance-coherence.mjs
+import assert40 from "node:assert/strict";
+import { createHash as createHash2 } from "node:crypto";
+var executableAssuranceSchemaVersions = Object.freeze({
+  api: 2,
+  fields: 2,
+  callChains: 1,
+  traces: 1,
+  gaps: 1
+});
+var executableAssuranceStepIds = Object.freeze({
+  generateCurrentSurface: "generate-current-surface",
+  auditCorrespondence: "audit-api-field-trace-gap-correspondence",
+  packageStrictTypes: "package-strict-types",
+  memoryEvidence: "memory-trace-property-and-authority-evidence",
+  completePackageTests: "complete-package-tests",
+  packageProductionBuild: "package-production-build",
+  registeredTlcModelSuite: "registered-tlc-model-suite"
+});
+function executableAssuranceRequiredStepIds(fullFormal) {
+  const common = [
+    executableAssuranceStepIds.generateCurrentSurface,
+    executableAssuranceStepIds.auditCorrespondence,
+    executableAssuranceStepIds.packageStrictTypes,
+    executableAssuranceStepIds.memoryEvidence
+  ];
+  return fullFormal ? [
+    ...common,
+    executableAssuranceStepIds.completePackageTests,
+    executableAssuranceStepIds.packageProductionBuild,
+    executableAssuranceStepIds.registeredTlcModelSuite
+  ] : common;
+}
+function executableAssuranceTraceTests(traces) {
+  const tests = /* @__PURE__ */ new Set(["test/formal-implementation-conformance.test.ts"]);
+  for (const [id, entry] of Object.entries(traces.entries)) {
+    if (!Array.isArray(entry.adapters) || entry.adapters.some((adapter) => typeof adapter !== "string" || adapter.length === 0) || !Array.isArray(entry.evidence) || entry.evidence.some((file) => typeof file !== "string" || file.length === 0)) {
+      throw new Error(`Executable trace '${id}' lacks its adapter/evidence selection.`);
+    }
+    if (!entry.adapters.includes("memory")) continue;
+    for (const file of entry.evidence) {
+      if (file.startsWith("test/") && /\.(?:test|spec)\.tsx?$/u.test(file)) tests.add(file);
+    }
+  }
+  return [...tests].sort();
+}
+var executableTraceModes = /* @__PURE__ */ new Set([
+  "state-result-refinement",
+  "bounded-property",
+  "direct-property"
+]);
+function assertKnownTraceModes(traceEntries) {
+  for (const entry of traceEntries) {
+    if (!executableTraceModes.has(entry.refinementMode)) {
+      throw new Error(
+        `Unknown executable assurance refinement mode '${String(entry.refinementMode)}'.`
+      );
+    }
+  }
+}
+function assertTraceApiEntries(traceEntries, apiEntries) {
+  for (const entry of traceEntries) {
+    if (typeof entry !== "object" || entry === null || Array.isArray(entry) || !Object.hasOwn(entry, "apiEntries") || !Array.isArray(entry.apiEntries) || entry.apiEntries.length === 0 || entry.apiEntries.some((apiEntry) => typeof apiEntry !== "string" || apiEntry.trim() !== apiEntry || apiEntry.length === 0)) {
+      throw new Error("Executable assurance trace apiEntries must be a present array of strings with nonempty membership.");
+    }
+    const seen = /* @__PURE__ */ new Set();
+    for (const apiEntry of entry.apiEntries) {
+      if (!Object.hasOwn(apiEntries, apiEntry) || seen.has(apiEntry)) throw new Error(`Executable assurance trace apiEntries contains duplicate or unknown API '${apiEntry}'.`);
+      seen.add(apiEntry);
+    }
+  }
+}
+var executableAssuranceCounterKeys = Object.freeze({
+  api: Object.freeze(["authorityMethods", "callAndConstructSignatures", "classMethods", "compilerCallGraphCallables", "compilerCallGraphEdges", "compilerCallGraphTestRoots", "compilerCallGraphUnresolvedApis", "compilerCallGraphWitnessedApis", "directExecutableApis", "explicitGapApis", "facadeMethods", "indirectCallChainApis", "kernelCallables", "maximumTypeDepth", "migrationCallables", "reachableFields", "reachableTypes", "recursiveTypeReferences", "rootCallables", "storageCallables", "storageMethods", "truncatedTypes", "unreferencedPublicApis"]),
+  fields: Object.freeze(["callableFieldSignatures", "callableFields", "callbackArgumentFields", "callbackResultFields", "fields", "inputFields", "nullableFields", "optionalFields", "outputFields", "recursiveTypeReferences", "truncatedTypes", "types", "undefinedFields"]),
+  callChains: Object.freeze(["callables", "edges", "publicEntries", "publicEntriesWithTargets", "publicEntriesWithWitnesses", "testRoots", "unresolvedPublicEntries"])
+});
+function assertEntryMap(value, label) {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) throw new Error(`Malformed ${label} assurance entry map.`);
+  for (const [key, entry] of Object.entries(value)) {
+    if (key.length === 0 || entry === null || typeof entry !== "object" || Array.isArray(entry)) throw new Error(`Malformed ${label} assurance entry '${key}'.`);
+  }
+}
+function apiSignatureCount(entries) {
+  let total = 0;
+  for (const [key, entry] of Object.entries(entries)) {
+    const signature = entry.signature;
+    if (signature === null || typeof signature !== "object" || Array.isArray(signature)) {
+      throw new Error(`API assurance entry '${key}' requires a signature object.`);
+    }
+    let count;
+    if (Object.hasOwn(signature, "signatures")) {
+      if (!Array.isArray(signature.signatures)) {
+        throw new Error(`API assurance entry '${key}' signatures must be an array.`);
+      }
+      count = signature.signatures.length;
+    } else {
+      for (const field of ["callSignatures", "constructSignatures"]) {
+        if (Object.hasOwn(signature, field) && !Array.isArray(signature[field])) {
+          throw new Error(`API assurance entry '${key}' ${field} must be an array.`);
+        }
+      }
+      count = (signature.callSignatures ?? []).length + (signature.constructSignatures ?? []).length;
+    }
+    if (count === 0) {
+      throw new Error(`API assurance entry '${key}' has no call or construct signature.`);
+    }
+    total += count;
+  }
+  return total;
+}
+function assertGapEntries(gaps) {
+  for (const [id, gap] of Object.entries(gaps)) {
+    for (const field of ["status", "productionImpact", "requiredMitigation"]) {
+      const value = gap[field];
+      if (typeof value !== "string" || value.trim().length === 0 || value !== value.trim()) {
+        throw new Error(`Explicit assurance gap '${id}' requires nonempty trimmed ${field} text.`);
+      }
+    }
+  }
+}
+function assertExecutableAssuranceManifests(input2) {
+  for (const section of ["api", "fields", "callChains", "traces", "gaps"]) {
+    const manifest = input2[section];
+    if (manifest === null || typeof manifest !== "object" || Array.isArray(manifest)) throw new Error(`Missing ${section} assurance manifest.`);
+    if (manifest.schemaVersion !== executableAssuranceSchemaVersions[section]) {
+      throw new Error(
+        `${section} assurance manifest schemaVersion must be ${executableAssuranceSchemaVersions[section]}.`
+      );
+    }
+    if (section === "api" || section === "fields" || section === "callChains") assertManifestCounters(section, manifest.counts, executableAssuranceCounterKeys[section]);
+  }
+  assertEntryMap(input2.api.entries, "API");
+  assertEntryMap(input2.fields.entries, "field");
+  assertEntryMap(input2.gaps.gaps, "gap");
+  assertGapEntries(input2.gaps.gaps);
+  assertEntryMap(input2.traces.entries, "trace");
+  assertTraceApiEntries(Object.values(input2.traces.entries), input2.api.entries);
+  if (typeof input2.api.surfaceSha256 !== "string" || input2.api.surfaceSha256.length === 0) throw new Error("API assurance manifest surfaceSha256 must be a present non-empty string.");
+  const apiCount = Object.keys(input2.api.entries).length;
+  const signatureCount = apiSignatureCount(input2.api.entries);
+  if (apiCount === 0 || input2.api.counts.callAndConstructSignatures !== signatureCount) {
+    throw new Error("API assurance signature counter differs from the actual call/construct signature domain.");
+  }
+  if (input2.api.counts.directExecutableApis + input2.api.counts.indirectCallChainApis + input2.api.counts.explicitGapApis + input2.api.counts.unreferencedPublicApis !== apiCount) {
+    throw new Error("API assurance disposition counters do not partition the actual nonempty API domain.");
+  }
+  if (input2.fields.counts.fields !== Object.keys(input2.fields.entries).length) throw new Error("Field assurance counter differs from actual field domain.");
+  const duplicatedCounters = [
+    ["compilerCallGraphCallables", input2.api.counts.compilerCallGraphCallables, input2.callChains.counts.callables],
+    ["compilerCallGraphEdges", input2.api.counts.compilerCallGraphEdges, input2.callChains.counts.edges],
+    ["compilerCallGraphTestRoots", input2.api.counts.compilerCallGraphTestRoots, input2.callChains.counts.testRoots],
+    ["compilerCallGraphWitnessedApis", input2.api.counts.compilerCallGraphWitnessedApis, input2.callChains.counts.publicEntriesWithWitnesses],
+    ["compilerCallGraphUnresolvedApis", input2.api.counts.compilerCallGraphUnresolvedApis, input2.callChains.counts.unresolvedPublicEntries],
+    ["reachableFields", input2.api.counts.reachableFields, input2.fields.counts.fields],
+    ["reachableTypes", input2.api.counts.reachableTypes, input2.fields.counts.types],
+    ["recursiveTypeReferences", input2.api.counts.recursiveTypeReferences, input2.fields.counts.recursiveTypeReferences],
+    ["truncatedTypes", input2.api.counts.truncatedTypes, input2.fields.counts.truncatedTypes]
+  ];
+  for (const [label, apiValue, sourceValue] of duplicatedCounters) {
+    if (apiValue !== sourceValue) {
+      throw new Error(`Executable assurance duplicated counter '${label}' disagrees across manifests.`);
+    }
+  }
+  if (input2.callChains.counts.publicEntries !== apiCount) {
+    throw new Error("Call-chain public entry counter differs from the actual API domain.");
+  }
+  if (input2.callChains.counts.publicEntriesWithWitnesses > input2.callChains.counts.publicEntriesWithTargets || input2.callChains.counts.publicEntriesWithTargets > apiCount) {
+    throw new Error("Call-chain target counters do not fit the witnessed/API domains.");
+  }
+  if (input2.callChains.counts.publicEntriesWithWitnesses + input2.callChains.counts.unresolvedPublicEntries !== apiCount) {
+    throw new Error("Call-chain witnessed and unresolved counters do not partition the API domain.");
+  }
+}
+function executableAssuranceSummary({ api, fields: fields2, callChains, traces, gaps }) {
+  assertExecutableAssuranceManifests({ api, fields: fields2, callChains, traces, gaps });
+  const traceEntries = Object.values(traces.entries);
+  assertKnownTraceModes(traceEntries);
+  return {
+    surfaceSha256: api.surfaceSha256,
+    apiEntries: Object.keys(api.entries).length,
+    callAndConstructSignatures: api.counts.callAndConstructSignatures,
+    directExecutableApis: api.counts.directExecutableApis,
+    indirectCallChainApis: api.counts.indirectCallChainApis,
+    explicitGapApis: api.counts.explicitGapApis,
+    unreferencedPublicApis: api.counts.unreferencedPublicApis,
+    compilerCallGraphCallables: callChains.counts.callables,
+    compilerCallGraphEdges: callChains.counts.edges,
+    compilerCallGraphTestRoots: callChains.counts.testRoots,
+    compilerCallGraphWitnessedApis: callChains.counts.publicEntriesWithWitnesses,
+    compilerCallGraphUnresolvedApis: callChains.counts.unresolvedPublicEntries,
+    fieldEntries: Object.keys(fields2.entries).length,
+    inputFields: fields2.counts.inputFields,
+    outputFields: fields2.counts.outputFields,
+    recursiveTypeReferences: fields2.counts.recursiveTypeReferences,
+    truncatedTypes: fields2.counts.truncatedTypes,
+    boundedTraceEntries: Object.keys(traces.entries).length,
+    tracedPublicApis: new Set(traceEntries.flatMap((entry) => entry.apiEntries)).size,
+    stateResultTraceEntries: traceEntries.filter(
+      (entry) => entry.refinementMode === "state-result-refinement"
+    ).length,
+    boundedPropertyTraceEntries: traceEntries.filter(
+      (entry) => entry.refinementMode === "bounded-property"
+    ).length,
+    directPropertyTraceEntries: traceEntries.filter(
+      (entry) => entry.refinementMode === "direct-property"
+    ).length,
+    explicitGapEntries: Object.keys(gaps.gaps).length
+  };
+}
+function assertManifestCounters(label, counts, keys) {
+  if (typeof counts !== "object" || counts === null) {
+    throw new Error(`${label} assurance manifest is missing its counts object.`);
+  }
+  for (const key of keys) {
+    if (!Object.hasOwn(counts, key) || !Number.isSafeInteger(counts[key]) || counts[key] < 0) {
+      throw new Error(
+        `${label} assurance manifest counter '${key}' must be a present non-negative safe integer.`
+      );
+    }
+  }
+}
+function assertExecutableAssuranceMatchesManifests(input2) {
+  const expected = executableAssuranceSummary(input2);
+  const executable = input2.executable;
+  if (typeof executable !== "object" || executable === null || Array.isArray(executable) || Object.getPrototypeOf(executable) !== Object.prototype && Object.getPrototypeOf(executable) !== null) {
+    throw new Error("Executable assurance report must be a plain object.");
+  }
+  const mismatches = [];
+  const metadataKeys = /* @__PURE__ */ new Set([
+    "version",
+    "repositoryHead",
+    "repositoryStateSha256",
+    "fullFormal",
+    "fullLogSha256",
+    "packageTraceTests",
+    "steps"
+  ]);
+  const metadataPresent = Object.keys(executable).some((key) => metadataKeys.has(key));
+  if (metadataPresent) {
+    if (executable.version !== 5) mismatches.push("version: executable assurance report version must be 5");
+    if (typeof executable.repositoryHead !== "string" || !/^[0-9a-f]{40,64}$/u.test(executable.repositoryHead)) mismatches.push("repositoryHead: invalid executable assurance repository head");
+    if (typeof executable.repositoryStateSha256 !== "string" || !/^[0-9a-f]{64}$/u.test(executable.repositoryStateSha256)) mismatches.push("repositoryStateSha256: invalid executable assurance repository state digest");
+    if (typeof executable.fullFormal !== "boolean") mismatches.push("fullFormal: executable assurance full-formal marker must be boolean");
+    if (executable.fullFormal === true) {
+      if (typeof executable.fullLogSha256 !== "string" || !/^[0-9a-f]{64}$/u.test(executable.fullLogSha256)) mismatches.push("fullLogSha256: full-formal executable assurance needs the exact full-log digest");
+    } else if (Object.hasOwn(executable, "fullLogSha256")) {
+      mismatches.push("fullLogSha256: partial executable assurance must not claim a full-log digest");
+    }
+    if (!Array.isArray(executable.packageTraceTests) || executable.packageTraceTests.some((file) => typeof file !== "string" || file.length === 0) || new Set(executable.packageTraceTests).size !== executable.packageTraceTests.length) {
+      mismatches.push("packageTraceTests: executable assurance trace-test list must contain unique nonempty paths");
+    }
+    const expectedTraceTests = executableAssuranceTraceTests(input2.traces);
+    if (JSON.stringify(executable.packageTraceTests) !== JSON.stringify(expectedTraceTests)) {
+      mismatches.push("packageTraceTests: executable assurance report does not contain the exact authoritative trace-test selection");
+    }
+    if (!Array.isArray(executable.steps) || executable.steps.length === 0) {
+      mismatches.push("steps: executable assurance report must contain passed step evidence");
+    } else {
+      const stepIds = /* @__PURE__ */ new Set();
+      let rowsValid = true;
+      for (const step of executable.steps) {
+        if (step === null || typeof step !== "object" || Array.isArray(step) || Object.keys(step).sort().join(",") !== "id,status" || typeof step.id !== "string" || step.id.length === 0 || step.status !== "passed" || stepIds.has(step.id)) {
+          mismatches.push("steps: executable assurance steps must be unique exact {id,status:passed} rows");
+          rowsValid = false;
+          break;
+        }
+        stepIds.add(step.id);
+      }
+      if (rowsValid) {
+        const expectedStepIds = executableAssuranceRequiredStepIds(executable.fullFormal);
+        if (executable.steps.length !== expectedStepIds.length || executable.steps.some((step, index) => step.id !== expectedStepIds[index])) {
+          mismatches.push("steps: executable assurance report does not contain the exact authoritative ordered step set");
+        }
+      }
+    }
+  }
+  for (const key of Object.keys(executable)) {
+    if (!Object.hasOwn(expected, key) && !(metadataPresent && metadataKeys.has(key))) {
+      mismatches.push(`${key}: unexpected executable assurance field`);
+    }
+  }
+  for (const [key, value] of Object.entries(expected)) {
+    if (executable[key] !== value) {
+      mismatches.push(`${key}: executable=${JSON.stringify(executable[key])}, current=${JSON.stringify(value)}`);
+    }
+  }
+  if (mismatches.length !== 0) {
+    throw new Error(
+      `Executable assurance report does not match the current same-run manifests: ${mismatches.join("; ")}.`
+    );
+  }
+  return expected;
+}
+function assertCompactAssuranceCertificate(certification, {
+  /** Certified tree head obtained from the immutable evidence commit parent. */
+  head,
+  /** Content identity read from that independently pinned tree's closure. */
+  inputKey,
+  /** Compiler-discovered callable surface read from that pinned closure. */
+  surfaceDigest
+}) {
+  assert40.match(head, /^[a-f0-9]{40}$/u, "Independent compact tested head is invalid.");
+  assert40.match(inputKey, /^[a-f0-9]{64}$/u, "Independent compact closure key is invalid.");
+  assert40.match(surfaceDigest, /^[a-f0-9]{64}$/u, "Independent compact surface digest is invalid.");
+  assert40.equal(certification?.schemaVersion, 1, "Pinned compact certificate has an unsupported schema.");
+  assert40.match(certification.certifiedHead, /^[a-f0-9]{40}$/u, "Pinned compact certificate head is invalid.");
+  assert40.match(certification.inputKey, /^[a-f0-9]{64}$/u, "Pinned compact certificate input key is invalid.");
+  assert40.equal(certification.certifiedHead, head, "Compact certificate tested the wrong head.");
+  assert40.equal(certification.inputKey, inputKey, "Compact certificate names the wrong independent closure.");
+  assert40(Array.isArray(certification.processes), "Pinned compact certificate process evidence is missing.");
+  assert40.deepEqual(certification.processes.map((row) => row.mode).sort(), ["registry", "selftest", "verify"], "Pinned compact certificate does not carry exactly one registry, selftest, and verify process.");
+  for (const row of certification.processes) {
+    assert40.equal(row.exitCode, 0, `Pinned compact certificate ${row.mode} process did not exit cleanly.`);
+    assert40.equal(row.signal, null, `Pinned compact certificate ${row.mode} process was signalled.`);
+    assert40.equal(row.stderr, "", `Pinned compact certificate ${row.mode} emitted stderr.`);
+    assert40.match(row.stdoutSha256, /^[a-f0-9]{64}$/u);
+    assert40.match(row.stderrSha256, /^[a-f0-9]{64}$/u);
+    assert40.equal(compactOutputSha256(row.stdout), row.stdoutSha256, "Immutable certificate output hash is invalid.");
+    assert40.equal(compactOutputSha256(row.stderr), row.stderrSha256, "Immutable certificate error hash is invalid.");
+    assert40.equal(row.inputKey, certification.inputKey);
+    assert40.equal(row.head, certification.certifiedHead);
+    const lines = row.stdout.trim().split(/\r?\n/u).filter(Boolean);
+    assert40.equal(lines.length, 1, `Pinned compact certificate ${row.mode} emitted unexpected stdout.`);
+    const emitted = JSON.parse(lines[0]);
+    assert40.deepEqual(row.report, emitted, `Pinned compact certificate ${row.mode} report differs from exact stdout.`);
+    assert40.equal(row.report.mode, row.mode);
+    assert40.equal(row.report.inputKey, certification.inputKey);
+    assert40.equal(row.report.head, certification.certifiedHead);
+    assert40.equal(row.report.compilerPasses, 1);
+    if (row.mode === "registry") {
+      assert40.equal(row.report.status, "FINAL_535_REGISTRY_BUILT", "Pinned compact certificate registry status is invalid.");
+      assert40.deepEqual(row.report.counts, { A: 121, B: 58, V: 309, HARD_RED: 47 }, "Pinned compact registry partition is invalid.");
+    } else if (row.mode === "selftest") {
+      assert40.equal(row.report.status, "FINAL_CONVERGENCE_ADVERSARIAL_PASS", "Pinned compact certificate selftest status is invalid.");
+      assert40.equal(row.report.valueRows, 309);
+      assert40.equal(row.report.producerRows, 179);
+      assert40.equal(row.report.surfaceDigest, surfaceDigest, "Compact process surface differs from its independent certified closure.");
+      assert40.deepEqual(row.report.controls, { honestValueAccepted: true, wrongValueModeRejected: true, resignedValueTamperRejected: true, honestAandBAccepted: true, wrongProducerModeRejected: true, resignedProducerTamperRejected: true, immutableHistoricalAuthorityTamperRejected: true, sameMtimeEvidenceDriftRejected: true }, "Pinned compact certificate adversarial controls are incomplete.");
+    } else {
+      assert40.equal(row.report.status, "FINAL_BINDER_GREEN", "Pinned compact certificate verifier status is invalid.");
+      assert40.equal(row.report.surfaceDigest, surfaceDigest, "Compact process surface differs from its independent certified closure.");
+      assert40.equal(row.report.callables, 535);
+      assert40.equal(row.report.diagnostics, 47);
+      assert40.deepEqual(row.report.byCode, { EXPLICIT_HARD_RED: 47 });
+      assert40.equal(row.report.hardRed, 47);
+      assert40.equal(row.report.unexpected, 0);
+      assert40.deepEqual(row.report.unexpectedRows, []);
+      assert40.equal(row.report.valueAccepted, 309);
+      assert40.equal(row.report.producerAccepted, 179);
+      assert40.equal(row.report.strictAccepted, 488);
+    }
+  }
+  return certification;
+}
+function compactOutputSha256(value) {
+  return createHash2("sha256").update(value).digest("hex");
+}
+
 // experiments/tla-conformance/final-convergence/current-review-assurance.mjs
 var import_formal_implementation_surface = __toESM(require_formal_implementation_surface(), 1);
-import assert40 from "node:assert/strict";
+import assert41 from "node:assert/strict";
 import crypto4 from "node:crypto";
 import fs38 from "node:fs";
 import path42 from "node:path";
 import { execFileSync as execFileSync4 } from "node:child_process";
 
 // scripts/repository-assurance-state.mjs
-import { createHash as createHash2 } from "node:crypto";
+import { createHash as createHash3 } from "node:crypto";
 import { spawnSync } from "node:child_process";
+import { lstatSync, readFileSync, readlinkSync } from "node:fs";
+import { resolve } from "node:path";
 var excludedPaths = /* @__PURE__ */ new Set([
   "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json"
 ]);
@@ -16781,7 +17143,7 @@ function includedPath(path45) {
   return path45.length > 0 && !path45.startsWith(".chatgpt/") && !excludedPaths.has(path45);
 }
 function hashAssuranceEntries(entries) {
-  const hash = createHash2("sha256");
+  const hash = createHash3("sha256");
   const writeLength = (length2) => {
     const encoded = Buffer.allocUnsafe(8);
     encoded.writeBigUInt64BE(BigInt(length2));
@@ -16811,7 +17173,73 @@ function repositoryAssuranceInputPaths(repositoryRoot, untrackedOnly = false) {
   }
   return [...new Set(listed.stdout.split("\0").filter(includedPath))].sort();
 }
-function repositoryAssuranceCommittedStateSha256(repositoryRoot, commit) {
+function repositoryAssuranceStateSha256(repositoryRoot, omittedPaths = /* @__PURE__ */ new Set()) {
+  const paths = repositoryAssuranceInputPaths(repositoryRoot).filter((file) => !omittedPaths.has(file));
+  const indexed = spawnSync(
+    "git",
+    ["ls-files", "--stage", "-z"],
+    { cwd: repositoryRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }
+  );
+  if (indexed.error !== void 0 || indexed.status !== 0) {
+    throw new Error("Unable to enumerate tracked repository assurance modes.");
+  }
+  const trackedModeByPath = /* @__PURE__ */ new Map();
+  for (const record of indexed.stdout.split("\0")) {
+    if (record.length === 0) continue;
+    const tab = record.indexOf("	");
+    const header = tab < 0 ? [] : record.slice(0, tab).split(" ");
+    if (tab < 0 || header.length !== 3 || header[2] !== "0") {
+      throw new Error("Malformed tracked assurance mode record.");
+    }
+    trackedModeByPath.set(record.slice(tab + 1), header[0]);
+  }
+  const fileMode = spawnSync("git", ["config", "--bool", "core.fileMode"], { cwd: repositoryRoot, encoding: "utf8" });
+  if (fileMode.error !== void 0 || fileMode.status !== 0 && fileMode.status !== 1) throw new Error("Unable to read Git file-mode semantics.");
+  const ignoresExecutableBit = fileMode.status === 0 && fileMode.stdout.trim() === "false";
+  const entries = [];
+  for (const path45 of paths) {
+    const absolute = resolve(repositoryRoot, path45);
+    let stat;
+    let kind;
+    let mode;
+    let payload;
+    try {
+      stat = lstatSync(absolute);
+      if (stat.isSymbolicLink()) {
+        kind = 1;
+        mode = "120000";
+        payload = Buffer.from(readlinkSync(absolute));
+      } else if (stat.isFile()) {
+        kind = 0;
+        const trackedMode = trackedModeByPath.get(path45);
+        mode = ignoresExecutableBit && (trackedMode === "100644" || trackedMode === "100755") ? trackedMode : (stat.mode & 64) === 0 ? "100644" : "100755";
+        payload = readFileSync(absolute);
+      }
+    } catch (error) {
+      if (error instanceof Error && error.code === "ENOENT") {
+        kind = 2;
+        mode = trackedModeByPath.get(path45);
+        if (mode === void 0) {
+          throw new Error(`Deleted assurance path '${path45}' has no tracked Git mode.`);
+        }
+        payload = Buffer.alloc(0);
+      } else {
+        throw error;
+      }
+    }
+    if (stat !== void 0 && !stat.isSymbolicLink() && !stat.isFile()) {
+      throw new Error(
+        `Repository assurance path '${path45}' is not a regular file or symbolic link.`
+      );
+    }
+    if (kind === void 0 || mode === void 0 || payload === void 0) {
+      throw new Error(`Unable to frame repository assurance path '${path45}'.`);
+    }
+    entries.push({ path: path45, kind, mode, payload });
+  }
+  return hashAssuranceEntries(entries);
+}
+function repositoryAssuranceCommittedStateSha256(repositoryRoot, commit, omittedPaths = /* @__PURE__ */ new Set()) {
   const listed = spawnSync(
     "git",
     ["ls-tree", "-rz", "--full-tree", commit],
@@ -16827,7 +17255,7 @@ function repositoryAssuranceCommittedStateSha256(repositoryRoot, commit) {
     if (tab < 0) throw new Error("Malformed git ls-tree assurance record.");
     const header = record.slice(0, tab).split(" ");
     const path45 = record.slice(tab + 1);
-    if (!includedPath(path45)) continue;
+    if (!includedPath(path45) || omittedPaths.has(path45)) continue;
     if (header.length !== 3 || header[1] !== "blob" || !/^[a-f0-9]{40,64}$/u.test(header[2])) throw new Error(`Unsupported committed assurance entry '${path45}'.`);
     const kind = header[0] === "120000" ? 1 : header[0] === "100644" || header[0] === "100755" ? 0 : void 0;
     if (kind === void 0) throw new Error(`Unsupported committed assurance mode for '${path45}'.`);
@@ -16860,7 +17288,14 @@ function repositoryAssuranceCommittedStateSha256(repositoryRoot, commit) {
 var CURRENT_REVIEW_ASSURANCE_RECEIPT = "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json";
 var CURRENT_REVIEW_ASSURANCE_REPORT = "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json";
 var CURRENT_REVIEW_ASSURANCE_FULL_LOG = "experiments/tla-conformance/final-convergence/current-pr-review-full.log";
-var CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "e05b342c625b9693139ba48d4b9b56ccdcb8cc42";
+var CURRENT_REVIEW_ASSURANCE_MANIFESTS = Object.freeze({
+  api: "formal/implementation-conformance/API_ASSURANCE.json",
+  fields: "formal/implementation-conformance/FIELD_CLASSIFICATION.json",
+  callChains: "formal/implementation-conformance/CALL_CHAIN_ASSURANCE.json",
+  traces: "formal/implementation-conformance/TRACE_REPLAY_ASSURANCE.json",
+  gaps: "formal/implementation-conformance/FORMAL_COVERAGE_GAPS.json"
+});
+var CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD = "635dc7b04c215cd7cc6310ee4d669e16622eb506";
 var CURRENT_REVIEW_ASSURANCE_SELF = "experiments/tla-conformance/final-convergence/current-review-assurance.mjs";
 var COMPACT_MANIFEST = "experiments/tla-conformance/final-convergence/compact-support-manifest.json";
 var COMPACT_CLOSURE = "experiments/tla-conformance/final-convergence/authority-reference-manifest.json";
@@ -16892,7 +17327,7 @@ function repositoryPath(repositoryRoot, file) {
 function regularFile(repositoryRoot, file, label) {
   const target = repositoryPath(repositoryRoot, file);
   const stat = fs38.lstatSync(target);
-  assert40.equal(stat.isFile(), true, `${label} is not a regular file.`);
+  assert41.equal(stat.isFile(), true, `${label} is not a regular file.`);
   return target;
 }
 function committedFileBytes(repositoryRoot, commit, file) {
@@ -16932,7 +17367,7 @@ function immutableCurrentReviewCertifiedHead(repositoryRoot) {
     ["merge-base", "--is-ancestor", CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD, "HEAD"],
     { cwd: repositoryRoot, stdio: "ignore" }
   );
-  assert40.equal(
+  assert41.equal(
     sha2564(receiptPath),
     committedFileSha256(
       repositoryRoot,
@@ -16942,12 +17377,12 @@ function immutableCurrentReviewCertifiedHead(repositoryRoot) {
     "Current review assurance receipt differs from its immutable evidence commit."
   );
   const receipt = JSON.parse(fs38.readFileSync(receiptPath, "utf8"));
-  assert40.match(
+  assert41.match(
     receipt.certifiedHead,
     /^[a-f0-9]{40}$/u,
     "Current review certified head is invalid for proof-output derivation."
   );
-  assert40.equal(
+  assert41.equal(
     execFileSync4(
       "git",
       ["rev-parse", `${CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD}^`],
@@ -16958,68 +17393,48 @@ function immutableCurrentReviewCertifiedHead(repositoryRoot) {
   );
   return receipt.certifiedHead;
 }
-function assertCurrentReviewCompactCertificateProcesses(certification, compactCertifiedHead) {
-  assert40.match(
-    compactCertifiedHead,
-    /^[a-f0-9]{40}$/u,
-    "Independent compact certified head is invalid."
-  );
-  const expectedModes = /* @__PURE__ */ new Map([
-    ["registry", "FINAL_535_REGISTRY_BUILT"],
-    ["selftest", "FINAL_CONVERGENCE_ADVERSARIAL_PASS"],
-    ["verify", "FINAL_BINDER_GREEN"]
-  ]);
-  assert40(Array.isArray(certification?.processes), "Pinned compact certificate process evidence is missing.");
-  assert40.deepEqual(
-    certification.processes.map((row) => row.mode).sort(),
-    [...expectedModes.keys()].sort(),
-    "Pinned compact certificate does not carry exactly one registry, selftest, and verify process."
-  );
-  for (const row of certification.processes) {
-    assert40.equal(row.exitCode, 0, `Pinned compact ${row.mode} process failed.`);
-    assert40.equal(row.signal, null, `Pinned compact ${row.mode} process was signalled.`);
-    assert40.equal(row.inputKey, certification.inputKey, `Pinned compact ${row.mode} input key differs.`);
-    assert40.equal(row.head, compactCertifiedHead, `Pinned compact ${row.mode} tested the wrong head.`);
-    assert40.equal(row.report?.status, expectedModes.get(row.mode), `Pinned compact ${row.mode} status is invalid.`);
-  }
+function assertCurrentReviewCompactCertificateProcesses(certification, compactCertifiedHead, independentlyDerivedClosure) {
+  assertCompactAssuranceCertificate(certification, {
+    head: compactCertifiedHead,
+    inputKey: independentlyDerivedClosure.inputKey,
+    surfaceDigest: independentlyDerivedClosure.surfaceDigest
+  });
 }
 function currentReviewProofIntegrationAuthority(repositoryRoot, certifiedHead) {
   const root3 = path42.resolve(repositoryRoot);
   const effectiveCertifiedHead = certifiedHead ?? immutableCurrentReviewCertifiedHead(root3);
-  assert40.match(effectiveCertifiedHead, /^[a-f0-9]{40}$/u, "Current review certified head is invalid for proof-output derivation.");
+  assert41.match(effectiveCertifiedHead, /^[a-f0-9]{40}$/u, "Current review certified head is invalid for proof-output derivation.");
   const wrapper = committedFileText(root3, effectiveCertifiedHead, COMPACT_WRAPPER);
   const anchorMatches = [...wrapper.matchAll(/const COMPACT_CERTIFICATE_COMMIT = "([a-f0-9]{40})";/gu)];
-  assert40.equal(anchorMatches.length, 1, "Full-assurance certified head has an invalid compact certificate anchor count.");
+  assert41.equal(anchorMatches.length, 1, "Full-assurance certified head has an invalid compact certificate anchor count.");
   const certificateEvidenceHead = anchorMatches[0][1];
   const expectedWrapper = `import { runCompactCommand } from "../../../scripts/compact-assurance-pipeline.mjs";
 // Updated only after successful independent pristine certification; this is verifier authority, not evidence data.
 const COMPACT_CERTIFICATE_COMMIT = "${certificateEvidenceHead}";
 await runCompactCommand({ moduleUrl: import.meta.url, mode: process.argv[2] ?? "verify", certificateCommit: COMPACT_CERTIFICATE_COMMIT });
 `;
-  assert40.equal(wrapper, expectedWrapper, "Full-assurance certified head does not contain the exact compact certificate wrapper.");
+  assert41.equal(wrapper, expectedWrapper, "Full-assurance certified head does not contain the exact compact certificate wrapper.");
   execFileSync4("git", ["merge-base", "--is-ancestor", certificateEvidenceHead, effectiveCertifiedHead], { cwd: root3, stdio: "ignore" });
   const manifest = JSON.parse(committedFileText(root3, certificateEvidenceHead, COMPACT_MANIFEST));
-  assert40.equal(manifest.certification?.schemaVersion, 1, "Pinned compact certificate schema is unsupported.");
+  assert41.equal(manifest.certification?.schemaVersion, 1, "Pinned compact certificate schema is unsupported.");
   const compactCertifiedHead = manifest.certification?.certifiedHead;
-  assert40.match(compactCertifiedHead, /^[a-f0-9]{40}$/u, "Pinned compact certificate names an invalid tested head.");
-  assert40.equal(
+  assert41.match(compactCertifiedHead, /^[a-f0-9]{40}$/u, "Pinned compact certificate names an invalid tested head.");
+  assert41.equal(
     execFileSync4("git", ["rev-parse", `${certificateEvidenceHead}^`], { cwd: root3, encoding: "utf8" }).trim(),
     compactCertifiedHead,
     "Pinned compact certificate evidence is not the direct child of its tested head."
   );
-  assertCurrentReviewCompactCertificateProcesses(
-    manifest.certification,
-    compactCertifiedHead
-  );
-  assert40.equal(typeof manifest.archive?.file, "string", "Pinned compact archive path is invalid.");
-  assert40.match(manifest.archive?.sha256, /^[a-f0-9]{64}$/u, "Pinned compact archive digest is invalid.");
-  assert40(Array.isArray(manifest.archive?.files), "Pinned compact archive file manifest is invalid.");
+  const closure = JSON.parse(committedFileText(root3, compactCertifiedHead, COMPACT_CLOSURE));
+  assertCurrentReviewCompactCertificateProcesses(manifest.certification, compactCertifiedHead, closure);
+  assert41.equal(typeof manifest.archive?.file, "string", "Pinned compact archive path is invalid.");
+  assert41.match(manifest.archive?.sha256, /^[a-f0-9]{64}$/u, "Pinned compact archive digest is invalid.");
+  assert41(Array.isArray(manifest.archive?.files), "Pinned compact archive file manifest is invalid.");
   const fullManifest = JSON.parse(committedFileText(root3, effectiveCertifiedHead, COMPACT_MANIFEST));
-  assert40.equal(fullManifest.archive?.file, manifest.archive.file, "Full-certified compact archive path changed unexpectedly.");
-  assert40.match(fullManifest.archive?.sha256, /^[a-f0-9]{64}$/u, "Full-certified compact archive digest is invalid.");
-  assert40(Array.isArray(fullManifest.archive?.files), "Full-certified compact archive file manifest is invalid.");
+  assert41.equal(fullManifest.archive?.file, manifest.archive.file, "Full-certified compact archive path changed unexpectedly.");
+  assert41.match(fullManifest.archive?.sha256, /^[a-f0-9]{64}$/u, "Full-certified compact archive digest is invalid.");
+  assert41(Array.isArray(fullManifest.archive?.files), "Full-certified compact archive file manifest is invalid.");
   const fullArchiveBytes = committedFileBytes(root3, effectiveCertifiedHead, fullManifest.archive.file);
-  assert40.equal(
+  assert41.equal(
     crypto4.createHash("sha256").update(fullArchiveBytes).digest("hex"),
     fullManifest.archive.sha256,
     "Full-certified compact archive bytes differ from its manifest."
@@ -17032,10 +17447,9 @@ await runCompactCommand({ moduleUrl: import.meta.url, mode: process.argv[2] ?? "
       bytes: bytes2.length
     });
   }
-  const closure = JSON.parse(committedFileText(root3, compactCertifiedHead, COMPACT_CLOSURE));
-  assert40.equal(closure.schemaVersion, 2, "Pinned compact closure schema is unsupported.");
-  assert40.equal(closure.status, "FINAL_LIVE_INPUT_CLOSURE", "Pinned compact closure status is invalid.");
-  assert40.equal(closure.inputKey, manifest.certification.inputKey, "Pinned compact closure and certificate input keys differ.");
+  assert41.equal(closure.schemaVersion, 2, "Pinned compact closure schema is unsupported.");
+  assert41.equal(closure.status, "FINAL_LIVE_INPUT_CLOSURE", "Pinned compact closure status is invalid.");
+  assert41.equal(closure.inputKey, manifest.certification.inputKey, "Pinned compact closure and certificate input keys differ.");
   const paths = /* @__PURE__ */ new Set([
     ...CURRENT_REVIEW_EVIDENCE_PATHS,
     CURRENT_REVIEW_ASSURANCE_SELF,
@@ -17046,14 +17460,14 @@ await runCompactCommand({ moduleUrl: import.meta.url, mode: process.argv[2] ?? "
     AGENT_DIARY
   ]);
   for (const row of closure.outputs ?? []) {
-    assert40.equal(typeof row?.file, "string", "Pinned compact output path is invalid.");
+    assert41.equal(typeof row?.file, "string", "Pinned compact output path is invalid.");
     paths.add(row.file);
   }
   return { paths, temporarySupportRows };
 }
 function assertCurrentReviewTrackedDriftAllowed(changedPaths, allowedPaths) {
   const unexpected = [...new Set(changedPaths)].filter((file) => !allowedPaths.has(file)).sort();
-  assert40.deepEqual(
+  assert41.deepEqual(
     unexpected,
     [],
     `Post-certification tracked drift escaped the proof-integration closure: ${unexpected.join(", ")}`
@@ -17069,10 +17483,19 @@ function currentReviewWorktreeDriftPaths(repositoryRoot, authenticatedTemporaryS
       continue;
     }
     const target = regularFile(repositoryRoot, file, `Authenticated temporary compact support '${file}'`);
-    assert40.equal(fs38.statSync(target).size, expected.bytes, `Authenticated temporary compact support size changed: ${file}`);
-    assert40.equal(sha2564(target), expected.sha256, `Authenticated temporary compact support hash changed: ${file}`);
+    assert41.equal(fs38.statSync(target).size, expected.bytes, `Authenticated temporary compact support size changed: ${file}`);
+    assert41.equal(sha2564(target), expected.sha256, `Authenticated temporary compact support hash changed: ${file}`);
   }
   return [.../* @__PURE__ */ new Set([...modified, ...untracked])].sort();
+}
+function assertCurrentReviewLiveSourceBytes(root3, certifiedHead, authority) {
+  const dirtyPaths = currentReviewWorktreeDriftPaths(root3, authority.temporarySupportRows);
+  assertCurrentReviewTrackedDriftAllowed(dirtyPaths, authority.paths);
+  const omitted = /* @__PURE__ */ new Set([...authority.paths, ...authority.temporarySupportRows.keys()]);
+  const current = repositoryAssuranceStateSha256(root3, omitted);
+  const expected = repositoryAssuranceCommittedStateSha256(root3, certifiedHead, omitted);
+  assert41.equal(current, expected, "Live full-assurance source bytes or modes differ from the independently certified tree.");
+  return current;
 }
 function assertCurrentReviewAssuranceContent({
   receipt,
@@ -17080,54 +17503,59 @@ function assertCurrentReviewAssuranceContent({
   reportSha256,
   fullLogSha256,
   independentlyDerivedSurfaceSha256,
-  independentlyDerivedRepositoryStateSha256
+  independentlyDerivedRepositoryStateSha256,
+  manifests
 }) {
-  assert40.equal(receipt.schemaVersion, 1, "Current review assurance receipt schema is unsupported.");
-  assert40.equal(receipt.status, "CURRENT_PR_REVIEW_FULL_ASSURANCE_VERIFIED", "Current review assurance receipt status is invalid.");
-  assert40.match(receipt.certifiedHead, /^[a-f0-9]{40}$/u, "Current review assurance certified head is invalid.");
-  assert40.equal(receipt.report.file, CURRENT_REVIEW_ASSURANCE_REPORT, "Current review assurance report path is not package-owned.");
-  assert40.equal(receipt.fullLog.file, CURRENT_REVIEW_ASSURANCE_FULL_LOG, "Current review assurance full-log path is not package-owned.");
-  assert40.equal(reportSha256, receipt.report.sha256, "Current review assurance report bytes changed.");
-  assert40.equal(fullLogSha256, receipt.fullLog.sha256, "Current review assurance full-log bytes changed.");
-  assert40.equal(report.repositoryHead, receipt.certifiedHead, "Current review assurance report certifies the wrong commit.");
-  assert40.equal(report.fullFormal, true, "Current review assurance report is not a full-formal run.");
-  assert40.match(report.surfaceSha256, /^[a-f0-9]{64}$/u, "Current review assurance report surface digest is invalid.");
-  assert40.match(receipt.surfaceSha256, /^[a-f0-9]{64}$/u, "Current review assurance receipt surface digest is invalid.");
-  assert40.equal(report.surfaceSha256, independentlyDerivedSurfaceSha256, "Current review assurance report surface digest is not independently source-derived.");
-  assert40.equal(receipt.surfaceSha256, independentlyDerivedSurfaceSha256, "Current review assurance receipt surface digest is not independently source-derived.");
-  assert40.equal(report.apiEntries, 510, "Current review assurance API census changed.");
-  assert40.equal(report.compilerCallGraphUnresolvedApis, 0, "Current review assurance has unresolved public APIs.");
-  assert40.equal(report.repositoryStateSha256, receipt.repositoryStateSha256, "Current review assurance state receipt disagrees with the report.");
-  assert40.equal(independentlyDerivedRepositoryStateSha256, receipt.repositoryStateSha256, "Current review assurance was not produced from the exact clean committed evidence state.");
-  assert40.equal(report.fullLogSha256, receipt.fullLog.sha256, "Current review assurance report is not bound to the tracked full log.");
+  assert41.equal(receipt.schemaVersion, 1, "Current review assurance receipt schema is unsupported.");
+  assert41.equal(receipt.status, "CURRENT_PR_REVIEW_FULL_ASSURANCE_VERIFIED", "Current review assurance receipt status is invalid.");
+  assert41.match(receipt.certifiedHead, /^[a-f0-9]{40}$/u, "Current review assurance certified head is invalid.");
+  assert41.equal(receipt.report.file, CURRENT_REVIEW_ASSURANCE_REPORT, "Current review assurance report path is not package-owned.");
+  assert41.equal(receipt.fullLog.file, CURRENT_REVIEW_ASSURANCE_FULL_LOG, "Current review assurance full-log path is not package-owned.");
+  assert41.equal(reportSha256, receipt.report.sha256, "Current review assurance report bytes changed.");
+  assert41.equal(fullLogSha256, receipt.fullLog.sha256, "Current review assurance full-log bytes changed.");
+  assert41.equal(report.repositoryHead, receipt.certifiedHead, "Current review assurance report certifies the wrong commit.");
+  assert41.equal(report.fullFormal, true, "Current review assurance report is not a full-formal run.");
+  assert41.match(report.surfaceSha256, /^[a-f0-9]{64}$/u, "Current review assurance report surface digest is invalid.");
+  assert41.match(receipt.surfaceSha256, /^[a-f0-9]{64}$/u, "Current review assurance receipt surface digest is invalid.");
+  assert41.equal(report.surfaceSha256, independentlyDerivedSurfaceSha256, "Current review assurance report surface digest is not independently source-derived.");
+  assert41.equal(receipt.surfaceSha256, independentlyDerivedSurfaceSha256, "Current review assurance receipt surface digest is not independently source-derived.");
+  assert41.equal(report.apiEntries, 510, "Current review assurance API census changed.");
+  assert41.equal(report.compilerCallGraphUnresolvedApis, 0, "Current review assurance has unresolved public APIs.");
+  assert41.equal(report.repositoryStateSha256, receipt.repositoryStateSha256, "Current review assurance state receipt disagrees with the report.");
+  assert41.equal(independentlyDerivedRepositoryStateSha256, receipt.repositoryStateSha256, "Current review assurance was not produced from the exact clean committed evidence state.");
+  assert41.equal(report.fullLogSha256, receipt.fullLog.sha256, "Current review assurance report is not bound to the tracked full log.");
+  assertExecutableAssuranceMatchesManifests({
+    executable: report,
+    ...manifests
+  });
 }
 function verifyCurrentReviewAssurance(repositoryRoot, context) {
   const root3 = path42.resolve(repositoryRoot);
   const receiptPath = regularFile(root3, CURRENT_REVIEW_ASSURANCE_RECEIPT, "Current review assurance receipt");
   execFileSync4("git", ["merge-base", "--is-ancestor", CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD, "HEAD"], { cwd: root3, stdio: "ignore" });
-  assert40.equal(
+  assert41.equal(
     sha2564(receiptPath),
     committedFileSha256(root3, CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD, CURRENT_REVIEW_ASSURANCE_RECEIPT),
     "Current review assurance receipt differs from its immutable evidence commit."
   );
   const receipt = JSON.parse(fs38.readFileSync(receiptPath, "utf8"));
-  assert40.match(receipt.certifiedHead, /^[a-f0-9]{40}$/u, "Current review assurance certified head is invalid.");
-  assert40.equal(
+  assert41.match(receipt.certifiedHead, /^[a-f0-9]{40}$/u, "Current review assurance certified head is invalid.");
+  assert41.equal(
     execFileSync4("git", ["rev-parse", `${CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD}^`], { cwd: root3, encoding: "utf8" }).trim(),
     receipt.certifiedHead,
     "Immutable current-review evidence commit is not the direct child of the certified repair head."
   );
   execFileSync4("git", ["merge-base", "--is-ancestor", receipt.certifiedHead, "HEAD"], { cwd: root3, stdio: "ignore" });
-  assert40.equal(receipt.report.file, CURRENT_REVIEW_ASSURANCE_REPORT, "Current review assurance report path is not package-owned.");
-  assert40.equal(receipt.fullLog.file, CURRENT_REVIEW_ASSURANCE_FULL_LOG, "Current review assurance full-log path is not package-owned.");
+  assert41.equal(receipt.report.file, CURRENT_REVIEW_ASSURANCE_REPORT, "Current review assurance report path is not package-owned.");
+  assert41.equal(receipt.fullLog.file, CURRENT_REVIEW_ASSURANCE_FULL_LOG, "Current review assurance full-log path is not package-owned.");
   const reportPath = regularFile(root3, CURRENT_REVIEW_ASSURANCE_REPORT, "Current review assurance report");
   const logPath = regularFile(root3, CURRENT_REVIEW_ASSURANCE_FULL_LOG, "Current review assurance full log");
-  assert40.equal(
+  assert41.equal(
     sha2564(reportPath),
     committedFileSha256(root3, CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD, CURRENT_REVIEW_ASSURANCE_REPORT),
     "Current review assurance report differs from its immutable evidence commit."
   );
-  assert40.equal(
+  assert41.equal(
     sha2564(logPath),
     committedFileSha256(root3, CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD, CURRENT_REVIEW_ASSURANCE_FULL_LOG),
     "Current review assurance full log differs from its immutable evidence commit."
@@ -17135,13 +17563,20 @@ function verifyCurrentReviewAssurance(repositoryRoot, context) {
   const reportSha256 = sha2564(reportPath);
   const fullLogSha256 = sha2564(logPath);
   const report = JSON.parse(fs38.readFileSync(reportPath, "utf8"));
+  const manifests = Object.fromEntries(
+    Object.entries(CURRENT_REVIEW_ASSURANCE_MANIFESTS).map(([name, file]) => [
+      name,
+      JSON.parse(committedFileText(root3, receipt.certifiedHead, file))
+    ])
+  );
   assertCurrentReviewAssuranceContent({
     receipt,
     report,
     reportSha256,
     fullLogSha256,
     independentlyDerivedSurfaceSha256: currentReviewSurfaceSha256(root3, context),
-    independentlyDerivedRepositoryStateSha256: repositoryAssuranceCommittedStateSha256(root3, receipt.certifiedHead)
+    independentlyDerivedRepositoryStateSha256: repositoryAssuranceCommittedStateSha256(root3, receipt.certifiedHead),
+    manifests
   });
   const proofIntegrationAuthority = currentReviewProofIntegrationAuthority(root3, receipt.certifiedHead);
   const allowedProofIntegrationPaths = proofIntegrationAuthority.paths;
@@ -17153,7 +17588,7 @@ function verifyCurrentReviewAssurance(repositoryRoot, context) {
     CURRENT_REVIEW_ASSURANCE_EVIDENCE_HEAD,
     "--"
   ]);
-  assert40.deepEqual(
+  assert41.deepEqual(
     evidenceDelta,
     [...CURRENT_REVIEW_EVIDENCE_PATHS].sort(),
     "Immutable current-review evidence commit changed bytes outside its exact receipt/report/log payload."
@@ -17167,8 +17602,7 @@ function verifyCurrentReviewAssurance(repositoryRoot, context) {
     "--"
   ]);
   assertCurrentReviewTrackedDriftAllowed(trackedPostCertificationDelta, allowedProofIntegrationPaths);
-  const dirtyPaths = currentReviewWorktreeDriftPaths(root3, proofIntegrationAuthority.temporarySupportRows);
-  assertCurrentReviewTrackedDriftAllowed(dirtyPaths, allowedProofIntegrationPaths);
+  assertCurrentReviewLiveSourceBytes(root3, receipt.certifiedHead, proofIntegrationAuthority);
   return {
     receipt,
     reference: {
@@ -17184,37 +17618,37 @@ function verifyCurrentReviewAssurance(repositoryRoot, context) {
 }
 
 // experiments/tla-conformance/final-convergence/build-final-registry.mjs
-import assert41 from "node:assert/strict";
+import assert42 from "node:assert/strict";
 var DIRECTORY4 = "experiments/tla-conformance/final-convergence/";
 function buildFinalRegistry(root3) {
   const valueFile = DIRECTORY4 + "final-v309.json", producerFile = DIRECTORY4 + "final-a121-b58.json";
   const value = JSON.parse(readAssuranceFile(root3, valueFile)), producer = JSON.parse(readAssuranceFile(root3, producerFile));
-  assert41.equal(value.proofKind, "final-convergence-value-v309-v1");
-  assert41.equal(producer.proofKind, "final-convergence-producer-a121-b58-v1");
-  assert41.equal(value.proofs.length, 309);
-  assert41.equal(producer.proofs.length, 179);
-  assert41.equal(value.surfaceDigest, producer.surfaceDigest);
+  assert42.equal(value.proofKind, "final-convergence-value-v309-v1");
+  assert42.equal(producer.proofKind, "final-convergence-producer-a121-b58-v1");
+  assert42.equal(value.proofs.length, 309);
+  assert42.equal(producer.proofs.length, 179);
+  assert42.equal(value.surfaceDigest, producer.surfaceDigest);
   const values = new Set(value.proofs.map((row) => row.surfaceKey));
   const producers = new Map(producer.proofs.map((row) => [row.surfaceKey, row.mode]));
-  assert41.equal(values.size, 309);
-  assert41.equal(producers.size, 179);
+  assert42.equal(values.size, 309);
+  assert42.equal(producers.size, 179);
   const valueRef = { file: valueFile, sha256: assuranceFileSha256(root3, valueFile) };
   const producerRef = { file: producerFile, sha256: assuranceFileSha256(root3, producerFile) };
   const bindings = epochRegistryRows.map((row) => {
     if (row.mode === "HARD_RED") return structuredClone(row);
     if (row.mode === "V") {
-      assert41(values.has(row.surfaceKey));
+      assert42(values.has(row.surfaceKey));
       return { surfaceKey: row.surfaceKey, mode: row.mode, evidence: valueRef };
     }
-    assert41.equal(producers.get(row.surfaceKey), row.mode);
+    assert42.equal(producers.get(row.surfaceKey), row.mode);
     return { surfaceKey: row.surfaceKey, mode: row.mode, evidence: producerRef };
   });
-  assert41.equal(bindings.length, 535);
+  assert42.equal(bindings.length, 535);
   return { schemaVersion: 1, owner: "InventoryOnceEpochMilliseconds", bindings };
 }
 
 // experiments/tla-conformance/final-convergence/final-selftest.mjs
-import assert42 from "node:assert/strict";
+import assert43 from "node:assert/strict";
 import fs39 from "node:fs";
 import path43 from "node:path";
 function runFinalAdversarialChecks(ROOT3, context) {
@@ -17237,27 +17671,27 @@ function runFinalAdversarialChecks(ROOT3, context) {
   const valueKey2 = supportedValueKeys[0];
   const producerA = supportedProducerRows.find((row) => row.mode === "A");
   const producerB = supportedProducerRows.find((row) => row.mode === "B");
-  assert42(producerA !== void 0 && producerB !== void 0);
-  assert42.deepEqual(verifyRegisteredValueBinding({ repositoryRoot: ROOT3, context, surface, binding: { surfaceKey: valueKey2, mode: "V", evidence: valueEvidence }, registrations: [valueRegistration] }), []);
-  assert42.equal(verifyRegisteredValueBinding({ repositoryRoot: ROOT3, context, surface, binding: { surfaceKey: valueKey2, mode: "A", evidence: valueEvidence }, registrations: [valueRegistration] })[0]?.code, "VALUE_FAMILY_PROOF_REJECTED");
+  assert43(producerA !== void 0 && producerB !== void 0);
+  assert43.deepEqual(verifyRegisteredValueBinding({ repositoryRoot: ROOT3, context, surface, binding: { surfaceKey: valueKey2, mode: "V", evidence: valueEvidence }, registrations: [valueRegistration] }), []);
+  assert43.equal(verifyRegisteredValueBinding({ repositoryRoot: ROOT3, context, surface, binding: { surfaceKey: valueKey2, mode: "A", evidence: valueEvidence }, registrations: [valueRegistration] })[0]?.code, "VALUE_FAMILY_PROOF_REJECTED");
   const tamperedValue = JSON.parse(fs39.readFileSync(finalConvergenceRepositoryPath(ROOT3, VALUE_FILE), "utf8"));
   tamperedValue.proofs[0].semantics = { ...tamperedValue.proofs[0].semantics, finalConvergenceTamper: true };
   const tamperedValueFile = writeTemp(".tampered-v309.json", tamperedValue);
   try {
-    assert42.equal(verifyRegisteredValueBinding({ repositoryRoot: ROOT3, context, surface, binding: { surfaceKey: tamperedValue.proofs[0].surfaceKey, mode: "V", evidence: evidence(tamperedValueFile) }, registrations: [valueRegistration] })[0]?.code, "VALUE_FAMILY_PROOF_REJECTED");
+    assert43.equal(verifyRegisteredValueBinding({ repositoryRoot: ROOT3, context, surface, binding: { surfaceKey: tamperedValue.proofs[0].surfaceKey, mode: "V", evidence: evidence(tamperedValueFile) }, registrations: [valueRegistration] })[0]?.code, "VALUE_FAMILY_PROOF_REJECTED");
   } finally {
     fs39.rmSync(finalConvergenceRepositoryPath(ROOT3, tamperedValueFile), { force: true });
   }
   for (const row of [producerA, producerB]) {
-    assert42.deepEqual(verifyRegisteredProducerBinding({ repositoryRoot: ROOT3, context, surface, binding: { surfaceKey: row.surfaceKey, mode: row.mode, evidence: producerEvidence }, registrations: [producerRegistration] }), []);
+    assert43.deepEqual(verifyRegisteredProducerBinding({ repositoryRoot: ROOT3, context, surface, binding: { surfaceKey: row.surfaceKey, mode: row.mode, evidence: producerEvidence }, registrations: [producerRegistration] }), []);
   }
-  assert42.equal(verifyRegisteredProducerBinding({ repositoryRoot: ROOT3, context, surface, binding: { surfaceKey: producerA.surfaceKey, mode: producerA.mode === "A" ? "B" : "A", evidence: producerEvidence }, registrations: [producerRegistration] })[0]?.code, "REGISTERED_PRODUCER_PROOF_REJECTED");
+  assert43.equal(verifyRegisteredProducerBinding({ repositoryRoot: ROOT3, context, surface, binding: { surfaceKey: producerA.surfaceKey, mode: producerA.mode === "A" ? "B" : "A", evidence: producerEvidence }, registrations: [producerRegistration] })[0]?.code, "REGISTERED_PRODUCER_PROOF_REJECTED");
   const tamperedProducer = JSON.parse(fs39.readFileSync(finalConvergenceRepositoryPath(ROOT3, PRODUCER_FILE), "utf8"));
   tamperedProducer.proofs[0].semantics = { ...tamperedProducer.proofs[0].semantics, finalConvergenceTamper: true };
   const tamperedProducerFile = writeTemp(".tampered-a121-b58.json", tamperedProducer);
   try {
     const row = tamperedProducer.proofs[0];
-    assert42.equal(verifyRegisteredProducerBinding({ repositoryRoot: ROOT3, context, surface, binding: { surfaceKey: row.surfaceKey, mode: row.mode, evidence: evidence(tamperedProducerFile) }, registrations: [producerRegistration] })[0]?.code, "REGISTERED_PRODUCER_PROOF_REJECTED");
+    assert43.equal(verifyRegisteredProducerBinding({ repositoryRoot: ROOT3, context, surface, binding: { surfaceKey: row.surfaceKey, mode: row.mode, evidence: evidence(tamperedProducerFile) }, registrations: [producerRegistration] })[0]?.code, "REGISTERED_PRODUCER_PROOF_REJECTED");
   } finally {
     fs39.rmSync(finalConvergenceRepositoryPath(ROOT3, tamperedProducerFile), { force: true });
   }
@@ -17282,7 +17716,7 @@ function runFinalAdversarialChecks(ROOT3, context) {
       fs39.writeFileSync(target, `${JSON.stringify(forged, null, 2)}
 `);
       fs39.utimesSync(target, times.atime, times.mtime);
-      assert42.throws(() => buildArtifact({ repositoryRoot: ROOT3, context, surface }), /Frozen assurance evidence differs from immutable proof input/u, `Re-signed ${file} must not acquire proof credit.`);
+      assert43.throws(() => buildArtifact({ repositoryRoot: ROOT3, context, surface }), /Frozen assurance evidence differs from immutable proof input/u, `Re-signed ${file} must not acquire proof credit.`);
     } finally {
       fs39.writeFileSync(target, original);
       fs39.utimesSync(target, times.atime, times.mtime);
@@ -17323,14 +17757,14 @@ function verifyFinalBindings(root3, context) {
   const registry = JSON.parse(readAssuranceFile(root3, DIRECTORY5 + "final-surface-bindings.json"));
   const counts = {};
   for (const row of registry.bindings) counts[row.mode] = (counts[row.mode] ?? 0) + 1;
-  assert43.deepEqual(counts, { A: 121, V: 309, B: 58, HARD_RED: 47 });
-  assert43.deepEqual(registry.bindings.filter((row) => row.mode === "HARD_RED"), epochRegistryRows.filter((row) => row.mode === "HARD_RED"));
-  assert43.deepEqual(registry.bindings.filter((row) => row.mode === "V").map((row) => row.surfaceKey).sort(), [...supportedValueKeys].sort());
-  assert43.deepEqual(registry.bindings.filter((row) => row.mode === "A" || row.mode === "B").map((row) => ({ surfaceKey: row.surfaceKey, mode: row.mode })).sort((a, b) => a.surfaceKey < b.surfaceKey ? -1 : a.surfaceKey > b.surfaceKey ? 1 : 0), supportedProducerRows);
+  assert44.deepEqual(counts, { A: 121, V: 309, B: 58, HARD_RED: 47 });
+  assert44.deepEqual(registry.bindings.filter((row) => row.mode === "HARD_RED"), epochRegistryRows.filter((row) => row.mode === "HARD_RED"));
+  assert44.deepEqual(registry.bindings.filter((row) => row.mode === "V").map((row) => row.surfaceKey).sort(), [...supportedValueKeys].sort());
+  assert44.deepEqual(registry.bindings.filter((row) => row.mode === "A" || row.mode === "B").map((row) => ({ surfaceKey: row.surfaceKey, mode: row.mode })).sort((a, b) => a.surfaceKey < b.surfaceKey ? -1 : a.surfaceKey > b.surfaceKey ? 1 : 0), supportedProducerRows);
   const diagnostics = checkBindings({ repositoryRoot: root3, surface: context.surface, registries: [registry], compilerContext: context, registeredProducerFamilies: [{ proofKind: producerProofKind, buildFamilyArtifact: buildFinalProducerArtifact, supportedSurfaceRows: supportedProducerRows }] });
   const unexpectedRows = diagnostics.filter((row) => row.code !== "EXPLICIT_HARD_RED");
-  assert43.deepEqual(unexpectedRows, [], "Central binder rejected a current strict row.");
-  assert43.equal(diagnostics.length, 47);
+  assert44.deepEqual(unexpectedRows, [], "Central binder rejected a current strict row.");
+  assert44.equal(diagnostics.length, 47);
   return {
     status: "FINAL_BINDER_GREEN",
     surfaceDigest: context.surface.digest,
@@ -17347,7 +17781,7 @@ function verifyFinalBindings(root3, context) {
 }
 function verifyFinalRegistry(root3) {
   const current = JSON.parse(readAssuranceFile(root3, DIRECTORY5 + "final-surface-bindings.json"));
-  assert43.deepEqual(buildFinalRegistry(root3), current, "Exact final registry is stale.");
+  assert44.deepEqual(buildFinalRegistry(root3), current, "Exact final registry is stale.");
   return { status: "FINAL_535_REGISTRY_BUILT", counts: { A: 121, B: 58, V: 309, HARD_RED: 47 } };
 }
 function verifyFinalAdversarial(root3, context) {
