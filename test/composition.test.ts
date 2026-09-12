@@ -594,6 +594,12 @@ describe("revision-frozen heterogeneous package composition", () => {
         [copied.compositionId]: copied.revisionId,
       },
     });
+    const originalOutput = callerOutputs[0];
+    if (originalOutput === undefined) {
+      throw new Error("Composition output fixture disappeared.");
+    }
+    // Mutate the exact object handed to the catalogue before replacing the array slot.
+    Reflect.set(originalOutput, "outputId", "mutated-in-place");
     callerOutputs[0] = {
       outputId: "mutated",
       itemRevisionId: "active-a-v1",
