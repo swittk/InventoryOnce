@@ -82,10 +82,12 @@ function trackedFiles(root) {
   return files;
 }
 function ordinaryBytes(root, file) {
-  const target = assuranceRepositoryPath(root, file);
-  assert(native.lstatSync(target).isFile(), `Assurance input is not an ordinary file: ${file}`);
-  const fd = native.openSync(target, fs.constants.O_RDONLY | fs.constants.O_NOFOLLOW);
-  try { return native.readFileSync(fd); } finally { native.closeSync(fd); }
+  return runWithoutAssuranceFileObservation(() => {
+    const target = assuranceRepositoryPath(root, file);
+    assert(native.lstatSync(target).isFile(), `Assurance input is not an ordinary file: ${file}`);
+    const fd = native.openSync(target, fs.constants.O_RDONLY | fs.constants.O_NOFOLLOW);
+    try { return native.readFileSync(fd); } finally { native.closeSync(fd); }
+  });
 }
 
 /** Hash the exact compiler root file set selected by tsconfig.test.json before any cache reuse. */
@@ -139,7 +141,7 @@ function snapshot(root, manifest) {
       bytes = runWithoutAssuranceFileObservation(() => native.readFileSync(target)); kind = "toolchain";
     } else {
       assert(tracked.has(file) || archived.has(file) || outputs.has(file), `Ambient/untracked proof input is forbidden: ${file}`);
-      bytes = runWithoutAssuranceFileObservation(() => ordinaryBytes(root, file)); kind = archived.has(file) && !tracked.has(file) ? "archived" : "tracked";
+      bytes = ordinaryBytes(root, file); kind = archived.has(file) && !tracked.has(file) ? "archived" : "tracked";
       if (kind === "archived") assert.equal(sha(bytes), archived.get(file).sha256, `Materialized support changed without a tracked archive update: ${file}`);
     }
     const entry = { file, kind, bytes, sha256: sha(bytes), sizeBytes: bytes.length };
