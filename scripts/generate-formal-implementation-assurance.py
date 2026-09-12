@@ -311,9 +311,6 @@ for trace_id, trace in trace_manifest['entries'].items():
  )
  if not trace['apiEntries']:
   raise RuntimeError(f'bounded trace {trace_id} maps to no current public API')
-trace_path.write_text(json.dumps(trace_manifest, indent=2, sort_keys=True) + '\n')
-
-
 # Count complete call/construct signatures represented by one discovered public row.
 def signature_count(row):
  if 'signatures' in row: return len(row['signatures'])
@@ -465,6 +462,8 @@ field_manifest={
 
 out=pkg/'formal/implementation-conformance'
 out.mkdir(parents=True,exist_ok=True)
+# Publish the generated evidence set only after every manifest has been derived successfully.
+trace_path.write_text(json.dumps(trace_manifest, indent=2, sort_keys=True) + '\n')
 (out/'API_ASSURANCE.json').write_text(json.dumps(api_manifest,indent=2,sort_keys=True)+'\n')
 (out/'FIELD_CLASSIFICATION.json').write_text(json.dumps(field_manifest,indent=2,sort_keys=True)+'\n')
 (out/'CALL_CHAIN_ASSURANCE.json').write_text(json.dumps({

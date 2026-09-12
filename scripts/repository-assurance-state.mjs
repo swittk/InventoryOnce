@@ -36,6 +36,19 @@ function hashAssuranceEntries(entries) {
 
 /** Enumerate one authoritative repository domain without ambient global/info excludes or local coordination. */
 export function repositoryAssuranceInputPaths(repositoryRoot, untrackedOnly = false) {
+  // An untracked ignore file can otherwise hide both itself and sibling proof/source bytes from --others.
+  const untrackedIgnoreFiles = spawnSync(
+    "git",
+    ["-c", "core.excludesFile=/dev/null", "ls-files", "--others", "-z", "--", "*.gitignore", ".gitignore"],
+    { cwd: repositoryRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }
+  );
+  if (untrackedIgnoreFiles.error !== undefined || untrackedIgnoreFiles.status !== 0) {
+    throw new Error("Unable to enumerate untracked repository ignore files.");
+  }
+  const ambientIgnoreFiles = untrackedIgnoreFiles.stdout.split("\0").filter(includedPath);
+  if (ambientIgnoreFiles.length !== 0) {
+    throw new Error(`Untracked ignore files must not narrow the assurance domain: ${ambientIgnoreFiles.join(", ")}.`);
+  }
   const listed = spawnSync(
     "git",
     ["-c", "core.excludesFile=/dev/null", "ls-files", ...(untrackedOnly ? [] : ["--cached"]), "--others", "--exclude-per-directory=.gitignore", "-z"],

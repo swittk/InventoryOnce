@@ -83,6 +83,27 @@ test("current-review drift enumeration includes untracked authoritative inputs b
   );
 }));
 
+test("untracked ignore files cannot hide authoritative untracked inputs", () => temporaryDirectory(directory => {
+  execFileSync("git", ["init", "-q"], { cwd: directory });
+  execFileSync("git", ["config", "user.email", "assurance@example.invalid"], { cwd: directory });
+  execFileSync("git", ["config", "user.name", "InventoryOnce assurance"], { cwd: directory });
+  fs.writeFileSync(path.join(directory, "package.json"), "{}\n");
+  fs.mkdirSync(path.join(directory, "src"));
+  fs.writeFileSync(path.join(directory, "src", "tracked.ts"), "export const tracked = true;\n");
+  execFileSync("git", ["add", "."], { cwd: directory });
+  execFileSync("git", ["commit", "-qm", "baseline"], { cwd: directory });
+  fs.writeFileSync(path.join(directory, "src", ".gitignore"), "*\n");
+  fs.writeFileSync(path.join(directory, "src", "hidden.ts"), "export const hidden = true;\n");
+  assert.throws(
+    () => repositoryAssuranceStateSha256(directory),
+    /Untracked ignore files must not narrow the assurance domain/u,
+  );
+  assert.throws(
+    () => currentReviewWorktreeDriftPaths(directory),
+    /Untracked ignore files must not narrow the assurance domain/u,
+  );
+}));
+
 test("mutable current-review receipt cannot choose proof-integration authority", () => {
   const receiptPath = path.join(
     root,
