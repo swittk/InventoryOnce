@@ -22,7 +22,10 @@ import type {
   InventoryMigrationPlan,
 } from "../src/migrations.js";
 import type { InventoryMigrationSourceDisposition } from "../src/migration-evidence.js";
-import type { InventoryTraceabilityState } from "../src/traceability.js";
+import type {
+  InventoryTraceabilityRelation,
+  InventoryTraceabilityState,
+} from "../src/traceability.js";
 import {
   InventoryAuthorityActivationKind,
   InventoryAuthorityMode,
@@ -822,6 +825,13 @@ export function assertAbstractInventoryInvariants(
       Object.keys(world.projection.eventIdByOperationId).length !== operationIds.size) {
     throw new Error("Event indexes retain entries without a published event.");
   }
+  for (const relation of Object.values(world.projection.traceability.relations)) {
+    if (!eventIds.has(relation.createdByEventId)) {
+      throw new Error(
+        `Traceability relation names missing creating event '${relation.createdByEventId}'.`
+      );
+    }
+  }
   assertAbstractPositionIndexes(world.projection);
   assertAbstractHistoryIndexes(world.projection);
   assertAbstractTraceabilityInvariants(world.projection.traceability);
@@ -1019,31 +1029,99 @@ export function assertAbstractCountInvariants(book: InventoryCountBook): void {
   }
 }
 
-/** Independently check that the effective containment graph is acyclic. */
+/** Derive one traceability node identity without calling the production identity helper. */
+function abstractTraceabilityNodeIdentity(
+  node: InventoryTraceabilityRelation["from"]
+): string {
+  return JSON.stringify([node.kind, node.itemId ?? null, node.id]);
+}
+
+/** Reject a cycle in one independently derived directed adjacency map without recursion. */
+function assertAbstractDirectedGraphAcyclic(
+  outputsByInput: ReadonlyMap<string, readonly string[]>,
+  label: string
+): void {
+  const visited = new Set<string>();
+  const active = new Set<string>();
+  for (const start of outputsByInput.keys()) {
+    if (visited.has(start)) continue;
+    const stack: { node: string; nextOutput: number }[] = [
+      { node: start, nextOutput: 0 },
+    ];
+    active.add(start);
+    while (stack.length > 0) {
+      const frame = stack[stack.length - 1];
+      if (frame === undefined) break;
+      const outputs = outputsByInput.get(frame.node) ?? [];
+      if (frame.nextOutput >= outputs.length) {
+        active.delete(frame.node);
+        visited.add(frame.node);
+        stack.pop();
+        continue;
+      }
+      const output = outputs[frame.nextOutput];
+      frame.nextOutput += 1;
+      if (output === undefined) continue;
+      if (active.has(output))
+        throw new Error(`Abstract ${label} graph contains a cycle.`);
+      if (visited.has(output)) continue;
+      active.add(output);
+      stack.push({ node: output, nextOutput: 0 });
+    }
+  }
+}
+
+/** Independently check effective traceability identities, indexes, and graph invariants. */
 export function assertAbstractTraceabilityInvariants(
   state: InventoryTraceabilityState
 ): void {
-  const childrenByParent = new Map<string, string[]>();
-  for (const relation of Object.values(state.relations)) {
-    if (relation.kind !== "containment") continue;
-    const child = JSON.stringify(canonicalValue(relation.from));
-    const parent = JSON.stringify(canonicalValue(relation.to));
-    const children = childrenByParent.get(parent) ?? [];
-    children.push(child);
-    childrenByParent.set(parent, children);
+  const parentByChild = new Map<string, string>();
+  const containmentOutputs = new Map<string, string[]>();
+  const genealogyOutputs = new Map<string, string[]>();
+  const containerChildrenByParent = new Map<string, string[]>();
+  for (const [identity, relation] of Object.entries(state.relations)) {
+    const fromIdentity = abstractTraceabilityNodeIdentity(relation.from);
+    const toIdentity = abstractTraceabilityNodeIdentity(relation.to);
+    const expectedIdentity = JSON.stringify([
+      relation.kind,
+      fromIdentity,
+      toIdentity,
+    ]);
+    if (identity !== expectedIdentity) {
+      throw new Error(
+        "Traceability relation dictionary key disagrees with its primary identity."
+      );
+    }
+    if (relation.kind === "containment") {
+      const earlierParent = parentByChild.get(fromIdentity);
+      if (earlierParent !== undefined && earlierParent !== toIdentity) {
+        throw new Error(
+          `Abstract contained node '${fromIdentity}' cannot have two parents.`
+        );
+      }
+      parentByChild.set(fromIdentity, toIdentity);
+      addAbstractIndexMember(containmentOutputs, fromIdentity, toIdentity);
+      if (relation.from.kind === "container" && relation.to.kind === "container") {
+        addAbstractIndexMember(
+          containerChildrenByParent,
+          toIdentity,
+          relation.from.id
+        );
+      }
+    } else if (relation.kind === "genealogy") {
+      addAbstractIndexMember(genealogyOutputs, fromIdentity, toIdentity);
+    }
   }
-  const visiting = new Set<string>();
-  const visited = new Set<string>();
-  const visit = (node: string): void => {
-    if (visiting.has(node))
-      throw new Error("Abstract containment graph contains a cycle.");
-    if (visited.has(node)) return;
-    visiting.add(node);
-    for (const child of childrenByParent.get(node) ?? []) visit(child);
-    visiting.delete(node);
-    visited.add(node);
-  };
-  for (const node of childrenByParent.keys()) visit(node);
+  assertAbstractGroupedIndex(
+    state.containmentChildContainerIdsByParentNodeIdentity,
+    containerChildrenByParent,
+    "Containment child container"
+  );
+  assertAbstractDirectedGraphAcyclic(
+    containmentOutputs,
+    "containment"
+  );
+  assertAbstractDirectedGraphAcyclic(genealogyOutputs, "genealogy");
 }
 
 /** Independently check mode/evidence prerequisites in one authority state. */

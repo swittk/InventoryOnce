@@ -108,21 +108,166 @@ describe("formal implementation state/result refinement", () => {
     };
     expect(abstractPositionIdentity(left)).toBe(abstractPositionIdentity(right));
 
+    const semanticSelfNodeIdentity = JSON.stringify([
+      InventoryTraceabilityNodeKind.Container,
+      null,
+      "SAME",
+    ]);
+    const semanticSelfRelationIdentity = JSON.stringify([
+      InventoryTraceabilityRelationKind.Containment,
+      semanticSelfNodeIdentity,
+      semanticSelfNodeIdentity,
+    ]);
     const traceability: InventoryTraceabilityState = {
       relations: {
-        "semantic-self-cycle": {
+        [semanticSelfRelationIdentity]: {
           kind: InventoryTraceabilityRelationKind.Containment,
           from: { kind: InventoryTraceabilityNodeKind.Container, id: "SAME" },
           to: { id: "SAME", kind: InventoryTraceabilityNodeKind.Container },
           createdByEventId: "semantic-self-cycle-event",
         },
       },
-      containmentChildContainerIdsByParentNodeIdentity: {},
+      containmentChildContainerIdsByParentNodeIdentity: {
+        [semanticSelfNodeIdentity]: ["SAME"],
+      },
     };
     expect(() => assertAbstractTraceabilityInvariants(traceability)).toThrow(
       "cycle"
     );
   });
+
+  it("rejects corrupted traceability primary keys indexes and graph shape", () => {
+    const nodeIdentity = (node: {
+      readonly kind: InventoryTraceabilityNodeKind;
+      readonly id: string;
+      readonly itemId?: string;
+    }): string => JSON.stringify([node.kind, node.itemId ?? null, node.id]);
+    const relationIdentity = (relation: {
+      readonly kind: InventoryTraceabilityRelationKind;
+      readonly from: Parameters<typeof nodeIdentity>[0];
+      readonly to: Parameters<typeof nodeIdentity>[0];
+    }): string =>
+      JSON.stringify([
+        relation.kind,
+        nodeIdentity(relation.from),
+        nodeIdentity(relation.to),
+      ]);
+    const child = {
+      kind: InventoryTraceabilityNodeKind.Container,
+      id: "formal-child",
+    };
+    const parent = {
+      kind: InventoryTraceabilityNodeKind.Container,
+      id: "formal-parent",
+    };
+    const relation = {
+      kind: InventoryTraceabilityRelationKind.Containment,
+      from: child,
+      to: parent,
+      createdByEventId: "formal-event",
+    };
+    const identity = relationIdentity(relation);
+    const parentIdentity = nodeIdentity(parent);
+
+    expect(() =>
+      assertAbstractTraceabilityInvariants({
+        relations: { "wrong-relation-key": relation },
+        containmentChildContainerIdsByParentNodeIdentity: {
+          [parentIdentity]: [child.id],
+        },
+      })
+    ).toThrow("dictionary key");
+    expect(() =>
+      assertAbstractTraceabilityInvariants({
+        relations: { [identity]: relation },
+        containmentChildContainerIdsByParentNodeIdentity: {
+          "wrong-parent": ["wrong-child"],
+        },
+      })
+    ).toThrow("Containment child container index");
+
+    const parent2 = {
+      kind: InventoryTraceabilityNodeKind.Container,
+      id: "formal-parent-2",
+    };
+    const relation2 = { ...relation, to: parent2 };
+    expect(() =>
+      assertAbstractTraceabilityInvariants({
+        relations: {
+          [identity]: relation,
+          [relationIdentity(relation2)]: relation2,
+        },
+        containmentChildContainerIdsByParentNodeIdentity: {},
+      })
+    ).toThrow("two parents");
+
+    const serialA = {
+      kind: InventoryTraceabilityNodeKind.Serial,
+      id: "formal-serial-a",
+    };
+    const serialB = {
+      kind: InventoryTraceabilityNodeKind.Serial,
+      id: "formal-serial-b",
+    };
+    const genealogyAB = {
+      kind: InventoryTraceabilityRelationKind.Genealogy,
+      from: serialA,
+      to: serialB,
+      createdByEventId: "formal-genealogy-a",
+    };
+    const genealogyBA = {
+      ...genealogyAB,
+      from: serialB,
+      to: serialA,
+      createdByEventId: "formal-genealogy-b",
+    };
+    expect(() =>
+      assertAbstractTraceabilityInvariants({
+        relations: {
+          [relationIdentity(genealogyAB)]: genealogyAB,
+          [relationIdentity(genealogyBA)]: genealogyBA,
+        },
+        containmentChildContainerIdsByParentNodeIdentity: {},
+      })
+    ).toThrow("genealogy graph contains a cycle");
+  });
+
+  it("binds current traceability provenance to committed event history", async () => {
+    const inventory = createTestInventory();
+    await inventory.traceability.aggregate({
+      operationId: "formal-provenance-aggregate",
+      occurredAtEpochMs: time0,
+      from: {
+        kind: InventoryTraceabilityNodeKind.Container,
+        id: "formal-provenance-child",
+      },
+      to: {
+        kind: InventoryTraceabilityNodeKind.Container,
+        id: "formal-provenance-parent",
+      },
+    });
+    const world = await inventory.read.world();
+    expect(() => assertAbstractInventoryInvariants(world)).not.toThrow();
+    const entry = Object.entries(world.projection.traceability.relations)[0];
+    if (entry === undefined) throw new Error("Expected retained traceability relation.");
+    const [identity, relation] = entry;
+    const corrupted = {
+      ...world,
+      projection: {
+        ...world.projection,
+        traceability: {
+          ...world.projection.traceability,
+          relations: {
+            [identity]: { ...relation, createdByEventId: "missing-event" },
+          },
+        },
+      },
+    };
+    expect(() => assertAbstractInventoryInvariants(corrupted)).toThrow(
+      "missing creating event"
+    );
+  });
+
   it("preserves special metadata keys in the independent formal abstraction", () => {
     const catalog = createTabletCatalog();
     const evidence = JSON.parse(
