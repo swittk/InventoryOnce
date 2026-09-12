@@ -349,6 +349,13 @@ function vitestSuiteChildrenExecute(metadata) {
   return metadata.registration === "describe" && vitestRegistrationRuns(metadata);
 }
 
+/** Grant proof credit only to Promise handlers that run on the ordinary fulfilled/settled path. */
+function standardLibraryPromiseCallbackCanExecute(methodName, argumentIndex) {
+  if (methodName === "then") return argumentIndex === 0;
+  if (methodName === "catch") return false;
+  return methodName === "finally" && argumentIndex === 0;
+}
+
 /** Exclude literal array calls that cannot dispatch a callback, including sparse and singleton reductions/sorts. */
 function standardLibraryCallbackCanExecute(ts, node, methodName, checker) {
   const access = unwrappedExpression(ts, node.expression);
@@ -379,6 +386,7 @@ function standardLibraryCallbackCanExecute(ts, node, methodName, checker) {
 
 module.exports = {
   standardLibraryCallbackCanExecute,
+  standardLibraryPromiseCallbackCanExecute,
   expressionHasProperty,
   vitestRegistrationMode,
   vitestRegistrationNameFromExpression,

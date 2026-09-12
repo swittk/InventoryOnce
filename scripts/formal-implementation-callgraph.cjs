@@ -6,6 +6,7 @@ const {
   expressionHasProperty,
   staticBooleanValue,
   standardLibraryCallbackCanExecute,
+  standardLibraryPromiseCallbackCanExecute,
   vitestCallbackExecutes,
   vitestConditionalMetadata,
   vitestFocusedRegistrationNode,
@@ -590,8 +591,11 @@ function externalCallbackArgumentIndexes(node) {
   if (ts.isPropertyAccessExpression(node.expression)) methodName = node.expression.name.text;
   else if (ts.isIdentifier(node.expression)) methodName = node.expression.text;
   if (arrayCallbackMethods.has(methodName) && standardLibraryCallbackCanExecute(ts, node, methodName, checker)) indexes.add(0);
-  else if (methodName === "then") { indexes.add(0); indexes.add(1); }
-  else if (methodName === "catch" || methodName === "finally") indexes.add(0);
+  else if (methodName === "then" || methodName === "catch" || methodName === "finally") {
+    for (let index = 0; index < (node.arguments?.length ?? 0); index += 1) {
+      if (standardLibraryPromiseCallbackCanExecute(methodName, index)) indexes.add(index);
+    }
+  }
   else if (methodName === "from" && standardLibraryCallbackCanExecute(ts, node, methodName, checker)) indexes.add(1);
   if (ts.isNewExpression(node) && node.expression.getText(node.getSourceFile()) === "Promise") indexes.add(0);
   return indexes;

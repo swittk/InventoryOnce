@@ -10,6 +10,8 @@ const vitestSemantics = require(
   "../scripts/formal-implementation-vitest-semantics.cjs",
 ) as {
   readonly vitestCallbackExecutes: (metadata: VitestExecutionMetadata) => boolean;
+  /** Return whether one Promise callback position can prove ordinary execution. */
+  readonly standardLibraryPromiseCallbackCanExecute: (methodName: string, argumentIndex: number) => boolean;
   /** Return true only when TypeScript's bound control flow proves that one call can execute. */
   readonly compilerCallCanExecute: (
     ts: typeof import("typescript"),
@@ -138,6 +140,15 @@ function compilerFlowCallDecisions(sourceText: string): Readonly<Record<string, 
     rmSync(directory, { recursive: true, force: true });
   }
 }
+
+describe("formal call-graph Promise callback semantics", () => {
+  it("does not grant execution credit to rejection-only handlers", () => {
+    expect(vitestSemantics.standardLibraryPromiseCallbackCanExecute("then", 0)).toBe(true);
+    expect(vitestSemantics.standardLibraryPromiseCallbackCanExecute("then", 1)).toBe(false);
+    expect(vitestSemantics.standardLibraryPromiseCallbackCanExecute("catch", 0)).toBe(false);
+    expect(vitestSemantics.standardLibraryPromiseCallbackCanExecute("finally", 0)).toBe(true);
+  });
+});
 
 describe("formal call-graph Vitest callback semantics", () => {
   it("uses compiler flow without losing hoisting or targeted continue semantics", () => {
