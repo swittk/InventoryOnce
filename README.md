@@ -297,6 +297,8 @@ Because the complete plan is durable while an operation is applying, `repairInve
 
 The included memory adapter is the executable reference, not a production database adapter. A real adapter must pass the same conformance/failpoint suite and provide its advertised atomic or repairable publication guarantee.
 
+Low-level `/storage` delta appliers consume planner-produced or adapter-conformant protocol records. They are deliberately not a second application-input validation layer: adapter conformance establishes those cross-field semantics once, and the appliers enforce only the structural/base-book invariants needed for durable publication. Hand-building a semantically invalid delta is implementer misuse, not a supported kernel input that the reducer must revalidate.
+
 ## Migrations
 
 `@inventoryonce/core/migrations` lets application code declare typed bounded legacy queries. A declaration plugin may receive a catalogue owned elsewhere and return side-effect-free opening/traceability facts. A complete source plugin may instead reconstruct both the frozen native catalogue and the declaration from those same typed reads; this is the appropriate boundary when legacy item/package definitions are themselves part of the migration.
@@ -353,9 +355,9 @@ Required local gates are `pnpm check`, `pnpm test`, `pnpm build`, and `pnpm form
 InventoryOnce does not treat `mode === "authoritative"` as a sufficient write
 fence. A host application must use atomic writer admission around every legacy
 physical workflow and claim the cutover fence only after the active writer set
-is empty. The Shinebright adapter applies this at three levels: whole workflow,
-line-level mutation ledger, and direct Parse source triggers. Once the fence is
-claimed, further legacy source writes fail closed.
+is empty. A host adapter must apply equivalent writer admission at every legacy
+write boundary, such as whole workflows, line-level mutation ledgers, and direct
+source triggers. Once the fence is claimed, further legacy source writes must fail closed.
 
 Crashed admissions remain explicit repair work. The generic core deliberately
 does not prescribe a timeout that could erase a writer whose database outcome

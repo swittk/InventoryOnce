@@ -19,6 +19,15 @@ const BUNDLE = DIRECTORY + "compact-final-verify.mjs";
 const SOURCE_ENTRY = DIRECTORY + "run-final-verifier.mjs";
 const PIPELINE_SELF = "scripts/compact-assurance-pipeline.mjs";
 const DERIVED = new Set([MANIFEST, CLOSURE, WRAPPER, BUNDLE, DIRECTORY + "compact-final-selftest.mjs", DIRECTORY + "compact-final-registry.mjs", ...["final-head-transport.json", "final-v309.json", "final-a121-b58.json", "final-surface-bindings.json", "final-binder-report.json"].map(file => DIRECTORY + file)]);
+/** Tracked immutable baselines consumed by adversarial selftest after the traced read session. */
+const ADVERSARIAL_BASELINE_INPUTS = [
+  "authority-producer17.json",
+  "authority-value3.json",
+  "r137-v15.json",
+  "readworld-producer24.json",
+  "wrapper-producer11.json",
+  "r170-pristine-repro-transport.json",
+].map(file => DIRECTORY + file);
 const NO_CERTIFICATE = "0".repeat(40);
 const native = Object.fromEntries(["readFileSync", "existsSync", "readdirSync", "openSync", "closeSync", "lstatSync", "statSync", "writeFileSync"].map(name => [name, fs[name]]));
 const sha = bytes => crypto.createHash("sha256").update(bytes).digest("hex");
@@ -309,6 +318,7 @@ function assertClosure(root, closure, manifest) {
     assert.equal(sha(bytes),row.sha256,`Stale compact input hash: ${row.file}`);
   }
   for(const row of manifest.bundles.sources) assert(seen.has(row.file), `Unbound bundled executable input: ${row.file}`);
+  for(const file of ADVERSARIAL_BASELINE_INPUTS) assert(seen.has(file), `Unbound adversarial baseline input: ${file}`);
   for(const file of [PIPELINE_SELF, "package.json", "pnpm-lock.yaml", "tsconfig.json", "tsconfig.test.json", manifest.archive.file]) assert(seen.has(file), `Unbound compact root input: ${file}`);
   const currentCompilerRootSet = compactCompilerSourceSetIdentity(root);
   assert.deepEqual(closure.compilerRootSet, currentCompilerRootSet, "Compact compiler root set is stale.");
@@ -378,6 +388,8 @@ async function currentize(root, manifest, anchor) {
     // Independent central admission remains mandatory when there is no authenticated node cache.
     return {surfaceDigest:context.surface.digest};
   });
+  // Selftest mutates these files only after tracing; bind their pristine tracked bytes into every closure first.
+  for(const file of ADVERSARIAL_BASELINE_INPUTS) pass.hash(file);
   pass.finish();
   manifest.graph=graph;delete manifest.certification;
   const closure=closureDocument(pass,manifest,graph,result.surfaceDigest,compilerRootSet,compilerSourceSet);
@@ -397,6 +409,8 @@ async function validateMode(root,manifest,mode) {
     library.verifyFinalCurrentReview(root,context);
     result=mode==="registry"?library.verifyFinalRegistry(root):library.verifyFinalBindings(root,context);
   });
+  // The adversarial runner intentionally writes/restores baselines outside trace; freeze their pre-run bytes explicitly.
+  if(mode==="selftest") for(const file of ADVERSARIAL_BASELINE_INPUTS) pass.hash(file);
   pass.finish();
   const bound = new Map([...closure.rows,...closure.outputs].map(row=>[row.file,row]));
   for(const row of pass.inputRows()) {

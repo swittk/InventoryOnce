@@ -15,6 +15,12 @@ These rules are non-negotiable for every file in this standalone repository. The
 - A plain location transfer must preserve item, lot, serial, packaging revision, container, stock status, and owner. If one of those changes, use a verb that says what changed.
 - Never recreate `Substock`. A weird legacy child row must become packaging, an ordinary stock position, a container, or transformation output.
 
+## Adapter conformance boundary
+- Low-level `/storage` deltas and reducer inputs are planner-produced or adapter-conformant protocol records, not arbitrary application payloads.
+- Do not duplicate planner semantics inside delta appliers merely to defend against hand-built semantically invalid records. Adapter conformance establishes those cross-field invariants once; repeated validation is correctness-neutral overhead.
+- Before accepting a review finding against a low-level delta/reducer boundary, prove either that InventoryOnce itself can produce the bad record through a supported path or that the record still satisfies the adapter conformance contract. Otherwise classify it as implementer misuse/out of contract.
+- Never add hot-path scans, guards, clones, or fallback validation solely for a nonconforming adapter/caller. Fix the producer or adapter conformance instead.
+
 ## Correctness
 - Inventory truth uses exact quantities. No epsilon arithmetic.
 - Same idempotency identity must freeze the same intent. Changed retries fail closed.
