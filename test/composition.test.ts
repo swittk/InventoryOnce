@@ -4,6 +4,7 @@ import {
   InventoryCompositionOutputLotPolicy,
   InventoryEventKind,
   InventoryTraceabilityNodeKind,
+  InventoryWhereaboutsAction,
   createInventoryOnce,
   defineInventoryComposition,
   defineInventoryCatalog,
@@ -771,6 +772,70 @@ describe("revision-frozen heterogeneous package composition", () => {
         packageCount: 1,
       })
     ).resolves.toBeDefined();
+  });
+
+  it("keeps opening detached stock as reclassification instead of a second detach", async () => {
+    const fixture = ocpCatalog();
+    const inventory = createInventoryOnce({
+      catalog: fixture.catalog,
+      storage: createInMemoryInventoryDurableStorage(),
+      clock: clockAt(time3),
+    });
+    await inventory.stock.receive({
+      operationId: "receive-detached-composition-source",
+      occurredAtEpochMs: time0,
+      to: {
+        itemId: fixture.oldPackItem.itemId,
+        placementNodeId: "DETACHED-COMPOSITION-SOURCE",
+        lotId: "DETACHED-COMPOSITION-LOT",
+      },
+      amount: packageAmount(1, fixture.oldPack.revisionId),
+      lot: { expiresAtEpochMs: 1830297600000 },
+    });
+    await inventory.stock.detach({
+      operationId: "detach-composition-source",
+      occurredAtEpochMs: time1,
+      from: {
+        itemId: fixture.oldPackItem.itemId,
+        placementNodeId: "DETACHED-COMPOSITION-SOURCE",
+        lotId: "DETACHED-COMPOSITION-LOT",
+        packagingRevisionId: fixture.oldPack.revisionId,
+      },
+      amount: packageAmount(1, fixture.oldPack.revisionId),
+    });
+    const lifecycle = (await inventory.read.whereabouts())[0];
+    const source = lifecycle?.currentPositions[0];
+    if (lifecycle === undefined || source === undefined) {
+      throw new Error("Expected detached composition source.");
+    }
+
+    await inventory.compositions.open({
+      operationId: "open-detached-composition-source",
+      occurredAtEpochMs: time2,
+      from: {
+        ...source.key,
+        packagingRevisionId: fixture.oldPack.revisionId,
+      },
+      packageCount: 1,
+    });
+
+    const history = (
+      await inventory.read.whereaboutsHistory({
+        whereaboutsIds: [lifecycle.whereaboutsId],
+      })
+    )[0];
+    if (history === undefined) {
+      throw new Error("Expected detached composition lifecycle history.");
+    }
+    const actions = history.history.flatMap((entry) => entry.actions);
+    expect(
+      actions.filter((action) => action === InventoryWhereaboutsAction.Detached)
+    ).toHaveLength(1);
+    expect(
+      history.history.find(
+        (entry) => entry.event.operationId === "open-detached-composition-source"
+      )?.actions
+    ).toEqual([InventoryWhereaboutsAction.Reclassified]);
   });
 
   it("enforces strict, optional, and explicit lot policies without guessing", async () => {

@@ -341,12 +341,17 @@ function inventoryWhereaboutsActionsForEvent(
     }
   }
   if (actions.size === 0) {
-    const positiveUnresolved = event.stockEffects.find(
-      /** Find an unresolved destination when an opening/import created the cohort directly. */
-      (effect) =>
-        effect.position.whereaboutsId === whereaboutsId &&
-        effect.measurementsDelta.primary.quantity.amountMinor > 0
-    )?.position;
+    const createsCohortDirectly =
+      event.kind === InventoryEventKind.Opening ||
+      event.kind === InventoryEventKind.Receipt;
+    const positiveUnresolved = createsCohortDirectly
+      ? event.stockEffects.find(
+          /** Find an unresolved destination when an opening/import created the cohort directly. */
+          (effect) =>
+            effect.position.whereaboutsId === whereaboutsId &&
+            effect.measurementsDelta.primary.quantity.amountMinor > 0
+        )?.position
+      : undefined;
     if (
       positiveUnresolved?.whereaboutsState ===
       InventoryStockWhereaboutsState.Detached

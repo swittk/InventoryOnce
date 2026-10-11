@@ -3,8 +3,8 @@
     "authorityMethods": 14,
     "callAndConstructSignatures": 529,
     "classMethods": 71,
-    "compilerCallGraphCallables": 2860,
-    "compilerCallGraphEdges": 7427,
+    "compilerCallGraphCallables": 2864,
+    "compilerCallGraphEdges": 7441,
     "compilerCallGraphTestRoots": 45,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 529,
@@ -3178,20 +3178,20 @@
               "column": 63,
               "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/composition.test.ts:6880:<anonymous@223>",
+              "id": "test/composition.test.ts:6910:<anonymous@224>",
               "kind": "ArrowFunction",
-              "line": 223,
-              "name": "<anonymous@223>",
+              "line": 224,
+              "name": "<anonymous@224>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 82,
               "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/composition.test.ts:6969:<anonymous@224>",
+              "id": "test/composition.test.ts:6999:<anonymous@225>",
               "kind": "ArrowFunction",
-              "line": 224,
-              "name": "<anonymous@224>",
+              "line": 225,
+              "name": "<anonymous@225>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -3341,20 +3341,20 @@
               "column": 63,
               "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/composition.test.ts:6880:<anonymous@223>",
+              "id": "test/composition.test.ts:6910:<anonymous@224>",
               "kind": "ArrowFunction",
-              "line": 223,
-              "name": "<anonymous@223>",
+              "line": 224,
+              "name": "<anonymous@224>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 95,
               "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/composition.test.ts:18433:<anonymous@573>",
+              "id": "test/composition.test.ts:18463:<anonymous@574>",
               "kind": "ArrowFunction",
-              "line": 573,
-              "name": "<anonymous@573>",
+              "line": 574,
+              "name": "<anonymous@574>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -3800,20 +3800,20 @@
               "column": 56,
               "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/composition.test.ts:31083:<anonymous@942>",
+              "id": "test/composition.test.ts:33377:<anonymous@1007>",
               "kind": "ArrowFunction",
-              "line": 942,
-              "name": "<anonymous@942>",
+              "line": 1007,
+              "name": "<anonymous@1007>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 100,
               "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/composition.test.ts:31190:<anonymous@943>",
+              "id": "test/composition.test.ts:33484:<anonymous@1008>",
               "kind": "ArrowFunction",
-              "line": 943,
-              "name": "<anonymous@943>",
+              "line": 1008,
+              "name": "<anonymous@1008>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -8464,20 +8464,20 @@
               "column": 63,
               "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/composition.test.ts:6880:<anonymous@223>",
+              "id": "test/composition.test.ts:6910:<anonymous@224>",
               "kind": "ArrowFunction",
-              "line": 223,
-              "name": "<anonymous@223>",
+              "line": 224,
+              "name": "<anonymous@224>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 82,
               "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/composition.test.ts:6969:<anonymous@224>",
+              "id": "test/composition.test.ts:6999:<anonymous@225>",
               "kind": "ArrowFunction",
-              "line": 224,
-              "name": "<anonymous@224>",
+              "line": 225,
+              "name": "<anonymous@225>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -8627,20 +8627,20 @@
               "column": 63,
               "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/composition.test.ts:6880:<anonymous@223>",
+              "id": "test/composition.test.ts:6910:<anonymous@224>",
               "kind": "ArrowFunction",
-              "line": 223,
-              "name": "<anonymous@223>",
+              "line": 224,
+              "name": "<anonymous@224>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 95,
               "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/composition.test.ts:18433:<anonymous@573>",
+              "id": "test/composition.test.ts:18463:<anonymous@574>",
               "kind": "ArrowFunction",
-              "line": 573,
-              "name": "<anonymous@573>",
+              "line": 574,
+              "name": "<anonymous@574>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -9086,20 +9086,20 @@
               "column": 56,
               "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/composition.test.ts:31083:<anonymous@942>",
+              "id": "test/composition.test.ts:33377:<anonymous@1007>",
               "kind": "ArrowFunction",
-              "line": 942,
-              "name": "<anonymous@942>",
+              "line": 1007,
+              "name": "<anonymous@1007>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 100,
               "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/composition.test.ts:31190:<anonymous@943>",
+              "id": "test/composition.test.ts:33484:<anonymous@1008>",
               "kind": "ArrowFunction",
-              "line": 943,
-              "name": "<anonymous@943>",
+              "line": 1008,
+              "name": "<anonymous@1008>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -22228,29 +22228,29 @@
               "column": 56,
               "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/composition.test.ts:31083:<anonymous@942>",
+              "id": "test/composition.test.ts:33377:<anonymous@1007>",
               "kind": "ArrowFunction",
-              "line": 942,
-              "name": "<anonymous@942>",
+              "line": 1007,
+              "name": "<anonymous@1007>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 100,
               "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/composition.test.ts:31190:<anonymous@943>",
+              "id": "test/composition.test.ts:33484:<anonymous@1008>",
               "kind": "ArrowFunction",
-              "line": 943,
-              "name": "<anonymous@943>",
+              "line": 1008,
+              "name": "<anonymous@1008>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 20,
               "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/composition.test.ts:32147:create",
+              "id": "test/composition.test.ts:34441:create",
               "kind": "ArrowFunction",
-              "line": 953,
+              "line": 1018,
               "name": "create",
               "reason": "resolved-call"
             },
@@ -27247,20 +27247,20 @@
               "column": 63,
               "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/composition.test.ts:6880:<anonymous@223>",
+              "id": "test/composition.test.ts:6910:<anonymous@224>",
               "kind": "ArrowFunction",
-              "line": 223,
-              "name": "<anonymous@223>",
+              "line": 224,
+              "name": "<anonymous@224>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 91,
               "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/composition.test.ts:12921:<anonymous@414>",
+              "id": "test/composition.test.ts:12951:<anonymous@415>",
               "kind": "ArrowFunction",
-              "line": 414,
-              "name": "<anonymous@414>",
+              "line": 415,
+              "name": "<anonymous@415>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -27562,20 +27562,20 @@
               "column": 63,
               "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/composition.test.ts:6880:<anonymous@223>",
+              "id": "test/composition.test.ts:6910:<anonymous@224>",
               "kind": "ArrowFunction",
-              "line": 223,
-              "name": "<anonymous@223>",
+              "line": 224,
+              "name": "<anonymous@224>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 91,
               "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/composition.test.ts:12921:<anonymous@414>",
+              "id": "test/composition.test.ts:12951:<anonymous@415>",
               "kind": "ArrowFunction",
-              "line": 414,
-              "name": "<anonymous@414>",
+              "line": 415,
+              "name": "<anonymous@415>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -43843,29 +43843,29 @@
               "column": 56,
               "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/composition.test.ts:31083:<anonymous@942>",
+              "id": "test/composition.test.ts:33377:<anonymous@1007>",
               "kind": "ArrowFunction",
-              "line": 942,
-              "name": "<anonymous@942>",
+              "line": 1007,
+              "name": "<anonymous@1007>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 100,
               "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/composition.test.ts:31190:<anonymous@943>",
+              "id": "test/composition.test.ts:33484:<anonymous@1008>",
               "kind": "ArrowFunction",
-              "line": 943,
-              "name": "<anonymous@943>",
+              "line": 1008,
+              "name": "<anonymous@1008>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 20,
               "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/composition.test.ts:32147:create",
+              "id": "test/composition.test.ts:34441:create",
               "kind": "ArrowFunction",
-              "line": 953,
+              "line": 1018,
               "name": "create",
               "reason": "resolved-call"
             },
@@ -45726,40 +45726,40 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/formal-public-surface-completion.test.ts",
+              "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test-root:test/formal-public-surface-completion.test.ts",
+              "id": "test-root:test/composition.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/formal-public-surface-completion.test.ts"
+              "name": "test/composition.test.ts"
             },
             {
-              "column": 54,
-              "file": "test/formal-public-surface-completion.test.ts",
+              "column": 63,
+              "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:2686:<anonymous@87>",
+              "id": "test/composition.test.ts:6910:<anonymous@224>",
               "kind": "ArrowFunction",
-              "line": 87,
-              "name": "<anonymous@87>",
+              "line": 224,
+              "name": "<anonymous@224>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 73,
-              "file": "test/formal-public-surface-completion.test.ts",
+              "column": 85,
+              "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:7098:<anonymous@205>",
+              "id": "test/composition.test.ts:25628:<anonymous@777>",
               "kind": "ArrowFunction",
-              "line": 205,
-              "name": "<anonymous@205>",
+              "line": 777,
+              "name": "<anonymous@777>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": false,
-              "id": "src/facade.ts:71359:whereaboutsHistory",
+              "id": "src/facade.ts:75033:whereaboutsHistory",
               "kind": "MethodSignature",
-              "line": 1718,
+              "line": 1792,
               "name": "whereaboutsHistory",
               "reason": "resolved-call"
             },
@@ -45767,9 +45767,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:324214:whereaboutsHistory",
+              "id": "src/facade.ts:332530:whereaboutsHistory",
               "kind": "MethodDeclaration",
-              "line": 8802,
+              "line": 9044,
               "name": "whereaboutsHistory",
               "reason": "interface-to-implementation"
             },
@@ -45793,7 +45793,7 @@
             "line": 181,
             "name": "findInventoryWhereaboutsHistory"
           },
-          "test": "test/formal-public-surface-completion.test.ts"
+          "test": "test/composition.test.ts"
         }
       ],
       "directExecutableEntrypoints": [],
@@ -47396,20 +47396,20 @@
               "column": 63,
               "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/composition.test.ts:6880:<anonymous@223>",
+              "id": "test/composition.test.ts:6910:<anonymous@224>",
               "kind": "ArrowFunction",
-              "line": 223,
-              "name": "<anonymous@223>",
+              "line": 224,
+              "name": "<anonymous@224>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 91,
               "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/composition.test.ts:12921:<anonymous@414>",
+              "id": "test/composition.test.ts:12951:<anonymous@415>",
               "kind": "ArrowFunction",
-              "line": 414,
-              "name": "<anonymous@414>",
+              "line": 415,
+              "name": "<anonymous@415>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -47711,20 +47711,20 @@
               "column": 63,
               "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/composition.test.ts:6880:<anonymous@223>",
+              "id": "test/composition.test.ts:6910:<anonymous@224>",
               "kind": "ArrowFunction",
-              "line": 223,
-              "name": "<anonymous@223>",
+              "line": 224,
+              "name": "<anonymous@224>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 91,
               "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/composition.test.ts:12921:<anonymous@414>",
+              "id": "test/composition.test.ts:12951:<anonymous@415>",
               "kind": "ArrowFunction",
-              "line": 414,
-              "name": "<anonymous@414>",
+              "line": 415,
+              "name": "<anonymous@415>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -49123,40 +49123,40 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/formal-public-surface-completion.test.ts",
+              "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test-root:test/formal-public-surface-completion.test.ts",
+              "id": "test-root:test/composition.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/formal-public-surface-completion.test.ts"
+              "name": "test/composition.test.ts"
             },
             {
-              "column": 54,
-              "file": "test/formal-public-surface-completion.test.ts",
+              "column": 63,
+              "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:2686:<anonymous@87>",
+              "id": "test/composition.test.ts:6910:<anonymous@224>",
               "kind": "ArrowFunction",
-              "line": 87,
-              "name": "<anonymous@87>",
+              "line": 224,
+              "name": "<anonymous@224>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 73,
-              "file": "test/formal-public-surface-completion.test.ts",
+              "column": 85,
+              "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-completion.test.ts:7098:<anonymous@205>",
+              "id": "test/composition.test.ts:25628:<anonymous@777>",
               "kind": "ArrowFunction",
-              "line": 205,
-              "name": "<anonymous@205>",
+              "line": 777,
+              "name": "<anonymous@777>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": false,
-              "id": "src/facade.ts:71165:whereabouts",
+              "id": "src/facade.ts:74830:whereabouts",
               "kind": "MethodSignature",
-              "line": 1714,
+              "line": 1788,
               "name": "whereabouts",
               "reason": "resolved-call"
             },
@@ -49164,9 +49164,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:323915:whereabouts",
+              "id": "src/facade.ts:332208:whereabouts",
               "kind": "MethodDeclaration",
-              "line": 8792,
+              "line": 9034,
               "name": "whereabouts",
               "reason": "interface-to-implementation"
             },
@@ -49200,7 +49200,7 @@
             "line": 71,
             "name": "inventoryWhereaboutsLifecycles"
           },
-          "test": "test/formal-public-surface-completion.test.ts"
+          "test": "test/composition.test.ts"
         }
       ],
       "directExecutableEntrypoints": [],
@@ -60221,20 +60221,20 @@
               "column": 63,
               "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/composition.test.ts:6880:<anonymous@223>",
+              "id": "test/composition.test.ts:6910:<anonymous@224>",
               "kind": "ArrowFunction",
-              "line": 223,
-              "name": "<anonymous@223>",
+              "line": 224,
+              "name": "<anonymous@224>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 82,
               "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/composition.test.ts:6969:<anonymous@224>",
+              "id": "test/composition.test.ts:6999:<anonymous@225>",
               "kind": "ArrowFunction",
-              "line": 224,
-              "name": "<anonymous@224>",
+              "line": 225,
+              "name": "<anonymous@225>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -64709,7 +64709,7 @@
           "path": "src/transfers.ts"
         },
         {
-          "occurrences": 40,
+          "occurrences": 42,
           "path": "src/whereabouts.ts"
         },
         {
@@ -67305,31 +67305,31 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/whereabouts.test.ts",
+              "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test-root:test/whereabouts.test.ts",
+              "id": "test-root:test/composition.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/whereabouts.test.ts"
+              "name": "test/composition.test.ts"
             },
             {
-              "column": 52,
-              "file": "test/whereabouts.test.ts",
+              "column": 63,
+              "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/whereabouts.test.ts:1884:<anonymous@64>",
+              "id": "test/composition.test.ts:6910:<anonymous@224>",
               "kind": "ArrowFunction",
-              "line": 64,
-              "name": "<anonymous@64>",
+              "line": 224,
+              "name": "<anonymous@224>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 82,
-              "file": "test/whereabouts.test.ts",
+              "column": 85,
+              "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/whereabouts.test.ts:18046:<anonymous@510>",
+              "id": "test/composition.test.ts:25628:<anonymous@777>",
               "kind": "ArrowFunction",
-              "line": 510,
-              "name": "<anonymous@510>",
+              "line": 777,
+              "name": "<anonymous@777>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -67362,7 +67362,7 @@
             "line": 9034,
             "name": "whereabouts"
           },
-          "test": "test/whereabouts.test.ts"
+          "test": "test/composition.test.ts"
         }
       ],
       "directExecutableEntrypoints": [],
@@ -67490,31 +67490,31 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/whereabouts.test.ts",
+              "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test-root:test/whereabouts.test.ts",
+              "id": "test-root:test/composition.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/whereabouts.test.ts"
+              "name": "test/composition.test.ts"
             },
             {
-              "column": 52,
-              "file": "test/whereabouts.test.ts",
+              "column": 63,
+              "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/whereabouts.test.ts:1884:<anonymous@64>",
+              "id": "test/composition.test.ts:6910:<anonymous@224>",
               "kind": "ArrowFunction",
-              "line": 64,
-              "name": "<anonymous@64>",
+              "line": 224,
+              "name": "<anonymous@224>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 95,
-              "file": "test/whereabouts.test.ts",
+              "column": 85,
+              "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/whereabouts.test.ts:1986:<anonymous@65>",
+              "id": "test/composition.test.ts:25628:<anonymous@777>",
               "kind": "ArrowFunction",
-              "line": 65,
-              "name": "<anonymous@65>",
+              "line": 777,
+              "name": "<anonymous@777>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -67547,7 +67547,7 @@
             "line": 9044,
             "name": "whereaboutsHistory"
           },
-          "test": "test/whereabouts.test.ts"
+          "test": "test/composition.test.ts"
         }
       ],
       "directExecutableEntrypoints": [],
@@ -70007,7 +70007,7 @@
           "path": "src/transfers.ts"
         },
         {
-          "occurrences": 40,
+          "occurrences": 42,
           "path": "src/whereabouts.ts"
         },
         {
@@ -74513,31 +74513,31 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/whereabouts.test.ts",
+              "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test-root:test/whereabouts.test.ts",
+              "id": "test-root:test/composition.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/whereabouts.test.ts"
+              "name": "test/composition.test.ts"
             },
             {
-              "column": 52,
-              "file": "test/whereabouts.test.ts",
+              "column": 63,
+              "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/whereabouts.test.ts:1884:<anonymous@64>",
+              "id": "test/composition.test.ts:6910:<anonymous@224>",
               "kind": "ArrowFunction",
-              "line": 64,
-              "name": "<anonymous@64>",
+              "line": 224,
+              "name": "<anonymous@224>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 95,
-              "file": "test/whereabouts.test.ts",
+              "column": 85,
+              "file": "test/composition.test.ts",
               "hasBody": true,
-              "id": "test/whereabouts.test.ts:1986:<anonymous@65>",
+              "id": "test/composition.test.ts:25628:<anonymous@777>",
               "kind": "ArrowFunction",
-              "line": 65,
-              "name": "<anonymous@65>",
+              "line": 777,
+              "name": "<anonymous@777>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -74570,7 +74570,7 @@
             "line": 2670,
             "name": "detach"
           },
-          "test": "test/whereabouts.test.ts"
+          "test": "test/composition.test.ts"
         }
       ],
       "directExecutableEntrypoints": [],
