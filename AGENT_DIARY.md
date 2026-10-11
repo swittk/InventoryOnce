@@ -1615,3 +1615,11 @@ The R105 portable-current-input authority and final publication both continue to
 - Hardened digest caching so only objects recursively frozen and marked by the reference publication boundary receive reusable roots; shallow external `Object.freeze` is not trusted.
 - Exact pre-commit validation passed: strict check/assurance, 59 Node controls, 45 Vitest files / 629 tests, production build, 27 positive TLC models, 19 expected mutation rejections, and one positive reachability witness. Current public surface is 529/529 compiler-witnessed callables with zero unresolved entries and 2,357 reachable fields.
 - No subagents or delegation were used. Next step is a coherent branch commit, then clean-commit full conformance and ship review.
+
+
+## 2026-10-11 — Placement-v2 full formal implementation certificate
+
+- Exact clean semantic commit `874e831cc5858f8f826899e888e948efe467405b` passed `pnpm conformance:full` end to end.
+- Final certificate binds repository-state digest `230b914c7a662392eacaf9fcb42f6488ffd6f3eb469a97934db913ca39fd7a0b`, public surface `b8572c4d3a980d9bc3ad10f81836ef0aaa43606646c8c863739e7c9e59fdd9f4`, and full log `d9b0669b0f89fd356c3bea395e177699bd8da5e4b2b689c68f9392fa42f122d1`.
+- Complete evidence: 529/529 public APIs compiler-witnessed with zero unresolved; 2,357 reachable fields; 59 assurance selftests; 45 Vitest files / 629 tests; production build; 27 positive TLC models; 19 expected mutation rejections; one positive reachability witness.
+- The certificate is committed separately from the semantic source so it truthfully names the exact source commit it certified. No subagents or delegation were used.

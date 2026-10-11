@@ -425,3 +425,22 @@ The complete pre-commit gate is green on the current exact tree:
 The reference adapter now marks only its own recursively frozen object graph as digest-cacheable. A merely shallow-frozen external world is deliberately rehashed after nested mutation; the regression is green. Latest measured ancestor move was about 3.63 ms for 1,000 descendant stock rows and 3.70 ms for 5,000, with zero stock effects and unchanged descendant position identities.
 
 No subagents or delegated workers were used. The branch is ready for one coherent semantic commit, followed by validation again from the committed clean source and the full implementation-conformance production gate.
+
+## 2026-10-11 — Committed-source full production conformance passed
+
+Semantic commit `874e831cc5858f8f826899e888e948efe467405b` (`feat: make placement topology first-class`) passed `pnpm conformance:full` from the exact clean committed source.
+
+The full gate regenerated and audited the current public surface, ran strict source/test types, memory trace/property evidence, the complete package suite, production build, every registered TLC model, every deliberate mutation rejection, and the positive reachability witness. Final results:
+
+- public surface SHA-256 `b8572c4d3a980d9bc3ad10f81836ef0aaa43606646c8c863739e7c9e59fdd9f4`;
+- 529 public callables, all 529 compiler-witnessed, zero unresolved;
+- 2,357 reachable fields and 177 configured invariants/properties;
+- 59 assurance selftests plus 45 Vitest files / 629 product/conformance tests;
+- production build green;
+- 27 positive TLC models green;
+- 19 deliberately invalid mutations rejected by their exact named invariants;
+- one positive reachability witness reached;
+- exact full log SHA-256 `d9b0669b0f89fd356c3bea395e177699bd8da5e4b2b689c68f9392fa42f122d1`;
+- latest public ancestor-move measurement: 3.02 ms for 1,000 descendant positions and 3.33 ms for 5,000, with zero descendant stock rewrites.
+
+`formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json` is the only generated tracked change and intentionally pins the semantic commit above. It is being committed separately as evidence. No subagents or delegated workers were used.
