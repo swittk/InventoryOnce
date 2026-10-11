@@ -13,16 +13,12 @@ VARIABLES parent, acceptsPlacement, stockAnchor,
 vars == <<parent, acceptsPlacement, stockAnchor,
           lastAction, anchorsBeforeLastMove, lastMovedNode>>
 
-\* Four bounded hops match Cardinality(Nodes); update this depth whenever Nodes changes.
-ParentChainTerminates(p, node) ==
-  \/ p[node] = NoParent
-  \/ p[p[node]] = NoParent
-  \/ p[p[p[node]]] = NoParent
-  \/ p[p[p[p[node]]]] = NoParent
-
+\* A finite functional parent graph is acyclic iff every nonempty node subset
+\* has at least one member whose parent escapes that subset.
 PlacementForest(p) ==
   /\ p[NoParent] = NoParent
-  /\ \A node \in Nodes: ParentChainTerminates(p, node)
+  /\ \A subset \in SUBSET Nodes:
+       subset # {} => \E node \in subset: p[node] \notin subset
 
 DirectContentsAt(node, p, anchors) ==
   {child \in Nodes: p[child] = node}

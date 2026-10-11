@@ -876,6 +876,11 @@ function assertReservationAllocationCanBecomeLegalIssue(
   if (allocation.position.transferId !== undefined) {
     throw new Error("Reservation allocation cannot bind prepared or in-transit transfer stock.");
   }
+  if (allocation.position.placementNodeId === undefined) {
+    throw new Error(
+      "Reservation allocation cannot bind detached or missing stock; place it explicitly first."
+    );
+  }
   const identity = inventoryStockPositionIdentity(allocation.position);
   const projected = projection.positions[identity];
   if (projected === undefined) {

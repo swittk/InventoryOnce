@@ -292,6 +292,49 @@ describe("detached and missing stock whereabouts", () => {
     ).rejects.toThrow("cannot all be fulfilled simultaneously");
   });
 
+  it("rejects exact reservation binding to detached stock with the physical reason", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receive({
+      operationId: "receive-for-detached-allocation",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store"),
+      amount: stockAmount("2", "piece"),
+    });
+    await inventory.stock.detach({
+      operationId: "detach-for-allocation",
+      occurredAtEpochMs: time1,
+      from: loosePosition("store"),
+      amount: stockAmount("1", "piece"),
+    });
+    const detached = (await currentUnresolvedPositions(inventory))[0];
+    if (detached === undefined) throw new Error("Expected detached stock.");
+
+    await inventory.reservations.reserve({
+      reservationId: "claim-one-placed-piece",
+      operationId: "claim-one-placed-piece:create",
+      itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a" },
+      requested: parseQuantity("1", "piece"),
+      createdAtEpochMs: time2,
+    });
+
+    await expect(
+      inventory.reservations.allocate({
+        operationId: "allocate-detached-piece",
+        reservationId: "claim-one-placed-piece",
+        occurredAtEpochMs: time3,
+        allocations: [
+          {
+            position: detached.key,
+            quantity: parseQuantity("1", "piece"),
+          },
+        ],
+      })
+    ).rejects.toThrow(
+      "Reservation allocation cannot bind detached or missing stock; place it explicitly first."
+    );
+  });
+
   it("supports partial scrap and later missing escalation without destroying the remaining quantity", async () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({

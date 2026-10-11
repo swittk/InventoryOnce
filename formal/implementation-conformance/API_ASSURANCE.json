@@ -3,8 +3,8 @@
     "authorityMethods": 14,
     "callAndConstructSignatures": 529,
     "classMethods": 71,
-    "compilerCallGraphCallables": 2864,
-    "compilerCallGraphEdges": 7441,
+    "compilerCallGraphCallables": 2865,
+    "compilerCallGraphEdges": 7451,
     "compilerCallGraphTestRoots": 45,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 529,
@@ -75713,6 +75713,10 @@
         {
           "occurrences": 5,
           "path": "src/facade.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/reservations.ts"
         },
         {
           "occurrences": 1,
