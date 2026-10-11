@@ -23,7 +23,7 @@ If Apalache becomes a gate, pin its exact release/container digest and solver ve
 
 ## Add Alloy only when graph coverage increases
 
-Alloy's relational logic/SAT analyzer is particularly well suited to structural questions: placement parentage, associations, genealogy, serial uniqueness, and forbidden graph shapes. The current TLA `PlacementGraph`, `TraceabilityAssociation`, and `TraceabilityGraph` already exhaust bounded topology/association/genealogy structures, so maintaining a second spec language would currently duplicate coverage.
+Alloy's relational logic/SAT analyzer is particularly well suited to structural questions: nested handling units, associations, genealogy, serial uniqueness, and forbidden graph shapes. The current TLA `TraceabilityGraph` already exhausts a bounded arbitrary containment/association/transformation graph, so maintaining a second spec language would currently duplicate coverage.
 
 Add an Alloy gate when the production traceability schema becomes rich enough that relational assertions are materially clearer/stronger than the TLA graph model. Pin the Analyzer/solver and give every Alloy assertion an executable-schema/property-test companion.
 

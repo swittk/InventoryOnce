@@ -10,10 +10,6 @@ import {
   type InventoryCatalogSnapshot,
 } from "./catalog.js";
 import {
-  inventoryObjectIsDeeplyImmutable,
-  markInventoryObjectDeeplyImmutable,
-} from "./immutable-cache.js";
-import {
   applyInventoryCountBookDelta,
   applyInventoryReservationBookDelta,
   inventoryDurableMigrationPlanDigest,
@@ -84,13 +80,12 @@ function freezeInventoryPublishedWorld(
     const current = pending.pop();
     if (current === undefined || visited.has(current)) continue;
     visited.add(current);
-    // A previously published shared object already has a completely trusted frozen subgraph.
-    if (inventoryObjectIsDeeplyImmutable(current)) continue;
+    // Every frozen object reachable here was frozen by an earlier reference-adapter publication.
+    if (Object.isFrozen(current)) continue;
     for (const value of Object.values(current)) {
       if (value !== null && typeof value === "object") pending.push(value);
     }
-    if (!Object.isFrozen(current)) Object.freeze(current);
-    markInventoryObjectDeeplyImmutable(current);
+    Object.freeze(current);
   }
   return world;
 }

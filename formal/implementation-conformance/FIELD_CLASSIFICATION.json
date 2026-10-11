@@ -55745,7 +55745,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/integrity.ts:380:51.baseWorldRoot": {
+    "anonymous@src/integrity.ts:417:51.baseWorldRoot": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -55769,7 +55769,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/integrity.ts:380:51.catalogRoot": {
+    "anonymous@src/integrity.ts:417:51.catalogRoot": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -55793,7 +55793,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/integrity.ts:380:51.countDelta": {
+    "anonymous@src/integrity.ts:417:51.countDelta": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -55817,7 +55817,7 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/integrity.ts:380:51.deficitPolicy": {
+    "anonymous@src/integrity.ts:417:51.deficitPolicy": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -55841,7 +55841,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/integrity.ts:380:51.event": {
+    "anonymous@src/integrity.ts:417:51.event": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -55865,7 +55865,7 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/integrity.ts:380:51.nextRoots": {
+    "anonymous@src/integrity.ts:417:51.nextRoots": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -55889,7 +55889,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/integrity.ts:380:51.receipt": {
+    "anonymous@src/integrity.ts:417:51.receipt": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -55913,7 +55913,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/integrity.ts:380:51.reservationDelta": {
+    "anonymous@src/integrity.ts:417:51.reservationDelta": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -55937,7 +55937,7 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/integrity.ts:394:21.countId": {
+    "anonymous@src/integrity.ts:431:21.countId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -55961,7 +55961,7 @@
       "optional": true,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/integrity.ts:394:21.eventId": {
+    "anonymous@src/integrity.ts:431:21.eventId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -55985,7 +55985,7 @@
       "optional": true,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/integrity.ts:394:21.operationId": {
+    "anonymous@src/integrity.ts:431:21.operationId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -56009,7 +56009,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/integrity.ts:394:21.recordedAtEpochMs": {
+    "anonymous@src/integrity.ts:431:21.recordedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -56033,7 +56033,7 @@
       "optional": false,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "anonymous@src/integrity.ts:394:21.reservationId": {
+    "anonymous@src/integrity.ts:431:21.reservationId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -56057,7 +56057,7 @@
       "optional": true,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/integrity.ts:394:21.worldRevision": {
+    "anonymous@src/integrity.ts:431:21.worldRevision": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -56081,7 +56081,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/integrity.ts:426:60.baseWorldRoot": {
+    "anonymous@src/integrity.ts:463:60.baseWorldRoot": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -56105,7 +56105,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/integrity.ts:426:60.catalogRoot": {
+    "anonymous@src/integrity.ts:463:60.catalogRoot": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -56129,7 +56129,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/integrity.ts:426:60.deficitPolicy": {
+    "anonymous@src/integrity.ts:463:60.deficitPolicy": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -56153,7 +56153,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/integrity.ts:426:60.events": {
+    "anonymous@src/integrity.ts:463:60.events": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -56177,7 +56177,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/integrity.ts:426:60.nextRoots": {
+    "anonymous@src/integrity.ts:463:60.nextRoots": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -56201,7 +56201,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/integrity.ts:426:60.sourceDispositions": {
+    "anonymous@src/integrity.ts:463:60.sourceDispositions": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -56384,5 +56384,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "b8572c4d3a980d9bc3ad10f81836ef0aaa43606646c8c863739e7c9e59fdd9f4"
+  "surfaceSha256": "f85359e8d6a42433830d69b5bc03670b7b9a3b7c93af832452d80cc5b70a147a"
 }

@@ -867,7 +867,7 @@
         "facade.placement.unplace"
       ],
       "evidence": [
-        "test/placement-topology.test.ts"
+        "test/containers.test.ts"
       ],
       "failpoints": [],
       "finiteDomain": "Generic nested placement nodes, heterogeneous direct stock anchors, one ancestor move with zero stock effects, target-policy/cycle rejection, and blocked exact-reservation subtree action.",

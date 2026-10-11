@@ -10,7 +10,6 @@ import {
   type InventoryCountOperation,
 } from "./counts.js";
 import { inventorySha256 } from "./digest.js";
-import { inventoryObjectIsDeeplyImmutable } from "./immutable-cache.js";
 import { compareInventoryIdentityText } from "./ordering.js";
 import type { InventoryCommittedEvent } from "./events.js";
 import type {
@@ -31,6 +30,44 @@ import {
   inventorySparseRecordValue,
   setInventorySparseRecordValue,
 } from "./sparse-record.js";
+
+/** Object graphs already proven recursively frozen and therefore safe for digest reuse. */
+const deeplyImmutableInventoryObjects = new WeakSet<object>();
+
+/** Prove one object graph recursively frozen, reusing earlier proofs for shared subgraphs. */
+function inventoryObjectIsDeeplyImmutable(value: object): boolean {
+  if (deeplyImmutableInventoryObjects.has(value)) return true;
+  if (!Object.isFrozen(value)) return false;
+  /** Newly inspected frozen objects to mark only after their entire reachable graph passes. */
+  const visited: object[] = [];
+  /** Objects still requiring recursive frozen-child inspection. */
+  const pending: object[] = [value];
+  const inspecting = new WeakSet<object>();
+  while (pending.length > 0) {
+    const current = pending.pop();
+    if (
+      current === undefined ||
+      deeplyImmutableInventoryObjects.has(current) ||
+      inspecting.has(current)
+    ) {
+      continue;
+    }
+    if (!Object.isFrozen(current)) return false;
+    inspecting.add(current);
+    visited.push(current);
+    for (const child of Object.values(current)) {
+      if (
+        child !== null &&
+        typeof child === "object" &&
+        !deeplyImmutableInventoryObjects.has(child)
+      ) {
+        pending.push(child);
+      }
+    }
+  }
+  for (const current of visited) deeplyImmutableInventoryObjects.add(current);
+  return true;
+}
 
 /** Cached digest of one immutable retained record value. */
 const inventoryValueDigestCache = new WeakMap<object, string>();

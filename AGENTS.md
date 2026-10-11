@@ -1,11 +1,5 @@
 # InventoryOnce agent rules
 
-## Coordination bulletin — REQUIRED
-- **Before substantial work or resuming this repository, read `BULLETIN.md`, `PLEASE_READ_BULLETIN.md`, and the latest `AGENT_DIARY.md` entries.**
-- Re-check `BULLETIN.md` before committing, finalizing a modeled invariant, or declaring a slice complete.
-- Append timestamped bulletin entries for new owner direction, architecture decisions, newly discovered invariants, blockers, and meaningful progress. Do not rewrite old bulletin history.
-- A root `PLEASE_READ_BULLETIN.md` means there is active coordination that must be incorporated before continuing.
-
 These rules are non-negotiable for every file in this standalone repository. They intentionally mirror the PayMeOnce hardening discipline.
 
 ## Runtime
@@ -17,12 +11,9 @@ These rules are non-negotiable for every file in this standalone repository. The
 - Normal application code must say what physically happened: receive, issue, transfer, reserve, release, consume reservation, unpack/repack, transform, scrap, reconcile count.
 - Do not make applications construct journal legs, calculate balance deltas, choose retry behavior, or directly edit projections.
 - Low-level reducers may exist for adapters/tests, but they are not the preferred application API.
-- Human package words like `box`, `pack`, `bottle`, or `case` are never enough package identity when more than one definition can exist. Package-shaped stock or commands must name the exact packaging revision.
-- Placement nodes are generic identities plus capabilities/policy. Never hardcode room, shelf, box, trolley, vehicle, person, or similar domain categories into kernel behavior.
-- A plain stock transfer may change only direct placement and must preserve item, lot, serial, packaging revision, status, owner, custody, disposition authority, whereabouts state, and qualified dimensions. If another fact changes, use the verb that names it.
-- Moving one placement node changes one parent edge. Never rewrite descendant stock merely because an ancestor moved.
-- Never recreate `Substock` or a second container/location authority. A nested physical thing is packaging, an ordinary stock position, a generic placement node, or transformation output.
-- Detached/missing stock remains accounted inventory but is not ordinary usable, reservable, or automatically allocatable stock until placed. Do not encode detach as issue or missing as scrap.
+- Human package words like `box`, `pack`, `bottle`, or `case` are never enough identity when more than one package definition can exist. Package-shaped stock or commands must name the exact packaging revision or exact container.
+- A plain location transfer must preserve item, lot, serial, packaging revision, container, stock status, and owner. If one of those changes, use a verb that says what changed.
+- Never recreate `Substock`. A weird legacy child row must become packaging, an ordinary stock position, a container, or transformation output.
 
 ## Adapter conformance boundary
 - Low-level `/storage` deltas and reducer inputs are planner-produced or adapter-conformant protocol records, not arbitrary application payloads.
