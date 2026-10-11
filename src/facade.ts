@@ -8721,7 +8721,11 @@ function findCurrentInventoryWhereaboutsLifecycles(
     positionsByWhereaboutsId.set(whereaboutsId, positions);
   }
   const result: InventoryWhereaboutsLifecycle[] = [];
-  for (const lifecycle of inventoryWhereaboutsLifecycles(projection)) {
+  const selectedWhereaboutsIds = new Set(positionsByWhereaboutsId.keys());
+  for (const lifecycle of inventoryWhereaboutsLifecycles(
+    projection,
+    selectedWhereaboutsIds
+  )) {
     const currentPositions = positionsByWhereaboutsId.get(
       lifecycle.whereaboutsId
     );

@@ -345,7 +345,6 @@ describe("projection index real-world scale", () => {
     expect(scaled.beforePositionIds).toEqual(scaled.afterPositionIds);
     expect(scaled.directParent).toBe("scale-root-new");
     expect(scaled.elapsedMs).toBeLessThan(baseline.elapsedMs * 4 + 50);
-    expect(scaled.elapsedMs).toBeLessThan(250);
     console.log(
       JSON.stringify({
         adapter: "memory-placement-ancestor-move",

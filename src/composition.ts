@@ -206,7 +206,8 @@ export function createInventoryCompositionOpenEvent(
   const sourceTraceabilityNode = compositionTraceabilityNode(
     input.from,
     input.sourceTraceabilityNode,
-    `${input.operationId}:source`
+    `${input.operationId}:source`,
+    true
   );
   const consume: InventoryTransformationLine = {
     position: input.from,
@@ -487,7 +488,8 @@ function currentSourceLot(
 function compositionTraceabilityNode(
   position: InventoryStockPositionInput,
   explicit: InventoryTraceabilityNodeRef | undefined,
-  externalId: string
+  externalId: string,
+  preferSerial = false
 ): InventoryTraceabilityNodeRef | undefined {
   const candidates: InventoryTraceabilityNodeRef[] = [];
   if (position.serialId !== undefined) {
@@ -523,12 +525,12 @@ function compositionTraceabilityNode(
       "Composition genealogy node does not match the serial or lot on its stock line."
     );
   }
-  if (candidates.length > 1) {
+  if (candidates.length > 1 && !preferSerial) {
     throw new Error(
       "Composition line has both serial and lot identities; name the genealogy node."
     );
   }
-  if (candidates.length === 1) return candidates[0];
+  if (candidates.length >= 1) return candidates[0];
   return {
     kind: InventoryTraceabilityNodeKind.External,
     id: `inventory:composition:${encodeURIComponent(externalId)}`,

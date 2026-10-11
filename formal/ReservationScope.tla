@@ -158,8 +158,10 @@ ConsumedTokenNoLongerOnHand ==
 
 UnplacedStockCannotSatisfyClaims ==
   \A c \in Claims:
-    claimState[c] = "active" =>
-      CandidateTokens(c, available, claimState, scope, allocated) \subseteq available
+    claimState[c] = "active" /\ reportStatus = "feasible" =>
+      IF allocated[c] # NoToken
+      THEN allocated[c] \in available
+      ELSE scope[c] \cap available # {}
 
 OrdinaryDetachPreservesExactAllocations ==
   ~physicalLossOccurred =>

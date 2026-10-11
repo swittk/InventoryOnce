@@ -136,6 +136,52 @@ describe("broad reservations and physical truth", () => {
     });
   });
 
+  it("persists subtree-to-descendant reservation refinement through the durable plan", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receive({
+      operationId: "receive-subtree-refine-stock",
+      occurredAtEpochMs: time0,
+      to: loosePosition("child-node"),
+      amount: stockAmount("1", "piece"),
+    });
+    await inventory.placement.move({
+      operationId: "place-child-under-root",
+      occurredAtEpochMs: time0,
+      nodeId: "child-node",
+      into: "root-node",
+    });
+    await inventory.reservations.reserve({
+      reservationId: "subtree-refine-claim",
+      operationId: "reserve-subtree-refine",
+      itemRevisionId: "item-a-v2",
+      selector: {
+        itemId: "item-a",
+        withinPlacementNodeIds: ["root-node"],
+      },
+      requested: parseQuantity("1", "piece"),
+      createdAtEpochMs: time1,
+    });
+
+    await expect(
+      inventory.reservations.refine({
+        operationId: "refine-subtree-to-child",
+        reservationId: "subtree-refine-claim",
+        selector: {
+          itemId: "item-a",
+          placementNodeIds: ["child-node"],
+        },
+        occurredAtEpochMs: time2,
+      })
+    ).resolves.toBeDefined();
+
+    expect(await inventory.read.reservation("subtree-refine-claim")).toMatchObject({
+      selector: {
+        itemId: "item-a",
+        placementNodeIds: ["child-node"],
+      },
+    });
+  });
+
   it("backs recorded deficit before exact claims without crossing locations", async () => {
     const inventory = createTestInventory(
       undefined,

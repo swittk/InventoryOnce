@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  createInventoryOnce,
+  defineInventoryCatalog,
+  defineScalarInventoryItem,
   InventoryAllocationMethod,
   InventoryCountStatus,
   InventoryEventKind,
@@ -9,7 +12,9 @@ import {
   parseQuantity,
   stockAmount,
 } from "../src/index.js";
+import { createInMemoryInventoryDurableStorage } from "../src/storage-api.js";
 import {
+  clockAt,
   createTestInventory,
   loosePosition,
   time0,
@@ -502,4 +507,83 @@ describe("detached and missing stock whereabouts", () => {
       correctedHistory[0]?.history.flatMap((entry) => entry.actions)
     ).toContain(InventoryWhereaboutsAction.Corrected);
   });
+  it("keeps indexed lifecycle history and item identities scoped to one cohort", async () => {
+    const itemA = defineScalarInventoryItem({
+      itemId: "item-a",
+      revisionId: "item-a-v1",
+      unit: "piece",
+      axisId: "pieces",
+    });
+    const itemB = defineScalarInventoryItem({
+      itemId: "item-b",
+      revisionId: "item-b-v1",
+      unit: "piece",
+      axisId: "pieces",
+    });
+    const inventory = createInventoryOnce({
+      catalog: defineInventoryCatalog({
+        itemRevisions: [itemA, itemB],
+        activeItemRevisionIds: {
+          "item-a": itemA.revisionId,
+          "item-b": itemB.revisionId,
+        },
+      }),
+      storage: createInMemoryInventoryDurableStorage(),
+      clock: clockAt(),
+    });
+    await inventory.stock.receiveMany({
+      operationId: "whereabouts-mixed-receive",
+      occurredAtEpochMs: time0,
+      lines: [
+        {
+          to: { itemId: "item-a", placementNodeId: "store-a" },
+          amount: stockAmount("1", "piece"),
+        },
+        {
+          to: { itemId: "item-b", placementNodeId: "store-b" },
+          amount: stockAmount("1", "piece"),
+        },
+      ],
+    });
+    await inventory.stock.detach({
+      operationId: "whereabouts-mixed-detach-a",
+      occurredAtEpochMs: time1,
+      from: { itemId: "item-a", placementNodeId: "store-a" },
+      amount: stockAmount("1", "piece"),
+    });
+    const lifecycle = (await inventory.read.whereabouts())[0];
+    const detached = lifecycle?.currentPositions[0];
+    if (lifecycle === undefined || detached === undefined) {
+      throw new Error("Expected one detached cohort.");
+    }
+
+    await inventory.stock.issueMany({
+      operationId: "whereabouts-mixed-issue",
+      occurredAtEpochMs: time2,
+      lines: [
+        { from: detached.key, amount: stockAmount("1", "piece") },
+        {
+          from: { itemId: "item-b", placementNodeId: "store-b" },
+          amount: stockAmount("1", "piece"),
+        },
+      ],
+    });
+
+    const history = await inventory.read.whereaboutsHistory({
+      whereaboutsIds: [lifecycle.whereaboutsId],
+      resolved: true,
+    });
+    expect(history).toHaveLength(1);
+    expect(history[0]?.itemIds).toEqual(["item-a"]);
+    expect(
+      history[0]?.history.flatMap((entry) => entry.actions)
+    ).toContain(InventoryWhereaboutsAction.Issued);
+
+    const world = await inventory.read.world();
+    expect(
+      world.projection.eventSequencesByWhereaboutsId[lifecycle.whereaboutsId]
+    ).toEqual(history[0]?.history.map((entry) => entry.event.recordSequence));
+  });
+
+
 });

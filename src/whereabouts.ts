@@ -67,10 +67,17 @@ export interface InventoryWhereaboutsHistoryQuery {
   readonly resolved?: boolean;
 }
 
-/** Build every whereabouts lifecycle from immutable events plus current projected stock. */
+/** Build indexed whereabouts lifecycles from retained cohort event sequences plus current stock. */
 export function inventoryWhereaboutsLifecycles(
-  projection: InventoryProjectionState
+  projection: InventoryProjectionState,
+  onlyWhereaboutsIds?: ReadonlySet<string>
 ): readonly InventoryWhereaboutsLifecycle[] {
+  /** Cohort ids selected directly from the rebuildable projection index. */
+  const lifecycleIds =
+    onlyWhereaboutsIds === undefined
+      ? Object.keys(projection.eventSequencesByWhereaboutsId)
+      : [...onlyWhereaboutsIds];
+  lifecycleIds.sort(compareInventoryIdentityText);
   /** Mutable history/item accumulator keyed by exact lifecycle identity. */
   const builders = new Map<
     string,
@@ -79,51 +86,68 @@ export function inventoryWhereaboutsLifecycles(
       readonly history: InventoryWhereaboutsHistoryEvent[];
       /** Every item identity named by those retained events. */
       readonly itemIds: Set<string>;
-      /** Current unresolved rows added after history replay. */
+      /** Current unresolved rows added after indexed history replay. */
       readonly currentPositions: InventoryStockPosition[];
     }
   >();
-  for (
-    let sequence = 1;
-    sequence <= projection.lastRecordSequence;
-    sequence += 1
-  ) {
-    const eventId = projection.eventIdsBySequence[String(sequence)];
-    if (eventId === undefined) {
-      throw new Error(
-        `Whereabouts history is missing event sequence ${sequence}.`
-      );
-    }
-    const event = inventorySparseRecordValue(projection.events, eventId);
-    if (event === undefined || event.recordSequence !== sequence) {
-      throw new Error(
-        `Whereabouts history index disagrees at event sequence ${sequence}.`
-      );
-    }
-    const ids = inventoryWhereaboutsIdsTouchedByEvent(projection, event);
-    if (ids.size === 0) continue;
-    const itemIds = inventoryItemIdsTouchedByWhereaboutsEvent(projection, event);
-    for (const whereaboutsId of ids) {
-      const builder = builders.get(whereaboutsId) ?? {
-        history: [],
-        itemIds: new Set<string>(),
-        currentPositions: [],
-      };
+  for (const whereaboutsId of lifecycleIds) {
+    const sequences =
+      inventorySparseRecordValue(
+        projection.eventSequencesByWhereaboutsId,
+        whereaboutsId
+      ) ?? [];
+    if (sequences.length === 0) continue;
+    const builder = {
+      history: [] as InventoryWhereaboutsHistoryEvent[],
+      itemIds: new Set<string>(),
+      currentPositions: [] as InventoryStockPosition[],
+    };
+    for (const sequence of sequences) {
+      const eventId = projection.eventIdsBySequence[String(sequence)];
+      if (eventId === undefined) {
+        throw new Error(
+          "Whereabouts history is missing indexed event sequence " +
+            String(sequence) +
+            "."
+        );
+      }
+      const event = inventorySparseRecordValue(projection.events, eventId);
+      if (event === undefined || event.recordSequence !== sequence) {
+        throw new Error(
+          "Whereabouts history index disagrees at event sequence " +
+            String(sequence) +
+            "."
+        );
+      }
       builder.history.push({
         event,
         actions: inventoryWhereaboutsActionsForEvent(event, whereaboutsId),
       });
-      for (const itemId of itemIds) builder.itemIds.add(itemId);
-      builders.set(whereaboutsId, builder);
+      for (const itemId of inventoryItemIdsTouchedByWhereaboutsEvent(
+        projection,
+        event,
+        whereaboutsId
+      )) {
+        builder.itemIds.add(itemId);
+      }
     }
+    builders.set(whereaboutsId, builder);
   }
   for (const position of Object.values(projection.positions)) {
     const whereaboutsId = position.key.whereaboutsId;
-    if (whereaboutsId === undefined) continue;
+    if (
+      whereaboutsId === undefined ||
+      (onlyWhereaboutsIds !== undefined &&
+        !onlyWhereaboutsIds.has(whereaboutsId))
+    ) {
+      continue;
+    }
     const builder = builders.get(whereaboutsId);
     if (builder === undefined) {
       throw new Error(
-        `Current whereabouts '${whereaboutsId}' has no retained originating event.`
+        "Current whereabouts '" +
+          whereaboutsId +
+          "' has no retained originating event."
       );
     }
     builder.itemIds.add(position.key.itemId);
@@ -134,7 +158,7 @@ export function inventoryWhereaboutsLifecycles(
     const origin = builder.history[0]?.event;
     if (origin === undefined) {
       throw new Error(
-        `Whereabouts '${whereaboutsId}' has no retained origin event.`
+        "Whereabouts '" + whereaboutsId + "' has no retained origin event."
       );
     }
     builder.currentPositions.sort(compareInventoryWhereaboutsPosition);
@@ -168,7 +192,10 @@ export function findInventoryWhereaboutsHistory(
       ? undefined
       : normalizeWhereaboutsActions(query.actions);
   const result: InventoryWhereaboutsLifecycle[] = [];
-  for (const lifecycle of inventoryWhereaboutsLifecycles(projection)) {
+  for (const lifecycle of inventoryWhereaboutsLifecycles(
+    projection,
+    whereaboutsIds
+  )) {
     if (
       whereaboutsIds !== undefined &&
       !whereaboutsIds.has(lifecycle.whereaboutsId)
@@ -205,82 +232,49 @@ export function findInventoryWhereaboutsHistory(
   return result;
 }
 
-/** Return every lifecycle identity directly touched by an event or its correction root. */
-function inventoryWhereaboutsIdsTouchedByEvent(
-  projection: InventoryProjectionState,
-  event: InventoryCommittedEvent
-): ReadonlySet<string> {
-  const result = new Set<string>();
-  addDirectInventoryWhereaboutsIds(result, event);
-  if (event.correction !== undefined) {
-    const corrected = inventorySparseRecordValue(
-      projection.events,
-      event.correction.correctsEventId
-    );
-    if (corrected === undefined) {
-      throw new Error(
-        `Whereabouts correction references missing event '${event.correction.correctsEventId}'.`
-      );
-    }
-    addDirectInventoryWhereaboutsIds(result, corrected);
-  }
-  return result;
-}
-
-/** Add direct whereabouts identities retained by one event's stock/provenance evidence. */
-function addDirectInventoryWhereaboutsIds(
-  result: Set<string>,
-  event: InventoryCommittedEvent
-): void {
-  for (const effect of event.stockEffects) {
-    if (effect.position.whereaboutsId !== undefined) {
-      result.add(effect.position.whereaboutsId);
-    }
-  }
-  for (const transfer of event.positiveLayerProvenanceTransfers ?? []) {
-    if (transfer.from.whereaboutsId !== undefined) {
-      result.add(transfer.from.whereaboutsId);
-    }
-    if (transfer.to.whereaboutsId !== undefined) {
-      result.add(transfer.to.whereaboutsId);
-    }
-  }
-  for (const override of event.positiveLayerProvenanceOverrides ?? []) {
-    if (override.position.whereaboutsId !== undefined) {
-      result.add(override.position.whereaboutsId);
-    }
-  }
-}
-
 /** Return every item identity directly touched by one whereabouts event/correction root. */
 function inventoryItemIdsTouchedByWhereaboutsEvent(
   projection: InventoryProjectionState,
-  event: InventoryCommittedEvent
+  event: InventoryCommittedEvent,
+  whereaboutsId: string
 ): ReadonlySet<string> {
   const result = new Set<string>();
-  addDirectInventoryItemIds(result, event);
+  addDirectInventoryItemIds(result, event, whereaboutsId);
   if (event.correction !== undefined) {
     const corrected = inventorySparseRecordValue(
       projection.events,
       event.correction.correctsEventId
     );
-    if (corrected !== undefined) addDirectInventoryItemIds(result, corrected);
+    if (corrected !== undefined) {
+      addDirectInventoryItemIds(result, corrected, whereaboutsId);
+    }
   }
   return result;
 }
 
-/** Add item identities retained by one event's exact stock/provenance evidence. */
+/** Add item identities from stock/provenance evidence belonging to one exact cohort. */
 function addDirectInventoryItemIds(
   result: Set<string>,
-  event: InventoryCommittedEvent
+  event: InventoryCommittedEvent,
+  whereaboutsId: string
 ): void {
-  for (const effect of event.stockEffects) result.add(effect.position.itemId);
+  for (const effect of event.stockEffects) {
+    if (effect.position.whereaboutsId === whereaboutsId) {
+      result.add(effect.position.itemId);
+    }
+  }
   for (const transfer of event.positiveLayerProvenanceTransfers ?? []) {
-    result.add(transfer.from.itemId);
-    result.add(transfer.to.itemId);
+    if (transfer.from.whereaboutsId === whereaboutsId) {
+      result.add(transfer.from.itemId);
+    }
+    if (transfer.to.whereaboutsId === whereaboutsId) {
+      result.add(transfer.to.itemId);
+    }
   }
   for (const override of event.positiveLayerProvenanceOverrides ?? []) {
-    result.add(override.position.itemId);
+    if (override.position.whereaboutsId === whereaboutsId) {
+      result.add(override.position.itemId);
+    }
   }
 }
 

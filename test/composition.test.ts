@@ -736,7 +736,7 @@ describe("revision-frozen heterogeneous package composition", () => {
     ).rejects.toThrow(/both serial and lot identities/i);
   });
 
-  it("requires an explicit genealogy choice when the source has several physical identities", async () => {
+  it("prefers source serial identity when a package also has a lot", async () => {
     const fixture = ocpCatalog();
     const inventory = createInventoryOnce({
       catalog: fixture.catalog,
@@ -744,44 +744,31 @@ describe("revision-frozen heterogeneous package composition", () => {
       clock: clockAt(time3),
     });
     await inventory.stock.receive({
-      operationId: "receive-ambiguous-source-pack",
+      operationId: "receive-serial-lot-source-pack",
       occurredAtEpochMs: time0,
       to: {
         itemId: fixture.newPackItem.itemId,
-        placementNodeId: "AMBIGUOUS-SOURCE-CONTAINER",
-        lotId: "AMBIGUOUS-SOURCE-LOT",
-        serialId: "AMBIGUOUS-SOURCE-SERIAL",
+        placementNodeId: "SERIAL-LOT-SOURCE-CONTAINER",
+        lotId: "SERIAL-LOT-SOURCE-LOT",
+        serialId: "SERIAL-LOT-SOURCE-SERIAL",
       },
       amount: packageAmount(1, fixture.newPack.revisionId),
       lot: { expiresAtEpochMs: 1861920000000 },
       placementNode: { category: "calendar-pack" },
     });
-    const from = {
-      itemId: fixture.newPackItem.itemId,
-      placementNodeId: "AMBIGUOUS-SOURCE-CONTAINER",
-      lotId: "AMBIGUOUS-SOURCE-LOT",
-      serialId: "AMBIGUOUS-SOURCE-SERIAL",
-      packagingRevisionId: fixture.newPack.revisionId,
-    };
-    await expect(
-      inventory.compositions.open({
-        operationId: "reject-ambiguous-source-pack",
-        occurredAtEpochMs: time1,
-        from,
-        packageCount: 1,
-      })
-    ).rejects.toThrow(/both serial and lot identities/i);
 
     await expect(
       inventory.compositions.open({
-        operationId: "open-explicit-ambiguous-source-pack",
-        occurredAtEpochMs: time2,
-        from,
-        packageCount: 1,
-        sourceTraceabilityNode: {
-          kind: InventoryTraceabilityNodeKind.PlacementNode,
-          id: "AMBIGUOUS-SOURCE-CONTAINER",
+        operationId: "open-serial-lot-source-pack",
+        occurredAtEpochMs: time1,
+        from: {
+          itemId: fixture.newPackItem.itemId,
+          placementNodeId: "SERIAL-LOT-SOURCE-CONTAINER",
+          lotId: "SERIAL-LOT-SOURCE-LOT",
+          serialId: "SERIAL-LOT-SOURCE-SERIAL",
+          packagingRevisionId: fixture.newPack.revisionId,
         },
+        packageCount: 1,
       })
     ).resolves.toBeDefined();
   });

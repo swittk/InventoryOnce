@@ -51,6 +51,9 @@ function cloneInventoryPublishedWorld(world: InventoryWorldState): InventoryWorl
       lotIdentitiesByItemId: cloneInventorySparseRecord(cloned.projection.lotIdentitiesByItemId),
       transfers: cloneInventorySparseRecord(cloned.projection.transfers),
       events: cloneInventorySparseRecord(cloned.projection.events),
+      eventSequencesByWhereaboutsId: cloneInventorySparseRecord(
+        cloned.projection.eventSequencesByWhereaboutsId
+      ),
       eventIdByOperationId: cloneInventorySparseRecord(cloned.projection.eventIdByOperationId),
       correctionEventIdByCorrectedEventId: cloneInventorySparseRecord(
         cloned.projection.correctionEventIdByCorrectedEventId
@@ -1404,7 +1407,8 @@ function validateInventoryDurablePlanAgainstBase(
         }).state;
   const reservations = applyInventoryReservationBookDelta(
     base.reservations,
-    plan.reservationDelta
+    plan.reservationDelta,
+    base.projection.placement
   );
   const counts = applyInventoryCountBookDelta(base.counts, plan.countDelta);
   const next: InventoryWorldState = {

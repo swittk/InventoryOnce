@@ -122,6 +122,10 @@ export interface InventoryProjectionState {
   readonly events: Readonly<Record<string, InventoryCommittedEvent>>;
   /** Durable sequence -> event id index used by snapshot/replay/count semantics. */
   readonly eventIdsBySequence: Readonly<Record<string, string>>;
+  /** Whereabouts lifecycle -> durable event sequences touching that exact cohort. */
+  readonly eventSequencesByWhereaboutsId: Readonly<
+    Record<string, readonly number[]>
+  >;
   /** Operation id -> committed event id index for exact retry semantics. */
   readonly eventIdByOperationId: Readonly<Record<string, string>>;
   /** Corrected event id -> one current direct correction event id. */
@@ -187,6 +191,7 @@ export function emptyInventoryProjectionState(): InventoryProjectionState {
     transfers: createInventorySparseRecord(),
     events: createInventorySparseRecord(),
     eventIdsBySequence: {},
+    eventSequencesByWhereaboutsId: createInventorySparseRecord(),
     eventIdByOperationId: createInventorySparseRecord(),
     correctionEventIdByCorrectedEventId: createInventorySparseRecord(),
     placement: emptyInventoryPlacementState(),
@@ -762,6 +767,31 @@ function applyInventoryCommittedEventInternal(
         changes: normalizedEvent.traceabilityChanges,
       })
     : state.traceability;
+  const touchedWhereaboutsIds = inventoryWhereaboutsIdsTouchedByProjectionEvent(
+    state,
+    normalizedEvent
+  );
+  const eventSequencesByWhereaboutsId: Record<string, readonly number[]> =
+    mutateProjection
+      ? (state.eventSequencesByWhereaboutsId as Record<string, readonly number[]>)
+      : touchedWhereaboutsIds.length === 0
+        ? (state.eventSequencesByWhereaboutsId as Record<
+            string,
+            readonly number[]
+          >)
+        : cloneInventorySparseRecord(state.eventSequencesByWhereaboutsId);
+  for (const whereaboutsId of touchedWhereaboutsIds) {
+    const earlierSequences =
+      inventorySparseRecordValue(
+        eventSequencesByWhereaboutsId,
+        whereaboutsId
+      ) ?? [];
+    setInventorySparseRecordValue(
+      eventSequencesByWhereaboutsId,
+      whereaboutsId,
+      [...earlierSequences, normalizedEvent.recordSequence]
+    );
+  }
   const events: Record<string, InventoryCommittedEvent> = mutateProjection
     ? (state.events as Record<string, InventoryCommittedEvent>)
     : cloneInventorySparseRecord(state.events);
@@ -802,6 +832,7 @@ function applyInventoryCommittedEventInternal(
       transfers,
       events,
       eventIdsBySequence,
+      eventSequencesByWhereaboutsId,
       eventIdByOperationId,
       correctionEventIdByCorrectedEventId,
       placement,
@@ -809,6 +840,57 @@ function applyInventoryCommittedEventInternal(
       lastRecordSequence: normalizedEvent.recordSequence,
     },
   };
+}
+
+/** Return every whereabouts lifecycle identity retained by one event or its corrected root. */
+function inventoryWhereaboutsIdsTouchedByProjectionEvent(
+  state: InventoryProjectionState,
+  event: InventoryCommittedEvent
+): readonly string[] {
+  const result = new Set<string>();
+  addDirectInventoryWhereaboutsIds(result, event);
+  if (event.correction !== undefined) {
+    const corrected = inventorySparseRecordValue(
+      state.events,
+      event.correction.correctsEventId
+    );
+    if (corrected === undefined) {
+      throw new Error(
+        "Whereabouts correction references missing event '" +
+          event.correction.correctsEventId +
+          "'."
+      );
+    }
+    addDirectInventoryWhereaboutsIds(result, corrected);
+  }
+  const ordered = [...result];
+  ordered.sort(compareInventoryIdentityText);
+  return ordered;
+}
+
+/** Add direct whereabouts identities retained in one event's stock/provenance evidence. */
+function addDirectInventoryWhereaboutsIds(
+  result: Set<string>,
+  event: InventoryCommittedEvent
+): void {
+  for (const effect of event.stockEffects) {
+    if (effect.position.whereaboutsId !== undefined) {
+      result.add(effect.position.whereaboutsId);
+    }
+  }
+  for (const transfer of event.positiveLayerProvenanceTransfers ?? []) {
+    if (transfer.from.whereaboutsId !== undefined) {
+      result.add(transfer.from.whereaboutsId);
+    }
+    if (transfer.to.whereaboutsId !== undefined) {
+      result.add(transfer.to.whereaboutsId);
+    }
+  }
+  for (const override of event.positiveLayerProvenanceOverrides ?? []) {
+    if (override.position.whereaboutsId !== undefined) {
+      result.add(override.position.whereaboutsId);
+    }
+  }
 }
 
 /** Stable current placement-node comparison including policy, identifiers, and metadata. */

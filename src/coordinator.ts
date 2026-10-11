@@ -302,7 +302,8 @@ function createDurableOperationPlan({
     world.reservations,
     reservations,
     operationId,
-    logicalPlan.reservationId
+    logicalPlan.reservationId,
+    world.projection.placement
   );
   const countDelta = createInventoryCountBookDelta(
     world.counts,

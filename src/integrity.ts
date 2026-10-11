@@ -12,6 +12,7 @@ import {
 import { inventorySha256 } from "./digest.js";
 import { compareInventoryIdentityText } from "./ordering.js";
 import type { InventoryCommittedEvent } from "./events.js";
+import type { InventoryPlacementState } from "./placement.js";
 import type {
   InventoryDeficitPolicy,
   InventoryProjectionState,
@@ -191,6 +192,7 @@ export function inventoryProjectionDigest(
       inventoryImmutableRecordDigest(projection.transfers),
       inventoryImmutableRecordDigest(projection.events),
       inventoryImmutableRecordDigest(projection.eventIdsBySequence),
+      inventoryImmutableRecordDigest(projection.eventSequencesByWhereaboutsId),
       inventoryImmutableRecordDigest(projection.eventIdByOperationId),
       inventoryImmutableRecordDigest(
         projection.correctionEventIdByCorrectedEventId
@@ -281,7 +283,8 @@ export function createInventoryReservationBookDelta(
   base: InventoryReservationBook,
   next: InventoryReservationBook,
   operationId: string,
-  reservationId: string | undefined
+  reservationId: string | undefined,
+  placement?: InventoryPlacementState
 ): InventoryReservationBookDelta | undefined {
   retainEveryReservationOperation(base, next);
   const addedOperationIds = addedRecordKeys(base.operations, next.operations);
@@ -314,7 +317,8 @@ export function createInventoryReservationBookDelta(
   assertAllowedReservationTransition(
     inventorySparseRecordValue(base.reservations, operation.reservationId),
     reservation,
-    operation
+    operation,
+    placement
   );
   return { reservation, operation };
 }
@@ -322,7 +326,8 @@ export function createInventoryReservationBookDelta(
 /** Apply one already-validated reservation delta and recheck it against this exact base book. */
 export function applyInventoryReservationBookDelta(
   base: InventoryReservationBook,
-  delta: InventoryReservationBookDelta | undefined
+  delta: InventoryReservationBookDelta | undefined,
+  placement?: InventoryPlacementState
 ): InventoryReservationBook {
   if (delta === undefined) return base;
   const reservations = cloneInventorySparseRecord(base.reservations);
@@ -342,7 +347,8 @@ export function applyInventoryReservationBookDelta(
     base,
     next,
     delta.operation.operationId,
-    delta.reservation.reservationId
+    delta.reservation.reservationId,
+    placement
   );
   return next;
 }
@@ -533,7 +539,8 @@ function retainUnchangedReservationRows(
 function assertAllowedReservationTransition(
   base: InventoryReservation | undefined,
   next: InventoryReservation,
-  operation: InventoryReservationOperation
+  operation: InventoryReservationOperation,
+  placement?: InventoryPlacementState
 ): void {
   if (
     operation.kind !== InventoryReservationOperationKind.Consume &&
@@ -571,7 +578,7 @@ function assertAllowedReservationTransition(
     if (
       next.status !== InventoryReservationStatus.Active ||
       !sameJson(base.allocations, next.allocations) ||
-      !inventoryStockSelectorIsSubset(next.selector, base.selector)
+      !inventoryStockSelectorIsSubset(next.selector, base.selector, placement)
     )
       throw new Error(
         "Reservation refine may only narrow its selector and change time."
