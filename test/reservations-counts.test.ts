@@ -40,7 +40,7 @@ describe("broad reservations and physical truth", () => {
       reservationId: "current-reservation",
       operationId: "current-reservation-create",
       itemRevisionId: "item-a-v2",
-      selector: { itemId: "item-a", locationIds: ["store"] },
+      selector: { itemId: "item-a", placementNodeIds: ["store"] },
       requested: parseQuantity("1", "piece"),
       createdAtEpochMs: time1,
     });
@@ -98,14 +98,14 @@ describe("broad reservations and physical truth", () => {
       reservationId: "claim-u1",
       operationId: "reserve-u1",
       itemRevisionId: "item-a-v2",
-      selector: { itemId: "item-a", locationIds: ["u1"] },
+      selector: { itemId: "item-a", placementNodeIds: ["u1"] },
       requested: parseQuantity("1", "piece"),
       createdAtEpochMs: time1,
     });
     const u2 = (
       await inventory.read.positions({
         itemId: "item-a",
-        locationIds: ["u2"],
+        placementNodeIds: ["u2"],
       })
     )[0];
     if (u2 === undefined) throw new Error("Test stock u2 disappeared.");
@@ -122,7 +122,7 @@ describe("broad reservations and physical truth", () => {
       inventory.reservations.refine({
         operationId: "refine-bound-claim",
         reservationId: "claim-broad",
-        selector: { itemId: "item-a", locationIds: ["u1"] },
+        selector: { itemId: "item-a", placementNodeIds: ["u1"] },
         occurredAtEpochMs: time3,
       })
     ).rejects.toThrow("outside the declared selector");
@@ -175,7 +175,7 @@ describe("broad reservations and physical truth", () => {
         itemRevisionId: "item-a-v2",
         selector: {
           itemId: "item-a",
-          locationIds: ["store"],
+          placementNodeIds: ["store"],
           lotIds: ["EXACT"],
         },
         requested: parseQuantity("6", "piece"),
@@ -189,7 +189,7 @@ describe("broad reservations and physical truth", () => {
       itemRevisionId: "item-a-v2",
       selector: {
         itemId: "item-a",
-        locationIds: ["store"],
+        placementNodeIds: ["store"],
         lotIds: ["EXACT"],
       },
       requested: parseQuantity("5", "piece"),
@@ -201,7 +201,7 @@ describe("broad reservations and physical truth", () => {
       itemRevisionId: "item-a-v2",
       selector: {
         itemId: "item-a",
-        locationIds: ["room"],
+        placementNodeIds: ["room"],
         lotIds: ["ROOM"],
       },
       requested: parseQuantity("4", "piece"),
@@ -229,7 +229,7 @@ describe("broad reservations and physical truth", () => {
       reservationId: "claim-two",
       operationId: "reserve-two",
       itemRevisionId: "item-a-v2",
-      selector: { itemId: "item-a", locationIds: ["store"] },
+      selector: { itemId: "item-a", placementNodeIds: ["store"] },
       requested: parseQuantity("2", "piece"),
       createdAtEpochMs: time1,
     });
@@ -271,7 +271,7 @@ describe("broad reservations and physical truth", () => {
       reservationId: "count-shortage-claim",
       operationId: "count-shortage-reserve",
       itemRevisionId: "item-a-v2",
-      selector: { itemId: "item-a", locationIds: ["store"] },
+      selector: { itemId: "item-a", placementNodeIds: ["store"] },
       requested: parseQuantity("2", "piece"),
       createdAtEpochMs: time1,
     });
@@ -290,11 +290,11 @@ describe("broad reservations and physical truth", () => {
       countId: "count-during-shortage",
       operationId: "count-during-shortage:start",
       itemRevisionId: "item-a-v2",
-      selector: { itemId: "item-a", locationIds: ["store"] },
+      selector: { itemId: "item-a", placementNodeIds: ["store"] },
       startedAtEpochMs: time2,
     });
     const position = (
-      await inventory.read.positions({ itemId: "item-a", locationIds: ["store"] })
+      await inventory.read.positions({ itemId: "item-a", placementNodeIds: ["store"] })
     )[0];
     if (position === undefined) throw new Error("Expected remaining shortage stock.");
     await inventory.counts.observe({
@@ -323,7 +323,7 @@ describe("broad reservations and physical truth", () => {
       countId: "absolute-loss-during-shortage",
       operationId: "absolute-loss-during-shortage",
       itemRevisionId: "item-a-v2",
-      selector: { itemId: "item-a", locationIds: ["store"] },
+      selector: { itemId: "item-a", placementNodeIds: ["store"] },
       occurredAtEpochMs: time2,
       reason: "The remaining piece was also physically absent.",
     });
@@ -352,7 +352,7 @@ describe("broad reservations and physical truth", () => {
       reservationId: "claim-consume",
       operationId: "reserve-consume",
       itemRevisionId: "item-a-v2",
-      selector: { itemId: "item-a", locationIds: ["store"] },
+      selector: { itemId: "item-a", placementNodeIds: ["store"] },
       requested: parseQuantity("1", "piece"),
       createdAtEpochMs: time1,
     });
@@ -404,20 +404,20 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     await inventory.counts.start({
       countId: "count-a",
       operationId: "count-start",
-      selector: { itemId: "item-a", locationIds: ["a"] },
+      selector: { itemId: "item-a", placementNodeIds: ["a"] },
       startedAtEpochMs: time0,
     });
     await inventory.stock.transfer({
       operationId: "move-before-observation",
       occurredAtEpochMs: time1,
       from: loosePosition("a"),
-      toLocationId: "b",
+      toPlacementNodeId: "b",
       amount: stockAmount("2", "piece"),
     });
     const aAtObservation = (
       await inventory.read.positions({
         itemId: "item-a",
-        locationIds: ["a"],
+        placementNodeIds: ["a"],
       })
     )[0];
     if (aAtObservation === undefined)
@@ -443,7 +443,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
       operationId: "move-after-observation",
       occurredAtEpochMs: time2,
       from: loosePosition("a"),
-      toLocationId: "b",
+      toPlacementNodeId: "b",
       amount: stockAmount("1", "piece"),
     });
     const reconciled = await inventory.counts.reconcile({
@@ -461,7 +461,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     const positions = await inventory.read.positions({ itemId: "item-a" });
     expect(
       positions.map((row) => [
-        row.key.locationId,
+        row.key.placementNodeId,
         row.measurements.primary.quantity.amountMinor,
       ])
     ).toEqual([
@@ -481,7 +481,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     await inventory.counts.start({
       countId: "count-correction-cut",
       operationId: "count-correction-cut-start",
-      selector: { itemId: "item-a", locationIds: ["a"] },
+      selector: { itemId: "item-a", placementNodeIds: ["a"] },
       startedAtEpochMs: time0,
     });
     await inventory.stock.correct({
@@ -509,7 +509,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
         }),
     });
     const position = (
-      await inventory.read.positions({ itemId: "item-a", locationIds: ["a"] })
+      await inventory.read.positions({ itemId: "item-a", placementNodeIds: ["a"] })
     )[0];
     if (position === undefined) throw new Error("Expected corrected count position.");
     expect(position.measurements.primary.quantity.amountMinor).toBe(8);
@@ -545,7 +545,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
       countId: "absolute-count-seven",
       operationId: "absolute-count-seven",
       itemRevisionId: "item-a-v2",
-      selector: { itemId: "item-a", locationIds: ["store"] },
+      selector: { itemId: "item-a", placementNodeIds: ["store"] },
       observedMeasurements: {
         primary: {
           axisId: "pieces",
@@ -556,7 +556,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
       positionWhenEmpty: {
         itemId: "item-a",
         itemRevisionId: "item-a-v2",
-        locationId: "store",
+        placementNodeId: "store",
         qualifiedDimensions: [],
       },
       occurredAtEpochMs: time1,
@@ -606,7 +606,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     ).rejects.toThrow("changed intent");
     const positions = await inventory.read.positions({
       itemId: "item-a",
-      locationIds: ["store"],
+      placementNodeIds: ["store"],
     });
     expect(positions[0]?.measurements.primary.quantity.amountMinor).toBe(7);
   });
@@ -625,7 +625,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
       itemRevisionId: "item-a-v2",
       selector: {
         itemId: "item-a",
-        locationIds: ["store"],
+        placementNodeIds: ["store"],
         lotIds: ["LOT-ZERO"],
       },
       occurredAtEpochMs: time1,
@@ -643,7 +643,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     expect(
       await inventory.read.positions({
         itemId: "item-a",
-        locationIds: ["store"],
+        placementNodeIds: ["store"],
         lotIds: ["LOT-ZERO"],
       })
     ).toEqual([]);
@@ -677,7 +677,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
       countId: "absolute-resume",
       operationId: "absolute-resume",
       itemRevisionId: "item-a-v2",
-      selector: { itemId: "item-a", locationIds: ["store"] },
+      selector: { itemId: "item-a", placementNodeIds: ["store"] },
       observedMeasurements: {
         primary: {
           axisId: "pieces",
@@ -711,7 +711,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
       (
         await inventory.read.positions({
           itemId: "item-a",
-          locationIds: ["store"],
+          placementNodeIds: ["store"],
         })
       )[0]?.measurements.primary.quantity.amountMinor
     ).toBe(3);
@@ -740,7 +740,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
         countId: "absolute-ambiguous",
         operationId: "absolute-ambiguous",
         itemRevisionId: "item-a-v2",
-        selector: { itemId: "item-a", locationIds: ["store"] },
+        selector: { itemId: "item-a", placementNodeIds: ["store"] },
         observedMeasurements: {
           primary: {
             axisId: "pieces",
@@ -751,7 +751,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
         positionWhenEmpty: {
           itemId: "item-a",
           itemRevisionId: "item-a-v2",
-          locationId: "store",
+          placementNodeId: "store",
           qualifiedDimensions: [],
         },
         occurredAtEpochMs: time1,
@@ -770,7 +770,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
         countId: "absolute-invalid-observation",
         operationId: "absolute-invalid-observation",
         itemRevisionId: "item-a-v2",
-        selector: { itemId: "item-a", locationIds: ["empty-store"] },
+        selector: { itemId: "item-a", placementNodeIds: ["empty-store"] },
         observedMeasurements: {
           primary: {
             axisId: "pieces",
@@ -781,7 +781,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
         positionWhenEmpty: {
           itemId: "item-a",
           itemRevisionId: "item-a-v2",
-          locationId: "empty-store",
+          placementNodeId: "empty-store",
           qualifiedDimensions: [],
         },
         occurredAtEpochMs: time1,

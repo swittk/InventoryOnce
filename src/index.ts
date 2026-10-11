@@ -35,8 +35,10 @@ export type {
 } from "./collections.js";
 /** Revision-frozen mutual-fungibility summaries and exact allocation planning. */
 export * from "./fungibility.js";
-/** Shared lot/container expiry and effective-use-by helpers. */
+/** Shared lot/placement-ancestry expiry and effective-use-by helpers. */
 export * from "./usability.js";
+/** Durable current/resolved whereabouts lifecycle and provenance reads. */
+export * from "./whereabouts.js";
 /** Safe FIFO/FEFO method vocabulary used by native policy helpers. */
 export { InventoryAllocationMethod } from "./allocation.js";
 
@@ -44,7 +46,7 @@ export { InventoryAllocationMethod } from "./allocation.js";
 export { InventoryDeficitPolicy } from "./projection.js";
 /** Current projected lot-master read shape. */
 export type {
-  InventoryProjectedContainerDefinition,
+  InventoryProjectedPlacementNodeDefinition,
   InventoryProjectedLotDefinition,
 } from "./projection.js";
 
@@ -72,6 +74,12 @@ export type {
   InventoryMeasurementEvidence,
   InventoryTraceabilityRelationChange,
 } from "./events.js";
+/** Public generic placement topology values. */
+export type {
+  InventoryPlacementChange,
+  InventoryPlacementRelation,
+  InventoryPlacementState,
+} from "./placement.js";
 
 /** Public first-class physical transfer lifecycle/read types. */
 export { InventoryTransferStatus } from "./transfers.js";
@@ -106,13 +114,14 @@ export type {
 /** Public current-world and identity/configuration value shapes. */
 export type { InventoryWorldState } from "./world.js";
 export {
+  InventoryStockWhereaboutsState,
   InventoryTraceabilityNodeKind,
-  inventoryContainerIdentity,
+  inventoryPlacementNodeIdentity,
   inventoryLotIdentity,
 } from "./model.js";
 export type {
-  ContainerId,
-  InventoryContainerDefinition,
+  InventoryPlacementNodeDefinition,
+  InventoryWhereaboutsId,
   InventoryLotDefinition,
   InventoryMetadata,
   InventoryMetadataValue,
@@ -123,7 +132,7 @@ export type {
   InventoryStockPositionKey,
   ItemId,
   ItemRevisionId,
-  LocationId,
+  PlacementNodeId,
   LotId,
   PartyId,
   SerialId,

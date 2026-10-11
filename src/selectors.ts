@@ -4,8 +4,13 @@ import {
   inventoryStockPositionIdentity,
   type InventoryQualifiedDimension,
   type InventoryStockPositionKey,
+  InventoryStockWhereaboutsState,
   type ItemId,
 } from "./model.js";
+import {
+  inventoryPlacementNodeIsWithin,
+  type InventoryPlacementState,
+} from "./placement.js";
 
 /** How one optional stock identity is matched when omission would otherwise mean broad. */
 export enum InventoryOptionalIdentityConstraintKind {
@@ -44,8 +49,18 @@ export interface InventoryStockSelector {
   readonly itemId: ItemId;
   /** Allowed frozen item revisions, or every compatible retained revision when omitted. */
   readonly itemRevisionIds?: readonly string[];
-  /** Allowed locations, or every location when omitted. */
-  readonly locationIds?: readonly string[];
+  /** Explicit direct-placement presence/absence/allowed-set constraint. */
+  readonly placement?: InventoryOptionalIdentityConstraint;
+  /** Allowed exact direct placement nodes shorthand, or every placed/unplaced position when omitted. */
+  readonly placementNodeIds?: readonly string[];
+  /** Explicit whereabouts-lifecycle presence/absence/allowed-set constraint. */
+  readonly whereabouts?: InventoryOptionalIdentityConstraint;
+  /** Allowed exact whereabouts lifecycle identities shorthand. */
+  readonly whereaboutsIds?: readonly string[];
+  /** Allowed unresolved whereabouts classifications; omission means detached/missing/placed are all eligible. */
+  readonly whereaboutsStates?: readonly InventoryStockWhereaboutsState[];
+  /** Allowed placement subtrees; a position matches when its direct node descends from one root. */
+  readonly withinPlacementNodeIds?: readonly string[];
   /** Explicit lot presence/absence/allowed-set constraint. */
   readonly lot?: InventoryOptionalIdentityConstraint;
   /** Allowed lots shorthand, or every lot/no-lot position when omitted. */
@@ -58,10 +73,6 @@ export interface InventoryStockSelector {
   readonly packagingRevision?: InventoryOptionalIdentityConstraint;
   /** Allowed exact package revisions shorthand, or every package/loose position when omitted. */
   readonly packagingRevisionIds?: readonly string[];
-  /** Explicit container presence/absence/allowed-set constraint. */
-  readonly container?: InventoryOptionalIdentityConstraint;
-  /** Allowed handling units shorthand, or every container/loose position when omitted. */
-  readonly containerIds?: readonly string[];
   /** Explicit status presence/absence/allowed-set constraint. */
   readonly status?: InventoryOptionalIdentityConstraint;
   /** Allowed stock statuses shorthand, or every status when omitted. */
@@ -106,9 +117,22 @@ export function normalizeInventoryStockSelector(
     selector.itemRevisionIds,
     "itemRevisionIds"
   );
-  const locationIds = normalizeOptionalIdentitySet(
-    selector.locationIds,
-    "locationIds"
+  const placement = normalizeOptionalIdentityConstraint(
+    selector.placement,
+    selector.placementNodeIds,
+    "placement"
+  );
+  const whereabouts = normalizeOptionalIdentityConstraint(
+    selector.whereabouts,
+    selector.whereaboutsIds,
+    "whereabouts"
+  );
+  const whereaboutsStates = normalizeWhereaboutsStates(
+    selector.whereaboutsStates
+  );
+  const withinPlacementNodeIds = normalizeOptionalIdentitySet(
+    selector.withinPlacementNodeIds,
+    "withinPlacementNodeIds"
   );
   const lot = normalizeOptionalIdentityConstraint(
     selector.lot,
@@ -124,11 +148,6 @@ export function normalizeInventoryStockSelector(
     selector.packagingRevision,
     selector.packagingRevisionIds,
     "packagingRevision"
-  );
-  const container = normalizeOptionalIdentityConstraint(
-    selector.container,
-    selector.containerIds,
-    "container"
   );
   const status = normalizeOptionalIdentityConstraint(
     selector.status,
@@ -156,11 +175,21 @@ export function normalizeInventoryStockSelector(
   return {
     itemId: selector.itemId,
     ...(itemRevisionIds === undefined ? {} : { itemRevisionIds }),
-    ...(locationIds === undefined ? {} : { locationIds }),
+    ...(placement === undefined ? {} : { placement }),
+    ...(placement?.kind === InventoryOptionalIdentityConstraintKind.Allowed
+      ? { placementNodeIds: placement.valueIds }
+      : {}),
+    ...(whereabouts === undefined ? {} : { whereabouts }),
+    ...(whereabouts?.kind === InventoryOptionalIdentityConstraintKind.Allowed
+      ? { whereaboutsIds: whereabouts.valueIds }
+      : {}),
+    ...(whereaboutsStates === undefined ? {} : { whereaboutsStates }),
+    ...(withinPlacementNodeIds === undefined
+      ? {}
+      : { withinPlacementNodeIds }),
     ...(lot === undefined ? {} : { lot }),
     ...(serial === undefined ? {} : { serial }),
     ...(packagingRevision === undefined ? {} : { packagingRevision }),
-    ...(container === undefined ? {} : { container }),
     ...(status === undefined ? {} : { status }),
     ...(owner === undefined ? {} : { owner }),
     ...(custodian === undefined ? {} : { custodian }),
@@ -172,24 +201,46 @@ export function normalizeInventoryStockSelector(
 /** Return whether one exact stock position is eligible under a broad selector. */
 export function inventoryStockPositionMatchesSelector(
   position: InventoryStockPositionKey,
-  rawSelector: InventoryStockSelector
+  rawSelector: InventoryStockSelector,
+  placement?: InventoryPlacementState
 ): boolean {
   return inventoryStockPositionMatchesNormalizedSelector(
     position,
-    normalizeInventoryStockSelector(rawSelector)
+    normalizeInventoryStockSelector(rawSelector),
+    placement
   );
 }
 
 /** Match one position against a selector already normalized once by a bounded caller loop. */
 export function inventoryStockPositionMatchesNormalizedSelector(
   position: InventoryStockPositionKey,
-  selector: InventoryStockSelector
+  selector: InventoryStockSelector,
+  placement?: InventoryPlacementState
 ): boolean {
   if (position.itemId !== selector.itemId) return false;
   if (!optionalSetMatches(selector.itemRevisionIds, position.itemRevisionId))
     return false;
-  if (!optionalSetMatches(selector.locationIds, position.locationId))
+  if (!optionalIdentityConstraintMatches(selector.placement, position.placementNodeId))
     return false;
+  if (!optionalIdentityConstraintMatches(selector.whereabouts, position.whereaboutsId))
+    return false;
+  if (
+    selector.whereaboutsStates !== undefined &&
+    (position.whereaboutsState === undefined ||
+      !selector.whereaboutsStates.includes(position.whereaboutsState))
+  ) {
+    return false;
+  }
+  if (
+    selector.withinPlacementNodeIds !== undefined &&
+    !placementSubtreeMatches(
+      position.placementNodeId,
+      selector.withinPlacementNodeIds,
+      placement
+    )
+  ) {
+    return false;
+  }
   if (!optionalIdentityConstraintMatches(selector.lot, position.lotId))
     return false;
   if (!optionalIdentityConstraintMatches(selector.serial, position.serialId))
@@ -199,10 +250,6 @@ export function inventoryStockPositionMatchesNormalizedSelector(
       selector.packagingRevision,
       position.packagingRevisionId
     )
-  )
-    return false;
-  if (
-    !optionalIdentityConstraintMatches(selector.container, position.containerId)
   )
     return false;
   if (!optionalIdentityConstraintMatches(selector.status, position.statusId))
@@ -236,15 +283,37 @@ export function inventoryStockSelectorIdentity(
 /** Require an exact position to be inside one declared selector. */
 export function assertPositionInsideSelector(
   position: InventoryStockPositionKey,
-  selector: InventoryStockSelector
+  selector: InventoryStockSelector,
+  placement?: InventoryPlacementState
 ): void {
-  if (!inventoryStockPositionMatchesSelector(position, selector)) {
+  if (!inventoryStockPositionMatchesSelector(position, selector, placement)) {
     throw new Error(
       `Stock position ${inventoryStockPositionIdentity(
         position
       )} is outside the declared selector.`
     );
   }
+}
+
+/** Normalize one optional whereabouts-state set while preserving omission as broad matching. */
+function normalizeWhereaboutsStates(
+  values: readonly InventoryStockWhereaboutsState[] | undefined
+): readonly InventoryStockWhereaboutsState[] | undefined {
+  if (values === undefined) return undefined;
+  if (values.length === 0) {
+    throw new Error("Selector whereaboutsStates must be omitted instead of empty.");
+  }
+  const normalized = [...new Set(values)];
+  normalized.sort();
+  for (const value of normalized) {
+    if (
+      value !== InventoryStockWhereaboutsState.Detached &&
+      value !== InventoryStockWhereaboutsState.Missing
+    ) {
+      throw new Error("Selector whereaboutsStates contains an unknown value.");
+    }
+  }
+  return normalized;
 }
 
 /** Normalize one optional identity set while preserving omission as broad matching. */
@@ -262,9 +331,37 @@ function normalizeOptionalIdentityConstraint(
   label: string
 ): InventoryOptionalIdentityConstraint | undefined {
   if (constraint !== undefined && shorthandValueIds !== undefined) {
-    throw new Error(
-      `Selector ${label} cannot use both a constraint and its Ids shorthand.`
+    if (
+      constraint.kind !== InventoryOptionalIdentityConstraintKind.Allowed ||
+      constraint.valueIds === undefined
+    ) {
+      throw new Error(
+        `Selector ${label} cannot combine a non-Allowed constraint with its Ids shorthand.`
+      );
+    }
+    const constraintIds = normalizeIdentitySet(
+      constraint.valueIds,
+      `${label}.valueIds`
     );
+    const shorthandIds = normalizeIdentitySet(
+      shorthandValueIds,
+      `${label}Ids`
+    );
+    if (
+      constraintIds.length !== shorthandIds.length ||
+      constraintIds.some(
+        /** Compare one normalized constraint identity to the same shorthand slot. */
+        (value, index) => value !== shorthandIds[index]
+      )
+    ) {
+      throw new Error(
+        `Selector ${label} constraint and Ids shorthand disagree.`
+      );
+    }
+    return {
+      kind: InventoryOptionalIdentityConstraintKind.Allowed,
+      valueIds: constraintIds,
+    };
   }
   if (constraint === undefined) {
     const valueIds = normalizeOptionalIdentitySet(
@@ -358,6 +455,32 @@ function normalizeQualifiedDimensionSelectors(
   return normalized;
 }
 
+/** Match one direct placement node against one or more ancestor roots. */
+function placementSubtreeMatches(
+  placementNodeId: string | undefined,
+  ancestorNodeIds: readonly string[],
+  placement: InventoryPlacementState | undefined
+): boolean {
+  if (placementNodeId === undefined) return false;
+  if (placement === undefined) {
+    throw new Error(
+      "Selector withinPlacementNodeIds requires current placement topology."
+    );
+  }
+  for (const ancestorNodeId of ancestorNodeIds) {
+    if (
+      inventoryPlacementNodeIsWithin(
+        placement,
+        placementNodeId,
+        ancestorNodeId
+      )
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
 /** Return whether one optional exact value belongs to an optional allowed set. */
 function optionalSetMatches(
   allowed: readonly string[] | undefined,
@@ -415,7 +538,8 @@ function compareQualifiedDimensionSelector(
 /** Return whether `narrower` can only match positions already matched by `broader`. */
 export function inventoryStockSelectorIsSubset(
   narrower: InventoryStockSelector,
-  broader: InventoryStockSelector
+  broader: InventoryStockSelector,
+  placement?: InventoryPlacementState
 ): boolean {
   const normalizedNarrower = normalizeInventoryStockSelector(narrower);
   const normalizedBroader = normalizeInventoryStockSelector(broader);
@@ -428,12 +552,34 @@ export function inventoryStockSelectorIsSubset(
   )
     return false;
   if (
-    !optionalSetIsSubset(
-      normalizedNarrower.locationIds,
-      normalizedBroader.locationIds
+    !optionalIdentityConstraintIsSubset(
+      normalizedNarrower.placement,
+      normalizedBroader.placement
+    ) ||
+    !placementSelectorIsSubset(
+      normalizedNarrower,
+      normalizedBroader,
+      placement
     )
-  )
+  ) {
     return false;
+  }
+  if (
+    !optionalIdentityConstraintIsSubset(
+      normalizedNarrower.whereabouts,
+      normalizedBroader.whereabouts
+    )
+  ) {
+    return false;
+  }
+  if (
+    !optionalWhereaboutsStatesAreSubset(
+      normalizedNarrower.whereaboutsStates,
+      normalizedBroader.whereaboutsStates
+    )
+  ) {
+    return false;
+  }
   if (
     !optionalIdentityConstraintIsSubset(
       normalizedNarrower.lot,
@@ -452,13 +598,6 @@ export function inventoryStockSelectorIsSubset(
     !optionalIdentityConstraintIsSubset(
       normalizedNarrower.packagingRevision,
       normalizedBroader.packagingRevision
-    )
-  )
-    return false;
-  if (
-    !optionalIdentityConstraintIsSubset(
-      normalizedNarrower.container,
-      normalizedBroader.container
     )
   )
     return false;
@@ -494,6 +633,55 @@ export function inventoryStockSelectorIsSubset(
     normalizedNarrower.qualifiedDimensions,
     normalizedBroader.qualifiedDimensions
   );
+}
+
+/** Prove that one exact/subtree placement scope cannot escape another. */
+function placementSelectorIsSubset(
+  narrower: InventoryStockSelector,
+  broader: InventoryStockSelector,
+  placement: InventoryPlacementState | undefined
+): boolean {
+  if (
+    !optionalSetIsSubset(
+      narrower.placementNodeIds,
+      broader.placementNodeIds
+    )
+  ) {
+    return false;
+  }
+  const broaderRoots = broader.withinPlacementNodeIds;
+  if (broaderRoots === undefined) return true;
+  const narrowerDirect = narrower.placementNodeIds;
+  if (narrowerDirect !== undefined) {
+    for (const nodeId of narrowerDirect) {
+      if (!nodeIsWithinAnyRoot(nodeId, broaderRoots, placement)) return false;
+    }
+    return true;
+  }
+  const narrowerRoots = narrower.withinPlacementNodeIds;
+  if (narrowerRoots === undefined) return false;
+  for (const nodeId of narrowerRoots) {
+    if (!nodeIsWithinAnyRoot(nodeId, broaderRoots, placement)) return false;
+  }
+  return true;
+}
+
+/** Conservatively test ancestry, allowing exact-root equality without a topology snapshot. */
+function nodeIsWithinAnyRoot(
+  nodeId: string,
+  roots: readonly string[],
+  placement: InventoryPlacementState | undefined
+): boolean {
+  for (const root of roots) {
+    if (nodeId === root) return true;
+    if (
+      placement !== undefined &&
+      inventoryPlacementNodeIsWithin(placement, nodeId, root)
+    ) {
+      return true;
+    }
+  }
+  return false;
 }
 
 /** Return whether one optional allowed set is no broader than another optional set. */
@@ -533,6 +721,19 @@ function optionalIdentityConstraintIsSubset(
   if (narrowerKind !== InventoryOptionalIdentityConstraintKind.Allowed)
     return false;
   return optionalSetIsSubset(narrower.valueIds, broader.valueIds);
+}
+
+/** Return whether one optional whereabouts-state set is no broader than another. */
+function optionalWhereaboutsStatesAreSubset(
+  narrower: readonly InventoryStockWhereaboutsState[] | undefined,
+  broader: readonly InventoryStockWhereaboutsState[] | undefined
+): boolean {
+  if (broader === undefined) return true;
+  if (narrower === undefined) return false;
+  return narrower.every(
+    /** Require every narrower whereabouts state to be admitted by the broader set. */
+    (value) => broader.includes(value)
+  );
 }
 
 /** Return whether every broader qualified constraint is preserved/narrowed. */

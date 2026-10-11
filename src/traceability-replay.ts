@@ -4,12 +4,8 @@ import {
   type InventoryCommittedEvent,
   type InventoryTraceabilityRelationChange,
 } from "./events.js";
+import { inventoryTraceabilityNodeIdentity } from "./model.js";
 import {
-  InventoryTraceabilityNodeKind,
-  inventoryTraceabilityNodeIdentity,
-} from "./model.js";
-import {
-  buildContainmentChildContainerIndex,
   inventoryTraceabilityRelationIdentity,
   type InventoryTraceabilityRelation,
   type InventoryTraceabilityState,
@@ -21,8 +17,6 @@ export function projectInventoryTraceabilityEvents(
 ): InventoryTraceabilityState {
   // Canonical effective relation truth accumulated in durable event order.
   const relations: Record<string, InventoryTraceabilityRelation> = {};
-  // Fast child-to-parent index used to reject containment cycles and double parents.
-  const containmentParentByChild = new Map<string, string>();
   // Genealogy adjacency index used to reject ancestry cycles during replay.
   const genealogyOutputsByInput = new Map<string, Set<string>>();
 
@@ -83,61 +77,28 @@ export function projectInventoryTraceabilityEvents(
     for (const [identity, before] of beforeByIdentity) {
       const after = relations[identity];
       if (before !== undefined && before !== after) {
-        removeIndexedRelation(
-          before,
-          containmentParentByChild,
-          genealogyOutputsByInput
-        );
+        removeIndexedRelation(before, genealogyOutputsByInput);
       }
     }
     for (const [identity, before] of beforeByIdentity) {
       const after = relations[identity];
       if (after !== undefined && before !== after) {
-        validateAndIndexAddition(
-          after,
-          containmentParentByChild,
-          genealogyOutputsByInput
-        );
+        validateAndIndexAddition(after, genealogyOutputsByInput);
       }
     }
   }
 
-  return {
-    relations,
-    containmentChildContainerIdsByParentNodeIdentity:
-      buildContainmentChildContainerIndex(relations),
-  };
+  return { relations };
 }
 
-/** Prove one new structural edge preserves forest/DAG invariants, then index it. */
+/** Prove one new genealogy edge preserves the DAG invariant, then index it. */
 function validateAndIndexAddition(
   relation: Pick<InventoryTraceabilityRelationChange, "kind" | "from" | "to">,
-  containmentParentByChild: Map<string, string>,
   genealogyOutputsByInput: Map<string, Set<string>>
 ): void {
+  if (relation.kind !== InventoryTraceabilityRelationKind.Genealogy) return;
   const fromIdentity = inventoryTraceabilityNodeIdentity(relation.from);
   const toIdentity = inventoryTraceabilityNodeIdentity(relation.to);
-  if (relation.kind === InventoryTraceabilityRelationKind.Containment) {
-    const earlierParent = containmentParentByChild.get(fromIdentity);
-    if (earlierParent !== undefined && earlierParent !== toIdentity) {
-      throw new Error(
-        `Contained node '${fromIdentity}' cannot have two parents.`
-      );
-    }
-    let current: string | undefined = toIdentity;
-    /** Ancestors already inspected while checking the proposed containment parent chain. */
-    const visited = new Set<string>();
-    while (current !== undefined) {
-      if (current === fromIdentity || visited.has(current)) {
-        throw new Error(`Containment graph contains a cycle at '${current}'.`);
-      }
-      visited.add(current);
-      current = containmentParentByChild.get(current);
-    }
-    containmentParentByChild.set(fromIdentity, toIdentity);
-    return;
-  }
-  if (relation.kind !== InventoryTraceabilityRelationKind.Genealogy) return;
   assertNoGenealogyPath(genealogyOutputsByInput, toIdentity, fromIdentity);
   const outputs =
     genealogyOutputsByInput.get(fromIdentity) ?? new Set<string>();
@@ -145,19 +106,14 @@ function validateAndIndexAddition(
   genealogyOutputsByInput.set(fromIdentity, outputs);
 }
 
-/** Remove one effective structural edge from the incremental validation indexes. */
+/** Remove one effective genealogy edge from the incremental validation index. */
 function removeIndexedRelation(
   relation: InventoryTraceabilityRelation,
-  containmentParentByChild: Map<string, string>,
   genealogyOutputsByInput: Map<string, Set<string>>
 ): void {
+  if (relation.kind !== InventoryTraceabilityRelationKind.Genealogy) return;
   const fromIdentity = inventoryTraceabilityNodeIdentity(relation.from);
   const toIdentity = inventoryTraceabilityNodeIdentity(relation.to);
-  if (relation.kind === InventoryTraceabilityRelationKind.Containment) {
-    containmentParentByChild.delete(fromIdentity);
-    return;
-  }
-  if (relation.kind !== InventoryTraceabilityRelationKind.Genealogy) return;
   const outputs = genealogyOutputsByInput.get(fromIdentity);
   outputs?.delete(toIdentity);
   if (outputs?.size === 0) genealogyOutputsByInput.delete(fromIdentity);

@@ -91,7 +91,7 @@ describe("independent physical count reconciliation", () => {
     await inventory.stock.receive({
       operationId: "measured-loose-receive",
       occurredAtEpochMs,
-      to: { itemId, locationId: "loose" },
+      to: { itemId, placementNodeId: "loose" },
       amount: measuredStockAmount("2", "piece", [
         { axisId: "weight", value: "20", unit: "kg" },
       ]),
@@ -101,7 +101,7 @@ describe("independent physical count reconciliation", () => {
       countId: "measured-loose-count",
       operationId: "measured-loose-count",
       itemRevisionId,
-      selector: { itemId, locationIds: ["loose"] },
+      selector: { itemId, placementNodeIds: ["loose"] },
       observedMeasurements: measuredVector("2", "21"),
       occurredAtEpochMs,
       reason: "Reweighed unchanged piece stock.",
@@ -116,7 +116,7 @@ describe("independent physical count reconciliation", () => {
         unitCode("kg"),
       ).amountMinor,
     ).toBe(1);
-    const [position] = await inventory.read.positions({ itemId, locationIds: ["loose"] });
+    const [position] = await inventory.read.positions({ itemId, placementNodeIds: ["loose"] });
     expect(position?.measurements.primary.quantity.amountMinor).toBe(2);
     expect(
       position === undefined
@@ -141,7 +141,7 @@ describe("independent physical count reconciliation", () => {
     await inventory.stock.receive({
       operationId: "dynamic-package-receive",
       occurredAtEpochMs,
-      to: { itemId, locationId: "dynamic-package" },
+      to: { itemId, placementNodeId: "dynamic-package" },
       amount: packageAmount(1, packaging.revisionId, [
         { axisId: "weight", value: "3", unit: "kg" },
       ]),
@@ -151,7 +151,7 @@ describe("independent physical count reconciliation", () => {
       countId: "dynamic-package-count",
       operationId: "dynamic-package-count",
       itemRevisionId,
-      selector: { itemId, locationIds: ["dynamic-package"] },
+      selector: { itemId, placementNodeIds: ["dynamic-package"] },
       observedMeasurements: measuredVector("24", "4"),
       occurredAtEpochMs,
     });
@@ -180,7 +180,7 @@ describe("independent physical count reconciliation", () => {
     await inventory.stock.receive({
       operationId: "fixed-package-receive",
       occurredAtEpochMs,
-      to: { itemId, locationId: "fixed-package" },
+      to: { itemId, placementNodeId: "fixed-package" },
       amount: packageAmount(1, packaging.revisionId),
     });
     const before = await inventory.read.world();
@@ -189,7 +189,7 @@ describe("independent physical count reconciliation", () => {
       countId: "fixed-package-count",
       operationId: "fixed-package-count",
       itemRevisionId,
-      selector: { itemId, locationIds: ["fixed-package"] },
+      selector: { itemId, placementNodeIds: ["fixed-package"] },
       observedMeasurements: measuredVector("24", "4"),
       occurredAtEpochMs,
     })).rejects.toThrow("does not match the same whole package count");
@@ -201,8 +201,8 @@ describe("independent physical count reconciliation", () => {
 describe("independent exact-axis assurance", () => {
   it("reconciles both primary and independent axes and rejects omitted or changed weight", async () => {
     const inventory = inventoryFor();
-    await inventory.stock.receive({ operationId: "oracle-measured", occurredAtEpochMs, to: { itemId, locationId: "store" }, amount: measuredStockAmount("2", "piece", [{ axisId: "weight", value: "20.25", unit: "kg" }]) });
-    await inventory.counts.replaceAbsolute({ countId: "oracle-reweigh", operationId: "oracle-reweigh", itemRevisionId, selector: { itemId, locationIds: ["store"] }, observedMeasurements: measuredVector("2", "21.125"), occurredAtEpochMs, reason: "Physical reweigh." });
+    await inventory.stock.receive({ operationId: "oracle-measured", occurredAtEpochMs, to: { itemId, placementNodeId: "store" }, amount: measuredStockAmount("2", "piece", [{ axisId: "weight", value: "20.25", unit: "kg" }]) });
+    await inventory.counts.replaceAbsolute({ countId: "oracle-reweigh", operationId: "oracle-reweigh", itemRevisionId, selector: { itemId, placementNodeIds: ["store"] }, observedMeasurements: measuredVector("2", "21.125"), occurredAtEpochMs, reason: "Physical reweigh." });
     const world = await inventory.read.world();
     expect(() => assertAbstractInventoryInvariants(world)).not.toThrow();
     const entry = Object.entries(world.projection.positions)[0];

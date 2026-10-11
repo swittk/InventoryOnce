@@ -62,7 +62,7 @@ async function createReservationShortageFixture(
     reservationId: "c1",
     operationId: "closure:reserve:c1",
     itemRevisionId: "item-a-v2",
-    selector: { itemId: "item-a", locationIds: ["u1"] },
+    selector: { itemId: "item-a", placementNodeIds: ["u1"] },
     requested: parseQuantity("1", "piece"),
     createdAtEpochMs: time1,
   });
@@ -70,7 +70,7 @@ async function createReservationShortageFixture(
     reservationId: "c2",
     operationId: "closure:reserve:c2",
     itemRevisionId: "item-a-v2",
-    selector: { itemId: "item-a", locationIds: ["u2"] },
+    selector: { itemId: "item-a", placementNodeIds: ["u2"] },
     requested: parseQuantity("1", "piece"),
     createdAtEpochMs: time1,
     ...(secondClaimExpiresAtEpochMs === undefined
@@ -221,7 +221,7 @@ describe("reservation closure through an existing shortage", () => {
         reservationId: "c3",
         operationId: "closure:unrelated-reserve",
         itemRevisionId: "item-a-v2",
-        selector: { itemId: "item-a", locationIds: ["u2"] },
+        selector: { itemId: "item-a", placementNodeIds: ["u2"] },
         requested: parseQuantity("1", "piece"),
         createdAtEpochMs: time2,
       })
@@ -230,7 +230,7 @@ describe("reservation closure through an existing shortage", () => {
       inventory.reservations.refine({
         reservationId: "c2",
         operationId: "closure:unrelated-refine",
-        selector: { itemId: "item-a", locationIds: ["u2"] },
+        selector: { itemId: "item-a", placementNodeIds: ["u2"] },
         occurredAtEpochMs: time2,
       })
     ).rejects.toThrow("cannot all be fulfilled");
@@ -312,7 +312,7 @@ describe("reservation closure through an existing shortage", () => {
             operationId: "closure:release-with-transfer",
             occurredAtEpochMs: time2,
             from: loosePosition("u2"),
-            toLocationId: "u3",
+            toPlacementNodeId: "u3",
             amount: stockAmount("1", "piece"),
           }),
           reservationResult: releaseInventoryReservation({

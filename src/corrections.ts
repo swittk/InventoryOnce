@@ -31,6 +31,10 @@ import {
   projectInventoryEvents,
   type InventoryProjectionState,
 } from "./projection.js";
+import type {
+  InventoryPlacementChange,
+  InventoryPlacementRelation,
+} from "./placement.js";
 import {
   inventoryTraceabilityRelationIdentity,
   type InventoryTraceabilityRelation,
@@ -135,6 +139,10 @@ export function createInventoryCorrectionEvent(
       input.projection,
       desiredProjection
     );
+  const placementChanges = createCorrectionPlacementChanges(
+    input.projection.placement.relationByNodeId,
+    desiredProjection.placement.relationByNodeId
+  );
   const traceabilityChanges = createCorrectionTraceabilityChanges(
     input.projection.traceability.relations,
     desiredProjection.traceability.relations
@@ -152,7 +160,8 @@ export function createInventoryCorrectionEvent(
       stockEffects,
       positiveLayerProvenanceOverrides,
       lotDefinitions: replacement?.lotDefinitions ?? [],
-      containerDefinitions: replacement?.containerDefinitions ?? [],
+      placementNodeDefinitions: replacement?.placementNodeDefinitions ?? [],
+      placementChanges,
       traceabilityChanges,
       ...(input.actorId === undefined ? {} : { actorId: input.actorId }),
       ...(sourcePartyId === undefined ? {} : { sourcePartyId }),
@@ -204,11 +213,13 @@ function projectHistoryWithReplacement(
           operationId: root.operationId,
         };
   const hypothetical: InventoryCommittedEvent[] = [];
+  // Current direct parent per node while replaying corrected hypothetical history.
+  const hypotheticalParentByNodeId = new Map<string, string>();
   // Effective relation creators for the hypothetical history built below.
   const hypotheticalRelationCreatorById = new Map<string, string>();
-  // Traceability rows can become semantic no-ops after an earlier replacement; their
-  // correction chain must disappear from the same hypothetical history as well.
-  const droppedTraceabilityEventIds = new Set<string>();
+  // Graph-only rows can become semantic no-ops after an earlier replacement; their
+  // correction chains must disappear from the same hypothetical history as well.
+  const droppedGraphEventIds = new Set<string>();
   let nextSequence = 1;
   for (
     let recordSequence = 1;
@@ -237,9 +248,9 @@ function projectHistoryWithReplacement(
           );
     if (
       (event.correction !== undefined &&
-        droppedTraceabilityEventIds.has(event.correction.correctsEventId)) ||
+        droppedGraphEventIds.has(event.correction.correctsEventId)) ||
       correctedEvent?.kind === InventoryEventKind.LotMetadata ||
-      correctedEvent?.kind === InventoryEventKind.ContainerMetadata
+      correctedEvent?.kind === InventoryEventKind.PlacementNodeMetadata
     ) {
       continue;
     }
@@ -251,7 +262,7 @@ function projectHistoryWithReplacement(
     // A corrected metadata root may legitimately become a physical stock/graph assertion.
     if (
       draft.kind === InventoryEventKind.LotMetadata ||
-      draft.kind === InventoryEventKind.ContainerMetadata
+      draft.kind === InventoryEventKind.PlacementNodeMetadata
     ) {
       continue;
     }
@@ -260,8 +271,12 @@ function projectHistoryWithReplacement(
     const stockAndGraphDraft: InventoryEventDraft = {
       ...draft,
       lotDefinitions: [],
-      containerDefinitions: [],
+      placementNodeDefinitions: [],
     };
+    const reconciledPlacementChanges = reconcileHypotheticalPlacementChanges(
+      stockAndGraphDraft.placementChanges ?? [],
+      hypotheticalParentByNodeId
+    );
     const reconciledTraceabilityChanges =
       reconcileHypotheticalTraceabilityChanges(
         stockAndGraphDraft.traceabilityChanges,
@@ -269,20 +284,22 @@ function projectHistoryWithReplacement(
         hypotheticalRelationCreatorById
       );
     if (
-      stockAndGraphDraft.kind === InventoryEventKind.Traceability &&
-      reconciledTraceabilityChanges.length === 0
+      (stockAndGraphDraft.kind === InventoryEventKind.Placement &&
+        reconciledPlacementChanges.length === 0) ||
+      (stockAndGraphDraft.kind === InventoryEventKind.Traceability &&
+        reconciledTraceabilityChanges.length === 0)
     ) {
-      droppedTraceabilityEventIds.add(event.eventId);
+      droppedGraphEventIds.add(event.eventId);
       continue;
     }
+    const reconciledDraft: InventoryEventDraft = {
+      ...stockAndGraphDraft,
+      placementChanges: reconciledPlacementChanges,
+      traceabilityChanges: reconciledTraceabilityChanges,
+    };
     hypothetical.push(
       commitInventoryEvent(
-        reconciledTraceabilityChanges === stockAndGraphDraft.traceabilityChanges
-          ? stockAndGraphDraft
-          : {
-              ...stockAndGraphDraft,
-              traceabilityChanges: reconciledTraceabilityChanges,
-            },
+        reconciledDraft,
         event.recordedAtEpochMs,
         nextSequence
       )
@@ -294,6 +311,34 @@ function projectHistoryWithReplacement(
     events: hypothetical,
     deficitPolicy,
   });
+}
+
+/** Rebase later move intents onto the direct parent produced by corrected earlier history. */
+function reconcileHypotheticalPlacementChanges(
+  changes: readonly InventoryPlacementChange[],
+  parentByNodeId: Map<string, string>
+): readonly InventoryPlacementChange[] {
+  if (changes.length === 0) return changes;
+  const reconciled: InventoryPlacementChange[] = [];
+  for (const change of changes) {
+    const currentParentNodeId = parentByNodeId.get(change.nodeId);
+    if (currentParentNodeId === change.toParentNodeId) continue;
+    reconciled.push({
+      nodeId: change.nodeId,
+      ...(currentParentNodeId === undefined
+        ? {}
+        : { fromParentNodeId: currentParentNodeId }),
+      ...(change.toParentNodeId === undefined
+        ? {}
+        : { toParentNodeId: change.toParentNodeId }),
+    });
+    if (change.toParentNodeId === undefined) {
+      parentByNodeId.delete(change.nodeId);
+    } else {
+      parentByNodeId.set(change.nodeId, change.toParentNodeId);
+    }
+  }
+  return reconciled;
 }
 
 /** Reconcile relation removals that became unnecessary only because earlier corrected history changed. */
@@ -416,6 +461,35 @@ function createCorrectionStockEffects(
   }
   effects.sort(compareCorrectionStockEffect);
   return effects;
+}
+
+/** Create exact direct-parent transitions that make current placement equal hypothetical replay. */
+function createCorrectionPlacementChanges(
+  actual: Readonly<Record<string, InventoryPlacementRelation>>,
+  desired: Readonly<Record<string, InventoryPlacementRelation>>
+): readonly InventoryPlacementChange[] {
+  const nodeIds = new Set<string>([
+    ...Object.keys(actual),
+    ...Object.keys(desired),
+  ]);
+  const orderedNodeIds = [...nodeIds];
+  orderedNodeIds.sort(compareInventoryIdentityText);
+  const changes: InventoryPlacementChange[] = [];
+  for (const nodeId of orderedNodeIds) {
+    const actualParentNodeId = actual[nodeId]?.parentNodeId;
+    const desiredParentNodeId = desired[nodeId]?.parentNodeId;
+    if (actualParentNodeId === desiredParentNodeId) continue;
+    changes.push({
+      nodeId,
+      ...(actualParentNodeId === undefined
+        ? {}
+        : { fromParentNodeId: actualParentNodeId }),
+      ...(desiredParentNodeId === undefined
+        ? {}
+        : { toParentNodeId: desiredParentNodeId }),
+    });
+  }
+  return changes;
 }
 
 /** Create relation changes that make current graph equal the hypothetical replacement graph. */

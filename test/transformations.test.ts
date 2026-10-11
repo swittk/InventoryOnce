@@ -207,7 +207,7 @@ describe("reusable physical transformation definitions", () => {
     await inventory.stock.receive({
       operationId: "receive-bottles",
       occurredAtEpochMs: time0,
-      to: { itemId: "med-a", locationId: "room-a" },
+      to: { itemId: "med-a", placementNodeId: "room-a" },
       itemRevisionId: bottle.revisionId,
       amount: stockAmount("3", "bottle"),
     });
@@ -216,7 +216,7 @@ describe("reusable physical transformation definitions", () => {
     const plan = await inventory.transformations.plan({
       transformationRevisionId: definition.revisionId,
       selectorsByInputLine: {
-        "bottle-in": { itemId: "med-a", locationIds: ["room-a"] },
+        "bottle-in": { itemId: "med-a", placementNodeIds: ["room-a"] },
       },
     });
     expect(plan).toMatchObject({ worldRevision: before, applicable: true });
@@ -236,7 +236,7 @@ describe("reusable physical transformation definitions", () => {
     const unavailable = await inventory.transformations.plan({
       transformationRevisionId: definition.revisionId,
       selectorsByInputLine: {
-        "bottle-in": { itemId: "med-a", locationIds: ["room-b"] },
+        "bottle-in": { itemId: "med-a", placementNodeIds: ["room-b"] },
       },
     });
     expect(unavailable.applicable).toBe(false);

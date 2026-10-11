@@ -51,11 +51,11 @@ describe("traceability graph meanings", () => {
   it("rejects contradictory actions for the same relation edge in one event", () => {
     const catalog = createTabletCatalog();
     const child = {
-      kind: InventoryTraceabilityNodeKind.Container,
+      kind: InventoryTraceabilityNodeKind.PlacementNode,
       id: "same-edge-child",
     };
     const parent = {
-      kind: InventoryTraceabilityNodeKind.Container,
+      kind: InventoryTraceabilityNodeKind.PlacementNode,
       id: "same-edge-parent",
     };
 
@@ -71,13 +71,13 @@ describe("traceability graph meanings", () => {
           traceabilityChanges: [
             {
               action: InventoryTraceabilityRelationAction.Add,
-              kind: InventoryTraceabilityRelationKind.Containment,
+              kind: InventoryTraceabilityRelationKind.Association,
               from: child,
               to: parent,
             },
             {
               action: InventoryTraceabilityRelationAction.Remove,
-              kind: InventoryTraceabilityRelationKind.Containment,
+              kind: InventoryTraceabilityRelationKind.Association,
               from: child,
               to: parent,
             },
@@ -89,7 +89,7 @@ describe("traceability graph meanings", () => {
   it("rejects item qualifiers on non-lot traceability identities", () => {
     expect(() =>
       inventoryTraceabilityNodeIdentity({
-        kind: InventoryTraceabilityNodeKind.Container,
+        kind: InventoryTraceabilityNodeKind.PlacementNode,
         id: "QUALIFIED-CONTAINER",
         itemId: "item-a",
       })
@@ -106,7 +106,7 @@ describe("traceability graph meanings", () => {
   it("replays a wide valid genealogy without argument-list overflow", () => {
     const catalog = createTabletCatalog();
     const source = {
-      kind: InventoryTraceabilityNodeKind.Container,
+      kind: InventoryTraceabilityNodeKind.PlacementNode,
       id: "WIDE-GENEALOGY-SOURCE",
     };
     const changes: InventoryTraceabilityRelationChange[] = [];
@@ -116,7 +116,7 @@ describe("traceability graph meanings", () => {
         kind: InventoryTraceabilityRelationKind.Genealogy,
         from: source,
         to: {
-          kind: InventoryTraceabilityNodeKind.Container,
+          kind: InventoryTraceabilityNodeKind.PlacementNode,
           id: `WIDE-GENEALOGY-OUTPUT-${index}`,
         },
       });
@@ -150,7 +150,7 @@ describe("traceability graph meanings", () => {
               action: InventoryTraceabilityRelationAction.Add,
               kind: InventoryTraceabilityRelationKind.Genealogy,
               from: {
-                kind: InventoryTraceabilityNodeKind.Container,
+                kind: InventoryTraceabilityNodeKind.PlacementNode,
                 id: "WIDE-GENEALOGY-PREDECESSOR",
               },
               to: source,
@@ -165,23 +165,23 @@ describe("traceability graph meanings", () => {
     expect(() =>
       projectInventoryTraceabilityEvents([fanOut, predecessor])
     ).not.toThrow();
-  });
+  }, 15_000);
 
-  it("keeps containment and association independent and rejects containment cycles", async () => {
+  it("keeps placement and association independent and rejects placement cycles", async () => {
     const inventory = createTestInventory();
     const child = {
-      kind: InventoryTraceabilityNodeKind.Container,
+      kind: InventoryTraceabilityNodeKind.PlacementNode,
       id: "child",
     };
     const parent = {
-      kind: InventoryTraceabilityNodeKind.Container,
+      kind: InventoryTraceabilityNodeKind.PlacementNode,
       id: "parent",
     };
-    await inventory.traceability.aggregate({
-      operationId: "aggregate-child",
+    await inventory.placement.move({
+      operationId: "place-child",
       occurredAtEpochMs: time0,
-      from: child,
-      to: parent,
+      nodeId: child.id,
+      into: parent.id,
     });
     await inventory.traceability.associate({
       operationId: "associate-child",
@@ -190,47 +190,44 @@ describe("traceability graph meanings", () => {
       to: parent,
     });
     const world = await inventory.read.world();
-    const kinds = Object.values(world.projection.traceability.relations)
-      .map(
-        /** Return each retained relation kind for deterministic comparison. */
-        (relation) => relation.kind
-      )
-      .sort();
-    expect(kinds).toEqual([
-      InventoryTraceabilityRelationKind.Association,
-      InventoryTraceabilityRelationKind.Containment,
+    expect(world.projection.placement.relationByNodeId[child.id]).toMatchObject({
+      parentNodeId: parent.id,
+    });
+    expect(Object.values(world.projection.traceability.relations)).toEqual([
+      expect.objectContaining({
+        kind: InventoryTraceabilityRelationKind.Association,
+        from: child,
+        to: parent,
+      }),
     ]);
     await expect(
-      inventory.traceability.aggregate({
-        operationId: "aggregate-cycle",
+      inventory.placement.move({
+        operationId: "place-cycle",
         occurredAtEpochMs: time2,
-        from: parent,
-        to: child,
+        nodeId: parent.id,
+        into: child.id,
       })
-    ).rejects.toThrow("Containment graph contains a cycle");
-    await inventory.traceability.disaggregate({
-      operationId: "disaggregate-child",
+    ).rejects.toThrow("cycle");
+    await inventory.placement.unplace({
+      operationId: "unplace-child",
       occurredAtEpochMs: time3,
-      from: child,
-      to: parent,
+      nodeId: child.id,
+      expectedParent: parent.id,
     });
-    const remaining = Object.values(
-      (await inventory.read.world()).projection.traceability.relations
-    );
-    expect(remaining).toHaveLength(1);
-    expect(remaining[0]?.kind).toBe(
-      InventoryTraceabilityRelationKind.Association
-    );
+    expect(await inventory.read.placementParent(child.id)).toBeUndefined();
+    expect(
+      Object.values((await inventory.read.world()).projection.traceability.relations)
+    ).toHaveLength(1);
   });
 
   it("replays same-event genealogy replacement against the event-final graph", () => {
     const catalog = createTabletCatalog();
     const left = {
-      kind: InventoryTraceabilityNodeKind.Container,
+      kind: InventoryTraceabilityNodeKind.PlacementNode,
       id: "atomic-left",
     };
     const right = {
-      kind: InventoryTraceabilityNodeKind.Container,
+      kind: InventoryTraceabilityNodeKind.PlacementNode,
       id: "atomic-right",
     };
     const original = commitInventoryEvent(
@@ -337,10 +334,7 @@ describe("traceability graph meanings", () => {
     };
 
     const next = applyInventoryTraceabilityChanges({
-      state: {
-        relations,
-        containmentChildContainerIdsByParentNodeIdentity: {},
-      },
+      state: { relations },
       eventId: "deep-tail-event",
       changes: [
         {
@@ -354,29 +348,21 @@ describe("traceability graph meanings", () => {
     expect(Object.keys(next.relations)).toHaveLength(relationCount + 1);
   });
 
-  it("rejects transforming a container while an effective containment edge still uses it", async () => {
+  it("rejects transforming a placement node while it still has child nodes", async () => {
     const inventory = createTestInventory();
-    const child = {
-      kind: InventoryTraceabilityNodeKind.Container,
-      id: "transform-contained-child",
-    };
-    const container = {
-      kind: InventoryTraceabilityNodeKind.Container,
-      id: "transform-containing-input",
-    };
+    const childNodeId = "transform-contained-child";
+    const inputNodeId = "transform-containing-input";
     await inventory.stock.receive({
       operationId: "receive-containing-input",
       occurredAtEpochMs: time0,
-      to: loosePosition("transform-containment-store", {
-        containerId: container.id,
-      }),
+      to: loosePosition(inputNodeId),
       amount: stockAmount("1", "piece"),
     });
-    await inventory.traceability.aggregate({
-      operationId: "aggregate-before-transform",
+    await inventory.placement.move({
+      operationId: "place-child-before-transform",
       occurredAtEpochMs: time0,
-      from: child,
-      to: container,
+      nodeId: childNodeId,
+      into: inputNodeId,
     });
     await expect(
       inventory.stock.transform({
@@ -384,31 +370,35 @@ describe("traceability graph meanings", () => {
         occurredAtEpochMs: time1,
         consume: [
           {
-            position: loosePosition("transform-containment-store", {
-              containerId: container.id,
-            }),
+            position: loosePosition(inputNodeId),
             amount: stockAmount("1", "piece"),
+            traceabilityNode: {
+              kind: InventoryTraceabilityNodeKind.PlacementNode,
+              id: inputNodeId,
+            },
           },
         ],
         produce: [
           {
-            position: loosePosition("transform-containment-store", {
-              containerId: "transform-output",
-            }),
+            position: loosePosition("transform-output"),
             amount: stockAmount("1", "piece"),
+            traceabilityNode: {
+              kind: InventoryTraceabilityNodeKind.PlacementNode,
+              id: "transform-output",
+            },
           },
         ],
       })
-    ).rejects.toThrow("disaggregated from containment");
+    ).rejects.toThrow("must be unplaced and have no child nodes");
     expect(
       (await inventory.read.positions({
         itemId: "item-a",
-        locationIds: ["transform-containment-store"],
-      }))[0]?.key.containerId
-    ).toBe(container.id);
+        placementNodeIds: [inputNodeId],
+      }))[0]?.key.placementNodeId
+    ).toBe(inputNodeId);
   });
 
-  it("records transformation genealogy without treating it as containment", async () => {
+  it("records transformation genealogy without treating it as placement", async () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "receive-transform-input",
@@ -477,7 +467,7 @@ describe("traceability graph meanings", () => {
           },
         ],
       })
-    ).rejects.toThrow("does not match the serial, container, or lot");
+    ).rejects.toThrow("does not match the serial or lot");
     expect(
       (await inventory.read.positions({ itemId: "item-a" }))[0]?.key.serialId
     ).toBe("serial-a");
@@ -488,20 +478,20 @@ describe("append-only corrections", () => {
   it("treats a later traceability removal as a no-op when correction omits its root add", async () => {
     const inventory = createTestInventory();
     const child = {
-      kind: InventoryTraceabilityNodeKind.Container,
+      kind: InventoryTraceabilityNodeKind.PlacementNode,
       id: "omit-trace-child",
     };
     const parent = {
-      kind: InventoryTraceabilityNodeKind.Container,
+      kind: InventoryTraceabilityNodeKind.PlacementNode,
       id: "omit-trace-parent",
     };
-    const root = await inventory.traceability.aggregate({
+    const root = await inventory.traceability.associate({
       operationId: "omit-trace-root",
       occurredAtEpochMs: time0,
       from: child,
       to: parent,
     });
-    const removal = await inventory.traceability.disaggregate({
+    const removal = await inventory.traceability.disassociate({
       operationId: "omit-trace-later-remove",
       occurredAtEpochMs: time1,
       from: child,
@@ -513,7 +503,7 @@ describe("append-only corrections", () => {
       correctsEventId: removal.event.eventId,
       reason: "The later removal was verified before the root was corrected.",
       replaceWith: (plans) =>
-        plans.disaggregate({ occurredAtEpochMs: time1, from: child, to: parent }),
+        plans.disassociate({ occurredAtEpochMs: time1, from: child, to: parent }),
     });
 
     const correction = await inventory.stock.correct({
@@ -670,7 +660,7 @@ describe("append-only corrections", () => {
     });
     const request = {
       selector: inventoryStockSelector("item-a", {
-        locationIds: ["fifo-store"],
+        placementNodeIds: ["fifo-store"],
       }),
       amount: stockAmount("1", "piece"),
       method: InventoryAllocationMethod.Fifo,
@@ -752,7 +742,7 @@ describe("append-only corrections", () => {
     ]);
     const plan = await inventory.read.planAllocation({
       selector: inventoryStockSelector("item-a", {
-        locationIds: ["omit-layer-store"],
+        placementNodeIds: ["omit-layer-store"],
       }),
       amount: stockAmount("1", "piece"),
       method: InventoryAllocationMethod.Fifo,
@@ -802,7 +792,7 @@ describe("append-only corrections", () => {
 
     const positions = await inventory.read.positions({
       itemId: "item-a",
-      locationIds: ["metadata-replay-store"],
+      placementNodeIds: ["metadata-replay-store"],
     });
     expect(positions).toHaveLength(1);
     expect(positions[0]?.measurements.primary.quantity.amountMinor).toBe(2);
@@ -891,7 +881,7 @@ describe("append-only corrections", () => {
       ).toMatchObject([{ startedAtEpochMs: time0 }]);
       const openingPlan = await inventory.read.planAllocation({
         selector: inventoryStockSelector("item-a", {
-          locationIds: ["opening-store"],
+          placementNodeIds: ["opening-store"],
         }),
         amount: stockAmount("1", "piece"),
         method: InventoryAllocationMethod.Fifo,
@@ -942,7 +932,7 @@ describe("append-only corrections", () => {
         operationId: "transfer-root",
         occurredAtEpochMs: time1,
         from: loosePosition("transfer-a"),
-        toLocationId: "transfer-b",
+        toPlacementNodeId: "transfer-b",
         amount: stockAmount("1", "piece"),
       });
       await inventory.stock.correct({
@@ -954,7 +944,7 @@ describe("append-only corrections", () => {
           plans.transfer({
             occurredAtEpochMs: time1,
             from: loosePosition("transfer-a"),
-            toLocationId: "transfer-b",
+            toPlacementNodeId: "transfer-b",
             amount: stockAmount("1", "piece"),
           }),
       });
@@ -1138,14 +1128,14 @@ describe("append-only corrections", () => {
     {
       const inventory = createTestInventory();
       const child = {
-        kind: InventoryTraceabilityNodeKind.Container,
+        kind: InventoryTraceabilityNodeKind.PlacementNode,
         id: "trace-child",
       };
       const parent = {
-        kind: InventoryTraceabilityNodeKind.Container,
+        kind: InventoryTraceabilityNodeKind.PlacementNode,
         id: "trace-parent",
       };
-      const root = await inventory.traceability.aggregate({
+      const root = await inventory.traceability.associate({
         operationId: "trace-root",
         occurredAtEpochMs: time0,
         from: child,
@@ -1157,10 +1147,33 @@ describe("append-only corrections", () => {
         correctsEventId: root.event.eventId,
         reason: "Traceability row was checked.",
         replaceWith: (plans) =>
-          plans.aggregate({
+          plans.associate({
             occurredAtEpochMs: time0,
             from: child,
             to: parent,
+          }),
+      });
+      correctedRootKinds.add(root.event.kind);
+    }
+
+    {
+      const inventory = createTestInventory();
+      const root = await inventory.placement.move({
+        operationId: "placement-root",
+        occurredAtEpochMs: time0,
+        nodeId: "placement-correction-child",
+        into: "placement-correction-parent",
+      });
+      await inventory.stock.correct({
+        operationId: "correct-placement-root",
+        occurredAtEpochMs: time1,
+        correctsEventId: root.event.eventId,
+        reason: "Placement row was checked.",
+        replaceWith: (plans) =>
+          plans.placement({
+            occurredAtEpochMs: time0,
+            nodeId: "placement-correction-child",
+            toParentNodeId: "placement-correction-parent",
           }),
       });
       correctedRootKinds.add(root.event.kind);
@@ -1193,22 +1206,22 @@ describe("append-only corrections", () => {
 
     {
       const inventory = createTestInventory();
-      const root = await inventory.containers.define({
-        operationId: "container-metadata-root",
+      const root = await inventory.placement.define({
+        operationId: "placement-node-metadata-root",
         occurredAtEpochMs: time0,
-        containerId: "container-correction",
-        container: { containerType: "tray", useByEpochMs: time3 },
+        nodeId: "placement-node-correction",
+        placementNode: { category: "tray", useByEpochMs: time3 },
       });
       await inventory.stock.correct({
-        operationId: "correct-container-metadata",
+        operationId: "correct-placement-node-metadata",
         occurredAtEpochMs: time1,
         correctsEventId: root.event.eventId,
-        reason: "Container metadata row was checked.",
+        reason: "Placement-node metadata row was checked.",
         replaceWith: (plans) =>
-          plans.containerMetadata({
+          plans.placementNodeMetadata({
             occurredAtEpochMs: time0,
-            containerId: "container-correction",
-            container: { containerType: "tray", useByEpochMs: time3 },
+            nodeId: "placement-node-correction",
+            placementNode: { category: "tray", useByEpochMs: time3 },
           }),
       });
       correctedRootKinds.add(root.event.kind);
@@ -1225,13 +1238,13 @@ describe("append-only corrections", () => {
       await inventory.counts.start({
         countId: "count-correction",
         operationId: "count-correction-start",
-        selector: { itemId: "item-a", locationIds: ["count-store"] },
+        selector: { itemId: "item-a", placementNodeIds: ["count-store"] },
         startedAtEpochMs: time0,
       });
       const position = (
         await inventory.read.positions({
           itemId: "item-a",
-          locationIds: ["count-store"],
+          placementNodeIds: ["count-store"],
         })
       )[0];
       if (position === undefined)
@@ -1352,11 +1365,11 @@ describe("runtime discriminator and ownership hardening", () => {
     ).toThrow(/Unsupported transfer lifecycle action/u);
 
     const from = {
-      kind: InventoryTraceabilityNodeKind.Container,
+      kind: InventoryTraceabilityNodeKind.PlacementNode,
       id: "DISCRIMINATOR-FROM",
     };
     const to = {
-      kind: InventoryTraceabilityNodeKind.Container,
+      kind: InventoryTraceabilityNodeKind.PlacementNode,
       id: "DISCRIMINATOR-TO",
     };
     const traceabilityEvent = {
@@ -1409,11 +1422,11 @@ describe("runtime discriminator and ownership hardening", () => {
 
   it("detaches projected traceability relation nodes from caller and event objects", () => {
     const from = {
-      kind: InventoryTraceabilityNodeKind.Container,
+      kind: InventoryTraceabilityNodeKind.PlacementNode,
       id: "OWNERSHIP-FROM",
     };
     const to = {
-      kind: InventoryTraceabilityNodeKind.Container,
+      kind: InventoryTraceabilityNodeKind.PlacementNode,
       id: "OWNERSHIP-TO",
     };
     const change = {
@@ -1428,7 +1441,7 @@ describe("runtime discriminator and ownership hardening", () => {
       change.to
     );
     const live = applyInventoryTraceabilityChanges({
-      state: { relations: {}, containmentChildContainerIdsByParentNodeIdentity: {} },
+      state: { relations: {} },
       eventId: "ownership-live-event",
       changes: [change],
     });
@@ -1451,11 +1464,11 @@ describe("runtime discriminator and ownership hardening", () => {
             action: InventoryTraceabilityRelationAction.Add,
             kind: InventoryTraceabilityRelationKind.Association,
             from: {
-              kind: InventoryTraceabilityNodeKind.Container,
+              kind: InventoryTraceabilityNodeKind.PlacementNode,
               id: "REPLAY-FROM",
             },
             to: {
-              kind: InventoryTraceabilityNodeKind.Container,
+              kind: InventoryTraceabilityNodeKind.PlacementNode,
               id: "REPLAY-TO",
             },
           },

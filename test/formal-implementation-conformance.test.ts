@@ -284,8 +284,9 @@ describe("formal implementation conformance manifest", () => {
     expect(summary.callableFieldSignatures).toBeGreaterThanOrEqual(10);
     expect(summary.optionalFields).toBeGreaterThanOrEqual(821);
     expect(summary.undefinedFields).toBeGreaterThanOrEqual(2);
-    // The four authority checkpoint instants are nullable because epoch 0 is a valid instant and cannot encode absence.
-    expect(summary.nullableFields).toBe(4);
+    // Four authority checkpoint instants use null for absence, and placement move/unplace
+    // use null as the explicit optimistic expectation that a node is currently unplaced.
+    expect(summary.nullableFields).toBe(6);
     expect(summary.callAndConstructSignatures).toBeGreaterThanOrEqual(461);
     expect(summary.recursiveTypeReferences).toBeGreaterThanOrEqual(3);
     expect(summary.truncatedTypes).toBe(0);

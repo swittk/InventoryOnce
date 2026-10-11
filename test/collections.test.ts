@@ -167,12 +167,12 @@ async function receivePacks(
   /** Exact pack quantity text. */
   amount: string,
   /** Physical destination location. */
-  locationId = "store"
+  placementNodeId = "store"
 ): Promise<void> {
   await inventory.stock.receive({
-    operationId: `receive:${itemRevisionId}:${locationId}`,
+    operationId: `receive:${itemRevisionId}:${placementNodeId}`,
     occurredAtEpochMs: time0,
-    to: { itemId, locationId },
+    to: { itemId, placementNodeId },
     itemRevisionId,
     amount: stockAmount(amount, "pack"),
   });
@@ -258,7 +258,7 @@ describe("revision-frozen read-only inventory collections", () => {
 
     const storeOnly = await inventory.collections.summary({
       collectionRevisionId: "all-ocps-v2",
-      scope: { locationIds: ["store"] },
+      scope: { placementNodeIds: ["store"] },
     });
     expect(storeOnly.rollups[0]?.total.amountMinor).toBe(9);
     expect(
@@ -282,7 +282,7 @@ describe("revision-frozen read-only inventory collections", () => {
       occurredAtEpochMs: time0,
       selector: inventoryStockSelector("brand-x-old", {
         itemRevisionIds: ["brand-x-old-v1"],
-        locationIds: ["store"],
+        placementNodeIds: ["store"],
       }),
       itemRevisionId: "brand-x-old-v1",
       amount: stockAmount("3", "pack"),
@@ -291,14 +291,14 @@ describe("revision-frozen read-only inventory collections", () => {
     await inventory.stock.receive({
       operationId: "receive-old-brand-after-collection-deficit",
       occurredAtEpochMs: time1,
-      to: { itemId: "brand-x-old", locationId: "store", lotId: "OLD-LATE" },
+      to: { itemId: "brand-x-old", placementNodeId: "store", lotId: "OLD-LATE" },
       itemRevisionId: "brand-x-old-v1",
       amount: stockAmount("10", "pack"),
     });
 
     const summary = await inventory.collections.summary({
       collectionRevisionId: "brand-x-view-v1",
-      scope: { locationIds: ["store"] },
+      scope: { placementNodeIds: ["store"] },
     });
     const oldMember = summary.members.find(
       /** Read the one member carrying both physical stock and recorded deficit. */

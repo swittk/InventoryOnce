@@ -71,9 +71,9 @@ export interface InventoryTransferLine {
 /** Current first-class physical transfer truth rebuilt from committed events. */
 export interface InventoryTransfer {
   /** Transfer-lifecycle transferId value retained or supplied by this record. */ readonly transferId: string;
-  /** Transfer-lifecycle sourceLocationId value retained or supplied by this record. */ readonly sourceLocationId: string;
-  /** Transfer-lifecycle transitLocationId value retained or supplied by this record. */ readonly transitLocationId: string;
-  /** Transfer-lifecycle destinationLocationId value retained or supplied by this record. */ readonly destinationLocationId: string;
+  /** Transfer-lifecycle sourcePlacementNodeId value retained or supplied by this record. */ readonly sourcePlacementNodeId: string;
+  /** Transfer-lifecycle transitPlacementNodeId value retained or supplied by this record. */ readonly transitPlacementNodeId: string;
+  /** Transfer-lifecycle destinationPlacementNodeId value retained or supplied by this record. */ readonly destinationPlacementNodeId: string;
   /** Transfer-lifecycle destinationCustodianId value retained or supplied by this record. */ readonly destinationCustodianId?: PartyId;
   /** Transfer-lifecycle carrierCustodianId value retained or supplied by this record. */ readonly carrierCustodianId?: PartyId;
   /** Transfer-lifecycle status value retained or supplied by this record. */ readonly status: InventoryTransferStatus;
@@ -103,13 +103,13 @@ export function inventoryTransferPreparedPosition(
 export function inventoryTransferTransitPosition(
   transfer: Pick<
     InventoryTransfer,
-    "transferId" | "transitLocationId" | "carrierCustodianId"
+    "transferId" | "transitPlacementNodeId" | "carrierCustodianId"
   >,
   line: Pick<InventoryTransferLine, "sourcePosition">
 ): InventoryStockPositionKey {
   return normalizeInventoryStockPositionKey({
     ...line.sourcePosition,
-    locationId: transfer.transitLocationId,
+    placementNodeId: transfer.transitPlacementNodeId,
     transferId: transfer.transferId,
     ...(transfer.carrierCustodianId === undefined
       ? {}
@@ -121,13 +121,13 @@ export function inventoryTransferTransitPosition(
 export function inventoryTransferDestinationPosition(
   transfer: Pick<
     InventoryTransfer,
-    "destinationLocationId" | "destinationCustodianId"
+    "destinationPlacementNodeId" | "destinationCustodianId"
   >,
   line: Pick<InventoryTransferLine, "sourcePosition">
 ): InventoryStockPositionKey {
   return normalizeInventoryStockPositionKey({
     ...line.sourcePosition,
-    locationId: transfer.destinationLocationId,
+    placementNodeId: transfer.destinationPlacementNodeId,
     ...(transfer.destinationCustodianId === undefined
       ? {}
       : { custodianId: transfer.destinationCustodianId }),
@@ -176,9 +176,9 @@ export function applyInventoryTransferLifecycleEvent(
     );
     const transfer: InventoryTransfer = {
       transferId: change.transferId,
-      sourceLocationId: change.sourceLocationId,
-      transitLocationId: change.transitLocationId,
-      destinationLocationId: change.destinationLocationId,
+      sourcePlacementNodeId: change.sourcePlacementNodeId,
+      transitPlacementNodeId: change.transitPlacementNodeId,
+      destinationPlacementNodeId: change.destinationPlacementNodeId,
       ...(change.destinationCustodianId === undefined
         ? {}
         : { destinationCustodianId: change.destinationCustodianId }),
@@ -512,8 +512,8 @@ export interface CreateInventoryTransferPrepareEventInput
   extends InventoryCommandHeader {
   /** Transfer-lifecycle catalog value retained or supplied by this record. */ readonly catalog: InventoryCatalog;
   /** Transfer-lifecycle transferId value retained or supplied by this record. */ readonly transferId: string;
-  /** Transfer-lifecycle transitLocationId value retained or supplied by this record. */ readonly transitLocationId: string;
-  /** Transfer-lifecycle destinationLocationId value retained or supplied by this record. */ readonly destinationLocationId: string;
+  /** Transfer-lifecycle transitPlacementNodeId value retained or supplied by this record. */ readonly transitPlacementNodeId: string;
+  /** Transfer-lifecycle destinationPlacementNodeId value retained or supplied by this record. */ readonly destinationPlacementNodeId: string;
   /** Transfer-lifecycle destinationCustodianId value retained or supplied by this record. */ readonly destinationCustodianId?: PartyId;
   /** Transfer-lifecycle lines value retained or supplied by this record. */ readonly lines: readonly InventoryTransferPrepareLineInput[];
 }
@@ -547,7 +547,7 @@ export interface CreateInventoryTransferReleaseEventInput
   /** Transfer-lifecycle transfer value retained or supplied by this record. */ readonly transfer: InventoryTransfer;
 }
 
-/** Partition exact source stock under a kernel-owned transfer identity without moving location. */
+/** Partition exact source stock under a kernel-owned transfer identity without changing direct placement. */
 export function createInventoryTransferPrepareEvent(
   input: CreateInventoryTransferPrepareEventInput
 ): InventoryEventDraft {
@@ -577,7 +577,12 @@ export function createInventoryTransferPrepareEvent(
       );
     }
     seenSourcePositions.add(sourceIdentity);
-    sourceLocations.add(resolvedLine.position.locationId);
+    if (resolvedLine.position.placementNodeId === undefined) {
+      throw new Error(
+        "Transfer lifecycle source must have a current placement; place unresolved stock explicitly first."
+      );
+    }
+    sourceLocations.add(resolvedLine.position.placementNodeId);
     effects.push(
       transferEffect(
         resolvedLine.position,
@@ -608,20 +613,20 @@ export function createInventoryTransferPrepareEvent(
   }
   if (sourceLocations.size !== 1)
     throw new Error(
-      "One physical transfer must have exactly one source location."
+      "One physical transfer must have exactly one source direct placement."
     );
-  const sourceLocationId = sourceLocations.values().next().value;
-  if (sourceLocationId === undefined)
-    throw new Error("Transfer prepare source location is missing.");
-  assertInventoryIdentity(input.transitLocationId, "transfer transitLocationId");
+  const sourcePlacementNodeId = sourceLocations.values().next().value;
+  if (sourcePlacementNodeId === undefined)
+    throw new Error("Transfer prepare source direct placement is missing.");
+  assertInventoryIdentity(input.transitPlacementNodeId, "transfer transitPlacementNodeId");
   assertInventoryIdentity(
-    input.destinationLocationId,
-    "transfer destinationLocationId"
+    input.destinationPlacementNodeId,
+    "transfer destinationPlacementNodeId"
   );
-  if (input.transitLocationId === sourceLocationId)
-    throw new Error("Transfer transit location must differ from the source location.");
-  if (input.transitLocationId === input.destinationLocationId)
-    throw new Error("Transfer transit location must differ from the destination location.");
+  if (input.transitPlacementNodeId === sourcePlacementNodeId)
+    throw new Error("Transfer transit placement must differ from the source placement.");
+  if (input.transitPlacementNodeId === input.destinationPlacementNodeId)
+    throw new Error("Transfer transit placement must differ from the destination placement.");
   return transferLifecycleEvent(
     input.catalog,
     InventoryEventKind.Reclassification,
@@ -630,9 +635,9 @@ export function createInventoryTransferPrepareEvent(
     {
       action: InventoryTransferLifecycleAction.Prepare,
       transferId: input.transferId,
-      sourceLocationId,
-      transitLocationId: input.transitLocationId,
-      destinationLocationId: input.destinationLocationId,
+      sourcePlacementNodeId,
+      transitPlacementNodeId: input.transitPlacementNodeId,
+      destinationPlacementNodeId: input.destinationPlacementNodeId,
       ...(input.destinationCustodianId === undefined
         ? {}
         : { destinationCustodianId: input.destinationCustodianId }),

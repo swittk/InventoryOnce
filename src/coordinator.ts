@@ -497,7 +497,8 @@ function assertReservationConsumptionMatchesIssue({
     (committedEvent.positiveLayerProvenanceTransfers?.length ?? 0) !== 0 ||
     (committedEvent.positiveLayerProvenanceOverrides?.length ?? 0) !== 0 ||
     (committedEvent.lotDefinitions?.length ?? 0) !== 0 ||
-    (committedEvent.containerDefinitions?.length ?? 0) !== 0 ||
+    (committedEvent.placementNodeDefinitions?.length ?? 0) !== 0 ||
+    (committedEvent.placementChanges?.length ?? 0) !== 0 ||
     committedEvent.transferLifecycle !== undefined ||
     committedEvent.catalogDigest !== undefined ||
     committedEvent.catalogSnapshot !== undefined ||

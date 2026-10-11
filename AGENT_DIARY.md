@@ -1559,3 +1559,59 @@ The R105 portable-current-input authority and final publication both continue to
 - The composition duplicate is already independently closed by executable mutation evidence from Review 518686: a deliberately wrong implementation that actually retains caller-owned composition output objects makes the existing current-head regression fail, so wrong supported alias semantics do not receive green credit. Repeating the same static suggestion creates no new defect.
 - The shared-step-id suggestion is maintainability/fail-diagnostic cleanup only. The current producer and report literals agree. A future rename mismatch would make the report fail closed (`0` rows / mismatched expected run) rather than certify wrong supported semantics, so it cannot satisfy the owner false-credit threshold and does not justify review-relevant churn during convergence.
 - Review-relevant bytes remain unchanged from the exact already-certified source. Compact authority remains input key `4e1dfe8b8603aecc3fb4708f12fb188904898fad73c548138a48f94b0ca5fa9f`, 639 tracked inputs / zero untracked proof inputs; binder remains A121/B58/V309/HARD_RED47 = 535 callables / 488 strict / 47 `EXPLICIT_HARD_RED` / zero unexpected, 309 value + 179 producer accepted.
+
+## 2026-10-11 — Placement graph v2 hard cutover started
+
+- Owner authorized a zero-user hard cutover: no migration layer, no backward-compatibility surface, no dual location/container semantics.
+- Implement directly on `feat/placement-graph-v2` in the standalone InventoryOnce repository.
+- Replace mandatory flat `locationId` plus optional `containerId` with generic direct placement topology. Any node accepted by policy can be a placement target; the kernel must not hardcode box/shelf/room categories.
+- Keep application APIs physical and obvious. InventoryOnce derives current parent and graph mechanics when intent is unambiguous; callers do not construct graph deltas or descendant rewrites.
+- Placement, association, and genealogy remain distinct semantic structures. Moving an ancestor must not rewrite descendant stock positions.
+- Formal work is part of the implementation: update/add TLA models, executable refinement tests, assurance manifests, performance tests, and full implementation conformance.
+- No subagents or delegated workers are permitted for this effort.
+
+
+## 2026-10-11 — Coordination bulletin + intentionally detached stock invariant
+
+- Added root `BULLETIN.md` plus `PLEASE_READ_BULLETIN.md`; `AGENTS.md` now requires checking/updating the bulletin during substantial work.
+- New blocking placement-v2 invariant from owner discussion: partial stock may be deliberately removed from a current placement with no destination asserted yet while remaining conserved current inventory. Actor/custodian may be known or absent and is orthogonal to placement.
+- Existing `placement.unplace(nodeId)` covers detaching a whole placement node from its parent, but does not cover taking a partial quantity out of a stock position. With mandatory `InventoryStockPositionKey.placementNodeId`, the current WIP has no honest representation for this without a fake node or misuse of `issue`.
+- Preserve the semantic boundary: place/move = still inventory with known placement; take-out/detach = still inventory intentionally unplaced; issue/dispense = leaves InventoryOnce; scrap = destroyed/discarded. Do not finalize the public/formal model until this gap is resolved and covered by executable/formal tests.
+
+
+## 2026-10-11 — Explicit acknowledgement gate added
+
+- Owner requested a conspicuous acknowledgement gate because the active placement-v2 worker continued original graph/formal work without yet recording that the later detached/missing-stock requirements were absorbed.
+- Added STOP_AND_ACK_BULLETIN_BEFORE_CONTINUING.md, strengthened PLEASE_READ_BULLETIN.md and AGENTS.md, and required a timestamped bulletin reply describing the intended representation/API and affected invariants before more substantive work.
+- The worker must acknowledge and then continue implementation; acknowledgement alone is not task completion.
+
+
+## 2026-10-11 — Owner correction: no Codex / no agents
+
+- Owner explicitly corrected the coordination approach: do not use Codex or delegated agents for this InventoryOnce revamp.
+- The briefly added worker-ACK gate was removed. The semantic BULLETIN requirements remain authoritative.
+- Further work on placement-v2 must be performed directly through the repository tools in the current session.
+
+
+## 2026-10-11 — Direct continuation after reading placement-v2 bulletin
+
+- Current session found and adopted the existing `/home/server/Documents/Projects/InventoryOnce-placement-v2` worktree on `feat/placement-graph-v2`; no competing branch/worktree was created.
+- Read `PLEASE_READ_BULLETIN.md`, all current bulletin requirements, repository rules, and latest diary entries. Existing uncommitted placement and whereabouts work is treated as colleague work to validate and continue, not replace.
+- No Codex, subagents, or delegated workers will be used. First action is validation of the current WIP, followed by reservation/count/formal/performance closure and full package assurance.
+
+
+## 2026-10-11 — Placement-v2 whereabouts and performance invariant closure
+
+- Removed public lifecycle-id ceremony from detach/missing commands; lifecycle identity is kernel-owned and stable through all later outcomes.
+- Added current/resolved whereabouts lifecycle reads backed by immutable event history and origin provenance.
+- Clarified accounted versus usable stock: detached/missing remains on hand but cannot back normal claims or automatic picking until placed. Added executable regressions and updated ReservationScope TLA with a deliberate bad-detach mutation witness.
+- Found and removed two hidden ancestor-move scaling costs: eager stock-index cloning and full historical event reserialization during content-root calculation. Projection components now use copy-on-write; immutable published worlds and component/value digests reuse structural identity safely. Runtime caching is restricted to frozen objects so mutable external inputs cannot receive stale roots.
+- Measured public move latency at roughly 3.09 ms for 1,000 descendants and 3.97 ms for 5,000 descendants, with zero descendant rewrites. Storage conformance, strict types, focused product tests, and the complete TLC/mutation suite are green at this checkpoint.
+
+
+## 2026-10-11 — Placement-v2 pre-commit gate complete
+
+- Finalized first-class generic placement, detached/missing whereabouts lifecycle/history, accounted-vs-usable availability, reservation/picking exclusion of unplaced stock, structural-sharing projection/storage roots, and full placement/reservation TLA mutation coverage.
+- Hardened digest caching so only objects recursively frozen and marked by the reference publication boundary receive reusable roots; shallow external `Object.freeze` is not trusted.
+- Exact pre-commit validation passed: strict check/assurance, 59 Node controls, 45 Vitest files / 629 tests, production build, 27 positive TLC models, 19 expected mutation rejections, and one positive reachability witness. Current public surface is 529/529 compiler-witnessed callables with zero unresolved entries and 2,357 reachable fields.
+- No subagents or delegation were used. Next step is a coherent branch commit, then clean-commit full conformance and ship review.

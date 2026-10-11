@@ -5,14 +5,21 @@ import type { InventoryMeasurementVector } from "./measurements.js";
 export type ItemId = string;
 /** Immutable item-definition revision identity. */
 export type ItemRevisionId = string;
-/** Generic physical/logical location identity. */
-export type LocationId = string;
+/** Stable identity for one generic physical placement node. */
+export type PlacementNodeId = string;
+/** Stable kernel-owned identity for one detached/missing stock whereabouts lifecycle. */
+export type InventoryWhereaboutsId = string;
+/** Current unresolved whereabouts classification for stock with no asserted placement. */
+export enum InventoryStockWhereaboutsState {
+  /** Deliberately removed from its prior placement; next placement is not yet asserted. */
+  Detached = "detached",
+  /** Still-accounted-for stock whose current physical whereabouts are genuinely unknown. */
+  Missing = "missing",
+}
 /** Generic maker/production lot identity. */
 export type LotId = string;
 /** Generic individually tracked serial identity. */
 export type SerialId = string;
-/** Generic physical/logical handling-unit identity. */
-export type ContainerId = string;
 /** Generic party identity used for ownership, custody, authority, source, and destination roles. */
 export type PartyId = string;
 /** Stable kernel-owned identity for one prepared/dispatched physical transfer lifecycle. */
@@ -54,16 +61,24 @@ export interface InventoryStockPositionKey {
   readonly itemId: ItemId;
   /** Frozen item definition revision governing measurements/tracking/dimensions for this stock. */
   readonly itemRevisionId: ItemRevisionId;
-  /** Place where this stock currently exists; transit is represented as a real location. */
-  readonly locationId: LocationId;
+  /** Generic node directly holding this stock; omitted only for explicit detached/missing whereabouts. */
+  readonly placementNodeId?: PlacementNodeId;
+  /** Stable lifecycle/cohort identity while current placement is unresolved. */
+  readonly whereaboutsId?: InventoryWhereaboutsId;
+  /** Detached/missing classification while current placement is unresolved. */
+  readonly whereaboutsState?: InventoryStockWhereaboutsState;
+  /** Last asserted direct placement before the current unresolved whereabouts lifecycle began. */
+  readonly lastPlacementNodeId?: PlacementNodeId;
+  /** Original intentional-detach time for this unresolved whereabouts lifecycle. */
+  readonly detachedAtEpochMs?: number;
+  /** Time the unresolved lifecycle was escalated to genuinely missing; valid only for Missing. */
+  readonly missingAtEpochMs?: number;
   /** Production lot when lot traceability matters. */
   readonly lotId?: LotId;
   /** Exact serial identity when one resource is individually tracked. */
   readonly serialId?: SerialId;
   /** Exact package revision while stock remains physically intact in that package form. */
   readonly packagingRevisionId?: string;
-  /** Exact handling unit/container currently holding this stock. */
-  readonly containerId?: ContainerId;
   /** Current usable/quarantine/recalled/etc. state. */
   readonly statusId?: StockStatusId;
   /** Current legal/economic owner. */
@@ -123,34 +138,36 @@ export function inventoryLotIdentity(itemId: ItemId, lotId: LotId): string {
   return JSON.stringify([itemId, lotId]);
 }
 
-/** Immutable identifying facts for one physical/logical handling unit. */
-export interface InventoryContainerDefinition {
-  /** Stable identity for this exact handling unit. */
-  readonly containerId: ContainerId;
-  /** Plain application-defined kind such as vial, syringe, carton, tray, or pallet. */
-  readonly containerType?: string;
-  /** GTIN/SSCC/barcode/vendor identifiers that help resolve this exact container. */
+/** Optional metadata and policy for one generic physical placement node. */
+export interface InventoryPlacementNodeDefinition {
+  /** Stable identity for this exact physical/logical node. */
+  readonly nodeId: PlacementNodeId;
+  /** Application-defined category with no kernel behavior. */
+  readonly category?: string;
+  /** Whether other nodes or stock may be placed directly here; omission means allowed. */
+  readonly acceptsPlacement?: boolean;
+  /** Barcode/vendor/application identifiers that help resolve this exact node. */
   readonly identifiers?: Readonly<Record<string, string>>;
-  /** Time this exact container was physically opened/prepared when known. */
+  /** Time this node was physically opened/prepared when meaningful. */
   readonly openedAtEpochMs?: number;
-  /** Container-specific use-by time, often shorter than the source lot expiry. */
+  /** Node-specific use-by time applied to stock anywhere in its descendant subtree. */
   readonly useByEpochMs?: number;
-  /** Extra application metadata that does not change container identity. */
+  /** Extra application metadata that does not change node identity or topology. */
   readonly metadata?: InventoryMetadata;
 }
 
-/** Stable identity for one exact physical/logical handling unit. */
-export function inventoryContainerIdentity(containerId: ContainerId): string {
-  assertInventoryIdentity(containerId, "containerId");
-  return JSON.stringify([containerId]);
+/** Stable identity for one generic physical placement node. */
+export function inventoryPlacementNodeIdentity(nodeId: PlacementNodeId): string {
+  assertInventoryIdentity(nodeId, "placement nodeId");
+  return JSON.stringify([nodeId]);
 }
 
-/** Kind of object that can participate in containment, association, or genealogy. */
+/** Kind of object that can participate in association or genealogy. */
 export enum InventoryTraceabilityNodeKind {
   /** Individually tracked serial/resource identity. */
   Serial = "serial",
-  /** Physical/logical handling-unit identity. */
-  Container = "container",
+  /** Generic physical placement-node identity. */
+  PlacementNode = "placement-node",
   /** Lot/batch identity qualified by item. */
   Lot = "lot",
   /** Application-owned external traceability identity. */
@@ -159,7 +176,7 @@ export enum InventoryTraceabilityNodeKind {
 
 /** Stable reference to one traceability graph node. */
 export interface InventoryTraceabilityNodeRef {
-  /** Node category used to avoid collisions between serial/container/lot namespaces. */
+  /** Node category used to avoid collisions between serial/placement-node/lot namespaces. */
   readonly kind: InventoryTraceabilityNodeKind;
   /** Stable identity inside that category. */
   readonly id: string;
@@ -183,17 +200,21 @@ export function normalizeInventoryStockPositionKey(
 ): InventoryStockPositionKey {
   assertInventoryIdentity(key.itemId, "itemId");
   assertInventoryIdentity(key.itemRevisionId, "itemRevisionId");
-  assertInventoryIdentity(key.locationId, "locationId");
+  if (key.placementNodeId !== undefined) {
+    assertInventoryIdentity(key.placementNodeId, "placementNodeId");
+  }
+  assertInventoryPositionPlacementOrWhereabouts(key);
   for (const [label, value] of [
     ["lotId", key.lotId],
     ["serialId", key.serialId],
     ["packagingRevisionId", key.packagingRevisionId],
-    ["containerId", key.containerId],
     ["statusId", key.statusId],
     ["ownerId", key.ownerId],
     ["custodianId", key.custodianId],
     ["dispositionAuthorityId", key.dispositionAuthorityId],
     ["transferId", key.transferId],
+    ["whereaboutsId", key.whereaboutsId],
+    ["lastPlacementNodeId", key.lastPlacementNodeId],
   ] as const) {
     if (value !== undefined) assertInventoryIdentity(value, label);
   }
@@ -225,6 +246,79 @@ export function normalizeInventoryStockPositionKey(
   return { ...key, qualifiedDimensions: dimensions };
 }
 
+
+/** Enforce one honest current physical-placement representation on every stock position. */
+function assertInventoryPositionPlacementOrWhereabouts(
+  key: InventoryStockPositionKey
+): void {
+  const hasPlacement = key.placementNodeId !== undefined;
+  const whereaboutsFields = [
+    key.whereaboutsId,
+    key.whereaboutsState,
+    key.lastPlacementNodeId,
+    key.detachedAtEpochMs,
+  ];
+  const hasAnyWhereabouts =
+    whereaboutsFields.some(
+      /** Return whether one unresolved-whereabouts field is present. */
+      (value) => value !== undefined
+    ) ||
+    key.missingAtEpochMs !== undefined;
+  if (hasPlacement) {
+    if (hasAnyWhereabouts) {
+      throw new Error(
+        "Placed stock cannot simultaneously carry unresolved whereabouts fields."
+      );
+    }
+    return;
+  }
+  if (
+    key.whereaboutsId === undefined ||
+    key.whereaboutsState === undefined ||
+    key.lastPlacementNodeId === undefined ||
+    key.detachedAtEpochMs === undefined
+  ) {
+    throw new Error(
+      "Unplaced stock requires whereaboutsId, whereaboutsState, lastPlacementNodeId, and detachedAtEpochMs."
+    );
+  }
+  assertInventoryIdentity(key.whereaboutsId, "whereaboutsId");
+  assertInventoryIdentity(key.lastPlacementNodeId, "lastPlacementNodeId");
+  assertInventoryPositionEpochMilliseconds(
+    key.detachedAtEpochMs,
+    "detachedAtEpochMs"
+  );
+  if (key.whereaboutsState === InventoryStockWhereaboutsState.Detached) {
+    if (key.missingAtEpochMs !== undefined) {
+      throw new Error("Detached stock cannot carry missingAtEpochMs.");
+    }
+    return;
+  }
+  if (key.whereaboutsState !== InventoryStockWhereaboutsState.Missing) {
+    throw new Error("Unknown inventory whereabouts state.");
+  }
+  if (key.missingAtEpochMs === undefined) {
+    throw new Error("Missing stock requires missingAtEpochMs.");
+  }
+  assertInventoryPositionEpochMilliseconds(
+    key.missingAtEpochMs,
+    "missingAtEpochMs"
+  );
+  if (key.missingAtEpochMs < key.detachedAtEpochMs) {
+    throw new Error("missingAtEpochMs cannot precede detachedAtEpochMs.");
+  }
+}
+
+/** Require one non-negative safe-integer epoch millisecond on position lifecycle truth. */
+function assertInventoryPositionEpochMilliseconds(
+  value: number,
+  label: string
+): void {
+  if (!Number.isSafeInteger(value) || value < 0) {
+    throw new Error(label + " must be non-negative safe-integer epoch milliseconds.");
+  }
+}
+
 /** Sort extra position dimensions by their configured dimension identity. */
 function compareQualifiedDimension(
   left: InventoryQualifiedDimension,
@@ -248,11 +342,15 @@ export function inventoryStockPositionIdentity(
   return JSON.stringify([
     key.itemId,
     key.itemRevisionId,
-    key.locationId,
+    key.placementNodeId ?? null,
+    key.whereaboutsId ?? null,
+    key.whereaboutsState ?? null,
+    key.lastPlacementNodeId ?? null,
+    key.detachedAtEpochMs ?? null,
+    key.missingAtEpochMs ?? null,
     key.lotId ?? null,
     key.serialId ?? null,
     key.packagingRevisionId ?? null,
-    key.containerId ?? null,
     key.statusId ?? null,
     key.ownerId ?? null,
     key.custodianId ?? null,
@@ -272,7 +370,7 @@ export function inventoryTraceabilityNodeIdentity(
   assertInventoryIdentity(node.id, "traceability node id");
   switch (node.kind) {
     case InventoryTraceabilityNodeKind.Serial:
-    case InventoryTraceabilityNodeKind.Container:
+    case InventoryTraceabilityNodeKind.PlacementNode:
     case InventoryTraceabilityNodeKind.Lot:
     case InventoryTraceabilityNodeKind.External:
       break;

@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import { inventoryMetadataValueFingerprint } from "../src/canonical.js";
 import { inventorySha256 } from "../src/digest.js";
+import { inventoryWorldContentRoots } from "../src/integrity.js";
 import type { InventoryMetadataValue } from "../src/model.js";
+import { emptyInventoryWorldState } from "../src/world.js";
 
 describe("inventory metadata fingerprint", () => {
   it("rejects undefined array elements just like undefined object properties", () => {
@@ -40,4 +42,18 @@ describe("inventorySha256", () => {
       expect(inventorySha256(value)).toBe(expected);
     }
   );
+});
+
+describe("inventory world digest caching", () => {
+  it("does not trust an externally shallow-frozen world for reusable roots", () => {
+    const world = emptyInventoryWorldState();
+    Object.freeze(world);
+    const before = inventoryWorldContentRoots(world);
+    expect(
+      Reflect.set(world.projection, "lastRecordSequence", 1)
+    ).toBe(true);
+    const after = inventoryWorldContentRoots(world);
+    expect(after.projection).not.toBe(before.projection);
+    expect(after.world).not.toBe(before.world);
+  });
 });

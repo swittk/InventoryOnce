@@ -29,7 +29,7 @@ async function currentAvailability(
   const summary = await inventory.read.availability(
     inventoryStockSelector("item-a", {
       itemRevisionIds: ["item-a-v2"],
-      locationIds: ["store"],
+      withinPlacementNodeIds: ["store"],
     }),
     atEpochMs
   );
@@ -59,19 +59,24 @@ describe("truthful native availability read model", () => {
           lot: { expiresAtEpochMs: farFutureExpiry },
         },
         {
-          to: loosePosition("store", {
+          to: loosePosition("OPENED", {
             lotId: "EXPIRED",
-            containerId: "OPENED",
           }),
           amount: stockAmount("3", "piece"),
           lot: { expiresAtEpochMs: farFutureExpiry },
-          container: {
-            containerType: "opened-vial",
+          placementNode: {
+            category: "opened-vial",
             openedAtEpochMs: time0,
             useByEpochMs: useByBetweenTime1AndTime2,
           },
         },
       ],
+    });
+    await inventory.placement.move({
+      operationId: "place-opened-vial-in-store",
+      occurredAtEpochMs: time0,
+      nodeId: "OPENED",
+      into: "store",
     });
     await inventory.reservations.reserve({
       reservationId: "usable-exact",
@@ -105,7 +110,7 @@ describe("truthful native availability read model", () => {
       reservationId: "broad-claim",
       operationId: "reserve-broad",
       itemRevisionId: "item-a-v2",
-      selector: { itemId: "item-a", locationIds: ["store"] },
+      selector: { itemId: "item-a", withinPlacementNodeIds: ["store"] },
       requested: parseQuantity("1", "piece"),
       createdAtEpochMs: time1,
     });
@@ -169,7 +174,7 @@ describe("truthful native availability read model", () => {
     const exact = await inventory.read.availability(
       inventoryStockSelector("item-a", {
         itemRevisionIds: ["item-a-v2"],
-        locationIds: ["store"],
+        placementNodeIds: ["store"],
         lotIds: ["POSITIVE"],
       }),
       time2
@@ -234,7 +239,7 @@ describe("truthful native availability read model", () => {
     const first = await inventory.read.availability(
       inventoryStockSelector("item-a", {
         itemRevisionIds: ["item-a-v2"],
-        locationIds: ["store"],
+        placementNodeIds: ["store"],
         lotIds: ["A-FIRST"],
       }),
       time2
@@ -252,7 +257,7 @@ describe("truthful native availability read model", () => {
     const second = await inventory.read.availability(
       inventoryStockSelector("item-a", {
         itemRevisionIds: ["item-a-v2"],
-        locationIds: ["store"],
+        placementNodeIds: ["store"],
         lotIds: ["B-SECOND"],
       }),
       time2

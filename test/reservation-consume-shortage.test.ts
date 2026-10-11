@@ -80,7 +80,7 @@ async function createConsumeShortageFixture(
     reservationId: "c1",
     operationId: `consume-shortage:${shape}:reserve:c1`,
     itemRevisionId: "item-a-v2",
-    selector: { itemId: "item-a", locationIds: firstLocations },
+    selector: { itemId: "item-a", placementNodeIds: firstLocations },
     requested: parseQuantity("1", "piece"),
     createdAtEpochMs: time1,
   });
@@ -88,7 +88,7 @@ async function createConsumeShortageFixture(
     reservationId: "c2",
     operationId: `consume-shortage:${shape}:reserve:c2`,
     itemRevisionId: "item-a-v2",
-    selector: { itemId: "item-a", locationIds: ["u2"] },
+    selector: { itemId: "item-a", placementNodeIds: ["u2"] },
     requested: parseQuantity("1", "piece"),
     createdAtEpochMs: time1,
     ...(secondClaimExpiresAtEpochMs === undefined
@@ -211,7 +211,7 @@ describe("reservation consumption through an existing shortage", () => {
       await inventory.reservations.reserve({
         reservationId: `short-${index}`, operationId: `revision-group:reserve:${index}`,
         itemRevisionId: revision,
-        selector: { itemId: "item-a", itemRevisionIds: [revision], locationIds: [location] },
+        selector: { itemId: "item-a", itemRevisionIds: [revision], placementNodeIds: [location] },
         requested: parseQuantity("1", "piece"), createdAtEpochMs: time1,
       });
     }
@@ -222,7 +222,7 @@ describe("reservation consumption through an existing shortage", () => {
     await inventory.reservations.reserve({
       reservationId: "consume", operationId: "revision-group:reserve:consume",
       itemRevisionId: "item-a-v2",
-      selector: { itemId: "item-a", itemRevisionIds: ["item-a-v2"], locationIds: ["u2"] },
+      selector: { itemId: "item-a", itemRevisionIds: ["item-a-v2"], placementNodeIds: ["u2"] },
       requested: parseQuantity("1", "piece"), createdAtEpochMs: time1,
     });
     await inventory.reservations.allocate({
@@ -304,8 +304,8 @@ describe("reservation consumption through an existing shortage", () => {
       occurredAtEpochMs: time0,
       lines: ["u1", "u2", "u3"].map(
         /** Give every formal token one exact piece. */
-        (locationId) => ({
-          to: loosePosition(locationId),
+        (placementNodeId) => ({
+          to: loosePosition(placementNodeId),
           amount: stockAmount("1", "piece"),
         })
       ),
@@ -314,7 +314,7 @@ describe("reservation consumption through an existing shortage", () => {
       reservationId: "c1",
       operationId: "consume-shortage:many:reserve:c1",
       itemRevisionId: "item-a-v2",
-      selector: { itemId: "item-a", locationIds: ["u1"] },
+      selector: { itemId: "item-a", placementNodeIds: ["u1"] },
       requested: parseQuantity("1", "piece"),
       createdAtEpochMs: time1,
     });
@@ -322,7 +322,7 @@ describe("reservation consumption through an existing shortage", () => {
       reservationId: "c2",
       operationId: "consume-shortage:many:reserve:c2",
       itemRevisionId: "item-a-v2",
-      selector: { itemId: "item-a", locationIds: ["u2", "u3"] },
+      selector: { itemId: "item-a", placementNodeIds: ["u2", "u3"] },
       requested: parseQuantity("2", "piece"),
       createdAtEpochMs: time1,
     });
@@ -332,9 +332,9 @@ describe("reservation consumption through an existing shortage", () => {
       occurredAtEpochMs: time1,
       allocations: ["u2", "u3"].map(
         /** Bind each half of c2's exact request to one token. */
-        (locationId) => ({
+        (placementNodeId) => ({
           position: {
-            ...loosePosition(locationId),
+            ...loosePosition(placementNodeId),
             itemRevisionId: "item-a-v2",
           },
           quantity: parseQuantity("1", "piece"),
@@ -365,10 +365,10 @@ describe("reservation consumption through an existing shortage", () => {
     const catalog = createWeightReservationCatalog();
     const inventory = createTestInventory(undefined, catalog);
     /** Build one exact loose position for the independent-axis fixture. */
-    const position = (locationId: string) => ({
+    const position = (placementNodeId: string) => ({
       itemId: "weight-item",
       itemRevisionId: "weight-item-v1",
-      locationId,
+      placementNodeId,
     });
     const amount = measuredStockAmount("1", "piece", [
       { axisId: "weight", value: "1.25", unit: "kg" },
@@ -383,12 +383,12 @@ describe("reservation consumption through an existing shortage", () => {
     });
     const claims: readonly ("c1" | "c2")[] = ["c1", "c2"];
     for (const claim of claims) {
-      const locationId = claim === "c1" ? "u1" : "u2";
+      const placementNodeId = claim === "c1" ? "u1" : "u2";
       await inventory.reservations.reserve({
         reservationId: claim,
         operationId: `consume-shortage:weight:reserve:${claim}`,
         itemRevisionId: "weight-item-v1",
-        selector: { itemId: "weight-item", locationIds: [locationId] },
+        selector: { itemId: "weight-item", placementNodeIds: [placementNodeId] },
         requested: parseQuantity("1.25", "kg"),
         createdAtEpochMs: time1,
       });
@@ -397,7 +397,7 @@ describe("reservation consumption through an existing shortage", () => {
         operationId: `consume-shortage:weight:allocate:${claim}`,
         occurredAtEpochMs: time1,
         allocations: [
-          { position: position(locationId), quantity: parseQuantity("1.25", "kg") },
+          { position: position(placementNodeId), quantity: parseQuantity("1.25", "kg") },
         ],
       });
     }

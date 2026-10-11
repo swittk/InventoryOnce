@@ -600,7 +600,7 @@ describe("portable InventoryOnce authority controller", () => {
             openingStock: [
               {
                 openingId: "durable-manifest-retry-fence-row",
-                position: { itemId: "item-a", locationId: "store" },
+                position: { itemId: "item-a", placementNodeId: "store" },
                 amount: stockAmount("1", "piece"),
                 itemRevisionId: "item-a-v2",
                 source: {
@@ -685,7 +685,7 @@ describe("portable InventoryOnce authority controller", () => {
             openingStock: [
               {
                 openingId: "same-token-stale-release-row",
-                position: { itemId: "item-a", locationId: "store" },
+                position: { itemId: "item-a", placementNodeId: "store" },
                 amount: stockAmount("1", "piece"),
                 itemRevisionId: "item-a-v2",
                 source: {
@@ -795,7 +795,7 @@ describe("portable InventoryOnce authority controller", () => {
             openingStock: [
               {
                 openingId: "cutover-time-retry-row",
-                position: { itemId: "item-a", locationId: "store" },
+                position: { itemId: "item-a", placementNodeId: "store" },
                 amount: stockAmount("1", "piece"),
                 itemRevisionId: "item-a-v2",
                 source: {

@@ -23,6 +23,7 @@ import {
   createInventoryCorrectionEvent,
   createInventoryCountReconciliationPlan,
   createInventoryIssueManyEvent,
+  createInventoryPlacementEvent,
   createInventoryReservation,
   createInventoryScrapManyEvent,
   createInventoryTransferManyEvent,
@@ -136,6 +137,9 @@ describe("remaining public implementation surfaces", () => {
     expectMalformedInputRejected(() =>
       createInventoryIssueManyEvent({} as never)
     );
+    expectMalformedInputRejected(() =>
+      createInventoryPlacementEvent({} as never)
+    );
     expectMalformedInputRejected(() => createInventoryReservation({} as never));
     expectMalformedInputRejected(() =>
       createInventoryScrapManyEvent({} as never)
@@ -204,33 +208,42 @@ describe("remaining public implementation surfaces", () => {
     const received = await inventory.stock.receive({
       operationId: "surface-snapshot-receipt",
       occurredAtEpochMs: time0,
-      to: loosePosition("surface-store", {
+      to: loosePosition("SURFACE-CONTAINER", {
         lotId: "SURFACE-LOT",
-        containerId: "SURFACE-CONTAINER",
       }),
       amount: stockAmount("2", "piece"),
       lot: { expiresAtEpochMs: time3 },
-      container: { containerType: "tray" },
+      placementNode: { category: "tray" },
     });
     const snapshot = await readPublishedInventorySnapshot(storage, time2);
     expect(snapshot.positions({ itemId: "item-a" })).toHaveLength(1);
+    expect(snapshot.whereabouts()).toEqual([]);
+    expect(snapshot.whereaboutsHistory()).toEqual([]);
     expect(
       snapshot.availability(
-        { itemId: "item-a", locationIds: ["surface-store"] },
+        { itemId: "item-a", placementNodeIds: ["SURFACE-CONTAINER"] },
         time2
       ).revisions[0]?.onHand.primary.quantity.amountMinor
     ).toBe(2);
     expect(
       snapshot.planAllocation({
-        selector: { itemId: "item-a", locationIds: ["surface-store"] },
+        selector: { itemId: "item-a", placementNodeIds: ["SURFACE-CONTAINER"] },
         amount: stockAmount("1", "piece"),
         method: InventoryAllocationMethod.Fifo,
         atEpochMs: time2,
       }).lines[0]?.allocatedPrimary.amountMinor
     ).toBe(1);
     expect(
-      snapshot.container("SURFACE-CONTAINER")?.definition.containerId
+      snapshot.placementNode("SURFACE-CONTAINER")?.definition.nodeId
     ).toBe("SURFACE-CONTAINER");
+    expect(snapshot.placementNodes().map((row) => row.definition.nodeId)).toContain(
+      "SURFACE-CONTAINER"
+    );
+    expect(snapshot.placementParent("SURFACE-CONTAINER")).toBeUndefined();
+    expect(snapshot.placementChildren("SURFACE-CONTAINER")).toEqual([]);
+    expect(snapshot.placementAncestry("SURFACE-CONTAINER")).toEqual([
+      "SURFACE-CONTAINER",
+    ]);
     expect(snapshot.lot("item-a", "SURFACE-LOT")?.definition.lotId).toBe(
       "SURFACE-LOT"
     );
@@ -261,6 +274,15 @@ describe("remaining public implementation surfaces", () => {
       inventory.stock.transferMany({} as never)
     );
     await expectMalformedAsyncInputRejected(() =>
+      inventory.stock.detach({} as never)
+    );
+    await expectMalformedAsyncInputRejected(() =>
+      inventory.stock.place({} as never)
+    );
+    await expectMalformedAsyncInputRejected(() =>
+      inventory.stock.markMissing({} as never)
+    );
+    await expectMalformedAsyncInputRejected(() =>
       inventory.stock.scrapMany({} as never)
     );
     await expectMalformedAsyncInputRejected(() =>
@@ -288,10 +310,10 @@ describe("remaining public implementation surfaces", () => {
       inventory.stock.clearDispositionAuthority({} as never)
     );
     await expectMalformedAsyncInputRejected(() =>
-      inventory.stock.placeInContainer({} as never)
+      inventory.placement.move({} as never)
     );
     await expectMalformedAsyncInputRejected(() =>
-      inventory.stock.removeFromContainer({} as never)
+      inventory.placement.unplace({} as never)
     );
     await expectMalformedAsyncInputRejected(() =>
       inventory.stock.changeQualifiedDimension({} as never)

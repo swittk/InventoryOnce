@@ -84,10 +84,10 @@ export function createTestInventory(
 
 /** Build one ordinary loose-stock command position. */
 export function loosePosition(
-  locationId: string,
-  extra: Omit<InventoryStockPositionInput, "itemId" | "locationId"> = {}
+  placementNodeId: string,
+  extra: Omit<InventoryStockPositionInput, "itemId" | "placementNodeId"> = {}
 ): InventoryStockPositionInput {
-  return { itemId: "item-a", locationId, ...extra };
+  return { itemId: "item-a", placementNodeId, ...extra };
 }
 
 

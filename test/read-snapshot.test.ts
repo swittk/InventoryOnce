@@ -63,13 +63,12 @@ describe("published InventoryOnce read snapshots", () => {
       occurredAtEpochMs: time0,
       to: {
         itemId: "item-a",
-        locationId: "store",
+        placementNodeId: "CONTAINER-A",
         lotId: "LOT-A",
-        containerId: "CONTAINER-A",
       },
       amount: stockAmount("1", "piece"),
       lot: { expiresAtEpochMs: 1798761600000 },
-      container: { containerType: "tray" },
+      placementNode: { category: "tray" },
     });
 
     counted.reset();
@@ -78,11 +77,11 @@ describe("published InventoryOnce read snapshots", () => {
     expect(snapshot.worldRevision).toBe(2);
     expect(
       snapshot.summary(
-        inventoryStockSelector("item-a", { locationIds: ["store"] })
+        inventoryStockSelector("item-a")
       ).revisions[0]?.total.primary.quantity.amountMinor
     ).toBe(1);
     expect(snapshot.lots("item-a")[0]?.definition.lotId).toBe("LOT-A");
-    expect(snapshot.containers()[0]?.definition.containerId).toBe(
+    expect(snapshot.placementNodes()[0]?.definition.nodeId).toBe(
       "CONTAINER-A"
     );
     expect(snapshot.packagingRevisions({ itemId: "item-a" })).toHaveLength(2);
@@ -91,14 +90,14 @@ describe("published InventoryOnce read snapshots", () => {
     await inventory.stock.receive({
       operationId: "receive-snapshot-second",
       occurredAtEpochMs: time1,
-      to: { itemId: "item-a", locationId: "store", lotId: "LOT-B" },
+      to: { itemId: "item-a", placementNodeId: "store", lotId: "LOT-B" },
       amount: stockAmount("1", "piece"),
       lot: {},
     });
     counted.reset();
     expect(
       snapshot.summary(
-        inventoryStockSelector("item-a", { locationIds: ["store"] })
+        inventoryStockSelector("item-a")
       ).revisions[0]?.total.primary.quantity.amountMinor
     ).toBe(1);
     expect(snapshot.lots("item-a").map((lot) => lot.definition.lotId)).toEqual([
@@ -111,7 +110,7 @@ describe("published InventoryOnce read snapshots", () => {
     expect(latest.worldRevision).toBe(3);
     expect(
       latest.summary(
-        inventoryStockSelector("item-a", { locationIds: ["store"] })
+        inventoryStockSelector("item-a")
       ).revisions[0]?.total.primary.quantity.amountMinor
     ).toBe(2);
     expect(latest.lots("item-a").map((lot) => lot.definition.lotId)).toEqual([

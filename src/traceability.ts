@@ -5,7 +5,6 @@ import {
   type InventoryTraceabilityRelationChange,
 } from "./events.js";
 import {
-  InventoryTraceabilityNodeKind,
   inventoryTraceabilityNodeIdentity,
   type InventoryTraceabilityNodeRef,
 } from "./model.js";
@@ -22,14 +21,10 @@ export interface InventoryTraceabilityRelation {
   readonly createdByEventId: string;
 }
 
-/** Current containment/association graph plus append-only transformation genealogy. */
+/** Current association graph plus append-only transformation genealogy. */
 export interface InventoryTraceabilityState {
   /** Effective relations keyed by stable relationship identity. */
   readonly relations: Readonly<Record<string, InventoryTraceabilityRelation>>;
-  /** Direct child container ids grouped by exact parent-container node identity. */
-  readonly containmentChildContainerIdsByParentNodeIdentity: Readonly<
-    Record<string, readonly string[]>
-  >;
 }
 
 /** Inputs for applying one event's graph changes all-or-nothing. */
@@ -44,10 +39,7 @@ export interface ApplyInventoryTraceabilityChangesInput {
 
 /** Create an empty traceability graph. */
 export function emptyInventoryTraceabilityState(): InventoryTraceabilityState {
-  return {
-    relations: {},
-    containmentChildContainerIdsByParentNodeIdentity: {},
-  };
+  return { relations: {} };
 }
 
 /** Apply graph changes atomically without mutating the caller-owned state. */
@@ -60,11 +52,8 @@ export function applyInventoryTraceabilityChanges({
   const relations: Record<string, InventoryTraceabilityRelation> = {
     ...state.relations,
   };
-  let containmentChanged = false;
   let genealogyChanged = false;
   for (const change of changes) {
-    containmentChanged ||=
-      change.kind === InventoryTraceabilityRelationKind.Containment;
     genealogyChanged ||=
       change.kind === InventoryTraceabilityRelationKind.Genealogy;
     const identity = inventoryTraceabilityRelationIdentity(
@@ -109,41 +98,8 @@ export function applyInventoryTraceabilityChanges({
     }
     delete relations[identity];
   }
-  if (containmentChanged) assertContainmentHasOneParentAndNoCycles(relations);
   if (genealogyChanged) assertGenealogyHasNoCycles(relations);
-  return {
-    relations,
-    containmentChildContainerIdsByParentNodeIdentity: containmentChanged
-      ? buildContainmentChildContainerIndex(relations)
-      : state.containmentChildContainerIdsByParentNodeIdentity,
-  };
-}
-
-/** Build direct container-child lookup while retaining the relation map as canonical graph truth. */
-export function buildContainmentChildContainerIndex(
-  relations: Readonly<Record<string, InventoryTraceabilityRelation>>
-): Readonly<Record<string, readonly string[]>> {
-  const childrenByParent = new Map<string, Set<string>>();
-  for (const relation of Object.values(relations)) {
-    if (relation.kind !== InventoryTraceabilityRelationKind.Containment)
-      continue;
-    if (
-      relation.from.kind !== InventoryTraceabilityNodeKind.Container ||
-      relation.to.kind !== InventoryTraceabilityNodeKind.Container
-    )
-      continue;
-    const parentIdentity = inventoryTraceabilityNodeIdentity(relation.to);
-    const children = childrenByParent.get(parentIdentity) ?? new Set<string>();
-    children.add(relation.from.id);
-    childrenByParent.set(parentIdentity, children);
-  }
-  const index: Record<string, readonly string[]> = {};
-  for (const [parentIdentity, children] of childrenByParent) {
-    const ordered = [...children];
-    ordered.sort();
-    index[parentIdentity] = ordered;
-  }
-  return index;
+  return { relations };
 }
 
 /** Stable identity for one relation regardless of creating event. */
@@ -201,38 +157,6 @@ export function inventoryGenealogyAncestors(
   const result = [...ancestors.values()];
   result.sort(compareNode);
   return result;
-}
-
-/** Require containment to be a forest: one parent per child and no path back to itself. */
-function assertContainmentHasOneParentAndNoCycles(
-  relations: Readonly<Record<string, InventoryTraceabilityRelation>>
-): void {
-  const parentByChild = new Map<string, string>();
-  for (const relation of Object.values(relations)) {
-    if (relation.kind !== InventoryTraceabilityRelationKind.Containment)
-      continue;
-    const child = inventoryTraceabilityNodeIdentity(relation.from);
-    const parent = inventoryTraceabilityNodeIdentity(relation.to);
-    const earlierParent = parentByChild.get(child);
-    if (earlierParent !== undefined && earlierParent !== parent) {
-      throw new Error(`Contained node '${child}' cannot have two parents.`);
-    }
-    parentByChild.set(child, parent);
-  }
-  const settled = new Set<string>();
-  for (const child of parentByChild.keys()) {
-    if (settled.has(child)) continue;
-    const path = new Set<string>();
-    let current: string | undefined = child;
-    while (current !== undefined && !settled.has(current)) {
-      if (path.has(current)) {
-        throw new Error(`Containment graph contains a cycle at '${current}'.`);
-      }
-      path.add(current);
-      current = parentByChild.get(current);
-    }
-    for (const node of path) settled.add(node);
-  }
 }
 
 /** Require transformation genealogy to remain a directed acyclic graph. */

@@ -27,7 +27,6 @@ import {
   zeroInventoryMeasurements,
 } from "./measurements.js";
 import {
-  inventoryContainerIdentity,
   inventoryStockPositionIdentity,
   normalizeInventoryStockPositionKey,
   type InventoryStockPosition,
@@ -80,16 +79,16 @@ export type InventoryFungibilityScope = Omit<
 export enum InventoryFungibilityReservationEffectKind {
   /** Selected stock leaves the eligible physical world, as with issue or scrap. */
   Deplete = "deplete",
-  /** Selected stock moves to another location while retaining every other dimension. */
+  /** Selected stock moves to another direct placement while retaining every other dimension. */
   Transfer = "transfer",
 }
 
 /** Claim-feasibility effect used by one pure fungibility allocation preview. */
 export interface InventoryFungibilityReservationEffect {
-  /** Deplete or location-transfer semantics. */
+  /** Deplete or direct-placement-transfer semantics. */
   readonly kind: InventoryFungibilityReservationEffectKind;
   /** Required destination for Transfer and forbidden for Deplete. */
-  readonly toLocationId?: string;
+  readonly toPlacementNodeId?: string;
 }
 
 /** Normalize one common pool scope through the same selector rules used by ordinary stock. */
@@ -159,7 +158,7 @@ export interface SummarizeInventoryFungibilityInput {
   readonly projection: InventoryProjectionState;
   /** Exact pool revision; active pointers are resolved before durable operations. */
   readonly fungibilityRevisionId: InventoryFungibilityRevisionId;
-  /** Optional common stock dimensions such as location/status/owner. */
+  /** Optional common stock dimensions such as placement/status/owner. */
   readonly scope?: InventoryFungibilityScope;
 }
 
@@ -266,7 +265,7 @@ export interface InventoryFungibilityAllocationLine {
   readonly poolQuantity: Quantity;
   /** Time this exact position entered its current uninterrupted positive layer. */
   readonly layerStartedAtEpochMs: number;
-  /** Effective lot/container use-by used by FEFO when known. */
+  /** Effective lot/placement-ancestry use-by used by FEFO when known. */
   readonly expiresAtEpochMs?: number;
 }
 
@@ -304,13 +303,13 @@ export interface PlanInventoryFungibilityAllocationInput {
   readonly requested: Quantity;
   /** FIFO or FEFO ordering applied globally across member positions. */
   readonly method: InventoryAllocationMethod;
-  /** Physical authority time for lot/container use-by checks. */
+  /** Physical authority time for lot/placement-ancestry use-by checks. */
   readonly atEpochMs: number;
   /** Claim-book authority time; defaults to `at` for pure previews. */
   readonly reservationAtEpochMs?: number;
   /** How selected stock should affect claim feasibility; defaults to depletion. */
   readonly reservationEffect?: InventoryFungibilityReservationEffect;
-  /** Optional common stock dimensions such as one source location. */
+  /** Optional common stock dimensions such as one source direct placement. */
   readonly scope?: InventoryFungibilityScope;
   /** Explicit override permitting expired member stock. */
   readonly allowExpiredLots?: boolean;
@@ -500,7 +499,7 @@ function validateFungibilityReservationEffect(
   effect: InventoryFungibilityReservationEffect
 ): void {
   if (effect.kind === InventoryFungibilityReservationEffectKind.Deplete) {
-    if (effect.toLocationId !== undefined) {
+    if (effect.toPlacementNodeId !== undefined) {
       throw new Error(
         "Depleting fungibility allocation cannot name a destination."
       );
@@ -508,11 +507,11 @@ function validateFungibilityReservationEffect(
     return;
   }
   if (
-    effect.toLocationId === undefined ||
-    effect.toLocationId.trim().length === 0
+    effect.toPlacementNodeId === undefined ||
+    effect.toPlacementNodeId.trim().length === 0
   ) {
     throw new Error(
-      "Transfer fungibility allocation needs a destination location."
+      "Transfer fungibility allocation needs a destination placement node."
     );
   }
 }
@@ -554,8 +553,8 @@ function fungibilityAllocationsPreserveReservations({
   const positionIdsByItemRevisionId = createFungibilitySparseRecordOverlay(
     world.projection.positionIdsByItemRevisionId
   );
-  const positionIdsByContainerIdentity = createFungibilitySparseRecordOverlay(
-    world.projection.positionIdsByContainerIdentity
+  const positionIdsByPlacementNodeId = createFungibilitySparseRecordOverlay(
+    world.projection.positionIdsByPlacementNodeId
   );
   for (const allocation of allocations) {
     const identity = inventoryStockPositionIdentity(allocation.position);
@@ -595,10 +594,10 @@ function fungibilityAllocationsPreserveReservations({
         current.key.itemRevisionId,
         identity
       );
-      if (current.key.containerId !== undefined) {
+      if (current.key.placementNodeId !== undefined) {
         removeFungibilitySimulationIndex(
-          positionIdsByContainerIdentity,
-          inventoryContainerIdentity(current.key.containerId),
+          positionIdsByPlacementNodeId,
+          current.key.placementNodeId,
           identity
         );
       }
@@ -612,15 +611,23 @@ function fungibilityAllocationsPreserveReservations({
       reservationEffect.kind ===
       InventoryFungibilityReservationEffectKind.Transfer
     ) {
-      const toLocationId = reservationEffect.toLocationId;
-      if (toLocationId === undefined) {
+      const toPlacementNodeId = reservationEffect.toPlacementNodeId;
+      if (toPlacementNodeId === undefined) {
         throw new Error(
           "Fungibility transfer reservation effect lost destination."
         );
       }
+      const {
+        whereaboutsId,
+        whereaboutsState,
+        lastPlacementNodeId,
+        detachedAtEpochMs,
+        missingAtEpochMs,
+        ...placedSource
+      } = current.key;
       const destinationKey = normalizeInventoryStockPositionKey({
-        ...current.key,
-        locationId: toLocationId,
+        ...placedSource,
+        placementNodeId: toPlacementNodeId,
       });
       const destinationIdentity =
         inventoryStockPositionIdentity(destinationKey);
@@ -646,13 +653,11 @@ function fungibilityAllocationsPreserveReservations({
           destinationKey.itemRevisionId,
           destinationIdentity
         );
-        if (destinationKey.containerId !== undefined) {
-          addFungibilitySimulationIndex(
-            positionIdsByContainerIdentity,
-            inventoryContainerIdentity(destinationKey.containerId),
-            destinationIdentity
-          );
-        }
+        addFungibilitySimulationIndex(
+          positionIdsByPlacementNodeId,
+          toPlacementNodeId,
+          destinationIdentity
+        );
       }
     }
   }
@@ -661,7 +666,7 @@ function fungibilityAllocationsPreserveReservations({
     positions,
     positionIdsByItemId,
     positionIdsByItemRevisionId,
-    positionIdsByContainerIdentity,
+    positionIdsByPlacementNodeId,
   };
   return (
     inspectInventoryReservationFeasibility({

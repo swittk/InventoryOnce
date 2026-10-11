@@ -39,7 +39,7 @@ async function currentStoreQuantity(
   const summary = await inventory.read.summary(
     inventoryStockSelector("item-a", {
       itemRevisionIds: ["item-a-v2"],
-      locationIds: ["store"],
+      placementNodeIds: ["store"],
     })
   );
   return summary.revisions[0]?.total.primary.quantity.amountMinor ?? 0;
@@ -101,7 +101,7 @@ describe("native item-scoped lot masters", () => {
     });
     const physicalRows = await inventory.read.positions({
       itemId: "item-a",
-      locationIds: ["store"],
+      placementNodeIds: ["store"],
     });
 
     const corrected = await inventory.lots.correct({
@@ -120,7 +120,7 @@ describe("native item-scoped lot masters", () => {
       (await inventory.read.lot("item-a", "LOT-B"))?.definition.expiresAtEpochMs
     ).toBe(expiry2);
     expect(await currentStoreQuantity(inventory)).toBe(5);
-    expect(await inventory.read.positions({ itemId: "item-a", locationIds: ["store"] })).toEqual(physicalRows);
+    expect(await inventory.read.positions({ itemId: "item-a", placementNodeIds: ["store"] })).toEqual(physicalRows);
 
     const replay = await inventory.lots.correct({
       operationId: "correct-lot-expiry",
@@ -144,7 +144,7 @@ describe("native item-scoped lot masters", () => {
       (await inventory.read.world()).projection.lotIdentitiesByItemId["item-a"]
     ).toBeUndefined();
     expect(await currentStoreQuantity(inventory)).toBe(5);
-    expect(await inventory.read.positions({ itemId: "item-a", locationIds: ["store"] })).toEqual(physicalRows);
+    expect(await inventory.read.positions({ itemId: "item-a", placementNodeIds: ["store"] })).toEqual(physicalRows);
 
     await expect(
       inventory.lots.define({
@@ -168,7 +168,7 @@ describe("native item-scoped lot masters", () => {
       (await inventory.read.lot("item-a", "LOT-B"))?.definition.expiresAtEpochMs
     ).toBe(expiry1);
     expect(await currentStoreQuantity(inventory)).toBe(5);
-    expect(await inventory.read.positions({ itemId: "item-a", locationIds: ["store"] })).toEqual(physicalRows);
+    expect(await inventory.read.positions({ itemId: "item-a", placementNodeIds: ["store"] })).toEqual(physicalRows);
     const restoredWorld = await inventory.read.world();
     expect(restoredWorld.projection.lotIdentitiesByItemId["item-a"]).toEqual([
       inventoryLotIdentity("item-a", "LOT-B"),

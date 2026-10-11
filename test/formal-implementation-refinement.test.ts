@@ -12,6 +12,7 @@ import {
 } from "../src/index.js";
 import { createInMemoryInventoryDurableStorage } from "../src/storage-api.js";
 import type { InventoryTraceabilityState } from "../src/traceability.js";
+import type { InventoryPlacementState } from "../src/placement.js";
 import {
   applyInventoryMigrationPlan,
   defineInventoryMigration,
@@ -35,6 +36,7 @@ import {
   assertAbstractReservationInvariants,
   assertAbstractCountInvariants,
   assertAbstractMigrationInvariants,
+  assertAbstractPlacementInvariants,
   assertAbstractTraceabilityInvariants,
   assertStateResultRefinement,
 } from "./formal-implementation-abstraction.js";
@@ -94,7 +96,7 @@ describe("formal implementation state/result refinement", () => {
     const left = {
       itemId: "item-a",
       itemRevisionId: "item-a-v2",
-      locationId: "store",
+      placementNodeId: "store",
       qualifiedDimensions: [
         { dimensionId: "zone", valueId: "B" },
         { dimensionId: "temperature", valueId: "cold" },
@@ -103,7 +105,7 @@ describe("formal implementation state/result refinement", () => {
     const right = {
       itemId: "item-a",
       itemRevisionId: "item-a-v2",
-      locationId: "store",
+      placementNodeId: "store",
       qualifiedDimensions: [
         { dimensionId: "temperature", valueId: "cold" },
         { dimensionId: "zone", valueId: "B" },
@@ -111,35 +113,69 @@ describe("formal implementation state/result refinement", () => {
     };
     expect(abstractPositionIdentity(left)).toBe(abstractPositionIdentity(right));
 
-    const semanticSelfNodeIdentity = JSON.stringify([
-      InventoryTraceabilityNodeKind.Container,
-      null,
-      "SAME",
-    ]);
-    const semanticSelfRelationIdentity = JSON.stringify([
-      InventoryTraceabilityRelationKind.Containment,
-      semanticSelfNodeIdentity,
-      semanticSelfNodeIdentity,
-    ]);
-    const traceability: InventoryTraceabilityState = {
-      relations: {
-        [semanticSelfRelationIdentity]: {
-          kind: InventoryTraceabilityRelationKind.Containment,
-          from: { kind: InventoryTraceabilityNodeKind.Container, id: "SAME" },
-          to: { id: "SAME", kind: InventoryTraceabilityNodeKind.Container },
+    const placement: InventoryPlacementState = {
+      relationByNodeId: {
+        SAME: {
+          nodeId: "SAME",
+          parentNodeId: "SAME",
           createdByEventId: "semantic-self-cycle-event",
         },
       },
-      containmentChildContainerIdsByParentNodeIdentity: {
-        [semanticSelfNodeIdentity]: ["SAME"],
-      },
+      childNodeIdsByParentNodeId: { SAME: ["SAME"] },
     };
-    expect(() => assertAbstractTraceabilityInvariants(traceability)).toThrow(
-      "cycle"
+    expect(() => assertAbstractPlacementInvariants(placement)).toThrow(
+      "cannot parent itself"
     );
   });
 
-  it("rejects corrupted traceability primary keys indexes and graph shape", () => {
+  it("rejects corrupted placement indexes and traceability graph shape", () => {
+    const validPlacement: InventoryPlacementState = {
+      relationByNodeId: {
+        "formal-child": {
+          nodeId: "formal-child",
+          parentNodeId: "formal-parent",
+          createdByEventId: "formal-placement-event",
+        },
+      },
+      childNodeIdsByParentNodeId: {
+        "formal-parent": ["formal-child"],
+      },
+    };
+    expect(() => assertAbstractPlacementInvariants(validPlacement)).not.toThrow();
+    expect(() =>
+      assertAbstractPlacementInvariants({
+        ...validPlacement,
+        relationByNodeId: {
+          "wrong-child-key": validPlacement.relationByNodeId["formal-child"]!,
+        },
+      })
+    ).toThrow("dictionary key");
+    expect(() =>
+      assertAbstractPlacementInvariants({
+        ...validPlacement,
+        childNodeIdsByParentNodeId: {
+          "wrong-parent": ["wrong-child"],
+        },
+      })
+    ).toThrow("Placement child index");
+    expect(() =>
+      assertAbstractPlacementInvariants({
+        relationByNodeId: {
+          A: {
+            nodeId: "A",
+            parentNodeId: "B",
+            createdByEventId: "placement-a",
+          },
+          B: {
+            nodeId: "B",
+            parentNodeId: "A",
+            createdByEventId: "placement-b",
+          },
+        },
+        childNodeIdsByParentNodeId: { A: ["B"], B: ["A"] },
+      })
+    ).toThrow("placement graph contains a cycle");
+
     const nodeIdentity = (node: {
       readonly kind: InventoryTraceabilityNodeKind;
       readonly id: string;
@@ -155,61 +191,6 @@ describe("formal implementation state/result refinement", () => {
         nodeIdentity(relation.from),
         nodeIdentity(relation.to),
       ]);
-    const child = {
-      kind: InventoryTraceabilityNodeKind.Container,
-      id: "formal-child",
-    };
-    const parent = {
-      kind: InventoryTraceabilityNodeKind.Container,
-      id: "formal-parent",
-    };
-    const relation = {
-      kind: InventoryTraceabilityRelationKind.Containment,
-      from: child,
-      to: parent,
-      createdByEventId: "formal-event",
-    };
-    const identity = relationIdentity(relation);
-    const parentIdentity = nodeIdentity(parent);
-    expect(() => assertAbstractTraceabilityInvariants({
-      relations: { [identity]: relation },
-      containmentChildContainerIdsByParentNodeIdentity: {
-        [parentIdentity]: [child.id],
-      },
-    })).not.toThrow();
-
-    expect(() =>
-      assertAbstractTraceabilityInvariants({
-        relations: { "wrong-relation-key": relation },
-        containmentChildContainerIdsByParentNodeIdentity: {
-          [parentIdentity]: [child.id],
-        },
-      })
-    ).toThrow("dictionary key");
-    expect(() =>
-      assertAbstractTraceabilityInvariants({
-        relations: { [identity]: relation },
-        containmentChildContainerIdsByParentNodeIdentity: {
-          "wrong-parent": ["wrong-child"],
-        },
-      })
-    ).toThrow("Containment child container index");
-
-    const parent2 = {
-      kind: InventoryTraceabilityNodeKind.Container,
-      id: "formal-parent-2",
-    };
-    const relation2 = { ...relation, to: parent2 };
-    expect(() =>
-      assertAbstractTraceabilityInvariants({
-        relations: {
-          [identity]: relation,
-          [relationIdentity(relation2)]: relation2,
-        },
-        containmentChildContainerIdsByParentNodeIdentity: {},
-      })
-    ).toThrow("two parents");
-
     const serialA = {
       kind: InventoryTraceabilityNodeKind.Serial,
       id: "formal-serial-a",
@@ -236,22 +217,21 @@ describe("formal implementation state/result refinement", () => {
           [relationIdentity(genealogyAB)]: genealogyAB,
           [relationIdentity(genealogyBA)]: genealogyBA,
         },
-        containmentChildContainerIdsByParentNodeIdentity: {},
       })
     ).toThrow("genealogy graph contains a cycle");
   });
 
   it("binds current traceability provenance to committed event history", async () => {
     const inventory = createTestInventory();
-    await inventory.traceability.aggregate({
-      operationId: "formal-provenance-aggregate",
+    await inventory.traceability.associate({
+      operationId: "formal-provenance-associate",
       occurredAtEpochMs: time0,
       from: {
-        kind: InventoryTraceabilityNodeKind.Container,
+        kind: InventoryTraceabilityNodeKind.PlacementNode,
         id: "formal-provenance-child",
       },
       to: {
-        kind: InventoryTraceabilityNodeKind.Container,
+        kind: InventoryTraceabilityNodeKind.PlacementNode,
         id: "formal-provenance-parent",
       },
     });
@@ -336,7 +316,7 @@ describe("formal implementation state/result refinement", () => {
             operationId: `bounded-issue-${suffix}`,
             occurredAtEpochMs: time1,
             selector: inventoryStockSelector("item-a", {
-              locationIds: ["store"],
+              placementNodeIds: ["store"],
             }),
             amount: stockAmount(String(issued), "piece"),
             method: InventoryAllocationMethod.Fifo,
@@ -350,11 +330,11 @@ describe("formal implementation state/result refinement", () => {
             operationId: `bounded-transfer-${suffix}`,
             occurredAtEpochMs: time2,
             selector: inventoryStockSelector("item-a", {
-              locationIds: ["store"],
+              placementNodeIds: ["store"],
             }),
             amount: stockAmount(String(transferred), "piece"),
             method: InventoryAllocationMethod.Fifo,
-            toLocationId: "room",
+            toPlacementNodeId: "room",
           };
           before = after;
           const transfer = await inventory.stock.transferByPolicy(
@@ -389,7 +369,7 @@ describe("formal implementation state/result refinement", () => {
 
   it("refines recorded deficit as signed non-allocatable truth while Reject stutters", async () => {
     const selector = inventoryStockSelector("item-a", {
-      locationIds: ["store"],
+      placementNodeIds: ["store"],
     });
     const recordedInventory = createTestInventory(
       undefined,
@@ -412,7 +392,7 @@ describe("formal implementation state/result refinement", () => {
       expect.objectContaining({
         position: expect.objectContaining({
           lotId: "__inventory_deficit__",
-          locationId: "store",
+          placementNodeId: "store",
         }),
         primary: expect.objectContaining({ amountMinor: 5, unit: "piece" }),
       })
@@ -481,7 +461,7 @@ describe("formal implementation state/result refinement", () => {
       operationId: "formal-issue-through-covered-deficit",
       occurredAtEpochMs: time2,
       selector: inventoryStockSelector("item-a", {
-        locationIds: ["store"],
+        placementNodeIds: ["store"],
         lotIds: ["FORMAL-LATE-RECEIPT"],
       }),
       amount: stockAmount("6", "piece"),
@@ -745,11 +725,11 @@ describe("independent projection index bijections", () => {
       lotId: "primary-key-lot",
       lot: { expiresAtEpochMs: time3 },
     });
-    await inventory.containers.define({
-      operationId: "primary-key-container",
+    await inventory.placement.define({
+      operationId: "primary-key-placement-node",
       occurredAtEpochMs: time0,
-      containerId: "primary-key-container",
-      container: { containerType: "tray", useByEpochMs: time3 },
+      nodeId: "primary-key-placement-node",
+      placementNode: { category: "tray", useByEpochMs: time3 },
     });
     await inventory.stock.receive({
       operationId: "primary-key-position",
@@ -762,9 +742,9 @@ describe("independent projection index bijections", () => {
     const p = world.projection;
     const positionEntry = Object.entries(p.positions)[0];
     const lotEntry = Object.entries(p.lots)[0];
-    const containerEntry = Object.entries(p.containers)[0];
-    if (positionEntry === undefined || lotEntry === undefined || containerEntry === undefined) {
-      throw new Error("Expected position, lot, and container fixtures for primary-key controls.");
+    const placementNodeEntry = Object.entries(p.placementNodes)[0];
+    if (positionEntry === undefined || lotEntry === undefined || placementNodeEntry === undefined) {
+      throw new Error("Expected position, lot, and placement-node fixtures for primary-key controls.");
     }
     const [positionIdentity, position] = positionEntry;
     const wrongPositionIdentity = "wrong-position-identity";
@@ -775,7 +755,7 @@ describe("independent projection index bijections", () => {
       positions: { [wrongPositionIdentity]: position },
       positionIdsByItemId: Object.fromEntries(Object.entries(p.positionIdsByItemId).map(([key, values]) => [key, replaceMember(values)])),
       positionIdsByItemRevisionId: Object.fromEntries(Object.entries(p.positionIdsByItemRevisionId).map(([key, values]) => [key, replaceMember(values)])),
-      positionIdsByContainerIdentity: Object.fromEntries(Object.entries(p.positionIdsByContainerIdentity).map(([key, values]) => [key, replaceMember(values)])),
+      positionIdsByPlacementNodeId: Object.fromEntries(Object.entries(p.positionIdsByPlacementNodeId).map(([key, values]) => [key, replaceMember(values)])),
       positiveLayerStartedAtEpochMsByPositionId: {
         [wrongPositionIdentity]: p.positiveLayerStartedAtEpochMsByPositionId[positionIdentity] ?? time0,
       },
@@ -788,9 +768,16 @@ describe("independent projection index bijections", () => {
       lots: { [wrongLotIdentity]: lot },
       lotIdentitiesByItemId: Object.fromEntries(Object.entries(p.lotIdentitiesByItemId).map(([key, values]) => [key, values.map((value) => value === lotIdentity ? wrongLotIdentity : value)])),
     };
-    const [, container] = containerEntry;
-    const containerProjection = { ...p, containers: { "wrong-container-identity": container } };
-    for (const projection of [positionProjection, lotProjection, containerProjection]) {
+    const [, placementNode] = placementNodeEntry;
+    const placementNodeProjection = {
+      ...p,
+      placementNodes: { "wrong-placement-node-identity": placementNode },
+    };
+    for (const projection of [
+      positionProjection,
+      lotProjection,
+      placementNodeProjection,
+    ]) {
       expect(() => assertAbstractInventoryInvariants({ ...world, projection })).toThrow(/dictionary key disagrees with its primary identity/u);
     }
   });
@@ -820,12 +807,12 @@ describe("all projection secondary-index domains", () => {
     const variants = [
       [{ ...p, positionIdsByItemId: { ...p.positionIdsByItemId, orphan: [] } }, /Item position index/u],
       [{ ...p, positionIdsByItemRevisionId: { ...p.positionIdsByItemRevisionId, orphan: [] } }, /Revision position index/u],
-      [{ ...p, positionIdsByContainerIdentity: { ...p.positionIdsByContainerIdentity, orphan: [] } }, /Container position index/u],
+      [{ ...p, positionIdsByPlacementNodeId: { ...p.positionIdsByPlacementNodeId, orphan: [] } }, /Direct placement position index/u],
       [{ ...p, positivePositionIdBySerialIdentity: { ...p.positivePositionIdBySerialIdentity, orphan: "missing" } }, /Positive serial index/u],
       [{ ...p, positiveLayerStartedAtEpochMsByPositionId: { ...p.positiveLayerStartedAtEpochMsByPositionId, orphan: 0 } }, /Positive layer index/u],
       [{ ...p, lotIdentitiesByItemId: { ...p.lotIdentitiesByItemId, orphan: [] } }, /Item lot index/u],
       [{ ...p, lotRootEventIdByIdentity: { ...p.lotRootEventIdByIdentity, orphan: "missing" } }, /Lot root ownership index/u],
-      [{ ...p, containerRootEventIdByIdentity: { ...p.containerRootEventIdByIdentity, orphan: "missing" } }, /Container root ownership index/u],
+      [{ ...p, placementNodeRootEventIdByNodeId: { ...p.placementNodeRootEventIdByNodeId, orphan: "missing" } }, /Placement-node root ownership index/u],
       [{ ...p, correctionEventIdByCorrectedEventId: { ...p.correctionEventIdByCorrectedEventId, orphan: "missing" } }, /Current correction index/u],
     ] as const;
     for (const [projection, diagnostic] of variants) expect.soft(() => assertAbstractInventoryInvariants({ ...world, projection })).toThrow(diagnostic);
@@ -866,7 +853,7 @@ describe("operation-result refinement authority", () => {
         reservationId: "result-reservation",
         operationId: "result-reservation:create",
         itemRevisionId: "item-a-v2",
-        selector: { itemId: "item-a", locationIds: ["store"] },
+        selector: { itemId: "item-a", placementNodeIds: ["store"] },
         requested: parseQuantity("1", "piece"),
         createdAtEpochMs: time1,
       });
@@ -890,7 +877,7 @@ describe("operation-result refinement authority", () => {
         countId: "result-count",
         operationId: "result-count:start",
         itemRevisionId: "item-a-v2",
-        selector: { itemId: "item-a", locationIds: ["store"] },
+        selector: { itemId: "item-a", placementNodeIds: ["store"] },
         startedAtEpochMs: time0,
       });
       const after = await inventory.read.world();
@@ -916,8 +903,8 @@ describe("operation-result refinement authority", () => {
         operationId: "result-transfer:prepare",
         occurredAtEpochMs: time1,
         transferId: "result-transfer",
-        transitLocationId: "TRANSIT",
-        destinationLocationId: "B",
+        transitPlacementNodeId: "TRANSIT",
+        destinationPlacementNodeId: "B",
         lines: [
           {
             lineId: "line",
@@ -942,7 +929,7 @@ describe("operation-result refinement authority", () => {
       const inventory = createTestInventory();
       await inventory.stock.receive({ operationId: "result-receipt-reservation-seed", occurredAtEpochMs: time0, to: loosePosition("store"), amount: stockAmount("2", "piece") });
       const before = await inventory.read.world();
-      const result = await inventory.reservations.reserve({ reservationId: "result-receipt-reservation", operationId: "result-receipt-reservation:create", itemRevisionId: "item-a-v2", selector: { itemId: "item-a", locationIds: ["store"] }, requested: parseQuantity("1", "piece"), createdAtEpochMs: time1 });
+      const result = await inventory.reservations.reserve({ reservationId: "result-receipt-reservation", operationId: "result-receipt-reservation:create", itemRevisionId: "item-a-v2", selector: { itemId: "item-a", placementNodeIds: ["store"] }, requested: parseQuantity("1", "piece"), createdAtEpochMs: time1 });
       const after = await inventory.read.world();
       expect(() => assertStateResultRefinement(before, after, result)).not.toThrow();
       const mutations = [
@@ -998,7 +985,7 @@ describe("operation-result refinement authority", () => {
             requestId: "a",
             groupId: "group",
             selector: inventoryStockSelector("item-a", {
-              locationIds: ["store"],
+              placementNodeIds: ["store"],
             }),
             amount: stockAmount("2", "piece"),
             method: InventoryAllocationMethod.Fifo,
@@ -1007,7 +994,7 @@ describe("operation-result refinement authority", () => {
             requestId: "b",
             groupId: "group",
             selector: inventoryStockSelector("item-a", {
-              locationIds: ["store"],
+              placementNodeIds: ["store"],
             }),
             amount: stockAmount("2", "piece"),
             method: InventoryAllocationMethod.Fifo,
@@ -1045,7 +1032,7 @@ describe("operation-result refinement authority", () => {
       const result = await inventory.stock.issueByPolicy({
         operationId: "result-deficit",
         occurredAtEpochMs: time0,
-        selector: inventoryStockSelector("item-a", { locationIds: ["store"] }),
+        selector: inventoryStockSelector("item-a", { placementNodeIds: ["store"] }),
         amount: stockAmount("1", "piece"),
         method: InventoryAllocationMethod.Fifo,
       });
@@ -1102,7 +1089,7 @@ describe("systemic producer-result falsification", () => {
   it("rejects producer allocation total and selector corruption", async () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({ operationId: "oracle-allocation-stock", occurredAtEpochMs: time0, to: loosePosition("A"), amount: stockAmount("2", "piece") });
-    await inventory.reservations.reserve({ reservationId: "oracle-allocation", operationId: "oracle-allocation-reserve", itemRevisionId: "item-a-v2", selector: { itemId: "item-a", locationIds: ["A"] }, requested: parseQuantity("1", "piece"), createdAtEpochMs: time1 });
+    await inventory.reservations.reserve({ reservationId: "oracle-allocation", operationId: "oracle-allocation-reserve", itemRevisionId: "item-a-v2", selector: { itemId: "item-a", placementNodeIds: ["A"] }, requested: parseQuantity("1", "piece"), createdAtEpochMs: time1 });
     const position = (await inventory.read.positions({ itemId: "item-a" }))[0];
     if (position === undefined) throw new Error("Expected real stock for allocation.");
     await inventory.reservations.allocate({ reservationId: "oracle-allocation", operationId: "oracle-allocate", occurredAtEpochMs: time1, allocations: [{ position: position.key, quantity: parseQuantity("1", "piece") }] });
@@ -1111,7 +1098,7 @@ describe("systemic producer-result falsification", () => {
     const reservation = book.reservations["oracle-allocation"];
     const allocation = reservation?.allocations[0];
     if (reservation === undefined || allocation === undefined) throw new Error("Expected the actual allocated producer record.");
-    for (const changed of [{ ...allocation, quantity: parseQuantity("2", "piece") }, { ...allocation, position: { ...allocation.position, locationId: "B" } }]) {
+    for (const changed of [{ ...allocation, quantity: parseQuantity("2", "piece") }, { ...allocation, position: { ...allocation.position, placementNodeId: "B" } }]) {
       expect.soft(() => assertAbstractReservationInvariants({ ...book, reservations: { ...book.reservations, [reservation.reservationId]: { ...reservation, allocations: [changed] } } })).toThrow(/Reservation allocation (?:total differs|lies outside)/u);
     }
   });

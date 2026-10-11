@@ -88,6 +88,27 @@ it("canonicalizes nested compact and migration plan values independently of obje
   );
 });
 
+it("keeps reference-adapter published worlds deeply immutable and identity-stable", async () => {
+  const storage = createInMemoryInventoryDurableStorage();
+  const inventory = createTestInventory(storage);
+  await inventory.stock.receive({
+    operationId: "freeze-reference-world",
+    occurredAtEpochMs: time0,
+    to: loosePosition("freeze-store"),
+    amount: stockAmount("2", "piece"),
+  });
+  const published = await storage.readWorld();
+  const firstPosition = Object.values(published.projection.positions)[0];
+  expect(Object.isFrozen(published)).toBe(true);
+  expect(Object.isFrozen(published.projection)).toBe(true);
+  expect(Object.isFrozen(published.projection.positions)).toBe(true);
+  expect(Object.isFrozen(firstPosition)).toBe(true);
+  expect(
+    Reflect.set(published.projection.positions, "forged-position", firstPosition)
+  ).toBe(false);
+  expect(await storage.readWorld()).toBe(published);
+});
+
 it("binds deficit policy into the durable compact-plan digest", () => {
   const common = {
     baseWorldRoot: "base-root",
@@ -125,7 +146,7 @@ type HiddenInventoryPart =
   | "positions"
   | "item-position-index"
   | "revision-position-index"
-  | "container-position-index"
+  | "placement-position-index"
   | "positive-layer-index"
   | "serial-position-index"
   | "events"
@@ -134,10 +155,11 @@ type HiddenInventoryPart =
   | "lots"
   | "lot-item-index"
   | "lot-root-index"
-  | "containers"
-  | "container-root-index"
+  | "placement-nodes"
+  | "placement-node-root-index"
+  | "placement-relations"
+  | "placement-child-index"
   | "traceability"
-  | "containment-child-index"
   | "reservations"
   | "counts";
 /** Every part the broken adapter may actually hide. */
@@ -147,7 +169,7 @@ const droppedStockParts: readonly HidableInventoryPart[] = [
   "positions",
   "item-position-index",
   "revision-position-index",
-  "container-position-index",
+  "placement-position-index",
   "positive-layer-index",
   "serial-position-index",
 ];
@@ -157,15 +179,22 @@ const droppedLotParts: readonly HidableInventoryPart[] = [
   "lot-item-index",
   "lot-root-index",
 ];
-/** Container projection row and its retained-root index, each required by conformance. */
-const droppedContainerParts: readonly HidableInventoryPart[] = [
-  "containers",
-  "container-root-index",
+/** Placement-node metadata row and its retained-root index, each required by conformance. */
+const droppedPlacementNodeParts: readonly HidableInventoryPart[] = [
+  "placement-nodes",
+  "placement-node-root-index",
 ];
-/** Traceability row plus event indexes required to read/rebuild its creating fact. */
+/** Placement topology plus event indexes required to read/rebuild its creating fact. */
+const droppedPlacementTopologyParts: readonly HidableInventoryPart[] = [
+  "placement-relations",
+  "placement-child-index",
+  "events",
+  "event-sequence-index",
+  "event-operation-index",
+];
+/** Association/genealogy row plus event indexes required to read/rebuild its creating fact. */
 const droppedTraceabilityParts: readonly HidableInventoryPart[] = [
   "traceability",
-  "containment-child-index",
   "events",
   "event-sequence-index",
   "event-operation-index",
@@ -210,10 +239,10 @@ class HidingPublishedInventoryPartStorage extends InMemoryInventoryDurableStorag
         projection: { ...projection, positionIdsByItemRevisionId: {} },
       };
     }
-    if (this.hiddenPart === "container-position-index") {
+    if (this.hiddenPart === "placement-position-index") {
       return {
         ...world,
-        projection: { ...projection, positionIdsByContainerIdentity: {} },
+        projection: { ...projection, positionIdsByPlacementNodeId: {} },
       };
     }
     if (this.hiddenPart === "positive-layer-index") {
@@ -258,23 +287,35 @@ class HidingPublishedInventoryPartStorage extends InMemoryInventoryDurableStorag
         projection: { ...projection, lotRootEventIdByIdentity: {} },
       };
     }
-    if (this.hiddenPart === "containers") {
-      return { ...world, projection: { ...projection, containers: {} } };
+    if (this.hiddenPart === "placement-nodes") {
+      return { ...world, projection: { ...projection, placementNodes: {} } };
     }
-    if (this.hiddenPart === "container-root-index") {
+    if (this.hiddenPart === "placement-node-root-index") {
       return {
         ...world,
-        projection: { ...projection, containerRootEventIdByIdentity: {} },
+        projection: { ...projection, placementNodeRootEventIdByNodeId: {} },
       };
     }
-    if (this.hiddenPart === "containment-child-index") {
+    if (this.hiddenPart === "placement-relations") {
       return {
         ...world,
         projection: {
           ...projection,
-          traceability: {
-            ...projection.traceability,
-            containmentChildContainerIdsByParentNodeIdentity: {},
+          placement: {
+            ...projection.placement,
+            relationByNodeId: {},
+          },
+        },
+      };
+    }
+    if (this.hiddenPart === "placement-child-index") {
+      return {
+        ...world,
+        projection: {
+          ...projection,
+          placement: {
+            ...projection.placement,
+            childNodeIdsByParentNodeId: {},
           },
         },
       };
@@ -333,7 +374,7 @@ it("the reusable component assertions reject adapters that lose reservation or c
     reservationId: "shape-claim",
     operationId: "broken-reservation",
     itemRevisionId: "item-a-v2",
-    selector: { itemId: "item-a", locationIds: ["reserve-store"] },
+    selector: { itemId: "item-a", placementNodeIds: ["reserve-store"] },
     requested: parseQuantity("1", "piece"),
     createdAtEpochMs: time0,
   });
@@ -366,7 +407,7 @@ it("the reusable component assertions reject adapters that lose reservation or c
   );
 });
 
-it("the reusable shapes reject dropped catalogue, stock, lot, container, traceability, and event indexes", async () => {
+it("the reusable shapes reject dropped catalogue, stock, lot, placement, traceability, and event indexes", async () => {
   const catalogStorage = new HidingPublishedInventoryPartStorage();
   const catalogInventory = createTestInventory(catalogStorage);
   await catalogInventory.catalog.publish({
@@ -389,9 +430,8 @@ it("the reusable shapes reject dropped catalogue, stock, lot, container, traceab
     await stockInventory.stock.receive({
       operationId: "shape-stock",
       occurredAtEpochMs: time0,
-      to: loosePosition("stock-store", {
+      to: loosePosition("SHAPE-STOCK-CONTAINER", {
         serialId: "SHAPE-SERIAL",
-        containerId: "SHAPE-STOCK-CONTAINER",
       }),
       amount: stockAmount("1", "piece"),
     });
@@ -431,25 +471,45 @@ it("the reusable shapes reject dropped catalogue, stock, lot, container, traceab
     );
   }
 
-  for (const hiddenPart of droppedContainerParts) {
-    const containerStorage = new HidingPublishedInventoryPartStorage();
-    const containerInventory = createTestInventory(containerStorage);
-    await containerInventory.containers.define({
-      operationId: "shape-container-master",
+  for (const hiddenPart of droppedPlacementNodeParts) {
+    const nodeStorage = new HidingPublishedInventoryPartStorage();
+    const nodeInventory = createTestInventory(nodeStorage);
+    await nodeInventory.placement.define({
+      operationId: "shape-placement-node-master",
       occurredAtEpochMs: time0,
-      containerId: "SHAPE-CONTAINER",
-      container: {
-        containerType: "carton",
+      nodeId: "SHAPE-NODE",
+      placementNode: {
+        category: "carton",
         identifiers: { barcode: "SHAPE-001" },
       },
     });
-    const visibleContainerWorld = await containerStorage.readWorld();
-    containerStorage.hide(hiddenPart);
-    const hiddenContainerWorld = await containerStorage.readWorld();
+    const visibleNodeWorld = await nodeStorage.readWorld();
+    nodeStorage.hide(hiddenPart);
+    const hiddenNodeWorld = await nodeStorage.readWorld();
     expectHiddenPublishedPartDetected(
-      "container-master-only",
-      visibleContainerWorld,
-      hiddenContainerWorld,
+      "placement-node-master-only",
+      visibleNodeWorld,
+      hiddenNodeWorld,
+      hiddenPart
+    );
+  }
+
+  for (const hiddenPart of droppedPlacementTopologyParts) {
+    const placementStorage = new HidingPublishedInventoryPartStorage();
+    const placementInventory = createTestInventory(placementStorage);
+    await placementInventory.placement.move({
+      operationId: "shape-placement",
+      occurredAtEpochMs: time0,
+      nodeId: "SHAPE-CHILD",
+      into: "SHAPE-PARENT",
+    });
+    const visiblePlacementWorld = await placementStorage.readWorld();
+    placementStorage.hide(hiddenPart);
+    const hiddenPlacementWorld = await placementStorage.readWorld();
+    expectHiddenPublishedPartDetected(
+      "placement-only",
+      visiblePlacementWorld,
+      hiddenPlacementWorld,
       hiddenPart
     );
   }
@@ -457,14 +517,14 @@ it("the reusable shapes reject dropped catalogue, stock, lot, container, traceab
   for (const hiddenPart of droppedTraceabilityParts) {
     const traceStorage = new HidingPublishedInventoryPartStorage();
     const traceInventory = createTestInventory(traceStorage);
-    await traceInventory.traceability.aggregate({
+    await traceInventory.traceability.associate({
       operationId: "shape-traceability",
       occurredAtEpochMs: time0,
       from: {
-        kind: InventoryTraceabilityNodeKind.Container,
+        kind: InventoryTraceabilityNodeKind.PlacementNode,
         id: "SHAPE-CHILD",
       },
-      to: { kind: InventoryTraceabilityNodeKind.Container, id: "SHAPE-PARENT" },
+      to: { kind: InventoryTraceabilityNodeKind.PlacementNode, id: "SHAPE-PARENT" },
     });
     const visibleTraceabilityWorld = await traceStorage.readWorld();
     traceStorage.hide(hiddenPart);

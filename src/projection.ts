@@ -22,15 +22,19 @@ import {
   zeroInventoryMeasurements,
 } from "./measurements.js";
 import {
-  inventoryContainerIdentity,
   inventoryLotIdentity,
   inventorySerialIdentity,
   inventoryStockPositionIdentity,
-  type InventoryContainerDefinition,
+  type InventoryPlacementNodeDefinition,
   type InventoryLotDefinition,
   type InventoryStockPosition,
   type InventoryStockPositionKey,
 } from "./model.js";
+import {
+  applyInventoryPlacementChanges,
+  emptyInventoryPlacementState,
+  type InventoryPlacementState,
+} from "./placement.js";
 import {
   compareQuantity,
   parseQuantity,
@@ -62,11 +66,11 @@ export enum InventoryDeficitPolicy {
   Record = "record",
 }
 
-/** Current handling-unit metadata plus the retained root assertion that owns it. */
-export interface InventoryProjectedContainerDefinition {
-  /** Current exact container metadata/use-by assertion. */
-  readonly definition: InventoryContainerDefinition;
-  /** Retained non-correction event that first established this container master. */
+/** Current placement-node metadata plus the retained root assertion that owns it. */
+export interface InventoryProjectedPlacementNodeDefinition {
+  /** Current exact placement-node metadata/use-by assertion. */
+  readonly definition: InventoryPlacementNodeDefinition;
+  /** Retained non-correction event that first established this placement-node master. */
   readonly rootEventId: string;
   /** Latest event that established/corrected the current metadata value. */
   readonly assertedByEventId: string;
@@ -92,20 +96,20 @@ export interface InventoryProjectionState {
   readonly positionIdsByItemRevisionId: Readonly<
     Record<string, readonly string[]>
   >;
-  /** Exact current position identities grouped by exact handling-unit identity. */
-  readonly positionIdsByContainerIdentity: Readonly<
+  /** Exact current position identities grouped by their direct placement node. */
+  readonly positionIdsByPlacementNodeId: Readonly<
     Record<string, readonly string[]>
   >;
   /** Current uninterrupted positive-layer occurrence time by exact position identity. */
   readonly positiveLayerStartedAtEpochMsByPositionId: Readonly<Record<string, number>>;
   /** Current positive exact position by item-scoped serial identity. */
   readonly positivePositionIdBySerialIdentity: Readonly<Record<string, string>>;
-  /** Current handling-unit metadata keyed by exact container identity. */
-  readonly containers: Readonly<
-    Record<string, InventoryProjectedContainerDefinition>
+  /** Current placement-node metadata keyed by exact node id. */
+  readonly placementNodes: Readonly<
+    Record<string, InventoryProjectedPlacementNodeDefinition>
   >;
-  /** First retained root event that owns each container master identity. */
-  readonly containerRootEventIdByIdentity: Readonly<Record<string, string>>;
+  /** First retained root event that owns each placement-node metadata identity. */
+  readonly placementNodeRootEventIdByNodeId: Readonly<Record<string, string>>;
   /** Current item-scoped lot metadata keyed by deterministic lot identity. */
   readonly lots: Readonly<Record<string, InventoryProjectedLotDefinition>>;
   /** Current lot identities grouped by item id for item-local metadata reads. */
@@ -124,7 +128,9 @@ export interface InventoryProjectionState {
   readonly correctionEventIdByCorrectedEventId: Readonly<
     Record<string, string>
   >;
-  /** Current containment/association plus append-only genealogy graph. */
+  /** Current direct-parent placement forest. */
+  readonly placement: InventoryPlacementState;
+  /** Current association plus append-only genealogy graph. */
   readonly traceability: InventoryTraceabilityState;
   /** Highest applied durable sequence; zero means no events. */
   readonly lastRecordSequence: number;
@@ -170,11 +176,11 @@ export function emptyInventoryProjectionState(): InventoryProjectionState {
     positions: {},
     positionIdsByItemId: createInventorySparseRecord(),
     positionIdsByItemRevisionId: createInventorySparseRecord(),
-    positionIdsByContainerIdentity: {},
+    positionIdsByPlacementNodeId: createInventorySparseRecord(),
     positiveLayerStartedAtEpochMsByPositionId: {},
     positivePositionIdBySerialIdentity: {},
-    containers: {},
-    containerRootEventIdByIdentity: {},
+    placementNodes: createInventorySparseRecord(),
+    placementNodeRootEventIdByNodeId: createInventorySparseRecord(),
     lots: {},
     lotIdentitiesByItemId: createInventorySparseRecord(),
     lotRootEventIdByIdentity: {},
@@ -183,6 +189,7 @@ export function emptyInventoryProjectionState(): InventoryProjectionState {
     eventIdsBySequence: {},
     eventIdByOperationId: createInventorySparseRecord(),
     correctionEventIdByCorrectedEventId: createInventorySparseRecord(),
+    placement: emptyInventoryPlacementState(),
     traceability: emptyInventoryTraceabilityState(),
     lastRecordSequence: 0,
   };
@@ -257,10 +264,26 @@ function applyInventoryCommittedEventInternal(
       `Inventory recordSequence ${normalizedEvent.recordSequence} already exists.`
     );
   }
+  /** Whether this event can change the correction ownership index. */
+  const correctionProjectionChanges = normalizedEvent.correction !== undefined;
+  /** Whether node metadata/root ownership needs a private copy for this event. */
+  const placementNodeProjectionChanges =
+    correctionProjectionChanges ||
+    (normalizedEvent.placementNodeDefinitions?.length ?? 0) > 0;
+  /** Whether lot metadata/root ownership needs a private copy for this event. */
+  const lotProjectionChanges =
+    correctionProjectionChanges ||
+    (normalizedEvent.lotDefinitions?.length ?? 0) > 0;
+  /** Whether any current stock/index/FIFO/serial value can change. */
+  const stockProjectionChanges =
+    normalizedEvent.stockEffects.length > 0 ||
+    (normalizedEvent.positiveLayerProvenanceOverrides?.length ?? 0) > 0;
   const correctionEventIdByCorrectedEventId: Record<string, string> =
     mutateProjection
       ? (state.correctionEventIdByCorrectedEventId as Record<string, string>)
-      : cloneInventorySparseRecord(state.correctionEventIdByCorrectedEventId);
+      : correctionProjectionChanges
+        ? cloneInventorySparseRecord(state.correctionEventIdByCorrectedEventId)
+        : (state.correctionEventIdByCorrectedEventId as Record<string, string>);
   if (normalizedEvent.correction !== undefined) {
     const correctedEventId = normalizedEvent.correction.correctsEventId;
     const correctedEvent = inventorySparseRecordValue(
@@ -301,99 +324,119 @@ function applyInventoryCommittedEventInternal(
     );
   }
 
-  /** Copy used while deriving the next all-or-nothing container-metadata projection. */
-  const containers: Record<string, InventoryProjectedContainerDefinition> =
-    mutateProjection
-      ? (state.containers as Record<
+  /** Copy used while deriving the next all-or-nothing placement-node metadata projection. */
+  const placementNodes: Record<
+    string,
+    InventoryProjectedPlacementNodeDefinition
+  > = mutateProjection
+    ? (state.placementNodes as Record<
+        string,
+        InventoryProjectedPlacementNodeDefinition
+      >)
+    : placementNodeProjectionChanges
+      ? cloneInventorySparseRecord(state.placementNodes)
+      : (state.placementNodes as Record<
           string,
-          InventoryProjectedContainerDefinition
-        >)
-      : { ...state.containers };
-  /** Retained root ownership survives when one correction temporarily omits the container master. */
-  const containerRootEventIdByIdentity: Record<string, string> =
+          InventoryProjectedPlacementNodeDefinition
+        >);
+  /** Retained root ownership survives when one correction temporarily omits node metadata. */
+  const placementNodeRootEventIdByNodeId: Record<string, string> =
     mutateProjection
-      ? (state.containerRootEventIdByIdentity as Record<string, string>)
-      : { ...state.containerRootEventIdByIdentity };
-  const correctedContainerRootEventId =
+      ? (state.placementNodeRootEventIdByNodeId as Record<string, string>)
+      : placementNodeProjectionChanges
+        ? cloneInventorySparseRecord(state.placementNodeRootEventIdByNodeId)
+        : (state.placementNodeRootEventIdByNodeId as Record<string, string>);
+  const correctedPlacementNodeRootEventId =
     normalizedEvent.correction?.correctsEventId;
-  const replacementContainerIdentities = new Set<string>();
-  for (const definition of normalizedEvent.containerDefinitions ?? []) {
-    replacementContainerIdentities.add(
-      inventoryContainerIdentity(definition.containerId)
-    );
+  const replacementPlacementNodeIds = new Set<string>();
+  for (const definition of normalizedEvent.placementNodeDefinitions ?? []) {
+    replacementPlacementNodeIds.add(definition.nodeId);
   }
-  if (correctedContainerRootEventId !== undefined) {
-    for (const [identity, projected] of Object.entries(containers)) {
+  if (correctedPlacementNodeRootEventId !== undefined) {
+    for (const [nodeId, projected] of Object.entries(placementNodes)) {
       if (
-        projected.rootEventId === correctedContainerRootEventId &&
-        !replacementContainerIdentities.has(identity)
+        projected.rootEventId === correctedPlacementNodeRootEventId &&
+        !replacementPlacementNodeIds.has(nodeId)
       ) {
-        delete containers[identity];
+        delete placementNodes[nodeId];
       }
     }
   }
-  for (const definition of normalizedEvent.containerDefinitions ?? []) {
-    const identity = inventoryContainerIdentity(definition.containerId);
+  for (const definition of normalizedEvent.placementNodeDefinitions ?? []) {
+    const nodeId = definition.nodeId;
     const rootEventId =
-      correctedContainerRootEventId ?? normalizedEvent.eventId;
-    const existingRootEventId = containerRootEventIdByIdentity[identity];
-    const current = containers[identity];
+      correctedPlacementNodeRootEventId ?? normalizedEvent.eventId;
+    const existingRootEventId = inventorySparseRecordValue(
+      placementNodeRootEventIdByNodeId,
+      nodeId
+    );
+    const current = inventorySparseRecordValue(placementNodes, nodeId);
     if (existingRootEventId === undefined) {
-      containerRootEventIdByIdentity[identity] = rootEventId;
-      containers[identity] = {
+      setInventorySparseRecordValue(
+        placementNodeRootEventIdByNodeId,
+        nodeId,
+        rootEventId
+      );
+      setInventorySparseRecordValue(placementNodes, nodeId, {
         definition,
         rootEventId,
         assertedByEventId: normalizedEvent.eventId,
-      };
+      });
       continue;
     }
     const sameDefinition =
       current !== undefined &&
-      inventoryContainerDefinitionFingerprint(current.definition) ===
-        inventoryContainerDefinitionFingerprint(definition);
-    if (correctedContainerRootEventId === undefined) {
+      inventoryPlacementNodeDefinitionFingerprint(current.definition) ===
+        inventoryPlacementNodeDefinitionFingerprint(definition);
+    if (correctedPlacementNodeRootEventId === undefined) {
       if (current === undefined) {
         throw new Error(
-          `Inventory container ${identity} was removed by correction; correct its retained root to restore it.`
+          `Inventory placement node '${nodeId}' was removed by correction; correct its retained root to restore it.`
         );
       }
       if (!sameDefinition) {
         throw new Error(
-          `Inventory container ${identity} already has different metadata; correct retained root '${existingRootEventId}'.`
+          `Inventory placement node '${nodeId}' already has different metadata; correct retained root '${existingRootEventId}'.`
         );
       }
       continue;
     }
-    if (existingRootEventId !== correctedContainerRootEventId) {
+    if (existingRootEventId !== correctedPlacementNodeRootEventId) {
       if (!sameDefinition) {
         throw new Error(
-          `Inventory container ${identity} belongs to retained root '${existingRootEventId}', not '${correctedContainerRootEventId}'.`
+          `Inventory placement node '${nodeId}' belongs to retained root '${existingRootEventId}', not '${correctedPlacementNodeRootEventId}'.`
         );
       }
       continue;
     }
-    containers[identity] = {
+    setInventorySparseRecordValue(placementNodes, nodeId, {
       definition,
       rootEventId: existingRootEventId,
       assertedByEventId: normalizedEvent.eventId,
-    };
+    });
   }
 
   /** Copy used while deriving the next all-or-nothing lot-metadata projection. */
   const lots: Record<string, InventoryProjectedLotDefinition> = mutateProjection
     ? (state.lots as Record<string, InventoryProjectedLotDefinition>)
-    : { ...state.lots };
+    : lotProjectionChanges
+      ? { ...state.lots }
+      : (state.lots as Record<string, InventoryProjectedLotDefinition>);
   /** Item -> current lot identities index supports item-local lot reads without a global scan. */
   const lotIdentitiesByItemId: Record<string, readonly string[]> =
     mutateProjection
       ? (state.lotIdentitiesByItemId as Record<string, readonly string[]>)
-      : cloneInventorySparseRecord(state.lotIdentitiesByItemId);
+      : lotProjectionChanges
+        ? cloneInventorySparseRecord(state.lotIdentitiesByItemId)
+        : (state.lotIdentitiesByItemId as Record<string, readonly string[]>);
   /** One desired final membership per touched item lot-index row. */
   const lotIndexMutations = new Map<string, Map<string, boolean>>();
   /** Retained root ownership survives even when one correction temporarily omits the lot master. */
   const lotRootEventIdByIdentity: Record<string, string> = mutateProjection
     ? (state.lotRootEventIdByIdentity as Record<string, string>)
-    : { ...state.lotRootEventIdByIdentity };
+    : lotProjectionChanges
+      ? { ...state.lotRootEventIdByIdentity }
+      : (state.lotRootEventIdByIdentity as Record<string, string>);
   const correctedRootEventId = normalizedEvent.correction?.correctsEventId;
   const replacementLotIdentities = new Set<string>();
   for (const definition of normalizedEvent.lotDefinitions ?? []) {
@@ -486,46 +529,76 @@ function applyInventoryCommittedEventInternal(
   /** Copy used while deriving the next all-or-nothing stock projection. */
   const positions: Record<string, InventoryStockPosition> = mutateProjection
     ? (state.positions as Record<string, InventoryStockPosition>)
-    : { ...state.positions };
+    : stockProjectionChanges
+      ? { ...state.positions }
+      : (state.positions as Record<string, InventoryStockPosition>);
   /** Copy-on-write item indexes avoid scanning unrelated inventory on normal reads. */
   const positionIdsByItemId: Record<string, readonly string[]> =
     mutateProjection
       ? (state.positionIdsByItemId as Record<string, readonly string[]>)
-      : cloneInventorySparseRecord(state.positionIdsByItemId);
+      : stockProjectionChanges
+        ? cloneInventorySparseRecord(state.positionIdsByItemId)
+        : (state.positionIdsByItemId as Record<string, readonly string[]>);
   /** Copy-on-write revision indexes support revisioned collections and summaries. */
   const positionIdsByItemRevisionId: Record<string, readonly string[]> =
     mutateProjection
       ? (state.positionIdsByItemRevisionId as Record<string, readonly string[]>)
-      : cloneInventorySparseRecord(state.positionIdsByItemRevisionId);
-  /** Copy-on-write handling-unit index supports whole-container operations across item types. */
-  const positionIdsByContainerIdentity: Record<string, readonly string[]> =
+      : stockProjectionChanges
+        ? cloneInventorySparseRecord(state.positionIdsByItemRevisionId)
+        : (state.positionIdsByItemRevisionId as Record<string, readonly string[]>);
+  /** Copy-on-write direct-placement index supports subtree operations across item types. */
+  const positionIdsByPlacementNodeId: Record<string, readonly string[]> =
     mutateProjection
-      ? (state.positionIdsByContainerIdentity as Record<
+      ? (state.positionIdsByPlacementNodeId as Record<
           string,
           readonly string[]
         >)
-      : { ...state.positionIdsByContainerIdentity };
+      : stockProjectionChanges
+        ? cloneInventorySparseRecord(state.positionIdsByPlacementNodeId)
+        : (state.positionIdsByPlacementNodeId as Record<
+            string,
+            readonly string[]
+          >);
   /** One desired final membership per touched item index row; applied once after all effects. */
   const itemIndexMutations = new Map<string, Map<string, boolean>>();
   /** One desired final membership per touched revision index row. */
   const revisionIndexMutations = new Map<string, Map<string, boolean>>();
-  /** One desired final membership per touched container index row. */
-  const containerIndexMutations = new Map<string, Map<string, boolean>>();
+  /** One desired final membership per touched direct-placement index row. */
+  const placementNodeIndexMutations = new Map<string, Map<string, boolean>>();
   /** O(1) FIFO provenance for each current uninterrupted positive layer. */
   const positiveLayerStartedAtEpochMsByPositionId: Record<string, number> =
     mutateProjection
       ? (state.positiveLayerStartedAtEpochMsByPositionId as Record<string, number>)
-      : { ...state.positiveLayerStartedAtEpochMsByPositionId };
+      : stockProjectionChanges
+        ? { ...state.positiveLayerStartedAtEpochMsByPositionId }
+        : (state.positiveLayerStartedAtEpochMsByPositionId as Record<
+            string,
+            number
+          >);
   /** Current serial ownership index updated only for serials touched by this event. */
   const positivePositionIdBySerialIdentity: Record<string, string> =
     mutateProjection
       ? (state.positivePositionIdBySerialIdentity as Record<string, string>)
-      : { ...state.positivePositionIdBySerialIdentity };
+      : stockProjectionChanges
+        ? { ...state.positivePositionIdBySerialIdentity }
+        : (state.positivePositionIdBySerialIdentity as Record<string, string>);
   const touchedPositionIdsBySerialIdentity = new Map<string, Set<string>>();
   /** Conserved moves carry the oldest current source/destination layer into the destination. */
   const conservedPositiveLayerStartByDestinationId =
     captureConservedPositiveLayerStarts(state, normalizedEvent);
   for (const effect of normalizedEvent.stockEffects) {
+    const placementNode =
+      effect.position.placementNodeId === undefined
+        ? undefined
+        : inventorySparseRecordValue(
+            placementNodes,
+            effect.position.placementNodeId
+          );
+    if (placementNode?.definition.acceptsPlacement === false) {
+      throw new Error(
+        `Placement node '${effect.position.placementNodeId}' does not accept stock.`
+      );
+    }
     const identity = inventoryStockPositionIdentity(effect.position);
     const earlier = positions[identity];
     const current =
@@ -555,10 +628,10 @@ function applyInventoryCommittedEventInternal(
         identity,
         false
       );
-      if (effect.position.containerId !== undefined) {
+      if (effect.position.placementNodeId !== undefined) {
         recordIndexedIdentityMutation(
-          containerIndexMutations,
-          inventoryContainerIdentity(effect.position.containerId),
+          placementNodeIndexMutations,
+          effect.position.placementNodeId,
           identity,
           false
         );
@@ -578,10 +651,10 @@ function applyInventoryCommittedEventInternal(
           identity,
           true
         );
-        if (effect.position.containerId !== undefined) {
+        if (effect.position.placementNodeId !== undefined) {
           recordIndexedIdentityMutation(
-            containerIndexMutations,
-            inventoryContainerIdentity(effect.position.containerId),
+            placementNodeIndexMutations,
+            effect.position.placementNodeId,
             identity,
             true
           );
@@ -606,8 +679,8 @@ function applyInventoryCommittedEventInternal(
     revisionIndexMutations
   );
   applyIndexedIdentityMutations(
-    positionIdsByContainerIdentity,
-    containerIndexMutations
+    positionIdsByPlacementNodeId,
+    placementNodeIndexMutations
   );
   for (const [
     identity,
@@ -655,6 +728,33 @@ function applyInventoryCommittedEventInternal(
     touchedPositionIdsBySerialIdentity,
     positivePositionIdBySerialIdentity,
   });
+  const placement = applyInventoryPlacementChanges({
+    state: state.placement,
+    eventId: normalizedEvent.eventId,
+    changes: normalizedEvent.placementChanges ?? [],
+    /** Resolve destination policy from the event-final projected node metadata. */
+    acceptsPlacement: (nodeId) =>
+      inventorySparseRecordValue(placementNodes, nodeId)?.definition
+        .acceptsPlacement !== false,
+  });
+  for (const definition of normalizedEvent.placementNodeDefinitions ?? []) {
+    if (definition.acceptsPlacement !== false) continue;
+    const directPositions =
+      inventorySparseRecordValue(
+        positionIdsByPlacementNodeId,
+        definition.nodeId
+      ) ?? [];
+    const childNodes =
+      inventorySparseRecordValue(
+        placement.childNodeIdsByParentNodeId,
+        definition.nodeId
+      ) ?? [];
+    if (directPositions.length > 0 || childNodes.length > 0) {
+      throw new Error(
+        `Placement node '${definition.nodeId}' cannot reject placement while it still has direct contents.`
+      );
+    }
+  }
   const traceability = projectTraceability
     ? applyInventoryTraceabilityChanges({
         state: state.traceability,
@@ -691,11 +791,11 @@ function applyInventoryCommittedEventInternal(
       positions,
       positionIdsByItemId,
       positionIdsByItemRevisionId,
-      positionIdsByContainerIdentity,
+      positionIdsByPlacementNodeId,
       positiveLayerStartedAtEpochMsByPositionId,
       positivePositionIdBySerialIdentity,
-      containers,
-      containerRootEventIdByIdentity,
+      placementNodes,
+      placementNodeRootEventIdByNodeId,
       lots,
       lotIdentitiesByItemId,
       lotRootEventIdByIdentity,
@@ -704,19 +804,21 @@ function applyInventoryCommittedEventInternal(
       eventIdsBySequence,
       eventIdByOperationId,
       correctionEventIdByCorrectedEventId,
+      placement,
       traceability,
       lastRecordSequence: normalizedEvent.recordSequence,
     },
   };
 }
 
-/** Stable current-container comparison including identifiers and JSON-safe metadata. */
-function inventoryContainerDefinitionFingerprint(
-  definition: InventoryContainerDefinition
+/** Stable current placement-node comparison including policy, identifiers, and metadata. */
+function inventoryPlacementNodeDefinitionFingerprint(
+  definition: InventoryPlacementNodeDefinition
 ): string {
   return JSON.stringify([
-    definition.containerId,
-    definition.containerType ?? null,
+    definition.nodeId,
+    definition.category ?? null,
+    definition.acceptsPlacement ?? null,
     inventoryMetadataFingerprint(definition.identifiers),
     definition.openedAtEpochMs ?? null,
     definition.useByEpochMs ?? null,
@@ -767,7 +869,7 @@ export function projectInventoryEvents({
     ).state;
     appliedEventCount += 1;
   }
-  /** Reuse the exact replayed prefix so post-cut traceability can never leak into the historical state. */
+  /** Reuse the exact replayed prefix so post-cut graph changes can never leak into the historical state. */
   const traceabilityEvents =
     throughRecordSequence === undefined
       ? ordered
@@ -816,7 +918,8 @@ export function findInventoryPositions(
     if (
       inventoryStockPositionMatchesNormalizedSelector(
         position.key,
-        normalizedSelector
+        normalizedSelector,
+        state.placement
       )
     ) {
       result.push({ identity, position });

@@ -199,7 +199,7 @@ export async function runInventoryFormalCriticalTrace(
       {
         requestId: "formal-issue-line",
         groupId: "formal-issue-group",
-        selector: inventoryStockSelector("item-a", { locationIds: ["store"] }),
+        selector: inventoryStockSelector("item-a", { placementNodeIds: ["store"] }),
         amount: stockAmount("2", "piece"),
         method: InventoryAllocationMethod.Fefo,
       },
@@ -231,12 +231,12 @@ export async function runInventoryFormalCriticalTrace(
       ? {}
       : { reason: decoration.transferReason }),
     metadata: decoration,
-    toLocationId: "room",
+    toPlacementNodeId: "room",
     requests: [
       {
         requestId: "formal-transfer-line",
         groupId: "formal-transfer-group",
-        selector: inventoryStockSelector("item-a", { locationIds: ["store"] }),
+        selector: inventoryStockSelector("item-a", { placementNodeIds: ["store"] }),
         amount: stockAmount("3", "piece"),
         method: InventoryAllocationMethod.Fefo,
       },
@@ -271,7 +271,7 @@ export async function runInventoryFormalCriticalTrace(
     operationId: `formal-count-${suffix}`,
     itemRevisionId: "item-a-v2",
     selector: inventoryStockSelector("item-a", {
-      locationIds: ["store"],
+      placementNodeIds: ["store"],
       lotIds: ["FORMAL-LATE"],
     }),
     observedMeasurements: {
@@ -426,7 +426,7 @@ export function runInventoryFormalStorageRefinementSuite(
                 requestId: "formal-issue-line",
                 groupId: "formal-issue-group",
                 selector: inventoryStockSelector("item-a", {
-                  locationIds: ["store"],
+                  placementNodeIds: ["store"],
                 }),
                 amount: stockAmount("1", "piece"),
                 method: InventoryAllocationMethod.Fefo,
@@ -445,7 +445,7 @@ export function runInventoryFormalStorageRefinementSuite(
               {
                 requestId: "too-large",
                 selector: inventoryStockSelector("item-a", {
-                  locationIds: ["store"],
+                  placementNodeIds: ["store"],
                 }),
                 amount: stockAmount("100", "piece"),
                 method: InventoryAllocationMethod.Fifo,
@@ -699,7 +699,7 @@ export function runInventoryFormalStorageRefinementSuite(
           {
             requestId: "fail-issue-line",
             selector: inventoryStockSelector("item-a", {
-              locationIds: ["store"],
+              placementNodeIds: ["store"],
             }),
             amount: stockAmount("2", "piece"),
             method: InventoryAllocationMethod.Fifo,
@@ -762,12 +762,12 @@ export function runInventoryFormalStorageRefinementSuite(
       const transferCommand = {
         operationId: transferOperationId,
         occurredAtEpochMs: time1,
-        toLocationId: "room",
+        toPlacementNodeId: "room",
         requests: [
           {
             requestId: "fail-transfer-line",
             selector: inventoryStockSelector("item-a", {
-              locationIds: ["store"],
+              placementNodeIds: ["store"],
             }),
             amount: stockAmount("2", "piece"),
             method: InventoryAllocationMethod.Fifo,
@@ -846,7 +846,7 @@ export function runInventoryFormalStorageRefinementSuite(
         operationId: countOperationId,
         itemRevisionId: "item-a-v2",
         selector: inventoryStockSelector("item-a", {
-          locationIds: ["store"],
+          placementNodeIds: ["store"],
           lotIds: ["FAIL-COUNT"],
         }),
         observedMeasurements: {

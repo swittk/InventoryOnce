@@ -96,7 +96,7 @@ export interface SummarizeInventoryCollectionInput {
   readonly projection: InventoryProjectionState;
   /** Exact retained collection revision; active pointers are not inferred here. */
   readonly collectionRevisionId: InventoryCollectionRevisionId;
-  /** Optional shared position scope such as one location/status/owner. */
+  /** Optional shared position scope such as one placement/status/owner. */
   readonly scope?: InventoryCollectionStockScope;
 }
 

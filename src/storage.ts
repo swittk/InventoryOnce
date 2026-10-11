@@ -10,6 +10,10 @@ import {
   type InventoryCatalogSnapshot,
 } from "./catalog.js";
 import {
+  inventoryObjectIsDeeplyImmutable,
+  markInventoryObjectDeeplyImmutable,
+} from "./immutable-cache.js";
+import {
   applyInventoryCountBookDelta,
   applyInventoryReservationBookDelta,
   inventoryDurableMigrationPlanDigest,
@@ -34,7 +38,7 @@ import { cloneInventorySparseRecord } from "./sparse-record.js";
 /** Clone one published world while restoring own-only semantics for application-id dictionaries. */
 function cloneInventoryPublishedWorld(world: InventoryWorldState): InventoryWorldState {
   const cloned = structuredClone(world);
-  return {
+  const result: InventoryWorldState = {
     ...cloned,
     catalog: {
       ...cloned.catalog,
@@ -65,6 +69,30 @@ function cloneInventoryPublishedWorld(world: InventoryWorldState): InventoryWorl
       operations: cloneInventorySparseRecord(cloned.counts.operations),
     },
   };
+  return result;
+}
+
+/** Deep-freeze one published world while skipping already-frozen shared subgraphs. */
+function freezeInventoryPublishedWorld(
+  world: InventoryWorldState
+): InventoryWorldState {
+  /** Pending newly-created objects whose children and own properties still need freezing. */
+  const pending: object[] = [world];
+  /** Shared/cyclic object identities are visited once during this publication. */
+  const visited = new WeakSet<object>();
+  while (pending.length > 0) {
+    const current = pending.pop();
+    if (current === undefined || visited.has(current)) continue;
+    visited.add(current);
+    // A previously published shared object already has a completely trusted frozen subgraph.
+    if (inventoryObjectIsDeeplyImmutable(current)) continue;
+    for (const value of Object.values(current)) {
+      if (value !== null && typeof value === "object") pending.push(value);
+    }
+    if (!Object.isFrozen(current)) Object.freeze(current);
+    markInventoryObjectDeeplyImmutable(current);
+  }
+  return world;
 }
 
 /** Async execution context used only to reject same-adapter mutation re-entry from failpoints. */
@@ -463,16 +491,18 @@ export class InMemoryInventoryDurableStorage
   constructor(input: InMemoryInventoryDurableStorageInput = {}) {
     this.guarantee =
       input.guarantee ?? InventoryStorageGuarantee.OptimisticRepairable;
-    this.world = cloneInventoryPublishedWorld(
-      input.initialWorld ?? emptyInventoryWorldState()
+    this.world = freezeInventoryPublishedWorld(
+      cloneInventoryPublishedWorld(
+        input.initialWorld ?? emptyInventoryWorldState()
+      )
     );
     validatePublishedInventoryWorld(this.world);
     this.failpoint = input.failpoint;
   }
 
-  /** Read only the latest fully published world. */
+  /** Read the latest deeply immutable published world without cloning shared stock state. */
   async readWorld(): Promise<InventoryWorldState> {
-    return cloneInventoryPublishedWorld(this.world);
+    return this.world;
   }
 
   /** Read one public operation row without exposing private staged snapshots. */
@@ -659,7 +689,7 @@ export class InMemoryInventoryDurableStorage
         targetWorldRoot: inventoryWorldContentRoots(nextWorld).world,
         targetWorldRevision: nextWorld.revision,
       };
-      this.world = cloneInventoryPublishedWorld(nextWorld);
+      this.world = freezeInventoryPublishedWorld(nextWorld);
       this.migrationManifests.set(migrationId, published);
       await this.fire(
         InventoryStorageWriteStage.MigrationPublishWorld,
@@ -1051,7 +1081,7 @@ export class InMemoryInventoryDurableStorage
         ...stored.value,
         worldPublished: true,
       };
-      this.world = cloneInventoryPublishedWorld(nextWorld);
+      this.world = freezeInventoryPublishedWorld(nextWorld);
       this.operations.set(operationId, { value: publishedValue });
       await this.fire(
         InventoryStorageWriteStage.PublishWorld,

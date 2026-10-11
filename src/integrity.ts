@@ -10,6 +10,8 @@ import {
   type InventoryCountOperation,
 } from "./counts.js";
 import { inventorySha256 } from "./digest.js";
+import { inventoryObjectIsDeeplyImmutable } from "./immutable-cache.js";
+import { compareInventoryIdentityText } from "./ordering.js";
 import type { InventoryCommittedEvent } from "./events.js";
 import type {
   InventoryDeficitPolicy,
@@ -24,7 +26,29 @@ import {
 } from "./reservations.js";
 import { inventoryStockSelectorIsSubset } from "./selectors.js";
 import type { InventoryWorldState } from "./world.js";
-import { inventorySparseRecordValue } from "./sparse-record.js";
+import {
+  cloneInventorySparseRecord,
+  inventorySparseRecordValue,
+  setInventorySparseRecordValue,
+} from "./sparse-record.js";
+
+/** Cached digest of one immutable retained record value. */
+const inventoryValueDigestCache = new WeakMap<object, string>();
+/** Cached digest of one immutable published record object. */
+const inventoryRecordDigestCache = new WeakMap<object, string>();
+/** Cached digest of one immutable published catalogue snapshot. */
+const inventoryCatalogDigestCache = new WeakMap<object, string>();
+/** Cached digest of one immutable published projection object. */
+const inventoryProjectionDigestCache = new WeakMap<object, string>();
+/** Cached digest of one immutable published reservation book. */
+const inventoryReservationDigestCache = new WeakMap<object, string>();
+/** Cached digest of one immutable published count book. */
+const inventoryCountDigestCache = new WeakMap<object, string>();
+/** Cached component roots for one immutable published world object. */
+const inventoryWorldRootsCache = new WeakMap<
+  object,
+  InventoryWorldContentRoots
+>();
 
 /** One append-only reservation row/operation change frozen in a compact durable plan. */
 export interface InventoryReservationBookDelta {
@@ -48,7 +72,7 @@ export interface InventoryWorldContentRoots {
   readonly world: string;
   /** Durable catalogue-definition root. */
   readonly catalog: string;
-  /** Committed event/current-stock/traceability projection root. */
+  /** Committed event/current-stock/placement/traceability projection root. */
   readonly projection: string;
   /** Current reservation rows plus append-only lifecycle evidence root. */
   readonly reservations: string;
@@ -60,17 +84,21 @@ export interface InventoryWorldContentRoots {
 export function inventoryWorldContentRoots(
   world: InventoryWorldState
 ): InventoryWorldContentRoots {
+  const cacheable = inventoryObjectIsDeeplyImmutable(world);
+  const cached = cacheable ? inventoryWorldRootsCache.get(world) : undefined;
+  if (cached !== undefined) return cached;
   const catalog = inventoryCatalogSnapshotDigest(world.catalog);
   const projection = inventoryProjectionDigest(world.projection);
   const reservations = inventoryReservationBookDigest(world.reservations);
   const counts = inventoryCountBookDigest(world.counts);
-  return {
+  const roots: InventoryWorldContentRoots = {
     catalog,
     projection,
     reservations,
     counts,
     world: inventorySha256(
       canonicalNormalizedJson([
+        "inventory-world-components-v2",
         world.revision,
         catalog,
         projection,
@@ -79,65 +107,136 @@ export function inventoryWorldContentRoots(
       ])
     ),
   };
+  if (cacheable) inventoryWorldRootsCache.set(world, roots);
+  return roots;
 }
 
 /** Verify and hash one persisted catalogue snapshot without trusting its digest field. */
 export function inventoryCatalogSnapshotDigest(
   snapshot: InventoryCatalogSnapshot
 ): string {
-  return inventoryCatalogFromSnapshot(snapshot).digest;
+  const cacheable = inventoryObjectIsDeeplyImmutable(snapshot);
+  const cached = cacheable ? inventoryCatalogDigestCache.get(snapshot) : undefined;
+  if (cached !== undefined) return cached;
+  const digest = inventoryCatalogFromSnapshot(snapshot).digest;
+  if (cacheable) inventoryCatalogDigestCache.set(snapshot, digest);
+  return digest;
 }
 
-/** Hash one event/current-stock/traceability projection in key-sorted row order. */
+/** Hash one event/current-stock/placement/traceability projection in key-sorted row order. */
 export function inventoryProjectionDigest(
   projection: InventoryProjectionState
 ): string {
-  const digestParts: unknown[] = [
-    projection.lastRecordSequence,
-    sortedRecordRows(projection.positions),
-    sortedRecordRows(projection.positionIdsByItemId),
-    sortedRecordRows(projection.positionIdsByItemRevisionId),
-    sortedRecordRows(projection.positionIdsByContainerIdentity),
-    sortedRecordRows(projection.positiveLayerStartedAtEpochMsByPositionId),
-    sortedRecordRows(projection.positivePositionIdBySerialIdentity),
-    sortedRecordRows(projection.containers),
-    sortedRecordRows(projection.containerRootEventIdByIdentity),
-    sortedRecordRows(projection.lots),
-    sortedRecordRows(projection.lotIdentitiesByItemId),
-    sortedRecordRows(projection.lotRootEventIdByIdentity),
-    sortedRecordRows(projection.transfers),
-    sortedRecordRows(projection.events),
-    sortedRecordRows(projection.eventIdsBySequence),
-    sortedRecordRows(projection.eventIdByOperationId),
-    sortedRecordRows(projection.correctionEventIdByCorrectedEventId),
-    sortedRecordRows(projection.traceability.relations),
-    sortedRecordRows(
-      projection.traceability.containmentChildContainerIdsByParentNodeIdentity
-    ),
-  ];
-  return inventorySha256(canonicalNormalizedJson(digestParts));
+  const cacheable = inventoryObjectIsDeeplyImmutable(projection);
+  const cached = cacheable ? inventoryProjectionDigestCache.get(projection) : undefined;
+  if (cached !== undefined) return cached;
+  const digest = inventorySha256(
+    canonicalNormalizedJson([
+      "inventory-projection-components-v2",
+      projection.lastRecordSequence,
+      inventoryImmutableRecordDigest(projection.positions),
+      inventoryImmutableRecordDigest(projection.positionIdsByItemId),
+      inventoryImmutableRecordDigest(projection.positionIdsByItemRevisionId),
+      inventoryImmutableRecordDigest(projection.positionIdsByPlacementNodeId),
+      inventoryImmutableRecordDigest(
+        projection.positiveLayerStartedAtEpochMsByPositionId
+      ),
+      inventoryImmutableRecordDigest(
+        projection.positivePositionIdBySerialIdentity
+      ),
+      inventoryImmutableRecordDigest(projection.placementNodes),
+      inventoryImmutableRecordDigest(
+        projection.placementNodeRootEventIdByNodeId
+      ),
+      inventoryImmutableRecordDigest(projection.lots),
+      inventoryImmutableRecordDigest(projection.lotIdentitiesByItemId),
+      inventoryImmutableRecordDigest(projection.lotRootEventIdByIdentity),
+      inventoryImmutableRecordDigest(projection.transfers),
+      inventoryImmutableRecordDigest(projection.events),
+      inventoryImmutableRecordDigest(projection.eventIdsBySequence),
+      inventoryImmutableRecordDigest(projection.eventIdByOperationId),
+      inventoryImmutableRecordDigest(
+        projection.correctionEventIdByCorrectedEventId
+      ),
+      inventoryImmutableRecordDigest(projection.placement.relationByNodeId),
+      inventoryImmutableRecordDigest(
+        projection.placement.childNodeIdsByParentNodeId
+      ),
+      inventoryImmutableRecordDigest(projection.traceability.relations),
+    ])
+  );
+  if (cacheable) inventoryProjectionDigestCache.set(projection, digest);
+  return digest;
 }
 
 /** Hash the complete reservation book in stable identity order. */
 export function inventoryReservationBookDigest(
   book: InventoryReservationBook
 ): string {
-  return inventorySha256(
+  const cacheable = inventoryObjectIsDeeplyImmutable(book);
+  const cached = cacheable ? inventoryReservationDigestCache.get(book) : undefined;
+  if (cached !== undefined) return cached;
+  const digest = inventorySha256(
     canonicalNormalizedJson([
-      sortedRecordRows(book.reservations),
-      sortedRecordRows(book.operations),
+      "inventory-reservation-components-v2",
+      inventoryImmutableRecordDigest(book.reservations),
+      inventoryImmutableRecordDigest(book.operations),
     ])
   );
+  if (cacheable) inventoryReservationDigestCache.set(book, digest);
+  return digest;
 }
 
 /** Hash the complete count book in stable identity order. */
 export function inventoryCountBookDigest(book: InventoryCountBook): string {
-  return inventorySha256(
+  const cacheable = inventoryObjectIsDeeplyImmutable(book);
+  const cached = cacheable ? inventoryCountDigestCache.get(book) : undefined;
+  if (cached !== undefined) return cached;
+  const digest = inventorySha256(
     canonicalNormalizedJson([
-      sortedRecordRows(book.counts),
-      sortedRecordRows(book.operations),
+      "inventory-count-components-v2",
+      inventoryImmutableRecordDigest(book.counts),
+      inventoryImmutableRecordDigest(book.operations),
     ])
   );
+  if (cacheable) inventoryCountDigestCache.set(book, digest);
+  return digest;
+}
+
+/** Hash one immutable key-sorted record once for structural-sharing root reuse. */
+function inventoryImmutableRecordDigest(
+  record: Readonly<Record<string, NormalizedJsonComparable>>
+): string {
+  const cacheable = inventoryObjectIsDeeplyImmutable(record);
+  const cached = cacheable ? inventoryRecordDigestCache.get(record) : undefined;
+  if (cached !== undefined) return cached;
+  const rows = Object.entries(record);
+  rows.sort(
+    /** Keep arbitrary application-defined record keys in deterministic code-unit order. */
+    (left, right) => compareInventoryIdentityText(left[0], right[0])
+  );
+  const digestedRows = rows.map(
+    /** Bind each key to a separately reusable digest of its exact retained value. */
+    ([key, value]) => [key, inventoryImmutableValueDigest(value)] as const
+  );
+  const digest = inventorySha256(canonicalNormalizedJson(digestedRows));
+  if (cacheable) inventoryRecordDigestCache.set(record, digest);
+  return digest;
+}
+
+/** Hash one immutable retained value once so new record roots reuse unchanged large rows. */
+function inventoryImmutableValueDigest(
+  value: NormalizedJsonComparable
+): string {
+  if (value !== null && typeof value === "object") {
+    const cacheable = inventoryObjectIsDeeplyImmutable(value);
+    const cached = cacheable ? inventoryValueDigestCache.get(value) : undefined;
+    if (cached !== undefined) return cached;
+    const digest = inventorySha256(canonicalNormalizedJson(value));
+    if (cacheable) inventoryValueDigestCache.set(value, digest);
+    return digest;
+  }
+  return inventorySha256(canonicalNormalizedJson(value));
 }
 
 /** Extract and validate the one legal append-only reservation change in a planner result. */
@@ -189,16 +288,19 @@ export function applyInventoryReservationBookDelta(
   delta: InventoryReservationBookDelta | undefined
 ): InventoryReservationBook {
   if (delta === undefined) return base;
-  const next: InventoryReservationBook = {
-    reservations: {
-      ...base.reservations,
-      [delta.reservation.reservationId]: delta.reservation,
-    },
-    operations: {
-      ...base.operations,
-      [delta.operation.operationId]: delta.operation,
-    },
-  };
+  const reservations = cloneInventorySparseRecord(base.reservations);
+  setInventorySparseRecordValue(
+    reservations,
+    delta.reservation.reservationId,
+    delta.reservation
+  );
+  const operations = cloneInventorySparseRecord(base.operations);
+  setInventorySparseRecordValue(
+    operations,
+    delta.operation.operationId,
+    delta.operation
+  );
+  const next: InventoryReservationBook = { reservations, operations };
   createInventoryReservationBookDelta(
     base,
     next,
@@ -256,13 +358,15 @@ export function applyInventoryCountBookDelta(
   delta: InventoryCountBookDelta | undefined
 ): InventoryCountBook {
   if (delta === undefined) return base;
-  const next: InventoryCountBook = {
-    counts: { ...base.counts, [delta.count.countId]: delta.count },
-    operations: {
-      ...base.operations,
-      [delta.operation.operationId]: delta.operation,
-    },
-  };
+  const counts = cloneInventorySparseRecord(base.counts);
+  setInventorySparseRecordValue(counts, delta.count.countId, delta.count);
+  const operations = cloneInventorySparseRecord(base.operations);
+  setInventorySparseRecordValue(
+    operations,
+    delta.operation.operationId,
+    delta.operation
+  );
+  const next: InventoryCountBook = { counts, operations };
   createInventoryCountBookDelta(
     base,
     next,

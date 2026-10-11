@@ -19,7 +19,7 @@ import {
   createInventoryIssueEvent,
   createInventoryOpeningEvent,
   createInventoryTraceabilityEvent,
-  type InventoryContainerMetadataInput,
+  type InventoryPlacementNodeMetadataInput,
   type InventoryLotMetadataInput,
 } from "./commands.js";
 import {
@@ -113,8 +113,8 @@ export interface InventoryMigrationOpeningStock {
   readonly itemRevisionId?: string;
   /** Optional lot metadata for `position.lotId`, reconstructed from the same legacy fact. */
   readonly lot?: InventoryLotMetadataInput;
-  /** Optional container metadata for `position.containerId`, reconstructed from the same legacy fact. */
-  readonly container?: InventoryContainerMetadataInput;
+  /** Optional metadata for `position.placementNodeId`, reconstructed from the same source fact. */
+  readonly placementNode?: InventoryPlacementNodeMetadataInput;
   /** Real-world time represented by this opening; defaults to migration cutover time. */
   readonly occurredAtEpochMs?: number;
   /** Required provenance back to the legacy row. */
@@ -145,7 +145,7 @@ export interface InventoryMigrationDeficitStock {
 export interface InventoryMigrationTraceabilityChange {
   /** Stable identity inside this migration and its idempotency key. */
   readonly changeId: string;
-  /** Explicit containment/association/genealogy change. */
+  /** Explicit association/genealogy change. */
   readonly change: InventoryTraceabilityRelationChange;
   /** Real-world occurrence time; defaults to migration cutover time. */
   readonly occurredAtEpochMs?: number;
@@ -327,9 +327,9 @@ export function defineInventoryMigration({
           ? {}
           : { itemRevisionId: opening.itemRevisionId }),
         ...(opening.lot === undefined ? {} : { lot: opening.lot }),
-        ...(opening.container === undefined
+        ...(opening.placementNode === undefined
           ? {}
-          : { container: opening.container }),
+          : { placementNode: opening.placementNode }),
       });
       events.push(event);
       sourceByOperationId.set(event.operationId, opening.source);

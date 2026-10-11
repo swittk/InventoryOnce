@@ -32,7 +32,7 @@ export * from "./composition.js";
 export * from "./collections.js";
 /** Revision-frozen mutual-fungibility summaries and exact allocation planning. */
 export * from "./fungibility.js";
-/** Shared lot/container expiry and effective-use-by helpers. */
+/** Shared lot/placement-ancestry expiry and effective-use-by helpers. */
 export * from "./usability.js";
 /** Exact finite-decimal quantity arithmetic. */
 export * from "./quantity.js";
@@ -40,7 +40,9 @@ export * from "./quantity.js";
 export * from "./reservations.js";
 /** Broad stock selector normalization/matching/subset rules. */
 export * from "./selectors.js";
-/** Containment/association/genealogy projection. */
+/** Generic direct-parent placement forest and topology helpers. */
+export * from "./placement.js";
+/** Association/genealogy projection. */
 export * from "./traceability.js";
 /** First-class physical transfer lifecycle event builders. */
 export {

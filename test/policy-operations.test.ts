@@ -35,12 +35,12 @@ const alreadyExpiredAtTime1 = 1787560200000;
 /** Return current scalar stock by lot for one location. */
 async function quantityByLot(
   inventory: ReturnType<typeof createTestInventory>,
-  locationId: string
+  placementNodeId: string
 ): Promise<Readonly<Record<string, number>>> {
   const positions = await inventory.read.positions({
     itemId: "item-a",
     itemRevisionIds: ["item-a-v2"],
-    locationIds: [locationId],
+    placementNodeIds: [placementNodeId],
   });
   const result: Record<string, number> = {};
   for (const position of positions) {
@@ -72,7 +72,7 @@ describe("native FIFO/FEFO movement policy", () => {
     const request = {
       selector: inventoryStockSelector("item-a", {
         itemRevisionIds: ["item-a-v2"],
-        locationIds: ["store"],
+        placementNodeIds: ["store"],
       }),
       amount: stockAmount("3", "piece"),
       method: InventoryAllocationMethod.Fefo,
@@ -139,7 +139,7 @@ describe("native FIFO/FEFO movement policy", () => {
 
     const storePlan = await inventory.read.planAllocation({
       selector: inventoryStockSelector("item-a", {
-        locationIds: ["store"],
+        placementNodeIds: ["store"],
         lotIds: ["POSITIVE-LOT"],
       }),
       amount: stockAmount("10", "piece"),
@@ -155,7 +155,7 @@ describe("native FIFO/FEFO movement policy", () => {
 
     const roomPlan = await inventory.read.planAllocation({
       selector: inventoryStockSelector("item-a", {
-        locationIds: ["room"],
+        placementNodeIds: ["room"],
       }),
       amount: stockAmount("7", "piece"),
       method: InventoryAllocationMethod.Fifo,
@@ -183,7 +183,7 @@ describe("native FIFO/FEFO movement policy", () => {
       operationId: "record-policy-shortfall",
       occurredAtEpochMs: time1,
       selector: inventoryStockSelector("item-a", {
-        locationIds: ["store"],
+        placementNodeIds: ["store"],
       }),
       amount: stockAmount("5", "piece"),
       method: InventoryAllocationMethod.Fifo,
@@ -209,7 +209,7 @@ describe("native FIFO/FEFO movement policy", () => {
     });
     const preview = await inventory.read.planAllocation({
       selector: inventoryStockSelector("item-a", {
-        locationIds: ["store"],
+        placementNodeIds: ["store"],
         lotIds: ["LATER-RECEIPT"],
       }),
       amount: stockAmount("4", "piece"),
@@ -230,7 +230,7 @@ describe("native FIFO/FEFO movement policy", () => {
     );
     const broadSelector = inventoryStockSelector("item-a", {
       itemRevisionIds: ["item-a-v2"],
-      locationIds: ["store"],
+      placementNodeIds: ["store"],
     });
     await inventory.stock.issueByPolicy({
       operationId: "record-five-piece-location-deficit",
@@ -255,7 +255,7 @@ describe("native FIFO/FEFO movement policy", () => {
     const firstLotPlan = await inventory.read.planAllocation({
       selector: inventoryStockSelector("item-a", {
         itemRevisionIds: ["item-a-v2"],
-        locationIds: ["store"],
+        placementNodeIds: ["store"],
         lotIds: ["LOT-FIRST"],
       }),
       amount: stockAmount("1", "piece"),
@@ -268,7 +268,7 @@ describe("native FIFO/FEFO movement policy", () => {
     const secondLotPlan = await inventory.read.planAllocation({
       selector: inventoryStockSelector("item-a", {
         itemRevisionIds: ["item-a-v2"],
-        locationIds: ["store"],
+        placementNodeIds: ["store"],
         lotIds: ["LOT-SECOND"],
       }),
       amount: stockAmount("6", "piece"),
@@ -304,7 +304,7 @@ describe("native FIFO/FEFO movement policy", () => {
         operationId: "do-not-record-package-split-as-deficit",
         occurredAtEpochMs: time1,
         selector: inventoryStockSelector("item-a", {
-          locationIds: ["store"],
+          placementNodeIds: ["store"],
         }),
         amount: stockAmount("5", "piece"),
         method: InventoryAllocationMethod.Fifo,
@@ -330,7 +330,7 @@ describe("native FIFO/FEFO movement policy", () => {
       amount: stockAmount("1", "piece"),
     });
     const preview = await inventory.read.planAllocation({
-      selector: inventoryStockSelector("item-a", { locationIds: ["store"] }),
+      selector: inventoryStockSelector("item-a", { placementNodeIds: ["store"] }),
       amount: stockAmount("1", "piece"),
       method: InventoryAllocationMethod.Fifo,
       atEpochMs: time2,
@@ -349,7 +349,7 @@ describe("native FIFO/FEFO movement policy", () => {
       lot: { expiresAtEpochMs: alreadyExpiredAtTime1 },
     });
     const selector = inventoryStockSelector("item-a", {
-      locationIds: ["store"],
+      placementNodeIds: ["store"],
     });
     const preview = await inventory.read.planAllocation({
       selector,
@@ -390,7 +390,7 @@ describe("native FIFO/FEFO movement policy", () => {
       amount: packageAmount(1, "item-a-box-24-v1"),
     });
     const selector = inventoryStockSelector("item-a", {
-      locationIds: ["store"],
+      placementNodeIds: ["store"],
     });
     const blocked = await inventory.read.planAllocation({
       selector,
@@ -459,7 +459,7 @@ describe("native FIFO/FEFO movement policy", () => {
     await inventory.stock.receive({
       operationId: "receive-two-measured-packages",
       occurredAtEpochMs: time0,
-      to: { itemId: "measured-package-item", locationId: "store" },
+      to: { itemId: "measured-package-item", placementNodeId: "store" },
       amount: packageAmount(2, "measured-package-box-v1", [
         { axisId: "weight", value: "3", unit: "kg" },
       ]),
@@ -467,7 +467,7 @@ describe("native FIFO/FEFO movement policy", () => {
 
     const blocked = await inventory.read.planAllocation({
       selector: inventoryStockSelector("measured-package-item", {
-        locationIds: ["store"],
+        placementNodeIds: ["store"],
       }),
       amount: packageAmount(1, "measured-package-box-v1"),
       method: InventoryAllocationMethod.Fifo,
@@ -482,14 +482,14 @@ describe("native FIFO/FEFO movement policy", () => {
     await looseInventory.stock.receive({
       operationId: "receive-loose-measured-position",
       occurredAtEpochMs: time0,
-      to: { itemId: "measured-package-item", locationId: "store" },
+      to: { itemId: "measured-package-item", placementNodeId: "store" },
       amount: measuredStockAmount("2", "piece", [
         { axisId: "weight", value: "3", unit: "kg" },
       ]),
     });
     const looseBlocked = await looseInventory.read.planAllocation({
       selector: inventoryStockSelector("measured-package-item", {
-        locationIds: ["store"],
+        placementNodeIds: ["store"],
       }),
       amount: stockAmount("1", "piece"),
       method: InventoryAllocationMethod.Fifo,
@@ -515,7 +515,7 @@ describe("native FIFO/FEFO movement policy", () => {
         {
           requestId: "first-package",
           selector: inventoryStockSelector("item-a", {
-            locationIds: ["store"],
+            placementNodeIds: ["store"],
           }),
           amount: stockAmount("24", "piece"),
           method: InventoryAllocationMethod.Fifo,
@@ -523,7 +523,7 @@ describe("native FIFO/FEFO movement policy", () => {
         {
           requestId: "second-package",
           selector: inventoryStockSelector("item-a", {
-            locationIds: ["store"],
+            placementNodeIds: ["store"],
           }),
           amount: stockAmount("24", "piece"),
           method: InventoryAllocationMethod.Fifo,
@@ -577,7 +577,7 @@ describe("native FIFO/FEFO movement policy", () => {
         {
           requestId: "first-five",
           selector: inventoryStockSelector("item-a", {
-            locationIds: ["store"],
+            placementNodeIds: ["store"],
           }),
           amount: stockAmount("5", "piece"),
           method: InventoryAllocationMethod.Fifo,
@@ -585,7 +585,7 @@ describe("native FIFO/FEFO movement policy", () => {
         {
           requestId: "then-one",
           selector: inventoryStockSelector("item-a", {
-            locationIds: ["store"],
+            placementNodeIds: ["store"],
           }),
           amount: stockAmount("1", "piece"),
           method: InventoryAllocationMethod.Fifo,
@@ -639,7 +639,7 @@ describe("native FIFO/FEFO movement policy", () => {
           {
             requestId: "first",
             selector: inventoryStockSelector("item-a", {
-              locationIds: ["store"],
+              placementNodeIds: ["store"],
             }),
             amount: stockAmount("2", "piece"),
             method: InventoryAllocationMethod.Fifo,
@@ -647,7 +647,7 @@ describe("native FIFO/FEFO movement policy", () => {
           {
             requestId: "second",
             selector: inventoryStockSelector("item-a", {
-              locationIds: ["store"],
+              placementNodeIds: ["store"],
             }),
             amount: stockAmount("4", "piece"),
             method: InventoryAllocationMethod.Fifo,
@@ -677,7 +677,7 @@ describe("native FIFO/FEFO movement policy", () => {
           requestId: "line-a",
           groupId: "prescription-line",
           selector: inventoryStockSelector("item-a", {
-            locationIds: ["store"],
+            placementNodeIds: ["store"],
           }),
           amount: stockAmount("2", "piece"),
           method: InventoryAllocationMethod.Fifo,
@@ -686,7 +686,7 @@ describe("native FIFO/FEFO movement policy", () => {
           requestId: "line-b",
           groupId: "prescription-line",
           selector: inventoryStockSelector("item-a", {
-            locationIds: ["store"],
+            placementNodeIds: ["store"],
           }),
           amount: stockAmount("2", "piece"),
           method: InventoryAllocationMethod.Fifo,
@@ -701,7 +701,7 @@ describe("native FIFO/FEFO movement policy", () => {
     expect(
       issued.allocations.map((allocation) => [
         allocation.requestId,
-        allocation.lines[0]?.position.locationId,
+        allocation.lines[0]?.position.placementNodeId,
         allocation.lines[0]?.position.lotId,
         allocation.lines[0]?.allocatedPrimary.amountMinor,
       ])
@@ -770,10 +770,10 @@ describe("native FIFO/FEFO movement policy", () => {
     const moved = await inventory.stock.transferByPolicy({
       operationId: "transfer-fefo-three",
       occurredAtEpochMs: time1,
-      selector: inventoryStockSelector("item-a", { locationIds: ["store"] }),
+      selector: inventoryStockSelector("item-a", { placementNodeIds: ["store"] }),
       amount: stockAmount("3", "piece"),
       method: InventoryAllocationMethod.Fefo,
-      toLocationId: "room",
+      toPlacementNodeId: "room",
     });
     expect(moved.event.stockEffects).toHaveLength(4);
     expect(await quantityByLot(inventory, "store")).toEqual({ T2: 1 });
@@ -785,9 +785,9 @@ describe("native FIFO/FEFO movement policy", () => {
         selector: inventoryStockSelector("item-a"),
         amount: stockAmount("1", "piece"),
         method: InventoryAllocationMethod.Fifo,
-        toLocationId: "elsewhere",
+        toPlacementNodeId: "elsewhere",
       })
-    ).rejects.toThrow("exactly one source location");
+    ).rejects.toThrow("exactly one source direct placement");
   });
 });
 
@@ -836,7 +836,7 @@ describe("native policy and reservation safety", () => {
     });
 
     const preview = await inventory.read.planAllocation({
-      selector: inventoryStockSelector("item-a", { locationIds: ["store"] }),
+      selector: inventoryStockSelector("item-a", { placementNodeIds: ["store"] }),
       amount: stockAmount("3", "piece"),
       method: InventoryAllocationMethod.Fifo,
       atEpochMs: time2,
@@ -875,7 +875,7 @@ describe("native policy and reservation safety", () => {
       reservationId: "claim-policy-two",
       operationId: "reserve-policy-two",
       itemRevisionId: "item-a-v2",
-      selector: { itemId: "item-a", locationIds: ["store"] },
+      selector: { itemId: "item-a", placementNodeIds: ["store"] },
       requested: parseQuantity("2", "piece"),
       createdAtEpochMs: time1,
     });
@@ -940,13 +940,12 @@ describe("native policy and reservation safety", () => {
     await inventory.stock.receive({
       operationId: "receive-use-by-reservation-stock",
       occurredAtEpochMs: time0,
-      to: loosePosition("store", {
+      to: loosePosition("USE-BY-CONTAINER", {
         lotId: "USE-BY-LOT",
-        containerId: "USE-BY-CONTAINER",
       }),
       amount: stockAmount("1", "piece"),
-      container: {
-        containerType: "opened-vial",
+      placementNode: {
+        category: "opened-vial",
         openedAtEpochMs: time0,
         useByEpochMs: time2,
       },
@@ -955,7 +954,7 @@ describe("native policy and reservation safety", () => {
       reservationId: "ordinary-use-by-claim",
       operationId: "reserve-before-use-by",
       itemRevisionId: "item-a-v2",
-      selector: { itemId: "item-a", containerIds: ["USE-BY-CONTAINER"] },
+      selector: { itemId: "item-a", placementNodeIds: ["USE-BY-CONTAINER"] },
       requested: parseQuantity("1", "piece"),
       createdAtEpochMs: time1,
     });
@@ -976,7 +975,7 @@ describe("native policy and reservation safety", () => {
         reservationId: "ordinary-use-by-claim",
         occurredAtEpochMs: time3,
       })
-    ).rejects.toThrow("past its lot/container use-by");
+    ).rejects.toThrow("past its lot/placement-ancestor use-by");
     await inventory.reservations.release({
       operationId: "release-expired-backing-claim",
       reservationId: "ordinary-use-by-claim",
@@ -987,7 +986,7 @@ describe("native policy and reservation safety", () => {
       reservationId: "explicit-expired-claim",
       operationId: "reserve-expired-explicitly",
       itemRevisionId: "item-a-v2",
-      selector: { itemId: "item-a", containerIds: ["USE-BY-CONTAINER"] },
+      selector: { itemId: "item-a", placementNodeIds: ["USE-BY-CONTAINER"] },
       requested: parseQuantity("1", "piece"),
       createdAtEpochMs: time3,
       allowExpiredStock: true,
@@ -1035,7 +1034,7 @@ describe("native policy and reservation safety", () => {
       packagingRevisions: [],
     });
     const inventory = createTestInventory(undefined, catalog);
-    const position = { itemId: "weight-policy-item", locationId: "store" };
+    const position = { itemId: "weight-policy-item", placementNodeId: "store" };
     await inventory.stock.receive({
       operationId: "weight-policy-receive",
       occurredAtEpochMs: time0,
@@ -1048,13 +1047,13 @@ describe("native policy and reservation safety", () => {
       reservationId: "weight-policy-claim",
       operationId: "weight-policy-reserve",
       itemRevisionId: "weight-policy-item-v1",
-      selector: { itemId: "weight-policy-item", locationIds: ["store"] },
+      selector: { itemId: "weight-policy-item", placementNodeIds: ["store"] },
       requested: parseQuantity("4", "kg"),
       createdAtEpochMs: time1,
     });
     const [stockPosition] = await inventory.read.positions({
       itemId: "weight-policy-item",
-      locationIds: ["store"],
+      placementNodeIds: ["store"],
     });
     if (stockPosition === undefined) throw new Error("Weight-policy fixture lost stock.");
     await inventory.reservations.allocate({
@@ -1064,7 +1063,7 @@ describe("native policy and reservation safety", () => {
       allocations: [{ position: stockPosition.key, quantity: parseQuantity("4", "kg") }],
     });
     const request = {
-      selector: inventoryStockSelector("weight-policy-item", { locationIds: ["store"] }),
+      selector: inventoryStockSelector("weight-policy-item", { placementNodeIds: ["store"] }),
       amount: measuredStockAmount("2", "piece", [
         { axisId: "weight", value: "10", unit: "kg" },
       ]),

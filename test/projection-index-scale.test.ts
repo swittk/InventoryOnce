@@ -57,7 +57,7 @@ function createWorldWithExactReservations(
   const operations: Record<string, InventoryReservationOperation> = {};
   const selector = inventoryStockSelector("item-a", {
     itemRevisionIds: ["item-a-v2"],
-    locationIds: ["scale-store"],
+    placementNodeIds: ["scale-store"],
   });
   for (let index = 0; index < positionCount; index += 1) {
     const reservationId = `scale-reservation-${index}`;
@@ -125,7 +125,7 @@ async function runHighLotItem(positionCount: number) {
   const rows = await inventory.read.positions(
     inventoryStockSelector("item-a", {
       itemRevisionIds: ["item-a-v2"],
-      locationIds: ["scale-store"],
+      placementNodeIds: ["scale-store"],
     })
   );
   const readMs = performance.now() - readStarted;
@@ -133,7 +133,7 @@ async function runHighLotItem(positionCount: number) {
   const plan = await inventory.read.planAllocation({
     selector: inventoryStockSelector("item-a", {
       itemRevisionIds: ["item-a-v2"],
-      locationIds: ["scale-store"],
+      placementNodeIds: ["scale-store"],
     }),
     amount: stockAmount("1", "piece"),
     method: InventoryAllocationMethod.Fifo,
@@ -141,6 +141,54 @@ async function runHighLotItem(positionCount: number) {
   });
   const planMs = performance.now() - planStarted;
   return { inventory, world, rows, plan, publishMs, readMs, planMs };
+}
+
+/** Move one placement ancestor over a large descendant stock population. */
+async function runPlacementAncestorMove(positionCount: number) {
+  const inventory = createTestInventory();
+  const lines = Array.from({ length: positionCount }, (_, index) => ({
+    to: loosePosition("scale-leaf", {
+      lotId: `PLACEMENT-${String(index).padStart(5, "0")}`,
+    }),
+    amount: stockAmount("1", "piece"),
+  }));
+  await inventory.stock.receiveMany({
+    operationId: `placement-scale-receive-${positionCount}`,
+    occurredAtEpochMs: time0,
+    lines,
+  });
+  await inventory.placement.move({
+    operationId: `placement-scale-leaf-${positionCount}`,
+    occurredAtEpochMs: time0,
+    nodeId: "scale-leaf",
+    into: "scale-carrier",
+  });
+  await inventory.placement.move({
+    operationId: `placement-scale-carrier-old-${positionCount}`,
+    occurredAtEpochMs: time0,
+    nodeId: "scale-carrier",
+    into: "scale-root-old",
+  });
+  const before = await inventory.read.world();
+  const beforePositionIds = Object.keys(before.projection.positions).sort();
+  const started = performance.now();
+  const moved = await inventory.placement.move({
+    operationId: `placement-scale-carrier-new-${positionCount}`,
+    occurredAtEpochMs: time0,
+    nodeId: "scale-carrier",
+    into: "scale-root-new",
+    expectedParent: "scale-root-old",
+  });
+  const elapsedMs = performance.now() - started;
+  const after = await inventory.read.world();
+  return {
+    elapsedMs,
+    moved,
+    beforePositionIds,
+    afterPositionIds: Object.keys(after.projection.positions).sort(),
+    directParent: after.projection.placement.relationByNodeId["scale-carrier"]
+      ?.parentNodeId,
+  };
 }
 
 /** Deliberately large quadratic comparison bound used by scale assertions. */
@@ -220,11 +268,11 @@ function replayTraceabilityHistory(
               action: InventoryTraceabilityRelationAction.Add,
               kind,
               from: {
-                kind: InventoryTraceabilityNodeKind.Container,
+                kind: InventoryTraceabilityNodeKind.PlacementNode,
                 id: `scale-${kind}-child-${index}`,
               },
               to: {
-                kind: InventoryTraceabilityNodeKind.Container,
+                kind: InventoryTraceabilityNodeKind.PlacementNode,
                 id: `scale-${kind}-parent-${index}`,
               },
             },
@@ -286,6 +334,29 @@ describe("projection index real-world scale", () => {
     );
   }, 20_000);
 
+  it("moves one ancestor without cloning or rewriting descendant stock", async () => {
+    const baseline = await runPlacementAncestorMove(1_000);
+    const scaled = await runPlacementAncestorMove(5_000);
+    expect(baseline.moved.event.stockEffects).toEqual([]);
+    expect(scaled.moved.event.stockEffects).toEqual([]);
+    expect(baseline.moved.event.placementChanges).toHaveLength(1);
+    expect(scaled.moved.event.placementChanges).toHaveLength(1);
+    expect(baseline.beforePositionIds).toEqual(baseline.afterPositionIds);
+    expect(scaled.beforePositionIds).toEqual(scaled.afterPositionIds);
+    expect(scaled.directParent).toBe("scale-root-new");
+    expect(scaled.elapsedMs).toBeLessThan(baseline.elapsedMs * 4 + 50);
+    expect(scaled.elapsedMs).toBeLessThan(250);
+    console.log(
+      JSON.stringify({
+        adapter: "memory-placement-ancestor-move",
+        baselineDescendantPositions: 1_000,
+        scaledDescendantPositions: 5_000,
+        baselineMoveMs: baseline.elapsedMs,
+        scaledMoveMs: scaled.elapsedMs,
+      })
+    );
+  }, 20_000);
+
   it("rebuilds retained event history near-linearly without cloning growing indexes", () => {
     const baseline = replayRetainedEventHistory(500);
     const scaled = replayRetainedEventHistory(2_000);
@@ -306,7 +377,7 @@ describe("projection index real-world scale", () => {
   }, 15_000);
 
   it.each([
-    InventoryTraceabilityRelationKind.Containment,
+    InventoryTraceabilityRelationKind.Association,
     InventoryTraceabilityRelationKind.Genealogy,
   ])(
     "rebuilds %s history near-linearly through the private graph builder",
@@ -336,7 +407,7 @@ describe("projection index real-world scale", () => {
       requestId: `scale-batch-request-${index}`,
       selector: inventoryStockSelector("item-a", {
         itemRevisionIds: ["item-a-v2"],
-        locationIds: ["scale-store"],
+        placementNodeIds: ["scale-store"],
         lotIds: [`SCALE-${String(index).padStart(5, "0")}`],
       }),
       amount: stockAmount("1", "piece"),
@@ -383,7 +454,7 @@ describe("projection index real-world scale", () => {
       world,
       selector: inventoryStockSelector("item-a", {
         itemRevisionIds: ["item-a-v2"],
-        locationIds: ["scale-store"],
+        placementNodeIds: ["scale-store"],
       }),
       amount: stockAmount("1", "piece"),
       method: InventoryAllocationMethod.Fifo,
@@ -415,7 +486,7 @@ describe("projection index real-world scale", () => {
         reservations: world.reservations,
         selector: inventoryStockSelector("item-a", {
           itemRevisionIds: ["item-a-v2"],
-          locationIds: ["scale-store"],
+          placementNodeIds: ["scale-store"],
         }),
         atEpochMs: 1787702400000,
       });
@@ -459,6 +530,10 @@ describe("projection index real-world scale", () => {
     );
     const corrections = readFileSync(
       resolve(testDirectory, "../src/corrections.ts"),
+      "utf8"
+    );
+    const placement = readFileSync(
+      resolve(testDirectory, "../src/placement.ts"),
       "utf8"
     );
     const traceability = readFileSync(
@@ -524,7 +599,9 @@ describe("projection index real-world scale", () => {
     expect(projection).toContain("inventoryEventsInRecordSequence(events)");
     expect(traceability).toContain("if (changes.length === 0) return state;");
     expect(projection).toContain("projectInventoryTraceabilityEvents(");
-    expect(traceabilityReplay).toContain("containmentParentByChild");
+    expect(placement).toContain("relationByNodeId");
+    expect(placement).toContain("childNodeIdsByParentNodeId");
+    expect(placement).toContain("assertPlacementChangeHasNoCycle(");
     expect(traceabilityReplay).toContain("genealogyOutputsByInput");
     expect(fungibility).toContain("createFungibilitySparseRecordOverlay(");
     expect(fungibility).not.toContain("...world.projection.positions");

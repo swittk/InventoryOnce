@@ -69,7 +69,8 @@ import {
   createInventoryCatalogPublicationEvent,
   createInventoryIssueEvent,
   createInventoryIssueManyEvent,
-  createInventoryContainerMetadataEvent,
+  createInventoryPlacementNodeMetadataEvent,
+  createInventoryPlacementEvent,
   createInventoryLotMetadataEvent,
   createInventoryOpeningEvent,
   createInventoryPackEvent,
@@ -88,7 +89,8 @@ import {
   type CreateInventoryCatalogPublicationInput,
   type CreateInventoryIssueInput,
   type CreateInventoryIssueManyInput,
-  type CreateInventoryContainerMetadataInput,
+  type CreateInventoryPlacementNodeMetadataInput,
+  type CreateInventoryPlacementInput,
   type CreateInventoryLotMetadataInput,
   type CreateInventoryOpeningInput,
   type CreateInventoryPackInput,
@@ -104,7 +106,7 @@ import {
   type CreateInventoryTransformationInput,
   type CreateInventoryUnpackInput,
   type InventoryCommandHeader,
-  type InventoryContainerMetadataInput,
+  type InventoryPlacementNodeMetadataInput,
   type InventoryLotMetadataInput,
   type InventoryTransformationLine,
 } from "./commands.js";
@@ -149,13 +151,15 @@ import {
   type InventoryMeasurementVector,
 } from "./measurements.js";
 import {
-  inventoryContainerIdentity,
+  assertInventoryIdentity,
+  inventoryPlacementNodeIdentity,
   inventoryLotIdentity,
   inventoryStockPositionIdentity,
   inventoryTraceabilityNodeIdentity,
   normalizeInventoryStockPositionKey,
+  InventoryStockWhereaboutsState,
   InventoryTraceabilityNodeKind,
-  type InventoryContainerDefinition,
+  type InventoryPlacementNodeDefinition,
   type InventoryLotDefinition,
   type InventoryMetadata,
   type InventoryMetadataValue,
@@ -167,9 +171,14 @@ import {
   type PartyId,
 } from "./model.js";
 import {
+  inventoryPlacementAncestry,
+  inventoryPlacementParentNodeId,
+  inventoryPlacementSubtreeNodeIds,
+} from "./placement.js";
+import {
   findInventoryPositions,
   InventoryDeficitPolicy,
-  type InventoryProjectedContainerDefinition,
+  type InventoryProjectedPlacementNodeDefinition,
   type InventoryProjectedLotDefinition,
   type InventoryProjectionState,
 } from "./projection.js";
@@ -229,6 +238,12 @@ import type {
   InventoryOperationReceipt,
 } from "./storage.js";
 import {
+  findInventoryWhereaboutsHistory,
+  inventoryWhereaboutsLifecycles,
+  type InventoryWhereaboutsHistoryQuery,
+  type InventoryWhereaboutsLifecycle,
+} from "./whereabouts.js";
+import {
   createInventoryTransferDispatchEvent,
   createInventoryTransferPrepareEvent,
   createInventoryTransferReceiveEvent,
@@ -251,7 +266,7 @@ const systemInventoryClock: InventoryClock = {
 /** Reserved count metadata retaining one complete absolute-count intent. */
 const inventoryAbsoluteCountMetadataKey = "inventoryOnceAbsoluteCount";
 /** Version of the reserved absolute-count replay-evidence payload. */
-const inventoryAbsoluteCountMetadataVersion = 2;
+const inventoryAbsoluteCountMetadataVersion = 4;
 
 /** Private runtime configuration retained for one InventoryOnce façade. */
 interface InventoryOnceInternals {
@@ -477,7 +492,7 @@ export type InventoryOncePrepareTransferInput = Omit<
   "catalog"
 >;
 
-/** Dispatch one prepared transfer into its configured transit location. */
+/** Dispatch one prepared transfer into its configured transit placement. */
 export interface InventoryOnceDispatchTransferInput
   extends InventoryCommandHeader {
   /** Transfer-lifecycle transferId value retained or supplied by this record. */ readonly transferId: string;
@@ -546,7 +561,7 @@ export type InventoryOnceIssueManyInput = Omit<
   CreateInventoryIssueManyInput,
   "catalog"
 >;
-/** Normal location-transfer command without repeated catalogue plumbing. */
+/** Normal direct-placement transfer command without repeated catalogue plumbing. */
 export type InventoryOnceTransferInput = Omit<
   CreateInventoryTransferInput,
   "catalog"
@@ -600,64 +615,82 @@ export interface InventoryOnceCorrectLotInput extends InventoryCommandHeader {
   readonly lot?: InventoryLotMetadataInput;
 }
 
-/** Normal handling-unit metadata assertion without repeated catalogue plumbing. */
-export type InventoryOnceDefineContainerInput = Omit<
-  CreateInventoryContainerMetadataInput,
+/** Normal placement-node metadata assertion without repeated catalogue plumbing. */
+export type InventoryOnceDefinePlacementNodeInput = Omit<
+  CreateInventoryPlacementNodeMetadataInput,
   "catalog"
 >;
 
-/** Inputs for append-only correction of current container metadata/use-by. */
-export interface InventoryOnceCorrectContainerInput
+/** Inputs for append-only correction of current placement-node metadata/policy. */
+export interface InventoryOnceCorrectPlacementNodeInput
   extends InventoryCommandHeader {
-  /** Stable exact handling-unit identity. */
-  readonly containerId: string;
+  /** Stable generic placement-node identity. */
+  readonly nodeId: string;
   /** Correct current metadata, or omission when the retained assertion was entirely wrong. */
-  readonly container?: InventoryContainerMetadataInput;
+  readonly placementNode?: InventoryPlacementNodeMetadataInput;
 }
 
-/** Inputs for moving one whole handling unit and every nested content row. */
-export interface InventoryOnceTransferContainerInput
-  extends InventoryCommandHeader {
-  /** Exact outer handling unit whose current fenced contents move together. */
-  readonly containerId: string;
-  /** One destination location applied to the outer unit and every nested content row. */
-  readonly toLocationId: string;
+/** Optional optimistic direct-parent expectation for one topology move. */
+export type InventoryExpectedPlacementParent = string | null;
+
+/** Inputs for moving one node beneath another without rewriting descendant stock. */
+export interface InventoryOnceMovePlacementInput extends InventoryCommandHeader {
+  /** Node whose direct placement changes. */
+  readonly nodeId: string;
+  /** Destination node accepting this node. */
+  readonly into: string;
+  /** Optional optimistic parent expectation; null means currently unplaced. */
+  readonly expectedParent?: InventoryExpectedPlacementParent;
+  /** Optional metadata/policy assertion for the moved node. */
+  readonly node?: InventoryPlacementNodeMetadataInput;
+  /** Optional metadata/policy assertion for the destination node. */
+  readonly destination?: InventoryPlacementNodeMetadataInput;
 }
 
-/** Inputs for issuing every current content row in one whole handling unit. */
-export interface InventoryOnceIssueContainerInput
-  extends InventoryCommandHeader {
-  /** Exact outer handling unit whose current fenced contents leave inventory together. */
-  readonly containerId: string;
+/** Inputs for removing one node from its current parent without changing descendants. */
+export interface InventoryOnceUnplaceInput extends InventoryCommandHeader {
+  /** Node becoming an unplaced/root node. */
+  readonly nodeId: string;
+  /** Optional optimistic parent expectation; null means currently unplaced. */
+  readonly expectedParent?: InventoryExpectedPlacementParent;
+  /** Optional metadata/policy assertion for the moved node. */
+  readonly node?: InventoryPlacementNodeMetadataInput;
 }
 
-/** Inputs for destroying every current content row in one whole handling unit. */
-export interface InventoryOnceScrapContainerInput
+/** Inputs for issuing every current stock row in one placement subtree. */
+export interface InventoryOnceIssuePlacementContentsInput
   extends InventoryCommandHeader {
-  /** Exact outer handling unit whose current fenced contents are destroyed together. */
-  readonly containerId: string;
+  /** Root node whose current direct and nested stock leaves inventory together. */
+  readonly nodeId: string;
 }
 
-/** Inputs for applying one stock status to every current row in a whole handling unit. */
-export interface InventoryOnceChangeContainerStatusInput
+/** Inputs for destroying every current stock row in one placement subtree. */
+export interface InventoryOnceScrapPlacementContentsInput
   extends InventoryCommandHeader {
-  /** Exact outer handling unit whose current fenced contents change status together. */
-  readonly containerId: string;
-  /** New explicit status applied to every direct and nested content row. */
+  /** Root node whose current direct and nested stock is destroyed together. */
+  readonly nodeId: string;
+}
+
+/** Inputs for applying one stock status to every current row in a placement subtree. */
+export interface InventoryOnceChangePlacementContentsStatusInput
+  extends InventoryCommandHeader {
+  /** Root node whose current direct and nested stock changes status together. */
+  readonly nodeId: string;
+  /** New explicit status applied to every direct and nested stock row. */
   readonly toStatusId: string;
 }
 
-/** Inputs for clearing stock status from every current row in a whole handling unit. */
-export interface InventoryOnceClearContainerStatusInput
+/** Inputs for clearing stock status from every current row in a placement subtree. */
+export interface InventoryOnceClearPlacementContentsStatusInput
   extends InventoryCommandHeader {
-  /** Exact outer handling unit whose current fenced contents lose their status together. */
-  readonly containerId: string;
+  /** Root node whose current direct and nested stock loses its status together. */
+  readonly nodeId: string;
 }
 
 /** Read-side native allocation preview with optional authority-time override. */
 export interface InventoryOncePlanAllocationInput
   extends InventoryAllocationPolicyRequest {
-  /** Physical authority time for lot/container expiry; defaults to the façade clock. */
+  /** Physical authority time for lot/placement-ancestry expiry; defaults to the façade clock. */
   readonly atEpochMs?: number;
   /** Claim-book authority time; defaults to the physical authority time. */
   readonly reservationAtEpochMs?: number;
@@ -696,18 +729,18 @@ export interface InventoryOncePolicyBatchInput extends InventoryCommandHeader {
 /** Native atomic FIFO/FEFO issue across multiple requests/items. */
 export type InventoryOnceIssueManyByPolicyInput = InventoryOncePolicyBatchInput;
 
-/** Native FIFO/FEFO transfer request from one source location to one destination. */
+/** Native FIFO/FEFO transfer request from one source direct placement to one destination. */
 export interface InventoryOnceTransferByPolicyInput
   extends InventoryOncePolicyMovementInput {
-  /** Destination location; the selector must resolve one source location. */
-  readonly toLocationId: string;
+  /** Destination direct placement; the selector must resolve one source direct placement. */
+  readonly toPlacementNodeId: string;
 }
 
 /** Native atomic FIFO/FEFO transfer across multiple requests/items. */
 export interface InventoryOnceTransferManyByPolicyInput
   extends InventoryOncePolicyBatchInput {
   /** One destination shared by every exact selected source line. */
-  readonly toLocationId: string;
+  readonly toPlacementNodeId: string;
 }
 
 /** One exact source allocation retained for an identified policy-batch request. */
@@ -780,7 +813,7 @@ export type InventoryOnceOpenCompositionInput = Omit<
 export interface InventoryOnceCollectionSummaryInput {
   /** Exact immutable collection revision to summarize. */
   readonly collectionRevisionId: InventoryCollectionRevisionId;
-  /** Optional common stock dimensions such as location/status/owner. */
+  /** Optional common stock dimensions such as placement/status/owner. */
   readonly scope?: InventoryCollectionStockScope;
 }
 
@@ -788,7 +821,7 @@ export interface InventoryOnceCollectionSummaryInput {
 export interface InventoryOnceFungibilitySummaryInput {
   /** Exact immutable pool revision to summarize. */
   readonly fungibilityRevisionId: InventoryFungibilityRevisionId;
-  /** Optional common stock dimensions such as location/status/owner. */
+  /** Optional common stock dimensions such as placement/status/owner. */
   readonly scope?: InventoryFungibilityScope;
 }
 
@@ -800,13 +833,13 @@ export interface InventoryOncePlanFungibilityInput {
   readonly requested: Quantity;
   /** FIFO or FEFO ordering across all member positions. */
   readonly method: InventoryAllocationPolicyRequest["method"];
-  /** Optional common stock dimensions such as one source location. */
+  /** Optional common stock dimensions such as one source direct placement. */
   readonly scope?: InventoryFungibilityScope;
   /** Physical authority time for use-by; defaults to the façade clock. */
   readonly atEpochMs?: number;
   /** Claim-book authority time; defaults to the physical authority time. */
   readonly reservationAtEpochMs?: number;
-  /** Preview depletion or one exact location transfer. */
+  /** Preview depletion or one exact direct-placement transfer. */
   readonly reservationEffect?: InventoryFungibilityReservationEffect;
   /** Explicit override permitting expired member stock. */
   readonly allowExpiredLots?: boolean;
@@ -823,7 +856,7 @@ export interface InventoryOnceFungibilityMovementInput
   readonly requested: Quantity;
   /** FIFO or FEFO ordering across all member positions. */
   readonly method: InventoryAllocationPolicyRequest["method"];
-  /** Optional common stock dimensions such as one source location. */
+  /** Optional common stock dimensions such as one source direct placement. */
   readonly scope?: InventoryFungibilityScope;
   /** Explicit override permitting expired member stock. */
   readonly allowExpiredLots?: boolean;
@@ -838,8 +871,8 @@ export type InventoryOnceIssueFungibleInput =
 /** Revision-frozen mutual-fungibility transfer request. */
 export interface InventoryOnceTransferFungibleInput
   extends InventoryOnceFungibilityMovementInput {
-  /** Destination location; scope must name exactly one source location. */
-  readonly toLocationId: string;
+  /** Destination direct placement; scope must name exactly one source direct placement. */
+  readonly toPlacementNodeId: string;
 }
 
 /** Revision-frozen physical scrap request over mutually fungible members. */
@@ -862,6 +895,19 @@ export interface InventoryOnceDimensionChangeInput
   /** Optional exact item revision; defaults to active/package revision. */
   readonly itemRevisionId?: string;
 }
+
+/** Inputs for intentionally removing stock from a known placement without issuing it. */
+export type InventoryOnceDetachInput = InventoryOnceDimensionChangeInput;
+
+/** Inputs for placing currently detached/missing stock at one known node. */
+export interface InventoryOncePlaceInput
+  extends InventoryOnceDimensionChangeInput {
+  /** New exact direct placement node. */
+  readonly into: string;
+}
+
+/** Inputs for classifying stock as genuinely missing while it remains accounted-for inventory. */
+export type InventoryOnceMarkMissingInput = InventoryOnceDimensionChangeInput;
 
 /** Inputs for changing only stock status/disposition. */
 export interface InventoryOnceChangeStatusInput
@@ -904,19 +950,6 @@ export interface InventoryOnceChangeDispositionAuthorityInput
 /** Inputs for removing the current disposition authority while preserving every other dimension. */
 export type InventoryOnceClearDispositionAuthorityInput =
   InventoryOnceDimensionChangeInput;
-
-/** Inputs for moving stock into one exact handling unit without changing location/ownership/etc. */
-export interface InventoryOncePlaceInContainerInput
-  extends InventoryOnceDimensionChangeInput {
-  /** Exact destination handling unit. */
-  readonly toContainerId: string;
-  /** Optional metadata/use-by assertion for the destination container. */
-  readonly container?: InventoryContainerMetadataInput;
-}
-
-/** Inputs for removing stock from its current handling unit without changing other dimensions. */
-export interface InventoryOnceRemoveFromContainerInput
-  extends InventoryOnceDimensionChangeInput {}
 
 /** Inputs for setting one item-defined qualified stock dimension. */
 export interface InventoryOnceChangeQualifiedDimensionInput
@@ -981,9 +1014,21 @@ export interface InventoryOnceReplacementPlans {
   issue(
     input: Omit<InventoryOnceIssueInput, "operationId">
   ): InventoryOnceReplacementPlan;
-  /** Plan a replacement location transfer assertion. */
+  /** Plan a replacement direct-placement transfer assertion. */
   transfer(
     input: Omit<InventoryOnceTransferInput, "operationId">
+  ): InventoryOnceReplacementPlan;
+  /** Plan a replacement intentional detach without issuing stock. */
+  detach(
+    input: Omit<InventoryOnceDetachInput, "operationId">
+  ): InventoryOnceReplacementPlan;
+  /** Plan a replacement placement/recovery of detached or missing stock. */
+  place(
+    input: Omit<InventoryOncePlaceInput, "operationId">
+  ): InventoryOnceReplacementPlan;
+  /** Plan a replacement missing-stock classification. */
+  markMissing(
+    input: Omit<InventoryOnceMarkMissingInput, "operationId">
   ): InventoryOnceReplacementPlan;
   /** Plan a replacement status-only reclassification. */
   changeStatus(
@@ -1017,14 +1062,6 @@ export interface InventoryOnceReplacementPlans {
   clearDispositionAuthority(
     input: Omit<InventoryOnceClearDispositionAuthorityInput, "operationId">
   ): InventoryOnceReplacementPlan;
-  /** Plan a replacement move into one exact container. */
-  placeInContainer(
-    input: Omit<InventoryOncePlaceInContainerInput, "operationId">
-  ): InventoryOnceReplacementPlan;
-  /** Plan a replacement move out of one exact container. */
-  removeFromContainer(
-    input: Omit<InventoryOnceRemoveFromContainerInput, "operationId">
-  ): InventoryOnceReplacementPlan;
   /** Plan a replacement item-defined qualified-dimension change. */
   changeQualifiedDimension(
     input: Omit<InventoryOnceChangeQualifiedDimensionInput, "operationId">
@@ -1053,9 +1090,9 @@ export interface InventoryOnceReplacementPlans {
   scrap(
     input: Omit<InventoryOnceScrapInput, "operationId">
   ): InventoryOnceReplacementPlan;
-  /** Plan a replacement standalone handling-unit metadata assertion. */
-  containerMetadata(
-    input: Omit<InventoryOnceDefineContainerInput, "operationId">
+  /** Plan a replacement standalone placement-node metadata assertion. */
+  placementNodeMetadata(
+    input: Omit<InventoryOnceDefinePlacementNodeInput, "operationId">
   ): InventoryOnceReplacementPlan;
   /** Plan a replacement standalone lot-metadata assertion. */
   lotMetadata(
@@ -1065,13 +1102,9 @@ export interface InventoryOnceReplacementPlans {
   countAdjustment(
     input: InventoryOnceCountAdjustmentReplacementInput
   ): InventoryOnceReplacementPlan;
-  /** Plan a replacement containment add. */
-  aggregate(
-    input: Omit<InventoryOnceRelationInput, "operationId">
-  ): InventoryOnceReplacementPlan;
-  /** Plan a replacement containment removal. */
-  disaggregate(
-    input: Omit<InventoryOnceRelationInput, "operationId">
+  /** Plan one exact replacement direct-parent transition. */
+  placement(
+    input: Omit<CreateInventoryPlacementInput, "catalog" | "operationId">
   ): InventoryOnceReplacementPlan;
   /** Plan a replacement association add. */
   associate(
@@ -1427,7 +1460,15 @@ export interface InventoryOnceStockApi {
   issueManyByPolicy(
     input: InventoryOnceIssueManyByPolicyInput
   ): Promise<InventoryOncePolicyBatchResult>;
-  /** Move unchanged stock to another location while preserving every other dimension. */
+  /** Intentionally detach stock from a known placement while keeping it conserved inventory. */
+  detach(input: InventoryOnceDetachInput): Promise<InventoryOnceEventResult>;
+  /** Place or recover detached/missing stock at one known direct placement node. */
+  place(input: InventoryOncePlaceInput): Promise<InventoryOnceEventResult>;
+  /** Mark placed or detached stock genuinely missing without destroying quantity. */
+  markMissing(
+    input: InventoryOnceMarkMissingInput
+  ): Promise<InventoryOnceEventResult>;
+  /** Move unchanged stock to another direct placement while preserving every other dimension. */
   transfer(
     input: InventoryOnceTransferInput
   ): Promise<InventoryOnceEventResult>;
@@ -1435,7 +1476,7 @@ export interface InventoryOnceStockApi {
   transferMany(
     input: InventoryOnceTransferManyInput
   ): Promise<InventoryOnceEventResult>;
-  /** Select FIFO/FEFO positions from one source location and transfer them atomically. */
+  /** Select FIFO/FEFO positions from one source placement and transfer them atomically. */
   transferByPolicy(
     input: InventoryOnceTransferByPolicyInput
   ): Promise<InventoryOnceEventResult>;
@@ -1475,14 +1516,6 @@ export interface InventoryOnceStockApi {
   clearDispositionAuthority(
     input: InventoryOnceClearDispositionAuthorityInput
   ): Promise<InventoryOnceEventResult>;
-  /** Move stock into one exact handling unit. */
-  placeInContainer(
-    input: InventoryOncePlaceInContainerInput
-  ): Promise<InventoryOnceEventResult>;
-  /** Remove stock from its current handling unit. */
-  removeFromContainer(
-    input: InventoryOnceRemoveFromContainerInput
-  ): Promise<InventoryOnceEventResult>;
   /** Set one explicitly item-defined extra dimension. */
   changeQualifiedDimension(
     input: InventoryOnceChangeQualifiedDimensionInput
@@ -1491,7 +1524,7 @@ export interface InventoryOnceStockApi {
   clearQualifiedDimension(
     input: InventoryOnceClearQualifiedDimensionInput
   ): Promise<InventoryOnceEventResult>;
-  /** Atomically split, merge, relot, recontainer, or otherwise reclassify conserved stock. */
+  /** Atomically split, merge, relot, replace direct placement, or otherwise reclassify conserved stock. */
   reclassifyMany(
     input: InventoryOnceReclassifyManyInput
   ): Promise<InventoryOnceEventResult>;
@@ -1517,35 +1550,35 @@ export interface InventoryOnceStockApi {
   correct(input: InventoryOnceCorrectInput): Promise<InventoryOnceEventResult>;
 }
 
-/** Whole handling-unit physical commands plus exact container metadata commands. */
-export interface InventoryOnceContainersApi {
-  /** Move every direct/nested content row to one location as one frozen transfer. */
-  transfer(
-    input: InventoryOnceTransferContainerInput
+/** Generic placement topology plus explicit subtree-content command surface. */
+export interface InventoryOncePlacementApi {
+  /** Move one node beneath another; descendants resolve through the new ancestry automatically. */
+  move(input: InventoryOnceMovePlacementInput): Promise<InventoryOnceEventResult>;
+  /** Remove one node from its direct parent without rewriting descendants. */
+  unplace(input: InventoryOnceUnplaceInput): Promise<InventoryOnceEventResult>;
+  /** Issue every current direct/nested stock row as one immutable physical fact. */
+  issueContents(
+    input: InventoryOnceIssuePlacementContentsInput
   ): Promise<InventoryOnceEventResult>;
-  /** Issue every direct/nested content row as one immutable physical fact. */
-  issue(
-    input: InventoryOnceIssueContainerInput
+  /** Destroy every current direct/nested stock row under one explicit reason. */
+  scrapContents(
+    input: InventoryOnceScrapPlacementContentsInput
   ): Promise<InventoryOnceEventResult>;
-  /** Destroy every direct/nested content row under one explicit reason. */
-  scrap(
-    input: InventoryOnceScrapContainerInput
+  /** Apply one status to every direct/nested stock row while preserving other fields. */
+  changeContentsStatus(
+    input: InventoryOnceChangePlacementContentsStatusInput
   ): Promise<InventoryOnceEventResult>;
-  /** Apply one status to every direct/nested content row while preserving other fields. */
-  changeStatus(
-    input: InventoryOnceChangeContainerStatusInput
+  /** Clear status from every direct/nested stock row while preserving other fields. */
+  clearContentsStatus(
+    input: InventoryOnceClearPlacementContentsStatusInput
   ): Promise<InventoryOnceEventResult>;
-  /** Clear status from every direct/nested content row while preserving other fields. */
-  clearStatus(
-    input: InventoryOnceClearContainerStatusInput
-  ): Promise<InventoryOnceEventResult>;
-  /** Assert exact container type/identifier/open/use-by metadata without changing stock. */
+  /** Assert exact generic node category/policy/identifier/use-by metadata. */
   define(
-    input: InventoryOnceDefineContainerInput
+    input: InventoryOnceDefinePlacementNodeInput
   ): Promise<InventoryOnceEventResult>;
-  /** Correct/omit/restore current container metadata append-only. */
+  /** Correct/omit/restore current placement-node metadata append-only. */
   correct(
-    input: InventoryOnceCorrectContainerInput
+    input: InventoryOnceCorrectPlacementNodeInput
   ): Promise<InventoryOnceEventResult>;
 }
 
@@ -1641,16 +1674,8 @@ export interface InventoryOnceCountsApi {
   ): Promise<InventoryOnceCountResult>;
 }
 
-/** Explicit traceability graph command surface. */
+/** Explicit association graph command surface; genealogy comes from transformations. */
 export interface InventoryOnceTraceabilityApi {
-  /** Add one reversible containment/aggregation relationship. */
-  aggregate(
-    input: InventoryOnceRelationInput
-  ): Promise<InventoryOnceEventResult>;
-  /** Remove one reversible containment/aggregation relationship. */
-  disaggregate(
-    input: InventoryOnceRelationInput
-  ): Promise<InventoryOnceEventResult>;
   /** Add one durable association/installation relationship. */
   associate(
     input: InventoryOnceRelationInput
@@ -1661,6 +1686,22 @@ export interface InventoryOnceTraceabilityApi {
   ): Promise<InventoryOnceEventResult>;
 }
 
+/** Cross-item query for current stock whose physical placement is unresolved. */
+export interface InventoryOnceWhereaboutsQuery {
+  /** Optional item identities; omission searches every current item. */
+  readonly itemIds?: readonly string[];
+  /** Optional detached/missing states; omission searches both unresolved states. */
+  readonly states?: readonly InventoryStockWhereaboutsState[];
+  /** Optional exact lifecycle/cohort identities. */
+  readonly whereaboutsIds?: readonly string[];
+  /** Optional last-known direct placement nodes. */
+  readonly lastPlacementNodeIds?: readonly string[];
+  /** Return only stock detached at or before this time. */
+  readonly detachedBeforeEpochMs?: number;
+  /** Return only missing stock marked missing at or before this time. */
+  readonly missingBeforeEpochMs?: number;
+}
+
 /** Immutable public read surface bound to one fully published InventoryOnce world. */
 export interface InventoryOnceReadSnapshotApi {
   /** Exact published world revision backing every method on this snapshot. */
@@ -1669,6 +1710,14 @@ export interface InventoryOnceReadSnapshotApi {
   positions(
     selector: InventoryStockSelector
   ): ReturnType<typeof findInventoryPositions>;
+  /** Read current detached/missing lifecycles with originating event provenance. */
+  whereabouts(
+    input?: InventoryOnceWhereaboutsQuery
+  ): readonly InventoryWhereaboutsLifecycle[];
+  /** Read current and resolved whereabouts lifecycles with append-only event history. */
+  whereaboutsHistory(
+    input?: InventoryWhereaboutsHistoryQuery
+  ): readonly InventoryWhereaboutsLifecycle[];
   /** Read one revision-safe physical summary from this exact snapshot. */
   summary(selector: InventoryStockSelector): InventoryStockSummary;
   /** Read claim-aware physical and expiry availability from this exact snapshot. */
@@ -1684,12 +1733,18 @@ export interface InventoryOnceReadSnapshotApi {
   packagingRevisions(
     input: Omit<ListInventoryPackagingRevisionsInput, "catalog">
   ): ReturnType<typeof listInventoryPackagingRevisions>;
-  /** Read one current handling-unit metadata master by exact identity. */
-  container(
-    containerId: string
-  ): InventoryProjectedContainerDefinition | undefined;
-  /** List current handling-unit metadata masters in deterministic identity order. */
-  containers(): readonly InventoryProjectedContainerDefinition[];
+  /** Read one current placement-node metadata master by exact identity. */
+  placementNode(
+    nodeId: string
+  ): InventoryProjectedPlacementNodeDefinition | undefined;
+  /** List current placement-node metadata masters in deterministic identity order. */
+  placementNodes(): readonly InventoryProjectedPlacementNodeDefinition[];
+  /** Read one node's direct parent, or undefined when it is unplaced/root. */
+  placementParent(nodeId: string): string | undefined;
+  /** Read direct children in deterministic identity order. */
+  placementChildren(nodeId: string): readonly string[];
+  /** Read a node followed by every current direct ancestor. */
+  placementAncestry(nodeId: string): readonly string[];
   /** Read one current item-scoped lot/batch master by exact identity. */
   lot(
     itemId: string,
@@ -1729,7 +1784,15 @@ export interface InventoryOnceReadApi {
   positions(
     selector: InventoryStockSelector
   ): Promise<ReturnType<typeof findInventoryPositions>>;
-  /** Read one revision-safe physical summary with package/lot/location/status/party breakdowns. */
+  /** Read current detached/missing lifecycles with originating event provenance. */
+  whereabouts(
+    input?: InventoryOnceWhereaboutsQuery
+  ): Promise<readonly InventoryWhereaboutsLifecycle[]>;
+  /** Read current and resolved whereabouts lifecycles with append-only event history. */
+  whereaboutsHistory(
+    input?: InventoryWhereaboutsHistoryQuery
+  ): Promise<readonly InventoryWhereaboutsLifecycle[]>;
+  /** Read one revision-safe physical summary with package/lot/direct-placement/status/party breakdowns. */
   summary(selector: InventoryStockSelector): Promise<InventoryStockSummary>;
   /** Read truthful physical/use-by/exact-allocation/broad-claim availability facts. */
   availability(
@@ -1744,12 +1807,18 @@ export interface InventoryOnceReadApi {
   packagingRevisions(
     input: Omit<ListInventoryPackagingRevisionsInput, "catalog">
   ): Promise<ReturnType<typeof listInventoryPackagingRevisions>>;
-  /** Read one current handling-unit metadata master by exact identity. */
-  container(
-    containerId: string
-  ): Promise<InventoryProjectedContainerDefinition | undefined>;
-  /** List current handling-unit metadata masters in deterministic identity order. */
-  containers(): Promise<readonly InventoryProjectedContainerDefinition[]>;
+  /** Read one current placement-node metadata master by exact identity. */
+  placementNode(
+    nodeId: string
+  ): Promise<InventoryProjectedPlacementNodeDefinition | undefined>;
+  /** List current placement-node metadata masters in deterministic identity order. */
+  placementNodes(): Promise<readonly InventoryProjectedPlacementNodeDefinition[]>;
+  /** Read one node's direct parent, or undefined when it is unplaced/root. */
+  placementParent(nodeId: string): Promise<string | undefined>;
+  /** Read direct children in deterministic identity order. */
+  placementChildren(nodeId: string): Promise<readonly string[]>;
+  /** Read a node followed by every current direct ancestor. */
+  placementAncestry(nodeId: string): Promise<readonly string[]>;
   /** Read one current item-scoped lot/batch master by exact identity. */
   lot(
     itemId: string,
@@ -1783,8 +1852,8 @@ export class InventoryOnce {
   readonly fungibility: InventoryOnceFungibilityApi;
   /** Physical resource commands. */
   readonly stock: InventoryOnceStockApi;
-  /** Handling-unit metadata commands. */
-  readonly containers: InventoryOnceContainersApi;
+  /** Generic physical placement topology and subtree-content commands. */
+  readonly placement: InventoryOncePlacementApi;
   /** Lot/batch metadata commands. */
   readonly lots: InventoryOnceLotsApi;
   /** First-class time-separated physical transfer lifecycle. */
@@ -1793,7 +1862,7 @@ export class InventoryOnce {
   readonly reservations: InventoryOnceReservationsApi;
   /** Physical-count commands. */
   readonly counts: InventoryOnceCountsApi;
-  /** Containment/association traceability commands. */
+  /** Association traceability commands. */
   readonly traceability: InventoryOnceTraceabilityApi;
   /** Read-only current/history queries. */
   readonly read: InventoryOnceReadApi;
@@ -1812,7 +1881,7 @@ export class InventoryOnce {
     this.collections = new InventoryOnceCollectionsImplementation(this);
     this.fungibility = new InventoryOnceFungibilityImplementation(this);
     this.stock = new InventoryOnceStockImplementation(this);
-    this.containers = new InventoryOnceContainersImplementation(this);
+    this.placement = new InventoryOncePlacementImplementation(this);
     this.lots = new InventoryOnceLotsImplementation(this);
     this.transfers = new InventoryOnceTransfersImplementation(this);
     this.reservations = new InventoryOnceReservationsImplementation(this);
@@ -1876,33 +1945,34 @@ function createInventoryOnceEventResult(
   return { receipt: result.receipt, event, replayed: result.replayed };
 }
 
-/** Reject transforming a traceability node before its current containment is explicitly removed. */
+/** Reject transforming one placement node while it remains in a physical parent/child topology. */
 function assertTransformationInputsAreDetached(
   world: InventoryWorldState,
   event: InventoryEventDraft
 ): void {
-  const consumedNodeIdentities = new Set<string>();
+  const consumedPlacementNodeIds = new Set<string>();
   for (const change of event.traceabilityChanges) {
     if (
       change.action === InventoryTraceabilityRelationAction.Add &&
-      change.kind === InventoryTraceabilityRelationKind.Genealogy
+      change.kind === InventoryTraceabilityRelationKind.Genealogy &&
+      change.from.kind === InventoryTraceabilityNodeKind.PlacementNode
     ) {
-      consumedNodeIdentities.add(inventoryTraceabilityNodeIdentity(change.from));
+      consumedPlacementNodeIds.add(change.from.id);
     }
   }
-  if (consumedNodeIdentities.size === 0) return;
-  for (const relation of Object.values(
-    world.projection.traceability.relations
-  )) {
-    if (relation.kind !== InventoryTraceabilityRelationKind.Containment) continue;
-    const childIdentity = inventoryTraceabilityNodeIdentity(relation.from);
-    const parentIdentity = inventoryTraceabilityNodeIdentity(relation.to);
-    if (
-      consumedNodeIdentities.has(childIdentity) ||
-      consumedNodeIdentities.has(parentIdentity)
-    ) {
+  for (const nodeId of consumedPlacementNodeIds) {
+    const parentNodeId = inventoryPlacementParentNodeId(
+      world.projection.placement,
+      nodeId
+    );
+    const childNodeIds =
+      inventorySparseRecordValue(
+        world.projection.placement.childNodeIdsByParentNodeId,
+        nodeId
+      ) ?? [];
+    if (parentNodeId !== undefined || childNodeIds.length > 0) {
       throw new Error(
-        "Transformation input must be disaggregated from containment before it can be consumed."
+        "Transformation placement-node input must be unplaced and have no child nodes before it can be consumed."
       );
     }
   }
@@ -2484,7 +2554,7 @@ class InventoryOnceFungibilityImplementation
     );
   }
 
-  /** Transfer exact selected member items while retaining every non-location dimension. */
+  /** Transfer exact selected member items while retaining every non-placement dimension. */
   async transfer(
     input: InventoryOnceTransferFungibleInput
   ): Promise<InventoryOnceEventResult> {
@@ -2492,7 +2562,7 @@ class InventoryOnceFungibilityImplementation
       this.owner,
       InventoryFungibilityMovementKind.Transfer,
       input,
-      input.toLocationId
+      input.toPlacementNodeId
     );
   }
 
@@ -2596,7 +2666,34 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
     );
   }
 
-  /** Move unchanged stock to another location while preserving every other dimension. */
+  /** Intentionally detach stock from a known placement while preserving every other dimension. */
+  async detach(
+    input: InventoryOnceDetachInput
+  ): Promise<InventoryOnceEventResult> {
+    return this.commitReclassification(
+      input,
+      inventoryDetachedPosition(input, input.operationId)
+    );
+  }
+
+  /** Place or recover detached/missing stock at one known direct placement node. */
+  async place(
+    input: InventoryOncePlaceInput
+  ): Promise<InventoryOnceEventResult> {
+    return this.commitReclassification(input, inventoryPlacedPosition(input));
+  }
+
+  /** Mark placed or detached stock as genuinely missing while keeping quantity conserved. */
+  async markMissing(
+    input: InventoryOnceMarkMissingInput
+  ): Promise<InventoryOnceEventResult> {
+    return this.commitReclassification(
+      input,
+      inventoryMissingPosition(input, input.operationId)
+    );
+  }
+
+  /** Move unchanged stock to another direct placement while preserving every other dimension. */
   async transfer(
     input: InventoryOnceTransferInput
   ): Promise<InventoryOnceEventResult> {
@@ -2610,7 +2707,7 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
     );
   }
 
-  /** Move several exact stock positions atomically while preserving every non-location dimension. */
+  /** Move several exact stock positions atomically while preserving every non-placement dimension. */
   async transferMany(
     input: InventoryOnceTransferManyInput
   ): Promise<InventoryOnceEventResult> {
@@ -2624,7 +2721,7 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
     );
   }
 
-  /** Select FIFO/FEFO sources from one location and transfer them atomically. */
+  /** Select FIFO/FEFO sources from one direct placement and transfer them atomically. */
   async transferByPolicy(
     input: InventoryOnceTransferByPolicyInput
   ): Promise<InventoryOnceEventResult> {
@@ -2632,7 +2729,7 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
       this.owner,
       InventoryPolicyMovementKind.Transfer,
       input,
-      input.toLocationId
+      input.toPlacementNodeId
     );
   }
 
@@ -2644,7 +2741,7 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
       this.owner,
       InventoryPolicyMovementKind.Transfer,
       input,
-      input.toLocationId
+      input.toPlacementNodeId
     );
   }
 
@@ -2746,33 +2843,6 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
     return this.commitReclassification(input, withoutAuthority);
   }
 
-  /** Move stock into one exact handling unit. */
-  async placeInContainer(
-    input: InventoryOncePlaceInContainerInput
-  ): Promise<InventoryOnceEventResult> {
-    const from = requireStockPositionInput(input.from, "place in container");
-    return this.commitReclassification(input, {
-      ...from,
-      containerId: requireChangedIdentity(
-        from.containerId,
-        input.toContainerId,
-        "container"
-      ),
-    });
-  }
-
-  /** Remove stock from its current handling unit. */
-  async removeFromContainer(
-    input: InventoryOnceRemoveFromContainerInput
-  ): Promise<InventoryOnceEventResult> {
-    const from = requireStockPositionInput(input.from, "remove from container");
-    const { containerId, ...withoutContainer } = from;
-    if (containerId === undefined) {
-      throw new Error("Stock is not currently inside a container.");
-    }
-    return this.commitReclassification(input, withoutContainer);
-  }
-
   /** Set one item-defined extra dimension while preserving every other dimension. */
   async changeQualifiedDimension(
     input: InventoryOnceChangeQualifiedDimensionInput
@@ -2793,7 +2863,7 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
     );
   }
 
-  /** Atomically split, merge, relot, recontainer, or otherwise reclassify conserved stock. */
+  /** Atomically split, merge, relot, replace direct placement, or otherwise reclassify conserved stock. */
   async reclassifyMany(
     input: InventoryOnceReclassifyManyInput
   ): Promise<InventoryOnceEventResult> {
@@ -2971,11 +3041,114 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
   }
 }
 
+/** Derive one kernel-namespaced stable whereabouts lifecycle identity from a command identity. */
+function inventoryWhereaboutsIdForOperation(operationId: string): string {
+  assertInventoryIdentity(operationId, "whereabouts operationId");
+  return `inventory:whereabouts:${encodeURIComponent(operationId)}`;
+}
+
+/** Build one conserved detached destination while preserving every unrelated stock dimension. */
+function inventoryDetachedPosition(
+  input: Omit<InventoryOnceDetachInput, "operationId"> | InventoryOnceDetachInput,
+  fallbackWhereaboutsId: string
+): InventoryStockPositionInput {
+  const from = requireStockPositionInput(input.from, "detach");
+  const placementNodeId = from.placementNodeId;
+  if (placementNodeId === undefined) {
+    throw new Error("Detach source must currently have a placement.");
+  }
+  const {
+    placementNodeId: _placementNodeId,
+    whereaboutsId: _whereaboutsId,
+    whereaboutsState: _whereaboutsState,
+    lastPlacementNodeId: _lastPlacementNodeId,
+    detachedAtEpochMs: _detachedAtEpochMs,
+    missingAtEpochMs: _missingAtEpochMs,
+    ...rest
+  } = from;
+  return {
+    ...rest,
+    whereaboutsId: inventoryWhereaboutsIdForOperation(fallbackWhereaboutsId),
+    whereaboutsState: InventoryStockWhereaboutsState.Detached,
+    lastPlacementNodeId: placementNodeId,
+    detachedAtEpochMs: input.occurredAtEpochMs,
+  };
+}
+
+/** Build one known-placement destination from detached/missing stock and clear unresolved lifecycle fields. */
+function inventoryPlacedPosition(
+  input: Omit<InventoryOncePlaceInput, "operationId"> | InventoryOncePlaceInput
+): InventoryStockPositionInput {
+  const from = requireStockPositionInput(input.from, "place");
+  if (from.placementNodeId !== undefined) {
+    throw new Error("Place source must currently be detached or missing.");
+  }
+  if (from.whereaboutsId === undefined || from.whereaboutsState === undefined) {
+    throw new Error("Place source has no unresolved whereabouts lifecycle.");
+  }
+  const into = typeof input.into === "string" ? input.into.trim() : "";
+  if (into.length === 0) throw new Error("Place destination must not be empty.");
+  const {
+    whereaboutsId: _whereaboutsId,
+    whereaboutsState: _whereaboutsState,
+    lastPlacementNodeId: _lastPlacementNodeId,
+    detachedAtEpochMs: _detachedAtEpochMs,
+    missingAtEpochMs: _missingAtEpochMs,
+    ...rest
+  } = from;
+  return { ...rest, placementNodeId: into };
+}
+
+/** Build one conserved missing destination from either placed or intentionally detached stock. */
+function inventoryMissingPosition(
+  input:
+    | Omit<InventoryOnceMarkMissingInput, "operationId">
+    | InventoryOnceMarkMissingInput,
+  fallbackWhereaboutsId: string
+): InventoryStockPositionInput {
+  const from = requireStockPositionInput(input.from, "mark missing");
+  if (from.whereaboutsState === InventoryStockWhereaboutsState.Missing) {
+    throw new Error("Stock is already marked missing.");
+  }
+  if (from.placementNodeId !== undefined) {
+    const {
+      placementNodeId,
+      whereaboutsId: _whereaboutsId,
+      whereaboutsState: _whereaboutsState,
+      lastPlacementNodeId: _lastPlacementNodeId,
+      detachedAtEpochMs: _detachedAtEpochMs,
+      missingAtEpochMs: _missingAtEpochMs,
+      ...rest
+    } = from;
+    return {
+      ...rest,
+      whereaboutsId: inventoryWhereaboutsIdForOperation(fallbackWhereaboutsId),
+      whereaboutsState: InventoryStockWhereaboutsState.Missing,
+      lastPlacementNodeId: placementNodeId,
+      detachedAtEpochMs: input.occurredAtEpochMs,
+      missingAtEpochMs: input.occurredAtEpochMs,
+    };
+  }
+  if (
+    from.whereaboutsId === undefined ||
+    from.whereaboutsState !== InventoryStockWhereaboutsState.Detached ||
+    from.lastPlacementNodeId === undefined ||
+    from.detachedAtEpochMs === undefined
+  ) {
+    throw new Error("Mark-missing source must be placed or intentionally detached stock.");
+  }
+  return {
+    ...from,
+    whereaboutsState: InventoryStockWhereaboutsState.Missing,
+    missingAtEpochMs: input.occurredAtEpochMs,
+  };
+}
+
 /** Physical movement selected through one exact mutual-fungibility pool revision. */
 enum InventoryFungibilityMovementKind {
   /** Selected member stock leaves inventory for use/dispense. */
   Issue = "issue",
-  /** Selected member stock moves unchanged between locations. */
+  /** Selected member stock moves unchanged between direct placements. */
   Transfer = "transfer",
   /** Selected member stock is explicitly destroyed/discarded. */
   Scrap = "scrap",
@@ -2986,14 +3159,14 @@ async function commitInventoryFungibilityMovement(
   owner: InventoryOnce,
   kind: InventoryFungibilityMovementKind,
   input: InventoryOnceFungibilityMovementInput,
-  toLocationId?: string
+  toPlacementNodeId?: string
 ): Promise<InventoryOnceEventResult> {
   const internals = requireInventoryOnceInternals(owner);
   const scope = normalizeInventoryFungibilityScope(input.scope ?? {});
-  assertFungibilityMovementRequest(kind, input, scope, toLocationId);
+  assertFungibilityMovementRequest(kind, input, scope, toPlacementNodeId);
   const reservationEffect = fungibilityReservationEffectForMovement(
     kind,
-    toLocationId
+    toPlacementNodeId
   );
   const intentFingerprint = inventoryIntentFingerprint([
     `inventory-fungibility-${kind}`,
@@ -3012,7 +3185,7 @@ async function commitInventoryFungibilityMovement(
     input.method,
     input.allowExpiredLots ?? false,
     input.allowAllocatedStock ?? false,
-    toLocationId ?? null,
+    toPlacementNodeId ?? null,
   ]);
   const result = await commitInventoryOperation({
     catalog: internals.catalog,
@@ -3052,7 +3225,7 @@ async function commitInventoryFungibilityMovement(
           kind,
           input,
           allocation,
-          toLocationId
+          toPlacementNodeId
         ),
         ...(kind === InventoryFungibilityMovementKind.Scrap
           ? {
@@ -3069,17 +3242,17 @@ async function commitInventoryFungibilityMovement(
 /** Return the exact claim-feasibility effect for one validated movement kind. */
 function fungibilityReservationEffectForMovement(
   kind: InventoryFungibilityMovementKind,
-  toLocationId: string | undefined
+  toPlacementNodeId: string | undefined
 ): InventoryFungibilityReservationEffect {
   if (kind !== InventoryFungibilityMovementKind.Transfer) {
     return { kind: InventoryFungibilityReservationEffectKind.Deplete };
   }
-  if (toLocationId === undefined) {
-    throw new Error("Fungibility transfer lost destination location.");
+  if (toPlacementNodeId === undefined) {
+    throw new Error("Fungibility transfer lost destination direct placement.");
   }
   return {
     kind: InventoryFungibilityReservationEffectKind.Transfer,
-    toLocationId,
+    toPlacementNodeId,
   };
 }
 
@@ -3088,7 +3261,7 @@ function assertFungibilityMovementRequest(
   kind: InventoryFungibilityMovementKind,
   input: InventoryOnceFungibilityMovementInput,
   scope: InventoryFungibilityScope,
-  toLocationId: string | undefined
+  toPlacementNodeId: string | undefined
 ): void {
   if (
     kind !== InventoryFungibilityMovementKind.Scrap &&
@@ -3099,17 +3272,17 @@ function assertFungibilityMovementRequest(
     );
   }
   if (kind === InventoryFungibilityMovementKind.Transfer) {
-    if (toLocationId === undefined || toLocationId.trim().length === 0) {
-      throw new Error("Fungibility transfer needs toLocationId.");
+    if (toPlacementNodeId === undefined || toPlacementNodeId.trim().length === 0) {
+      throw new Error("Fungibility transfer needs toPlacementNodeId.");
     }
-    if (scope.locationIds?.length !== 1) {
+    if (scope.placementNodeIds?.length !== 1) {
       throw new Error(
-        "Fungibility transfer scope must name exactly one source location."
+        "Fungibility transfer scope must name exactly one source direct placement."
       );
     }
-    if (scope.locationIds[0] === toLocationId) {
+    if (scope.placementNodeIds[0] === toPlacementNodeId) {
       throw new Error(
-        "Fungibility transfer source/destination locations must differ."
+        "Fungibility transfer source/destination direct placements must differ."
       );
     }
   }
@@ -3160,7 +3333,7 @@ function createFungibilityMovementEvent(
   kind: InventoryFungibilityMovementKind,
   input: InventoryOnceFungibilityMovementInput,
   plan: InventoryFungibilityAllocationPlan,
-  toLocationId: string | undefined
+  toPlacementNodeId: string | undefined
 ): InventoryEventDraft {
   const header = inventoryCommandHeaderFromFungibilityInput(input, plan);
   if (kind === InventoryFungibilityMovementKind.Issue) {
@@ -3174,17 +3347,17 @@ function createFungibilityMovementEvent(
     });
   }
   if (kind === InventoryFungibilityMovementKind.Transfer) {
-    if (toLocationId === undefined) {
-      throw new Error("Fungibility transfer lost destination location.");
+    if (toPlacementNodeId === undefined) {
+      throw new Error("Fungibility transfer lost destination direct placement.");
     }
     return createInventoryTransferManyEvent({
       catalog,
       ...header,
       lines: plan.lines.map(
-        /** Add only the destination location to each exact selected member line. */
+        /** Add only the destination direct placement to each exact selected member line. */
         (line) => ({
           ...fungibilityIssueLine(line, plan.definition),
-          toLocationId,
+          toPlacementNodeId,
         })
       ),
     });
@@ -3266,7 +3439,7 @@ function fungibilityIssueLine(
 enum InventoryPolicyMovementKind {
   /** Stock leaves inventory for dispense/use. */
   Issue = "issue",
-  /** Stock moves unchanged between locations. */
+  /** Stock moves unchanged between direct placements. */
   Transfer = "transfer",
   /** Physical stock is explicitly destroyed/discarded. */
   Scrap = "scrap",
@@ -3335,7 +3508,7 @@ async function commitInventoryPolicyBatch(
   owner: InventoryOnce,
   kind: InventoryPolicyMovementKind,
   input: InventoryOncePolicyBatchInput,
-  toLocationId?: string
+  toPlacementNodeId?: string
 ): Promise<InventoryOncePolicyBatchResult> {
   if (
     kind !== InventoryPolicyMovementKind.Issue &&
@@ -3347,7 +3520,7 @@ async function commitInventoryPolicyBatch(
   assertInventoryPolicyBatchInput(
     kind,
     input,
-    toLocationId,
+    toPlacementNodeId,
     internals.deficitPolicy
   );
   const intentFingerprint = inventoryIntentFingerprint([
@@ -3361,7 +3534,7 @@ async function commitInventoryPolicyBatch(
     input.reason ?? null,
     inventoryMetadataFingerprint(input.metadata),
     input.requests.map(policyBatchRequestFingerprint),
-    toLocationId ?? null,
+    toPlacementNodeId ?? null,
   ]);
   const result = await commitInventoryOperation({
     catalog: internals.catalog,
@@ -3455,7 +3628,7 @@ async function commitInventoryPolicyBatch(
           allocations,
           selectedLines,
           deficitLines,
-          toLocationId
+          toPlacementNodeId
         ),
         ...(recordedDeficit
           ? {
@@ -3482,7 +3655,7 @@ async function commitInventoryPolicyBatch(
 function assertInventoryPolicyBatchInput(
   kind: InventoryPolicyMovementKind,
   input: InventoryOncePolicyBatchInput,
-  toLocationId: string | undefined,
+  toPlacementNodeId: string | undefined,
   deficitPolicy: InventoryDeficitPolicy
 ): void {
   if (input.requests.length === 0) {
@@ -3531,7 +3704,7 @@ function assertInventoryPolicyBatchInput(
           ? {}
           : { deficitPosition: request.deficitPosition }),
       },
-      toLocationId,
+      toPlacementNodeId,
       deficitPolicy
     );
   }
@@ -3605,9 +3778,13 @@ function policyDeficitPositionFingerprint(
   );
   return inventoryIntentFingerprint([
     position.itemId,
-    position.locationId,
+    position.placementNodeId ?? null,
+    position.whereaboutsId ?? null,
+    position.whereaboutsState ?? null,
+    position.lastPlacementNodeId ?? null,
+    position.detachedAtEpochMs ?? null,
+    position.missingAtEpochMs ?? null,
     position.lotId ?? null,
-    position.containerId ?? null,
     position.serialId ?? null,
     position.packagingRevisionId ?? null,
     position.statusId ?? null,
@@ -3725,7 +3902,7 @@ function createPolicyBatchMovementEvent(
   allocations: readonly InventoryOncePolicyBatchAllocation[],
   selectedLines: readonly InventoryPolicyAllocationLine[],
   deficitLines: readonly CreateInventoryIssueManyInput["lines"][number][],
-  toLocationId: string | undefined
+  toPlacementNodeId: string | undefined
 ): InventoryEventDraft {
   const exactLines = combinePolicyBatchExactLines(
     catalog,
@@ -3747,15 +3924,15 @@ function createPolicyBatchMovementEvent(
     });
   }
   if (kind === InventoryPolicyMovementKind.Transfer) {
-    if (toLocationId === undefined) {
-      throw new Error("Policy transfer batch lost destination location.");
+    if (toPlacementNodeId === undefined) {
+      throw new Error("Policy transfer batch lost destination direct placement.");
     }
     return createInventoryTransferManyEvent({
       catalog,
       ...header,
       lines: exactLines.map(
         /** Apply the shared destination after every source allocation is frozen. */
-        (line) => ({ ...line, toLocationId })
+        (line) => ({ ...line, toPlacementNodeId })
       ),
     });
   }
@@ -4507,13 +4684,13 @@ async function commitInventoryPolicyMovement(
   owner: InventoryOnce,
   kind: InventoryPolicyMovementKind,
   input: InventoryOncePolicyMovementInput,
-  toLocationId?: string
+  toPlacementNodeId?: string
 ): Promise<InventoryOnceEventResult> {
   const internals = requireInventoryOnceInternals(owner);
   assertPolicyMovementRequest(
     kind,
     input,
-    toLocationId,
+    toPlacementNodeId,
     internals.deficitPolicy
   );
   const intentFingerprint = inventoryIntentFingerprint([
@@ -4533,7 +4710,7 @@ async function commitInventoryPolicyMovement(
     input.allowExpiredLots ?? false,
     input.allowAllocatedStock ?? false,
     policyDeficitPositionFingerprint(input.deficitPosition),
-    toLocationId ?? null,
+    toPlacementNodeId ?? null,
   ]);
   const result = await commitInventoryOperation({
     catalog: internals.catalog,
@@ -4581,7 +4758,7 @@ async function commitInventoryPolicyMovement(
           kind,
           input,
           allocation.lines,
-          toLocationId,
+          toPlacementNodeId,
           deficit
         ),
         ...(kind === InventoryPolicyMovementKind.Scrap || deficit !== undefined
@@ -4608,7 +4785,7 @@ async function commitInventoryPolicyMovement(
 function assertPolicyMovementRequest(
   kind: InventoryPolicyMovementKind,
   input: InventoryOncePolicyMovementInput,
-  toLocationId: string | undefined,
+  toPlacementNodeId: string | undefined,
   deficitPolicy: InventoryDeficitPolicy
 ): void {
   if (input.reservationId !== undefined) {
@@ -4633,12 +4810,9 @@ function assertPolicyMovementRequest(
       "Inventory deficitPosition is accepted only by policy Issue under Record mode."
     );
   }
-  if (
-    input.deficitPosition?.serialId !== undefined ||
-    input.deficitPosition?.containerId !== undefined
-  ) {
+  if (input.deficitPosition?.serialId !== undefined) {
     throw new Error(
-      "Recorded inventory deficit cannot claim a physical serial or container."
+      "Recorded inventory deficit cannot claim a physical serial."
     );
   }
   if (
@@ -4650,18 +4824,18 @@ function assertPolicyMovementRequest(
     );
   }
   if (kind === InventoryPolicyMovementKind.Transfer) {
-    if (toLocationId === undefined || toLocationId.trim().length === 0) {
-      throw new Error("Policy transfer needs toLocationId.");
+    if (toPlacementNodeId === undefined || toPlacementNodeId.trim().length === 0) {
+      throw new Error("Policy transfer needs toPlacementNodeId.");
     }
     const selector = normalizeInventoryStockSelector(input.selector);
-    if (selector.locationIds?.length !== 1) {
+    if (selector.placementNodeIds?.length !== 1) {
       throw new Error(
-        "Policy transfer selector must name exactly one source location."
+        "Policy transfer selector must name exactly one source direct placement."
       );
     }
-    if (selector.locationIds[0] === toLocationId) {
+    if (selector.placementNodeIds[0] === toPlacementNodeId) {
       throw new Error(
-        "Policy transfer source/destination locations must differ."
+        "Policy transfer source/destination direct placements must differ."
       );
     }
   }
@@ -4785,7 +4959,7 @@ function policyRecordedDeficit({
   };
 }
 
-/** Resolve one unallocated deficit position without pretending it is a selected lot/serial/container. */
+/** Resolve one unallocated deficit position without pretending it is a selected lot/serial identity. */
 function resolvePolicyDeficitPosition(
   explicit: InventoryStockPositionInput | undefined,
   selector: InventoryStockSelector,
@@ -4799,32 +4973,33 @@ function resolvePolicyDeficitPosition(
       );
     }
     if (
-      normalizedSelector.locationIds !== undefined &&
-      !normalizedSelector.locationIds.includes(explicit.locationId)
+      normalizedSelector.placementNodeIds !== undefined &&
+      (explicit.placementNodeId === undefined ||
+        !normalizedSelector.placementNodeIds.includes(explicit.placementNodeId))
     ) {
       throw new Error(
-        "Inventory policy deficit position is outside the selected location scope."
+        "Inventory policy deficit position is outside the selected placement scope."
       );
     }
-    if (explicit.serialId !== undefined || explicit.containerId !== undefined) {
+    if (explicit.serialId !== undefined) {
       throw new Error(
-        "Recorded inventory deficit cannot claim a physical serial or container."
+        "Recorded inventory deficit cannot claim a physical serial."
       );
     }
     return explicit;
   }
-  if (normalizedSelector.locationIds?.length !== 1) {
+  if (normalizedSelector.placementNodeIds?.length !== 1) {
     throw new Error(
-      "Record policy shortfall needs exactly one selected location or an explicit deficitPosition."
+      "Record policy shortfall needs exactly one selected direct placement or an explicit deficitPosition."
     );
   }
-  const locationId = normalizedSelector.locationIds[0];
-  if (locationId === undefined) {
-    throw new Error("Inventory policy deficit lost its selected location.");
+  const placementNodeId = normalizedSelector.placementNodeIds[0];
+  if (placementNodeId === undefined) {
+    throw new Error("Inventory policy deficit lost its selected direct placement.");
   }
   return {
     itemId: item.itemId,
-    locationId,
+    placementNodeId,
     lotId: INVENTORY_RECORDED_DEFICIT_LOT_ID,
   };
 }
@@ -4862,7 +5037,7 @@ function createPolicyMovementEvent(
   kind: InventoryPolicyMovementKind,
   input: InventoryOncePolicyMovementInput,
   lines: readonly InventoryPolicyAllocationLine[],
-  toLocationId: string | undefined,
+  toPlacementNodeId: string | undefined,
   deficit: InventoryPolicyRecordedDeficit | undefined
 ): InventoryEventDraft {
   const header = inventoryCommandHeaderFromPolicyInput(input);
@@ -4891,8 +5066,8 @@ function createPolicyMovementEvent(
     throw new Error("Only policy Issue may record deficit.");
   }
   if (kind === InventoryPolicyMovementKind.Transfer) {
-    if (toLocationId === undefined) {
-      throw new Error("Policy transfer lost destination location.");
+    if (toPlacementNodeId === undefined) {
+      throw new Error("Policy transfer lost destination direct placement.");
     }
     return createInventoryTransferManyEvent({
       catalog,
@@ -4901,7 +5076,7 @@ function createPolicyMovementEvent(
         /** Add the one explicit destination while preserving each selected source identity. */
         (line) => ({
           ...policyIssueLine(line),
-          toLocationId,
+          toPlacementNodeId,
         })
       ),
     });
@@ -5133,7 +5308,7 @@ class InventoryOnceReplacementPlansImplementation
     );
   }
 
-  /** Plan a replacement location transfer assertion. */
+  /** Plan a replacement direct-placement transfer assertion. */
   transfer(
     input: Omit<InventoryOnceTransferInput, "operationId">
   ): InventoryOnceReplacementPlan {
@@ -5143,6 +5318,33 @@ class InventoryOnceReplacementPlansImplementation
         catalog: this.catalog,
         operationId: this.operationId,
       })
+    );
+  }
+
+  /** Plan a replacement intentional detach without issuing stock. */
+  detach(
+    input: Omit<InventoryOnceDetachInput, "operationId">
+  ): InventoryOnceReplacementPlan {
+    return this.reclassification(
+      input,
+      inventoryDetachedPosition(input, this.operationId)
+    );
+  }
+
+  /** Plan a replacement placement/recovery of detached or missing stock. */
+  place(
+    input: Omit<InventoryOncePlaceInput, "operationId">
+  ): InventoryOnceReplacementPlan {
+    return this.reclassification(input, inventoryPlacedPosition(input));
+  }
+
+  /** Plan a replacement missing-stock classification. */
+  markMissing(
+    input: Omit<InventoryOnceMarkMissingInput, "operationId">
+  ): InventoryOnceReplacementPlan {
+    return this.reclassification(
+      input,
+      inventoryMissingPosition(input, this.operationId)
     );
   }
 
@@ -5238,31 +5440,6 @@ class InventoryOnceReplacementPlansImplementation
     return this.reclassification(input, withoutAuthority);
   }
 
-  /** Plan a replacement move into one exact container. */
-  placeInContainer(
-    input: Omit<InventoryOncePlaceInContainerInput, "operationId">
-  ): InventoryOnceReplacementPlan {
-    return this.reclassification(input, {
-      ...input.from,
-      containerId: requireChangedIdentity(
-        input.from.containerId,
-        input.toContainerId,
-        "container"
-      ),
-    });
-  }
-
-  /** Plan a replacement move out of one exact container. */
-  removeFromContainer(
-    input: Omit<InventoryOnceRemoveFromContainerInput, "operationId">
-  ): InventoryOnceReplacementPlan {
-    const { containerId, ...withoutContainer } = input.from;
-    if (containerId === undefined) {
-      throw new Error("Stock is not currently inside a container.");
-    }
-    return this.reclassification(input, withoutContainer);
-  }
-
   /** Plan a replacement item-defined qualified-dimension reclassification. */
   changeQualifiedDimension(
     input: Omit<InventoryOnceChangeQualifiedDimensionInput, "operationId">
@@ -5348,12 +5525,12 @@ class InventoryOnceReplacementPlansImplementation
     );
   }
 
-  /** Plan a replacement standalone handling-unit metadata assertion. */
-  containerMetadata(
-    input: Omit<InventoryOnceDefineContainerInput, "operationId">
+  /** Plan a replacement standalone placement-node metadata assertion. */
+  placementNodeMetadata(
+    input: Omit<InventoryOnceDefinePlacementNodeInput, "operationId">
   ): InventoryOnceReplacementPlan {
     return new InventoryOnceReplacementPlanImplementation(
-      createInventoryContainerMetadataEvent({
+      createInventoryPlacementNodeMetadataEvent({
         ...input,
         catalog: this.catalog,
         operationId: this.operationId,
@@ -5424,25 +5601,16 @@ class InventoryOnceReplacementPlansImplementation
     );
   }
 
-  /** Plan a replacement containment add. */
-  aggregate(
-    input: Omit<InventoryOnceRelationInput, "operationId">
+  /** Plan one exact replacement direct-parent transition. */
+  placement(
+    input: Omit<CreateInventoryPlacementInput, "catalog" | "operationId">
   ): InventoryOnceReplacementPlan {
-    return this.relation(
-      input,
-      InventoryTraceabilityRelationAction.Add,
-      InventoryTraceabilityRelationKind.Containment
-    );
-  }
-
-  /** Plan a replacement containment removal. */
-  disaggregate(
-    input: Omit<InventoryOnceRelationInput, "operationId">
-  ): InventoryOnceReplacementPlan {
-    return this.relation(
-      input,
-      InventoryTraceabilityRelationAction.Remove,
-      InventoryTraceabilityRelationKind.Containment
+    return new InventoryOnceReplacementPlanImplementation(
+      createInventoryPlacementEvent({
+        ...input,
+        catalog: this.catalog,
+        operationId: this.operationId,
+      })
     );
   }
 
@@ -5500,63 +5668,53 @@ class InventoryOnceReplacementPlansImplementation
   }
 }
 
-/** Physical action applied to every direct and nested row in one handling unit. */
-enum InventoryWholeContainerOperationKind {
-  /** Move the whole handling unit to one location. */
-  Transfer = "transfer",
-  /** Issue the whole handling unit out of inventory. */
+/** Physical action that genuinely touches every positive stock row in one placement subtree. */
+enum InventoryPlacementContentsOperationKind {
+  /** Issue every physical stock row out of inventory. */
   Issue = "issue",
-  /** Destroy every physical row in the handling unit. */
+  /** Destroy every physical stock row. */
   Scrap = "scrap",
-  /** Set one status on every physical row in the handling unit. */
+  /** Set one status on every physical stock row. */
   ChangeStatus = "change-status",
-  /** Remove status from every physical row in the handling unit. */
+  /** Remove status from every physical stock row. */
   ClearStatus = "clear-status",
 }
 
-/** Kind-correlated command accepted by the shared whole-handling-unit planner. */
-type InventoryWholeContainerOperation =
+/** Kind-correlated command accepted by the shared placement-subtree planner. */
+type InventoryPlacementContentsOperation =
   | {
-      /** Whole-unit location move. */
-      readonly kind: InventoryWholeContainerOperationKind.Transfer;
-      /** Location-move command. */
-      readonly input: InventoryOnceTransferContainerInput;
-    }
-  | {
-      /** Whole-unit issue. */
-      readonly kind: InventoryWholeContainerOperationKind.Issue;
+      /** Subtree issue. */
+      readonly kind: InventoryPlacementContentsOperationKind.Issue;
       /** Issue command. */
-      readonly input: InventoryOnceIssueContainerInput;
+      readonly input: InventoryOnceIssuePlacementContentsInput;
     }
   | {
-      /** Whole-unit physical destruction. */
-      readonly kind: InventoryWholeContainerOperationKind.Scrap;
+      /** Subtree physical destruction. */
+      readonly kind: InventoryPlacementContentsOperationKind.Scrap;
       /** Scrap command. */
-      readonly input: InventoryOnceScrapContainerInput;
+      readonly input: InventoryOnceScrapPlacementContentsInput;
     }
   | {
-      /** Whole-unit status set. */
-      readonly kind: InventoryWholeContainerOperationKind.ChangeStatus;
+      /** Subtree status set. */
+      readonly kind: InventoryPlacementContentsOperationKind.ChangeStatus;
       /** Status-set command. */
-      readonly input: InventoryOnceChangeContainerStatusInput;
+      readonly input: InventoryOnceChangePlacementContentsStatusInput;
     }
   | {
-      /** Whole-unit status removal. */
-      readonly kind: InventoryWholeContainerOperationKind.ClearStatus;
+      /** Subtree status removal. */
+      readonly kind: InventoryPlacementContentsOperationKind.ClearStatus;
       /** Status-clear command. */
-      readonly input: InventoryOnceClearContainerStatusInput;
+      readonly input: InventoryOnceClearPlacementContentsStatusInput;
     };
 
-/** Exact direct/nested contents loaded from one fenced published world. */
-interface InventoryWholeContainerContents {
-  /** Every positive stock row held directly by those containers. */
+/** Exact positive stock rows loaded from one fenced placement subtree. */
+interface InventoryPlacementSubtreeContents {
+  /** Every positive physical stock row anchored directly at one node in the subtree. */
   readonly positions: readonly InventoryStockPosition[];
-  /** One physical location shared by every current content row. */
-  readonly locationId: string;
 }
 
-/** Exact full-position source line created inside a fenced whole-container plan. */
-interface InventoryWholeContainerSourceLine {
+/** Exact full-position source line created inside a fenced subtree-content plan. */
+interface InventoryPlacementContentsSourceLine {
   /** Current position without its separately supplied frozen item revision. */
   readonly from: InventoryStockPositionInput;
   /** Frozen item revision already present on the projected position. */
@@ -5565,85 +5723,89 @@ interface InventoryWholeContainerSourceLine {
   readonly amount: InventoryAmount;
 }
 
-/** Private implementation of whole handling-unit actions and exact metadata commands. */
-class InventoryOnceContainersImplementation
-  implements InventoryOnceContainersApi
+/** Private implementation of generic placement topology, metadata, and subtree-content commands. */
+class InventoryOncePlacementImplementation
+  implements InventoryOncePlacementApi
 {
   /** Owning façade. */
   private readonly owner: InventoryOnce;
 
-  /** Bind container metadata commands to one façade. */
+  /** Bind placement commands to one façade. */
   constructor(owner: InventoryOnce) {
     this.owner = owner;
   }
 
-  /** Move direct and nested contents from their one current location to one new location. */
-  async transfer(
-    input: InventoryOnceTransferContainerInput
+  /** Move one node beneath another without rewriting any descendant stock position. */
+  async move(
+    input: InventoryOnceMovePlacementInput
   ): Promise<InventoryOnceEventResult> {
-    return commitInventoryWholeContainerOperation(this.owner, {
-      kind: InventoryWholeContainerOperationKind.Transfer,
+    return commitInventoryPlacementTopologyChange(this.owner, input, input.into);
+  }
+
+  /** Remove one node from its current parent without rewriting descendants. */
+  async unplace(
+    input: InventoryOnceUnplaceInput
+  ): Promise<InventoryOnceEventResult> {
+    return commitInventoryPlacementTopologyChange(this.owner, input, undefined);
+  }
+
+  /** Issue every positive stock row anchored in one current placement subtree. */
+  async issueContents(
+    input: InventoryOnceIssuePlacementContentsInput
+  ): Promise<InventoryOnceEventResult> {
+    return commitInventoryPlacementContentsOperation(this.owner, {
+      kind: InventoryPlacementContentsOperationKind.Issue,
       input,
     });
   }
 
-  /** Issue direct and nested contents without making the caller rebuild exact stock lines. */
-  async issue(
-    input: InventoryOnceIssueContainerInput
+  /** Destroy every positive stock row anchored in one current placement subtree. */
+  async scrapContents(
+    input: InventoryOnceScrapPlacementContentsInput
   ): Promise<InventoryOnceEventResult> {
-    return commitInventoryWholeContainerOperation(this.owner, {
-      kind: InventoryWholeContainerOperationKind.Issue,
+    return commitInventoryPlacementContentsOperation(this.owner, {
+      kind: InventoryPlacementContentsOperationKind.Scrap,
       input,
     });
   }
 
-  /** Destroy direct and nested contents while retaining one explicit scrap fact/reason. */
-  async scrap(
-    input: InventoryOnceScrapContainerInput
+  /** Apply one status to every positive stock row that does not already have it. */
+  async changeContentsStatus(
+    input: InventoryOnceChangePlacementContentsStatusInput
   ): Promise<InventoryOnceEventResult> {
-    return commitInventoryWholeContainerOperation(this.owner, {
-      kind: InventoryWholeContainerOperationKind.Scrap,
+    return commitInventoryPlacementContentsOperation(this.owner, {
+      kind: InventoryPlacementContentsOperationKind.ChangeStatus,
       input,
     });
   }
 
-  /** Apply one status to every direct and nested content row that does not already have it. */
-  async changeStatus(
-    input: InventoryOnceChangeContainerStatusInput
+  /** Clear status from every positive stock row that currently has one. */
+  async clearContentsStatus(
+    input: InventoryOnceClearPlacementContentsStatusInput
   ): Promise<InventoryOnceEventResult> {
-    return commitInventoryWholeContainerOperation(this.owner, {
-      kind: InventoryWholeContainerOperationKind.ChangeStatus,
+    return commitInventoryPlacementContentsOperation(this.owner, {
+      kind: InventoryPlacementContentsOperationKind.ClearStatus,
       input,
     });
   }
 
-  /** Clear status from every direct and nested content row that currently has one. */
-  async clearStatus(
-    input: InventoryOnceClearContainerStatusInput
-  ): Promise<InventoryOnceEventResult> {
-    return commitInventoryWholeContainerOperation(this.owner, {
-      kind: InventoryWholeContainerOperationKind.ClearStatus,
-      input,
-    });
-  }
-
-  /** Assert one current container metadata/use-by value without changing physical stock. */
+  /** Assert current generic node metadata/policy without changing stock or topology. */
   async define(
-    input: InventoryOnceDefineContainerInput
+    input: InventoryOnceDefinePlacementNodeInput
   ): Promise<InventoryOnceEventResult> {
     const { catalog } = requireInventoryOnceInternals(this.owner);
     return commitInventoryEventDraft(
       this.owner,
-      createInventoryContainerMetadataEvent({
+      createInventoryPlacementNodeMetadataEvent({
         ...input,
         catalog,
       })
     );
   }
 
-  /** Correct/omit/restore current container metadata while retaining its root event. */
+  /** Correct/omit/restore current placement-node metadata while retaining its root event. */
   async correct(
-    input: InventoryOnceCorrectContainerInput
+    input: InventoryOnceCorrectPlacementNodeInput
   ): Promise<InventoryOnceEventResult> {
     const internals = requireInventoryOnceInternals(this.owner);
     const correctionReason = input.reason;
@@ -5652,31 +5814,33 @@ class InventoryOnceContainersImplementation
       correctionReason.trim().length === 0
     ) {
       throw new Error(
-        "Inventory container correction needs an explicit reason."
+        "Inventory placement-node correction needs an explicit reason."
       );
     }
-    const nextDefinition: InventoryContainerDefinition | undefined =
-      input.container === undefined
+    inventoryPlacementNodeIdentity(input.nodeId);
+    const nextDefinition: InventoryPlacementNodeDefinition | undefined =
+      input.placementNode === undefined
         ? undefined
         : {
-            containerId: input.containerId,
-            ...input.container,
+            nodeId: input.nodeId,
+            ...input.placementNode,
           };
     const intentFingerprint = inventoryIntentFingerprint([
-      "container-correction",
+      "placement-node-correction",
       input.operationId,
-      input.containerId,
+      input.nodeId,
       input.occurredAtEpochMs,
       input.actorId ?? null,
       input.sourcePartyId ?? null,
       input.destinationPartyId ?? null,
       input.sourceReference ?? null,
       correctionReason,
-      input.container?.containerType ?? null,
-      inventoryMetadataFingerprint(input.container?.identifiers),
-      input.container?.openedAtEpochMs ?? null,
-      input.container?.useByEpochMs ?? null,
-      inventoryMetadataFingerprint(input.container?.metadata),
+      input.placementNode?.category ?? null,
+      input.placementNode?.acceptsPlacement ?? null,
+      inventoryMetadataFingerprint(input.placementNode?.identifiers),
+      input.placementNode?.openedAtEpochMs ?? null,
+      input.placementNode?.useByEpochMs ?? null,
+      inventoryMetadataFingerprint(input.placementNode?.metadata),
       inventoryMetadataFingerprint(input.metadata),
     ]);
     const result = await commitInventoryOperation({
@@ -5686,14 +5850,15 @@ class InventoryOnceContainersImplementation
       intentFingerprint,
       clock: internals.clock,
       deficitPolicy: internals.deficitPolicy,
-      /** Rebuild the retained root with only this container master changed. */
+      /** Rebuild the retained root with only this node definition changed. */
       plan: ({ world }) => {
-        const identity = inventoryContainerIdentity(input.containerId);
-        const rootEventId =
-          world.projection.containerRootEventIdByIdentity[identity];
+        const rootEventId = inventorySparseRecordValue(
+          world.projection.placementNodeRootEventIdByNodeId,
+          input.nodeId
+        );
         if (rootEventId === undefined) {
           throw new Error(
-            `Inventory container ${identity} has no retained metadata assertion to correct.`
+            `Inventory placement node '${input.nodeId}' has no retained metadata assertion to correct.`
           );
         }
         const root = inventorySparseRecordValue(
@@ -5702,17 +5867,19 @@ class InventoryOnceContainersImplementation
         );
         if (root === undefined) {
           throw new Error(
-            "Inventory container metadata points to a missing retained root event."
+            "Inventory placement-node metadata points to a missing retained root event."
           );
         }
-        const replacement: InventoryEventDraft = {
-          ...root,
-          containerDefinitions: replaceContainerDefinition(
-            root.containerDefinitions ?? [],
-            input.containerId,
-            nextDefinition
-          ),
-        };
+        const nextDefinitions = replacePlacementNodeDefinition(
+          root.placementNodeDefinitions ?? [],
+          input.nodeId,
+          nextDefinition
+        );
+        const replacement: InventoryEventDraft | undefined =
+          root.kind === InventoryEventKind.PlacementNodeMetadata &&
+          nextDefinitions.length === 0
+            ? undefined
+            : { ...root, placementNodeDefinitions: nextDefinitions };
         return {
           event: createInventoryCorrectionEvent({
             catalog: internals.catalog,
@@ -5720,7 +5887,7 @@ class InventoryOnceContainersImplementation
             operationId: input.operationId,
             occurredAtEpochMs: input.occurredAtEpochMs,
             correctsEventId: rootEventId,
-            replacement,
+            ...(replacement === undefined ? {} : { replacement }),
             ...(input.actorId === undefined ? {} : { actorId: input.actorId }),
             ...(input.sourcePartyId === undefined
               ? {}
@@ -5735,7 +5902,7 @@ class InventoryOnceContainersImplementation
             ...(input.metadata === undefined
               ? {}
               : { metadata: input.metadata }),
-          }, internals.deficitPolicy),
+          }),
         };
       },
     });
@@ -5743,27 +5910,142 @@ class InventoryOnceContainersImplementation
   }
 }
 
-/** Plan one whole handling-unit fact from exact contents inside the same fenced world revision. */
-async function commitInventoryWholeContainerOperation(
+/** Commit one state-dependent direct-parent transition through normal durable publication. */
+async function commitInventoryPlacementTopologyChange(
   owner: InventoryOnce,
-  operation: InventoryWholeContainerOperation
+  input: InventoryOnceMovePlacementInput | InventoryOnceUnplaceInput,
+  toParentNodeId: string | undefined
+): Promise<InventoryOnceEventResult> {
+  const internals = requireInventoryOnceInternals(owner);
+  inventoryPlacementNodeIdentity(input.nodeId);
+  if (toParentNodeId !== undefined) inventoryPlacementNodeIdentity(toParentNodeId);
+  const expectedParentIntent =
+    input.expectedParent === undefined
+      ? "<unspecified>"
+      : input.expectedParent === null
+        ? "<unplaced>"
+        : input.expectedParent;
+  const destinationMetadata =
+    "destination" in input ? input.destination : undefined;
+  const intentFingerprint = inventoryIntentFingerprint([
+    "placement-topology",
+    input.operationId,
+    input.nodeId,
+    toParentNodeId ?? null,
+    expectedParentIntent,
+    input.occurredAtEpochMs,
+    input.actorId ?? null,
+    input.sourcePartyId ?? null,
+    input.destinationPartyId ?? null,
+    input.sourceReference ?? null,
+    input.reason ?? null,
+    input.node?.category ?? null,
+    input.node?.acceptsPlacement ?? null,
+    inventoryMetadataFingerprint(input.node?.identifiers),
+    input.node?.openedAtEpochMs ?? null,
+    input.node?.useByEpochMs ?? null,
+    inventoryMetadataFingerprint(input.node?.metadata),
+    destinationMetadata?.category ?? null,
+    destinationMetadata?.acceptsPlacement ?? null,
+    inventoryMetadataFingerprint(destinationMetadata?.identifiers),
+    destinationMetadata?.openedAtEpochMs ?? null,
+    destinationMetadata?.useByEpochMs ?? null,
+    inventoryMetadataFingerprint(destinationMetadata?.metadata),
+    inventoryMetadataFingerprint(input.metadata),
+  ]);
+  const result = await commitInventoryOperation({
+    catalog: internals.catalog,
+    storage: internals.storage,
+    operationId: input.operationId,
+    intentFingerprint,
+    clock: internals.clock,
+    deficitPolicy: internals.deficitPolicy,
+    /** Resolve the exact current parent inside the same fenced published world. */
+    plan: ({ world, recordedAtEpochMs }) => {
+      assertInventoryLifecycleTimeWasRecorded(
+        input.occurredAtEpochMs,
+        recordedAtEpochMs,
+        "placement topology change"
+      );
+      const fromParentNodeId = inventoryPlacementParentNodeId(
+        world.projection.placement,
+        input.nodeId
+      );
+      if (input.expectedParent !== undefined) {
+        const expectedParentNodeId =
+          input.expectedParent === null ? undefined : input.expectedParent;
+        if (fromParentNodeId !== expectedParentNodeId) {
+          throw new Error(
+            `Placement node '${input.nodeId}' expected parent '${
+              expectedParentNodeId ?? "<unplaced>"
+            }', not '${fromParentNodeId ?? "<unplaced>"}'.`
+          );
+        }
+      }
+      if (fromParentNodeId === toParentNodeId) {
+        throw new Error(
+          toParentNodeId === undefined
+            ? `Placement node '${input.nodeId}' is already unplaced.`
+            : `Placement node '${input.nodeId}' is already directly in '${toParentNodeId}'.`
+        );
+      }
+      return {
+        event: createInventoryPlacementEvent({
+          catalog: internals.catalog,
+          ...inventoryCommandHeaderFromPlacementInput(input),
+          nodeId: input.nodeId,
+          ...(fromParentNodeId === undefined ? {} : { fromParentNodeId }),
+          ...(toParentNodeId === undefined ? {} : { toParentNodeId }),
+          ...(input.node === undefined ? {} : { node: input.node }),
+          ...(destinationMetadata === undefined
+            ? {}
+            : { parent: destinationMetadata }),
+        }),
+      };
+    },
+  });
+  return createInventoryOnceEventResult(result);
+}
+
+/** Copy the normal immutable command header from one placement command. */
+function inventoryCommandHeaderFromPlacementInput(
+  input: InventoryOnceMovePlacementInput | InventoryOnceUnplaceInput
+): InventoryCommandHeader {
+  return {
+    operationId: input.operationId,
+    occurredAtEpochMs: input.occurredAtEpochMs,
+    ...(input.actorId === undefined ? {} : { actorId: input.actorId }),
+    ...(input.sourcePartyId === undefined
+      ? {}
+      : { sourcePartyId: input.sourcePartyId }),
+    ...(input.destinationPartyId === undefined
+      ? {}
+      : { destinationPartyId: input.destinationPartyId }),
+    ...(input.sourceReference === undefined
+      ? {}
+      : { sourceReference: input.sourceReference }),
+    ...(input.reason === undefined ? {} : { reason: input.reason }),
+    ...(input.metadata === undefined ? {} : { metadata: input.metadata }),
+  };
+}
+
+/** Plan one subtree-content fact from exact rows inside the same fenced world revision. */
+async function commitInventoryPlacementContentsOperation(
+  owner: InventoryOnce,
+  operation: InventoryPlacementContentsOperation
 ): Promise<InventoryOnceEventResult> {
   const internals = requireInventoryOnceInternals(owner);
   const { kind, input } = operation;
-  let targetIdentity: string | null = null;
-  if (operation.kind === InventoryWholeContainerOperationKind.Transfer) {
-    targetIdentity = operation.input.toLocationId;
-  } else if (
-    operation.kind === InventoryWholeContainerOperationKind.ChangeStatus
-  ) {
-    targetIdentity = operation.input.toStatusId;
-  }
+  const targetStatusId =
+    operation.kind === InventoryPlacementContentsOperationKind.ChangeStatus
+      ? operation.input.toStatusId
+      : null;
   const intentFingerprint = inventoryIntentFingerprint([
-    "whole-container",
+    "placement-subtree-contents",
     kind,
     input.operationId,
-    input.containerId,
-    targetIdentity,
+    input.nodeId,
+    targetStatusId,
     input.occurredAtEpochMs,
     input.actorId ?? null,
     input.sourcePartyId ?? null,
@@ -5779,34 +6061,34 @@ async function commitInventoryWholeContainerOperation(
     intentFingerprint,
     clock: internals.clock,
     deficitPolicy: internals.deficitPolicy,
-    /** Read contents and freeze every derived physical line before the durable Begin write. */
+    /** Read subtree contents and freeze every exact line before the durable Begin write. */
     plan: ({ world, recordedAtEpochMs }) => {
       assertInventoryLifecycleTimeWasRecorded(
         input.occurredAtEpochMs,
         recordedAtEpochMs,
-        `whole-container ${kind}`
+        `placement subtree ${kind}`
       );
-      const contents = findInventoryWholeContainerContents(
+      const contents = findInventoryPlacementSubtreeContents(
         world,
-        input.containerId
+        input.nodeId
       );
-      const affectedPositions = findPositionsChangedByWholeContainerOperation(
+      const affectedPositions = findPositionsChangedByPlacementContentsOperation(
         operation,
         contents
       );
-      assertNoExactReservationBindsWholeContainerPositions(
+      assertNoExactReservationBindsPlacementContents(
         world,
         affectedPositions,
         input.occurredAtEpochMs
       );
-      const event = createInventoryWholeContainerEvent(
+      const event = createInventoryPlacementContentsEvent(
         internals.catalog,
         operation,
         affectedPositions
       );
       return {
         event,
-        ...(kind === InventoryWholeContainerOperationKind.Scrap
+        ...(kind === InventoryPlacementContentsOperationKind.Scrap
           ? {
               reservationProtection:
                 InventoryReservationProtection.RecordPhysicalTruth,
@@ -5818,120 +6100,90 @@ async function commitInventoryWholeContainerOperation(
   return createInventoryOnceEventResult(result);
 }
 
-/** Find the outer handling unit, nested containers, and every exact current stock row they hold. */
-function findInventoryWholeContainerContents(
+/** Find every positive stock row anchored at the root node or one current descendant. */
+function findInventoryPlacementSubtreeContents(
   world: InventoryWorldState,
-  containerId: string
-): InventoryWholeContainerContents {
-  inventoryContainerIdentity(containerId);
-  /** Outer id plus every container reached through the current indexed containment graph. */
-  const includedContainerIds = new Set<string>([containerId]);
-  const containersNeedingChildren = [containerId];
-  while (containersNeedingChildren.length > 0) {
-    const parentId = containersNeedingChildren.pop();
-    if (parentId === undefined) break;
-    const parentNodeIdentity = inventoryTraceabilityNodeIdentity({
-      kind: InventoryTraceabilityNodeKind.Container,
-      id: parentId,
-    });
-    const children =
-      world.projection.traceability
-        .containmentChildContainerIdsByParentNodeIdentity[parentNodeIdentity] ??
-      [];
-    for (const childId of children) {
-      if (includedContainerIds.has(childId)) continue;
-      includedContainerIds.add(childId);
-      containersNeedingChildren.push(childId);
-    }
-  }
-  /** Positive physical rows held directly by the outer unit or one nested unit. */
+  nodeId: string
+): InventoryPlacementSubtreeContents {
+  inventoryPlacementNodeIdentity(nodeId);
   const positions: InventoryStockPosition[] = [];
   const seenPositionIds = new Set<string>();
-  let locationId: string | undefined;
-  for (const includedContainerId of includedContainerIds) {
-    const containerIdentity = inventoryContainerIdentity(includedContainerId);
-    for (const positionId of world.projection.positionIdsByContainerIdentity[
-      containerIdentity
-    ] ?? []) {
+  for (const includedNodeId of inventoryPlacementSubtreeNodeIds(
+    world.projection.placement,
+    nodeId
+  )) {
+    const positionIds =
+      inventorySparseRecordValue(
+        world.projection.positionIdsByPlacementNodeId,
+        includedNodeId
+      ) ?? [];
+    for (const positionId of positionIds) {
       if (seenPositionIds.has(positionId)) continue;
       seenPositionIds.add(positionId);
-      const position = world.projection.positions[positionId];
+      const position = inventorySparseRecordValue(
+        world.projection.positions,
+        positionId
+      );
       if (position === undefined) {
         throw new Error(
-          `Inventory container index references missing position ${positionId}.`
+          `Inventory direct-placement index references missing position ${positionId}.`
         );
       }
-      if (position.measurements.primary.quantity.amountMinor <= 0) {
-        throw new Error(
-          "Whole-container operations cannot move a zero/negative bookkeeping row as physical contents."
-        );
-      }
-      if (locationId === undefined) locationId = position.key.locationId;
-      if (position.key.locationId !== locationId) {
-        throw new Error(
-          "Whole-container contents appear in more than one location; correct the dirty stock rows before moving the handling unit."
-        );
-      }
+      // Deficits and zero rows are bookkeeping truth, not physical subtree contents.
+      if (position.measurements.primary.quantity.amountMinor <= 0) continue;
       positions.push(position);
     }
   }
-  if (positions.length === 0 || locationId === undefined) {
+  if (positions.length === 0) {
     throw new Error(
-      `Inventory container '${containerId}' has no current physical contents.`
+      `Inventory placement node '${nodeId}' has no current positive physical contents.`
     );
   }
-  positions.sort(compareWholeContainerPosition);
-  return { positions, locationId };
+  positions.sort(comparePlacementContentsPosition);
+  return { positions };
 }
 
-/** Keep only rows that really change for a whole-unit status verb; other verbs use all contents. */
-function findPositionsChangedByWholeContainerOperation(
-  operation: InventoryWholeContainerOperation,
-  contents: InventoryWholeContainerContents
+/** Keep only rows that really change for a subtree status verb; issue/scrap use all contents. */
+function findPositionsChangedByPlacementContentsOperation(
+  operation: InventoryPlacementContentsOperation,
+  contents: InventoryPlacementSubtreeContents
 ): readonly InventoryStockPosition[] {
-  if (operation.kind === InventoryWholeContainerOperationKind.Transfer) {
-    if (operation.input.toLocationId.trim().length === 0) {
-      throw new Error("Whole-container transfer needs a destination location.");
-    }
-    if (operation.input.toLocationId === contents.locationId) {
-      throw new Error(
-        "Whole-container transfer destination already holds this handling unit."
-      );
-    }
-    return contents.positions;
-  }
-  if (operation.kind === InventoryWholeContainerOperationKind.ChangeStatus) {
+  if (
+    operation.kind === InventoryPlacementContentsOperationKind.ChangeStatus
+  ) {
     if (operation.input.toStatusId.trim().length === 0) {
       throw new Error(
-        "Whole-container status change needs a non-empty status."
+        "Placement subtree status change needs a non-empty status."
       );
     }
     const changed = contents.positions.filter(
-      /** Rows already carrying the requested status stay untouched in the same atomic fact. */
+      /** Rows already carrying the requested status remain untouched. */
       (position) => position.key.statusId !== operation.input.toStatusId
     );
     if (changed.length === 0) {
       throw new Error(
-        "Every whole-container content row already has that status."
+        "Every placement-subtree content row already has that status."
       );
     }
     return changed;
   }
-  if (operation.kind === InventoryWholeContainerOperationKind.ClearStatus) {
+  if (
+    operation.kind === InventoryPlacementContentsOperationKind.ClearStatus
+  ) {
     const changed = contents.positions.filter(
       /** Only rows with a current status need a conserved reclassification line. */
       (position) => position.key.statusId !== undefined
     );
     if (changed.length === 0) {
-      throw new Error("Whole-container contents have no status to clear.");
+      throw new Error("Placement-subtree contents have no status to clear.");
     }
     return changed;
   }
   return contents.positions;
 }
 
-/** Reject a whole-unit operation before it could strand an exact claim on an old position key. */
-function assertNoExactReservationBindsWholeContainerPositions(
+/** Reject a content operation before it could strand an exact claim on an old position key. */
+function assertNoExactReservationBindsPlacementContents(
   world: InventoryWorldState,
   positions: readonly InventoryStockPosition[],
   atEpochMs: number
@@ -5948,16 +6200,17 @@ function assertNoExactReservationBindsWholeContainerPositions(
         !affectedPositionIds.has(
           inventoryStockPositionIdentity(allocation.position)
         )
-      )
+      ) {
         continue;
+      }
       blockingReservationIds.push(reservation.reservationId);
       break;
     }
   }
-  blockingReservationIds.sort();
+  blockingReservationIds.sort(compareInventoryIdentityText);
   if (blockingReservationIds.length > 0) {
     throw new Error(
-      "Whole-container operation would move or remove exact reservation bindings; " +
+      "Placement-subtree content operation would move or remove exact reservation bindings; " +
         `release, consume, or reallocate these claims first: ${blockingReservationIds.join(
           ", "
         )}.`
@@ -5965,44 +6218,31 @@ function assertNoExactReservationBindsWholeContainerPositions(
   }
 }
 
-/** Build the one immutable event carrying every exact whole-container content line. */
-function createInventoryWholeContainerEvent(
+/** Build one immutable event carrying every exact subtree-content stock line. */
+function createInventoryPlacementContentsEvent(
   catalog: InventoryCatalog,
-  operation: InventoryWholeContainerOperation,
+  operation: InventoryPlacementContentsOperation,
   positions: readonly InventoryStockPosition[]
 ): InventoryEventDraft {
   const { input } = operation;
-  const header = inventoryCommandHeaderFromWholeContainerInput(input);
-  if (operation.kind === InventoryWholeContainerOperationKind.Transfer) {
-    return createInventoryTransferManyEvent({
-      catalog,
-      ...header,
-      lines: positions.map(
-        /** Move one full current row and preserve lot/revision/package/container/serial/party fields. */
-        (position) => ({
-          ...wholeContainerSourceLine(catalog, position),
-          toLocationId: operation.input.toLocationId,
-        })
-      ),
-    });
-  }
-  if (operation.kind === InventoryWholeContainerOperationKind.Issue) {
+  const header = inventoryCommandHeaderFromPlacementContentsInput(input);
+  if (operation.kind === InventoryPlacementContentsOperationKind.Issue) {
     return createInventoryIssueManyEvent({
       catalog,
       ...header,
       lines: positions.map(
-        /** Issue one complete current row from this fenced handling-unit snapshot. */
-        (position) => wholeContainerSourceLine(catalog, position)
+        /** Issue one complete current row from this fenced subtree snapshot. */
+        (position) => placementContentsSourceLine(catalog, position)
       ),
     });
   }
-  if (operation.kind === InventoryWholeContainerOperationKind.Scrap) {
+  if (operation.kind === InventoryPlacementContentsOperationKind.Scrap) {
     return createInventoryScrapManyEvent({
       catalog,
       ...header,
       lines: positions.map(
-        /** Destroy one complete current row from this fenced handling-unit snapshot. */
-        (position) => wholeContainerSourceLine(catalog, position)
+        /** Destroy one complete current row from this fenced subtree snapshot. */
+        (position) => placementContentsSourceLine(catalog, position)
       ),
     });
   }
@@ -6011,14 +6251,15 @@ function createInventoryWholeContainerEvent(
     ...header,
     consume: positions.map(
       /** Remove one full old-status row. */
-      (position) => wholeContainerSourceLine(catalog, position)
+      (position) => placementContentsSourceLine(catalog, position)
     ),
     produce: positions.map(
-      /** Recreate the same full row with only the named status field changed. */
+      /** Recreate the same full row with only status changed. */
       (position) => {
-        const source = wholeContainerSourceLine(catalog, position);
+        const source = placementContentsSourceLine(catalog, position);
         const to =
-          operation.kind === InventoryWholeContainerOperationKind.ChangeStatus
+          operation.kind ===
+          InventoryPlacementContentsOperationKind.ChangeStatus
             ? { ...source.from, statusId: operation.input.toStatusId }
             : positionWithoutStatus(source.from);
         return {
@@ -6032,10 +6273,10 @@ function createInventoryWholeContainerEvent(
 }
 
 /** Build one exact full-position source line without asking the application to rebuild package math. */
-function wholeContainerSourceLine(
+function placementContentsSourceLine(
   catalog: InventoryCatalog,
   position: InventoryStockPosition
-): InventoryWholeContainerSourceLine {
+): InventoryPlacementContentsSourceLine {
   const { itemRevisionId, ...from } = position.key;
   return {
     from,
@@ -6049,9 +6290,9 @@ function wholeContainerSourceLine(
   };
 }
 
-/** Strip whole-container selector fields while keeping the normal immutable command header. */
-function inventoryCommandHeaderFromWholeContainerInput(
-  input: InventoryWholeContainerOperation["input"]
+/** Strip subtree selector fields while keeping the normal immutable command header. */
+function inventoryCommandHeaderFromPlacementContentsInput(
+  input: InventoryPlacementContentsOperation["input"]
 ): InventoryCommandHeader {
   return {
     operationId: input.operationId,
@@ -6078,31 +6319,34 @@ function positionWithoutStatus(
   const { statusId, ...withoutStatus } = position;
   if (statusId === undefined) {
     throw new Error(
-      "Whole-container clear-status selected a row without status."
+      "Placement-subtree clear-status selected a row without status."
     );
   }
   return withoutStatus;
 }
 
-/** Sort whole-container rows by their full revision-qualified position identity. */
-function compareWholeContainerPosition(
+/** Sort subtree rows by their full revision-qualified position identity. */
+function comparePlacementContentsPosition(
   left: InventoryStockPosition,
   right: InventoryStockPosition
 ): number {
-  return compareInventoryIdentityText(inventoryStockPositionIdentity(left.key), inventoryStockPositionIdentity(right.key));
+  return compareInventoryIdentityText(
+    inventoryStockPositionIdentity(left.key),
+    inventoryStockPositionIdentity(right.key)
+  );
 }
 
-/** Replace, append, or omit one exact container definition inside a retained root assertion. */
-function replaceContainerDefinition(
-  definitions: readonly InventoryContainerDefinition[],
-  containerId: string,
-  replacement: InventoryContainerDefinition | undefined
-): readonly InventoryContainerDefinition[] {
-  const targetIdentity = inventoryContainerIdentity(containerId);
-  const next: InventoryContainerDefinition[] = [];
+/** Replace, append, or omit one exact placement-node definition in a retained root assertion. */
+function replacePlacementNodeDefinition(
+  definitions: readonly InventoryPlacementNodeDefinition[],
+  nodeId: string,
+  replacement: InventoryPlacementNodeDefinition | undefined
+): readonly InventoryPlacementNodeDefinition[] {
+  inventoryPlacementNodeIdentity(nodeId);
+  const next: InventoryPlacementNodeDefinition[] = [];
   let found = false;
   for (const definition of definitions) {
-    if (inventoryContainerIdentity(definition.containerId) === targetIdentity) {
+    if (definition.nodeId === nodeId) {
       found = true;
       if (replacement !== undefined) next.push(replacement);
     } else {
@@ -6110,6 +6354,11 @@ function replaceContainerDefinition(
     }
   }
   if (!found && replacement !== undefined) next.push(replacement);
+  next.sort(
+    /** Keep replacement intent independent of retained array order. */
+    (left, right) =>
+      compareInventoryIdentityText(left.nodeId, right.nodeId)
+  );
   return next;
 }
 
@@ -6215,7 +6464,7 @@ class InventoryOnceLotsImplementation implements InventoryOnceLotsApi {
             operationId: input.operationId,
             occurredAtEpochMs: input.occurredAtEpochMs,
             correctsEventId: rootEventId,
-            replacement,
+            ...(replacement === undefined ? {} : { replacement }),
             ...(input.actorId === undefined ? {} : { actorId: input.actorId }),
             ...(input.sourcePartyId === undefined
               ? {}
@@ -7018,7 +7267,7 @@ function createReservationConsumptionEvent(
       inventoryPositionIsExpiredAt(projection, line.from, input.occurredAtEpochMs)
     ) {
       throw new Error(
-        "Reservation fulfillment cannot use stock past its lot/container use-by unless the claim explicitly permits it."
+        "Reservation fulfillment cannot use stock past its lot/placement-ancestor use-by unless the claim explicitly permits it."
       );
     }
     const item = catalog.itemRevision(line.from.itemRevisionId);
@@ -7210,13 +7459,17 @@ function snapshotInventoryPolicyDeficitPosition(
 ): InventoryStockPositionInput {
   return {
     itemId: position.itemId,
-    locationId: position.locationId,
+    ...(position.placementNodeId === undefined ? {} : { placementNodeId: position.placementNodeId }),
+    ...(position.whereaboutsId === undefined ? {} : { whereaboutsId: position.whereaboutsId }),
+    ...(position.whereaboutsState === undefined ? {} : { whereaboutsState: position.whereaboutsState }),
+    ...(position.lastPlacementNodeId === undefined ? {} : { lastPlacementNodeId: position.lastPlacementNodeId }),
+    ...(position.detachedAtEpochMs === undefined ? {} : { detachedAtEpochMs: position.detachedAtEpochMs }),
+    ...(position.missingAtEpochMs === undefined ? {} : { missingAtEpochMs: position.missingAtEpochMs }),
     ...(position.lotId === undefined ? {} : { lotId: position.lotId }),
     ...(position.serialId === undefined ? {} : { serialId: position.serialId }),
     ...(position.packagingRevisionId === undefined
       ? {}
       : { packagingRevisionId: position.packagingRevisionId }),
-    ...(position.containerId === undefined ? {} : { containerId: position.containerId }),
     ...(position.statusId === undefined ? {} : { statusId: position.statusId }),
     ...(position.ownerId === undefined ? {} : { ownerId: position.ownerId }),
     ...(position.custodianId === undefined ? {} : { custodianId: position.custodianId }),
@@ -7962,13 +8215,16 @@ function exactCountSelectorForPosition(
   return normalizeInventoryStockSelector({
     itemId: position.itemId,
     itemRevisionIds: [position.itemRevisionId],
-    locationIds: [position.locationId],
+    placement: exactOptionalIdentityConstraint(position.placementNodeId),
+    whereabouts: exactOptionalIdentityConstraint(position.whereaboutsId),
+    ...(position.whereaboutsState === undefined
+      ? {}
+      : { whereaboutsStates: [position.whereaboutsState] }),
     lot: exactOptionalIdentityConstraint(position.lotId),
     serial: exactOptionalIdentityConstraint(position.serialId),
     packagingRevision: exactOptionalIdentityConstraint(
       position.packagingRevisionId
     ),
-    container: exactOptionalIdentityConstraint(position.containerId),
     status: exactOptionalIdentityConstraint(position.statusId),
     owner: exactOptionalIdentityConstraint(position.ownerId),
     custodian: exactOptionalIdentityConstraint(position.custodianId),
@@ -7999,11 +8255,15 @@ function absoluteCountPositionMetadataValue(
   return [
     position.itemId,
     position.itemRevisionId,
-    position.locationId,
+    position.placementNodeId ?? null,
+    position.whereaboutsId ?? null,
+    position.whereaboutsState ?? null,
+    position.lastPlacementNodeId ?? null,
+    position.detachedAtEpochMs ?? null,
+    position.missingAtEpochMs ?? null,
     position.lotId ?? null,
     position.serialId ?? null,
     position.packagingRevisionId ?? null,
-    position.containerId ?? null,
     position.statusId ?? null,
     position.ownerId ?? null,
     position.custodianId ?? null,
@@ -8035,42 +8295,61 @@ function readAbsoluteCountPosition(
     );
   }
   const encoded = evidence.position;
-  if (!isAbsoluteCountMetadataArray(encoded) || encoded.length !== 12) {
+  if (!isAbsoluteCountMetadataArray(encoded) || encoded.length !== 16) {
     throw new Error(
       `Inventory count '${count.countId}' has invalid absolute-count position evidence.`
     );
   }
-  const lotId = readAbsoluteCountOptionalMetadataString(encoded[3], "lotId");
+  const placementNodeId = readAbsoluteCountOptionalMetadataString(
+    encoded[2],
+    "placementNodeId"
+  );
+  const whereaboutsId = readAbsoluteCountOptionalMetadataString(
+    encoded[3],
+    "whereaboutsId"
+  );
+  const whereaboutsState = readAbsoluteCountOptionalWhereaboutsState(
+    encoded[4]
+  );
+  const lastPlacementNodeId = readAbsoluteCountOptionalMetadataString(
+    encoded[5],
+    "lastPlacementNodeId"
+  );
+  const detachedAtEpochMs = readAbsoluteCountOptionalMetadataEpoch(
+    encoded[6],
+    "detachedAtEpochMs"
+  );
+  const missingAtEpochMs = readAbsoluteCountOptionalMetadataEpoch(
+    encoded[7],
+    "missingAtEpochMs"
+  );
+  const lotId = readAbsoluteCountOptionalMetadataString(encoded[8], "lotId");
   const serialId = readAbsoluteCountOptionalMetadataString(
-    encoded[4],
+    encoded[9],
     "serialId"
   );
   const packagingRevisionId = readAbsoluteCountOptionalMetadataString(
-    encoded[5],
+    encoded[10],
     "packagingRevisionId"
   );
-  const containerId = readAbsoluteCountOptionalMetadataString(
-    encoded[6],
-    "containerId"
-  );
   const statusId = readAbsoluteCountOptionalMetadataString(
-    encoded[7],
+    encoded[11],
     "statusId"
   );
   const ownerId = readAbsoluteCountOptionalMetadataString(
-    encoded[8],
+    encoded[12],
     "ownerId"
   );
   const custodianId = readAbsoluteCountOptionalMetadataString(
-    encoded[9],
+    encoded[13],
     "custodianId"
   );
   const dispositionAuthorityId = readAbsoluteCountOptionalMetadataString(
-    encoded[10],
+    encoded[14],
     "dispositionAuthorityId"
   );
   const qualifiedDimensions = readAbsoluteCountQualifiedDimensions(
-    encoded[11],
+    encoded[15],
     count.countId
   );
   const position = normalizeInventoryStockPositionKey({
@@ -8079,11 +8358,15 @@ function readAbsoluteCountPosition(
       encoded[1],
       "itemRevisionId"
     ),
-    locationId: requireAbsoluteCountMetadataString(encoded[2], "locationId"),
+    ...(placementNodeId === undefined ? {} : { placementNodeId }),
+    ...(whereaboutsId === undefined ? {} : { whereaboutsId }),
+    ...(whereaboutsState === undefined ? {} : { whereaboutsState }),
+    ...(lastPlacementNodeId === undefined ? {} : { lastPlacementNodeId }),
+    ...(detachedAtEpochMs === undefined ? {} : { detachedAtEpochMs }),
+    ...(missingAtEpochMs === undefined ? {} : { missingAtEpochMs }),
     ...(lotId === undefined ? {} : { lotId }),
     ...(serialId === undefined ? {} : { serialId }),
     ...(packagingRevisionId === undefined ? {} : { packagingRevisionId }),
-    ...(containerId === undefined ? {} : { containerId }),
     ...(statusId === undefined ? {} : { statusId }),
     ...(ownerId === undefined ? {} : { ownerId }),
     ...(custodianId === undefined ? {} : { custodianId }),
@@ -8142,6 +8425,33 @@ function readAbsoluteCountOptionalMetadataString(
   return requireAbsoluteCountMetadataString(value, label);
 }
 
+/** Read one optional detached/missing state or explicit null from position evidence. */
+function readAbsoluteCountOptionalWhereaboutsState(
+  value: InventoryMetadataValue | undefined
+): InventoryStockWhereaboutsState | undefined {
+  if (value === null) return undefined;
+  if (value === InventoryStockWhereaboutsState.Detached) {
+    return InventoryStockWhereaboutsState.Detached;
+  }
+  if (value === InventoryStockWhereaboutsState.Missing) {
+    return InventoryStockWhereaboutsState.Missing;
+  }
+  throw new Error("Absolute-count whereaboutsState must be detached, missing, or null.");
+}
+
+/** Read one optional safe-integer epoch millisecond or explicit null from position evidence. */
+function readAbsoluteCountOptionalMetadataEpoch(
+  value: InventoryMetadataValue | undefined,
+  label: string
+): number | undefined {
+  if (value === null) return undefined;
+  if (typeof value !== "number") {
+    throw new Error(`Absolute-count ${label} must be a number or null.`);
+  }
+  assertInventoryEpochMilliseconds(value, `absolute-count ${label}`);
+  return value;
+}
+
 /** Decode exact qualified dimensions while preserving omitted versus empty position shape. */
 function readAbsoluteCountQualifiedDimensions(
   value: InventoryMetadataValue | undefined,
@@ -8181,7 +8491,7 @@ function absoluteCountIntentFingerprint(
   fallbackPosition: InventoryStockPositionKey | undefined
 ): string {
   return inventoryIntentFingerprint([
-    "absolute-count-replacement-v2",
+    "absolute-count-replacement-v3",
     input.operationId,
     input.countId,
     input.itemRevisionId ?? null,
@@ -8235,7 +8545,7 @@ function compareCountObservationLine(
   return compareInventoryIdentityText(inventoryStockPositionIdentity(left.position), inventoryStockPositionIdentity(right.position));
 }
 
-/** Private implementation of containment/association traceability verbs. */
+/** Private implementation of explicit association traceability verbs. */
 class InventoryOnceTraceabilityImplementation
   implements InventoryOnceTraceabilityApi
 {
@@ -8245,28 +8555,6 @@ class InventoryOnceTraceabilityImplementation
   /** Bind graph commands to one façade. */
   constructor(owner: InventoryOnce) {
     this.owner = owner;
-  }
-
-  /** Add one reversible containment/aggregation relationship. */
-  async aggregate(
-    input: InventoryOnceRelationInput
-  ): Promise<InventoryOnceEventResult> {
-    return this.commitRelation(
-      input,
-      InventoryTraceabilityRelationAction.Add,
-      InventoryTraceabilityRelationKind.Containment
-    );
-  }
-
-  /** Remove one reversible containment/aggregation relationship. */
-  async disaggregate(
-    input: InventoryOnceRelationInput
-  ): Promise<InventoryOnceEventResult> {
-    return this.commitRelation(
-      input,
-      InventoryTraceabilityRelationAction.Remove,
-      InventoryTraceabilityRelationKind.Containment
-    );
   }
 
   /** Add one durable association/installation relationship. */
@@ -8322,6 +8610,148 @@ class InventoryOnceTraceabilityImplementation
   }
 }
 
+
+/** Filter current unresolved whereabouts truth without requiring one item-scoped selector. */
+function findInventoryWhereaboutsPositions(
+  projection: InventoryProjectionState,
+  input: InventoryOnceWhereaboutsQuery
+): readonly InventoryStockPosition[] {
+  const itemIds = normalizeOptionalInventoryWhereaboutsIdentitySet(
+    input.itemIds,
+    "whereabouts itemIds"
+  );
+  const whereaboutsIds = normalizeOptionalInventoryWhereaboutsIdentitySet(
+    input.whereaboutsIds,
+    "whereabouts whereaboutsIds"
+  );
+  const lastPlacementNodeIds = normalizeOptionalInventoryWhereaboutsIdentitySet(
+    input.lastPlacementNodeIds,
+    "whereabouts lastPlacementNodeIds"
+  );
+  if (input.detachedBeforeEpochMs !== undefined) {
+    assertInventoryEpochMilliseconds(
+      input.detachedBeforeEpochMs,
+      "whereabouts detachedBeforeEpochMs"
+    );
+  }
+  if (input.missingBeforeEpochMs !== undefined) {
+    assertInventoryEpochMilliseconds(
+      input.missingBeforeEpochMs,
+      "whereabouts missingBeforeEpochMs"
+    );
+  }
+  const states = input.states === undefined ? undefined : new Set(input.states);
+  if (states !== undefined) {
+    if (states.size === 0) {
+      throw new Error("Whereabouts states must be omitted instead of empty.");
+    }
+    for (const state of states) {
+      if (
+        state !== InventoryStockWhereaboutsState.Detached &&
+        state !== InventoryStockWhereaboutsState.Missing
+      ) {
+        throw new Error("Whereabouts query contains an unknown state.");
+      }
+    }
+  }
+  const result: InventoryStockPosition[] = [];
+  for (const position of Object.values(projection.positions)) {
+    const key = position.key;
+    if (
+      key.whereaboutsId === undefined ||
+      key.whereaboutsState === undefined ||
+      key.lastPlacementNodeId === undefined ||
+      key.detachedAtEpochMs === undefined
+    ) {
+      continue;
+    }
+    if (itemIds !== undefined && !itemIds.has(key.itemId)) continue;
+    if (states !== undefined && !states.has(key.whereaboutsState)) continue;
+    if (whereaboutsIds !== undefined && !whereaboutsIds.has(key.whereaboutsId))
+      continue;
+    if (
+      lastPlacementNodeIds !== undefined &&
+      !lastPlacementNodeIds.has(key.lastPlacementNodeId)
+    ) {
+      continue;
+    }
+    if (
+      input.detachedBeforeEpochMs !== undefined &&
+      key.detachedAtEpochMs > input.detachedBeforeEpochMs
+    ) {
+      continue;
+    }
+    if (input.missingBeforeEpochMs !== undefined) {
+      if (
+        key.whereaboutsState !== InventoryStockWhereaboutsState.Missing ||
+        key.missingAtEpochMs === undefined ||
+        key.missingAtEpochMs > input.missingBeforeEpochMs
+      ) {
+        continue;
+      }
+    }
+    result.push(position);
+  }
+  result.sort(
+    /** Sort unresolved rows by canonical full position identity. */
+    (left, right) =>
+    compareInventoryIdentityText(
+      inventoryStockPositionIdentity(left.key),
+      inventoryStockPositionIdentity(right.key)
+    )
+  );
+  return result;
+}
+
+/** Attach current filtered unresolved rows to their complete retained lifecycle provenance. */
+function findCurrentInventoryWhereaboutsLifecycles(
+  projection: InventoryProjectionState,
+  input: InventoryOnceWhereaboutsQuery
+): readonly InventoryWhereaboutsLifecycle[] {
+  const filteredPositions = findInventoryWhereaboutsPositions(projection, input);
+  /** Exact current filtered rows grouped by stable lifecycle identity. */
+  const positionsByWhereaboutsId = new Map<string, InventoryStockPosition[]>();
+  for (const position of filteredPositions) {
+    const whereaboutsId = position.key.whereaboutsId;
+    if (whereaboutsId === undefined) {
+      throw new Error("Filtered unresolved stock lost its whereabouts identity.");
+    }
+    const positions = positionsByWhereaboutsId.get(whereaboutsId) ?? [];
+    positions.push(position);
+    positionsByWhereaboutsId.set(whereaboutsId, positions);
+  }
+  const result: InventoryWhereaboutsLifecycle[] = [];
+  for (const lifecycle of inventoryWhereaboutsLifecycles(projection)) {
+    const currentPositions = positionsByWhereaboutsId.get(
+      lifecycle.whereaboutsId
+    );
+    if (currentPositions === undefined) continue;
+    result.push({
+      ...lifecycle,
+      currentPositions,
+      resolved: false,
+    });
+  }
+  return result;
+}
+
+/** Normalize one optional whereabouts query identity set. */
+function normalizeOptionalInventoryWhereaboutsIdentitySet(
+  values: readonly string[] | undefined,
+  label: string
+): ReadonlySet<string> | undefined {
+  if (values === undefined) return undefined;
+  if (values.length === 0) {
+    throw new Error(label + " must be omitted instead of empty.");
+  }
+  const result = new Set<string>();
+  for (const value of values) {
+    assertInventoryIdentity(value, label + " identity");
+    result.add(value);
+  }
+  return result;
+}
+
 /** Private immutable implementation of one snapshot-bound public read surface. */
 class InventoryOnceReadSnapshotImplementation
   implements InventoryOnceReadSnapshotApi
@@ -8352,6 +8782,23 @@ class InventoryOnceReadSnapshotImplementation
     selector: InventoryStockSelector
   ): ReturnType<typeof findInventoryPositions> {
     return findInventoryPositions(this.world.projection, selector);
+  }
+
+  /** Read current detached/missing lifecycles from the frozen world. */
+  whereabouts(
+    input: InventoryOnceWhereaboutsQuery = {}
+  ): readonly InventoryWhereaboutsLifecycle[] {
+    return findCurrentInventoryWhereaboutsLifecycles(
+      this.world.projection,
+      input
+    );
+  }
+
+  /** Read complete current/resolved whereabouts history from the frozen world. */
+  whereaboutsHistory(
+    input: InventoryWhereaboutsHistoryQuery = {}
+  ): readonly InventoryWhereaboutsLifecycle[] {
+    return findInventoryWhereaboutsHistory(this.world.projection, input);
   }
 
   /** Read one revision-safe physical summary from the frozen world. */
@@ -8416,20 +8863,49 @@ class InventoryOnceReadSnapshotImplementation
     });
   }
 
-  /** Read one current handling-unit metadata master by exact identity. */
-  container(
-    containerId: string
-  ): InventoryProjectedContainerDefinition | undefined {
-    return this.world.projection.containers[
-      inventoryContainerIdentity(containerId)
-    ];
+  /** Read one current placement-node metadata master by exact identity. */
+  placementNode(
+    nodeId: string
+  ): InventoryProjectedPlacementNodeDefinition | undefined {
+    inventoryPlacementNodeIdentity(nodeId);
+    return inventorySparseRecordValue(
+      this.world.projection.placementNodes,
+      nodeId
+    );
   }
 
-  /** List current handling-unit metadata masters in stable identity order. */
-  containers(): readonly InventoryProjectedContainerDefinition[] {
-    const result = Object.values(this.world.projection.containers);
-    result.sort(compareProjectedContainerDefinition);
+  /** List current placement-node metadata masters in stable identity order. */
+  placementNodes(): readonly InventoryProjectedPlacementNodeDefinition[] {
+    const result = Object.values(this.world.projection.placementNodes);
+    result.sort(compareProjectedPlacementNodeDefinition);
     return result;
+  }
+
+  /** Read one node's current direct parent. */
+  placementParent(nodeId: string): string | undefined {
+    return inventoryPlacementParentNodeId(
+      this.world.projection.placement,
+      nodeId
+    );
+  }
+
+  /** Read one node's current direct children in stable identity order. */
+  placementChildren(nodeId: string): readonly string[] {
+    inventoryPlacementNodeIdentity(nodeId);
+    return (
+      inventorySparseRecordValue(
+        this.world.projection.placement.childNodeIdsByParentNodeId,
+        nodeId
+      ) ?? []
+    );
+  }
+
+  /** Read one node followed by every current direct ancestor. */
+  placementAncestry(nodeId: string): readonly string[] {
+    return inventoryPlacementAncestry(
+      this.world.projection.placement,
+      nodeId
+    );
   }
 
   /** Read one current item-scoped lot master by exact identity. */
@@ -8550,6 +9026,23 @@ class InventoryOnceReadImplementation implements InventoryOnceReadApi {
     return findInventoryPositions(world.projection, selector);
   }
 
+  /** Read current detached/missing lifecycles from one published world. */
+  async whereabouts(
+    input: InventoryOnceWhereaboutsQuery = {}
+  ): Promise<readonly InventoryWhereaboutsLifecycle[]> {
+    return findCurrentInventoryWhereaboutsLifecycles(
+      (await this.world()).projection,
+      input
+    );
+  }
+
+  /** Read current and resolved whereabouts history from one published world. */
+  async whereaboutsHistory(
+    input: InventoryWhereaboutsHistoryQuery = {}
+  ): Promise<readonly InventoryWhereaboutsLifecycle[]> {
+    return findInventoryWhereaboutsHistory((await this.world()).projection, input);
+  }
+
   /** Read one revision-safe physical summary without leaking projection mechanics to callers. */
   async summary(
     selector: InventoryStockSelector
@@ -8622,22 +9115,53 @@ class InventoryOnceReadImplementation implements InventoryOnceReadApi {
     });
   }
 
-  /** Read one current handling-unit metadata master by exact identity. */
-  async container(
-    containerId: string
-  ): Promise<InventoryProjectedContainerDefinition | undefined> {
-    const world = await this.world();
-    return world.projection.containers[inventoryContainerIdentity(containerId)];
+  /** Read one current placement-node metadata master by exact identity. */
+  async placementNode(
+    nodeId: string
+  ): Promise<InventoryProjectedPlacementNodeDefinition | undefined> {
+    inventoryPlacementNodeIdentity(nodeId);
+    return inventorySparseRecordValue(
+      (await this.world()).projection.placementNodes,
+      nodeId
+    );
   }
 
-  /** List current handling-unit metadata masters in deterministic identity order. */
-  async containers(): Promise<
-    readonly InventoryProjectedContainerDefinition[]
+  /** List current placement-node metadata masters in deterministic identity order. */
+  async placementNodes(): Promise<
+    readonly InventoryProjectedPlacementNodeDefinition[]
   > {
     const world = await this.world();
-    const result = Object.values(world.projection.containers);
-    result.sort(compareProjectedContainerDefinition);
+    const result = Object.values(world.projection.placementNodes);
+    result.sort(compareProjectedPlacementNodeDefinition);
     return result;
+  }
+
+  /** Read one node's current direct parent. */
+  async placementParent(nodeId: string): Promise<string | undefined> {
+    return inventoryPlacementParentNodeId(
+      (await this.world()).projection.placement,
+      nodeId
+    );
+  }
+
+  /** Read one node's current direct children in stable identity order. */
+  async placementChildren(nodeId: string): Promise<readonly string[]> {
+    inventoryPlacementNodeIdentity(nodeId);
+    const world = await this.world();
+    return (
+      inventorySparseRecordValue(
+        world.projection.placement.childNodeIdsByParentNodeId,
+        nodeId
+      ) ?? []
+    );
+  }
+
+  /** Read one node followed by every current direct ancestor. */
+  async placementAncestry(nodeId: string): Promise<readonly string[]> {
+    return inventoryPlacementAncestry(
+      (await this.world()).projection.placement,
+      nodeId
+    );
   }
 
   /** Read one current item-scoped lot/batch master by exact identity. */
@@ -8708,12 +9232,15 @@ function compareInventoryCompositionRevision(
   return compareInventoryIdentityText(left.revisionId, right.revisionId);
 }
 
-/** Sort current container masters by exact handling-unit identity. */
-function compareProjectedContainerDefinition(
-  left: InventoryProjectedContainerDefinition,
-  right: InventoryProjectedContainerDefinition
+/** Sort current placement-node masters by exact node identity. */
+function compareProjectedPlacementNodeDefinition(
+  left: InventoryProjectedPlacementNodeDefinition,
+  right: InventoryProjectedPlacementNodeDefinition
 ): number {
-  return compareInventoryIdentityText(inventoryContainerIdentity(left.definition.containerId), inventoryContainerIdentity(right.definition.containerId));
+  return compareInventoryIdentityText(
+    left.definition.nodeId,
+    right.definition.nodeId
+  );
 }
 
 /** Read item-filtered lot masters from the rebuildable index and fail closed on index drift. */
