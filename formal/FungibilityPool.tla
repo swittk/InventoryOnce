@@ -4,7 +4,7 @@ EXTENDS FiniteSets, Naturals
 \* Each token is one indivisible physical unit whose exact item identity never changes.
 Tokens == {"old-1", "old-2", "new-1", "new-2", "double-1"}
 Items == {"old", "new", "double"}
-Placements == {"store", "room"}
+Locations == {"store", "room"}
 Issued == "issued"
 Revisions == {"pool-v1", "pool-v2"}
 Claims == {"c1", "c2"}
@@ -43,7 +43,7 @@ InitialPoolTotal(revision) == Basis(revision, Tokens)
 EmptyAllocation == {}
 ActiveClaim(state, c) == state[c] \in {"active", "allocated"}
 
-EligiblePlacements(c) == IF c = "c1" THEN {"store"} ELSE Placements
+EligibleLocations(c) == IF c = "c1" THEN {"store"} ELSE Locations
 
 PoolAllocations(revision, amount, where) ==
   {candidate \in SUBSET OnHand(where):
@@ -52,7 +52,7 @@ PoolAllocations(revision, amount, where) ==
 
 ClaimAllocations(c, revision, amount, where) ==
   {candidate \in PoolAllocations(revision, amount, where):
-    \A token \in candidate: where[token] \in EligiblePlacements(c)}
+    \A token \in candidate: where[token] \in EligibleLocations(c)}
 
 ClaimChoices(c, where, state, revision, amount, allocation) ==
   IF state[c] = "allocated"
@@ -175,7 +175,7 @@ Consume(c) ==
 Transfer(token, destination) ==
   /\ token \in OnHand(where)
   /\ token \notin AllocatedTokens(claimState, allocation)
-  /\ destination \in Placements
+  /\ destination \in Locations
   /\ destination # where[token]
   /\ LET nextWhere == [where EXCEPT ![token] = destination]
        IN FeasibleFor(
@@ -215,7 +215,7 @@ Next ==
   \/ \E c \in Claims, selected \in SUBSET Tokens: Allocate(c, selected)
   \/ \E c \in Claims: Release(c)
   \/ \E c \in Claims: Consume(c)
-  \/ \E token \in Tokens, destination \in Placements:
+  \/ \E token \in Tokens, destination \in Locations:
        Transfer(token, destination)
   \/ \E revision \in Revisions, selected \in SUBSET Tokens:
        DirectIssue(revision, selected)
@@ -223,7 +223,7 @@ Next ==
 Spec == Init /\ [][Next]_vars
 
 TypeOK ==
-  /\ where \in [Tokens -> Placements \cup {Issued}]
+  /\ where \in [Tokens -> Locations \cup {Issued}]
   /\ activeRevision \in Revisions
   /\ claimState \in [Claims -> ClaimStates]
   /\ claimRevision \in [Claims -> Revisions \cup {NoRevision}]
@@ -254,10 +254,10 @@ AllocatedClaimsMatchFrozenRevisionBasis ==
     claimState[c] = "allocated" =>
       Basis(claimRevision[c], allocation[c]) = claimAmount[c]
 
-AllocatedClaimsRemainInEligiblePlacements ==
+AllocatedClaimsRemainInEligibleLocations ==
   \A c \in Claims:
     claimState[c] = "allocated" =>
-      \A token \in allocation[c]: where[token] \in EligiblePlacements(c)
+      \A token \in allocation[c]: where[token] \in EligibleLocations(c)
 
 ActiveAllocationsRemainDisjoint ==
   \A left, right \in Claims:
