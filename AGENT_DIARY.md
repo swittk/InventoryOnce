@@ -1597,3 +1597,12 @@ The R105 portable-current-input authority and final publication both continue to
 - Combined focused QA: 22/22 green across segmented placement, warehouse failpoint/snapshot, item-scope active/terminal lifecycle, and seeded segmented-vs-legacy differential tests.
 - Regenerated combined compiler-based implementation assurance: 581/581 callable APIs witnessed, 2589 fields classified, 0 unresolved. Clean integration branch differs by 31 paths from segmented pass base `695af0b`; embodiment is a prior stacked branch and retains its own review limit.
 - Full exact-commit certification and promotion to authoritative segmented branch follow after generating the final manifest on this exact tree. No Codex or subagents.
+
+## 2026-10-12 — Segmented standalone placement movement and coherent indexed reads
+
+- Extended the certified segmented warehouse core on disjoint `feat/segmented-topology-hot` from `0ad1468`, coordinating through the central InventoryOnce placement-v2 bulletin. No Codex or delegated agents.
+- Added optional adapter-native transaction for existing non-embodied stock-free placement-node move/unplace. State-dependent from-parent and cycle validation occur inside the serialized reference adapter; commit advances the global publication revision, appends one event, and lazily catches the canonical projection up. Active reservation/open-count books and embodied/metadata-changing commands conservatively fall back to the legacy coordinator.
+- Maintained private segmented placement forest with safe rebuild on legacy/migration topology publication, exposing only a frozen read-only adapter index to callers. Public direct-parent/children/ancestry use revision-fenced reads and retry if another generation publishes, including async adapter races.
+- Public benchmark: 1000 versus 10000 indirectly anchored stock positions moved at approximately 0.53ms and 0.59ms, with only one placement edge changed, no stock effect and no whole-world access. Single-run Node in-memory reference measurement; external DB adapter not yet implemented.
+- Focused correctness covers idempotency, changed intent, cycle rollback/authenticated root, canonical snapshot agreement, dependent embodied and active claim fallback, reader generation replacement and no exposed applyChange. Strict source/test TypeScript, documentation and 252 focused tests green.
+- Regenerate formal implementation assurance and obtain exact full conformance certification before release/integration.

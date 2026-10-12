@@ -284,9 +284,10 @@ describe("formal implementation conformance manifest", () => {
     expect(summary.callableFieldSignatures).toBeGreaterThanOrEqual(10);
     expect(summary.optionalFields).toBeGreaterThanOrEqual(821);
     expect(summary.undefinedFields).toBeGreaterThanOrEqual(2);
-    // Four authority checkpoint instants use null for absence, and placement move/unplace
-    // use null as the explicit optimistic expectation that a node is currently unplaced.
-    expect(summary.nullableFields).toBe(6);
+    // Four authority checkpoint instants use null for absence; the application
+    // placement move/unplace inputs and the native segmented adapter's matching
+    // expected-parent input separately use null to assert an unplaced root.
+    expect(summary.nullableFields).toBe(7);
     expect(summary.callAndConstructSignatures).toBeGreaterThanOrEqual(461);
     expect(summary.recursiveTypeReferences).toBeGreaterThanOrEqual(3);
     expect(summary.truncatedTypes).toBe(0);

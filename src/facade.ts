@@ -245,10 +245,13 @@ import {
   type InventoryQualifiedDimensionConstraint,
   type InventoryStockSelector,
 } from "./selectors.js";
-import type {
-  InventoryDurableStorage,
-  InventoryOperationReceipt,
+import {
+  inventoryStorageSupportsSegmentedPlacement,
+  type InventoryDurableStorage,
+  type InventoryOperationReceipt,
+  type InventorySegmentedPlacementStorageCapability,
 } from "./storage.js";
+import type { InventorySegmentedPlacementReader } from "./segmented-placement.js";
 import {
   inventoryStorageSupportsSegmentedPositions,
   inventoryStorageSupportsSegmentedStockEventCommit,
@@ -6029,6 +6032,39 @@ async function commitInventoryPlacementTopologyChange(
     inventoryMetadataFingerprint(destinationMetadata?.metadata),
     inventoryMetadataFingerprint(input.metadata),
   ]);
+  if (
+    internals.deficitPolicy === InventoryDeficitPolicy.Reject &&
+    input.node === undefined &&
+    destinationMetadata === undefined &&
+    inventoryStorageSupportsSegmentedPlacement(internals.storage)
+  ) {
+    const committed = await internals.storage.commitSegmentedPlacementChange({
+      catalog: inventoryCatalogSnapshot(internals.catalog),
+      ...inventoryCommandHeaderFromPlacementInput(input),
+      nodeId: input.nodeId,
+      intentFingerprint,
+      recordedAtEpochMs: internals.clock.nowEpochMs(),
+      ...(input.expectedParent === undefined
+        ? {}
+        : { expectedParent: input.expectedParent }),
+      ...(toParentNodeId === undefined
+        ? {}
+        : { toParentNodeId }),
+    });
+    if (committed !== undefined) {
+      return {
+        receipt: {
+          operationId: input.operationId,
+          recordedAtEpochMs: committed.recordedAtEpochMs,
+          worldRevision: committed.worldRevision,
+          eventId: committed.event.eventId,
+        },
+        event: committed.event,
+        replayed: committed.replayed,
+      };
+    }
+  }
+
   const result = await commitInventoryOperation({
     catalog: internals.catalog,
     storage: internals.storage,
@@ -9372,6 +9408,37 @@ async function findInventoryPositionsFromSegment(
   return await segment.queryPositions(selector);
 }
 
+/** One placement-index result bounded by the same adapter publication revision. */
+interface InventorySegmentedPlacementSnapshotRead<Result> {
+  /** True when the complete read observed one stable latest segment revision. */
+  readonly coherent: boolean;
+  /** Resolved read value; undefined may itself be a valid unplaced parent. */
+  readonly value?: Result;
+}
+
+/** One coherent current placement read, retried when async adapter publication interleaves. */
+async function readInventorySegmentedPlacementSnapshot<Result>(
+  storage: InventorySegmentedPlacementStorageCapability,
+  read: (
+    segment: InventorySegmentedPlacementReader
+  ) => Result | Promise<Result>
+): Promise<InventorySegmentedPlacementSnapshotRead<Result>> {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const segment = await storage.readPlacementSegment();
+    const before = await segment.revision();
+    const value = await read(segment);
+    const after = await segment.revision();
+    // Legacy publication can replace the entire reference segment. Recheck the
+    // adapter's current generation, not only a now-detached reader object.
+    const latest = await storage.readPlacementSegment();
+    const latestRevision = await latest.revision();
+    if (before === after && after === latestRevision) {
+      return { coherent: true, value };
+    }
+  }
+  return { coherent: false };
+}
+
 /** Private implementation of current/history reads. */
 class InventoryOnceReadImplementation implements InventoryOnceReadApi {
   /** Owning façade. */
@@ -9533,6 +9600,16 @@ class InventoryOnceReadImplementation implements InventoryOnceReadApi {
 
   /** Read one node's current direct parent. */
   async placementParent(nodeId: string): Promise<string | undefined> {
+    inventoryPlacementNodeIdentity(nodeId);
+    const internals = requireInventoryOnceInternals(this.owner);
+    if (inventoryStorageSupportsSegmentedPlacement(internals.storage)) {
+      const result = await readInventorySegmentedPlacementSnapshot(
+        internals.storage,
+        /** Read one current direct parent under the segment revision fence. */
+        (segment) => segment.parentNodeId(nodeId)
+      );
+      if (result.coherent) return result.value;
+    }
     return inventoryPlacementParentNodeId(
       (await this.world()).projection.placement,
       nodeId
@@ -9542,6 +9619,20 @@ class InventoryOnceReadImplementation implements InventoryOnceReadApi {
   /** Read one node's current direct children in stable identity order. */
   async placementChildren(nodeId: string): Promise<readonly string[]> {
     inventoryPlacementNodeIdentity(nodeId);
+    const internals = requireInventoryOnceInternals(this.owner);
+    if (inventoryStorageSupportsSegmentedPlacement(internals.storage)) {
+      const result = await readInventorySegmentedPlacementSnapshot(
+        internals.storage,
+        /** Read every current direct child under the segment revision fence. */
+        (segment) => segment.childNodeIds(nodeId)
+      );
+      if (result.coherent) {
+        if (result.value === undefined) {
+          throw new Error("Segmented placement children reader returned no result.");
+        }
+        return result.value;
+      }
+    }
     const world = await this.world();
     return (
       inventorySparseRecordValue(
@@ -9553,6 +9644,21 @@ class InventoryOnceReadImplementation implements InventoryOnceReadApi {
 
   /** Read one node followed by every current direct ancestor. */
   async placementAncestry(nodeId: string): Promise<readonly string[]> {
+    inventoryPlacementNodeIdentity(nodeId);
+    const internals = requireInventoryOnceInternals(this.owner);
+    if (inventoryStorageSupportsSegmentedPlacement(internals.storage)) {
+      const result = await readInventorySegmentedPlacementSnapshot(
+        internals.storage,
+        /** Read this node and its current ancestry under one segment revision. */
+        (segment) => segment.ancestry(nodeId)
+      );
+      if (result.coherent) {
+        if (result.value === undefined) {
+          throw new Error("Segmented placement ancestry reader returned no result.");
+        }
+        return result.value;
+      }
+    }
     return inventoryPlacementAncestry(
       (await this.world()).projection.placement,
       nodeId

@@ -145,6 +145,7 @@ def storage_export_family(name):
   'createInMemoryInventorySegmentedPlacementStore',
   'inventoryStorageSupportsSegmentedStockEventCommit',
   'inventoryStorageSupportsSegmentedPositions',
+  'inventoryStorageSupportsSegmentedPlacement',
  }: return 'durable-protocol'
  # A coherent indexed reader is authenticated by a revision fence, and its
  # failure must leave the canonical world/ledger unchanged.
