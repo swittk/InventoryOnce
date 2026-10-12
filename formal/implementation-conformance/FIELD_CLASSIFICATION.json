@@ -4,14 +4,14 @@
     "callableFields": 11,
     "callbackArgumentFields": 360,
     "callbackResultFields": 429,
-    "fields": 2369,
-    "inputFields": 2038,
+    "fields": 2406,
+    "inputFields": 2075,
     "nullableFields": 6,
-    "optionalFields": 966,
+    "optionalFields": 987,
     "outputFields": 885,
     "recursiveTypeReferences": 3,
     "truncatedTypes": 0,
-    "types": 389,
+    "types": 392,
     "undefinedFields": 2
   },
   "entries": {
@@ -3765,6 +3765,284 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
+    "CreateInventoryDetachInput.actorId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "observational/audit-only",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "CreateInventoryDetachInput.amount": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryAmount",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "CreateInventoryDetachInput.catalog": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryCatalog",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "CreateInventoryDetachInput.destinationPartyId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "observational/audit-only",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "CreateInventoryDetachInput.from": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryStockPositionInput",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "CreateInventoryDetachInput.itemRevisionId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "CreateInventoryDetachInput.metadata": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "observational/audit-only",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "Readonly<Record<string, InventoryMetadataValue>>",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [
+        "GAP-ARBITRARY-AUDIT-METADATA"
+      ],
+      "optional": true,
+      "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "CreateInventoryDetachInput.occurredAtEpochMs": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "CreateInventoryDetachInput.operationId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "CreateInventoryDetachInput.reason": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "observational/audit-only",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "CreateInventoryDetachInput.sourcePartyId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "observational/audit-only",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "CreateInventoryDetachInput.sourceReference": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "observational/audit-only",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
     "CreateInventoryIssueInput.actorId": {
       "allowsNull": false,
       "allowsUndefined": false,
@@ -4531,6 +4809,284 @@
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
     "CreateInventoryLotMetadataInput.sourceReference": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "observational/audit-only",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "CreateInventoryMarkMissingInput.actorId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "observational/audit-only",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "CreateInventoryMarkMissingInput.amount": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryAmount",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "CreateInventoryMarkMissingInput.catalog": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryCatalog",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "CreateInventoryMarkMissingInput.destinationPartyId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "observational/audit-only",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "CreateInventoryMarkMissingInput.from": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryStockPositionInput",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "CreateInventoryMarkMissingInput.itemRevisionId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "CreateInventoryMarkMissingInput.metadata": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "observational/audit-only",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "Readonly<Record<string, InventoryMetadataValue>>",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [
+        "GAP-ARBITRARY-AUDIT-METADATA"
+      ],
+      "optional": true,
+      "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "CreateInventoryMarkMissingInput.occurredAtEpochMs": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "CreateInventoryMarkMissingInput.operationId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "CreateInventoryMarkMissingInput.reason": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "observational/audit-only",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "CreateInventoryMarkMissingInput.sourcePartyId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "observational/audit-only",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "CreateInventoryMarkMissingInput.sourceReference": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -5379,6 +5935,307 @@
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
     "CreateInventoryPackInput.sourceReference": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "observational/audit-only",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "CreateInventoryPlaceInput.actorId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "observational/audit-only",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "CreateInventoryPlaceInput.amount": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryAmount",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "CreateInventoryPlaceInput.catalog": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryCatalog",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "CreateInventoryPlaceInput.destinationPartyId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "observational/audit-only",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "CreateInventoryPlaceInput.from": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryStockPositionInput",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "CreateInventoryPlaceInput.into": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "CreateInventoryPlaceInput.itemRevisionId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "CreateInventoryPlaceInput.metadata": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "observational/audit-only",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "Readonly<Record<string, InventoryMetadataValue>>",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [
+        "GAP-ARBITRARY-AUDIT-METADATA"
+      ],
+      "optional": true,
+      "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "CreateInventoryPlaceInput.occurredAtEpochMs": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "CreateInventoryPlaceInput.operationId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "CreateInventoryPlaceInput.reason": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "observational/audit-only",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "CreateInventoryPlaceInput.sourcePartyId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "observational/audit-only",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "CreateInventoryPlaceInput.sourceReference": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -55455,7 +56312,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/commands.ts:312:35.axisId": {
+    "anonymous@src/commands.ts:351:35.axisId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -55478,7 +56335,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/commands.ts:312:35.unit": {
+    "anonymous@src/commands.ts:351:35.unit": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -55501,7 +56358,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/commands.ts:312:35.value": {
+    "anonymous@src/commands.ts:351:35.value": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -55937,7 +56794,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/facade.ts:714:5.deficitPosition": {
+    "anonymous@src/facade.ts:717:5.deficitPosition": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -55962,7 +56819,7 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/facade.ts:714:5.groupId": {
+    "anonymous@src/facade.ts:717:5.groupId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -55986,7 +56843,7 @@
       "optional": true,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/facade.ts:714:5.requestId": {
+    "anonymous@src/facade.ts:717:5.requestId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -56673,5 +57530,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "905e87cded88fffcaba4e132665ae173dbb8598f2f96fb8d5a7e9d03b4f4cc28"
+  "surfaceSha256": "d922dc292d5b2f37a97f3575e06d68fb176369a64d52e4182735c8afca7db618"
 }

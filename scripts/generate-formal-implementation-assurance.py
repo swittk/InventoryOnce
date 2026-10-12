@@ -160,6 +160,7 @@ def kernel_family(name,decl):
  if decl in {'src/read-model.ts','src/availability.ts','src/usability.ts','src/whereabouts.ts'}: return 'read-current'
  if decl == 'src/projection.ts': return 'dimension-reclassification'
  if decl in {'src/events.ts','src/commands.ts'}:
+  if name in {'createInventoryDetachEvent','createInventoryPlaceEvent','createInventoryMarkMissingEvent'}: return 'dimension-reclassification'
   if 'receipt' in low or 'opening' in low: return 'stock-receipt'
   if 'issue' in low: return 'stock-issue'
   if 'transfer' in low: return 'stock-transfer'

@@ -12,7 +12,13 @@ import {
   parseQuantity,
   stockAmount,
 } from "../src/index.js";
-import { createInventoryOpeningEvent } from "../src/kernel.js";
+import {
+  createInventoryDetachEvent,
+  createInventoryOpeningEvent,
+  createInventoryReclassificationEvent,
+  createInventoryReclassificationManyEvent,
+  createInventoryTransformationEvent,
+} from "../src/kernel.js";
 import { createInMemoryInventoryDurableStorage } from "../src/storage-api.js";
 import {
   clockAt,
@@ -94,6 +100,89 @@ describe("detached and missing stock whereabouts", () => {
         amount: stockAmount("1", "piece"),
       } as never)
     ).toThrow("cannot supply detached/missing whereabouts lifecycle fields");
+  });
+
+  it("rejects lifecycle invention through generic reclassification and transformation builders", () => {
+    const catalog = createTabletCatalog();
+    const forgedUnresolved = {
+      itemId: "item-a",
+      whereaboutsId: "caller-forged-cohort",
+      whereaboutsState: InventoryStockWhereaboutsState.Detached,
+      lastPlacementNodeId: "store",
+      detachedAtEpochMs: time1,
+    } as const;
+
+    expect(() =>
+      createInventoryReclassificationEvent({
+        catalog,
+        operationId: "reject-forged-single-reclassification-cohort",
+        occurredAtEpochMs: time1,
+        from: loosePosition("store"),
+        to: forgedUnresolved,
+        amount: stockAmount("1", "piece"),
+      })
+    ).toThrow(
+      "Generic reclassification cannot change a whereabouts lifecycle"
+    );
+
+    expect(() =>
+      createInventoryReclassificationManyEvent({
+        catalog,
+        operationId: "reject-forged-reclassification-cohort",
+        occurredAtEpochMs: time1,
+        consume: [
+          {
+            from: loosePosition("store"),
+            amount: stockAmount("1", "piece"),
+          },
+        ],
+        produce: [
+          {
+            to: forgedUnresolved,
+            amount: stockAmount("1", "piece"),
+          },
+        ],
+      })
+    ).toThrow(
+      "Generic reclassification cannot create or resolve detached/missing whereabouts cohorts."
+    );
+
+    const explicitDetach = createInventoryDetachEvent({
+      catalog,
+      operationId: "explicit-low-level-detach",
+      occurredAtEpochMs: time1,
+      from: loosePosition("store"),
+      amount: stockAmount("1", "piece"),
+    });
+    expect(explicitDetach.stockEffects[1]?.position).toMatchObject({
+      whereaboutsId:
+        "inventory:whereabouts:explicit-low-level-detach",
+      whereaboutsState: InventoryStockWhereaboutsState.Detached,
+      lastPlacementNodeId: "store",
+      detachedAtEpochMs: time1,
+    });
+
+    expect(() =>
+      createInventoryTransformationEvent({
+        catalog,
+        operationId: "reject-forged-transformation-cohort",
+        occurredAtEpochMs: time1,
+        consume: [
+          {
+            position: loosePosition("store"),
+            amount: stockAmount("1", "piece"),
+          },
+        ],
+        produce: [
+          {
+            position: forgedUnresolved,
+            amount: stockAmount("1", "piece"),
+          },
+        ],
+      })
+    ).toThrow(
+      "Transformation output cannot invent or switch a detached/missing whereabouts lifecycle."
+    );
   });
 
   it("keeps separate detach cohorts queryable and later resolves them without fake receipts", async () => {

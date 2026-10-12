@@ -33,6 +33,7 @@ import {
   type InventoryMeasurementVector,
 } from "./measurements.js";
 import {
+  InventoryStockWhereaboutsState,
   InventoryTraceabilityNodeKind,
   inventoryPlacementNodeIdentity,
   inventoryLotIdentity,
@@ -169,6 +170,44 @@ export interface CreateInventoryReclassificationInput
   readonly itemRevisionId?: string;
   /** Optional metadata for `to.placementNodeId` when this change introduces/confirms a placementNode. */
   readonly placementNode?: InventoryPlacementNodeMetadataInput;
+}
+
+/** Inputs for explicitly detaching known-placed stock without issuing it. */
+export interface CreateInventoryDetachInput extends InventoryCommandHeader {
+  /** Frozen catalogue used to resolve the source item/package definition. */
+  readonly catalog: InventoryCatalog;
+  /** Exact currently placed source position. */
+  readonly from: InventoryStockPositionInput;
+  /** Exact amount becoming intentionally unplaced. */
+  readonly amount: InventoryAmount;
+  /** Optional exact item revision; defaults to active/package revision. */
+  readonly itemRevisionId?: string;
+}
+
+/** Inputs for explicitly placing currently detached/missing stock. */
+export interface CreateInventoryPlaceInput extends InventoryCommandHeader {
+  /** Frozen catalogue used to resolve the source item/package definition. */
+  readonly catalog: InventoryCatalog;
+  /** Exact detached/missing source position. */
+  readonly from: InventoryStockPositionInput;
+  /** Known direct placement becoming current. */
+  readonly into: string;
+  /** Exact amount being placed. */
+  readonly amount: InventoryAmount;
+  /** Optional exact item revision; defaults to active/package revision. */
+  readonly itemRevisionId?: string;
+}
+
+/** Inputs for explicitly escalating placed/detached stock to genuinely missing. */
+export interface CreateInventoryMarkMissingInput extends InventoryCommandHeader {
+  /** Frozen catalogue used to resolve the source item/package definition. */
+  readonly catalog: InventoryCatalog;
+  /** Exact placed or detached source position. */
+  readonly from: InventoryStockPositionInput;
+  /** Exact amount becoming genuinely missing. */
+  readonly amount: InventoryAmount;
+  /** Optional exact item revision; defaults to active/package revision. */
+  readonly itemRevisionId?: string;
 }
 
 /** One exact source line in an atomic conserved reclassification. */
@@ -1016,9 +1055,56 @@ export function createInventoryTransferManyEvent(
   );
 }
 
-/** Create an explicit dimension-only reclassification event. */
+/** Create an ordinary dimension-only reclassification that preserves whereabouts. */
 export function createInventoryReclassificationEvent(
   input: CreateInventoryReclassificationInput
+): InventoryEventDraft {
+  return createInventoryReclassificationEventInternal(input, false);
+}
+
+/** Create an explicit known-placement -> detached lifecycle transition. */
+export function createInventoryDetachEvent(
+  input: CreateInventoryDetachInput
+): InventoryEventDraft {
+  return createInventoryReclassificationEventInternal(
+    {
+      ...input,
+      to: inventoryDetachedCommandPosition(input),
+    },
+    true
+  );
+}
+
+/** Create an explicit detached/missing -> known-placement lifecycle transition. */
+export function createInventoryPlaceEvent(
+  input: CreateInventoryPlaceInput
+): InventoryEventDraft {
+  return createInventoryReclassificationEventInternal(
+    {
+      ...input,
+      to: inventoryPlacedCommandPosition(input),
+    },
+    true
+  );
+}
+
+/** Create an explicit placed/detached -> missing lifecycle transition. */
+export function createInventoryMarkMissingEvent(
+  input: CreateInventoryMarkMissingInput
+): InventoryEventDraft {
+  return createInventoryReclassificationEventInternal(
+    {
+      ...input,
+      to: inventoryMissingCommandPosition(input),
+    },
+    true
+  );
+}
+
+/** Shared single-line reducer; only explicit lifecycle verbs may bypass preservation. */
+function createInventoryReclassificationEventInternal(
+  input: CreateInventoryReclassificationInput,
+  allowWhereaboutsTransition: boolean
 ): InventoryEventDraft {
   const item = findCommandItem(
     input.catalog,
@@ -1033,6 +1119,9 @@ export function createInventoryReclassificationEvent(
     item.revisionId
   );
   const to = positionWithAmountPackaging(input.to, resolved, item.revisionId);
+  if (!allowWhereaboutsTransition) {
+    assertInventoryReclassificationPreservesWhereabouts(from, to);
+  }
   if (from.itemId !== to.itemId) {
     throw new Error(
       "Reclassification cannot change item identity; use transformation."
@@ -1132,6 +1221,22 @@ export function createInventoryReclassificationManyEvent(
   }
   const sourceEntries = [...groupedSources.entries()];
   const destinationEntries = [...groupedDestinations.entries()];
+  assertInventoryReclassificationManyPreservesWhereabouts(
+    sourceEntries.map(
+      /** Project one grouped source into lifecycle-conservation evidence. */
+      ([, line]) => ({
+        position: line.position,
+        measurements: line.measurements,
+      })
+    ),
+    destinationEntries.map(
+      /** Project one grouped destination into lifecycle-conservation evidence. */
+      ([, line]) => ({
+        position: line.position,
+        measurements: line.measurements,
+      })
+    )
+  );
   sourceEntries.sort(compareGroupedInventoryOutgoingEntry);
   destinationEntries.sort(compareGroupedInventoryOutgoingEntry);
   const stockEffects: InventoryStockEffect[] = [];
@@ -1373,6 +1478,16 @@ export function createInventoryTransformationEvent(
   }
   const consumedEntries = [...groupedConsumed.entries()];
   const producedEntries = [...groupedProduced.entries()];
+  assertInventoryTransformationWhereaboutsInheritance(
+    consumedEntries.map(
+      /** Project one consumed line to the exact whereabouts-bearing position. */
+      ([, line]) => line.movement.position
+    ),
+    producedEntries.map(
+      /** Project one produced line to the exact whereabouts-bearing position. */
+      ([, line]) => line.movement.position
+    )
+  );
   consumedEntries.sort(compareGroupedInventoryTransformationEntry);
   producedEntries.sort(compareGroupedInventoryTransformationEntry);
   const stockEffects: InventoryStockEffect[] = [];
@@ -1607,6 +1722,219 @@ export function createInventoryTraceabilityEvent(
     [],
     input.changes
   );
+}
+
+/** Stable unresolved-whereabouts tuple; placed stock has no lifecycle tuple. */
+function inventoryWhereaboutsLifecycleIdentity(
+  position: InventoryStockPositionKey
+): string | undefined {
+  if (position.whereaboutsId === undefined) return undefined;
+  return JSON.stringify([
+    position.whereaboutsId,
+    position.whereaboutsState ?? null,
+    position.lastPlacementNodeId ?? null,
+    position.detachedAtEpochMs ?? null,
+    position.missingAtEpochMs ?? null,
+  ]);
+}
+
+/** Kernel-owned unresolved lifecycle identity derived from one explicit physical operation. */
+function inventoryWhereaboutsIdForCommand(operationId: string): string {
+  return "inventory:whereabouts:" + encodeURIComponent(operationId);
+}
+
+/** Require one lifecycle command to name a structurally valid source object. */
+function requireInventoryWhereaboutsCommandSource(
+  value: InventoryStockPositionInput | undefined,
+  label: string
+): InventoryStockPositionInput {
+  if (value === undefined || value === null || typeof value !== "object") {
+    throw new Error(label + " must name an exact source position.");
+  }
+  return value;
+}
+
+/** Build a canonical detached destination from one known-placed source. */
+function inventoryDetachedCommandPosition(
+  input: CreateInventoryDetachInput
+): InventoryStockPositionInput {
+  const from = requireInventoryWhereaboutsCommandSource(input.from, "Detach source");
+  const placementNodeId = from.placementNodeId;
+  if (placementNodeId === undefined) {
+    throw new Error("Detach source must currently have a placement.");
+  }
+  const {
+    placementNodeId: _placementNodeId,
+    whereaboutsId: _whereaboutsId,
+    whereaboutsState: _whereaboutsState,
+    lastPlacementNodeId: _lastPlacementNodeId,
+    detachedAtEpochMs: _detachedAtEpochMs,
+    missingAtEpochMs: _missingAtEpochMs,
+    ...rest
+  } = from;
+  return {
+    ...rest,
+    whereaboutsId: inventoryWhereaboutsIdForCommand(input.operationId),
+    whereaboutsState: InventoryStockWhereaboutsState.Detached,
+    lastPlacementNodeId: placementNodeId,
+    detachedAtEpochMs: input.occurredAtEpochMs,
+  };
+}
+
+/** Build a canonical known-placement destination from detached/missing stock. */
+function inventoryPlacedCommandPosition(
+  input: CreateInventoryPlaceInput
+): InventoryStockPositionInput {
+  const from = requireInventoryWhereaboutsCommandSource(input.from, "Place source");
+  if (from.placementNodeId !== undefined) {
+    throw new Error("Place source must currently be detached or missing.");
+  }
+  if (from.whereaboutsId === undefined || from.whereaboutsState === undefined) {
+    throw new Error("Place source has no unresolved whereabouts lifecycle.");
+  }
+  const into = typeof input.into === "string" ? input.into.trim() : "";
+  if (into.length === 0) throw new Error("Place destination must not be empty.");
+  const {
+    whereaboutsId: _whereaboutsId,
+    whereaboutsState: _whereaboutsState,
+    lastPlacementNodeId: _lastPlacementNodeId,
+    detachedAtEpochMs: _detachedAtEpochMs,
+    missingAtEpochMs: _missingAtEpochMs,
+    ...rest
+  } = from;
+  return { ...rest, placementNodeId: into };
+}
+
+/** Build a canonical missing destination from known-placed or detached stock. */
+function inventoryMissingCommandPosition(
+  input: CreateInventoryMarkMissingInput
+): InventoryStockPositionInput {
+  const from = requireInventoryWhereaboutsCommandSource(
+    input.from,
+    "Mark-missing source"
+  );
+  if (from.whereaboutsState === InventoryStockWhereaboutsState.Missing) {
+    throw new Error("Stock is already marked missing.");
+  }
+  if (from.placementNodeId !== undefined) {
+    const {
+      placementNodeId,
+      whereaboutsId: _whereaboutsId,
+      whereaboutsState: _whereaboutsState,
+      lastPlacementNodeId: _lastPlacementNodeId,
+      detachedAtEpochMs: _detachedAtEpochMs,
+      missingAtEpochMs: _missingAtEpochMs,
+      ...rest
+    } = from;
+    return {
+      ...rest,
+      whereaboutsId: inventoryWhereaboutsIdForCommand(input.operationId),
+      whereaboutsState: InventoryStockWhereaboutsState.Missing,
+      lastPlacementNodeId: placementNodeId,
+      detachedAtEpochMs: input.occurredAtEpochMs,
+      missingAtEpochMs: input.occurredAtEpochMs,
+    };
+  }
+  if (
+    from.whereaboutsId === undefined ||
+    from.whereaboutsState !== InventoryStockWhereaboutsState.Detached ||
+    from.lastPlacementNodeId === undefined ||
+    from.detachedAtEpochMs === undefined
+  ) {
+    throw new Error(
+      "Mark-missing source must be placed or intentionally detached stock."
+    );
+  }
+  return {
+    ...from,
+    whereaboutsState: InventoryStockWhereaboutsState.Missing,
+    missingAtEpochMs: input.occurredAtEpochMs,
+  };
+}
+
+/** Ordinary reclassification cannot start, resolve, switch, or mutate whereabouts. */
+function assertInventoryReclassificationPreservesWhereabouts(
+  from: InventoryStockPositionKey,
+  to: InventoryStockPositionKey
+): void {
+  if (
+    inventoryWhereaboutsLifecycleIdentity(from) ===
+    inventoryWhereaboutsLifecycleIdentity(to)
+  ) {
+    return;
+  }
+  throw new Error(
+    "Generic reclassification cannot change a whereabouts lifecycle; use stock.detach, stock.markMissing, or stock.place."
+  );
+}
+
+/** Conserved split/merge reclassification cannot move quantity between whereabouts cohorts. */
+function assertInventoryReclassificationManyPreservesWhereabouts(
+  sources: readonly InventoryProvenanceLine[],
+  destinations: readonly InventoryProvenanceLine[]
+): void {
+  const sourceTotals = inventoryWhereaboutsMeasurementTotals(sources);
+  const destinationTotals = inventoryWhereaboutsMeasurementTotals(destinations);
+  if (sourceTotals.size !== destinationTotals.size) {
+    throw new Error(
+      "Generic reclassification cannot create or resolve detached/missing whereabouts cohorts."
+    );
+  }
+  for (const [identity, sourceMeasurements] of sourceTotals) {
+    const destinationMeasurements = destinationTotals.get(identity);
+    if (
+      destinationMeasurements === undefined ||
+      !inventoryMeasurementsEqual(sourceMeasurements, destinationMeasurements)
+    ) {
+      throw new Error(
+        "Generic reclassification must preserve each detached/missing whereabouts cohort exactly."
+      );
+    }
+  }
+}
+
+/** Aggregate unresolved measurements by item/revision plus exact lifecycle tuple. */
+function inventoryWhereaboutsMeasurementTotals(
+  lines: readonly InventoryProvenanceLine[]
+): ReadonlyMap<string, InventoryMeasurementVector> {
+  const totals = new Map<string, InventoryMeasurementVector>();
+  for (const line of lines) {
+    const lifecycle = inventoryWhereaboutsLifecycleIdentity(line.position);
+    if (lifecycle === undefined) continue;
+    const key = JSON.stringify([
+      line.position.itemId,
+      line.position.itemRevisionId,
+      lifecycle,
+    ]);
+    const earlier = totals.get(key);
+    totals.set(
+      key,
+      earlier === undefined
+        ? line.measurements
+        : addInventoryMeasurements(earlier, line.measurements)
+    );
+  }
+  return totals;
+}
+
+/** Transformation outputs may inherit unresolved truth only from consumed stock. */
+function assertInventoryTransformationWhereaboutsInheritance(
+  consumed: readonly InventoryStockPositionKey[],
+  produced: readonly InventoryStockPositionKey[]
+): void {
+  const consumedLifecycles = new Set<string>();
+  for (const position of consumed) {
+    const lifecycle = inventoryWhereaboutsLifecycleIdentity(position);
+    if (lifecycle !== undefined) consumedLifecycles.add(lifecycle);
+  }
+  for (const position of produced) {
+    const lifecycle = inventoryWhereaboutsLifecycleIdentity(position);
+    if (lifecycle !== undefined && !consumedLifecycles.has(lifecycle)) {
+      throw new Error(
+        "Transformation output cannot invent or switch a detached/missing whereabouts lifecycle."
+      );
+    }
+  }
 }
 
 /** One resolved line used only to identify exact one-to-one conserved reclassifications. */

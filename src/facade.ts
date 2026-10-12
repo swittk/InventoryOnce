@@ -67,13 +67,16 @@ import {
 } from "./counts.js";
 import {
   createInventoryCatalogPublicationEvent,
+  createInventoryDetachEvent,
   createInventoryIssueEvent,
   createInventoryIssueManyEvent,
   createInventoryPlacementNodeMetadataEvent,
   createInventoryPlacementEvent,
   createInventoryLotMetadataEvent,
+  createInventoryMarkMissingEvent,
   createInventoryOpeningEvent,
   createInventoryPackEvent,
+  createInventoryPlaceEvent,
   createInventoryReceiptEvent,
   createInventoryReceiptManyEvent,
   createInventoryReclassificationEvent,
@@ -2670,9 +2673,10 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
   async detach(
     input: InventoryOnceDetachInput
   ): Promise<InventoryOnceEventResult> {
-    return this.commitReclassification(
-      input,
-      inventoryDetachedPosition(input, input.operationId)
+    const { catalog } = requireInventoryOnceInternals(this.owner);
+    return commitInventoryEventDraft(
+      this.owner,
+      createInventoryDetachEvent({ ...input, catalog })
     );
   }
 
@@ -2680,16 +2684,21 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
   async place(
     input: InventoryOncePlaceInput
   ): Promise<InventoryOnceEventResult> {
-    return this.commitReclassification(input, inventoryPlacedPosition(input));
+    const { catalog } = requireInventoryOnceInternals(this.owner);
+    return commitInventoryEventDraft(
+      this.owner,
+      createInventoryPlaceEvent({ ...input, catalog })
+    );
   }
 
   /** Mark placed or detached stock as genuinely missing while keeping quantity conserved. */
   async markMissing(
     input: InventoryOnceMarkMissingInput
   ): Promise<InventoryOnceEventResult> {
-    return this.commitReclassification(
-      input,
-      inventoryMissingPosition(input, input.operationId)
+    const { catalog } = requireInventoryOnceInternals(this.owner);
+    return commitInventoryEventDraft(
+      this.owner,
+      createInventoryMarkMissingEvent({ ...input, catalog })
     );
   }
 
@@ -3039,109 +3048,6 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
       })
     );
   }
-}
-
-/** Derive one kernel-namespaced stable whereabouts lifecycle identity from a command identity. */
-function inventoryWhereaboutsIdForOperation(operationId: string): string {
-  assertInventoryIdentity(operationId, "whereabouts operationId");
-  return `inventory:whereabouts:${encodeURIComponent(operationId)}`;
-}
-
-/** Build one conserved detached destination while preserving every unrelated stock dimension. */
-function inventoryDetachedPosition(
-  input: Omit<InventoryOnceDetachInput, "operationId"> | InventoryOnceDetachInput,
-  fallbackWhereaboutsId: string
-): InventoryStockPositionInput {
-  const from = requireStockPositionInput(input.from, "detach");
-  const placementNodeId = from.placementNodeId;
-  if (placementNodeId === undefined) {
-    throw new Error("Detach source must currently have a placement.");
-  }
-  const {
-    placementNodeId: _placementNodeId,
-    whereaboutsId: _whereaboutsId,
-    whereaboutsState: _whereaboutsState,
-    lastPlacementNodeId: _lastPlacementNodeId,
-    detachedAtEpochMs: _detachedAtEpochMs,
-    missingAtEpochMs: _missingAtEpochMs,
-    ...rest
-  } = from;
-  return {
-    ...rest,
-    whereaboutsId: inventoryWhereaboutsIdForOperation(fallbackWhereaboutsId),
-    whereaboutsState: InventoryStockWhereaboutsState.Detached,
-    lastPlacementNodeId: placementNodeId,
-    detachedAtEpochMs: input.occurredAtEpochMs,
-  };
-}
-
-/** Build one known-placement destination from detached/missing stock and clear unresolved lifecycle fields. */
-function inventoryPlacedPosition(
-  input: Omit<InventoryOncePlaceInput, "operationId"> | InventoryOncePlaceInput
-): InventoryStockPositionInput {
-  const from = requireStockPositionInput(input.from, "place");
-  if (from.placementNodeId !== undefined) {
-    throw new Error("Place source must currently be detached or missing.");
-  }
-  if (from.whereaboutsId === undefined || from.whereaboutsState === undefined) {
-    throw new Error("Place source has no unresolved whereabouts lifecycle.");
-  }
-  const into = typeof input.into === "string" ? input.into.trim() : "";
-  if (into.length === 0) throw new Error("Place destination must not be empty.");
-  const {
-    whereaboutsId: _whereaboutsId,
-    whereaboutsState: _whereaboutsState,
-    lastPlacementNodeId: _lastPlacementNodeId,
-    detachedAtEpochMs: _detachedAtEpochMs,
-    missingAtEpochMs: _missingAtEpochMs,
-    ...rest
-  } = from;
-  return { ...rest, placementNodeId: into };
-}
-
-/** Build one conserved missing destination from either placed or intentionally detached stock. */
-function inventoryMissingPosition(
-  input:
-    | Omit<InventoryOnceMarkMissingInput, "operationId">
-    | InventoryOnceMarkMissingInput,
-  fallbackWhereaboutsId: string
-): InventoryStockPositionInput {
-  const from = requireStockPositionInput(input.from, "mark missing");
-  if (from.whereaboutsState === InventoryStockWhereaboutsState.Missing) {
-    throw new Error("Stock is already marked missing.");
-  }
-  if (from.placementNodeId !== undefined) {
-    const {
-      placementNodeId,
-      whereaboutsId: _whereaboutsId,
-      whereaboutsState: _whereaboutsState,
-      lastPlacementNodeId: _lastPlacementNodeId,
-      detachedAtEpochMs: _detachedAtEpochMs,
-      missingAtEpochMs: _missingAtEpochMs,
-      ...rest
-    } = from;
-    return {
-      ...rest,
-      whereaboutsId: inventoryWhereaboutsIdForOperation(fallbackWhereaboutsId),
-      whereaboutsState: InventoryStockWhereaboutsState.Missing,
-      lastPlacementNodeId: placementNodeId,
-      detachedAtEpochMs: input.occurredAtEpochMs,
-      missingAtEpochMs: input.occurredAtEpochMs,
-    };
-  }
-  if (
-    from.whereaboutsId === undefined ||
-    from.whereaboutsState !== InventoryStockWhereaboutsState.Detached ||
-    from.lastPlacementNodeId === undefined ||
-    from.detachedAtEpochMs === undefined
-  ) {
-    throw new Error("Mark-missing source must be placed or intentionally detached stock.");
-  }
-  return {
-    ...from,
-    whereaboutsState: InventoryStockWhereaboutsState.Missing,
-    missingAtEpochMs: input.occurredAtEpochMs,
-  };
 }
 
 /** Physical movement selected through one exact mutual-fungibility pool revision. */
@@ -5325,9 +5231,12 @@ class InventoryOnceReplacementPlansImplementation
   detach(
     input: Omit<InventoryOnceDetachInput, "operationId">
   ): InventoryOnceReplacementPlan {
-    return this.reclassification(
-      input,
-      inventoryDetachedPosition(input, this.operationId)
+    return new InventoryOnceReplacementPlanImplementation(
+      createInventoryDetachEvent({
+        ...input,
+        catalog: this.catalog,
+        operationId: this.operationId,
+      })
     );
   }
 
@@ -5335,16 +5244,25 @@ class InventoryOnceReplacementPlansImplementation
   place(
     input: Omit<InventoryOncePlaceInput, "operationId">
   ): InventoryOnceReplacementPlan {
-    return this.reclassification(input, inventoryPlacedPosition(input));
+    return new InventoryOnceReplacementPlanImplementation(
+      createInventoryPlaceEvent({
+        ...input,
+        catalog: this.catalog,
+        operationId: this.operationId,
+      })
+    );
   }
 
   /** Plan a replacement missing-stock classification. */
   markMissing(
     input: Omit<InventoryOnceMarkMissingInput, "operationId">
   ): InventoryOnceReplacementPlan {
-    return this.reclassification(
-      input,
-      inventoryMissingPosition(input, this.operationId)
+    return new InventoryOnceReplacementPlanImplementation(
+      createInventoryMarkMissingEvent({
+        ...input,
+        catalog: this.catalog,
+        operationId: this.operationId,
+      })
     );
   }
 
