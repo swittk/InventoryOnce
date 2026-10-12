@@ -53,7 +53,9 @@ import {
 } from "./selectors.js";
 import {
   applyInventoryTraceabilityChanges,
+  applyInventoryTraceabilityChangesBatch,
   emptyInventoryTraceabilityState,
+  type ApplyInventoryTraceabilityChangesInput,
   type InventoryTraceabilityState,
 } from "./traceability.js";
 import { projectInventoryTraceabilityEvents } from "./traceability-replay.js";
@@ -274,16 +276,35 @@ export function applyInventoryCommittedEvents({
   }
   let next = cloneInventoryProjectionForEventBatch(state);
   let changed = false;
+  const traceabilityTail: Array<
+    Pick<ApplyInventoryTraceabilityChangesInput, "eventId" | "changes">
+  > = [];
   for (const event of ordered) {
+    // Validate all stock/placement/transfer state via the existing exact
+    // reducer, but do not repeatedly copy the full traceability relation
+    // map while catching up a deferred event sequence.
     const result = applyInventoryCommittedEventInternal(
       { catalog, state: next, event, deficitPolicy },
       true,
-      true
+      false
     );
     next = result.state;
     changed ||= !result.replayed;
+    if (!result.replayed && result.event.traceabilityChanges.length !== 0) {
+      traceabilityTail.push({
+        eventId: result.event.eventId,
+        changes: result.event.traceabilityChanges,
+      });
+    }
   }
-  return changed ? next : state;
+  if (!changed) return state;
+  return {
+    ...next,
+    traceability: applyInventoryTraceabilityChangesBatch({
+      state: state.traceability,
+      events: traceabilityTail,
+    }),
+  };
 }
 
 /** Clone each mutable root once; immutable rows and sorted arrays remain shared. */

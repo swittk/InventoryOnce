@@ -1,22 +1,22 @@
 {
   "counts": {
     "authorityMethods": 14,
-    "callAndConstructSignatures": 538,
+    "callAndConstructSignatures": 539,
     "classMethods": 71,
-    "compilerCallGraphCallables": 2966,
-    "compilerCallGraphEdges": 7780,
-    "compilerCallGraphTestRoots": 47,
+    "compilerCallGraphCallables": 2979,
+    "compilerCallGraphEdges": 7812,
+    "compilerCallGraphTestRoots": 48,
     "compilerCallGraphUnresolvedApis": 0,
-    "compilerCallGraphWitnessedApis": 538,
-    "directExecutableApis": 207,
+    "compilerCallGraphWitnessedApis": 539,
+    "directExecutableApis": 209,
     "explicitGapApis": 4,
     "facadeMethods": 130,
-    "indirectCallChainApis": 327,
-    "kernelCallables": 168,
+    "indirectCallChainApis": 326,
+    "kernelCallables": 169,
     "maximumTypeDepth": 12,
     "migrationCallables": 15,
-    "reachableFields": 2484,
-    "reachableTypes": 400,
+    "reachableFields": 2486,
+    "reachableTypes": 401,
     "recursiveTypeReferences": 3,
     "rootCallables": 100,
     "storageCallables": 23,
@@ -11469,6 +11469,10 @@
           "path": "src/traceability-replay.ts"
         },
         {
+          "occurrences": 1,
+          "path": "src/traceability.ts"
+        },
+        {
           "occurrences": 2,
           "path": "src/transfers.ts"
         },
@@ -14657,9 +14661,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:9427:applyInventoryCommittedEvent",
+              "id": "src/projection.ts:9516:applyInventoryCommittedEvent",
               "kind": "FunctionDeclaration",
-              "line": 215,
+              "line": 217,
               "name": "applyInventoryCommittedEvent",
               "reason": "resolved-call"
             }
@@ -14668,9 +14672,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:9427:applyInventoryCommittedEvent",
+            "id": "src/projection.ts:9516:applyInventoryCommittedEvent",
             "kind": "FunctionDeclaration",
-            "line": 215,
+            "line": 217,
             "name": "applyInventoryCommittedEvent"
           },
           "test": "test/projection-batch-catchup.test.ts"
@@ -14697,9 +14701,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:9427:applyInventoryCommittedEvent",
+          "id": "src/projection.ts:9516:applyInventoryCommittedEvent",
           "kind": "FunctionDeclaration",
-          "line": 215,
+          "line": 217,
           "name": "applyInventoryCommittedEvent"
         }
       ],
@@ -14803,9 +14807,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:10572:applyInventoryCommittedEvents",
+              "id": "src/projection.ts:10661:applyInventoryCommittedEvents",
               "kind": "FunctionDeclaration",
-              "line": 239,
+              "line": 241,
               "name": "applyInventoryCommittedEvents",
               "reason": "resolved-call"
             }
@@ -14814,9 +14818,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:10572:applyInventoryCommittedEvents",
+            "id": "src/projection.ts:10661:applyInventoryCommittedEvents",
             "kind": "FunctionDeclaration",
-            "line": 239,
+            "line": 241,
             "name": "applyInventoryCommittedEvents"
           },
           "test": "test/projection-batch-catchup.test.ts"
@@ -14843,9 +14847,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:10572:applyInventoryCommittedEvents",
+          "id": "src/projection.ts:10661:applyInventoryCommittedEvents",
           "kind": "FunctionDeclaration",
-          "line": 239,
+          "line": 241,
           "name": "applyInventoryCommittedEvents"
         }
       ],
@@ -14936,9 +14940,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:53938:projectInventoryEvents",
+              "id": "src/projection.ts:54718:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1415,
+              "line": 1436,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -14946,9 +14950,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:14170:applyInventoryCommittedEventInternal",
+              "id": "src/projection.ts:14950:applyInventoryCommittedEventInternal",
               "kind": "FunctionDeclaration",
-              "line": 340,
+              "line": 361,
               "name": "applyInventoryCommittedEventInternal",
               "reason": "resolved-call"
             },
@@ -15176,6 +15180,142 @@
         "constructable": false,
         "declaration": "src/traceability.ts",
         "name": "applyInventoryTraceabilityChanges"
+      },
+      "stateProjection": [
+        "abstractTraceabilityState",
+        "abstractInventoryState",
+        "abstractOperationResult"
+      ],
+      "status": "covered"
+    },
+    "entrypoint.kernel.applyInventoryTraceabilityChangesBatch": {
+      "adapterCoverage": [
+        "memory",
+        "all-operation-failpoints"
+      ],
+      "callChainWitnesses": [
+        {
+          "chain": [
+            {
+              "column": 1,
+              "file": "test/traceability-batch-locality.test.ts",
+              "hasBody": true,
+              "id": "test-root:test/traceability-batch-locality.test.ts",
+              "kind": "TestRoot",
+              "line": 1,
+              "name": "test/traceability-batch-locality.test.ts"
+            },
+            {
+              "column": 54,
+              "file": "test/traceability-batch-locality.test.ts",
+              "hasBody": true,
+              "id": "test/traceability-batch-locality.test.ts:2504:<anonymous@79>",
+              "kind": "ArrowFunction",
+              "line": 79,
+              "name": "<anonymous@79>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 80,
+              "file": "test/traceability-batch-locality.test.ts",
+              "hasBody": true,
+              "id": "test/traceability-batch-locality.test.ts:3665:<anonymous@110>",
+              "kind": "ArrowFunction",
+              "line": 110,
+              "name": "<anonymous@110>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 1,
+              "file": "src/traceability.ts",
+              "hasBody": true,
+              "id": "src/traceability.ts:2837:applyInventoryTraceabilityChangesBatch",
+              "kind": "FunctionDeclaration",
+              "line": 76,
+              "name": "applyInventoryTraceabilityChangesBatch",
+              "reason": "resolved-call"
+            }
+          ],
+          "target": {
+            "column": 1,
+            "file": "src/traceability.ts",
+            "hasBody": true,
+            "id": "src/traceability.ts:2837:applyInventoryTraceabilityChangesBatch",
+            "kind": "FunctionDeclaration",
+            "line": 76,
+            "name": "applyInventoryTraceabilityChangesBatch"
+          },
+          "test": "test/traceability-batch-locality.test.ts"
+        }
+      ],
+      "directExecutableEntrypoints": [
+        "test/traceability-batch-locality.test.ts"
+      ],
+      "directExecutableEvidence": [
+        "test/traceability-batch-locality.test.ts"
+      ],
+      "evidenceMode": "direct-executable",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/traceability-corrections.test.ts",
+        "test/projection-index-scale.test.ts",
+        "test/formal-storage-refinement.test.ts"
+      ],
+      "family": "traceability",
+      "gaps": [
+        "GAP-GRAPH-ADVERSARIAL-SEARCH"
+      ],
+      "implementationTargets": [
+        {
+          "column": 1,
+          "file": "src/traceability.ts",
+          "hasBody": true,
+          "id": "src/traceability.ts:2837:applyInventoryTraceabilityChangesBatch",
+          "kind": "FunctionDeclaration",
+          "line": 76,
+          "name": "applyInventoryTraceabilityChangesBatch"
+        }
+      ],
+      "inputMapping": "Node identities, association action, transformation genealogy, source provenance, and command header map to one association/genealogy graph transition.",
+      "internalReferences": [
+        {
+          "occurrences": 2,
+          "path": "src/projection.ts"
+        }
+      ],
+      "invariants": [
+        "NoSelfAssociation",
+        "ConsumedIdentityIsNotStillActive",
+        "ProducedIdentityWasCreatedOnce",
+        "GenealogyOnlyPointsFromConsumedToProduced",
+        "AssociationEndpointsRemainKnown"
+      ],
+      "models": [
+        "TraceabilityGraph",
+        "TraceabilityAssociation",
+        "InventoryOperation"
+      ],
+      "rejectionRelation": "Self-edge, invalid node kind, duplicate/inconsistent relation, genealogy cycle, or genealogy without transformation rejects.",
+      "resultMapping": "Result exposes exact relation change, graph state, event, revision, and replay without inventing placement or stock effects.",
+      "retryRelation": "Exact relation intent replays once; changed kind/action/endpoints rejects.",
+      "signature": {
+        "callSignatures": [
+          {
+            "parameters": [
+              {
+                "name": "__0",
+                "optional": false,
+                "type": "ApplyInventoryTraceabilityChangesBatchInput"
+              }
+            ],
+            "result": "InventoryTraceabilityState"
+          }
+        ],
+        "callable": true,
+        "constructSignatures": [],
+        "constructable": false,
+        "declaration": "src/traceability.ts",
+        "name": "applyInventoryTraceabilityChangesBatch"
       },
       "stateProjection": [
         "abstractTraceabilityState",
@@ -15864,9 +16004,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:53938:projectInventoryEvents",
+              "id": "src/projection.ts:54718:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1415,
+              "line": 1436,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -15874,9 +16014,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:14170:applyInventoryCommittedEventInternal",
+              "id": "src/projection.ts:14950:applyInventoryCommittedEventInternal",
               "kind": "FunctionDeclaration",
-              "line": 340,
+              "line": 361,
               "name": "applyInventoryCommittedEventInternal",
               "reason": "resolved-call"
             },
@@ -17086,9 +17226,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:53938:projectInventoryEvents",
+              "id": "src/projection.ts:54718:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1415,
+              "line": 1436,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -17096,9 +17236,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:55308:inventoryEventsInRecordSequence",
+              "id": "src/projection.ts:56088:inventoryEventsInRecordSequence",
               "kind": "FunctionDeclaration",
-              "line": 1456,
+              "line": 1477,
               "name": "inventoryEventsInRecordSequence",
               "reason": "resolved-call"
             },
@@ -17106,9 +17246,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:68608:compareCommittedEventSequence",
+              "id": "src/projection.ts:69388:compareCommittedEventSequence",
               "kind": "FunctionDeclaration",
-              "line": 1827,
+              "line": 1848,
               "name": "compareCommittedEventSequence",
               "reason": "external-callback-dispatch"
             }
@@ -17117,9 +17257,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:68608:compareCommittedEventSequence",
+            "id": "src/projection.ts:69388:compareCommittedEventSequence",
             "kind": "FunctionDeclaration",
-            "line": 1827,
+            "line": 1848,
             "name": "compareCommittedEventSequence"
           },
           "test": "test/catalog-publication.test.ts"
@@ -17142,9 +17282,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:68608:compareCommittedEventSequence",
+          "id": "src/projection.ts:69388:compareCommittedEventSequence",
           "kind": "FunctionDeclaration",
-          "line": 1827,
+          "line": 1848,
           "name": "compareCommittedEventSequence"
         }
       ],
@@ -21447,42 +21587,32 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/containers.test.ts",
+              "file": "test/traceability-batch-locality.test.ts",
               "hasBody": true,
-              "id": "test-root:test/containers.test.ts",
+              "id": "test-root:test/traceability-batch-locality.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/containers.test.ts"
+              "name": "test/traceability-batch-locality.test.ts"
             },
             {
-              "column": 40,
-              "file": "test/containers.test.ts",
+              "column": 54,
+              "file": "test/traceability-batch-locality.test.ts",
               "hasBody": true,
-              "id": "test/containers.test.ts:2092:<anonymous@73>",
+              "id": "test/traceability-batch-locality.test.ts:2504:<anonymous@79>",
               "kind": "ArrowFunction",
-              "line": 73,
-              "name": "<anonymous@73>",
+              "line": 79,
+              "name": "<anonymous@79>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 81,
-              "file": "test/containers.test.ts",
+              "column": 87,
+              "file": "test/traceability-batch-locality.test.ts",
               "hasBody": true,
-              "id": "test/containers.test.ts:24249:<anonymous@762>",
+              "id": "test/traceability-batch-locality.test.ts:5604:<anonymous@167>",
               "kind": "ArrowFunction",
-              "line": 762,
-              "name": "<anonymous@762>",
+              "line": 167,
+              "name": "<anonymous@167>",
               "reason": "external-callback-dispatch"
-            },
-            {
-              "column": 1,
-              "file": "src/migrations.ts",
-              "hasBody": true,
-              "id": "src/migrations.ts:11485:defineInventoryMigration",
-              "kind": "FunctionDeclaration",
-              "line": 270,
-              "name": "defineInventoryMigration",
-              "reason": "resolved-call"
             },
             {
               "column": 1,
@@ -21504,12 +21634,16 @@
             "line": 1851,
             "name": "createInventoryTraceabilityEvent"
           },
-          "test": "test/containers.test.ts"
+          "test": "test/traceability-batch-locality.test.ts"
         }
       ],
-      "directExecutableEntrypoints": [],
-      "directExecutableEvidence": [],
-      "evidenceMode": "indirect-call-chain",
+      "directExecutableEntrypoints": [
+        "test/traceability-batch-locality.test.ts"
+      ],
+      "directExecutableEvidence": [
+        "test/traceability-batch-locality.test.ts"
+      ],
+      "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/traceability-corrections.test.ts",
@@ -24632,9 +24766,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:8202:emptyInventoryProjectionState",
+              "id": "src/projection.ts:8291:emptyInventoryProjectionState",
               "kind": "FunctionDeclaration",
-              "line": 188,
+              "line": 190,
               "name": "emptyInventoryProjectionState",
               "reason": "resolved-call"
             },
@@ -24769,9 +24903,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:8202:emptyInventoryProjectionState",
+              "id": "src/projection.ts:8291:emptyInventoryProjectionState",
               "kind": "FunctionDeclaration",
-              "line": 188,
+              "line": 190,
               "name": "emptyInventoryProjectionState",
               "reason": "resolved-call"
             }
@@ -24780,9 +24914,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:8202:emptyInventoryProjectionState",
+            "id": "src/projection.ts:8291:emptyInventoryProjectionState",
             "kind": "FunctionDeclaration",
-            "line": 188,
+            "line": 190,
             "name": "emptyInventoryProjectionState"
           },
           "test": "test/digest.test.ts"
@@ -24809,9 +24943,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:8202:emptyInventoryProjectionState",
+          "id": "src/projection.ts:8291:emptyInventoryProjectionState",
           "kind": "FunctionDeclaration",
-          "line": 188,
+          "line": 190,
           "name": "emptyInventoryProjectionState"
         }
       ],
@@ -25738,9 +25872,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:55786:findInventoryPositions",
+              "id": "src/projection.ts:56566:findInventoryPositions",
               "kind": "FunctionDeclaration",
-              "line": 1472,
+              "line": 1493,
               "name": "findInventoryPositions",
               "reason": "resolved-call"
             }
@@ -25749,9 +25883,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:55786:findInventoryPositions",
+            "id": "src/projection.ts:56566:findInventoryPositions",
             "kind": "FunctionDeclaration",
-            "line": 1472,
+            "line": 1493,
             "name": "findInventoryPositions"
           },
           "test": "test/projection-index-scale.test.ts"
@@ -25778,9 +25912,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:55786:findInventoryPositions",
+          "id": "src/projection.ts:56566:findInventoryPositions",
           "kind": "FunctionDeclaration",
-          "line": 1472,
+          "line": 1493,
           "name": "findInventoryPositions"
         }
       ],
@@ -27238,9 +27372,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:53938:projectInventoryEvents",
+              "id": "src/projection.ts:54718:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1415,
+              "line": 1436,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -27248,9 +27382,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:55308:inventoryEventsInRecordSequence",
+              "id": "src/projection.ts:56088:inventoryEventsInRecordSequence",
               "kind": "FunctionDeclaration",
-              "line": 1456,
+              "line": 1477,
               "name": "inventoryEventsInRecordSequence",
               "reason": "resolved-call"
             }
@@ -27259,9 +27393,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:55308:inventoryEventsInRecordSequence",
+            "id": "src/projection.ts:56088:inventoryEventsInRecordSequence",
             "kind": "FunctionDeclaration",
-            "line": 1456,
+            "line": 1477,
             "name": "inventoryEventsInRecordSequence"
           },
           "test": "test/catalog-publication.test.ts"
@@ -27284,9 +27418,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:55308:inventoryEventsInRecordSequence",
+          "id": "src/projection.ts:56088:inventoryEventsInRecordSequence",
           "kind": "FunctionDeclaration",
-          "line": 1456,
+          "line": 1477,
           "name": "inventoryEventsInRecordSequence"
         }
       ],
@@ -27542,9 +27676,9 @@
               "column": 1,
               "file": "src/traceability.ts",
               "hasBody": true,
-              "id": "src/traceability.ts:4504:inventoryGenealogyAncestors",
+              "id": "src/traceability.ts:6257:inventoryGenealogyAncestors",
               "kind": "FunctionDeclaration",
-              "line": 132,
+              "line": 185,
               "name": "inventoryGenealogyAncestors",
               "reason": "resolved-call"
             }
@@ -27553,9 +27687,9 @@
             "column": 1,
             "file": "src/traceability.ts",
             "hasBody": true,
-            "id": "src/traceability.ts:4504:inventoryGenealogyAncestors",
+            "id": "src/traceability.ts:6257:inventoryGenealogyAncestors",
             "kind": "FunctionDeclaration",
-            "line": 132,
+            "line": 185,
             "name": "inventoryGenealogyAncestors"
           },
           "test": "test/traceability-corrections.test.ts"
@@ -27583,9 +27717,9 @@
           "column": 1,
           "file": "src/traceability.ts",
           "hasBody": true,
-          "id": "src/traceability.ts:4504:inventoryGenealogyAncestors",
+          "id": "src/traceability.ts:6257:inventoryGenealogyAncestors",
           "kind": "FunctionDeclaration",
-          "line": 132,
+          "line": 185,
           "name": "inventoryGenealogyAncestors"
         }
       ],
@@ -28606,9 +28740,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:53938:projectInventoryEvents",
+              "id": "src/projection.ts:54718:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1415,
+              "line": 1436,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -28616,9 +28750,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:14170:applyInventoryCommittedEventInternal",
+              "id": "src/projection.ts:14950:applyInventoryCommittedEventInternal",
               "kind": "FunctionDeclaration",
-              "line": 340,
+              "line": 361,
               "name": "applyInventoryCommittedEventInternal",
               "reason": "resolved-call"
             },
@@ -29752,9 +29886,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:55786:findInventoryPositions",
+              "id": "src/projection.ts:56566:findInventoryPositions",
               "kind": "FunctionDeclaration",
-              "line": 1472,
+              "line": 1493,
               "name": "findInventoryPositions",
               "reason": "resolved-call"
             },
@@ -31286,9 +31420,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:55786:findInventoryPositions",
+              "id": "src/projection.ts:56566:findInventoryPositions",
               "kind": "FunctionDeclaration",
-              "line": 1472,
+              "line": 1493,
               "name": "findInventoryPositions",
               "reason": "resolved-call"
             },
@@ -32189,40 +32323,40 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/traceability-corrections.test.ts",
+              "file": "test/traceability-batch-locality.test.ts",
               "hasBody": true,
-              "id": "test-root:test/traceability-corrections.test.ts",
+              "id": "test-root:test/traceability-batch-locality.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/traceability-corrections.test.ts"
+              "name": "test/traceability-batch-locality.test.ts"
             },
             {
-              "column": 41,
-              "file": "test/traceability-corrections.test.ts",
+              "column": 54,
+              "file": "test/traceability-batch-locality.test.ts",
               "hasBody": true,
-              "id": "test/traceability-corrections.test.ts:1420:<anonymous@50>",
+              "id": "test/traceability-batch-locality.test.ts:2504:<anonymous@79>",
               "kind": "ArrowFunction",
-              "line": 50,
-              "name": "<anonymous@50>",
+              "line": 79,
+              "name": "<anonymous@79>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 79,
-              "file": "test/traceability-corrections.test.ts",
+              "column": 80,
+              "file": "test/traceability-batch-locality.test.ts",
               "hasBody": true,
-              "id": "test/traceability-corrections.test.ts:9183:<anonymous@300>",
+              "id": "test/traceability-batch-locality.test.ts:3665:<anonymous@110>",
               "kind": "ArrowFunction",
-              "line": 300,
-              "name": "<anonymous@300>",
+              "line": 110,
+              "name": "<anonymous@110>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 1,
               "file": "src/traceability.ts",
               "hasBody": true,
-              "id": "src/traceability.ts:3647:inventoryTraceabilityRelationIdentity",
+              "id": "src/traceability.ts:5400:inventoryTraceabilityRelationIdentity",
               "kind": "FunctionDeclaration",
-              "line": 106,
+              "line": 159,
               "name": "inventoryTraceabilityRelationIdentity",
               "reason": "resolved-call"
             }
@@ -32231,19 +32365,19 @@
             "column": 1,
             "file": "src/traceability.ts",
             "hasBody": true,
-            "id": "src/traceability.ts:3647:inventoryTraceabilityRelationIdentity",
+            "id": "src/traceability.ts:5400:inventoryTraceabilityRelationIdentity",
             "kind": "FunctionDeclaration",
-            "line": 106,
+            "line": 159,
             "name": "inventoryTraceabilityRelationIdentity"
           },
-          "test": "test/traceability-corrections.test.ts"
+          "test": "test/traceability-batch-locality.test.ts"
         }
       ],
       "directExecutableEntrypoints": [
-        "test/traceability-corrections.test.ts"
+        "test/traceability-batch-locality.test.ts"
       ],
       "directExecutableEvidence": [
-        "test/traceability-corrections.test.ts"
+        "test/traceability-batch-locality.test.ts"
       ],
       "evidenceMode": "direct-executable",
       "executableEvidence": [
@@ -32261,9 +32395,9 @@
           "column": 1,
           "file": "src/traceability.ts",
           "hasBody": true,
-          "id": "src/traceability.ts:3647:inventoryTraceabilityRelationIdentity",
+          "id": "src/traceability.ts:5400:inventoryTraceabilityRelationIdentity",
           "kind": "FunctionDeclaration",
-          "line": 106,
+          "line": 159,
           "name": "inventoryTraceabilityRelationIdentity"
         }
       ],
@@ -32374,9 +32508,9 @@
               "column": 1,
               "file": "src/traceability.ts",
               "hasBody": true,
-              "id": "src/traceability.ts:4025:inventoryTraceabilityRelationsOfKind",
+              "id": "src/traceability.ts:5778:inventoryTraceabilityRelationsOfKind",
               "kind": "FunctionDeclaration",
-              "line": 119,
+              "line": 172,
               "name": "inventoryTraceabilityRelationsOfKind",
               "reason": "resolved-call"
             }
@@ -32385,9 +32519,9 @@
             "column": 1,
             "file": "src/traceability.ts",
             "hasBody": true,
-            "id": "src/traceability.ts:4025:inventoryTraceabilityRelationsOfKind",
+            "id": "src/traceability.ts:5778:inventoryTraceabilityRelationsOfKind",
             "kind": "FunctionDeclaration",
-            "line": 119,
+            "line": 172,
             "name": "inventoryTraceabilityRelationsOfKind"
           },
           "test": "test/formal-public-surface-direct.test.ts"
@@ -32415,9 +32549,9 @@
           "column": 1,
           "file": "src/traceability.ts",
           "hasBody": true,
-          "id": "src/traceability.ts:4025:inventoryTraceabilityRelationsOfKind",
+          "id": "src/traceability.ts:5778:inventoryTraceabilityRelationsOfKind",
           "kind": "FunctionDeclaration",
-          "line": 119,
+          "line": 172,
           "name": "inventoryTraceabilityRelationsOfKind"
         }
       ],
@@ -33851,9 +33985,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:53938:projectInventoryEvents",
+              "id": "src/projection.ts:54718:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1415,
+              "line": 1436,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -33861,9 +33995,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:14170:applyInventoryCommittedEventInternal",
+              "id": "src/projection.ts:14950:applyInventoryCommittedEventInternal",
               "kind": "FunctionDeclaration",
-              "line": 340,
+              "line": 361,
               "name": "applyInventoryCommittedEventInternal",
               "reason": "resolved-call"
             },
@@ -35686,9 +35820,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:53938:projectInventoryEvents",
+              "id": "src/projection.ts:54718:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1415,
+              "line": 1436,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             }
@@ -35697,9 +35831,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:53938:projectInventoryEvents",
+            "id": "src/projection.ts:54718:projectInventoryEvents",
             "kind": "FunctionDeclaration",
-            "line": 1415,
+            "line": 1436,
             "name": "projectInventoryEvents"
           },
           "test": "test/catalog-publication.test.ts"
@@ -35726,9 +35860,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:53938:projectInventoryEvents",
+          "id": "src/projection.ts:54718:projectInventoryEvents",
           "kind": "FunctionDeclaration",
-          "line": 1415,
+          "line": 1436,
           "name": "projectInventoryEvents"
         }
       ],
@@ -42333,9 +42467,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:53938:projectInventoryEvents",
+              "id": "src/projection.ts:54718:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1415,
+              "line": 1436,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -42343,9 +42477,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:14170:applyInventoryCommittedEventInternal",
+              "id": "src/projection.ts:14950:applyInventoryCommittedEventInternal",
               "kind": "FunctionDeclaration",
-              "line": 340,
+              "line": 361,
               "name": "applyInventoryCommittedEventInternal",
               "reason": "resolved-call"
             },
@@ -48775,9 +48909,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:53938:projectInventoryEvents",
+              "id": "src/projection.ts:54718:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1415,
+              "line": 1436,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -48785,9 +48919,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:14170:applyInventoryCommittedEventInternal",
+              "id": "src/projection.ts:14950:applyInventoryCommittedEventInternal",
               "kind": "FunctionDeclaration",
-              "line": 340,
+              "line": 361,
               "name": "applyInventoryCommittedEventInternal",
               "reason": "resolved-call"
             },
@@ -51441,9 +51575,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:53938:projectInventoryEvents",
+              "id": "src/projection.ts:54718:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1415,
+              "line": 1436,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -51451,9 +51585,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:14170:applyInventoryCommittedEventInternal",
+              "id": "src/projection.ts:14950:applyInventoryCommittedEventInternal",
               "kind": "FunctionDeclaration",
-              "line": 340,
+              "line": 361,
               "name": "applyInventoryCommittedEventInternal",
               "reason": "resolved-call"
             },
@@ -63411,7 +63545,7 @@
           "path": "src/picking.ts"
         },
         {
-          "occurrences": 11,
+          "occurrences": 12,
           "path": "src/projection.ts"
         },
         {
@@ -65751,7 +65885,7 @@
           "path": "src/placement.ts"
         },
         {
-          "occurrences": 83,
+          "occurrences": 87,
           "path": "src/projection.ts"
         },
         {
@@ -65775,7 +65909,7 @@
           "path": "src/traceability-replay.ts"
         },
         {
-          "occurrences": 4,
+          "occurrences": 15,
           "path": "src/traceability.ts"
         },
         {
@@ -71061,7 +71195,7 @@
           "path": "src/placement.ts"
         },
         {
-          "occurrences": 83,
+          "occurrences": 87,
           "path": "src/projection.ts"
         },
         {
@@ -71085,7 +71219,7 @@
           "path": "src/traceability-replay.ts"
         },
         {
-          "occurrences": 4,
+          "occurrences": 15,
           "path": "src/traceability.ts"
         },
         {
@@ -78235,7 +78369,7 @@
           "path": "src/picking.ts"
         },
         {
-          "occurrences": 11,
+          "occurrences": 12,
           "path": "src/projection.ts"
         },
         {
@@ -82260,6 +82394,10 @@
           "path": "src/traceability-replay.ts"
         },
         {
+          "occurrences": 1,
+          "path": "src/traceability.ts"
+        },
+        {
           "occurrences": 2,
           "path": "src/transfers.ts"
         },
@@ -85788,5 +85926,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "563874e5f097374f0c5c440f53159ae9ab5ea70685e06d34fdc4e11292a379c1"
+  "surfaceSha256": "d1d6201d8677cd873bb2d4eeb974395f834d36a0f9426e8bee94644d247ed6b8"
 }

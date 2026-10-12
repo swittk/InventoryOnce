@@ -4,7 +4,7 @@ This file is generated from the exact TypeScript surface plus the checked API, f
 
 Use the repository `.nvmrc` when one exists; otherwise run the assurance command with a Node version permitted by `package.json#engines`. Edit only checked source/manifests, run `pnpm assurance:generate` when generated evidence must change, then run `pnpm assurance --write-report`.
 
-Surface SHA-256: `563874e5f097374f0c5c440f53159ae9ab5ea70685e06d34fdc4e11292a379c1`
+Surface SHA-256: `d1d6201d8677cd873bb2d4eeb974395f834d36a0f9426e8bee94644d247ed6b8`
 
 ## Mechanically covered surface
 
@@ -15,10 +15,10 @@ Surface SHA-256: `563874e5f097374f0c5c440f53159ae9ab5ea70685e06d34fdc4e11292a379
 - Root callable exports: 100
 - Storage callable exports: 23
 - Migration callable exports: 15
-- Kernel callable exports: 168
-- Reachable public data types: 400
-- Classified public fields: 2484
-- Input-reachable fields: 2152
+- Kernel callable exports: 169
+- Reachable public data types: 401
+- Classified public fields: 2486
+- Input-reachable fields: 2154
 - Output-reachable fields: 891
 - Callback-argument-reachable fields: 365
 - Callback-result-reachable fields: 433
@@ -26,9 +26,9 @@ Surface SHA-256: `563874e5f097374f0c5c440f53159ae9ab5ea70685e06d34fdc4e11292a379
 - Optional fields: 1034
 - Explicit undefined-union fields: 2
 - Explicit nullable fields: 6
-- Public call/construct overload signatures: 538
-- Directly executed public APIs: 207
-- Public APIs exercised through tested internal call chains: 327
+- Public call/construct overload signatures: 539
+- Directly executed public APIs: 209
+- Public APIs exercised through tested internal call chains: 326
 - Explicit-gap public APIs: 4
 - Unreferenced public APIs: 0
 - Explicit recursive type edges: 3
@@ -74,7 +74,7 @@ Any added/removed method, callable export, class method, type field, field type,
 | stock-receipt | 5 | InventoryOperation, PublishedHeadCAS, PackagingIdentity, DualMeasure, ResourceDimensions, PlacementGraph | covered | — |
 | stock-transfer | 2 | ResourceDimensions, PlacementGraph, DurableTransferRefinement, InventoryOperation, PackagingIdentity | covered | — |
 | storage-integrity | 14 | InventoryOperation, PublishedHeadCAS | covered | GAP-HASH-COLLISION-ASSUMPTION |
-| traceability | 8 | TraceabilityGraph, TraceabilityAssociation, InventoryOperation | covered | GAP-GRAPH-ADVERSARIAL-SEARCH |
+| traceability | 9 | TraceabilityGraph, TraceabilityAssociation, InventoryOperation | covered | GAP-GRAPH-ADVERSARIAL-SEARCH |
 | transfer-lifecycle | 11 | TransferLifecycle, ResourceDimensions, ReservationSafety, InventoryOperation, DurableTransferRefinement, PublishedHeadCAS, PackagingIdentity, FungibilityPool | covered | — |
 | transformation | 2 | TraceabilityGraph, ReclassificationConservation, DualMeasure, InventoryOperation | covered | GAP-GRAPH-ADVERSARIAL-SEARCH |
 | transformation-read | 7 | CatalogPublication, PublishedHeadCAS, ReclassificationConservation, DualMeasure | covered | — |
@@ -83,7 +83,7 @@ Any added/removed method, callable export, class method, type field, field type,
 
 | Classification | Fields |
 |---|---:|
-| abstract-semantic | 1185 |
+| abstract-semantic | 1187 |
 | application decoration | 5 |
 | identity/retry-semantic | 717 |
 | observational/audit-only | 560 |

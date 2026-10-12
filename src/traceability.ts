@@ -52,6 +52,60 @@ export function applyInventoryTraceabilityChanges({
   const relations: Record<string, InventoryTraceabilityRelation> = {
     ...state.relations,
   };
+  mutateInventoryTraceabilityRelations(relations, eventId, changes);
+  return { relations };
+}
+
+/** Inputs for appending many independently validated traceability changes. */
+export interface ApplyInventoryTraceabilityChangesBatchInput {
+  /** Existing published graph; never modified. */
+  readonly state: InventoryTraceabilityState;
+  /** Committed event identities and changes in durable event order. */
+  readonly events: readonly Pick<
+    ApplyInventoryTraceabilityChangesInput,
+    "eventId" | "changes"
+  >[];
+}
+
+/**
+ * Apply one deferred batch with only one complete relations copy. Each event
+ * still enforces the same add/remove/invalidate semantics and genealogy DAG
+ * safety as a standalone graph event, rather than deferring validation until
+ * after several events could conceal an invalid intermediate graph.
+ */
+export function applyInventoryTraceabilityChangesBatch({
+  state,
+  events,
+}: ApplyInventoryTraceabilityChangesBatchInput): InventoryTraceabilityState {
+  let changesPresent = false;
+  for (const event of events) {
+    if (event.changes.length !== 0) {
+      changesPresent = true;
+      break;
+    }
+  }
+  if (!changesPresent) return state;
+  const relations: Record<string, InventoryTraceabilityRelation> = {
+    ...state.relations,
+  };
+  for (const event of events) {
+    if (event.changes.length !== 0) {
+      mutateInventoryTraceabilityRelations(
+        relations,
+        event.eventId,
+        event.changes
+      );
+    }
+  }
+  return { relations };
+}
+
+/** Apply one event to a private relation record, preserving standalone validation. */
+function mutateInventoryTraceabilityRelations(
+  relations: Record<string, InventoryTraceabilityRelation>,
+  eventId: string,
+  changes: readonly InventoryTraceabilityRelationChange[]
+): void {
   let genealogyChanged = false;
   for (const change of changes) {
     genealogyChanged ||=
@@ -99,7 +153,6 @@ export function applyInventoryTraceabilityChanges({
     delete relations[identity];
   }
   if (genealogyChanged) assertGenealogyHasNoCycles(relations);
-  return { relations };
 }
 
 /** Stable identity for one relation regardless of creating event. */

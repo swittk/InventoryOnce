@@ -4,14 +4,14 @@
     "callableFields": 11,
     "callbackArgumentFields": 365,
     "callbackResultFields": 433,
-    "fields": 2484,
-    "inputFields": 2152,
+    "fields": 2486,
+    "inputFields": 2154,
     "nullableFields": 6,
     "optionalFields": 1034,
     "outputFields": 891,
     "recursiveTypeReferences": 3,
     "truncatedTypes": 0,
-    "types": 400,
+    "types": 401,
     "undefinedFields": 2
   },
   "entries": {
@@ -1236,6 +1236,50 @@
       "formalModels": [
         "InventoryOperation",
         "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "ApplyInventoryTraceabilityChangesBatchInput.events": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/traceability.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "readonly Pick<ApplyInventoryTraceabilityChangesInput, \"eventId\" | \"changes\">[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "TraceabilityGraph"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "ApplyInventoryTraceabilityChangesBatchInput.state": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/traceability.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryTraceabilityState",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "TraceabilityGraph"
       ],
       "gaps": [],
       "optional": false,
@@ -59351,5 +59395,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "563874e5f097374f0c5c440f53159ae9ab5ea70685e06d34fdc4e11292a379c1"
+  "surfaceSha256": "d1d6201d8677cd873bb2d4eeb974395f834d36a0f9426e8bee94644d247ed6b8"
 }
