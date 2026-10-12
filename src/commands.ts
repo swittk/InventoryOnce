@@ -1082,16 +1082,20 @@ export function createInventoryTransferManyEvent(
     );
     provenanceTransfers.push({ from: line.position, to: line.destination });
   }
-  return withPositiveLayerProvenanceTransfers(
-    input.catalog,
-    createMovementEvent(
-      input.catalog,
-      InventoryEventKind.Transfer,
-      input,
-      stockEffects
-    ),
-    provenanceTransfers
-  );
+  // This movement already has exact one-to-one FIFO provenance. Construct
+  // and validate the complete event once rather than validating 20k stock
+  // effects, appending provenance, and validating all 20k effects again.
+  return defineInventoryEvent({
+    catalog: input.catalog,
+    event: {
+      ...movementEventDraft(
+        InventoryEventKind.Transfer,
+        input,
+        stockEffects
+      ),
+      positiveLayerProvenanceTransfers: provenanceTransfers,
+    },
+  });
 }
 
 /** Create an ordinary dimension-only reclassification that preserves whereabouts. */
@@ -2135,32 +2139,57 @@ function createMovementEvent(
 ): InventoryEventDraft {
   return defineInventoryEvent({
     catalog,
-    event: {
-      eventId: inventoryEventIdForOperation(header.operationId),
-      operationId: header.operationId,
+    event: movementEventDraft(
       kind,
-      occurredAtEpochMs: header.occurredAtEpochMs,
+      header,
       stockEffects,
+      traceabilityChanges,
       lotDefinitions,
       placementNodeDefinitions,
-      placementChanges,
-      traceabilityChanges,
-      ...(catalogDigest === undefined ? {} : { catalogDigest }),
-      ...(catalogSnapshot === undefined ? {} : { catalogSnapshot }),
-      ...(header.actorId === undefined ? {} : { actorId: header.actorId }),
-      ...(header.sourcePartyId === undefined
-        ? {}
-        : { sourcePartyId: header.sourcePartyId }),
-      ...(header.destinationPartyId === undefined
-        ? {}
-        : { destinationPartyId: header.destinationPartyId }),
-      ...(header.sourceReference === undefined
-        ? {}
-        : { sourceReference: header.sourceReference }),
-      ...(header.reason === undefined ? {} : { reason: header.reason }),
-      ...(header.metadata === undefined ? {} : { metadata: header.metadata }),
-    },
+      catalogDigest,
+      catalogSnapshot,
+      placementChanges
+    ),
   });
+}
+
+/** Build the event's exact unvalidated fields for one final normalized validation. */
+function movementEventDraft(
+  kind: InventoryEventKind,
+  header: InventoryCommandHeader,
+  stockEffects: readonly InventoryStockEffect[],
+  traceabilityChanges: readonly InventoryTraceabilityRelationChange[] = [],
+  lotDefinitions: readonly InventoryLotDefinition[] = [],
+  placementNodeDefinitions: readonly InventoryPlacementNodeDefinition[] = [],
+  catalogDigest?: string,
+  catalogSnapshot?: InventoryCatalogSnapshot,
+  placementChanges: readonly InventoryPlacementChange[] = []
+): InventoryEventDraft {
+  return {
+    eventId: inventoryEventIdForOperation(header.operationId),
+    operationId: header.operationId,
+    kind,
+    occurredAtEpochMs: header.occurredAtEpochMs,
+    stockEffects,
+    lotDefinitions,
+    placementNodeDefinitions,
+    placementChanges,
+    traceabilityChanges,
+    ...(catalogDigest === undefined ? {} : { catalogDigest }),
+    ...(catalogSnapshot === undefined ? {} : { catalogSnapshot }),
+    ...(header.actorId === undefined ? {} : { actorId: header.actorId }),
+    ...(header.sourcePartyId === undefined
+      ? {}
+      : { sourcePartyId: header.sourcePartyId }),
+    ...(header.destinationPartyId === undefined
+      ? {}
+      : { destinationPartyId: header.destinationPartyId }),
+    ...(header.sourceReference === undefined
+      ? {}
+      : { sourceReference: header.sourceReference }),
+    ...(header.reason === undefined ? {} : { reason: header.reason }),
+    ...(header.metadata === undefined ? {} : { metadata: header.metadata }),
+  };
 }
 
 /** Reject malformed or empty batch commands so one operation identity always means a real physical fact. */

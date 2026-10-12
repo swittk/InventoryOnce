@@ -1,11 +1,11 @@
 {
   "counts": {
-    "callables": 3196,
-    "edges": 8389,
+    "callables": 3206,
+    "edges": 8412,
     "publicEntries": 570,
     "publicEntriesWithTargets": 570,
     "publicEntriesWithWitnesses": 570,
-    "testRoots": 52,
+    "testRoots": 53,
     "unresolvedPublicEntries": 0
   },
   "entries": {
@@ -10952,9 +10952,9 @@
           "column": 1,
           "file": "src/commands.ts",
           "hasBody": true,
-          "id": "src/commands.ts:66568:createInventoryCatalogPublicationEvent",
+          "id": "src/commands.ts:66835:createInventoryCatalogPublicationEvent",
           "kind": "FunctionDeclaration",
-          "line": 1764,
+          "line": 1768,
           "name": "createInventoryCatalogPublicationEvent"
         }
       ],
@@ -10965,9 +10965,9 @@
             "column": 1,
             "file": "src/commands.ts",
             "hasBody": true,
-            "id": "src/commands.ts:66568:createInventoryCatalogPublicationEvent",
+            "id": "src/commands.ts:66835:createInventoryCatalogPublicationEvent",
             "kind": "FunctionDeclaration",
-            "line": 1764,
+            "line": 1768,
             "name": "createInventoryCatalogPublicationEvent"
           },
           "witness": {
@@ -11015,9 +11015,9 @@
                 "column": 1,
                 "file": "src/commands.ts",
                 "hasBody": true,
-                "id": "src/commands.ts:66568:createInventoryCatalogPublicationEvent",
+                "id": "src/commands.ts:66835:createInventoryCatalogPublicationEvent",
                 "kind": "FunctionDeclaration",
-                "line": 1764,
+                "line": 1768,
                 "name": "createInventoryCatalogPublicationEvent",
                 "reason": "resolved-call"
               }
@@ -11286,9 +11286,9 @@
           "column": 1,
           "file": "src/commands.ts",
           "hasBody": true,
-          "id": "src/commands.ts:48620:createInventoryDeindividualizeEvent",
+          "id": "src/commands.ts:48887:createInventoryDeindividualizeEvent",
           "kind": "FunctionDeclaration",
-          "line": 1243,
+          "line": 1247,
           "name": "createInventoryDeindividualizeEvent"
         }
       ],
@@ -11299,9 +11299,9 @@
             "column": 1,
             "file": "src/commands.ts",
             "hasBody": true,
-            "id": "src/commands.ts:48620:createInventoryDeindividualizeEvent",
+            "id": "src/commands.ts:48887:createInventoryDeindividualizeEvent",
             "kind": "FunctionDeclaration",
-            "line": 1243,
+            "line": 1247,
             "name": "createInventoryDeindividualizeEvent"
           },
           "witness": {
@@ -11359,9 +11359,9 @@
                 "column": 1,
                 "file": "src/commands.ts",
                 "hasBody": true,
-                "id": "src/commands.ts:48620:createInventoryDeindividualizeEvent",
+                "id": "src/commands.ts:48887:createInventoryDeindividualizeEvent",
                 "kind": "FunctionDeclaration",
-                "line": 1243,
+                "line": 1247,
                 "name": "createInventoryDeindividualizeEvent",
                 "reason": "resolved-call"
               }
@@ -11377,9 +11377,9 @@
           "column": 1,
           "file": "src/commands.ts",
           "hasBody": true,
-          "id": "src/commands.ts:44677:createInventoryDetachEvent",
+          "id": "src/commands.ts:44944:createInventoryDetachEvent",
           "kind": "FunctionDeclaration",
-          "line": 1105,
+          "line": 1109,
           "name": "createInventoryDetachEvent"
         }
       ],
@@ -11390,9 +11390,9 @@
             "column": 1,
             "file": "src/commands.ts",
             "hasBody": true,
-            "id": "src/commands.ts:44677:createInventoryDetachEvent",
+            "id": "src/commands.ts:44944:createInventoryDetachEvent",
             "kind": "FunctionDeclaration",
-            "line": 1105,
+            "line": 1109,
             "name": "createInventoryDetachEvent"
           },
           "witness": {
@@ -11430,9 +11430,9 @@
                 "column": 1,
                 "file": "src/commands.ts",
                 "hasBody": true,
-                "id": "src/commands.ts:44677:createInventoryDetachEvent",
+                "id": "src/commands.ts:44944:createInventoryDetachEvent",
                 "kind": "FunctionDeclaration",
-                "line": 1105,
+                "line": 1109,
                 "name": "createInventoryDetachEvent",
                 "reason": "resolved-call"
               }
@@ -11448,9 +11448,9 @@
           "column": 1,
           "file": "src/commands.ts",
           "hasBody": true,
-          "id": "src/commands.ts:46972:createInventoryIndividualizeEvent",
+          "id": "src/commands.ts:47239:createInventoryIndividualizeEvent",
           "kind": "FunctionDeclaration",
-          "line": 1188,
+          "line": 1192,
           "name": "createInventoryIndividualizeEvent"
         }
       ],
@@ -11461,9 +11461,9 @@
             "column": 1,
             "file": "src/commands.ts",
             "hasBody": true,
-            "id": "src/commands.ts:46972:createInventoryIndividualizeEvent",
+            "id": "src/commands.ts:47239:createInventoryIndividualizeEvent",
             "kind": "FunctionDeclaration",
-            "line": 1188,
+            "line": 1192,
             "name": "createInventoryIndividualizeEvent"
           },
           "witness": {
@@ -11521,9 +11521,9 @@
                 "column": 1,
                 "file": "src/commands.ts",
                 "hasBody": true,
-                "id": "src/commands.ts:46972:createInventoryIndividualizeEvent",
+                "id": "src/commands.ts:47239:createInventoryIndividualizeEvent",
                 "kind": "FunctionDeclaration",
-                "line": 1188,
+                "line": 1192,
                 "name": "createInventoryIndividualizeEvent",
                 "reason": "resolved-call"
               }
@@ -11711,9 +11711,9 @@
           "column": 1,
           "file": "src/commands.ts",
           "hasBody": true,
-          "id": "src/commands.ts:66990:createInventoryLotMetadataEvent",
+          "id": "src/commands.ts:67257:createInventoryLotMetadataEvent",
           "kind": "FunctionDeclaration",
-          "line": 1781,
+          "line": 1785,
           "name": "createInventoryLotMetadataEvent"
         }
       ],
@@ -11724,9 +11724,9 @@
             "column": 1,
             "file": "src/commands.ts",
             "hasBody": true,
-            "id": "src/commands.ts:66990:createInventoryLotMetadataEvent",
+            "id": "src/commands.ts:67257:createInventoryLotMetadataEvent",
             "kind": "FunctionDeclaration",
-            "line": 1781,
+            "line": 1785,
             "name": "createInventoryLotMetadataEvent"
           },
           "witness": {
@@ -11774,9 +11774,9 @@
                 "column": 1,
                 "file": "src/commands.ts",
                 "hasBody": true,
-                "id": "src/commands.ts:66990:createInventoryLotMetadataEvent",
+                "id": "src/commands.ts:67257:createInventoryLotMetadataEvent",
                 "kind": "FunctionDeclaration",
-                "line": 1781,
+                "line": 1785,
                 "name": "createInventoryLotMetadataEvent",
                 "reason": "resolved-call"
               }
@@ -11792,9 +11792,9 @@
           "column": 1,
           "file": "src/commands.ts",
           "hasBody": true,
-          "id": "src/commands.ts:45346:createInventoryMarkMissingEvent",
+          "id": "src/commands.ts:45613:createInventoryMarkMissingEvent",
           "kind": "FunctionDeclaration",
-          "line": 1131,
+          "line": 1135,
           "name": "createInventoryMarkMissingEvent"
         }
       ],
@@ -11805,9 +11805,9 @@
             "column": 1,
             "file": "src/commands.ts",
             "hasBody": true,
-            "id": "src/commands.ts:45346:createInventoryMarkMissingEvent",
+            "id": "src/commands.ts:45613:createInventoryMarkMissingEvent",
             "kind": "FunctionDeclaration",
-            "line": 1131,
+            "line": 1135,
             "name": "createInventoryMarkMissingEvent"
           },
           "witness": {
@@ -11865,9 +11865,9 @@
                 "column": 1,
                 "file": "src/commands.ts",
                 "hasBody": true,
-                "id": "src/commands.ts:45346:createInventoryMarkMissingEvent",
+                "id": "src/commands.ts:45613:createInventoryMarkMissingEvent",
                 "kind": "FunctionDeclaration",
-                "line": 1131,
+                "line": 1135,
                 "name": "createInventoryMarkMissingEvent",
                 "reason": "resolved-call"
               }
@@ -11964,9 +11964,9 @@
           "column": 1,
           "file": "src/commands.ts",
           "hasBody": true,
-          "id": "src/commands.ts:54774:createInventoryPackEvent",
+          "id": "src/commands.ts:55041:createInventoryPackEvent",
           "kind": "FunctionDeclaration",
-          "line": 1420,
+          "line": 1424,
           "name": "createInventoryPackEvent"
         }
       ],
@@ -11977,9 +11977,9 @@
             "column": 1,
             "file": "src/commands.ts",
             "hasBody": true,
-            "id": "src/commands.ts:54774:createInventoryPackEvent",
+            "id": "src/commands.ts:55041:createInventoryPackEvent",
             "kind": "FunctionDeclaration",
-            "line": 1420,
+            "line": 1424,
             "name": "createInventoryPackEvent"
           },
           "witness": {
@@ -12037,9 +12037,9 @@
                 "column": 1,
                 "file": "src/commands.ts",
                 "hasBody": true,
-                "id": "src/commands.ts:54774:createInventoryPackEvent",
+                "id": "src/commands.ts:55041:createInventoryPackEvent",
                 "kind": "FunctionDeclaration",
-                "line": 1420,
+                "line": 1424,
                 "name": "createInventoryPackEvent",
                 "reason": "resolved-call"
               }
@@ -12055,9 +12055,9 @@
           "column": 1,
           "file": "src/commands.ts",
           "hasBody": true,
-          "id": "src/commands.ts:45018:createInventoryPlaceEvent",
+          "id": "src/commands.ts:45285:createInventoryPlaceEvent",
           "kind": "FunctionDeclaration",
-          "line": 1118,
+          "line": 1122,
           "name": "createInventoryPlaceEvent"
         }
       ],
@@ -12068,9 +12068,9 @@
             "column": 1,
             "file": "src/commands.ts",
             "hasBody": true,
-            "id": "src/commands.ts:45018:createInventoryPlaceEvent",
+            "id": "src/commands.ts:45285:createInventoryPlaceEvent",
             "kind": "FunctionDeclaration",
-            "line": 1118,
+            "line": 1122,
             "name": "createInventoryPlaceEvent"
           },
           "witness": {
@@ -12128,9 +12128,9 @@
                 "column": 1,
                 "file": "src/commands.ts",
                 "hasBody": true,
-                "id": "src/commands.ts:45018:createInventoryPlaceEvent",
+                "id": "src/commands.ts:45285:createInventoryPlaceEvent",
                 "kind": "FunctionDeclaration",
-                "line": 1118,
+                "line": 1122,
                 "name": "createInventoryPlaceEvent",
                 "reason": "resolved-call"
               }
@@ -12146,9 +12146,9 @@
           "column": 1,
           "file": "src/commands.ts",
           "hasBody": true,
-          "id": "src/commands.ts:67836:createInventoryPlacementEvent",
+          "id": "src/commands.ts:68103:createInventoryPlacementEvent",
           "kind": "FunctionDeclaration",
-          "line": 1811,
+          "line": 1815,
           "name": "createInventoryPlacementEvent"
         }
       ],
@@ -12159,9 +12159,9 @@
             "column": 1,
             "file": "src/commands.ts",
             "hasBody": true,
-            "id": "src/commands.ts:67836:createInventoryPlacementEvent",
+            "id": "src/commands.ts:68103:createInventoryPlacementEvent",
             "kind": "FunctionDeclaration",
-            "line": 1811,
+            "line": 1815,
             "name": "createInventoryPlacementEvent"
           },
           "witness": {
@@ -12219,9 +12219,9 @@
                 "column": 1,
                 "file": "src/commands.ts",
                 "hasBody": true,
-                "id": "src/commands.ts:67836:createInventoryPlacementEvent",
+                "id": "src/commands.ts:68103:createInventoryPlacementEvent",
                 "kind": "FunctionDeclaration",
-                "line": 1811,
+                "line": 1815,
                 "name": "createInventoryPlacementEvent",
                 "reason": "resolved-call"
               }
@@ -12237,9 +12237,9 @@
           "column": 1,
           "file": "src/commands.ts",
           "hasBody": true,
-          "id": "src/commands.ts:67420:createInventoryPlacementNodeMetadataEvent",
+          "id": "src/commands.ts:67687:createInventoryPlacementNodeMetadataEvent",
           "kind": "FunctionDeclaration",
-          "line": 1796,
+          "line": 1800,
           "name": "createInventoryPlacementNodeMetadataEvent"
         }
       ],
@@ -12250,9 +12250,9 @@
             "column": 1,
             "file": "src/commands.ts",
             "hasBody": true,
-            "id": "src/commands.ts:67420:createInventoryPlacementNodeMetadataEvent",
+            "id": "src/commands.ts:67687:createInventoryPlacementNodeMetadataEvent",
             "kind": "FunctionDeclaration",
-            "line": 1796,
+            "line": 1800,
             "name": "createInventoryPlacementNodeMetadataEvent"
           },
           "witness": {
@@ -12300,9 +12300,9 @@
                 "column": 1,
                 "file": "src/commands.ts",
                 "hasBody": true,
-                "id": "src/commands.ts:67420:createInventoryPlacementNodeMetadataEvent",
+                "id": "src/commands.ts:67687:createInventoryPlacementNodeMetadataEvent",
                 "kind": "FunctionDeclaration",
-                "line": 1796,
+                "line": 1800,
                 "name": "createInventoryPlacementNodeMetadataEvent",
                 "reason": "resolved-call"
               }
@@ -12480,9 +12480,9 @@
           "column": 1,
           "file": "src/commands.ts",
           "hasBody": true,
-          "id": "src/commands.ts:44404:createInventoryReclassificationEvent",
+          "id": "src/commands.ts:44671:createInventoryReclassificationEvent",
           "kind": "FunctionDeclaration",
-          "line": 1098,
+          "line": 1102,
           "name": "createInventoryReclassificationEvent"
         }
       ],
@@ -12493,9 +12493,9 @@
             "column": 1,
             "file": "src/commands.ts",
             "hasBody": true,
-            "id": "src/commands.ts:44404:createInventoryReclassificationEvent",
+            "id": "src/commands.ts:44671:createInventoryReclassificationEvent",
             "kind": "FunctionDeclaration",
-            "line": 1098,
+            "line": 1102,
             "name": "createInventoryReclassificationEvent"
           },
           "witness": {
@@ -12563,9 +12563,9 @@
                 "column": 1,
                 "file": "src/commands.ts",
                 "hasBody": true,
-                "id": "src/commands.ts:44404:createInventoryReclassificationEvent",
+                "id": "src/commands.ts:44671:createInventoryReclassificationEvent",
                 "kind": "FunctionDeclaration",
-                "line": 1098,
+                "line": 1102,
                 "name": "createInventoryReclassificationEvent",
                 "reason": "resolved-call"
               }
@@ -12581,9 +12581,9 @@
           "column": 1,
           "file": "src/commands.ts",
           "hasBody": true,
-          "id": "src/commands.ts:49902:createInventoryReclassificationManyEvent",
+          "id": "src/commands.ts:50169:createInventoryReclassificationManyEvent",
           "kind": "FunctionDeclaration",
-          "line": 1285,
+          "line": 1289,
           "name": "createInventoryReclassificationManyEvent"
         }
       ],
@@ -12594,9 +12594,9 @@
             "column": 1,
             "file": "src/commands.ts",
             "hasBody": true,
-            "id": "src/commands.ts:49902:createInventoryReclassificationManyEvent",
+            "id": "src/commands.ts:50169:createInventoryReclassificationManyEvent",
             "kind": "FunctionDeclaration",
-            "line": 1285,
+            "line": 1289,
             "name": "createInventoryReclassificationManyEvent"
           },
           "witness": {
@@ -12654,9 +12654,9 @@
                 "column": 1,
                 "file": "src/commands.ts",
                 "hasBody": true,
-                "id": "src/commands.ts:49902:createInventoryReclassificationManyEvent",
+                "id": "src/commands.ts:50169:createInventoryReclassificationManyEvent",
                 "kind": "FunctionDeclaration",
-                "line": 1285,
+                "line": 1289,
                 "name": "createInventoryReclassificationManyEvent",
                 "reason": "resolved-call"
               }
@@ -12743,9 +12743,9 @@
           "column": 1,
           "file": "src/commands.ts",
           "hasBody": true,
-          "id": "src/commands.ts:64103:createInventoryScrapEvent",
+          "id": "src/commands.ts:64370:createInventoryScrapEvent",
           "kind": "FunctionDeclaration",
-          "line": 1682,
+          "line": 1686,
           "name": "createInventoryScrapEvent"
         }
       ],
@@ -12756,9 +12756,9 @@
             "column": 1,
             "file": "src/commands.ts",
             "hasBody": true,
-            "id": "src/commands.ts:64103:createInventoryScrapEvent",
+            "id": "src/commands.ts:64370:createInventoryScrapEvent",
             "kind": "FunctionDeclaration",
-            "line": 1682,
+            "line": 1686,
             "name": "createInventoryScrapEvent"
           },
           "witness": {
@@ -12816,9 +12816,9 @@
                 "column": 1,
                 "file": "src/commands.ts",
                 "hasBody": true,
-                "id": "src/commands.ts:64103:createInventoryScrapEvent",
+                "id": "src/commands.ts:64370:createInventoryScrapEvent",
                 "kind": "FunctionDeclaration",
-                "line": 1682,
+                "line": 1686,
                 "name": "createInventoryScrapEvent",
                 "reason": "resolved-call"
               }
@@ -12834,9 +12834,9 @@
           "column": 1,
           "file": "src/commands.ts",
           "hasBody": true,
-          "id": "src/commands.ts:64838:createInventoryScrapManyEvent",
+          "id": "src/commands.ts:65105:createInventoryScrapManyEvent",
           "kind": "FunctionDeclaration",
-          "line": 1706,
+          "line": 1710,
           "name": "createInventoryScrapManyEvent"
         }
       ],
@@ -12847,9 +12847,9 @@
             "column": 1,
             "file": "src/commands.ts",
             "hasBody": true,
-            "id": "src/commands.ts:64838:createInventoryScrapManyEvent",
+            "id": "src/commands.ts:65105:createInventoryScrapManyEvent",
             "kind": "FunctionDeclaration",
-            "line": 1706,
+            "line": 1710,
             "name": "createInventoryScrapManyEvent"
           },
           "witness": {
@@ -12907,9 +12907,9 @@
                 "column": 1,
                 "file": "src/commands.ts",
                 "hasBody": true,
-                "id": "src/commands.ts:64838:createInventoryScrapManyEvent",
+                "id": "src/commands.ts:65105:createInventoryScrapManyEvent",
                 "kind": "FunctionDeclaration",
-                "line": 1706,
+                "line": 1710,
                 "name": "createInventoryScrapManyEvent",
                 "reason": "resolved-call"
               }
@@ -12925,9 +12925,9 @@
           "column": 1,
           "file": "src/commands.ts",
           "hasBody": true,
-          "id": "src/commands.ts:68903:createInventoryTraceabilityEvent",
+          "id": "src/commands.ts:69170:createInventoryTraceabilityEvent",
           "kind": "FunctionDeclaration",
-          "line": 1851,
+          "line": 1855,
           "name": "createInventoryTraceabilityEvent"
         }
       ],
@@ -12938,9 +12938,9 @@
             "column": 1,
             "file": "src/commands.ts",
             "hasBody": true,
-            "id": "src/commands.ts:68903:createInventoryTraceabilityEvent",
+            "id": "src/commands.ts:69170:createInventoryTraceabilityEvent",
             "kind": "FunctionDeclaration",
-            "line": 1851,
+            "line": 1855,
             "name": "createInventoryTraceabilityEvent"
           },
           "witness": {
@@ -12978,9 +12978,9 @@
                 "column": 1,
                 "file": "src/commands.ts",
                 "hasBody": true,
-                "id": "src/commands.ts:68903:createInventoryTraceabilityEvent",
+                "id": "src/commands.ts:69170:createInventoryTraceabilityEvent",
                 "kind": "FunctionDeclaration",
-                "line": 1851,
+                "line": 1855,
                 "name": "createInventoryTraceabilityEvent",
                 "reason": "resolved-call"
               }
@@ -13170,52 +13170,32 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/catalog-stock.test.ts",
+                "file": "test/transfermany-builder-perf.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/catalog-stock.test.ts",
+                "id": "test-root:test/transfermany-builder-perf.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/catalog-stock.test.ts"
+                "name": "test/transfermany-builder-perf.test.ts"
               },
               {
-                "column": 65,
-                "file": "test/catalog-stock.test.ts",
+                "column": 66,
+                "file": "test/transfermany-builder-perf.test.ts",
                 "hasBody": true,
-                "id": "test/catalog-stock.test.ts:643:<anonymous@28>",
+                "id": "test/transfermany-builder-perf.test.ts:838:<anonymous@25>",
                 "kind": "ArrowFunction",
-                "line": 28,
-                "name": "<anonymous@28>",
+                "line": 25,
+                "name": "<anonymous@25>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 77,
-                "file": "test/catalog-stock.test.ts",
+                "column": 95,
+                "file": "test/transfermany-builder-perf.test.ts",
                 "hasBody": true,
-                "id": "test/catalog-stock.test.ts:8631:<anonymous@285>",
+                "id": "test/transfermany-builder-perf.test.ts:940:<anonymous@26>",
                 "kind": "ArrowFunction",
-                "line": 285,
-                "name": "<anonymous@285>",
+                "line": 26,
+                "name": "<anonymous@26>",
                 "reason": "external-callback-dispatch"
-              },
-              {
-                "column": 3,
-                "file": "src/facade.ts",
-                "hasBody": false,
-                "id": "src/facade.ts:62266:transferMany",
-                "kind": "MethodSignature",
-                "line": 1521,
-                "name": "transferMany",
-                "reason": "resolved-call"
-              },
-              {
-                "column": 3,
-                "file": "src/facade.ts",
-                "hasBody": true,
-                "id": "src/facade.ts:113313:transferMany",
-                "kind": "MethodDeclaration",
-                "line": 2817,
-                "name": "transferMany",
-                "reason": "interface-to-implementation"
               },
               {
                 "column": 1,
@@ -13228,7 +13208,7 @@
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/catalog-stock.test.ts"
+            "test": "test/transfermany-builder-perf.test.ts"
           }
         }
       ]
@@ -13452,9 +13432,9 @@
           "column": 1,
           "file": "src/commands.ts",
           "hasBody": true,
-          "id": "src/commands.ts:57717:createInventoryTransformationEvent",
+          "id": "src/commands.ts:57984:createInventoryTransformationEvent",
           "kind": "FunctionDeclaration",
-          "line": 1507,
+          "line": 1511,
           "name": "createInventoryTransformationEvent"
         }
       ],
@@ -13465,9 +13445,9 @@
             "column": 1,
             "file": "src/commands.ts",
             "hasBody": true,
-            "id": "src/commands.ts:57717:createInventoryTransformationEvent",
+            "id": "src/commands.ts:57984:createInventoryTransformationEvent",
             "kind": "FunctionDeclaration",
-            "line": 1507,
+            "line": 1511,
             "name": "createInventoryTransformationEvent"
           },
           "witness": {
@@ -13525,9 +13505,9 @@
                 "column": 1,
                 "file": "src/commands.ts",
                 "hasBody": true,
-                "id": "src/commands.ts:57717:createInventoryTransformationEvent",
+                "id": "src/commands.ts:57984:createInventoryTransformationEvent",
                 "kind": "FunctionDeclaration",
-                "line": 1507,
+                "line": 1511,
                 "name": "createInventoryTransformationEvent",
                 "reason": "resolved-call"
               }
@@ -13543,9 +13523,9 @@
           "column": 1,
           "file": "src/commands.ts",
           "hasBody": true,
-          "id": "src/commands.ts:56076:createInventoryUnpackEvent",
+          "id": "src/commands.ts:56343:createInventoryUnpackEvent",
           "kind": "FunctionDeclaration",
-          "line": 1457,
+          "line": 1461,
           "name": "createInventoryUnpackEvent"
         }
       ],
@@ -13556,9 +13536,9 @@
             "column": 1,
             "file": "src/commands.ts",
             "hasBody": true,
-            "id": "src/commands.ts:56076:createInventoryUnpackEvent",
+            "id": "src/commands.ts:56343:createInventoryUnpackEvent",
             "kind": "FunctionDeclaration",
-            "line": 1457,
+            "line": 1461,
             "name": "createInventoryUnpackEvent"
           },
           "witness": {
@@ -13616,9 +13596,9 @@
                 "column": 1,
                 "file": "src/commands.ts",
                 "hasBody": true,
-                "id": "src/commands.ts:56076:createInventoryUnpackEvent",
+                "id": "src/commands.ts:56343:createInventoryUnpackEvent",
                 "kind": "FunctionDeclaration",
-                "line": 1457,
+                "line": 1461,
                 "name": "createInventoryUnpackEvent",
                 "reason": "resolved-call"
               }
@@ -15823,9 +15803,9 @@
           "column": 1,
           "file": "src/commands.ts",
           "hasBody": true,
-          "id": "src/commands.ts:86145:inventoryEventIdForOperation",
+          "id": "src/commands.ts:87194:inventoryEventIdForOperation",
           "kind": "FunctionDeclaration",
-          "line": 2315,
+          "line": 2344,
           "name": "inventoryEventIdForOperation"
         }
       ],
@@ -15836,9 +15816,9 @@
             "column": 1,
             "file": "src/commands.ts",
             "hasBody": true,
-            "id": "src/commands.ts:86145:inventoryEventIdForOperation",
+            "id": "src/commands.ts:87194:inventoryEventIdForOperation",
             "kind": "FunctionDeclaration",
-            "line": 2315,
+            "line": 2344,
             "name": "inventoryEventIdForOperation"
           },
           "witness": {
@@ -15886,9 +15866,9 @@
                 "column": 1,
                 "file": "src/commands.ts",
                 "hasBody": true,
-                "id": "src/commands.ts:86145:inventoryEventIdForOperation",
+                "id": "src/commands.ts:87194:inventoryEventIdForOperation",
                 "kind": "FunctionDeclaration",
-                "line": 2315,
+                "line": 2344,
                 "name": "inventoryEventIdForOperation",
                 "reason": "resolved-call"
               }
