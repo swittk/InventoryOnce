@@ -27348,7 +27348,7 @@
       "invariants": [
         "PoolReportMatchesExactPhysicalTruth",
         "ClaimsFreezeOneExactRevision",
-        "AllocatedClaimsRemainInEligiblePlacements"
+        "AllocatedClaimsRemainInEligibleLocations"
       ],
       "models": [
         "FungibilityPool",
@@ -33973,7 +33973,7 @@
       "invariants": [
         "PoolReportMatchesExactPhysicalTruth",
         "ClaimsFreezeOneExactRevision",
-        "AllocatedClaimsRemainInEligiblePlacements"
+        "AllocatedClaimsRemainInEligibleLocations"
       ],
       "models": [
         "FungibilityPool",
@@ -35182,7 +35182,7 @@
       "invariants": [
         "PoolReportMatchesExactPhysicalTruth",
         "ClaimsFreezeOneExactRevision",
-        "AllocatedClaimsRemainInEligiblePlacements"
+        "AllocatedClaimsRemainInEligibleLocations"
       ],
       "models": [
         "FungibilityPool",
@@ -38304,7 +38304,7 @@
       "invariants": [
         "PoolReportMatchesExactPhysicalTruth",
         "ClaimsFreezeOneExactRevision",
-        "AllocatedClaimsRemainInEligiblePlacements"
+        "AllocatedClaimsRemainInEligibleLocations"
       ],
       "models": [
         "FungibilityPool",
@@ -47833,7 +47833,7 @@
       "invariants": [
         "PoolReportMatchesExactPhysicalTruth",
         "ClaimsFreezeOneExactRevision",
-        "AllocatedClaimsRemainInEligiblePlacements"
+        "AllocatedClaimsRemainInEligibleLocations"
       ],
       "models": [
         "FungibilityPool",
@@ -51563,7 +51563,7 @@
       "invariants": [
         "PoolReportMatchesExactPhysicalTruth",
         "ClaimsFreezeOneExactRevision",
-        "AllocatedClaimsRemainInEligiblePlacements"
+        "AllocatedClaimsRemainInEligibleLocations"
       ],
       "models": [
         "FungibilityPool",
@@ -52152,7 +52152,7 @@
       "invariants": [
         "PoolReportMatchesExactPhysicalTruth",
         "ClaimsFreezeOneExactRevision",
-        "AllocatedClaimsRemainInEligiblePlacements"
+        "AllocatedClaimsRemainInEligibleLocations"
       ],
       "models": [
         "FungibilityPool",
@@ -55277,7 +55277,7 @@
       "invariants": [
         "PoolReportMatchesExactPhysicalTruth",
         "ClaimsFreezeOneExactRevision",
-        "AllocatedClaimsRemainInEligiblePlacements"
+        "AllocatedClaimsRemainInEligibleLocations"
       ],
       "models": [
         "FungibilityPool",
@@ -62179,7 +62179,7 @@
       "invariants": [
         "PoolReportMatchesExactPhysicalTruth",
         "ClaimsFreezeOneExactRevision",
-        "AllocatedClaimsRemainInEligiblePlacements"
+        "AllocatedClaimsRemainInEligibleLocations"
       ],
       "models": [
         "FungibilityPool",
@@ -62389,7 +62389,7 @@
       "invariants": [
         "PoolReportMatchesExactPhysicalTruth",
         "ClaimsFreezeOneExactRevision",
-        "AllocatedClaimsRemainInEligiblePlacements"
+        "AllocatedClaimsRemainInEligibleLocations"
       ],
       "models": [
         "FungibilityPool",
@@ -62758,7 +62758,7 @@
       "invariants": [
         "PoolReportMatchesExactPhysicalTruth",
         "ClaimsFreezeOneExactRevision",
-        "AllocatedClaimsRemainInEligiblePlacements"
+        "AllocatedClaimsRemainInEligibleLocations"
       ],
       "models": [
         "FungibilityPool",
@@ -63107,7 +63107,7 @@
       "invariants": [
         "PoolReportMatchesExactPhysicalTruth",
         "ClaimsFreezeOneExactRevision",
-        "AllocatedClaimsRemainInEligiblePlacements"
+        "AllocatedClaimsRemainInEligibleLocations"
       ],
       "models": [
         "FungibilityPool",
@@ -84812,7 +84812,7 @@
       "invariants": [
         "PoolReportMatchesExactPhysicalTruth",
         "ClaimsFreezeOneExactRevision",
-        "AllocatedClaimsRemainInEligiblePlacements"
+        "AllocatedClaimsRemainInEligibleLocations"
       ],
       "models": [
         "FungibilityPool",
