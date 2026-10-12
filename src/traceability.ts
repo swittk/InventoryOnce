@@ -85,14 +85,38 @@ export function applyInventoryTraceabilityChangesBatch({
     }
   }
   if (!changesPresent) return state;
+  let genealogyTouched = false;
+  for (const event of events) {
+    for (const change of event.changes) {
+      if (change.kind === InventoryTraceabilityRelationKind.Genealogy) {
+        genealogyTouched = true;
+        break;
+      }
+    }
+    if (genealogyTouched) break;
+  }
+  // The ordinary single-event API verifies the entire DAG after a genealogy
+  // mutation. Batch catch-up may validate its published base once, then use
+  // an incremental adjacency index for newly added edges.
+  if (genealogyTouched) assertGenealogyHasNoCycles(state.relations);
+  const ancestry = genealogyTouched
+    ? inventoryBatchGenealogyAdjacency(state.relations)
+    : undefined;
   const relations: Record<string, InventoryTraceabilityRelation> = {
     ...state.relations,
   };
   for (const event of events) {
-    if (event.changes.length !== 0) {
-      mutateInventoryTraceabilityRelations(
+    if (event.changes.length === 0) continue;
+    mutateInventoryTraceabilityRelations(
+      relations,
+      event.eventId,
+      event.changes,
+      ancestry === undefined
+    );
+    if (ancestry !== undefined) {
+      validateInventoryBatchGenealogyChanges(
+        ancestry,
         relations,
-        event.eventId,
         event.changes
       );
     }
@@ -104,7 +128,8 @@ export function applyInventoryTraceabilityChangesBatch({
 function mutateInventoryTraceabilityRelations(
   relations: Record<string, InventoryTraceabilityRelation>,
   eventId: string,
-  changes: readonly InventoryTraceabilityRelationChange[]
+  changes: readonly InventoryTraceabilityRelationChange[],
+  validateWholeGenealogy = true
 ): void {
   let genealogyChanged = false;
   for (const change of changes) {
@@ -152,7 +177,102 @@ function mutateInventoryTraceabilityRelations(
     }
     delete relations[identity];
   }
-  if (genealogyChanged) assertGenealogyHasNoCycles(relations);
+  if (genealogyChanged && validateWholeGenealogy) {
+    assertGenealogyHasNoCycles(relations);
+  }
+}
+
+/** Build the current adjacency once from the already validated genealogy DAG. */
+function inventoryBatchGenealogyAdjacency(
+  relations: Readonly<Record<string, InventoryTraceabilityRelation>>
+): Map<string, Set<string>> {
+  const adjacency = new Map<string, Set<string>>();
+  for (const relation of Object.values(relations)) {
+    if (relation.kind !== InventoryTraceabilityRelationKind.Genealogy) {
+      continue;
+    }
+    const from = inventoryTraceabilityNodeIdentity(relation.from);
+    const to = inventoryTraceabilityNodeIdentity(relation.to);
+    const outgoing = adjacency.get(from) ?? new Set<string>();
+    outgoing.add(to);
+    adjacency.set(from, outgoing);
+  }
+  return adjacency;
+}
+
+/**
+ * Refresh all genealogy edges touched by this event from its final relations,
+ * then verify that none of its retained additions closes a directed cycle.
+ * This preserves the standalone per-event final-state semantics even when an
+ * edge was added and invalidated within the same event.
+ */
+function validateInventoryBatchGenealogyChanges(
+  adjacency: Map<string, Set<string>>,
+  relations: Readonly<Record<string, InventoryTraceabilityRelation>>,
+  changes: readonly InventoryTraceabilityRelationChange[]
+): void {
+  const additions: Array<readonly [string, string]> = [];
+  for (const change of changes) {
+    if (change.kind !== InventoryTraceabilityRelationKind.Genealogy) {
+      continue;
+    }
+    const from = inventoryTraceabilityNodeIdentity(change.from);
+    const to = inventoryTraceabilityNodeIdentity(change.to);
+    const identity = inventoryTraceabilityRelationIdentity(
+      change.kind,
+      change.from,
+      change.to
+    );
+    const current = inventorySparseRelationValue(relations, identity);
+    if (current === undefined) {
+      const outgoing = adjacency.get(from);
+      outgoing?.delete(to);
+      if (outgoing?.size === 0) adjacency.delete(from);
+    } else {
+      const outgoing = adjacency.get(from) ?? new Set<string>();
+      outgoing.add(to);
+      adjacency.set(from, outgoing);
+      if (change.action === InventoryTraceabilityRelationAction.Add) {
+        additions.push([from, to]);
+      }
+    }
+  }
+  for (const [from, to] of additions) {
+    if (inventoryGenealogyReachable(adjacency, to, from)) {
+      throw new Error("Genealogy graph contains a cycle at '" + from + "'.");
+    }
+  }
+}
+
+/** Avoid prototype-chain collisions for graph identities from application strings. */
+function inventorySparseRelationValue(
+  relations: Readonly<Record<string, InventoryTraceabilityRelation>>,
+  identity: string
+): InventoryTraceabilityRelation | undefined {
+  return Object.prototype.hasOwnProperty.call(relations, identity)
+    ? relations[identity]
+    : undefined;
+}
+
+/** Search only edges reachable from a newly added edge's destination. */
+function inventoryGenealogyReachable(
+  adjacency: ReadonlyMap<string, ReadonlySet<string>>,
+  start: string,
+  target: string
+): boolean {
+  if (start === target) return true;
+  const visited = new Set<string>();
+  const pending = [start];
+  while (pending.length > 0) {
+    const current = pending.pop();
+    if (current === undefined || visited.has(current)) continue;
+    if (current === target) return true;
+    visited.add(current);
+    for (const next of adjacency.get(current) ?? []) {
+      if (!visited.has(next)) pending.push(next);
+    }
+  }
+  return false;
 }
 
 /** Stable identity for one relation regardless of creating event. */

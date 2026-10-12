@@ -1,7 +1,7 @@
 {
   "counts": {
-    "callables": 2979,
-    "edges": 7812,
+    "callables": 2990,
+    "edges": 7835,
     "publicEntries": 539,
     "publicEntriesWithTargets": 539,
     "publicEntriesWithWitnesses": 539,
@@ -7551,31 +7551,31 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/traceability-corrections.test.ts",
+                "file": "test/traceability-batch-locality.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/traceability-corrections.test.ts",
+                "id": "test-root:test/traceability-batch-locality.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/traceability-corrections.test.ts"
+                "name": "test/traceability-batch-locality.test.ts"
               },
               {
-                "column": 41,
-                "file": "test/traceability-corrections.test.ts",
+                "column": 54,
+                "file": "test/traceability-batch-locality.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-corrections.test.ts:1420:<anonymous@50>",
+                "id": "test/traceability-batch-locality.test.ts:2541:<anonymous@80>",
                 "kind": "ArrowFunction",
-                "line": 50,
-                "name": "<anonymous@50>",
+                "line": 80,
+                "name": "<anonymous@80>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 79,
-                "file": "test/traceability-corrections.test.ts",
+                "column": 94,
+                "file": "test/traceability-batch-locality.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-corrections.test.ts:9183:<anonymous@300>",
+                "id": "test/traceability-batch-locality.test.ts:7176:<anonymous@214>",
                 "kind": "ArrowFunction",
-                "line": 300,
-                "name": "<anonymous@300>",
+                "line": 214,
+                "name": "<anonymous@214>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -7589,7 +7589,7 @@
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/traceability-corrections.test.ts"
+            "test": "test/traceability-batch-locality.test.ts"
           }
         }
       ]
@@ -7633,20 +7633,20 @@
                 "column": 54,
                 "file": "test/traceability-batch-locality.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-batch-locality.test.ts:2504:<anonymous@79>",
+                "id": "test/traceability-batch-locality.test.ts:2541:<anonymous@80>",
                 "kind": "ArrowFunction",
-                "line": 79,
-                "name": "<anonymous@79>",
+                "line": 80,
+                "name": "<anonymous@80>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 80,
                 "file": "test/traceability-batch-locality.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-batch-locality.test.ts:3665:<anonymous@110>",
+                "id": "test/traceability-batch-locality.test.ts:3702:<anonymous@111>",
                 "kind": "ArrowFunction",
-                "line": 110,
-                "name": "<anonymous@110>",
+                "line": 111,
+                "name": "<anonymous@111>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -11205,20 +11205,20 @@
                 "column": 54,
                 "file": "test/traceability-batch-locality.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-batch-locality.test.ts:2504:<anonymous@79>",
+                "id": "test/traceability-batch-locality.test.ts:2541:<anonymous@80>",
                 "kind": "ArrowFunction",
-                "line": 79,
-                "name": "<anonymous@79>",
+                "line": 80,
+                "name": "<anonymous@80>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 87,
                 "file": "test/traceability-batch-locality.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-batch-locality.test.ts:5604:<anonymous@167>",
+                "id": "test/traceability-batch-locality.test.ts:5641:<anonymous@168>",
                 "kind": "ArrowFunction",
-                "line": 167,
-                "name": "<anonymous@167>",
+                "line": 168,
+                "name": "<anonymous@168>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -14404,9 +14404,9 @@
           "column": 1,
           "file": "src/traceability.ts",
           "hasBody": true,
-          "id": "src/traceability.ts:6257:inventoryGenealogyAncestors",
+          "id": "src/traceability.ts:10537:inventoryGenealogyAncestors",
           "kind": "FunctionDeclaration",
-          "line": 185,
+          "line": 305,
           "name": "inventoryGenealogyAncestors"
         }
       ],
@@ -14417,9 +14417,9 @@
             "column": 1,
             "file": "src/traceability.ts",
             "hasBody": true,
-            "id": "src/traceability.ts:6257:inventoryGenealogyAncestors",
+            "id": "src/traceability.ts:10537:inventoryGenealogyAncestors",
             "kind": "FunctionDeclaration",
-            "line": 185,
+            "line": 305,
             "name": "inventoryGenealogyAncestors"
           },
           "witness": {
@@ -14457,9 +14457,9 @@
                 "column": 1,
                 "file": "src/traceability.ts",
                 "hasBody": true,
-                "id": "src/traceability.ts:6257:inventoryGenealogyAncestors",
+                "id": "src/traceability.ts:10537:inventoryGenealogyAncestors",
                 "kind": "FunctionDeclaration",
-                "line": 185,
+                "line": 305,
                 "name": "inventoryGenealogyAncestors",
                 "reason": "resolved-call"
               }
@@ -16773,9 +16773,9 @@
           "column": 1,
           "file": "src/traceability.ts",
           "hasBody": true,
-          "id": "src/traceability.ts:5400:inventoryTraceabilityRelationIdentity",
+          "id": "src/traceability.ts:9680:inventoryTraceabilityRelationIdentity",
           "kind": "FunctionDeclaration",
-          "line": 159,
+          "line": 279,
           "name": "inventoryTraceabilityRelationIdentity"
         }
       ],
@@ -16786,9 +16786,9 @@
             "column": 1,
             "file": "src/traceability.ts",
             "hasBody": true,
-            "id": "src/traceability.ts:5400:inventoryTraceabilityRelationIdentity",
+            "id": "src/traceability.ts:9680:inventoryTraceabilityRelationIdentity",
             "kind": "FunctionDeclaration",
-            "line": 159,
+            "line": 279,
             "name": "inventoryTraceabilityRelationIdentity"
           },
           "witness": {
@@ -16806,29 +16806,29 @@
                 "column": 54,
                 "file": "test/traceability-batch-locality.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-batch-locality.test.ts:2504:<anonymous@79>",
+                "id": "test/traceability-batch-locality.test.ts:2541:<anonymous@80>",
                 "kind": "ArrowFunction",
-                "line": 79,
-                "name": "<anonymous@79>",
+                "line": 80,
+                "name": "<anonymous@80>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 80,
                 "file": "test/traceability-batch-locality.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-batch-locality.test.ts:3665:<anonymous@110>",
+                "id": "test/traceability-batch-locality.test.ts:3702:<anonymous@111>",
                 "kind": "ArrowFunction",
-                "line": 110,
-                "name": "<anonymous@110>",
+                "line": 111,
+                "name": "<anonymous@111>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 1,
                 "file": "src/traceability.ts",
                 "hasBody": true,
-                "id": "src/traceability.ts:5400:inventoryTraceabilityRelationIdentity",
+                "id": "src/traceability.ts:9680:inventoryTraceabilityRelationIdentity",
                 "kind": "FunctionDeclaration",
-                "line": 159,
+                "line": 279,
                 "name": "inventoryTraceabilityRelationIdentity",
                 "reason": "resolved-call"
               }
@@ -16844,9 +16844,9 @@
           "column": 1,
           "file": "src/traceability.ts",
           "hasBody": true,
-          "id": "src/traceability.ts:5778:inventoryTraceabilityRelationsOfKind",
+          "id": "src/traceability.ts:10058:inventoryTraceabilityRelationsOfKind",
           "kind": "FunctionDeclaration",
-          "line": 172,
+          "line": 292,
           "name": "inventoryTraceabilityRelationsOfKind"
         }
       ],
@@ -16857,9 +16857,9 @@
             "column": 1,
             "file": "src/traceability.ts",
             "hasBody": true,
-            "id": "src/traceability.ts:5778:inventoryTraceabilityRelationsOfKind",
+            "id": "src/traceability.ts:10058:inventoryTraceabilityRelationsOfKind",
             "kind": "FunctionDeclaration",
-            "line": 172,
+            "line": 292,
             "name": "inventoryTraceabilityRelationsOfKind"
           },
           "witness": {
@@ -16897,9 +16897,9 @@
                 "column": 1,
                 "file": "src/traceability.ts",
                 "hasBody": true,
-                "id": "src/traceability.ts:5778:inventoryTraceabilityRelationsOfKind",
+                "id": "src/traceability.ts:10058:inventoryTraceabilityRelationsOfKind",
                 "kind": "FunctionDeclaration",
-                "line": 172,
+                "line": 292,
                 "name": "inventoryTraceabilityRelationsOfKind",
                 "reason": "resolved-call"
               }

@@ -12,6 +12,7 @@ import {
 } from "../src/events.js";
 import { InventoryTraceabilityNodeKind } from "../src/model.js";
 import {
+  applyInventoryTraceabilityChanges,
   applyInventoryTraceabilityChangesBatch,
   emptyInventoryTraceabilityState,
   inventoryTraceabilityRelationIdentity,
@@ -208,6 +209,110 @@ describe("batched traceability projection locality", () => {
     expect(before.lastRecordSequence).toBe(0);
     expect(Object.keys(before.events)).toHaveLength(0);
     expect(Object.keys(before.traceability.relations)).toHaveLength(0);
+  });
+
+  it("measures independent genealogy catch-up without rescanning all prior edges per event", () => {
+    const genealogy = (index: number): InventoryTraceabilityRelationChange => ({
+      action: InventoryTraceabilityRelationAction.Add,
+      kind: InventoryTraceabilityRelationKind.Genealogy,
+      from: {
+        kind: InventoryTraceabilityNodeKind.External,
+        id: "genealogy-source-" + index,
+      },
+      to: {
+        kind: InventoryTraceabilityNodeKind.External,
+        id: "genealogy-output-" + index,
+      },
+    });
+    const graphSize = 5_000;
+    const tailSize = 100;
+    const state = applyInventoryTraceabilityChanges({
+      state: emptyInventoryTraceabilityState(),
+      eventId: "genealogy-batch-seed",
+      changes: Array.from({ length: graphSize }, (_, index) => genealogy(index)),
+    });
+    const events = Array.from({ length: tailSize }, (_, index) => ({
+      eventId: "genealogy-batch-append-" + index,
+      changes: [genealogy(graphSize + index)],
+    }));
+    const started = performance.now();
+    const result = applyInventoryTraceabilityChangesBatch({
+      state,
+      events,
+    });
+    const elapsedMs = performance.now() - started;
+    let sequential = state;
+    for (const event of events) {
+      sequential = applyInventoryTraceabilityChanges({
+        state: sequential,
+        eventId: event.eventId,
+        changes: event.changes,
+      });
+    }
+    expect(result).toEqual(sequential);
+    expect(Object.keys(state.relations)).toHaveLength(graphSize);
+    expect(Object.keys(result.relations)).toHaveLength(graphSize + tailSize);
+    console.log(JSON.stringify({
+      bench: "traceability-genealogy-batch-catchup",
+      baseRelations: graphSize,
+      appendedEvents: tailSize,
+      elapsedMs,
+    }));
+  });
+
+  it("allows a canceled same-event cycle but rejects an indirect surviving back-edge", () => {
+    const state = emptyInventoryTraceabilityState();
+    const a = { kind: InventoryTraceabilityNodeKind.External, id: "graph-A" };
+    const b = { kind: InventoryTraceabilityNodeKind.External, id: "graph-B" };
+    const c = { kind: InventoryTraceabilityNodeKind.External, id: "graph-C" };
+    const edge = (
+      from: typeof a,
+      to: typeof a,
+      action: InventoryTraceabilityRelationAction,
+      invalidatesCreatedByEventId?: string
+    ): InventoryTraceabilityRelationChange => ({
+      action,
+      kind: InventoryTraceabilityRelationKind.Genealogy,
+      from,
+      to,
+      ...(invalidatesCreatedByEventId === undefined
+        ? {}
+        : { invalidatesCreatedByEventId }),
+    });
+    const sameEventChanges = [
+      edge(a, b, InventoryTraceabilityRelationAction.Add),
+      edge(b, a, InventoryTraceabilityRelationAction.Add),
+      edge(b, a, InventoryTraceabilityRelationAction.Invalidate, "same-event"),
+    ];
+    const standalone = applyInventoryTraceabilityChanges({
+      state,
+      eventId: "same-event",
+      changes: sameEventChanges,
+    });
+    const batch = applyInventoryTraceabilityChangesBatch({
+      state,
+      events: [{ eventId: "same-event", changes: sameEventChanges }],
+    });
+    expect(batch).toEqual(standalone);
+    expect(Object.keys(batch.relations)).toHaveLength(1);
+
+    expect(() => applyInventoryTraceabilityChangesBatch({
+      state,
+      events: [
+        {
+          eventId: "long-chain",
+          changes: [
+            edge(a, b, InventoryTraceabilityRelationAction.Add),
+            edge(b, c, InventoryTraceabilityRelationAction.Add),
+          ],
+        },
+        {
+          eventId: "indirect-back-edge",
+          changes: [edge(c, a, InventoryTraceabilityRelationAction.Add)],
+        },
+      ],
+    })).toThrow("cycle");
+    expect(Object.keys(state.relations)).toHaveLength(0);
   });
 
   it("does not double-add replayed graph operations in a mixed append batch", () => {
