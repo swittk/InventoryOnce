@@ -744,6 +744,72 @@ describe("projection index real-world scale", () => {
 
 
 describe("canonical projection exact-placement index locality", () => {
+  it("falls back to the item index before traversing 100,000 irrelevant placement nodes", () => {
+    const positions: Record<string, InventoryStockPosition> = Object.create(null);
+    const itemPositionIds: string[] = [];
+    const measurements: InventoryStockPosition["measurements"] = {
+      primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") },
+      independent: [],
+    };
+    for (let index = 0; index < 5_000; index += 1) {
+      const key = {
+        itemId: "item-a",
+        itemRevisionId: "item-a-v2",
+        placementNodeId: "outside-warehouse",
+        lotId: "OUTSIDE-" + String(index).padStart(6, "0"),
+      };
+      const identity = inventoryStockPositionIdentity(key);
+      positions[identity] = { key, measurements };
+      itemPositionIds.push(identity);
+    }
+    itemPositionIds.sort();
+    const emptyBinIds: string[] = [];
+    const parentByNode: Record<string, {
+      nodeId: string;
+      parentNodeId: string;
+      createdByEventId: string;
+    }> = Object.create(null);
+    for (let index = 0; index < 100_000; index += 1) {
+      const nodeId = "empty-bin-" + String(index).padStart(6, "0");
+      emptyBinIds.push(nodeId);
+      parentByNode[nodeId] = {
+        nodeId,
+        parentNodeId: "large-empty-warehouse",
+        createdByEventId: "warehouse-topology",
+      };
+    }
+    let placementIndexProbes = 0;
+    const state = {
+      ...emptyInventoryProjectionState(),
+      positions,
+      positionIdsByItemId: { "item-a": itemPositionIds },
+      positionIdsByItemRevisionId: { "item-a-v2": itemPositionIds },
+      positionIdsByPlacementNodeId: new Proxy(
+        Object.create(null) as Record<string, readonly string[]>,
+        {
+          /** Count sparse-index membership checks, including absent bins. */
+          getOwnPropertyDescriptor(target, key) {
+            placementIndexProbes += 1;
+            return Reflect.getOwnPropertyDescriptor(target, key);
+          },
+        }
+      ),
+      placement: {
+        relationByNodeId: parentByNode,
+        childNodeIdsByParentNodeId: {
+          "large-empty-warehouse": emptyBinIds,
+        },
+      },
+    };
+    expect(findInventoryPositions(state, {
+      itemId: "item-a",
+      withinPlacementNodeIds: ["large-empty-warehouse"],
+    })).toEqual([]);
+    // Selectivity must be bounded by the 5,000 item candidates, not the
+    // 100,000 unrelated empty physical nodes.
+    expect(placementIndexProbes).toBeLessThan(5_000);
+  });
+
   it("returns sorted exact-bin rows without probing 100,000 unrelated item positions", () => {
     const positions: Record<string, InventoryStockPosition> = Object.create(null);
     const itemPositionIds: string[] = [];

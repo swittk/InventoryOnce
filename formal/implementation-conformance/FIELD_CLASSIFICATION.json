@@ -4,14 +4,14 @@
     "callableFields": 11,
     "callbackArgumentFields": 365,
     "callbackResultFields": 433,
-    "fields": 2480,
-    "inputFields": 2148,
+    "fields": 2484,
+    "inputFields": 2152,
     "nullableFields": 6,
     "optionalFields": 1034,
     "outputFields": 891,
     "recursiveTypeReferences": 3,
     "truncatedTypes": 0,
-    "types": 399,
+    "types": 400,
     "undefinedFields": 2
   },
   "entries": {
@@ -905,6 +905,98 @@
       "declaration": "src/projection.ts",
       "directions": [
         "output"
+      ],
+      "discoveredType": "InventoryProjectionState",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "ResourceDimensions",
+        "InventoryOperation"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "ApplyInventoryCommittedEventsInput.catalog": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/projection.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryCatalog",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "ResourceDimensions",
+        "InventoryOperation"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "ApplyInventoryCommittedEventsInput.deficitPolicy": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/projection.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryDeficitPolicy",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "ResourceDimensions",
+        "InventoryOperation"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "ApplyInventoryCommittedEventsInput.events": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/projection.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "readonly InventoryCommittedEvent[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "ResourceDimensions",
+        "InventoryOperation"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "ApplyInventoryCommittedEventsInput.state": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/projection.ts",
+      "directions": [
+        "input"
       ],
       "discoveredType": "InventoryProjectionState",
       "executableEvidence": [
@@ -59259,5 +59351,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "0ab7586ba775b55090ffaec494342ffde6170060a17de344a0632b845be6a946"
+  "surfaceSha256": "563874e5f097374f0c5c440f53159ae9ab5ea70685e06d34fdc4e11292a379c1"
 }

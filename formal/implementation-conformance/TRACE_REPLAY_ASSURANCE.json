@@ -548,6 +548,7 @@
       ],
       "apiEntries": [
         "entrypoint.kernel.applyInventoryCommittedEvent",
+        "entrypoint.kernel.applyInventoryCommittedEvents",
         "entrypoint.kernel.compareCommittedEventSequence",
         "entrypoint.kernel.createInventoryDeindividualizeEvent",
         "entrypoint.kernel.createInventoryDetachEvent",
@@ -1339,6 +1340,7 @@
         "entrypoint.kernel.addQuantity",
         "entrypoint.kernel.allocateInventoryReservation",
         "entrypoint.kernel.applyInventoryCommittedEvent",
+        "entrypoint.kernel.applyInventoryCommittedEvents",
         "entrypoint.kernel.applyInventoryTraceabilityChanges",
         "entrypoint.kernel.assertInventoryAmountSum",
         "entrypoint.kernel.assertInventoryMeasurementsFollowPrimarySign",

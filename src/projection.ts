@@ -36,7 +36,6 @@ import {
   applyInventoryPlacementChanges,
   emptyInventoryPlacementState,
   inventoryPlacementParentNodeId,
-  inventoryPlacementSubtreeNodeIds,
   type InventoryPlacementState,
 } from "./placement.js";
 import {
@@ -217,6 +216,121 @@ export function applyInventoryCommittedEvent(
   input: ApplyInventoryCommittedEventInput
 ): ApplyInventoryCommittedEventResult {
   return applyInventoryCommittedEventInternal(input, false, true);
+}
+
+/** Inputs for appending a committed event batch to one already published projection. */
+export interface ApplyInventoryCommittedEventsInput {
+  /** Frozen catalogue validating every appended event. */
+  readonly catalog: InventoryCatalog;
+  /** Existing immutable projection; never modified by this operation. */
+  readonly state: InventoryProjectionState;
+  /** Ordered or unordered committed events, including exact idempotent replays. */
+  readonly events: readonly InventoryCommittedEvent[];
+  /** Same explicit deficit semantics as single-event commit and cold replay. */
+  readonly deficitPolicy: InventoryDeficitPolicy;
+}
+
+/**
+ * Catch up an existing projection through many committed events atomically.
+ * Clone the flat maps once into a private workspace, then reuse the exact
+ * validated reducer in its mutable replay mode. A failure cannot expose any
+ * partial state, while N pending events avoid N growing whole-record copies.
+ */
+export function applyInventoryCommittedEvents({
+  catalog,
+  state,
+  events,
+  deficitPolicy,
+}: ApplyInventoryCommittedEventsInput): InventoryProjectionState {
+  if (events.length === 0) return state;
+  const ordered = inventoryEventsInRecordSequence(events);
+  // Exact retries must not clone a giant published projection just to prove
+  // that no new event is necessary. The ordinary single-event validator
+  // remains the authority for both replay equivalence and changed intent.
+  let allPreviouslyCommitted = true;
+  for (const event of ordered) {
+    if (
+      inventorySparseRecordValue(
+        state.eventIdByOperationId,
+        event.operationId
+      ) === undefined
+    ) {
+      allPreviouslyCommitted = false;
+      break;
+    }
+  }
+  if (allPreviouslyCommitted) {
+    for (const event of ordered) {
+      const replay = applyInventoryCommittedEventInternal(
+        { catalog, state, event, deficitPolicy },
+        false,
+        true
+      );
+      if (!replay.replayed) {
+        throw new Error("Committed batch replay unexpectedly changed the projection.");
+      }
+    }
+    return state;
+  }
+  let next = cloneInventoryProjectionForEventBatch(state);
+  let changed = false;
+  for (const event of ordered) {
+    const result = applyInventoryCommittedEventInternal(
+      { catalog, state: next, event, deficitPolicy },
+      true,
+      true
+    );
+    next = result.state;
+    changed ||= !result.replayed;
+  }
+  return changed ? next : state;
+}
+
+/** Clone each mutable root once; immutable rows and sorted arrays remain shared. */
+function cloneInventoryProjectionForEventBatch(
+  state: InventoryProjectionState
+): InventoryProjectionState {
+  return {
+    ...state,
+    positions: cloneInventorySparseRecord(state.positions),
+    positionIdsByItemId: cloneInventorySparseRecord(state.positionIdsByItemId),
+    positionIdsByItemRevisionId: cloneInventorySparseRecord(
+      state.positionIdsByItemRevisionId
+    ),
+    positionIdsByPlacementNodeId: cloneInventorySparseRecord(
+      state.positionIdsByPlacementNodeId
+    ),
+    positiveLayerStartedAtEpochMsByPositionId: cloneInventorySparseRecord(
+      state.positiveLayerStartedAtEpochMsByPositionId
+    ),
+    positivePositionIdBySerialIdentity: cloneInventorySparseRecord(
+      state.positivePositionIdBySerialIdentity
+    ),
+    placementNodes: cloneInventorySparseRecord(state.placementNodes),
+    placementNodeIdByEmbodiedSerialIdentity: cloneInventorySparseRecord(
+      state.placementNodeIdByEmbodiedSerialIdentity
+    ),
+    placementNodeRootEventIdByNodeId: cloneInventorySparseRecord(
+      state.placementNodeRootEventIdByNodeId
+    ),
+    lots: cloneInventorySparseRecord(state.lots),
+    lotIdentitiesByItemId: cloneInventorySparseRecord(
+      state.lotIdentitiesByItemId
+    ),
+    lotRootEventIdByIdentity: cloneInventorySparseRecord(
+      state.lotRootEventIdByIdentity
+    ),
+    transfers: cloneInventorySparseRecord(state.transfers),
+    events: cloneInventorySparseRecord(state.events),
+    eventIdsBySequence: cloneInventorySparseRecord(state.eventIdsBySequence),
+    eventSequencesByWhereaboutsId: cloneInventorySparseRecord(
+      state.eventSequencesByWhereaboutsId
+    ),
+    eventIdByOperationId: cloneInventorySparseRecord(state.eventIdByOperationId),
+    correctionEventIdByCorrectedEventId: cloneInventorySparseRecord(
+      state.correctionEventIdByCorrectedEventId
+    ),
+  };
 }
 
 /**
@@ -1481,38 +1595,78 @@ function candidatePositionIds(
   return candidates;
 }
 
+/** One enter/leave visit in the bounded physical placement traversal. */
+interface InventorySubtreeCandidateVisit {
+  /** Exact placement node being inspected. */
+  readonly nodeId: string;
+  /** Whether this visit finishes a node after its descendants. */
+  readonly exiting: boolean;
+}
+
 /**
- * Enumerate a selective physical subtree from the already maintained
- * child-node and direct-stock indexes. Fallback on an item/revision index
- * when the subtree is broad; no global position or journal scan is needed.
+ * Enumerate selective subtree stock without traversing an arbitrarily large
+ * mostly empty topology. Once the graph/index search would cost as much as
+ * the item/revision candidates, return undefined to use that existing index.
  */
 function candidateSubtreePositionIds(
   state: InventoryProjectionState,
   rootNodeIds: readonly string[],
   itemCandidateCount: number
 ): readonly string[] | undefined {
-  // Very small item sets are cheaper to filter directly than to traverse the
-  // graph. This cutoff avoids expensive traversal of mostly empty buildings.
+  // With small item scopes, filtering a few rows is cheaper than graph work.
   if (itemCandidateCount < 128) return undefined;
   const visitedNodes = new Set<string>();
+  const ancestors = new Set<string>();
   const candidates: string[] = [];
   for (const rootNodeId of rootNodeIds) {
-    for (const nodeId of inventoryPlacementSubtreeNodeIds(
-      state.placement,
-      rootNodeId
-    )) {
-      // Multiple selected roots may overlap; a physical position must
-      // appear exactly once even when both ancestor and child are selected.
+    const pending: InventorySubtreeCandidateVisit[] = [
+      { nodeId: rootNodeId, exiting: false },
+    ];
+    while (pending.length > 0) {
+      const visit = pending.pop();
+      if (visit === undefined) break;
+      const nodeId = visit.nodeId;
+      if (visit.exiting) {
+        ancestors.delete(nodeId);
+        visitedNodes.add(nodeId);
+        continue;
+      }
+      if (ancestors.has(nodeId)) {
+        throw new Error("Placement graph contains a cycle at '" + nodeId + "'.");
+      }
+      // Several selected roots can overlap. A direct-stock identity must be
+      // considered exactly once, regardless of the number of matching roots.
       if (visitedNodes.has(nodeId)) continue;
-      visitedNodes.add(nodeId);
+      if (visitedNodes.size + ancestors.size + 1 >= itemCandidateCount) {
+        return undefined;
+      }
+      ancestors.add(nodeId);
       const directPositions = inventorySparseRecordValue(
         state.positionIdsByPlacementNodeId,
         nodeId
       ) ?? [];
-      for (const positionId of directPositions) {
-        candidates.push(positionId);
-      }
+      for (const positionId of directPositions) candidates.push(positionId);
       if (candidates.length >= itemCandidateCount) return undefined;
+      const children =
+        inventorySparseRecordValue(
+          state.placement.childNodeIdsByParentNodeId,
+          nodeId
+        ) ?? [];
+      // Do not allocate/traverse 100k sibling nodes to answer a 5k-row item
+      // query. This conservative bound affects only the chosen index path.
+      if (
+        children.length + visitedNodes.size + ancestors.size >=
+        itemCandidateCount
+      ) {
+        return undefined;
+      }
+      pending.push({ nodeId, exiting: true });
+      for (let index = children.length - 1; index >= 0; index -= 1) {
+        const child = children[index];
+        if (child !== undefined) {
+          pending.push({ nodeId: child, exiting: false });
+        }
+      }
     }
   }
   candidates.sort(compareInventoryIdentityText);

@@ -1,22 +1,22 @@
 {
   "counts": {
     "authorityMethods": 14,
-    "callAndConstructSignatures": 537,
+    "callAndConstructSignatures": 538,
     "classMethods": 71,
-    "compilerCallGraphCallables": 2951,
-    "compilerCallGraphEdges": 7745,
-    "compilerCallGraphTestRoots": 46,
+    "compilerCallGraphCallables": 2966,
+    "compilerCallGraphEdges": 7780,
+    "compilerCallGraphTestRoots": 47,
     "compilerCallGraphUnresolvedApis": 0,
-    "compilerCallGraphWitnessedApis": 537,
-    "directExecutableApis": 202,
+    "compilerCallGraphWitnessedApis": 538,
+    "directExecutableApis": 207,
     "explicitGapApis": 4,
     "facadeMethods": 130,
-    "indirectCallChainApis": 331,
-    "kernelCallables": 167,
+    "indirectCallChainApis": 327,
+    "kernelCallables": 168,
     "maximumTypeDepth": 12,
     "migrationCallables": 15,
-    "reachableFields": 2480,
-    "reachableTypes": 399,
+    "reachableFields": 2484,
+    "reachableTypes": 400,
     "recursiveTypeReferences": 3,
     "rootCallables": 100,
     "storageCallables": 23,
@@ -13778,7 +13778,7 @@
           "path": "src/picking.ts"
         },
         {
-          "occurrences": 3,
+          "occurrences": 4,
           "path": "src/projection.ts"
         },
         {
@@ -14626,50 +14626,40 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/containers.test.ts",
+              "file": "test/projection-batch-catchup.test.ts",
               "hasBody": true,
-              "id": "test-root:test/containers.test.ts",
+              "id": "test-root:test/projection-batch-catchup.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/containers.test.ts"
+              "name": "test/projection-batch-catchup.test.ts"
             },
             {
-              "column": 40,
-              "file": "test/containers.test.ts",
+              "column": 51,
+              "file": "test/projection-batch-catchup.test.ts",
               "hasBody": true,
-              "id": "test/containers.test.ts:2092:<anonymous@73>",
+              "id": "test/projection-batch-catchup.test.ts:3068:<anonymous@101>",
               "kind": "ArrowFunction",
-              "line": 73,
-              "name": "<anonymous@73>",
+              "line": 101,
+              "name": "<anonymous@101>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 81,
-              "file": "test/containers.test.ts",
+              "column": 87,
+              "file": "test/projection-batch-catchup.test.ts",
               "hasBody": true,
-              "id": "test/containers.test.ts:24249:<anonymous@762>",
+              "id": "test/projection-batch-catchup.test.ts:3162:<anonymous@102>",
               "kind": "ArrowFunction",
-              "line": 762,
-              "name": "<anonymous@762>",
+              "line": 102,
+              "name": "<anonymous@102>",
               "reason": "external-callback-dispatch"
-            },
-            {
-              "column": 1,
-              "file": "src/migrations.ts",
-              "hasBody": true,
-              "id": "src/migrations.ts:19775:dryRunInventoryMigration",
-              "kind": "FunctionDeclaration",
-              "line": 504,
-              "name": "dryRunInventoryMigration",
-              "reason": "resolved-call"
             },
             {
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:9463:applyInventoryCommittedEvent",
+              "id": "src/projection.ts:9427:applyInventoryCommittedEvent",
               "kind": "FunctionDeclaration",
-              "line": 216,
+              "line": 215,
               "name": "applyInventoryCommittedEvent",
               "reason": "resolved-call"
             }
@@ -14678,17 +14668,21 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:9463:applyInventoryCommittedEvent",
+            "id": "src/projection.ts:9427:applyInventoryCommittedEvent",
             "kind": "FunctionDeclaration",
-            "line": 216,
+            "line": 215,
             "name": "applyInventoryCommittedEvent"
           },
-          "test": "test/containers.test.ts"
+          "test": "test/projection-batch-catchup.test.ts"
         }
       ],
-      "directExecutableEntrypoints": [],
-      "directExecutableEvidence": [],
-      "evidenceMode": "indirect-call-chain",
+      "directExecutableEntrypoints": [
+        "test/projection-batch-catchup.test.ts"
+      ],
+      "directExecutableEvidence": [
+        "test/projection-batch-catchup.test.ts"
+      ],
+      "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/reclassification.test.ts",
@@ -14703,9 +14697,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:9463:applyInventoryCommittedEvent",
+          "id": "src/projection.ts:9427:applyInventoryCommittedEvent",
           "kind": "FunctionDeclaration",
-          "line": 216,
+          "line": 215,
           "name": "applyInventoryCommittedEvent"
         }
       ],
@@ -14768,6 +14762,139 @@
       ],
       "status": "covered"
     },
+    "entrypoint.kernel.applyInventoryCommittedEvents": {
+      "adapterCoverage": [
+        "memory",
+        "all-operation-failpoints"
+      ],
+      "callChainWitnesses": [
+        {
+          "chain": [
+            {
+              "column": 1,
+              "file": "test/projection-batch-catchup.test.ts",
+              "hasBody": true,
+              "id": "test-root:test/projection-batch-catchup.test.ts",
+              "kind": "TestRoot",
+              "line": 1,
+              "name": "test/projection-batch-catchup.test.ts"
+            },
+            {
+              "column": 51,
+              "file": "test/projection-batch-catchup.test.ts",
+              "hasBody": true,
+              "id": "test/projection-batch-catchup.test.ts:3068:<anonymous@101>",
+              "kind": "ArrowFunction",
+              "line": 101,
+              "name": "<anonymous@101>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 87,
+              "file": "test/projection-batch-catchup.test.ts",
+              "hasBody": true,
+              "id": "test/projection-batch-catchup.test.ts:3162:<anonymous@102>",
+              "kind": "ArrowFunction",
+              "line": 102,
+              "name": "<anonymous@102>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 1,
+              "file": "src/projection.ts",
+              "hasBody": true,
+              "id": "src/projection.ts:10572:applyInventoryCommittedEvents",
+              "kind": "FunctionDeclaration",
+              "line": 239,
+              "name": "applyInventoryCommittedEvents",
+              "reason": "resolved-call"
+            }
+          ],
+          "target": {
+            "column": 1,
+            "file": "src/projection.ts",
+            "hasBody": true,
+            "id": "src/projection.ts:10572:applyInventoryCommittedEvents",
+            "kind": "FunctionDeclaration",
+            "line": 239,
+            "name": "applyInventoryCommittedEvents"
+          },
+          "test": "test/projection-batch-catchup.test.ts"
+        }
+      ],
+      "directExecutableEntrypoints": [
+        "test/projection-batch-catchup.test.ts"
+      ],
+      "directExecutableEvidence": [
+        "test/projection-batch-catchup.test.ts"
+      ],
+      "evidenceMode": "direct-executable",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/reclassification.test.ts",
+        "test/catalog-stock.test.ts",
+        "test/whereabouts.test.ts",
+        "test/formal-storage-refinement.test.ts"
+      ],
+      "family": "dimension-reclassification",
+      "gaps": [],
+      "implementationTargets": [
+        {
+          "column": 1,
+          "file": "src/projection.ts",
+          "hasBody": true,
+          "id": "src/projection.ts:10572:applyInventoryCommittedEvents",
+          "kind": "FunctionDeclaration",
+          "line": 239,
+          "name": "applyInventoryCommittedEvents"
+        }
+      ],
+      "inputMapping": "Source/destination positions and changed status/owner/custodian/authority/direct placement/qualified dimension map to one resource-key rewrite.",
+      "internalReferences": [],
+      "invariants": [
+        "ResourceAccounting",
+        "CurrentPhysicalStateIsExclusive",
+        "UnresolvedStockStillExists",
+        "UnresolvedWhereaboutsIdentityIsStable",
+        "ItemQuantityConserved",
+        "PackagingBucketConserved",
+        "PartialWritesStayInvisible",
+        "PlacementTargetsAcceptContents"
+      ],
+      "models": [
+        "ResourceDimensions",
+        "ReclassificationConservation",
+        "InventoryOperation",
+        "PlacementGraph"
+      ],
+      "rejectionRelation": "Missing source, rejecting direct placement, duplicate destination, implicit package conversion, or non-conservation rejects atomically.",
+      "resultMapping": "Result preserves item/package/measurement quantity and changes only declared dimensions.",
+      "retryRelation": "Exact rewrite replays once; changed source/destination/value rejects.",
+      "signature": {
+        "callSignatures": [
+          {
+            "parameters": [
+              {
+                "name": "__0",
+                "optional": false,
+                "type": "ApplyInventoryCommittedEventsInput"
+              }
+            ],
+            "result": "InventoryProjectionState"
+          }
+        ],
+        "callable": true,
+        "constructSignatures": [],
+        "constructable": false,
+        "declaration": "src/projection.ts",
+        "name": "applyInventoryCommittedEvents"
+      },
+      "stateProjection": [
+        "abstractInventoryState",
+        "abstractOperationResult"
+      ],
+      "status": "covered"
+    },
     "entrypoint.kernel.applyInventoryPlacementChanges": {
       "adapterCoverage": [
         "memory",
@@ -14809,9 +14936,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:49629:projectInventoryEvents",
+              "id": "src/projection.ts:53938:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1301,
+              "line": 1415,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -14819,9 +14946,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:9861:applyInventoryCommittedEventInternal",
+              "id": "src/projection.ts:14170:applyInventoryCommittedEventInternal",
               "kind": "FunctionDeclaration",
-              "line": 226,
+              "line": 340,
               "name": "applyInventoryCommittedEventInternal",
               "reason": "resolved-call"
             },
@@ -15737,9 +15864,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:49629:projectInventoryEvents",
+              "id": "src/projection.ts:53938:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1301,
+              "line": 1415,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -15747,9 +15874,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:9861:applyInventoryCommittedEventInternal",
+              "id": "src/projection.ts:14170:applyInventoryCommittedEventInternal",
               "kind": "FunctionDeclaration",
-              "line": 226,
+              "line": 340,
               "name": "applyInventoryCommittedEventInternal",
               "reason": "resolved-call"
             },
@@ -16959,9 +17086,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:49629:projectInventoryEvents",
+              "id": "src/projection.ts:53938:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1301,
+              "line": 1415,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -16969,9 +17096,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:50999:inventoryEventsInRecordSequence",
+              "id": "src/projection.ts:55308:inventoryEventsInRecordSequence",
               "kind": "FunctionDeclaration",
-              "line": 1342,
+              "line": 1456,
               "name": "inventoryEventsInRecordSequence",
               "reason": "resolved-call"
             },
@@ -16979,9 +17106,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:62842:compareCommittedEventSequence",
+              "id": "src/projection.ts:68608:compareCommittedEventSequence",
               "kind": "FunctionDeclaration",
-              "line": 1673,
+              "line": 1827,
               "name": "compareCommittedEventSequence",
               "reason": "external-callback-dispatch"
             }
@@ -16990,9 +17117,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:62842:compareCommittedEventSequence",
+            "id": "src/projection.ts:68608:compareCommittedEventSequence",
             "kind": "FunctionDeclaration",
-            "line": 1673,
+            "line": 1827,
             "name": "compareCommittedEventSequence"
           },
           "test": "test/catalog-publication.test.ts"
@@ -17015,9 +17142,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:62842:compareCommittedEventSequence",
+          "id": "src/projection.ts:68608:compareCommittedEventSequence",
           "kind": "FunctionDeclaration",
-          "line": 1673,
+          "line": 1827,
           "name": "compareCommittedEventSequence"
         }
       ],
@@ -20268,42 +20395,42 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/storage-conformance.test.ts",
+              "file": "test/projection-batch-catchup.test.ts",
               "hasBody": true,
-              "id": "test-root:test/storage-conformance.test.ts",
+              "id": "test-root:test/projection-batch-catchup.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/storage-conformance.test.ts"
+              "name": "test/projection-batch-catchup.test.ts"
             },
             {
-              "column": 85,
-              "file": "test/storage-conformance.test.ts",
+              "column": 51,
+              "file": "test/projection-batch-catchup.test.ts",
               "hasBody": true,
-              "id": "test/storage-conformance.test.ts:2659:<anonymous@91>",
+              "id": "test/projection-batch-catchup.test.ts:3068:<anonymous@101>",
               "kind": "ArrowFunction",
-              "line": 91,
-              "name": "<anonymous@91>",
+              "line": 101,
+              "name": "<anonymous@101>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 3,
-              "file": "src/facade.ts",
-              "hasBody": false,
-              "id": "src/facade.ts:60222:receive",
-              "kind": "MethodSignature",
-              "line": 1481,
-              "name": "receive",
-              "reason": "resolved-call"
+              "column": 87,
+              "file": "test/projection-batch-catchup.test.ts",
+              "hasBody": true,
+              "id": "test/projection-batch-catchup.test.ts:3162:<anonymous@102>",
+              "kind": "ArrowFunction",
+              "line": 102,
+              "name": "<anonymous@102>",
+              "reason": "external-callback-dispatch"
             },
             {
-              "column": 3,
-              "file": "src/facade.ts",
+              "column": 1,
+              "file": "test/projection-batch-catchup.test.ts",
               "hasBody": true,
-              "id": "src/facade.ts:107857:receive",
-              "kind": "MethodDeclaration",
-              "line": 2641,
-              "name": "receive",
-              "reason": "interface-to-implementation"
+              "id": "test/projection-batch-catchup.test.ts:858:stockCatchupFixture",
+              "kind": "FunctionDeclaration",
+              "line": 26,
+              "name": "stockCatchupFixture",
+              "reason": "resolved-call"
             },
             {
               "column": 1,
@@ -20325,12 +20452,16 @@
             "line": 567,
             "name": "createInventoryReceiptEvent"
           },
-          "test": "test/storage-conformance.test.ts"
+          "test": "test/projection-batch-catchup.test.ts"
         }
       ],
-      "directExecutableEntrypoints": [],
-      "directExecutableEvidence": [],
-      "evidenceMode": "indirect-call-chain",
+      "directExecutableEntrypoints": [
+        "test/projection-batch-catchup.test.ts"
+      ],
+      "directExecutableEvidence": [
+        "test/projection-batch-catchup.test.ts"
+      ],
+      "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-storage-refinement.test.ts",
@@ -20412,52 +20543,42 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/availability.test.ts",
+              "file": "test/projection-batch-catchup.test.ts",
               "hasBody": true,
-              "id": "test-root:test/availability.test.ts",
+              "id": "test-root:test/projection-batch-catchup.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/availability.test.ts"
+              "name": "test/projection-batch-catchup.test.ts"
             },
             {
-              "column": 53,
-              "file": "test/availability.test.ts",
+              "column": 51,
+              "file": "test/projection-batch-catchup.test.ts",
               "hasBody": true,
-              "id": "test/availability.test.ts:1210:<anonymous@45>",
+              "id": "test/projection-batch-catchup.test.ts:3068:<anonymous@101>",
               "kind": "ArrowFunction",
-              "line": 45,
-              "name": "<anonymous@45>",
+              "line": 101,
+              "name": "<anonymous@101>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 78,
-              "file": "test/availability.test.ts",
+              "column": 87,
+              "file": "test/projection-batch-catchup.test.ts",
               "hasBody": true,
-              "id": "test/availability.test.ts:1295:<anonymous@46>",
+              "id": "test/projection-batch-catchup.test.ts:3162:<anonymous@102>",
               "kind": "ArrowFunction",
-              "line": 46,
-              "name": "<anonymous@46>",
+              "line": 102,
+              "name": "<anonymous@102>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 3,
-              "file": "src/facade.ts",
-              "hasBody": false,
-              "id": "src/facade.ts:60388:receiveMany",
-              "kind": "MethodSignature",
-              "line": 1483,
-              "name": "receiveMany",
+              "column": 1,
+              "file": "test/projection-batch-catchup.test.ts",
+              "hasBody": true,
+              "id": "test/projection-batch-catchup.test.ts:858:stockCatchupFixture",
+              "kind": "FunctionDeclaration",
+              "line": 26,
+              "name": "stockCatchupFixture",
               "reason": "resolved-call"
-            },
-            {
-              "column": 3,
-              "file": "src/facade.ts",
-              "hasBody": true,
-              "id": "src/facade.ts:108233:receiveMany",
-              "kind": "MethodDeclaration",
-              "line": 2655,
-              "name": "receiveMany",
-              "reason": "interface-to-implementation"
             },
             {
               "column": 1,
@@ -20479,12 +20600,16 @@
             "line": 671,
             "name": "createInventoryReceiptManyEvent"
           },
-          "test": "test/availability.test.ts"
+          "test": "test/projection-batch-catchup.test.ts"
         }
       ],
-      "directExecutableEntrypoints": [],
-      "directExecutableEvidence": [],
-      "evidenceMode": "indirect-call-chain",
+      "directExecutableEntrypoints": [
+        "test/projection-batch-catchup.test.ts"
+      ],
+      "directExecutableEvidence": [
+        "test/projection-batch-catchup.test.ts"
+      ],
+      "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-storage-refinement.test.ts",
@@ -21620,52 +21745,42 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/catalog-stock.test.ts",
+              "file": "test/projection-batch-catchup.test.ts",
               "hasBody": true,
-              "id": "test-root:test/catalog-stock.test.ts",
+              "id": "test-root:test/projection-batch-catchup.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/catalog-stock.test.ts"
+              "name": "test/projection-batch-catchup.test.ts"
             },
             {
-              "column": 65,
-              "file": "test/catalog-stock.test.ts",
+              "column": 51,
+              "file": "test/projection-batch-catchup.test.ts",
               "hasBody": true,
-              "id": "test/catalog-stock.test.ts:643:<anonymous@28>",
+              "id": "test/projection-batch-catchup.test.ts:3068:<anonymous@101>",
               "kind": "ArrowFunction",
-              "line": 28,
-              "name": "<anonymous@28>",
+              "line": 101,
+              "name": "<anonymous@101>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 82,
-              "file": "test/catalog-stock.test.ts",
+              "column": 87,
+              "file": "test/projection-batch-catchup.test.ts",
               "hasBody": true,
-              "id": "test/catalog-stock.test.ts:18865:<anonymous@545>",
+              "id": "test/projection-batch-catchup.test.ts:3162:<anonymous@102>",
               "kind": "ArrowFunction",
-              "line": 545,
-              "name": "<anonymous@545>",
+              "line": 102,
+              "name": "<anonymous@102>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 3,
-              "file": "src/facade.ts",
-              "hasBody": false,
-              "id": "src/facade.ts:61795:transfer",
-              "kind": "MethodSignature",
-              "line": 1509,
-              "name": "transfer",
+              "column": 1,
+              "file": "test/projection-batch-catchup.test.ts",
+              "hasBody": true,
+              "id": "test/projection-batch-catchup.test.ts:858:stockCatchupFixture",
+              "kind": "FunctionDeclaration",
+              "line": 26,
+              "name": "stockCatchupFixture",
               "reason": "resolved-call"
-            },
-            {
-              "column": 3,
-              "file": "src/facade.ts",
-              "hasBody": true,
-              "id": "src/facade.ts:111147:transfer",
-              "kind": "MethodDeclaration",
-              "line": 2752,
-              "name": "transfer",
-              "reason": "interface-to-implementation"
             },
             {
               "column": 1,
@@ -21687,12 +21802,16 @@
             "line": 612,
             "name": "createInventoryTransferEvent"
           },
-          "test": "test/catalog-stock.test.ts"
+          "test": "test/projection-batch-catchup.test.ts"
         }
       ],
-      "directExecutableEntrypoints": [],
-      "directExecutableEvidence": [],
-      "evidenceMode": "indirect-call-chain",
+      "directExecutableEntrypoints": [
+        "test/projection-batch-catchup.test.ts"
+      ],
+      "directExecutableEvidence": [
+        "test/projection-batch-catchup.test.ts"
+      ],
+      "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/transfer-lifecycle.test.ts",
@@ -24513,9 +24632,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:8238:emptyInventoryProjectionState",
+              "id": "src/projection.ts:8202:emptyInventoryProjectionState",
               "kind": "FunctionDeclaration",
-              "line": 189,
+              "line": 188,
               "name": "emptyInventoryProjectionState",
               "reason": "resolved-call"
             },
@@ -24650,9 +24769,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:8238:emptyInventoryProjectionState",
+              "id": "src/projection.ts:8202:emptyInventoryProjectionState",
               "kind": "FunctionDeclaration",
-              "line": 189,
+              "line": 188,
               "name": "emptyInventoryProjectionState",
               "reason": "resolved-call"
             }
@@ -24661,9 +24780,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:8238:emptyInventoryProjectionState",
+            "id": "src/projection.ts:8202:emptyInventoryProjectionState",
             "kind": "FunctionDeclaration",
-            "line": 189,
+            "line": 188,
             "name": "emptyInventoryProjectionState"
           },
           "test": "test/digest.test.ts"
@@ -24690,9 +24809,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:8238:emptyInventoryProjectionState",
+          "id": "src/projection.ts:8202:emptyInventoryProjectionState",
           "kind": "FunctionDeclaration",
-          "line": 189,
+          "line": 188,
           "name": "emptyInventoryProjectionState"
         }
       ],
@@ -25606,10 +25725,10 @@
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 88,
+              "column": 91,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:27483:<anonymous@747>",
+              "id": "test/projection-index-scale.test.ts:27486:<anonymous@747>",
               "kind": "ArrowFunction",
               "line": 747,
               "name": "<anonymous@747>",
@@ -25619,9 +25738,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:51477:findInventoryPositions",
+              "id": "src/projection.ts:55786:findInventoryPositions",
               "kind": "FunctionDeclaration",
-              "line": 1358,
+              "line": 1472,
               "name": "findInventoryPositions",
               "reason": "resolved-call"
             }
@@ -25630,9 +25749,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:51477:findInventoryPositions",
+            "id": "src/projection.ts:55786:findInventoryPositions",
             "kind": "FunctionDeclaration",
-            "line": 1358,
+            "line": 1472,
             "name": "findInventoryPositions"
           },
           "test": "test/projection-index-scale.test.ts"
@@ -25659,9 +25778,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:51477:findInventoryPositions",
+          "id": "src/projection.ts:55786:findInventoryPositions",
           "kind": "FunctionDeclaration",
-          "line": 1358,
+          "line": 1472,
           "name": "findInventoryPositions"
         }
       ],
@@ -27119,9 +27238,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:49629:projectInventoryEvents",
+              "id": "src/projection.ts:53938:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1301,
+              "line": 1415,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -27129,9 +27248,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:50999:inventoryEventsInRecordSequence",
+              "id": "src/projection.ts:55308:inventoryEventsInRecordSequence",
               "kind": "FunctionDeclaration",
-              "line": 1342,
+              "line": 1456,
               "name": "inventoryEventsInRecordSequence",
               "reason": "resolved-call"
             }
@@ -27140,9 +27259,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:50999:inventoryEventsInRecordSequence",
+            "id": "src/projection.ts:55308:inventoryEventsInRecordSequence",
             "kind": "FunctionDeclaration",
-            "line": 1342,
+            "line": 1456,
             "name": "inventoryEventsInRecordSequence"
           },
           "test": "test/catalog-publication.test.ts"
@@ -27165,9 +27284,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:50999:inventoryEventsInRecordSequence",
+          "id": "src/projection.ts:55308:inventoryEventsInRecordSequence",
           "kind": "FunctionDeclaration",
-          "line": 1342,
+          "line": 1456,
           "name": "inventoryEventsInRecordSequence"
         }
       ],
@@ -27178,7 +27297,7 @@
           "path": "src/counts.ts"
         },
         {
-          "occurrences": 2,
+          "occurrences": 3,
           "path": "src/projection.ts"
         }
       ],
@@ -28487,9 +28606,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:49629:projectInventoryEvents",
+              "id": "src/projection.ts:53938:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1301,
+              "line": 1415,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -28497,9 +28616,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:9861:applyInventoryCommittedEventInternal",
+              "id": "src/projection.ts:14170:applyInventoryCommittedEventInternal",
               "kind": "FunctionDeclaration",
-              "line": 226,
+              "line": 340,
               "name": "applyInventoryCommittedEventInternal",
               "reason": "resolved-call"
             },
@@ -29620,10 +29739,10 @@
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 88,
+              "column": 91,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:27483:<anonymous@747>",
+              "id": "test/projection-index-scale.test.ts:27486:<anonymous@747>",
               "kind": "ArrowFunction",
               "line": 747,
               "name": "<anonymous@747>",
@@ -29633,9 +29752,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:51477:findInventoryPositions",
+              "id": "src/projection.ts:55786:findInventoryPositions",
               "kind": "FunctionDeclaration",
-              "line": 1358,
+              "line": 1472,
               "name": "findInventoryPositions",
               "reason": "resolved-call"
             },
@@ -30047,10 +30166,6 @@
         {
           "occurrences": 2,
           "path": "src/picking.ts"
-        },
-        {
-          "occurrences": 2,
-          "path": "src/projection.ts"
         },
         {
           "occurrences": 2,
@@ -30958,10 +31073,10 @@
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 88,
+              "column": 91,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:27483:<anonymous@747>",
+              "id": "test/projection-index-scale.test.ts:27486:<anonymous@747>",
               "kind": "ArrowFunction",
               "line": 747,
               "name": "<anonymous@747>",
@@ -31158,10 +31273,10 @@
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 88,
+              "column": 91,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:27483:<anonymous@747>",
+              "id": "test/projection-index-scale.test.ts:27486:<anonymous@747>",
               "kind": "ArrowFunction",
               "line": 747,
               "name": "<anonymous@747>",
@@ -31171,9 +31286,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:51477:findInventoryPositions",
+              "id": "src/projection.ts:55786:findInventoryPositions",
               "kind": "FunctionDeclaration",
-              "line": 1358,
+              "line": 1472,
               "name": "findInventoryPositions",
               "reason": "resolved-call"
             },
@@ -33736,9 +33851,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:49629:projectInventoryEvents",
+              "id": "src/projection.ts:53938:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1301,
+              "line": 1415,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -33746,9 +33861,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:9861:applyInventoryCommittedEventInternal",
+              "id": "src/projection.ts:14170:applyInventoryCommittedEventInternal",
               "kind": "FunctionDeclaration",
-              "line": 226,
+              "line": 340,
               "name": "applyInventoryCommittedEventInternal",
               "reason": "resolved-call"
             },
@@ -35571,9 +35686,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:49629:projectInventoryEvents",
+              "id": "src/projection.ts:53938:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1301,
+              "line": 1415,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             }
@@ -35582,9 +35697,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:49629:projectInventoryEvents",
+            "id": "src/projection.ts:53938:projectInventoryEvents",
             "kind": "FunctionDeclaration",
-            "line": 1301,
+            "line": 1415,
             "name": "projectInventoryEvents"
           },
           "test": "test/catalog-publication.test.ts"
@@ -35611,9 +35726,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:49629:projectInventoryEvents",
+          "id": "src/projection.ts:53938:projectInventoryEvents",
           "kind": "FunctionDeclaration",
-          "line": 1301,
+          "line": 1415,
           "name": "projectInventoryEvents"
         }
       ],
@@ -41304,7 +41419,7 @@
           "path": "src/picking.ts"
         },
         {
-          "occurrences": 3,
+          "occurrences": 4,
           "path": "src/projection.ts"
         },
         {
@@ -42218,9 +42333,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:49629:projectInventoryEvents",
+              "id": "src/projection.ts:53938:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1301,
+              "line": 1415,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -42228,9 +42343,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:9861:applyInventoryCommittedEventInternal",
+              "id": "src/projection.ts:14170:applyInventoryCommittedEventInternal",
               "kind": "FunctionDeclaration",
-              "line": 226,
+              "line": 340,
               "name": "applyInventoryCommittedEventInternal",
               "reason": "resolved-call"
             },
@@ -48660,9 +48775,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:49629:projectInventoryEvents",
+              "id": "src/projection.ts:53938:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1301,
+              "line": 1415,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -48670,9 +48785,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:9861:applyInventoryCommittedEventInternal",
+              "id": "src/projection.ts:14170:applyInventoryCommittedEventInternal",
               "kind": "FunctionDeclaration",
-              "line": 226,
+              "line": 340,
               "name": "applyInventoryCommittedEventInternal",
               "reason": "resolved-call"
             },
@@ -51326,9 +51441,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:49629:projectInventoryEvents",
+              "id": "src/projection.ts:53938:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1301,
+              "line": 1415,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -51336,9 +51451,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:9861:applyInventoryCommittedEventInternal",
+              "id": "src/projection.ts:14170:applyInventoryCommittedEventInternal",
               "kind": "FunctionDeclaration",
-              "line": 226,
+              "line": 340,
               "name": "applyInventoryCommittedEventInternal",
               "reason": "resolved-call"
             },
@@ -65636,7 +65751,7 @@
           "path": "src/placement.ts"
         },
         {
-          "occurrences": 72,
+          "occurrences": 83,
           "path": "src/projection.ts"
         },
         {
@@ -66096,7 +66211,7 @@
           "path": "src/picking.ts"
         },
         {
-          "occurrences": 12,
+          "occurrences": 14,
           "path": "src/projection.ts"
         },
         {
@@ -66929,7 +67044,7 @@
           "path": "src/integrity.ts"
         },
         {
-          "occurrences": 25,
+          "occurrences": 27,
           "path": "src/projection.ts"
         },
         {
@@ -67452,7 +67567,7 @@
           "path": "src/picking.ts"
         },
         {
-          "occurrences": 27,
+          "occurrences": 29,
           "path": "src/projection.ts"
         },
         {
@@ -68909,7 +69024,7 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 1,
+          "occurrences": 2,
           "path": "src/projection.ts"
         },
         {
@@ -70946,7 +71061,7 @@
           "path": "src/placement.ts"
         },
         {
-          "occurrences": 72,
+          "occurrences": 83,
           "path": "src/projection.ts"
         },
         {
@@ -71550,7 +71665,7 @@
           "path": "src/picking.ts"
         },
         {
-          "occurrences": 12,
+          "occurrences": 14,
           "path": "src/projection.ts"
         },
         {
@@ -72328,7 +72443,7 @@
           "path": "src/integrity.ts"
         },
         {
-          "occurrences": 25,
+          "occurrences": 27,
           "path": "src/projection.ts"
         },
         {
@@ -72818,7 +72933,7 @@
           "path": "src/picking.ts"
         },
         {
-          "occurrences": 27,
+          "occurrences": 29,
           "path": "src/projection.ts"
         },
         {
@@ -85673,5 +85788,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "0ab7586ba775b55090ffaec494342ffde6170060a17de344a0632b845be6a946"
+  "surfaceSha256": "563874e5f097374f0c5c440f53159ae9ab5ea70685e06d34fdc4e11292a379c1"
 }
