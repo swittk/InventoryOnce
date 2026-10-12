@@ -752,4 +752,146 @@ describe("detached and missing stock whereabouts", () => {
   });
 
 
+  it("keeps an embodied node aligned through detach, missing, recovery, and final issue", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receive({
+      operationId: "embodied-whereabouts-receive",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store"),
+      amount: stockAmount("3", "piece"),
+    });
+    await inventory.stock.individualize({
+      operationId: "embodied-whereabouts-individualize",
+      occurredAtEpochMs: time1,
+      from: loosePosition("store"),
+      amount: stockAmount("1", "piece"),
+      serialId: "CAB-DETACHED",
+      asPlacementNode: {
+        category: "cabinet",
+        acceptsPlacement: true,
+      },
+    });
+    await inventory.stock.transfer({
+      operationId: "embodied-whereabouts-load",
+      occurredAtEpochMs: time1,
+      from: loosePosition("store"),
+      toPlacementNodeId: "CAB-DETACHED",
+      amount: stockAmount("1", "piece"),
+    });
+
+    await inventory.stock.detach({
+      operationId: "embodied-whereabouts-detach",
+      occurredAtEpochMs: time2,
+      from: {
+        itemId: "item-a",
+        placementNodeId: "store",
+        serialId: "CAB-DETACHED",
+      },
+      amount: stockAmount("1", "piece"),
+    });
+    expect(await inventory.read.placementAncestry("CAB-DETACHED")).toEqual([
+      "CAB-DETACHED",
+    ]);
+    expect(await quantityAt(inventory, "CAB-DETACHED")).toBe(1);
+
+    const detached = (await currentUnresolvedPositions(inventory)).find(
+      /** Find the detached unique cabinet rather than unrelated unresolved stock. */
+      (position) => position.key.serialId === "CAB-DETACHED"
+    );
+    if (detached === undefined || detached.key.whereaboutsId === undefined) {
+      throw new Error("Expected the embodied cabinet to be detached.");
+    }
+    const whereaboutsId = detached.key.whereaboutsId;
+    await inventory.stock.markMissing({
+      operationId: "embodied-whereabouts-missing",
+      occurredAtEpochMs: time2,
+      from: detached.key,
+      amount: stockAmount("1", "piece"),
+    });
+    const missing = await unresolvedById(inventory, whereaboutsId);
+    expect(missing.key.serialId).toBe("CAB-DETACHED");
+    expect(missing.key.whereaboutsState).toBe(
+      InventoryStockWhereaboutsState.Missing
+    );
+    expect(await inventory.read.placementAncestry("CAB-DETACHED")).toEqual([
+      "CAB-DETACHED",
+    ]);
+    expect(await quantityAt(inventory, "CAB-DETACHED")).toBe(1);
+
+    await inventory.stock.place({
+      operationId: "embodied-whereabouts-recover",
+      occurredAtEpochMs: time3,
+      from: missing.key,
+      into: "room",
+      amount: stockAmount("1", "piece"),
+    });
+    expect(await inventory.read.placementAncestry("CAB-DETACHED")).toEqual([
+      "CAB-DETACHED",
+      "room",
+    ]);
+    expect(
+      (
+        await inventory.read.positions({
+          itemId: "item-a",
+          serialIds: ["CAB-DETACHED"],
+        })
+      )[0]?.key.placementNodeId
+    ).toBe("room");
+    expect(await quantityAt(inventory, "CAB-DETACHED")).toBe(1);
+
+    await expect(
+      inventory.stock.issue({
+        operationId: "embodied-whereabouts-reject-loaded-issue",
+        occurredAtEpochMs: time3,
+        from: {
+          itemId: "item-a",
+          placementNodeId: "room",
+          serialId: "CAB-DETACHED",
+        },
+        amount: stockAmount("1", "piece"),
+      })
+    ).rejects.toThrow("must be empty");
+
+    await inventory.stock.transfer({
+      operationId: "embodied-whereabouts-empty",
+      occurredAtEpochMs: time3,
+      from: loosePosition("CAB-DETACHED"),
+      toPlacementNodeId: "room",
+      amount: stockAmount("1", "piece"),
+    });
+    const issued = await inventory.stock.issue({
+      operationId: "embodied-whereabouts-final-issue",
+      occurredAtEpochMs: time3,
+      from: {
+        itemId: "item-a",
+        placementNodeId: "room",
+        serialId: "CAB-DETACHED",
+      },
+      amount: stockAmount("1", "piece"),
+    });
+    expect(issued.event.kind).toBe(InventoryEventKind.Issue);
+    expect(
+      (await inventory.read.placementNode("CAB-DETACHED"))?.retiredByEventId
+    ).toBeDefined();
+    expect(
+      await inventory.read.positions({
+        itemId: "item-a",
+        serialIds: ["CAB-DETACHED"],
+      })
+    ).toEqual([]);
+
+    const history = await inventory.read.whereaboutsHistory({
+      whereaboutsIds: [whereaboutsId],
+      resolved: true,
+    });
+    expect(history).toHaveLength(1);
+    expect(history[0]?.history.flatMap((entry) => entry.actions)).toContain(
+      InventoryWhereaboutsAction.MarkedMissing
+    );
+    expect(history[0]?.history.flatMap((entry) => entry.actions)).toContain(
+      InventoryWhereaboutsAction.Placed
+    );
+  });
+
+
 });

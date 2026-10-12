@@ -2,8 +2,17 @@ import { describe, expect, it } from "vitest";
 
 import { inventoryMetadataValueFingerprint } from "../src/canonical.js";
 import { inventorySha256 } from "../src/digest.js";
-import { inventoryWorldContentRoots } from "../src/integrity.js";
+import {
+  inventoryProjectionDigest,
+  inventoryWorldContentRoots,
+} from "../src/integrity.js";
 import type { InventoryMetadataValue } from "../src/model.js";
+import { emptyInventoryProjectionState } from "../src/projection.js";
+import {
+  cloneInventorySparseRecord,
+  deleteInventorySparseRecordValue,
+  setInventorySparseRecordValue,
+} from "../src/sparse-record.js";
 import { emptyInventoryWorldState } from "../src/world.js";
 
 describe("inventory metadata fingerprint", () => {
@@ -42,6 +51,46 @@ describe("inventorySha256", () => {
       expect(inventorySha256(value)).toBe(expected);
     }
   );
+});
+
+describe("inventory sparse-record digest lineage", () => {
+  it("matches a full unordered rebuild after changed-key copy-on-write updates", () => {
+    const base: Record<string, string> = Object.create(null) as Record<
+      string,
+      string
+    >;
+    for (let index = 0; index < 2_000; index += 1) {
+      base[String(index)] = `event-${index}`;
+    }
+    Object.freeze(base);
+    const incremental = cloneInventorySparseRecord(base);
+    deleteInventorySparseRecordValue(incremental, "17");
+    setInventorySparseRecordValue(incremental, "900", "event-900-replaced");
+    setInventorySparseRecordValue(incremental, "2000", "event-2000");
+
+    const rebuilt: Record<string, string> = Object.create(null) as Record<
+      string,
+      string
+    >;
+    const entries = Object.entries(incremental);
+    entries.reverse();
+    for (const [key, value] of entries) rebuilt[key] = value;
+
+    const empty = emptyInventoryProjectionState();
+    const incrementalProjection = {
+      ...empty,
+      eventIdsBySequence: incremental,
+      lastRecordSequence: 2_001,
+    };
+    const rebuiltProjection = {
+      ...empty,
+      eventIdsBySequence: rebuilt,
+      lastRecordSequence: 2_001,
+    };
+    expect(inventoryProjectionDigest(incrementalProjection)).toBe(
+      inventoryProjectionDigest(rebuiltProjection)
+    );
+  });
 });
 
 describe("inventory world digest caching", () => {

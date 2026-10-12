@@ -6,6 +6,7 @@ import {
 import {
   cloneInventorySparseRecord,
   createInventorySparseRecord,
+  deleteInventorySparseRecordValue,
   inventorySparseRecordValue,
   setInventorySparseRecordValue,
 } from "./sparse-record.js";
@@ -143,7 +144,7 @@ export function applyInventoryPlacementChanges({
         : { newParentNodeId: change.toParentNodeId }),
     });
     if (change.toParentNodeId === undefined) {
-      delete relations[change.nodeId];
+      deleteInventorySparseRecordValue(relations, change.nodeId);
       continue;
     }
     setInventorySparseRecordValue(relations, change.nodeId, {
@@ -187,7 +188,7 @@ export function applyInventoryPlacementChanges({
   }
   for (const [parentNodeId, childNodeIds] of touchedChildren) {
     if (childNodeIds.size === 0) {
-      delete childrenByParent[parentNodeId];
+      deleteInventorySparseRecordValue(childrenByParent, parentNodeId);
       continue;
     }
     const ordered = [...childNodeIds];

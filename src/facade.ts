@@ -67,7 +67,9 @@ import {
 } from "./counts.js";
 import {
   createInventoryCatalogPublicationEvent,
+  createInventoryDeindividualizeEvent,
   createInventoryDetachEvent,
+  createInventoryIndividualizeEvent,
   createInventoryIssueEvent,
   createInventoryIssueManyEvent,
   createInventoryPlacementNodeMetadataEvent,
@@ -90,6 +92,8 @@ import {
   createInventoryUnpackEvent,
   inventoryEventIdForOperation,
   type CreateInventoryCatalogPublicationInput,
+  type CreateInventoryDeindividualizeInput,
+  type CreateInventoryIndividualizeInput,
   type CreateInventoryIssueInput,
   type CreateInventoryIssueManyInput,
   type CreateInventoryPlacementNodeMetadataInput,
@@ -157,6 +161,7 @@ import {
   assertInventoryIdentity,
   inventoryPlacementNodeIdentity,
   inventoryLotIdentity,
+  inventorySerialIdentity,
   inventoryStockPositionIdentity,
   inventoryTraceabilityNodeIdentity,
   normalizeInventoryStockPositionKey,
@@ -175,8 +180,10 @@ import {
 } from "./model.js";
 import {
   inventoryPlacementAncestry,
+  inventoryPlacementNodeIsWithin,
   inventoryPlacementParentNodeId,
   inventoryPlacementSubtreeNodeIds,
+  type InventoryPlacementChange,
 } from "./placement.js";
 import {
   findInventoryPositions,
@@ -579,6 +586,16 @@ export type InventoryOnceReclassifyManyInput = Omit<
   CreateInventoryReclassificationManyInput,
   "catalog"
 >;
+/** Split one exact fungible unit into a new current serial identity. */
+export type InventoryOnceIndividualizeInput = Omit<
+  CreateInventoryIndividualizeInput,
+  "catalog"
+>;
+/** Merge one exact serial identity back into otherwise identical fungible stock. */
+export type InventoryOnceDeindividualizeInput = Omit<
+  CreateInventoryDeindividualizeInput,
+  "catalog"
+>;
 
 /** Normal pack command without repeated catalogue plumbing. */
 export type InventoryOncePackInput = Omit<CreateInventoryPackInput, "catalog">;
@@ -658,6 +675,15 @@ export interface InventoryOnceUnplaceInput extends InventoryCommandHeader {
   readonly expectedParent?: InventoryExpectedPlacementParent;
   /** Optional metadata/policy assertion for the moved node. */
   readonly node?: InventoryPlacementNodeMetadataInput;
+}
+
+/** Inputs for emptying one node's direct stock and child nodes into another node. */
+export interface InventoryOnceMovePlacementContentsInput
+  extends InventoryCommandHeader {
+  /** Node whose direct contents are moved out. */
+  readonly nodeId: string;
+  /** Destination receiving every direct stock row and direct child node. */
+  readonly into: string;
 }
 
 /** Inputs for issuing every current stock row in one placement subtree. */
@@ -1072,6 +1098,14 @@ export interface InventoryOnceReplacementPlans {
   /** Plan a replacement that removes one qualified dimension. */
   clearQualifiedDimension(
     input: Omit<InventoryOnceClearQualifiedDimensionInput, "operationId">
+  ): InventoryOnceReplacementPlan;
+  /** Plan a replacement that gives one fungible unit a new serial/embodied-node identity. */
+  individualize(
+    input: Omit<InventoryOnceIndividualizeInput, "operationId">
+  ): InventoryOnceReplacementPlan;
+  /** Plan a replacement that merges one exact serial back into fungible stock. */
+  deindividualize(
+    input: Omit<InventoryOnceDeindividualizeInput, "operationId">
   ): InventoryOnceReplacementPlan;
   /** Plan a replacement atomic conserved split/merge/reclassification. */
   reclassifyMany(
@@ -1527,6 +1561,14 @@ export interface InventoryOnceStockApi {
   clearQualifiedDimension(
     input: InventoryOnceClearQualifiedDimensionInput
   ): Promise<InventoryOnceEventResult>;
+  /** Split one exact fungible unit into a serial identity and optional embodied node. */
+  individualize(
+    input: InventoryOnceIndividualizeInput
+  ): Promise<InventoryOnceEventResult>;
+  /** Merge one exact serialized unit back into fungible stock after dependencies are empty. */
+  deindividualize(
+    input: InventoryOnceDeindividualizeInput
+  ): Promise<InventoryOnceEventResult>;
   /** Atomically split, merge, relot, replace direct placement, or otherwise reclassify conserved stock. */
   reclassifyMany(
     input: InventoryOnceReclassifyManyInput
@@ -1559,6 +1601,10 @@ export interface InventoryOncePlacementApi {
   move(input: InventoryOnceMovePlacementInput): Promise<InventoryOnceEventResult>;
   /** Remove one node from its direct parent without rewriting descendants. */
   unplace(input: InventoryOnceUnplaceInput): Promise<InventoryOnceEventResult>;
+  /** Move every direct stock row and direct child node into one destination atomically. */
+  moveContents(
+    input: InventoryOnceMovePlacementContentsInput
+  ): Promise<InventoryOnceEventResult>;
   /** Issue every current direct/nested stock row as one immutable physical fact. */
   issueContents(
     input: InventoryOnceIssuePlacementContentsInput
@@ -2869,6 +2915,28 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
     return this.commitReclassification(
       input,
       createPositionWithoutQualifiedDimension(input)
+    );
+  }
+
+  /** Split one exact fungible unit into a serial identity and optional embodied node. */
+  async individualize(
+    input: InventoryOnceIndividualizeInput
+  ): Promise<InventoryOnceEventResult> {
+    const { catalog } = requireInventoryOnceInternals(this.owner);
+    return commitInventoryEventDraft(
+      this.owner,
+      createInventoryIndividualizeEvent({ ...input, catalog })
+    );
+  }
+
+  /** Merge one exact serialized unit back into fungible stock. */
+  async deindividualize(
+    input: InventoryOnceDeindividualizeInput
+  ): Promise<InventoryOnceEventResult> {
+    const { catalog } = requireInventoryOnceInternals(this.owner);
+    return commitInventoryEventDraft(
+      this.owner,
+      createInventoryDeindividualizeEvent({ ...input, catalog })
     );
   }
 
@@ -5378,6 +5446,32 @@ class InventoryOnceReplacementPlansImplementation
     );
   }
 
+  /** Plan a replacement that gives one fungible unit a new serial/embodied-node identity. */
+  individualize(
+    input: Omit<InventoryOnceIndividualizeInput, "operationId">
+  ): InventoryOnceReplacementPlan {
+    return new InventoryOnceReplacementPlanImplementation(
+      createInventoryIndividualizeEvent({
+        ...input,
+        catalog: this.catalog,
+        operationId: this.operationId,
+      })
+    );
+  }
+
+  /** Plan a replacement that merges one exact serial back into fungible stock. */
+  deindividualize(
+    input: Omit<InventoryOnceDeindividualizeInput, "operationId">
+  ): InventoryOnceReplacementPlan {
+    return new InventoryOnceReplacementPlanImplementation(
+      createInventoryDeindividualizeEvent({
+        ...input,
+        catalog: this.catalog,
+        operationId: this.operationId,
+      })
+    );
+  }
+
   /** Plan a replacement atomic conserved split/merge/reclassification. */
   reclassifyMany(
     input: Omit<InventoryOnceReclassifyManyInput, "operationId">
@@ -5667,6 +5761,13 @@ class InventoryOncePlacementImplementation
     return commitInventoryPlacementTopologyChange(this.owner, input, undefined);
   }
 
+  /** Move every direct stock row and direct child node into one destination atomically. */
+  async moveContents(
+    input: InventoryOnceMovePlacementContentsInput
+  ): Promise<InventoryOnceEventResult> {
+    return commitInventoryPlacementDirectContentsMove(this.owner, input);
+  }
+
   /** Issue every positive stock row anchored in one current placement subtree. */
   async issueContents(
     input: InventoryOnceIssuePlacementContentsInput
@@ -5755,6 +5856,8 @@ class InventoryOncePlacementImplementation
       correctionReason,
       input.placementNode?.category ?? null,
       input.placementNode?.acceptsPlacement ?? null,
+      input.placementNode?.embodiedBy?.itemId ?? null,
+      input.placementNode?.embodiedBy?.serialId ?? null,
       inventoryMetadataFingerprint(input.placementNode?.identifiers),
       input.placementNode?.openedAtEpochMs ?? null,
       input.placementNode?.useByEpochMs ?? null,
@@ -5859,12 +5962,16 @@ async function commitInventoryPlacementTopologyChange(
     input.reason ?? null,
     input.node?.category ?? null,
     input.node?.acceptsPlacement ?? null,
+    input.node?.embodiedBy?.itemId ?? null,
+    input.node?.embodiedBy?.serialId ?? null,
     inventoryMetadataFingerprint(input.node?.identifiers),
     input.node?.openedAtEpochMs ?? null,
     input.node?.useByEpochMs ?? null,
     inventoryMetadataFingerprint(input.node?.metadata),
     destinationMetadata?.category ?? null,
     destinationMetadata?.acceptsPlacement ?? null,
+    destinationMetadata?.embodiedBy?.itemId ?? null,
+    destinationMetadata?.embodiedBy?.serialId ?? null,
     inventoryMetadataFingerprint(destinationMetadata?.identifiers),
     destinationMetadata?.openedAtEpochMs ?? null,
     destinationMetadata?.useByEpochMs ?? null,
@@ -5907,6 +6014,87 @@ async function commitInventoryPlacementTopologyChange(
             : `Placement node '${input.nodeId}' is already directly in '${toParentNodeId}'.`
         );
       }
+      const embodiedPosition = inventoryEmbodiedPlacementNodePosition(
+        world,
+        input.nodeId
+      );
+      if (embodiedPosition !== undefined) {
+        const source = placementContentsSourceLine(
+          internals.catalog,
+          embodiedPosition
+        );
+        const header = inventoryCommandHeaderFromPlacementInput(input);
+        const stockEvent =
+          toParentNodeId === undefined
+            ? createInventoryDetachEvent({
+                catalog: internals.catalog,
+                ...header,
+                from: source.from,
+                amount: source.amount,
+                itemRevisionId: source.itemRevisionId,
+              })
+            : embodiedPosition.key.placementNodeId === undefined
+              ? createInventoryPlaceEvent({
+                  catalog: internals.catalog,
+                  ...header,
+                  from: source.from,
+                  into: toParentNodeId,
+                  amount: source.amount,
+                  itemRevisionId: source.itemRevisionId,
+                })
+              : createInventoryTransferEvent({
+                  catalog: internals.catalog,
+                  ...header,
+                  from: source.from,
+                  toPlacementNodeId: toParentNodeId,
+                  amount: source.amount,
+                  itemRevisionId: source.itemRevisionId,
+                });
+        const placementNodeDefinitions: InventoryPlacementNodeDefinition[] = [
+          ...(stockEvent.placementNodeDefinitions ?? []),
+        ];
+        if (input.node !== undefined) {
+          const projected = inventorySparseRecordValue(
+            world.projection.placementNodes,
+            input.nodeId
+          );
+          const embodiedBy = projected?.definition.embodiedBy;
+          if (embodiedBy === undefined) {
+            throw new Error(
+              "Embodied placement move lost its projected embodiment definition."
+            );
+          }
+          if (
+            input.node.embodiedBy !== undefined &&
+            (input.node.embodiedBy.itemId !== embodiedBy.itemId ||
+              input.node.embodiedBy.serialId !== embodiedBy.serialId)
+          ) {
+            throw new Error(
+              "Placement move cannot change the node's embodied resource."
+            );
+          }
+          placementNodeDefinitions.push({
+            nodeId: input.nodeId,
+            ...input.node,
+            embodiedBy,
+          });
+        }
+        if (destinationMetadata !== undefined && toParentNodeId !== undefined) {
+          placementNodeDefinitions.push({
+            nodeId: toParentNodeId,
+            ...destinationMetadata,
+          });
+        }
+        return {
+          event:
+            placementNodeDefinitions.length === 0
+              ? stockEvent
+              : defineInventoryEvent({
+                  catalog: internals.catalog,
+                  event: { ...stockEvent, placementNodeDefinitions },
+                }),
+        };
+      }
       return {
         event: createInventoryPlacementEvent({
           catalog: internals.catalog,
@@ -5925,9 +6113,220 @@ async function commitInventoryPlacementTopologyChange(
   return createInventoryOnceEventResult(result);
 }
 
+/** Empty one node into another as one stock-plus-topology fact. */
+async function commitInventoryPlacementDirectContentsMove(
+  owner: InventoryOnce,
+  input: InventoryOnceMovePlacementContentsInput
+): Promise<InventoryOnceEventResult> {
+  const internals = requireInventoryOnceInternals(owner);
+  inventoryPlacementNodeIdentity(input.nodeId);
+  inventoryPlacementNodeIdentity(input.into);
+  if (input.nodeId === input.into) {
+    throw new Error("Placement contents destination must differ from its source node.");
+  }
+  const intentFingerprint = inventoryIntentFingerprint([
+    "placement-move-contents",
+    input.operationId,
+    input.nodeId,
+    input.into,
+    input.occurredAtEpochMs,
+    input.actorId ?? null,
+    input.sourcePartyId ?? null,
+    input.destinationPartyId ?? null,
+    input.sourceReference ?? null,
+    input.reason ?? null,
+    inventoryMetadataFingerprint(input.metadata),
+  ]);
+  const result = await commitInventoryOperation({
+    catalog: internals.catalog,
+    storage: internals.storage,
+    operationId: input.operationId,
+    intentFingerprint,
+    clock: internals.clock,
+    deficitPolicy: internals.deficitPolicy,
+    /** Select exact direct contents and child nodes from one fenced published world. */
+    plan: ({ world, recordedAtEpochMs }) => {
+      assertInventoryLifecycleTimeWasRecorded(
+        input.occurredAtEpochMs,
+        recordedAtEpochMs,
+        "placement contents move"
+      );
+      if (
+        inventoryPlacementNodeIsWithin(
+          world.projection.placement,
+          input.into,
+          input.nodeId
+        )
+      ) {
+        throw new Error(
+          "Placement contents destination cannot be the source node or one of its descendants."
+        );
+      }
+      const positions = inventoryDirectPositivePositionsAtNode(
+        world,
+        input.nodeId
+      );
+      const childNodeIds =
+        inventorySparseRecordValue(
+          world.projection.placement.childNodeIdsByParentNodeId,
+          input.nodeId
+        ) ?? [];
+      const placementChanges: InventoryPlacementChange[] = [];
+      for (const childNodeId of childNodeIds) {
+        const embodiedPosition = inventoryEmbodiedPlacementNodePosition(
+          world,
+          childNodeId
+        );
+        if (embodiedPosition !== undefined) {
+          if (embodiedPosition.key.placementNodeId !== input.nodeId) {
+            throw new Error(
+              `Embodied child node '${childNodeId}' disagrees with its unique stock placement.`
+            );
+          }
+          continue;
+        }
+        placementChanges.push({
+          nodeId: childNodeId,
+          fromParentNodeId: input.nodeId,
+          toParentNodeId: input.into,
+        });
+      }
+      if (positions.length === 0 && placementChanges.length === 0) {
+        throw new Error(
+          `Inventory placement node '${input.nodeId}' has no direct contents to move.`
+        );
+      }
+      const header = inventoryCommandHeaderFromPlacementInput(input);
+      const stockEvent =
+        positions.length === 0
+          ? undefined
+          : createInventoryTransferManyEvent({
+              catalog: internals.catalog,
+              ...header,
+              lines: positions.map(
+                /** Move one complete current direct row to the shared destination. */
+                (position) => {
+                  const source = placementContentsSourceLine(
+                    internals.catalog,
+                    position
+                  );
+                  return {
+                    ...source,
+                    toPlacementNodeId: input.into,
+                  };
+                }
+              ),
+            });
+      const event: InventoryEventDraft =
+        stockEvent === undefined
+          ? {
+              eventId: inventoryEventIdForOperation(input.operationId),
+              operationId: input.operationId,
+              kind: InventoryEventKind.Placement,
+              occurredAtEpochMs: input.occurredAtEpochMs,
+              stockEffects: [],
+              placementChanges,
+              traceabilityChanges: [],
+              ...(input.actorId === undefined ? {} : { actorId: input.actorId }),
+              ...(input.sourcePartyId === undefined
+                ? {}
+                : { sourcePartyId: input.sourcePartyId }),
+              ...(input.destinationPartyId === undefined
+                ? {}
+                : { destinationPartyId: input.destinationPartyId }),
+              ...(input.sourceReference === undefined
+                ? {}
+                : { sourceReference: input.sourceReference }),
+              ...(input.reason === undefined ? {} : { reason: input.reason }),
+              ...(input.metadata === undefined
+                ? {}
+                : { metadata: input.metadata }),
+            }
+          : {
+              ...stockEvent,
+              kind: InventoryEventKind.Placement,
+              placementChanges,
+            };
+      return {
+        event: defineInventoryEvent({ catalog: internals.catalog, event }),
+      };
+    },
+  });
+  return createInventoryOnceEventResult(result);
+}
+
+/** Return every positive stock row anchored directly at one exact node. */
+function inventoryDirectPositivePositionsAtNode(
+  world: InventoryWorldState,
+  nodeId: string
+): readonly InventoryStockPosition[] {
+  const result: InventoryStockPosition[] = [];
+  const positionIds =
+    inventorySparseRecordValue(
+      world.projection.positionIdsByPlacementNodeId,
+      nodeId
+    ) ?? [];
+  for (const positionId of positionIds) {
+    const position = inventorySparseRecordValue(
+      world.projection.positions,
+      positionId
+    );
+    if (position === undefined) {
+      throw new Error(
+        `Inventory direct-placement index references missing position ${positionId}.`
+      );
+    }
+    if (position.measurements.primary.quantity.amountMinor <= 0) continue;
+    result.push(position);
+  }
+  result.sort(comparePlacementContentsPosition);
+  return result;
+}
+
+/** Resolve the one live stock row that physically embodies a current node. */
+function inventoryEmbodiedPlacementNodePosition(
+  world: InventoryWorldState,
+  nodeId: string
+): InventoryStockPosition | undefined {
+  const projected = inventorySparseRecordValue(
+    world.projection.placementNodes,
+    nodeId
+  );
+  const embodiment = projected?.definition.embodiedBy;
+  if (embodiment === undefined || projected?.retiredByEventId !== undefined) {
+    return undefined;
+  }
+  const serialIdentity = inventorySerialIdentity(
+    embodiment.itemId,
+    embodiment.serialId
+  );
+  const positionId = inventorySparseRecordValue(
+    world.projection.positivePositionIdBySerialIdentity,
+    serialIdentity
+  );
+  if (positionId === undefined) {
+    throw new Error(
+      `Embodied placement node '${nodeId}' has no live serialized stock instance.`
+    );
+  }
+  const position = inventorySparseRecordValue(
+    world.projection.positions,
+    positionId
+  );
+  if (position === undefined) {
+    throw new Error(
+      `Embodied placement node '${nodeId}' references missing stock position '${positionId}'.`
+    );
+  }
+  return position;
+}
+
 /** Copy the normal immutable command header from one placement command. */
 function inventoryCommandHeaderFromPlacementInput(
-  input: InventoryOnceMovePlacementInput | InventoryOnceUnplaceInput
+  input:
+    | InventoryOnceMovePlacementInput
+    | InventoryOnceUnplaceInput
+    | InventoryOnceMovePlacementContentsInput
 ): InventoryCommandHeader {
   return {
     operationId: input.operationId,

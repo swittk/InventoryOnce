@@ -71,6 +71,299 @@ async function quantityAtNode(
 }
 
 describe("generic placement topology", () => {
+  it("individualizes, embodies, moves, empties, retires, and re-individualizes a physical cabinet", async () => {
+    const catalog = createHeterogeneousPlacementCatalog();
+    const inventory = createTestInventory(undefined, catalog);
+    await inventory.stock.receiveMany({
+      operationId: "receive-generic-cabinets-and-content",
+      occurredAtEpochMs: time0,
+      lines: [
+        {
+          to: loosePosition("store"),
+          amount: stockAmount("20", "piece"),
+        },
+        {
+          to: { itemId: "item-b", placementNodeId: "store" },
+          amount: stockAmount("1", "piece"),
+        },
+      ],
+    });
+    await inventory.stock.individualize({
+      operationId: "individualize-cabinet-17",
+      occurredAtEpochMs: time1,
+      from: loosePosition("store"),
+      amount: stockAmount("1", "piece"),
+      serialId: "CAB-17",
+      asPlacementNode: {
+        category: "cabinet",
+        acceptsPlacement: true,
+      },
+    });
+    expect(await quantityAtNode(inventory, "store")).toBe(20);
+    const cabinet = (
+      await inventory.read.positions({
+        itemId: "item-a",
+        serialIds: ["CAB-17"],
+      })
+    )[0];
+    expect(cabinet?.key.placementNodeId).toBe("store");
+    expect(await inventory.read.placementAncestry("CAB-17")).toEqual([
+      "CAB-17",
+      "store",
+    ]);
+    expect(
+      (await inventory.read.placementNode("CAB-17"))?.definition.embodiedBy
+    ).toEqual({ itemId: "item-a", serialId: "CAB-17" });
+
+    await inventory.stock.transfer({
+      operationId: "put-content-in-cabinet-17",
+      occurredAtEpochMs: time1,
+      from: { itemId: "item-b", placementNodeId: "store" },
+      toPlacementNodeId: "CAB-17",
+      amount: stockAmount("1", "piece"),
+    });
+    await inventory.placement.move({
+      operationId: "put-shelf-in-cabinet-17",
+      occurredAtEpochMs: time1,
+      nodeId: "INNER-SHELF",
+      into: "CAB-17",
+    });
+    await inventory.placement.move({
+      operationId: "move-cabinet-17-to-room",
+      occurredAtEpochMs: time2,
+      nodeId: "CAB-17",
+      into: "room",
+      expectedParent: "store",
+    });
+    expect(
+      (
+        await inventory.read.positions({
+          itemId: "item-a",
+          serialIds: ["CAB-17"],
+        })
+      )[0]?.key.placementNodeId
+    ).toBe("room");
+    expect(
+      (
+        await inventory.read.positions({
+          itemId: "item-b",
+          placementNodeIds: ["CAB-17"],
+        })
+      )[0]?.key.placementNodeId
+    ).toBe("CAB-17");
+    expect(await inventory.read.placementAncestry("CAB-17")).toEqual([
+      "CAB-17",
+      "room",
+    ]);
+
+    await expect(
+      inventory.stock.scrap({
+        operationId: "reject-scrap-nonempty-cabinet-17",
+        occurredAtEpochMs: time2,
+        from: {
+          itemId: "item-a",
+          placementNodeId: "room",
+          serialId: "CAB-17",
+        },
+        amount: stockAmount("1", "piece"),
+        reason: "Broken cabinet",
+      })
+    ).rejects.toThrow("must be empty");
+    const emptied = await inventory.placement.moveContents({
+      operationId: "empty-cabinet-17",
+      occurredAtEpochMs: time2,
+      nodeId: "CAB-17",
+      into: "room",
+    });
+    expect(emptied.event.kind).toBe(InventoryEventKind.Placement);
+    expect(emptied.event.stockEffects).toHaveLength(2);
+    expect(emptied.event.placementChanges).toEqual([
+      {
+        nodeId: "INNER-SHELF",
+        fromParentNodeId: "CAB-17",
+        toParentNodeId: "room",
+      },
+    ]);
+    expect(
+      (
+        await inventory.read.positions({
+          itemId: "item-b",
+          placementNodeIds: ["room"],
+        })
+      )[0]?.key.placementNodeId
+    ).toBe("room");
+    expect(await inventory.read.placementAncestry("INNER-SHELF")).toEqual([
+      "INNER-SHELF",
+      "room",
+    ]);
+    await inventory.stock.scrap({
+      operationId: "scrap-empty-cabinet-17",
+      occurredAtEpochMs: time2,
+      from: {
+        itemId: "item-a",
+        placementNodeId: "room",
+        serialId: "CAB-17",
+      },
+      amount: stockAmount("1", "piece"),
+      reason: "Broken cabinet",
+    });
+    expect(
+      (await inventory.read.placementNode("CAB-17"))?.retiredByEventId
+    ).toBeDefined();
+    await expect(
+      inventory.stock.transfer({
+        operationId: "reject-stock-into-retired-cabinet-17",
+        occurredAtEpochMs: time3,
+        from: { itemId: "item-b", placementNodeId: "room" },
+        toPlacementNodeId: "CAB-17",
+        amount: stockAmount("1", "piece"),
+      })
+    ).rejects.toThrow("Retired placement node");
+
+    await inventory.stock.individualize({
+      operationId: "individualize-cabinet-18",
+      occurredAtEpochMs: time2,
+      from: loosePosition("store"),
+      amount: stockAmount("1", "piece"),
+      serialId: "CAB-18",
+      asPlacementNode: { category: "cabinet" },
+    });
+    await inventory.stock.deindividualize({
+      operationId: "deindividualize-cabinet-18",
+      occurredAtEpochMs: time3,
+      from: {
+        itemId: "item-a",
+        placementNodeId: "store",
+        serialId: "CAB-18",
+      },
+      amount: stockAmount("1", "piece"),
+    });
+    expect(
+      (await inventory.read.placementNode("CAB-18"))?.retiredByEventId
+    ).toBeDefined();
+    await inventory.stock.individualize({
+      operationId: "reindividualize-cabinet-19",
+      occurredAtEpochMs: time3,
+      from: loosePosition("store"),
+      amount: stockAmount("1", "piece"),
+      serialId: "CAB-19",
+      asPlacementNode: { category: "cabinet" },
+    });
+    expect(
+      (
+        await inventory.read.positions({
+          itemId: "item-a",
+          serialIds: ["CAB-19"],
+        })
+      )[0]?.key.placementNodeId
+    ).toBe("store");
+  });
+
+  it("revives one retired embodiment only by correcting its exact retirement event", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receive({
+      operationId: "receive-correction-cabinet",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store"),
+      amount: stockAmount("1", "piece"),
+    });
+    await inventory.stock.individualize({
+      operationId: "individualize-correction-cabinet",
+      occurredAtEpochMs: time1,
+      from: loosePosition("store"),
+      amount: stockAmount("1", "piece"),
+      serialId: "CAB-CORRECT",
+      asPlacementNode: { category: "cabinet" },
+    });
+    const mistaken = await inventory.stock.scrap({
+      operationId: "mistaken-scrap-correction-cabinet",
+      occurredAtEpochMs: time2,
+      from: {
+        itemId: "item-a",
+        placementNodeId: "store",
+        serialId: "CAB-CORRECT",
+      },
+      amount: stockAmount("1", "piece"),
+      reason: "Mistaken destruction assertion.",
+    });
+    expect(
+      (await inventory.read.placementNode("CAB-CORRECT"))?.retiredByEventId
+    ).toBe(mistaken.event.eventId);
+
+    await inventory.stock.correct({
+      operationId: "correct-mistaken-cabinet-scrap",
+      occurredAtEpochMs: time3,
+      correctsEventId: mistaken.event.eventId,
+      reason: "Inspection proved the cabinet still exists.",
+      replaceWith: (plans) => plans.omit(),
+    });
+    expect(
+      (await inventory.read.placementNode("CAB-CORRECT"))?.retiredByEventId
+    ).toBeUndefined();
+    expect(
+      (
+        await inventory.read.positions({
+          itemId: "item-a",
+          serialIds: ["CAB-CORRECT"],
+        })
+      )[0]?.key.placementNodeId
+    ).toBe("store");
+    expect(await inventory.read.placementAncestry("CAB-CORRECT")).toEqual([
+      "CAB-CORRECT",
+      "store",
+    ]);
+  });
+
+  it("can embody an already-unique resource but rejects missing or duplicate embodiments", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receive({
+      operationId: "receive-existing-unique-cabinet",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store", { serialId: "CAB-EXISTING" }),
+      amount: stockAmount("1", "piece"),
+    });
+    await inventory.placement.define({
+      operationId: "embody-existing-unique-cabinet",
+      occurredAtEpochMs: time1,
+      nodeId: "CAB-EXISTING-NODE",
+      placementNode: {
+        category: "cabinet",
+        embodiedBy: {
+          itemId: "item-a",
+          serialId: "CAB-EXISTING",
+        },
+      },
+    });
+    expect(await inventory.read.placementAncestry("CAB-EXISTING-NODE")).toEqual([
+      "CAB-EXISTING-NODE",
+      "store",
+    ]);
+
+    await expect(
+      inventory.placement.define({
+        operationId: "reject-missing-embodied-resource",
+        occurredAtEpochMs: time1,
+        nodeId: "MISSING-CABINET-NODE",
+        placementNode: {
+          embodiedBy: { itemId: "item-a", serialId: "MISSING-CABINET" },
+        },
+      })
+    ).rejects.toThrow("without one live serialized resource");
+    await expect(
+      inventory.placement.define({
+        operationId: "reject-duplicate-embodied-resource",
+        occurredAtEpochMs: time1,
+        nodeId: "CAB-EXISTING-ALIAS",
+        placementNode: {
+          embodiedBy: {
+            itemId: "item-a",
+            serialId: "CAB-EXISTING",
+          },
+        },
+      })
+    ).rejects.toThrow("already bound to placement node");
+  });
+
   it("moves one ancestor without rewriting heterogeneous descendant stock rows", async () => {
     const catalog = createHeterogeneousPlacementCatalog();
     const inventory = createTestInventory(undefined, catalog);

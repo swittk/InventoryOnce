@@ -90,7 +90,7 @@ TypeOK ==
 PartialWritesRefineToStuttering ==
   phase # "done" => /\ visibleSource = 2 /\ visibleDestination = 0
 
-\* Both direct-placement facts belong to the same staged projection image.
+\* Both location facts belong to the same staged projection image.
 ProjectionWriteIsAtomic ==
   sourceProjectionWritten = destinationProjectionWritten
 

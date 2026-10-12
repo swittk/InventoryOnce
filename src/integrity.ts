@@ -28,52 +28,48 @@ import { inventoryStockSelectorIsSubset } from "./selectors.js";
 import type { InventoryWorldState } from "./world.js";
 import {
   cloneInventorySparseRecord,
+  inventoryObjectIsDeeplyImmutable,
+  inventorySparseRecordHas,
+  inventorySparseRecordLineage,
   inventorySparseRecordValue,
+  inventorySortedIdentitySetLineage,
   setInventorySparseRecordValue,
 } from "./sparse-record.js";
 
-/** Object graphs already proven recursively frozen and therefore safe for digest reuse. */
-const deeplyImmutableInventoryObjects = new WeakSet<object>();
-
-/** Prove one object graph recursively frozen, reusing earlier proofs for shared subgraphs. */
-function inventoryObjectIsDeeplyImmutable(value: object): boolean {
-  if (deeplyImmutableInventoryObjects.has(value)) return true;
-  if (!Object.isFrozen(value)) return false;
-  /** Newly inspected frozen objects to mark only after their entire reachable graph passes. */
-  const visited: object[] = [];
-  /** Objects still requiring recursive frozen-child inspection. */
-  const pending: object[] = [value];
-  const inspecting = new WeakSet<object>();
-  while (pending.length > 0) {
-    const current = pending.pop();
-    if (
-      current === undefined ||
-      deeplyImmutableInventoryObjects.has(current) ||
-      inspecting.has(current)
-    ) {
-      continue;
-    }
-    if (!Object.isFrozen(current)) return false;
-    inspecting.add(current);
-    visited.push(current);
-    for (const child of Object.values(current)) {
-      if (
-        child !== null &&
-        typeof child === "object" &&
-        !deeplyImmutableInventoryObjects.has(child)
-      ) {
-        pending.push(child);
-      }
-    }
-  }
-  for (const current of visited) deeplyImmutableInventoryObjects.add(current);
-  return true;
-}
-
 /** Cached digest of one immutable retained record value. */
 const inventoryValueDigestCache = new WeakMap<object, string>();
-/** Cached digest of one immutable published record object. */
-const inventoryRecordDigestCache = new WeakMap<object, string>();
+/** Cached aggregate of one canonical sorted unique identity-set array. */
+const inventoryIdentitySetDigestCache = new WeakMap<
+  object,
+  InventoryRecordDigestAggregate
+>();
+/** One order-independent authenticated aggregate for an immutable sparse record. */
+interface InventoryRecordDigestAggregate {
+  /** Number of own record entries included in this aggregate. */
+  readonly count: number;
+  /** First independently domain-separated 256-bit modular leaf sum. */
+  readonly primarySum: bigint;
+  /** Second independently domain-separated 256-bit modular leaf sum. */
+  readonly secondarySum: bigint;
+  /** Final SHA-256 commitment to the count and both modular sums. */
+  readonly digest: string;
+}
+
+/** One cached record aggregate bound to its copy-on-write mutation revision. */
+interface InventoryRecordDigestCacheEntry {
+  /** Authenticated aggregate at the cached revision. */
+  readonly aggregate: InventoryRecordDigestAggregate;
+  /** Sparse-record mutation revision; omitted for immutable non-lineage records. */
+  readonly lineageRevision?: number;
+}
+
+/** Cached aggregate of immutable records and revisioned copy-on-write records. */
+const inventoryRecordDigestCache = new WeakMap<
+  object,
+  InventoryRecordDigestCacheEntry
+>();
+/** 256-bit field modulus used only for order-independent record aggregation. */
+const inventoryRecordDigestModulus = 1n << 256n;
 /** Cached digest of one immutable published catalogue snapshot. */
 const inventoryCatalogDigestCache = new WeakMap<object, string>();
 /** Cached digest of one immutable published projection object. */
@@ -184,6 +180,9 @@ export function inventoryProjectionDigest(
       ),
       inventoryImmutableRecordDigest(projection.placementNodes),
       inventoryImmutableRecordDigest(
+        projection.placementNodeIdByEmbodiedSerialIdentity
+      ),
+      inventoryImmutableRecordDigest(
         projection.placementNodeRootEventIdByNodeId
       ),
       inventoryImmutableRecordDigest(projection.lots),
@@ -242,31 +241,153 @@ export function inventoryCountBookDigest(book: InventoryCountBook): string {
   return digest;
 }
 
-/** Hash one immutable key-sorted record once for structural-sharing root reuse. */
+/** Hash one immutable sparse record, reusing copy-on-write ancestry by changed key. */
 function inventoryImmutableRecordDigest(
   record: Readonly<Record<string, NormalizedJsonComparable>>
 ): string {
+  return inventoryImmutableRecordAggregate(record).digest;
+}
+
+/** Derive one authenticated record aggregate from all entries or one immutable base delta. */
+function inventoryImmutableRecordAggregate(
+  record: Readonly<Record<string, NormalizedJsonComparable>>
+): InventoryRecordDigestAggregate {
+  const lineage = inventorySparseRecordLineage(record);
   const cacheable = inventoryObjectIsDeeplyImmutable(record);
-  const cached = cacheable ? inventoryRecordDigestCache.get(record) : undefined;
-  if (cached !== undefined) return cached;
-  const rows = Object.entries(record);
-  rows.sort(
-    /** Keep arbitrary application-defined record keys in deterministic code-unit order. */
-    (left, right) => compareInventoryIdentityText(left[0], right[0])
-  );
-  const digestedRows = rows.map(
-    /** Bind each key to a separately reusable digest of its exact retained value. */
-    ([key, value]) => [key, inventoryImmutableValueDigest(value)] as const
-  );
-  const digest = inventorySha256(canonicalNormalizedJson(digestedRows));
-  if (cacheable) inventoryRecordDigestCache.set(record, digest);
-  return digest;
+  const cached = inventoryRecordDigestCache.get(record);
+  if (
+    cached !== undefined &&
+    ((lineage === undefined && cacheable && cached.lineageRevision === undefined) ||
+      (lineage !== undefined && cached.lineageRevision === lineage.revision))
+  ) {
+    return cached.aggregate;
+  }
+  let count = 0;
+  let primarySum = 0n;
+  let secondarySum = 0n;
+  if (
+    lineage !== undefined &&
+    inventoryObjectIsDeeplyImmutable(lineage.base)
+  ) {
+    const base = inventoryImmutableRecordAggregate(lineage.base);
+    count = base.count;
+    primarySum = base.primarySum;
+    secondarySum = base.secondarySum;
+    for (const key of lineage.changedKeys) {
+      if (inventorySparseRecordHas(lineage.base, key)) {
+        const value = Reflect.get(lineage.base, key) as NormalizedJsonComparable;
+        const leaf = inventoryRecordLeafAggregate(key, value);
+        count -= 1;
+        primarySum = inventoryNormalizeRecordDigestSum(
+          primarySum - leaf.primary
+        );
+        secondarySum = inventoryNormalizeRecordDigestSum(
+          secondarySum - leaf.secondary
+        );
+      }
+      if (inventorySparseRecordHas(record, key)) {
+        const value = Reflect.get(record, key) as NormalizedJsonComparable;
+        const leaf = inventoryRecordLeafAggregate(key, value);
+        count += 1;
+        primarySum = inventoryNormalizeRecordDigestSum(
+          primarySum + leaf.primary
+        );
+        secondarySum = inventoryNormalizeRecordDigestSum(
+          secondarySum + leaf.secondary
+        );
+      }
+    }
+  } else {
+    for (const [key, value] of Object.entries(record)) {
+      const leaf = inventoryRecordLeafAggregate(key, value);
+      count += 1;
+      primarySum = inventoryNormalizeRecordDigestSum(
+        primarySum + leaf.primary
+      );
+      secondarySum = inventoryNormalizeRecordDigestSum(
+        secondarySum + leaf.secondary
+      );
+    }
+  }
+  if (!Number.isSafeInteger(count) || count < 0) {
+    throw new Error("Inventory record digest entry count is invalid.");
+  }
+  const aggregate: InventoryRecordDigestAggregate = {
+    count,
+    primarySum,
+    secondarySum,
+    digest: inventorySha256(
+      canonicalNormalizedJson([
+        "inventory-record-multiset-v1",
+        count,
+        inventoryRecordDigestHex(primarySum),
+        inventoryRecordDigestHex(secondarySum),
+      ])
+    ),
+  };
+  if (cacheable || lineage !== undefined) {
+    inventoryRecordDigestCache.set(record, {
+      aggregate,
+      ...(lineage === undefined ? {} : { lineageRevision: lineage.revision }),
+    });
+  }
+  return aggregate;
+}
+
+/** Return two independent leaf values binding one exact key to its retained value digest. */
+function inventoryRecordLeafAggregate(
+  key: string,
+  value: NormalizedJsonComparable
+): {
+  /** First domain-separated 256-bit aggregate leaf. */
+  readonly primary: bigint;
+  /** Second independently domain-separated 256-bit aggregate leaf. */
+  readonly secondary: bigint;
+} {
+  const valueDigest = inventoryImmutableValueDigest(value);
+  return {
+    primary: BigInt(
+      `0x${inventorySha256(
+        canonicalNormalizedJson([
+          "inventory-record-leaf-primary-v1",
+          key,
+          valueDigest,
+        ])
+      )}`
+    ),
+    secondary: BigInt(
+      `0x${inventorySha256(
+        canonicalNormalizedJson([
+          "inventory-record-leaf-secondary-v1",
+          key,
+          valueDigest,
+        ])
+      )}`
+    ),
+  };
+}
+
+/** Normalize one signed modular sum into the canonical unsigned 256-bit domain. */
+function inventoryNormalizeRecordDigestSum(value: bigint): bigint {
+  const normalized = value % inventoryRecordDigestModulus;
+  return normalized < 0n
+    ? normalized + inventoryRecordDigestModulus
+    : normalized;
+}
+
+/** Encode one 256-bit aggregate value as exactly 64 lower-case hexadecimal digits. */
+function inventoryRecordDigestHex(value: bigint): string {
+  return value.toString(16).padStart(64, "0");
 }
 
 /** Hash one immutable retained value once so new record roots reuse unchanged large rows. */
 function inventoryImmutableValueDigest(
   value: NormalizedJsonComparable
 ): string {
+  if (Array.isArray(value)) {
+    const identitySet = inventorySortedIdentitySetAggregate(value);
+    if (identitySet !== undefined) return identitySet.digest;
+  }
   if (value !== null && typeof value === "object") {
     const cacheable = inventoryObjectIsDeeplyImmutable(value);
     const cached = cacheable ? inventoryValueDigestCache.get(value) : undefined;
@@ -276,6 +397,117 @@ function inventoryImmutableValueDigest(
     return digest;
   }
   return inventorySha256(canonicalNormalizedJson(value));
+}
+
+/** Hash one canonical sorted unique identity-set array with optional changed-id lineage. */
+function inventorySortedIdentitySetAggregate(
+  value: readonly unknown[]
+): InventoryRecordDigestAggregate | undefined {
+  const lineage = inventorySortedIdentitySetLineage(value);
+  const cacheable = inventoryObjectIsDeeplyImmutable(value);
+  const cached = cacheable
+    ? inventoryIdentitySetDigestCache.get(value)
+    : undefined;
+  if (cached !== undefined) return cached;
+  let count = 0;
+  let primarySum = 0n;
+  let secondarySum = 0n;
+  if (lineage !== undefined) {
+    const base = inventorySortedIdentitySetAggregate(lineage.base);
+    if (base === undefined) {
+      throw new Error(
+        "Inventory sorted identity-set lineage base is not canonical."
+      );
+    }
+    count = base.count;
+    primarySum = base.primarySum;
+    secondarySum = base.secondarySum;
+    for (const identity of lineage.removed) {
+      const leaf = inventoryIdentitySetLeafAggregate(identity);
+      count -= 1;
+      primarySum = inventoryNormalizeRecordDigestSum(
+        primarySum - leaf.primary
+      );
+      secondarySum = inventoryNormalizeRecordDigestSum(
+        secondarySum - leaf.secondary
+      );
+    }
+    for (const identity of lineage.added) {
+      const leaf = inventoryIdentitySetLeafAggregate(identity);
+      count += 1;
+      primarySum = inventoryNormalizeRecordDigestSum(
+        primarySum + leaf.primary
+      );
+      secondarySum = inventoryNormalizeRecordDigestSum(
+        secondarySum + leaf.secondary
+      );
+    }
+  } else {
+    let previous: string | undefined;
+    for (const child of value) {
+      if (
+        typeof child !== "string" ||
+        (previous !== undefined &&
+          compareInventoryIdentityText(previous, child) >= 0)
+      ) {
+        return undefined;
+      }
+      const leaf = inventoryIdentitySetLeafAggregate(child);
+      count += 1;
+      primarySum = inventoryNormalizeRecordDigestSum(
+        primarySum + leaf.primary
+      );
+      secondarySum = inventoryNormalizeRecordDigestSum(
+        secondarySum + leaf.secondary
+      );
+      previous = child;
+    }
+  }
+  if (!Number.isSafeInteger(count) || count < 0) {
+    throw new Error("Inventory identity-set digest entry count is invalid.");
+  }
+  const aggregate: InventoryRecordDigestAggregate = {
+    count,
+    primarySum,
+    secondarySum,
+    digest: inventorySha256(
+      canonicalNormalizedJson([
+        "inventory-sorted-identity-set-v1",
+        count,
+        inventoryRecordDigestHex(primarySum),
+        inventoryRecordDigestHex(secondarySum),
+      ])
+    ),
+  };
+  if (cacheable) inventoryIdentitySetDigestCache.set(value, aggregate);
+  return aggregate;
+}
+
+/** Return two independent 256-bit leaf values for one exact identity-set member. */
+function inventoryIdentitySetLeafAggregate(identity: string): {
+  /** First domain-separated 256-bit identity-set leaf. */
+  readonly primary: bigint;
+  /** Second independently domain-separated 256-bit identity-set leaf. */
+  readonly secondary: bigint;
+} {
+  return {
+    primary: BigInt(
+      `0x${inventorySha256(
+        canonicalNormalizedJson([
+          "inventory-identity-set-leaf-primary-v1",
+          identity,
+        ])
+      )}`
+    ),
+    secondary: BigInt(
+      `0x${inventorySha256(
+        canonicalNormalizedJson([
+          "inventory-identity-set-leaf-secondary-v1",
+          identity,
+        ])
+      )}`
+    ),
+  };
 }
 
 /** Extract and validate the one legal append-only reservation change in a planner result. */

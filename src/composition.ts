@@ -145,6 +145,8 @@ export function inventoryCompositionOpenIntentFingerprint(
         inventoryMetadataFingerprint(placement.lot?.metadata),
         placement.placementNode?.category ?? null,
         placement.placementNode?.acceptsPlacement ?? null,
+        placement.placementNode?.embodiedBy?.itemId ?? null,
+        placement.placementNode?.embodiedBy?.serialId ?? null,
         inventoryMetadataFingerprint(placement.placementNode?.identifiers),
         placement.placementNode?.openedAtEpochMs ?? null,
         placement.placementNode?.useByEpochMs ?? null,

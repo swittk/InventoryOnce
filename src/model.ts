@@ -151,6 +151,14 @@ export function inventoryLotIdentity(itemId: ItemId, lotId: LotId): string {
   return JSON.stringify([itemId, lotId]);
 }
 
+/** One live unique inventory instance that physically embodies a placement node. */
+export interface InventoryPlacementNodeEmbodiment {
+  /** Stable item identity of the embodied resource. */
+  readonly itemId: ItemId;
+  /** Exact serial identity of the one live embodied resource. */
+  readonly serialId: SerialId;
+}
+
 /** Optional metadata and policy for one generic physical placement node. */
 export interface InventoryPlacementNodeDefinition {
   /** Stable identity for this exact physical/logical node. */
@@ -159,6 +167,8 @@ export interface InventoryPlacementNodeDefinition {
   readonly category?: string;
   /** Whether other nodes or stock may be placed directly here; omission means allowed. */
   readonly acceptsPlacement?: boolean;
+  /** Unique live inventory resource whose physical placement and lifetime own this node. */
+  readonly embodiedBy?: InventoryPlacementNodeEmbodiment;
   /** Barcode/vendor/application identifiers that help resolve this exact node. */
   readonly identifiers?: Readonly<Record<string, string>>;
   /** Time this node was physically opened/prepared when meaningful. */

@@ -43,11 +43,15 @@ Internal movement, ownership/custody/status changes, packing, unpacking, and pla
 
 A verb changes only the dimensions it names. A direct-placement transfer cannot silently change owner, lot, status, package revision, custody, whereabouts state, or qualified dimensions. Moving an ancestor changes one parent edge and cannot rewrite descendant stock. Ownership transfer need not imply physical movement. In-transit stock remains real stock.
 
-### Placement topology and unresolved whereabouts
+### Placement topology, embodiment, and unresolved whereabouts
 
-Direct placement is one stock-position dimension; placement-node parentage is a separate topology. Every placed node has at most one direct parent, parents must accept placement, and ancestry is acyclic. Moving an ancestor changes only that node's parent edge. Descendant stock retains its direct anchor and exact identity while its resolved ancestry changes.
+Direct placement is one stock-position dimension; placement-node parentage is a separate topology. Every placed node has at most one direct parent, parents must accept placement, and ancestry is acyclic. Standalone nodes such as rooms, shelves, and bays need no inventory resource. Moving a standalone ancestor changes only that node's parent edge. Descendant stock retains its direct anchor and exact identity while its resolved ancestry changes.
 
-Stock may temporarily have no direct placement only through an explicit whereabouts lifecycle. Detach preserves quantity, last-known placement, time, actor/source provenance, and one stable kernel-owned cohort identity. Marking missing does not destroy stock; placing it resolves the current uncertainty; issue and scrap remain distinct terminal physical meanings. Detached/missing stock contributes to accounted on-hand truth but cannot satisfy ordinary reservations or automatic FIFO/FEFO selection until placed again.
+Fungible quantity cannot own placement topology because no exact physical unit exists for descendants to depend on. One exact physical unit may be individualized into one live serial resource, and that serial may uniquely embody one placement node. While active, the serial resource is the authority for the embodied node's parent and lifetime: moving the node moves the resource atomically, and moving/detaching/placing the resource derives the node topology. One serial cannot embody several nodes, one embodied node cannot outlive its live serial, and a generic reclassification cannot fabricate or switch embodiment.
+
+An embodied resource cannot be issued, scrapped, transformed away, or de-individualized while direct stock or child nodes depend on it. Emptying may move direct contents to another room/node without rewriting nested descendants. Once empty, destruction retires the serial/node pair; de-individualization returns one physical unit to generic quantity and also retires the old current identities. Later individualization must use a fresh identity unless append-only correction targets the exact mistaken retirement event and restores that retained physical identity.
+
+Stock may temporarily have no direct placement only through an explicit whereabouts lifecycle. Detach preserves quantity, last-known placement, time, actor/source provenance, and one stable kernel-owned cohort identity. Marking missing does not destroy stock; placing it resolves the current uncertainty; issue and scrap remain distinct terminal physical meanings. Detached/missing stock contributes to accounted on-hand truth but cannot satisfy ordinary reservations or automatic FIFO/FEFO selection until placed again. When such stock embodies a node, the node becomes unplaced/missing through the same resource truth rather than a second topology authority.
 
 ### Quantity-vector correctness
 
@@ -132,7 +136,7 @@ The formal runner executes the model suite exported by `scripts/formal-models.mj
 - `FungibilityPool`: exact revisioned mutual interchangeability without item merging or claim reinterpretation, including placement-scoped claims and reservation-safe member transfers.
 - `ResourceDimensions`: direct placement, detached/missing whereabouts, owner, custody, and status are orthogonal; internal rewrites conserve resources and preserve lifecycle identity.
 - `ReservationScope`: broad claims, later refinement/allocation, global feasibility, and exclusion of unplaced stock from ordinary capacity.
-- `PlacementGraph`: one-parent generic placement topology, accepting-target policy, cycle rejection, and ancestor moves that preserve descendant direct anchors.
+- `PlacementGraph`: standalone and serial-embodied placement topology; one-parent/cycle/acceptance safety; generic↔unique conservation; one-to-one embodiment; resource-parent agreement; empty-before-retirement; fresh identity after de-individualization; and ancestor moves that preserve descendant direct anchors.
 - `TraceabilityGraph`: association vs irreversible transformation/genealogy, independent of placement.
 - `PhysicalCount`: snapshot/observation/reconciliation in the presence of legitimate concurrent movements.
 - `DualMeasure`: primary quantity plus independent catch-weight/secondary measurement.
@@ -181,7 +185,13 @@ The current TypeScript contracts now embody several direct consequences of these
   ordinary allocation/consumption but never silently delete quantity. Physical stock, usable stock,
   expired stock, exact allocation, broad demand, and shortage are reported separately.
 - **A placement node is not a unit of measure.** Package revisions describe exact fixed contents;
-  generic nodes identify application-defined physical placement targets with independent metadata/policy.
+  standalone nodes identify places, while an inventory holder node is explicitly embodied by one live
+  serialized resource. Fungible quantity cannot own children, and retired serial/node identities cannot
+  silently become current again.
+- **Individualization is reversible but identity-aware.** Exactly one generic physical unit may become one
+  current serial and optional placement-capable node. Once empty, de-individualization conserves quantity
+  back into the generic pool while retaining and retiring the old identity in history; later
+  individualization receives a fresh identity unless correction reverses the exact mistaken retirement.
 - **Correction is append-only.** Quantity discrepancies use movement-safe count reconciliation; wrong
   historical assertions, lot metadata, and placement-node metadata use retained correction chains.
 - **Migration is an interpretation proof boundary.** Typed source queries produce normal opening and
@@ -218,7 +228,7 @@ The formal state is not inferred informally from class names. `scripts/formal-im
 
 The refinement relation is organized around independent projections:
 
-- `abstractInventoryState` — retained catalog digest, exact buckets, lots/placement nodes, topology, committed events, and published revision;
+- `abstractInventoryState` — retained catalog digest, exact buckets, lots/placement nodes, serial embodiment/retirement, topology, committed events, and published revision;
 - `abstractOperationResult` — operation identity, event/receipt revision, replay, allocations, reservation/count result;
 - `abstractReservationState`, `abstractCountState`, and `abstractTraceabilityState` — the books/graphs represented by their dedicated models;
 - `abstractMigrationState` — diagnostics, frozen operation set, target publication, manifest status, and repair/abort result;

@@ -786,10 +786,11 @@ function normalizePositiveLayerProvenanceTransfers(
     kind !== InventoryEventKind.Transfer &&
     kind !== InventoryEventKind.Reclassification &&
     kind !== InventoryEventKind.Pack &&
-    kind !== InventoryEventKind.Unpack
+    kind !== InventoryEventKind.Unpack &&
+    kind !== InventoryEventKind.Placement
   ) {
     throw new Error(
-      "Only conserved transfer/reclassification/pack/unpack events may carry FIFO provenance."
+      "Only conserved transfer/reclassification/pack/unpack/placement events may carry FIFO provenance."
     );
   }
   const effectByPositionId = new Map<string, InventoryStockEffect>();
@@ -1140,6 +1141,16 @@ function normalizePlacementNodeDefinitions(
     ) {
       throw new Error("Inventory placement-node acceptsPlacement must be boolean.");
     }
+    if (raw.embodiedBy !== undefined) {
+      assertInventoryIdentity(
+        raw.embodiedBy.itemId,
+        "placement-node embodiedBy itemId"
+      );
+      assertInventoryIdentity(
+        raw.embodiedBy.serialId,
+        "placement-node embodiedBy serialId"
+      );
+    }
     if (raw.openedAtEpochMs !== undefined) {
       assertInventoryEpochMilliseconds(
         raw.openedAtEpochMs,
@@ -1167,6 +1178,9 @@ function normalizePlacementNodeDefinitions(
       ...(raw.acceptsPlacement === undefined
         ? {}
         : { acceptsPlacement: raw.acceptsPlacement }),
+      ...(raw.embodiedBy === undefined
+        ? {}
+        : { embodiedBy: { ...raw.embodiedBy } }),
       ...(raw.identifiers === undefined
         ? {}
         : { identifiers: normalizePlacementNodeIdentifiers(raw.identifiers) }),
@@ -1234,6 +1248,17 @@ function assertPlacementNodeDefinitionsBelongToEvent(
         break;
       }
     }
+    if (!found && definition.embodiedBy !== undefined) {
+      for (const effect of effects) {
+        if (
+          effect.position.itemId === definition.embodiedBy.itemId &&
+          effect.position.serialId === definition.embodiedBy.serialId
+        ) {
+          found = true;
+          break;
+        }
+      }
+    }
     if (!found) {
       for (const change of placementChanges) {
         if (
@@ -1275,6 +1300,8 @@ function placementNodeDefinitionFingerprintParts(
     definition.nodeId,
     definition.category ?? null,
     definition.acceptsPlacement ?? null,
+    definition.embodiedBy?.itemId ?? null,
+    definition.embodiedBy?.serialId ?? null,
     inventoryMetadataFingerprint(definition.identifiers),
     definition.openedAtEpochMs ?? null,
     definition.useByEpochMs ?? null,
@@ -1457,14 +1484,19 @@ function assertEventKindShape(
   }
   if (kind === InventoryEventKind.Placement) {
     if (
-      effects.length !== 0 ||
       lotDefinitions.length !== 0 ||
       traceabilityChanges.length !== 0 ||
-      placementChanges.length === 0
+      (effects.length === 0 && placementChanges.length === 0)
     ) {
       throw new Error(
-        "Placement event must contain topology changes and no stock/lot/traceability changes."
+        "Placement event needs stock and/or topology changes and cannot contain lot/traceability changes."
       );
+    }
+    if (effects.length !== 0) {
+      if (effects.length < 2) {
+        throw new Error("Placement stock movement needs at least two effects.");
+      }
+      assertInternalEventConservesEachItem(effects, kind);
     }
     return;
   }

@@ -191,6 +191,80 @@ async function runPlacementAncestorMove(positionCount: number) {
   };
 }
 
+/** Move one embodied placement ancestor over a large descendant stock population. */
+async function runEmbodiedPlacementAncestorMove(positionCount: number) {
+  const inventory = createTestInventory();
+  const descendantLines = Array.from({ length: positionCount }, (_, index) => ({
+    to: loosePosition("scale-leaf", {
+      lotId:
+        "EMBODIED-PLACEMENT-" + String(index).padStart(5, "0"),
+    }),
+    amount: stockAmount("1", "piece"),
+  }));
+  await inventory.stock.receiveMany({
+    operationId: "embodied-placement-scale-receive-" + positionCount,
+    occurredAtEpochMs: time0,
+    lines: descendantLines,
+  });
+  await inventory.stock.receive({
+    operationId: "embodied-placement-carrier-receive-" + positionCount,
+    occurredAtEpochMs: time0,
+    to: loosePosition("scale-root-old"),
+    amount: stockAmount("1", "piece"),
+  });
+  const serialId = "SCALE-CARRIER-" + positionCount;
+  await inventory.stock.individualize({
+    operationId: "embodied-placement-carrier-individualize-" + positionCount,
+    occurredAtEpochMs: time0,
+    from: loosePosition("scale-root-old"),
+    amount: stockAmount("1", "piece"),
+    serialId,
+    asPlacementNode: {
+      nodeId: "scale-carrier",
+      category: "carrier",
+      acceptsPlacement: true,
+    },
+  });
+  await inventory.placement.move({
+    operationId: "embodied-placement-scale-leaf-" + positionCount,
+    occurredAtEpochMs: time0,
+    nodeId: "scale-leaf",
+    into: "scale-carrier",
+  });
+
+  const before = await inventory.read.world();
+  const beforeDescendantPositionIds = [
+    ...(before.projection.positionIdsByPlacementNodeId["scale-leaf"] ?? []),
+  ].sort();
+  const started = performance.now();
+  const moved = await inventory.placement.move({
+    operationId: "embodied-placement-scale-carrier-new-" + positionCount,
+    occurredAtEpochMs: time0,
+    nodeId: "scale-carrier",
+    into: "scale-root-new",
+    expectedParent: "scale-root-old",
+  });
+  const elapsedMs = performance.now() - started;
+  const after = await inventory.read.world();
+  const serialPosition = (
+    await inventory.read.positions({
+      itemId: "item-a",
+      serialIds: [serialId],
+    })
+  )[0];
+  return {
+    elapsedMs,
+    moved,
+    beforeDescendantPositionIds,
+    afterDescendantPositionIds: [
+      ...(after.projection.positionIdsByPlacementNodeId["scale-leaf"] ?? []),
+    ].sort(),
+    directParent: after.projection.placement.relationByNodeId["scale-carrier"]
+      ?.parentNodeId,
+    serialPlacementNodeId: serialPosition?.key.placementNodeId,
+  };
+}
+
 /** Deliberately large quadratic comparison bound used by scale assertions. */
 function positionCountSquared(positionCount: number): number {
   return positionCount * positionCount;
@@ -344,7 +418,9 @@ describe("projection index real-world scale", () => {
     expect(baseline.beforePositionIds).toEqual(baseline.afterPositionIds);
     expect(scaled.beforePositionIds).toEqual(scaled.afterPositionIds);
     expect(scaled.directParent).toBe("scale-root-new");
-    expect(scaled.elapsedMs).toBeLessThan(baseline.elapsedMs * 4 + 50);
+    // Five times as many descendants may add fixed publication noise, but must not
+    // restore the old descendant-cardinality slope (previously ~21 ms -> ~82 ms).
+    expect(scaled.elapsedMs).toBeLessThan(baseline.elapsedMs * 3 + 10);
     console.log(
       JSON.stringify({
         adapter: "memory-placement-ancestor-move",
@@ -352,6 +428,34 @@ describe("projection index real-world scale", () => {
         scaledDescendantPositions: 5_000,
         baselineMoveMs: baseline.elapsedMs,
         scaledMoveMs: scaled.elapsedMs,
+      })
+    );
+  }, 20_000);
+
+  it("moves one embodied ancestor with constant-size stock effects and no descendant rewrites", async () => {
+    const baseline = await runEmbodiedPlacementAncestorMove(1_000);
+    const scaled = await runEmbodiedPlacementAncestorMove(5_000);
+    expect(baseline.moved.event.stockEffects).toHaveLength(2);
+    expect(scaled.moved.event.stockEffects).toHaveLength(2);
+    expect(baseline.moved.event.placementChanges ?? []).toEqual([]);
+    expect(scaled.moved.event.placementChanges ?? []).toEqual([]);
+    expect(baseline.beforeDescendantPositionIds).toEqual(
+      baseline.afterDescendantPositionIds
+    );
+    expect(scaled.beforeDescendantPositionIds).toEqual(
+      scaled.afterDescendantPositionIds
+    );
+    expect(scaled.directParent).toBe("scale-root-new");
+    expect(scaled.serialPlacementNodeId).toBe("scale-root-new");
+    expect(scaled.elapsedMs).toBeLessThan(baseline.elapsedMs * 4 + 50);
+    console.log(
+      JSON.stringify({
+        adapter: "memory-embodied-placement-ancestor-move",
+        baselineDescendantPositions: 1_000,
+        scaledDescendantPositions: 5_000,
+        baselineMoveMs: baseline.elapsedMs,
+        scaledMoveMs: scaled.elapsedMs,
+        stockEffectsPerMove: scaled.moved.event.stockEffects.length,
       })
     );
   }, 20_000);

@@ -155,6 +155,16 @@ export const formalInvariantMutationChecks = Object.freeze([
     "AncestorMovePreservesDirectStockAnchors",
   ],
   [
+    "PlacementGraph",
+    "PlacementGraphEmbodiedMoveDesyncMutation",
+    "EmbodiedResourceTracksNodeParent",
+  ],
+  [
+    "PlacementGraph",
+    "PlacementGraphUnsafeEmbodimentTerminationMutation",
+    "EmbodimentTerminationRequiresEmptyNode",
+  ],
+  [
     "TraceabilityGraph",
     "TraceabilityGraphDuplicateProductionMutation",
     "ProducedIdentityWasCreatedOnce",

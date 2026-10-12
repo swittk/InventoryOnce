@@ -121,6 +121,7 @@ export {
 } from "./model.js";
 export type {
   InventoryPlacementNodeDefinition,
+  InventoryPlacementNodeEmbodiment,
   InventoryWhereaboutsId,
   InventoryLotDefinition,
   InventoryMetadata,

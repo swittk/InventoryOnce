@@ -1061,6 +1061,55 @@ function assertAbstractPositionIndexes(p: InventoryWorldState["projection"]): vo
     "Direct placement position"
   );
   assertAbstractScalarIndex(p.positivePositionIdBySerialIdentity, serials, "Positive serial");
+  const embodiedNodes = new Map<string, string>();
+  for (const [nodeId, projected] of Object.entries(p.placementNodes)) {
+    const embodiment = projected.definition.embodiedBy;
+    if (embodiment === undefined) continue;
+    const serialIdentity = JSON.stringify([
+      embodiment.itemId,
+      embodiment.serialId,
+    ]);
+    if (embodiedNodes.has(serialIdentity)) {
+      throw new Error("One serial embodiment is bound to more than one node.");
+    }
+    embodiedNodes.set(serialIdentity, nodeId);
+    const positivePositionId = serials.get(serialIdentity);
+    const relation = p.placement.relationByNodeId[nodeId];
+    if (projected.retiredByEventId !== undefined) {
+      if (positivePositionId !== undefined) {
+        throw new Error("Retired embodied node still has a live serial resource.");
+      }
+      if (relation !== undefined) {
+        throw new Error("Retired embodied node remains in placement topology.");
+      }
+      const childNodeIds =
+        p.placement.childNodeIdsByParentNodeId[nodeId] ?? [];
+      const directPositionIds = p.positionIdsByPlacementNodeId[nodeId] ?? [];
+      if (childNodeIds.length !== 0 || directPositionIds.length !== 0) {
+        throw new Error("Retired embodied node still has direct contents.");
+      }
+      continue;
+    }
+    if (positivePositionId === undefined) {
+      throw new Error("Active embodied node has no live serial resource.");
+    }
+    const position = p.positions[positivePositionId];
+    if (position === undefined) {
+      throw new Error("Embodied serial index references missing stock.");
+    }
+    if (relation?.parentNodeId !== position.key.placementNodeId) {
+      if (relation !== undefined || position.key.placementNodeId !== undefined) {
+        throw new Error(
+          "Embodied node parent differs from its unique resource placement."
+        );
+      }
+    }
+  }
+  assertAbstractScalarIndex(
+    p.placementNodeIdByEmbodiedSerialIdentity,
+    embodiedNodes,
+    "Embodied serial placement node"
+  );
   if (Object.keys(p.positiveLayerStartedAtEpochMsByPositionId).length !== positiveLayers.size) throw new Error("Positive layer index domain differs from positive positions.");
   for (const identity of positiveLayers) if (!Object.hasOwn(p.positiveLayerStartedAtEpochMsByPositionId, identity) || !Number.isSafeInteger(p.positiveLayerStartedAtEpochMsByPositionId[identity])) throw new Error("Positive layer index lacks a valid occurrence time.");
   const lotsByItem = new Map<string, string[]>();

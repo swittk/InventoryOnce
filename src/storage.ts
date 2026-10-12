@@ -29,7 +29,11 @@ import {
   type InventoryMigrationSourceDisposition,
 } from "./migration-evidence.js";
 import { emptyInventoryWorldState, type InventoryWorldState } from "./world.js";
-import { cloneInventorySparseRecord } from "./sparse-record.js";
+import {
+  cloneInventorySparseRecord,
+  inventoryObjectIsKnownDeeplyImmutable,
+  markInventoryObjectDeeplyImmutable,
+} from "./sparse-record.js";
 
 /** Clone one published world while restoring own-only semantics for application-id dictionaries. */
 function cloneInventoryPublishedWorld(world: InventoryWorldState): InventoryWorldState {
@@ -49,6 +53,9 @@ function cloneInventoryPublishedWorld(world: InventoryWorldState): InventoryWorl
       positionIdsByItemId: cloneInventorySparseRecord(cloned.projection.positionIdsByItemId),
       positionIdsByItemRevisionId: cloneInventorySparseRecord(cloned.projection.positionIdsByItemRevisionId),
       lotIdentitiesByItemId: cloneInventorySparseRecord(cloned.projection.lotIdentitiesByItemId),
+      placementNodeIdByEmbodiedSerialIdentity: cloneInventorySparseRecord(
+        cloned.projection.placementNodeIdByEmbodiedSerialIdentity
+      ),
       transfers: cloneInventorySparseRecord(cloned.projection.transfers),
       events: cloneInventorySparseRecord(cloned.projection.events),
       eventSequencesByWhereaboutsId: cloneInventorySparseRecord(
@@ -83,12 +90,12 @@ function freezeInventoryPublishedWorld(
     const current = pending.pop();
     if (current === undefined || visited.has(current)) continue;
     visited.add(current);
-    // Every frozen object reachable here was frozen by an earlier reference-adapter publication.
-    if (Object.isFrozen(current)) continue;
+    if (inventoryObjectIsKnownDeeplyImmutable(current)) continue;
     for (const value of Object.values(current)) {
       if (value !== null && typeof value === "object") pending.push(value);
     }
-    Object.freeze(current);
+    if (!Object.isFrozen(current)) Object.freeze(current);
+    markInventoryObjectDeeplyImmutable(current);
   }
   return world;
 }
@@ -453,6 +460,8 @@ export class InventoryApplyingOperationConflictError extends Error {
 interface StoredInventoryOperation {
   /** Public durable row fields. */
   readonly value: InventoryDurableOperation;
+  /** Ephemeral already-validated next world reused only by this live reference adapter. */
+  readonly validatedNextWorld?: InventoryWorldState;
 }
 
 /** Inputs for the deterministic reference in-memory durable adapter. */
@@ -877,7 +886,15 @@ export class InMemoryInventoryDurableStorage
       );
     }
     this.assertNoApplyingMigrationFence();
-    validateInventoryDurablePlanAgainstBase(this.world, input.plan);
+    const validatedNextWorld = freezeInventoryPublishedWorld(
+      validateInventoryDurablePlanAgainstBase(this.world, input.plan)
+    );
+    const validatedRoots = inventoryWorldContentRoots(validatedNextWorld);
+    if (!inventoryWorldContentRootsEqual(validatedRoots, input.plan.nextRoots)) {
+      throw new Error(
+        "Frozen validated inventory world roots changed during cache admission."
+      );
+    }
     const value: InventoryDurableOperation = {
       operationId: input.operationId,
       intentFingerprint: input.intentFingerprint,
@@ -896,7 +913,7 @@ export class InMemoryInventoryDurableStorage
       receiptWritten: false,
       worldPublished: false,
     };
-    this.operations.set(input.operationId, { value });
+    this.operations.set(input.operationId, { value, validatedNextWorld });
     await this.fire(
       InventoryStorageWriteStage.Begin,
       "after",
@@ -958,7 +975,7 @@ export class InMemoryInventoryDurableStorage
       operationId
     );
     const value = { ...stored.value, projectionWritten: true };
-    this.operations.set(operationId, { value });
+    this.operations.set(operationId, { ...stored, value });
     await this.fire(
       InventoryStorageWriteStage.Projection,
       "after",
@@ -990,7 +1007,7 @@ export class InMemoryInventoryDurableStorage
       operationId
     );
     const value = { ...stored.value, reservationsWritten: true };
-    this.operations.set(operationId, { value });
+    this.operations.set(operationId, { ...stored, value });
     await this.fire(
       InventoryStorageWriteStage.Reservations,
       "after",
@@ -1016,7 +1033,7 @@ export class InMemoryInventoryDurableStorage
     requireApplyingInventoryOperationPlan(stored.value);
     await this.fire(InventoryStorageWriteStage.Counts, "before", operationId);
     const value = { ...stored.value, countsWritten: true };
-    this.operations.set(operationId, { value });
+    this.operations.set(operationId, { ...stored, value });
     await this.fire(InventoryStorageWriteStage.Counts, "after", operationId);
     return structuredClone(value);
   }
@@ -1038,7 +1055,7 @@ export class InMemoryInventoryDurableStorage
     requireApplyingInventoryOperationPlan(stored.value);
     await this.fire(InventoryStorageWriteStage.Receipt, "before", operationId);
     const value = { ...stored.value, receiptWritten: true };
-    this.operations.set(operationId, { value });
+    this.operations.set(operationId, { ...stored, value });
     await this.fire(InventoryStorageWriteStage.Receipt, "after", operationId);
     return structuredClone(value);
   }
@@ -1071,10 +1088,9 @@ export class InMemoryInventoryDurableStorage
         "before",
         operationId
       );
-      const nextWorld = validateInventoryDurablePlanAgainstBase(
-        this.world,
-        plan
-      );
+      const nextWorld =
+        stored.validatedNextWorld ??
+        validateInventoryDurablePlanAgainstBase(this.world, plan);
       const publishedValue: InventoryDurableOperation = {
         ...stored.value,
         worldPublished: true,

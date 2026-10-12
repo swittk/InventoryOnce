@@ -8,14 +8,15 @@
 - Quantity is an exact vector: one primary stock axis plus independently measured axes such as actual weight. No epsilon math or guessed unit conversion is used.
 - Event `occurredAtEpochMs` is the real-world time as safe-integer epoch milliseconds. Durable `recordedAtEpochMs` and `recordSequence` say when and where the fact was stored.
 - A stock position has one optional **direct placement node**. Placement nodes are generic application identities: the kernel does not know or special-case rooms, shelves, boxes, trolleys, vehicles, people, or any other domain noun.
-- A node may accept direct placement and may itself be placed beneath another accepting node. Moving one node changes one parent edge; every descendant resolves through the new ancestry without rewriting descendant stock positions.
+- A node may accept direct placement and may itself be placed beneath another accepting node. A standalone room/shelf/bay needs no inventory stock. A node representing a cabinet/trolley/tote may instead be **embodied by one live serialized inventory resource**; its parent and lifetime are then derived from that resource, while descendants retain their direct anchors.
+- Fungible quantity cannot own placement children. `stock.individualize(...)` splits exactly one physical unit into a new serial and can atomically make that instance a placement-capable node. Once empty, `stock.deindividualize(...)` merges it back into fungible stock and permanently retires the old current serial/node identity; a later unit receives a fresh identity. Exact correction of the mistaken retirement event is the only normal way to revive that identity.
 - Intentionally detached or genuinely missing stock remains conserved/accounted inventory with a kernel-owned whereabouts lifecycle, last-known placement, times, actor/source provenance, and append-only outcome history. It is not ordinary usable/reservable/automatically allocatable stock until placed again. `issue` means it left the inventory world; `scrap` means it was destroyed.
 - Placement, association, and transformation genealogy are different structures with different invariants. Placement has one parent and no cycles; association is reversible relationship truth; genealogy is append-only production lineage.
 - Corrections append a delta and point to the retained root event. They never edit or delete earlier events.
 - Broad reservations are checked together. Divisible rows use exact max-flow; a merged row containing many equal intact packages/serial pieces stays one integer-capacity group instead of one search node per piece. Allocation may bind a claim to exact positions later, but it cannot bind part of one intact package or serial row.
 - Count work is snapshot → observation → reconcile. One count is frozen to one item revision and record sequence. Reconciliation applies only the discrepancy that existed at observation time, so later legitimate movement stays intact. `counts.replaceAbsolute(...)` is the one-call exact-bucket convenience built on the same lifecycle.
 
-There is no `Substock` type and no second container/location authority. A physical thing that can accept contents is simply a placement node; stock, package, lot, serial, status, owner, custodian, disposition authority, and configured extra dimensions remain explicit independent facts.
+There is no `Substock` type and no second container/location authority. A place is a standalone placement node; an inventoried physical holder is one placement node explicitly embodied by one live serial resource. Stock, package, lot, status, owner, custodian, disposition authority, and configured extra dimensions remain independent facts, while embodiment is the enforced bridge between unique stock identity and topology.
 
 ## Normal API
 
@@ -105,6 +106,66 @@ if (unresolved !== undefined) {
 }
 ```
 
+A fungible physical holder can become unique and placement-capable without application-side graph bookkeeping:
+
+```ts
+await inventory.stock.receive({
+  operationId: "receive-cabinets",
+  occurredAtEpochMs,
+  to: { itemId: "cabinet", placementNodeId: "store" },
+  amount: stockAmount("20", "piece"),
+});
+
+await inventory.stock.individualize({
+  operationId: "individualize-cabinet-17",
+  occurredAtEpochMs,
+  from: { itemId: "cabinet", placementNodeId: "store" },
+  amount: stockAmount("1", "piece"),
+  serialId: "CAB-17",
+  asPlacementNode: {
+    category: "cabinet",
+    acceptsPlacement: true,
+  },
+});
+
+await inventory.stock.transfer({
+  operationId: "put-kit-in-cabinet-17",
+  occurredAtEpochMs,
+  from: { itemId: "kit", placementNodeId: "store" },
+  toPlacementNodeId: "CAB-17",
+  amount: stockAmount("1", "piece"),
+});
+
+// This moves cabinet stock to room-2; topology follows the resource automatically.
+await inventory.placement.move({
+  operationId: "move-cabinet-17",
+  occurredAtEpochMs,
+  nodeId: "CAB-17",
+  into: "room-2",
+});
+
+// Empty all direct stock and child nodes before retirement or de-individualization.
+await inventory.placement.moveContents({
+  operationId: "empty-cabinet-17",
+  occurredAtEpochMs,
+  nodeId: "CAB-17",
+  into: "room-2",
+});
+
+await inventory.stock.deindividualize({
+  operationId: "return-cabinet-17-to-generic-pool",
+  occurredAtEpochMs,
+  from: {
+    itemId: "cabinet",
+    serialId: "CAB-17",
+    placementNodeId: "room-2",
+  },
+  amount: stockAmount("1", "piece"),
+});
+```
+
+The old `CAB-17` serial/node remains in retained history but cannot receive stock or be silently reused. Another cabinet may later be individualized under a fresh identity such as `CAB-42`.
+
 The façade groups are:
 
 - `catalog`: publish the complete retained item/package/composition/collection/fungibility revision set before commands use an appended revision.
@@ -112,8 +173,8 @@ The façade groups are:
 - `transformations`: define, preview, and run reusable revision-frozen physical transformations.
 - `collections`: read exact/active “same brand”, “All OCPs”, or other taxonomy revisions; summarize exact members and only explicitly declared scalar roll-ups.
 - `fungibility`: summarize explicit mutual-substitution pools and issue/transfer/scrap exact member rows through one frozen pool revision.
-- `stock`: receive, issue, transfer, detach, place, mark missing, change independent dimensions, pack, unpack, transform, scrap, and correct.
-- `placement`: define/correct generic nodes, move or unplace one node, and explicitly issue/scrap/re-status all current subtree contents when that is the physical action.
+- `stock`: receive, issue, transfer, detach, place, mark missing, individualize/de-individualize physical units, change independent dimensions, pack, unpack, transform, scrap, and correct.
+- `placement`: define/correct standalone or embodied nodes, move/unplace one node, evacuate direct contents, and explicitly issue/scrap/re-status all current subtree contents when that is the physical action.
 - `lots`: define and append-only correct item-scoped lot metadata.
 - `transfers`: prepare, dispatch, partially/fully receive, or release one time-separated physical transfer.
 - `reservations`: reserve, refine, allocate, release, expire, and consume.
@@ -125,7 +186,9 @@ The same `operationId` always freezes the same complete intent. An exact retry r
 
 ### Placement and whereabouts semantics
 
-`placement.move({ nodeId, into })` changes only the node's direct parent. InventoryOnce discovers the current parent inside the durable planning fence, checks optional `expectedParent`, target capability, one-parent ownership, and cycles, then publishes one topology change. Descendant stock retains the same exact position identities and direct anchors. Rebuildable parent/child and direct-stock indexes make ancestry/subtree reads fast without becoming another source of physical truth.
+For a standalone place, `placement.move({ nodeId, into })` changes only the node's direct parent. For an embodied node, the same call moves its unique stock instance and derives the node parent from that stock placement atomically. InventoryOnce discovers the current parent inside the durable planning fence, checks optional `expectedParent`, target capability, embodiment ownership, one-parent ownership, and cycles. Descendant stock retains the same exact position identities and direct anchors.
+
+An embodied resource cannot be issued, scrapped, transformed away, or de-individualized while its node has direct stock or child nodes. `placement.moveContents({ nodeId, into })` evacuates every direct stock row and direct child node as one event; nested descendants remain under their immediate child. Once empty, destruction retires the node with the resource, while de-individualization returns one unit to fungible stock and retires the old serial/node identity. Rebuildable parent/child, direct-stock, serial, and embodiment indexes accelerate these checks without becoming another source of physical truth.
 
 `stock.detach(...)` removes an exact quantity from its known direct placement while keeping it in current inventory. `stock.markMissing(...)` records that the unresolved cohort is genuinely missing. `stock.place(...)` gives detached/missing stock a new known direct placement. InventoryOnce derives and preserves the lifecycle identity; callers do not invent graph edges or cohort IDs.
 

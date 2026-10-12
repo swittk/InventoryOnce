@@ -15,6 +15,7 @@ import {
 } from "./catalog.js";
 import { inventoryMetadataFingerprint } from "./canonical.js";
 import { compareInventoryIdentityText } from "./ordering.js";
+import { parseQuantity, quantityEq } from "./quantity.js";
 import {
   InventoryEventKind,
   InventoryTraceabilityRelationAction,
@@ -41,6 +42,7 @@ import {
   inventoryTraceabilityNodeIdentity,
   normalizeInventoryStockPositionKey,
   type InventoryPlacementNodeDefinition,
+  type InventoryPlacementNodeEmbodiment,
   type InventoryLotDefinition,
   type InventoryMetadata,
   type InventoryStockIntakePositionInput,
@@ -87,6 +89,8 @@ export interface InventoryPlacementNodeMetadataInput {
   readonly category?: string;
   /** Whether stock or child nodes may be placed directly here; omission means allowed. */
   readonly acceptsPlacement?: boolean;
+  /** Optional unique inventory resource whose lifetime and placement own this node. */
+  readonly embodiedBy?: InventoryPlacementNodeEmbodiment;
   /** Barcode/vendor/application identifiers resolving this exact node. */
   readonly identifiers?: Readonly<Record<string, string>>;
   /** Time this node was physically opened/prepared when meaningful. */
@@ -205,6 +209,41 @@ export interface CreateInventoryMarkMissingInput extends InventoryCommandHeader 
   /** Exact placed or detached source position. */
   readonly from: InventoryStockPositionInput;
   /** Exact amount becoming genuinely missing. */
+  readonly amount: InventoryAmount;
+  /** Optional exact item revision; defaults to active/package revision. */
+  readonly itemRevisionId?: string;
+}
+
+/** Optional placement-node role created while one fungible unit becomes unique. */
+export interface InventoryIndividualizedPlacementNodeInput
+  extends Omit<InventoryPlacementNodeMetadataInput, "embodiedBy"> {
+  /** Global placement-node identity; omission reuses the new serial identity. */
+  readonly nodeId?: string;
+}
+
+/** Inputs for splitting one exact physical unit into a new current serial identity. */
+export interface CreateInventoryIndividualizeInput extends InventoryCommandHeader {
+  /** Frozen catalogue used to resolve the source item/package definition. */
+  readonly catalog: InventoryCatalog;
+  /** Exact non-serialized source position. */
+  readonly from: InventoryStockPositionInput;
+  /** Exact measurements representing one physical resource. */
+  readonly amount: InventoryAmount;
+  /** New current serial identity for the separated physical resource. */
+  readonly serialId: string;
+  /** Optional exact item revision; defaults to active/package revision. */
+  readonly itemRevisionId?: string;
+  /** Optional placement-node role embodied by the new serial resource. */
+  readonly asPlacementNode?: InventoryIndividualizedPlacementNodeInput;
+}
+
+/** Inputs for merging one exact serialized resource back into fungible stock. */
+export interface CreateInventoryDeindividualizeInput extends InventoryCommandHeader {
+  /** Frozen catalogue used to resolve the source item/package definition. */
+  readonly catalog: InventoryCatalog;
+  /** Exact serialized source position. */
+  readonly from: InventoryStockPositionInput;
+  /** Exact measurements of the one serialized resource. */
   readonly amount: InventoryAmount;
   /** Optional exact item revision; defaults to active/package revision. */
   readonly itemRevisionId?: string;
@@ -1140,6 +1179,103 @@ function createInventoryReclassificationEventInternal(
       [],
       [],
       placementNodeDefinitionsForPosition(to, input.placementNode)
+    ),
+    [{ from, to }]
+  );
+}
+
+/** Split one exact physical unit out of fungible stock and optionally embody a node. */
+export function createInventoryIndividualizeEvent(
+  input: CreateInventoryIndividualizeInput
+): InventoryEventDraft {
+  if (input.from.serialId !== undefined) {
+    throw new Error("Individualize source must not already have a serial identity.");
+  }
+  const item = findCommandItem(
+    input.catalog,
+    input.from,
+    input.amount,
+    input.itemRevisionId
+  );
+  const resolved = resolveInventoryAmount(input.catalog, item, input.amount);
+  if (
+    !quantityEq(
+      resolved.measurements.primary.quantity,
+      parseQuantity("1", resolved.measurements.primary.quantity.unit)
+    )
+  ) {
+    throw new Error("Individualize must split exactly one primary resource.");
+  }
+  const from = positionWithAmountPackaging(
+    input.from,
+    resolved,
+    item.revisionId
+  );
+  const to = normalizeInventoryStockPositionKey({
+    ...from,
+    serialId: input.serialId,
+  });
+  const placementNodeDefinitions: InventoryPlacementNodeDefinition[] = [];
+  if (input.asPlacementNode !== undefined) {
+    const { nodeId = input.serialId, ...metadata } = input.asPlacementNode;
+    placementNodeDefinitions.push({
+      nodeId,
+      ...metadata,
+      embodiedBy: { itemId: from.itemId, serialId: input.serialId },
+    });
+  }
+  return withPositiveLayerProvenanceTransfers(
+    input.catalog,
+    createMovementEvent(
+      input.catalog,
+      InventoryEventKind.Reclassification,
+      input,
+      [negativeEffect(item, from, resolved), positiveEffect(item, to, resolved)],
+      [],
+      [],
+      placementNodeDefinitions
+    ),
+    [{ from, to }]
+  );
+}
+
+/** Merge one exact serialized resource back into otherwise identical fungible stock. */
+export function createInventoryDeindividualizeEvent(
+  input: CreateInventoryDeindividualizeInput
+): InventoryEventDraft {
+  const serialId = input.from.serialId;
+  if (serialId === undefined) {
+    throw new Error("Deindividualize source must name one serial identity.");
+  }
+  const item = findCommandItem(
+    input.catalog,
+    input.from,
+    input.amount,
+    input.itemRevisionId
+  );
+  const resolved = resolveInventoryAmount(input.catalog, item, input.amount);
+  if (
+    !quantityEq(
+      resolved.measurements.primary.quantity,
+      parseQuantity("1", resolved.measurements.primary.quantity.unit)
+    )
+  ) {
+    throw new Error("Deindividualize must merge exactly one primary resource.");
+  }
+  const from = positionWithAmountPackaging(
+    input.from,
+    resolved,
+    item.revisionId
+  );
+  const { serialId: _serialId, ...withoutSerial } = from;
+  const to = normalizeInventoryStockPositionKey(withoutSerial);
+  return withPositiveLayerProvenanceTransfers(
+    input.catalog,
+    createMovementEvent(
+      input.catalog,
+      InventoryEventKind.Reclassification,
+      input,
+      [negativeEffect(item, from, resolved), positiveEffect(item, to, resolved)]
     ),
     [{ from, to }]
   );
@@ -2146,6 +2282,8 @@ function inventoryPlacementNodeDefinitionCommandFingerprint(
     definition.nodeId,
     definition.category ?? null,
     definition.acceptsPlacement ?? null,
+    definition.embodiedBy?.itemId ?? null,
+    definition.embodiedBy?.serialId ?? null,
     inventoryMetadataFingerprint(definition.identifiers),
     definition.openedAtEpochMs ?? null,
     definition.useByEpochMs ?? null,

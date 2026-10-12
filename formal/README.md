@@ -15,7 +15,7 @@ if [[ -f .nvmrc ]]; then nvm use; else nvm use 22; fi
 pnpm formal
 ```
 
-The runner pins `tla2tools.jar`, uses collision-safe metadata directories, retains failed-state metadata, and content-addresses successful proofs. It currently checks **27 positive models**, **19 deliberately invalid mutation configurations**, and **one positive reachability witness**. A mutation check passes only when TLC finds the exact named invariant violation.
+The runner pins `tla2tools.jar`, uses collision-safe metadata directories, retains failed-state metadata, and content-addresses successful proofs. It currently checks **27 positive models**, **21 deliberately invalid mutation configurations**, and **one positive reachability witness**. A mutation check passes only when TLC finds the exact named invariant violation.
 
 ## Registered TLC checks
 
@@ -29,7 +29,7 @@ The runner pins `tla2tools.jar`, uses collision-safe metadata directories, retai
 | `ResourceDimensions` | direct placement, owner, custody, status, transit, and detached/missing whereabouts remain orthogonal; detach/place/missing conserve quantity and stable lifecycle identity | whereabouts, transfer, availability, correction, and count tests |
 | `ReservationScope` | broad claims can narrow/bind while all active claims remain feasible; unplaced stock is accounted but unavailable; ordinary detach cannot strand an exact allocation | reservation/whereabouts feasibility tests plus bad-detach mutation |
 | `ReservationScopeAllocationReplacement` | replacing exact allocation preserves the globally feasible claim book rather than transiently double-allocating | reservation allocation replacement tests |
-| `PlacementGraph` | one direct parent, target capability, acyclicity, exact retry, and ancestor moves that preserve every descendant direct stock anchor | placement/contents tests and 1,000→5,000 descendant performance regression |
+| `PlacementGraph` | standalone and serial-embodied nodes; one-parent/acceptance/acyclicity; generic↔unique conservation; one-to-one embodiment; resource-parent agreement; empty-before-retirement; retired-identity non-revival; and ancestor moves that preserve descendant direct stock anchors | cabinet lifecycle/correction/contents tests, embodied move scale regression, and desynchronization/nonempty-retirement mutations |
 | `TraceabilityAssociation` | reversible association remains independent from physical placement and transformation genealogy | association/correction tests |
 | `TraceabilityGraph` | irreversible production genealogy is acyclic and one physical identity cannot be produced twice | transformation/traceability tests plus duplicate-production mutation |
 | `PhysicalCount` | snapshot → observation → discrepancy reconciliation preserves legitimate movements during counting | count lifecycle and absolute-count tests |
@@ -75,7 +75,7 @@ The exact seed and fingerprint values vary by run. The latest complete run explo
 | `ResourceDimensions` | 180,145 | 12,816 | 14 |
 | `ReservationScope` | 3,701 | 788 | 7 |
 | `ReservationScopeAllocationReplacement` | 2,361 | 548 | 7 |
-| `PlacementGraph` | 516,491 | 998 | 13 |
+| `PlacementGraph` | 87,339,921 | 20,116 | 16 |
 | `TraceabilityAssociation` | 49,153 | 4,096 | 13 |
 | `TraceabilityGraph` | 1,729 | 320 | 10 |
 | `PhysicalCount` | 5,272 | 1,794 | 16 |
@@ -94,7 +94,7 @@ The exact seed and fingerprint values vary by run. The latest complete run explo
 
 All reachable states in those finite configurations were checked by TLC.
 
-The 19 negative controls cover four snapshot-supersession violations, cross-transfer receipt, correction-history erasure, split durable publication, four use-by/reservation failures, reservation detach that strands an allocation, detach incorrectly becoming issue, unstable whereabouts identity, placement cycle, rejecting placement target, descendant rewrite during ancestor movement, duplicate genealogy production, and implementation-conformance result-delta mismatch. The positive reachability witness separately proves that a nonzero frozen snapshot state is reachable. Negative controls are not folded into the positive state counts.
+The 21 negative controls cover four snapshot-supersession violations, cross-transfer receipt, correction-history erasure, split durable publication, four use-by/reservation failures, reservation detach that strands an allocation, detach incorrectly becoming issue, unstable whereabouts identity, placement cycle, rejecting placement target, descendant rewrite during ancestor movement, embodied-resource/node parent desynchronization, nonempty embodiment termination, duplicate genealogy production, and implementation-conformance result-delta mismatch. The positive reachability witness separately proves that a nonzero frozen snapshot state is reachable. Negative controls are not folded into the positive state counts.
 
 ## What the claims mean
 
@@ -173,6 +173,14 @@ revision-pinned decomposition/transformation, not as a mutable `box` conversion.
 “All OCPs” revisions report exact member-item buckets. Moving the active view pointer changes only which
 revision the UI chooses by default; it never merges physical identity or grants fungibility. Any scalar
 roll-up requires an explicitly compatible measure or basis outside the membership relation itself.
+
+### Placement embodiment and reversible individualization
+
+`PlacementGraph` keeps standalone places and inventory-embodied holders distinct without reintroducing a second container authority. Rooms/shelves/bays are ordinary standalone nodes. A cabinet/trolley/tote may instead be embodied by one live serialized resource. The resource placement is authoritative for the node parent; moving it cannot rewrite descendant direct anchors. A fungible quantity cannot embody anything because it has no stable physical identity.
+
+The finite model conserves a fixed total of generic plus active unique resources. `Individualize` removes one generic unit and activates a fresh serial; `Embody` binds that serial one-to-one with a node whose current parent agrees with the serial placement. `DeindividualizeEmbodied` requires zero direct stock, zero child nodes, and zero other active-resource contents before returning one generic unit and retiring both current identities. Normal transitions never revive retired serials or nodes. Append-only correction of a mistaken terminal assertion is tested executable behavior outside that ordinary lifecycle transition system.
+
+Two deliberate mutations independently prove the bridge is real rather than convention: one moves an embodied resource without its node and violates `EmbodiedResourceTracksNodeParent`; the other terminates a nonempty embodiment and violates `EmbodimentTerminationRequiresEmptyNode`. The TypeScript companion additionally rejects duplicate embodiment, missing embodied serials, nonempty scrap/de-individualization, stock placed into retired nodes, and silent old-ID reuse. `placement.moveContents` supplies the one-call evacuation path before retirement.
 
 ### Fungibility versus substitution
 
