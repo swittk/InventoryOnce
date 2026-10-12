@@ -18,6 +18,7 @@ import {
   assertInventoryCatalogRetainsSnapshot,
   assertPositionMatchesItem,
   inventoryCatalogFromSnapshot,
+  inventoryCatalogSnapshot,
   extendInventoryCatalog,
   type ExtendInventoryCatalogInput,
   type InventoryCatalog,
@@ -237,6 +238,7 @@ import {
 import {
   assertPositionInsideSelector,
   InventoryOptionalIdentityConstraintKind,
+  inventoryStockPositionMatchesNormalizedSelector,
   inventoryStockSelectorIdentity,
   normalizeInventoryStockSelector,
   type InventoryOptionalIdentityConstraint,
@@ -247,6 +249,12 @@ import type {
   InventoryDurableStorage,
   InventoryOperationReceipt,
 } from "./storage.js";
+import {
+  inventoryStorageSupportsSegmentedPositions,
+  inventoryStorageSupportsSegmentedStockEventCommit,
+  readInventorySegmentedPositionSnapshot,
+  type InventorySegmentedPositionReader,
+} from "./segmented-state.js";
 import {
   findInventoryWhereaboutsHistory,
   inventoryWhereaboutsLifecycles,
@@ -1965,6 +1973,16 @@ async function commitInventoryEventDraft(
   validateWorld?: (world: InventoryWorldState) => void
 ): Promise<InventoryOnceEventResult> {
   const internals = requireInventoryOnceInternals(owner);
+  if (
+    validateWorld === undefined &&
+    reservationProtection === InventoryReservationProtection.ProtectClaims
+  ) {
+    const segmented = await commitInventorySegmentedStockEventIfEligible(
+      owner,
+      event
+    );
+    if (segmented !== undefined) return segmented;
+  }
   const result = await commitInventoryOperation({
     catalog: internals.catalog,
     storage: internals.storage,
@@ -1979,6 +1997,39 @@ async function commitInventoryEventDraft(
     },
   });
   return createInventoryOnceEventResult(result);
+}
+
+/** Try one simple stock-only event through adapter-native segmented state before whole-world fallback. */
+async function commitInventorySegmentedStockEventIfEligible(
+  owner: InventoryOnce,
+  event: InventoryEventDraft
+): Promise<InventoryOnceEventResult | undefined> {
+  const internals = requireInventoryOnceInternals(owner);
+  if (
+    internals.deficitPolicy !== InventoryDeficitPolicy.Reject ||
+    !inventoryStorageSupportsSegmentedStockEventCommit(internals.storage)
+  ) {
+    return undefined;
+  }
+  const recordedAtEpochMs = internals.clock.nowEpochMs();
+  const committed = await internals.storage.commitSegmentedStockEvent({
+    catalog: inventoryCatalogSnapshot(internals.catalog),
+    operationId: event.operationId,
+    intentFingerprint: inventoryEventIntentFingerprint(event),
+    recordedAtEpochMs,
+    event,
+  });
+  if (committed === undefined) return undefined;
+  return {
+    receipt: {
+      operationId: event.operationId,
+      recordedAtEpochMs: committed.recordedAtEpochMs,
+      worldRevision: committed.worldRevision,
+      eventId: committed.event.eventId,
+    },
+    event: committed.event,
+    replayed: committed.replayed,
+  };
 }
 
 /** Resolve one committed event result from the coordinator's published world/receipt. */
@@ -9313,6 +9364,14 @@ class InventoryOnceReadSnapshotImplementation
   }
 }
 
+/** Read one selector through the adapter-native direct-position query surface. */
+async function findInventoryPositionsFromSegment(
+  segment: InventorySegmentedPositionReader,
+  selector: InventoryStockSelector
+): Promise<ReturnType<typeof findInventoryPositions> | undefined> {
+  return await segment.queryPositions(selector);
+}
+
 /** Private implementation of current/history reads. */
 class InventoryOnceReadImplementation implements InventoryOnceReadApi {
   /** Owning façade. */
@@ -9347,6 +9406,17 @@ class InventoryOnceReadImplementation implements InventoryOnceReadApi {
   async positions(
     selector: InventoryStockSelector
   ): Promise<ReturnType<typeof findInventoryPositions>> {
+    const internals = requireInventoryOnceInternals(this.owner);
+    if (inventoryStorageSupportsSegmentedPositions(internals.storage)) {
+      const segmented = await readInventorySegmentedPositionSnapshot(
+        internals.storage,
+        /** Resolve every index read against one stable segmented revision. */
+        (segment) => findInventoryPositionsFromSegment(segment, selector)
+      );
+      if (segmented.coherent && segmented.value !== undefined) {
+        return segmented.value;
+      }
+    }
     const world = await this.world();
     return findInventoryPositions(world.projection, selector);
   }

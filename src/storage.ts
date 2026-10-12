@@ -2,6 +2,9 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import { compareInventoryIdentityText } from "./ordering.js";
 import {
   assertInventoryEpochMilliseconds,
+  commitInventoryEvent,
+  defineInventoryEvent,
+  InventoryEventKind,
   type InventoryCommittedEvent,
 } from "./events.js";
 import {
@@ -21,7 +24,8 @@ import {
 } from "./integrity.js";
 import {
   applyInventoryCommittedEvent,
-  type InventoryDeficitPolicy,
+  applyInventoryCommittedEvents,
+  InventoryDeficitPolicy,
 } from "./projection.js";
 import { inventoryIntentFingerprint } from "./canonical.js";
 import {
@@ -30,8 +34,22 @@ import {
 } from "./migration-evidence.js";
 import { emptyInventoryWorldState, type InventoryWorldState } from "./world.js";
 import {
+  createInMemoryInventorySegmentedEventJournal,
+  type InMemoryInventorySegmentedEventJournal,
+} from "./segmented-journal.js";
+import {
+  createInMemoryInventorySegmentedPositionStore,
+  type CommitInventorySegmentedStockEventInput,
+  type CommitInventorySegmentedStockEventResult,
+  type InMemoryInventorySegmentedPositionStore,
+  type InventorySegmentedPositionStorageCapability,
+  type InventorySegmentedStockEventCommitCapability,
+} from "./segmented-state.js";
+import { inventoryStockPositionIdentity } from "./model.js";
+import {
   cloneInventorySparseRecord,
   inventoryObjectIsKnownDeeplyImmutable,
+  inventorySparseRecordValue,
   markInventoryObjectDeeplyImmutable,
 } from "./sparse-record.js";
 
@@ -476,12 +494,21 @@ export interface InMemoryInventoryDurableStorageInput {
 
 /** Deterministic reference adapter proving staged values stay hidden until completion. */
 export class InMemoryInventoryDurableStorage
-  implements InventoryDurableStorage
+  implements
+    InventoryDurableStorage,
+    InventorySegmentedPositionStorageCapability,
+    InventorySegmentedStockEventCommitCapability
 {
   /** Advertised publication guarantee. */
   readonly guarantee: InventoryStorageGuarantee;
   /** Latest fully published world. */
   private world: InventoryWorldState;
+  /** Indexed hot position segment mirroring the same published world revision. */
+  private positionSegment: InMemoryInventorySegmentedPositionStore;
+  /** Append-only event authority independent of canonical flat projection materialization. */
+  private eventJournal: InMemoryInventorySegmentedEventJournal;
+  /** Catalogue first established by deferred segmented publication before canonical materialization. */
+  private pendingSegmentedCatalog: InventoryCatalogSnapshot | undefined;
   /** Durable operation rows including unpublished staged values. */
   private readonly operations = new Map<string, StoredInventoryOperation>();
   /** Durable whole-migration manifests kept separately from event operation rows. */
@@ -504,11 +531,35 @@ export class InMemoryInventoryDurableStorage
       )
     );
     validatePublishedInventoryWorld(this.world);
+    this.positionSegment = createInMemoryInventorySegmentedPositionStore({
+      positions: Object.values(this.world.projection.positions),
+      revision: this.world.revision,
+    });
+    this.eventJournal = createInMemoryInventorySegmentedEventJournal({
+      events: Object.values(this.world.projection.events),
+    });
     this.failpoint = input.failpoint;
   }
 
-  /** Read the latest deeply immutable published world without cloning shared stock state. */
+  /** Read the published indexed position segment without materializing another world. */
+  readPositionSegment(): InMemoryInventorySegmentedPositionStore {
+    return this.positionSegment;
+  }
+
+  /** Atomically commit one eligible exact transfer without materializing the whole world. */
+  async commitSegmentedStockEvent(
+    input: CommitInventorySegmentedStockEventInput
+  ): Promise<CommitInventorySegmentedStockEventResult | undefined> {
+    const commitOperation =
+      /** Serialize one atomic segmented stock-event commit behind the adapter mutation fence. */
+      (): Promise<CommitInventorySegmentedStockEventResult | undefined> =>
+        this.commitSegmentedStockEventUnlocked(input);
+    return this.runStorageMutationAtomically(commitOperation);
+  }
+
+  /** Read the latest deeply immutable published world, materializing deferred segmented commits on demand. */
   async readWorld(): Promise<InventoryWorldState> {
+    this.materializePendingSegmentedEvents();
     return this.world;
   }
 
@@ -517,7 +568,12 @@ export class InMemoryInventoryDurableStorage
     operationId: string
   ): Promise<InventoryDurableOperation | undefined> {
     const stored = this.operations.get(operationId);
-    return stored === undefined ? undefined : structuredClone(stored.value);
+    if (stored === undefined) return undefined;
+    if (stored.value.event !== undefined) return structuredClone(stored.value);
+    const event = this.eventJournal.eventByOperation(operationId);
+    return event === undefined
+      ? structuredClone(stored.value)
+      : structuredClone({ ...stored.value, event });
   }
 
   /** Read one whole-migration manifest without exposing the stored object alias. */
@@ -542,6 +598,7 @@ export class InMemoryInventoryDurableStorage
   private async beginMigrationManifestUnlocked(
     input: BeginInventoryMigrationManifestInput
   ): Promise<BeginInventoryMigrationManifestResult> {
+    this.materializePendingSegmentedEvents();
     validateBeginInventoryMigrationManifest(input);
     await this.fire(
       InventoryStorageWriteStage.MigrationBegin,
@@ -696,7 +753,15 @@ export class InMemoryInventoryDurableStorage
         targetWorldRoot: inventoryWorldContentRoots(nextWorld).world,
         targetWorldRevision: nextWorld.revision,
       };
-      this.world = freezeInventoryPublishedWorld(nextWorld);
+      const publishedWorld = freezeInventoryPublishedWorld(nextWorld);
+      this.world = publishedWorld;
+      this.positionSegment = createInMemoryInventorySegmentedPositionStore({
+        positions: Object.values(publishedWorld.projection.positions),
+        revision: publishedWorld.revision,
+      });
+      this.eventJournal = createInMemoryInventorySegmentedEventJournal({
+        events: Object.values(publishedWorld.projection.events),
+      });
       this.migrationManifests.set(migrationId, published);
       await this.fire(
         InventoryStorageWriteStage.MigrationPublishWorld,
@@ -853,6 +918,7 @@ export class InMemoryInventoryDurableStorage
   private async beginUnlocked(
     input: BeginInventoryDurableOperationInput
   ): Promise<BeginInventoryDurableOperationResult> {
+    this.materializePendingSegmentedEvents();
     validateBeginInventoryOperation(input);
     await this.fire(
       InventoryStorageWriteStage.Begin,
@@ -1095,7 +1161,15 @@ export class InMemoryInventoryDurableStorage
         ...stored.value,
         worldPublished: true,
       };
-      this.world = freezeInventoryPublishedWorld(nextWorld);
+      const publishedWorld = freezeInventoryPublishedWorld(nextWorld);
+      this.publishPositionSegment(publishedWorld, plan.event);
+      if (
+        plan.event !== undefined &&
+        this.eventJournal.eventByOperation(plan.event.operationId) === undefined
+      ) {
+        this.eventJournal.append(plan.event);
+      }
+      this.world = publishedWorld;
       this.operations.set(operationId, { value: publishedValue });
       await this.fire(
         InventoryStorageWriteStage.PublishWorld,
@@ -1133,6 +1207,264 @@ export class InMemoryInventoryDurableStorage
     );
     await this.fire(InventoryStorageWriteStage.Complete, "after", operationId);
     return structuredClone(plan.receipt);
+  }
+
+  /** Publish only event-touched stock rows into the indexed hot-state position segment. */
+  private publishPositionSegment(
+    nextWorld: InventoryWorldState,
+    event: InventoryCommittedEvent | undefined
+  ): void {
+    const touchedPositionIds = new Set<string>();
+    for (const effect of event?.stockEffects ?? []) {
+      touchedPositionIds.add(inventoryStockPositionIdentity(effect.position));
+    }
+    const removePositionIds: string[] = [];
+    const upsertPositions = [];
+    for (const positionId of touchedPositionIds) {
+      const position = nextWorld.projection.positions[positionId];
+      if (position === undefined) {
+        if (this.positionSegment.position(positionId) !== undefined) {
+          removePositionIds.push(positionId);
+        }
+      } else {
+        upsertPositions.push(position);
+      }
+    }
+    this.positionSegment.applyDelta({
+      expectedRevision: this.positionSegment.revision(),
+      nextRevision: nextWorld.revision,
+      ...(removePositionIds.length === 0 ? {} : { removePositionIds }),
+      ...(upsertPositions.length === 0 ? {} : { upsertPositions }),
+    });
+  }
+
+  /** Perform one atomic segmented transfer while the reference adapter mutation lock is held. */
+  private async commitSegmentedStockEventUnlocked(
+    input: CommitInventorySegmentedStockEventInput
+  ): Promise<CommitInventorySegmentedStockEventResult | undefined> {
+    if (input.operationId.trim().length === 0) {
+      throw new Error("Inventory operationId must not be empty.");
+    }
+    if (input.intentFingerprint.trim().length === 0) {
+      throw new Error("Inventory operation intent fingerprint must not be empty.");
+    }
+    assertInventoryEpochMilliseconds(
+      input.recordedAtEpochMs,
+      "inventory segmented transfer recordedAtEpochMs"
+    );
+
+    const existing = this.operations.get(input.operationId);
+    if (existing !== undefined) {
+      assertSameInventoryOperationIntent(existing.value, input.intentFingerprint);
+      if (existing.value.state === InventoryDurableOperationState.Completed) {
+        const event =
+          existing.value.event ??
+          this.eventJournal.eventByOperation(input.operationId);
+        if (event !== undefined) {
+          return {
+            worldRevision: existing.value.receipt.worldRevision,
+            recordedAtEpochMs: existing.value.recordedAtEpochMs,
+            event,
+            replayed: true,
+          };
+        }
+      }
+      return undefined;
+    }
+    for (const stored of this.operations.values()) {
+      if (stored.value.state === InventoryDurableOperationState.Applying) {
+        return undefined;
+      }
+    }
+    for (const manifest of this.migrationManifests.values()) {
+      if (manifest.state === InventoryMigrationManifestState.Applying) {
+        return undefined;
+      }
+    }
+    if (!this.segmentedStockEventIsEligible(input)) return undefined;
+
+    const suppliedCatalog = inventoryCatalogFromSnapshot(input.catalog);
+    const effectiveCatalog =
+      this.pendingSegmentedCatalog ?? this.world.catalog;
+    const currentRevision = this.positionSegment.revision();
+    const mayEstablishCatalog =
+      currentRevision === 0 &&
+      this.world.revision === 0 &&
+      this.eventJournal.lastRecordSequence() === 0;
+    if (!mayEstablishCatalog && effectiveCatalog.digest !== suppliedCatalog.digest) {
+      throw new Error(
+        "Inventory command uses unpublished catalogue revisions; publish the retained inventory catalogue first."
+      );
+    }
+    const catalogForEvent = mayEstablishCatalog ? input.catalog : effectiveCatalog;
+    const normalizedEvent = defineInventoryEvent({
+      catalog: inventoryCatalogFromSnapshot(catalogForEvent),
+      event: input.event,
+    });
+
+    const baseRevision = currentRevision;
+    const event = commitInventoryEvent(
+      normalizedEvent,
+      input.recordedAtEpochMs,
+      this.eventJournal.lastRecordSequence() + 1
+    );
+    const existingEvent = this.eventJournal.event(event.eventId);
+    if (
+      existingEvent !== undefined &&
+      existingEvent.operationId !== input.operationId
+    ) {
+      throw new Error(
+        "Inventory eventId already exists under another operationId."
+      );
+    }
+
+    for (const effect of event.stockEffects) {
+      const placementNodeId = effect.position.placementNodeId;
+      if (placementNodeId === undefined) continue;
+      const placementNode = inventorySparseRecordValue(
+        this.world.projection.placementNodes,
+        placementNodeId
+      );
+      if (placementNode?.retiredByEventId !== undefined) {
+        throw new Error(
+          `Retired placement node '${placementNodeId}' cannot receive stock.`
+        );
+      }
+      if (placementNode?.definition.acceptsPlacement === false) {
+        throw new Error(
+          `Placement node '${placementNodeId}' does not accept stock.`
+        );
+      }
+    }
+
+    await this.fire(
+      InventoryStorageWriteStage.PublishWorld,
+      "before",
+      input.operationId
+    );
+    this.positionSegment.applyStockEffects({
+      expectedRevision: baseRevision,
+      nextRevision: baseRevision + 1,
+      stockEffects: event.stockEffects,
+    });
+    const receipt: InventoryOperationReceipt = {
+      operationId: input.operationId,
+      recordedAtEpochMs: input.recordedAtEpochMs,
+      worldRevision: baseRevision + 1,
+      eventId: event.eventId,
+    };
+    const value: InventoryDurableOperation = {
+      operationId: input.operationId,
+      intentFingerprint: input.intentFingerprint,
+      baseRevision,
+      recordedAtEpochMs: input.recordedAtEpochMs,
+      state: InventoryDurableOperationState.Completed,
+      receipt,
+      eventWritten: true,
+      projectionWritten: true,
+      reservationsWritten: true,
+      countsWritten: true,
+      receiptWritten: true,
+      worldPublished: true,
+    };
+    this.eventJournal.append(event);
+    this.operations.set(input.operationId, { value });
+    if (mayEstablishCatalog) {
+      this.pendingSegmentedCatalog = structuredClone(input.catalog);
+    }
+    await this.fire(
+      InventoryStorageWriteStage.PublishWorld,
+      "after",
+      input.operationId
+    );
+    return {
+      worldRevision: receipt.worldRevision,
+      recordedAtEpochMs: input.recordedAtEpochMs,
+      event: structuredClone(event),
+      replayed: false,
+    };
+  }
+
+  /** Return whether one stock-only event may safely use the segmented write slice. */
+  private segmentedStockEventIsEligible(
+    input: CommitInventorySegmentedStockEventInput
+  ): boolean {
+    // The legacy failpoint harness certifies the staged repair protocol. Keep those
+    // deterministic stage tests on that path; segmented commit models one atomic DB transaction.
+    if (this.failpoint !== undefined) return false;
+    const event = input.event;
+    if (
+      event.kind !== InventoryEventKind.Transfer &&
+      event.kind !== InventoryEventKind.Receipt &&
+      event.kind !== InventoryEventKind.Issue &&
+      event.kind !== InventoryEventKind.Reclassification
+    ) {
+      return false;
+    }
+    if (event.operationId !== input.operationId) return false;
+    if (event.stockEffects.length === 0) return false;
+    if (
+      event.stockEffects.some(
+        /** Keep serialized/embodied stock on the canonical path until its coupled segment exists. */
+        (effect) => effect.position.serialId !== undefined
+      )
+    ) {
+      return false;
+    }
+    if ((event.lotDefinitions?.length ?? 0) !== 0) return false;
+    if ((event.placementNodeDefinitions?.length ?? 0) !== 0) return false;
+    if ((event.placementChanges?.length ?? 0) !== 0) return false;
+    if (event.traceabilityChanges.length !== 0) return false;
+    if (event.transferLifecycle !== undefined) return false;
+    if (event.correction !== undefined) return false;
+    if (event.catalogDigest !== undefined || event.catalogSnapshot !== undefined) {
+      return false;
+    }
+    if (Object.keys(this.world.reservations.reservations).length !== 0) {
+      return false;
+    }
+    if (Object.keys(this.world.counts.counts).length !== 0) return false;
+    return true;
+  }
+
+  /** Catch the canonical proof/export world up to already-published segmented events. */
+  private materializePendingSegmentedEvents(): void {
+    const firstPendingSequence =
+      this.world.projection.lastRecordSequence + 1;
+    const lastSequence = this.eventJournal.lastRecordSequence();
+    if (firstPendingSequence > lastSequence) return;
+
+    const events: InventoryCommittedEvent[] = [];
+    for (
+      let sequence = firstPendingSequence;
+      sequence <= lastSequence;
+      sequence += 1
+    ) {
+      const event = this.eventJournal.eventBySequence(sequence);
+      if (event === undefined) {
+        throw new Error(
+          `Segmented journal lost committed recordSequence ${sequence}.`
+        );
+      }
+      events.push(event);
+    }
+    const catalogSnapshot =
+      this.pendingSegmentedCatalog ?? this.world.catalog;
+    const catalog = inventoryCatalogFromSnapshot(catalogSnapshot);
+    const projection = applyInventoryCommittedEvents({
+      catalog,
+      state: this.world.projection,
+      events,
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+    });
+    this.world = freezeInventoryPublishedWorld({
+      revision: this.positionSegment.revision(),
+      catalog: catalogSnapshot,
+      projection,
+      reservations: this.world.reservations,
+      counts: this.world.counts,
+    });
+    this.pendingSegmentedCatalog = undefined;
   }
 
   /** Abort one applying plan without publishing any staged component. */

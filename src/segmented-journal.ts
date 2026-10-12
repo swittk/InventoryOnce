@@ -351,10 +351,18 @@ function inventoryJournalTouchedWhereaboutsIds(
 /** 256-bit modular field used by the order-independent event segment root. */
 const inventoryJournalRootModulus = 1n << 256n;
 
+/** Two independent authenticated leaf contributions for one retained journal event. */
+interface InventoryJournalRootLeaf {
+  /** Primary 256-bit modular contribution. */
+  readonly primary: bigint;
+  /** Independent secondary 256-bit modular contribution. */
+  readonly secondary: bigint;
+}
+
 /** Bind one exact committed event to two independent leaf hashes. */
 function inventoryJournalEventLeaf(
   event: InventoryCommittedEvent
-): { readonly primary: bigint; readonly secondary: bigint } {
+): InventoryJournalRootLeaf {
   const eventFingerprint = inventoryEventIntentFingerprint(event);
   const common = [
     event.eventId,
