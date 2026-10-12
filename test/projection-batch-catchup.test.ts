@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   createInventoryReceiptEvent,
   createInventoryReceiptManyEvent,
@@ -8,11 +8,16 @@ import {
 } from "../src/commands.js";
 import {
   commitInventoryEvent,
+  defineInventoryEvent,
+  InventoryEventKind,
   InventoryTraceabilityRelationAction,
   InventoryTraceabilityRelationKind,
   type InventoryCommittedEvent,
 } from "../src/events.js";
-import { InventoryTraceabilityNodeKind } from "../src/model.js";
+import {
+  inventorySerialIdentity,
+  InventoryTraceabilityNodeKind,
+} from "../src/model.js";
 import {
   applyInventoryCommittedEvent,
   applyInventoryCommittedEvents,
@@ -180,6 +185,238 @@ describe("batched canonical projection catch-up", () => {
       })
     ).toThrow("cannot be embodied without one live serialized resource");
     expect(base.placementNodes["UNOWNED-CABINET"]).toBeUndefined();
+  });
+
+  it("does not rebuild unrelated embodied-serial mappings for every metadata event in a mutable batch", () => {
+    const catalog = createTabletCatalog();
+    const serialIdentity = inventorySerialIdentity("item-a", "BOUND-SERIAL");
+    const originalSerial = commitInventoryEvent(
+      createInventoryReceiptEvent({
+        catalog,
+        operationId: "metadata-scale-receive-serial",
+        occurredAtEpochMs: time0,
+        to: loosePosition("SERIAL-STORE", { serialId: "BOUND-SERIAL" }),
+        amount: stockAmount("1", "piece"),
+      }),
+      time0,
+      1
+    );
+    const seedMetadata = commitInventoryEvent(
+      defineInventoryEvent({
+        catalog,
+        event: {
+          eventId: "metadata-scale-seed",
+          operationId: "metadata-scale-seed",
+          kind: InventoryEventKind.PlacementNodeMetadata,
+          occurredAtEpochMs: time0,
+          stockEffects: [],
+          traceabilityChanges: [],
+          placementNodeDefinitions: [
+            {
+              nodeId: "BOUND-CABINET",
+              category: "cabinet",
+              embodiedBy: { itemId: "item-a", serialId: "BOUND-SERIAL" },
+            },
+            ...Array.from({ length: 250 }, (_, index) => ({
+              nodeId: "SEED-" + String(index).padStart(4, "0"),
+              category: "ordinary-location",
+            })),
+          ],
+        },
+      }),
+      time0,
+      2
+    );
+    const base = projectInventoryEvents({
+      catalog,
+      events: [originalSerial, seedMetadata],
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+    });
+    expect(base.placementNodeIdByEmbodiedSerialIdentity[serialIdentity]).toBe(
+      "BOUND-CABINET"
+    );
+    const metadataTail = Array.from({ length: 24 }, (_, index) =>
+      commitInventoryEvent(
+        createInventoryPlacementNodeMetadataEvent({
+          catalog,
+          operationId: "metadata-scale-tail-" + index,
+          occurredAtEpochMs: time0,
+          nodeId: "TAIL-" + String(index).padStart(4, "0"),
+          placementNode: { category: "ordinary-location" },
+        }),
+        time0,
+        index + 3
+      )
+    );
+    const originalEntries = Object.entries;
+    let unrelatedNodeMapEnumerations = 0;
+    const entries = vi.spyOn(Object, "entries").mockImplementation(
+      /** Observe whole-node passes without instrumenting the projection implementation. */
+      (value: object) => {
+        if (
+          value !== null &&
+          typeof value === "object" &&
+          Object.hasOwn(value, "SEED-0000") &&
+          Object.hasOwn(value, "SEED-0249")
+        ) {
+          unrelatedNodeMapEnumerations += 1;
+        }
+        return originalEntries(value);
+      }
+    );
+    let batch;
+    try {
+      batch = applyInventoryCommittedEvents({
+        catalog,
+        state: base,
+        events: metadataTail,
+        deficitPolicy: InventoryDeficitPolicy.Reject,
+      });
+    } finally {
+      entries.mockRestore();
+    }
+    expect(batch.placementNodeIdByEmbodiedSerialIdentity[serialIdentity]).toBe(
+      "BOUND-CABINET"
+    );
+    expect(Object.keys(batch.placementNodes)).toHaveLength(275);
+    expect(unrelatedNodeMapEnumerations).toBe(0);
+    expect(base.placementNodes["TAIL-0000"]).toBeUndefined();
+  });
+
+  it("reassigns multiple embodied serial bindings atomically during root correction and rejects conflicts", () => {
+    const catalog = createTabletCatalog();
+    const serialA = inventorySerialIdentity("item-a", "SERIAL-A");
+    const serialB = inventorySerialIdentity("item-a", "SERIAL-B");
+    const received = commitInventoryEvent(
+      createInventoryReceiptManyEvent({
+        catalog,
+        operationId: "swap-serials-receive",
+        occurredAtEpochMs: time0,
+        lines: [
+          {
+            to: loosePosition("store", { serialId: "SERIAL-A" }),
+            amount: stockAmount("1", "piece"),
+          },
+          {
+            to: loosePosition("store", { serialId: "SERIAL-B" }),
+            amount: stockAmount("1", "piece"),
+          },
+        ],
+      }),
+      time0,
+      1
+    );
+    const root = commitInventoryEvent(
+      defineInventoryEvent({
+        catalog,
+        event: {
+          eventId: "swap-serials-root",
+          operationId: "swap-serials-root",
+          kind: InventoryEventKind.PlacementNodeMetadata,
+          occurredAtEpochMs: time0,
+          stockEffects: [],
+          traceabilityChanges: [],
+          placementNodeDefinitions: [
+            {
+              nodeId: "CABINET-A",
+              category: "cabinet",
+              embodiedBy: { itemId: "item-a", serialId: "SERIAL-A" },
+            },
+            {
+              nodeId: "CABINET-B",
+              category: "cabinet",
+              embodiedBy: { itemId: "item-a", serialId: "SERIAL-B" },
+            },
+          ],
+        },
+      }),
+      time0,
+      2
+    );
+    const base = projectInventoryEvents({
+      catalog,
+      events: [received, root],
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+    });
+    expect(base.placementNodeIdByEmbodiedSerialIdentity[serialA]).toBe(
+      "CABINET-A"
+    );
+    expect(base.placementNodeIdByEmbodiedSerialIdentity[serialB]).toBe(
+      "CABINET-B"
+    );
+    const change = (bothToA: boolean) =>
+      commitInventoryEvent(
+        defineInventoryEvent({
+          catalog,
+          event: {
+            eventId: bothToA ? "swap-serials-conflict" : "swap-serials-correction",
+            operationId: bothToA
+              ? "swap-serials-conflict"
+              : "swap-serials-correction",
+            kind: InventoryEventKind.Correction,
+            occurredAtEpochMs: time0,
+            stockEffects: [],
+            traceabilityChanges: [],
+            correction: {
+              correctsEventId: root.eventId,
+              reason: "Correct which serial embodies each cabinet.",
+            },
+            placementNodeDefinitions: [
+              {
+                nodeId: "CABINET-A",
+                category: "cabinet",
+                embodiedBy: {
+                  itemId: "item-a",
+                  serialId: bothToA ? "SERIAL-A" : "SERIAL-B",
+                },
+              },
+              {
+                nodeId: "CABINET-B",
+                category: "cabinet",
+                embodiedBy: {
+                  itemId: "item-a",
+                  serialId: "SERIAL-A",
+                },
+              },
+            ],
+          },
+        }),
+        time0,
+        3
+      );
+    const corrected = change(false);
+    const batch = applyInventoryCommittedEvents({
+      catalog,
+      state: base,
+      events: [corrected],
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+    });
+    const cold = projectInventoryEvents({
+      catalog,
+      events: [received, root, corrected],
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+    });
+    expect(batch).toEqual(cold);
+    expect(batch.placementNodeIdByEmbodiedSerialIdentity[serialA]).toBe(
+      "CABINET-B"
+    );
+    expect(batch.placementNodeIdByEmbodiedSerialIdentity[serialB]).toBe(
+      "CABINET-A"
+    );
+    expect(base.placementNodeIdByEmbodiedSerialIdentity[serialA]).toBe(
+      "CABINET-A"
+    );
+    expect(() =>
+      applyInventoryCommittedEvents({
+        catalog,
+        state: base,
+        events: [change(true)],
+        deficitPolicy: InventoryDeficitPolicy.Reject,
+      })
+    ).toThrow("already bound");
+    expect(base.placementNodeIdByEmbodiedSerialIdentity[serialB]).toBe(
+      "CABINET-B"
+    );
   });
 
   it("treats exact replay as a zero-copy no-op and rejects changed retry intent", () => {

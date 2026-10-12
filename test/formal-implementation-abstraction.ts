@@ -488,6 +488,7 @@ export function abstractInventoryState(
         definition: node.definition,
         rootEventId: node.rootEventId,
         assertedByEventId: node.assertedByEventId,
+        retiredByEventId: node.retiredByEventId,
       })
   );
   placementNodes.sort((left, right) =>

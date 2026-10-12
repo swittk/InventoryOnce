@@ -128,6 +128,54 @@ describe("formal implementation state/result refinement", () => {
     );
   });
 
+  it("distinguishes a retired embodied placement node from the same live node in the executable abstraction", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receive({
+      operationId: "abstract-retirement-receive",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store"),
+      amount: stockAmount("1", "piece"),
+    });
+    await inventory.stock.individualize({
+      operationId: "abstract-retirement-individualize",
+      occurredAtEpochMs: time1,
+      from: loosePosition("store"),
+      amount: stockAmount("1", "piece"),
+      serialId: "ABSTRACT-CABINET",
+      asPlacementNode: {
+        category: "cabinet",
+        acceptsPlacement: true,
+      },
+    });
+    const liveWorld = await inventory.read.world();
+    const liveNode = liveWorld.projection.placementNodes["ABSTRACT-CABINET"];
+    if (liveNode === undefined) {
+      throw new Error("Expected the serialized cabinet's active node.");
+    }
+    const incorrectlyRetiredWorld = {
+      ...liveWorld,
+      projection: {
+        ...liveWorld.projection,
+        placementNodes: {
+          ...liveWorld.projection.placementNodes,
+          "ABSTRACT-CABINET": {
+            ...liveNode,
+            retiredByEventId: "forged-retirement",
+          },
+        },
+      },
+    };
+    const live = abstractInventoryState(liveWorld);
+    const incorrectlyRetired = abstractInventoryState(incorrectlyRetiredWorld);
+    expect(live.placementNodes).not.toEqual(incorrectlyRetired.placementNodes);
+    expect(incorrectlyRetired.placementNodes).toContainEqual(
+      expect.objectContaining({
+        identity: "ABSTRACT-CABINET",
+        retiredByEventId: "forged-retirement",
+      })
+    );
+  });
+
   it("rejects corrupted placement indexes and traceability graph shape", () => {
     const validPlacement: InventoryPlacementState = {
       relationByNodeId: {

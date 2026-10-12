@@ -546,6 +546,8 @@ function applyInventoryCommittedEventInternal(
   for (const definition of normalizedEvent.placementNodeDefinitions ?? []) {
     replacementPlacementNodeIds.add(definition.nodeId);
   }
+  /** Only nodes redefined or removed by this event can change serial binding identities. */
+  const changedPlacementNodeIds = new Set(replacementPlacementNodeIds);
   if (correctedPlacementNodeRootEventId !== undefined) {
     for (const [nodeId, projected] of Object.entries(placementNodes)) {
       if (
@@ -561,6 +563,7 @@ function applyInventoryCommittedEventInternal(
           touchedEmbodiedNodeIds.add(nodeId);
         }
         rememberPreviousPlacementNode(nodeId);
+        changedPlacementNodeIds.add(nodeId);
         deleteInventorySparseRecordValue(placementNodes, nodeId);
       }
     }
@@ -637,27 +640,54 @@ function applyInventoryCommittedEventInternal(
         : { retiredByEventId: current.retiredByEventId }),
     });
   }
-  if (placementNodeProjectionChanges) {
-    for (const identity of Object.keys(placementNodeIdByEmbodiedSerialIdentity)) {
-      deleteInventorySparseRecordValue(
-        placementNodeIdByEmbodiedSerialIdentity,
-        identity
-      );
+  if (changedPlacementNodeIds.size !== 0) {
+    /** Next serial bindings wait until every affected previous binding is removed. */
+    const nextSerialByChangedNodeId = new Map<string, string>();
+    for (const nodeId of changedPlacementNodeIds) {
+      const previous =
+        previousPlacementNodeById?.has(nodeId) === true
+          ? previousPlacementNodeById.get(nodeId)
+          : inventorySparseRecordValue(state.placementNodes, nodeId);
+      const before = previous?.definition.embodiedBy;
+      const after = inventorySparseRecordValue(placementNodes, nodeId)
+        ?.definition.embodiedBy;
+      const previousSerialIdentity =
+        before === undefined
+          ? undefined
+          : inventorySerialIdentity(before.itemId, before.serialId);
+      const nextSerialIdentity =
+        after === undefined
+          ? undefined
+          : inventorySerialIdentity(after.itemId, after.serialId);
+      // A stable serial keeps its exact binding, including retired embodiments.
+      if (previousSerialIdentity === nextSerialIdentity) continue;
+      if (
+        previousSerialIdentity !== undefined &&
+        inventorySparseRecordValue(
+          placementNodeIdByEmbodiedSerialIdentity,
+          previousSerialIdentity
+        ) === nodeId
+      ) {
+        deleteInventorySparseRecordValue(
+          placementNodeIdByEmbodiedSerialIdentity,
+          previousSerialIdentity
+        );
+      }
+      if (nextSerialIdentity !== undefined) {
+        nextSerialByChangedNodeId.set(nodeId, nextSerialIdentity);
+      }
     }
-    for (const [nodeId, projected] of Object.entries(placementNodes)) {
-      const embodiment = projected.definition.embodiedBy;
-      if (embodiment === undefined) continue;
-      const serialIdentity = inventorySerialIdentity(
-        embodiment.itemId,
-        embodiment.serialId
-      );
+    // Release all old bindings before adding new ones so corrected nodes can
+    // exchange serial identities without transient duplicate conflicts.
+    for (const [nodeId, serialIdentity] of nextSerialByChangedNodeId) {
       const existingNodeId = inventorySparseRecordValue(
         placementNodeIdByEmbodiedSerialIdentity,
         serialIdentity
       );
       if (existingNodeId !== undefined && existingNodeId !== nodeId) {
         throw new Error(
-          `Embodied serial ${serialIdentity} is already bound to placement node '${existingNodeId}'.`
+          "Embodied serial " + serialIdentity +
+            " is already bound to placement node '" + existingNodeId + "'."
         );
       }
       setInventorySparseRecordValue(

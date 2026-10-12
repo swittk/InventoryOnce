@@ -1,5 +1,7 @@
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { runInNewContext } from "node:vm";
 import ts from "typescript";
 import { describe, expect, it } from "vitest";
@@ -52,7 +54,10 @@ describe("inventorySha256", () => {
   it("matches native SHA with no Node globals and with an older process shim", () => {
     // Execute the actual compiled digest module without native crypto, rather
     // than importing it into Node where the optimized path would hide fallback bugs.
-    const source = readFileSync("src/digest.ts", "utf8");
+    const source = readFileSync(
+      resolve(dirname(fileURLToPath(import.meta.url)), "../src/digest.ts"),
+      "utf8"
+    );
     const compiled = ts.transpileModule(source, {
       compilerOptions: {
         target: ts.ScriptTarget.ES2022,
