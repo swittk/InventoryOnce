@@ -31,6 +31,8 @@ import {
   inventoryObjectIsDeeplyImmutable,
   inventorySparseRecordHas,
   inventorySparseRecordLineage,
+  retireInventorySparseRecordLineage,
+  retireInventorySortedIdentitySetLineage,
   inventorySparseRecordValue,
   inventorySortedIdentitySetLineage,
   setInventorySparseRecordValue,
@@ -260,6 +262,12 @@ function inventoryImmutableRecordAggregate(
     ((lineage === undefined && cacheable && cached.lineageRevision === undefined) ||
       (lineage !== undefined && cached.lineageRevision === lineage.revision))
   ) {
+    // Planning may have cached this record before publication froze it. Once frozen,
+    // the aggregate is self-contained: keeping its full predecessor only retains history.
+    if (cacheable && lineage !== undefined) {
+      inventoryRecordDigestCache.set(record, { aggregate: cached.aggregate });
+      retireInventorySparseRecordLineage(record);
+    }
     return cached.aggregate;
   }
   let count = 0;
@@ -325,10 +333,14 @@ function inventoryImmutableRecordAggregate(
       ])
     ),
   };
-  if (cacheable || lineage !== undefined) {
+  if (cacheable) {
+    inventoryRecordDigestCache.set(record, { aggregate });
+    retireInventorySparseRecordLineage(record);
+  } else if (lineage !== undefined) {
+    // A mutable planning record still needs the exact changed-key revision on reuse.
     inventoryRecordDigestCache.set(record, {
       aggregate,
-      ...(lineage === undefined ? {} : { lineageRevision: lineage.revision }),
+      lineageRevision: lineage.revision,
     });
   }
   return aggregate;
@@ -479,7 +491,10 @@ function inventorySortedIdentitySetAggregate(
       ])
     ),
   };
-  if (cacheable) inventoryIdentitySetDigestCache.set(value, aggregate);
+  if (cacheable) {
+    inventoryIdentitySetDigestCache.set(value, aggregate);
+    retireInventorySortedIdentitySetLineage(value);
+  }
   return aggregate;
 }
 

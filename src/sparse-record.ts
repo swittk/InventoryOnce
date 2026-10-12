@@ -47,6 +47,9 @@ export function inventoryObjectIsDeeplyImmutable(value: object): boolean {
   return true;
 }
 
+/** Objects with self-contained cached aggregates, safe as one-hop incremental digest bases. */
+const inventoryFinalizedDigestObjects = new WeakSet<object>();
+
 /** Private copy-on-write ancestry used to derive immutable record roots from changed keys only. */
 export interface InventorySparseRecordLineage<T> {
   /** Immediate source record cloned into this record. */
@@ -158,12 +161,22 @@ export function updateInventorySortedIdentitySet(
   }
 
   Object.freeze(ordered);
-  inventorySortedIdentitySetLineageByArray.set(ordered, {
-    base,
-    added,
-    removed,
-  });
+  // Cold replay has no cached intermediate roots. Linking those full arrays would
+  // retain replay history and recurse once per event at the first digest calculation.
+  if (inventoryFinalizedDigestObjects.has(base)) {
+    inventorySortedIdentitySetLineageByArray.set(ordered, {
+      base,
+      added,
+      removed,
+    });
+  }
   return ordered;
+}
+
+/** Release predecessor arrays after their immutable aggregate has been cached. */
+export function retireInventorySortedIdentitySetLineage(value: readonly unknown[]): void {
+  inventoryFinalizedDigestObjects.add(value);
+  inventorySortedIdentitySetLineageByArray.delete(value);
 }
 
 /** Return private sorted-identity-set ancestry when this array was updated in-process. */
@@ -239,12 +252,22 @@ export function cloneInventorySparseRecord<T>(
   for (const key of Object.keys(record)) {
     clone[key] = record[key] as T;
   }
-  inventorySparseRecordLineageByRecord.set(clone, {
-    base: record,
-    changedKeys: new Set<string>(),
-    revision: 0,
-  });
+  // Only a finalized base makes incremental hashing useful. Cold construction keeps
+  // ordinary materialized records without a hidden chain of predecessor snapshots.
+  if (inventoryFinalizedDigestObjects.has(record)) {
+    inventorySparseRecordLineageByRecord.set(clone, {
+      base: record,
+      changedKeys: new Set<string>(),
+      revision: 0,
+    });
+  }
   return clone;
+}
+
+/** Release predecessor records after their immutable aggregate has been cached. */
+export function retireInventorySparseRecordLineage(record: object): void {
+  inventoryFinalizedDigestObjects.add(record);
+  inventorySparseRecordLineageByRecord.delete(record);
 }
 
 /** Return private copy-on-write ancestry for one record when it was cloned in this process. */
