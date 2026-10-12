@@ -42,6 +42,7 @@ import {
   type InventoryPlacementNodeDefinition,
   type InventoryLotDefinition,
   type InventoryMetadata,
+  type InventoryStockIntakePositionInput,
   type InventoryStockPositionInput,
   type InventoryStockPositionKey,
   type InventoryTraceabilityNodeRef,
@@ -100,7 +101,7 @@ export interface CreateInventoryOpeningInput extends InventoryCommandHeader {
   /** Frozen catalogue used to resolve exact item/package definitions. */
   readonly catalog: InventoryCatalog;
   /** Exact opening position; package identity is added from package amount. */
-  readonly to: InventoryStockPositionInput;
+  readonly to: InventoryStockIntakePositionInput;
   /** Exact direct measurements or whole package count already present. */
   readonly amount: InventoryAmount;
   /** Optional exact item revision; defaults to active/package revision. */
@@ -116,7 +117,7 @@ export interface CreateInventoryReceiptInput extends InventoryCommandHeader {
   /** Frozen catalogue used to resolve active item/package definitions. */
   readonly catalog: InventoryCatalog;
   /** Exact destination position; package identity is added from package amount. */
-  readonly to: InventoryStockPositionInput;
+  readonly to: InventoryStockIntakePositionInput;
   /** Direct measurements or exact whole package count received. */
   readonly amount: InventoryAmount;
   /** Optional exact item revision; defaults to the active revision. */
@@ -211,8 +212,8 @@ export interface CreateInventoryReclassificationManyInput
 
 /** One destination line in an atomic multi-item receipt. */
 export interface InventoryReceiptLine {
-  /** Exact destination position before package identity is resolved from amount. */
-  readonly to: InventoryStockPositionInput;
+  /** Exact placed destination position before package identity is resolved from amount. */
+  readonly to: InventoryStockIntakePositionInput;
   /** Direct measurements or exact whole package count received. */
   readonly amount: InventoryAmount;
   /** Optional exact item revision; defaults to active/package revision. */
@@ -438,10 +439,33 @@ export interface CreateInventoryTraceabilityInput
   readonly changes: readonly InventoryTraceabilityRelationChange[];
 }
 
+/** Intake cannot invent or merge kernel-owned detached/missing whereabouts lifecycles. */
+function assertInventoryIntakeHasKnownPlacement(
+  position: InventoryStockPositionInput,
+  label: string
+): asserts position is InventoryStockIntakePositionInput {
+  if (
+    position.whereaboutsId !== undefined ||
+    position.whereaboutsState !== undefined ||
+    position.lastPlacementNodeId !== undefined ||
+    position.detachedAtEpochMs !== undefined ||
+    position.missingAtEpochMs !== undefined
+  ) {
+    throw new Error(
+      label +
+        " cannot supply detached/missing whereabouts lifecycle fields; receive/open stock at a known placement and use stock.detach/markMissing explicitly."
+    );
+  }
+  if (position.placementNodeId === undefined) {
+    throw new Error(label + " must name a current direct placement.");
+  }
+}
+
 /** Create a validated opening event for pre-existing stock adoption/import. */
 export function createInventoryOpeningEvent(
   input: CreateInventoryOpeningInput
 ): InventoryEventDraft {
+  assertInventoryIntakeHasKnownPlacement(input.to, "Inventory opening");
   const item = findCommandItem(
     input.catalog,
     input.to,
@@ -465,6 +489,7 @@ export function createInventoryOpeningEvent(
 export function createInventoryReceiptEvent(
   input: CreateInventoryReceiptInput
 ): InventoryEventDraft {
+  assertInventoryIntakeHasKnownPlacement(input.to, "Inventory receipt");
   const item = findCommandItem(
     input.catalog,
     input.to,
@@ -576,6 +601,7 @@ export function createInventoryReceiptManyEvent(
   /** Placement-node definitions deduplicated across lines such as several items received in one carton. */
   const placementNodeDefinitions = new Map<string, InventoryPlacementNodeDefinition>();
   for (const line of input.lines) {
+    assertInventoryIntakeHasKnownPlacement(line.to, "Inventory receipt line");
     const item = findCommandItem(
       input.catalog,
       line.to,

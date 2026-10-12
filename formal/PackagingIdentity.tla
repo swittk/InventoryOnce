@@ -1,7 +1,7 @@
 --------------------------- MODULE PackagingIdentity --------------------------
 EXTENDS Integers
 
-\* Placement-specific intact package-revision quantities plus loose stock at placements A and B.
+\* Location-specific intact package-revision quantities plus loose stock at locations A and B.
 \* Two distinct 20-unit revisions deliberately share the same quantity so revision identity
 \* cannot be represented or preserved merely by package size.
 VARIABLES a20v1, b20v1, a20v2, b20v2, a24, b24, looseA, looseB

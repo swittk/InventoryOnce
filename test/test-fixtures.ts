@@ -10,6 +10,7 @@ import {
   type InventoryAuthorityStateStore,
   type InventoryCatalog,
   type InventoryOnce,
+  type InventoryStockIntakePositionInput,
   type InventoryStockPositionInput,
 } from "../src/index.js";
 import {
@@ -85,8 +86,11 @@ export function createTestInventory(
 /** Build one ordinary loose-stock command position. */
 export function loosePosition(
   placementNodeId: string,
-  extra: Omit<InventoryStockPositionInput, "itemId" | "placementNodeId"> = {}
-): InventoryStockPositionInput {
+  extra: Omit<
+    InventoryStockIntakePositionInput,
+    "itemId" | "placementNodeId"
+  > = {}
+): InventoryStockIntakePositionInput {
   return { itemId: "item-a", placementNodeId, ...extra };
 }
 

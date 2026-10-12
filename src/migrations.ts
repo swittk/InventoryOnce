@@ -48,6 +48,7 @@ export {
 import {
   inventoryStockPositionIdentity,
   type InventoryMetadata,
+  type InventoryStockIntakePositionInput,
   type InventoryStockPositionInput,
   type InventoryStockPositionKey,
 } from "./model.js";
@@ -105,8 +106,8 @@ export interface InventoryMigrationDiagnostic {
 export interface InventoryMigrationOpeningStock {
   /** Stable identity inside this migration and its idempotency key. */
   readonly openingId: string;
-  /** Exact position before InventoryOnce injects item revision. */
-  readonly position: InventoryStockPositionInput;
+  /** Exact known-placed position before InventoryOnce injects item revision. */
+  readonly position: InventoryStockIntakePositionInput;
   /** Direct measurements or exact package count already present. */
   readonly amount: InventoryAmount;
   /** Optional exact retained item revision; defaults to active/package revision. */

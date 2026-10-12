@@ -12,9 +12,11 @@ import {
   parseQuantity,
   stockAmount,
 } from "../src/index.js";
+import { createInventoryOpeningEvent } from "../src/kernel.js";
 import { createInMemoryInventoryDurableStorage } from "../src/storage-api.js";
 import {
   clockAt,
+  createTabletCatalog,
   createTestInventory,
   loosePosition,
   time0,
@@ -62,6 +64,38 @@ async function quantityAt(
 }
 
 describe("detached and missing stock whereabouts", () => {
+  it("keeps unresolved lifecycle identity kernel-owned at stock intake", async () => {
+    const inventory = createTestInventory();
+    await expect(
+      inventory.stock.receive({
+        operationId: "reject-caller-whereabouts-receipt",
+        occurredAtEpochMs: time0,
+        to: {
+          itemId: "item-a",
+          placementNodeId: "store",
+          whereaboutsId: "caller-owned-cohort",
+        },
+        amount: stockAmount("1", "piece"),
+      } as never)
+    ).rejects.toThrow(
+      "cannot supply detached/missing whereabouts lifecycle fields"
+    );
+
+    expect(() =>
+      createInventoryOpeningEvent({
+        catalog: createTabletCatalog(),
+        operationId: "reject-caller-whereabouts-opening",
+        occurredAtEpochMs: time0,
+        to: {
+          itemId: "item-a",
+          placementNodeId: "store",
+          whereaboutsId: "caller-owned-opening-cohort",
+        },
+        amount: stockAmount("1", "piece"),
+      } as never)
+    ).toThrow("cannot supply detached/missing whereabouts lifecycle fields");
+  });
+
   it("keeps separate detach cohorts queryable and later resolves them without fake receipts", async () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({

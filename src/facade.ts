@@ -8012,7 +8012,11 @@ async function commitAbsoluteCountStart({
           "Absolute count replacement needs positionWhenEmpty when its selector has no current stock position."
         );
       }
-      assertPositionInsideSelector(observedPosition, revisionSelector);
+      assertPositionInsideSelector(
+        observedPosition,
+        revisionSelector,
+        world.projection.placement
+      );
       assertAbsoluteCountPositionMatchesItem(
         internals.catalog,
         item,

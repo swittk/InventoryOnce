@@ -439,6 +439,71 @@ describe("broad reservations and physical truth", () => {
 });
 
 describe("snapshot, observation, and movement-safe count reconciliation", () => {
+  it("validates subtree-scoped observation and absolute count positions through placement ancestry", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receive({
+      operationId: "subtree-count-receive",
+      occurredAtEpochMs: time0,
+      to: loosePosition("count-child"),
+      amount: stockAmount("2", "piece"),
+    });
+    await inventory.placement.move({
+      operationId: "subtree-count-place-child",
+      occurredAtEpochMs: time0,
+      nodeId: "count-child",
+      into: "count-root",
+    });
+    const position = (
+      await inventory.read.positions({
+        itemId: "item-a",
+        placementNodeIds: ["count-child"],
+      })
+    )[0];
+    if (position === undefined) throw new Error("Expected subtree count stock.");
+
+    await inventory.counts.start({
+      countId: "subtree-observation-count",
+      operationId: "subtree-observation-count:start",
+      itemRevisionId: "item-a-v2",
+      selector: {
+        itemId: "item-a",
+        withinPlacementNodeIds: ["count-root"],
+      },
+      startedAtEpochMs: time1,
+    });
+    const observed = await inventory.counts.observe({
+      operationId: "subtree-observation-count:observe",
+      countId: "subtree-observation-count",
+      observedAtEpochMs: time1,
+      observations: [
+        {
+          position: position.key,
+          measurements: position.measurements,
+        },
+      ],
+    });
+    expect(observed.count.status).toBe(InventoryCountStatus.Observed);
+    await inventory.counts.abandon({
+      operationId: "subtree-observation-count:abandon",
+      countId: "subtree-observation-count",
+      occurredAtEpochMs: time2,
+      reason: "Close subtree validation count.",
+    });
+
+    const absolute = await inventory.counts.replaceAbsolute({
+      countId: "subtree-absolute-count",
+      operationId: "subtree-absolute-count",
+      itemRevisionId: "item-a-v2",
+      selector: {
+        itemId: "item-a",
+        withinPlacementNodeIds: ["count-root"],
+      },
+      observedMeasurements: position.measurements,
+      occurredAtEpochMs: time2,
+    });
+    expect(absolute.count.status).toBe(InventoryCountStatus.Completed);
+  });
+
   it("applies observed-minus-expected discrepancy without erasing later movement", async () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({

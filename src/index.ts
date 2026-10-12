@@ -128,6 +128,7 @@ export type {
   InventoryQualifiedDimension,
   InventoryTraceabilityNodeRef,
   InventoryStockPosition,
+  InventoryStockIntakePositionInput,
   InventoryStockPositionInput,
   InventoryStockPositionKey,
   ItemId,

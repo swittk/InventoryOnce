@@ -99,6 +99,19 @@ export type InventoryStockPositionInput = Omit<
   "itemRevisionId" | "transferId"
 >;
 
+/** New stock entering InventoryOnce must begin at one known direct placement. */
+export type InventoryStockIntakePositionInput = Omit<
+  InventoryStockPositionInput,
+  | "whereaboutsId"
+  | "whereaboutsState"
+  | "lastPlacementNodeId"
+  | "detachedAtEpochMs"
+  | "missingAtEpochMs"
+> & {
+  /** Known direct placement at the moment this stock enters InventoryOnce authority. */
+  readonly placementNodeId: PlacementNodeId;
+};
+
 /** Current projected measurements for one exact stock position. */
 export interface InventoryStockPosition {
   /** Dimensions identifying which homogeneous stock this row represents. */
