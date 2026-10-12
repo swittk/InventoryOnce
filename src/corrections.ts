@@ -284,8 +284,11 @@ function projectHistoryWithReplacement(
         hypotheticalRelationCreatorById
       );
     if (
+      // A contents move may be a stock-bearing Placement event even when
+      // no independent child-node parent changed.
       (stockAndGraphDraft.kind === InventoryEventKind.Placement &&
-        reconciledPlacementChanges.length === 0) ||
+        reconciledPlacementChanges.length === 0 &&
+        stockAndGraphDraft.stockEffects.length === 0) ||
       (stockAndGraphDraft.kind === InventoryEventKind.Traceability &&
         reconciledTraceabilityChanges.length === 0)
     ) {

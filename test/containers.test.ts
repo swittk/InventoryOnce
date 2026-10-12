@@ -71,6 +71,43 @@ async function quantityAtNode(
 }
 
 describe("generic placement topology", () => {
+  it("keeps stock-bearing placement moveContents during correction history replay", async () => {
+    const inventory = createTestInventory();
+    const receipt = await inventory.stock.receive({
+      operationId: "correction-move-contents-receive",
+      occurredAtEpochMs: time0,
+      to: loosePosition("CART"),
+      amount: stockAmount("2", "piece"),
+      placementNode: { category: "cart", acceptsPlacement: true },
+    });
+    const moved = await inventory.placement.moveContents({
+      operationId: "correction-move-contents-empty-cart",
+      occurredAtEpochMs: time1,
+      nodeId: "CART",
+      into: "ROOM",
+    });
+    expect(moved.event.kind).toBe(InventoryEventKind.Placement);
+    expect(moved.event.stockEffects).toHaveLength(2);
+    expect(moved.event.placementChanges).toEqual([]);
+
+    const corrected = await inventory.stock.correct({
+      operationId: "correction-move-contents-recount",
+      occurredAtEpochMs: time2,
+      correctsEventId: receipt.event.eventId,
+      reason: "The initial cart receipt had three pieces, not two.",
+      replaceWith: (plans) =>
+        plans.receive({
+          occurredAtEpochMs: time0,
+          to: loosePosition("CART"),
+          amount: stockAmount("3", "piece"),
+        }),
+    });
+    expect(corrected.event.kind).toBe(InventoryEventKind.Correction);
+    expect(await quantityAtNode(inventory, "CART")).toBe(1);
+    expect(await quantityAtNode(inventory, "ROOM")).toBe(2);
+    expect((await inventory.read.world()).projection.lastRecordSequence).toBe(3);
+  });
+
   it("individualizes, embodies, moves, empties, retires, and re-individualizes a physical cabinet", async () => {
     const catalog = createHeterogeneousPlacementCatalog();
     const inventory = createTestInventory(undefined, catalog);

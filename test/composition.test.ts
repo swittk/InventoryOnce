@@ -758,20 +758,30 @@ describe("revision-frozen heterogeneous package composition", () => {
       placementNode: { category: "calendar-pack" },
     });
 
-    await expect(
-      inventory.compositions.open({
-        operationId: "open-serial-lot-source-pack",
-        occurredAtEpochMs: time1,
-        from: {
-          itemId: fixture.newPackItem.itemId,
-          placementNodeId: "SERIAL-LOT-SOURCE-CONTAINER",
-          lotId: "SERIAL-LOT-SOURCE-LOT",
-          serialId: "SERIAL-LOT-SOURCE-SERIAL",
-          packagingRevisionId: fixture.newPack.revisionId,
-        },
-        packageCount: 1,
-      })
-    ).resolves.toBeDefined();
+    const opened = await inventory.compositions.open({
+      operationId: "open-serial-lot-source-pack",
+      occurredAtEpochMs: time1,
+      from: {
+        itemId: fixture.newPackItem.itemId,
+        placementNodeId: "SERIAL-LOT-SOURCE-CONTAINER",
+        lotId: "SERIAL-LOT-SOURCE-LOT",
+        serialId: "SERIAL-LOT-SOURCE-SERIAL",
+        packagingRevisionId: fixture.newPack.revisionId,
+      },
+      packageCount: 1,
+    });
+    const sources = opened.event.traceabilityChanges.map(
+      /** Inspect the genealogy source identity, not just successful opening. */
+      (change) => change.from
+    );
+    expect(sources).toContainEqual({
+      kind: InventoryTraceabilityNodeKind.Serial,
+      id: "SERIAL-LOT-SOURCE-SERIAL",
+    });
+    expect(sources.some(
+      /** Source lot must not compete with the preferred serialized identity. */
+      (source) => source.kind === InventoryTraceabilityNodeKind.Lot
+    )).toBe(false);
   });
 
   it("keeps opening detached stock as reclassification instead of a second detach", async () => {

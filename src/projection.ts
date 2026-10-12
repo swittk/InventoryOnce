@@ -502,6 +502,23 @@ function applyInventoryCommittedEventInternal(
           string,
           InventoryProjectedPlacementNodeDefinition
         >);
+  /** Pre-event metadata for nodes changed in this mutable batch replay step. */
+  const previousPlacementNodeById =
+    mutateProjection && placementNodeProjectionChanges
+      ? new Map<string, InventoryProjectedPlacementNodeDefinition | undefined>()
+      : undefined;
+  /** Capture only a changed node's pre-event row before mutating the shared batch workspace. */
+  const rememberPreviousPlacementNode = (nodeId: string): void => {
+    if (
+      previousPlacementNodeById !== undefined &&
+      !previousPlacementNodeById.has(nodeId)
+    ) {
+      previousPlacementNodeById.set(
+        nodeId,
+        inventorySparseRecordValue(state.placementNodes, nodeId)
+      );
+    }
+  };
   /** Historical/current embodied serial -> node binding; retired embodiments remain reserved. */
   const placementNodeIdByEmbodiedSerialIdentity: Record<string, string> =
     mutateProjection
@@ -543,12 +560,14 @@ function applyInventoryCommittedEventInternal(
         if (projected.definition.embodiedBy !== undefined) {
           touchedEmbodiedNodeIds.add(nodeId);
         }
+        rememberPreviousPlacementNode(nodeId);
         deleteInventorySparseRecordValue(placementNodes, nodeId);
       }
     }
   }
   for (const definition of normalizedEvent.placementNodeDefinitions ?? []) {
     const nodeId = definition.nodeId;
+    rememberPreviousPlacementNode(nodeId);
     const rootEventId =
       correctedPlacementNodeRootEventId ?? normalizedEvent.eventId;
     const existingRootEventId = inventorySparseRecordValue(
@@ -1037,6 +1056,9 @@ function applyInventoryCommittedEventInternal(
   });
   placement = reconcileInventoryPlacementEmbodiments({
     previousPlacementNodes: state.placementNodes,
+    ...(previousPlacementNodeById === undefined
+      ? {}
+      : { previousPlacementNodeById }),
     placementNodes,
     placementNodeIdByEmbodiedSerialIdentity,
     positions,
@@ -1159,6 +1181,11 @@ interface ReconcileInventoryPlacementEmbodimentsInput {
   readonly previousPlacementNodes: Readonly<
     Record<string, InventoryProjectedPlacementNodeDefinition>
   >;
+  /** Pre-event changed rows captured before in-place mutation of the batch workspace. */
+  readonly previousPlacementNodeById?: ReadonlyMap<
+    string,
+    InventoryProjectedPlacementNodeDefinition | undefined
+  >;
   /** Mutable next node projection, including any metadata assertions from this event. */
   readonly placementNodes: Record<
     string,
@@ -1189,6 +1216,7 @@ interface ReconcileInventoryPlacementEmbodimentsInput {
 /** Keep embodied node parent/lifetime derived from its one live serial resource. */
 function reconcileInventoryPlacementEmbodiments({
   previousPlacementNodes,
+  previousPlacementNodeById,
   placementNodes,
   placementNodeIdByEmbodiedSerialIdentity,
   positions,
@@ -1241,10 +1269,10 @@ function reconcileInventoryPlacementEmbodiments({
       setInventorySparseRecordValue(placementNodes, nodeId, projected);
     }
     if (positivePositionId === undefined) {
-      const previous = inventorySparseRecordValue(
-        previousPlacementNodes,
-        nodeId
-      );
+      const previous =
+        previousPlacementNodeById?.has(nodeId) === true
+          ? previousPlacementNodeById.get(nodeId)
+          : inventorySparseRecordValue(previousPlacementNodes, nodeId);
       if (
         previous === undefined ||
         previous.definition.embodiedBy === undefined ||

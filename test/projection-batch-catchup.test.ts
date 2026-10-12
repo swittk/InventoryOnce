@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   createInventoryReceiptEvent,
   createInventoryReceiptManyEvent,
+  createInventoryPlacementNodeMetadataEvent,
   createInventoryTraceabilityEvent,
   createInventoryTransferEvent,
 } from "../src/commands.js";
@@ -141,6 +142,44 @@ describe("batched canonical projection catch-up", () => {
     expect(base.eventIdsBySequence).toEqual(baseEventIdsBefore);
     expect(batch).not.toBe(base);
     expect(batch.positions).not.toBe(base.positions);
+  });
+
+  it("rejects a newly embodied placement node without its serialized resource in mutable batch replay", () => {
+    const catalog = createTabletCatalog();
+    const base = emptyInventoryProjectionState();
+    const definition = commitInventoryEvent(
+      createInventoryPlacementNodeMetadataEvent({
+        catalog,
+        operationId: "batch-orphan-embodied-node",
+        occurredAtEpochMs: time0,
+        nodeId: "UNOWNED-CABINET",
+        placementNode: {
+          category: "cabinet",
+          acceptsPlacement: true,
+          embodiedBy: { itemId: "item-a", serialId: "UNOWNED-CABINET-SERIAL" },
+        },
+      }),
+      time0,
+      1
+    );
+    expect(() =>
+      applyInventoryCommittedEvent({
+        catalog,
+        state: base,
+        event: definition,
+        deficitPolicy: InventoryDeficitPolicy.Reject,
+      })
+    ).toThrow("cannot be embodied without one live serialized resource");
+    // A multi-event catch-up must enforce the same pre-event incarnation rule.
+    expect(() =>
+      applyInventoryCommittedEvents({
+        catalog,
+        state: base,
+        events: [definition],
+        deficitPolicy: InventoryDeficitPolicy.Reject,
+      })
+    ).toThrow("cannot be embodied without one live serialized resource");
+    expect(base.placementNodes["UNOWNED-CABINET"]).toBeUndefined();
   });
 
   it("treats exact replay as a zero-copy no-op and rejects changed retry intent", () => {

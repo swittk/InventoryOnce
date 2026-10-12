@@ -20,6 +20,7 @@ import {
   createInventoryTransformationEvent,
 } from "../src/kernel.js";
 import { createInMemoryInventoryDurableStorage } from "../src/storage-api.js";
+import { inventoryWhereaboutsLifecycles } from "../src/whereabouts.js";
 import {
   clockAt,
   createTabletCatalog,
@@ -751,6 +752,70 @@ describe("detached and missing stock whereabouts", () => {
     ).toEqual(history[0]?.history.map((entry) => entry.event.recordSequence));
   });
 
+
+  it("uses the retained item index when querying only selected whereabouts cohorts", async () => {
+    const itemA = defineScalarInventoryItem({
+      itemId: "item-a",
+      revisionId: "item-a-v1",
+      unit: "piece",
+      axisId: "pieces",
+    });
+    const itemB = defineScalarInventoryItem({
+      itemId: "item-b",
+      revisionId: "item-b-v1",
+      unit: "piece",
+      axisId: "pieces",
+    });
+    const inventory = createInventoryOnce({
+      catalog: defineInventoryCatalog({
+        itemRevisions: [itemA, itemB],
+        activeItemRevisionIds: {
+          "item-a": itemA.revisionId,
+          "item-b": itemB.revisionId,
+        },
+      }),
+      storage: createInMemoryInventoryDurableStorage(),
+      clock: clockAt(),
+    });
+    await inventory.stock.receiveMany({
+      operationId: "indexed-whereabouts-seed",
+      occurredAtEpochMs: time0,
+      lines: [
+        {
+          to: { itemId: "item-a", placementNodeId: "store-a" },
+          amount: stockAmount("2", "piece"),
+        },
+        {
+          to: { itemId: "item-b", placementNodeId: "store-b" },
+          amount: stockAmount("500", "piece"),
+        },
+      ],
+    });
+    await inventory.stock.detach({
+      operationId: "indexed-whereabouts-detach",
+      occurredAtEpochMs: time1,
+      from: { itemId: "item-a", placementNodeId: "store-a" },
+      amount: stockAmount("1", "piece"),
+    });
+    const cohort = (await inventory.read.whereabouts())[0];
+    if (cohort === undefined) throw new Error("Expected detached cohort.");
+    const published = (await inventory.read.world()).projection;
+    const guarded = {
+      ...published,
+      positions: new Proxy(published.positions, {
+        /** A cohort-local query must never enumerate every warehouse position. */
+        ownKeys() {
+          throw new Error("Filtered whereabouts query enumerated the entire warehouse.");
+        },
+      }),
+    };
+    expect(
+      inventoryWhereaboutsLifecycles(
+        guarded,
+        new Set([cohort.whereaboutsId])
+      )
+    ).toEqual([cohort]);
+  });
 
   it("keeps an embodied node aligned through detach, missing, recovery, and final issue", async () => {
     const inventory = createTestInventory();

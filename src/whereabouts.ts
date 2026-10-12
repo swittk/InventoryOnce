@@ -133,7 +133,36 @@ export function inventoryWhereaboutsLifecycles(
     }
     builders.set(whereaboutsId, builder);
   }
-  for (const position of Object.values(projection.positions)) {
+  /** Candidate rows for these cohorts, without enumerating unrelated item positions. */
+  let candidatePositions: readonly InventoryStockPosition[];
+  if (onlyWhereaboutsIds === undefined) {
+    candidatePositions = Object.values(projection.positions);
+  } else {
+    const selectedPositionIds = new Set<string>();
+    const selectedPositions: InventoryStockPosition[] = [];
+    for (const builder of builders.values()) {
+      for (const itemId of builder.itemIds) {
+        const positionIds =
+          inventorySparseRecordValue(projection.positionIdsByItemId, itemId) ?? [];
+        for (const positionId of positionIds) {
+          if (selectedPositionIds.has(positionId)) continue;
+          selectedPositionIds.add(positionId);
+          const position = inventorySparseRecordValue(
+            projection.positions,
+            positionId
+          );
+          if (position === undefined) {
+            throw new Error(
+              "Whereabouts item-position index references a missing current stock row."
+            );
+          }
+          selectedPositions.push(position);
+        }
+      }
+    }
+    candidatePositions = selectedPositions;
+  }
+  for (const position of candidatePositions) {
     const whereaboutsId = position.key.whereaboutsId;
     if (
       whereaboutsId === undefined ||
