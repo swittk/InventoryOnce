@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   createInMemoryInventorySegmentedPlacementStore,
   InventoryPlacementSegmentRevisionConflictError,
-} from "../src/segmented-placement.js";
+} from "../src/storage-api.js";
 import {
   applyInventoryPlacementChanges,
   type InventoryPlacementRelation,

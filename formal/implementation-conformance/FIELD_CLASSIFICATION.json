@@ -4,14 +4,14 @@
     "callableFields": 11,
     "callbackArgumentFields": 365,
     "callbackResultFields": 433,
-    "fields": 2566,
-    "inputFields": 2172,
+    "fields": 2589,
+    "inputFields": 2181,
     "nullableFields": 6,
-    "optionalFields": 1042,
-    "outputFields": 953,
+    "optionalFields": 1050,
+    "outputFields": 967,
     "recursiveTypeReferences": 3,
     "truncatedTypes": 0,
-    "types": 420,
+    "types": 425,
     "undefinedFields": 3
   },
   "entries": {
@@ -1229,6 +1229,236 @@
         "input"
       ],
       "discoveredType": "InventoryPlacementState",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "ApplyInventorySegmentedPlacementChangeInput.eventId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/segmented-placement.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "ApplyInventorySegmentedPlacementChangeInput.expectedRevision": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/segmented-placement.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "ApplyInventorySegmentedPlacementChangeInput.fromParentNodeId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/segmented-placement.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "ApplyInventorySegmentedPlacementChangeInput.nextRevision": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/segmented-placement.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "ApplyInventorySegmentedPlacementChangeInput.nodeId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/segmented-placement.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "ApplyInventorySegmentedPlacementChangeInput.targetAcceptsPlacement": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/segmented-placement.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "boolean",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "ApplyInventorySegmentedPlacementChangeInput.toParentNodeId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/segmented-placement.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "ApplyInventorySegmentedPlacementChangeResult.nodeId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/segmented-placement.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "ApplyInventorySegmentedPlacementChangeResult.parentNodeId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/segmented-placement.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "ApplyInventorySegmentedPlacementChangeResult.revision": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/segmented-placement.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -3300,6 +3530,52 @@
         "input"
       ],
       "discoveredType": "readonly InventoryCommittedEvent[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "CreateInMemoryInventorySegmentedPlacementStoreInput.placement": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/segmented-placement.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryPlacementState",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "CreateInMemoryInventorySegmentedPlacementStoreInput.revision": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/segmented-placement.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "number",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -15296,6 +15572,121 @@
         "output"
       ],
       "discoveredType": "Map<string, number[]>",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InMemoryInventorySegmentedPlacementStore.childNodeIdsByParentNodeId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/segmented-placement.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "Map<string, Set<string>>",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InMemoryInventorySegmentedPlacementStore.currentRevision": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/segmented-placement.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InMemoryInventorySegmentedPlacementStore.primaryRootSum": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/segmented-placement.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "bigint",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InMemoryInventorySegmentedPlacementStore.relationByNodeId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/segmented-placement.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "Map<string, InventoryPlacementRelation>",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InMemoryInventorySegmentedPlacementStore.secondaryRootSum": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/segmented-placement.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "bigint",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -47736,6 +48127,146 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
+    "InventoryPlacementSegmentRevisionConflictError.actualRevision": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/segmented-placement.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryPlacementSegmentRevisionConflictError.cause": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "external:typescript/lib/lib.es2022.error.d.ts#0a3d63ef2b85",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "unknown",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryPlacementSegmentRevisionConflictError.expectedRevision": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/segmented-placement.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryPlacementSegmentRevisionConflictError.message": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "application decoration",
+      "declaration": "external:typescript/lib/lib.es5.d.ts#c430d4466628",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [
+        "GAP-APPLICATION-DECORATION"
+      ],
+      "optional": false,
+      "rationale": "Human/application decoration is intentionally outside conserved physical semantics."
+    },
+    "InventoryPlacementSegmentRevisionConflictError.name": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "external:typescript/lib/lib.es5.d.ts#c430d4466628",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryPlacementSegmentRevisionConflictError.stack": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "external:typescript/lib/lib.es5.d.ts#c430d4466628",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
     "InventoryPlacementState.childNodeIdsByParentNodeId": {
       "allowsNull": false,
       "allowsUndefined": false,
@@ -61244,5 +61775,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "d489624fbfb9f033cc4c1e28ada24989bae348920c209f11a295de5f2797cb2e"
+  "surfaceSha256": "b2bab82390f2561a7849a1d1636fada8ff630d5257418625c53d2cee7a443960"
 }

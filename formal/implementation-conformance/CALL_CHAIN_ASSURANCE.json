@@ -1,11 +1,11 @@
 {
   "counts": {
-    "callables": 3206,
-    "edges": 8412,
-    "publicEntries": 570,
-    "publicEntriesWithTargets": 570,
-    "publicEntriesWithWitnesses": 570,
-    "testRoots": 53,
+    "callables": 3267,
+    "edges": 8535,
+    "publicEntries": 581,
+    "publicEntriesWithTargets": 581,
+    "publicEntriesWithWitnesses": 581,
+    "testRoots": 54,
     "unresolvedPublicEntries": 0
   },
   "entries": {
@@ -7575,6 +7575,574 @@
         }
       ]
     },
+    "class.storage.InMemoryInventorySegmentedPlacementStore.ancestry": {
+      "targets": [
+        {
+          "column": 3,
+          "file": "src/segmented-placement.ts",
+          "hasBody": true,
+          "id": "src/segmented-placement.ts:8237:ancestry",
+          "kind": "MethodDeclaration",
+          "line": 208,
+          "name": "ancestry"
+        }
+      ],
+      "unresolvedTargets": [],
+      "witnesses": [
+        {
+          "target": {
+            "column": 3,
+            "file": "src/segmented-placement.ts",
+            "hasBody": true,
+            "id": "src/segmented-placement.ts:8237:ancestry",
+            "kind": "MethodDeclaration",
+            "line": 208,
+            "name": "ancestry"
+          },
+          "witness": {
+            "chain": [
+              {
+                "column": 1,
+                "file": "test/segmented-placement.test.ts",
+                "hasBody": true,
+                "id": "test-root:test/segmented-placement.test.ts",
+                "kind": "TestRoot",
+                "line": 1,
+                "name": "test/segmented-placement.test.ts"
+              },
+              {
+                "column": 55,
+                "file": "test/segmented-placement.test.ts",
+                "hasBody": true,
+                "id": "test/segmented-placement.test.ts:1705:<anonymous@48>",
+                "kind": "ArrowFunction",
+                "line": 48,
+                "name": "<anonymous@48>",
+                "reason": "external-callback-dispatch"
+              },
+              {
+                "column": 87,
+                "file": "test/segmented-placement.test.ts",
+                "hasBody": true,
+                "id": "test/segmented-placement.test.ts:3831:<anonymous@104>",
+                "kind": "ArrowFunction",
+                "line": 104,
+                "name": "<anonymous@104>",
+                "reason": "external-callback-dispatch"
+              },
+              {
+                "column": 3,
+                "file": "src/segmented-placement.ts",
+                "hasBody": true,
+                "id": "src/segmented-placement.ts:8237:ancestry",
+                "kind": "MethodDeclaration",
+                "line": 208,
+                "name": "ancestry",
+                "reason": "resolved-call"
+              }
+            ],
+            "test": "test/segmented-placement.test.ts"
+          }
+        }
+      ]
+    },
+    "class.storage.InMemoryInventorySegmentedPlacementStore.applyChange": {
+      "targets": [
+        {
+          "column": 3,
+          "file": "src/segmented-placement.ts",
+          "hasBody": true,
+          "id": "src/segmented-placement.ts:9636:applyChange",
+          "kind": "MethodDeclaration",
+          "line": 250,
+          "name": "applyChange"
+        }
+      ],
+      "unresolvedTargets": [],
+      "witnesses": [
+        {
+          "target": {
+            "column": 3,
+            "file": "src/segmented-placement.ts",
+            "hasBody": true,
+            "id": "src/segmented-placement.ts:9636:applyChange",
+            "kind": "MethodDeclaration",
+            "line": 250,
+            "name": "applyChange"
+          },
+          "witness": {
+            "chain": [
+              {
+                "column": 1,
+                "file": "test/segmented-placement.test.ts",
+                "hasBody": true,
+                "id": "test-root:test/segmented-placement.test.ts",
+                "kind": "TestRoot",
+                "line": 1,
+                "name": "test/segmented-placement.test.ts"
+              },
+              {
+                "column": 55,
+                "file": "test/segmented-placement.test.ts",
+                "hasBody": true,
+                "id": "test/segmented-placement.test.ts:1705:<anonymous@48>",
+                "kind": "ArrowFunction",
+                "line": 48,
+                "name": "<anonymous@48>",
+                "reason": "external-callback-dispatch"
+              },
+              {
+                "column": 87,
+                "file": "test/segmented-placement.test.ts",
+                "hasBody": true,
+                "id": "test/segmented-placement.test.ts:3831:<anonymous@104>",
+                "kind": "ArrowFunction",
+                "line": 104,
+                "name": "<anonymous@104>",
+                "reason": "external-callback-dispatch"
+              },
+              {
+                "column": 3,
+                "file": "src/segmented-placement.ts",
+                "hasBody": true,
+                "id": "src/segmented-placement.ts:9636:applyChange",
+                "kind": "MethodDeclaration",
+                "line": 250,
+                "name": "applyChange",
+                "reason": "resolved-call"
+              }
+            ],
+            "test": "test/segmented-placement.test.ts"
+          }
+        }
+      ]
+    },
+    "class.storage.InMemoryInventorySegmentedPlacementStore.childNodeIds": {
+      "targets": [
+        {
+          "column": 3,
+          "file": "src/segmented-placement.ts",
+          "hasBody": true,
+          "id": "src/segmented-placement.ts:8003:childNodeIds",
+          "kind": "MethodDeclaration",
+          "line": 199,
+          "name": "childNodeIds"
+        }
+      ],
+      "unresolvedTargets": [],
+      "witnesses": [
+        {
+          "target": {
+            "column": 3,
+            "file": "src/segmented-placement.ts",
+            "hasBody": true,
+            "id": "src/segmented-placement.ts:8003:childNodeIds",
+            "kind": "MethodDeclaration",
+            "line": 199,
+            "name": "childNodeIds"
+          },
+          "witness": {
+            "chain": [
+              {
+                "column": 1,
+                "file": "test/segmented-placement.test.ts",
+                "hasBody": true,
+                "id": "test-root:test/segmented-placement.test.ts",
+                "kind": "TestRoot",
+                "line": 1,
+                "name": "test/segmented-placement.test.ts"
+              },
+              {
+                "column": 55,
+                "file": "test/segmented-placement.test.ts",
+                "hasBody": true,
+                "id": "test/segmented-placement.test.ts:1705:<anonymous@48>",
+                "kind": "ArrowFunction",
+                "line": 48,
+                "name": "<anonymous@48>",
+                "reason": "external-callback-dispatch"
+              },
+              {
+                "column": 78,
+                "file": "test/segmented-placement.test.ts",
+                "hasBody": true,
+                "id": "test/segmented-placement.test.ts:1790:<anonymous@49>",
+                "kind": "ArrowFunction",
+                "line": 49,
+                "name": "<anonymous@49>",
+                "reason": "external-callback-dispatch"
+              },
+              {
+                "column": 3,
+                "file": "src/segmented-placement.ts",
+                "hasBody": true,
+                "id": "src/segmented-placement.ts:8003:childNodeIds",
+                "kind": "MethodDeclaration",
+                "line": 199,
+                "name": "childNodeIds",
+                "reason": "resolved-call"
+              }
+            ],
+            "test": "test/segmented-placement.test.ts"
+          }
+        }
+      ]
+    },
+    "class.storage.InMemoryInventorySegmentedPlacementStore.contentRoot": {
+      "targets": [
+        {
+          "column": 3,
+          "file": "src/segmented-placement.ts",
+          "hasBody": true,
+          "id": "src/segmented-placement.ts:7489:contentRoot",
+          "kind": "MethodDeclaration",
+          "line": 182,
+          "name": "contentRoot"
+        }
+      ],
+      "unresolvedTargets": [],
+      "witnesses": [
+        {
+          "target": {
+            "column": 3,
+            "file": "src/segmented-placement.ts",
+            "hasBody": true,
+            "id": "src/segmented-placement.ts:7489:contentRoot",
+            "kind": "MethodDeclaration",
+            "line": 182,
+            "name": "contentRoot"
+          },
+          "witness": {
+            "chain": [
+              {
+                "column": 1,
+                "file": "test/segmented-placement.test.ts",
+                "hasBody": true,
+                "id": "test-root:test/segmented-placement.test.ts",
+                "kind": "TestRoot",
+                "line": 1,
+                "name": "test/segmented-placement.test.ts"
+              },
+              {
+                "column": 55,
+                "file": "test/segmented-placement.test.ts",
+                "hasBody": true,
+                "id": "test/segmented-placement.test.ts:1705:<anonymous@48>",
+                "kind": "ArrowFunction",
+                "line": 48,
+                "name": "<anonymous@48>",
+                "reason": "external-callback-dispatch"
+              },
+              {
+                "column": 87,
+                "file": "test/segmented-placement.test.ts",
+                "hasBody": true,
+                "id": "test/segmented-placement.test.ts:3831:<anonymous@104>",
+                "kind": "ArrowFunction",
+                "line": 104,
+                "name": "<anonymous@104>",
+                "reason": "external-callback-dispatch"
+              },
+              {
+                "column": 3,
+                "file": "src/segmented-placement.ts",
+                "hasBody": true,
+                "id": "src/segmented-placement.ts:7489:contentRoot",
+                "kind": "MethodDeclaration",
+                "line": 182,
+                "name": "contentRoot",
+                "reason": "resolved-call"
+              }
+            ],
+            "test": "test/segmented-placement.test.ts"
+          }
+        }
+      ]
+    },
+    "class.storage.InMemoryInventorySegmentedPlacementStore.materialize": {
+      "targets": [
+        {
+          "column": 3,
+          "file": "src/segmented-placement.ts",
+          "hasBody": true,
+          "id": "src/segmented-placement.ts:13266:materialize",
+          "kind": "MethodDeclaration",
+          "line": 362,
+          "name": "materialize"
+        }
+      ],
+      "unresolvedTargets": [],
+      "witnesses": [
+        {
+          "target": {
+            "column": 3,
+            "file": "src/segmented-placement.ts",
+            "hasBody": true,
+            "id": "src/segmented-placement.ts:13266:materialize",
+            "kind": "MethodDeclaration",
+            "line": 362,
+            "name": "materialize"
+          },
+          "witness": {
+            "chain": [
+              {
+                "column": 1,
+                "file": "test/segmented-placement.test.ts",
+                "hasBody": true,
+                "id": "test-root:test/segmented-placement.test.ts",
+                "kind": "TestRoot",
+                "line": 1,
+                "name": "test/segmented-placement.test.ts"
+              },
+              {
+                "column": 55,
+                "file": "test/segmented-placement.test.ts",
+                "hasBody": true,
+                "id": "test/segmented-placement.test.ts:1705:<anonymous@48>",
+                "kind": "ArrowFunction",
+                "line": 48,
+                "name": "<anonymous@48>",
+                "reason": "external-callback-dispatch"
+              },
+              {
+                "column": 87,
+                "file": "test/segmented-placement.test.ts",
+                "hasBody": true,
+                "id": "test/segmented-placement.test.ts:3831:<anonymous@104>",
+                "kind": "ArrowFunction",
+                "line": 104,
+                "name": "<anonymous@104>",
+                "reason": "external-callback-dispatch"
+              },
+              {
+                "column": 3,
+                "file": "src/segmented-placement.ts",
+                "hasBody": true,
+                "id": "src/segmented-placement.ts:13266:materialize",
+                "kind": "MethodDeclaration",
+                "line": 362,
+                "name": "materialize",
+                "reason": "resolved-call"
+              }
+            ],
+            "test": "test/segmented-placement.test.ts"
+          }
+        }
+      ]
+    },
+    "class.storage.InMemoryInventorySegmentedPlacementStore.parentNodeId": {
+      "targets": [
+        {
+          "column": 3,
+          "file": "src/segmented-placement.ts",
+          "hasBody": true,
+          "id": "src/segmented-placement.ts:7829:parentNodeId",
+          "kind": "MethodDeclaration",
+          "line": 194,
+          "name": "parentNodeId"
+        }
+      ],
+      "unresolvedTargets": [],
+      "witnesses": [
+        {
+          "target": {
+            "column": 3,
+            "file": "src/segmented-placement.ts",
+            "hasBody": true,
+            "id": "src/segmented-placement.ts:7829:parentNodeId",
+            "kind": "MethodDeclaration",
+            "line": 194,
+            "name": "parentNodeId"
+          },
+          "witness": {
+            "chain": [
+              {
+                "column": 1,
+                "file": "test/segmented-placement.test.ts",
+                "hasBody": true,
+                "id": "test-root:test/segmented-placement.test.ts",
+                "kind": "TestRoot",
+                "line": 1,
+                "name": "test/segmented-placement.test.ts"
+              },
+              {
+                "column": 55,
+                "file": "test/segmented-placement.test.ts",
+                "hasBody": true,
+                "id": "test/segmented-placement.test.ts:1705:<anonymous@48>",
+                "kind": "ArrowFunction",
+                "line": 48,
+                "name": "<anonymous@48>",
+                "reason": "external-callback-dispatch"
+              },
+              {
+                "column": 78,
+                "file": "test/segmented-placement.test.ts",
+                "hasBody": true,
+                "id": "test/segmented-placement.test.ts:1790:<anonymous@49>",
+                "kind": "ArrowFunction",
+                "line": 49,
+                "name": "<anonymous@49>",
+                "reason": "external-callback-dispatch"
+              },
+              {
+                "column": 3,
+                "file": "src/segmented-placement.ts",
+                "hasBody": true,
+                "id": "src/segmented-placement.ts:7829:parentNodeId",
+                "kind": "MethodDeclaration",
+                "line": 194,
+                "name": "parentNodeId",
+                "reason": "resolved-call"
+              }
+            ],
+            "test": "test/segmented-placement.test.ts"
+          }
+        }
+      ]
+    },
+    "class.storage.InMemoryInventorySegmentedPlacementStore.revision": {
+      "targets": [
+        {
+          "column": 3,
+          "file": "src/segmented-placement.ts",
+          "hasBody": true,
+          "id": "src/segmented-placement.ts:7349:revision",
+          "kind": "MethodDeclaration",
+          "line": 177,
+          "name": "revision"
+        }
+      ],
+      "unresolvedTargets": [],
+      "witnesses": [
+        {
+          "target": {
+            "column": 3,
+            "file": "src/segmented-placement.ts",
+            "hasBody": true,
+            "id": "src/segmented-placement.ts:7349:revision",
+            "kind": "MethodDeclaration",
+            "line": 177,
+            "name": "revision"
+          },
+          "witness": {
+            "chain": [
+              {
+                "column": 1,
+                "file": "test/segmented-placement.test.ts",
+                "hasBody": true,
+                "id": "test-root:test/segmented-placement.test.ts",
+                "kind": "TestRoot",
+                "line": 1,
+                "name": "test/segmented-placement.test.ts"
+              },
+              {
+                "column": 55,
+                "file": "test/segmented-placement.test.ts",
+                "hasBody": true,
+                "id": "test/segmented-placement.test.ts:1705:<anonymous@48>",
+                "kind": "ArrowFunction",
+                "line": 48,
+                "name": "<anonymous@48>",
+                "reason": "external-callback-dispatch"
+              },
+              {
+                "column": 78,
+                "file": "test/segmented-placement.test.ts",
+                "hasBody": true,
+                "id": "test/segmented-placement.test.ts:1790:<anonymous@49>",
+                "kind": "ArrowFunction",
+                "line": 49,
+                "name": "<anonymous@49>",
+                "reason": "external-callback-dispatch"
+              },
+              {
+                "column": 3,
+                "file": "src/segmented-placement.ts",
+                "hasBody": true,
+                "id": "src/segmented-placement.ts:7349:revision",
+                "kind": "MethodDeclaration",
+                "line": 177,
+                "name": "revision",
+                "reason": "resolved-call"
+              }
+            ],
+            "test": "test/segmented-placement.test.ts"
+          }
+        }
+      ]
+    },
+    "class.storage.InMemoryInventorySegmentedPlacementStore.subtreeNodeIds": {
+      "targets": [
+        {
+          "column": 3,
+          "file": "src/segmented-placement.ts",
+          "hasBody": true,
+          "id": "src/segmented-placement.ts:8826:subtreeNodeIds",
+          "kind": "MethodDeclaration",
+          "line": 226,
+          "name": "subtreeNodeIds"
+        }
+      ],
+      "unresolvedTargets": [],
+      "witnesses": [
+        {
+          "target": {
+            "column": 3,
+            "file": "src/segmented-placement.ts",
+            "hasBody": true,
+            "id": "src/segmented-placement.ts:8826:subtreeNodeIds",
+            "kind": "MethodDeclaration",
+            "line": 226,
+            "name": "subtreeNodeIds"
+          },
+          "witness": {
+            "chain": [
+              {
+                "column": 1,
+                "file": "test/segmented-placement.test.ts",
+                "hasBody": true,
+                "id": "test-root:test/segmented-placement.test.ts",
+                "kind": "TestRoot",
+                "line": 1,
+                "name": "test/segmented-placement.test.ts"
+              },
+              {
+                "column": 55,
+                "file": "test/segmented-placement.test.ts",
+                "hasBody": true,
+                "id": "test/segmented-placement.test.ts:1705:<anonymous@48>",
+                "kind": "ArrowFunction",
+                "line": 48,
+                "name": "<anonymous@48>",
+                "reason": "external-callback-dispatch"
+              },
+              {
+                "column": 87,
+                "file": "test/segmented-placement.test.ts",
+                "hasBody": true,
+                "id": "test/segmented-placement.test.ts:3831:<anonymous@104>",
+                "kind": "ArrowFunction",
+                "line": 104,
+                "name": "<anonymous@104>",
+                "reason": "external-callback-dispatch"
+              },
+              {
+                "column": 3,
+                "file": "src/segmented-placement.ts",
+                "hasBody": true,
+                "id": "src/segmented-placement.ts:8826:subtreeNodeIds",
+                "kind": "MethodDeclaration",
+                "line": 226,
+                "name": "subtreeNodeIds",
+                "reason": "resolved-call"
+              }
+            ],
+            "test": "test/segmented-placement.test.ts"
+          }
+        }
+      ]
+    },
     "class.storage.InMemoryInventorySegmentedPositionStore.applyDelta": {
       "targets": [
         {
@@ -9213,52 +9781,32 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/catalog-publication.test.ts",
+                "file": "test/segmented-placement.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/catalog-publication.test.ts",
+                "id": "test-root:test/segmented-placement.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/catalog-publication.test.ts"
+                "name": "test/segmented-placement.test.ts"
               },
               {
-                "column": 56,
-                "file": "test/catalog-publication.test.ts",
+                "column": 55,
+                "file": "test/segmented-placement.test.ts",
                 "hasBody": true,
-                "id": "test/catalog-publication.test.ts:871:<anonymous@33>",
+                "id": "test/segmented-placement.test.ts:1705:<anonymous@48>",
                 "kind": "ArrowFunction",
-                "line": 33,
-                "name": "<anonymous@33>",
+                "line": 48,
+                "name": "<anonymous@48>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 96,
-                "file": "test/catalog-publication.test.ts",
+                "column": 86,
+                "file": "test/segmented-placement.test.ts",
                 "hasBody": true,
-                "id": "test/catalog-publication.test.ts:3468:<anonymous@106>",
+                "id": "test/segmented-placement.test.ts:5637:<anonymous@159>",
                 "kind": "ArrowFunction",
-                "line": 106,
-                "name": "<anonymous@106>",
+                "line": 159,
+                "name": "<anonymous@159>",
                 "reason": "external-callback-dispatch"
-              },
-              {
-                "column": 1,
-                "file": "src/projection.ts",
-                "hasBody": true,
-                "id": "src/projection.ts:54718:projectInventoryEvents",
-                "kind": "FunctionDeclaration",
-                "line": 1436,
-                "name": "projectInventoryEvents",
-                "reason": "resolved-call"
-              },
-              {
-                "column": 1,
-                "file": "src/projection.ts",
-                "hasBody": true,
-                "id": "src/projection.ts:14950:applyInventoryCommittedEventInternal",
-                "kind": "FunctionDeclaration",
-                "line": 361,
-                "name": "applyInventoryCommittedEventInternal",
-                "reason": "resolved-call"
               },
               {
                 "column": 1,
@@ -9271,7 +9819,7 @@
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/catalog-publication.test.ts"
+            "test": "test/segmented-placement.test.ts"
           }
         }
       ]
@@ -19631,51 +20179,41 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/review-hardening.test.ts",
+                "file": "test/segmented-placement.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/review-hardening.test.ts",
+                "id": "test-root:test/segmented-placement.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/review-hardening.test.ts"
+                "name": "test/segmented-placement.test.ts"
               },
               {
-                "column": 68,
-                "file": "test/review-hardening.test.ts",
+                "column": 55,
+                "file": "test/segmented-placement.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:59818:<anonymous@1546>",
+                "id": "test/segmented-placement.test.ts:1705:<anonymous@48>",
                 "kind": "ArrowFunction",
-                "line": 1546,
-                "name": "<anonymous@1546>",
+                "line": 48,
+                "name": "<anonymous@48>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 109,
-                "file": "test/review-hardening.test.ts",
+                "column": 87,
+                "file": "test/segmented-placement.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:59934:<anonymous@1547>",
+                "id": "test/segmented-placement.test.ts:3831:<anonymous@104>",
                 "kind": "ArrowFunction",
-                "line": 1547,
-                "name": "<anonymous@1547>",
+                "line": 104,
+                "name": "<anonymous@104>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 1,
-                "file": "src/events.ts",
+                "column": 3,
+                "file": "src/segmented-placement.ts",
                 "hasBody": true,
-                "id": "src/events.ts:16555:defineInventoryEvent",
-                "kind": "FunctionDeclaration",
-                "line": 347,
-                "name": "defineInventoryEvent",
-                "reason": "resolved-call"
-              },
-              {
-                "column": 1,
-                "file": "src/events.ts",
-                "hasBody": true,
-                "id": "src/events.ts:51067:normalizePlacementChanges",
-                "kind": "FunctionDeclaration",
-                "line": 1324,
-                "name": "normalizePlacementChanges",
+                "id": "src/segmented-placement.ts:9636:applyChange",
+                "kind": "MethodDeclaration",
+                "line": 250,
+                "name": "applyChange",
                 "reason": "resolved-call"
               },
               {
@@ -19689,7 +20227,7 @@
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/review-hardening.test.ts"
+            "test": "test/segmented-placement.test.ts"
           }
         }
       ]
@@ -31313,6 +31851,87 @@
         }
       ]
     },
+    "entrypoint.storage.InMemoryInventorySegmentedPlacementStore": {
+      "targets": [
+        {
+          "column": 3,
+          "file": "src/segmented-placement.ts",
+          "hasBody": true,
+          "id": "src/segmented-placement.ts:5121:InMemoryInventorySegmentedPlacementStore",
+          "kind": "Constructor",
+          "line": 116,
+          "name": "InMemoryInventorySegmentedPlacementStore"
+        }
+      ],
+      "unresolvedTargets": [],
+      "witnesses": [
+        {
+          "target": {
+            "column": 3,
+            "file": "src/segmented-placement.ts",
+            "hasBody": true,
+            "id": "src/segmented-placement.ts:5121:InMemoryInventorySegmentedPlacementStore",
+            "kind": "Constructor",
+            "line": 116,
+            "name": "InMemoryInventorySegmentedPlacementStore"
+          },
+          "witness": {
+            "chain": [
+              {
+                "column": 1,
+                "file": "test/segmented-placement.test.ts",
+                "hasBody": true,
+                "id": "test-root:test/segmented-placement.test.ts",
+                "kind": "TestRoot",
+                "line": 1,
+                "name": "test/segmented-placement.test.ts"
+              },
+              {
+                "column": 55,
+                "file": "test/segmented-placement.test.ts",
+                "hasBody": true,
+                "id": "test/segmented-placement.test.ts:1705:<anonymous@48>",
+                "kind": "ArrowFunction",
+                "line": 48,
+                "name": "<anonymous@48>",
+                "reason": "external-callback-dispatch"
+              },
+              {
+                "column": 78,
+                "file": "test/segmented-placement.test.ts",
+                "hasBody": true,
+                "id": "test/segmented-placement.test.ts:1790:<anonymous@49>",
+                "kind": "ArrowFunction",
+                "line": 49,
+                "name": "<anonymous@49>",
+                "reason": "external-callback-dispatch"
+              },
+              {
+                "column": 1,
+                "file": "src/segmented-placement.ts",
+                "hasBody": true,
+                "id": "src/segmented-placement.ts:15544:createInMemoryInventorySegmentedPlacementStore",
+                "kind": "FunctionDeclaration",
+                "line": 431,
+                "name": "createInMemoryInventorySegmentedPlacementStore",
+                "reason": "resolved-call"
+              },
+              {
+                "column": 3,
+                "file": "src/segmented-placement.ts",
+                "hasBody": true,
+                "id": "src/segmented-placement.ts:5121:InMemoryInventorySegmentedPlacementStore",
+                "kind": "Constructor",
+                "line": 116,
+                "name": "InMemoryInventorySegmentedPlacementStore",
+                "reason": "resolved-call"
+              }
+            ],
+            "test": "test/segmented-placement.test.ts"
+          }
+        }
+      ]
+    },
     "entrypoint.storage.InMemoryInventorySegmentedPositionStore": {
       "targets": [
         {
@@ -31521,6 +32140,87 @@
               }
             ],
             "test": "test/containers.test.ts"
+          }
+        }
+      ]
+    },
+    "entrypoint.storage.InventoryPlacementSegmentRevisionConflictError": {
+      "targets": [
+        {
+          "column": 3,
+          "file": "src/segmented-placement.ts",
+          "hasBody": true,
+          "id": "src/segmented-placement.ts:3977:InventoryPlacementSegmentRevisionConflictError",
+          "kind": "Constructor",
+          "line": 90,
+          "name": "InventoryPlacementSegmentRevisionConflictError"
+        }
+      ],
+      "unresolvedTargets": [],
+      "witnesses": [
+        {
+          "target": {
+            "column": 3,
+            "file": "src/segmented-placement.ts",
+            "hasBody": true,
+            "id": "src/segmented-placement.ts:3977:InventoryPlacementSegmentRevisionConflictError",
+            "kind": "Constructor",
+            "line": 90,
+            "name": "InventoryPlacementSegmentRevisionConflictError"
+          },
+          "witness": {
+            "chain": [
+              {
+                "column": 1,
+                "file": "test/segmented-placement.test.ts",
+                "hasBody": true,
+                "id": "test-root:test/segmented-placement.test.ts",
+                "kind": "TestRoot",
+                "line": 1,
+                "name": "test/segmented-placement.test.ts"
+              },
+              {
+                "column": 55,
+                "file": "test/segmented-placement.test.ts",
+                "hasBody": true,
+                "id": "test/segmented-placement.test.ts:1705:<anonymous@48>",
+                "kind": "ArrowFunction",
+                "line": 48,
+                "name": "<anonymous@48>",
+                "reason": "external-callback-dispatch"
+              },
+              {
+                "column": 87,
+                "file": "test/segmented-placement.test.ts",
+                "hasBody": true,
+                "id": "test/segmented-placement.test.ts:3831:<anonymous@104>",
+                "kind": "ArrowFunction",
+                "line": 104,
+                "name": "<anonymous@104>",
+                "reason": "external-callback-dispatch"
+              },
+              {
+                "column": 3,
+                "file": "src/segmented-placement.ts",
+                "hasBody": true,
+                "id": "src/segmented-placement.ts:9636:applyChange",
+                "kind": "MethodDeclaration",
+                "line": 250,
+                "name": "applyChange",
+                "reason": "resolved-call"
+              },
+              {
+                "column": 3,
+                "file": "src/segmented-placement.ts",
+                "hasBody": true,
+                "id": "src/segmented-placement.ts:3977:InventoryPlacementSegmentRevisionConflictError",
+                "kind": "Constructor",
+                "line": 90,
+                "name": "InventoryPlacementSegmentRevisionConflictError",
+                "reason": "resolved-call"
+              }
+            ],
+            "test": "test/segmented-placement.test.ts"
           }
         }
       ]
@@ -32168,6 +32868,77 @@
               }
             ],
             "test": "test/segmented-journal.test.ts"
+          }
+        }
+      ]
+    },
+    "entrypoint.storage.createInMemoryInventorySegmentedPlacementStore": {
+      "targets": [
+        {
+          "column": 1,
+          "file": "src/segmented-placement.ts",
+          "hasBody": true,
+          "id": "src/segmented-placement.ts:15544:createInMemoryInventorySegmentedPlacementStore",
+          "kind": "FunctionDeclaration",
+          "line": 431,
+          "name": "createInMemoryInventorySegmentedPlacementStore"
+        }
+      ],
+      "unresolvedTargets": [],
+      "witnesses": [
+        {
+          "target": {
+            "column": 1,
+            "file": "src/segmented-placement.ts",
+            "hasBody": true,
+            "id": "src/segmented-placement.ts:15544:createInMemoryInventorySegmentedPlacementStore",
+            "kind": "FunctionDeclaration",
+            "line": 431,
+            "name": "createInMemoryInventorySegmentedPlacementStore"
+          },
+          "witness": {
+            "chain": [
+              {
+                "column": 1,
+                "file": "test/segmented-placement.test.ts",
+                "hasBody": true,
+                "id": "test-root:test/segmented-placement.test.ts",
+                "kind": "TestRoot",
+                "line": 1,
+                "name": "test/segmented-placement.test.ts"
+              },
+              {
+                "column": 55,
+                "file": "test/segmented-placement.test.ts",
+                "hasBody": true,
+                "id": "test/segmented-placement.test.ts:1705:<anonymous@48>",
+                "kind": "ArrowFunction",
+                "line": 48,
+                "name": "<anonymous@48>",
+                "reason": "external-callback-dispatch"
+              },
+              {
+                "column": 78,
+                "file": "test/segmented-placement.test.ts",
+                "hasBody": true,
+                "id": "test/segmented-placement.test.ts:1790:<anonymous@49>",
+                "kind": "ArrowFunction",
+                "line": 49,
+                "name": "<anonymous@49>",
+                "reason": "external-callback-dispatch"
+              },
+              {
+                "column": 1,
+                "file": "src/segmented-placement.ts",
+                "hasBody": true,
+                "id": "src/segmented-placement.ts:15544:createInMemoryInventorySegmentedPlacementStore",
+                "kind": "FunctionDeclaration",
+                "line": 431,
+                "name": "createInMemoryInventorySegmentedPlacementStore",
+                "reason": "resolved-call"
+              }
+            ],
+            "test": "test/segmented-placement.test.ts"
           }
         }
       ]
@@ -33456,41 +34227,31 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/formal-storage-refinement.test.ts",
+                "file": "test/warehouse-state-scalability.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/formal-storage-refinement.test.ts",
+                "id": "test-root:test/warehouse-state-scalability.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/formal-storage-refinement.test.ts"
+                "name": "test/warehouse-state-scalability.test.ts"
               },
               {
-                "column": 1,
-                "file": "test/formal-storage-refinement-suite.ts",
+                "column": 67,
+                "file": "test/warehouse-state-scalability.test.ts",
                 "hasBody": true,
-                "id": "test/formal-storage-refinement-suite.ts:12400:runInventoryFormalStorageRefinementSuite",
-                "kind": "FunctionDeclaration",
-                "line": 395,
-                "name": "runInventoryFormalStorageRefinementSuite",
-                "reason": "resolved-call"
-              },
-              {
-                "column": 59,
-                "file": "test/formal-storage-refinement-suite.ts",
-                "hasBody": true,
-                "id": "test/formal-storage-refinement-suite.ts:12594:<anonymous@399>",
+                "id": "test/warehouse-state-scalability.test.ts:8263:<anonymous@184>",
                 "kind": "ArrowFunction",
-                "line": 399,
-                "name": "<anonymous@399>",
+                "line": 184,
+                "name": "<anonymous@184>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 60,
-                "file": "test/formal-storage-refinement-suite.ts",
+                "column": 97,
+                "file": "test/warehouse-state-scalability.test.ts",
                 "hasBody": true,
-                "id": "test/formal-storage-refinement-suite.ts:20329:<anonymous@616>",
+                "id": "test/warehouse-state-scalability.test.ts:12336:<anonymous@277>",
                 "kind": "ArrowFunction",
-                "line": 616,
-                "name": "<anonymous@616>",
+                "line": 277,
+                "name": "<anonymous@277>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -33504,7 +34265,7 @@
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/formal-storage-refinement.test.ts"
+            "test": "test/warehouse-state-scalability.test.ts"
           }
         }
       ]
@@ -45891,5 +46652,5 @@
     }
   },
   "schemaVersion": 1,
-  "surfaceSha256": "d489624fbfb9f033cc4c1e28ada24989bae348920c209f11a295de5f2797cb2e"
+  "surfaceSha256": "b2bab82390f2561a7849a1d1636fada8ff630d5257418625c53d2cee7a443960"
 }

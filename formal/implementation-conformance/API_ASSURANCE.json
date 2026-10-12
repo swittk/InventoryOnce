@@ -1,25 +1,25 @@
 {
   "counts": {
     "authorityMethods": 14,
-    "callAndConstructSignatures": 570,
-    "classMethods": 94,
-    "compilerCallGraphCallables": 3206,
-    "compilerCallGraphEdges": 8412,
-    "compilerCallGraphTestRoots": 53,
+    "callAndConstructSignatures": 581,
+    "classMethods": 102,
+    "compilerCallGraphCallables": 3267,
+    "compilerCallGraphEdges": 8535,
+    "compilerCallGraphTestRoots": 54,
     "compilerCallGraphUnresolvedApis": 0,
-    "compilerCallGraphWitnessedApis": 570,
-    "directExecutableApis": 235,
+    "compilerCallGraphWitnessedApis": 581,
+    "directExecutableApis": 245,
     "explicitGapApis": 4,
     "facadeMethods": 130,
-    "indirectCallChainApis": 331,
+    "indirectCallChainApis": 332,
     "kernelCallables": 169,
     "maximumTypeDepth": 12,
     "migrationCallables": 15,
-    "reachableFields": 2566,
-    "reachableTypes": 420,
+    "reachableFields": 2589,
+    "reachableTypes": 425,
     "recursiveTypeReferences": 3,
     "rootCallables": 100,
-    "storageCallables": 31,
+    "storageCallables": 34,
     "storageMethods": 17,
     "truncatedTypes": 0,
     "unreferencedPublicApis": 0
@@ -1601,6 +1601,10 @@
         {
           "occurrences": 1,
           "path": "src/reservations.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/segmented-placement.ts"
         },
         {
           "occurrences": 6,
@@ -6893,6 +6897,10 @@
           "path": "src/reservations.ts"
         },
         {
+          "occurrences": 1,
+          "path": "src/segmented-placement.ts"
+        },
+        {
           "occurrences": 6,
           "path": "src/segmented-state.ts"
         }
@@ -11666,6 +11674,10 @@
         },
         {
           "occurrences": 1,
+          "path": "src/segmented-placement.ts"
+        },
+        {
+          "occurrences": 1,
           "path": "src/segmented-state.ts"
         },
         {
@@ -14222,6 +14234,10 @@
         },
         {
           "occurrences": 2,
+          "path": "src/segmented-placement.ts"
+        },
+        {
+          "occurrences": 2,
           "path": "src/segmented-state.ts"
         }
       ],
@@ -15273,6 +15289,10 @@
           "path": "src/segmented-journal.ts"
         },
         {
+          "occurrences": 3,
+          "path": "src/segmented-placement.ts"
+        },
+        {
           "occurrences": 4,
           "path": "src/segmented-state.ts"
         }
@@ -15462,6 +15482,1422 @@
               }
             ],
             "result": "readonly number[]"
+          }
+        ]
+      },
+      "stateProjection": [
+        "abstractInventoryState",
+        "abstractReservationState",
+        "abstractCountState",
+        "abstractOperationResult"
+      ],
+      "status": "covered"
+    },
+    "class.storage.InMemoryInventorySegmentedPlacementStore.ancestry": {
+      "adapterCoverage": [
+        "memory",
+        "generic-all-operation-failpoints",
+        "generic-all-migration-failpoints"
+      ],
+      "callChainWitnesses": [
+        {
+          "chain": [
+            {
+              "column": 1,
+              "file": "test/segmented-placement.test.ts",
+              "hasBody": true,
+              "id": "test-root:test/segmented-placement.test.ts",
+              "kind": "TestRoot",
+              "line": 1,
+              "name": "test/segmented-placement.test.ts"
+            },
+            {
+              "column": 55,
+              "file": "test/segmented-placement.test.ts",
+              "hasBody": true,
+              "id": "test/segmented-placement.test.ts:1705:<anonymous@48>",
+              "kind": "ArrowFunction",
+              "line": 48,
+              "name": "<anonymous@48>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 87,
+              "file": "test/segmented-placement.test.ts",
+              "hasBody": true,
+              "id": "test/segmented-placement.test.ts:3831:<anonymous@104>",
+              "kind": "ArrowFunction",
+              "line": 104,
+              "name": "<anonymous@104>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 3,
+              "file": "src/segmented-placement.ts",
+              "hasBody": true,
+              "id": "src/segmented-placement.ts:8237:ancestry",
+              "kind": "MethodDeclaration",
+              "line": 208,
+              "name": "ancestry",
+              "reason": "resolved-call"
+            }
+          ],
+          "target": {
+            "column": 3,
+            "file": "src/segmented-placement.ts",
+            "hasBody": true,
+            "id": "src/segmented-placement.ts:8237:ancestry",
+            "kind": "MethodDeclaration",
+            "line": 208,
+            "name": "ancestry"
+          },
+          "test": "test/segmented-placement.test.ts"
+        }
+      ],
+      "directExecutableEntrypoints": [
+        "test/segmented-placement.test.ts"
+      ],
+      "directExecutableEvidence": [
+        "test/segmented-placement.test.ts"
+      ],
+      "evidenceMode": "direct-executable",
+      "executableEvidence": [
+        "test/formal-storage-refinement.test.ts",
+        "test/storage-conformance.test.ts"
+      ],
+      "family": "durable-protocol",
+      "gaps": [
+        "GAP-DB-IMPLEMENTATION-UNBOUNDED",
+        "GAP-PRODUCTION-STORAGE-SCALE-GC",
+        "GAP-HASH-COLLISION-ASSUMPTION"
+      ],
+      "implementationTargets": [
+        {
+          "column": 3,
+          "file": "src/segmented-placement.ts",
+          "hasBody": true,
+          "id": "src/segmented-placement.ts:8237:ancestry",
+          "kind": "MethodDeclaration",
+          "line": 208,
+          "name": "ancestry"
+        }
+      ],
+      "inputMapping": "Base revision/root, intent fingerprint, complete next-world plan, component roots, operation ID, and failpoint stage map to applying/published/completed/aborted protocol state.",
+      "internalReferences": [
+        {
+          "occurrences": 2,
+          "path": "src/availability.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/commands.ts"
+        },
+        {
+          "occurrences": 2,
+          "path": "src/facade.ts"
+        },
+        {
+          "occurrences": 2,
+          "path": "src/fungibility.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/index.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/integrity.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/kernel.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/picking.ts"
+        },
+        {
+          "occurrences": 3,
+          "path": "src/placement.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/projection.ts"
+        },
+        {
+          "occurrences": 2,
+          "path": "src/reservations.ts"
+        },
+        {
+          "occurrences": 3,
+          "path": "src/segmented-placement.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/segmented-state.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/selectors.ts"
+        },
+        {
+          "occurrences": 5,
+          "path": "src/sparse-record.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/traceability-replay.ts"
+        },
+        {
+          "occurrences": 4,
+          "path": "src/traceability.ts"
+        }
+      ],
+      "invariants": [
+        "FrozenIntentNeverChanges",
+        "ApplyingHasCompletePlan",
+        "PartialWritesStayInvisible",
+        "PublishedWorldMatchesFrozenPlan",
+        "PlanRetainedOnlyWhileApplying",
+        "PublishedWorldCannotAbort",
+        "ApplyingEventuallyTerminates",
+        "PartialWritesRefineToStuttering",
+        "PublishedRetainsAllDispositions",
+        "DispositionGeneratesNoPhysicalEvent"
+      ],
+      "models": [
+        "InventoryOperation",
+        "PublishedHeadCAS",
+        "RepairLiveness",
+        "DurableTransferRefinement",
+        "SnapshotSupersededWorkflow"
+      ],
+      "rejectionRelation": "Concurrent applying owner, root mismatch, missing/corrupt component, publish-after-abort, or abort-after-publication rejects.",
+      "resultMapping": "Storage observations map to invisible staged state, exact published world, compact replay receipt, terminal abort, or repair outcome.",
+      "retryRelation": "Exact begin/complete retry returns frozen plan/receipt; changed fingerprint or stale base rejects.",
+      "signature": {
+        "className": "InMemoryInventorySegmentedPlacementStore",
+        "declaration": "src/segmented-placement.ts",
+        "key": "storage.InMemoryInventorySegmentedPlacementStore.ancestry",
+        "method": "ancestry",
+        "parameters": [
+          {
+            "name": "nodeId",
+            "optional": false,
+            "type": "string"
+          }
+        ],
+        "result": "readonly string[]",
+        "signatures": [
+          {
+            "parameters": [
+              {
+                "name": "nodeId",
+                "optional": false,
+                "type": "string"
+              }
+            ],
+            "result": "readonly string[]"
+          }
+        ]
+      },
+      "stateProjection": [
+        "abstractInventoryState",
+        "abstractReservationState",
+        "abstractCountState",
+        "abstractOperationResult"
+      ],
+      "status": "covered"
+    },
+    "class.storage.InMemoryInventorySegmentedPlacementStore.applyChange": {
+      "adapterCoverage": [
+        "memory",
+        "generic-all-operation-failpoints",
+        "generic-all-migration-failpoints"
+      ],
+      "callChainWitnesses": [
+        {
+          "chain": [
+            {
+              "column": 1,
+              "file": "test/segmented-placement.test.ts",
+              "hasBody": true,
+              "id": "test-root:test/segmented-placement.test.ts",
+              "kind": "TestRoot",
+              "line": 1,
+              "name": "test/segmented-placement.test.ts"
+            },
+            {
+              "column": 55,
+              "file": "test/segmented-placement.test.ts",
+              "hasBody": true,
+              "id": "test/segmented-placement.test.ts:1705:<anonymous@48>",
+              "kind": "ArrowFunction",
+              "line": 48,
+              "name": "<anonymous@48>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 87,
+              "file": "test/segmented-placement.test.ts",
+              "hasBody": true,
+              "id": "test/segmented-placement.test.ts:3831:<anonymous@104>",
+              "kind": "ArrowFunction",
+              "line": 104,
+              "name": "<anonymous@104>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 3,
+              "file": "src/segmented-placement.ts",
+              "hasBody": true,
+              "id": "src/segmented-placement.ts:9636:applyChange",
+              "kind": "MethodDeclaration",
+              "line": 250,
+              "name": "applyChange",
+              "reason": "resolved-call"
+            }
+          ],
+          "target": {
+            "column": 3,
+            "file": "src/segmented-placement.ts",
+            "hasBody": true,
+            "id": "src/segmented-placement.ts:9636:applyChange",
+            "kind": "MethodDeclaration",
+            "line": 250,
+            "name": "applyChange"
+          },
+          "test": "test/segmented-placement.test.ts"
+        }
+      ],
+      "directExecutableEntrypoints": [
+        "test/segmented-placement.test.ts"
+      ],
+      "directExecutableEvidence": [
+        "test/segmented-placement.test.ts"
+      ],
+      "evidenceMode": "direct-executable",
+      "executableEvidence": [
+        "test/formal-storage-refinement.test.ts",
+        "test/storage-conformance.test.ts"
+      ],
+      "family": "durable-protocol",
+      "gaps": [
+        "GAP-DB-IMPLEMENTATION-UNBOUNDED",
+        "GAP-PRODUCTION-STORAGE-SCALE-GC",
+        "GAP-HASH-COLLISION-ASSUMPTION"
+      ],
+      "implementationTargets": [
+        {
+          "column": 3,
+          "file": "src/segmented-placement.ts",
+          "hasBody": true,
+          "id": "src/segmented-placement.ts:9636:applyChange",
+          "kind": "MethodDeclaration",
+          "line": 250,
+          "name": "applyChange"
+        }
+      ],
+      "inputMapping": "Base revision/root, intent fingerprint, complete next-world plan, component roots, operation ID, and failpoint stage map to applying/published/completed/aborted protocol state.",
+      "internalReferences": [
+        {
+          "occurrences": 2,
+          "path": "src/segmented-placement.ts"
+        }
+      ],
+      "invariants": [
+        "FrozenIntentNeverChanges",
+        "ApplyingHasCompletePlan",
+        "PartialWritesStayInvisible",
+        "PublishedWorldMatchesFrozenPlan",
+        "PlanRetainedOnlyWhileApplying",
+        "PublishedWorldCannotAbort",
+        "ApplyingEventuallyTerminates",
+        "PartialWritesRefineToStuttering",
+        "PublishedRetainsAllDispositions",
+        "DispositionGeneratesNoPhysicalEvent"
+      ],
+      "models": [
+        "InventoryOperation",
+        "PublishedHeadCAS",
+        "RepairLiveness",
+        "DurableTransferRefinement",
+        "SnapshotSupersededWorkflow"
+      ],
+      "rejectionRelation": "Concurrent applying owner, root mismatch, missing/corrupt component, publish-after-abort, or abort-after-publication rejects.",
+      "resultMapping": "Storage observations map to invisible staged state, exact published world, compact replay receipt, terminal abort, or repair outcome.",
+      "retryRelation": "Exact begin/complete retry returns frozen plan/receipt; changed fingerprint or stale base rejects.",
+      "signature": {
+        "className": "InMemoryInventorySegmentedPlacementStore",
+        "declaration": "src/segmented-placement.ts",
+        "key": "storage.InMemoryInventorySegmentedPlacementStore.applyChange",
+        "method": "applyChange",
+        "parameters": [
+          {
+            "name": "input",
+            "optional": false,
+            "type": "ApplyInventorySegmentedPlacementChangeInput"
+          }
+        ],
+        "result": "ApplyInventorySegmentedPlacementChangeResult",
+        "signatures": [
+          {
+            "parameters": [
+              {
+                "name": "input",
+                "optional": false,
+                "type": "ApplyInventorySegmentedPlacementChangeInput"
+              }
+            ],
+            "result": "ApplyInventorySegmentedPlacementChangeResult"
+          }
+        ]
+      },
+      "stateProjection": [
+        "abstractInventoryState",
+        "abstractReservationState",
+        "abstractCountState",
+        "abstractOperationResult"
+      ],
+      "status": "covered"
+    },
+    "class.storage.InMemoryInventorySegmentedPlacementStore.childNodeIds": {
+      "adapterCoverage": [
+        "memory",
+        "generic-all-operation-failpoints",
+        "generic-all-migration-failpoints"
+      ],
+      "callChainWitnesses": [
+        {
+          "chain": [
+            {
+              "column": 1,
+              "file": "test/segmented-placement.test.ts",
+              "hasBody": true,
+              "id": "test-root:test/segmented-placement.test.ts",
+              "kind": "TestRoot",
+              "line": 1,
+              "name": "test/segmented-placement.test.ts"
+            },
+            {
+              "column": 55,
+              "file": "test/segmented-placement.test.ts",
+              "hasBody": true,
+              "id": "test/segmented-placement.test.ts:1705:<anonymous@48>",
+              "kind": "ArrowFunction",
+              "line": 48,
+              "name": "<anonymous@48>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 78,
+              "file": "test/segmented-placement.test.ts",
+              "hasBody": true,
+              "id": "test/segmented-placement.test.ts:1790:<anonymous@49>",
+              "kind": "ArrowFunction",
+              "line": 49,
+              "name": "<anonymous@49>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 3,
+              "file": "src/segmented-placement.ts",
+              "hasBody": true,
+              "id": "src/segmented-placement.ts:8003:childNodeIds",
+              "kind": "MethodDeclaration",
+              "line": 199,
+              "name": "childNodeIds",
+              "reason": "resolved-call"
+            }
+          ],
+          "target": {
+            "column": 3,
+            "file": "src/segmented-placement.ts",
+            "hasBody": true,
+            "id": "src/segmented-placement.ts:8003:childNodeIds",
+            "kind": "MethodDeclaration",
+            "line": 199,
+            "name": "childNodeIds"
+          },
+          "test": "test/segmented-placement.test.ts"
+        }
+      ],
+      "directExecutableEntrypoints": [
+        "test/segmented-placement.test.ts"
+      ],
+      "directExecutableEvidence": [
+        "test/segmented-placement.test.ts"
+      ],
+      "evidenceMode": "direct-executable",
+      "executableEvidence": [
+        "test/formal-storage-refinement.test.ts",
+        "test/storage-conformance.test.ts"
+      ],
+      "family": "durable-protocol",
+      "gaps": [
+        "GAP-DB-IMPLEMENTATION-UNBOUNDED",
+        "GAP-PRODUCTION-STORAGE-SCALE-GC",
+        "GAP-HASH-COLLISION-ASSUMPTION"
+      ],
+      "implementationTargets": [
+        {
+          "column": 3,
+          "file": "src/segmented-placement.ts",
+          "hasBody": true,
+          "id": "src/segmented-placement.ts:8003:childNodeIds",
+          "kind": "MethodDeclaration",
+          "line": 199,
+          "name": "childNodeIds"
+        }
+      ],
+      "inputMapping": "Base revision/root, intent fingerprint, complete next-world plan, component roots, operation ID, and failpoint stage map to applying/published/completed/aborted protocol state.",
+      "internalReferences": [
+        {
+          "occurrences": 4,
+          "path": "src/facade.ts"
+        },
+        {
+          "occurrences": 3,
+          "path": "src/placement.ts"
+        },
+        {
+          "occurrences": 2,
+          "path": "src/projection.ts"
+        },
+        {
+          "occurrences": 4,
+          "path": "src/segmented-placement.ts"
+        }
+      ],
+      "invariants": [
+        "FrozenIntentNeverChanges",
+        "ApplyingHasCompletePlan",
+        "PartialWritesStayInvisible",
+        "PublishedWorldMatchesFrozenPlan",
+        "PlanRetainedOnlyWhileApplying",
+        "PublishedWorldCannotAbort",
+        "ApplyingEventuallyTerminates",
+        "PartialWritesRefineToStuttering",
+        "PublishedRetainsAllDispositions",
+        "DispositionGeneratesNoPhysicalEvent"
+      ],
+      "models": [
+        "InventoryOperation",
+        "PublishedHeadCAS",
+        "RepairLiveness",
+        "DurableTransferRefinement",
+        "SnapshotSupersededWorkflow"
+      ],
+      "rejectionRelation": "Concurrent applying owner, root mismatch, missing/corrupt component, publish-after-abort, or abort-after-publication rejects.",
+      "resultMapping": "Storage observations map to invisible staged state, exact published world, compact replay receipt, terminal abort, or repair outcome.",
+      "retryRelation": "Exact begin/complete retry returns frozen plan/receipt; changed fingerprint or stale base rejects.",
+      "signature": {
+        "className": "InMemoryInventorySegmentedPlacementStore",
+        "declaration": "src/segmented-placement.ts",
+        "key": "storage.InMemoryInventorySegmentedPlacementStore.childNodeIds",
+        "method": "childNodeIds",
+        "parameters": [
+          {
+            "name": "nodeId",
+            "optional": false,
+            "type": "string"
+          }
+        ],
+        "result": "readonly string[]",
+        "signatures": [
+          {
+            "parameters": [
+              {
+                "name": "nodeId",
+                "optional": false,
+                "type": "string"
+              }
+            ],
+            "result": "readonly string[]"
+          }
+        ]
+      },
+      "stateProjection": [
+        "abstractInventoryState",
+        "abstractReservationState",
+        "abstractCountState",
+        "abstractOperationResult"
+      ],
+      "status": "covered"
+    },
+    "class.storage.InMemoryInventorySegmentedPlacementStore.contentRoot": {
+      "adapterCoverage": [
+        "memory",
+        "generic-all-operation-failpoints",
+        "generic-all-migration-failpoints"
+      ],
+      "callChainWitnesses": [
+        {
+          "chain": [
+            {
+              "column": 1,
+              "file": "test/segmented-placement.test.ts",
+              "hasBody": true,
+              "id": "test-root:test/segmented-placement.test.ts",
+              "kind": "TestRoot",
+              "line": 1,
+              "name": "test/segmented-placement.test.ts"
+            },
+            {
+              "column": 55,
+              "file": "test/segmented-placement.test.ts",
+              "hasBody": true,
+              "id": "test/segmented-placement.test.ts:1705:<anonymous@48>",
+              "kind": "ArrowFunction",
+              "line": 48,
+              "name": "<anonymous@48>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 87,
+              "file": "test/segmented-placement.test.ts",
+              "hasBody": true,
+              "id": "test/segmented-placement.test.ts:3831:<anonymous@104>",
+              "kind": "ArrowFunction",
+              "line": 104,
+              "name": "<anonymous@104>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 3,
+              "file": "src/segmented-placement.ts",
+              "hasBody": true,
+              "id": "src/segmented-placement.ts:7489:contentRoot",
+              "kind": "MethodDeclaration",
+              "line": 182,
+              "name": "contentRoot",
+              "reason": "resolved-call"
+            }
+          ],
+          "target": {
+            "column": 3,
+            "file": "src/segmented-placement.ts",
+            "hasBody": true,
+            "id": "src/segmented-placement.ts:7489:contentRoot",
+            "kind": "MethodDeclaration",
+            "line": 182,
+            "name": "contentRoot"
+          },
+          "test": "test/segmented-placement.test.ts"
+        }
+      ],
+      "directExecutableEntrypoints": [
+        "test/segmented-placement.test.ts"
+      ],
+      "directExecutableEvidence": [
+        "test/segmented-placement.test.ts"
+      ],
+      "evidenceMode": "direct-executable",
+      "executableEvidence": [
+        "test/formal-storage-refinement.test.ts",
+        "test/storage-conformance.test.ts"
+      ],
+      "family": "durable-protocol",
+      "gaps": [
+        "GAP-DB-IMPLEMENTATION-UNBOUNDED",
+        "GAP-PRODUCTION-STORAGE-SCALE-GC",
+        "GAP-HASH-COLLISION-ASSUMPTION"
+      ],
+      "implementationTargets": [
+        {
+          "column": 3,
+          "file": "src/segmented-placement.ts",
+          "hasBody": true,
+          "id": "src/segmented-placement.ts:7489:contentRoot",
+          "kind": "MethodDeclaration",
+          "line": 182,
+          "name": "contentRoot"
+        }
+      ],
+      "inputMapping": "Base revision/root, intent fingerprint, complete next-world plan, component roots, operation ID, and failpoint stage map to applying/published/completed/aborted protocol state.",
+      "internalReferences": [
+        {
+          "occurrences": 2,
+          "path": "src/segmented-journal.ts"
+        },
+        {
+          "occurrences": 2,
+          "path": "src/segmented-placement.ts"
+        },
+        {
+          "occurrences": 2,
+          "path": "src/segmented-state.ts"
+        }
+      ],
+      "invariants": [
+        "FrozenIntentNeverChanges",
+        "ApplyingHasCompletePlan",
+        "PartialWritesStayInvisible",
+        "PublishedWorldMatchesFrozenPlan",
+        "PlanRetainedOnlyWhileApplying",
+        "PublishedWorldCannotAbort",
+        "ApplyingEventuallyTerminates",
+        "PartialWritesRefineToStuttering",
+        "PublishedRetainsAllDispositions",
+        "DispositionGeneratesNoPhysicalEvent"
+      ],
+      "models": [
+        "InventoryOperation",
+        "PublishedHeadCAS",
+        "RepairLiveness",
+        "DurableTransferRefinement",
+        "SnapshotSupersededWorkflow"
+      ],
+      "rejectionRelation": "Concurrent applying owner, root mismatch, missing/corrupt component, publish-after-abort, or abort-after-publication rejects.",
+      "resultMapping": "Storage observations map to invisible staged state, exact published world, compact replay receipt, terminal abort, or repair outcome.",
+      "retryRelation": "Exact begin/complete retry returns frozen plan/receipt; changed fingerprint or stale base rejects.",
+      "signature": {
+        "className": "InMemoryInventorySegmentedPlacementStore",
+        "declaration": "src/segmented-placement.ts",
+        "key": "storage.InMemoryInventorySegmentedPlacementStore.contentRoot",
+        "method": "contentRoot",
+        "parameters": [],
+        "result": "string",
+        "signatures": [
+          {
+            "parameters": [],
+            "result": "string"
+          }
+        ]
+      },
+      "stateProjection": [
+        "abstractInventoryState",
+        "abstractReservationState",
+        "abstractCountState",
+        "abstractOperationResult"
+      ],
+      "status": "covered"
+    },
+    "class.storage.InMemoryInventorySegmentedPlacementStore.materialize": {
+      "adapterCoverage": [
+        "memory",
+        "generic-all-operation-failpoints",
+        "generic-all-migration-failpoints"
+      ],
+      "callChainWitnesses": [
+        {
+          "chain": [
+            {
+              "column": 1,
+              "file": "test/segmented-placement.test.ts",
+              "hasBody": true,
+              "id": "test-root:test/segmented-placement.test.ts",
+              "kind": "TestRoot",
+              "line": 1,
+              "name": "test/segmented-placement.test.ts"
+            },
+            {
+              "column": 55,
+              "file": "test/segmented-placement.test.ts",
+              "hasBody": true,
+              "id": "test/segmented-placement.test.ts:1705:<anonymous@48>",
+              "kind": "ArrowFunction",
+              "line": 48,
+              "name": "<anonymous@48>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 87,
+              "file": "test/segmented-placement.test.ts",
+              "hasBody": true,
+              "id": "test/segmented-placement.test.ts:3831:<anonymous@104>",
+              "kind": "ArrowFunction",
+              "line": 104,
+              "name": "<anonymous@104>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 3,
+              "file": "src/segmented-placement.ts",
+              "hasBody": true,
+              "id": "src/segmented-placement.ts:13266:materialize",
+              "kind": "MethodDeclaration",
+              "line": 362,
+              "name": "materialize",
+              "reason": "resolved-call"
+            }
+          ],
+          "target": {
+            "column": 3,
+            "file": "src/segmented-placement.ts",
+            "hasBody": true,
+            "id": "src/segmented-placement.ts:13266:materialize",
+            "kind": "MethodDeclaration",
+            "line": 362,
+            "name": "materialize"
+          },
+          "test": "test/segmented-placement.test.ts"
+        }
+      ],
+      "directExecutableEntrypoints": [
+        "test/segmented-placement.test.ts"
+      ],
+      "directExecutableEvidence": [
+        "test/segmented-placement.test.ts"
+      ],
+      "evidenceMode": "direct-executable",
+      "executableEvidence": [
+        "test/formal-storage-refinement.test.ts",
+        "test/storage-conformance.test.ts"
+      ],
+      "family": "durable-protocol",
+      "gaps": [
+        "GAP-DB-IMPLEMENTATION-UNBOUNDED",
+        "GAP-PRODUCTION-STORAGE-SCALE-GC",
+        "GAP-HASH-COLLISION-ASSUMPTION"
+      ],
+      "implementationTargets": [
+        {
+          "column": 3,
+          "file": "src/segmented-placement.ts",
+          "hasBody": true,
+          "id": "src/segmented-placement.ts:13266:materialize",
+          "kind": "MethodDeclaration",
+          "line": 362,
+          "name": "materialize"
+        }
+      ],
+      "inputMapping": "Base revision/root, intent fingerprint, complete next-world plan, component roots, operation ID, and failpoint stage map to applying/published/completed/aborted protocol state.",
+      "internalReferences": [
+        {
+          "occurrences": 1,
+          "path": "src/picking.ts"
+        },
+        {
+          "occurrences": 3,
+          "path": "src/segmented-journal.ts"
+        },
+        {
+          "occurrences": 3,
+          "path": "src/segmented-placement.ts"
+        },
+        {
+          "occurrences": 4,
+          "path": "src/segmented-state.ts"
+        }
+      ],
+      "invariants": [
+        "FrozenIntentNeverChanges",
+        "ApplyingHasCompletePlan",
+        "PartialWritesStayInvisible",
+        "PublishedWorldMatchesFrozenPlan",
+        "PlanRetainedOnlyWhileApplying",
+        "PublishedWorldCannotAbort",
+        "ApplyingEventuallyTerminates",
+        "PartialWritesRefineToStuttering",
+        "PublishedRetainsAllDispositions",
+        "DispositionGeneratesNoPhysicalEvent"
+      ],
+      "models": [
+        "InventoryOperation",
+        "PublishedHeadCAS",
+        "RepairLiveness",
+        "DurableTransferRefinement",
+        "SnapshotSupersededWorkflow"
+      ],
+      "rejectionRelation": "Concurrent applying owner, root mismatch, missing/corrupt component, publish-after-abort, or abort-after-publication rejects.",
+      "resultMapping": "Storage observations map to invisible staged state, exact published world, compact replay receipt, terminal abort, or repair outcome.",
+      "retryRelation": "Exact begin/complete retry returns frozen plan/receipt; changed fingerprint or stale base rejects.",
+      "signature": {
+        "className": "InMemoryInventorySegmentedPlacementStore",
+        "declaration": "src/segmented-placement.ts",
+        "key": "storage.InMemoryInventorySegmentedPlacementStore.materialize",
+        "method": "materialize",
+        "parameters": [],
+        "result": "InventoryPlacementState",
+        "signatures": [
+          {
+            "parameters": [],
+            "result": "InventoryPlacementState"
+          }
+        ]
+      },
+      "stateProjection": [
+        "abstractInventoryState",
+        "abstractReservationState",
+        "abstractCountState",
+        "abstractOperationResult"
+      ],
+      "status": "covered"
+    },
+    "class.storage.InMemoryInventorySegmentedPlacementStore.parentNodeId": {
+      "adapterCoverage": [
+        "memory",
+        "generic-all-operation-failpoints",
+        "generic-all-migration-failpoints"
+      ],
+      "callChainWitnesses": [
+        {
+          "chain": [
+            {
+              "column": 1,
+              "file": "test/segmented-placement.test.ts",
+              "hasBody": true,
+              "id": "test-root:test/segmented-placement.test.ts",
+              "kind": "TestRoot",
+              "line": 1,
+              "name": "test/segmented-placement.test.ts"
+            },
+            {
+              "column": 55,
+              "file": "test/segmented-placement.test.ts",
+              "hasBody": true,
+              "id": "test/segmented-placement.test.ts:1705:<anonymous@48>",
+              "kind": "ArrowFunction",
+              "line": 48,
+              "name": "<anonymous@48>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 78,
+              "file": "test/segmented-placement.test.ts",
+              "hasBody": true,
+              "id": "test/segmented-placement.test.ts:1790:<anonymous@49>",
+              "kind": "ArrowFunction",
+              "line": 49,
+              "name": "<anonymous@49>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 3,
+              "file": "src/segmented-placement.ts",
+              "hasBody": true,
+              "id": "src/segmented-placement.ts:7829:parentNodeId",
+              "kind": "MethodDeclaration",
+              "line": 194,
+              "name": "parentNodeId",
+              "reason": "resolved-call"
+            }
+          ],
+          "target": {
+            "column": 3,
+            "file": "src/segmented-placement.ts",
+            "hasBody": true,
+            "id": "src/segmented-placement.ts:7829:parentNodeId",
+            "kind": "MethodDeclaration",
+            "line": 194,
+            "name": "parentNodeId"
+          },
+          "test": "test/segmented-placement.test.ts"
+        }
+      ],
+      "directExecutableEntrypoints": [
+        "test/segmented-placement.test.ts"
+      ],
+      "directExecutableEvidence": [
+        "test/segmented-placement.test.ts"
+      ],
+      "evidenceMode": "direct-executable",
+      "executableEvidence": [
+        "test/formal-storage-refinement.test.ts",
+        "test/storage-conformance.test.ts"
+      ],
+      "family": "durable-protocol",
+      "gaps": [
+        "GAP-DB-IMPLEMENTATION-UNBOUNDED",
+        "GAP-PRODUCTION-STORAGE-SCALE-GC",
+        "GAP-HASH-COLLISION-ASSUMPTION"
+      ],
+      "implementationTargets": [
+        {
+          "column": 3,
+          "file": "src/segmented-placement.ts",
+          "hasBody": true,
+          "id": "src/segmented-placement.ts:7829:parentNodeId",
+          "kind": "MethodDeclaration",
+          "line": 194,
+          "name": "parentNodeId"
+        }
+      ],
+      "inputMapping": "Base revision/root, intent fingerprint, complete next-world plan, component roots, operation ID, and failpoint stage map to applying/published/completed/aborted protocol state.",
+      "internalReferences": [
+        {
+          "occurrences": 2,
+          "path": "src/corrections.ts"
+        },
+        {
+          "occurrences": 2,
+          "path": "src/facade.ts"
+        },
+        {
+          "occurrences": 18,
+          "path": "src/placement.ts"
+        },
+        {
+          "occurrences": 2,
+          "path": "src/projection.ts"
+        },
+        {
+          "occurrences": 23,
+          "path": "src/segmented-placement.ts"
+        }
+      ],
+      "invariants": [
+        "FrozenIntentNeverChanges",
+        "ApplyingHasCompletePlan",
+        "PartialWritesStayInvisible",
+        "PublishedWorldMatchesFrozenPlan",
+        "PlanRetainedOnlyWhileApplying",
+        "PublishedWorldCannotAbort",
+        "ApplyingEventuallyTerminates",
+        "PartialWritesRefineToStuttering",
+        "PublishedRetainsAllDispositions",
+        "DispositionGeneratesNoPhysicalEvent"
+      ],
+      "models": [
+        "InventoryOperation",
+        "PublishedHeadCAS",
+        "RepairLiveness",
+        "DurableTransferRefinement",
+        "SnapshotSupersededWorkflow"
+      ],
+      "rejectionRelation": "Concurrent applying owner, root mismatch, missing/corrupt component, publish-after-abort, or abort-after-publication rejects.",
+      "resultMapping": "Storage observations map to invisible staged state, exact published world, compact replay receipt, terminal abort, or repair outcome.",
+      "retryRelation": "Exact begin/complete retry returns frozen plan/receipt; changed fingerprint or stale base rejects.",
+      "signature": {
+        "className": "InMemoryInventorySegmentedPlacementStore",
+        "declaration": "src/segmented-placement.ts",
+        "key": "storage.InMemoryInventorySegmentedPlacementStore.parentNodeId",
+        "method": "parentNodeId",
+        "parameters": [
+          {
+            "name": "nodeId",
+            "optional": false,
+            "type": "string"
+          }
+        ],
+        "result": "string | undefined",
+        "signatures": [
+          {
+            "parameters": [
+              {
+                "name": "nodeId",
+                "optional": false,
+                "type": "string"
+              }
+            ],
+            "result": "string | undefined"
+          }
+        ]
+      },
+      "stateProjection": [
+        "abstractInventoryState",
+        "abstractReservationState",
+        "abstractCountState",
+        "abstractOperationResult"
+      ],
+      "status": "covered"
+    },
+    "class.storage.InMemoryInventorySegmentedPlacementStore.revision": {
+      "adapterCoverage": [
+        "memory",
+        "generic-all-operation-failpoints",
+        "generic-all-migration-failpoints"
+      ],
+      "callChainWitnesses": [
+        {
+          "chain": [
+            {
+              "column": 1,
+              "file": "test/segmented-placement.test.ts",
+              "hasBody": true,
+              "id": "test-root:test/segmented-placement.test.ts",
+              "kind": "TestRoot",
+              "line": 1,
+              "name": "test/segmented-placement.test.ts"
+            },
+            {
+              "column": 55,
+              "file": "test/segmented-placement.test.ts",
+              "hasBody": true,
+              "id": "test/segmented-placement.test.ts:1705:<anonymous@48>",
+              "kind": "ArrowFunction",
+              "line": 48,
+              "name": "<anonymous@48>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 78,
+              "file": "test/segmented-placement.test.ts",
+              "hasBody": true,
+              "id": "test/segmented-placement.test.ts:1790:<anonymous@49>",
+              "kind": "ArrowFunction",
+              "line": 49,
+              "name": "<anonymous@49>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 3,
+              "file": "src/segmented-placement.ts",
+              "hasBody": true,
+              "id": "src/segmented-placement.ts:7349:revision",
+              "kind": "MethodDeclaration",
+              "line": 177,
+              "name": "revision",
+              "reason": "resolved-call"
+            }
+          ],
+          "target": {
+            "column": 3,
+            "file": "src/segmented-placement.ts",
+            "hasBody": true,
+            "id": "src/segmented-placement.ts:7349:revision",
+            "kind": "MethodDeclaration",
+            "line": 177,
+            "name": "revision"
+          },
+          "test": "test/segmented-placement.test.ts"
+        }
+      ],
+      "directExecutableEntrypoints": [
+        "test/segmented-placement.test.ts"
+      ],
+      "directExecutableEvidence": [
+        "test/segmented-placement.test.ts"
+      ],
+      "evidenceMode": "direct-executable",
+      "executableEvidence": [
+        "test/formal-storage-refinement.test.ts",
+        "test/storage-conformance.test.ts"
+      ],
+      "family": "durable-protocol",
+      "gaps": [
+        "GAP-DB-IMPLEMENTATION-UNBOUNDED",
+        "GAP-PRODUCTION-STORAGE-SCALE-GC",
+        "GAP-HASH-COLLISION-ASSUMPTION"
+      ],
+      "implementationTargets": [
+        {
+          "column": 3,
+          "file": "src/segmented-placement.ts",
+          "hasBody": true,
+          "id": "src/segmented-placement.ts:7349:revision",
+          "kind": "MethodDeclaration",
+          "line": 177,
+          "name": "revision"
+        }
+      ],
+      "inputMapping": "Base revision/root, intent fingerprint, complete next-world plan, component roots, operation ID, and failpoint stage map to applying/published/completed/aborted protocol state.",
+      "internalReferences": [
+        {
+          "occurrences": 20,
+          "path": "src/amounts.ts"
+        },
+        {
+          "occurrences": 29,
+          "path": "src/authority-cutover.ts"
+        },
+        {
+          "occurrences": 83,
+          "path": "src/authority.ts"
+        },
+        {
+          "occurrences": 14,
+          "path": "src/availability.ts"
+        },
+        {
+          "occurrences": 47,
+          "path": "src/catalog-lifecycle.ts"
+        },
+        {
+          "occurrences": 278,
+          "path": "src/catalog.ts"
+        },
+        {
+          "occurrences": 13,
+          "path": "src/collections.ts"
+        },
+        {
+          "occurrences": 52,
+          "path": "src/commands.ts"
+        },
+        {
+          "occurrences": 4,
+          "path": "src/composition.ts"
+        },
+        {
+          "occurrences": 9,
+          "path": "src/coordinator.ts"
+        },
+        {
+          "occurrences": 5,
+          "path": "src/counts.ts"
+        },
+        {
+          "occurrences": 4,
+          "path": "src/deficits.ts"
+        },
+        {
+          "occurrences": 11,
+          "path": "src/events.ts"
+        },
+        {
+          "occurrences": 101,
+          "path": "src/facade.ts"
+        },
+        {
+          "occurrences": 16,
+          "path": "src/fungibility.ts"
+        },
+        {
+          "occurrences": 5,
+          "path": "src/index.ts"
+        },
+        {
+          "occurrences": 9,
+          "path": "src/integrity.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/kernel.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/measurement-schema.ts"
+        },
+        {
+          "occurrences": 21,
+          "path": "src/migrations.ts"
+        },
+        {
+          "occurrences": 4,
+          "path": "src/model.ts"
+        },
+        {
+          "occurrences": 28,
+          "path": "src/picking.ts"
+        },
+        {
+          "occurrences": 6,
+          "path": "src/projection.ts"
+        },
+        {
+          "occurrences": 10,
+          "path": "src/read-model.ts"
+        },
+        {
+          "occurrences": 11,
+          "path": "src/reservations.ts"
+        },
+        {
+          "occurrences": 21,
+          "path": "src/segmented-placement.ts"
+        },
+        {
+          "occurrences": 44,
+          "path": "src/segmented-state.ts"
+        },
+        {
+          "occurrences": 2,
+          "path": "src/selectors.ts"
+        },
+        {
+          "occurrences": 7,
+          "path": "src/sparse-record.ts"
+        },
+        {
+          "occurrences": 41,
+          "path": "src/storage.ts"
+        },
+        {
+          "occurrences": 13,
+          "path": "src/transfers.ts"
+        },
+        {
+          "occurrences": 6,
+          "path": "src/world.ts"
+        }
+      ],
+      "invariants": [
+        "FrozenIntentNeverChanges",
+        "ApplyingHasCompletePlan",
+        "PartialWritesStayInvisible",
+        "PublishedWorldMatchesFrozenPlan",
+        "PlanRetainedOnlyWhileApplying",
+        "PublishedWorldCannotAbort",
+        "ApplyingEventuallyTerminates",
+        "PartialWritesRefineToStuttering",
+        "PublishedRetainsAllDispositions",
+        "DispositionGeneratesNoPhysicalEvent"
+      ],
+      "models": [
+        "InventoryOperation",
+        "PublishedHeadCAS",
+        "RepairLiveness",
+        "DurableTransferRefinement",
+        "SnapshotSupersededWorkflow"
+      ],
+      "rejectionRelation": "Concurrent applying owner, root mismatch, missing/corrupt component, publish-after-abort, or abort-after-publication rejects.",
+      "resultMapping": "Storage observations map to invisible staged state, exact published world, compact replay receipt, terminal abort, or repair outcome.",
+      "retryRelation": "Exact begin/complete retry returns frozen plan/receipt; changed fingerprint or stale base rejects.",
+      "signature": {
+        "className": "InMemoryInventorySegmentedPlacementStore",
+        "declaration": "src/segmented-placement.ts",
+        "key": "storage.InMemoryInventorySegmentedPlacementStore.revision",
+        "method": "revision",
+        "parameters": [],
+        "result": "number",
+        "signatures": [
+          {
+            "parameters": [],
+            "result": "number"
+          }
+        ]
+      },
+      "stateProjection": [
+        "abstractInventoryState",
+        "abstractReservationState",
+        "abstractCountState",
+        "abstractOperationResult"
+      ],
+      "status": "covered"
+    },
+    "class.storage.InMemoryInventorySegmentedPlacementStore.subtreeNodeIds": {
+      "adapterCoverage": [
+        "memory",
+        "generic-all-operation-failpoints",
+        "generic-all-migration-failpoints"
+      ],
+      "callChainWitnesses": [
+        {
+          "chain": [
+            {
+              "column": 1,
+              "file": "test/segmented-placement.test.ts",
+              "hasBody": true,
+              "id": "test-root:test/segmented-placement.test.ts",
+              "kind": "TestRoot",
+              "line": 1,
+              "name": "test/segmented-placement.test.ts"
+            },
+            {
+              "column": 55,
+              "file": "test/segmented-placement.test.ts",
+              "hasBody": true,
+              "id": "test/segmented-placement.test.ts:1705:<anonymous@48>",
+              "kind": "ArrowFunction",
+              "line": 48,
+              "name": "<anonymous@48>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 87,
+              "file": "test/segmented-placement.test.ts",
+              "hasBody": true,
+              "id": "test/segmented-placement.test.ts:3831:<anonymous@104>",
+              "kind": "ArrowFunction",
+              "line": 104,
+              "name": "<anonymous@104>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 3,
+              "file": "src/segmented-placement.ts",
+              "hasBody": true,
+              "id": "src/segmented-placement.ts:8826:subtreeNodeIds",
+              "kind": "MethodDeclaration",
+              "line": 226,
+              "name": "subtreeNodeIds",
+              "reason": "resolved-call"
+            }
+          ],
+          "target": {
+            "column": 3,
+            "file": "src/segmented-placement.ts",
+            "hasBody": true,
+            "id": "src/segmented-placement.ts:8826:subtreeNodeIds",
+            "kind": "MethodDeclaration",
+            "line": 226,
+            "name": "subtreeNodeIds"
+          },
+          "test": "test/segmented-placement.test.ts"
+        }
+      ],
+      "directExecutableEntrypoints": [
+        "test/segmented-placement.test.ts"
+      ],
+      "directExecutableEvidence": [
+        "test/segmented-placement.test.ts"
+      ],
+      "evidenceMode": "direct-executable",
+      "executableEvidence": [
+        "test/formal-storage-refinement.test.ts",
+        "test/storage-conformance.test.ts"
+      ],
+      "family": "durable-protocol",
+      "gaps": [
+        "GAP-DB-IMPLEMENTATION-UNBOUNDED",
+        "GAP-PRODUCTION-STORAGE-SCALE-GC",
+        "GAP-HASH-COLLISION-ASSUMPTION"
+      ],
+      "implementationTargets": [
+        {
+          "column": 3,
+          "file": "src/segmented-placement.ts",
+          "hasBody": true,
+          "id": "src/segmented-placement.ts:8826:subtreeNodeIds",
+          "kind": "MethodDeclaration",
+          "line": 226,
+          "name": "subtreeNodeIds"
+        }
+      ],
+      "inputMapping": "Base revision/root, intent fingerprint, complete next-world plan, component roots, operation ID, and failpoint stage map to applying/published/completed/aborted protocol state.",
+      "internalReferences": [
+        {
+          "occurrences": 2,
+          "path": "src/segmented-placement.ts"
+        }
+      ],
+      "invariants": [
+        "FrozenIntentNeverChanges",
+        "ApplyingHasCompletePlan",
+        "PartialWritesStayInvisible",
+        "PublishedWorldMatchesFrozenPlan",
+        "PlanRetainedOnlyWhileApplying",
+        "PublishedWorldCannotAbort",
+        "ApplyingEventuallyTerminates",
+        "PartialWritesRefineToStuttering",
+        "PublishedRetainsAllDispositions",
+        "DispositionGeneratesNoPhysicalEvent"
+      ],
+      "models": [
+        "InventoryOperation",
+        "PublishedHeadCAS",
+        "RepairLiveness",
+        "DurableTransferRefinement",
+        "SnapshotSupersededWorkflow"
+      ],
+      "rejectionRelation": "Concurrent applying owner, root mismatch, missing/corrupt component, publish-after-abort, or abort-after-publication rejects.",
+      "resultMapping": "Storage observations map to invisible staged state, exact published world, compact replay receipt, terminal abort, or repair outcome.",
+      "retryRelation": "Exact begin/complete retry returns frozen plan/receipt; changed fingerprint or stale base rejects.",
+      "signature": {
+        "className": "InMemoryInventorySegmentedPlacementStore",
+        "declaration": "src/segmented-placement.ts",
+        "key": "storage.InMemoryInventorySegmentedPlacementStore.subtreeNodeIds",
+        "method": "subtreeNodeIds",
+        "parameters": [
+          {
+            "name": "nodeId",
+            "optional": false,
+            "type": "string"
+          }
+        ],
+        "result": "readonly string[]",
+        "signatures": [
+          {
+            "parameters": [
+              {
+                "name": "nodeId",
+                "optional": false,
+                "type": "string"
+              }
+            ],
+            "result": "readonly string[]"
           }
         ]
       },
@@ -15944,6 +17380,10 @@
         },
         {
           "occurrences": 2,
+          "path": "src/segmented-placement.ts"
+        },
+        {
+          "occurrences": 2,
           "path": "src/segmented-state.ts"
         }
       ],
@@ -16089,6 +17529,10 @@
         {
           "occurrences": 3,
           "path": "src/segmented-journal.ts"
+        },
+        {
+          "occurrences": 3,
+          "path": "src/segmented-placement.ts"
         },
         {
           "occurrences": 4,
@@ -17577,6 +19021,10 @@
           "path": "src/reservations.ts"
         },
         {
+          "occurrences": 21,
+          "path": "src/segmented-placement.ts"
+        },
+        {
           "occurrences": 44,
           "path": "src/segmented-state.ts"
         },
@@ -18952,52 +20400,32 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/catalog-publication.test.ts",
+              "file": "test/segmented-placement.test.ts",
               "hasBody": true,
-              "id": "test-root:test/catalog-publication.test.ts",
+              "id": "test-root:test/segmented-placement.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/catalog-publication.test.ts"
+              "name": "test/segmented-placement.test.ts"
             },
             {
-              "column": 56,
-              "file": "test/catalog-publication.test.ts",
+              "column": 55,
+              "file": "test/segmented-placement.test.ts",
               "hasBody": true,
-              "id": "test/catalog-publication.test.ts:871:<anonymous@33>",
+              "id": "test/segmented-placement.test.ts:1705:<anonymous@48>",
               "kind": "ArrowFunction",
-              "line": 33,
-              "name": "<anonymous@33>",
+              "line": 48,
+              "name": "<anonymous@48>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 96,
-              "file": "test/catalog-publication.test.ts",
+              "column": 86,
+              "file": "test/segmented-placement.test.ts",
               "hasBody": true,
-              "id": "test/catalog-publication.test.ts:3468:<anonymous@106>",
+              "id": "test/segmented-placement.test.ts:5637:<anonymous@159>",
               "kind": "ArrowFunction",
-              "line": 106,
-              "name": "<anonymous@106>",
+              "line": 159,
+              "name": "<anonymous@159>",
               "reason": "external-callback-dispatch"
-            },
-            {
-              "column": 1,
-              "file": "src/projection.ts",
-              "hasBody": true,
-              "id": "src/projection.ts:54718:projectInventoryEvents",
-              "kind": "FunctionDeclaration",
-              "line": 1436,
-              "name": "projectInventoryEvents",
-              "reason": "resolved-call"
-            },
-            {
-              "column": 1,
-              "file": "src/projection.ts",
-              "hasBody": true,
-              "id": "src/projection.ts:14950:applyInventoryCommittedEventInternal",
-              "kind": "FunctionDeclaration",
-              "line": 361,
-              "name": "applyInventoryCommittedEventInternal",
-              "reason": "resolved-call"
             },
             {
               "column": 1,
@@ -19019,12 +20447,16 @@
             "line": 101,
             "name": "applyInventoryPlacementChanges"
           },
-          "test": "test/catalog-publication.test.ts"
+          "test": "test/segmented-placement.test.ts"
         }
       ],
-      "directExecutableEntrypoints": [],
-      "directExecutableEvidence": [],
-      "evidenceMode": "indirect-call-chain",
+      "directExecutableEntrypoints": [
+        "test/segmented-placement.test.ts"
+      ],
+      "directExecutableEvidence": [
+        "test/segmented-placement.test.ts"
+      ],
+      "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/containers.test.ts",
@@ -31949,6 +33381,10 @@
         },
         {
           "occurrences": 4,
+          "path": "src/segmented-placement.ts"
+        },
+        {
+          "occurrences": 4,
           "path": "src/segmented-state.ts"
         },
         {
@@ -38353,51 +39789,41 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/review-hardening.test.ts",
+              "file": "test/segmented-placement.test.ts",
               "hasBody": true,
-              "id": "test-root:test/review-hardening.test.ts",
+              "id": "test-root:test/segmented-placement.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/review-hardening.test.ts"
+              "name": "test/segmented-placement.test.ts"
             },
             {
-              "column": 68,
-              "file": "test/review-hardening.test.ts",
+              "column": 55,
+              "file": "test/segmented-placement.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:59818:<anonymous@1546>",
+              "id": "test/segmented-placement.test.ts:1705:<anonymous@48>",
               "kind": "ArrowFunction",
-              "line": 1546,
-              "name": "<anonymous@1546>",
+              "line": 48,
+              "name": "<anonymous@48>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 109,
-              "file": "test/review-hardening.test.ts",
+              "column": 87,
+              "file": "test/segmented-placement.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:59934:<anonymous@1547>",
+              "id": "test/segmented-placement.test.ts:3831:<anonymous@104>",
               "kind": "ArrowFunction",
-              "line": 1547,
-              "name": "<anonymous@1547>",
+              "line": 104,
+              "name": "<anonymous@104>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 1,
-              "file": "src/events.ts",
+              "column": 3,
+              "file": "src/segmented-placement.ts",
               "hasBody": true,
-              "id": "src/events.ts:16555:defineInventoryEvent",
-              "kind": "FunctionDeclaration",
-              "line": 347,
-              "name": "defineInventoryEvent",
-              "reason": "resolved-call"
-            },
-            {
-              "column": 1,
-              "file": "src/events.ts",
-              "hasBody": true,
-              "id": "src/events.ts:51067:normalizePlacementChanges",
-              "kind": "FunctionDeclaration",
-              "line": 1324,
-              "name": "normalizePlacementChanges",
+              "id": "src/segmented-placement.ts:9636:applyChange",
+              "kind": "MethodDeclaration",
+              "line": 250,
+              "name": "applyChange",
               "reason": "resolved-call"
             },
             {
@@ -38420,7 +39846,7 @@
             "line": 67,
             "name": "normalizeInventoryPlacementChange"
           },
-          "test": "test/review-hardening.test.ts"
+          "test": "test/segmented-placement.test.ts"
         }
       ],
       "directExecutableEntrypoints": [],
@@ -38455,6 +39881,10 @@
         {
           "occurrences": 2,
           "path": "src/placement.ts"
+        },
+        {
+          "occurrences": 2,
+          "path": "src/segmented-placement.ts"
         }
       ],
       "invariants": [
@@ -60631,6 +62061,157 @@
       ],
       "status": "covered"
     },
+    "entrypoint.storage.InMemoryInventorySegmentedPlacementStore": {
+      "adapterCoverage": [
+        "memory",
+        "generic-all-operation-failpoints",
+        "generic-all-migration-failpoints"
+      ],
+      "callChainWitnesses": [
+        {
+          "chain": [
+            {
+              "column": 1,
+              "file": "test/segmented-placement.test.ts",
+              "hasBody": true,
+              "id": "test-root:test/segmented-placement.test.ts",
+              "kind": "TestRoot",
+              "line": 1,
+              "name": "test/segmented-placement.test.ts"
+            },
+            {
+              "column": 55,
+              "file": "test/segmented-placement.test.ts",
+              "hasBody": true,
+              "id": "test/segmented-placement.test.ts:1705:<anonymous@48>",
+              "kind": "ArrowFunction",
+              "line": 48,
+              "name": "<anonymous@48>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 78,
+              "file": "test/segmented-placement.test.ts",
+              "hasBody": true,
+              "id": "test/segmented-placement.test.ts:1790:<anonymous@49>",
+              "kind": "ArrowFunction",
+              "line": 49,
+              "name": "<anonymous@49>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 1,
+              "file": "src/segmented-placement.ts",
+              "hasBody": true,
+              "id": "src/segmented-placement.ts:15544:createInMemoryInventorySegmentedPlacementStore",
+              "kind": "FunctionDeclaration",
+              "line": 431,
+              "name": "createInMemoryInventorySegmentedPlacementStore",
+              "reason": "resolved-call"
+            },
+            {
+              "column": 3,
+              "file": "src/segmented-placement.ts",
+              "hasBody": true,
+              "id": "src/segmented-placement.ts:5121:InMemoryInventorySegmentedPlacementStore",
+              "kind": "Constructor",
+              "line": 116,
+              "name": "InMemoryInventorySegmentedPlacementStore",
+              "reason": "resolved-call"
+            }
+          ],
+          "target": {
+            "column": 3,
+            "file": "src/segmented-placement.ts",
+            "hasBody": true,
+            "id": "src/segmented-placement.ts:5121:InMemoryInventorySegmentedPlacementStore",
+            "kind": "Constructor",
+            "line": 116,
+            "name": "InMemoryInventorySegmentedPlacementStore"
+          },
+          "test": "test/segmented-placement.test.ts"
+        }
+      ],
+      "directExecutableEntrypoints": [],
+      "directExecutableEvidence": [],
+      "evidenceMode": "indirect-call-chain",
+      "executableEvidence": [
+        "test/formal-storage-refinement.test.ts",
+        "test/storage-conformance.test.ts"
+      ],
+      "family": "durable-protocol",
+      "gaps": [
+        "GAP-DB-IMPLEMENTATION-UNBOUNDED",
+        "GAP-PRODUCTION-STORAGE-SCALE-GC",
+        "GAP-HASH-COLLISION-ASSUMPTION"
+      ],
+      "implementationTargets": [
+        {
+          "column": 3,
+          "file": "src/segmented-placement.ts",
+          "hasBody": true,
+          "id": "src/segmented-placement.ts:5121:InMemoryInventorySegmentedPlacementStore",
+          "kind": "Constructor",
+          "line": 116,
+          "name": "InMemoryInventorySegmentedPlacementStore"
+        }
+      ],
+      "inputMapping": "Base revision/root, intent fingerprint, complete next-world plan, component roots, operation ID, and failpoint stage map to applying/published/completed/aborted protocol state.",
+      "internalReferences": [
+        {
+          "occurrences": 3,
+          "path": "src/segmented-placement.ts"
+        }
+      ],
+      "invariants": [
+        "FrozenIntentNeverChanges",
+        "ApplyingHasCompletePlan",
+        "PartialWritesStayInvisible",
+        "PublishedWorldMatchesFrozenPlan",
+        "PlanRetainedOnlyWhileApplying",
+        "PublishedWorldCannotAbort",
+        "ApplyingEventuallyTerminates",
+        "PartialWritesRefineToStuttering",
+        "PublishedRetainsAllDispositions",
+        "DispositionGeneratesNoPhysicalEvent"
+      ],
+      "models": [
+        "InventoryOperation",
+        "PublishedHeadCAS",
+        "RepairLiveness",
+        "DurableTransferRefinement",
+        "SnapshotSupersededWorkflow"
+      ],
+      "rejectionRelation": "Concurrent applying owner, root mismatch, missing/corrupt component, publish-after-abort, or abort-after-publication rejects.",
+      "resultMapping": "Storage observations map to invisible staged state, exact published world, compact replay receipt, terminal abort, or repair outcome.",
+      "retryRelation": "Exact begin/complete retry returns frozen plan/receipt; changed fingerprint or stale base rejects.",
+      "signature": {
+        "callSignatures": [],
+        "callable": false,
+        "constructSignatures": [
+          {
+            "parameters": [
+              {
+                "name": "input",
+                "optional": false,
+                "type": "CreateInMemoryInventorySegmentedPlacementStoreInput"
+              }
+            ],
+            "result": "InMemoryInventorySegmentedPlacementStore"
+          }
+        ],
+        "constructable": true,
+        "declaration": "src/segmented-placement.ts",
+        "name": "InMemoryInventorySegmentedPlacementStore"
+      },
+      "stateProjection": [
+        "abstractInventoryState",
+        "abstractReservationState",
+        "abstractCountState",
+        "abstractOperationResult"
+      ],
+      "status": "covered"
+    },
     "entrypoint.storage.InMemoryInventorySegmentedPositionStore": {
       "adapterCoverage": [
         "memory",
@@ -60982,6 +62563,162 @@
         "constructable": true,
         "declaration": "src/storage.ts",
         "name": "InventoryApplyingOperationConflictError"
+      },
+      "stateProjection": [
+        "abstractInventoryState",
+        "abstractReservationState",
+        "abstractCountState",
+        "abstractOperationResult"
+      ],
+      "status": "covered"
+    },
+    "entrypoint.storage.InventoryPlacementSegmentRevisionConflictError": {
+      "adapterCoverage": [
+        "memory",
+        "generic-all-operation-failpoints",
+        "generic-all-migration-failpoints"
+      ],
+      "callChainWitnesses": [
+        {
+          "chain": [
+            {
+              "column": 1,
+              "file": "test/segmented-placement.test.ts",
+              "hasBody": true,
+              "id": "test-root:test/segmented-placement.test.ts",
+              "kind": "TestRoot",
+              "line": 1,
+              "name": "test/segmented-placement.test.ts"
+            },
+            {
+              "column": 55,
+              "file": "test/segmented-placement.test.ts",
+              "hasBody": true,
+              "id": "test/segmented-placement.test.ts:1705:<anonymous@48>",
+              "kind": "ArrowFunction",
+              "line": 48,
+              "name": "<anonymous@48>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 87,
+              "file": "test/segmented-placement.test.ts",
+              "hasBody": true,
+              "id": "test/segmented-placement.test.ts:3831:<anonymous@104>",
+              "kind": "ArrowFunction",
+              "line": 104,
+              "name": "<anonymous@104>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 3,
+              "file": "src/segmented-placement.ts",
+              "hasBody": true,
+              "id": "src/segmented-placement.ts:9636:applyChange",
+              "kind": "MethodDeclaration",
+              "line": 250,
+              "name": "applyChange",
+              "reason": "resolved-call"
+            },
+            {
+              "column": 3,
+              "file": "src/segmented-placement.ts",
+              "hasBody": true,
+              "id": "src/segmented-placement.ts:3977:InventoryPlacementSegmentRevisionConflictError",
+              "kind": "Constructor",
+              "line": 90,
+              "name": "InventoryPlacementSegmentRevisionConflictError",
+              "reason": "resolved-call"
+            }
+          ],
+          "target": {
+            "column": 3,
+            "file": "src/segmented-placement.ts",
+            "hasBody": true,
+            "id": "src/segmented-placement.ts:3977:InventoryPlacementSegmentRevisionConflictError",
+            "kind": "Constructor",
+            "line": 90,
+            "name": "InventoryPlacementSegmentRevisionConflictError"
+          },
+          "test": "test/segmented-placement.test.ts"
+        }
+      ],
+      "directExecutableEntrypoints": [],
+      "directExecutableEvidence": [],
+      "evidenceMode": "indirect-call-chain",
+      "executableEvidence": [
+        "test/formal-storage-refinement.test.ts",
+        "test/storage-conformance.test.ts"
+      ],
+      "family": "durable-protocol",
+      "gaps": [
+        "GAP-DB-IMPLEMENTATION-UNBOUNDED",
+        "GAP-PRODUCTION-STORAGE-SCALE-GC",
+        "GAP-HASH-COLLISION-ASSUMPTION"
+      ],
+      "implementationTargets": [
+        {
+          "column": 3,
+          "file": "src/segmented-placement.ts",
+          "hasBody": true,
+          "id": "src/segmented-placement.ts:3977:InventoryPlacementSegmentRevisionConflictError",
+          "kind": "Constructor",
+          "line": 90,
+          "name": "InventoryPlacementSegmentRevisionConflictError"
+        }
+      ],
+      "inputMapping": "Base revision/root, intent fingerprint, complete next-world plan, component roots, operation ID, and failpoint stage map to applying/published/completed/aborted protocol state.",
+      "internalReferences": [
+        {
+          "occurrences": 3,
+          "path": "src/segmented-placement.ts"
+        }
+      ],
+      "invariants": [
+        "FrozenIntentNeverChanges",
+        "ApplyingHasCompletePlan",
+        "PartialWritesStayInvisible",
+        "PublishedWorldMatchesFrozenPlan",
+        "PlanRetainedOnlyWhileApplying",
+        "PublishedWorldCannotAbort",
+        "ApplyingEventuallyTerminates",
+        "PartialWritesRefineToStuttering",
+        "PublishedRetainsAllDispositions",
+        "DispositionGeneratesNoPhysicalEvent"
+      ],
+      "models": [
+        "InventoryOperation",
+        "PublishedHeadCAS",
+        "RepairLiveness",
+        "DurableTransferRefinement",
+        "SnapshotSupersededWorkflow"
+      ],
+      "rejectionRelation": "Concurrent applying owner, root mismatch, missing/corrupt component, publish-after-abort, or abort-after-publication rejects.",
+      "resultMapping": "Storage observations map to invisible staged state, exact published world, compact replay receipt, terminal abort, or repair outcome.",
+      "retryRelation": "Exact begin/complete retry returns frozen plan/receipt; changed fingerprint or stale base rejects.",
+      "signature": {
+        "callSignatures": [],
+        "callable": false,
+        "constructSignatures": [
+          {
+            "parameters": [
+              {
+                "name": "expectedRevision",
+                "optional": false,
+                "type": "number"
+              },
+              {
+                "name": "actualRevision",
+                "optional": false,
+                "type": "number"
+              }
+            ],
+            "result": "InventoryPlacementSegmentRevisionConflictError"
+          }
+        ],
+        "constructable": true,
+        "declaration": "src/segmented-placement.ts",
+        "name": "InventoryPlacementSegmentRevisionConflictError"
       },
       "stateProjection": [
         "abstractInventoryState",
@@ -62127,6 +63864,146 @@
         "constructable": false,
         "declaration": "src/segmented-journal.ts",
         "name": "createInMemoryInventorySegmentedEventJournal"
+      },
+      "stateProjection": [
+        "abstractInventoryState",
+        "abstractReservationState",
+        "abstractCountState",
+        "abstractOperationResult"
+      ],
+      "status": "covered"
+    },
+    "entrypoint.storage.createInMemoryInventorySegmentedPlacementStore": {
+      "adapterCoverage": [
+        "memory",
+        "generic-all-operation-failpoints",
+        "generic-all-migration-failpoints"
+      ],
+      "callChainWitnesses": [
+        {
+          "chain": [
+            {
+              "column": 1,
+              "file": "test/segmented-placement.test.ts",
+              "hasBody": true,
+              "id": "test-root:test/segmented-placement.test.ts",
+              "kind": "TestRoot",
+              "line": 1,
+              "name": "test/segmented-placement.test.ts"
+            },
+            {
+              "column": 55,
+              "file": "test/segmented-placement.test.ts",
+              "hasBody": true,
+              "id": "test/segmented-placement.test.ts:1705:<anonymous@48>",
+              "kind": "ArrowFunction",
+              "line": 48,
+              "name": "<anonymous@48>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 78,
+              "file": "test/segmented-placement.test.ts",
+              "hasBody": true,
+              "id": "test/segmented-placement.test.ts:1790:<anonymous@49>",
+              "kind": "ArrowFunction",
+              "line": 49,
+              "name": "<anonymous@49>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 1,
+              "file": "src/segmented-placement.ts",
+              "hasBody": true,
+              "id": "src/segmented-placement.ts:15544:createInMemoryInventorySegmentedPlacementStore",
+              "kind": "FunctionDeclaration",
+              "line": 431,
+              "name": "createInMemoryInventorySegmentedPlacementStore",
+              "reason": "resolved-call"
+            }
+          ],
+          "target": {
+            "column": 1,
+            "file": "src/segmented-placement.ts",
+            "hasBody": true,
+            "id": "src/segmented-placement.ts:15544:createInMemoryInventorySegmentedPlacementStore",
+            "kind": "FunctionDeclaration",
+            "line": 431,
+            "name": "createInMemoryInventorySegmentedPlacementStore"
+          },
+          "test": "test/segmented-placement.test.ts"
+        }
+      ],
+      "directExecutableEntrypoints": [
+        "test/segmented-placement.test.ts"
+      ],
+      "directExecutableEvidence": [
+        "test/segmented-placement.test.ts"
+      ],
+      "evidenceMode": "direct-executable",
+      "executableEvidence": [
+        "test/formal-storage-refinement.test.ts",
+        "test/storage-conformance.test.ts"
+      ],
+      "family": "durable-protocol",
+      "gaps": [
+        "GAP-DB-IMPLEMENTATION-UNBOUNDED",
+        "GAP-PRODUCTION-STORAGE-SCALE-GC",
+        "GAP-HASH-COLLISION-ASSUMPTION"
+      ],
+      "implementationTargets": [
+        {
+          "column": 1,
+          "file": "src/segmented-placement.ts",
+          "hasBody": true,
+          "id": "src/segmented-placement.ts:15544:createInMemoryInventorySegmentedPlacementStore",
+          "kind": "FunctionDeclaration",
+          "line": 431,
+          "name": "createInMemoryInventorySegmentedPlacementStore"
+        }
+      ],
+      "inputMapping": "Base revision/root, intent fingerprint, complete next-world plan, component roots, operation ID, and failpoint stage map to applying/published/completed/aborted protocol state.",
+      "internalReferences": [],
+      "invariants": [
+        "FrozenIntentNeverChanges",
+        "ApplyingHasCompletePlan",
+        "PartialWritesStayInvisible",
+        "PublishedWorldMatchesFrozenPlan",
+        "PlanRetainedOnlyWhileApplying",
+        "PublishedWorldCannotAbort",
+        "ApplyingEventuallyTerminates",
+        "PartialWritesRefineToStuttering",
+        "PublishedRetainsAllDispositions",
+        "DispositionGeneratesNoPhysicalEvent"
+      ],
+      "models": [
+        "InventoryOperation",
+        "PublishedHeadCAS",
+        "RepairLiveness",
+        "DurableTransferRefinement",
+        "SnapshotSupersededWorkflow"
+      ],
+      "rejectionRelation": "Concurrent applying owner, root mismatch, missing/corrupt component, publish-after-abort, or abort-after-publication rejects.",
+      "resultMapping": "Storage observations map to invisible staged state, exact published world, compact replay receipt, terminal abort, or repair outcome.",
+      "retryRelation": "Exact begin/complete retry returns frozen plan/receipt; changed fingerprint or stale base rejects.",
+      "signature": {
+        "callSignatures": [
+          {
+            "parameters": [
+              {
+                "name": "input",
+                "optional": false,
+                "type": "CreateInMemoryInventorySegmentedPlacementStoreInput"
+              }
+            ],
+            "result": "InMemoryInventorySegmentedPlacementStore"
+          }
+        ],
+        "callable": true,
+        "constructSignatures": [],
+        "constructable": false,
+        "declaration": "src/segmented-placement.ts",
+        "name": "createInMemoryInventorySegmentedPlacementStore"
       },
       "stateProjection": [
         "abstractInventoryState",
@@ -64460,41 +66337,31 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/formal-storage-refinement.test.ts",
+              "file": "test/warehouse-state-scalability.test.ts",
               "hasBody": true,
-              "id": "test-root:test/formal-storage-refinement.test.ts",
+              "id": "test-root:test/warehouse-state-scalability.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/formal-storage-refinement.test.ts"
+              "name": "test/warehouse-state-scalability.test.ts"
             },
             {
-              "column": 1,
-              "file": "test/formal-storage-refinement-suite.ts",
+              "column": 67,
+              "file": "test/warehouse-state-scalability.test.ts",
               "hasBody": true,
-              "id": "test/formal-storage-refinement-suite.ts:12400:runInventoryFormalStorageRefinementSuite",
-              "kind": "FunctionDeclaration",
-              "line": 395,
-              "name": "runInventoryFormalStorageRefinementSuite",
-              "reason": "resolved-call"
-            },
-            {
-              "column": 59,
-              "file": "test/formal-storage-refinement-suite.ts",
-              "hasBody": true,
-              "id": "test/formal-storage-refinement-suite.ts:12594:<anonymous@399>",
+              "id": "test/warehouse-state-scalability.test.ts:8263:<anonymous@184>",
               "kind": "ArrowFunction",
-              "line": 399,
-              "name": "<anonymous@399>",
+              "line": 184,
+              "name": "<anonymous@184>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 60,
-              "file": "test/formal-storage-refinement-suite.ts",
+              "column": 97,
+              "file": "test/warehouse-state-scalability.test.ts",
               "hasBody": true,
-              "id": "test/formal-storage-refinement-suite.ts:20329:<anonymous@616>",
+              "id": "test/warehouse-state-scalability.test.ts:12336:<anonymous@277>",
               "kind": "ArrowFunction",
-              "line": 616,
-              "name": "<anonymous@616>",
+              "line": 277,
+              "name": "<anonymous@277>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -64517,14 +66384,14 @@
             "line": 693,
             "name": "repairInventoryDurableOperations"
           },
-          "test": "test/formal-storage-refinement.test.ts"
+          "test": "test/warehouse-state-scalability.test.ts"
         }
       ],
       "directExecutableEntrypoints": [
-        "test/formal-storage-refinement.test.ts"
+        "test/warehouse-state-scalability.test.ts"
       ],
       "directExecutableEvidence": [
-        "test/formal-storage-refinement-suite.ts"
+        "test/warehouse-state-scalability.test.ts"
       ],
       "evidenceMode": "direct-executable",
       "executableEvidence": [
@@ -69126,6 +70993,10 @@
         {
           "occurrences": 1,
           "path": "src/read-model.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/segmented-placement.ts"
         }
       ],
       "invariants": [
@@ -69727,6 +71598,10 @@
         {
           "occurrences": 1,
           "path": "src/read-model.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/segmented-placement.ts"
         }
       ],
       "invariants": [
@@ -70192,6 +72067,10 @@
           "path": "src/projection.ts"
         },
         {
+          "occurrences": 3,
+          "path": "src/segmented-placement.ts"
+        },
+        {
           "occurrences": 1,
           "path": "src/transfers.ts"
         }
@@ -70641,6 +72520,10 @@
         {
           "occurrences": 2,
           "path": "src/facade.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/segmented-placement.ts"
         }
       ],
       "invariants": [
@@ -81156,6 +83039,10 @@
         {
           "occurrences": 1,
           "path": "src/read-model.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/segmented-placement.ts"
         }
       ],
       "invariants": [
@@ -87885,6 +89772,10 @@
         },
         {
           "occurrences": 1,
+          "path": "src/segmented-placement.ts"
+        },
+        {
+          "occurrences": 1,
           "path": "src/segmented-state.ts"
         },
         {
@@ -91390,5 +93281,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "d489624fbfb9f033cc4c1e28ada24989bae348920c209f11a295de5f2797cb2e"
+  "surfaceSha256": "b2bab82390f2561a7849a1d1636fada8ff630d5257418625c53d2cee7a443960"
 }

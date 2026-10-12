@@ -1589,3 +1589,11 @@ The R105 portable-current-input authority and final publication both continue to
 - Storage now maintains private per-item protection sets refreshed at initialization, completed canonical publication, and migration publication. Only active reservations and started/observed counts protect their item; terminal histories do not. All event stock-effect item identities are checked, so a mixed A+B transfer still falls back and fails atomically if B's placement-bound claim would be violated.
 - No public InventoryOnce semantic/model/storage contract changed. Existing stable `readWorld` materialization and replay semantics preserved; hot segmented stock events never scan unrelated archived claim/count rows.
 - Focused evidence: two unrelated-item regressions, two terminal-lifecycle regressions, existing segmented/storage/refinement tests, 246/246 green; strict source/test TypeScript and diff check green. Full production conformance must be regenerated on this exact final source revision before release.
+
+## 2026-10-12 — Warehouse segmented hot-state clean union integration
+
+- Integrated the already-certified item-scoped active claim/count gates, bulk-transfer builder single-validation path, linear-time segmented placement-forest constructor with rejected-cycle authenticated-root rollback, and warehouse publication/repair QA into separate `feat/segmented-final-integration` worktree. Certified rescue source/test bytes were compared to original concurrent copies; original owner files not modified.
+- Added the public storage adapter entrypoint re-export for `segmented-placement` and tested import through `storage-api`; ordinary InventoryOnce application API unchanged.
+- Combined focused QA: 22/22 green across segmented placement, warehouse failpoint/snapshot, item-scope active/terminal lifecycle, and seeded segmented-vs-legacy differential tests.
+- Regenerated combined compiler-based implementation assurance: 581/581 callable APIs witnessed, 2589 fields classified, 0 unresolved. Clean integration branch differs by 31 paths from segmented pass base `695af0b`; embodiment is a prior stacked branch and retains its own review limit.
+- Full exact-commit certification and promotion to authoritative segmented branch follow after generating the final manifest on this exact tree. No Codex or subagents.
