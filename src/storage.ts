@@ -46,6 +46,8 @@ import {
   type InventorySegmentedStockEventCommitCapability,
 } from "./segmented-state.js";
 import { inventoryStockPositionIdentity } from "./model.js";
+import { InventoryReservationStatus } from "./reservations.js";
+import { InventoryCountStatus } from "./counts.js";
 import {
   cloneInventorySparseRecord,
   inventoryObjectIsKnownDeeplyImmutable,
@@ -523,6 +525,10 @@ export class InMemoryInventoryDurableStorage
     string,
     InventoryMigrationManifest
   >();
+  /** Items with retained reservation scopes requiring canonical claim-feasibility validation. */
+  private protectedReservationItemIds = new Set<string>();
+  /** Items with retained physical-count scopes requiring canonical count semantics. */
+  private protectedCountItemIds = new Set<string>();
   /** Optional deterministic failure injector. */
   private readonly failpoint: InventoryStorageFailpoint | undefined;
   /** Serializes reference-adapter mutations so concurrent callers cannot overwrite stale state. */
@@ -545,6 +551,7 @@ export class InMemoryInventoryDurableStorage
     this.eventJournal = createInMemoryInventorySegmentedEventJournal({
       events: Object.values(this.world.projection.events),
     });
+    this.refreshProtectedItemScopes(this.world);
     this.failpoint = input.failpoint;
   }
 
@@ -769,6 +776,7 @@ export class InMemoryInventoryDurableStorage
       this.eventJournal = createInMemoryInventorySegmentedEventJournal({
         events: Object.values(publishedWorld.projection.events),
       });
+      this.refreshProtectedItemScopes(publishedWorld);
       this.storeMigrationManifest(migrationId, published);
       await this.fire(
         InventoryStorageWriteStage.MigrationPublishWorld,
@@ -1177,6 +1185,7 @@ export class InMemoryInventoryDurableStorage
         this.eventJournal.append(plan.event);
       }
       this.world = publishedWorld;
+      this.refreshProtectedItemScopes(publishedWorld);
       this.storeOperation(operationId, { value: publishedValue });
       await this.fire(
         InventoryStorageWriteStage.PublishWorld,
@@ -1437,11 +1446,39 @@ export class InMemoryInventoryDurableStorage
     if (event.catalogDigest !== undefined || event.catalogSnapshot !== undefined) {
       return false;
     }
-    if (Object.keys(this.world.reservations.reservations).length !== 0) {
-      return false;
+    // Reservation and count semantics are scoped by item. One unrelated item's
+    // claim/count must not force an independent warehouse item through full-world
+    // planning. Conservative same-item fallback remains unchanged.
+    for (const effect of event.stockEffects) {
+      if (
+        this.protectedReservationItemIds.has(effect.position.itemId) ||
+        this.protectedCountItemIds.has(effect.position.itemId)
+      ) {
+        return false;
+      }
     }
-    if (Object.keys(this.world.counts.counts).length !== 0) return false;
     return true;
+  }
+
+  /** Rebuild only the item-scope fences when canonical claim/count books publish. */
+  private refreshProtectedItemScopes(world: InventoryWorldState): void {
+    const reservationItemIds = new Set<string>();
+    for (const reservation of Object.values(world.reservations.reservations)) {
+      if (reservation.status === InventoryReservationStatus.Active) {
+        reservationItemIds.add(reservation.selector.itemId);
+      }
+    }
+    const countItemIds = new Set<string>();
+    for (const count of Object.values(world.counts.counts)) {
+      if (
+        count.status === InventoryCountStatus.Started ||
+        count.status === InventoryCountStatus.Observed
+      ) {
+        countItemIds.add(count.selector.itemId);
+      }
+    }
+    this.protectedReservationItemIds = reservationItemIds;
+    this.protectedCountItemIds = countItemIds;
   }
 
   /** Catch the canonical proof/export world up to already-published segmented events. */
