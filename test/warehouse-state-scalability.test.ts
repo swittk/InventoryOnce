@@ -12,6 +12,9 @@ import {
   updateInventorySortedIdentitySet,
 } from "../src/sparse-record.js";
 import { emptyInventoryProjectionState, projectInventoryEvents } from "../src/projection.js";
+import { createInMemoryInventoryDurableStorage, InventoryStorageWriteStage, type InventoryDurableStorage } from "../src/storage.js";
+import { createInMemoryInventorySegmentedPositionStore, type InventorySegmentedPositionStorageCapability } from "../src/segmented-state.js";
+import { repairInventoryDurableOperations } from "../src/coordinator.js";
 import {
   createTabletCatalog,
   createTestInventory,
@@ -76,6 +79,26 @@ function retainedMembershipVersions(value: readonly string[]): number {
     count += 1;
     current = lineage.base;
   }
+}
+
+/** Check the indexed read capability against the same published canonical world. */
+async function assertPublishedSegmentMatchesWorld(
+  storage: ReturnType<typeof createInMemoryInventoryDurableStorage>
+): Promise<void> {
+  const world = await storage.readWorld();
+  const segment = storage.readPositionSegment();
+  const exported = segment.materialize();
+  expect(segment.revision()).toBe(world.revision);
+  expect(exported.positions).toEqual(world.projection.positions);
+  expect(exported.positionIdsByItemId).toEqual(world.projection.positionIdsByItemId);
+  expect(exported.positionIdsByItemRevisionId).toEqual(world.projection.positionIdsByItemRevisionId);
+  expect(exported.positionIdsByPlacementNodeId).toEqual(world.projection.positionIdsByPlacementNodeId);
+  expect(exported.positivePositionIdBySerialIdentity).toEqual(world.projection.positivePositionIdBySerialIdentity);
+  const rebuilt = createInMemoryInventorySegmentedPositionStore({
+    positions: Object.values(world.projection.positions),
+    revision: world.revision,
+  });
+  expect(segment.contentRoot()).toBe(rebuilt.contentRoot());
 }
 
 describe("warehouse hot-state lifetime and export equivalence", () => {
@@ -154,5 +177,138 @@ describe("warehouse hot-state lifetime and export equivalence", () => {
     });
     expect(inventoryWorldContentRoots({ ...final, projection: replayed })).toEqual(finalRoots);
     expect(inventoryWorldContentRoots(initial)).toEqual(initialRoots);
+  });
+});
+
+
+describe("indexed segment publication matches durable inventory", () => {
+  it("never exposes staged rows and supports partial moves into an existing destination", async () => {
+    const seen = new Set<string>();
+    const storage = createInMemoryInventoryDurableStorage({
+      failpoint: async ({ stage, timing }) => {
+        seen.add(`${stage}:${timing}`);
+        await assertPublishedSegmentMatchesWorld(storage);
+      },
+    });
+    const inventory = createTestInventory(storage);
+    await inventory.stock.receiveMany({
+      operationId: "segment-merged-receive",
+      occurredAtEpochMs: time0,
+      lines: [
+        { to: loosePosition("a"), amount: stockAmount("10", "piece") },
+        { to: loosePosition("b"), amount: stockAmount("2", "piece") },
+      ],
+    });
+    await inventory.stock.transfer({
+      operationId: "segment-partial-transfer",
+      occurredAtEpochMs: time0 + 1,
+      from: loosePosition("a"),
+      toPlacementNodeId: "b",
+      amount: stockAmount("3", "piece"),
+    });
+    await assertPublishedSegmentMatchesWorld(storage);
+    expect(storage.readPositionSegment().positionsByPlacement("a")[0]?.measurements.primary.quantity.amountMinor).toBe(7);
+    expect(storage.readPositionSegment().positionsByPlacement("b")[0]?.measurements.primary.quantity.amountMinor).toBe(5);
+    expect(seen.has(`${InventoryStorageWriteStage.PublishWorld}:before`)).toBe(true);
+    expect(seen.has(`${InventoryStorageWriteStage.PublishWorld}:after`)).toBe(true);
+  });
+
+  it("returns one coherent stock view when publication interleaves indexed location reads", async () => {
+    const storage: InventoryDurableStorage & InventorySegmentedPositionStorageCapability = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage);
+    await inventory.stock.receive({
+      operationId: "segment-interleaved-receive",
+      occurredAtEpochMs: time0,
+      to: loosePosition("a"),
+      amount: stockAmount("1", "piece"),
+    });
+    const readSegment = storage.readPositionSegment.bind(storage);
+    let moveBetweenReads = true;
+    // The optional adapter contract permits asynchronous indexed reads. Publish an
+    // ordinary supported transfer after the first lookup, before the second lookup.
+    storage.readPositionSegment = async () => {
+      const base = await readSegment();
+      return {
+        revision: () => base.revision(),
+        contentRoot: () => base.contentRoot(),
+        position: (id) => base.position(id),
+        positivePositionBySerial: (itemId, serialId) =>
+          base.positivePositionBySerial(itemId, serialId),
+        positionsByItem: (itemId) => base.positionsByItem(itemId),
+        positionsByItemRevision: (revisionId) =>
+          base.positionsByItemRevision(revisionId),
+        positionsByPlacement: (nodeId) => base.positionsByPlacement(nodeId),
+        queryPositions: async (selector) => {
+          const before =
+            (await base.queryPositions({
+              ...selector,
+              placementNodeIds: ["a"],
+            })) ?? [];
+          if (moveBetweenReads) {
+            moveBetweenReads = false;
+            await inventory.stock.transfer({
+              operationId: "segment-interleaved-move",
+              occurredAtEpochMs: time0 + 1,
+              from: loosePosition("a"),
+              toPlacementNodeId: "b",
+              amount: stockAmount("1", "piece"),
+            });
+          }
+          const after =
+            (await base.queryPositions({
+              ...selector,
+              placementNodeIds: ["b"],
+            })) ?? [];
+          return [...before, ...after];
+        },
+        materialize: () => base.materialize(),
+      };
+    };
+    const rows = await inventory.read.positions({
+      itemId: "item-a",
+      placementNodeIds: ["a", "b"],
+    });
+    expect(moveBetweenReads).toBe(false);
+    // Both the old and new committed worlds have one unit. A mixed snapshot has two.
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.measurements.primary.quantity.amountMinor).toBe(1);
+  });
+
+  it("publishes and repairs an indexed move exactly once after a publication-boundary failure", async () => {
+    let injected = false;
+    const storage = createInMemoryInventoryDurableStorage({
+      failpoint: async ({ operationId, stage, timing }) => {
+        await assertPublishedSegmentMatchesWorld(storage);
+        if (!injected && operationId === "segment-crash-move" &&
+            stage === InventoryStorageWriteStage.PublishWorld && timing === "after") {
+          injected = true;
+          throw new Error("test crash after indexed publication");
+        }
+      },
+    });
+    const inventory = createTestInventory(storage);
+    await inventory.stock.receive({
+      operationId: "segment-crash-receive",
+      occurredAtEpochMs: time0,
+      to: loosePosition("a"),
+      amount: stockAmount("1", "piece"),
+    });
+    const move = {
+      operationId: "segment-crash-move",
+      occurredAtEpochMs: time0 + 1,
+      from: loosePosition("a"),
+      toPlacementNodeId: "b",
+      amount: stockAmount("1", "piece"),
+    };
+    await expect(inventory.stock.transfer(move)).rejects.toThrow("test crash after indexed publication");
+    const visibleRevision = storage.readPositionSegment().revision();
+    const visibleRoot = storage.readPositionSegment().contentRoot();
+    await repairInventoryDurableOperations({ storage, limit: 10 });
+    await inventory.stock.transfer(move);
+    await assertPublishedSegmentMatchesWorld(storage);
+    expect(storage.readPositionSegment().revision()).toBe(visibleRevision);
+    expect(storage.readPositionSegment().contentRoot()).toBe(visibleRoot);
+    expect(storage.readPositionSegment().positionsByPlacement("a")).toEqual([]);
+    expect(storage.readPositionSegment().positionsByPlacement("b")).toHaveLength(1);
   });
 });
