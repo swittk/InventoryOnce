@@ -4,14 +4,14 @@
     "callableFields": 11,
     "callbackArgumentFields": 365,
     "callbackResultFields": 433,
-    "fields": 2589,
+    "fields": 2590,
     "inputFields": 2181,
     "nullableFields": 6,
     "optionalFields": 1050,
-    "outputFields": 967,
+    "outputFields": 968,
     "recursiveTypeReferences": 3,
     "truncatedTypes": 0,
-    "types": 425,
+    "types": 426,
     "undefinedFields": 3
   },
   "entries": {
@@ -15266,6 +15266,30 @@
       "gaps": [],
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InMemoryInventoryDurableStorage.publishedPositionReader": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/storage.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "InMemoryInventoryPublishedPositionReader",
+      "executableEvidence": [
+        "test/formal-storage-refinement.test.ts",
+        "test/storage-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS",
+        "RepairLiveness"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
     "InMemoryInventoryDurableStorage.storageMutationBarrier": {
       "allowsNull": false,
@@ -61775,5 +61799,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "b2bab82390f2561a7849a1d1636fada8ff630d5257418625c53d2cee7a443960"
+  "surfaceSha256": "631f3ce511d52c76bc77119c8fad912c4e90cc26c5fb0569f80a71acc8a6fc87"
 }
