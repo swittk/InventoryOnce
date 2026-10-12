@@ -94,6 +94,67 @@ describe("bulk transfer builder canonical-performance boundary", () => {
     }
   }, 90_000);
 
+  it("sorts mixed-destination FIFO transfers canonically without caller aliases", () => {
+    const catalog = createTabletCatalog();
+    const lines = transferRoutes(2_000).map(
+      /** Spread one direct source across multiple warehouse receiving zones. */
+      (line, index) => ({
+        ...line,
+        toPlacementNodeId:
+          "rack-" + String((index * 7919) % 503).padStart(4, "0"),
+      })
+    );
+    const event = createInventoryTransferManyEvent({
+      catalog,
+      operationId: "mixed-destination-canonical",
+      occurredAtEpochMs: time0,
+      lines,
+    });
+    const reversed = createInventoryTransferManyEvent({
+      catalog,
+      operationId: "mixed-destination-canonical",
+      occurredAtEpochMs: time0,
+      lines: [...lines].reverse(),
+    });
+    expect(event).toEqual(reversed);
+    const originalFingerprint = inventoryEventIntentFingerprint(event);
+    expect(originalFingerprint).toBe(inventoryEventIntentFingerprint(reversed));
+    expect(event.positiveLayerProvenanceTransfers).toHaveLength(lines.length);
+    // A returned kernel event must never retain mutable caller-position aliases.
+    const first = lines[0];
+    if (first === undefined) throw new Error("Missing mixed transfer source.");
+    (first.from as { lotId?: string }).lotId = "caller-mutated-after-build";
+    expect(inventoryEventIntentFingerprint(event)).toBe(originalFingerprint);
+    expect(inventoryEventIntentFingerprint(reversed)).toBe(originalFingerprint);
+  });
+
+  it("benchmarks 10,000 mixed-destination transfers with complete canonical FIFO proof", () => {
+    const catalog = createTabletCatalog();
+    const lines = transferRoutes(10_000).map(
+      /** Deliberately interleave destinations so sorting cannot be a preordered fast path. */
+      (line, index) => ({
+        ...line,
+        toPlacementNodeId:
+          "rack-" + String((index * 7919) % 503).padStart(4, "0"),
+      })
+    );
+    const started = performance.now();
+    const event = createInventoryTransferManyEvent({
+      catalog,
+      operationId: "mixed-destination-benchmark",
+      occurredAtEpochMs: time0,
+      lines,
+    });
+    const elapsedMs = performance.now() - started;
+    expect(event.stockEffects).toHaveLength(lines.length * 2);
+    expect(event.positiveLayerProvenanceTransfers).toHaveLength(lines.length);
+    console.log(JSON.stringify({
+      benchmark: "canonical-mixed-destination-transfer-many-builder",
+      routes: lines.length,
+      elapsedMs,
+    }));
+  }, 30_000);
+
   it("retains canonical fingerprints under reordered and duplicate identical routes", () => {
     const catalog = createTabletCatalog();
     const routes = transferRoutes(30);

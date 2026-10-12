@@ -3,8 +3,8 @@
     "authorityMethods": 14,
     "callAndConstructSignatures": 584,
     "classMethods": 104,
-    "compilerCallGraphCallables": 3323,
-    "compilerCallGraphEdges": 8728,
+    "compilerCallGraphCallables": 3328,
+    "compilerCallGraphEdges": 8739,
     "compilerCallGraphTestRoots": 55,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 584,
@@ -18093,7 +18093,7 @@
           "path": "src/deficits.ts"
         },
         {
-          "occurrences": 54,
+          "occurrences": 56,
           "path": "src/events.ts"
         },
         {
@@ -21542,9 +21542,9 @@
               "column": 1,
               "file": "src/events.ts",
               "hasBody": true,
-              "id": "src/events.ts:64412:assertInventoryEpochMilliseconds",
+              "id": "src/events.ts:65275:assertInventoryEpochMilliseconds",
               "kind": "FunctionDeclaration",
-              "line": 1724,
+              "line": 1746,
               "name": "assertInventoryEpochMilliseconds",
               "reason": "resolved-call"
             }
@@ -21553,9 +21553,9 @@
             "column": 1,
             "file": "src/events.ts",
             "hasBody": true,
-            "id": "src/events.ts:64412:assertInventoryEpochMilliseconds",
+            "id": "src/events.ts:65275:assertInventoryEpochMilliseconds",
             "kind": "FunctionDeclaration",
-            "line": 1724,
+            "line": 1746,
             "name": "assertInventoryEpochMilliseconds"
           },
           "test": "test/allocation.test.ts"
@@ -21576,9 +21576,9 @@
           "column": 1,
           "file": "src/events.ts",
           "hasBody": true,
-          "id": "src/events.ts:64412:assertInventoryEpochMilliseconds",
+          "id": "src/events.ts:65275:assertInventoryEpochMilliseconds",
           "kind": "FunctionDeclaration",
-          "line": 1724,
+          "line": 1746,
           "name": "assertInventoryEpochMilliseconds"
         }
       ],
@@ -22812,9 +22812,9 @@
               "column": 1,
               "file": "src/events.ts",
               "hasBody": true,
-              "id": "src/events.ts:38300:normalizeStockEffects",
+              "id": "src/events.ts:39163:normalizeStockEffects",
               "kind": "FunctionDeclaration",
-              "line": 943,
+              "line": 965,
               "name": "normalizeStockEffects",
               "reason": "resolved-call"
             },
@@ -37199,7 +37199,7 @@
           "path": "src/deficits.ts"
         },
         {
-          "occurrences": 18,
+          "occurrences": 14,
           "path": "src/events.ts"
         },
         {
@@ -49035,9 +49035,9 @@
               "column": 1,
               "file": "src/events.ts",
               "hasBody": true,
-              "id": "src/events.ts:38300:normalizeStockEffects",
+              "id": "src/events.ts:39163:normalizeStockEffects",
               "kind": "FunctionDeclaration",
-              "line": 943,
+              "line": 965,
               "name": "normalizeStockEffects",
               "reason": "resolved-call"
             },
@@ -71350,7 +71350,7 @@
           "path": "src/corrections.ts"
         },
         {
-          "occurrences": 41,
+          "occurrences": 46,
           "path": "src/events.ts"
         },
         {
@@ -86282,7 +86282,7 @@
           "path": "src/corrections.ts"
         },
         {
-          "occurrences": 41,
+          "occurrences": 46,
           "path": "src/events.ts"
         },
         {

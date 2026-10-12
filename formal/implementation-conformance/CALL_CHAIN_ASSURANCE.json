@@ -1,7 +1,7 @@
 {
   "counts": {
-    "callables": 3323,
-    "edges": 8728,
+    "callables": 3328,
+    "edges": 8739,
     "publicEntries": 584,
     "publicEntriesWithTargets": 584,
     "publicEntriesWithWitnesses": 584,
@@ -10306,9 +10306,9 @@
           "column": 1,
           "file": "src/events.ts",
           "hasBody": true,
-          "id": "src/events.ts:64412:assertInventoryEpochMilliseconds",
+          "id": "src/events.ts:65275:assertInventoryEpochMilliseconds",
           "kind": "FunctionDeclaration",
-          "line": 1724,
+          "line": 1746,
           "name": "assertInventoryEpochMilliseconds"
         }
       ],
@@ -10319,9 +10319,9 @@
             "column": 1,
             "file": "src/events.ts",
             "hasBody": true,
-            "id": "src/events.ts:64412:assertInventoryEpochMilliseconds",
+            "id": "src/events.ts:65275:assertInventoryEpochMilliseconds",
             "kind": "FunctionDeclaration",
-            "line": 1724,
+            "line": 1746,
             "name": "assertInventoryEpochMilliseconds"
           },
           "witness": {
@@ -10369,9 +10369,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:64412:assertInventoryEpochMilliseconds",
+                "id": "src/events.ts:65275:assertInventoryEpochMilliseconds",
                 "kind": "FunctionDeclaration",
-                "line": 1724,
+                "line": 1746,
                 "name": "assertInventoryEpochMilliseconds",
                 "reason": "resolved-call"
               }
@@ -11047,9 +11047,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:38300:normalizeStockEffects",
+                "id": "src/events.ts:39163:normalizeStockEffects",
                 "kind": "FunctionDeclaration",
-                "line": 943,
+                "line": 965,
                 "name": "normalizeStockEffects",
                 "reason": "resolved-call"
               },
@@ -24931,9 +24931,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:38300:normalizeStockEffects",
+                "id": "src/events.ts:39163:normalizeStockEffects",
                 "kind": "FunctionDeclaration",
-                "line": 943,
+                "line": 965,
                 "name": "normalizeStockEffects",
                 "reason": "resolved-call"
               },

@@ -800,7 +800,7 @@ function normalizePositiveLayerProvenanceTransfers(
       effect
     );
   }
-  const normalized: InventoryPositiveLayerProvenanceTransfer[] = [];
+  const normalized: NormalizedPositiveLayerProvenanceTransferEntry[] = [];
   const endpoints = new Set<string>();
   for (const raw of transfers) {
     const from = normalizeInventoryStockPositionKey(raw.from);
@@ -860,23 +860,45 @@ function normalizePositiveLayerProvenanceTransfers(
         "Inventory FIFO provenance transfer must pair equal negative and positive measurement vectors."
       );
     }
-    normalized.push({ from, to });
+    normalized.push({
+      transfer: { from, to },
+      fromIdentity,
+      toIdentity,
+    });
   }
-  normalized.sort(comparePositiveLayerProvenanceTransfer);
-  return normalized;
+  normalized.sort(compareNormalizedPositiveLayerProvenanceTransfer);
+  return normalized.map(unwrapNormalizedPositiveLayerProvenanceTransfer);
 }
 
-/** Sort conserved FIFO provenance transfers by exact destination then source identity. */
-function comparePositiveLayerProvenanceTransfer(
-  left: InventoryPositiveLayerProvenanceTransfer,
-  right: InventoryPositiveLayerProvenanceTransfer
+/** One conserved FIFO transfer paired with its already validated exact sort identities. */
+interface NormalizedPositiveLayerProvenanceTransferEntry {
+  /** Freshly normalized source/destination objects kept separate from stock effects. */
+  readonly transfer: InventoryPositiveLayerProvenanceTransfer;
+  /** Collision-free source position identity computed before sorting. */
+  readonly fromIdentity: string;
+  /** Collision-free destination position identity computed before sorting. */
+  readonly toIdentity: string;
+}
+
+/** Sort conserved FIFO provenance by cached destination and source identities. */
+function compareNormalizedPositiveLayerProvenanceTransfer(
+  left: NormalizedPositiveLayerProvenanceTransferEntry,
+  right: NormalizedPositiveLayerProvenanceTransferEntry
 ): number {
-  const destinationOrder = compareInventoryIdentityText(inventoryStockPositionIdentity(
-    left.to
-  ), inventoryStockPositionIdentity(right.to));
+  const destinationOrder = compareInventoryIdentityText(
+    left.toIdentity,
+    right.toIdentity
+  );
   return destinationOrder === 0
-    ? compareInventoryIdentityText(inventoryStockPositionIdentity(left.from), inventoryStockPositionIdentity(right.from))
+    ? compareInventoryIdentityText(left.fromIdentity, right.fromIdentity)
     : destinationOrder;
+}
+
+/** Unwrap one normalized transfer after canonical ordering without changing object ownership. */
+function unwrapNormalizedPositiveLayerProvenanceTransfer(
+  entry: NormalizedPositiveLayerProvenanceTransferEntry
+): InventoryPositiveLayerProvenanceTransfer {
+  return entry.transfer;
 }
 
 /** Validate correction-only FIFO provenance replacements and return stable position ordering. */
