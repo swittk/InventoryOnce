@@ -36,6 +36,7 @@ import {
   applyInventoryPlacementChanges,
   emptyInventoryPlacementState,
   inventoryPlacementParentNodeId,
+  inventoryPlacementSubtreeNodeIds,
   type InventoryPlacementState,
 } from "./placement.js";
 import {
@@ -46,6 +47,7 @@ import {
   type Quantity,
 } from "./quantity.js";
 import {
+  InventoryOptionalIdentityConstraintKind,
   inventoryStockPositionMatchesNormalizedSelector,
   normalizeInventoryStockSelector,
   type InventoryStockSelector,
@@ -1358,14 +1360,11 @@ export function findInventoryPositions(
   selector: InventoryStockSelector
 ): readonly InventoryStockPosition[] {
   const normalizedSelector = normalizeInventoryStockSelector(selector);
-  const result: Array<{
-    /** Stable identity already retained by the projection index. */
-    readonly identity: string;
-    /** Projected stock row for this identity. */
-    readonly position: InventoryStockPosition;
-  }> = [];
+  const result: InventoryStockPosition[] = [];
+  // The retained membership arrays and multi-index unions are already ordered
+  // by canonical position identity. Do not allocate pairs and sort again.
   for (const identity of candidatePositionIds(state, normalizedSelector)) {
-    const position = state.positions[identity];
+    const position = inventorySparseRecordValue(state.positions, identity);
     if (position === undefined) {
       throw new Error(
         `Inventory stock index references missing position ${identity}.`
@@ -1378,53 +1377,146 @@ export function findInventoryPositions(
         state.placement
       )
     ) {
-      result.push({ identity, position });
+      result.push(position);
     }
   }
-  result.sort(
-    /** Sort once using retained identities instead of recomputing position keys. */
-    (left, right) => compareInventoryIdentityText(left.identity, right.identity)
-  );
-  return result.map(
-    /** Return the projected row after deterministic identity ordering. */
-    (entry) => entry.position
-  );
+  return result;
 }
 
-/** Select the narrowest retained position index that satisfies this selector. */
+/** Select the smallest indexed candidate set without scanning unrelated stock. */
 function candidatePositionIds(
   state: InventoryProjectionState,
   selector: InventoryStockSelector
 ): readonly string[] {
   const revisionIds = selector.itemRevisionIds;
+  let itemCandidates: readonly string[] | undefined;
+  let itemCandidateCount = 0;
   if (revisionIds === undefined) {
-    return inventorySparseRecordValue(
-      state.positionIdsByItemId,
-      selector.itemId
-    ) ?? [];
-  }
-  if (revisionIds.length === 1) {
-    const revisionId = revisionIds[0];
-    return revisionId === undefined
-      ? []
-      : inventorySparseRecordValue(
+    itemCandidates =
+      inventorySparseRecordValue(state.positionIdsByItemId, selector.itemId) ??
+      [];
+    itemCandidateCount = itemCandidates.length;
+  } else if (revisionIds.length === 1) {
+    itemCandidates =
+      inventorySparseRecordValue(
+        state.positionIdsByItemRevisionId,
+        revisionIds[0] ?? ""
+      ) ?? [];
+    itemCandidateCount = itemCandidates.length;
+  } else {
+    // Count only first. Building a multi-revision union can be much more
+    // expensive than one selective direct-placement index.
+    for (const revisionId of revisionIds) {
+      itemCandidateCount +=
+        inventorySparseRecordValue(
           state.positionIdsByItemRevisionId,
           revisionId
-        ) ?? [];
+        )?.length ?? 0;
+    }
   }
-  const candidates = new Set<string>();
-  for (const revisionId of revisionIds) {
+
+  // Exact direct placement is independent of item, but may be much narrower
+  // than an item spanning thousands of bins. Subtree predicates are applied
+  // later by the full selector matcher; the direct-placement index remains exact.
+  const directPlacementIds =
+    selector.placement?.kind === InventoryOptionalIdentityConstraintKind.Allowed
+      ? selector.placement.valueIds
+      : undefined;
+  if (directPlacementIds !== undefined) {
+    let placementCandidateCount = 0;
+    for (const nodeId of directPlacementIds) {
+      placementCandidateCount +=
+        inventorySparseRecordValue(
+          state.positionIdsByPlacementNodeId,
+          nodeId
+        )?.length ?? 0;
+    }
+    if (placementCandidateCount < itemCandidateCount) {
+      if (directPlacementIds.length === 1) {
+        return inventorySparseRecordValue(
+          state.positionIdsByPlacementNodeId,
+          directPlacementIds[0] ?? ""
+        ) ?? [];
+      }
+      const placements: string[] = [];
+      for (const nodeId of directPlacementIds) {
+        const positionIds = inventorySparseRecordValue(
+          state.positionIdsByPlacementNodeId,
+          nodeId
+        ) ?? [];
+        for (const positionId of positionIds) placements.push(positionId);
+      }
+      // A position can have only one direct placement, so these lists are
+      // disjoint; preserve canonical ordering across the selected nodes.
+      placements.sort(compareInventoryIdentityText);
+      return placements;
+    }
+  }
+
+  // For a large item inventory, a small room/cabinet subtree may provide
+  // a much narrower candidate list. Its direct-node rows are disjoint; the
+  // full selector matcher still verifies each position's current ancestry.
+  if (selector.withinPlacementNodeIds !== undefined) {
+    const subtreeCandidates = candidateSubtreePositionIds(
+      state,
+      selector.withinPlacementNodeIds,
+      itemCandidateCount
+    );
+    if (subtreeCandidates !== undefined) return subtreeCandidates;
+  }
+
+  if (itemCandidates !== undefined) return itemCandidates;
+  const candidates: string[] = [];
+  for (const revisionId of revisionIds ?? []) {
     for (const positionId of
       inventorySparseRecordValue(
         state.positionIdsByItemRevisionId,
         revisionId
       ) ?? []) {
-      candidates.add(positionId);
+      candidates.push(positionId);
     }
   }
-  const ordered = [...candidates];
-  ordered.sort();
-  return ordered;
+  // A position has exactly one item revision; no deduplication is necessary.
+  candidates.sort(compareInventoryIdentityText);
+  return candidates;
+}
+
+/**
+ * Enumerate a selective physical subtree from the already maintained
+ * child-node and direct-stock indexes. Fallback on an item/revision index
+ * when the subtree is broad; no global position or journal scan is needed.
+ */
+function candidateSubtreePositionIds(
+  state: InventoryProjectionState,
+  rootNodeIds: readonly string[],
+  itemCandidateCount: number
+): readonly string[] | undefined {
+  // Very small item sets are cheaper to filter directly than to traverse the
+  // graph. This cutoff avoids expensive traversal of mostly empty buildings.
+  if (itemCandidateCount < 128) return undefined;
+  const visitedNodes = new Set<string>();
+  const candidates: string[] = [];
+  for (const rootNodeId of rootNodeIds) {
+    for (const nodeId of inventoryPlacementSubtreeNodeIds(
+      state.placement,
+      rootNodeId
+    )) {
+      // Multiple selected roots may overlap; a physical position must
+      // appear exactly once even when both ancestor and child are selected.
+      if (visitedNodes.has(nodeId)) continue;
+      visitedNodes.add(nodeId);
+      const directPositions = inventorySparseRecordValue(
+        state.positionIdsByPlacementNodeId,
+        nodeId
+      ) ?? [];
+      for (const positionId of directPositions) {
+        candidates.push(positionId);
+      }
+      if (candidates.length >= itemCandidateCount) return undefined;
+    }
+  }
+  candidates.sort(compareInventoryIdentityText);
+  return candidates;
 }
 
 /** Capture FIFO age before a conserved movement changes source/destination positions. */

@@ -17,9 +17,17 @@ import {
   commitInventoryEvent,
   defineInventoryEvent,
 } from "../src/events.js";
-import { InventoryTraceabilityNodeKind } from "../src/model.js";
+import {
+  InventoryTraceabilityNodeKind,
+  inventoryStockPositionIdentity,
+  type InventoryStockPosition,
+} from "../src/model.js";
 import { planInventoryAllocation } from "../src/picking.js";
-import { projectInventoryEvents } from "../src/projection.js";
+import {
+  emptyInventoryProjectionState,
+  findInventoryPositions,
+  projectInventoryEvents,
+} from "../src/projection.js";
 import { parseQuantity } from "../src/quantity.js";
 import {
   InventoryReservationOperationKind,
@@ -731,5 +739,120 @@ describe("projection index real-world scale", () => {
     expect(counts).toContain("inventoryEventsInRecordSequence(events)");
     expect(corrections).toContain("projection.eventIdsBySequence[");
     expect(corrections).not.toContain("Object.values(projection.events)");
+  });
+});
+
+
+describe("canonical projection exact-placement index locality", () => {
+  it("returns sorted exact-bin rows without probing 100,000 unrelated item positions", () => {
+    const positions: Record<string, InventoryStockPosition> = Object.create(null);
+    const itemPositionIds: string[] = [];
+    const revisionPositionIds: Record<string, string[]> = Object.create(null);
+    const placementPositionIds: Record<string, string[]> = Object.create(null);
+    const measurements: InventoryStockPosition["measurements"] = {
+      primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") },
+      independent: [],
+    };
+
+    for (let index = 0; index < 100_000; index += 1) {
+      const placementNodeId = "bin-" + String(index % 1_000).padStart(4, "0");
+      const itemRevisionId = index % 2 === 0 ? "item-a-v2" : "item-a-v3";
+      const key = {
+        itemId: "item-a",
+        itemRevisionId,
+        placementNodeId,
+        lotId: "BATCH-" + String(index).padStart(6, "0"),
+      };
+      const identity = inventoryStockPositionIdentity(key);
+      positions[identity] = { key, measurements };
+      itemPositionIds.push(identity);
+      (revisionPositionIds[itemRevisionId] ??= []).push(identity);
+      (placementPositionIds[placementNodeId] ??= []).push(identity);
+    }
+    itemPositionIds.sort();
+    for (const row of Object.values(revisionPositionIds)) row.sort();
+    for (const row of Object.values(placementPositionIds)) row.sort();
+
+    let positionReads = 0;
+    const guardedPositions = new Proxy(positions, {
+      /** Count touched exact stock positions rather than elapsed wall-clock noise. */
+      get(target, key, receiver) {
+        if (typeof key === "string") positionReads += 1;
+        return Reflect.get(target, key, receiver);
+      },
+    });
+    const state = {
+      ...emptyInventoryProjectionState(),
+      positions: guardedPositions,
+      positionIdsByItemId: { "item-a": itemPositionIds },
+      positionIdsByItemRevisionId: revisionPositionIds,
+      positionIdsByPlacementNodeId: placementPositionIds,
+    };
+
+    const selected = findInventoryPositions(state, {
+      itemId: "item-a",
+      itemRevisionIds: ["item-a-v3"],
+      placementNodeIds: ["bin-0001", "bin-0032"],
+    });
+    expect(selected).toHaveLength(100);
+    expect(selected.every((row) =>
+      row.key.itemRevisionId === "item-a-v3" &&
+      (row.key.placementNodeId === "bin-0001" ||
+        row.key.placementNodeId === "bin-0032")
+    )).toBe(true);
+    expect(selected.map((row) => inventoryStockPositionIdentity(row.key))).toEqual(
+      [...selected]
+        .map((row) => inventoryStockPositionIdentity(row.key))
+        .sort()
+    );
+    // The old item-only index scanned 50,000 item/revision positions here.
+    expect(positionReads).toBeLessThanOrEqual(200);
+
+    positionReads = 0;
+    const exactOne = findInventoryPositions(state, {
+      itemId: "item-a",
+      placementNodeIds: ["bin-0001"],
+    });
+    expect(exactOne).toHaveLength(100);
+    expect(positionReads).toBe(100);
+
+    // Both roots designate the same physical bin through overlapping
+    // ancestor/descendant selection. The returned rows must not double-count.
+    const nestedState = {
+      ...state,
+      placement: {
+        relationByNodeId: {
+          "bin-0001": {
+            nodeId: "bin-0001",
+            parentNodeId: "area-a",
+            createdByEventId: "placement-index-test",
+          },
+          "bin-0032": {
+            nodeId: "bin-0032",
+            parentNodeId: "area-a",
+            createdByEventId: "placement-index-test",
+          },
+        },
+        childNodeIdsByParentNodeId: {
+          "area-a": ["bin-0001", "bin-0032"],
+        },
+      },
+    };
+    positionReads = 0;
+    const subtree = findInventoryPositions(nestedState, {
+      itemId: "item-a",
+      itemRevisionIds: ["item-a-v3"],
+      withinPlacementNodeIds: ["area-a", "bin-0001"],
+    });
+    expect(subtree).toHaveLength(100);
+    expect(subtree.every((row) => row.key.placementNodeId === "bin-0001")).toBe(true);
+    expect(positionReads).toBe(200);
+
+    positionReads = 0;
+    expect(findInventoryPositions(nestedState, {
+      itemId: "item-a",
+      withinPlacementNodeIds: ["empty-area"],
+    })).toEqual([]);
+    expect(positionReads).toBe(0);
   });
 });
