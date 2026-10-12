@@ -116,6 +116,13 @@ await inventory.stock.receive({
   amount: stockAmount("20", "piece"),
 });
 
+await inventory.stock.receive({
+  operationId: "receive-kit",
+  occurredAtEpochMs,
+  to: { itemId: "kit", placementNodeId: "store" },
+  amount: stockAmount("1", "piece"),
+});
+
 await inventory.stock.individualize({
   operationId: "individualize-cabinet-17",
   occurredAtEpochMs,

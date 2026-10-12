@@ -1,7 +1,7 @@
 {
   "counts": {
-    "callables": 3346,
-    "edges": 8811,
+    "callables": 3349,
+    "edges": 8827,
     "publicEntries": 584,
     "publicEntriesWithTargets": 584,
     "publicEntriesWithWitnesses": 584,
@@ -5579,10 +5579,10 @@
                 "column": 81,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:25782:<anonymous@799>",
+                "id": "test/containers.test.ts:28590:<anonymous@879>",
                 "kind": "ArrowFunction",
-                "line": 799,
-                "name": "<anonymous@799>",
+                "line": 879,
+                "name": "<anonymous@879>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -8445,10 +8445,10 @@
                 "column": 81,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:25782:<anonymous@799>",
+                "id": "test/containers.test.ts:28590:<anonymous@879>",
                 "kind": "ArrowFunction",
-                "line": 799,
-                "name": "<anonymous@799>",
+                "line": 879,
+                "name": "<anonymous@879>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -12049,10 +12049,10 @@
                 "column": 101,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:3733:<anonymous@111>",
+                "id": "test/containers.test.ts:6541:<anonymous@191>",
                 "kind": "ArrowFunction",
-                "line": 111,
-                "name": "<anonymous@111>",
+                "line": 191,
+                "name": "<anonymous@191>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -12208,10 +12208,10 @@
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 101,
+                "column": 87,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:3733:<anonymous@111>",
+                "id": "test/containers.test.ts:3719:<anonymous@111>",
                 "kind": "ArrowFunction",
                 "line": 111,
                 "name": "<anonymous@111>",
@@ -12302,10 +12302,10 @@
                 "column": 81,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:25782:<anonymous@799>",
+                "id": "test/containers.test.ts:28590:<anonymous@879>",
                 "kind": "ArrowFunction",
-                "line": 799,
-                "name": "<anonymous@799>",
+                "line": 879,
+                "name": "<anonymous@879>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -12646,10 +12646,10 @@
                 "column": 81,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:25782:<anonymous@799>",
+                "id": "test/containers.test.ts:28590:<anonymous@879>",
                 "kind": "ArrowFunction",
-                "line": 799,
-                "name": "<anonymous@799>",
+                "line": 879,
+                "name": "<anonymous@879>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -15959,10 +15959,10 @@
                 "column": 71,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:19795:<anonymous@626>",
+                "id": "test/containers.test.ts:22603:<anonymous@706>",
                 "kind": "ArrowFunction",
-                "line": 626,
-                "name": "<anonymous@626>",
+                "line": 706,
+                "name": "<anonymous@706>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -17799,10 +17799,10 @@
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 101,
+                "column": 87,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:3733:<anonymous@111>",
+                "id": "test/containers.test.ts:3719:<anonymous@111>",
                 "kind": "ArrowFunction",
                 "line": 111,
                 "name": "<anonymous@111>",
@@ -17890,10 +17890,10 @@
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 101,
+                "column": 87,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:3733:<anonymous@111>",
+                "id": "test/containers.test.ts:3719:<anonymous@111>",
                 "kind": "ArrowFunction",
                 "line": 111,
                 "name": "<anonymous@111>",
@@ -18085,10 +18085,10 @@
                 "column": 86,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:18136:<anonymous@570>",
+                "id": "test/containers.test.ts:20944:<anonymous@650>",
                 "kind": "ArrowFunction",
-                "line": 570,
-                "name": "<anonymous@570>",
+                "line": 650,
+                "name": "<anonymous@650>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -22885,10 +22885,10 @@
                 "column": 81,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:25782:<anonymous@799>",
+                "id": "test/containers.test.ts:28590:<anonymous@879>",
                 "kind": "ArrowFunction",
-                "line": 799,
-                "name": "<anonymous@799>",
+                "line": 879,
+                "name": "<anonymous@879>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -23240,10 +23240,10 @@
                 "column": 81,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:25782:<anonymous@799>",
+                "id": "test/containers.test.ts:28590:<anonymous@879>",
                 "kind": "ArrowFunction",
-                "line": 799,
-                "name": "<anonymous@799>",
+                "line": 879,
+                "name": "<anonymous@879>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -23453,10 +23453,10 @@
                 "column": 81,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:25782:<anonymous@799>",
+                "id": "test/containers.test.ts:28590:<anonymous@879>",
                 "kind": "ArrowFunction",
-                "line": 799,
-                "name": "<anonymous@799>",
+                "line": 879,
+                "name": "<anonymous@879>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -28242,10 +28242,10 @@
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 101,
+                "column": 87,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:3733:<anonymous@111>",
+                "id": "test/containers.test.ts:3719:<anonymous@111>",
                 "kind": "ArrowFunction",
                 "line": 111,
                 "name": "<anonymous@111>",
@@ -32174,10 +32174,10 @@
                 "column": 81,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:25782:<anonymous@799>",
+                "id": "test/containers.test.ts:28590:<anonymous@879>",
                 "kind": "ArrowFunction",
-                "line": 799,
-                "name": "<anonymous@799>",
+                "line": 879,
+                "name": "<anonymous@879>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -32477,10 +32477,10 @@
                 "column": 81,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:25782:<anonymous@799>",
+                "id": "test/containers.test.ts:28590:<anonymous@879>",
                 "kind": "ArrowFunction",
-                "line": 799,
-                "name": "<anonymous@799>",
+                "line": 879,
+                "name": "<anonymous@879>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -33821,10 +33821,10 @@
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 101,
+                "column": 87,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:3733:<anonymous@111>",
+                "id": "test/containers.test.ts:3719:<anonymous@111>",
                 "kind": "ArrowFunction",
                 "line": 111,
                 "name": "<anonymous@111>",
@@ -36800,10 +36800,10 @@
                 "column": 82,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:12813:<anonymous@404>",
+                "id": "test/containers.test.ts:15621:<anonymous@484>",
                 "kind": "ArrowFunction",
-                "line": 404,
-                "name": "<anonymous@404>",
+                "line": 484,
+                "name": "<anonymous@484>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -36881,10 +36881,10 @@
                 "column": 82,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:12813:<anonymous@404>",
+                "id": "test/containers.test.ts:15621:<anonymous@484>",
                 "kind": "ArrowFunction",
-                "line": 404,
-                "name": "<anonymous@404>",
+                "line": 484,
+                "name": "<anonymous@484>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -36962,10 +36962,10 @@
                 "column": 81,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:23150:<anonymous@722>",
+                "id": "test/containers.test.ts:25958:<anonymous@802>",
                 "kind": "ArrowFunction",
-                "line": 722,
-                "name": "<anonymous@722>",
+                "line": 802,
+                "name": "<anonymous@802>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -37114,10 +37114,10 @@
                 "column": 71,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:19795:<anonymous@626>",
+                "id": "test/containers.test.ts:22603:<anonymous@706>",
                 "kind": "ArrowFunction",
-                "line": 626,
-                "name": "<anonymous@626>",
+                "line": 706,
+                "name": "<anonymous@706>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -37347,10 +37347,10 @@
                 "column": 71,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:19795:<anonymous@626>",
+                "id": "test/containers.test.ts:22603:<anonymous@706>",
                 "kind": "ArrowFunction",
-                "line": 626,
-                "name": "<anonymous@626>",
+                "line": 706,
+                "name": "<anonymous@706>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -37428,10 +37428,10 @@
                 "column": 86,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:18136:<anonymous@570>",
+                "id": "test/containers.test.ts:20944:<anonymous@650>",
                 "kind": "ArrowFunction",
-                "line": 570,
-                "name": "<anonymous@570>",
+                "line": 650,
+                "name": "<anonymous@650>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -37992,10 +37992,10 @@
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 101,
+                "column": 87,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:3733:<anonymous@111>",
+                "id": "test/containers.test.ts:3719:<anonymous@111>",
                 "kind": "ArrowFunction",
                 "line": 111,
                 "name": "<anonymous@111>",
@@ -38076,10 +38076,10 @@
                 "column": 86,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:18136:<anonymous@570>",
+                "id": "test/containers.test.ts:20944:<anonymous@650>",
                 "kind": "ArrowFunction",
-                "line": 570,
-                "name": "<anonymous@570>",
+                "line": 650,
+                "name": "<anonymous@650>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -38157,10 +38157,10 @@
                 "column": 101,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:3733:<anonymous@111>",
+                "id": "test/containers.test.ts:6541:<anonymous@191>",
                 "kind": "ArrowFunction",
-                "line": 111,
-                "name": "<anonymous@111>",
+                "line": 191,
+                "name": "<anonymous@191>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -38238,10 +38238,10 @@
                 "column": 81,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:23150:<anonymous@722>",
+                "id": "test/containers.test.ts:25958:<anonymous@802>",
                 "kind": "ArrowFunction",
-                "line": 722,
-                "name": "<anonymous@722>",
+                "line": 802,
+                "name": "<anonymous@802>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -38319,10 +38319,10 @@
                 "column": 86,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:18136:<anonymous@570>",
+                "id": "test/containers.test.ts:20944:<anonymous@650>",
                 "kind": "ArrowFunction",
-                "line": 570,
-                "name": "<anonymous@570>",
+                "line": 650,
+                "name": "<anonymous@650>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -38400,10 +38400,10 @@
                 "column": 62,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:21872:<anonymous@686>",
+                "id": "test/containers.test.ts:24680:<anonymous@766>",
                 "kind": "ArrowFunction",
-                "line": 686,
-                "name": "<anonymous@686>",
+                "line": 766,
+                "name": "<anonymous@766>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -38643,10 +38643,10 @@
                 "column": 71,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:19795:<anonymous@626>",
+                "id": "test/containers.test.ts:22603:<anonymous@706>",
                 "kind": "ArrowFunction",
-                "line": 626,
-                "name": "<anonymous@626>",
+                "line": 706,
+                "name": "<anonymous@706>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -39129,10 +39129,10 @@
                 "column": 82,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:12813:<anonymous@404>",
+                "id": "test/containers.test.ts:15621:<anonymous@484>",
                 "kind": "ArrowFunction",
-                "line": 404,
-                "name": "<anonymous@404>",
+                "line": 484,
+                "name": "<anonymous@484>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -39615,10 +39615,10 @@
                 "column": 82,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:12813:<anonymous@404>",
+                "id": "test/containers.test.ts:15621:<anonymous@484>",
                 "kind": "ArrowFunction",
-                "line": 404,
-                "name": "<anonymous@404>",
+                "line": 484,
+                "name": "<anonymous@484>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -42499,10 +42499,10 @@
                 "column": 101,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:3733:<anonymous@111>",
+                "id": "test/containers.test.ts:6541:<anonymous@191>",
                 "kind": "ArrowFunction",
-                "line": 111,
-                "name": "<anonymous@111>",
+                "line": 191,
+                "name": "<anonymous@191>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -42658,10 +42658,10 @@
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 101,
+                "column": 87,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:3733:<anonymous@111>",
+                "id": "test/containers.test.ts:3719:<anonymous@111>",
                 "kind": "ArrowFunction",
                 "line": 111,
                 "name": "<anonymous@111>",
@@ -45678,10 +45678,10 @@
                 "column": 81,
                 "file": "test/containers.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:25782:<anonymous@799>",
+                "id": "test/containers.test.ts:28590:<anonymous@879>",
                 "kind": "ArrowFunction",
-                "line": 799,
-                "name": "<anonymous@799>",
+                "line": 879,
+                "name": "<anonymous@879>",
                 "reason": "external-callback-dispatch"
               },
               {

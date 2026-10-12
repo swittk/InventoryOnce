@@ -1165,8 +1165,8 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
-        "InventoryOperation",
-        "PublishedHeadCAS"
+        "PlacementGraph",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -1188,8 +1188,8 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
-        "InventoryOperation",
-        "PublishedHeadCAS"
+        "PlacementGraph",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -1211,8 +1211,8 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
-        "InventoryOperation",
-        "PublishedHeadCAS"
+        "PlacementGraph",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -1234,8 +1234,8 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
-        "InventoryOperation",
-        "PublishedHeadCAS"
+        "PlacementGraph",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -1257,6 +1257,7 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
+        "PlacementGraph",
         "InventoryOperation",
         "PublishedHeadCAS"
       ],
@@ -1280,6 +1281,7 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
+        "PlacementGraph",
         "InventoryOperation",
         "PublishedHeadCAS"
       ],
@@ -1303,6 +1305,7 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
+        "PlacementGraph",
         "InventoryOperation",
         "PublishedHeadCAS"
       ],
@@ -1326,6 +1329,7 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
+        "PlacementGraph",
         "InventoryOperation",
         "PublishedHeadCAS"
       ],
@@ -1349,6 +1353,7 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
+        "PlacementGraph",
         "InventoryOperation",
         "PublishedHeadCAS"
       ],
@@ -1372,6 +1377,7 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
+        "PlacementGraph",
         "InventoryOperation",
         "PublishedHeadCAS"
       ],
@@ -1395,6 +1401,7 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
+        "PlacementGraph",
         "InventoryOperation",
         "PublishedHeadCAS"
       ],
@@ -1418,6 +1425,7 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
+        "PlacementGraph",
         "InventoryOperation",
         "PublishedHeadCAS"
       ],
@@ -1441,6 +1449,7 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
+        "PlacementGraph",
         "InventoryOperation",
         "PublishedHeadCAS"
       ],
@@ -1464,6 +1473,7 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
+        "PlacementGraph",
         "InventoryOperation",
         "PublishedHeadCAS"
       ],
@@ -1488,7 +1498,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -1511,7 +1522,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -1534,7 +1546,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": true,
@@ -1557,7 +1570,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": true,
@@ -1580,7 +1594,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -1603,7 +1618,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -1626,7 +1642,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -1649,7 +1666,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -1672,7 +1690,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -1695,7 +1714,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -3527,7 +3547,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -3550,7 +3571,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -3573,7 +3595,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -3596,7 +3619,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -3619,7 +3643,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -3642,7 +3667,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -3665,7 +3691,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -3688,7 +3715,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -3711,7 +3739,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -3866,7 +3895,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": true,
@@ -3888,6 +3918,7 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
+        "PlacementGraph",
         "InventoryOperation",
         "PublishedHeadCAS"
       ],
@@ -3911,6 +3942,7 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
+        "PlacementGraph",
         "InventoryOperation",
         "PublishedHeadCAS"
       ],
@@ -3935,7 +3967,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": true,
@@ -3958,7 +3991,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": true,
@@ -15819,7 +15853,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -15842,7 +15877,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -15865,7 +15901,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -15888,7 +15925,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -15911,7 +15949,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -15934,7 +15973,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -15957,7 +15997,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -15980,7 +16021,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -16002,6 +16044,7 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
+        "PlacementGraph",
         "InventoryOperation",
         "PublishedHeadCAS"
       ],
@@ -16025,6 +16068,7 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
+        "PlacementGraph",
         "InventoryOperation",
         "PublishedHeadCAS"
       ],
@@ -16048,6 +16092,7 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
+        "PlacementGraph",
         "InventoryOperation",
         "PublishedHeadCAS"
       ],
@@ -16071,6 +16116,7 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
+        "PlacementGraph",
         "InventoryOperation",
         "PublishedHeadCAS"
       ],
@@ -16094,6 +16140,7 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
+        "PlacementGraph",
         "InventoryOperation",
         "PublishedHeadCAS"
       ],
@@ -16118,7 +16165,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -16141,7 +16189,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -16164,7 +16213,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -16187,7 +16237,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -16210,7 +16261,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -16233,7 +16285,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -16256,7 +16309,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -16279,7 +16333,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -16302,7 +16357,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -16325,7 +16381,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -16348,7 +16405,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -16371,7 +16429,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -16394,7 +16453,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -16417,7 +16477,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -16440,7 +16501,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -16463,7 +16525,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -16486,7 +16549,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -16509,7 +16573,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -25676,7 +25741,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -25699,7 +25765,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -25722,7 +25789,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -25745,7 +25813,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -25768,7 +25837,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -25791,7 +25861,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -47963,8 +48034,8 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
-        "InventoryOperation",
-        "PublishedHeadCAS"
+        "PlacementGraph",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": true,
@@ -47989,8 +48060,8 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
-        "InventoryOperation",
-        "PublishedHeadCAS"
+        "PlacementGraph",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -48015,8 +48086,8 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
-        "InventoryOperation",
-        "PublishedHeadCAS"
+        "PlacementGraph",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": true,
@@ -48472,8 +48543,8 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
-        "InventoryOperation",
-        "PublishedHeadCAS"
+        "PlacementGraph",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -48497,8 +48568,8 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
-        "InventoryOperation",
-        "PublishedHeadCAS"
+        "PlacementGraph",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -48522,8 +48593,8 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
-        "InventoryOperation",
-        "PublishedHeadCAS"
+        "PlacementGraph",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -48545,6 +48616,7 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
+        "PlacementGraph",
         "InventoryOperation",
         "PublishedHeadCAS"
       ],
@@ -48591,6 +48663,7 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
+        "PlacementGraph",
         "InventoryOperation",
         "PublishedHeadCAS"
       ],
@@ -48687,8 +48760,8 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
-        "InventoryOperation",
-        "PublishedHeadCAS"
+        "PlacementGraph",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -48712,8 +48785,8 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
-        "InventoryOperation",
-        "PublishedHeadCAS"
+        "PlacementGraph",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -49524,7 +49597,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -49547,7 +49621,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -49570,7 +49645,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -49593,7 +49669,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -49616,7 +49693,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -52435,7 +52513,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -52481,7 +52560,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -52575,7 +52655,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -52598,7 +52679,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": true,
@@ -59939,7 +60021,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -59962,7 +60045,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -59985,7 +60069,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -60008,7 +60093,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -60031,7 +60117,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,
@@ -60054,7 +60141,8 @@
       ],
       "formalModels": [
         "InventoryOperation",
-        "PublishedHeadCAS"
+        "PublishedHeadCAS",
+        "ResourceDimensions"
       ],
       "gaps": [],
       "optional": false,

@@ -141,7 +141,13 @@ export function createInventoryCorrectionEvent(
     );
   const placementChanges = createCorrectionPlacementChanges(
     input.projection.placement.relationByNodeId,
-    desiredProjection.placement.relationByNodeId
+    desiredProjection.placement.relationByNodeId,
+    /** Whether the parent must be derived from a serial's live stock position. */
+    (nodeId) =>
+      inventorySparseRecordValue(input.projection.placementNodes, nodeId)
+        ?.definition.embodiedBy !== undefined ||
+      inventorySparseRecordValue(desiredProjection.placementNodes, nodeId)
+        ?.definition.embodiedBy !== undefined
   );
   const traceabilityChanges = createCorrectionTraceabilityChanges(
     input.projection.traceability.relations,
@@ -469,7 +475,8 @@ function createCorrectionStockEffects(
 /** Create exact direct-parent transitions that make current placement equal hypothetical replay. */
 function createCorrectionPlacementChanges(
   actual: Readonly<Record<string, InventoryPlacementRelation>>,
-  desired: Readonly<Record<string, InventoryPlacementRelation>>
+  desired: Readonly<Record<string, InventoryPlacementRelation>>,
+  parentIsDerived: (nodeId: string) => boolean
 ): readonly InventoryPlacementChange[] {
   const nodeIds = new Set<string>([
     ...Object.keys(actual),
@@ -482,6 +489,9 @@ function createCorrectionPlacementChanges(
     const actualParentNodeId = actual[nodeId]?.parentNodeId;
     const desiredParentNodeId = desired[nodeId]?.parentNodeId;
     if (actualParentNodeId === desiredParentNodeId) continue;
+    // An embodied node's parent is derived from its unique stock position.
+    // Explicit placement changes would violate the same invariant the projection enforces.
+    if (parentIsDerived(nodeId)) continue;
     changes.push({
       nodeId,
       ...(actualParentNodeId === undefined

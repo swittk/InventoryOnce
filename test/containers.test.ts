@@ -108,6 +108,86 @@ describe("generic placement topology", () => {
     expect((await inventory.read.world()).projection.lastRecordSequence).toBe(3);
   });
 
+  it("corrects an embodied serial transfer using its stock-derived placement parent", async () => {
+    const inventory = createTestInventory(undefined, createHeterogeneousPlacementCatalog());
+    await inventory.stock.receive({
+      operationId: "embodied-correction-receive",
+      occurredAtEpochMs: time0,
+      to: loosePosition("origin"),
+      amount: stockAmount("1", "piece"),
+    });
+    await inventory.stock.individualize({
+      operationId: "embodied-correction-individualize",
+      occurredAtEpochMs: time1,
+      from: loosePosition("origin"),
+      amount: stockAmount("1", "piece"),
+      serialId: "CAB-CORRECT",
+      asPlacementNode: { category: "cabinet", acceptsPlacement: true },
+    });
+    const source = {
+      itemId: "item-a",
+      serialId: "CAB-CORRECT",
+      placementNodeId: "origin",
+    };
+    const root = await inventory.stock.transfer({
+      operationId: "embodied-correction-wrong-room",
+      occurredAtEpochMs: time2,
+      from: source,
+      toPlacementNodeId: "wrong-room",
+      amount: stockAmount("1", "piece"),
+    });
+    expect(await inventory.read.placementAncestry("CAB-CORRECT")).toEqual([
+      "CAB-CORRECT",
+      "wrong-room",
+    ]);
+
+    // Later contents must remain anchored directly inside the cabinet even
+    // when the cabinet's earlier movement is corrected.
+    await inventory.stock.receive({
+      operationId: "embodied-correction-receive-content",
+      occurredAtEpochMs: time3,
+      to: { itemId: "item-b", placementNodeId: "CAB-CORRECT" },
+      amount: stockAmount("1", "piece"),
+    });
+
+    const correction = await inventory.stock.correct({
+      operationId: "embodied-correction-actual-room",
+      occurredAtEpochMs: time3,
+      correctsEventId: root.event.eventId,
+      reason: "The recorded room was not where the cabinet was moved.",
+      replaceWith: (plans) =>
+        plans.transfer({
+          occurredAtEpochMs: time2,
+          from: source,
+          toPlacementNodeId: "actual-room",
+          amount: stockAmount("1", "piece"),
+        }),
+    });
+    expect(correction.event.kind).toBe(InventoryEventKind.Correction);
+    expect(correction.event.placementChanges).toEqual([]);
+    expect(
+      (
+        await inventory.read.positions({
+          itemId: "item-a",
+          serialIds: ["CAB-CORRECT"],
+        })
+      )[0]?.key.placementNodeId
+    ).toBe("actual-room");
+    expect(await inventory.read.placementAncestry("CAB-CORRECT")).toEqual([
+      "CAB-CORRECT",
+      "actual-room",
+    ]);
+    expect(
+      (
+        await inventory.read.positions({
+          itemId: "item-b",
+          placementNodeIds: ["CAB-CORRECT"],
+        })
+      )[0]?.measurements.primary.quantity.amountMinor
+    ).toBe(1);
+    expect((await inventory.read.world()).projection.lastRecordSequence).toBe(5);
+  });
+
   it("individualizes, embodies, moves, empties, retires, and re-individualizes a physical cabinet", async () => {
     const catalog = createHeterogeneousPlacementCatalog();
     const inventory = createTestInventory(undefined, catalog);
