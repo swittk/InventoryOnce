@@ -131,6 +131,24 @@ def root_family(name,decl):
 # Map one storage export to durable-protocol or storage-integrity assurance.
 def storage_export_family(name):
  if any(k in name for k in ('Digest','ContentRoot','Delta','materialize','emptyInventoryWorldState')): return 'storage-integrity'
+ # Adapter-native segmented records are another implementation of the existing
+ # durable atomic-publication/indexed-storage obligations, not another
+ # application-facing inventory authority or an unchecked proof exception.
+ if name in {
+  'InMemoryInventorySegmentedEventJournal',
+  'InMemoryInventorySegmentedPositionStore',
+  'InMemoryInventorySegmentedPlacementStore',
+  'InventorySegmentRevisionConflictError',
+  'InventoryPlacementSegmentRevisionConflictError',
+  'createInMemoryInventorySegmentedEventJournal',
+  'createInMemoryInventorySegmentedPositionStore',
+  'createInMemoryInventorySegmentedPlacementStore',
+  'inventoryStorageSupportsSegmentedStockEventCommit',
+  'inventoryStorageSupportsSegmentedPositions',
+ }: return 'durable-protocol'
+ # A coherent indexed reader is authenticated by a revision fence, and its
+ # failure must leave the canonical world/ledger unchanged.
+ if name in {'readInventorySegmentedPositionSnapshot'}: return 'storage-integrity'
  if name in {'InMemoryInventoryDurableStorage','InventoryApplyingOperationConflictError','InventoryWorldRevisionConflictError','commitInventoryOperation','createInMemoryInventoryDurableStorage','repairInventoryDurableOperations','resumeInventoryDurableOperation','validateInventoryDurableOperationBeginInput','validateInventoryMigrationManifestBeginInput'}: return 'durable-protocol'
  raise KeyError(f'unmapped storage public API {name}')
 
@@ -298,6 +316,13 @@ for row in surface['classes']:
  if row['className']=='InventoryCatalog': fam='catalog-definition'
  elif row['className']=='InventoryAuthorityControl': fam='authority-control'
  elif row['className']=='InMemoryInventoryDurableStorage': fam='durable-protocol'
+ elif row['className'] in {
+  'InMemoryInventorySegmentedEventJournal',
+  'InMemoryInventorySegmentedPositionStore',
+  'InMemoryInventorySegmentedPlacementStore',
+  'InventorySegmentRevisionConflictError',
+  'InventoryPlacementSegmentRevisionConflictError',
+ }: fam='durable-protocol'
  else: raise KeyError('unmapped class '+row['className'])
  entries[key]=expanded_entry(fam,row)
 
