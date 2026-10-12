@@ -511,6 +511,13 @@ export class InMemoryInventoryDurableStorage
   private pendingSegmentedCatalog: InventoryCatalogSnapshot | undefined;
   /** Durable operation rows including unpublished staged values. */
   private readonly operations = new Map<string, StoredInventoryOperation>();
+  /** Applying rows only, sharing the archived row objects for constant-time fence checks. */
+  private readonly applyingOperations = new Map<string, StoredInventoryOperation>();
+  /** Applying migration batches only; completed history is never scanned for a fence. */
+  private readonly applyingMigrationManifests = new Map<
+    string,
+    InventoryMigrationManifest
+  >();
   /** Durable whole-migration manifests kept separately from event operation rows. */
   private readonly migrationManifests = new Map<
     string,
@@ -615,14 +622,14 @@ export class InMemoryInventoryDurableStorage
       );
       return { manifest: structuredClone(existing), created: false };
     }
-    for (const manifest of this.migrationManifests.values()) {
+    for (const manifest of this.applyingMigrationManifests.values()) {
       if (manifest.state === InventoryMigrationManifestState.Applying) {
         throw new Error(
           `Inventory migration '${manifest.migrationId}' already fences this target.`
         );
       }
     }
-    for (const stored of this.operations.values()) {
+    for (const stored of this.applyingOperations.values()) {
       if (stored.value.state === InventoryDurableOperationState.Applying) {
         throw new InventoryApplyingOperationConflictError(
           stored.value.operationId
@@ -652,7 +659,7 @@ export class InMemoryInventoryDurableStorage
       worldPublished: false,
       state: InventoryMigrationManifestState.Applying,
     };
-    this.migrationManifests.set(input.migrationId, manifest);
+    this.storeMigrationManifest(input.migrationId, manifest);
     await this.fire(
       InventoryStorageWriteStage.MigrationBegin,
       "after",
@@ -696,7 +703,7 @@ export class InMemoryInventoryDurableStorage
       ...manifest,
       worldWritten: true,
     };
-    this.migrationManifests.set(migrationId, staged);
+    this.storeMigrationManifest(migrationId, staged);
     await this.fire(
       InventoryStorageWriteStage.MigrationWorld,
       "after",
@@ -762,7 +769,7 @@ export class InMemoryInventoryDurableStorage
       this.eventJournal = createInMemoryInventorySegmentedEventJournal({
         events: Object.values(publishedWorld.projection.events),
       });
-      this.migrationManifests.set(migrationId, published);
+      this.storeMigrationManifest(migrationId, published);
       await this.fire(
         InventoryStorageWriteStage.MigrationPublishWorld,
         "after",
@@ -797,7 +804,7 @@ export class InMemoryInventoryDurableStorage
       ...manifestWithoutPlan,
       state: InventoryMigrationManifestState.Completed,
     };
-    this.migrationManifests.set(migrationId, completed);
+    this.storeMigrationManifest(migrationId, completed);
     await this.fire(
       InventoryStorageWriteStage.MigrationCompactManifest,
       "after",
@@ -851,7 +858,7 @@ export class InMemoryInventoryDurableStorage
       ...manifestWithoutPlan,
       state: InventoryMigrationManifestState.Aborted,
     };
-    this.migrationManifests.set(migrationId, aborted);
+    this.storeMigrationManifest(migrationId, aborted);
     await this.fire(
       InventoryStorageWriteStage.MigrationClaimAbort,
       "after",
@@ -878,7 +885,7 @@ export class InMemoryInventoryDurableStorage
   > {
     assertPositiveSafeInteger(limit, "applying operation list limit");
     const rows: InventoryDurableOperation[] = [];
-    for (const stored of this.operations.values()) {
+    for (const stored of this.applyingOperations.values()) {
       if (stored.value.state === InventoryDurableOperationState.Applying) {
         rows.push(structuredClone(stored.value));
       }
@@ -895,7 +902,7 @@ export class InMemoryInventoryDurableStorage
   > {
     assertPositiveSafeInteger(limit, "applying migration list limit");
     const manifests: InventoryMigrationManifest[] = [];
-    for (const manifest of this.migrationManifests.values()) {
+    for (const manifest of this.applyingMigrationManifests.values()) {
       if (manifest.state === InventoryMigrationManifestState.Applying) {
         manifests.push(structuredClone(manifest));
       }
@@ -938,7 +945,7 @@ export class InMemoryInventoryDurableStorage
       );
       return { operation: structuredClone(existing.value), created: false };
     }
-    for (const stored of this.operations.values()) {
+    for (const stored of this.applyingOperations.values()) {
       if (stored.value.state === InventoryDurableOperationState.Applying) {
         throw new InventoryApplyingOperationConflictError(
           stored.value.operationId
@@ -979,7 +986,7 @@ export class InMemoryInventoryDurableStorage
       receiptWritten: false,
       worldPublished: false,
     };
-    this.operations.set(input.operationId, { value, validatedNextWorld });
+    this.storeOperation(input.operationId, { value, validatedNextWorld });
     await this.fire(
       InventoryStorageWriteStage.Begin,
       "after",
@@ -1008,7 +1015,7 @@ export class InMemoryInventoryDurableStorage
     }
     await this.fire(InventoryStorageWriteStage.Event, "before", operationId);
     const value = { ...stored.value, eventWritten: true };
-    this.operations.set(operationId, { ...stored, value });
+    this.storeOperation(operationId, { ...stored, value });
     await this.fire(InventoryStorageWriteStage.Event, "after", operationId);
     return structuredClone(value);
   }
@@ -1041,7 +1048,7 @@ export class InMemoryInventoryDurableStorage
       operationId
     );
     const value = { ...stored.value, projectionWritten: true };
-    this.operations.set(operationId, { ...stored, value });
+    this.storeOperation(operationId, { ...stored, value });
     await this.fire(
       InventoryStorageWriteStage.Projection,
       "after",
@@ -1073,7 +1080,7 @@ export class InMemoryInventoryDurableStorage
       operationId
     );
     const value = { ...stored.value, reservationsWritten: true };
-    this.operations.set(operationId, { ...stored, value });
+    this.storeOperation(operationId, { ...stored, value });
     await this.fire(
       InventoryStorageWriteStage.Reservations,
       "after",
@@ -1099,7 +1106,7 @@ export class InMemoryInventoryDurableStorage
     requireApplyingInventoryOperationPlan(stored.value);
     await this.fire(InventoryStorageWriteStage.Counts, "before", operationId);
     const value = { ...stored.value, countsWritten: true };
-    this.operations.set(operationId, { ...stored, value });
+    this.storeOperation(operationId, { ...stored, value });
     await this.fire(InventoryStorageWriteStage.Counts, "after", operationId);
     return structuredClone(value);
   }
@@ -1121,7 +1128,7 @@ export class InMemoryInventoryDurableStorage
     requireApplyingInventoryOperationPlan(stored.value);
     await this.fire(InventoryStorageWriteStage.Receipt, "before", operationId);
     const value = { ...stored.value, receiptWritten: true };
-    this.operations.set(operationId, { ...stored, value });
+    this.storeOperation(operationId, { ...stored, value });
     await this.fire(InventoryStorageWriteStage.Receipt, "after", operationId);
     return structuredClone(value);
   }
@@ -1170,7 +1177,7 @@ export class InMemoryInventoryDurableStorage
         this.eventJournal.append(plan.event);
       }
       this.world = publishedWorld;
-      this.operations.set(operationId, { value: publishedValue });
+      this.storeOperation(operationId, { value: publishedValue });
       await this.fire(
         InventoryStorageWriteStage.PublishWorld,
         "after",
@@ -1199,7 +1206,7 @@ export class InMemoryInventoryDurableStorage
       state: InventoryDurableOperationState.Completed,
     };
     // Completed retry evidence stays small; the published world now owns the only full snapshots.
-    this.operations.set(operationId, { value });
+    this.storeOperation(operationId, { value });
     await this.fire(
       InventoryStorageWriteStage.CompactOperation,
       "after",
@@ -1257,9 +1264,12 @@ export class InMemoryInventoryDurableStorage
     if (existing !== undefined) {
       assertSameInventoryOperationIntent(existing.value, input.intentFingerprint);
       if (existing.value.state === InventoryDurableOperationState.Completed) {
+        // Legacy receipts may own a mutable retained event; journal reads
+        // already return defensive copies. Never expose either archive alias.
         const event =
-          existing.value.event ??
-          this.eventJournal.eventByOperation(input.operationId);
+          existing.value.event === undefined
+            ? this.eventJournal.eventByOperation(input.operationId)
+            : structuredClone(existing.value.event);
         if (event !== undefined) {
           return {
             worldRevision: existing.value.receipt.worldRevision,
@@ -1271,12 +1281,19 @@ export class InMemoryInventoryDurableStorage
       }
       return undefined;
     }
-    for (const stored of this.operations.values()) {
+    // A restored canonical snapshot includes event idempotency, but does not
+    // include durable receipts. Let the canonical coordinator validate/replay
+    // that retained fact before any hot-row update; its receipt revision cannot
+    // be inferred from an event sequence because claim-only revisions also exist.
+    if (this.eventJournal.eventByOperation(input.operationId) !== undefined) {
+      return undefined;
+    }
+    for (const stored of this.applyingOperations.values()) {
       if (stored.value.state === InventoryDurableOperationState.Applying) {
         return undefined;
       }
     }
-    for (const manifest of this.migrationManifests.values()) {
+    for (const manifest of this.applyingMigrationManifests.values()) {
       if (manifest.state === InventoryMigrationManifestState.Applying) {
         return undefined;
       }
@@ -1368,7 +1385,7 @@ export class InMemoryInventoryDurableStorage
       worldPublished: true,
     };
     this.eventJournal.append(event);
-    this.operations.set(input.operationId, { value });
+    this.storeOperation(input.operationId, { value });
     if (mayEstablishCatalog) {
       this.pendingSegmentedCatalog = structuredClone(input.catalog);
     }
@@ -1504,7 +1521,7 @@ export class InMemoryInventoryDurableStorage
       ...operationWithoutFullPlan,
       state: InventoryDurableOperationState.Aborted,
     };
-    this.operations.set(operationId, { value });
+    this.storeOperation(operationId, { value });
     await this.fire(
       InventoryStorageWriteStage.ClaimAbort,
       "after",
@@ -1532,6 +1549,32 @@ export class InMemoryInventoryDurableStorage
     return result;
   }
 
+  /** Publish one operation row and maintain the exact Applying-only repair/fence index. */
+  private storeOperation(
+    operationId: string,
+    stored: StoredInventoryOperation
+  ): void {
+    this.operations.set(operationId, stored);
+    if (stored.value.state === InventoryDurableOperationState.Applying) {
+      this.applyingOperations.set(operationId, stored);
+    } else {
+      this.applyingOperations.delete(operationId);
+    }
+  }
+
+  /** Publish one migration row and maintain the exact Applying-only repair/fence index. */
+  private storeMigrationManifest(
+    migrationId: string,
+    manifest: InventoryMigrationManifest
+  ): void {
+    this.migrationManifests.set(migrationId, manifest);
+    if (manifest.state === InventoryMigrationManifestState.Applying) {
+      this.applyingMigrationManifests.set(migrationId, manifest);
+    } else {
+      this.applyingMigrationManifests.delete(migrationId);
+    }
+  }
+
   /** Load one operation row or fail rather than inventing repair state. */
   private requireStored(operationId: string): StoredInventoryOperation {
     const stored = this.operations.get(operationId);
@@ -1552,7 +1595,7 @@ export class InMemoryInventoryDurableStorage
 
   /** Reject every normal operation while an unpublished migration batch fences this target. */
   private assertNoApplyingMigrationFence(): void {
-    for (const manifest of this.migrationManifests.values()) {
+    for (const manifest of this.applyingMigrationManifests.values()) {
       if (manifest.state !== InventoryMigrationManifestState.Applying) continue;
       throw new Error(
         `Inventory migration '${manifest.migrationId}' fences unrelated operations.`

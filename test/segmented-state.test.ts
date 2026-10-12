@@ -1,6 +1,6 @@
 import { performance } from "node:perf_hooks";
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   createInMemoryInventorySegmentedPositionStore,
@@ -130,6 +130,108 @@ async function expectSegmentMatchesPublishedWorld(
 }
 
 describe("segmented inventory position store", () => {
+  it("does not expose archived event aliases when replay switches from the legacy path", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage);
+    // Serialized receipt uses canonical validation; its exact retry reaches the
+    // common idempotency lookup before the segmented eligibility filter.
+    const command = {
+      operationId: "replay-legacy-alias",
+      occurredAtEpochMs: time0,
+      to: loosePosition("a", { serialId: "SERIAL-REPLAY" }),
+      amount: stockAmount("1", "piece"),
+    } as const;
+    const first = await inventory.stock.receive(command);
+    const replay = await inventory.stock.receive(command);
+    const position = replay.event.stockEffects[0]?.position;
+    if (position === undefined) throw new Error("Expected serialized receipt effect.");
+    // JavaScript callers may mutate a defensive result even though the TS view
+    // is readonly; the archived event must remain the original fact either way.
+    Reflect.set(position, "placementNodeId", "caller-mutated");
+    expect((await storage.readOperation(command.operationId))?.event)
+      .toEqual(first.event);
+    expect((await inventory.stock.receive(command)).event).toEqual(first.event);
+  });
+
+  it("never enumerates completed operation history when committing or listing work to repair", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage);
+    for (let index = 0; index < 2_000; index += 1) {
+      await inventory.stock.receive({
+        operationId: "history-seed-" + index,
+        occurredAtEpochMs: time0,
+        to: loosePosition("a"),
+        amount: stockAmount("1", "piece"),
+      });
+    }
+    // Observe traversal only. All records are produced by public commands and
+    // retain their real values; the spy does not replace or forge adapter state.
+    const archive = Reflect.get(storage, "operations");
+    const migrationArchive = Reflect.get(storage, "migrationManifests");
+    const values = vi.spyOn(Map.prototype, "values");
+    try {
+      for (let index = 0; index < 10; index += 1) {
+        await inventory.stock.transfer({
+          operationId: "history-tail-" + index,
+          occurredAtEpochMs: time1,
+          from: loosePosition(index % 2 === 0 ? "a" : "b"),
+          toPlacementNodeId: index % 2 === 0 ? "b" : "a",
+          amount: stockAmount("1", "piece"),
+        });
+      }
+      expect(await storage.listApplyingOperations({ limit: 10 })).toEqual([]);
+      expect(await storage.listApplyingMigrationManifests({ limit: 10 })).toEqual([]);
+      expect(values.mock.contexts.filter((context) =>
+        context === archive || context === migrationArchive
+      )).toHaveLength(0);
+    } finally {
+      values.mockRestore();
+    }
+    expect(storage.readPositionSegment().positionsByPlacement("a")[0]
+      ?.measurements.primary.quantity.amountMinor).toBe(2_000);
+  }, 20_000);
+
+  it("rejects a changed receipt retry after snapshot restore without changing stock or revision", async () => {
+    const original = createTestInventory();
+    const command = {
+      operationId: "restored-receipt-retry",
+      occurredAtEpochMs: time0,
+      to: loosePosition("a"),
+      amount: stockAmount("3", "piece"),
+    } as const;
+    await original.stock.receive(command);
+    const exported = await original.read.world();
+    const storage = createInMemoryInventoryDurableStorage({ initialWorld: exported });
+    const restored = createTestInventory(storage);
+    const before = storage.readPositionSegment().materialize();
+    const beforeRevision = storage.readPositionSegment().revision();
+    await expect(restored.stock.receive({
+      ...command,
+      amount: stockAmount("4", "piece"),
+    })).rejects.toThrow();
+    expect(storage.readPositionSegment().revision()).toBe(beforeRevision);
+    expect(storage.readPositionSegment().materialize()).toEqual(before);
+    expect(await storage.readWorld()).toEqual(exported);
+  });
+
+  it("allows exact event replay after snapshot restore without applying stock twice", async () => {
+    const original = createTestInventory();
+    const command = {
+      operationId: "restored-exact-receipt",
+      occurredAtEpochMs: time0,
+      to: loosePosition("a"),
+      amount: stockAmount("3", "piece"),
+    } as const;
+    await original.stock.receive(command);
+    const exported = await original.read.world();
+    const storage = createInMemoryInventoryDurableStorage({ initialWorld: exported });
+    const restored = createTestInventory(storage);
+    const before = storage.readPositionSegment().materialize();
+    await restored.stock.receive(command);
+    expect(storage.readPositionSegment().materialize()).toEqual(before);
+    await expectSegmentMatchesPublishedWorld(storage);
+  });
+
   it("keeps the adapter segmented mirror exact across normal stock lifecycle publication", async () => {
     const storage = createInMemoryInventoryDurableStorage();
     const inventory = createTestInventory(storage);

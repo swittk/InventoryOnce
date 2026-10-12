@@ -1,3 +1,7 @@
+import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { runInNewContext } from "node:vm";
+import ts from "typescript";
 import { describe, expect, it } from "vitest";
 
 import { inventoryMetadataValueFingerprint } from "../src/canonical.js";
@@ -44,6 +48,38 @@ describe("inventorySha256", () => {
       "5bebf12a7f7a884bc001b0d729eaa4fd461e2d42c9f275a03555157655f55b3e",
     ],
   ];
+
+  it("matches native SHA with no Node globals and with an older process shim", () => {
+    // Execute the actual compiled digest module without native crypto, rather
+    // than importing it into Node where the optimized path would hide fallback bugs.
+    const source = readFileSync("src/digest.ts", "utf8");
+    const compiled = ts.transpileModule(source, {
+      compilerOptions: {
+        target: ts.ScriptTarget.ES2022,
+        module: ts.ModuleKind.CommonJS,
+      },
+    }).outputText;
+    for (const oldRuntime of [false, true]) {
+      const exports: { inventorySha256?: typeof inventorySha256 } = {};
+      runInNewContext(compiled, {
+        exports,
+        TextEncoder,
+        ...(oldRuntime ? { process: {} } : {}),
+      });
+      const fallback = exports.inventorySha256;
+      if (fallback === undefined) throw new Error("Digest export was not compiled.");
+      for (const [value, expected] of sha256Vectors) {
+        expect(fallback(value)).toBe(expected);
+      }
+      for (const value of [
+        "\u0000a\u0000b", "\ud800", "\udc00", "🧪คลังยา", "x".repeat(8193),
+      ]) {
+        expect(fallback(value)).toBe(
+          createHash("sha256").update(value, "utf8").digest("hex")
+        );
+      }
+    }
+  });
 
   it.each(sha256Vectors)(
     "matches the SHA-256 known-answer vector for %j",
