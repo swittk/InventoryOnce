@@ -3,3 +3,7 @@ states/
 
 node_modules/
 .chatgpt/
+
+# Exact-run executable evidence includes its producing Git HEAD and cannot
+# truthfully be committed under that same HEAD. Regenerate with pnpm conformance:full.
+formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json

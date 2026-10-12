@@ -46,6 +46,7 @@ import {
   type InventorySegmentedStockEventCommitCapability,
 } from "./segmented-state.js";
 import { inventoryStockPositionIdentity } from "./model.js";
+import type { InventoryStockSelector } from "./selectors.js";
 import { InventoryReservationStatus } from "./reservations.js";
 import { InventoryCountStatus } from "./counts.js";
 import {
@@ -54,6 +55,20 @@ import {
   inventorySparseRecordValue,
   markInventoryObjectDeeplyImmutable,
 } from "./sparse-record.js";
+
+/** Synchronous reference-adapter read capability with no segment mutation methods. */
+type InMemoryInventoryPublishedPositionReader = Pick<
+  InMemoryInventorySegmentedPositionStore,
+  | "revision"
+  | "contentRoot"
+  | "position"
+  | "positivePositionBySerial"
+  | "positionsByItem"
+  | "positionsByItemRevision"
+  | "positionsByPlacement"
+  | "queryPositions"
+  | "materialize"
+>;
 
 /** Clone one published world while restoring own-only semantics for application-id dictionaries. */
 function cloneInventoryPublishedWorld(world: InventoryWorldState): InventoryWorldState {
@@ -507,6 +522,8 @@ export class InMemoryInventoryDurableStorage
   private world: InventoryWorldState;
   /** Indexed hot position segment mirroring the same published world revision. */
   private positionSegment: InMemoryInventorySegmentedPositionStore;
+  /** Immutable read-only capability which always delegates to the current segment. */
+  private readonly publishedPositionReader: InMemoryInventoryPublishedPositionReader;
   /** Append-only event authority independent of canonical flat projection materialization. */
   private eventJournal: InMemoryInventorySegmentedEventJournal;
   /** Catalogue first established by deferred segmented publication before canonical materialization. */
@@ -548,6 +565,36 @@ export class InMemoryInventoryDurableStorage
       positions: Object.values(this.world.projection.positions),
       revision: this.world.revision,
     });
+    // Do not expose the writable store through the optional read capability.
+    // Cache one frozen façade per adapter to avoid allocating readers in hot
+    // paths. Each call looks up the current segment because migration may
+    // replace its backing store after this reader has been handed out.
+    this.publishedPositionReader = Object.freeze({
+      /** Read the current published segment revision. */
+      revision: () => this.positionSegment.revision(),
+      /** Read the authenticated root of current exact positions. */
+      contentRoot: () => this.positionSegment.contentRoot(),
+      /** Read one defensive copy by exact identity. */
+      position: (positionId: string) =>
+        this.positionSegment.position(positionId),
+      /** Read one positive serialized row through the exact serial index. */
+      positivePositionBySerial: (itemId: string, serialId: string) =>
+        this.positionSegment.positivePositionBySerial(itemId, serialId),
+      /** Read all current rows for one item identity. */
+      positionsByItem: (itemId: string) =>
+        this.positionSegment.positionsByItem(itemId),
+      /** Read all current rows for one item revision. */
+      positionsByItemRevision: (itemRevisionId: string) =>
+        this.positionSegment.positionsByItemRevision(itemRevisionId),
+      /** Read current direct-stock rows for one exact placement. */
+      positionsByPlacement: (placementNodeId: string) =>
+        this.positionSegment.positionsByPlacement(placementNodeId),
+      /** Query one indexed direct-position selector. */
+      queryPositions: (selector: InventoryStockSelector) =>
+        this.positionSegment.queryPositions(selector),
+      /** Explicitly clone the complete canonical position/index view. */
+      materialize: () => this.positionSegment.materialize(),
+    });
     this.eventJournal = createInMemoryInventorySegmentedEventJournal({
       events: Object.values(this.world.projection.events),
     });
@@ -555,9 +602,9 @@ export class InMemoryInventoryDurableStorage
     this.failpoint = input.failpoint;
   }
 
-  /** Read the published indexed position segment without materializing another world. */
-  readPositionSegment(): InMemoryInventorySegmentedPositionStore {
-    return this.positionSegment;
+  /** Read the published indexed segment without exposing its mutable store. */
+  readPositionSegment(): InMemoryInventoryPublishedPositionReader {
+    return this.publishedPositionReader;
   }
 
   /** Atomically commit one eligible exact transfer without materializing the whole world. */

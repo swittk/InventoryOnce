@@ -130,6 +130,68 @@ async function expectSegmentMatchesPublishedWorld(
 }
 
 describe("segmented inventory position store", () => {
+  it("returns a frozen reader capability without writable segment methods or stock aliases", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage);
+    await inventory.stock.receive({
+      operationId: "reader-capability-receive",
+      occurredAtEpochMs: time0,
+      to: loosePosition("a"),
+      amount: stockAmount("2", "piece"),
+    });
+    const reader = storage.readPositionSegment();
+    expect(Object.isFrozen(reader)).toBe(true);
+    for (const mutationName of [
+      "applyDelta",
+      "applyStockEffects",
+      "replaceExactPosition",
+    ]) {
+      expect(Reflect.get(reader, mutationName)).toBeUndefined();
+    }
+
+    const result = reader.positionsByPlacement("a")[0];
+    if (result === undefined) throw new Error("Missing reader test row.");
+    Reflect.set(result.key, "placementNodeId", "caller-mutated");
+    expect(reader.positionsByPlacement("a")[0]?.key.placementNodeId).toBe("a");
+
+    const initialRevision = reader.revision();
+    await inventory.stock.transfer({
+      operationId: "reader-capability-move",
+      occurredAtEpochMs: time1,
+      from: loosePosition("a"),
+      toPlacementNodeId: "b",
+      amount: stockAmount("1", "piece"),
+    });
+    // The reader tracks the currently published segment, not a frozen snapshot.
+    expect(reader.revision()).toBe(initialRevision + 1);
+    expect(reader.positionsByPlacement("a")).toHaveLength(1);
+    expect(reader.positionsByPlacement("b")).toHaveLength(1);
+    expect((await inventory.read.world()).revision).toBe(initialRevision + 1);
+  });
+
+  it("keeps a previously issued reader bound to the current backing segment", () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const reader = storage.readPositionSegment();
+    const replacement = createInMemoryInventorySegmentedPositionStore({
+      revision: 17,
+      positions: [segmentedPosition({
+        lotId: "REBUILT-LOT",
+        placementNodeId: "rebuilt-room",
+      })],
+    });
+    // Migration publication replaces this private store. Simulate only that
+    // backing-store swap to verify the read capability doesn't retain an old
+    // store reference; publication/repair semantics have separate tests.
+    Reflect.set(storage, "positionSegment", replacement);
+    expect(reader.revision()).toBe(17);
+    expect(reader.contentRoot()).toBe(replacement.contentRoot());
+    expect(reader.positionsByPlacement("rebuilt-room")).toEqual(
+      replacement.positionsByPlacement("rebuilt-room")
+    );
+    expect(reader.positionsByPlacement("unplaced")).toEqual([]);
+    expect(Reflect.get(reader, "applyStockEffects")).toBeUndefined();
+  });
+
   it("does not expose archived event aliases when replay switches from the legacy path", async () => {
     const storage = createInMemoryInventoryDurableStorage();
     const inventory = createTestInventory(storage);
