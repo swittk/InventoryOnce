@@ -1,7 +1,7 @@
 {
   "counts": {
-    "callables": 2931,
-    "edges": 7692,
+    "callables": 2932,
+    "edges": 7693,
     "publicEntries": 537,
     "publicEntriesWithTargets": 537,
     "publicEntriesWithWitnesses": 537,
@@ -43428,5 +43428,5 @@
     }
   },
   "schemaVersion": 1,
-  "surfaceSha256": "ad931c990b39a6dfb7d1f7a014e59f07d61b554624cc230ed2b92b5cd9a0b37f"
+  "surfaceSha256": "b711f41731a5f06b0c7b2207e5eafbd28b40bbb75fc16c53169bdbecd6b6460a"
 }

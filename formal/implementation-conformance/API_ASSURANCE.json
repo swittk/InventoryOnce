@@ -3,8 +3,8 @@
     "authorityMethods": 14,
     "callAndConstructSignatures": 537,
     "classMethods": 71,
-    "compilerCallGraphCallables": 2931,
-    "compilerCallGraphEdges": 7692,
+    "compilerCallGraphCallables": 2932,
+    "compilerCallGraphEdges": 7693,
     "compilerCallGraphTestRoots": 45,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 537,
@@ -85657,5 +85657,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "ad931c990b39a6dfb7d1f7a014e59f07d61b554624cc230ed2b92b5cd9a0b37f"
+  "surfaceSha256": "b711f41731a5f06b0c7b2207e5eafbd28b40bbb75fc16c53169bdbecd6b6460a"
 }

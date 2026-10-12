@@ -57875,7 +57875,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "UnitCode.__@unitCodeBrand@389": {
+    "UnitCode.__@unitCodeBrand@369": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -59223,7 +59223,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/quantity.ts:8:33.__@unitCodeBrand@389": {
+    "anonymous@src/quantity.ts:8:33.__@unitCodeBrand@369": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -59259,5 +59259,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "ad931c990b39a6dfb7d1f7a014e59f07d61b554624cc230ed2b92b5cd9a0b37f"
+  "surfaceSha256": "b711f41731a5f06b0c7b2207e5eafbd28b40bbb75fc16c53169bdbecd6b6460a"
 }

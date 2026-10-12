@@ -89,28 +89,74 @@ const inventorySortedIdentitySetLineageByArray = new WeakMap<
   InventorySortedIdentitySetLineage
 >();
 
+/** Return whether one identity exists in a canonical sorted identity-set array. */
+function inventorySortedIdentitySetHas(
+  base: readonly string[],
+  identity: string
+): boolean {
+  let low = 0;
+  let high = base.length - 1;
+  while (low <= high) {
+    const middle = (low + high) >>> 1;
+    const candidate = base[middle];
+    if (candidate === undefined) return false;
+    if (candidate === identity) return true;
+    if (candidate < identity) low = middle + 1;
+    else high = middle - 1;
+  }
+  return false;
+}
+
 /** Apply exact membership changes and retain private lineage for incremental value hashing. */
 export function updateInventorySortedIdentitySet(
   base: readonly string[],
   desiredMembership: ReadonlyMap<string, boolean>
 ): readonly string[] {
   if (desiredMembership.size === 0) return base;
-  const baseSet = new Set(base);
-  const next = new Set(base);
-  for (const [identity, present] of desiredMembership) {
-    if (present) next.add(identity);
-    else next.delete(identity);
-  }
+
   const added = new Set<string>();
   const removed = new Set<string>();
   for (const [identity, present] of desiredMembership) {
-    const existed = baseSet.has(identity);
+    const existed = inventorySortedIdentitySetHas(base, identity);
     if (present && !existed) added.add(identity);
     if (!present && existed) removed.add(identity);
   }
   if (added.size === 0 && removed.size === 0) return base;
-  const ordered = [...next];
-  ordered.sort();
+
+  const additions = [...added];
+  additions.sort();
+  const ordered = new Array<string>(
+    base.length - removed.size + additions.length
+  );
+  let baseIndex = 0;
+  let additionIndex = 0;
+  let outputIndex = 0;
+  while (baseIndex < base.length || additionIndex < additions.length) {
+    const baseIdentity = base[baseIndex];
+    const addedIdentity = additions[additionIndex];
+    if (
+      addedIdentity !== undefined &&
+      (baseIdentity === undefined || addedIdentity < baseIdentity)
+    ) {
+      ordered[outputIndex] = addedIdentity;
+      additionIndex += 1;
+      outputIndex += 1;
+      continue;
+    }
+    if (baseIdentity !== undefined) {
+      if (!removed.has(baseIdentity)) {
+        ordered[outputIndex] = baseIdentity;
+        outputIndex += 1;
+      }
+      baseIndex += 1;
+      continue;
+    }
+    throw new Error("Inventory sorted identity-set merge lost one addition.");
+  }
+  if (outputIndex !== ordered.length) {
+    throw new Error("Inventory sorted identity-set merge produced wrong size.");
+  }
+
   Object.freeze(ordered);
   inventorySortedIdentitySetLineageByArray.set(ordered, {
     base,
@@ -190,13 +236,8 @@ export function cloneInventorySparseRecord<T>(
   record: Readonly<Record<string, T>>
 ): Record<string, T> {
   const clone = createInventorySparseRecord<T>();
-  for (const [key, value] of Object.entries(record)) {
-    Object.defineProperty(clone, key, {
-      value,
-      enumerable: true,
-      configurable: true,
-      writable: true,
-    });
+  for (const key of Object.keys(record)) {
+    clone[key] = record[key] as T;
   }
   inventorySparseRecordLineageByRecord.set(clone, {
     base: record,
