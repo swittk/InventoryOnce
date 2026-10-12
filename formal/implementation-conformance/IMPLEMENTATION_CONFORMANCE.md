@@ -4,7 +4,7 @@ This file is generated from the exact TypeScript surface plus the checked API, f
 
 Use the repository `.nvmrc` when one exists; otherwise run the assurance command with a Node version permitted by `package.json#engines`. Edit only checked source/manifests, run `pnpm assurance:generate` when generated evidence must change, then run `pnpm assurance --write-report`.
 
-Surface SHA-256: `adf4f205ed88c7b4bf60ba4fdb2c0a0904c263219361d133b03b770a9375bfa7`
+Surface SHA-256: `d489624fbfb9f033cc4c1e28ada24989bae348920c209f11a295de5f2797cb2e`
 
 ## Mechanically covered surface
 
@@ -17,9 +17,9 @@ Surface SHA-256: `adf4f205ed88c7b4bf60ba4fdb2c0a0904c263219361d133b03b770a9375bf
 - Migration callable exports: 15
 - Kernel callable exports: 169
 - Reachable public data types: 420
-- Classified public fields: 2562
+- Classified public fields: 2566
 - Input-reachable fields: 2172
-- Output-reachable fields: 949
+- Output-reachable fields: 953
 - Callback-argument-reachable fields: 365
 - Callback-result-reachable fields: 433
 - Callable-field overload signatures: 11
@@ -27,8 +27,8 @@ Surface SHA-256: `adf4f205ed88c7b4bf60ba4fdb2c0a0904c263219361d133b03b770a9375bf
 - Explicit undefined-union fields: 3
 - Explicit nullable fields: 6
 - Public call/construct overload signatures: 570
-- Directly executed public APIs: 230
-- Public APIs exercised through tested internal call chains: 336
+- Directly executed public APIs: 234
+- Public APIs exercised through tested internal call chains: 332
 - Explicit-gap public APIs: 4
 - Unreferenced public APIs: 0
 - Explicit recursive type edges: 3
@@ -83,9 +83,9 @@ Any added/removed method, callable export, class method, type field, field type,
 
 | Classification | Fields |
 |---|---:|
-| abstract-semantic | 1220 |
+| abstract-semantic | 1222 |
 | application decoration | 6 |
-| identity/retry-semantic | 757 |
+| identity/retry-semantic | 759 |
 | observational/audit-only | 562 |
 | unsupported/unmodelled | 17 |
 
