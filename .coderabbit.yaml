@@ -1,0 +1,8 @@
+# Keep CodeRabbit focused on human-authored source, tests, and formal models.
+# Generated assurance output, model-run CFGs, and the coordination diary are
+# verified by repository tooling and intentionally excluded from AI review.
+reviews:
+  path_filters:
+    - "!AGENT_DIARY.md"
+    - "!formal/implementation-conformance/**"
+    - "!formal/**/*.cfg"
