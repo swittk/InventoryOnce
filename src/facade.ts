@@ -9062,8 +9062,41 @@ function findInventoryWhereaboutsPositions(
       }
     }
   }
+  // Exact cohorts and item filters are already backed by private indexes:
+  // avoid scanning unrelated warehouse stock just to answer a narrow query.
+  let candidates: readonly InventoryStockPosition[];
+  if (whereaboutsIds !== undefined) {
+    candidates = inventoryWhereaboutsLifecycles(
+      projection,
+      whereaboutsIds
+    ).flatMap(
+      /** Select only the current physical rows of these retained cohorts. */
+      (lifecycle) => lifecycle.currentPositions
+    );
+  } else if (itemIds !== undefined) {
+    const selected: InventoryStockPosition[] = [];
+    for (const itemId of itemIds) {
+      const positionIds =
+        inventorySparseRecordValue(projection.positionIdsByItemId, itemId) ?? [];
+      for (const positionId of positionIds) {
+        const position = inventorySparseRecordValue(
+          projection.positions,
+          positionId
+        );
+        if (position === undefined) {
+          throw new Error(
+            "Whereabouts item-position index references missing stock."
+          );
+        }
+        selected.push(position);
+      }
+    }
+    candidates = selected;
+  } else {
+    candidates = Object.values(projection.positions);
+  }
   const result: InventoryStockPosition[] = [];
-  for (const position of Object.values(projection.positions)) {
+  for (const position of candidates) {
     const key = position.key;
     if (
       key.whereaboutsId === undefined ||

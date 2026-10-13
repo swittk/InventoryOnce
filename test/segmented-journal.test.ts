@@ -17,6 +17,8 @@ import {
   inventoryMeasurementVector,
 } from "../src/measurements.js";
 import { parseQuantity } from "../src/quantity.js";
+import { stockAmount } from "../src/amounts.js";
+import { createTestInventory, loosePosition, time0, time1, time2 } from "./test-fixtures.js";
 
 /** Build one already-committed event fact for journal/index tests. */
 function committedEvent(
@@ -165,6 +167,52 @@ describe("segmented inventory event journal", () => {
     const materialized = journal.materialize();
     expect(materialized.eventSequencesByWhereaboutsId["W-1"]).toEqual([1, 2, 3]);
     expect(materialized.eventSequencesByWhereaboutsId["W-2"]).toEqual([2]);
+  });
+
+  it("materializes the same cohort history as the canonical projection after correcting a detach", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receive({
+      operationId: "journal-parity-receive",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store"),
+      amount: stockAmount("5", "piece"),
+    });
+    const detached = await inventory.stock.detach({
+      operationId: "journal-parity-detach",
+      occurredAtEpochMs: time1,
+      from: loosePosition("store"),
+      amount: stockAmount("2", "piece"),
+    });
+    await inventory.stock.correct({
+      operationId: "journal-parity-correct",
+      correctsEventId: detached.event.eventId,
+      occurredAtEpochMs: time2,
+      reason: "Audit shows these units were issued, not detached.",
+      replaceWith: (plans) =>
+        plans.issue({
+          occurredAtEpochMs: time1,
+          from: loosePosition("store"),
+          amount: stockAmount("2", "piece"),
+        }),
+    });
+    const projection = (await inventory.read.world()).projection;
+    const journal = createInMemoryInventorySegmentedEventJournal({
+      events: Object.values(projection.events).reverse(),
+    });
+    const materialized = journal.materialize();
+    expect(materialized.eventSequencesByWhereaboutsId).toEqual(
+      projection.eventSequencesByWhereaboutsId
+    );
+    expect(materialized.correctionEventIdByCorrectedEventId).toEqual(
+      projection.correctionEventIdByCorrectedEventId
+    );
+    const whereaboutsId = detached.event.stockEffects.find(
+      (effect) => effect.position.whereaboutsId !== undefined
+    )?.position.whereaboutsId;
+    if (whereaboutsId === undefined) {
+      throw new Error("Detached source did not establish a cohort.");
+    }
+    expect(journal.sequencesForWhereabouts(whereaboutsId)).toEqual([2, 3]);
   });
 
   it("fails closed on sequence, operation, and correction ownership conflicts", () => {

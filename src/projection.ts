@@ -542,6 +542,12 @@ function applyInventoryCommittedEventInternal(
         : (state.placementNodeRootEventIdByNodeId as Record<string, string>);
   const correctedPlacementNodeRootEventId =
     normalizedEvent.correction?.correctsEventId;
+  // Only the retained root and its latest superseded correction can own
+  // currently effective metadata for this root. Do not scan the warehouse.
+  const correctedMetadataSources = inventoryCorrectionMetadataSources(
+    state,
+    normalizedEvent
+  );
   const replacementPlacementNodeIds = new Set<string>();
   for (const definition of normalizedEvent.placementNodeDefinitions ?? []) {
     replacementPlacementNodeIds.add(definition.nodeId);
@@ -549,9 +555,16 @@ function applyInventoryCommittedEventInternal(
   /** Only nodes redefined or removed by this event can change serial binding identities. */
   const changedPlacementNodeIds = new Set(replacementPlacementNodeIds);
   if (correctedPlacementNodeRootEventId !== undefined) {
-    for (const [nodeId, projected] of Object.entries(placementNodes)) {
+    const previouslyOwnedNodeIds = new Set<string>();
+    for (const sourceEvent of correctedMetadataSources) {
+      for (const definition of sourceEvent.placementNodeDefinitions ?? []) {
+        previouslyOwnedNodeIds.add(definition.nodeId);
+      }
+    }
+    for (const nodeId of previouslyOwnedNodeIds) {
+      const projected = inventorySparseRecordValue(placementNodes, nodeId);
       if (
-        projected.rootEventId === correctedPlacementNodeRootEventId &&
+        projected?.rootEventId === correctedPlacementNodeRootEventId &&
         !replacementPlacementNodeIds.has(nodeId)
       ) {
         if (projected.retiredByEventId !== undefined) {
@@ -727,9 +740,18 @@ function applyInventoryCommittedEventInternal(
     );
   }
   if (correctedRootEventId !== undefined) {
-    for (const [identity, projected] of Object.entries(lots)) {
+    const previouslyOwnedLotIdentities = new Set<string>();
+    for (const sourceEvent of correctedMetadataSources) {
+      for (const definition of sourceEvent.lotDefinitions ?? []) {
+        previouslyOwnedLotIdentities.add(
+          inventoryLotIdentity(definition.itemId, definition.lotId)
+        );
+      }
+    }
+    for (const identity of previouslyOwnedLotIdentities) {
+      const projected = inventorySparseRecordValue(lots, identity);
       if (
-        projected.rootEventId === correctedRootEventId &&
+        projected?.rootEventId === correctedRootEventId &&
         !replacementLotIdentities.has(identity)
       ) {
         deleteInventorySparseRecordValue(lots, identity);
@@ -1407,6 +1429,29 @@ function reconcileInventoryPlacementEmbodiments({
     });
   }
   return nextPlacement;
+}
+
+/** Identify only metadata-owner events whose definitions can survive into a root correction. */
+function inventoryCorrectionMetadataSources(
+  state: InventoryProjectionState,
+  event: InventoryCommittedEvent
+): readonly InventoryCommittedEvent[] {
+  const correction = event.correction;
+  if (correction === undefined) return [];
+  const root = inventorySparseRecordValue(state.events, correction.correctsEventId);
+  if (root === undefined || root.kind === InventoryEventKind.Correction) {
+    throw new Error("Metadata correction lost its retained root event.");
+  }
+  const supersededId = correction.supersedesCorrectionEventId;
+  if (supersededId === undefined) return [root];
+  const superseded = inventorySparseRecordValue(state.events, supersededId);
+  if (
+    superseded === undefined ||
+    superseded.correction?.correctsEventId !== correction.correctsEventId
+  ) {
+    throw new Error("Metadata correction lost its superseded root assertion.");
+  }
+  return [root, superseded];
 }
 
 /** Return every whereabouts lifecycle identity retained by one event or its corrected root. */

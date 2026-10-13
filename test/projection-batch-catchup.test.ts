@@ -283,6 +283,224 @@ describe("batched canonical projection catch-up", () => {
     expect(base.placementNodes["TAIL-0000"]).toBeUndefined();
   });
 
+  it("corrects stock without enumerating unrelated lot and placement metadata masters", () => {
+    const catalog = createTabletCatalog();
+    const received = commitInventoryEvent(
+      createInventoryReceiptEvent({
+        catalog,
+        operationId: "correction-metadata-scan-receive",
+        occurredAtEpochMs: time0,
+        to: loosePosition("store"),
+        amount: stockAmount("1", "piece"),
+      }),
+      time0,
+      1
+    );
+    const placementMasters = commitInventoryEvent(
+      defineInventoryEvent({
+        catalog,
+        event: {
+          eventId: "correction-metadata-scan-placement-seed",
+          operationId: "correction-metadata-scan-placement-seed",
+          kind: InventoryEventKind.PlacementNodeMetadata,
+          occurredAtEpochMs: time0,
+          stockEffects: [],
+          traceabilityChanges: [],
+          placementNodeDefinitions: Array.from({ length: 250 }, (_, index) => ({
+            nodeId: "MASTER-NODE-" + String(index).padStart(4, "0"),
+            category: "storage",
+          })),
+        },
+      }),
+      time0,
+      2
+    );
+    const lotMasters = commitInventoryEvent(
+      defineInventoryEvent({
+        catalog,
+        event: {
+          eventId: "correction-metadata-scan-lot-seed",
+          operationId: "correction-metadata-scan-lot-seed",
+          kind: InventoryEventKind.LotMetadata,
+          occurredAtEpochMs: time0,
+          stockEffects: [],
+          traceabilityChanges: [],
+          lotDefinitions: Array.from({ length: 250 }, (_, index) => ({
+            itemId: "item-a",
+            lotId: "MASTER-LOT-" + String(index).padStart(4, "0"),
+          })),
+        },
+      }),
+      time0,
+      3
+    );
+    const base = projectInventoryEvents({
+      catalog,
+      events: [received, placementMasters, lotMasters],
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+    });
+    const correction = commitInventoryEvent(
+      defineInventoryEvent({
+        catalog,
+        event: {
+          eventId: "correction-metadata-scan-correction",
+          operationId: "correction-metadata-scan-correction",
+          kind: InventoryEventKind.Correction,
+          occurredAtEpochMs: time0,
+          stockEffects: [],
+          traceabilityChanges: [],
+          correction: {
+            correctsEventId: received.eventId,
+            reason: "Rechecked the original stock receipt.",
+          },
+        },
+      }),
+      time0,
+      4
+    );
+    const originalEntries = Object.entries;
+    let unrelatedMetadataEnumerations = 0;
+    const entries = vi.spyOn(Object, "entries").mockImplementation(
+      /** Detect full scans of unrelated metadata maps during a stock-only correction. */
+      (value: object) => {
+        if (
+          value !== null &&
+          typeof value === "object" &&
+          ((Object.hasOwn(value, "MASTER-NODE-0000") &&
+            Object.hasOwn(value, "MASTER-NODE-0249")) ||
+            (Object.hasOwn(value, '["item-a","MASTER-LOT-0000"]') &&
+              Object.hasOwn(value, '["item-a","MASTER-LOT-0249"]')))
+        ) {
+          unrelatedMetadataEnumerations += 1;
+        }
+        return originalEntries(value);
+      }
+    );
+    let corrected;
+    try {
+      corrected = applyInventoryCommittedEvent({
+        catalog,
+        state: base,
+        event: correction,
+        deficitPolicy: InventoryDeficitPolicy.Reject,
+      }).state;
+    } finally {
+      entries.mockRestore();
+    }
+    expect(unrelatedMetadataEnumerations).toBe(0);
+    expect(corrected.lots).toEqual(base.lots);
+    expect(corrected.placementNodes).toEqual(base.placementNodes);
+  });
+
+  it("removes metadata identities introduced by superseded corrections without global scans", () => {
+    const catalog = createTabletCatalog();
+    /** Create a valid metadata assertion with one concrete definition owner. */
+    const metadataEvent = (
+      sequence: number,
+      kind: InventoryEventKind.LotMetadata | InventoryEventKind.PlacementNodeMetadata,
+      definitions: {
+        readonly lots?: readonly { readonly itemId: string; readonly lotId: string }[];
+        readonly nodes?: readonly { readonly nodeId: string }[];
+      }
+    ) =>
+      commitInventoryEvent(
+        defineInventoryEvent({
+          catalog,
+          event: {
+            eventId: "owned-metadata-root-" + sequence,
+            operationId: "owned-metadata-root-" + sequence,
+            kind,
+            occurredAtEpochMs: time0,
+            stockEffects: [],
+            traceabilityChanges: [],
+            ...(definitions.lots === undefined ? {} : { lotDefinitions: definitions.lots }),
+            ...(definitions.nodes === undefined ? {} : { placementNodeDefinitions: definitions.nodes }),
+          },
+        }),
+        time0,
+        sequence
+      );
+    const originalNode = metadataEvent(1, InventoryEventKind.PlacementNodeMetadata, {
+      nodes: [{ nodeId: "INITIAL-NODE" }],
+    });
+    const originalLot = metadataEvent(2, InventoryEventKind.LotMetadata, {
+      lots: [{ itemId: "item-a", lotId: "INITIAL-LOT" }],
+    });
+    /** Replace or omit one historical metadata root while retaining its identity. */
+    const correction = (
+      sequence: number,
+      root: InventoryCommittedEvent,
+      previous: InventoryCommittedEvent | undefined,
+      definitions: {
+        readonly lots?: readonly { readonly itemId: string; readonly lotId: string }[];
+        readonly nodes?: readonly { readonly nodeId: string }[];
+      }
+    ) =>
+      commitInventoryEvent(
+        defineInventoryEvent({
+          catalog,
+          event: {
+            eventId: "owned-metadata-correction-" + sequence,
+            operationId: "owned-metadata-correction-" + sequence,
+            kind: InventoryEventKind.Correction,
+            occurredAtEpochMs: time0,
+            stockEffects: [],
+            traceabilityChanges: [],
+            correction: {
+              correctsEventId: root.eventId,
+              reason: "Metadata owner was misidentified.",
+              ...(previous === undefined
+                ? {}
+                : { supersedesCorrectionEventId: previous.eventId }),
+            },
+            ...(definitions.lots === undefined ? {} : { lotDefinitions: definitions.lots }),
+            ...(definitions.nodes === undefined ? {} : { placementNodeDefinitions: definitions.nodes }),
+          },
+        }),
+        time0,
+        sequence
+      );
+    const newNode = correction(3, originalNode, undefined, {
+      nodes: [{ nodeId: "REPLACED-NODE" }],
+    });
+    const newLot = correction(4, originalLot, undefined, {
+      lots: [{ itemId: "item-a", lotId: "REPLACED-LOT" }],
+    });
+    const removeNode = correction(5, originalNode, newNode, {});
+    const removeLot = correction(6, originalLot, newLot, {});
+    const events = [originalNode, originalLot, newNode, newLot, removeNode, removeLot];
+    let state = emptyInventoryProjectionState();
+    for (const event of events) {
+      state = applyInventoryCommittedEvent({
+        catalog,
+        state,
+        event,
+        deficitPolicy: InventoryDeficitPolicy.Reject,
+      }).state;
+      if (event === newNode) {
+        expect(state.placementNodes["REPLACED-NODE"]?.rootEventId).toBe(originalNode.eventId);
+      }
+      if (event === newLot) {
+        expect(state.lots['["item-a","REPLACED-LOT"]']?.rootEventId).toBe(originalLot.eventId);
+      }
+    }
+    expect(Object.keys(state.placementNodes)).toEqual([]);
+    expect(Object.keys(state.lots)).toEqual([]);
+    expect(state).toEqual(projectInventoryEvents({
+      catalog,
+      events,
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+    }));
+    expect(
+      applyInventoryCommittedEvents({
+        catalog,
+        state: emptyInventoryProjectionState(),
+        events,
+        deficitPolicy: InventoryDeficitPolicy.Reject,
+      })
+    ).toEqual(state);
+  });
+
   it("reassigns multiple embodied serial bindings atomically during root correction and rejects conflicts", () => {
     const catalog = createTabletCatalog();
     const serialA = inventorySerialIdentity("item-a", "SERIAL-A");

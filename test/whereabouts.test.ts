@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   createInventoryOnce,
   defineInventoryCatalog,
@@ -838,6 +838,68 @@ describe("detached and missing stock whereabouts", () => {
         new Set([cohort.whereaboutsId])
       )
     ).toEqual([cohort]);
+  });
+
+  it("reads an exact whereabouts cohort without enumerating every unrelated warehouse position", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receiveMany({
+      operationId: "cohort-read-warehouse-receive",
+      occurredAtEpochMs: time0,
+      lines: [
+        {
+          to: loosePosition("store-a"),
+          amount: stockAmount("3", "piece"),
+        },
+        {
+          to: loosePosition("store-b"),
+          amount: stockAmount("100", "piece"),
+        },
+      ],
+    });
+    const detached = await inventory.stock.detach({
+      operationId: "cohort-read-warehouse-detach",
+      occurredAtEpochMs: time1,
+      from: loosePosition("store-a"),
+      amount: stockAmount("1", "piece"),
+    });
+    const whereaboutsId = detached.event.stockEffects.find(
+      (effect) => effect.position.whereaboutsId !== undefined
+    )?.position.whereaboutsId;
+    if (whereaboutsId === undefined) {
+      throw new Error("Detach did not retain its whereabouts identity.");
+    }
+    const snapshot = await inventory.read.snapshot();
+    const originalValues = Object.values;
+    const positions = (await inventory.read.world()).projection.positions;
+    const detachedPositionId = Object.keys(positions).find(
+      (identity) => positions[identity]?.key.whereaboutsId === whereaboutsId
+    );
+    if (detachedPositionId === undefined) {
+      throw new Error("Published projection lost the detached stock row.");
+    }
+    const allPositions = vi.spyOn(Object, "values").mockImplementation(
+      /** Reject any warehouse-wide positions enumeration inside the focused read. */
+      (record) => {
+        if (Object.prototype.hasOwnProperty.call(record, detachedPositionId)) {
+          throw new Error("Exact cohort query enumerated every stock position.");
+        }
+        return originalValues(record);
+      }
+    );
+    try {
+      const lifecycles = snapshot.whereabouts({ whereaboutsIds: [whereaboutsId] });
+      expect(lifecycles).toHaveLength(1);
+      expect(lifecycles[0]?.currentPositions[0]?.key.whereaboutsId).toBe(
+        whereaboutsId
+      );
+      // Item-scoped reads should also use the retained item index rather than
+      // enumerating the entire warehouse for a narrow item filter.
+      const byItem = snapshot.whereabouts({ itemIds: ["item-a"] });
+      expect(byItem).toHaveLength(1);
+      expect(byItem[0]?.whereaboutsId).toBe(whereaboutsId);
+    } finally {
+      allPositions.mockRestore();
+    }
   });
 
   it("keeps an embodied node aligned through detach, missing, recovery, and final issue", async () => {
