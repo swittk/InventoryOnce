@@ -790,12 +790,21 @@ function inventoryAffectedHistoricalEventIds(
       }
     }
   }
+  const dependencyKeysByEventId = new Map<string, readonly string[]>();
+  for (const event of proposed) {
+    if (!changed.has(event.eventId)) {
+      dependencyKeysByEventId.set(
+        event.eventId,
+        inventoryEventDependencyKeys(event)
+      );
+    }
+  }
   let expanded = true;
   while (expanded) {
     expanded = false;
     for (const event of proposed) {
       if (changed.has(event.eventId)) continue;
-      const keys = inventoryEventDependencyKeys(event);
+      const keys = dependencyKeysByEventId.get(event.eventId) ?? [];
       if (
         !keys.some(
           /** Detect whether this event touches the already-expanded dependency cone. */

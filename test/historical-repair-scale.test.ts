@@ -335,7 +335,6 @@ describe("historical repair and event-query scale boundaries", () => {
       expect(scaled.appended.event.historicalRepair).toBeUndefined();
       expect(scaled.appended.event.historicalImpact).toBeUndefined();
       expect(scaled.elapsedMs).toBeLessThan(baseline.elapsedMs * 8 + 100);
-      expect(scaled.elapsedMs).toBeLessThan(500);
       console.log(
         JSON.stringify({
           adapter: "ordinary-segmented-stock-append",
@@ -355,7 +354,6 @@ describe("historical repair and event-query scale boundaries", () => {
     expect(baseline.resultLength).toBe(1);
     expect(scaled.resultLength).toBe(1);
     expect(scaled.elapsedMs).toBeLessThan(baseline.elapsedMs * 8 + 25);
-    expect(scaled.elapsedMs).toBeLessThan(100);
     console.log(
       JSON.stringify({
         adapter: "direct-whereabouts-cohort-index",

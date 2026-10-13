@@ -1360,6 +1360,14 @@ export class InMemoryInventoryDurableStorage
         ...stored.value,
         worldPublished: true,
       };
+      const appendEvent =
+        plan.event !== undefined &&
+        this.eventJournal.eventByOperation(plan.event.operationId) === undefined
+          ? plan.event
+          : undefined;
+      if (appendEvent !== undefined) {
+        this.eventJournal.validateAppend(appendEvent);
+      }
       const publishedWorld = freezeInventoryPublishedWorld(nextWorld);
       this.publishPositionSegment(publishedWorld, plan.event);
       if (
@@ -1371,11 +1379,8 @@ export class InMemoryInventoryDurableStorage
         });
         this.placementReader = inventoryReadonlyPlacementReader(this.placementSegment);
       }
-      if (
-        plan.event !== undefined &&
-        this.eventJournal.eventByOperation(plan.event.operationId) === undefined
-      ) {
-        this.eventJournal.append(plan.event);
+      if (appendEvent !== undefined) {
+        this.eventJournal.append(appendEvent);
       }
       this.world = publishedWorld;
       this.refreshProtectedItemScopes(publishedWorld);
@@ -1595,6 +1600,7 @@ export class InMemoryInventoryDurableStorage
       );
     }
 
+    this.eventJournal.validateAppend(event);
     const baseRevision = this.positionSegment.revision();
     const placementRevision = this.placementSegment.revision();
     await this.fire(
@@ -1793,6 +1799,7 @@ export class InMemoryInventoryDurableStorage
       }
     }
 
+    this.eventJournal.validateAppend(event);
     await this.fire(
       InventoryStorageWriteStage.PublishWorld,
       "before",

@@ -111,6 +111,32 @@ export interface CreateInMemoryInventorySegmentedEventJournalInput {
   readonly events?: readonly InventoryCommittedEvent[];
 }
 
+/** One fully validated active-assertion index mutation. */
+interface InventoryPreparedJournalAssertionMutation {
+  /** Stable embedded assertion identity. */
+  readonly assertionId: string;
+  /** Exact public/dependency keys retained for that assertion. */
+  readonly resourceKeys: readonly string[];
+}
+
+/** Side-effect-free preparation for one append-only journal mutation. */
+interface InventoryPreparedJournalAppend {
+  /** Defensive retained copy of the event being appended. */
+  readonly retained: InventoryCommittedEvent;
+  /** Exact whereabouts cohorts touched directly or through correction roots. */
+  readonly touchedWhereaboutsIds: readonly string[];
+  /** Complete resource-key set for the envelope and embedded evidence. */
+  readonly resourceKeys: readonly string[];
+  /** Existing assertion rows removed only after every validation passes. */
+  readonly omittedAssertions: readonly InventoryPreparedJournalAssertionMutation[];
+  /** New assertion rows inserted only after every validation passes. */
+  readonly addedAssertions: readonly InventoryPreparedJournalAssertionMutation[];
+  /** Top-level and embedded physical event kinds. */
+  readonly kinds: readonly InventoryEventKind[];
+  /** Precomputed authenticated event-root leaf. */
+  readonly leaf: InventoryJournalRootLeaf;
+}
+
 /** Reference append-only indexed event journal. */
 export class InMemoryInventorySegmentedEventJournal
   implements InventorySegmentedEventJournal, InventorySegmentedEventQueryReader
@@ -365,11 +391,83 @@ export class InMemoryInventorySegmentedEventJournal
     };
   }
 
+  /** Validate every append invariant without mutating journal rows or indexes. */
+  validateAppend(event: InventoryCommittedEvent): void {
+    this.prepareAppend(event);
+  }
+
   /** Append one exact committed event and update only its touched indexes/root leaves. */
   append(event: InventoryCommittedEvent): void {
+    const prepared = this.prepareAppend(event);
+    const retained = prepared.retained;
+    const correction = retained.correction;
+
+    for (const key of prepared.resourceKeys) {
+      appendJournalSequence(
+        this.sequencesByResourceKey,
+        key,
+        retained.recordSequence
+      );
+    }
+    for (const kind of prepared.kinds) {
+      appendJournalSequence(
+        this.sequencesByKind,
+        kind,
+        retained.recordSequence
+      );
+    }
+    if (correction !== undefined) {
+      appendJournalSequence(
+        this.sequencesByCorrectionRoot,
+        correction.correctsEventId,
+        retained.recordSequence
+      );
+    }
+    for (const omitted of prepared.omittedAssertions) {
+      this.resourceKeysByAssertionId.delete(omitted.assertionId);
+    }
+    for (const added of prepared.addedAssertions) {
+      this.resourceKeysByAssertionId.set(
+        added.assertionId,
+        added.resourceKeys
+      );
+    }
+
+    this.eventsById.set(retained.eventId, retained);
+    this.eventIdBySequence.set(retained.recordSequence, retained.eventId);
+    this.eventIdByOperation.set(retained.operationId, retained.eventId);
+    for (const whereaboutsId of prepared.touchedWhereaboutsIds) {
+      const sequences = this.sequencesByWhereabouts.get(whereaboutsId) ?? [];
+      sequences.push(retained.recordSequence);
+      this.sequencesByWhereabouts.set(whereaboutsId, sequences);
+    }
+    if (correction !== undefined) {
+      this.correctionByRootEvent.set(
+        correction.correctsEventId,
+        retained.eventId
+      );
+    }
+    this.primaryRootSum = inventoryNormalizeJournalRootSum(
+      this.primaryRootSum + prepared.leaf.primary
+    );
+    this.secondaryRootSum = inventoryNormalizeJournalRootSum(
+      this.secondaryRootSum + prepared.leaf.secondary
+    );
+    this.lastSequence = retained.recordSequence;
+  }
+
+  /** Compute every fallible append decision before any journal mutation occurs. */
+  private prepareAppend(
+    event: InventoryCommittedEvent
+  ): InventoryPreparedJournalAppend {
     const retained = cloneInventoryRetainedData(event);
-    if (!Number.isSafeInteger(retained.recordSequence) || retained.recordSequence <= 0) {
-      throw new Error("Segmented journal recordSequence must be a positive safe integer.");
+    if (
+      !Number.isSafeInteger(retained.recordSequence) ||
+      retained.recordSequence <= 0
+    ) {
+      throw new Error(
+        "Segmented journal recordSequence must be a positive safe integer."
+      );
     }
     if (retained.recordSequence !== this.lastSequence + 1) {
       throw new Error(
@@ -387,7 +485,12 @@ export class InMemoryInventorySegmentedEventJournal
       );
     }
 
-    let touchedWhereaboutsIds = inventoryJournalTouchedWhereaboutsIds(retained);
+    let touchedWhereaboutsIds =
+      inventoryJournalTouchedWhereaboutsIds(retained);
+    const resourceKeys = new Set([
+      ...inventoryEventResourceKeys(retained),
+      ...inventoryEventDependencyIndexKeys(retained),
+    ]);
     const correction = retained.correction;
     if (correction !== undefined) {
       const corrected = this.eventsById.get(correction.correctsEventId);
@@ -417,53 +520,12 @@ export class InMemoryInventorySegmentedEventJournal
           `Segmented journal correction must supersede '${currentCorrection}'.`
         );
       }
-      // A correction touches its root's historical cohorts even when its own
-      // stock effects do not name a whereabouts ID. Keep normal appends unchanged.
       touchedWhereaboutsIds = [
         ...new Set([
           ...touchedWhereaboutsIds,
           ...inventoryJournalTouchedWhereaboutsIds(corrected),
         ]),
       ].sort();
-    }
-
-    const resourceKeys = new Set([
-      ...inventoryEventResourceKeys(retained),
-      ...inventoryEventDependencyIndexKeys(retained),
-    ]);
-    const repair = retained.historicalRepair;
-    if (repair !== undefined) {
-      for (const assertionId of repair.omittedAssertionIds) {
-        const earlierKeys = this.resourceKeysByAssertionId.get(assertionId);
-        if (earlierKeys === undefined) {
-          throw new Error(
-            `Segmented journal historical repair omits unknown assertion '${assertionId}'.`
-          );
-        }
-        for (const key of earlierKeys) resourceKeys.add(key);
-        this.resourceKeysByAssertionId.delete(assertionId);
-      }
-      for (const assertion of repair.assertions) {
-        if (this.resourceKeysByAssertionId.has(assertion.assertionId)) {
-          throw new Error(
-            `Segmented journal historical assertion '${assertion.assertionId}' already exists.`
-          );
-        }
-        const assertionKeys = [
-          ...new Set([
-            ...inventoryEventResourceKeys(assertion.event),
-            ...inventoryEventDependencyIndexKeys(assertion.event),
-          ]),
-        ].sort();
-        this.resourceKeysByAssertionId.set(
-          assertion.assertionId,
-          assertionKeys
-        );
-        for (const key of assertionKeys) resourceKeys.add(key);
-      }
-    }
-    if (correction !== undefined) {
-      const corrected = this.eventsById.get(correction.correctsEventId)!;
       for (const key of [
         ...inventoryEventResourceKeys(corrected),
         ...inventoryEventDependencyIndexKeys(corrected),
@@ -471,49 +533,76 @@ export class InMemoryInventorySegmentedEventJournal
         resourceKeys.add(key);
       }
     }
-    for (const key of resourceKeys) {
-      appendJournalSequence(this.sequencesByResourceKey, key, retained.recordSequence);
-    }
-    const kinds = new Set<InventoryEventKind>([
-      retained.kind,
-      ...(retained.historicalRepair?.assertions.map(
-        /** Index the physical kind carried by one embedded assertion envelope. */
-        (assertion) => assertion.event.kind
-      ) ?? []),
-    ]);
-    for (const kind of kinds) {
-      appendJournalSequence(this.sequencesByKind, kind, retained.recordSequence);
-    }
-    if (correction !== undefined) {
-      appendJournalSequence(
-        this.sequencesByCorrectionRoot,
-        correction.correctsEventId,
-        retained.recordSequence
-      );
+
+    const omittedAssertions: InventoryPreparedJournalAssertionMutation[] = [];
+    const addedAssertions: InventoryPreparedJournalAssertionMutation[] = [];
+    const repair = retained.historicalRepair;
+    if (repair !== undefined) {
+      const omittedIds = new Set<string>();
+      for (const assertionId of repair.omittedAssertionIds) {
+        if (omittedIds.has(assertionId)) {
+          throw new Error(
+            `Segmented journal historical repair repeats omitted assertion '${assertionId}'.`
+          );
+        }
+        omittedIds.add(assertionId);
+        const earlierKeys = this.resourceKeysByAssertionId.get(assertionId);
+        if (earlierKeys === undefined) {
+          throw new Error(
+            `Segmented journal historical repair omits unknown assertion '${assertionId}'.`
+          );
+        }
+        omittedAssertions.push({
+          assertionId,
+          resourceKeys: earlierKeys,
+        });
+        for (const key of earlierKeys) resourceKeys.add(key);
+      }
+
+      const addedIds = new Set<string>();
+      for (const assertion of repair.assertions) {
+        if (
+          addedIds.has(assertion.assertionId) ||
+          (this.resourceKeysByAssertionId.has(assertion.assertionId) &&
+            !omittedIds.has(assertion.assertionId))
+        ) {
+          throw new Error(
+            `Segmented journal historical assertion '${assertion.assertionId}' already exists.`
+          );
+        }
+        addedIds.add(assertion.assertionId);
+        const assertionKeys = [
+          ...new Set([
+            ...inventoryEventResourceKeys(assertion.event),
+            ...inventoryEventDependencyIndexKeys(assertion.event),
+          ]),
+        ].sort();
+        addedAssertions.push({
+          assertionId: assertion.assertionId,
+          resourceKeys: assertionKeys,
+        });
+        for (const key of assertionKeys) resourceKeys.add(key);
+      }
     }
 
-    this.eventsById.set(retained.eventId, retained);
-    this.eventIdBySequence.set(retained.recordSequence, retained.eventId);
-    this.eventIdByOperation.set(retained.operationId, retained.eventId);
-    for (const whereaboutsId of touchedWhereaboutsIds) {
-      const sequences = this.sequencesByWhereabouts.get(whereaboutsId) ?? [];
-      sequences.push(retained.recordSequence);
-      this.sequencesByWhereabouts.set(whereaboutsId, sequences);
-    }
-    if (correction !== undefined) {
-      this.correctionByRootEvent.set(
-        correction.correctsEventId,
-        retained.eventId
-      );
-    }
-    const leaf = inventoryJournalEventLeaf(retained);
-    this.primaryRootSum = inventoryNormalizeJournalRootSum(
-      this.primaryRootSum + leaf.primary
-    );
-    this.secondaryRootSum = inventoryNormalizeJournalRootSum(
-      this.secondaryRootSum + leaf.secondary
-    );
-    this.lastSequence = retained.recordSequence;
+    const kinds = [
+      ...new Set<InventoryEventKind>([
+        retained.kind,
+        ...(retained.historicalRepair?.assertions.map(
+          /** Index the physical kind carried by one embedded assertion envelope. */
+          (assertion) => assertion.event.kind
+        ) ?? []),
+      ]),
+    ];
+    return {
+      retained,
+      touchedWhereaboutsIds,
+      resourceKeys: [...resourceKeys].sort(),
+      omittedAssertions,
+      addedAssertions,
+      kinds,
+      leaf: inventoryJournalEventLeaf(retained),
+    };
   }
 
   /** Materialize the legacy flat event/index projection on explicit request only. */

@@ -4,14 +4,14 @@ This file is generated from the exact TypeScript surface plus the checked API, f
 
 Use the repository `.nvmrc` when one exists; otherwise run the assurance command with a Node version permitted by `package.json#engines`. Edit only checked source/manifests, run `pnpm assurance:generate` when generated evidence must change, then run `pnpm assurance --write-report`.
 
-Surface SHA-256: `5da8e928a1a763445d3181f35b896df26cf8275b0457a29e60a8ef1a9573d2ec`
+Surface SHA-256: `197525276018ee6988232058b2a5d73472653a09c2d57bc0778f83e823d89a2a`
 
 ## Mechanically covered surface
 
 - Grouped façade/read methods: 135
 - Authority-port methods: 14
 - Durable-storage-port methods: 17
-- Public exported class methods: 108
+- Public exported class methods: 109
 - Root callable exports: 100
 - Storage callable exports: 36
 - Migration callable exports: 15
@@ -26,8 +26,8 @@ Surface SHA-256: `5da8e928a1a763445d3181f35b896df26cf8275b0457a29e60a8ef1a9573d2
 - Optional fields: 1125
 - Explicit undefined-union fields: 11
 - Explicit nullable fields: 9
-- Public call/construct overload signatures: 615
-- Directly executed public APIs: 249
+- Public call/construct overload signatures: 616
+- Directly executed public APIs: 250
 - Public APIs exercised through tested internal call chains: 362
 - Explicit-gap public APIs: 4
 - Unreferenced public APIs: 0
@@ -51,7 +51,7 @@ Any added/removed method, callable export, class method, type field, field type,
 | correction | 4 | CorrectionHistory, InventoryOperation, PublishedHeadCAS | covered | GAP-COUNT-CORRECTION-HISTORY-REPLAY |
 | count | 11 | PhysicalCount, InventoryOperation, PublishedHeadCAS, ResourceDimensions | covered | GAP-COUNT-CORRECTION-HISTORY-REPLAY |
 | dimension-reclassification | 30 | ResourceDimensions, ReclassificationConservation, InventoryOperation, PlacementGraph | covered | — |
-| durable-protocol | 92 | InventoryOperation, PublishedHeadCAS, RepairLiveness, DurableTransferRefinement, SnapshotSupersededWorkflow | covered | GAP-DB-IMPLEMENTATION-UNBOUNDED, GAP-PRODUCTION-STORAGE-SCALE-GC, GAP-HASH-COLLISION-ASSUMPTION |
+| durable-protocol | 93 | InventoryOperation, PublishedHeadCAS, RepairLiveness, DurableTransferRefinement, SnapshotSupersededWorkflow | covered | GAP-DB-IMPLEMENTATION-UNBOUNDED, GAP-PRODUCTION-STORAGE-SCALE-GC, GAP-HASH-COLLISION-ASSUMPTION |
 | external-plugin-boundary | 4 | CatalogPublication | explicit-gap | GAP-EXTERNAL-MIGRATION-CALLBACKS, GAP-LEGACY-SOURCE-INTERPRETATION |
 | facade-construction | 2 | InventoryOperation | covered | GAP-EXTERNAL-CLOCK, GAP-DB-IMPLEMENTATION-UNBOUNDED |
 | fungibility-movement | 3 | FungibilityPool, ReservationScope, ReservationSafety, UseByReservation, InventoryOperation, PublishedHeadCAS | covered | GAP-FUNGIBILITY-EXACT-SEARCH-BOUND |

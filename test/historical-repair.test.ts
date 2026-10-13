@@ -145,6 +145,192 @@ describe("late historical repair", () => {
     ).toEqual([]);
   });
 
+  it("does not mutate segmented stock when journal validation rejects", async () => {
+    const catalog = createTabletCatalog();
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage, catalog);
+    await inventory.stock.receive({
+      operationId: "segmented-journal-reject-root",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store"),
+      amount: stockAmount("1", "piece"),
+    });
+    const beforeWorld = await inventory.read.world();
+    const plan = await inventory.stock.planHistorical({
+      operationId: "segmented-journal-reject-stock",
+      occurredAtEpochMs: time3,
+      reason: "Build one net-zero missing-to-found repair.",
+      assertions: [
+        {
+          assertionId: "segmented-journal-reject-missing",
+          assert: (plans) =>
+            plans.markMissing({
+              occurredAtEpochMs: time1,
+              from: loosePosition("store"),
+              amount: stockAmount("1", "piece"),
+            }),
+        },
+        {
+          assertionId: "segmented-journal-reject-found",
+          assert: (plans) =>
+            plans.place({
+              occurredAtEpochMs: time2,
+              from: plans.outputOf("segmented-journal-reject-missing"),
+              into: "store",
+              amount: stockAmount("1", "piece"),
+            }),
+        },
+      ],
+    });
+    expect(plan.valid).toBe(true);
+    if (!plan.valid || plan.event.historicalRepair === undefined) {
+      throw new Error("Expected one valid historical repair plan.");
+    }
+    expect(plan.event.stockEffects).toEqual([]);
+    const beforeSegment = storage.readPositionSegment().materialize();
+    const beforeSegmentRevision = storage.readPositionSegment().revision();
+    const invalidEvent = {
+      ...plan.event,
+      historicalRepair: {
+        ...plan.event.historicalRepair,
+        omittedAssertionIds: ["assertion-that-does-not-exist"],
+      },
+    };
+
+    await expect(
+      storage.commitSegmentedStockEvent({
+        catalog: inventoryCatalogSnapshot(catalog),
+        operationId: invalidEvent.operationId,
+        intentFingerprint: "segmented-journal-reject-stock-intent",
+        recordedAtEpochMs: time3,
+        expectedWorldRevision: beforeWorld.revision,
+        expectedRecordSequence: beforeWorld.projection.lastRecordSequence,
+        event: invalidEvent,
+      })
+    ).rejects.toThrow("omits unknown assertion");
+
+    expect(storage.readPositionSegment().revision()).toBe(
+      beforeSegmentRevision
+    );
+    expect(storage.readPositionSegment().materialize()).toEqual(beforeSegment);
+    expect((await storage.readWorld()).revision).toBe(beforeWorld.revision);
+    expect(
+      await storage.readOperation(invalidEvent.operationId)
+    ).toBeUndefined();
+  });
+
+  it("does not mutate segmented placement when journal validation rejects", async () => {
+    const catalog = createTabletCatalog();
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage, catalog);
+    await inventory.placement.define({
+      operationId: "segmented-placement-source-definition",
+      occurredAtEpochMs: time0,
+      nodeId: "SEGMENTED-SOURCE",
+      placementNode: { category: "cart", acceptsPlacement: true },
+    });
+    await inventory.placement.define({
+      operationId: "segmented-placement-target-definition",
+      occurredAtEpochMs: time0,
+      nodeId: "SEGMENTED-TARGET",
+      placementNode: { category: "room", acceptsPlacement: true },
+    });
+    const beforeWorld = await inventory.read.world();
+    const beforePositions = storage.readPositionSegment().materialize();
+    const beforePositionRevision = storage.readPositionSegment().revision();
+    const beforePlacement = storage.readPlacementSegment().materialize();
+    const beforePlacementRevision = storage.readPlacementSegment().revision();
+    const journal = Reflect.get(storage, "eventJournal") as {
+      /** Side-effect-free journal append validation owned by the reference adapter. */
+      validateAppend(event: unknown): void;
+    };
+    const validate = vi.spyOn(journal, "validateAppend").mockImplementation(
+      /** Simulate one future journal invariant rejecting before publication. */
+      () => {
+        throw new Error("synthetic journal rejection");
+      }
+    );
+    try {
+      await expect(
+        storage.commitSegmentedPlacementChange({
+          operationId: "segmented-placement-rejected",
+          intentFingerprint: "segmented-placement-rejected-intent",
+          catalog: inventoryCatalogSnapshot(catalog),
+          recordedAtEpochMs: time2,
+          occurredAtEpochMs: time1,
+          nodeId: "SEGMENTED-SOURCE",
+          toParentNodeId: "SEGMENTED-TARGET",
+          expectedParent: null,
+        })
+      ).rejects.toThrow("synthetic journal rejection");
+    } finally {
+      validate.mockRestore();
+    }
+
+    expect(storage.readPositionSegment().revision()).toBe(
+      beforePositionRevision
+    );
+    expect(storage.readPositionSegment().materialize()).toEqual(beforePositions);
+    expect(storage.readPlacementSegment().revision()).toBe(
+      beforePlacementRevision
+    );
+    expect(storage.readPlacementSegment().materialize()).toEqual(
+      beforePlacement
+    );
+    expect((await storage.readWorld()).revision).toBe(beforeWorld.revision);
+    expect(
+      await storage.readOperation("segmented-placement-rejected")
+    ).toBeUndefined();
+  });
+
+  it("does not publish canonical hot state when journal validation rejects", async () => {
+    const storage = createInMemoryInventoryDurableStorage({
+      /** Presence of this no-op failpoint keeps the operation on the staged coordinator path. */
+      failpoint: () => undefined,
+    });
+    const inventory = createTestInventory(storage);
+    const beforeWorld = await inventory.read.world();
+    const beforePositions = storage.readPositionSegment().materialize();
+    const beforePositionRevision = storage.readPositionSegment().revision();
+    const beforePlacement = storage.readPlacementSegment().materialize();
+    const beforePlacementRevision = storage.readPlacementSegment().revision();
+    const journal = Reflect.get(storage, "eventJournal") as {
+      /** Side-effect-free journal append validation owned by the reference adapter. */
+      validateAppend(event: unknown): void;
+    };
+    const validate = vi.spyOn(journal, "validateAppend").mockImplementation(
+      /** Simulate one journal invariant rejecting before canonical publication. */
+      () => {
+        throw new Error("synthetic canonical journal rejection");
+      }
+    );
+    try {
+      await expect(
+        inventory.stock.receive({
+          operationId: "canonical-journal-rejected",
+          occurredAtEpochMs: time0,
+          to: loosePosition("store"),
+          amount: stockAmount("1", "piece"),
+        })
+      ).rejects.toThrow("synthetic canonical journal rejection");
+    } finally {
+      validate.mockRestore();
+    }
+
+    expect(storage.readPositionSegment().revision()).toBe(
+      beforePositionRevision
+    );
+    expect(storage.readPositionSegment().materialize()).toEqual(beforePositions);
+    expect(storage.readPlacementSegment().revision()).toBe(
+      beforePlacementRevision
+    );
+    expect(storage.readPlacementSegment().materialize()).toEqual(
+      beforePlacement
+    );
+    expect((await storage.readWorld()).revision).toBe(beforeWorld.revision);
+    expect((await inventory.read.events()).events).toEqual([]);
+  });
+
   it("falls back to the protected coordinator for same-item claims and counts", async () => {
     {
       const storage = createInMemoryInventoryDurableStorage();

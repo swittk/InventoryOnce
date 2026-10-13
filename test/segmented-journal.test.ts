@@ -215,6 +215,69 @@ describe("segmented inventory event journal", () => {
     expect(journal.sequencesForWhereabouts(whereaboutsId)).toEqual([2, 3]);
   });
 
+  it("leaves assertion indexes unchanged when one repair append is rejected", async () => {
+    const inventory = createTestInventory();
+    const root = await inventory.stock.receive({
+      operationId: "journal-atomic-root",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store"),
+      amount: stockAmount("2", "piece"),
+    });
+    const repair = await inventory.stock.recordHistorical({
+      operationId: "journal-atomic-repair",
+      occurredAtEpochMs: time2,
+      reason: "One piece was historically discarded.",
+      assertions: [
+        {
+          assertionId: "journal-atomic-scrap",
+          assert: (plans) =>
+            plans.scrap({
+              occurredAtEpochMs: time1,
+              from: loosePosition("store"),
+              amount: stockAmount("1", "piece"),
+              reason: "Historical disposal.",
+            }),
+        },
+      ],
+    });
+    const journal = createInMemoryInventorySegmentedEventJournal({
+      events: [root.event, repair.event],
+    });
+    const beforeRoot = journal.contentRoot();
+    const beforeMaterialized = journal.materialize();
+    const rejected = {
+      ...repair.event,
+      eventId: "journal-atomic-rejected",
+      operationId: "journal-atomic-rejected",
+      recordedAtEpochMs: time2 + 1,
+      recordSequence: 3,
+      historicalRepair: {
+        assertions: [],
+        omittedAssertionIds: [
+          "journal-atomic-scrap",
+          "journal-atomic-missing",
+        ],
+      },
+    };
+
+    expect(() => journal.append(rejected)).toThrow("omits unknown assertion");
+    expect(journal.lastRecordSequence()).toBe(2);
+    expect(journal.contentRoot()).toBe(beforeRoot);
+    expect(journal.materialize()).toEqual(beforeMaterialized);
+
+    journal.append({
+      ...rejected,
+      eventId: "journal-atomic-valid",
+      operationId: "journal-atomic-valid",
+      historicalRepair: {
+        assertions: [],
+        omittedAssertionIds: ["journal-atomic-scrap"],
+      },
+    });
+    expect(journal.lastRecordSequence()).toBe(3);
+    expect(journal.eventBySequence(3)?.eventId).toBe("journal-atomic-valid");
+  });
+
   it("fails closed on sequence, operation, and correction ownership conflicts", () => {
     const journal = createInMemoryInventorySegmentedEventJournal();
     const root = committedEvent(1);
