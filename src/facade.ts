@@ -120,6 +120,20 @@ import {
 } from "./commands.js";
 import { createInventoryCorrectionEvent } from "./corrections.js";
 import {
+  InventoryHistoricalReplayConflictError,
+  type InventoryHistoricalReplayConflict,
+} from "./historical-replay.js";
+import {
+  createInventoryHistoricalRepairEvent,
+  InventoryHistoricalRepairMetadataError,
+} from "./historical-repair.js";
+import { loadInventoryHistoricalDependencies } from "./historical-dependencies.js";
+import {
+  queryInventoryProjectionEvents,
+  type InventoryEventPage,
+  type InventoryEventQuery,
+} from "./event-query.js";
+import {
   INVENTORY_RECORDED_DEFICIT_LOT_ID,
   inventoryPositionIsDeficit,
 } from "./deficits.js";
@@ -132,6 +146,8 @@ import {
   inventoryEventIntentFingerprint,
   type InventoryCommittedEvent,
   type InventoryEventDraft,
+  type InventoryHistoricalAssertion,
+  type InventoryHistoricalImpact,
   type InventoryStockEffect,
   type InventoryTraceabilityRelationChange,
 } from "./events.js";
@@ -246,6 +262,7 @@ import {
   type InventoryStockSelector,
 } from "./selectors.js";
 import {
+  inventoryStorageSupportsEventQuery,
   inventoryStorageSupportsSegmentedPlacement,
   type InventoryDurableStorage,
   type InventoryOperationReceipt,
@@ -1174,6 +1191,89 @@ export interface InventoryOnceCorrectInput extends InventoryCommandHeader {
   ) => InventoryOnceReplacementPlan;
 }
 
+/** Valid side-effect-free correction preview against one exact published revision. */
+export interface InventoryOnceValidCorrectionPlan {
+  /** Discriminator proving this plan reached one coherent corrected history. */
+  readonly valid: true;
+  /** Published world revision from which the plan was derived. */
+  readonly basedOnWorldRevision: number;
+  /** Exact uncommitted correction event that normal `stock.correct` would publish. */
+  readonly event: InventoryEventDraft;
+  /** Typed replay consequences retained on the correction event. */
+  readonly impact: InventoryHistoricalImpact;
+}
+
+/** Side-effect-free correction preview whose historical replay is not coherent. */
+export interface InventoryOnceInvalidCorrectionPlan {
+  /** Discriminator proving nothing can be committed from this result. */
+  readonly valid: false;
+  /** Published world revision from which the conflict was derived. */
+  readonly basedOnWorldRevision: number;
+  /** Structured exact replay failure. */
+  readonly conflict: InventoryHistoricalReplayConflict;
+}
+
+/** Side-effect-free correction planning result. */
+export type InventoryOnceCorrectionPlan =
+  | InventoryOnceValidCorrectionPlan
+  | InventoryOnceInvalidCorrectionPlan;
+
+/** Existing physical-verb planner plus safe references to prior bundle assertions. */
+export interface InventoryOnceHistoricalAssertionPlans
+  extends InventoryOnceReplacementPlans {
+  /** Read one prior assertion's exact consumed/source position by negative-effect order. */
+  inputOf(assertionId: string, index?: number): InventoryStockPositionInput;
+  /** Read one prior assertion's exact produced/destination position by positive-effect order. */
+  outputOf(assertionId: string, index?: number): InventoryStockPositionInput;
+}
+
+/** One stable ordinary assertion to insert into effective physical history. */
+export interface InventoryOnceHistoricalAssertionInput {
+  /** Stable identity used for audit and later append-only omission/replacement. */
+  readonly assertionId: string;
+  /** Optional retained/effective event after which this assertion must replay. */
+  readonly afterEventId?: string;
+  /** Build one ordinary assertion from the existing correction-plan verbs. */
+  readonly assert: (
+    plans: InventoryOnceHistoricalAssertionPlans
+  ) => InventoryOnceReplacementPlan;
+}
+
+/** Inputs for one atomic append-only late-history repair bundle. */
+export interface InventoryOnceHistoricalRepairInput extends InventoryCommandHeader {
+  /** Late assertions that must become coherent together. */
+  readonly assertions: readonly InventoryOnceHistoricalAssertionInput[];
+  /** Earlier embedded assertion identities removed from latest effective history. */
+  readonly omittedAssertionIds?: readonly string[];
+}
+
+/** Coherent side-effect-free late-history repair plan. */
+export interface InventoryOnceValidHistoricalRepairPlan {
+  /** Discriminator proving this bundle replays coherently. */
+  readonly valid: true;
+  /** Published world revision against which the bundle was planned. */
+  readonly basedOnWorldRevision: number;
+  /** Exact uncommitted repair envelope. */
+  readonly event: InventoryEventDraft;
+  /** Typed affected-event and historical-deficit consequences. */
+  readonly impact: InventoryHistoricalImpact;
+}
+
+/** Late-history repair plan that cannot be coherently replayed. */
+export interface InventoryOnceInvalidHistoricalRepairPlan {
+  /** Discriminator proving this bundle cannot be committed. */
+  readonly valid: false;
+  /** Published world revision against which the conflict was derived. */
+  readonly basedOnWorldRevision: number;
+  /** Structured deterministic replay failure. */
+  readonly conflict: InventoryHistoricalReplayConflict;
+}
+
+/** Side-effect-free atomic late-history repair result. */
+export type InventoryOnceHistoricalRepairPlan =
+  | InventoryOnceValidHistoricalRepairPlan
+  | InventoryOnceInvalidHistoricalRepairPlan;
+
 /** Inputs for creating one broad/exact inventory reservation. */
 export type InventoryOnceReserveInput = NewInventoryReservation;
 
@@ -1602,6 +1702,18 @@ export interface InventoryOnceStockApi {
   scrapByPolicy(
     input: InventoryOnceScrapByPolicyInput
   ): Promise<InventoryOnceEventResult>;
+  /** Plan one atomic late-history assertion bundle without writing inventory truth. */
+  planHistorical(
+    input: InventoryOnceHistoricalRepairInput
+  ): Promise<InventoryOnceHistoricalRepairPlan>;
+  /** Append one atomic late-history assertion bundle after replanning current truth. */
+  recordHistorical(
+    input: InventoryOnceHistoricalRepairInput
+  ): Promise<InventoryOnceEventResult>;
+  /** Plan one correction against the current world without writing inventory truth. */
+  planCorrection(
+    input: InventoryOnceCorrectInput
+  ): Promise<InventoryOnceCorrectionPlan>;
   /** Append/supersede one correction using a normal declarative replacement plan. */
   correct(input: InventoryOnceCorrectInput): Promise<InventoryOnceEventResult>;
 }
@@ -1778,6 +1890,8 @@ export interface InventoryOnceReadSnapshotApi {
   whereaboutsHistory(
     input?: InventoryWhereaboutsHistoryQuery
   ): readonly InventoryWhereaboutsLifecycle[];
+  /** Query retained events from this exact published snapshot in durable order. */
+  events(input?: InventoryEventQuery): InventoryEventPage;
   /** Read one revision-safe physical summary from this exact snapshot. */
   summary(selector: InventoryStockSelector): InventoryStockSummary;
   /** Read claim-aware physical and expiry availability from this exact snapshot. */
@@ -1852,6 +1966,8 @@ export interface InventoryOnceReadApi {
   whereaboutsHistory(
     input?: InventoryWhereaboutsHistoryQuery
   ): Promise<readonly InventoryWhereaboutsLifecycle[]>;
+  /** Query retained events through adapter-native indexes when available. */
+  events(input?: InventoryEventQuery): Promise<InventoryEventPage>;
   /** Read one revision-safe physical summary with package/lot/direct-placement/status/party breakdowns. */
   summary(selector: InventoryStockSelector): Promise<InventoryStockSummary>;
   /** Read truthful physical/use-by/exact-allocation/broad-claim availability facts. */
@@ -2026,6 +2142,56 @@ async function commitInventorySegmentedStockEventIfEligible(
   return {
     receipt: {
       operationId: event.operationId,
+      recordedAtEpochMs: committed.recordedAtEpochMs,
+      worldRevision: committed.worldRevision,
+      eventId: committed.event.eventId,
+    },
+    event: committed.event,
+    replayed: committed.replayed,
+  };
+}
+
+/**
+ * Try one state-dependent correction/repair envelope through adapter-native stock/journal state.
+ * Exact world and journal fences make a stale plan decline cleanly to normal coordinator replanning.
+ */
+async function commitInventorySegmentedHistoricalEventIfEligible(
+  owner: InventoryOnce,
+  operationId: string,
+  intentFingerprint: string,
+  planEvent: (
+    world: InventoryWorldState,
+    recordedAtEpochMs: number
+  ) => Promise<InventoryEventDraft>
+): Promise<InventoryOnceEventResult | undefined> {
+  const internals = requireInventoryOnceInternals(owner);
+  if (
+    internals.deficitPolicy !== InventoryDeficitPolicy.Reject ||
+    !inventoryStorageSupportsSegmentedStockEventCommit(internals.storage)
+  ) {
+    return undefined;
+  }
+  // Exact replay/applying recovery remains the generic coordinator's authority.
+  if (await internals.storage.readOperation(operationId) !== undefined) {
+    return undefined;
+  }
+  const world = await internals.storage.readWorld();
+  assertInventoryCatalogRetainsSnapshot(internals.catalog, world.catalog);
+  const recordedAtEpochMs = internals.clock.nowEpochMs();
+  const event = await planEvent(world, recordedAtEpochMs);
+  const committed = await internals.storage.commitSegmentedStockEvent({
+    catalog: inventoryCatalogSnapshot(internals.catalog),
+    operationId,
+    intentFingerprint,
+    recordedAtEpochMs,
+    expectedWorldRevision: world.revision,
+    expectedRecordSequence: world.projection.lastRecordSequence,
+    event,
+  });
+  if (committed === undefined) return undefined;
+  return {
+    receipt: {
+      operationId,
       recordedAtEpochMs: committed.recordedAtEpochMs,
       worldRevision: committed.worldRevision,
       eventId: committed.event.eventId,
@@ -3093,6 +3259,253 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
     );
   }
 
+  /** Plan one late-history bundle through the exact commit-time replay engine. */
+  async planHistorical(
+    input: InventoryOnceHistoricalRepairInput
+  ): Promise<InventoryOnceHistoricalRepairPlan> {
+    const internals = requireInventoryOnceInternals(this.owner);
+    const world = await internals.storage.readWorld();
+    assertInventoryCatalogRetainsSnapshot(internals.catalog, world.catalog);
+    const assertions = buildInventoryHistoricalAssertions(
+      internals.catalog,
+      input
+    );
+    const omittedAssertionIds = normalizeHistoricalAssertionIds(
+      input.omittedAssertionIds ?? [],
+      "omitted historical assertionId"
+    );
+    const historyEvents = await loadInventoryHistoricalDependencies({
+      storage: internals.storage,
+      projection: world.projection,
+      seedEvents: assertions.map(
+        /** Select one embedded assertion event as a dependency seed. */
+        (assertion) => assertion.event
+      ),
+      assertionIds: omittedAssertionIds,
+    });
+    try {
+      const planned = createInventoryHistoricalRepairEvent(
+        {
+          operationId: input.operationId,
+          occurredAtEpochMs: input.occurredAtEpochMs,
+          ...(input.actorId === undefined ? {} : { actorId: input.actorId }),
+          ...(input.sourcePartyId === undefined
+            ? {}
+            : { sourcePartyId: input.sourcePartyId }),
+          ...(input.destinationPartyId === undefined
+            ? {}
+            : { destinationPartyId: input.destinationPartyId }),
+          ...(input.sourceReference === undefined
+            ? {}
+            : { sourceReference: input.sourceReference }),
+          ...(input.reason === undefined ? {} : { reason: input.reason }),
+          ...(input.metadata === undefined ? {} : { metadata: input.metadata }),
+          catalog: internals.catalog,
+          projection: world.projection,
+          recordedAtEpochMs: internals.clock.nowEpochMs(),
+          assertions,
+          omittedAssertionIds,
+          ...(historyEvents === undefined ? {} : { historyEvents }),
+        },
+        internals.deficitPolicy
+      );
+      if (planned.event.historicalImpact === undefined) {
+        throw new Error("Historical repair planner did not retain impact.");
+      }
+      return {
+        valid: true,
+        basedOnWorldRevision: world.revision,
+        event: planned.event,
+        impact: planned.event.historicalImpact,
+      };
+    } catch (error) {
+      if (error instanceof InventoryHistoricalReplayConflictError) {
+        return {
+          valid: false,
+          basedOnWorldRevision: world.revision,
+          conflict: error.conflict,
+        };
+      }
+      if (error instanceof InventoryHistoricalRepairMetadataError) {
+        return {
+          valid: false,
+          basedOnWorldRevision: world.revision,
+          conflict: { code: "invalid-history", message: error.message },
+        };
+      }
+      throw error;
+    }
+  }
+
+  /** Append one late-history bundle as one normal atomically published repair envelope. */
+  async recordHistorical(
+    input: InventoryOnceHistoricalRepairInput
+  ): Promise<InventoryOnceEventResult> {
+    const internals = requireInventoryOnceInternals(this.owner);
+    const assertions = buildInventoryHistoricalAssertions(
+      internals.catalog,
+      input
+    );
+    const omittedAssertionIds = normalizeHistoricalAssertionIds(
+      input.omittedAssertionIds ?? [],
+      "omitted historical assertionId"
+    );
+    const intentFingerprint = inventoryIntentFingerprint([
+      "historical-repair-v1",
+      input.operationId,
+      input.occurredAtEpochMs,
+      input.actorId ?? null,
+      input.sourcePartyId ?? null,
+      input.destinationPartyId ?? null,
+      input.sourceReference ?? null,
+      input.reason ?? null,
+      assertions.map(
+        /** Freeze one embedded assertion into the historical-repair retry identity. */
+        (assertion) => [
+          assertion.assertionId,
+          assertion.afterEventId ?? null,
+          inventoryEventIntentFingerprint(assertion.event),
+        ]
+      ),
+      omittedAssertionIds,
+      inventoryMetadataFingerprint(input.metadata),
+    ]);
+    /** Rebuild one exact repair envelope against a supplied published head. */
+    const planEvent = async (
+      world: InventoryWorldState,
+      recordedAtEpochMs: number
+    ): Promise<InventoryEventDraft> => {
+      const historyEvents = await loadInventoryHistoricalDependencies({
+        storage: internals.storage,
+        projection: world.projection,
+        seedEvents: assertions.map(
+          /** Select one embedded assertion event as a dependency seed. */
+          (assertion) => assertion.event
+        ),
+        assertionIds: omittedAssertionIds,
+      });
+      return createInventoryHistoricalRepairEvent(
+        {
+          operationId: input.operationId,
+          occurredAtEpochMs: input.occurredAtEpochMs,
+          ...(input.actorId === undefined ? {} : { actorId: input.actorId }),
+          ...(input.sourcePartyId === undefined
+            ? {}
+            : { sourcePartyId: input.sourcePartyId }),
+          ...(input.destinationPartyId === undefined
+            ? {}
+            : { destinationPartyId: input.destinationPartyId }),
+          ...(input.sourceReference === undefined
+            ? {}
+            : { sourceReference: input.sourceReference }),
+          ...(input.reason === undefined ? {} : { reason: input.reason }),
+          ...(input.metadata === undefined ? {} : { metadata: input.metadata }),
+          catalog: internals.catalog,
+          projection: world.projection,
+          recordedAtEpochMs,
+          assertions,
+          omittedAssertionIds,
+          ...(historyEvents === undefined ? {} : { historyEvents }),
+        },
+        internals.deficitPolicy
+      ).event;
+    };
+    const segmented =
+      await commitInventorySegmentedHistoricalEventIfEligible(
+        this.owner,
+        input.operationId,
+        intentFingerprint,
+        planEvent
+      );
+    if (segmented !== undefined) return segmented;
+    const result = await commitInventoryOperation({
+      catalog: internals.catalog,
+      storage: internals.storage,
+      operationId: input.operationId,
+      intentFingerprint,
+      clock: internals.clock,
+      deficitPolicy: internals.deficitPolicy,
+      /** Replan the exact dependency cone against the won published revision. */
+      plan: async ({ world, recordedAtEpochMs }) => ({
+        event: await planEvent(world, recordedAtEpochMs),
+        reservationProtection:
+          InventoryReservationProtection.RecordPhysicalTruth,
+      }),
+    });
+    return createInventoryOnceEventResult(result);
+  }
+
+  /** Plan one exact correction through the same replay engine without durable writes. */
+  async planCorrection(
+    input: InventoryOnceCorrectInput
+  ): Promise<InventoryOnceCorrectionPlan> {
+    const internals = requireInventoryOnceInternals(this.owner);
+    const world = await internals.storage.readWorld();
+    assertInventoryCatalogRetainsSnapshot(internals.catalog, world.catalog);
+    const replacementPlans = new InventoryOnceReplacementPlansImplementation(
+      internals.catalog,
+      `${input.operationId}:replacement`
+    );
+    const opaqueReplacement = input.replaceWith(replacementPlans);
+    const replacement = readReplacementEventDraft(opaqueReplacement);
+    const root = inventorySparseRecordValue(
+      world.projection.events,
+      input.correctsEventId
+    );
+    const historyEvents = await loadInventoryHistoricalDependencies({
+      storage: internals.storage,
+      projection: world.projection,
+      seedEvents: [
+        ...(root === undefined ? [] : [root]),
+        ...(replacement === undefined ? [] : [replacement]),
+      ],
+    });
+    try {
+      const event = createInventoryCorrectionEvent(
+        {
+          catalog: internals.catalog,
+          projection: world.projection,
+          correctsEventId: input.correctsEventId,
+          ...(replacement === undefined ? {} : { replacement }),
+          ...(historyEvents === undefined ? {} : { historyEvents }),
+          operationId: input.operationId,
+          occurredAtEpochMs: input.occurredAtEpochMs,
+          ...(input.actorId === undefined ? {} : { actorId: input.actorId }),
+          ...(input.sourcePartyId === undefined
+            ? {}
+            : { sourcePartyId: input.sourcePartyId }),
+          ...(input.destinationPartyId === undefined
+            ? {}
+            : { destinationPartyId: input.destinationPartyId }),
+          ...(input.sourceReference === undefined
+            ? {}
+            : { sourceReference: input.sourceReference }),
+          ...(input.reason === undefined ? {} : { reason: input.reason }),
+          ...(input.metadata === undefined ? {} : { metadata: input.metadata }),
+        },
+        internals.deficitPolicy
+      );
+      if (event.historicalImpact === undefined) {
+        throw new Error("Correction planner did not retain historical impact.");
+      }
+      return {
+        valid: true,
+        basedOnWorldRevision: world.revision,
+        event,
+        impact: event.historicalImpact,
+      };
+    } catch (error) {
+      if (error instanceof InventoryHistoricalReplayConflictError) {
+        return {
+          valid: false,
+          basedOnWorldRevision: world.revision,
+          conflict: error.conflict,
+        };
+      }
+      throw error;
+    }
+  }
+
   /** Append/supersede one correction using a normal declarative replacement plan. */
   async correct(
     input: InventoryOnceCorrectInput
@@ -3119,20 +3532,30 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
         ? "omit"
         : inventoryEventIntentFingerprint(replacement),
     ]);
-    const result = await commitInventoryOperation({
-      catalog: internals.catalog,
-      storage: internals.storage,
-      operationId: input.operationId,
-      intentFingerprint,
-      clock: internals.clock,
-      deficitPolicy: internals.deficitPolicy,
-      /** Recalculate the append-only delta against the current correction chain. */
-      plan: ({ world }) => ({
-        event: createInventoryCorrectionEvent({
+    /** Rebuild one exact correction envelope against a supplied published head. */
+    const planEvent = async (
+      world: InventoryWorldState,
+      _recordedAtEpochMs: number
+    ): Promise<InventoryEventDraft> => {
+      const root = inventorySparseRecordValue(
+        world.projection.events,
+        input.correctsEventId
+      );
+      const historyEvents = await loadInventoryHistoricalDependencies({
+        storage: internals.storage,
+        projection: world.projection,
+        seedEvents: [
+          ...(root === undefined ? [] : [root]),
+          ...(replacement === undefined ? [] : [replacement]),
+        ],
+      });
+      return createInventoryCorrectionEvent(
+        {
           catalog: internals.catalog,
           projection: world.projection,
           correctsEventId: input.correctsEventId,
           ...(replacement === undefined ? {} : { replacement }),
+          ...(historyEvents === undefined ? {} : { historyEvents }),
           operationId: input.operationId,
           occurredAtEpochMs: input.occurredAtEpochMs,
           ...(input.actorId === undefined ? {} : { actorId: input.actorId }),
@@ -3147,7 +3570,28 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
             : { sourceReference: input.sourceReference }),
           ...(input.reason === undefined ? {} : { reason: input.reason }),
           ...(input.metadata === undefined ? {} : { metadata: input.metadata }),
-        }, internals.deficitPolicy),
+        },
+        internals.deficitPolicy
+      );
+    };
+    const segmented =
+      await commitInventorySegmentedHistoricalEventIfEligible(
+        this.owner,
+        input.operationId,
+        intentFingerprint,
+        planEvent
+      );
+    if (segmented !== undefined) return segmented;
+    const result = await commitInventoryOperation({
+      catalog: internals.catalog,
+      storage: internals.storage,
+      operationId: input.operationId,
+      intentFingerprint,
+      clock: internals.clock,
+      deficitPolicy: internals.deficitPolicy,
+      /** Recalculate the exact dependency cone against the won published revision. */
+      plan: async ({ world, recordedAtEpochMs }) => ({
+        event: await planEvent(world, recordedAtEpochMs),
         reservationProtection:
           InventoryReservationProtection.RecordPhysicalTruth,
       }),
@@ -5732,6 +6176,146 @@ class InventoryOnceReplacementPlansImplementation
       })
     );
   }
+}
+
+/** Historical assertion planner that safely exposes prior assertion positions. */
+class InventoryOnceHistoricalAssertionPlansImplementation
+  extends InventoryOnceReplacementPlansImplementation
+  implements InventoryOnceHistoricalAssertionPlans
+{
+  /** Earlier assertions in this same ordered atomic bundle. */
+  private readonly earlierAssertions: ReadonlyMap<string, InventoryEventDraft>;
+
+  /** Bind ordinary verbs and stable prior-output references to one assertion. */
+  constructor(
+    catalog: InventoryCatalog,
+    operationId: string,
+    earlierAssertions: ReadonlyMap<string, InventoryEventDraft>
+  ) {
+    super(catalog, operationId);
+    this.earlierAssertions = earlierAssertions;
+  }
+
+  /** Read one prior assertion's exact negative-effect position. */
+  inputOf(assertionId: string, index = 0): InventoryStockPositionInput {
+    return this.positionOf(assertionId, index, -1, "input");
+  }
+
+  /** Read one prior assertion's exact positive-effect position. */
+  outputOf(assertionId: string, index = 0): InventoryStockPositionInput {
+    return this.positionOf(assertionId, index, 1, "output");
+  }
+
+  /** Resolve one signed stock-effect position without exposing kernel-owned construction. */
+  private positionOf(
+    assertionId: string,
+    index: number,
+    sign: -1 | 1,
+    label: string
+  ): InventoryStockPositionInput {
+    assertInventoryIdentity(assertionId, `historical ${label} assertionId`);
+    if (!Number.isSafeInteger(index) || index < 0) {
+      throw new Error(`Historical ${label} index must be a non-negative safe integer.`);
+    }
+    const event = this.earlierAssertions.get(assertionId);
+    if (event === undefined) {
+      throw new Error(
+        `Historical ${label} references unknown or later assertion '${assertionId}'.`
+      );
+    }
+    const effects = event.stockEffects.filter(
+      /** Select signed stock effects matching the requested source/output direction. */
+      (effect) =>
+        Math.sign(effect.measurementsDelta.primary.quantity.amountMinor) === sign
+    );
+    const effect = effects[index];
+    if (effect === undefined) {
+      throw new Error(
+        `Historical assertion '${assertionId}' has no ${label} stock effect at index ${index}.`
+      );
+    }
+    const { itemRevisionId: _itemRevisionId, transferId: _transferId, ...position } =
+      effect.position;
+    return position;
+  }
+}
+
+/** Build stable ordinary assertion drafts from existing correction-plan verbs. */
+function buildInventoryHistoricalAssertions(
+  catalog: InventoryCatalog,
+  input: InventoryOnceHistoricalRepairInput
+): readonly InventoryHistoricalAssertion[] {
+  if (
+    input.assertions.length === 0 &&
+    (input.omittedAssertionIds?.length ?? 0) === 0
+  ) {
+    throw new Error("Historical repair must add or omit at least one assertion.");
+  }
+  const assertionIds = new Set<string>();
+  const result: InventoryHistoricalAssertion[] = [];
+  const earlierAssertions = new Map<string, InventoryEventDraft>();
+  for (const assertion of input.assertions) {
+    assertInventoryIdentity(assertion.assertionId, "historical assertionId");
+    if (assertionIds.has(assertion.assertionId)) {
+      throw new Error(
+        `Historical repair repeats assertionId '${assertion.assertionId}'.`
+      );
+    }
+    assertionIds.add(assertion.assertionId);
+    if (assertion.afterEventId !== undefined) {
+      assertInventoryIdentity(
+        assertion.afterEventId,
+        "historical assertion afterEventId"
+      );
+    }
+    const plans = new InventoryOnceHistoricalAssertionPlansImplementation(
+      catalog,
+      `${input.operationId}:historical:${assertion.assertionId}`,
+      earlierAssertions
+    );
+    const event = readReplacementEventDraft(assertion.assert(plans));
+    if (event === undefined) {
+      throw new Error(
+        "Historical assertion cannot use omit(); omit an earlier assertionId instead."
+      );
+    }
+    result.push({
+      assertionId: assertion.assertionId,
+      ...(assertion.afterEventId === undefined
+        ? {}
+        : { afterEventId: assertion.afterEventId }),
+      event,
+    });
+    earlierAssertions.set(assertion.assertionId, event);
+  }
+  const omitted = normalizeHistoricalAssertionIds(
+    input.omittedAssertionIds ?? [],
+    "omitted historical assertionId"
+  );
+  for (const assertionId of omitted) {
+    if (assertionIds.has(assertionId)) {
+      throw new Error(
+        `Historical repair cannot add and omit assertion '${assertionId}' together.`
+      );
+    }
+  }
+  return result;
+}
+
+/** Normalize one stable unique assertion-id set. */
+function normalizeHistoricalAssertionIds(
+  values: readonly string[],
+  label: string
+): readonly string[] {
+  const result = new Set<string>();
+  for (const value of values) {
+    assertInventoryIdentity(value, label);
+    if (result.has(value)) {
+      throw new Error(`Historical repair repeats ${label} '${value}'.`);
+    }
+    result.add(value);
+  }
+  return [...result].sort(compareInventoryIdentityText);
 }
 
 /** Physical action that genuinely touches every positive stock row in one placement subtree. */
@@ -9066,13 +9650,30 @@ function findInventoryWhereaboutsPositions(
   // avoid scanning unrelated warehouse stock just to answer a narrow query.
   let candidates: readonly InventoryStockPosition[];
   if (whereaboutsIds !== undefined) {
-    candidates = inventoryWhereaboutsLifecycles(
-      projection,
-      whereaboutsIds
-    ).flatMap(
-      /** Select only the current physical rows of these retained cohorts. */
-      (lifecycle) => lifecycle.currentPositions
-    );
+    const selected: InventoryStockPosition[] = [];
+    for (const whereaboutsId of whereaboutsIds) {
+      const positionIds =
+        inventorySparseRecordValue(
+          projection.positionIdsByWhereaboutsId,
+          whereaboutsId
+        ) ?? [];
+      for (const positionId of positionIds) {
+        const position = inventorySparseRecordValue(
+          projection.positions,
+          positionId
+        );
+        if (
+          position === undefined ||
+          position.key.whereaboutsId !== whereaboutsId
+        ) {
+          throw new Error(
+            "Whereabouts cohort-position index references invalid stock."
+          );
+        }
+        selected.push(position);
+      }
+    }
+    candidates = selected;
   } else if (itemIds !== undefined) {
     const selected: InventoryStockPosition[] = [];
     for (const itemId of itemIds) {
@@ -9244,6 +9845,11 @@ class InventoryOnceReadSnapshotImplementation
     input: InventoryWhereaboutsHistoryQuery = {}
   ): readonly InventoryWhereaboutsLifecycle[] {
     return findInventoryWhereaboutsHistory(this.world.projection, input);
+  }
+
+  /** Query retained events from this exact frozen world. */
+  events(input: InventoryEventQuery = {}): InventoryEventPage {
+    return queryInventoryProjectionEvents(this.world.projection, input);
   }
 
   /** Read one revision-safe physical summary from the frozen world. */
@@ -9536,6 +10142,15 @@ class InventoryOnceReadImplementation implements InventoryOnceReadApi {
     input: InventoryWhereaboutsHistoryQuery = {}
   ): Promise<readonly InventoryWhereaboutsLifecycle[]> {
     return findInventoryWhereaboutsHistory((await this.world()).projection, input);
+  }
+
+  /** Query retained history through an optional adapter-native index or canonical fallback. */
+  async events(input: InventoryEventQuery = {}): Promise<InventoryEventPage> {
+    const internals = requireInventoryOnceInternals(this.owner);
+    if (inventoryStorageSupportsEventQuery(internals.storage)) {
+      return internals.storage.queryInventoryEvents(input);
+    }
+    return queryInventoryProjectionEvents((await this.world()).projection, input);
   }
 
   /** Read one revision-safe physical summary without leaking projection mechanics to callers. */

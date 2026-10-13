@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   InventoryAllocationMethod,
+  InventoryDeficitPolicy,
   InventoryEventKind,
   InventoryTraceabilityNodeKind,
   InventoryTraceabilityRelationAction,
@@ -603,6 +604,69 @@ describe("append-only corrections", () => {
     expect((await inventory.read.world()).revision).toBe(1);
   });
 
+  it("plans corrections without writes and retains a resolved historical deficit under Record policy", async () => {
+    const inventory = createTestInventory(
+      undefined,
+      undefined,
+      undefined,
+      InventoryDeficitPolicy.Record
+    );
+    const original = await inventory.stock.receive({
+      operationId: "plan-correction-root",
+      occurredAtEpochMs: time0,
+      to: loosePosition("plan-correction-store"),
+      amount: stockAmount("10", "piece"),
+    });
+    await inventory.stock.issue({
+      operationId: "plan-correction-issue",
+      occurredAtEpochMs: time1,
+      from: loosePosition("plan-correction-store"),
+      amount: stockAmount("7", "piece"),
+    });
+    await inventory.stock.receive({
+      operationId: "plan-correction-cover",
+      occurredAtEpochMs: time2,
+      to: loosePosition("plan-correction-store"),
+      amount: stockAmount("5", "piece"),
+    });
+    const before = await inventory.read.world();
+    const input = {
+      operationId: "plan-correction-to-five",
+      occurredAtEpochMs: time3,
+      correctsEventId: original.event.eventId,
+      reason: "The initial receipt contained only five pieces.",
+      replaceWith: (plans: Parameters<typeof inventory.stock.correct>[0]["replaceWith"] extends (plans: infer Plans) => unknown ? Plans : never) =>
+        plans.receive({
+          occurredAtEpochMs: time0,
+          to: loosePosition("plan-correction-store"),
+          amount: stockAmount("5", "piece"),
+        }),
+    };
+    const plan = await inventory.stock.planCorrection(input);
+    expect(plan.valid).toBe(true);
+    if (!plan.valid) throw new Error(plan.conflict.message);
+    expect(plan.basedOnWorldRevision).toBe(before.revision);
+    expect(plan.impact.deficits).toEqual([
+      expect.objectContaining({
+        startedByEventId: "inventory:event:plan-correction-issue",
+        endedByEventId: "inventory:event:plan-correction-cover",
+        maximumDeficit: expect.objectContaining({
+          primary: expect.objectContaining({
+            quantity: expect.objectContaining({ amountMinor: 2 }),
+          }),
+        }),
+      }),
+    ]);
+    expect((await inventory.read.world()).revision).toBe(before.revision);
+
+    const committed = await inventory.stock.correct(input);
+    expect(committed.event.historicalImpact).toEqual(plan.impact);
+    expect(
+      (await inventory.read.positions({ itemId: "item-a" }))[0]?.measurements
+        .primary.quantity.amountMinor
+    ).toBe(3);
+  });
+
   it("rejects a replacement whose historical replay violates Reject deficit policy", async () => {
     const inventory = createTestInventory();
     const original = await inventory.stock.receive({
@@ -622,6 +686,23 @@ describe("append-only corrections", () => {
       occurredAtEpochMs: time2,
       to: loosePosition("reject-correction-store"),
       amount: stockAmount("5", "piece"),
+    });
+
+    const invalidPlan = await inventory.stock.planCorrection({
+      operationId: "reject-correction-rewrite-root",
+      occurredAtEpochMs: time3,
+      correctsEventId: original.event.eventId,
+      reason: "The original receipt was only five pieces.",
+      replaceWith: (plans) =>
+        plans.receive({
+          occurredAtEpochMs: time0,
+          to: loosePosition("reject-correction-store"),
+          amount: stockAmount("5", "piece"),
+        }),
+    });
+    expect(invalidPlan).toMatchObject({
+      valid: false,
+      conflict: { code: "negative-stock" },
     });
 
     await expect(
@@ -1291,6 +1372,7 @@ describe("append-only corrections", () => {
       Object.values(InventoryEventKind).filter(
         (kind) =>
           kind !== InventoryEventKind.Correction &&
+          kind !== InventoryEventKind.HistoricalRepair &&
           kind !== InventoryEventKind.CatalogPublication
       )
     );

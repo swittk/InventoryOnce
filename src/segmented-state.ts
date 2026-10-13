@@ -54,6 +54,10 @@ export interface CommitInventorySegmentedStockEventInput {
   readonly intentFingerprint: string;
   /** Durable record time selected by the InventoryOnce clock. */
   readonly recordedAtEpochMs: number;
+  /** Optional exact published world revision used to derive a state-dependent event. */
+  readonly expectedWorldRevision?: number;
+  /** Optional exact event-journal head used to derive a historical event. */
+  readonly expectedRecordSequence?: number;
   /** Already domain-validated transfer event draft. */
   readonly event: InventoryEventDraft;
 }
@@ -101,6 +105,10 @@ export interface InventoryPositionSegmentMaterialization {
   >;
   /** Exact position identities grouped by direct placement node. */
   readonly positionIdsByPlacementNodeId: Readonly<
+    Record<string, readonly string[]>
+  >;
+  /** Exact position identities grouped by unresolved whereabouts cohort. */
+  readonly positionIdsByWhereaboutsId: Readonly<
     Record<string, readonly string[]>
   >;
   /** Positive exact position by item-scoped serial identity. */
@@ -762,6 +770,9 @@ export class InMemoryInventorySegmentedPositionStore
       positionIdsByPlacementNodeId: materializeIdentityIndex(
         this.positionIdsByPlacementNodeId
       ),
+      positionIdsByWhereaboutsId: materializeCompactIdentityIndex(
+        this.positionIdsByWhereaboutsId
+      ),
       positivePositionIdBySerialIdentity: materializeScalarIndex(
         this.positivePositionIdBySerialIdentity
       ),
@@ -1228,6 +1239,23 @@ function materializeIdentityIndex(
   for (const groupId of groups) {
     const identities = [...(index.get(groupId) ?? [])];
     identities.sort();
+    setInventorySparseRecordValue(result, groupId, identities);
+  }
+  return result;
+}
+
+/** Materialize one compact scalar-or-set index as deterministic sorted arrays. */
+function materializeCompactIdentityIndex(
+  index: ReadonlyMap<string, InventorySegmentedCompactMembership>
+): Readonly<Record<string, readonly string[]>> {
+  const result = createInventorySparseRecord<readonly string[]>();
+  const groups = [...index.keys()];
+  groups.sort();
+  for (const groupId of groups) {
+    const membership = index.get(groupId);
+    if (membership === undefined) continue;
+    const identities =
+      typeof membership === "string" ? [membership] : [...membership].sort();
     setInventorySparseRecordValue(result, groupId, identities);
   }
   return result;

@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   InventoryAllocationMethod,
   InventoryCountStatus,
+  InventoryEventKind,
   InventoryReservationStatus,
+  InventoryWhereaboutsAction,
   InventoryTraceabilityNodeKind,
   InventoryTraceabilityRelationAction,
   InventoryTraceabilityRelationKind,
@@ -209,6 +211,73 @@ const storagePlanShapes: readonly StoragePlanShape[] = Object.freeze([
       ).toBe(positionId);
       expect(Object.keys(world.reservations.reservations)).toHaveLength(0);
       expect(Object.keys(world.counts.counts)).toHaveLength(0);
+    },
+  },
+  {
+    name: "historical-repair-only",
+    operationId: "shape-historical-repair",
+    eventful: true,
+    setup: async (inventory) => {
+      await inventory.stock.receive({
+        operationId: "shape-historical-repair-seed",
+        occurredAtEpochMs: time0,
+        to: loosePosition("SHAPE-HISTORICAL-STORE"),
+        amount: stockAmount("3", "piece"),
+      });
+    },
+    run: async (inventory) => {
+      await inventory.stock.recordHistorical({
+        operationId: "shape-historical-repair",
+        occurredAtEpochMs: time3,
+        reason: "One piece was missing briefly and recovered before publication.",
+        assertions: [
+          {
+            assertionId: "shape-historical-missing",
+            assert: (plans) =>
+              plans.markMissing({
+                occurredAtEpochMs: time0 + 1,
+                from: loosePosition("SHAPE-HISTORICAL-STORE"),
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+          {
+            assertionId: "shape-historical-found",
+            assert: (plans) =>
+              plans.place({
+                occurredAtEpochMs: time0 + 2,
+                from: plans.outputOf("shape-historical-missing"),
+                into: "SHAPE-HISTORICAL-STORE",
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+    },
+    assertPublished: (world) => {
+      const event =
+        world.projection.events["inventory:event:shape-historical-repair"];
+      expect(event?.kind).toBe(InventoryEventKind.HistoricalRepair);
+      expect(event?.stockEffects).toEqual([]);
+      expect(event?.historicalRepair?.assertions).toHaveLength(2);
+      expect(event?.historicalImpact?.deficits).toEqual([]);
+      expect(world.projection.lastRecordSequence).toBe(2);
+      const position = Object.values(world.projection.positions)[0];
+      expect(position?.measurements.primary.quantity.amountMinor).toBe(3);
+    },
+    assertPublicReads: async (inventory) => {
+      expect(
+        (
+          await inventory.read.events({
+            kinds: [InventoryEventKind.HistoricalRepair],
+          })
+        ).events.map((event) => event.operationId)
+      ).toEqual(["shape-historical-repair"]);
+      const history = await inventory.read.whereaboutsHistory({
+        actions: [InventoryWhereaboutsAction.HistoricallyRepaired],
+        resolved: true,
+      });
+      expect(history).toHaveLength(1);
+      expect(history[0]?.currentPositions).toEqual([]);
     },
   },
   {

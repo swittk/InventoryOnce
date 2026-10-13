@@ -2,6 +2,7 @@ import { compareInventoryIdentityText } from "./ordering.js";
 import {
   InventoryEventKind,
   type InventoryCommittedEvent,
+  type InventoryEventDraft,
 } from "./events.js";
 import {
   InventoryStockWhereaboutsState,
@@ -27,6 +28,8 @@ export enum InventoryWhereaboutsAction {
   CountAdjusted = "count-adjusted",
   /** An append-only correction changed the retained interpretation of this cohort. */
   Corrected = "corrected",
+  /** One late historical-repair envelope changed this cohort's retained lifecycle evidence. */
+  HistoricallyRepaired = "historically-repaired",
   /** Another conserved dimension change affected this cohort without resolving it. */
   Reclassified = "reclassified",
 }
@@ -133,31 +136,32 @@ export function inventoryWhereaboutsLifecycles(
     }
     builders.set(whereaboutsId, builder);
   }
-  /** Candidate rows for these cohorts, without enumerating unrelated item positions. */
+  /** Exact cohort membership is indexed independently of item cardinality. */
   let candidatePositions: readonly InventoryStockPosition[];
   if (onlyWhereaboutsIds === undefined) {
     candidatePositions = Object.values(projection.positions);
   } else {
-    const selectedPositionIds = new Set<string>();
     const selectedPositions: InventoryStockPosition[] = [];
-    for (const builder of builders.values()) {
-      for (const itemId of builder.itemIds) {
-        const positionIds =
-          inventorySparseRecordValue(projection.positionIdsByItemId, itemId) ?? [];
-        for (const positionId of positionIds) {
-          if (selectedPositionIds.has(positionId)) continue;
-          selectedPositionIds.add(positionId);
-          const position = inventorySparseRecordValue(
-            projection.positions,
-            positionId
+    for (const whereaboutsId of onlyWhereaboutsIds) {
+      const positionIds =
+        inventorySparseRecordValue(
+          projection.positionIdsByWhereaboutsId,
+          whereaboutsId
+        ) ?? [];
+      for (const positionId of positionIds) {
+        const position = inventorySparseRecordValue(
+          projection.positions,
+          positionId
+        );
+        if (
+          position === undefined ||
+          position.key.whereaboutsId !== whereaboutsId
+        ) {
+          throw new Error(
+            "Whereabouts cohort-position index disagrees with current stock."
           );
-          if (position === undefined) {
-            throw new Error(
-              "Whereabouts item-position index references a missing current stock row."
-            );
-          }
-          selectedPositions.push(position);
         }
+        selectedPositions.push(position);
       }
     }
     candidatePositions = selectedPositions;
@@ -269,6 +273,9 @@ function inventoryItemIdsTouchedByWhereaboutsEvent(
 ): ReadonlySet<string> {
   const result = new Set<string>();
   addDirectInventoryItemIds(result, event, whereaboutsId);
+  for (const assertion of event.historicalRepair?.assertions ?? []) {
+    addDirectInventoryItemIds(result, assertion.event, whereaboutsId);
+  }
   if (event.correction !== undefined) {
     const corrected = inventorySparseRecordValue(
       projection.events,
@@ -284,7 +291,7 @@ function inventoryItemIdsTouchedByWhereaboutsEvent(
 /** Add item identities from stock/provenance evidence belonging to one exact cohort. */
 function addDirectInventoryItemIds(
   result: Set<string>,
-  event: InventoryCommittedEvent,
+  event: InventoryEventDraft,
   whereaboutsId: string
 ): void {
   for (const effect of event.stockEffects) {
@@ -309,10 +316,24 @@ function addDirectInventoryItemIds(
 
 /** Derive one event's physical meaning for an exact whereabouts lifecycle identity. */
 function inventoryWhereaboutsActionsForEvent(
-  event: InventoryCommittedEvent,
+  event: InventoryEventDraft,
   whereaboutsId: string
 ): readonly InventoryWhereaboutsAction[] {
   const actions = new Set<InventoryWhereaboutsAction>();
+  if (event.kind === InventoryEventKind.HistoricalRepair) {
+    actions.add(InventoryWhereaboutsAction.HistoricallyRepaired);
+    for (const assertion of event.historicalRepair?.assertions ?? []) {
+      for (const action of inventoryWhereaboutsActionsForEvent(
+        assertion.event,
+        whereaboutsId
+      )) {
+        actions.add(action);
+      }
+    }
+    const ordered = [...actions];
+    ordered.sort(compareInventoryIdentityText);
+    return ordered;
+  }
   if (event.kind === InventoryEventKind.Correction) {
     actions.add(InventoryWhereaboutsAction.Corrected);
     return [...actions];

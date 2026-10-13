@@ -36,6 +36,7 @@ import { emptyInventoryWorldState, type InventoryWorldState } from "./world.js";
 import {
   createInMemoryInventorySegmentedEventJournal,
   type InMemoryInventorySegmentedEventJournal,
+  type InventorySegmentedEventResourceQuery,
 } from "./segmented-journal.js";
 import {
   createInMemoryInventorySegmentedPositionStore,
@@ -56,6 +57,7 @@ import { inventoryStockPositionIdentity } from "./model.js";
 import type { InventoryStockSelector } from "./selectors.js";
 import { InventoryReservationStatus } from "./reservations.js";
 import { InventoryCountStatus } from "./counts.js";
+import type { InventoryEventPage, InventoryEventQuery } from "./event-query.js";
 import {
   cloneInventorySparseRecord,
   inventoryObjectIsKnownDeeplyImmutable,
@@ -94,6 +96,7 @@ function cloneInventoryPublishedWorld(world: InventoryWorldState): InventoryWorl
       ...cloned.projection,
       positionIdsByItemId: cloneInventorySparseRecord(cloned.projection.positionIdsByItemId),
       positionIdsByItemRevisionId: cloneInventorySparseRecord(cloned.projection.positionIdsByItemRevisionId),
+      positionIdsByWhereaboutsId: cloneInventorySparseRecord(cloned.projection.positionIdsByWhereaboutsId),
       lotIdentitiesByItemId: cloneInventorySparseRecord(cloned.projection.lotIdentitiesByItemId),
       placementNodeIdByEmbodiedSerialIdentity: cloneInventorySparseRecord(
         cloned.projection.placementNodeIdByEmbodiedSerialIdentity
@@ -543,6 +546,29 @@ export function inventoryStorageSupportsSegmentedPlacement(
   );
 }
 
+/** Optional adapter-native retained-event query acceleration. */
+export interface InventoryEventQueryStorageCapability {
+  /** Query one stable durable-order event page through adapter-native indexes. */
+  queryInventoryEvents(input: InventoryEventQuery): Promise<InventoryEventPage>;
+  /** Query internal resource-index rows for scoped historical replay. */
+  queryInventoryEventsByResourceKeys(
+    input: InventorySegmentedEventResourceQuery
+  ): Promise<InventoryEventPage>;
+}
+
+/** Detect optional indexed event-query support without changing the base adapter contract. */
+export function inventoryStorageSupportsEventQuery(
+  value: unknown
+): value is InventoryEventQueryStorageCapability {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    typeof Reflect.get(value, "queryInventoryEvents") === "function" &&
+    typeof Reflect.get(value, "queryInventoryEventsByResourceKeys") ===
+      "function"
+  );
+}
+
 /** Inputs for the deterministic reference in-memory durable adapter. */
 export interface InMemoryInventoryDurableStorageInput {
   /** Atomic or optimistic-repairable behavior advertised to tests/callers. */
@@ -581,7 +607,8 @@ export class InMemoryInventoryDurableStorage
     InventoryDurableStorage,
     InventorySegmentedPositionStorageCapability,
     InventorySegmentedStockEventCommitCapability,
-    InventorySegmentedPlacementStorageCapability
+    InventorySegmentedPlacementStorageCapability,
+    InventoryEventQueryStorageCapability
 {
   /** Advertised publication guarantee. */
   readonly guarantee: InventoryStorageGuarantee;
@@ -707,6 +734,20 @@ export class InMemoryInventoryDurableStorage
       (): Promise<CommitInventorySegmentedStockEventResult | undefined> =>
         this.commitSegmentedStockEventUnlocked(input);
     return this.runStorageMutationAtomically(commitOperation);
+  }
+
+  /** Query retained event history without materializing deferred canonical position state. */
+  async queryInventoryEvents(
+    input: InventoryEventQuery
+  ): Promise<InventoryEventPage> {
+    return this.eventJournal.queryEvents(input);
+  }
+
+  /** Query exact internal resource rows without materializing canonical current state. */
+  async queryInventoryEventsByResourceKeys(
+    input: InventorySegmentedEventResourceQuery
+  ): Promise<InventoryEventPage> {
+    return this.eventJournal.queryEventsByResourceKeys(input);
   }
 
   /** Read the latest deeply immutable published world, materializing deferred segmented commits on demand. */
@@ -1625,8 +1666,26 @@ export class InMemoryInventoryDurableStorage
     }
     assertInventoryEpochMilliseconds(
       input.recordedAtEpochMs,
-      "inventory segmented transfer recordedAtEpochMs"
+      "inventory segmented stock event recordedAtEpochMs"
     );
+    if (
+      input.expectedWorldRevision !== undefined &&
+      (!Number.isSafeInteger(input.expectedWorldRevision) ||
+        input.expectedWorldRevision < 0)
+    ) {
+      throw new Error(
+        "Segmented stock event expectedWorldRevision must be a non-negative safe integer."
+      );
+    }
+    if (
+      input.expectedRecordSequence !== undefined &&
+      (!Number.isSafeInteger(input.expectedRecordSequence) ||
+        input.expectedRecordSequence < 0)
+    ) {
+      throw new Error(
+        "Segmented stock event expectedRecordSequence must be a non-negative safe integer."
+      );
+    }
 
     const existing = this.operations.get(input.operationId);
     if (existing !== undefined) {
@@ -1665,6 +1724,18 @@ export class InMemoryInventoryDurableStorage
       if (manifest.state === InventoryMigrationManifestState.Applying) {
         return undefined;
       }
+    }
+    if (
+      input.expectedWorldRevision !== undefined &&
+      input.expectedWorldRevision !== this.positionSegment.revision()
+    ) {
+      return undefined;
+    }
+    if (
+      input.expectedRecordSequence !== undefined &&
+      input.expectedRecordSequence !== this.eventJournal.lastRecordSequence()
+    ) {
+      return undefined;
     }
     if (!this.segmentedStockEventIsEligible(input)) return undefined;
 
@@ -1778,16 +1849,27 @@ export class InMemoryInventoryDurableStorage
     // deterministic stage tests on that path; segmented commit models one atomic DB transaction.
     if (this.failpoint !== undefined) return false;
     const event = input.event;
+    const historicalEnvelope =
+      event.kind === InventoryEventKind.Correction ||
+      event.kind === InventoryEventKind.HistoricalRepair;
     if (
       event.kind !== InventoryEventKind.Transfer &&
       event.kind !== InventoryEventKind.Receipt &&
       event.kind !== InventoryEventKind.Issue &&
-      event.kind !== InventoryEventKind.Reclassification
+      event.kind !== InventoryEventKind.Reclassification &&
+      !historicalEnvelope
     ) {
       return false;
     }
     if (event.operationId !== input.operationId) return false;
-    if (event.stockEffects.length === 0) return false;
+    if (
+      historicalEnvelope &&
+      (input.expectedWorldRevision === undefined ||
+        input.expectedRecordSequence === undefined)
+    ) {
+      return false;
+    }
+    if (!historicalEnvelope && event.stockEffects.length === 0) return false;
     if (
       event.stockEffects.some(
         /** Keep serialized/embodied stock on the canonical path until its coupled segment exists. */
@@ -1800,8 +1882,19 @@ export class InMemoryInventoryDurableStorage
     if ((event.placementNodeDefinitions?.length ?? 0) !== 0) return false;
     if ((event.placementChanges?.length ?? 0) !== 0) return false;
     if (event.traceabilityChanges.length !== 0) return false;
+    if (
+      (event.positiveLayerProvenanceOverrides?.length ?? 0) !== 0
+    ) return false;
     if (event.transferLifecycle !== undefined) return false;
-    if (event.correction !== undefined) return false;
+    if (!historicalEnvelope && event.correction !== undefined) return false;
+    if (
+      event.kind === InventoryEventKind.Correction &&
+      event.correction === undefined
+    ) return false;
+    if (
+      event.kind === InventoryEventKind.HistoricalRepair &&
+      event.historicalRepair === undefined
+    ) return false;
     if (event.catalogDigest !== undefined || event.catalogSnapshot !== undefined) {
       return false;
     }

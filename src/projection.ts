@@ -15,6 +15,7 @@ import {
   defineInventoryEvent,
   inventoryEventIntentFingerprint,
   type InventoryCommittedEvent,
+  type InventoryEventDraft,
 } from "./events.js";
 import {
   addInventoryMeasurements,
@@ -108,6 +109,10 @@ export interface InventoryProjectionState {
   readonly positionIdsByPlacementNodeId: Readonly<
     Record<string, readonly string[]>
   >;
+  /** Exact current position identities grouped by kernel-owned whereabouts cohort. */
+  readonly positionIdsByWhereaboutsId: Readonly<
+    Record<string, readonly string[]>
+  >;
   /** Current uninterrupted positive-layer occurrence time by exact position identity. */
   readonly positiveLayerStartedAtEpochMsByPositionId: Readonly<Record<string, number>>;
   /** Current positive exact position by item-scoped serial identity. */
@@ -193,6 +198,7 @@ export function emptyInventoryProjectionState(): InventoryProjectionState {
     positionIdsByItemId: createInventorySparseRecord(),
     positionIdsByItemRevisionId: createInventorySparseRecord(),
     positionIdsByPlacementNodeId: createInventorySparseRecord(),
+    positionIdsByWhereaboutsId: createInventorySparseRecord(),
     positiveLayerStartedAtEpochMsByPositionId: {},
     positivePositionIdBySerialIdentity: {},
     placementNodes: createInventorySparseRecord(),
@@ -320,6 +326,9 @@ function cloneInventoryProjectionForEventBatch(
     ),
     positionIdsByPlacementNodeId: cloneInventorySparseRecord(
       state.positionIdsByPlacementNodeId
+    ),
+    positionIdsByWhereaboutsId: cloneInventorySparseRecord(
+      state.positionIdsByWhereaboutsId
     ),
     positiveLayerStartedAtEpochMsByPositionId: cloneInventorySparseRecord(
       state.positiveLayerStartedAtEpochMsByPositionId
@@ -867,6 +876,15 @@ function applyInventoryCommittedEventInternal(
             string,
             readonly string[]
           >);
+  /** Current unresolved-cohort memberships, copied only when stock changes. */
+  const positionIdsByWhereaboutsId: Record<string, readonly string[]> =
+    mutateProjection
+      ? (state.positionIdsByWhereaboutsId as Record<string, readonly string[]>)
+      : stockProjectionChanges
+        ? cloneInventorySparseRecord(state.positionIdsByWhereaboutsId)
+        : (state.positionIdsByWhereaboutsId as Record<string, readonly string[]>);
+  /** One desired final membership per touched whereabouts cohort. */
+  const whereaboutsIndexMutations = new Map<string, Map<string, boolean>>();
   /** One desired final membership per touched item index row; applied once after all effects. */
   const itemIndexMutations = new Map<string, Map<string, boolean>>();
   /** One desired final membership per touched revision index row. */
@@ -946,6 +964,14 @@ function applyInventoryCommittedEventInternal(
     const isPositive = quantityIsPositive(next.primary.quantity);
     if (inventoryMeasurementsAreZero(next)) {
       deleteInventorySparseRecordValue(positions, identity);
+      if (effect.position.whereaboutsId !== undefined) {
+        recordIndexedIdentityMutation(
+          whereaboutsIndexMutations,
+          effect.position.whereaboutsId,
+          identity,
+          false
+        );
+      }
       recordIndexedIdentityMutation(
         itemIndexMutations,
         effect.position.itemId,
@@ -972,6 +998,14 @@ function applyInventoryCommittedEventInternal(
         measurements: next,
       });
       if (earlier === undefined) {
+        if (effect.position.whereaboutsId !== undefined) {
+          recordIndexedIdentityMutation(
+            whereaboutsIndexMutations,
+            effect.position.whereaboutsId,
+            identity,
+            true
+          );
+        }
         recordIndexedIdentityMutation(
           itemIndexMutations,
           effect.position.itemId,
@@ -1014,6 +1048,10 @@ function applyInventoryCommittedEventInternal(
     );
   }
   applyIndexedIdentityMutations(positionIdsByItemId, itemIndexMutations);
+  applyIndexedIdentityMutations(
+    positionIdsByWhereaboutsId,
+    whereaboutsIndexMutations
+  );
   applyIndexedIdentityMutations(
     positionIdsByItemRevisionId,
     revisionIndexMutations
@@ -1206,6 +1244,7 @@ function applyInventoryCommittedEventInternal(
       positionIdsByItemId,
       positionIdsByItemRevisionId,
       positionIdsByPlacementNodeId,
+      positionIdsByWhereaboutsId,
       positiveLayerStartedAtEpochMsByPositionId,
       positivePositionIdBySerialIdentity,
       placementNodes,
@@ -1461,6 +1500,12 @@ function inventoryWhereaboutsIdsTouchedByProjectionEvent(
 ): readonly string[] {
   const result = new Set<string>();
   addDirectInventoryWhereaboutsIds(result, event);
+  for (const whereaboutsId of event.historicalImpact?.whereaboutsIds ?? []) {
+    result.add(whereaboutsId);
+  }
+  for (const assertion of event.historicalRepair?.assertions ?? []) {
+    addDirectInventoryWhereaboutsIds(result, assertion.event);
+  }
   if (event.correction !== undefined) {
     const corrected = inventorySparseRecordValue(
       state.events,
@@ -1483,7 +1528,7 @@ function inventoryWhereaboutsIdsTouchedByProjectionEvent(
 /** Add direct whereabouts identities retained in one event's stock/provenance evidence. */
 function addDirectInventoryWhereaboutsIds(
   result: Set<string>,
-  event: InventoryCommittedEvent
+  event: InventoryEventDraft
 ): void {
   for (const effect of event.stockEffects) {
     if (effect.position.whereaboutsId !== undefined) {

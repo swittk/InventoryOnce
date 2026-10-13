@@ -831,6 +831,12 @@ describe("detached and missing stock whereabouts", () => {
           throw new Error("Filtered whereabouts query enumerated the entire warehouse.");
         },
       }),
+      positionIdsByItemId: new Proxy(published.positionIdsByItemId, {
+        /** Exact cohort lookup must not widen to every current position for its item. */
+        get() {
+          throw new Error("Filtered whereabouts query widened to the item index.");
+        },
+      }),
     };
     expect(
       inventoryWhereaboutsLifecycles(

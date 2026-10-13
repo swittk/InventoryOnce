@@ -39,6 +39,14 @@ export * from "./fungibility.js";
 export * from "./usability.js";
 /** Durable current/resolved whereabouts lifecycle and provenance reads. */
 export * from "./whereabouts.js";
+/** Indexed durable-order retained-event history query values. */
+export { InventoryEventQueryDirection } from "./event-query.js";
+export type {
+  InventoryEventLotRef,
+  InventoryEventPage,
+  InventoryEventQuery,
+  InventoryEventSerialRef,
+} from "./event-query.js";
 /** Safe FIFO/FEFO method vocabulary used by native policy helpers. */
 export { InventoryAllocationMethod } from "./allocation.js";
 
@@ -71,6 +79,8 @@ export {
 } from "./events.js";
 export type {
   InventoryCommittedEvent,
+  InventoryHistoricalDeficitInterval,
+  InventoryHistoricalImpact,
   InventoryMeasurementEvidence,
   InventoryTraceabilityRelationChange,
 } from "./events.js";

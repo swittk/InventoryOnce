@@ -56,6 +56,8 @@ families['transformation']=create_assurance_family(['TraceabilityGraph','Reclass
 families['transformation-read']=create_assurance_family(['CatalogPublication','PublishedHeadCAS','ReclassificationConservation','DualMeasure'],['ActiveIsRetained','PublishedSnapshotsRemainRetained','PublishedMeaningsNeverChange','HeadReferencesCompleteWorld','PublishedFencePointsAtExactTarget','ItemQuantityConserved','PrimaryQuantityConserved','SecondaryMeasureHasExplicitCause'],'Exact transformation identity or revision plus one published world maps to retained definitions and current exact input stock.',['abstractInventoryState'],'Definition reads retain immutable revision meaning; planning reports one published world revision, exact required/current vectors, and no stock write.','Repeated reads and plans over one published world return the same retained definitions and physical inputs.','Unknown revisions, item/form mismatches, invalid selectors, and insufficient input stock reject or report not applicable without writing.',[M,'test/transformations.test.ts'],['memory'])
 families['scrap']=create_assurance_family(['InventoryOperation','PackagingIdentity','DualMeasure','ReservationSafety','UseByReservation'],['VisibleQuantityConserved','PhysicalQuantityConserved','NoOverReservation','OrdinaryConsumptionWasUsable'],'Exact or policy-selected source amounts map to explicit destructive resource effects with reason/evidence.',['abstractInventoryState','abstractReservationState','abstractOperationResult'],'Result maps to one scrap event and exact decrements; nothing disappears without the event.','Exact scrap intent replays once; changed source/amount/method rejects.','Deficit, package mismatch, reservation conflict, or disallowed source rejects atomically.',[M,'test/catalog-stock.test.ts','test/policy-operations.test.ts',S],['memory','all-operation-failpoints'])
 families['correction']=create_assurance_family(['CorrectionHistory','InventoryOperation','PublishedHeadCAS'],['OriginalHistoryIsNeverErased','PartialCorrectionDoesNotRewriteCurrentTruth','CorrectedVisibilityRequiresBothNewFacts','VisibleProjectionMatchesLogicalRecordVersion','PartialWritesStayInvisible'],'Corrected root/event reference and replacement plans map to append-only compensating facts, never deletion or mutation of retained history.',['abstractInventoryState','abstractTraceabilityState','abstractOperationResult'],'Result exposes the correction event, retained root chain, revised projection, revision, and replay.','Exact correction intent replays once; changed replacement/supersession under one ID rejects.','Unknown root, correction cycles, over-correction, invalid replacement, or stale base rejects atomically.',[M,'test/traceability-corrections.test.ts','test/projection-index-scale.test.ts',S],['memory','all-operation-failpoints'],gaps=['GAP-COUNT-CORRECTION-HISTORY-REPLAY'])
+families['historical-repair']=create_assurance_family(['HistoricalRepair','CorrectionHistory','RecordedDeficit','InventoryOperation','PublishedHeadCAS'],['OriginalHistoryIsNeverErased','HistoricalRepairIsAtomic','RejectedRepairPreservesCurrentTruth','SerializedConflictNeverPublishes','RejectPolicyNeverPublishesDeficit','RecordedDeficitRemainsExplicit','PublishedRepairAdvancesOneRevision','PartialWritesStayInvisible'],'Stable assertion identities, ordinary physical-event plans, optional durable anchors, and omitted assertion identities map to one deterministic effective-history repair bundle.',['abstractInventoryState','abstractTraceabilityState','abstractOperationResult'],'Plan/commit results expose one atomic repair envelope, exact current delta, retained embedded assertions, affected event/cohort identities, historical deficit intervals, revision, and replay.','Exact repair intent replays the same envelope/result; changed assertion order/content/omission under one operation ID rejects.','Unknown anchor/assertion, duplicate identity, serialized deficit, Reject-mode deficit, invalid downstream history, stale head, or partial publication rejects atomically.',[M,'test/historical-repair.test.ts','test/historical-repair-scale.test.ts','test/event-query.test.ts',S,D],['memory','segmented-memory','all-operation-failpoints'])
+families['read-history']=create_assurance_family(['HistoricalRepair','CorrectionHistory','PublishedHeadCAS'],['OriginalHistoryIsNeverErased','HistoricalRepairIsAtomic','HeadReferencesCompleteWorld'],'Resource/time/kind/correction-lineage filters and a durable-sequence cursor map to one stable retained-event index query.',['abstractInventoryState'],'Result is one ascending durable event page from one published head, including matching embedded historical assertions without rewriting event envelopes.','Read-only query; repeated calls against one head and cursor are equal.','Empty/invalid filters, reversed ranges, malformed cursor/limit, corrupt index, or incoherent adapter head rejects/falls back without state change.',[M,'test/event-query.test.ts','test/historical-repair-scale.test.ts'],['memory','segmented-memory'])
 families['placement-command']=create_assurance_family(['PlacementGraph','ResourceDimensions','UseByReservation','CorrectionHistory','InventoryOperation'],['PlacementIsAcyclic','PlacementTargetsAcceptContents','AncestorMovePreservesDirectStockAnchors','ResourceAccounting','ReportMatchesCurrentTruth','OriginalHistoryIsNeverErased'],'Generic node identity/metadata, one direct-parent transition, or an explicit subtree-content action maps to one placement/metadata/resource event.',['abstractInventoryState','abstractOperationResult'],'A topology move changes one parent edge and preserves descendant stock identities; subtree-content verbs touch only the exact rows their physical action requires.','Exact placement intent replays once; changed metadata/action/destination rejects.','Unknown node, cycle, rejecting target, optimistic-parent mismatch, reservation conflict, or invalid correction rejects atomically.',[M,'test/containers.test.ts','test/traceability-corrections.test.ts','test/projection-index-scale.test.ts',S],['memory','all-operation-failpoints'])
 families['lot-command']=create_assurance_family(['UseByReservation','CorrectionHistory','InventoryOperation'],['ReportMatchesCurrentTruth','OrdinaryAllocationWasUsable','OriginalHistoryIsNeverErased','VisibleProjectionMatchesLogicalRecordVersion'],'Item/lot identity and asserted/corrected metadata map to one immutable lot master chain.',['abstractInventoryState','abstractOperationResult'],'Result exposes effective lot metadata, retained correction provenance, event, revision, and replay without changing quantity.','Exact lot command replays once; changed metadata under one operation identity rejects.','Cross-item lot identity, invalid time, correction cycle, or stale root rejects.',[M,'test/lots.test.ts','test/traceability-corrections.test.ts',S],['memory','all-operation-failpoints'])
 families['reservation']=create_assurance_family(['ReservationSafety','ReservationScope','UseByReservation','InventoryOperation'],['NoOverReservation','NoDoubleConsume','AllocatedClaimsRespectScope','ShortageRequiresExplicitPhysicalLoss','ConsumedClaimHasEvidence','ReleasedOrExpiredWasNeverConsumed'],'Reservation identity, revision, broad selector, requested quantity, lifecycle time, allocations, and fulfillment map to one claim lifecycle transition.',['abstractInventoryState','abstractReservationState','abstractOperationResult'],'Result maps to exact reservation state/allocations, optional issue event, revision, and replay.','Exact lifecycle intent replays once; changed claim/request/allocation/fulfillment under the same operation ID rejects.','Infeasible allocation, out-of-scope source, double consume, invalid lifecycle time, or terminal transition rejects.',[M,'test/reservations-counts.test.ts','test/review-hardening.test.ts',S],['memory','all-operation-failpoints'])
@@ -88,7 +90,10 @@ def facade_family(key):
  if group=='counts': return 'count'
  if group=='traceability': return 'traceability'
  if group=='snapshot': return 'read-snapshot'
- if group=='read': return 'read-snapshot' if method=='snapshot' else 'read-current'
+ if group=='read':
+  if method=='snapshot': return 'read-snapshot'
+  if method=='events': return 'read-history'
+  return 'read-current'
  if group=='stock':
   if method.startswith('receive'): return 'stock-receipt'
   if method in {'issueByPolicy','issueManyByPolicy'}: return 'stock-policy-issue'
@@ -99,6 +104,8 @@ def facade_family(key):
   if method=='transform': return 'transformation'
   if method.startswith('scrap'): return 'scrap'
   if method=='correct': return 'correction'
+  if method=='planCorrection': return 'correction'
+  if method in {'planHistorical','recordHistorical'}: return 'historical-repair'
   if method in {
    'changeCustodian','changeDispositionAuthority','changeOwner',
    'changeQualifiedDimension','changeStatus','clearCustodian',
@@ -123,6 +130,8 @@ def root_family(name,decl):
  if decl == 'src/fungibility.ts': return 'fungibility-read'
  if decl == 'src/transfers.ts': return 'transfer-lifecycle'
  if decl in {'src/read-model.ts','src/availability.ts','src/usability.ts','src/whereabouts.ts'}: return 'read-current'
+ if decl == 'src/event-query.ts': return 'read-history'
+ if decl in {'src/historical-repair.ts','src/historical-replay.ts','src/historical-dependencies.ts'}: return 'historical-repair'
  if decl in {'src/picking.ts','src/allocation.ts'}: return 'allocation-helper'
  if name in {'assertInventoryAmountSum','defineInventoryAmountLineGroup','combineInventoryAmountLineGroups','defineInventoryPolicyBatchRequestGroup','combineInventoryPolicyBatchRequestGroups','inventoryPolicyBatchAllocationLinesByReference'}: return 'operation-result-helper'
  if name in {'everythingInInventoryStockSelector','inventoryPlacementNodeIdentity','inventoryLotIdentity','inventoryStockSelector'}: return 'identity-normalization'
@@ -146,6 +155,7 @@ def storage_export_family(name):
   'inventoryStorageSupportsSegmentedStockEventCommit',
   'inventoryStorageSupportsSegmentedPositions',
   'inventoryStorageSupportsSegmentedPlacement',
+  'inventoryStorageSupportsEventQuery',
  }: return 'durable-protocol'
  # A coherent indexed reader is authenticated by a revision fence, and its
  # failure must leave the canonical world/ledger unchanged.
@@ -178,6 +188,8 @@ def kernel_family(name,decl):
  if decl == 'src/fungibility.ts': return 'fungibility-movement' if any(x in low for x in ('issue','transfer','scrap','event')) else 'fungibility-read'
  if decl == 'src/transfers.ts': return 'transfer-lifecycle'
  if decl in {'src/read-model.ts','src/availability.ts','src/usability.ts','src/whereabouts.ts'}: return 'read-current'
+ if decl == 'src/event-query.ts': return 'read-history'
+ if decl in {'src/historical-repair.ts','src/historical-replay.ts','src/historical-dependencies.ts'}: return 'historical-repair'
  if decl == 'src/projection.ts': return 'dimension-reclassification'
  if decl in {'src/events.ts','src/commands.ts'}:
   if name in {
@@ -416,11 +428,14 @@ def models_for(source,owner,field):
  if 'reservations.ts' in source: return ['ReservationSafety','ReservationScope','UseByReservation']
  if 'counts.ts' in source: return ['PhysicalCount']
  if 'traceability.ts' in source: return ['TraceabilityGraph']
- if 'corrections.ts' in source: return ['CorrectionHistory']
+ if 'corrections.ts' in source: return ['CorrectionHistory','HistoricalRepair']
+ if any(x in source for x in ('historical-repair.ts','historical-replay.ts','historical-dependencies.ts')): return ['HistoricalRepair','CorrectionHistory','RecordedDeficit','PublishedHeadCAS']
+ if 'event-query.ts' in source: return ['HistoricalRepair','CorrectionHistory','PublishedHeadCAS']
  if 'whereabouts.ts' in source: return ['ResourceDimensions','CorrectionHistory','PublishedHeadCAS']
  if 'segmented-placement.ts' in source: return ['PlacementGraph','InventoryOperation','PublishedHeadCAS']
  if 'placement.ts' in source: return ['PlacementGraph','ResourceDimensions']
- if any(x in source for x in ('segmented-state.ts','segmented-journal.ts')): return ['InventoryOperation','PublishedHeadCAS','ResourceDimensions']
+ if 'segmented-journal.ts' in source: return ['InventoryOperation','PublishedHeadCAS','ResourceDimensions','HistoricalRepair']
+ if 'segmented-state.ts' in source: return ['InventoryOperation','PublishedHeadCAS','ResourceDimensions']
  if any(x in source for x in ('availability.ts','picking.ts','allocation.ts','read-model.ts','usability.ts')): return ['UseByReservation','ReservationScope','PackagingIdentity']
  if any(x in source for x in ('projection.ts','model.ts','selectors.ts')): return ['ResourceDimensions','InventoryOperation']
  return ['InventoryOperation','PublishedHeadCAS']

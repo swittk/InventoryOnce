@@ -2,7 +2,7 @@ import { formalCodeText } from "./formal-syntax.mjs";
 
 /** Registered InventoryOnce TLC models in deterministic execution order. */
 export const formalModels = Object.freeze(
-  ["AuthorityWriterFence", "PublishedHeadCAS", "CompositionRevision", "CollectionView", "FungibilityPool", "CatalogPublication", "ReclassificationConservation", "UseByReservation", "ResourceDimensions", "ReservationScope", "ReservationScopeAllocationReplacement", "PlacementGraph", "TraceabilityAssociation", "TraceabilityGraph", "PhysicalCount", "DualMeasure", "DistributedRights", "CorrectionHistory", "DurableTransferRefinement", "TransferLifecycle", "RepairLiveness", "RecordedDeficit", "SnapshotSupersededWorkflow", "InventoryOperation", "ImplementationConformance", "ReservationSafety", "PackagingIdentity"]
+  ["AuthorityWriterFence", "PublishedHeadCAS", "CompositionRevision", "CollectionView", "FungibilityPool", "CatalogPublication", "ReclassificationConservation", "UseByReservation", "ResourceDimensions", "ReservationScope", "ReservationScopeAllocationReplacement", "PlacementGraph", "TraceabilityAssociation", "TraceabilityGraph", "PhysicalCount", "DualMeasure", "DistributedRights", "CorrectionHistory", "HistoricalRepair", "DurableTransferRefinement", "TransferLifecycle", "RepairLiveness", "RecordedDeficit", "SnapshotSupersededWorkflow", "InventoryOperation", "ImplementationConformance", "ReservationSafety", "PackagingIdentity"]
 );
 
 /** Stateful API families that must retain bounded executable trace/property evidence. */
@@ -23,6 +23,7 @@ export const statefulOperationFamilyIds = Object.freeze([
   "transformation",
   "scrap",
   "correction",
+  "historical-repair",
   "placement-command",
   "lot-command",
   "reservation",
@@ -103,6 +104,16 @@ export const formalInvariantMutationChecks = Object.freeze([
     "CorrectionHistory",
     "CorrectionHistoryErasureMutation",
     "OriginalHistoryIsNeverErased",
+  ],
+  [
+    "HistoricalRepair",
+    "HistoricalRepairPartialPublishMutation",
+    "HistoricalRepairIsAtomic",
+  ],
+  [
+    "HistoricalRepair",
+    "HistoricalRepairReverseBundleOrderMutation",
+    "SameTimeBundleOrderIsPreserved",
   ],
   [
     "DurableTransferRefinement",

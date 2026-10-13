@@ -109,6 +109,14 @@ Physical grouping is placement topology, not a traceability alias. Association i
 
 A cycle count is an observation against a defined snapshot/scope, not `SET balance = counted`. Reconciliation must preserve legitimate movements recorded between snapshot, observation, and finalization; otherwise a late count can erase a real transfer.
 
+### Late historical repair and correction replay
+
+Durable history is append-only. A correction retains its root and replacement assertion; a historical repair retains stable embedded assertion identities and optional omission evidence. Neither operation mutates or deletes an earlier durable row.
+
+Effective-history replay uses the same event-kind rules as live/correction projection. Exact stock effects remain exact, placement-topology source edges may rebase onto corrected earlier topology, reversible traceability removals may become no-ops, and embodied placement remains stock-derived. Fungible under-accounting may become explicit signed deficit only under Record policy; a negative serialized identity is never admitted.
+
+A repair bundle is one atomic publication. Equal-time assertions retain durable repair-envelope order and caller order inside one bundle; explicit anchors fail closed when that ordering is insufficient. Planning conflicts, stale world/journal fences, unknown anchors/assertions, and invalid downstream history leave current truth unchanged. Present-time physical re-anchoring remains the existing count lifecycle rather than a hidden historical rewrite.
+
 ### Durable operation visibility
 
 Partial database writes are never committed inventory truth. Same operation identity freezes one intent. Completed multi-leg operations expose every leg together. Retry/repair converges exactly once.
@@ -144,6 +152,7 @@ The formal runner executes the model suite exported by `scripts/formal-models.mj
 - `PackagingIdentity`: revision-frozen whole-package constraints.
 - `DistributedRights`: allocated decrement/reservation rights and free-right transfer, checking rights-to-stock backing, physical accounting, and consumption bounds. Partition/merge behavior is not yet modeled.
 - `CorrectionHistory`: immutable event correction/supersession with partial correction writes hidden until the logical correction is complete.
+- `HistoricalRepair`: append-only late assertions publish atomically, preserve original evidence, reject serialized conflicts, keep Reject-mode history non-negative, and retain explicit Record-mode deficits.
 - `DurableTransferRefinement`: the concrete crash-separated transfer protocol must implement an abstract atomic transfer under an explicit refinement mapping.
 - `RepairLiveness`: under weak fairness, pending repair work eventually reaches a terminal completed/aborted state.
 

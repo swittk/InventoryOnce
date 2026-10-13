@@ -174,6 +174,7 @@ export function inventoryProjectionDigest(
       inventoryImmutableRecordDigest(projection.positionIdsByItemId),
       inventoryImmutableRecordDigest(projection.positionIdsByItemRevisionId),
       inventoryImmutableRecordDigest(projection.positionIdsByPlacementNodeId),
+      inventoryImmutableRecordDigest(projection.positionIdsByWhereaboutsId),
       inventoryImmutableRecordDigest(
         projection.positiveLayerStartedAtEpochMsByPositionId
       ),

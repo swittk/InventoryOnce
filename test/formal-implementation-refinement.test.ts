@@ -856,6 +856,7 @@ describe("all projection secondary-index domains", () => {
       [{ ...p, positionIdsByItemId: { ...p.positionIdsByItemId, orphan: [] } }, /Item position index/u],
       [{ ...p, positionIdsByItemRevisionId: { ...p.positionIdsByItemRevisionId, orphan: [] } }, /Revision position index/u],
       [{ ...p, positionIdsByPlacementNodeId: { ...p.positionIdsByPlacementNodeId, orphan: [] } }, /Direct placement position index/u],
+      [{ ...p, positionIdsByWhereaboutsId: { ...p.positionIdsByWhereaboutsId, orphan: [] } }, /Whereabouts cohort position index/u],
       [{ ...p, positivePositionIdBySerialIdentity: { ...p.positivePositionIdBySerialIdentity, orphan: "missing" } }, /Positive serial index/u],
       [{ ...p, positiveLayerStartedAtEpochMsByPositionId: { ...p.positiveLayerStartedAtEpochMsByPositionId, orphan: 0 } }, /Positive layer index/u],
       [{ ...p, lotIdentitiesByItemId: { ...p.lotIdentitiesByItemId, orphan: [] } }, /Item lot index/u],

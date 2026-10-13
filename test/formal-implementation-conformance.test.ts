@@ -284,15 +284,15 @@ describe("formal implementation conformance manifest", () => {
     expect(summary.callableFieldSignatures).toBeGreaterThanOrEqual(10);
     expect(summary.optionalFields).toBeGreaterThanOrEqual(821);
     expect(summary.undefinedFields).toBeGreaterThanOrEqual(2);
-    // Four authority checkpoint instants use null for absence; the application
-    // placement move/unplace inputs and the native segmented adapter's matching
-    // expected-parent input separately use null to assert an unplaced root.
-    expect(summary.nullableFields).toBe(7);
+    // Four authority checkpoint instants use null for absence; placement
+    // move/unplace and the native adapter use null for an unplaced root; two
+    // correction-replacement fields use null to retain an explicit omit assertion.
+    expect(summary.nullableFields).toBe(9);
     expect(summary.callAndConstructSignatures).toBeGreaterThanOrEqual(461);
     expect(summary.recursiveTypeReferences).toBeGreaterThanOrEqual(3);
     expect(summary.truncatedTypes).toBe(0);
     expect(summary.criticalKernelCalls).toBe(4);
-    expect(summary.boundedTraceEntries).toBe(26);
+    expect(summary.boundedTraceEntries).toBe(27);
     expect(summary.tracedPublicApis).toBeGreaterThanOrEqual(457);
     expect(summary.explicitGaps).toBeGreaterThanOrEqual(13);
     expect(summary.apiEntries - summary.tracedPublicApis).toBe(

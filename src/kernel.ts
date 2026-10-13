@@ -12,6 +12,12 @@ export * from "./commands.js";
 export * from "./counts.js";
 /** Append-only event-correction planner. */
 export * from "./corrections.js";
+/** Shared corrected/late historical replay planner. */
+export * from "./historical-replay.js";
+/** Historical-repair envelope planner. */
+export * from "./historical-repair.js";
+/** Indexed event-history query helpers. */
+export * from "./event-query.js";
 /** Immutable event facts and validation. */
 export * from "./events.js";
 /** Exact primary/independent measurement-vector arithmetic. */

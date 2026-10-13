@@ -1,18 +1,18 @@
 {
   "counts": {
-    "callableFieldSignatures": 11,
-    "callableFields": 11,
-    "callbackArgumentFields": 365,
-    "callbackResultFields": 433,
-    "fields": 2606,
-    "inputFields": 2195,
-    "nullableFields": 7,
-    "optionalFields": 1058,
-    "outputFields": 970,
-    "recursiveTypeReferences": 3,
+    "callableFieldSignatures": 12,
+    "callableFields": 12,
+    "callbackArgumentFields": 408,
+    "callbackResultFields": 451,
+    "fields": 2769,
+    "inputFields": 2308,
+    "nullableFields": 9,
+    "optionalFields": 1125,
+    "outputFields": 1065,
+    "recursiveTypeReferences": 5,
     "truncatedTypes": 0,
-    "types": 428,
-    "undefinedFields": 3
+    "types": 459,
+    "undefinedFields": 11
   },
   "entries": {
     "AbandonInventoryCountInput.book": {
@@ -3578,6 +3578,54 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
+    "CommitInventorySegmentedStockEventInput.expectedRecordSequence": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/segmented-state.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS",
+        "ResourceDimensions"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "CommitInventorySegmentedStockEventInput.expectedWorldRevision": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/segmented-state.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS",
+        "ResourceDimensions"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
     "CommitInventorySegmentedStockEventInput.intentFingerprint": {
       "allowsNull": false,
       "allowsUndefined": false,
@@ -3896,7 +3944,8 @@
       "formalModels": [
         "InventoryOperation",
         "PublishedHeadCAS",
-        "ResourceDimensions"
+        "ResourceDimensions",
+        "HistoricalRepair"
       ],
       "gaps": [],
       "optional": true,
@@ -4614,7 +4663,8 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
-        "CorrectionHistory"
+        "CorrectionHistory",
+        "HistoricalRepair"
       ],
       "gaps": [],
       "optional": false,
@@ -4636,7 +4686,8 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
-        "CorrectionHistory"
+        "CorrectionHistory",
+        "HistoricalRepair"
       ],
       "gaps": [],
       "optional": false,
@@ -4664,6 +4715,29 @@
       "gaps": [],
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "CreateInventoryCorrectionInput.historyEvents": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/corrections.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "readonly InventoryCommittedEvent[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "CorrectionHistory",
+        "HistoricalRepair"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
     "CreateInventoryCorrectionInput.metadata": {
       "allowsNull": false,
@@ -4752,7 +4826,8 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
-        "CorrectionHistory"
+        "CorrectionHistory",
+        "HistoricalRepair"
       ],
       "gaps": [],
       "optional": false,
@@ -4797,7 +4872,8 @@
         "test/formal-implementation-conformance.test.ts"
       ],
       "formalModels": [
-        "CorrectionHistory"
+        "CorrectionHistory",
+        "HistoricalRepair"
       ],
       "gaps": [],
       "optional": true,
@@ -5581,6 +5657,342 @@
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
     "CreateInventoryDetachInput.sourceReference": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "observational/audit-only",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "CreateInventoryHistoricalRepairInput.actorId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "observational/audit-only",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "CreateInventoryHistoricalRepairInput.assertions": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/historical-repair.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "readonly InventoryHistoricalAssertion[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "RecordedDeficit",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "CreateInventoryHistoricalRepairInput.catalog": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/historical-repair.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryCatalog",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "RecordedDeficit",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "CreateInventoryHistoricalRepairInput.destinationPartyId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "observational/audit-only",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "CreateInventoryHistoricalRepairInput.historyEvents": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/historical-repair.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "readonly InventoryCommittedEvent[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "RecordedDeficit",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "CreateInventoryHistoricalRepairInput.metadata": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "observational/audit-only",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "Readonly<Record<string, InventoryMetadataValue>>",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [
+        "GAP-ARBITRARY-AUDIT-METADATA"
+      ],
+      "optional": true,
+      "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "CreateInventoryHistoricalRepairInput.occurredAtEpochMs": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "CreateInventoryHistoricalRepairInput.omittedAssertionIds": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/historical-repair.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "readonly string[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "RecordedDeficit",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "CreateInventoryHistoricalRepairInput.operationId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "CreateInventoryHistoricalRepairInput.projection": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/historical-repair.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryProjectionState",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "RecordedDeficit",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "CreateInventoryHistoricalRepairInput.reason": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "observational/audit-only",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "CreateInventoryHistoricalRepairInput.recordedAtEpochMs": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "observational/audit-only",
+      "declaration": "src/historical-repair.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "RecordedDeficit",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "CreateInventoryHistoricalRepairInput.sourcePartyId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "observational/audit-only",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "CreateInventoryHistoricalRepairInput.sourceReference": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -15854,7 +16266,8 @@
       "formalModels": [
         "InventoryOperation",
         "PublishedHeadCAS",
-        "ResourceDimensions"
+        "ResourceDimensions",
+        "HistoricalRepair"
       ],
       "gaps": [],
       "optional": false,
@@ -15878,7 +16291,8 @@
       "formalModels": [
         "InventoryOperation",
         "PublishedHeadCAS",
-        "ResourceDimensions"
+        "ResourceDimensions",
+        "HistoricalRepair"
       ],
       "gaps": [],
       "optional": false,
@@ -15902,7 +16316,8 @@
       "formalModels": [
         "InventoryOperation",
         "PublishedHeadCAS",
-        "ResourceDimensions"
+        "ResourceDimensions",
+        "HistoricalRepair"
       ],
       "gaps": [],
       "optional": false,
@@ -15926,7 +16341,8 @@
       "formalModels": [
         "InventoryOperation",
         "PublishedHeadCAS",
-        "ResourceDimensions"
+        "ResourceDimensions",
+        "HistoricalRepair"
       ],
       "gaps": [],
       "optional": false,
@@ -15950,7 +16366,8 @@
       "formalModels": [
         "InventoryOperation",
         "PublishedHeadCAS",
-        "ResourceDimensions"
+        "ResourceDimensions",
+        "HistoricalRepair"
       ],
       "gaps": [],
       "optional": false,
@@ -15974,11 +16391,37 @@
       "formalModels": [
         "InventoryOperation",
         "PublishedHeadCAS",
-        "ResourceDimensions"
+        "ResourceDimensions",
+        "HistoricalRepair"
       ],
       "gaps": [],
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InMemoryInventorySegmentedEventJournal.resourceKeysByAssertionId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/segmented-journal.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "Map<string, readonly string[]>",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS",
+        "ResourceDimensions",
+        "HistoricalRepair"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
     "InMemoryInventorySegmentedEventJournal.secondaryRootSum": {
       "allowsNull": false,
@@ -15998,7 +16441,83 @@
       "formalModels": [
         "InventoryOperation",
         "PublishedHeadCAS",
-        "ResourceDimensions"
+        "ResourceDimensions",
+        "HistoricalRepair"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InMemoryInventorySegmentedEventJournal.sequencesByCorrectionRoot": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/segmented-journal.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "Map<string, number[]>",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS",
+        "ResourceDimensions",
+        "HistoricalRepair"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InMemoryInventorySegmentedEventJournal.sequencesByKind": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/segmented-journal.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "Map<InventoryEventKind, number[]>",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS",
+        "ResourceDimensions",
+        "HistoricalRepair"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InMemoryInventorySegmentedEventJournal.sequencesByResourceKey": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/segmented-journal.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "Map<string, number[]>",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS",
+        "ResourceDimensions",
+        "HistoricalRepair"
       ],
       "gaps": [],
       "optional": false,
@@ -16022,7 +16541,8 @@
       "formalModels": [
         "InventoryOperation",
         "PublishedHeadCAS",
-        "ResourceDimensions"
+        "ResourceDimensions",
+        "HistoricalRepair"
       ],
       "gaps": [],
       "optional": false,
@@ -21898,6 +22418,31 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
+    "InventoryCommittedEvent.correctionReplacement": {
+      "allowsNull": true,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/events.ts",
+      "directions": [
+        "callback-argument",
+        "input",
+        "output"
+      ],
+      "discoveredType": "InventoryEventDraft | null",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
     "InventoryCommittedEvent.destinationPartyId": {
       "allowsNull": false,
       "allowsUndefined": false,
@@ -21947,6 +22492,56 @@
       "gaps": [],
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryCommittedEvent.historicalImpact": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/events.ts",
+      "directions": [
+        "callback-argument",
+        "input",
+        "output"
+      ],
+      "discoveredType": "InventoryHistoricalImpact",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryCommittedEvent.historicalRepair": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/events.ts",
+      "directions": [
+        "callback-argument",
+        "input",
+        "output"
+      ],
+      "discoveredType": "InventoryHistoricalRepairEvidence",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
     "InventoryCommittedEvent.kind": {
       "allowsNull": false,
@@ -25205,6 +25800,7 @@
       "classification": "observational/audit-only",
       "declaration": "src/events.ts",
       "directions": [
+        "callback-argument",
         "callback-result",
         "input",
         "output"
@@ -25230,6 +25826,7 @@
       "classification": "identity/retry-semantic",
       "declaration": "src/events.ts",
       "directions": [
+        "callback-argument",
         "callback-result",
         "input",
         "output"
@@ -25255,6 +25852,7 @@
       "classification": "abstract-semantic",
       "declaration": "src/events.ts",
       "directions": [
+        "callback-argument",
         "callback-result",
         "input",
         "output"
@@ -25280,11 +25878,38 @@
       "classification": "abstract-semantic",
       "declaration": "src/events.ts",
       "directions": [
+        "callback-argument",
         "callback-result",
         "input",
         "output"
       ],
       "discoveredType": "InventoryCorrectionReference",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryEventDraft.correctionReplacement": {
+      "allowsNull": true,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/events.ts",
+      "directions": [
+        "callback-argument",
+        "callback-result",
+        "input",
+        "output"
+      ],
+      "discoveredType": "InventoryEventDraft | null",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -25305,6 +25930,7 @@
       "classification": "observational/audit-only",
       "declaration": "src/events.ts",
       "directions": [
+        "callback-argument",
         "callback-result",
         "input",
         "output"
@@ -25330,6 +25956,7 @@
       "classification": "identity/retry-semantic",
       "declaration": "src/events.ts",
       "directions": [
+        "callback-argument",
         "callback-result",
         "input",
         "output"
@@ -25347,6 +25974,58 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
+    "InventoryEventDraft.historicalImpact": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/events.ts",
+      "directions": [
+        "callback-argument",
+        "callback-result",
+        "input",
+        "output"
+      ],
+      "discoveredType": "InventoryHistoricalImpact",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryEventDraft.historicalRepair": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/events.ts",
+      "directions": [
+        "callback-argument",
+        "callback-result",
+        "input",
+        "output"
+      ],
+      "discoveredType": "InventoryHistoricalRepairEvidence",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
     "InventoryEventDraft.kind": {
       "allowsNull": false,
       "allowsUndefined": false,
@@ -25355,6 +26034,7 @@
       "classification": "abstract-semantic",
       "declaration": "src/events.ts",
       "directions": [
+        "callback-argument",
         "callback-result",
         "input",
         "output"
@@ -25380,6 +26060,7 @@
       "classification": "abstract-semantic",
       "declaration": "src/events.ts",
       "directions": [
+        "callback-argument",
         "callback-result",
         "input",
         "output"
@@ -25405,6 +26086,7 @@
       "classification": "observational/audit-only",
       "declaration": "src/events.ts",
       "directions": [
+        "callback-argument",
         "callback-result",
         "input",
         "output"
@@ -25432,6 +26114,7 @@
       "classification": "abstract-semantic",
       "declaration": "src/events.ts",
       "directions": [
+        "callback-argument",
         "callback-result",
         "input",
         "output"
@@ -25457,6 +26140,7 @@
       "classification": "identity/retry-semantic",
       "declaration": "src/events.ts",
       "directions": [
+        "callback-argument",
         "callback-result",
         "input",
         "output"
@@ -25482,6 +26166,7 @@
       "classification": "abstract-semantic",
       "declaration": "src/events.ts",
       "directions": [
+        "callback-argument",
         "callback-result",
         "input",
         "output"
@@ -25507,6 +26192,7 @@
       "classification": "abstract-semantic",
       "declaration": "src/events.ts",
       "directions": [
+        "callback-argument",
         "callback-result",
         "input",
         "output"
@@ -25532,6 +26218,7 @@
       "classification": "abstract-semantic",
       "declaration": "src/events.ts",
       "directions": [
+        "callback-argument",
         "callback-result",
         "input",
         "output"
@@ -25557,6 +26244,7 @@
       "classification": "abstract-semantic",
       "declaration": "src/events.ts",
       "directions": [
+        "callback-argument",
         "callback-result",
         "input",
         "output"
@@ -25582,6 +26270,7 @@
       "classification": "observational/audit-only",
       "declaration": "src/events.ts",
       "directions": [
+        "callback-argument",
         "callback-result",
         "input",
         "output"
@@ -25607,6 +26296,7 @@
       "classification": "observational/audit-only",
       "declaration": "src/events.ts",
       "directions": [
+        "callback-argument",
         "callback-result",
         "input",
         "output"
@@ -25632,6 +26322,7 @@
       "classification": "observational/audit-only",
       "declaration": "src/events.ts",
       "directions": [
+        "callback-argument",
         "callback-result",
         "input",
         "output"
@@ -25657,6 +26348,7 @@
       "classification": "abstract-semantic",
       "declaration": "src/events.ts",
       "directions": [
+        "callback-argument",
         "callback-result",
         "input",
         "output"
@@ -25682,6 +26374,7 @@
       "classification": "abstract-semantic",
       "declaration": "src/events.ts",
       "directions": [
+        "callback-argument",
         "callback-result",
         "input",
         "output"
@@ -25707,6 +26400,7 @@
       "classification": "abstract-semantic",
       "declaration": "src/events.ts",
       "directions": [
+        "callback-argument",
         "callback-result",
         "input",
         "output"
@@ -25742,7 +26436,8 @@
       "formalModels": [
         "InventoryOperation",
         "PublishedHeadCAS",
-        "ResourceDimensions"
+        "ResourceDimensions",
+        "HistoricalRepair"
       ],
       "gaps": [],
       "optional": false,
@@ -25766,7 +26461,8 @@
       "formalModels": [
         "InventoryOperation",
         "PublishedHeadCAS",
-        "ResourceDimensions"
+        "ResourceDimensions",
+        "HistoricalRepair"
       ],
       "gaps": [],
       "optional": false,
@@ -25790,7 +26486,8 @@
       "formalModels": [
         "InventoryOperation",
         "PublishedHeadCAS",
-        "ResourceDimensions"
+        "ResourceDimensions",
+        "HistoricalRepair"
       ],
       "gaps": [],
       "optional": false,
@@ -25814,7 +26511,8 @@
       "formalModels": [
         "InventoryOperation",
         "PublishedHeadCAS",
-        "ResourceDimensions"
+        "ResourceDimensions",
+        "HistoricalRepair"
       ],
       "gaps": [],
       "optional": false,
@@ -25838,7 +26536,8 @@
       "formalModels": [
         "InventoryOperation",
         "PublishedHeadCAS",
-        "ResourceDimensions"
+        "ResourceDimensions",
+        "HistoricalRepair"
       ],
       "gaps": [],
       "optional": false,
@@ -25862,7 +26561,728 @@
       "formalModels": [
         "InventoryOperation",
         "PublishedHeadCAS",
-        "ResourceDimensions"
+        "ResourceDimensions",
+        "HistoricalRepair"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryEventLotRef.itemId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryEventLotRef.lotId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryEventPage.events": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "readonly InventoryCommittedEvent[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryEventPage.nextAfterRecordSequence": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryEventPage.nextCursor": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryEventPage.throughRecordSequence": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryEventQuery.afterRecordSequence": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryEventQuery.correctsEventIds": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "readonly string[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryEventQuery.cursor": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryEventQuery.direction": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryEventQueryDirection",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryEventQuery.itemIds": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "readonly string[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryEventQuery.itemRevisionIds": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "readonly string[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryEventQuery.kinds": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "readonly InventoryEventKind[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryEventQuery.limit": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryEventQuery.lots": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "readonly InventoryEventLotRef[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryEventQuery.occurredFromEpochMs": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryEventQuery.occurredThroughEpochMs": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryEventQuery.placementNodeIds": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "readonly string[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryEventQuery.recordSequenceFrom": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryEventQuery.recordSequenceThrough": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryEventQuery.recordedFromEpochMs": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryEventQuery.recordedThroughEpochMs": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryEventQuery.serials": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "readonly InventoryEventSerialRef[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryEventQuery.whereaboutsIds": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "readonly string[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryEventQuerySequenceWindow.firstRecordSequence": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryEventQuerySequenceWindow.lastRecordSequence": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryEventQuerySequenceWindow.step": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "1 | -1",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryEventQuerySequenceWindow.throughRecordSequence": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryEventSerialRef.itemId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryEventSerialRef.serialId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
       ],
       "gaps": [],
       "optional": false,
@@ -27418,6 +28838,922 @@
       "gaps": [],
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryHistoricalAssertion.afterEventId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/events.ts",
+      "directions": [
+        "callback-argument",
+        "callback-result",
+        "input",
+        "output"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryHistoricalAssertion.assertionId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/events.ts",
+      "directions": [
+        "callback-argument",
+        "callback-result",
+        "input",
+        "output"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryHistoricalAssertion.event": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/events.ts",
+      "directions": [
+        "callback-argument",
+        "callback-result",
+        "input",
+        "output"
+      ],
+      "discoveredType": "InventoryEventDraft",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryHistoricalDeficitInterval.endedAtEpochMs": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/events.ts",
+      "directions": [
+        "callback-argument",
+        "callback-result",
+        "input",
+        "output"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "RecordedDeficit",
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryHistoricalDeficitInterval.endedByEventId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/events.ts",
+      "directions": [
+        "callback-argument",
+        "callback-result",
+        "input",
+        "output"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "RecordedDeficit",
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryHistoricalDeficitInterval.itemRevisionId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/events.ts",
+      "directions": [
+        "callback-argument",
+        "callback-result",
+        "input",
+        "output"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "RecordedDeficit",
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryHistoricalDeficitInterval.maximumDeficit": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/events.ts",
+      "directions": [
+        "callback-argument",
+        "callback-result",
+        "input",
+        "output"
+      ],
+      "discoveredType": "InventoryMeasurementVector",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "RecordedDeficit",
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryHistoricalDeficitInterval.position": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/events.ts",
+      "directions": [
+        "callback-argument",
+        "callback-result",
+        "input",
+        "output"
+      ],
+      "discoveredType": "InventoryStockPositionKey",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "RecordedDeficit",
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryHistoricalDeficitInterval.startedAtEpochMs": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/events.ts",
+      "directions": [
+        "callback-argument",
+        "callback-result",
+        "input",
+        "output"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "RecordedDeficit",
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryHistoricalDeficitInterval.startedByEventId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/events.ts",
+      "directions": [
+        "callback-argument",
+        "callback-result",
+        "input",
+        "output"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "RecordedDeficit",
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryHistoricalImpact.affectedEventIds": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/events.ts",
+      "directions": [
+        "callback-argument",
+        "callback-result",
+        "input",
+        "output"
+      ],
+      "discoveredType": "readonly string[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryHistoricalImpact.deficits": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/events.ts",
+      "directions": [
+        "callback-argument",
+        "callback-result",
+        "input",
+        "output"
+      ],
+      "discoveredType": "readonly InventoryHistoricalDeficitInterval[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryHistoricalImpact.whereaboutsIds": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/events.ts",
+      "directions": [
+        "callback-argument",
+        "callback-result",
+        "input",
+        "output"
+      ],
+      "discoveredType": "readonly string[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryHistoricalRepairEventPlan.event": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/historical-repair.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "InventoryEventDraft",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "RecordedDeficit",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryHistoricalRepairEventPlan.replay": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/historical-repair.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "InventoryHistoricalReplayResult",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "RecordedDeficit",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryHistoricalRepairEvidence.assertions": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/events.ts",
+      "directions": [
+        "callback-argument",
+        "callback-result",
+        "input",
+        "output"
+      ],
+      "discoveredType": "readonly InventoryHistoricalAssertion[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryHistoricalRepairEvidence.omittedAssertionIds": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/events.ts",
+      "directions": [
+        "callback-argument",
+        "callback-result",
+        "input",
+        "output"
+      ],
+      "discoveredType": "readonly string[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryHistoricalRepairMetadataError.cause": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "external:typescript/lib/lib.es2022.error.d.ts#0a3d63ef2b85",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "unknown",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryHistoricalRepairMetadataError.message": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "application decoration",
+      "declaration": "external:typescript/lib/lib.es5.d.ts#c430d4466628",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [
+        "GAP-APPLICATION-DECORATION"
+      ],
+      "optional": false,
+      "rationale": "Human/application decoration is intentionally outside conserved physical semantics."
+    },
+    "InventoryHistoricalRepairMetadataError.name": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "external:typescript/lib/lib.es5.d.ts#c430d4466628",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryHistoricalRepairMetadataError.stack": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "external:typescript/lib/lib.es5.d.ts#c430d4466628",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryHistoricalReplayConflict.code": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "application decoration",
+      "declaration": "src/historical-replay.ts",
+      "directions": [
+        "input",
+        "output"
+      ],
+      "discoveredType": "InventoryHistoricalReplayConflictCode",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "RecordedDeficit",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [
+        "GAP-APPLICATION-DECORATION"
+      ],
+      "optional": false,
+      "rationale": "Human/application decoration is intentionally outside conserved physical semantics."
+    },
+    "InventoryHistoricalReplayConflict.eventId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/historical-replay.ts",
+      "directions": [
+        "input",
+        "output"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "RecordedDeficit",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryHistoricalReplayConflict.message": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "application decoration",
+      "declaration": "src/historical-replay.ts",
+      "directions": [
+        "input",
+        "output"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "RecordedDeficit",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [
+        "GAP-APPLICATION-DECORATION"
+      ],
+      "optional": false,
+      "rationale": "Human/application decoration is intentionally outside conserved physical semantics."
+    },
+    "InventoryHistoricalReplayConflictCode.length": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "external:typescript/lib/lib.es5.d.ts#c430d4466628",
+      "directions": [
+        "input",
+        "output"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryHistoricalReplayConflictError.cause": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "external:typescript/lib/lib.es2022.error.d.ts#0a3d63ef2b85",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "unknown",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryHistoricalReplayConflictError.conflict": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/historical-replay.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "InventoryHistoricalReplayConflict",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "RecordedDeficit",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryHistoricalReplayConflictError.message": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "application decoration",
+      "declaration": "external:typescript/lib/lib.es5.d.ts#c430d4466628",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [
+        "GAP-APPLICATION-DECORATION"
+      ],
+      "optional": false,
+      "rationale": "Human/application decoration is intentionally outside conserved physical semantics."
+    },
+    "InventoryHistoricalReplayConflictError.name": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "external:typescript/lib/lib.es5.d.ts#c430d4466628",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryHistoricalReplayConflictError.stack": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "external:typescript/lib/lib.es5.d.ts#c430d4466628",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryHistoricalReplayResult.actualProjection": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/historical-replay.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "InventoryProjectionState",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "RecordedDeficit",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryHistoricalReplayResult.effectiveEvents": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/historical-replay.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "readonly InventoryCommittedEvent[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "RecordedDeficit",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryHistoricalReplayResult.impact": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/historical-replay.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "InventoryHistoricalImpact",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "RecordedDeficit",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryHistoricalReplayResult.projection": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/historical-replay.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "InventoryProjectionState",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "RecordedDeficit",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryHistoricalRootReplacement.replacement": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/historical-replay.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryEventDraft",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "RecordedDeficit",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryHistoricalRootReplacement.rootEventId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/historical-replay.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "RecordedDeficit",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
     "InventoryIndependentAmountInput.axisId": {
       "allowsNull": false,
@@ -35146,6 +37482,52 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
+    "InventoryOnceCorrectionPlan.basedOnWorldRevision": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryOnceCorrectionPlan.valid": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "boolean",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
     "InventoryOnceCountResult.count": {
       "allowsNull": false,
       "allowsUndefined": false,
@@ -36953,6 +39335,364 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
+    "InventoryOnceHistoricalAssertionInput.afterEventId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryOnceHistoricalAssertionInput.assert": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [
+        {
+          "parameters": [
+            {
+              "name": "plans",
+              "optional": false,
+              "type": "InventoryOnceHistoricalAssertionPlans"
+            }
+          ],
+          "result": "InventoryOnceReplacementPlan"
+        }
+      ],
+      "callable": true,
+      "classification": "abstract-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "(plans: InventoryOnceHistoricalAssertionPlans) => InventoryOnceReplacementPlan",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryOnceHistoricalAssertionInput.assertionId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryOnceHistoricalRepairInput.actorId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "observational/audit-only",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "InventoryOnceHistoricalRepairInput.assertions": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "readonly InventoryOnceHistoricalAssertionInput[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryOnceHistoricalRepairInput.destinationPartyId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "observational/audit-only",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "InventoryOnceHistoricalRepairInput.metadata": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "observational/audit-only",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "Readonly<Record<string, InventoryMetadataValue>>",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [
+        "GAP-ARBITRARY-AUDIT-METADATA"
+      ],
+      "optional": true,
+      "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "InventoryOnceHistoricalRepairInput.occurredAtEpochMs": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryOnceHistoricalRepairInput.omittedAssertionIds": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "readonly string[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryOnceHistoricalRepairInput.operationId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryOnceHistoricalRepairInput.reason": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "observational/audit-only",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "InventoryOnceHistoricalRepairInput.sourcePartyId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "observational/audit-only",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "InventoryOnceHistoricalRepairInput.sourceReference": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "observational/audit-only",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "InventoryOnceHistoricalRepairPlan.basedOnWorldRevision": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryOnceHistoricalRepairPlan.valid": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "boolean",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
     "InventoryOnceIndividualizeInput.actorId": {
       "allowsNull": false,
       "allowsUndefined": false,
@@ -37253,6 +39993,144 @@
       "gaps": [],
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "InventoryOnceInvalidCorrectionPlan.basedOnWorldRevision": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryOnceInvalidCorrectionPlan.conflict": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "InventoryHistoricalReplayConflict",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryOnceInvalidCorrectionPlan.valid": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "false",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryOnceInvalidHistoricalRepairPlan.basedOnWorldRevision": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryOnceInvalidHistoricalRepairPlan.conflict": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "InventoryHistoricalReplayConflict",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryOnceInvalidHistoricalRepairPlan.valid": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "false",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
     "InventoryOnceIssueInput.actorId": {
       "allowsNull": false,
@@ -47173,6 +50051,190 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
+    "InventoryOnceValidCorrectionPlan.basedOnWorldRevision": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryOnceValidCorrectionPlan.event": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "InventoryEventDraft",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryOnceValidCorrectionPlan.impact": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "InventoryHistoricalImpact",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryOnceValidCorrectionPlan.valid": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "true",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryOnceValidHistoricalRepairPlan.basedOnWorldRevision": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryOnceValidHistoricalRepairPlan.event": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "InventoryEventDraft",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryOnceValidHistoricalRepairPlan.impact": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "InventoryHistoricalImpact",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryOnceValidHistoricalRepairPlan.valid": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "true",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
     "InventoryOnceWhereaboutsQuery.detachedBeforeEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
@@ -48014,6 +51076,106 @@
       "gaps": [],
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryPendingHistoricalAssertion.assertion": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/historical-replay.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryHistoricalAssertion",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "RecordedDeficit",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryPendingHistoricalAssertion.assertionOrder": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/historical-replay.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "RecordedDeficit",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryPendingHistoricalAssertion.durableOrder": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/historical-replay.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "RecordedDeficit",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryPendingHistoricalAssertion.recordedAtEpochMs": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "observational/audit-only",
+      "declaration": "src/historical-replay.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "RecordedDeficit",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
     "InventoryPlacementChange.fromParentNodeId": {
       "allowsNull": false,
@@ -49652,6 +52814,30 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
+    "InventoryPositionSegmentMaterialization.positionIdsByWhereaboutsId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/segmented-state.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "Readonly<Record<string, readonly string[]>>",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS",
+        "ResourceDimensions"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
     "InventoryPositionSegmentMaterialization.positions": {
       "allowsNull": false,
       "allowsUndefined": false,
@@ -49978,6 +53164,98 @@
       "gaps": [],
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryProjectionDelta.placementChanges": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/corrections.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "readonly InventoryPlacementChange[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "CorrectionHistory",
+        "HistoricalRepair"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryProjectionDelta.positiveLayerProvenanceOverrides": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/corrections.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "readonly InventoryPositiveLayerProvenanceOverride[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "CorrectionHistory",
+        "HistoricalRepair"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryProjectionDelta.stockEffects": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/corrections.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "readonly InventoryStockEffect[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "CorrectionHistory",
+        "HistoricalRepair"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryProjectionDelta.traceabilityChanges": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/corrections.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "readonly InventoryTraceabilityRelationChange[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "CorrectionHistory",
+        "HistoricalRepair"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
     "InventoryProjectionState.correctionEventIdByCorrectedEventId": {
       "allowsNull": false,
@@ -50355,6 +53633,31 @@
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
     "InventoryProjectionState.positionIdsByPlacementNodeId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/projection.ts",
+      "directions": [
+        "callback-argument",
+        "input",
+        "output"
+      ],
+      "discoveredType": "Readonly<Record<string, readonly string[]>>",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "ResourceDimensions",
+        "InventoryOperation"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryProjectionState.positionIdsByWhereaboutsId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -52636,6 +55939,81 @@
       ],
       "gaps": [],
       "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventorySegmentedEventResourceQuery.afterRecordSequence": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/segmented-journal.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS",
+        "ResourceDimensions",
+        "HistoricalRepair"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventorySegmentedEventResourceQuery.limit": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/segmented-journal.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS",
+        "ResourceDimensions",
+        "HistoricalRepair"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventorySegmentedEventResourceQuery.resourceKeys": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/segmented-journal.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "readonly string[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS",
+        "ResourceDimensions",
+        "HistoricalRepair"
+      ],
+      "gaps": [],
+      "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
     "InventorySegmentedPositionSnapshotRead<17917904e285>.coherent": {
@@ -58165,6 +61543,481 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
+    "NormalizedInventoryEventQuery.correctsEventIds": {
+      "allowsNull": false,
+      "allowsUndefined": true,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input",
+        "output"
+      ],
+      "discoveredType": "ReadonlySet<string> | undefined",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "NormalizedInventoryEventQuery.cursorBoundary": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input",
+        "output"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "NormalizedInventoryEventQuery.cursorFingerprint": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input",
+        "output"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "NormalizedInventoryEventQuery.cursorThroughRecordSequence": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input",
+        "output"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "NormalizedInventoryEventQuery.direction": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input",
+        "output"
+      ],
+      "discoveredType": "InventoryEventQueryDirection",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "NormalizedInventoryEventQuery.itemIds": {
+      "allowsNull": false,
+      "allowsUndefined": true,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input",
+        "output"
+      ],
+      "discoveredType": "ReadonlySet<string> | undefined",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "NormalizedInventoryEventQuery.itemRevisionIds": {
+      "allowsNull": false,
+      "allowsUndefined": true,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input",
+        "output"
+      ],
+      "discoveredType": "ReadonlySet<string> | undefined",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "NormalizedInventoryEventQuery.kinds": {
+      "allowsNull": false,
+      "allowsUndefined": true,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input",
+        "output"
+      ],
+      "discoveredType": "ReadonlySet<InventoryEventKind> | undefined",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "NormalizedInventoryEventQuery.limit": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input",
+        "output"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "NormalizedInventoryEventQuery.lotIdentities": {
+      "allowsNull": false,
+      "allowsUndefined": true,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input",
+        "output"
+      ],
+      "discoveredType": "ReadonlySet<string> | undefined",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "NormalizedInventoryEventQuery.occurredFromEpochMs": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input",
+        "output"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "NormalizedInventoryEventQuery.occurredThroughEpochMs": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input",
+        "output"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "NormalizedInventoryEventQuery.placementNodeIds": {
+      "allowsNull": false,
+      "allowsUndefined": true,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input",
+        "output"
+      ],
+      "discoveredType": "ReadonlySet<string> | undefined",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "NormalizedInventoryEventQuery.recordSequenceFrom": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input",
+        "output"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "NormalizedInventoryEventQuery.recordSequenceThrough": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input",
+        "output"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "NormalizedInventoryEventQuery.recordedFromEpochMs": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input",
+        "output"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "NormalizedInventoryEventQuery.recordedThroughEpochMs": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input",
+        "output"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "NormalizedInventoryEventQuery.serialIdentities": {
+      "allowsNull": false,
+      "allowsUndefined": true,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input",
+        "output"
+      ],
+      "discoveredType": "ReadonlySet<string> | undefined",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "NormalizedInventoryEventQuery.whereaboutsIds": {
+      "allowsNull": false,
+      "allowsUndefined": true,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "input",
+        "output"
+      ],
+      "discoveredType": "ReadonlySet<string> | undefined",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
     "ObserveInventoryCountInput.book": {
       "allowsNull": false,
       "allowsUndefined": false,
@@ -60148,6 +64001,181 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
+    "ReplayInventoryHistoricalScenarioInput.assertions": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/historical-replay.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "readonly InventoryPendingHistoricalAssertion[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "RecordedDeficit",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "ReplayInventoryHistoricalScenarioInput.catalog": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/historical-replay.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryCatalog",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "RecordedDeficit",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "ReplayInventoryHistoricalScenarioInput.deficitPolicy": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/historical-replay.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryDeficitPolicy",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "RecordedDeficit",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "ReplayInventoryHistoricalScenarioInput.omittedAssertionIds": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/historical-replay.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "readonly string[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "RecordedDeficit",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "ReplayInventoryHistoricalScenarioInput.projection": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/historical-replay.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryProjectionState",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "RecordedDeficit",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "ReplayInventoryHistoricalScenarioInput.rootReplacement": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/historical-replay.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryHistoricalRootReplacement",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "RecordedDeficit",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "ReplayInventoryHistoricalScenarioInput.sourceEvents": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/historical-replay.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "readonly InventoryCommittedEvent[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "RecordedDeficit",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
     "ResolvedInventoryAmount.measurements": {
       "allowsNull": false,
       "allowsUndefined": false,
@@ -61139,7 +65167,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/events.ts:260:5.action": {
+    "anonymous@src/events.ts:309:5.action": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61165,7 +65193,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/events.ts:260:5.destinationCustodianId": {
+    "anonymous@src/events.ts:309:5.destinationCustodianId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61191,7 +65219,7 @@
       "optional": true,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/events.ts:260:5.destinationPlacementNodeId": {
+    "anonymous@src/events.ts:309:5.destinationPlacementNodeId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61217,7 +65245,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/events.ts:260:5.lines": {
+    "anonymous@src/events.ts:309:5.lines": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61243,7 +65271,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/events.ts:260:5.sourcePlacementNodeId": {
+    "anonymous@src/events.ts:309:5.sourcePlacementNodeId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61269,7 +65297,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/events.ts:260:5.transferId": {
+    "anonymous@src/events.ts:309:5.transferId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61295,7 +65323,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/events.ts:260:5.transitPlacementNodeId": {
+    "anonymous@src/events.ts:309:5.transitPlacementNodeId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61321,7 +65349,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/events.ts:269:5.action": {
+    "anonymous@src/events.ts:318:5.action": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61347,7 +65375,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/events.ts:269:5.carrierCustodianId": {
+    "anonymous@src/events.ts:318:5.carrierCustodianId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61373,7 +65401,7 @@
       "optional": true,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/events.ts:269:5.transferId": {
+    "anonymous@src/events.ts:318:5.transferId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61399,7 +65427,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/events.ts:274:5.action": {
+    "anonymous@src/events.ts:323:5.action": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61425,7 +65453,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/events.ts:274:5.lines": {
+    "anonymous@src/events.ts:323:5.lines": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61451,7 +65479,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/events.ts:274:5.transferId": {
+    "anonymous@src/events.ts:323:5.transferId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61477,7 +65505,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/events.ts:279:5.action": {
+    "anonymous@src/events.ts:328:5.action": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61503,7 +65531,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/events.ts:279:5.transferId": {
+    "anonymous@src/events.ts:328:5.transferId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61529,7 +65557,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/facade.ts:754:5.deficitPosition": {
+    "anonymous@src/facade.ts:771:5.deficitPosition": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61554,7 +65582,7 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/facade.ts:754:5.groupId": {
+    "anonymous@src/facade.ts:771:5.groupId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61578,7 +65606,7 @@
       "optional": true,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/facade.ts:754:5.requestId": {
+    "anonymous@src/facade.ts:771:5.requestId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61602,7 +65630,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/integrity.ts:670:51.baseWorldRoot": {
+    "anonymous@src/integrity.ts:671:51.baseWorldRoot": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61626,7 +65654,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/integrity.ts:670:51.catalogRoot": {
+    "anonymous@src/integrity.ts:671:51.catalogRoot": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61650,7 +65678,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/integrity.ts:670:51.countDelta": {
+    "anonymous@src/integrity.ts:671:51.countDelta": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61674,7 +65702,7 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/integrity.ts:670:51.deficitPolicy": {
+    "anonymous@src/integrity.ts:671:51.deficitPolicy": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61698,7 +65726,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/integrity.ts:670:51.event": {
+    "anonymous@src/integrity.ts:671:51.event": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61722,7 +65750,7 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/integrity.ts:670:51.nextRoots": {
+    "anonymous@src/integrity.ts:671:51.nextRoots": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61746,7 +65774,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/integrity.ts:670:51.receipt": {
+    "anonymous@src/integrity.ts:671:51.receipt": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61770,7 +65798,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/integrity.ts:670:51.reservationDelta": {
+    "anonymous@src/integrity.ts:671:51.reservationDelta": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61794,7 +65822,7 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/integrity.ts:684:21.countId": {
+    "anonymous@src/integrity.ts:685:21.countId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61818,7 +65846,7 @@
       "optional": true,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/integrity.ts:684:21.eventId": {
+    "anonymous@src/integrity.ts:685:21.eventId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61842,7 +65870,7 @@
       "optional": true,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/integrity.ts:684:21.operationId": {
+    "anonymous@src/integrity.ts:685:21.operationId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61866,7 +65894,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/integrity.ts:684:21.recordedAtEpochMs": {
+    "anonymous@src/integrity.ts:685:21.recordedAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61890,7 +65918,7 @@
       "optional": false,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "anonymous@src/integrity.ts:684:21.reservationId": {
+    "anonymous@src/integrity.ts:685:21.reservationId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61914,7 +65942,7 @@
       "optional": true,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/integrity.ts:684:21.worldRevision": {
+    "anonymous@src/integrity.ts:685:21.worldRevision": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61938,7 +65966,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/integrity.ts:716:60.baseWorldRoot": {
+    "anonymous@src/integrity.ts:717:60.baseWorldRoot": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61962,7 +65990,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/integrity.ts:716:60.catalogRoot": {
+    "anonymous@src/integrity.ts:717:60.catalogRoot": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -61986,7 +66014,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/integrity.ts:716:60.deficitPolicy": {
+    "anonymous@src/integrity.ts:717:60.deficitPolicy": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -62010,7 +66038,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/integrity.ts:716:60.events": {
+    "anonymous@src/integrity.ts:717:60.events": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -62034,7 +66062,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/integrity.ts:716:60.nextRoots": {
+    "anonymous@src/integrity.ts:717:60.nextRoots": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -62058,7 +66086,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/integrity.ts:716:60.sourceDispositions": {
+    "anonymous@src/integrity.ts:717:60.sourceDispositions": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -62259,11 +66287,13 @@
   "surfaceDiagnostics": {
     "maximumTypeDepth": 12,
     "recursiveTypeReferences": [
+      "InventoryEventDraft|src/events.ts|15572|04849f27e95c",
       "InventoryIntentFingerprintValue|src/canonical.ts|81|409e33b74f02",
       "InventoryMetadataValue|src/model.ts|1577|5d09d8b2fba1",
-      "external:cce81cd429ac"
+      "external:cce81cd429ac",
+      "external:f2ef35b1785c"
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "57739b90e8207d6bd6181eb3aacf0ced2ee58837b21c7704c99e0c7cd88e43f0"
+  "surfaceSha256": "5da8e928a1a763445d3181f35b896df26cf8275b0457a29e60a8ef1a9573d2ec"
 }

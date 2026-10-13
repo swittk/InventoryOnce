@@ -1037,11 +1037,14 @@ function assertAbstractPositionIndexes(p: InventoryWorldState["projection"]): vo
     row => row.definition.nodeId,
     "Placement node"
   );
-  const byItem = new Map<string, string[]>(), byRevision = new Map<string, string[]>(), byPlacementNode = new Map<string, string[]>();
+  const byItem = new Map<string, string[]>(), byRevision = new Map<string, string[]>(), byPlacementNode = new Map<string, string[]>(), byWhereabouts = new Map<string, string[]>();
   const serials = new Map<string, string>(), positiveLayers = new Set<string>();
   for (const [identity, position] of Object.entries(p.positions)) {
     addAbstractIndexMember(byItem, position.key.itemId, identity);
     addAbstractIndexMember(byRevision, position.key.itemRevisionId, identity);
+    if (position.key.whereaboutsId !== undefined) {
+      addAbstractIndexMember(byWhereabouts, position.key.whereaboutsId, identity);
+    }
     if (position.key.placementNodeId !== undefined) {
       addAbstractIndexMember(
         byPlacementNode,
@@ -1056,6 +1059,11 @@ function assertAbstractPositionIndexes(p: InventoryWorldState["projection"]): vo
   }
   assertAbstractGroupedIndex(p.positionIdsByItemId, byItem, "Item position");
   assertAbstractGroupedIndex(p.positionIdsByItemRevisionId, byRevision, "Revision position");
+  assertAbstractGroupedIndex(
+    p.positionIdsByWhereaboutsId,
+    byWhereabouts,
+    "Whereabouts cohort position"
+  );
   assertAbstractGroupedIndex(
     p.positionIdsByPlacementNodeId,
     byPlacementNode,

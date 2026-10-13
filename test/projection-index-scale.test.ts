@@ -644,6 +644,14 @@ describe("projection index real-world scale", () => {
       resolve(testDirectory, "../src/corrections.ts"),
       "utf8"
     );
+    const historicalReplay = readFileSync(
+      resolve(testDirectory, "../src/historical-replay.ts"),
+      "utf8"
+    );
+    const historicalDependencies = readFileSync(
+      resolve(testDirectory, "../src/historical-dependencies.ts"),
+      "utf8"
+    );
     const placement = readFileSync(
       resolve(testDirectory, "../src/placement.ts"),
       "utf8"
@@ -738,7 +746,14 @@ describe("projection index real-world scale", () => {
       "for (const projected of Object.values(world.projection.lots))"
     );
     expect(counts).toContain("inventoryEventsInRecordSequence(events)");
-    expect(corrections).toContain("projection.eventIdsBySequence[");
+    expect(historicalReplay).toContain("projection.eventIdsBySequence[");
+    expect(historicalReplay).not.toContain("Object.values(projection.events)");
+    expect(historicalDependencies).toContain(
+      "queryInventoryEventsByResourceKeys"
+    );
+    expect(historicalDependencies).not.toContain(
+      "Object.values(projection.events)"
+    );
     expect(corrections).not.toContain("Object.values(projection.events)");
   });
 });

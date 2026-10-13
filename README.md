@@ -12,7 +12,9 @@
 - Fungible quantity cannot own placement children. `stock.individualize(...)` splits exactly one physical unit into a new serial and can atomically make that instance a placement-capable node. Once empty, `stock.deindividualize(...)` merges it back into fungible stock and permanently retires the old current serial/node identity; a later unit receives a fresh identity. Exact correction of the mistaken retirement event is the only normal way to revive that identity.
 - Intentionally detached or genuinely missing stock remains conserved/accounted inventory with a kernel-owned whereabouts lifecycle, last-known placement, times, actor/source provenance, and append-only outcome history. It is not ordinary usable/reservable/automatically allocatable stock until placed again. `issue` means it left the inventory world; `scrap` means it was destroyed.
 - Placement, association, and transformation genealogy are different structures with different invariants. Placement has one parent and no cycles; association is reversible relationship truth; genealogy is append-only production lineage.
-- Corrections append a delta and point to the retained root event. They never edit or delete earlier events.
+- Corrections append a delta and point to the retained root event. They never edit or delete earlier events. `stock.planCorrection(...)` runs the same replay without writing; new corrections retain their replacement assertion so later historical repair can recompute current truth rather than stack a stale delta.
+- Late-discovered historical facts are opt-in. `stock.planHistorical(...)` / `stock.recordHistorical(...)` atomically replay existing physical verbs at their occurrence time while retaining one append-only repair envelope at the durable record time. Applications that never call these methods keep the same normal API and hot path.
+- `read.events(...)` provides indexed, paginated retained-event history. Embedded historical assertions participate in resource/kind/time matching without becoming independent durable records.
 - Broad reservations are checked together. Divisible rows use exact max-flow; a merged row containing many equal intact packages/serial pieces stays one integer-capacity group instead of one search node per piece. Allocation may bind a claim to exact positions later, but it cannot bind part of one intact package or serial row.
 - Count work is snapshot → observation → reconcile. One count is frozen to one item revision and record sequence. Reconciliation applies only the discrepancy that existed at observation time, so later legitimate movement stays intact. `counts.replaceAbsolute(...)` is the one-call exact-bucket convenience built on the same lifecycle.
 
@@ -207,7 +209,58 @@ An embodied resource cannot be issued, scrapped, transformed away, or de-individ
 
 `stock.detach(...)` removes an exact quantity from its known direct placement while keeping it in current inventory. `stock.markMissing(...)` records that the unresolved cohort is genuinely missing. `stock.place(...)` gives detached/missing stock a new known direct placement. InventoryOnce derives and preserves the lifecycle identity; callers do not invent graph edges or cohort IDs.
 
-`read.whereabouts()` returns current unresolved lifecycles with origin provenance. `read.whereaboutsHistory()` also returns resolved lifecycles, including later placement, issue, scrap, count adjustment, or correction events. Broad on-hand reporting includes unresolved stock as accounted truth, while ordinary usable availability, reservations, and FIFO/FEFO picking exclude it until placement is known again.
+`read.whereabouts()` returns current unresolved lifecycles with origin provenance. `read.whereaboutsHistory()` also returns resolved lifecycles, including later placement, issue, scrap, count adjustment, correction, or historical-repair events. Broad on-hand reporting includes unresolved stock as accounted truth, while ordinary usable availability, reservations, and FIFO/FEFO picking exclude it until placement is known again.
+
+### Corrections and late historical evidence
+
+Normal applications keep using the existing verbs. Historical capabilities are additive and do not run on ordinary current reads/writes.
+
+```ts
+const correction = await inventory.stock.planCorrection({
+  operationId: "correct-receipt",
+  occurredAtEpochMs: learnedAt,
+  correctsEventId: receipt.event.eventId,
+  reason: "The receipt contained five pieces.",
+  replaceWith: plans => plans.receive({
+    occurredAtEpochMs: originalReceiptAt,
+    to: originalPosition,
+    amount: stockAmount("5", "piece"),
+  }),
+});
+```
+
+For evidence learned late, one repair may assert several existing physical verbs atomically. `outputOf(...)` safely carries kernel-owned cohort identity from an earlier assertion:
+
+```ts
+await inventory.stock.recordHistorical({
+  operationId: "cart-loss-audit",
+  occurredAtEpochMs: learnedAt,
+  reason: "Two pieces were missing and later recovered.",
+  assertions: [
+    {
+      assertionId: "missing-two",
+      assert: plans => plans.markMissing({
+        occurredAtEpochMs: missingAt,
+        from: sourcePosition,
+        amount: stockAmount("2", "piece"),
+      }),
+    },
+    {
+      assertionId: "found-two",
+      assert: plans => plans.place({
+        occurredAtEpochMs: foundAt,
+        from: plans.outputOf("missing-two"),
+        into: "store",
+        amount: stockAmount("2", "piece"),
+      }),
+    },
+  ],
+});
+```
+
+Fungible under-accounting may become a typed recorded-deficit interval only under `InventoryDeficitPolicy.Record`; serialized negative identity is always rejected. Present-time physical truth remains the existing count lifecycle. See [`docs/historical-repair.md`](docs/historical-repair.md) and [`docs/performance-and-indexing.md`](docs/performance-and-indexing.md).
+
+Retained history is paged with `read.events(...)`. Use its opaque `nextCursor` for a stable traversal that excludes concurrent appends; set `direction: InventoryEventQueryDirection.Descending` for newest-first investigation. Equal-time assertions inside one repair retain caller order, while `afterEventId` supplies an explicit anchor when needed.
 
 ## Package and measurement truth
 

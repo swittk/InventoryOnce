@@ -41,6 +41,7 @@ The runner pins `tla2tools.jar`, uses collision-safe metadata directories, retai
 | `TransferLifecycle` | prepare, dispatch, partial/full receive, completion, and release conserve one isolated transfer | transfer lifecycle tests and isolation mutation |
 | `RepairLiveness` | under weak fairness a pending frozen plan eventually publishes/compacts or aborts before publication | generic operation/migration repair tests |
 | `CorrectionHistory` | original history persists; incomplete correction storage cannot replace current truth; completion advances current meaning atomically | correction tests and retained-current-head indexes |
+| `HistoricalRepair` | late assertions publish all-or-nothing, preserve original evidence, reject serialized conflicts, and expose permitted fungible deficits | historical-repair/event-query/scale tests plus segmented failover paths |
 | `AuthorityWriterFence` | cutover fencing cannot overlap admitted legacy writers; activation provenance remains exact | authority/cutover tests |
 | `SnapshotSupersededWorkflow` | snapshot-superseded source rows remain audit evidence, create no physical event or guessed outcome, and cannot resume after the fence | migration/storage refinement plus four mutations |
 | `RecordedDeficit` | Record mode keeps genuine shortfall as signed non-allocatable liability while Reject mode stutters; replay preserves the frozen shortfall | policy, migration, projection, and replay tests |
@@ -82,6 +83,7 @@ The exact seed and fingerprint values vary by run. The latest complete run explo
 | `DualMeasure` | 213 | 43 | 7 |
 | `DistributedRights` | 351 | 70 | 7 |
 | `CorrectionHistory` | 8 | 7 | 6 |
+| `HistoricalRepair` | 10,387 | 913 | 9 |
 | `DurableTransferRefinement` | 7 | 6 | 5 |
 | `TransferLifecycle` | 4,321 | 929 | 7 |
 | `RepairLiveness` | 540 | 265 | 13 |
@@ -94,7 +96,7 @@ The exact seed and fingerprint values vary by run. The latest complete run explo
 
 All reachable states in those finite configurations were checked by TLC.
 
-The 21 negative controls cover four snapshot-supersession violations, cross-transfer receipt, correction-history erasure, split durable publication, four use-by/reservation failures, reservation detach that strands an allocation, detach incorrectly becoming issue, unstable whereabouts identity, placement cycle, rejecting placement target, descendant rewrite during ancestor movement, embodied-resource/node parent desynchronization, nonempty embodiment termination, duplicate genealogy production, and implementation-conformance result-delta mismatch. The positive reachability witness separately proves that a nonzero frozen snapshot state is reachable. Negative controls are not folded into the positive state counts.
+The 22 negative controls cover four snapshot-supersession violations, cross-transfer receipt, correction-history erasure, partial historical-repair publication, split durable publication, four use-by/reservation failures, reservation detach that strands an allocation, detach incorrectly becoming issue, unstable whereabouts identity, placement cycle, rejecting placement target, descendant rewrite during ancestor movement, embodied-resource/node parent desynchronization, nonempty embodiment termination, duplicate genealogy production, and implementation-conformance result-delta mismatch. The positive reachability witness separately proves that a nonzero frozen snapshot state is reachable. Negative controls are not folded into the positive state counts.
 
 ## What the claims mean
 
@@ -173,6 +175,14 @@ revision-pinned decomposition/transformation, not as a mutable `box` conversion.
 “All OCPs” revisions report exact member-item buckets. Moving the active view pointer changes only which
 revision the UI chooses by default; it never merges physical identity or grants fungibility. Any scalar
 roll-up requires an explicitly compatible measure or basis outside the membership relation itself.
+
+### Append-only historical repair
+
+`HistoricalRepair` models an application learning several earlier physical assertions after later inventory events already exist. The repair either publishes every assertion as one new visible revision or publishes none. Original durable evidence remains retained. A serialized conflict cannot publish; Reject mode cannot publish a signed deficit; Record mode retains the exact requested deficit rather than silently manufacturing missing stock. Same-time assertions retain caller order inside their atomic repair bundle.
+
+The TypeScript implementation refines this with `stock.planHistorical`, `stock.recordHistorical`, `stock.planCorrection`, typed historical-deficit intervals, stable embedded assertion identities, optional durable anchors, indexed dependency-cone replay, and exact world/journal fencing. Existing normal APIs remain unchanged. `counts.reconcile` remains the mechanism for establishing present physical reality without repairing older history.
+
+`HistoricalRepairPartialPublishMutation` deliberately exposes only one assertion from a two-assertion bundle; `HistoricalRepairIsAtomic` must reject it. `HistoricalRepairReverseBundleOrderMutation` publishes a two-assertion bundle in reverse caller order; `SameTimeBundleOrderIsPreserved` must reject it.
 
 ### Placement embodiment and reversible individualization
 

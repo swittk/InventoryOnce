@@ -4,34 +4,34 @@ This file is generated from the exact TypeScript surface plus the checked API, f
 
 Use the repository `.nvmrc` when one exists; otherwise run the assurance command with a Node version permitted by `package.json#engines`. Edit only checked source/manifests, run `pnpm assurance:generate` when generated evidence must change, then run `pnpm assurance --write-report`.
 
-Surface SHA-256: `57739b90e8207d6bd6181eb3aacf0ced2ee58837b21c7704c99e0c7cd88e43f0`
+Surface SHA-256: `5da8e928a1a763445d3181f35b896df26cf8275b0457a29e60a8ef1a9573d2ec`
 
 ## Mechanically covered surface
 
-- Grouped façade/read methods: 130
+- Grouped façade/read methods: 135
 - Authority-port methods: 14
 - Durable-storage-port methods: 17
-- Public exported class methods: 104
+- Public exported class methods: 108
 - Root callable exports: 100
-- Storage callable exports: 35
+- Storage callable exports: 36
 - Migration callable exports: 15
-- Kernel callable exports: 169
-- Reachable public data types: 428
-- Classified public fields: 2606
-- Input-reachable fields: 2195
-- Output-reachable fields: 970
-- Callback-argument-reachable fields: 365
-- Callback-result-reachable fields: 433
-- Callable-field overload signatures: 11
-- Optional fields: 1058
-- Explicit undefined-union fields: 3
-- Explicit nullable fields: 7
-- Public call/construct overload signatures: 584
-- Directly executed public APIs: 248
-- Public APIs exercised through tested internal call chains: 332
+- Kernel callable exports: 190
+- Reachable public data types: 459
+- Classified public fields: 2769
+- Input-reachable fields: 2308
+- Output-reachable fields: 1065
+- Callback-argument-reachable fields: 408
+- Callback-result-reachable fields: 451
+- Callable-field overload signatures: 12
+- Optional fields: 1125
+- Explicit undefined-union fields: 11
+- Explicit nullable fields: 9
+- Public call/construct overload signatures: 615
+- Directly executed public APIs: 249
+- Public APIs exercised through tested internal call chains: 362
 - Explicit-gap public APIs: 4
 - Unreferenced public APIs: 0
-- Explicit recursive type edges: 3
+- Explicit recursive type edges: 5
 - Silently truncated types: 0
 
 Any added/removed method, callable export, class method, type field, field type, or declaration location fails the audit until the checked correspondence is updated.
@@ -48,14 +48,15 @@ Any added/removed method, callable export, class method, type field, field type,
 | collection-read | 4 | CollectionView | covered | — |
 | composition-open | 3 | CompositionRevision, PackagingIdentity, ReclassificationConservation, DualMeasure, TraceabilityGraph, InventoryOperation | covered | — |
 | composition-read | 3 | CompositionRevision | covered | — |
-| correction | 2 | CorrectionHistory, InventoryOperation, PublishedHeadCAS | covered | GAP-COUNT-CORRECTION-HISTORY-REPLAY |
+| correction | 4 | CorrectionHistory, InventoryOperation, PublishedHeadCAS | covered | GAP-COUNT-CORRECTION-HISTORY-REPLAY |
 | count | 11 | PhysicalCount, InventoryOperation, PublishedHeadCAS, ResourceDimensions | covered | GAP-COUNT-CORRECTION-HISTORY-REPLAY |
 | dimension-reclassification | 30 | ResourceDimensions, ReclassificationConservation, InventoryOperation, PlacementGraph | covered | — |
-| durable-protocol | 87 | InventoryOperation, PublishedHeadCAS, RepairLiveness, DurableTransferRefinement, SnapshotSupersededWorkflow | covered | GAP-DB-IMPLEMENTATION-UNBOUNDED, GAP-PRODUCTION-STORAGE-SCALE-GC, GAP-HASH-COLLISION-ASSUMPTION |
+| durable-protocol | 92 | InventoryOperation, PublishedHeadCAS, RepairLiveness, DurableTransferRefinement, SnapshotSupersededWorkflow | covered | GAP-DB-IMPLEMENTATION-UNBOUNDED, GAP-PRODUCTION-STORAGE-SCALE-GC, GAP-HASH-COLLISION-ASSUMPTION |
 | external-plugin-boundary | 4 | CatalogPublication | explicit-gap | GAP-EXTERNAL-MIGRATION-CALLBACKS, GAP-LEGACY-SOURCE-INTERPRETATION |
 | facade-construction | 2 | InventoryOperation | covered | GAP-EXTERNAL-CLOCK, GAP-DB-IMPLEMENTATION-UNBOUNDED |
 | fungibility-movement | 3 | FungibilityPool, ReservationScope, ReservationSafety, UseByReservation, InventoryOperation, PublishedHeadCAS | covered | GAP-FUNGIBILITY-EXACT-SEARCH-BOUND |
 | fungibility-read | 12 | FungibilityPool, UseByReservation | covered | GAP-FUNGIBILITY-EXACT-SEARCH-BOUND |
+| historical-repair | 6 | HistoricalRepair, CorrectionHistory, RecordedDeficit, InventoryOperation, PublishedHeadCAS | covered | — |
 | identity-normalization | 22 | ResourceDimensions, PlacementGraph, TraceabilityGraph, SnapshotSupersededWorkflow | covered | — |
 | lot-command | 3 | UseByReservation, CorrectionHistory, InventoryOperation | covered | — |
 | migration-definition | 8 | CatalogPublication, PlacementGraph, TraceabilityGraph, ReclassificationConservation, SnapshotSupersededWorkflow, CompositionRevision | covered | GAP-LEGACY-SOURCE-INTERPRETATION, GAP-EXTERNAL-MIGRATION-CALLBACKS |
@@ -65,7 +66,8 @@ Any added/removed method, callable export, class method, type field, field type,
 | placement-command | 18 | PlacementGraph, ResourceDimensions, UseByReservation, CorrectionHistory, InventoryOperation | covered | — |
 | pure-exact-value | 90 | DualMeasure, PackagingIdentity | covered | — |
 | read-current | 34 | PublishedHeadCAS, ResourceDimensions, PlacementGraph, UseByReservation, ReservationScope, CollectionView, FungibilityPool, CorrectionHistory | covered | — |
-| read-snapshot | 23 | PublishedHeadCAS, PlacementGraph | covered | GAP-DB-IMPLEMENTATION-UNBOUNDED |
+| read-history | 17 | HistoricalRepair, CorrectionHistory, PublishedHeadCAS | covered | — |
+| read-snapshot | 24 | PublishedHeadCAS, PlacementGraph | covered | GAP-DB-IMPLEMENTATION-UNBOUNDED |
 | reservation | 19 | ReservationSafety, ReservationScope, UseByReservation, InventoryOperation | covered | — |
 | scrap | 5 | InventoryOperation, PackagingIdentity, DualMeasure, ReservationSafety, UseByReservation | covered | — |
 | stock-issue | 4 | InventoryOperation, PackagingIdentity, DualMeasure, ReservationSafety, UseByReservation | covered | — |
@@ -83,10 +85,10 @@ Any added/removed method, callable export, class method, type field, field type,
 
 | Classification | Fields |
 |---|---:|
-| abstract-semantic | 1237 |
-| application decoration | 7 |
-| identity/retry-semantic | 776 |
-| observational/audit-only | 569 |
+| abstract-semantic | 1330 |
+| application decoration | 11 |
+| identity/retry-semantic | 828 |
+| observational/audit-only | 583 |
 | unsupported/unmodelled | 17 |
 
 ## Kernel reference-adapter seam

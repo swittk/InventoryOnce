@@ -10,6 +10,18 @@ import {
   createInventorySparseRecord,
   setInventorySparseRecordValue,
 } from "./sparse-record.js";
+import {
+  createInventoryEventPage,
+  inventoryEventDependencyIndexKeys,
+  inventoryEventMatchesQuery,
+  inventoryEventQueryResourceKeyGroups,
+  inventoryEventQuerySequenceWindow,
+  inventoryEventResourceKeys,
+  normalizeInventoryEventQuery,
+  InventoryEventQueryDirection,
+  type InventoryEventPage,
+  type InventoryEventQuery,
+} from "./event-query.js";
 
 /** Adapter-local journal reads may be synchronous or asynchronous. */
 export type InventorySegmentedJournalResult<T> = T | Promise<T>;
@@ -62,6 +74,28 @@ export interface InventorySegmentedEventJournalReader {
   materialize(): InventorySegmentedJournalResult<InventoryEventJournalMaterialization>;
 }
 
+/** Internal/resource-index query used by scoped historical replay planners. */
+export interface InventorySegmentedEventResourceQuery {
+  /** Non-empty domain-separated resource keys; events touching any are returned. */
+  readonly resourceKeys: readonly string[];
+  /** Stable pagination cursor. */
+  readonly afterRecordSequence?: number;
+  /** Maximum events returned; defaults/caps at 1,000. */
+  readonly limit?: number;
+}
+
+/** Optional indexed event-query surface; base journal readers remain source-compatible. */
+export interface InventorySegmentedEventQueryReader {
+  /** Query exact retained envelopes/events in durable order using adapter-native indexes. */
+  queryEvents(
+    input: InventoryEventQuery
+  ): InventorySegmentedJournalResult<InventoryEventPage>;
+  /** Query the union of exact internal resource-index rows. */
+  queryEventsByResourceKeys(
+    input: InventorySegmentedEventResourceQuery
+  ): InventorySegmentedJournalResult<InventoryEventPage>;
+}
+
 /** Mutable journal contract used inside one adapter-native publication transaction. */
 export interface InventorySegmentedEventJournal
   extends InventorySegmentedEventJournalReader {
@@ -79,7 +113,7 @@ export interface CreateInMemoryInventorySegmentedEventJournalInput {
 
 /** Reference append-only indexed event journal. */
 export class InMemoryInventorySegmentedEventJournal
-  implements InventorySegmentedEventJournal
+  implements InventorySegmentedEventJournal, InventorySegmentedEventQueryReader
 {
   /** Event rows keyed by exact event identity. */
   private readonly eventsById = new Map<string, InventoryCommittedEvent>();
@@ -91,6 +125,17 @@ export class InMemoryInventorySegmentedEventJournal
   private readonly sequencesByWhereabouts = new Map<string, number[]>();
   /** Root event -> current direct correction event id. */
   private readonly correctionByRootEvent = new Map<string, string>();
+  /** Resource identity -> ordered durable sequences touching that resource. */
+  private readonly sequencesByResourceKey = new Map<string, number[]>();
+  /** Top-level/embedded assertion kind -> ordered durable envelope sequences. */
+  private readonly sequencesByKind = new Map<InventoryEventKind, number[]>();
+  /** Corrected retained root -> every correction sequence. */
+  private readonly sequencesByCorrectionRoot = new Map<string, number[]>();
+  /** Active embedded assertion -> its public/dependency resource index keys. */
+  private readonly resourceKeysByAssertionId = new Map<
+    string,
+    readonly string[]
+  >();
   /** Highest appended sequence. */
   private lastSequence = 0;
   /** Order-independent primary 256-bit event aggregate. */
@@ -157,6 +202,169 @@ export class InMemoryInventorySegmentedEventJournal
     return eventId === undefined ? undefined : this.event(eventId);
   }
 
+  /** Query one indexed durable page without materializing the complete journal. */
+  queryEvents(input: InventoryEventQuery): InventoryEventPage {
+    const query = normalizeInventoryEventQuery(input);
+    const window = inventoryEventQuerySequenceWindow(query, this.lastSequence);
+    const candidateGroups: Set<number>[] = [];
+    for (const resourceKeys of inventoryEventQueryResourceKeyGroups(query)) {
+      const union = new Set<number>();
+      for (const key of resourceKeys) {
+        for (const sequence of this.sequencesByResourceKey.get(key) ?? []) {
+          union.add(sequence);
+        }
+      }
+      candidateGroups.push(union);
+    }
+    if (query.kinds !== undefined) {
+      const union = new Set<number>();
+      for (const kind of query.kinds) {
+        for (const sequence of this.sequencesByKind.get(kind) ?? []) {
+          union.add(sequence);
+        }
+      }
+      candidateGroups.push(union);
+    }
+    if (query.correctsEventIds !== undefined) {
+      const union = new Set<number>();
+      for (const correctedEventId of query.correctsEventIds) {
+        for (const sequence of
+          this.sequencesByCorrectionRoot.get(correctedEventId) ?? []) {
+          union.add(sequence);
+        }
+      }
+      candidateGroups.push(union);
+    }
+
+    let candidates: readonly number[] | undefined;
+    if (candidateGroups.length !== 0) {
+      candidateGroups.sort(
+        /** Probe the smallest candidate set before intersecting wider groups. */
+        (left, right) => left.size - right.size
+      );
+      const [smallest, ...rest] = candidateGroups;
+      const selected: number[] = [];
+      for (const sequence of smallest ?? []) {
+        if (
+          rest.every(
+            /** Require this sequence in every independently filtered group. */
+            (group) => group.has(sequence)
+          )
+        ) selected.push(sequence);
+      }
+      selected.sort(
+        query.direction === InventoryEventQueryDirection.Ascending
+          ? compareAscendingEventSequence
+          : compareDescendingEventSequence
+      );
+      candidates = selected;
+    }
+
+    const events: InventoryCommittedEvent[] = [];
+    let hasMore = false;
+    /** Visit one in-window candidate; true means one further match filled the page. */
+    const visit = (sequence: number): boolean => {
+      const eventId = this.eventIdBySequence.get(sequence);
+      const event = eventId === undefined ? undefined : this.eventsById.get(eventId);
+      if (event === undefined || event.recordSequence !== sequence) {
+        throw new Error(
+          `Segmented event-query index disagrees at recordSequence ${sequence}.`
+        );
+      }
+      if (!inventoryEventMatchesQuery(event, query)) return false;
+      if (events.length === query.limit) {
+        hasMore = true;
+        return true;
+      }
+      events.push(cloneInventoryRetainedData(event));
+      return false;
+    };
+
+    if (candidates === undefined) {
+      for (
+        let sequence = window.firstRecordSequence;
+        window.step === 1
+          ? sequence <= window.lastRecordSequence
+          : sequence >= window.lastRecordSequence;
+        sequence += window.step
+      ) {
+        if (visit(sequence)) break;
+      }
+    } else {
+      for (const sequence of candidates) {
+        if (window.step === 1) {
+          if (sequence < window.firstRecordSequence) continue;
+          if (sequence > window.lastRecordSequence) break;
+        } else {
+          if (sequence > window.firstRecordSequence) continue;
+          if (sequence < window.lastRecordSequence) break;
+        }
+        if (visit(sequence)) break;
+      }
+    }
+    return createInventoryEventPage(
+      query,
+      this.lastSequence,
+      events,
+      hasMore
+    );
+  }
+
+  /** Query exact resource-index rows for a dependency-closure planner. */
+  queryEventsByResourceKeys(
+    input: InventorySegmentedEventResourceQuery
+  ): InventoryEventPage {
+    if (input.resourceKeys.length === 0) {
+      throw new Error("Resource event query needs at least one resource key.");
+    }
+    const limit = input.limit ?? 1_000;
+    if (!Number.isSafeInteger(limit) || limit <= 0 || limit > 1_000) {
+      throw new Error(
+        "Resource event query limit must be a positive safe integer at most 1,000."
+      );
+    }
+    const after = input.afterRecordSequence ?? 0;
+    if (!Number.isSafeInteger(after) || after < 0) {
+      throw new Error(
+        "Resource event query afterRecordSequence must be a non-negative safe integer."
+      );
+    }
+    const candidates = new Set<number>();
+    for (const key of new Set(input.resourceKeys)) {
+      if (key.length === 0) {
+        throw new Error("Resource event query key must not be empty.");
+      }
+      for (const sequence of this.sequencesByResourceKey.get(key) ?? []) {
+        if (sequence > after) candidates.add(sequence);
+      }
+    }
+    const ordered = [...candidates].sort(
+      /** Restore ascending durable order after resource-index union. */
+      (left, right) => left - right
+    );
+    const events: InventoryCommittedEvent[] = [];
+    for (const sequence of ordered.slice(0, limit)) {
+      const eventId = this.eventIdBySequence.get(sequence);
+      const event = eventId === undefined ? undefined : this.eventsById.get(eventId);
+      if (event === undefined || event.recordSequence !== sequence) {
+        throw new Error(
+          `Segmented resource index disagrees at recordSequence ${sequence}.`
+        );
+      }
+      events.push(cloneInventoryRetainedData(event));
+    }
+    return {
+      throughRecordSequence: this.lastSequence,
+      events,
+      ...(ordered.length > limit && events.length !== 0
+        ? {
+            nextAfterRecordSequence:
+              events[events.length - 1]!.recordSequence,
+          }
+        : {}),
+    };
+  }
+
   /** Append one exact committed event and update only its touched indexes/root leaves. */
   append(event: InventoryCommittedEvent): void {
     const retained = cloneInventoryRetainedData(event);
@@ -217,6 +425,71 @@ export class InMemoryInventorySegmentedEventJournal
           ...inventoryJournalTouchedWhereaboutsIds(corrected),
         ]),
       ].sort();
+    }
+
+    const resourceKeys = new Set([
+      ...inventoryEventResourceKeys(retained),
+      ...inventoryEventDependencyIndexKeys(retained),
+    ]);
+    const repair = retained.historicalRepair;
+    if (repair !== undefined) {
+      for (const assertionId of repair.omittedAssertionIds) {
+        const earlierKeys = this.resourceKeysByAssertionId.get(assertionId);
+        if (earlierKeys === undefined) {
+          throw new Error(
+            `Segmented journal historical repair omits unknown assertion '${assertionId}'.`
+          );
+        }
+        for (const key of earlierKeys) resourceKeys.add(key);
+        this.resourceKeysByAssertionId.delete(assertionId);
+      }
+      for (const assertion of repair.assertions) {
+        if (this.resourceKeysByAssertionId.has(assertion.assertionId)) {
+          throw new Error(
+            `Segmented journal historical assertion '${assertion.assertionId}' already exists.`
+          );
+        }
+        const assertionKeys = [
+          ...new Set([
+            ...inventoryEventResourceKeys(assertion.event),
+            ...inventoryEventDependencyIndexKeys(assertion.event),
+          ]),
+        ].sort();
+        this.resourceKeysByAssertionId.set(
+          assertion.assertionId,
+          assertionKeys
+        );
+        for (const key of assertionKeys) resourceKeys.add(key);
+      }
+    }
+    if (correction !== undefined) {
+      const corrected = this.eventsById.get(correction.correctsEventId)!;
+      for (const key of [
+        ...inventoryEventResourceKeys(corrected),
+        ...inventoryEventDependencyIndexKeys(corrected),
+      ]) {
+        resourceKeys.add(key);
+      }
+    }
+    for (const key of resourceKeys) {
+      appendJournalSequence(this.sequencesByResourceKey, key, retained.recordSequence);
+    }
+    const kinds = new Set<InventoryEventKind>([
+      retained.kind,
+      ...(retained.historicalRepair?.assertions.map(
+        /** Index the physical kind carried by one embedded assertion envelope. */
+        (assertion) => assertion.event.kind
+      ) ?? []),
+    ]);
+    for (const kind of kinds) {
+      appendJournalSequence(this.sequencesByKind, kind, retained.recordSequence);
+    }
+    if (correction !== undefined) {
+      appendJournalSequence(
+        this.sequencesByCorrectionRoot,
+        correction.correctsEventId,
+        retained.recordSequence
+      );
     }
 
     this.eventsById.set(retained.eventId, retained);
@@ -329,6 +602,29 @@ export function createInMemoryInventorySegmentedEventJournal(
   return new InMemoryInventorySegmentedEventJournal(input);
 }
 
+/** Append one monotonically increasing sequence to an index row. */
+function appendJournalSequence<Key>(
+  index: Map<Key, number[]>,
+  key: Key,
+  sequence: number
+): void {
+  const sequences = index.get(key) ?? [];
+  sequences.push(sequence);
+  index.set(key, sequences);
+}
+
+/** Treat embedded assertion effects as retained facts for lifecycle indexing only. */
+function commitInventoryAssertionForIndex(
+  assertion: import("./events.js").InventoryEventDraft,
+  envelope: InventoryCommittedEvent
+): InventoryCommittedEvent {
+  return {
+    ...assertion,
+    recordedAtEpochMs: envelope.recordedAtEpochMs,
+    recordSequence: envelope.recordSequence,
+  };
+}
+
 /** Collect stable whereabouts lifecycle identities touched directly by one event. */
 function inventoryJournalTouchedWhereaboutsIds(
   event: InventoryCommittedEvent
@@ -352,9 +648,26 @@ function inventoryJournalTouchedWhereaboutsIds(
       result.add(override.position.whereaboutsId);
     }
   }
+  for (const assertion of event.historicalRepair?.assertions ?? []) {
+    for (const whereaboutsId of inventoryJournalTouchedWhereaboutsIds(
+      commitInventoryAssertionForIndex(assertion.event, event)
+    )) {
+      result.add(whereaboutsId);
+    }
+  }
   const ordered = [...result];
   ordered.sort();
   return ordered;
+}
+
+/** Compare durable event sequences oldest first. */
+function compareAscendingEventSequence(left: number, right: number): number {
+  return left - right;
+}
+
+/** Compare durable event sequences newest first. */
+function compareDescendingEventSequence(left: number, right: number): number {
+  return right - left;
 }
 
 /** 256-bit modular field used by the order-independent event segment root. */

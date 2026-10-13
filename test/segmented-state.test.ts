@@ -735,6 +735,7 @@ describe("segmented inventory position store", () => {
     expect(Object.keys(materialized.positions)).toHaveLength(2);
     expect(materialized.positionIdsByPlacementNodeId.store).toHaveLength(1);
     expect(materialized.positionIdsByPlacementNodeId.room).toHaveLength(1);
+    expect(materialized.positionIdsByWhereaboutsId).toEqual({});
     const rebuilt = createInMemoryInventorySegmentedPositionStore({
       positions: Object.values(materialized.positions),
       revision: store.revision(),

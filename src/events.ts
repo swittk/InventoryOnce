@@ -79,6 +79,8 @@ export enum InventoryEventKind {
   CatalogPublication = "catalog-publication",
   /** Append-only correction changed current truth while retaining the original event. */
   Correction = "correction",
+  /** Late-discovered historical assertions changed current truth after deterministic replay. */
+  HistoricalRepair = "historical-repair",
 }
 
 /** Reject a runtime event discriminator outside the closed durable event-kind set. */
@@ -100,6 +102,7 @@ function assertSupportedInventoryEventKind(kind: InventoryEventKind): void {
     case InventoryEventKind.PlacementNodeMetadata:
     case InventoryEventKind.CatalogPublication:
     case InventoryEventKind.Correction:
+    case InventoryEventKind.HistoricalRepair:
       return;
     default:
       throw new Error(`Unsupported inventory event kind '${String(kind)}'.`);
@@ -199,6 +202,52 @@ export interface InventoryCorrectionReference {
   readonly reason: string;
   /** Current correction event being superseded when this is not the first correction. */
   readonly supersedesCorrectionEventId?: string;
+}
+
+/** One interval where corrected/repaired history records more outflow than accounted inflow. */
+export interface InventoryHistoricalDeficitInterval {
+  /** Frozen item revision governing the exact signed resource. */
+  readonly itemRevisionId: ItemRevisionId;
+  /** Exact signed stock bucket that became negative during historical replay. */
+  readonly position: InventoryStockPositionKey;
+  /** Largest positive deficit magnitude reached inside this interval. */
+  readonly maximumDeficit: InventoryMeasurementVector;
+  /** Effective assertion that first made this bucket negative. */
+  readonly startedByEventId: string;
+  /** Physical occurrence time of the deficit start. */
+  readonly startedAtEpochMs: number;
+  /** Effective assertion that returned this bucket to non-negative truth, when resolved. */
+  readonly endedByEventId?: string;
+  /** Physical occurrence time of the resolving assertion, when resolved. */
+  readonly endedAtEpochMs?: number;
+}
+
+/** Auditable consequences derived while replaying corrected or late historical truth. */
+export interface InventoryHistoricalImpact {
+  /** Effective retained/asserted events whose meaning participated in this replay. */
+  readonly affectedEventIds: readonly string[];
+  /** Whereabouts cohorts whose retained lifecycle evidence changed. */
+  readonly whereaboutsIds: readonly string[];
+  /** Newly exposed signed-deficit intervals, including intervals already resolved later. */
+  readonly deficits: readonly InventoryHistoricalDeficitInterval[];
+}
+
+/** One embedded ordinary event assertion discovered after its physical occurrence. */
+export interface InventoryHistoricalAssertion {
+  /** Stable identity inside all historical-repair envelopes. */
+  readonly assertionId: string;
+  /** Optional retained/effective event after which this assertion must be replayed. */
+  readonly afterEventId?: string;
+  /** Ordinary validated physical assertion; never another correction/repair/catalogue event. */
+  readonly event: InventoryEventDraft;
+}
+
+/** Append-only historical-repair evidence retained by one derived current-state delta. */
+export interface InventoryHistoricalRepairEvidence {
+  /** New late-discovered assertions introduced by this repair. */
+  readonly assertions: readonly InventoryHistoricalAssertion[];
+  /** Earlier embedded assertion identities removed from latest effective history. */
+  readonly omittedAssertionIds: readonly string[];
 }
 
 /** One correction-only replacement for the current positive-layer FIFO provenance. */
@@ -323,6 +372,12 @@ export interface InventoryEventDraft {
   readonly reason?: string;
   /** Required correction pointer for a Correction event. */
   readonly correction?: InventoryCorrectionReference;
+  /** Full replacement assertion retained for future corrected-history replay; null means omit. */
+  readonly correctionReplacement?: InventoryEventDraft | null;
+  /** Required embedded evidence for a HistoricalRepair event. */
+  readonly historicalRepair?: InventoryHistoricalRepairEvidence;
+  /** Optional typed replay consequences on a Correction/HistoricalRepair event. */
+  readonly historicalImpact?: InventoryHistoricalImpact;
   /** Extra JSON-safe application facts that do not define inventory math. */
   readonly metadata?: InventoryMetadata;
 }
@@ -341,6 +396,199 @@ export interface DefineInventoryEventInput {
   readonly catalog: InventoryCatalog;
   /** Raw event intent. */
   readonly event: InventoryEventDraft;
+}
+
+/** Normalize one append-only historical-repair envelope and its ordinary assertions. */
+function normalizeInventoryHistoricalRepairEvidence(
+  catalog: InventoryCatalog,
+  kind: InventoryEventKind,
+  repairOccurredAtEpochMs: number,
+  evidence: InventoryHistoricalRepairEvidence | undefined
+): InventoryHistoricalRepairEvidence | undefined {
+  if (evidence === undefined) return undefined;
+  if (kind !== InventoryEventKind.HistoricalRepair) {
+    throw new Error("Historical repair evidence belongs only to HistoricalRepair events.");
+  }
+  if (
+    evidence.assertions.length === 0 &&
+    evidence.omittedAssertionIds.length === 0
+  ) {
+    throw new Error(
+      "Historical repair must add or omit at least one historical assertion."
+    );
+  }
+  const assertionIds = new Set<string>();
+  const eventIds = new Set<string>();
+  const operationIds = new Set<string>();
+  const assertions: InventoryHistoricalAssertion[] = [];
+  for (const raw of evidence.assertions) {
+    assertInventoryIdentity(raw.assertionId, "historical assertionId");
+    if (assertionIds.has(raw.assertionId)) {
+      throw new Error(
+        `Historical repair repeats assertionId '${raw.assertionId}'.`
+      );
+    }
+    assertionIds.add(raw.assertionId);
+    if (raw.afterEventId !== undefined) {
+      assertInventoryIdentity(raw.afterEventId, "historical assertion afterEventId");
+    }
+    if (
+      raw.event.kind === InventoryEventKind.Correction ||
+      raw.event.kind === InventoryEventKind.HistoricalRepair ||
+      raw.event.kind === InventoryEventKind.CatalogPublication ||
+      raw.event.correction !== undefined ||
+      raw.event.historicalRepair !== undefined ||
+      raw.event.historicalImpact !== undefined ||
+      raw.event.transferLifecycle !== undefined
+    ) {
+      throw new Error(
+        "Historical assertions must be ordinary non-correction, non-repair physical/metadata/graph events."
+      );
+    }
+    if (raw.event.occurredAtEpochMs > repairOccurredAtEpochMs) {
+      throw new Error(
+        "Historical assertion cannot occur after its repair operation."
+      );
+    }
+    const event = defineInventoryEvent({ catalog, event: raw.event });
+    if (eventIds.has(event.eventId) || operationIds.has(event.operationId)) {
+      throw new Error(
+        "Historical repair assertion event/operation identities must be unique."
+      );
+    }
+    eventIds.add(event.eventId);
+    operationIds.add(event.operationId);
+    assertions.push({
+      assertionId: raw.assertionId,
+      ...(raw.afterEventId === undefined
+        ? {}
+        : { afterEventId: raw.afterEventId }),
+      event,
+    });
+  }
+  const omitted = new Set<string>();
+  for (const assertionId of evidence.omittedAssertionIds) {
+    assertInventoryIdentity(assertionId, "omitted historical assertionId");
+    if (assertionIds.has(assertionId)) {
+      throw new Error(
+        `Historical repair cannot add and omit assertion '${assertionId}' together.`
+      );
+    }
+    if (omitted.has(assertionId)) {
+      throw new Error(
+        `Historical repair repeats omitted assertionId '${assertionId}'.`
+      );
+    }
+    omitted.add(assertionId);
+  }
+  const omittedAssertionIds = [...omitted];
+  omittedAssertionIds.sort(compareInventoryIdentityText);
+  return cloneInventoryRetainedData({ assertions, omittedAssertionIds });
+}
+
+/** Normalize typed replay consequences retained on correction/repair events. */
+function normalizeInventoryHistoricalImpact(
+  catalog: InventoryCatalog,
+  kind: InventoryEventKind,
+  impact: InventoryHistoricalImpact | undefined
+): InventoryHistoricalImpact | undefined {
+  if (impact === undefined) return undefined;
+  if (
+    kind !== InventoryEventKind.Correction &&
+    kind !== InventoryEventKind.HistoricalRepair
+  ) {
+    throw new Error(
+      "Historical impact belongs only to Correction/HistoricalRepair events."
+    );
+  }
+  const affected = new Set<string>();
+  for (const eventId of impact.affectedEventIds) {
+    assertInventoryIdentity(eventId, "historical impact affected eventId");
+    affected.add(eventId);
+  }
+  const affectedEventIds = [...affected];
+  affectedEventIds.sort(compareInventoryIdentityText);
+  const whereaboutsIds = new Set<string>();
+  for (const whereaboutsId of impact.whereaboutsIds) {
+    assertInventoryIdentity(whereaboutsId, "historical impact whereaboutsId");
+    whereaboutsIds.add(whereaboutsId);
+  }
+  const orderedWhereaboutsIds = [...whereaboutsIds];
+  orderedWhereaboutsIds.sort(compareInventoryIdentityText);
+  const deficits: InventoryHistoricalDeficitInterval[] = [];
+  for (const raw of impact.deficits) {
+    assertInventoryIdentity(raw.startedByEventId, "historical deficit start eventId");
+    assertInventoryEpochMilliseconds(
+      raw.startedAtEpochMs,
+      "historical deficit startedAtEpochMs"
+    );
+    if (
+      (raw.endedByEventId === undefined) !==
+      (raw.endedAtEpochMs === undefined)
+    ) {
+      throw new Error(
+        "Historical deficit end event/time must either both be present or both be omitted."
+      );
+    }
+    if (raw.endedByEventId !== undefined) {
+      assertInventoryIdentity(raw.endedByEventId, "historical deficit end eventId");
+      assertInventoryEpochMilliseconds(
+        raw.endedAtEpochMs!,
+        "historical deficit endedAtEpochMs"
+      );
+      if (raw.endedAtEpochMs! < raw.startedAtEpochMs) {
+        throw new Error("Historical deficit cannot end before it starts.");
+      }
+    }
+    const position = normalizeInventoryStockPositionKey(raw.position);
+    const item = catalog.itemRevision(raw.itemRevisionId);
+    if (position.itemId !== item.itemId) {
+      throw new Error(
+        "Historical deficit position does not match its item revision."
+      );
+    }
+    assertPositionMatchesItem(item, position);
+    assertMeasurementsMatchItem(item, raw.maximumDeficit, true);
+    positiveInventoryMeasurements(
+      raw.maximumDeficit,
+      "Historical maximum deficit"
+    );
+    deficits.push({
+      itemRevisionId: raw.itemRevisionId,
+      position,
+      maximumDeficit: raw.maximumDeficit,
+      startedByEventId: raw.startedByEventId,
+      startedAtEpochMs: raw.startedAtEpochMs,
+      ...(raw.endedByEventId === undefined
+        ? {}
+        : {
+            endedByEventId: raw.endedByEventId,
+            endedAtEpochMs: raw.endedAtEpochMs!,
+          }),
+    });
+  }
+  deficits.sort(
+    /** Order deficit intervals by physical start, event, then position. */
+    (left, right) => {
+    const time = left.startedAtEpochMs - right.startedAtEpochMs;
+    if (time !== 0) return time;
+    const event = compareInventoryIdentityText(
+      left.startedByEventId,
+      right.startedByEventId
+    );
+    return event !== 0
+      ? event
+      : compareInventoryIdentityText(
+          inventoryStockPositionIdentity(left.position),
+          inventoryStockPositionIdentity(right.position)
+        );
+    }
+  );
+  return cloneInventoryRetainedData({
+    affectedEventIds,
+    whereaboutsIds: orderedWhereaboutsIds,
+    deficits,
+  });
 }
 
 /** Validate, merge, and deterministically sort one event intent. */
@@ -408,6 +656,72 @@ export function defineInventoryEvent({
       throw new Error("Inventory correction needs a non-empty reason.");
     }
   }
+  if (
+    event.kind !== InventoryEventKind.Correction &&
+    event.correctionReplacement !== undefined
+  ) {
+    throw new Error(
+      "Only a Correction event may retain a correction replacement assertion."
+    );
+  }
+  let correctionReplacement: InventoryEventDraft | null | undefined;
+  if (event.correctionReplacement === null) {
+    correctionReplacement = null;
+  } else if (event.correctionReplacement !== undefined) {
+    const replacement = event.correctionReplacement;
+    if (
+      replacement.kind === InventoryEventKind.Correction ||
+      replacement.kind === InventoryEventKind.HistoricalRepair ||
+      replacement.kind === InventoryEventKind.CatalogPublication ||
+      replacement.correction !== undefined ||
+      replacement.correctionReplacement !== undefined ||
+      replacement.historicalRepair !== undefined ||
+      replacement.historicalImpact !== undefined ||
+      replacement.transferLifecycle !== undefined
+    ) {
+      throw new Error(
+        "Correction replacement evidence must be one ordinary non-correction assertion."
+      );
+    }
+    correctionReplacement = defineInventoryEvent({
+      catalog,
+      event: replacement,
+    });
+  }
+  if (
+    event.kind === InventoryEventKind.HistoricalRepair &&
+    event.historicalRepair === undefined
+  ) {
+    throw new Error("HistoricalRepair event needs historicalRepair evidence.");
+  }
+  if (
+    event.kind !== InventoryEventKind.HistoricalRepair &&
+    event.historicalRepair !== undefined
+  ) {
+    throw new Error(
+      "Only a HistoricalRepair event may retain historicalRepair evidence."
+    );
+  }
+  if (
+    event.historicalImpact !== undefined &&
+    event.kind !== InventoryEventKind.Correction &&
+    event.kind !== InventoryEventKind.HistoricalRepair
+  ) {
+    throw new Error(
+      "Only Correction/HistoricalRepair events may retain historical impact."
+    );
+  }
+  const historicalRepair = normalizeInventoryHistoricalRepairEvidence(
+    catalog,
+    event.kind,
+    event.occurredAtEpochMs,
+    event.historicalRepair
+  );
+  const historicalImpact = normalizeInventoryHistoricalImpact(
+    catalog,
+    event.kind,
+    event.historicalImpact
+  );
   const stockEffects = normalizeStockEffects(
     catalog,
     event.stockEffects,
@@ -465,6 +779,7 @@ export function defineInventoryEvent({
     placementChanges.length === 0 &&
     traceabilityChanges.length === 0 &&
     event.kind !== InventoryEventKind.Correction &&
+    event.kind !== InventoryEventKind.HistoricalRepair &&
     event.kind !== InventoryEventKind.CatalogPublication
   ) {
     throw new Error(
@@ -498,6 +813,11 @@ export function defineInventoryEvent({
     placementChanges,
     traceabilityChanges,
     ...(transferLifecycle === undefined ? {} : { transferLifecycle }),
+    ...(correctionReplacement === undefined
+      ? {}
+      : { correctionReplacement }),
+    ...(historicalRepair === undefined ? {} : { historicalRepair }),
+    ...(historicalImpact === undefined ? {} : { historicalImpact }),
   });
 }
 
@@ -514,6 +834,22 @@ export function commitInventoryEvent(
     throw new Error(
       "Inventory event occurredAtEpochMs cannot be after its durable recordedAtEpochMs time."
     );
+  }
+  if (
+    event.correctionReplacement !== undefined &&
+    event.correctionReplacement !== null &&
+    event.correctionReplacement.occurredAtEpochMs > recordedAtEpochMs
+  ) {
+    throw new Error(
+      "Correction replacement occurredAtEpochMs cannot be after durable correction record time."
+    );
+  }
+  for (const assertion of event.historicalRepair?.assertions ?? []) {
+    if (assertion.event.occurredAtEpochMs > recordedAtEpochMs) {
+      throw new Error(
+        "Historical assertion occurredAtEpochMs cannot be after durable repair record time."
+      );
+    }
   }
   for (const override of event.positiveLayerProvenanceOverrides ?? []) {
     if (override.startedAtEpochMs !== undefined) {
@@ -553,6 +889,42 @@ export function inventoryEventIntentFingerprint(
           event.correction.correctsEventId,
           event.correction.reason,
           event.correction.supersedesCorrectionEventId ?? null,
+        ],
+    event.correctionReplacement === undefined
+      ? "legacy-correction-replacement"
+      : event.correctionReplacement === null
+        ? null
+        : inventoryEventIntentFingerprint(event.correctionReplacement),
+    event.historicalRepair === undefined
+      ? null
+      : [
+          event.historicalRepair.assertions.map(
+            /** Freeze one embedded assertion identity and exact event intent. */
+            (assertion) => [
+            assertion.assertionId,
+            assertion.afterEventId ?? null,
+              inventoryEventIntentFingerprint(assertion.event),
+            ]
+          ),
+          event.historicalRepair.omittedAssertionIds,
+        ],
+    event.historicalImpact === undefined
+      ? null
+      : [
+          event.historicalImpact.affectedEventIds,
+          event.historicalImpact.whereaboutsIds,
+          event.historicalImpact.deficits.map(
+            /** Freeze one typed historical-deficit interval. */
+            (deficit) => [
+            deficit.itemRevisionId,
+            inventoryStockPositionIdentity(deficit.position),
+            inventoryMeasurementsFingerprint(deficit.maximumDeficit),
+            deficit.startedByEventId,
+            deficit.startedAtEpochMs,
+            deficit.endedByEventId ?? null,
+              deficit.endedAtEpochMs ?? null,
+            ]
+          ),
         ],
     inventoryMetadataFingerprint(event.metadata),
     inventoryTransferLifecycleFingerprint(event.transferLifecycle),
@@ -907,9 +1279,13 @@ function normalizePositiveLayerProvenanceOverrides(
   kind: InventoryEventKind,
   overrides: readonly InventoryPositiveLayerProvenanceOverride[]
 ): readonly InventoryPositiveLayerProvenanceOverride[] {
-  if (overrides.length !== 0 && kind !== InventoryEventKind.Correction) {
+  if (
+    overrides.length !== 0 &&
+    kind !== InventoryEventKind.Correction &&
+    kind !== InventoryEventKind.HistoricalRepair
+  ) {
     throw new Error(
-      "Only a Correction event may replace positive-layer FIFO provenance."
+      "Only a Correction/HistoricalRepair event may replace positive-layer FIFO provenance."
     );
   }
   const normalized: InventoryPositiveLayerProvenanceOverride[] = [];
@@ -1097,6 +1473,7 @@ function assertLotDefinitionsBelongToEvent(
 ): void {
   if (
     kind === InventoryEventKind.Correction ||
+    kind === InventoryEventKind.HistoricalRepair ||
     kind === InventoryEventKind.LotMetadata
   )
     return;
@@ -1258,6 +1635,7 @@ function assertPlacementNodeDefinitionsBelongToEvent(
 ): void {
   if (
     kind === InventoryEventKind.Correction ||
+    kind === InventoryEventKind.HistoricalRepair ||
     kind === InventoryEventKind.PlacementNodeMetadata
   ) {
     return;
@@ -1454,14 +1832,18 @@ function assertEventKindShape(
   for (const change of traceabilityChanges) {
     if (
       change.action === InventoryTraceabilityRelationAction.Invalidate &&
-      kind !== InventoryEventKind.Correction
+      kind !== InventoryEventKind.Correction &&
+      kind !== InventoryEventKind.HistoricalRepair
     ) {
       throw new Error(
-        "Only a Correction event may invalidate an earlier relation assertion."
+        "Only a Correction/HistoricalRepair event may invalidate an earlier relation assertion."
       );
     }
   }
-  if (kind === InventoryEventKind.Correction) return;
+  if (
+    kind === InventoryEventKind.Correction ||
+    kind === InventoryEventKind.HistoricalRepair
+  ) return;
   if (kind === InventoryEventKind.CatalogPublication) {
     if (
       effects.length !== 0 ||
