@@ -20,7 +20,10 @@ import {
   createInventoryTransformationEvent,
 } from "../src/kernel.js";
 import { createInMemoryInventoryDurableStorage } from "../src/storage-api.js";
-import { inventoryWhereaboutsLifecycles } from "../src/whereabouts.js";
+import {
+  findInventoryWhereaboutsHistory,
+  inventoryWhereaboutsLifecycles,
+} from "../src/whereabouts.js";
 import {
   clockAt,
   createTabletCatalog,
@@ -844,6 +847,15 @@ describe("detached and missing stock whereabouts", () => {
         new Set([cohort.whereaboutsId])
       )
     ).toEqual([cohort]);
+    // An unfiltered read still needs only unresolved cohort positions; placed
+    // warehouse rows must not be enumerated to return complete lifecycle history.
+    expect(inventoryWhereaboutsLifecycles(guarded)).toEqual([cohort]);
+    expect(
+      findInventoryWhereaboutsHistory(guarded, { itemIds: ["item-a"] })
+    ).toEqual([cohort]);
+    expect(
+      findInventoryWhereaboutsHistory(guarded, { resolved: true })
+    ).toEqual([]);
   });
 
   it("reads an exact whereabouts cohort without enumerating every unrelated warehouse position", async () => {

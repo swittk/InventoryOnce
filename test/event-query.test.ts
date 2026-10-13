@@ -274,6 +274,61 @@ describe("indexed retained event history", () => {
     expect(older.nextCursor).toBeUndefined();
   });
 
+  /** Sequence zero is a valid inclusive lower bound, never an indexed event. */
+  it("keeps descending zero-bound pages empty or complete across indexed and snapshot reads", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage);
+    const fromZero = {
+      direction: InventoryEventQueryDirection.Descending,
+      recordSequenceFrom: 0,
+    } as const;
+    const zeroOnly = { ...fromZero, recordSequenceThrough: 0 };
+
+    const empty = await inventory.read.snapshot();
+    expect(empty.events(fromZero).events).toEqual([]);
+    expect(empty.events(zeroOnly).events).toEqual([]);
+    expect((await inventory.read.events(fromZero)).events).toEqual([]);
+    expect((await inventory.read.events(zeroOnly)).events).toEqual([]);
+
+    for (const [index, placementNodeId] of ["a", "b"].entries()) {
+      await inventory.stock.receive({
+        operationId: `zero-bound-receive-${index + 1}`,
+        occurredAtEpochMs: time0 + index,
+        to: loosePosition(placementNodeId),
+        amount: stockAmount("1", "piece"),
+      });
+    }
+
+    const snapshot = await inventory.read.snapshot();
+    const expected = snapshot.events({ direction: InventoryEventQueryDirection.Descending });
+    expect(expected.events.map((event) => event.operationId)).toEqual([
+      "zero-bound-receive-2",
+      "zero-bound-receive-1",
+    ]);
+    expect(snapshot.events(fromZero)).toEqual(expected);
+    expect(await inventory.read.events(fromZero)).toEqual(expected);
+    expect(snapshot.events(zeroOnly).events).toEqual([]);
+    expect((await inventory.read.events(zeroOnly)).events).toEqual([]);
+
+    const first = await inventory.read.events({ ...fromZero, limit: 1 });
+    expect(first.events.map((event) => event.recordSequence)).toEqual([2]);
+    if (first.nextCursor === undefined) {
+      throw new Error("Expected descending continuation before sequence one.");
+    }
+    const second = await inventory.read.events({
+      ...fromZero,
+      limit: 1,
+      cursor: first.nextCursor,
+    });
+    expect(second.events.map((event) => event.recordSequence)).toEqual([1]);
+    expect(second.nextCursor).toBeUndefined();
+    expect(
+      snapshot.events({ ...fromZero, recordSequenceThrough: 1 }).events.map(
+        (event) => event.recordSequence
+      )
+    ).toEqual([1]);
+  });
+
   it("rejects malformed or query-mismatched continuation cursors", async () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({

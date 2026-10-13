@@ -345,7 +345,8 @@ export function inventoryEventQuerySequenceWindow(
       upper,
       (query.cursorBoundary ?? upper + 1) - 1
     ),
-    lastRecordSequence: query.recordSequenceFrom,
+    // Zero is a valid filter boundary, but persisted sequences start at one.
+    lastRecordSequence: Math.max(1, query.recordSequenceFrom),
     step: -1,
   };
 }

@@ -136,55 +136,41 @@ export function inventoryWhereaboutsLifecycles(
     }
     builders.set(whereaboutsId, builder);
   }
-  /** Exact cohort membership is indexed independently of item cardinality. */
-  let candidatePositions: readonly InventoryStockPosition[];
-  if (onlyWhereaboutsIds === undefined) {
-    candidatePositions = Object.values(projection.positions);
-  } else {
-    const selectedPositions: InventoryStockPosition[] = [];
-    for (const whereaboutsId of onlyWhereaboutsIds) {
-      const positionIds =
-        inventorySparseRecordValue(
-          projection.positionIdsByWhereaboutsId,
-          whereaboutsId
-        ) ?? [];
-      for (const positionId of positionIds) {
-        const position = inventorySparseRecordValue(
-          projection.positions,
-          positionId
-        );
-        if (
-          position === undefined ||
-          position.key.whereaboutsId !== whereaboutsId
-        ) {
-          throw new Error(
-            "Whereabouts cohort-position index disagrees with current stock."
-          );
-        }
-        selectedPositions.push(position);
-      }
-    }
-    candidatePositions = selectedPositions;
-  }
-  for (const position of candidatePositions) {
-    const whereaboutsId = position.key.whereaboutsId;
-    if (
-      whereaboutsId === undefined ||
-      (onlyWhereaboutsIds !== undefined &&
-        !onlyWhereaboutsIds.has(whereaboutsId))
-    ) {
-      continue;
-    }
-    const builder = builders.get(whereaboutsId);
-    if (builder === undefined) {
-      throw new Error(
-        "Current whereabouts '" +
-          whereaboutsId +
-          "' has no retained originating event."
+  /** Only unresolved cohorts have live positions; history includes resolved cohorts. */
+  const cohortIds =
+    onlyWhereaboutsIds === undefined
+      ? Object.keys(projection.positionIdsByWhereaboutsId)
+      : onlyWhereaboutsIds;
+  for (const whereaboutsId of cohortIds) {
+    const positionIds =
+      inventorySparseRecordValue(
+        projection.positionIdsByWhereaboutsId,
+        whereaboutsId
+      ) ?? [];
+    for (const positionId of positionIds) {
+      const position = inventorySparseRecordValue(
+        projection.positions,
+        positionId
       );
+      if (
+        position === undefined ||
+        position.key.whereaboutsId !== whereaboutsId
+      ) {
+        throw new Error(
+          "Whereabouts cohort-position index disagrees with current stock."
+        );
+      }
+      const builder = builders.get(whereaboutsId);
+      if (builder === undefined) {
+        throw new Error(
+          "Current whereabouts '" +
+            whereaboutsId +
+            "' has no retained originating event."
+        );
+      }
+      builder.itemIds.add(position.key.itemId);
+      builder.currentPositions.push(position);
     }
-    builder.itemIds.add(position.key.itemId);
-    builder.currentPositions.push(position);
   }
   const result: InventoryWhereaboutsLifecycle[] = [];
   for (const [whereaboutsId, builder] of builders) {
