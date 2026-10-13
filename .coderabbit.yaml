@@ -1,9 +1,10 @@
 # Keep CodeRabbit focused on executable source, scripts, and behavioral tests.
 # Markdown and the complete formal tree are independently checked by docs,
 # TLC mutation gates, and implementation-assurance tooling; generated reports
-# and the coordination diary should not consume the bounded AI review scope.
+# and coordination-only files should not consume the bounded AI review scope.
 reviews:
   path_filters:
     - "!AGENT_DIARY.md"
     - "!**/*.md"
     - "!formal/**"
+    - "!.gitignore"

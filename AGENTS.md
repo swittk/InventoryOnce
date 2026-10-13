@@ -54,6 +54,15 @@ These rules are non-negotiable for every file in this standalone repository. The
 - Prefer simple loops/maps over repeated chained full-array walks.
 - Keep runtime dependencies at zero unless a dependency clearly improves the generic core enough to justify it.
 
+## Coordination and resume-first worktrees
+- Before substantial InventoryOnce work, read both `AGENT_DIARY.md` and the shared `/home/server/Documents/Projects/InventoryOnce-placement-v2/BULLETIN.local.md` when it exists.
+- Before creating a new branch or worktree, inspect existing `InventoryOnce*` worktrees for the same scope, including Git status and recent file edits. Treat unfinished same-scope work as resumable even if it was created by a prior session.
+- If a same-scope worktree has substantive uncommitted or unmerged work, resume that lane. Do not restart from the base branch merely because the previous session stopped, context was reloaded, or a new session began.
+- Create a replacement lane only when the existing lane is demonstrably unsafe/corrupt, has an incompatible base that cannot be reconciled, or the owner explicitly directs a restart. Before doing so, append a bulletin entry marking the old lane `SUPERSEDED` with the exact reason and a salvage/transplant plan for unique source, tests, docs, and findings.
+- Every long-lived bulletin claim must identify exact worktree, branch, base SHA, and state (`ACTIVE`, `PAUSED`, `RELEASED`, or `SUPERSEDED`). A new same-scope `ACTIVE` claim is invalid while an earlier lane is still `ACTIVE` or `PAUSED` unless that earlier entry is explicitly superseded.
+- Before pausing or ending a substantial session, append a checkpoint with uncommitted state, validation completed, current blocker, and exact next step so another session can resume rather than rediscover or reimplement work.
+- Never discard or independently reimplement a substantial unfinished lane without first comparing/salvaging it. Prefer continuation or transplantation over duplicate implementation.
+
 ## Long-task diary
 - `AGENT_DIARY.md` is append-only running memory for this package.
 - Read it before resuming substantial InventoryOnce work.
