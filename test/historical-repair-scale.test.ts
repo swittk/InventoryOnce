@@ -151,6 +151,7 @@ async function benchmarkCorrectionPlan(eventCount: number) {
     return {
       medianMs: median(samples.slice(4)),
       maximumReturnedEvents,
+      queryCalls: query.mock.calls.length,
     };
   } finally {
     query.mockRestore();
@@ -280,6 +281,8 @@ describe("historical repair and event-query scale boundaries", () => {
       const baselinePlan = await benchmarkCorrectionPlan(baselineEvents);
       const warehousePlan = await benchmarkCorrectionPlan(warehouseEvents);
 
+      expect(baselinePlan.queryCalls).toBeGreaterThan(0);
+      expect(warehousePlan.queryCalls).toBeGreaterThan(0);
       expect(baselinePlan.maximumReturnedEvents).toBeLessThanOrEqual(2);
       expect(warehousePlan.maximumReturnedEvents).toBeLessThanOrEqual(2);
       expect(warehouseReadMs).toBeLessThan(baselineReadMs * 8 + 20);

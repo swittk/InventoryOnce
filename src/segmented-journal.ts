@@ -13,6 +13,7 @@ import {
 import {
   createInventoryEventPage,
   inventoryEventDependencyIndexKeys,
+  inventoryEventEffectiveKinds,
   inventoryEventMatchesQuery,
   inventoryEventQueryResourceKeyGroups,
   inventoryEventQuerySequenceWindow,
@@ -585,15 +586,7 @@ export class InMemoryInventorySegmentedEventJournal
       }
     }
 
-    const kinds = [
-      ...new Set<InventoryEventKind>([
-        retained.kind,
-        ...(retained.historicalRepair?.assertions.map(
-          /** Index the physical kind carried by one embedded assertion envelope. */
-          (assertion) => assertion.event.kind
-        ) ?? []),
-      ]),
-    ];
+    const kinds = inventoryEventEffectiveKinds(retained);
     return {
       retained,
       touchedWhereaboutsIds,
@@ -736,6 +729,9 @@ function inventoryJournalTouchedWhereaboutsIds(
     if (override.position.whereaboutsId !== undefined) {
       result.add(override.position.whereaboutsId);
     }
+  }
+  for (const whereaboutsId of event.historicalImpact?.whereaboutsIds ?? []) {
+    result.add(whereaboutsId);
   }
   for (const assertion of event.historicalRepair?.assertions ?? []) {
     for (const whereaboutsId of inventoryJournalTouchedWhereaboutsIds(

@@ -444,9 +444,9 @@ export function inventoryEventMatchesQuery(
   const assertions = inventoryEventEffectiveAssertions(event);
   if (
     query.kinds !== undefined &&
-    !assertions.some(
+    !inventoryEventEffectiveKinds(event).some(
       /** Match one top-level or embedded assertion kind. */
-      (assertion) => query.kinds!.has(assertion.kind)
+      (kind) => query.kinds!.has(kind)
     )
   ) return false;
   if (
@@ -502,6 +502,17 @@ export function inventoryEventResourceKeys(
   const result = [...keys];
   result.sort(compareInventoryIdentityText);
   return result;
+}
+
+/** Exact event kinds visible through public retained-history matching. */
+export function inventoryEventEffectiveKinds(
+  event: InventoryEventDraft
+): readonly InventoryEventKind[] {
+  const kinds = new Set<InventoryEventKind>();
+  for (const assertion of inventoryEventEffectiveAssertions(event)) {
+    kinds.add(assertion.kind);
+  }
+  return [...kinds].sort(compareInventoryIdentityText);
 }
 
 /** Envelope plus embedded ordinary assertions relevant to kind/time/resource matching. */

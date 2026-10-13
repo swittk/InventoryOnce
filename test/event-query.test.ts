@@ -137,6 +137,56 @@ describe("indexed retained event history", () => {
     ]);
   });
 
+  it("indexes correction envelopes through their replacement kind in segmented and canonical reads", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage);
+    await inventory.stock.receive({
+      operationId: "replacement-kind-receive",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store"),
+      amount: stockAmount("2", "piece"),
+    });
+    const detached = await inventory.stock.detach({
+      operationId: "replacement-kind-detach",
+      occurredAtEpochMs: time1,
+      from: loosePosition("store"),
+      amount: stockAmount("1", "piece"),
+    });
+    const correction = await inventory.stock.correct({
+      operationId: "replacement-kind-correction",
+      occurredAtEpochMs: time2,
+      correctsEventId: detached.event.eventId,
+      reason: "Audit showed the unit was issued rather than detached.",
+      replaceWith: (plans) =>
+        plans.issue({
+          occurredAtEpochMs: time1,
+          from: loosePosition("store"),
+          amount: stockAmount("1", "piece"),
+        }),
+    });
+
+    const worldRead = vi.spyOn(storage, "readWorld").mockRejectedValue(
+      new Error("Replacement-kind query unexpectedly materialized the world.")
+    );
+    try {
+      const segmented = await inventory.read.events({
+        kinds: [InventoryEventKind.Issue],
+      });
+      expect(segmented.events.map((event) => event.eventId)).toEqual([
+        correction.event.eventId,
+      ]);
+    } finally {
+      worldRead.mockRestore();
+    }
+
+    const snapshot = await inventory.read.snapshot();
+    expect(
+      snapshot
+        .events({ kinds: [InventoryEventKind.Issue] })
+        .events.map((event) => event.eventId)
+    ).toEqual([correction.event.eventId]);
+  });
+
   it("queries correction lineage without scanning caller-visible projection maps", async () => {
     const inventory = createTestInventory();
     const root = await inventory.stock.receive({

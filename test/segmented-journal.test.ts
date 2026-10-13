@@ -13,12 +13,23 @@ import {
   InventoryStockWhereaboutsState,
 } from "../src/model.js";
 import {
+  InventoryDeficitPolicy,
+  projectInventoryEvents,
+} from "../src/projection.js";
+import {
   inventoryMeasurement,
   inventoryMeasurementVector,
 } from "../src/measurements.js";
 import { parseQuantity } from "../src/quantity.js";
 import { stockAmount } from "../src/amounts.js";
-import { createTestInventory, loosePosition, time0, time1, time2 } from "./test-fixtures.js";
+import {
+  createTabletCatalog,
+  createTestInventory,
+  loosePosition,
+  time0,
+  time1,
+  time2,
+} from "./test-fixtures.js";
 
 /** Build one already-committed event fact for journal/index tests. */
 function committedEvent(
@@ -213,6 +224,54 @@ describe("segmented inventory event journal", () => {
       throw new Error("Detached source did not establish a cohort.");
     }
     expect(journal.sequencesForWhereabouts(whereaboutsId)).toEqual([2, 3]);
+  });
+
+  it("indexes historical-impact-only cohorts exactly like the canonical projection", async () => {
+    const inventory = createTestInventory();
+    const root = await inventory.stock.receive({
+      operationId: "impact-only-root",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store"),
+      amount: stockAmount("1", "piece"),
+    });
+    const correction = await inventory.stock.correct({
+      operationId: "impact-only-correction",
+      occurredAtEpochMs: time1,
+      correctsEventId: root.event.eventId,
+      reason: "Keep current stock unchanged while retaining impacted cohort evidence.",
+      replaceWith: (plans) =>
+        plans.receive({
+          occurredAtEpochMs: time0,
+          to: loosePosition("store"),
+          amount: stockAmount("1", "piece"),
+        }),
+    });
+    const impactedWhereaboutsId = "IMPACT-ONLY-COHORT";
+    const impactedCorrection = {
+      ...correction.event,
+      historicalImpact: {
+        affectedEventIds:
+          correction.event.historicalImpact?.affectedEventIds ?? [
+            root.event.eventId,
+          ],
+        whereaboutsIds: [impactedWhereaboutsId],
+        deficits: correction.event.historicalImpact?.deficits ?? [],
+      },
+    };
+    const events = [root.event, impactedCorrection];
+    const projection = projectInventoryEvents({
+      catalog: createTabletCatalog(),
+      events,
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+    });
+    const journal = createInMemoryInventorySegmentedEventJournal({ events });
+
+    expect(journal.sequencesForWhereabouts(impactedWhereaboutsId)).toEqual(
+      projection.eventSequencesByWhereaboutsId[impactedWhereaboutsId]
+    );
+    expect(journal.materialize().eventSequencesByWhereaboutsId).toEqual(
+      projection.eventSequencesByWhereaboutsId
+    );
   });
 
   it("leaves assertion indexes unchanged when one repair append is rejected", async () => {

@@ -727,6 +727,7 @@
         "entrypoint.kernel.inventoryAssertionEventKey",
         "entrypoint.kernel.inventoryEventDependencyIndexKeys",
         "entrypoint.kernel.inventoryEventDependencyKeys",
+        "entrypoint.kernel.inventoryEventEffectiveKinds",
         "entrypoint.kernel.inventoryEventMatchesQuery",
         "entrypoint.kernel.inventoryEventQueryResourceKeyGroups",
         "entrypoint.kernel.inventoryEventQuerySequenceWindow",
