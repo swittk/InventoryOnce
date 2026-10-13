@@ -109,7 +109,7 @@ describe("segmented inventory event journal", () => {
     expect(journal.event(root.eventId)).toEqual(root);
     expect(journal.eventByOperation("operation-1")).toEqual(root);
     expect(journal.eventBySequence(1)).toEqual(root);
-    expect(journal.sequencesForWhereabouts("W-1")).toEqual([1]);
+    expect(journal.sequencesForWhereabouts("W-1")).toEqual([1, 2, 3]);
     expect(journal.currentCorrectionFor(root.eventId)).toEqual(
       secondCorrection
     );
@@ -123,7 +123,9 @@ describe("segmented inventory event journal", () => {
     expect(materialized.eventIdByOperationId["operation-2"]).toBe(
       firstCorrection.eventId
     );
-    expect(materialized.eventSequencesByWhereaboutsId["W-1"]).toEqual([1]);
+    expect(materialized.eventSequencesByWhereaboutsId["W-1"]).toEqual([
+      1, 2, 3,
+    ]);
     expect(
       materialized.correctionEventIdByCorrectedEventId[root.eventId]
     ).toBe(secondCorrection.eventId);
@@ -133,6 +135,36 @@ describe("segmented inventory event journal", () => {
     });
     expect(rebuilt.contentRoot()).toBe(journal.contentRoot());
     expect(rebuilt.materialize()).toEqual(materialized);
+  });
+
+  it("indexes both root and direct correction cohorts without duplicate sequences", () => {
+    const journal = createInMemoryInventorySegmentedEventJournal();
+    const root = committedEvent(1, { whereaboutsId: "W-1" });
+    const firstCorrection = committedEvent(2, {
+      whereaboutsId: "W-2",
+      correction: {
+        correctsEventId: root.eventId,
+        reason: "Correction touches another cohort",
+      },
+    });
+    const secondCorrection = committedEvent(3, {
+      whereaboutsId: "W-1",
+      correction: {
+        correctsEventId: root.eventId,
+        supersedesCorrectionEventId: firstCorrection.eventId,
+        reason: "Correction also touches its root cohort directly",
+      },
+    });
+
+    journal.append(root);
+    journal.append(firstCorrection);
+    journal.append(secondCorrection);
+
+    expect(journal.sequencesForWhereabouts("W-1")).toEqual([1, 2, 3]);
+    expect(journal.sequencesForWhereabouts("W-2")).toEqual([2]);
+    const materialized = journal.materialize();
+    expect(materialized.eventSequencesByWhereaboutsId["W-1"]).toEqual([1, 2, 3]);
+    expect(materialized.eventSequencesByWhereaboutsId["W-2"]).toEqual([2]);
   });
 
   it("fails closed on sequence, operation, and correction ownership conflicts", () => {

@@ -1,7 +1,7 @@
 {
   "counts": {
-    "callables": 3350,
-    "edges": 8829,
+    "callables": 3351,
+    "edges": 8835,
     "publicEntries": 584,
     "publicEntriesWithTargets": 584,
     "publicEntriesWithWitnesses": 584,
@@ -7611,9 +7611,9 @@
           "column": 3,
           "file": "src/segmented-journal.ts",
           "hasBody": true,
-          "id": "src/segmented-journal.ts:9800:materialize",
+          "id": "src/segmented-journal.ts:10197:materialize",
           "kind": "MethodDeclaration",
-          "line": 238,
+          "line": 247,
           "name": "materialize"
         }
       ],
@@ -7624,9 +7624,9 @@
             "column": 3,
             "file": "src/segmented-journal.ts",
             "hasBody": true,
-            "id": "src/segmented-journal.ts:9800:materialize",
+            "id": "src/segmented-journal.ts:10197:materialize",
             "kind": "MethodDeclaration",
-            "line": 238,
+            "line": 247,
             "name": "materialize"
           },
           "witness": {
@@ -7664,9 +7664,9 @@
                 "column": 3,
                 "file": "src/segmented-journal.ts",
                 "hasBody": true,
-                "id": "src/segmented-journal.ts:9800:materialize",
+                "id": "src/segmented-journal.ts:10197:materialize",
                 "kind": "MethodDeclaration",
-                "line": 238,
+                "line": 247,
                 "name": "materialize",
                 "reason": "resolved-call"
               }
@@ -31941,9 +31941,9 @@
                 "column": 1,
                 "file": "src/segmented-journal.ts",
                 "hasBody": true,
-                "id": "src/segmented-journal.ts:12346:createInMemoryInventorySegmentedEventJournal",
+                "id": "src/segmented-journal.ts:12743:createInMemoryInventorySegmentedEventJournal",
                 "kind": "FunctionDeclaration",
-                "line": 317,
+                "line": 326,
                 "name": "createInMemoryInventorySegmentedEventJournal",
                 "reason": "resolved-call"
               },
@@ -32919,9 +32919,9 @@
           "column": 1,
           "file": "src/segmented-journal.ts",
           "hasBody": true,
-          "id": "src/segmented-journal.ts:12346:createInMemoryInventorySegmentedEventJournal",
+          "id": "src/segmented-journal.ts:12743:createInMemoryInventorySegmentedEventJournal",
           "kind": "FunctionDeclaration",
-          "line": 317,
+          "line": 326,
           "name": "createInMemoryInventorySegmentedEventJournal"
         }
       ],
@@ -32932,9 +32932,9 @@
             "column": 1,
             "file": "src/segmented-journal.ts",
             "hasBody": true,
-            "id": "src/segmented-journal.ts:12346:createInMemoryInventorySegmentedEventJournal",
+            "id": "src/segmented-journal.ts:12743:createInMemoryInventorySegmentedEventJournal",
             "kind": "FunctionDeclaration",
-            "line": 317,
+            "line": 326,
             "name": "createInMemoryInventorySegmentedEventJournal"
           },
           "witness": {
@@ -32972,9 +32972,9 @@
                 "column": 1,
                 "file": "src/segmented-journal.ts",
                 "hasBody": true,
-                "id": "src/segmented-journal.ts:12346:createInMemoryInventorySegmentedEventJournal",
+                "id": "src/segmented-journal.ts:12743:createInMemoryInventorySegmentedEventJournal",
                 "kind": "FunctionDeclaration",
-                "line": 317,
+                "line": 326,
                 "name": "createInMemoryInventorySegmentedEventJournal",
                 "reason": "resolved-call"
               }

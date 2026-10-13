@@ -3,8 +3,8 @@
     "authorityMethods": 14,
     "callAndConstructSignatures": 584,
     "classMethods": 104,
-    "compilerCallGraphCallables": 3350,
-    "compilerCallGraphEdges": 8829,
+    "compilerCallGraphCallables": 3351,
+    "compilerCallGraphEdges": 8835,
     "compilerCallGraphTestRoots": 55,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 584,
@@ -15569,9 +15569,9 @@
               "column": 3,
               "file": "src/segmented-journal.ts",
               "hasBody": true,
-              "id": "src/segmented-journal.ts:9800:materialize",
+              "id": "src/segmented-journal.ts:10197:materialize",
               "kind": "MethodDeclaration",
-              "line": 238,
+              "line": 247,
               "name": "materialize",
               "reason": "resolved-call"
             }
@@ -15580,9 +15580,9 @@
             "column": 3,
             "file": "src/segmented-journal.ts",
             "hasBody": true,
-            "id": "src/segmented-journal.ts:9800:materialize",
+            "id": "src/segmented-journal.ts:10197:materialize",
             "kind": "MethodDeclaration",
-            "line": 238,
+            "line": 247,
             "name": "materialize"
           },
           "test": "test/segmented-journal.test.ts"
@@ -15610,9 +15610,9 @@
           "column": 3,
           "file": "src/segmented-journal.ts",
           "hasBody": true,
-          "id": "src/segmented-journal.ts:9800:materialize",
+          "id": "src/segmented-journal.ts:10197:materialize",
           "kind": "MethodDeclaration",
-          "line": 238,
+          "line": 247,
           "name": "materialize"
         }
       ],
@@ -62298,9 +62298,9 @@
               "column": 1,
               "file": "src/segmented-journal.ts",
               "hasBody": true,
-              "id": "src/segmented-journal.ts:12346:createInMemoryInventorySegmentedEventJournal",
+              "id": "src/segmented-journal.ts:12743:createInMemoryInventorySegmentedEventJournal",
               "kind": "FunctionDeclaration",
-              "line": 317,
+              "line": 326,
               "name": "createInMemoryInventorySegmentedEventJournal",
               "reason": "resolved-call"
             },
@@ -64124,9 +64124,9 @@
               "column": 1,
               "file": "src/segmented-journal.ts",
               "hasBody": true,
-              "id": "src/segmented-journal.ts:12346:createInMemoryInventorySegmentedEventJournal",
+              "id": "src/segmented-journal.ts:12743:createInMemoryInventorySegmentedEventJournal",
               "kind": "FunctionDeclaration",
-              "line": 317,
+              "line": 326,
               "name": "createInMemoryInventorySegmentedEventJournal",
               "reason": "resolved-call"
             }
@@ -64135,9 +64135,9 @@
             "column": 1,
             "file": "src/segmented-journal.ts",
             "hasBody": true,
-            "id": "src/segmented-journal.ts:12346:createInMemoryInventorySegmentedEventJournal",
+            "id": "src/segmented-journal.ts:12743:createInMemoryInventorySegmentedEventJournal",
             "kind": "FunctionDeclaration",
-            "line": 317,
+            "line": 326,
             "name": "createInMemoryInventorySegmentedEventJournal"
           },
           "test": "test/segmented-journal.test.ts"
@@ -64165,9 +64165,9 @@
           "column": 1,
           "file": "src/segmented-journal.ts",
           "hasBody": true,
-          "id": "src/segmented-journal.ts:12346:createInMemoryInventorySegmentedEventJournal",
+          "id": "src/segmented-journal.ts:12743:createInMemoryInventorySegmentedEventJournal",
           "kind": "FunctionDeclaration",
-          "line": 317,
+          "line": 326,
           "name": "createInMemoryInventorySegmentedEventJournal"
         }
       ],
@@ -76468,7 +76468,7 @@
           "path": "src/projection.ts"
         },
         {
-          "occurrences": 3,
+          "occurrences": 4,
           "path": "src/segmented-journal.ts"
         },
         {
@@ -81648,7 +81648,7 @@
           "path": "src/projection.ts"
         },
         {
-          "occurrences": 3,
+          "occurrences": 4,
           "path": "src/segmented-journal.ts"
         },
         {

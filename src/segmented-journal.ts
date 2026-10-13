@@ -179,6 +179,7 @@ export class InMemoryInventorySegmentedEventJournal
       );
     }
 
+    let touchedWhereaboutsIds = inventoryJournalTouchedWhereaboutsIds(retained);
     const correction = retained.correction;
     if (correction !== undefined) {
       const corrected = this.eventsById.get(correction.correctsEventId);
@@ -208,12 +209,20 @@ export class InMemoryInventorySegmentedEventJournal
           `Segmented journal correction must supersede '${currentCorrection}'.`
         );
       }
+      // A correction touches its root's historical cohorts even when its own
+      // stock effects do not name a whereabouts ID. Keep normal appends unchanged.
+      touchedWhereaboutsIds = [
+        ...new Set([
+          ...touchedWhereaboutsIds,
+          ...inventoryJournalTouchedWhereaboutsIds(corrected),
+        ]),
+      ].sort();
     }
 
     this.eventsById.set(retained.eventId, retained);
     this.eventIdBySequence.set(retained.recordSequence, retained.eventId);
     this.eventIdByOperation.set(retained.operationId, retained.eventId);
-    for (const whereaboutsId of inventoryJournalTouchedWhereaboutsIds(retained)) {
+    for (const whereaboutsId of touchedWhereaboutsIds) {
       const sequences = this.sequencesByWhereabouts.get(whereaboutsId) ?? [];
       sequences.push(retained.recordSequence);
       this.sequencesByWhereabouts.set(whereaboutsId, sequences);
