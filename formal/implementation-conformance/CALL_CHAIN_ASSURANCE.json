@@ -1,7 +1,7 @@
 {
   "counts": {
-    "callables": 3349,
-    "edges": 8827,
+    "callables": 3350,
+    "edges": 8829,
     "publicEntries": 584,
     "publicEntriesWithTargets": 584,
     "publicEntriesWithWitnesses": 584,
@@ -28670,10 +28670,10 @@
                 "column": 86,
                 "file": "test/whereabouts.test.ts",
                 "hasBody": true,
-                "id": "test/whereabouts.test.ts:25939:<anonymous@756>",
+                "id": "test/whereabouts.test.ts:27043:<anonymous@779>",
                 "kind": "ArrowFunction",
-                "line": 756,
-                "name": "<anonymous@756>",
+                "line": 779,
+                "name": "<anonymous@779>",
                 "reason": "external-callback-dispatch"
               },
               {

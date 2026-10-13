@@ -81,7 +81,7 @@ await inventory.placement.move({
 });
 
 // Partial stock can be taken out without pretending it left inventory.
-await inventory.stock.detach({
+const detached = await inventory.stock.detach({
   operationId: "take-one-package-out",
   occurredAtEpochMs: takenAtEpochMs,
   from: {
@@ -92,9 +92,17 @@ await inventory.stock.detach({
   amount: packageAmount(1, "item-a-box-20-v1"),
 });
 
-const [unresolved] = (await inventory.read.whereabouts()).flatMap(
-  (lifecycle) => lifecycle.currentPositions
-);
+// Use this detach's kernel-owned cohort identity, not the first unresolved stock
+// elsewhere in the warehouse.
+const detachedWhereaboutsId = detached.event.stockEffects.find(
+  (effect) => effect.position.whereaboutsId !== undefined
+)?.position.whereaboutsId;
+if (detachedWhereaboutsId === undefined) {
+  throw new Error("Detach did not create a whereabouts cohort.");
+}
+const [unresolved] = (await inventory.read.whereabouts({
+  whereaboutsIds: [detachedWhereaboutsId],
+})).flatMap((lifecycle) => lifecycle.currentPositions);
 if (unresolved !== undefined) {
   await inventory.stock.place({
     operationId: "put-package-on-shelf",

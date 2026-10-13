@@ -201,7 +201,7 @@ describe("detached and missing stock whereabouts", () => {
       from: loosePosition("store", { lotId: "LOT-A" }),
       amount: stockAmount("5", "piece"),
     });
-    await inventory.stock.detach({
+    const secondDetach = await inventory.stock.detach({
       operationId: "detach-second-two",
       occurredAtEpochMs: time2,
       from: loosePosition("store", { lotId: "LOT-A" }),
@@ -236,6 +236,29 @@ describe("detached and missing stock whereabouts", () => {
     if (firstWhereaboutsId === undefined || secondWhereaboutsId === undefined) {
       throw new Error("Detach lifecycle identity was not projected.");
     }
+
+    // A global first-row selection would incorrectly select the older detach;
+    // derive the exact cohort from the event and use its indexed read instead.
+    const secondDetachWhereaboutsId = secondDetach.event.stockEffects.find(
+      (effect) => effect.position.whereaboutsId !== undefined
+    )?.position.whereaboutsId;
+    expect(secondDetachWhereaboutsId).toBe(secondWhereaboutsId);
+    expect(firstWhereaboutsId).not.toBe(secondDetachWhereaboutsId);
+    if (secondDetachWhereaboutsId === undefined) {
+      throw new Error("The second detach did not produce a whereabouts cohort.");
+    }
+    const matchedCohort = await inventory.read.whereabouts({
+      whereaboutsIds: [secondDetachWhereaboutsId],
+    });
+    expect(matchedCohort).toHaveLength(1);
+    expect(matchedCohort[0]?.originEvent.eventId).toBe(
+      secondDetach.event.eventId
+    );
+    expect(matchedCohort[0]?.currentPositions[0]?.key.whereaboutsId).toBe(
+      secondDetachWhereaboutsId
+    );
+    expect(matchedCohort[0]?.currentPositions[0]?.measurements.primary.quantity.amountMinor)
+      .toBe(2);
 
     const first = await unresolvedById(inventory, firstWhereaboutsId);
     await inventory.stock.markMissing({
