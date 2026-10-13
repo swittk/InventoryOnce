@@ -6,3 +6,5 @@ reviews:
     - "!AGENT_DIARY.md"
     - "!formal/implementation-conformance/**"
     - "!formal/**/*.cfg"
+    - "!**/*.md"
+    - "!.gitignore"
