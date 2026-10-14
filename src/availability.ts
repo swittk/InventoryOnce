@@ -52,7 +52,6 @@ import {
   inventoryStockSelectorIdentity,
   normalizeInventoryStockSelector,
   InventoryOptionalIdentityConstraintKind,
-  type InventoryOptionalIdentityConstraint,
   type InventoryStockSelector,
 } from "./selectors.js";
 import {
@@ -442,7 +441,7 @@ function summarizeAvailabilityRevision({
   const deficit = availabilitySelectedDeficitBurdenMeasurements({
     projection,
     item,
-    placement: selector.placement,
+    selector,
     placementNodeIds,
     poolPositions,
     selectedPositions: positions,
@@ -452,7 +451,7 @@ function summarizeAvailabilityRevision({
   const usableDeficit = availabilitySelectedDeficitBurdenMeasurements({
     projection,
     item,
-    placement: selector.placement,
+    selector,
     placementNodeIds,
     poolPositions,
     selectedPositions: positions,
@@ -520,8 +519,8 @@ interface AvailabilitySelectedDeficitBurdenInput {
   readonly projection: InventoryProjectionState;
   /** Exact item revision and all configured measurement axes. */
   readonly item: InventoryItemDefinitionRevision;
-  /** Explicit normalized placement presence/absence constraint. */
-  readonly placement: InventoryOptionalIdentityConstraint | undefined;
+  /** Normalized selector; placement and whereabouts scope recorded deficit rows. */
+  readonly selector: InventoryStockSelector;
   /** Direct-placement pools owning the deficit. */
   readonly placementNodeIds: readonly string[];
   /** Deterministically ordered positive/negative positions in the whole pool. */
@@ -541,7 +540,7 @@ interface AvailabilitySelectedDeficitBurdenInput {
 function availabilitySelectedDeficitBurdenMeasurements({
   projection,
   item,
-  placement,
+  selector,
   placementNodeIds,
   poolPositions,
   selectedPositions,
@@ -553,7 +552,7 @@ function availabilitySelectedDeficitBurdenMeasurements({
       projection,
       item,
       placementNodeIds,
-      placement
+      selector
     );
   }
   const selectedPositionIds = new Set(
@@ -680,19 +679,26 @@ function availabilitySelectedDeficitAxisBurden({
   return selectedBurden;
 }
 
-/** Sum deficits in selected placement pools, preserving the unconstrained wildcard. */
+/** Sum deficits in selected placement/whereabouts pools without narrowing by lot or owner. */
 function availabilityPoolDeficitMeasurements(
   projection: InventoryProjectionState,
   item: InventoryItemDefinitionRevision,
   placementNodeIds: readonly string[],
-  placement: InventoryOptionalIdentityConstraint | undefined
+  selector: InventoryStockSelector
 ): InventoryMeasurementVector {
   const selectedLocations = new Set(placementNodeIds);
   // Explicit absence/presence cannot be inferred from an empty placement-node set.
   const absentOnly =
-    placement?.kind === InventoryOptionalIdentityConstraintKind.Absent;
+    selector.placement?.kind === InventoryOptionalIdentityConstraintKind.Absent;
   const presentOnly =
-    placement?.kind === InventoryOptionalIdentityConstraintKind.Present;
+    selector.placement?.kind === InventoryOptionalIdentityConstraintKind.Present;
+  // A cohort-scoped read may share a revision with thousands of unrelated
+  // cohorts; the allowed IDs are indexed once, not linearly searched per row.
+  const whereabouts = selector.whereabouts;
+  const allowedWhereaboutsIds =
+    whereabouts?.kind === InventoryOptionalIdentityConstraintKind.Allowed
+      ? new Set(whereabouts.valueIds)
+      : undefined;
   let deficit = zeroInventoryMeasurementsForItem(item);
   for (const positionIdentity of inventorySparseRecordValue(
     projection.positionIdsByItemRevisionId,
@@ -713,6 +719,21 @@ function availabilityPoolDeficitMeasurements(
     ) continue;
     const measurements = inventoryPositionDeficitMeasurements(position);
     if (measurements === undefined) continue;
+    // Cohort checks are needed only for negative rows. Keep ordinary
+    // positive stock rows on the existing cheap placement/deficit path.
+    const { whereaboutsId, whereaboutsState } = position.key;
+    if (
+      (whereabouts?.kind === InventoryOptionalIdentityConstraintKind.Absent &&
+        whereaboutsId !== undefined) ||
+      (whereabouts?.kind === InventoryOptionalIdentityConstraintKind.Present &&
+        whereaboutsId === undefined) ||
+      (allowedWhereaboutsIds !== undefined &&
+        (whereaboutsId === undefined ||
+          !allowedWhereaboutsIds.has(whereaboutsId))) ||
+      (selector.whereaboutsStates !== undefined &&
+        (whereaboutsState === undefined ||
+          !selector.whereaboutsStates.includes(whereaboutsState)))
+    ) continue;
     deficit = addInventoryMeasurements(deficit, measurements);
   }
   return deficit;
