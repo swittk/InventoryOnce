@@ -1446,23 +1446,13 @@ function reconcileInventoryPlacementEmbodiments({
       }
       const directPositionIds =
         inventorySparseRecordValue(positionIdsByPlacementNodeId, nodeId) ?? [];
-      let hasPositiveDirectContents = false;
-      for (const positionId of directPositionIds) {
-        const position = inventorySparseRecordValue(positions, positionId);
-        if (
-          position !== undefined &&
-          quantityIsPositive(position.measurements.primary.quantity)
-        ) {
-          hasPositiveDirectContents = true;
-          break;
-        }
-      }
+      // Recorded negative positions are contents too; the index holds every live row.
       const childNodeIds =
         inventorySparseRecordValue(
           nextPlacement.childNodeIdsByParentNodeId,
           nodeId
         ) ?? [];
-      if (hasPositiveDirectContents || childNodeIds.length > 0) {
+      if (directPositionIds.length > 0 || childNodeIds.length > 0) {
         throw new Error(
           `Embodied placement node '${nodeId}' must be empty before its unique resource can leave or become generic.`
         );

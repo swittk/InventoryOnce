@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   InventoryAllocationMethod,
+  InventoryDeficitPolicy,
   InventoryEventKind,
   InventoryReservationFeasibilityStatus,
   defineScalarInventoryItem,
@@ -374,6 +375,57 @@ describe("generic placement topology", () => {
         })
       )[0]?.key.placementNodeId
     ).toBe("store");
+  });
+
+  /** Keep a Record-policy deficit repairable while the embodied container exists. */
+  it("blocks retirement of an embodied container with recorded direct deficit", async () => {
+    const inventory = createTestInventory(
+      undefined, createHeterogeneousPlacementCatalog(), undefined, InventoryDeficitPolicy.Record
+    );
+    await inventory.stock.receive({
+      operationId: "deficit-cabinet-receive", occurredAtEpochMs: time0,
+      to: loosePosition("store"), amount: stockAmount("1", "piece"),
+    });
+    await inventory.stock.individualize({
+      operationId: "deficit-cabinet-individualize", occurredAtEpochMs: time1,
+      from: loosePosition("store"), amount: stockAmount("1", "piece"),
+      serialId: "CAB-DEFICIT",
+      asPlacementNode: { category: "cabinet", acceptsPlacement: true },
+    });
+    await inventory.stock.issue({
+      operationId: "deficit-cabinet-overissue", occurredAtEpochMs: time2,
+      from: { itemId: "item-b", placementNodeId: "CAB-DEFICIT" },
+      amount: stockAmount("3", "piece"),
+    });
+    const before = await inventory.read.positions({
+      itemId: "item-b", placementNodeIds: ["CAB-DEFICIT"],
+    });
+    expect(before).toHaveLength(1);
+    expect(before[0]?.measurements.primary.quantity.amountMinor).toBe(-3);
+
+    await expect(inventory.stock.scrap({
+      operationId: "deficit-cabinet-premature-scrap", occurredAtEpochMs: time2,
+      from: loosePosition("store", { serialId: "CAB-DEFICIT" }),
+      amount: stockAmount("1", "piece"), reason: "Remove occupied container",
+    })).rejects.toThrow("must be empty");
+    expect((await inventory.read.placementNode("CAB-DEFICIT"))?.retiredByEventId).toBeUndefined();
+
+    await inventory.stock.receive({
+      operationId: "deficit-cabinet-settle", occurredAtEpochMs: time3,
+      to: { itemId: "item-b", placementNodeId: "CAB-DEFICIT" },
+      amount: stockAmount("3", "piece"),
+    });
+    expect(await inventory.read.positions({
+      itemId: "item-b", placementNodeIds: ["CAB-DEFICIT"],
+    })).toEqual([]);
+    await inventory.stock.scrap({
+      operationId: "deficit-cabinet-retire-after-settlement",
+      occurredAtEpochMs: time3,
+      from: loosePosition("store", { serialId: "CAB-DEFICIT" }),
+      amount: stockAmount("1", "piece"),
+      reason: "Container emptied",
+    });
+    expect((await inventory.read.placementNode("CAB-DEFICIT"))?.retiredByEventId).toBeDefined();
   });
 
   it("revives one retired embodiment only by correcting its exact retirement event", async () => {
