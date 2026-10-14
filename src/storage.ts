@@ -1893,6 +1893,30 @@ export class InMemoryInventoryDurableStorage
       (event.positiveLayerProvenanceOverrides?.length ?? 0) !== 0
     ) return false;
     if (event.transferLifecycle !== undefined) return false;
+    if (event.correction !== undefined) {
+      // An omitted metadata/topology root has no explicit stock or placement delta.
+      // Publication must update the canonical placement/lot masters before native reads.
+      const correctedRoot = inventorySparseRecordValue(
+        this.world.projection.events,
+        event.correction.correctsEventId
+      );
+      const supersededCorrection =
+        event.correction.supersedesCorrectionEventId === undefined
+          ? undefined
+          : inventorySparseRecordValue(
+              this.world.projection.events,
+              event.correction.supersedesCorrectionEventId
+            );
+      for (const source of [correctedRoot, supersededCorrection]) {
+        if (
+          (source?.lotDefinitions?.length ?? 0) !== 0 ||
+          (source?.placementNodeDefinitions?.length ?? 0) !== 0 ||
+          (source?.placementChanges?.length ?? 0) !== 0
+        ) {
+          return false;
+        }
+      }
+    }
     if (!historicalEnvelope && event.correction !== undefined) return false;
     if (
       event.kind === InventoryEventKind.Correction &&

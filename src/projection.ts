@@ -1159,7 +1159,15 @@ function applyInventoryCommittedEventInternal(
     eventId: normalizedEvent.eventId,
     ...(normalizedEvent.correction === undefined
       ? {}
-      : { correctsEventId: normalizedEvent.correction.correctsEventId }),
+      : {
+          correctsEventId: normalizedEvent.correction.correctsEventId,
+          ...(normalizedEvent.correction.supersedesCorrectionEventId === undefined
+            ? {}
+            : {
+                supersedesCorrectionEventId:
+                  normalizedEvent.correction.supersedesCorrectionEventId,
+              }),
+        }),
     ...(normalizedEvent.historicalRepair === undefined
       ? {}
       : { omittedHistoricalAssertionIds: normalizedEvent.historicalRepair.omittedAssertionIds }),
@@ -1306,6 +1314,8 @@ interface ReconcileInventoryPlacementEmbodimentsInput {
   readonly eventId: string;
   /** Exact retired event being append-only corrected, when this is a correction. */
   readonly correctsEventId?: string;
+  /** Prior correction replaced by this correction of the same retained root. */
+  readonly supersedesCorrectionEventId?: string;
   /** Exact historical assertions explicitly omitted by this repair, if any. */
   readonly omittedHistoricalAssertionIds?: readonly string[];
   /** Previously published events used to authenticate a retrospective omission. */
@@ -1365,6 +1375,7 @@ function reconcileInventoryPlacementEmbodiments({
   placement,
   eventId,
   correctsEventId,
+  supersedesCorrectionEventId,
   omittedHistoricalAssertionIds,
   retainedEvents,
 }: ReconcileInventoryPlacementEmbodimentsInput): InventoryPlacementState {
@@ -1396,6 +1407,7 @@ function reconcileInventoryPlacementEmbodiments({
       if (positivePositionId === undefined) continue;
       if (
         correctsEventId !== projected.retiredByEventId &&
+        supersedesCorrectionEventId !== projected.retiredByEventId &&
         !historicalRepairOmitsEmbodiedRetirement({
           omittedAssertionIds: omittedHistoricalAssertionIds,
           retainedEvents,

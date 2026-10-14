@@ -107,6 +107,84 @@ describe("adapter-native standalone topology events", () => {
     expect(segment.parentNodeId("unknown-node")).toBeUndefined();
   });
 
+  /** A metadata-root correction must be committed through the canonical world. */
+  it("publishes a metadata-root correction through canonical storage", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage);
+    await inventory.placement.define({
+      operationId: "corrected-placement-destination",
+      occurredAtEpochMs: time0,
+      nodeId: "KEPT-ROOM",
+      placementNode: { category: "room", acceptsPlacement: true },
+    });
+    const defined = await inventory.placement.define({
+      operationId: "corrected-placement-source",
+      occurredAtEpochMs: time0,
+      nodeId: "REMOVED-SHELF",
+      placementNode: { category: "shelf", acceptsPlacement: true },
+    });
+    const canonical = vi.spyOn(storage, "begin");
+    const native = vi.spyOn(storage, "commitSegmentedStockEvent");
+    const correction = await inventory.stock.correct({
+      operationId: "corrected-placement-omit-root",
+      occurredAtEpochMs: time1,
+      correctsEventId: defined.event.eventId,
+      reason: "This shelf definition referred to a nonexistent shelf.",
+      replaceWith: (plans) => plans.omit(),
+    });
+    expect(correction.event.stockEffects).toEqual([]);
+    expect(correction.event.placementChanges).toEqual([]);
+    expect(correction.event.placementNodeDefinitions).toEqual([]);
+    expect(native).toHaveBeenCalledTimes(1);
+    const attempted = native.mock.results[0];
+    if (attempted === undefined || attempted.type !== "return") {
+      throw new Error("Native correction admission was not attempted.");
+    }
+    expect(await attempted.value).toBeUndefined();
+    expect(canonical).toHaveBeenCalled();
+    native.mockRestore();
+    canonical.mockRestore();
+    const world = await inventory.read.world();
+    expect(world.projection.placementNodes["REMOVED-SHELF"]).toBeUndefined();
+    expect(world.projection.lastRecordSequence).toBe(correction.event.recordSequence);
+  });
+
+  /** A lot-master omission has no stock delta but still requires canonical publication. */
+  it("declines segmented stock publication when a correction removes a lot metadata root", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage);
+    const defined = await inventory.lots.define({
+      operationId: "corrected-lot-source",
+      occurredAtEpochMs: time0,
+      itemId: "item-a",
+      lotId: "REMOVED-LOT",
+      lot: { manufacturedAtEpochMs: time0 },
+    });
+    expect(defined.event.lotDefinitions).toHaveLength(1);
+    const canonical = vi.spyOn(storage, "begin");
+    const native = vi.spyOn(storage, "commitSegmentedStockEvent");
+    const correction = await inventory.stock.correct({
+      operationId: "corrected-lot-omit-root",
+      occurredAtEpochMs: time1,
+      correctsEventId: defined.event.eventId,
+      reason: "The lot was entered against the wrong item.",
+      replaceWith: (plans) => plans.omit(),
+    });
+    expect(correction.event.stockEffects).toEqual([]);
+    expect(correction.event.lotDefinitions).toEqual([]);
+    const attempted = native.mock.results[0];
+    if (attempted === undefined || attempted.type !== "return") {
+      throw new Error("Expected native stock publication admission to be attempted.");
+    }
+    expect(await attempted.value).toBeUndefined();
+    expect(canonical).toHaveBeenCalled();
+    native.mockRestore();
+    canonical.mockRestore();
+    const world = await inventory.read.world();
+    expect(Object.values(world.projection.lots)).toEqual([]);
+    expect(world.projection.lastRecordSequence).toBe(correction.event.recordSequence);
+  });
+
   it("preserves one journal sequence and canonical snapshot across interleaved stock and topology commits", async () => {
     const storage = createInMemoryInventoryDurableStorage();
     const inventory = createTestInventory(storage);

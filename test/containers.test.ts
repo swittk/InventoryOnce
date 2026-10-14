@@ -431,6 +431,69 @@ describe("generic placement topology", () => {
     ]);
   });
 
+  /** A later stock correction can supersede one that retired an existing embodied node. */
+  it("restores an embodied node when the stock correction that retired it is superseded", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receive({
+      operationId: "superseded-retirement-receive",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store", { serialId: "SUPERSEDED-CAB" }),
+      amount: stockAmount("1", "piece"),
+    });
+    await inventory.placement.define({
+      operationId: "superseded-retirement-embody",
+      occurredAtEpochMs: time1,
+      nodeId: "SUPERSEDED-CAB-NODE",
+      placementNode: {
+        category: "cabinet",
+        embodiedBy: { itemId: "item-a", serialId: "SUPERSEDED-CAB" },
+      },
+    });
+    const root = await inventory.stock.transfer({
+      operationId: "superseded-retirement-original-movement",
+      occurredAtEpochMs: time2,
+      from: loosePosition("store", { serialId: "SUPERSEDED-CAB" }),
+      toPlacementNodeId: "original-room",
+      amount: stockAmount("1", "piece"),
+    });
+    const first = await inventory.stock.correct({
+      operationId: "superseded-retirement-incorrect-issue",
+      occurredAtEpochMs: time3,
+      correctsEventId: root.event.eventId,
+      reason: "An earlier audit mistakenly said the moved cabinet was issued.",
+      replaceWith: (plans) => plans.issue({
+        occurredAtEpochMs: time2,
+        from: loosePosition("store", { serialId: "SUPERSEDED-CAB" }),
+        amount: stockAmount("1", "piece"),
+      }),
+    });
+    expect((await inventory.read.placementNode("SUPERSEDED-CAB-NODE"))?.retiredByEventId)
+      .toBe(first.event.eventId);
+    const correctionInput = {
+      operationId: "superseded-retirement-confirmed-transfer",
+      occurredAtEpochMs: time3,
+      correctsEventId: root.event.eventId,
+      reason: "Subsequent evidence confirmed the cabinet was moved, not issued.",
+      replaceWith: (plans: Parameters<typeof inventory.stock.correct>[0]["replaceWith"] extends
+        (plans: infer Plans) => unknown ? Plans : never) => plans.transfer({
+          occurredAtEpochMs: time2,
+          from: loosePosition("store", { serialId: "SUPERSEDED-CAB" }),
+          toPlacementNodeId: "original-room",
+          amount: stockAmount("1", "piece"),
+        }),
+    };
+    const second = await inventory.stock.correct(correctionInput);
+    expect(second.event.correction?.supersedesCorrectionEventId).toBe(first.event.eventId);
+    expect((await inventory.read.placementNode("SUPERSEDED-CAB-NODE"))?.retiredByEventId)
+      .toBeUndefined();
+    expect((await inventory.read.positions({
+      itemId: "item-a", serialIds: ["SUPERSEDED-CAB"],
+    }))).toHaveLength(1);
+    expect(await inventory.read.placementAncestry("SUPERSEDED-CAB-NODE"))
+      .toEqual(["SUPERSEDED-CAB-NODE", "original-room"]);
+    expect((await inventory.stock.correct(correctionInput)).replayed).toBe(true);
+  });
+
   it("can embody an already-unique resource but rejects missing or duplicate embodiments", async () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
