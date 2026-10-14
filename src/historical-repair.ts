@@ -1,4 +1,8 @@
 import type { InventoryCatalog } from "./catalog.js";
+import {
+  inventoryIntentFingerprint,
+  inventoryMetadataFingerprint,
+} from "./canonical.js";
 import { inventoryEventIdForOperation, type InventoryCommandHeader } from "./commands.js";
 import {
   createInventoryProjectionDelta,
@@ -13,7 +17,12 @@ import {
   replayInventoryHistoricalScenario,
   type InventoryHistoricalReplayResult,
 } from "./historical-replay.js";
+import type {
+  InventoryLotDefinition,
+  InventoryPlacementNodeDefinition,
+} from "./model.js";
 import { InventoryDeficitPolicy, type InventoryProjectionState } from "./projection.js";
+import { inventorySparseRecordValue } from "./sparse-record.js";
 
 /** Inputs for one append-only atomic late-history repair envelope. */
 export interface CreateInventoryHistoricalRepairInput extends InventoryCommandHeader {
@@ -127,15 +136,85 @@ export function createInventoryHistoricalRepairEvent(
   return { event, replay };
 }
 
-/** Historical repairs reuse metadata already asserted through existing metadata APIs. */
+/** Historical repairs preserve metadata masters, not derived embodiment lifecycle state. */
 function assertHistoricalRepairMetadataIsAdditive(
   actual: InventoryProjectionState,
   desired: InventoryProjectionState
 ): void {
   if (
-    JSON.stringify(actual.lots) !== JSON.stringify(desired.lots) ||
-    JSON.stringify(actual.placementNodes) !== JSON.stringify(desired.placementNodes)
+    !historicalRepairMetadataRowsMatch(
+      actual.lots,
+      desired.lots,
+      historicalRepairLotDefinitionFingerprint
+    ) ||
+    !historicalRepairMetadataRowsMatch(
+      actual.placementNodes,
+      desired.placementNodes,
+      historicalRepairPlacementDefinitionFingerprint
+    )
   ) {
     throw new InventoryHistoricalRepairMetadataError();
   }
+}
+
+/** Compare exact asserted keys/roots/definitions while ignoring projected lifecycle fields. */
+function historicalRepairMetadataRowsMatch<
+  TDefinition,
+  TRow extends {
+    /** Metadata master asserted by one root. */
+    readonly definition: TDefinition;
+    /** Original retained metadata authority. */
+    readonly rootEventId: string;
+  },
+>(
+  actual: Readonly<Record<string, TRow>>,
+  desired: Readonly<Record<string, TRow>>,
+  definitionFingerprint: (definition: TDefinition) => string
+): boolean {
+  const actualKeys = Object.keys(actual);
+  if (actualKeys.length !== Object.keys(desired).length) return false;
+  for (const key of actualKeys) {
+    const before = inventorySparseRecordValue(actual, key);
+    const after = inventorySparseRecordValue(desired, key);
+    if (
+      before === undefined ||
+      after === undefined ||
+      before.rootEventId !== after.rootEventId ||
+      definitionFingerprint(before.definition) !==
+        definitionFingerprint(after.definition)
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/** Stable lot master identity and values, including canonical nested metadata. */
+function historicalRepairLotDefinitionFingerprint(
+  definition: InventoryLotDefinition
+): string {
+  return inventoryIntentFingerprint([
+    definition.itemId,
+    definition.lotId,
+    definition.manufacturedAtEpochMs ?? null,
+    definition.expiresAtEpochMs ?? null,
+    inventoryMetadataFingerprint(definition.metadata),
+  ]);
+}
+
+/** Stable node master identity, policy, embodiment and nested metadata. */
+function historicalRepairPlacementDefinitionFingerprint(
+  definition: InventoryPlacementNodeDefinition
+): string {
+  return inventoryIntentFingerprint([
+    definition.nodeId,
+    definition.category ?? null,
+    definition.acceptsPlacement ?? null,
+    definition.embodiedBy?.itemId ?? null,
+    definition.embodiedBy?.serialId ?? null,
+    inventoryMetadataFingerprint(definition.identifiers),
+    definition.openedAtEpochMs ?? null,
+    definition.useByEpochMs ?? null,
+    inventoryMetadataFingerprint(definition.metadata),
+  ]);
 }

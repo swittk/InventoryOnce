@@ -1160,6 +1160,10 @@ function applyInventoryCommittedEventInternal(
     ...(normalizedEvent.correction === undefined
       ? {}
       : { correctsEventId: normalizedEvent.correction.correctsEventId }),
+    ...(normalizedEvent.historicalRepair === undefined
+      ? {}
+      : { omittedHistoricalAssertionIds: normalizedEvent.historicalRepair.omittedAssertionIds }),
+    retainedEvents: state.events,
   });
   for (const definition of normalizedEvent.placementNodeDefinitions ?? []) {
     if (definition.acceptsPlacement !== false) continue;
@@ -1302,6 +1306,50 @@ interface ReconcileInventoryPlacementEmbodimentsInput {
   readonly eventId: string;
   /** Exact retired event being append-only corrected, when this is a correction. */
   readonly correctsEventId?: string;
+  /** Exact historical assertions explicitly omitted by this repair, if any. */
+  readonly omittedHistoricalAssertionIds?: readonly string[];
+  /** Previously published events used to authenticate a retrospective omission. */
+  readonly retainedEvents: Readonly<Record<string, InventoryCommittedEvent>>;
+}
+
+/** Allow revival only when the exact retained repair's serialized retirement is omitted. */
+function historicalRepairOmitsEmbodiedRetirement({
+  omittedAssertionIds,
+  retainedEvents,
+  retirementEventId,
+  itemId,
+  serialId,
+}: {
+  /** Explicit source assertion identities removed from effective history, if any. */
+  readonly omittedAssertionIds: readonly string[] | undefined;
+  /** Previously committed envelopes, including the retirement owner. */
+  readonly retainedEvents: Readonly<Record<string, InventoryCommittedEvent>>;
+  /** Envelope that retired the embodied node. */
+  readonly retirementEventId: string;
+  /** Item identity of the embodied physical instance. */
+  readonly itemId: string;
+  /** Serial identity of the embodied physical instance. */
+  readonly serialId: string;
+}): boolean {
+  if (omittedAssertionIds === undefined || omittedAssertionIds.length === 0) {
+    return false;
+  }
+  const retiredBy = inventorySparseRecordValue(retainedEvents, retirementEventId);
+  if (retiredBy?.historicalRepair === undefined) return false;
+  const omitted = new Set(omittedAssertionIds);
+  for (const assertion of retiredBy.historicalRepair.assertions) {
+    if (!omitted.has(assertion.assertionId)) continue;
+    for (const effect of assertion.event.stockEffects) {
+      if (
+        effect.position.itemId === itemId &&
+        effect.position.serialId === serialId &&
+        effect.measurementsDelta.primary.quantity.amountMinor < 0
+      ) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 /** Keep embodied node parent/lifetime derived from its one live serial resource. */
@@ -1317,6 +1365,8 @@ function reconcileInventoryPlacementEmbodiments({
   placement,
   eventId,
   correctsEventId,
+  omittedHistoricalAssertionIds,
+  retainedEvents,
 }: ReconcileInventoryPlacementEmbodimentsInput): InventoryPlacementState {
   let nextPlacement = placement;
   const nodeIds = [...touchedEmbodiedNodeIds];
@@ -1344,7 +1394,16 @@ function reconcileInventoryPlacementEmbodiments({
     );
     if (projected.retiredByEventId !== undefined) {
       if (positivePositionId === undefined) continue;
-      if (correctsEventId !== projected.retiredByEventId) {
+      if (
+        correctsEventId !== projected.retiredByEventId &&
+        !historicalRepairOmitsEmbodiedRetirement({
+          omittedAssertionIds: omittedHistoricalAssertionIds,
+          retainedEvents,
+          retirementEventId: projected.retiredByEventId,
+          itemId: embodiment.itemId,
+          serialId: embodiment.serialId,
+        })
+      ) {
         throw new Error(
           `Retired embodied serial ${serialIdentity} cannot become current stock again without correcting its retirement event.`
         );

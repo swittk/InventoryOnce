@@ -787,6 +787,104 @@ describe("late historical repair", () => {
     ).toBe("b");
   });
 
+  /** Derived embodied retirement is stock lifecycle, not an asserted metadata edit. */
+  it("permits a late embodied scrap to retire its node without editing metadata", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receive({
+      operationId: "late-embodied-receive",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store"),
+      amount: stockAmount("1", "piece"),
+    });
+    await inventory.stock.individualize({
+      operationId: "late-embodied-individualize",
+      occurredAtEpochMs: time1,
+      from: loosePosition("store"),
+      amount: stockAmount("1", "piece"),
+      serialId: "LATE-CAB",
+      asPlacementNode: { category: "cabinet" },
+    });
+    const before = await inventory.read.world();
+    const metadataBefore = before.projection.placementNodes["LATE-CAB"];
+    expect(metadataBefore?.retiredByEventId).toBeUndefined();
+
+    const input = {
+      operationId: "late-embodied-scrap-repair",
+      occurredAtEpochMs: time3,
+      reason: "The individualized cabinet was scrapped earlier.",
+      assertions: [{
+        assertionId: "late-embodied-scrap",
+        assert: (plans: Parameters<
+          typeof inventory.stock.recordHistorical
+        >[0]["assertions"][number]["assert"] extends (plans: infer Plans) => unknown
+          ? Plans
+          : never) => plans.scrap({
+            occurredAtEpochMs: time2,
+            from: loosePosition("store", { serialId: "LATE-CAB" }),
+            amount: stockAmount("1", "piece"),
+            reason: "Physical retirement verified after the fact.",
+          }),
+      }],
+    };
+
+    const planned = await inventory.stock.planHistorical(input);
+    if (!planned.valid) throw new Error(planned.conflict.message);
+    expect(planned.valid).toBe(true);
+    expect(planned.event.lotDefinitions).toEqual([]);
+    expect(planned.event.placementNodeDefinitions).toEqual([]);
+    expect((await inventory.read.world()).revision).toBe(before.revision);
+
+    const committed = await inventory.stock.recordHistorical(input);
+    const retired = await inventory.read.placementNode("LATE-CAB");
+    expect(retired?.definition).toEqual(metadataBefore?.definition);
+    expect(retired?.rootEventId).toBe(metadataBefore?.rootEventId);
+    expect(retired?.retiredByEventId).toBeDefined();
+    expect(await inventory.read.positions({
+      itemId: "item-a",
+      serialIds: ["LATE-CAB"],
+    })).toEqual([]);
+    await expect(inventory.stock.receive({
+      operationId: "reject-ordinary-revival-of-late-cab",
+      occurredAtEpochMs: time3,
+      to: loosePosition("store", { serialId: "LATE-CAB" }),
+      amount: stockAmount("1", "piece"),
+    })).rejects.toThrow();
+    expect((await inventory.stock.recordHistorical(input)).replayed).toBe(true);
+    const world = await inventory.read.world();
+    const rebuilt = projectInventoryEvents({
+      catalog: createTabletCatalog(),
+      events: Object.values(world.projection.events),
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+    });
+    expect(rebuilt.placementNodes["LATE-CAB"]?.retiredByEventId).toBe(
+      retired?.retiredByEventId
+    );
+    expect(committed.event.kind).toBe(InventoryEventKind.HistoricalRepair);
+
+    // Correcting the asserted history can restore the same immutable master.
+    await inventory.stock.recordHistorical({
+      operationId: "late-embodied-scrap-omission",
+      occurredAtEpochMs: time3,
+      reason: "A later inspection confirmed this cabinet had not been scrapped.",
+      assertions: [],
+      omittedAssertionIds: ["late-embodied-scrap"],
+    });
+    const revived = await inventory.read.placementNode("LATE-CAB");
+    expect(revived?.definition).toEqual(metadataBefore?.definition);
+    expect(revived?.rootEventId).toBe(metadataBefore?.rootEventId);
+    expect(revived?.retiredByEventId).toBeUndefined();
+    expect(await inventory.read.positions({
+      itemId: "item-a",
+      serialIds: ["LATE-CAB"],
+    })).toHaveLength(1);
+    const restoredWorld = await inventory.read.world();
+    expect(projectInventoryEvents({
+      catalog: createTabletCatalog(),
+      events: Object.values(restoredWorld.projection.events),
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+    })).toEqual(restoredWorld.projection);
+  });
+
   it("fails closed when v1 historical repair would introduce metadata masters", async () => {
     const inventory = createTestInventory();
     const plan = await inventory.stock.planHistorical({

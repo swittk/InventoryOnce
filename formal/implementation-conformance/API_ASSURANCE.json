@@ -3,8 +3,8 @@
     "authorityMethods": 14,
     "callAndConstructSignatures": 617,
     "classMethods": 109,
-    "compilerCallGraphCallables": 3607,
-    "compilerCallGraphEdges": 9605,
+    "compilerCallGraphCallables": 3613,
+    "compilerCallGraphEdges": 9631,
     "compilerCallGraphTestRoots": 58,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 617,
@@ -15303,7 +15303,7 @@
           "path": "src/placement.ts"
         },
         {
-          "occurrences": 97,
+          "occurrences": 98,
           "path": "src/projection.ts"
         },
         {
@@ -19079,7 +19079,7 @@
           "path": "src/picking.ts"
         },
         {
-          "occurrences": 75,
+          "occurrences": 77,
           "path": "src/projection.ts"
         },
         {
@@ -20751,9 +20751,9 @@
               "column": 1,
               "file": "src/historical-repair.ts",
               "hasBody": true,
-              "id": "src/historical-repair.ts:2505:createInventoryHistoricalRepairEvent",
+              "id": "src/historical-repair.ts:2763:createInventoryHistoricalRepairEvent",
               "kind": "FunctionDeclaration",
-              "line": 54,
+              "line": 63,
               "name": "createInventoryHistoricalRepairEvent",
               "reason": "resolved-call"
             },
@@ -20761,9 +20761,9 @@
               "column": 1,
               "file": "src/historical-repair.ts",
               "hasBody": true,
-              "id": "src/historical-repair.ts:5267:assertHistoricalRepairMetadataIsAdditive",
+              "id": "src/historical-repair.ts:5528:assertHistoricalRepairMetadataIsAdditive",
               "kind": "FunctionDeclaration",
-              "line": 131,
+              "line": 140,
               "name": "assertHistoricalRepairMetadataIsAdditive",
               "reason": "resolved-call"
             },
@@ -20771,9 +20771,9 @@
               "column": 3,
               "file": "src/historical-repair.ts",
               "hasBody": true,
-              "id": "src/historical-repair.ts:2186:InventoryHistoricalRepairMetadataError",
+              "id": "src/historical-repair.ts:2444:InventoryHistoricalRepairMetadataError",
               "kind": "Constructor",
-              "line": 45,
+              "line": 54,
               "name": "InventoryHistoricalRepairMetadataError",
               "reason": "resolved-call"
             }
@@ -20782,9 +20782,9 @@
             "column": 3,
             "file": "src/historical-repair.ts",
             "hasBody": true,
-            "id": "src/historical-repair.ts:2186:InventoryHistoricalRepairMetadataError",
+            "id": "src/historical-repair.ts:2444:InventoryHistoricalRepairMetadataError",
             "kind": "Constructor",
-            "line": 45,
+            "line": 54,
             "name": "InventoryHistoricalRepairMetadataError"
           },
           "test": "test/historical-repair.test.ts"
@@ -20808,9 +20808,9 @@
           "column": 3,
           "file": "src/historical-repair.ts",
           "hasBody": true,
-          "id": "src/historical-repair.ts:2186:InventoryHistoricalRepairMetadataError",
+          "id": "src/historical-repair.ts:2444:InventoryHistoricalRepairMetadataError",
           "kind": "Constructor",
-          "line": 45,
+          "line": 54,
           "name": "InventoryHistoricalRepairMetadataError"
         }
       ],
@@ -23197,9 +23197,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:61154:projectInventoryEvents",
+              "id": "src/projection.ts:63533:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1584,
+              "line": 1643,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -24423,9 +24423,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:61154:projectInventoryEvents",
+              "id": "src/projection.ts:63533:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1584,
+              "line": 1643,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -24433,9 +24433,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:62524:inventoryEventsInRecordSequence",
+              "id": "src/projection.ts:64903:inventoryEventsInRecordSequence",
               "kind": "FunctionDeclaration",
-              "line": 1625,
+              "line": 1684,
               "name": "inventoryEventsInRecordSequence",
               "reason": "resolved-call"
             },
@@ -24443,9 +24443,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:75824:compareCommittedEventSequence",
+              "id": "src/projection.ts:78203:compareCommittedEventSequence",
               "kind": "FunctionDeclaration",
-              "line": 1996,
+              "line": 2055,
               "name": "compareCommittedEventSequence",
               "reason": "external-callback-dispatch"
             }
@@ -24454,9 +24454,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:75824:compareCommittedEventSequence",
+            "id": "src/projection.ts:78203:compareCommittedEventSequence",
             "kind": "FunctionDeclaration",
-            "line": 1996,
+            "line": 2055,
             "name": "compareCommittedEventSequence"
           },
           "test": "test/catalog-publication.test.ts"
@@ -24479,9 +24479,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:75824:compareCommittedEventSequence",
+          "id": "src/projection.ts:78203:compareCommittedEventSequence",
           "kind": "FunctionDeclaration",
-          "line": 1996,
+          "line": 2055,
           "name": "compareCommittedEventSequence"
         }
       ],
@@ -26466,9 +26466,9 @@
               "column": 1,
               "file": "src/historical-repair.ts",
               "hasBody": true,
-              "id": "src/historical-repair.ts:2505:createInventoryHistoricalRepairEvent",
+              "id": "src/historical-repair.ts:2763:createInventoryHistoricalRepairEvent",
               "kind": "FunctionDeclaration",
-              "line": 54,
+              "line": 63,
               "name": "createInventoryHistoricalRepairEvent",
               "reason": "resolved-call"
             }
@@ -26477,9 +26477,9 @@
             "column": 1,
             "file": "src/historical-repair.ts",
             "hasBody": true,
-            "id": "src/historical-repair.ts:2505:createInventoryHistoricalRepairEvent",
+            "id": "src/historical-repair.ts:2763:createInventoryHistoricalRepairEvent",
             "kind": "FunctionDeclaration",
-            "line": 54,
+            "line": 63,
             "name": "createInventoryHistoricalRepairEvent"
           },
           "test": "test/historical-repair.test.ts"
@@ -26503,9 +26503,9 @@
           "column": 1,
           "file": "src/historical-repair.ts",
           "hasBody": true,
-          "id": "src/historical-repair.ts:2505:createInventoryHistoricalRepairEvent",
+          "id": "src/historical-repair.ts:2763:createInventoryHistoricalRepairEvent",
           "kind": "FunctionDeclaration",
-          "line": 54,
+          "line": 63,
           "name": "createInventoryHistoricalRepairEvent"
         }
       ],
@@ -33535,9 +33535,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:63002:findInventoryPositions",
+              "id": "src/projection.ts:65381:findInventoryPositions",
               "kind": "FunctionDeclaration",
-              "line": 1641,
+              "line": 1700,
               "name": "findInventoryPositions",
               "reason": "resolved-call"
             }
@@ -33546,9 +33546,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:63002:findInventoryPositions",
+            "id": "src/projection.ts:65381:findInventoryPositions",
             "kind": "FunctionDeclaration",
-            "line": 1641,
+            "line": 1700,
             "name": "findInventoryPositions"
           },
           "test": "test/projection-index-scale.test.ts"
@@ -33575,9 +33575,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:63002:findInventoryPositions",
+          "id": "src/projection.ts:65381:findInventoryPositions",
           "kind": "FunctionDeclaration",
-          "line": 1641,
+          "line": 1700,
           "name": "findInventoryPositions"
         }
       ],
@@ -36315,9 +36315,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:61154:projectInventoryEvents",
+              "id": "src/projection.ts:63533:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1584,
+              "line": 1643,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -36325,9 +36325,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:62524:inventoryEventsInRecordSequence",
+              "id": "src/projection.ts:64903:inventoryEventsInRecordSequence",
               "kind": "FunctionDeclaration",
-              "line": 1625,
+              "line": 1684,
               "name": "inventoryEventsInRecordSequence",
               "reason": "resolved-call"
             }
@@ -36336,9 +36336,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:62524:inventoryEventsInRecordSequence",
+            "id": "src/projection.ts:64903:inventoryEventsInRecordSequence",
             "kind": "FunctionDeclaration",
-            "line": 1625,
+            "line": 1684,
             "name": "inventoryEventsInRecordSequence"
           },
           "test": "test/catalog-publication.test.ts"
@@ -36361,9 +36361,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:62524:inventoryEventsInRecordSequence",
+          "id": "src/projection.ts:64903:inventoryEventsInRecordSequence",
           "kind": "FunctionDeclaration",
-          "line": 1625,
+          "line": 1684,
           "name": "inventoryEventsInRecordSequence"
         }
       ],
@@ -36834,6 +36834,10 @@
         {
           "occurrences": 31,
           "path": "src/facade.ts"
+        },
+        {
+          "occurrences": 3,
+          "path": "src/historical-repair.ts"
         },
         {
           "occurrences": 3,
@@ -38033,9 +38037,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:61154:projectInventoryEvents",
+              "id": "src/projection.ts:63533:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1584,
+              "line": 1643,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -38620,6 +38624,10 @@
         {
           "occurrences": 23,
           "path": "src/facade.ts"
+        },
+        {
+          "occurrences": 4,
+          "path": "src/historical-repair.ts"
         },
         {
           "occurrences": 2,
@@ -39360,9 +39368,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:63002:findInventoryPositions",
+              "id": "src/projection.ts:65381:findInventoryPositions",
               "kind": "FunctionDeclaration",
-              "line": 1641,
+              "line": 1700,
               "name": "findInventoryPositions",
               "reason": "resolved-call"
             },
@@ -41248,9 +41256,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:63002:findInventoryPositions",
+              "id": "src/projection.ts:65381:findInventoryPositions",
               "kind": "FunctionDeclaration",
-              "line": 1641,
+              "line": 1700,
               "name": "findInventoryPositions",
               "reason": "resolved-call"
             },
@@ -43998,9 +44006,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:61154:projectInventoryEvents",
+              "id": "src/projection.ts:63533:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1584,
+              "line": 1643,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -45994,9 +46002,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:61154:projectInventoryEvents",
+              "id": "src/projection.ts:63533:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1584,
+              "line": 1643,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             }
@@ -46005,9 +46013,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:61154:projectInventoryEvents",
+            "id": "src/projection.ts:63533:projectInventoryEvents",
             "kind": "FunctionDeclaration",
-            "line": 1584,
+            "line": 1643,
             "name": "projectInventoryEvents"
           },
           "test": "test/catalog-publication.test.ts"
@@ -46034,9 +46042,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:61154:projectInventoryEvents",
+          "id": "src/projection.ts:63533:projectInventoryEvents",
           "kind": "FunctionDeclaration",
-          "line": 1584,
+          "line": 1643,
           "name": "projectInventoryEvents"
         }
       ],
@@ -46253,7 +46261,7 @@
           "path": "src/picking.ts"
         },
         {
-          "occurrences": 10,
+          "occurrences": 11,
           "path": "src/projection.ts"
         },
         {
@@ -52983,9 +52991,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:61154:projectInventoryEvents",
+              "id": "src/projection.ts:63533:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1584,
+              "line": 1643,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -59421,9 +59429,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:61154:projectInventoryEvents",
+              "id": "src/projection.ts:63533:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1584,
+              "line": 1643,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -62081,9 +62089,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:61154:projectInventoryEvents",
+              "id": "src/projection.ts:63533:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1584,
+              "line": 1643,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -63684,7 +63692,7 @@
           "path": "src/picking.ts"
         },
         {
-          "occurrences": 10,
+          "occurrences": 11,
           "path": "src/projection.ts"
         },
         {
@@ -73203,6 +73211,10 @@
           "path": "src/fungibility.ts"
         },
         {
+          "occurrences": 20,
+          "path": "src/historical-repair.ts"
+        },
+        {
           "occurrences": 1,
           "path": "src/integrity.ts"
         },
@@ -73707,6 +73719,10 @@
         {
           "occurrences": 18,
           "path": "src/fungibility.ts"
+        },
+        {
+          "occurrences": 20,
+          "path": "src/historical-repair.ts"
         },
         {
           "occurrences": 1,
@@ -75158,6 +75174,10 @@
         {
           "occurrences": 18,
           "path": "src/fungibility.ts"
+        },
+        {
+          "occurrences": 20,
+          "path": "src/historical-repair.ts"
         },
         {
           "occurrences": 1,
@@ -78498,7 +78518,7 @@
           "path": "src/placement.ts"
         },
         {
-          "occurrences": 97,
+          "occurrences": 98,
           "path": "src/projection.ts"
         },
         {
@@ -78774,7 +78794,7 @@
           "path": "src/picking.ts"
         },
         {
-          "occurrences": 35,
+          "occurrences": 37,
           "path": "src/projection.ts"
         },
         {
@@ -78992,7 +79012,7 @@
           "path": "src/fungibility.ts"
         },
         {
-          "occurrences": 1,
+          "occurrences": 2,
           "path": "src/historical-repair.ts"
         },
         {
@@ -84149,7 +84169,7 @@
           "path": "src/placement.ts"
         },
         {
-          "occurrences": 97,
+          "occurrences": 98,
           "path": "src/projection.ts"
         },
         {
@@ -84415,7 +84435,7 @@
           "path": "src/picking.ts"
         },
         {
-          "occurrences": 35,
+          "occurrences": 37,
           "path": "src/projection.ts"
         },
         {
@@ -84803,7 +84823,7 @@
           "path": "src/fungibility.ts"
         },
         {
-          "occurrences": 1,
+          "occurrences": 2,
           "path": "src/historical-repair.ts"
         },
         {
@@ -94591,6 +94611,10 @@
           "path": "src/fungibility.ts"
         },
         {
+          "occurrences": 20,
+          "path": "src/historical-repair.ts"
+        },
+        {
           "occurrences": 1,
           "path": "src/integrity.ts"
         },
@@ -99775,5 +99799,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "37ad9b21d040f9e261157777d401aaf5acd80b18879e7574afebfcca56012d0d"
+  "surfaceSha256": "b45f4dcca671e84c1fd1b7a9866ca15a5c8fefd230711eca1f28d8d3edf2a3b4"
 }
