@@ -957,7 +957,13 @@ function applyInventoryCommittedEventInternal(
       next,
       `Stock position ${identity}`
     );
-    if (deficitPolicy === InventoryDeficitPolicy.Reject) {
+    // Historical planners reject newly exposed shortages; a verified correction
+    // may leave a previously recorded deficit open while improving it.
+    if (
+      deficitPolicy === InventoryDeficitPolicy.Reject &&
+      normalizedEvent.kind !== InventoryEventKind.Correction &&
+      normalizedEvent.kind !== InventoryEventKind.HistoricalRepair
+    ) {
       nonNegativeInventoryMeasurements(next, `Stock position ${identity}`);
     }
     const wasPositive = quantityIsPositive(current.primary.quantity);

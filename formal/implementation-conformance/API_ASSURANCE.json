@@ -3,9 +3,9 @@
     "authorityMethods": 14,
     "callAndConstructSignatures": 617,
     "classMethods": 109,
-    "compilerCallGraphCallables": 3643,
-    "compilerCallGraphEdges": 9787,
-    "compilerCallGraphTestRoots": 58,
+    "compilerCallGraphCallables": 3648,
+    "compilerCallGraphEdges": 9816,
+    "compilerCallGraphTestRoots": 59,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 617,
     "directExecutableApis": 253,
@@ -10677,9 +10677,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:87281:abort",
+              "id": "src/storage.ts:87819:abort",
               "kind": "MethodDeclaration",
-              "line": 2093,
+              "line": 2108,
               "name": "abort",
               "reason": "interface-to-implementation"
             }
@@ -10688,9 +10688,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:87281:abort",
+            "id": "src/storage.ts:87819:abort",
             "kind": "MethodDeclaration",
-            "line": 2093,
+            "line": 2108,
             "name": "abort"
           },
           "test": "test/storage-conformance.test.ts"
@@ -10714,9 +10714,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:87281:abort",
+          "id": "src/storage.ts:87819:abort",
           "kind": "MethodDeclaration",
-          "line": 2093,
+          "line": 2108,
           "name": "abort"
         }
       ],
@@ -15327,7 +15327,7 @@
           "path": "src/sparse-record.ts"
         },
         {
-          "occurrences": 140,
+          "occurrences": 141,
           "path": "src/storage.ts"
         },
         {
@@ -16657,9 +16657,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:89165:runStorageMutationAtomically",
+              "id": "src/storage.ts:89703:runStorageMutationAtomically",
               "kind": "MethodDeclaration",
-              "line": 2141,
+              "line": 2156,
               "name": "runStorageMutationAtomically",
               "reason": "resolved-call"
             },
@@ -18463,9 +18463,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:89165:runStorageMutationAtomically",
+              "id": "src/storage.ts:89703:runStorageMutationAtomically",
               "kind": "MethodDeclaration",
-              "line": 2141,
+              "line": 2156,
               "name": "runStorageMutationAtomically",
               "reason": "resolved-call"
             },
@@ -19111,7 +19111,7 @@
           "path": "src/stock-amount-rules.ts"
         },
         {
-          "occurrences": 22,
+          "occurrences": 24,
           "path": "src/storage.ts"
         },
         {
@@ -23201,9 +23201,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:63744:projectInventoryEvents",
+              "id": "src/projection.ts:64043:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1645,
+              "line": 1651,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -24427,9 +24427,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:63744:projectInventoryEvents",
+              "id": "src/projection.ts:64043:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1645,
+              "line": 1651,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -24437,9 +24437,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:65114:inventoryEventsInRecordSequence",
+              "id": "src/projection.ts:65413:inventoryEventsInRecordSequence",
               "kind": "FunctionDeclaration",
-              "line": 1686,
+              "line": 1692,
               "name": "inventoryEventsInRecordSequence",
               "reason": "resolved-call"
             },
@@ -24447,9 +24447,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:78414:compareCommittedEventSequence",
+              "id": "src/projection.ts:78713:compareCommittedEventSequence",
               "kind": "FunctionDeclaration",
-              "line": 2057,
+              "line": 2063,
               "name": "compareCommittedEventSequence",
               "reason": "external-callback-dispatch"
             }
@@ -24458,9 +24458,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:78414:compareCommittedEventSequence",
+            "id": "src/projection.ts:78713:compareCommittedEventSequence",
             "kind": "FunctionDeclaration",
-            "line": 2057,
+            "line": 2063,
             "name": "compareCommittedEventSequence"
           },
           "test": "test/catalog-publication.test.ts"
@@ -24483,9 +24483,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:78414:compareCommittedEventSequence",
+          "id": "src/projection.ts:78713:compareCommittedEventSequence",
           "kind": "FunctionDeclaration",
-          "line": 2057,
+          "line": 2063,
           "name": "compareCommittedEventSequence"
         }
       ],
@@ -33539,9 +33539,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:65592:findInventoryPositions",
+              "id": "src/projection.ts:65891:findInventoryPositions",
               "kind": "FunctionDeclaration",
-              "line": 1702,
+              "line": 1708,
               "name": "findInventoryPositions",
               "reason": "resolved-call"
             }
@@ -33550,9 +33550,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:65592:findInventoryPositions",
+            "id": "src/projection.ts:65891:findInventoryPositions",
             "kind": "FunctionDeclaration",
-            "line": 1702,
+            "line": 1708,
             "name": "findInventoryPositions"
           },
           "test": "test/projection-index-scale.test.ts"
@@ -33579,9 +33579,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:65592:findInventoryPositions",
+          "id": "src/projection.ts:65891:findInventoryPositions",
           "kind": "FunctionDeclaration",
-          "line": 1702,
+          "line": 1708,
           "name": "findInventoryPositions"
         }
       ],
@@ -36307,9 +36307,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:63744:projectInventoryEvents",
+              "id": "src/projection.ts:64043:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1645,
+              "line": 1651,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -36317,9 +36317,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:65114:inventoryEventsInRecordSequence",
+              "id": "src/projection.ts:65413:inventoryEventsInRecordSequence",
               "kind": "FunctionDeclaration",
-              "line": 1686,
+              "line": 1692,
               "name": "inventoryEventsInRecordSequence",
               "reason": "resolved-call"
             }
@@ -36328,9 +36328,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:65114:inventoryEventsInRecordSequence",
+            "id": "src/projection.ts:65413:inventoryEventsInRecordSequence",
             "kind": "FunctionDeclaration",
-            "line": 1686,
+            "line": 1692,
             "name": "inventoryEventsInRecordSequence"
           },
           "test": "test/catalog-publication.test.ts"
@@ -36353,9 +36353,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:65114:inventoryEventsInRecordSequence",
+          "id": "src/projection.ts:65413:inventoryEventsInRecordSequence",
           "kind": "FunctionDeclaration",
-          "line": 1686,
+          "line": 1692,
           "name": "inventoryEventsInRecordSequence"
         }
       ],
@@ -38029,9 +38029,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:63744:projectInventoryEvents",
+              "id": "src/projection.ts:64043:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1645,
+              "line": 1651,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -39360,9 +39360,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:65592:findInventoryPositions",
+              "id": "src/projection.ts:65891:findInventoryPositions",
               "kind": "FunctionDeclaration",
-              "line": 1702,
+              "line": 1708,
               "name": "findInventoryPositions",
               "reason": "resolved-call"
             },
@@ -41106,7 +41106,7 @@
           "path": "src/selectors.ts"
         },
         {
-          "occurrences": 2,
+          "occurrences": 3,
           "path": "src/storage.ts"
         },
         {
@@ -41200,9 +41200,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:65592:findInventoryPositions",
+              "id": "src/projection.ts:65891:findInventoryPositions",
               "kind": "FunctionDeclaration",
-              "line": 1702,
+              "line": 1708,
               "name": "findInventoryPositions",
               "reason": "resolved-call"
             },
@@ -43950,9 +43950,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:63744:projectInventoryEvents",
+              "id": "src/projection.ts:64043:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1645,
+              "line": 1651,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -45946,9 +45946,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:63744:projectInventoryEvents",
+              "id": "src/projection.ts:64043:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1645,
+              "line": 1651,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             }
@@ -45957,9 +45957,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:63744:projectInventoryEvents",
+            "id": "src/projection.ts:64043:projectInventoryEvents",
             "kind": "FunctionDeclaration",
-            "line": 1645,
+            "line": 1651,
             "name": "projectInventoryEvents"
           },
           "test": "test/catalog-publication.test.ts"
@@ -45986,9 +45986,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:63744:projectInventoryEvents",
+          "id": "src/projection.ts:64043:projectInventoryEvents",
           "kind": "FunctionDeclaration",
-          "line": 1645,
+          "line": 1651,
           "name": "projectInventoryEvents"
         }
       ],
@@ -46227,6 +46227,10 @@
         {
           "occurrences": 1,
           "path": "src/stock-amount-rules.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/storage.ts"
         },
         {
           "occurrences": 5,
@@ -52925,9 +52929,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:63744:projectInventoryEvents",
+              "id": "src/projection.ts:64043:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1645,
+              "line": 1651,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -59363,9 +59367,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:63744:projectInventoryEvents",
+              "id": "src/projection.ts:64043:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1645,
+              "line": 1651,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -62013,9 +62017,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:63744:projectInventoryEvents",
+              "id": "src/projection.ts:64043:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1645,
+              "line": 1651,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -63638,6 +63642,10 @@
         {
           "occurrences": 1,
           "path": "src/stock-amount-rules.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/storage.ts"
         },
         {
           "occurrences": 5,
@@ -67318,9 +67326,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:89165:runStorageMutationAtomically",
+              "id": "src/storage.ts:89703:runStorageMutationAtomically",
               "kind": "MethodDeclaration",
-              "line": 2141,
+              "line": 2156,
               "name": "runStorageMutationAtomically",
               "reason": "resolved-call"
             },
@@ -67825,9 +67833,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:89165:runStorageMutationAtomically",
+              "id": "src/storage.ts:89703:runStorageMutationAtomically",
               "kind": "MethodDeclaration",
-              "line": 2141,
+              "line": 2156,
               "name": "runStorageMutationAtomically",
               "reason": "resolved-call"
             },
@@ -68023,9 +68031,9 @@
               "column": 1,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:93517:materializeInventoryDurableOperationWorld",
+              "id": "src/storage.ts:94055:materializeInventoryDurableOperationWorld",
               "kind": "FunctionDeclaration",
-              "line": 2256,
+              "line": 2271,
               "name": "materializeInventoryDurableOperationWorld",
               "reason": "resolved-call"
             },
@@ -68033,9 +68041,9 @@
               "column": 1,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:97619:validateInventoryDurablePlanAgainstBase",
+              "id": "src/storage.ts:98157:validateInventoryDurablePlanAgainstBase",
               "kind": "FunctionDeclaration",
-              "line": 2377,
+              "line": 2392,
               "name": "validateInventoryDurablePlanAgainstBase",
               "reason": "resolved-call"
             },
@@ -68195,9 +68203,9 @@
               "column": 1,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:93517:materializeInventoryDurableOperationWorld",
+              "id": "src/storage.ts:94055:materializeInventoryDurableOperationWorld",
               "kind": "FunctionDeclaration",
-              "line": 2256,
+              "line": 2271,
               "name": "materializeInventoryDurableOperationWorld",
               "reason": "resolved-call"
             },
@@ -68205,9 +68213,9 @@
               "column": 1,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:97619:validateInventoryDurablePlanAgainstBase",
+              "id": "src/storage.ts:98157:validateInventoryDurablePlanAgainstBase",
               "kind": "FunctionDeclaration",
-              "line": 2377,
+              "line": 2392,
               "name": "validateInventoryDurablePlanAgainstBase",
               "reason": "resolved-call"
             },
@@ -68489,9 +68497,9 @@
               "column": 1,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:92988:createInMemoryInventoryDurableStorage",
+              "id": "src/storage.ts:93526:createInMemoryInventoryDurableStorage",
               "kind": "FunctionDeclaration",
-              "line": 2242,
+              "line": 2257,
               "name": "createInMemoryInventoryDurableStorage",
               "reason": "resolved-call"
             }
@@ -68500,9 +68508,9 @@
             "column": 1,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:92988:createInMemoryInventoryDurableStorage",
+            "id": "src/storage.ts:93526:createInMemoryInventoryDurableStorage",
             "kind": "FunctionDeclaration",
-            "line": 2242,
+            "line": 2257,
             "name": "createInMemoryInventoryDurableStorage"
           },
           "test": "test/storage-conformance.test.ts"
@@ -68530,9 +68538,9 @@
           "column": 1,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:92988:createInMemoryInventoryDurableStorage",
+          "id": "src/storage.ts:93526:createInMemoryInventoryDurableStorage",
           "kind": "FunctionDeclaration",
-          "line": 2242,
+          "line": 2257,
           "name": "createInMemoryInventoryDurableStorage"
         }
       ],
@@ -71117,9 +71125,9 @@
               "column": 1,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:94073:materializeInventoryDurableMigrationWorld",
+              "id": "src/storage.ts:94611:materializeInventoryDurableMigrationWorld",
               "kind": "FunctionDeclaration",
-              "line": 2271,
+              "line": 2286,
               "name": "materializeInventoryDurableMigrationWorld",
               "reason": "resolved-call"
             }
@@ -71128,9 +71136,9 @@
             "column": 1,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:94073:materializeInventoryDurableMigrationWorld",
+            "id": "src/storage.ts:94611:materializeInventoryDurableMigrationWorld",
             "kind": "FunctionDeclaration",
-            "line": 2271,
+            "line": 2286,
             "name": "materializeInventoryDurableMigrationWorld"
           },
           "test": "test/formal-public-surface-direct.test.ts"
@@ -71156,9 +71164,9 @@
           "column": 1,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:94073:materializeInventoryDurableMigrationWorld",
+          "id": "src/storage.ts:94611:materializeInventoryDurableMigrationWorld",
           "kind": "FunctionDeclaration",
-          "line": 2271,
+          "line": 2286,
           "name": "materializeInventoryDurableMigrationWorld"
         }
       ],
@@ -71268,9 +71276,9 @@
               "column": 1,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:93517:materializeInventoryDurableOperationWorld",
+              "id": "src/storage.ts:94055:materializeInventoryDurableOperationWorld",
               "kind": "FunctionDeclaration",
-              "line": 2256,
+              "line": 2271,
               "name": "materializeInventoryDurableOperationWorld",
               "reason": "resolved-call"
             }
@@ -71279,9 +71287,9 @@
             "column": 1,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:93517:materializeInventoryDurableOperationWorld",
+            "id": "src/storage.ts:94055:materializeInventoryDurableOperationWorld",
             "kind": "FunctionDeclaration",
-            "line": 2256,
+            "line": 2271,
             "name": "materializeInventoryDurableOperationWorld"
           },
           "test": "test/formal-public-surface-direct.test.ts"
@@ -71307,9 +71315,9 @@
           "column": 1,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:93517:materializeInventoryDurableOperationWorld",
+          "id": "src/storage.ts:94055:materializeInventoryDurableOperationWorld",
           "kind": "FunctionDeclaration",
-          "line": 2256,
+          "line": 2271,
           "name": "materializeInventoryDurableOperationWorld"
         }
       ],
@@ -71874,9 +71882,9 @@
               "column": 1,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:93271:validateInventoryDurableOperationBeginInput",
+              "id": "src/storage.ts:93809:validateInventoryDurableOperationBeginInput",
               "kind": "FunctionDeclaration",
-              "line": 2249,
+              "line": 2264,
               "name": "validateInventoryDurableOperationBeginInput",
               "reason": "resolved-call"
             }
@@ -71885,9 +71893,9 @@
             "column": 1,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:93271:validateInventoryDurableOperationBeginInput",
+            "id": "src/storage.ts:93809:validateInventoryDurableOperationBeginInput",
             "kind": "FunctionDeclaration",
-            "line": 2249,
+            "line": 2264,
             "name": "validateInventoryDurableOperationBeginInput"
           },
           "test": "test/formal-public-surface-direct.test.ts"
@@ -71915,9 +71923,9 @@
           "column": 1,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:93271:validateInventoryDurableOperationBeginInput",
+          "id": "src/storage.ts:93809:validateInventoryDurableOperationBeginInput",
           "kind": "FunctionDeclaration",
-          "line": 2249,
+          "line": 2264,
           "name": "validateInventoryDurableOperationBeginInput"
         }
       ],
@@ -72034,9 +72042,9 @@
               "column": 1,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:93824:validateInventoryMigrationManifestBeginInput",
+              "id": "src/storage.ts:94362:validateInventoryMigrationManifestBeginInput",
               "kind": "FunctionDeclaration",
-              "line": 2264,
+              "line": 2279,
               "name": "validateInventoryMigrationManifestBeginInput",
               "reason": "resolved-call"
             }
@@ -72045,9 +72053,9 @@
             "column": 1,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:93824:validateInventoryMigrationManifestBeginInput",
+            "id": "src/storage.ts:94362:validateInventoryMigrationManifestBeginInput",
             "kind": "FunctionDeclaration",
-            "line": 2264,
+            "line": 2279,
             "name": "validateInventoryMigrationManifestBeginInput"
           },
           "test": "test/formal-public-surface-direct.test.ts"
@@ -72075,9 +72083,9 @@
           "column": 1,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:93824:validateInventoryMigrationManifestBeginInput",
+          "id": "src/storage.ts:94362:validateInventoryMigrationManifestBeginInput",
           "kind": "FunctionDeclaration",
-          "line": 2264,
+          "line": 2279,
           "name": "validateInventoryMigrationManifestBeginInput"
         }
       ],
@@ -73951,6 +73959,10 @@
         {
           "occurrences": 8,
           "path": "src/historical-replay.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/projection.ts"
         }
       ],
       "invariants": [
@@ -78456,7 +78468,7 @@
           "path": "src/sparse-record.ts"
         },
         {
-          "occurrences": 140,
+          "occurrences": 141,
           "path": "src/storage.ts"
         },
         {
@@ -84115,7 +84127,7 @@
           "path": "src/sparse-record.ts"
         },
         {
-          "occurrences": 140,
+          "occurrences": 141,
           "path": "src/storage.ts"
         },
         {
@@ -95312,9 +95324,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:87281:abort",
+              "id": "src/storage.ts:87819:abort",
               "kind": "MethodDeclaration",
-              "line": 2093,
+              "line": 2108,
               "name": "abort",
               "reason": "interface-to-implementation"
             }
@@ -95323,9 +95335,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:87281:abort",
+            "id": "src/storage.ts:87819:abort",
             "kind": "MethodDeclaration",
-            "line": 2093,
+            "line": 2108,
             "name": "abort"
           },
           "test": "test/storage-conformance.test.ts"
@@ -95349,9 +95361,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:87281:abort",
+          "id": "src/storage.ts:87819:abort",
           "kind": "MethodDeclaration",
-          "line": 2093,
+          "line": 2108,
           "name": "abort"
         }
       ],

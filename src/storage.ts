@@ -1961,6 +1961,21 @@ export class InMemoryInventoryDurableStorage
         return false;
       }
     }
+    if (historicalEnvelope) {
+      // Historical plans may legitimately improve an existing recorded deficit.
+      // Route those rare signed rows through the canonical correction publisher.
+      for (const effect of event.stockEffects) {
+        const current = this.positionSegment.position(
+          inventoryStockPositionIdentity(effect.position)
+        );
+        if (
+          current !== undefined &&
+          current.measurements.primary.quantity.amountMinor < 0
+        ) {
+          return false;
+        }
+      }
+    }
     return true;
   }
 
