@@ -11,7 +11,10 @@ import {
   inventoryMetadataFingerprint,
 } from "./canonical.js";
 import type { InventoryCatalog } from "./catalog.js";
-import { applyInventoryRecordedDeficitBurden } from "./deficits.js";
+import {
+  applyInventoryRecordedDeficitBurden,
+  inventorySelectedDeficitPlacementNodeIds,
+} from "./deficits.js";
 import { assertInventoryEpochMilliseconds } from "./events.js";
 import { inventoryMeasurementAt } from "./measurements.js";
 import {
@@ -21,7 +24,6 @@ import {
   type ItemId,
   type PartyId,
 } from "./model.js";
-import { inventoryPlacementSubtreeNodeIds } from "./placement.js";
 import type { InventoryProjectionState } from "./projection.js";
 import {
   assertPositionInsideSelector,
@@ -1548,16 +1550,14 @@ function reservationFeasibilityPlacementNodeIds(
       includeEveryPlacementNode = true;
       continue;
     }
-    for (const placementNodeId of exactPlacementNodeIds ?? []) {
+    // Resolve only relevant direct deficit pools; large empty subtrees do not
+    // contribute capacity and must not trigger a descendant graph walk.
+    for (const placementNodeId of inventorySelectedDeficitPlacementNodeIds(
+      projection,
+      reservation.selector,
+      revisionId
+    )) {
       placementNodeIds.add(placementNodeId);
-    }
-    for (const rootNodeId of subtreeRootNodeIds ?? []) {
-      for (const placementNodeId of inventoryPlacementSubtreeNodeIds(
-        projection.placement,
-        rootNodeId
-      )) {
-        placementNodeIds.add(placementNodeId);
-      }
     }
   }
   if (includeEveryPlacementNode) {

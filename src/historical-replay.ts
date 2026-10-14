@@ -145,16 +145,6 @@ export function replayInventoryHistoricalScenario({
   );
   const actualDeficits = inventoryHistoricalDeficitIntervals(actualEvents);
   const proposedDeficits = inventoryHistoricalDeficitIntervals(effectiveEvents);
-  for (const deficit of proposedDeficits) {
-    if (deficit.position.serialId !== undefined) {
-      throw new InventoryHistoricalReplayConflictError({
-        code: "serialized-deficit",
-        message:
-          "Historical replay cannot represent a negative serialized resource; add/correct the missing identity event instead.",
-        eventId: deficit.startedByEventId,
-      });
-    }
-  }
   const actualDeficitFingerprints = new Set(
     actualDeficits.map(inventoryHistoricalDeficitFingerprint)
   );
@@ -165,6 +155,18 @@ export function replayInventoryHistoricalScenario({
         inventoryHistoricalDeficitFingerprint(deficit)
       )
   );
+  // An existing recorded serialized shortage is retained historical truth;
+  // only a newly exposed negative serialized interval is a new identity error.
+  for (const deficit of deficits) {
+    if (deficit.position.serialId !== undefined) {
+      throw new InventoryHistoricalReplayConflictError({
+        code: "serialized-deficit",
+        message:
+          "Historical replay cannot represent a negative serialized resource; add/correct the missing identity event instead.",
+        eventId: deficit.startedByEventId,
+      });
+    }
+  }
   if (deficitPolicy === InventoryDeficitPolicy.Reject && deficits.length !== 0) {
     // A pre-existing recorded interval is historical truth, not a new
     // Reject-policy failure; only a newly exposed interval is forbidden.

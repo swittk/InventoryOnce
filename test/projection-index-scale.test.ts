@@ -23,6 +23,7 @@ import {
   inventoryStockPositionIdentity,
   type InventoryStockPosition,
 } from "../src/model.js";
+import { inventoryPlacementSubtreeNodeIds } from "../src/placement.js";
 import { planInventoryAllocation } from "../src/picking.js";
 import {
   emptyInventoryProjectionState,
@@ -31,6 +32,10 @@ import {
 } from "../src/projection.js";
 import { parseQuantity } from "../src/quantity.js";
 import {
+  createInventoryReservation,
+  emptyInventoryReservationBook,
+  inspectInventoryReservationFeasibility,
+  InventoryReservationFeasibilityStatus,
   InventoryReservationOperationKind,
   InventoryReservationStatus,
   type InventoryReservation,
@@ -898,6 +903,35 @@ describe("canonical projection exact-placement index locality", () => {
     expect(empty.revisions[0]?.deficit.primary.quantity.amountMinor).toBe(0);
     expect(empty.revisions[0]?.onHand.primary.quantity.amountMinor).toBe(0);
     expect(descendantIndexProbes).toBeLessThan(40);
+
+    // A planner-produced broad reservation follows the same bounded item
+    // candidate path; it must never enumerate unrelated empty descendants.
+    const claim = createInventoryReservation({
+      catalog: createTabletCatalog(),
+      projection,
+      book: emptyInventoryReservationBook(),
+      reservation: {
+        reservationId: "subtree-bounded-claim",
+        operationId: "create-subtree-bounded-claim",
+        itemRevisionId: "item-a-v2",
+        selector: selected,
+        requested: parseQuantity("1", "piece"),
+        createdAtEpochMs: time0,
+      },
+      nowEpochMs: time0,
+    });
+    expect(claim.reservation.selector.withinPlacementNodeIds).toEqual([
+      "subtree-root",
+    ]);
+    const feasibility = inspectInventoryReservationFeasibility({
+      catalog: createTabletCatalog(),
+      projection,
+      book: claim.book,
+      atEpochMs: time0,
+    });
+    expect(feasibility.status).toBe(InventoryReservationFeasibilityStatus.Feasible);
+    expect(feasibility.groups[0]?.fulfillable.amountMinor).toBe(1);
+    expect(descendantIndexProbes).toBeLessThan(40);
   });
 
   it("falls back to the item index before traversing 100,000 irrelevant placement nodes", () => {
@@ -1074,6 +1108,10 @@ describe("canonical projection exact-placement index locality", () => {
         },
       },
     };
+    // The separately exported public subtree traversal keeps its exact
+    // deterministic parent-before-children ordering for direct callers.
+    expect(inventoryPlacementSubtreeNodeIds(nestedState.placement, "area-a"))
+      .toEqual(["area-a", "bin-0001", "bin-0032"]);
     positionReads = 0;
     const subtree = findInventoryPositions(nestedState, {
       itemId: "item-a",

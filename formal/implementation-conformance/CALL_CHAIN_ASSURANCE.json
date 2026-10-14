@@ -1,7 +1,7 @@
 {
   "counts": {
-    "callables": 3635,
-    "edges": 9743,
+    "callables": 3638,
+    "edges": 9763,
     "publicEntries": 617,
     "publicEntriesWithTargets": 617,
     "publicEntriesWithWitnesses": 617,
@@ -2074,40 +2074,40 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/record-key-domain.test.ts",
+                "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/record-key-domain.test.ts",
+                "id": "test-root:test/projection-index-scale.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/record-key-domain.test.ts"
+                "name": "test/projection-index-scale.test.ts"
               },
               {
-                "column": 61,
-                "file": "test/record-key-domain.test.ts",
+                "column": 65,
+                "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/record-key-domain.test.ts:12269:<anonymous@280>",
+                "id": "test/projection-index-scale.test.ts:28289:<anonymous@768>",
                 "kind": "ArrowFunction",
-                "line": 280,
-                "name": "<anonymous@280>",
+                "line": 768,
+                "name": "<anonymous@768>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 128,
-                "file": "test/record-key-domain.test.ts",
+                "column": 94,
+                "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/record-key-domain.test.ts:14881:<anonymous@309>",
+                "id": "test/projection-index-scale.test.ts:28390:<anonymous@769>",
                 "kind": "ArrowFunction",
-                "line": 309,
-                "name": "<anonymous@309>",
+                "line": 769,
+                "name": "<anonymous@769>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:8847:createInventoryReservation",
+                "id": "src/reservations.ts:8827:createInventoryReservation",
                 "kind": "FunctionDeclaration",
-                "line": 219,
+                "line": 221,
                 "name": "createInventoryReservation",
                 "reason": "resolved-call"
               },
@@ -2122,7 +2122,7 @@
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/record-key-domain.test.ts"
+            "test": "test/projection-index-scale.test.ts"
           }
         }
       ]
@@ -4698,40 +4698,40 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/record-key-domain.test.ts",
+                "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/record-key-domain.test.ts",
+                "id": "test-root:test/projection-index-scale.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/record-key-domain.test.ts"
+                "name": "test/projection-index-scale.test.ts"
               },
               {
-                "column": 61,
-                "file": "test/record-key-domain.test.ts",
+                "column": 65,
+                "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/record-key-domain.test.ts:12269:<anonymous@280>",
+                "id": "test/projection-index-scale.test.ts:28289:<anonymous@768>",
                 "kind": "ArrowFunction",
-                "line": 280,
-                "name": "<anonymous@280>",
+                "line": 768,
+                "name": "<anonymous@768>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 128,
-                "file": "test/record-key-domain.test.ts",
+                "column": 94,
+                "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/record-key-domain.test.ts:14881:<anonymous@309>",
+                "id": "test/projection-index-scale.test.ts:28390:<anonymous@769>",
                 "kind": "ArrowFunction",
-                "line": 309,
-                "name": "<anonymous@309>",
+                "line": 769,
+                "name": "<anonymous@769>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:8847:createInventoryReservation",
+                "id": "src/reservations.ts:8827:createInventoryReservation",
                 "kind": "FunctionDeclaration",
-                "line": 219,
+                "line": 221,
                 "name": "createInventoryReservation",
                 "reason": "resolved-call"
               },
@@ -4746,7 +4746,7 @@
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/record-key-domain.test.ts"
+            "test": "test/projection-index-scale.test.ts"
           }
         }
       ]
@@ -10385,9 +10385,9 @@
           "column": 1,
           "file": "src/reservations.ts",
           "hasBody": true,
-          "id": "src/reservations.ts:22104:allocateInventoryReservation",
+          "id": "src/reservations.ts:22084:allocateInventoryReservation",
           "kind": "FunctionDeclaration",
-          "line": 589,
+          "line": 591,
           "name": "allocateInventoryReservation"
         }
       ],
@@ -10398,9 +10398,9 @@
             "column": 1,
             "file": "src/reservations.ts",
             "hasBody": true,
-            "id": "src/reservations.ts:22104:allocateInventoryReservation",
+            "id": "src/reservations.ts:22084:allocateInventoryReservation",
             "kind": "FunctionDeclaration",
-            "line": 589,
+            "line": 591,
             "name": "allocateInventoryReservation"
           },
           "witness": {
@@ -10438,9 +10438,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:22104:allocateInventoryReservation",
+                "id": "src/reservations.ts:22084:allocateInventoryReservation",
                 "kind": "FunctionDeclaration",
-                "line": 589,
+                "line": 591,
                 "name": "allocateInventoryReservation",
                 "reason": "resolved-call"
               }
@@ -11226,9 +11226,9 @@
           "column": 1,
           "file": "src/reservations.ts",
           "hasBody": true,
-          "id": "src/reservations.ts:12462:assertInventoryReservationsFeasible",
+          "id": "src/reservations.ts:12442:assertInventoryReservationsFeasible",
           "kind": "FunctionDeclaration",
-          "line": 323,
+          "line": 325,
           "name": "assertInventoryReservationsFeasible"
         }
       ],
@@ -11239,49 +11239,49 @@
             "column": 1,
             "file": "src/reservations.ts",
             "hasBody": true,
-            "id": "src/reservations.ts:12462:assertInventoryReservationsFeasible",
+            "id": "src/reservations.ts:12442:assertInventoryReservationsFeasible",
             "kind": "FunctionDeclaration",
-            "line": 323,
+            "line": 325,
             "name": "assertInventoryReservationsFeasible"
           },
           "witness": {
             "chain": [
               {
                 "column": 1,
-                "file": "test/record-key-domain.test.ts",
+                "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/record-key-domain.test.ts",
+                "id": "test-root:test/projection-index-scale.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/record-key-domain.test.ts"
+                "name": "test/projection-index-scale.test.ts"
               },
               {
-                "column": 61,
-                "file": "test/record-key-domain.test.ts",
+                "column": 65,
+                "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/record-key-domain.test.ts:12269:<anonymous@280>",
+                "id": "test/projection-index-scale.test.ts:28289:<anonymous@768>",
                 "kind": "ArrowFunction",
-                "line": 280,
-                "name": "<anonymous@280>",
+                "line": 768,
+                "name": "<anonymous@768>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 128,
-                "file": "test/record-key-domain.test.ts",
+                "column": 94,
+                "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/record-key-domain.test.ts:14881:<anonymous@309>",
+                "id": "test/projection-index-scale.test.ts:28390:<anonymous@769>",
                 "kind": "ArrowFunction",
-                "line": 309,
-                "name": "<anonymous@309>",
+                "line": 769,
+                "name": "<anonymous@769>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:8847:createInventoryReservation",
+                "id": "src/reservations.ts:8827:createInventoryReservation",
                 "kind": "FunctionDeclaration",
-                "line": 219,
+                "line": 221,
                 "name": "createInventoryReservation",
                 "reason": "resolved-call"
               },
@@ -11289,14 +11289,14 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:12462:assertInventoryReservationsFeasible",
+                "id": "src/reservations.ts:12442:assertInventoryReservationsFeasible",
                 "kind": "FunctionDeclaration",
-                "line": 323,
+                "line": 325,
                 "name": "assertInventoryReservationsFeasible",
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/record-key-domain.test.ts"
+            "test": "test/projection-index-scale.test.ts"
           }
         }
       ]
@@ -11441,9 +11441,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:19384:refineInventoryReservation",
+                "id": "src/reservations.ts:19364:refineInventoryReservation",
                 "kind": "FunctionDeclaration",
-                "line": 502,
+                "line": 504,
                 "name": "refineInventoryReservation",
                 "reason": "resolved-call"
               },
@@ -14302,9 +14302,9 @@
           "column": 1,
           "file": "src/reservations.ts",
           "hasBody": true,
-          "id": "src/reservations.ts:8847:createInventoryReservation",
+          "id": "src/reservations.ts:8827:createInventoryReservation",
           "kind": "FunctionDeclaration",
-          "line": 219,
+          "line": 221,
           "name": "createInventoryReservation"
         }
       ],
@@ -14315,54 +14315,54 @@
             "column": 1,
             "file": "src/reservations.ts",
             "hasBody": true,
-            "id": "src/reservations.ts:8847:createInventoryReservation",
+            "id": "src/reservations.ts:8827:createInventoryReservation",
             "kind": "FunctionDeclaration",
-            "line": 219,
+            "line": 221,
             "name": "createInventoryReservation"
           },
           "witness": {
             "chain": [
               {
                 "column": 1,
-                "file": "test/record-key-domain.test.ts",
+                "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/record-key-domain.test.ts",
+                "id": "test-root:test/projection-index-scale.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/record-key-domain.test.ts"
+                "name": "test/projection-index-scale.test.ts"
               },
               {
-                "column": 61,
-                "file": "test/record-key-domain.test.ts",
+                "column": 65,
+                "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/record-key-domain.test.ts:12269:<anonymous@280>",
+                "id": "test/projection-index-scale.test.ts:28289:<anonymous@768>",
                 "kind": "ArrowFunction",
-                "line": 280,
-                "name": "<anonymous@280>",
+                "line": 768,
+                "name": "<anonymous@768>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 128,
-                "file": "test/record-key-domain.test.ts",
+                "column": 94,
+                "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/record-key-domain.test.ts:14881:<anonymous@309>",
+                "id": "test/projection-index-scale.test.ts:28390:<anonymous@769>",
                 "kind": "ArrowFunction",
-                "line": 309,
-                "name": "<anonymous@309>",
+                "line": 769,
+                "name": "<anonymous@769>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:8847:createInventoryReservation",
+                "id": "src/reservations.ts:8827:createInventoryReservation",
                 "kind": "FunctionDeclaration",
-                "line": 219,
+                "line": 221,
                 "name": "createInventoryReservation",
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/record-key-domain.test.ts"
+            "test": "test/projection-index-scale.test.ts"
           }
         }
       ]
@@ -16339,9 +16339,9 @@
           "column": 1,
           "file": "src/reservations.ts",
           "hasBody": true,
-          "id": "src/reservations.ts:8564:emptyInventoryReservationBook",
+          "id": "src/reservations.ts:8544:emptyInventoryReservationBook",
           "kind": "FunctionDeclaration",
-          "line": 211,
+          "line": 213,
           "name": "emptyInventoryReservationBook"
         }
       ],
@@ -16352,54 +16352,54 @@
             "column": 1,
             "file": "src/reservations.ts",
             "hasBody": true,
-            "id": "src/reservations.ts:8564:emptyInventoryReservationBook",
+            "id": "src/reservations.ts:8544:emptyInventoryReservationBook",
             "kind": "FunctionDeclaration",
-            "line": 211,
+            "line": 213,
             "name": "emptyInventoryReservationBook"
           },
           "witness": {
             "chain": [
               {
                 "column": 1,
-                "file": "test/record-key-domain.test.ts",
+                "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/record-key-domain.test.ts",
+                "id": "test-root:test/projection-index-scale.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/record-key-domain.test.ts"
+                "name": "test/projection-index-scale.test.ts"
               },
               {
-                "column": 44,
-                "file": "test/record-key-domain.test.ts",
+                "column": 65,
+                "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/record-key-domain.test.ts:1102:<anonymous@33>",
+                "id": "test/projection-index-scale.test.ts:28289:<anonymous@768>",
                 "kind": "ArrowFunction",
-                "line": 33,
-                "name": "<anonymous@33>",
+                "line": 768,
+                "name": "<anonymous@768>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 68,
-                "file": "test/record-key-domain.test.ts",
+                "column": 94,
+                "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/record-key-domain.test.ts:1177:<anonymous@34>",
+                "id": "test/projection-index-scale.test.ts:28390:<anonymous@769>",
                 "kind": "ArrowFunction",
-                "line": 34,
-                "name": "<anonymous@34>",
+                "line": 769,
+                "name": "<anonymous@769>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:8564:emptyInventoryReservationBook",
+                "id": "src/reservations.ts:8544:emptyInventoryReservationBook",
                 "kind": "FunctionDeclaration",
-                "line": 211,
+                "line": 213,
                 "name": "emptyInventoryReservationBook",
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/record-key-domain.test.ts"
+            "test": "test/projection-index-scale.test.ts"
           }
         }
       ]
@@ -16552,9 +16552,9 @@
           "column": 1,
           "file": "src/reservations.ts",
           "hasBody": true,
-          "id": "src/reservations.ts:25572:expireInventoryReservation",
+          "id": "src/reservations.ts:25552:expireInventoryReservation",
           "kind": "FunctionDeclaration",
-          "line": 698,
+          "line": 700,
           "name": "expireInventoryReservation"
         }
       ],
@@ -16565,9 +16565,9 @@
             "column": 1,
             "file": "src/reservations.ts",
             "hasBody": true,
-            "id": "src/reservations.ts:25572:expireInventoryReservation",
+            "id": "src/reservations.ts:25552:expireInventoryReservation",
             "kind": "FunctionDeclaration",
-            "line": 698,
+            "line": 700,
             "name": "expireInventoryReservation"
           },
           "witness": {
@@ -16625,9 +16625,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:25572:expireInventoryReservation",
+                "id": "src/reservations.ts:25552:expireInventoryReservation",
                 "kind": "FunctionDeclaration",
-                "line": 698,
+                "line": 700,
                 "name": "expireInventoryReservation",
                 "reason": "resolved-call"
               }
@@ -16818,20 +16818,20 @@
                 "column": 65,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:28071:<anonymous@763>",
+                "id": "test/projection-index-scale.test.ts:28289:<anonymous@768>",
                 "kind": "ArrowFunction",
-                "line": 763,
-                "name": "<anonymous@763>",
+                "line": 768,
+                "name": "<anonymous@768>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 91,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:33134:<anonymous@903>",
+                "id": "test/projection-index-scale.test.ts:34445:<anonymous@937>",
                 "kind": "ArrowFunction",
-                "line": 903,
-                "name": "<anonymous@903>",
+                "line": 937,
+                "name": "<anonymous@937>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -16856,9 +16856,9 @@
           "column": 1,
           "file": "src/reservations.ts",
           "hasBody": true,
-          "id": "src/reservations.ts:13323:inspectInventoryReservationFeasibility",
+          "id": "src/reservations.ts:13303:inspectInventoryReservationFeasibility",
           "kind": "FunctionDeclaration",
-          "line": 350,
+          "line": 352,
           "name": "inspectInventoryReservationFeasibility"
         }
       ],
@@ -16869,9 +16869,9 @@
             "column": 1,
             "file": "src/reservations.ts",
             "hasBody": true,
-            "id": "src/reservations.ts:13323:inspectInventoryReservationFeasibility",
+            "id": "src/reservations.ts:13303:inspectInventoryReservationFeasibility",
             "kind": "FunctionDeclaration",
-            "line": 350,
+            "line": 352,
             "name": "inspectInventoryReservationFeasibility"
           },
           "witness": {
@@ -16889,39 +16889,29 @@
                 "column": 65,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:28071:<anonymous@763>",
+                "id": "test/projection-index-scale.test.ts:28289:<anonymous@768>",
                 "kind": "ArrowFunction",
-                "line": 763,
-                "name": "<anonymous@763>",
+                "line": 768,
+                "name": "<anonymous@768>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 94,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:28172:<anonymous@764>",
+                "id": "test/projection-index-scale.test.ts:28390:<anonymous@769>",
                 "kind": "ArrowFunction",
-                "line": 764,
-                "name": "<anonymous@764>",
+                "line": 769,
+                "name": "<anonymous@769>",
                 "reason": "external-callback-dispatch"
-              },
-              {
-                "column": 1,
-                "file": "src/availability.ts",
-                "hasBody": true,
-                "id": "src/availability.ts:6545:summarizeInventoryAvailability",
-                "kind": "FunctionDeclaration",
-                "line": 150,
-                "name": "summarizeInventoryAvailability",
-                "reason": "resolved-call"
               },
               {
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:13323:inspectInventoryReservationFeasibility",
+                "id": "src/reservations.ts:13303:inspectInventoryReservationFeasibility",
                 "kind": "FunctionDeclaration",
-                "line": 350,
+                "line": 352,
                 "name": "inspectInventoryReservationFeasibility",
                 "reason": "resolved-call"
               }
@@ -17061,20 +17051,20 @@
                 "column": 47,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:12784:<anonymous@381>",
+                "id": "test/projection-index-scale.test.ts:13002:<anonymous@386>",
                 "kind": "ArrowFunction",
-                "line": 381,
-                "name": "<anonymous@381>",
+                "line": 386,
+                "name": "<anonymous@386>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 95,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:19675:<anonymous@554>",
+                "id": "test/projection-index-scale.test.ts:19893:<anonymous@559>",
                 "kind": "ArrowFunction",
-                "line": 554,
-                "name": "<anonymous@554>",
+                "line": 559,
+                "name": "<anonymous@559>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -20035,20 +20025,20 @@
                 "column": 65,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:28071:<anonymous@763>",
+                "id": "test/projection-index-scale.test.ts:28289:<anonymous@768>",
                 "kind": "ArrowFunction",
-                "line": 763,
-                "name": "<anonymous@763>",
+                "line": 768,
+                "name": "<anonymous@768>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 91,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:33134:<anonymous@903>",
+                "id": "test/projection-index-scale.test.ts:34445:<anonymous@937>",
                 "kind": "ArrowFunction",
-                "line": 903,
-                "name": "<anonymous@903>",
+                "line": 937,
+                "name": "<anonymous@937>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -20227,61 +20217,21 @@
                 "column": 65,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:28071:<anonymous@763>",
+                "id": "test/projection-index-scale.test.ts:28289:<anonymous@768>",
                 "kind": "ArrowFunction",
-                "line": 763,
-                "name": "<anonymous@763>",
+                "line": 768,
+                "name": "<anonymous@768>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 94,
+                "column": 88,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:28172:<anonymous@764>",
+                "id": "test/projection-index-scale.test.ts:36901:<anonymous@1003>",
                 "kind": "ArrowFunction",
-                "line": 764,
-                "name": "<anonymous@764>",
+                "line": 1003,
+                "name": "<anonymous@1003>",
                 "reason": "external-callback-dispatch"
-              },
-              {
-                "column": 1,
-                "file": "src/availability.ts",
-                "hasBody": true,
-                "id": "src/availability.ts:6545:summarizeInventoryAvailability",
-                "kind": "FunctionDeclaration",
-                "line": 150,
-                "name": "summarizeInventoryAvailability",
-                "reason": "resolved-call"
-              },
-              {
-                "column": 1,
-                "file": "src/reservations.ts",
-                "hasBody": true,
-                "id": "src/reservations.ts:13323:inspectInventoryReservationFeasibility",
-                "kind": "FunctionDeclaration",
-                "line": 350,
-                "name": "inspectInventoryReservationFeasibility",
-                "reason": "resolved-call"
-              },
-              {
-                "column": 1,
-                "file": "src/reservations.ts",
-                "hasBody": true,
-                "id": "src/reservations.ts:38623:reservationGroupFeasibility",
-                "kind": "FunctionDeclaration",
-                "line": 1059,
-                "name": "reservationGroupFeasibility",
-                "reason": "resolved-call"
-              },
-              {
-                "column": 1,
-                "file": "src/reservations.ts",
-                "hasBody": true,
-                "id": "src/reservations.ts:54382:reservationFeasibilityPlacementNodeIds",
-                "kind": "FunctionDeclaration",
-                "line": 1518,
-                "name": "reservationFeasibilityPlacementNodeIds",
-                "reason": "resolved-call"
               },
               {
                 "column": 1,
@@ -20338,20 +20288,20 @@
                 "column": 47,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:12784:<anonymous@381>",
+                "id": "test/projection-index-scale.test.ts:13002:<anonymous@386>",
                 "kind": "ArrowFunction",
-                "line": 381,
-                "name": "<anonymous@381>",
+                "line": 386,
+                "name": "<anonymous@386>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 95,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:19675:<anonymous@554>",
+                "id": "test/projection-index-scale.test.ts:19893:<anonymous@559>",
                 "kind": "ArrowFunction",
-                "line": 554,
-                "name": "<anonymous@554>",
+                "line": 559,
+                "name": "<anonymous@559>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -20429,20 +20379,20 @@
                 "column": 65,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:28071:<anonymous@763>",
+                "id": "test/projection-index-scale.test.ts:28289:<anonymous@768>",
                 "kind": "ArrowFunction",
-                "line": 763,
-                "name": "<anonymous@763>",
+                "line": 768,
+                "name": "<anonymous@768>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 94,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:28172:<anonymous@764>",
+                "id": "test/projection-index-scale.test.ts:28390:<anonymous@769>",
                 "kind": "ArrowFunction",
-                "line": 764,
-                "name": "<anonymous@764>",
+                "line": 769,
+                "name": "<anonymous@769>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -20487,9 +20437,9 @@
           "column": 1,
           "file": "src/reservations.ts",
           "hasBody": true,
-          "id": "src/reservations.ts:17576:inventoryReservationIsActiveAt",
+          "id": "src/reservations.ts:17556:inventoryReservationIsActiveAt",
           "kind": "FunctionDeclaration",
-          "line": 467,
+          "line": 469,
           "name": "inventoryReservationIsActiveAt"
         }
       ],
@@ -20500,9 +20450,9 @@
             "column": 1,
             "file": "src/reservations.ts",
             "hasBody": true,
-            "id": "src/reservations.ts:17576:inventoryReservationIsActiveAt",
+            "id": "src/reservations.ts:17556:inventoryReservationIsActiveAt",
             "kind": "FunctionDeclaration",
-            "line": 467,
+            "line": 469,
             "name": "inventoryReservationIsActiveAt"
           },
           "witness": {
@@ -20520,20 +20470,20 @@
                 "column": 65,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:28071:<anonymous@763>",
+                "id": "test/projection-index-scale.test.ts:28289:<anonymous@768>",
                 "kind": "ArrowFunction",
-                "line": 763,
-                "name": "<anonymous@763>",
+                "line": 768,
+                "name": "<anonymous@768>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 94,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:28172:<anonymous@764>",
+                "id": "test/projection-index-scale.test.ts:28390:<anonymous@769>",
                 "kind": "ArrowFunction",
-                "line": 764,
-                "name": "<anonymous@764>",
+                "line": 769,
+                "name": "<anonymous@769>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -20550,9 +20500,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:17576:inventoryReservationIsActiveAt",
+                "id": "src/reservations.ts:17556:inventoryReservationIsActiveAt",
                 "kind": "FunctionDeclaration",
-                "line": 467,
+                "line": 469,
                 "name": "inventoryReservationIsActiveAt",
                 "reason": "resolved-call"
               }
@@ -20568,9 +20518,9 @@
           "column": 1,
           "file": "src/reservations.ts",
           "hasBody": true,
-          "id": "src/reservations.ts:15760:inventoryReservationsAt",
+          "id": "src/reservations.ts:15740:inventoryReservationsAt",
           "kind": "FunctionDeclaration",
-          "line": 420,
+          "line": 422,
           "name": "inventoryReservationsAt"
         }
       ],
@@ -20581,9 +20531,9 @@
             "column": 1,
             "file": "src/reservations.ts",
             "hasBody": true,
-            "id": "src/reservations.ts:15760:inventoryReservationsAt",
+            "id": "src/reservations.ts:15740:inventoryReservationsAt",
             "kind": "FunctionDeclaration",
-            "line": 420,
+            "line": 422,
             "name": "inventoryReservationsAt"
           },
           "witness": {
@@ -20621,9 +20571,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:15760:inventoryReservationsAt",
+                "id": "src/reservations.ts:15740:inventoryReservationsAt",
                 "kind": "FunctionDeclaration",
-                "line": 420,
+                "line": 422,
                 "name": "inventoryReservationsAt",
                 "reason": "resolved-call"
               }
@@ -20965,20 +20915,20 @@
                 "column": 65,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:28071:<anonymous@763>",
+                "id": "test/projection-index-scale.test.ts:28289:<anonymous@768>",
                 "kind": "ArrowFunction",
-                "line": 763,
-                "name": "<anonymous@763>",
+                "line": 768,
+                "name": "<anonymous@768>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 94,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:28172:<anonymous@764>",
+                "id": "test/projection-index-scale.test.ts:28390:<anonymous@769>",
                 "kind": "ArrowFunction",
-                "line": 764,
-                "name": "<anonymous@764>",
+                "line": 769,
+                "name": "<anonymous@769>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -21036,20 +20986,20 @@
                 "column": 65,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:28071:<anonymous@763>",
+                "id": "test/projection-index-scale.test.ts:28289:<anonymous@768>",
                 "kind": "ArrowFunction",
-                "line": 763,
-                "name": "<anonymous@763>",
+                "line": 768,
+                "name": "<anonymous@768>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 91,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:33134:<anonymous@903>",
+                "id": "test/projection-index-scale.test.ts:34445:<anonymous@937>",
                 "kind": "ArrowFunction",
-                "line": 903,
-                "name": "<anonymous@903>",
+                "line": 937,
+                "name": "<anonymous@937>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -21137,9 +21087,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:19384:refineInventoryReservation",
+                "id": "src/reservations.ts:19364:refineInventoryReservation",
                 "kind": "FunctionDeclaration",
-                "line": 502,
+                "line": 504,
                 "name": "refineInventoryReservation",
                 "reason": "resolved-call"
               },
@@ -21380,9 +21330,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:19384:refineInventoryReservation",
+                "id": "src/reservations.ts:19364:refineInventoryReservation",
                 "kind": "FunctionDeclaration",
-                "line": 502,
+                "line": 504,
                 "name": "refineInventoryReservation",
                 "reason": "resolved-call"
               },
@@ -21944,9 +21894,9 @@
           "column": 1,
           "file": "src/reservations.ts",
           "hasBody": true,
-          "id": "src/reservations.ts:27941:markInventoryReservationConsumed",
+          "id": "src/reservations.ts:27921:markInventoryReservationConsumed",
           "kind": "FunctionDeclaration",
-          "line": 760,
+          "line": 762,
           "name": "markInventoryReservationConsumed"
         }
       ],
@@ -21957,9 +21907,9 @@
             "column": 1,
             "file": "src/reservations.ts",
             "hasBody": true,
-            "id": "src/reservations.ts:27941:markInventoryReservationConsumed",
+            "id": "src/reservations.ts:27921:markInventoryReservationConsumed",
             "kind": "FunctionDeclaration",
-            "line": 760,
+            "line": 762,
             "name": "markInventoryReservationConsumed"
           },
           "witness": {
@@ -21997,9 +21947,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:27941:markInventoryReservationConsumed",
+                "id": "src/reservations.ts:27921:markInventoryReservationConsumed",
                 "kind": "FunctionDeclaration",
-                "line": 760,
+                "line": 762,
                 "name": "markInventoryReservationConsumed",
                 "reason": "resolved-call"
               }
@@ -23263,20 +23213,20 @@
                 "column": 47,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:12784:<anonymous@381>",
+                "id": "test/projection-index-scale.test.ts:13002:<anonymous@386>",
                 "kind": "ArrowFunction",
-                "line": 381,
-                "name": "<anonymous@381>",
+                "line": 386,
+                "name": "<anonymous@386>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 95,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:19675:<anonymous@554>",
+                "id": "test/projection-index-scale.test.ts:19893:<anonymous@559>",
                 "kind": "ArrowFunction",
-                "line": 554,
-                "name": "<anonymous@554>",
+                "line": 559,
+                "name": "<anonymous@559>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -24212,9 +24162,9 @@
           "column": 1,
           "file": "src/reservations.ts",
           "hasBody": true,
-          "id": "src/reservations.ts:19384:refineInventoryReservation",
+          "id": "src/reservations.ts:19364:refineInventoryReservation",
           "kind": "FunctionDeclaration",
-          "line": 502,
+          "line": 504,
           "name": "refineInventoryReservation"
         }
       ],
@@ -24225,9 +24175,9 @@
             "column": 1,
             "file": "src/reservations.ts",
             "hasBody": true,
-            "id": "src/reservations.ts:19384:refineInventoryReservation",
+            "id": "src/reservations.ts:19364:refineInventoryReservation",
             "kind": "FunctionDeclaration",
-            "line": 502,
+            "line": 504,
             "name": "refineInventoryReservation"
           },
           "witness": {
@@ -24265,9 +24215,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:19384:refineInventoryReservation",
+                "id": "src/reservations.ts:19364:refineInventoryReservation",
                 "kind": "FunctionDeclaration",
-                "line": 502,
+                "line": 504,
                 "name": "refineInventoryReservation",
                 "reason": "resolved-call"
               }
@@ -24283,9 +24233,9 @@
           "column": 1,
           "file": "src/reservations.ts",
           "hasBody": true,
-          "id": "src/reservations.ts:24292:releaseInventoryReservation",
+          "id": "src/reservations.ts:24272:releaseInventoryReservation",
           "kind": "FunctionDeclaration",
-          "line": 658,
+          "line": 660,
           "name": "releaseInventoryReservation"
         }
       ],
@@ -24296,9 +24246,9 @@
             "column": 1,
             "file": "src/reservations.ts",
             "hasBody": true,
-            "id": "src/reservations.ts:24292:releaseInventoryReservation",
+            "id": "src/reservations.ts:24272:releaseInventoryReservation",
             "kind": "FunctionDeclaration",
-            "line": 658,
+            "line": 660,
             "name": "releaseInventoryReservation"
           },
           "witness": {
@@ -24336,9 +24286,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:24292:releaseInventoryReservation",
+                "id": "src/reservations.ts:24272:releaseInventoryReservation",
                 "kind": "FunctionDeclaration",
-                "line": 658,
+                "line": 660,
                 "name": "releaseInventoryReservation",
                 "reason": "resolved-call"
               }
@@ -24965,20 +24915,20 @@
                 "column": 65,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:28071:<anonymous@763>",
+                "id": "test/projection-index-scale.test.ts:28289:<anonymous@768>",
                 "kind": "ArrowFunction",
-                "line": 763,
-                "name": "<anonymous@763>",
+                "line": 768,
+                "name": "<anonymous@768>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 94,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:28172:<anonymous@764>",
+                "id": "test/projection-index-scale.test.ts:28390:<anonymous@769>",
                 "kind": "ArrowFunction",
-                "line": 764,
-                "name": "<anonymous@764>",
+                "line": 769,
+                "name": "<anonymous@769>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -29687,20 +29637,20 @@
                 "column": 47,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:12784:<anonymous@381>",
+                "id": "test/projection-index-scale.test.ts:13002:<anonymous@386>",
                 "kind": "ArrowFunction",
-                "line": 381,
-                "name": "<anonymous@381>",
+                "line": 386,
+                "name": "<anonymous@386>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 95,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:19675:<anonymous@554>",
+                "id": "test/projection-index-scale.test.ts:19893:<anonymous@559>",
                 "kind": "ArrowFunction",
-                "line": 554,
-                "name": "<anonymous@554>",
+                "line": 559,
+                "name": "<anonymous@559>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -31034,20 +30984,20 @@
                 "column": 47,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:12784:<anonymous@381>",
+                "id": "test/projection-index-scale.test.ts:13002:<anonymous@386>",
                 "kind": "ArrowFunction",
-                "line": 381,
-                "name": "<anonymous@381>",
+                "line": 386,
+                "name": "<anonymous@386>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 95,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:19675:<anonymous@554>",
+                "id": "test/projection-index-scale.test.ts:19893:<anonymous@559>",
                 "kind": "ArrowFunction",
-                "line": 554,
-                "name": "<anonymous@554>",
+                "line": 559,
+                "name": "<anonymous@559>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -31125,20 +31075,20 @@
                 "column": 65,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:28071:<anonymous@763>",
+                "id": "test/projection-index-scale.test.ts:28289:<anonymous@768>",
                 "kind": "ArrowFunction",
-                "line": 763,
-                "name": "<anonymous@763>",
+                "line": 768,
+                "name": "<anonymous@768>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 94,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:28172:<anonymous@764>",
+                "id": "test/projection-index-scale.test.ts:28390:<anonymous@769>",
                 "kind": "ArrowFunction",
-                "line": 764,
-                "name": "<anonymous@764>",
+                "line": 769,
+                "name": "<anonymous@769>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -32380,20 +32330,20 @@
                 "column": 47,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:12784:<anonymous@381>",
+                "id": "test/projection-index-scale.test.ts:13002:<anonymous@386>",
                 "kind": "ArrowFunction",
-                "line": 381,
-                "name": "<anonymous@381>",
+                "line": 386,
+                "name": "<anonymous@386>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 95,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:19675:<anonymous@554>",
+                "id": "test/projection-index-scale.test.ts:19893:<anonymous@559>",
                 "kind": "ArrowFunction",
-                "line": 554,
-                "name": "<anonymous@554>",
+                "line": 559,
+                "name": "<anonymous@559>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -33981,20 +33931,20 @@
                 "column": 65,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:28071:<anonymous@763>",
+                "id": "test/projection-index-scale.test.ts:28289:<anonymous@768>",
                 "kind": "ArrowFunction",
-                "line": 763,
-                "name": "<anonymous@763>",
+                "line": 768,
+                "name": "<anonymous@768>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 94,
                 "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/projection-index-scale.test.ts:28172:<anonymous@764>",
+                "id": "test/projection-index-scale.test.ts:28390:<anonymous@769>",
                 "kind": "ArrowFunction",
-                "line": 764,
-                "name": "<anonymous@764>",
+                "line": 769,
+                "name": "<anonymous@769>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -49928,5 +49878,5 @@
     }
   },
   "schemaVersion": 1,
-  "surfaceSha256": "33fa778f0e7f18197312bbbb91bda4fe70e4f14d827609af8f1b2cd8d3e64910"
+  "surfaceSha256": "2d614527e43764f1be35e3dabef25c3b8160bd3aef6286004f030ac09a78eb45"
 }

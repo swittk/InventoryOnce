@@ -683,6 +683,72 @@ describe("late historical repair", () => {
     ).rejects.toThrow("changed intent");
   });
 
+  it("preserves a recorded serialized deficit interval when correcting a later unrelated serial receipt under Reject", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const recorder = createTestInventory(
+      storage,
+      undefined,
+      undefined,
+      InventoryDeficitPolicy.Record
+    );
+    const serial = loosePosition("serial-store", { serialId: "RECORDED-OLD-SHORTAGE" });
+    await recorder.stock.issue({
+      operationId: "recorded-old-serial-shortage",
+      occurredAtEpochMs: time0,
+      from: serial,
+      amount: stockAmount("1", "piece"),
+    });
+    await recorder.stock.receive({
+      operationId: "settle-old-serial-shortage",
+      occurredAtEpochMs: time1,
+      to: serial,
+      amount: stockAmount("1", "piece"),
+    });
+    const later = await recorder.stock.receive({
+      operationId: "later-separate-serial-receipt",
+      occurredAtEpochMs: time2,
+      to: serial,
+      amount: stockAmount("1", "piece"),
+    });
+
+    // The previously recorded negative interval remains unchanged. Only the
+    // later positive receipt's placement was wrong, so no new shortfall exists.
+    const strict = createTestInventory(storage);
+    const plan = await strict.stock.planCorrection({
+      operationId: "correct-later-serial-placement",
+      occurredAtEpochMs: time3,
+      correctsEventId: later.event.eventId,
+      reason: "The received serial was placed in the adjacent bin.",
+      replaceWith: (plans) =>
+        plans.receive({
+          occurredAtEpochMs: time2,
+          to: loosePosition("adjacent-bin", { serialId: "RECORDED-OLD-SHORTAGE" }),
+          amount: stockAmount("1", "piece"),
+        }),
+    });
+    if (!plan.valid) throw new Error(plan.conflict.code + ": " + plan.conflict.message);
+    expect(plan.valid).toBe(true);
+    expect(plan.event.historicalImpact?.deficits).toEqual([]);
+
+    const corrected = await strict.stock.correct({
+      operationId: "correct-later-serial-placement",
+      occurredAtEpochMs: time3,
+      correctsEventId: later.event.eventId,
+      reason: "The received serial was placed in the adjacent bin.",
+      replaceWith: (plans) =>
+        plans.receive({
+          occurredAtEpochMs: time2,
+          to: loosePosition("adjacent-bin", { serialId: "RECORDED-OLD-SHORTAGE" }),
+          amount: stockAmount("1", "piece"),
+        }),
+    });
+    expect(corrected.event.kind).toBe(InventoryEventKind.Correction);
+    const serialRows = await strict.read.positions({ itemId: "item-a" });
+    expect(serialRows).toHaveLength(1);
+    expect(serialRows[0]?.key.placementNodeId).toBe("adjacent-bin");
+    expect(serialRows[0]?.measurements.primary.quantity.amountMinor).toBe(1);
+  });
+
   it("rejects a negative serialized historical assertion even under Record policy", async () => {
     const inventory = createTestInventory(
       undefined,
