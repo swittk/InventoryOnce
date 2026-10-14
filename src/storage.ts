@@ -96,7 +96,23 @@ function cloneInventoryPublishedWorld(world: InventoryWorldState): InventoryWorl
       ...cloned.projection,
       positionIdsByItemId: cloneInventorySparseRecord(cloned.projection.positionIdsByItemId),
       positionIdsByItemRevisionId: cloneInventorySparseRecord(cloned.projection.positionIdsByItemRevisionId),
+      positionIdsByPlacementNodeId: cloneInventorySparseRecord(
+        cloned.projection.positionIdsByPlacementNodeId
+      ),
       positionIdsByWhereaboutsId: cloneInventorySparseRecord(cloned.projection.positionIdsByWhereaboutsId),
+      placementNodes: cloneInventorySparseRecord(cloned.projection.placementNodes),
+      placementNodeRootEventIdByNodeId: cloneInventorySparseRecord(
+        cloned.projection.placementNodeRootEventIdByNodeId
+      ),
+      placement: {
+        ...cloned.projection.placement,
+        relationByNodeId: cloneInventorySparseRecord(
+          cloned.projection.placement.relationByNodeId
+        ),
+        childNodeIdsByParentNodeId: cloneInventorySparseRecord(
+          cloned.projection.placement.childNodeIdsByParentNodeId
+        ),
+      },
       lotIdentitiesByItemId: cloneInventorySparseRecord(cloned.projection.lotIdentitiesByItemId),
       placementNodeIdByEmbodiedSerialIdentity: cloneInventorySparseRecord(
         cloned.projection.placementNodeIdByEmbodiedSerialIdentity

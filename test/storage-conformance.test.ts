@@ -88,6 +88,34 @@ it("canonicalizes nested compact and migration plan values independently of obje
   );
 });
 
+it("preserves prototype-free placement indexes on public published-world reads", async () => {
+  const storage = createInMemoryInventoryDurableStorage();
+  const inventory = createTestInventory(storage);
+  /** Check all five application-key placement dictionaries in a published snapshot. */
+  const assertOwnOnlyPlacementIndexes = (world: InventoryWorldState) => {
+    const projection = world.projection;
+    const dictionaries = [
+      projection.positionIdsByPlacementNodeId,
+      projection.placementNodes,
+      projection.placementNodeRootEventIdByNodeId,
+      projection.placement.relationByNodeId,
+      projection.placement.childNodeIdsByParentNodeId,
+    ];
+    for (const dictionary of dictionaries) {
+      expect(Object.getPrototypeOf(dictionary)).toBeNull();
+      expect(Reflect.get(dictionary, "constructor")).toBeUndefined();
+    }
+  };
+  assertOwnOnlyPlacementIndexes(await storage.readWorld());
+  await inventory.stock.receive({
+    operationId: "published-own-only-placement-indexes",
+    occurredAtEpochMs: time0,
+    to: loosePosition("published-store"),
+    amount: stockAmount("2", "piece"),
+  });
+  assertOwnOnlyPlacementIndexes(await storage.readWorld());
+});
+
 it("keeps reference-adapter published worlds deeply immutable and identity-stable", async () => {
   const storage = createInMemoryInventoryDurableStorage();
   const inventory = createTestInventory(storage);
