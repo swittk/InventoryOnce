@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   InventoryAllocationMethod,
   InventoryDeficitPolicy,
+  InventoryOptionalIdentityConstraintKind,
   InventoryReservationFeasibilityStatus,
   inventoryStockSelector,
   parseQuantity,
@@ -207,6 +208,45 @@ describe("truthful native availability read model", () => {
       unallocatedUsablePhysical: { amountMinor: 0 },
     });
   });
+
+  it("keeps detached recorded deficit separate from unrelated placed deficit", async () => {
+    const inventory = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
+    await inventory.stock.receive({
+      operationId: "avail-absent-receive", occurredAtEpochMs: time0,
+      to: loosePosition("store-a"), amount: stockAmount("2", "piece"),
+    });
+    await inventory.stock.detach({
+      operationId: "avail-absent-detach", occurredAtEpochMs: time1,
+      from: loosePosition("store-a"), amount: stockAmount("2", "piece"),
+    });
+    const detached = (await inventory.read.whereabouts())[0]?.currentPositions[0];
+    if (detached === undefined) throw new Error("Expected detached position.");
+    await inventory.stock.issue({
+      operationId: "avail-absent-overissue", occurredAtEpochMs: time2,
+      from: detached.key, amount: stockAmount("5", "piece"),
+    });
+    await inventory.stock.issue({
+      operationId: "avail-placed-shortage", occurredAtEpochMs: time3,
+      from: loosePosition("store-b"), amount: stockAmount("7", "piece"),
+    });
+    /** Read one revision under exact placement-presence or wildcard selection. */
+    const read = async (kind?: InventoryOptionalIdentityConstraintKind) =>
+      inventory.read.availability(
+        inventoryStockSelector("item-a", {
+          itemRevisionIds: ["item-a-v2"],
+          ...(kind === undefined ? {} : { placement: { kind } }),
+        }),
+        time3
+      );
+    const absent = (await read(InventoryOptionalIdentityConstraintKind.Absent)).revisions[0];
+    const present = (await read(InventoryOptionalIdentityConstraintKind.Present)).revisions[0];
+    const broad = (await read()).revisions[0];
+    expect(absent?.deficit.primary.quantity.amountMinor).toBe(3);
+    expect(absent?.onHand.primary.quantity.amountMinor).toBe(-3);
+    expect(present?.deficit.primary.quantity.amountMinor).toBe(7);
+    expect(broad?.deficit.primary.quantity.amountMinor).toBe(10);
+  });
+
 
   it("attributes one location deficit once across exact-lot availability rows", async () => {
     const inventory = createTestInventory(

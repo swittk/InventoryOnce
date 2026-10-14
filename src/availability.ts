@@ -51,6 +51,8 @@ import {
   inventoryStockPositionMatchesSelector,
   inventoryStockSelectorIdentity,
   normalizeInventoryStockSelector,
+  InventoryOptionalIdentityConstraintKind,
+  type InventoryOptionalIdentityConstraint,
   type InventoryStockSelector,
 } from "./selectors.js";
 import {
@@ -440,6 +442,7 @@ function summarizeAvailabilityRevision({
   const deficit = availabilitySelectedDeficitBurdenMeasurements({
     projection,
     item,
+    placement: selector.placement,
     placementNodeIds,
     poolPositions,
     selectedPositions: positions,
@@ -449,6 +452,7 @@ function summarizeAvailabilityRevision({
   const usableDeficit = availabilitySelectedDeficitBurdenMeasurements({
     projection,
     item,
+    placement: selector.placement,
     placementNodeIds,
     poolPositions,
     selectedPositions: positions,
@@ -538,6 +542,8 @@ interface AvailabilitySelectedDeficitBurdenInput {
   readonly projection: InventoryProjectionState;
   /** Exact item revision and all configured measurement axes. */
   readonly item: InventoryItemDefinitionRevision;
+  /** Explicit normalized placement presence/absence constraint. */
+  readonly placement: InventoryOptionalIdentityConstraint | undefined;
   /** Direct-placement pools owning the deficit. */
   readonly placementNodeIds: readonly string[];
   /** Deterministically ordered positive/negative positions in the whole pool. */
@@ -557,6 +563,7 @@ interface AvailabilitySelectedDeficitBurdenInput {
 function availabilitySelectedDeficitBurdenMeasurements({
   projection,
   item,
+  placement,
   placementNodeIds,
   poolPositions,
   selectedPositions,
@@ -564,7 +571,12 @@ function availabilitySelectedDeficitBurdenMeasurements({
   usableOnly,
 }: AvailabilitySelectedDeficitBurdenInput): InventoryMeasurementVector {
   if (selectedPositions.some(inventoryPositionIsDeficit)) {
-    return availabilityPoolDeficitMeasurements(projection, item, placementNodeIds);
+    return availabilityPoolDeficitMeasurements(
+      projection,
+      item,
+      placementNodeIds,
+      placement
+    );
   }
   const selectedPositionIds = new Set(
     selectedPositions.map(
@@ -690,13 +702,19 @@ function availabilitySelectedDeficitAxisBurden({
   return selectedBurden;
 }
 
-/** Sum positive deficit magnitude across the pools used by allocation. */
+/** Sum deficits in selected placement pools, preserving the unconstrained wildcard. */
 function availabilityPoolDeficitMeasurements(
   projection: InventoryProjectionState,
   item: InventoryItemDefinitionRevision,
-  placementNodeIds: readonly string[]
+  placementNodeIds: readonly string[],
+  placement: InventoryOptionalIdentityConstraint | undefined
 ): InventoryMeasurementVector {
   const selectedLocations = new Set(placementNodeIds);
+  // Explicit absence/presence cannot be inferred from an empty placement-node set.
+  const absentOnly =
+    placement?.kind === InventoryOptionalIdentityConstraintKind.Absent;
+  const presentOnly =
+    placement?.kind === InventoryOptionalIdentityConstraintKind.Present;
   let deficit = zeroInventoryMeasurementsForItem(item);
   for (const positionIdentity of inventorySparseRecordValue(
     projection.positionIdsByItemRevisionId,
@@ -708,10 +726,12 @@ function availabilityPoolDeficitMeasurements(
         `Inventory availability index references missing position '${positionIdentity}'.`
       );
     }
+    const nodeId = position.key.placementNodeId;
     if (
-      placementNodeIds.length > 0 &&
-      (position.key.placementNodeId === undefined ||
-        !selectedLocations.has(position.key.placementNodeId))
+      (absentOnly && nodeId !== undefined) ||
+      (presentOnly && nodeId === undefined) ||
+      (placementNodeIds.length > 0 &&
+        (nodeId === undefined || !selectedLocations.has(nodeId)))
     ) continue;
     const measurements = inventoryPositionDeficitMeasurements(position);
     if (measurements === undefined) continue;
