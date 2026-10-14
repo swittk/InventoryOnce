@@ -6,6 +6,7 @@ import type {
 import {
   applyInventoryRecordedDeficitBurden,
   inventoryRecordedDeficitPoolSelector,
+  inventorySelectedDeficitPlacementNodeIds,
   inventoryPositionDeficitMeasurements,
   inventoryPositionIsDeficit,
 } from "./deficits.js";
@@ -28,7 +29,6 @@ import {
   findInventoryPositions,
   type InventoryProjectionState,
 } from "./projection.js";
-import { inventoryPlacementSubtreeNodeIds } from "./placement.js";
 import { inventorySparseRecordValue } from "./sparse-record.js";
 import {
   addQuantity,
@@ -274,7 +274,7 @@ function summarizeAvailabilityRevision({
   let expiredOnHand = zeroInventoryMeasurementsForItem(item);
   let exactlyAllocatedUsable = zeroQuantity(reservationAxis.unit);
   let exactlyAllocatedExpired = zeroQuantity(reservationAxis.unit);
-  const placementNodeIds = availabilityPoolPlacementNodeIds(
+  const placementNodeIds = inventorySelectedDeficitPlacementNodeIds(
     projection,
     selector,
     revisionId
@@ -512,28 +512,6 @@ interface MutableInventoryPositionAvailability
   extends Omit<InventoryPositionAvailability, "unallocatedUsablePhysical"> {
   /** Positive claim-adjusted capacity before direct-placement-pool deficit burden. */
   readonly rawUnallocatedUsablePhysical: Quantity;
-}
-
-/** Resolve every direct-placement pool selected for this item revision. */
-function availabilityPoolPlacementNodeIds(
-  projection: InventoryProjectionState,
-  selector: InventoryStockSelector,
-  _revisionId: ItemRevisionId
-): readonly string[] {
-  if (selector.placementNodeIds !== undefined) return selector.placementNodeIds;
-  if (selector.withinPlacementNodeIds === undefined) return [];
-  const placementNodeIds = new Set<string>();
-  for (const rootNodeId of selector.withinPlacementNodeIds) {
-    for (const nodeId of inventoryPlacementSubtreeNodeIds(
-      projection.placement,
-      rootNodeId
-    )) {
-      placementNodeIds.add(nodeId);
-    }
-  }
-  const ordered = [...placementNodeIds];
-  ordered.sort();
-  return ordered;
 }
 
 /** Inputs for attributing one direct-placement-pool deficit to a selected physical subset. */

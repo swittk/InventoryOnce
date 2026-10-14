@@ -718,7 +718,7 @@ describe("append-only corrections", () => {
             amount: stockAmount("5", "piece"),
           }),
       })
-    ).rejects.toThrow(/primary quantity must not be negative/u);
+    ).rejects.toThrow(/Historical replay would expose a new negative stock interval/u);
     expect(
       (await inventory.read.positions({ itemId: "item-a" }))[0]?.measurements
         .primary.quantity.amountMinor

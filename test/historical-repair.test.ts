@@ -25,6 +25,119 @@ export const FORMAL_IMPLEMENTATION_TRACE_IDS = [
 ] as const;
 
 describe("late historical repair", () => {
+  it("allows a Reject-policy correction that does not change a retained recorded deficit", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const recorder = createTestInventory(
+      storage,
+      undefined,
+      undefined,
+      InventoryDeficitPolicy.Record
+    );
+    await recorder.stock.issue({
+      operationId: "retained-deficit-initial-issue",
+      occurredAtEpochMs: time0,
+      from: loosePosition("historical-shortage"),
+      amount: stockAmount("5", "piece"),
+    });
+    const unrelated = await recorder.stock.receive({
+      operationId: "retained-deficit-unrelated-receipt",
+      occurredAtEpochMs: time1,
+      to: loosePosition("historical-shortage"),
+      amount: stockAmount("8", "piece"),
+    });
+
+    // A new strict facade over the same supported persisted stock must prevent
+    // new deficits, not misclassify the already-recorded shortage as new.
+    const strict = createTestInventory(storage);
+    const corrected = await strict.stock.planCorrection({
+      operationId: "retained-deficit-safe-correction",
+      occurredAtEpochMs: time3,
+      correctsEventId: unrelated.event.eventId,
+      reason: "Receipt was seven pieces, still sufficient to close the old shortage.",
+      replaceWith: (plans) =>
+        plans.receive({
+          occurredAtEpochMs: time1,
+          to: loosePosition("historical-shortage"),
+          amount: stockAmount("7", "piece"),
+        }),
+    });
+    if (!corrected.valid) throw new Error(corrected.conflict.code + ": " + corrected.conflict.message);
+    expect(corrected.valid).toBe(true);
+    expect(corrected.event.historicalImpact?.deficits).toEqual([]);
+
+    const stillUnsafe = await strict.stock.planCorrection({
+      operationId: "retained-deficit-worsened-correction",
+      occurredAtEpochMs: time3,
+      correctsEventId: unrelated.event.eventId,
+      reason: "This would leave the old shortage unresolved.",
+      replaceWith: (plans) =>
+        plans.receive({
+          occurredAtEpochMs: time1,
+          to: loosePosition("historical-shortage"),
+          amount: stockAmount("4", "piece"),
+        }),
+    });
+    expect(stillUnsafe).toMatchObject({
+      valid: false,
+      conflict: { code: "negative-stock" },
+    });
+
+    // An interval can retain its old peak and still become MORE negative now.
+    // Reject must not mistake a worsened current shortage for unchanged history.
+    const openStorage = createInMemoryInventoryDurableStorage();
+    const openRecorder = createTestInventory(
+      openStorage,
+      undefined,
+      undefined,
+      InventoryDeficitPolicy.Record
+    );
+    await openRecorder.stock.issue({
+      operationId: "ongoing-deficit-initial-issue",
+      occurredAtEpochMs: time0,
+      from: loosePosition("ongoing-shortage"),
+      amount: stockAmount("5", "piece"),
+    });
+    const partialRepayment = await openRecorder.stock.receive({
+      operationId: "ongoing-deficit-partial-receipt",
+      occurredAtEpochMs: time1,
+      to: loosePosition("ongoing-shortage"),
+      amount: stockAmount("3", "piece"),
+    });
+    const strictOnOpen = createTestInventory(openStorage);
+    const improvement = await strictOnOpen.stock.planCorrection({
+      operationId: "ongoing-deficit-improves-correction",
+      occurredAtEpochMs: time3,
+      correctsEventId: partialRepayment.event.eventId,
+      reason: "A little more was received, reducing the old shortage.",
+      replaceWith: (plans) =>
+        plans.receive({
+          occurredAtEpochMs: time1,
+          to: loosePosition("ongoing-shortage"),
+          amount: stockAmount("4", "piece"),
+        }),
+    });
+    expect(improvement.valid).toBe(true);
+    if (!improvement.valid) throw new Error(improvement.conflict.message);
+    expect(improvement.impact.deficits).toEqual([]);
+
+    const worsening = await strictOnOpen.stock.planCorrection({
+      operationId: "ongoing-deficit-worsened-correction",
+      occurredAtEpochMs: time3,
+      correctsEventId: partialRepayment.event.eventId,
+      reason: "The already open shortage would become worse.",
+      replaceWith: (plans) =>
+        plans.receive({
+          occurredAtEpochMs: time1,
+          to: loosePosition("ongoing-shortage"),
+          amount: stockAmount("2", "piece"),
+        }),
+    });
+    expect(worsening).toMatchObject({
+      valid: false,
+      conflict: { code: "negative-stock" },
+    });
+  });
+
   it("publishes eligible repair and correction envelopes without the canonical coordinator", async () => {
     const storage = createInMemoryInventoryDurableStorage();
     const inventory = createTestInventory(storage);

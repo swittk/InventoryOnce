@@ -10,6 +10,7 @@ import {
   stockAmount,
 } from "../src/index.js";
 import { summarizeInventoryAvailability } from "../src/availability.js";
+import { inventorySelectedDeficitPlacementNodeIds } from "../src/deficits.js";
 import {
   InventoryEventKind,
   InventoryTraceabilityRelationAction,
@@ -760,6 +761,145 @@ describe("projection index real-world scale", () => {
 
 
 describe("canonical projection exact-placement index locality", () => {
+  it("limits subtree deficit pools to occupied revision nodes for availability and picking", async () => {
+    const world = await createTestInventory().read.world();
+    const positions: Record<string, InventoryStockPosition> = Object.create(null);
+    const ids: string[] = [];
+    const positiveLayers: Record<string, number> = Object.create(null);
+    const outsideIds: string[] = [];
+    const onePiece: InventoryStockPosition["measurements"] = {
+      primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") },
+      independent: [],
+    };
+    for (let index = 0; index < 5_000; index += 1) {
+      const key = {
+        itemId: "item-a",
+        itemRevisionId: "item-a-v2",
+        placementNodeId: "outside-warehouse",
+        lotId: "OTHER-" + String(index).padStart(6, "0"),
+      };
+      const id = inventoryStockPositionIdentity(key);
+      positions[id] = { key, measurements: onePiece };
+      ids.push(id);
+      outsideIds.push(id);
+      positiveLayers[id] = time0;
+    }
+    const children: string[] = [];
+    const relationByNodeId: Record<string, {
+      nodeId: string;
+      parentNodeId: string;
+      createdByEventId: string;
+    }> = Object.create(null);
+    for (let index = 0; index < 10_000; index += 1) {
+      const nodeId = "subtree-empty-" + String(index).padStart(5, "0");
+      children.push(nodeId);
+      relationByNodeId[nodeId] = {
+        nodeId,
+        parentNodeId: "subtree-root",
+        createdByEventId: "valid-topology-event",
+      };
+    }
+    const leafKey = {
+      itemId: "item-a",
+      itemRevisionId: "item-a-v2",
+      placementNodeId: children[0]!,
+    };
+    const leafId = inventoryStockPositionIdentity(leafKey);
+    positions[leafId] = { key: leafKey, measurements: onePiece };
+    ids.push(leafId);
+    positiveLayers[leafId] = time0;
+
+    // This unrelated recorded shortage must never leak into the selected
+    // subtree, even when that subtree contains no matching item positions.
+    const deficitKey = {
+      itemId: "item-a",
+      itemRevisionId: "item-a-v2",
+      placementNodeId: "outside-warehouse",
+      lotId: "OTHER-NEGATIVE",
+    };
+    const deficitId = inventoryStockPositionIdentity(deficitKey);
+    positions[deficitId] = {
+      key: deficitKey,
+      measurements: {
+        primary: { axisId: "pieces", quantity: parseQuantity("-3", "piece") },
+        independent: [],
+      },
+    };
+    ids.push(deficitId);
+    outsideIds.push(deficitId);
+    ids.sort();
+    outsideIds.sort();
+
+    let descendantIndexProbes = 0;
+    const childIndex = new Proxy(
+      { "subtree-root": children },
+      {
+        /** Reject any walk of unrelated empty descendants, not noisy clock timings. */
+        getOwnPropertyDescriptor(target, key) {
+          descendantIndexProbes += 1;
+          if (descendantIndexProbes > 40) {
+            throw new Error("Subtree deficit query traversed unrelated empty nodes.");
+          }
+          return Reflect.getOwnPropertyDescriptor(target, key);
+        },
+      }
+    );
+    const projection = {
+      ...world.projection,
+      positions,
+      positionIdsByItemId: { "item-a": ids },
+      positionIdsByItemRevisionId: { "item-a-v2": ids },
+      positionIdsByPlacementNodeId: {
+        "outside-warehouse": outsideIds,
+        [leafKey.placementNodeId]: [leafId],
+      },
+      positiveLayerStartedAtEpochMsByPositionId: positiveLayers,
+      placement: {
+        relationByNodeId,
+        childNodeIdsByParentNodeId: childIndex,
+      },
+    };
+    const selected = inventoryStockSelector("item-a", {
+      itemRevisionIds: ["item-a-v2"],
+      withinPlacementNodeIds: ["subtree-root"],
+    });
+    const available = summarizeInventoryAvailability({
+      catalog: createTabletCatalog(),
+      projection,
+      reservations: world.reservations,
+      selector: selected,
+      atEpochMs: time0,
+    });
+    expect(available.revisions[0]?.onHand.primary.quantity.amountMinor).toBe(1);
+    expect(available.revisions[0]?.deficit.primary.quantity.amountMinor).toBe(0);
+
+    const plan = planInventoryAllocation({
+      catalog: createTabletCatalog(),
+      world: { ...world, projection },
+      selector: selected,
+      amount: stockAmount("1", "piece"),
+      method: InventoryAllocationMethod.Fifo,
+      atEpochMs: time0,
+    });
+    expect(plan.lines).toHaveLength(1);
+    expect(plan.shortfall.amountMinor).toBe(0);
+    expect(plan.recordedDeficit.amountMinor).toBe(0);
+
+    const empty = summarizeInventoryAvailability({
+      catalog: createTabletCatalog(),
+      projection,
+      reservations: world.reservations,
+      selector: inventoryStockSelector("item-a", {
+        itemRevisionIds: ["item-a-v2"],
+        withinPlacementNodeIds: ["no-stock-subtree"],
+      }),
+      atEpochMs: time0,
+    });
+    expect(empty.revisions[0]?.deficit.primary.quantity.amountMinor).toBe(0);
+    expect(empty.revisions[0]?.onHand.primary.quantity.amountMinor).toBe(0);
+    expect(descendantIndexProbes).toBeLessThan(40);
+  });
+
   it("falls back to the item index before traversing 100,000 irrelevant placement nodes", () => {
     const positions: Record<string, InventoryStockPosition> = Object.create(null);
     const itemPositionIds: string[] = [];
@@ -897,6 +1037,20 @@ describe("canonical projection exact-placement index locality", () => {
     });
     expect(exactOne).toHaveLength(100);
     expect(positionReads).toBe(100);
+
+    // Deficit-pool selection must also use the bounded subtree index: a
+    // tiny bin inside 100k same-item positions cannot scan all 50k v3 rows.
+    positionReads = 0;
+    const narrowDeficitPools = inventorySelectedDeficitPlacementNodeIds(
+      state,
+      inventoryStockSelector("item-a", {
+        itemRevisionIds: ["item-a-v3"],
+        withinPlacementNodeIds: ["bin-0001"],
+      }),
+      "item-a-v3"
+    );
+    expect(narrowDeficitPools).toEqual(["bin-0001"]);
+    expect(positionReads).toBeLessThanOrEqual(200);
 
     // Both roots designate the same physical bin through overlapping
     // ancestor/descendant selection. The returned rows must not double-count.

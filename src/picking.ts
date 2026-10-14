@@ -22,6 +22,7 @@ import {
 import {
   applyInventoryRecordedDeficitBurden,
   inventoryRecordedDeficitPoolSelector,
+  inventorySelectedDeficitPlacementNodeIds,
 } from "./deficits.js";
 import { assertInventoryEpochMilliseconds } from "./events.js";
 import {
@@ -36,7 +37,6 @@ import {
   type ItemRevisionId,
 } from "./model.js";
 import type { InventoryProjectionState } from "./projection.js";
-import { inventoryPlacementSubtreeNodeIds } from "./placement.js";
 import { inventorySparseRecordValue } from "./sparse-record.js";
 import {
   addQuantity,
@@ -174,7 +174,7 @@ export function planInventoryAllocation({
     resolved.measurements.primary.quantity,
     "Inventory allocation request"
   );
-  const deficitPlacementNodeIds = selectedPolicyPlacementNodeIds(
+  const deficitPlacementNodeIds = inventorySelectedDeficitPlacementNodeIds(
     world.projection,
     selected.selector,
     selected.item.revisionId
@@ -433,28 +433,6 @@ function applyPolicyAllocationDeficitBurden({
     uncoveredDeficit: burden.uncoveredDeficit,
     expiredStockWasExcluded,
   };
-}
-
-/** Resolve every direct placement whose signed pool is selected by this policy request. */
-function selectedPolicyPlacementNodeIds(
-  projection: InventoryProjectionState,
-  selector: InventoryStockSelector,
-  _itemRevisionId: ItemRevisionId
-): readonly string[] {
-  if (selector.placementNodeIds !== undefined) return selector.placementNodeIds;
-  if (selector.withinPlacementNodeIds === undefined) return [];
-  const placementNodeIds = new Set<string>();
-  for (const rootNodeId of selector.withinPlacementNodeIds) {
-    for (const nodeId of inventoryPlacementSubtreeNodeIds(
-      projection.placement,
-      rootNodeId
-    )) {
-      placementNodeIds.add(nodeId);
-    }
-  }
-  const ordered = [...placementNodeIds];
-  ordered.sort();
-  return ordered;
 }
 
 /** Inputs for constructing one exact policy-allocation candidate snapshot. */

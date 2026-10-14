@@ -9,7 +9,10 @@ import {
   type InventoryStockPositionKey,
   type ItemRevisionId,
 } from "./model.js";
-import type { InventoryProjectionState } from "./projection.js";
+import {
+  findInventoryPositions,
+  type InventoryProjectionState,
+} from "./projection.js";
 import { inventorySparseRecordValue } from "./sparse-record.js";
 import {
   inventoryStockSelector,
@@ -79,8 +82,46 @@ export function inventoryRecordedDeficitPoolSelector(
 ): InventoryStockSelector {
   return inventoryStockSelector(selector.itemId, {
     itemRevisionIds: [itemRevisionId],
-    ...(placementNodeIds.length === 0 ? {} : { placementNodeIds }),
+    // Keep subtree ancestry as a predicate: expanding every descendant into
+    // Allowed values turns one warehouse read into quadratic list matching.
+    ...(selector.placementNodeIds === undefined &&
+    selector.withinPlacementNodeIds !== undefined
+      ? { withinPlacementNodeIds: selector.withinPlacementNodeIds }
+      : placementNodeIds.length === 0
+        ? {}
+        : { placementNodeIds }),
   });
+}
+
+/**
+ * Limit deficit pools to direct nodes holding this item revision, without
+ * traversing unrelated empty descendants. Include roots so an empty subtree
+ * never becomes the unconstrained empty-list wildcard.
+ */
+export function inventorySelectedDeficitPlacementNodeIds(
+  projection: InventoryProjectionState,
+  selector: InventoryStockSelector,
+  itemRevisionId: ItemRevisionId
+): readonly string[] {
+  if (selector.placementNodeIds !== undefined) return selector.placementNodeIds;
+  const roots = selector.withinPlacementNodeIds;
+  if (roots === undefined) return [];
+  const selected = new Set<string>(roots);
+  // Reuse the projection's bounded subtree-vs-item index chooser: a small
+  // subtree of a huge item must not scan every unrelated item position,
+  // while a huge empty subtree must not walk all unrelated placement nodes.
+  const occupied = findInventoryPositions(
+    projection,
+    inventoryStockSelector(selector.itemId, {
+      itemRevisionIds: [itemRevisionId],
+      withinPlacementNodeIds: roots,
+    })
+  );
+  for (const position of occupied) {
+    const nodeId = position.key.placementNodeId;
+    if (nodeId !== undefined) selected.add(nodeId);
+  }
+  return [...selected].sort();
 }
 
 /** Return whether one signed projected position is an explicit recorded deficit. */

@@ -30,6 +30,7 @@ import { inventoryTraceabilityRelationIdentity } from "./traceability.js";
 import { compareQuantity, zeroQuantity } from "./quantity.js";
 import type { InventoryCatalog } from "./catalog.js";
 import { inventoryEventDependencyKeys } from "./event-query.js";
+import { inventorySparseRecordValue } from "./sparse-record.js";
 
 /** Machine-readable reason one proposed historical scenario cannot become inventory truth. */
 export type InventoryHistoricalReplayConflictCode =
@@ -154,29 +155,23 @@ export function replayInventoryHistoricalScenario({
       });
     }
   }
-  if (
-    deficitPolicy === InventoryDeficitPolicy.Reject &&
-    proposedDeficits.length !== 0
-  ) {
-    const first = proposedDeficits[0]!;
-    try {
-      projectInventoryEvents({
-        catalog,
-        events: effectiveEvents,
-        deficitPolicy: InventoryDeficitPolicy.Reject,
-      });
-    } catch (error) {
-      throw new InventoryHistoricalReplayConflictError({
-        code: "negative-stock",
-        message: error instanceof Error ? error.message : String(error),
-        eventId: first.startedByEventId,
-      });
-    }
+  const actualDeficitFingerprints = new Set(
+    actualDeficits.map(inventoryHistoricalDeficitFingerprint)
+  );
+  const deficits = proposedDeficits.filter(
+    /** Retain only deficit intervals newly exposed by the proposed history. */
+    (deficit) =>
+      !actualDeficitFingerprints.has(
+        inventoryHistoricalDeficitFingerprint(deficit)
+      )
+  );
+  if (deficitPolicy === InventoryDeficitPolicy.Reject && deficits.length !== 0) {
+    // A pre-existing recorded interval is historical truth, not a new
+    // Reject-policy failure; only a newly exposed interval is forbidden.
     throw new InventoryHistoricalReplayConflictError({
       code: "negative-stock",
-      message:
-        "Historical replay exposed a deficit that Reject policy did not reject.",
-      eventId: first.startedByEventId,
+      message: "Historical replay would expose a new negative stock interval.",
+      eventId: deficits[0]!.startedByEventId,
     });
   }
   let actualProjection: InventoryProjectionState;
@@ -200,16 +195,31 @@ export function replayInventoryHistoricalScenario({
       message: error instanceof Error ? error.message : String(error),
     });
   }
-  const actualDeficitFingerprints = new Set(
-    actualDeficits.map(inventoryHistoricalDeficitFingerprint)
-  );
-  const deficits = proposedDeficits.filter(
-    /** Retain only deficit intervals newly exposed by the proposed history. */
-    (deficit) =>
-      !actualDeficitFingerprints.has(
-        inventoryHistoricalDeficitFingerprint(deficit)
-      )
-  );
+  if (deficitPolicy === InventoryDeficitPolicy.Reject) {
+    // An already-open interval may retain its historical peak while a changed
+    // receipt deepens the current shortage. Reject this new burden using only
+    // indexed positions for open intervals, not a second full-history replay.
+    for (const interval of proposedDeficits) {
+      if (interval.endedByEventId !== undefined) continue;
+      const positionId = inventoryStockPositionIdentity(interval.position);
+      const before = inventorySparseRecordValue(
+        actualProjection.positions,
+        positionId
+      )?.measurements.primary.quantity;
+      const after = inventorySparseRecordValue(
+        desired.positions,
+        positionId
+      )?.measurements.primary.quantity;
+      if (after !== undefined &&
+        (before === undefined || compareQuantity(after, before) < 0)) {
+        throw new InventoryHistoricalReplayConflictError({
+          code: "negative-stock",
+          message: "Historical replay would deepen an existing recorded shortage.",
+          ...(rootReplacement === undefined ? {} : { eventId: rootReplacement.rootEventId }),
+        });
+      }
+    }
+  }
   return {
     actualProjection,
     projection: desired,
