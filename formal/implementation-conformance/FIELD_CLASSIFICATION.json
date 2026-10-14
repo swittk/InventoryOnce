@@ -15779,6 +15779,30 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
+    "InMemoryInventoryDurableStorage.activeReservationCountsByItemId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/storage.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "Map<string, number>",
+      "executableEvidence": [
+        "test/formal-storage-refinement.test.ts",
+        "test/storage-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS",
+        "RepairLiveness"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
     "InMemoryInventoryDurableStorage.applyingMigrationManifests": {
       "allowsNull": false,
       "allowsUndefined": false,
@@ -15923,6 +15947,30 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
+    "InMemoryInventoryDurableStorage.openCountCountsByItemId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/storage.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "Map<string, number>",
+      "executableEvidence": [
+        "test/formal-storage-refinement.test.ts",
+        "test/storage-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS",
+        "RepairLiveness"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
     "InMemoryInventoryDurableStorage.operations": {
       "allowsNull": false,
       "allowsUndefined": false,
@@ -16042,54 +16090,6 @@
       "gaps": [],
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
-    },
-    "InMemoryInventoryDurableStorage.protectedCountItemIds": {
-      "allowsNull": false,
-      "allowsUndefined": false,
-      "callSignatures": [],
-      "callable": false,
-      "classification": "identity/retry-semantic",
-      "declaration": "src/storage.ts",
-      "directions": [
-        "output"
-      ],
-      "discoveredType": "Set<string>",
-      "executableEvidence": [
-        "test/formal-storage-refinement.test.ts",
-        "test/storage-conformance.test.ts"
-      ],
-      "formalModels": [
-        "InventoryOperation",
-        "PublishedHeadCAS",
-        "RepairLiveness"
-      ],
-      "gaps": [],
-      "optional": false,
-      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
-    },
-    "InMemoryInventoryDurableStorage.protectedReservationItemIds": {
-      "allowsNull": false,
-      "allowsUndefined": false,
-      "callSignatures": [],
-      "callable": false,
-      "classification": "identity/retry-semantic",
-      "declaration": "src/storage.ts",
-      "directions": [
-        "output"
-      ],
-      "discoveredType": "Set<string>",
-      "executableEvidence": [
-        "test/formal-storage-refinement.test.ts",
-        "test/storage-conformance.test.ts"
-      ],
-      "formalModels": [
-        "InventoryOperation",
-        "PublishedHeadCAS",
-        "RepairLiveness"
-      ],
-      "gaps": [],
-      "optional": false,
-      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
     "InMemoryInventoryDurableStorage.publishedPositionReader": {
       "allowsNull": false,
@@ -66295,5 +66295,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "b45f4dcca671e84c1fd1b7a9866ca15a5c8fefd230711eca1f28d8d3edf2a3b4"
+  "surfaceSha256": "68b3f71ebe769d22d0427e6ce779b315c809958a984dc2902fdb1182c1979cc5"
 }

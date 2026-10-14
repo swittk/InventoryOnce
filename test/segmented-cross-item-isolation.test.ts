@@ -171,6 +171,122 @@ describe("segmented writes with unrelated reservation/count scopes", () => {
     const canonical = await storage.readWorld();
     expect(canonical.revision).toBe(before + 1);
   });
+  /** A stock-only canonical publication must not reread unchanged archived claim/count books. */
+  it("does not rescan retained claim and count books for canonical stock-only publication", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage);
+    await inventory.stock.receive({
+      operationId: "scope-archive-receive",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store"),
+      amount: stockAmount("3", "piece"),
+    });
+    await inventory.reservations.reserve({
+      reservationId: "scope-archive-reservation",
+      operationId: "scope-archive-reserve",
+      itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a" },
+      requested: parseQuantity("1", "piece"),
+      createdAtEpochMs: time1,
+    });
+    await inventory.reservations.release({
+      operationId: "scope-archive-release",
+      reservationId: "scope-archive-reservation",
+      occurredAtEpochMs: time2,
+    });
+    await inventory.counts.start({
+      operationId: "scope-archive-count-start",
+      countId: "scope-archive-count",
+      selector: { itemId: "item-a" },
+      startedAtEpochMs: time1,
+    });
+    await inventory.counts.abandon({
+      operationId: "scope-archive-count-abandon",
+      countId: "scope-archive-count",
+      occurredAtEpochMs: time2,
+      reason: "Physical count discontinued.",
+    });
+
+    const before = await storage.readWorld();
+    const reservationRows = before.reservations.reservations;
+    const countRows = before.counts.counts;
+    let reservationScans = 0;
+    let countScans = 0;
+    const originalValues = Object.values;
+    const spy = vi.spyOn(Object, "values").mockImplementation((record) => {
+      if (record === reservationRows) reservationScans += 1;
+      if (record === countRows) countScans += 1;
+      return originalValues(record);
+    });
+    try {
+      // Scrap is a canonical command, but it changes no reservation/count row.
+      await inventory.stock.scrap({
+        operationId: "scope-archive-canonical-scrap",
+        occurredAtEpochMs: time3,
+        from: loosePosition("store"),
+        amount: stockAmount("1", "piece"),
+        reason: "Damaged item.",
+      });
+    } finally {
+      spy.mockRestore();
+    }
+    expect({ reservationScans, countScans }).toEqual({
+      reservationScans: 0,
+      countScans: 0,
+    });
+    expect((await inventory.read.positions({ itemId: "item-a" }))[0]
+      ?.measurements.primary.quantity.amountMinor).toBe(2);
+  });
+
+  it("keeps the second reservation protected when the first of two closes", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage);
+    await inventory.stock.receive({
+      operationId: "paired-reserve-receive", occurredAtEpochMs: time0,
+      to: loosePosition("store"), amount: stockAmount("4", "piece"),
+    });
+    for (const reservationId of ["paired-first", "paired-second"]) {
+      await inventory.reservations.reserve({
+        reservationId, operationId: reservationId + "-create",
+        itemRevisionId: "item-a-v2", selector: { itemId: "item-a" },
+        requested: parseQuantity("1", "piece"), createdAtEpochMs: time1,
+      });
+    }
+    await inventory.reservations.release({
+      operationId: "paired-first-close", reservationId: "paired-first",
+      occurredAtEpochMs: time2,
+    });
+    const spy = vi.spyOn(storage, "readWorld").mockRejectedValue(
+      new Error("Remaining claim requires canonical evaluation.")
+    );
+    try {
+      await expect(inventory.stock.transfer({
+        operationId: "paired-move-blocked", occurredAtEpochMs: time3,
+        from: loosePosition("store"), toPlacementNodeId: "room",
+        amount: stockAmount("1", "piece"),
+      })).rejects.toThrow("Remaining claim requires canonical evaluation.");
+    } finally {
+      spy.mockRestore();
+    }
+    await inventory.reservations.release({
+      operationId: "paired-second-close", reservationId: "paired-second",
+      occurredAtEpochMs: time3,
+    });
+    const readWorld = vi.spyOn(storage, "readWorld").mockRejectedValue(
+      new Error("Terminal claim forced canonical fallback.")
+    );
+    try {
+      await inventory.stock.transfer({
+        operationId: "paired-move-after-close", occurredAtEpochMs: time3,
+        from: loosePosition("store"), toPlacementNodeId: "room",
+        amount: stockAmount("1", "piece"),
+      });
+      expect(readWorld).not.toHaveBeenCalled();
+    } finally {
+      readWorld.mockRestore();
+    }
+  });
+
   it("does not let a released historical reservation permanently disable the item fast path", async () => {
     const storage = createInMemoryInventoryDurableStorage();
     const inventory = createTestInventory(storage);

@@ -640,10 +640,10 @@ export class InMemoryInventoryDurableStorage
     string,
     InventoryMigrationManifest
   >();
-  /** Items with retained reservation scopes requiring canonical claim-feasibility validation. */
-  private protectedReservationItemIds = new Set<string>();
-  /** Items with retained physical-count scopes requiring canonical count semantics. */
-  private protectedCountItemIds = new Set<string>();
+  /** Number of currently active reservations per item, independent of terminal history. */
+  private activeReservationCountsByItemId = new Map<string, number>();
+  /** Number of started or observed physical counts per item, independent of terminal history. */
+  private openCountCountsByItemId = new Map<string, number>();
   /** Optional deterministic failure injector. */
   private readonly failpoint: InventoryStorageFailpoint | undefined;
   /** Serializes reference-adapter mutations so concurrent callers cannot overwrite stale state. */
@@ -1369,6 +1369,7 @@ export class InMemoryInventoryDurableStorage
         this.eventJournal.validateAppend(appendEvent);
       }
       const publishedWorld = freezeInventoryPublishedWorld(nextWorld);
+      const baseWorld = this.world;
       this.publishPositionSegment(publishedWorld, plan.event);
       if (
         publishedWorld.projection.placement !== this.world.projection.placement
@@ -1383,7 +1384,11 @@ export class InMemoryInventoryDurableStorage
         this.eventJournal.append(appendEvent);
       }
       this.world = publishedWorld;
-      this.refreshProtectedItemScopes(publishedWorld);
+      // Only changed claim/count rows affect these private item-level fences.
+      // Stock-only publication must not traverse retained terminal history.
+      if (plan.reservationDelta !== undefined || plan.countDelta !== undefined) {
+        this.updateProtectedItemScopesFromPlan(plan, baseWorld);
+      }
       this.storeOperation(operationId, { value: publishedValue });
       await this.fire(
         InventoryStorageWriteStage.PublishWorld,
@@ -1504,8 +1509,8 @@ export class InMemoryInventoryDurableStorage
       this.failpoint !== undefined ||
       this.applyingOperations.size !== 0 ||
       this.applyingMigrationManifests.size !== 0 ||
-      this.protectedReservationItemIds.size !== 0 ||
-      this.protectedCountItemIds.size !== 0
+      this.activeReservationCountsByItemId.size !== 0 ||
+      this.openCountCountsByItemId.size !== 0
     ) {
       return undefined;
     }
@@ -1934,8 +1939,8 @@ export class InMemoryInventoryDurableStorage
     // planning. Conservative same-item fallback remains unchanged.
     for (const effect of event.stockEffects) {
       if (
-        this.protectedReservationItemIds.has(effect.position.itemId) ||
-        this.protectedCountItemIds.has(effect.position.itemId)
+        this.activeReservationCountsByItemId.has(effect.position.itemId) ||
+        this.openCountCountsByItemId.has(effect.position.itemId)
       ) {
         return false;
       }
@@ -1943,25 +1948,89 @@ export class InMemoryInventoryDurableStorage
     return true;
   }
 
-  /** Rebuild only the item-scope fences when canonical claim/count books publish. */
+  /** Rebuild private protection counters on initialization and whole-world migration. */
   private refreshProtectedItemScopes(world: InventoryWorldState): void {
-    const reservationItemIds = new Set<string>();
+    const reservations = new Map<string, number>();
     for (const reservation of Object.values(world.reservations.reservations)) {
-      if (reservation.status === InventoryReservationStatus.Active) {
-        reservationItemIds.add(reservation.selector.itemId);
-      }
+      if (reservation.status !== InventoryReservationStatus.Active) continue;
+      const itemId = reservation.selector.itemId;
+      reservations.set(itemId, (reservations.get(itemId) ?? 0) + 1);
     }
-    const countItemIds = new Set<string>();
+    const counts = new Map<string, number>();
     for (const count of Object.values(world.counts.counts)) {
       if (
-        count.status === InventoryCountStatus.Started ||
-        count.status === InventoryCountStatus.Observed
-      ) {
-        countItemIds.add(count.selector.itemId);
-      }
+        count.status !== InventoryCountStatus.Started &&
+        count.status !== InventoryCountStatus.Observed
+      ) continue;
+      const itemId = count.selector.itemId;
+      counts.set(itemId, (counts.get(itemId) ?? 0) + 1);
     }
-    this.protectedReservationItemIds = reservationItemIds;
-    this.protectedCountItemIds = countItemIds;
+    this.activeReservationCountsByItemId = reservations;
+    this.openCountCountsByItemId = counts;
+  }
+
+  /** Apply the one validated claim/count lifecycle delta without traversing history. */
+  private updateProtectedItemScopesFromPlan(
+    plan: InventoryDurableOperationPlan,
+    base: InventoryWorldState
+  ): void {
+    const nextReservation = plan.reservationDelta?.reservation;
+    if (nextReservation !== undefined) {
+      const previous = inventorySparseRecordValue(
+        base.reservations.reservations,
+        nextReservation.reservationId
+      );
+      this.updateActiveItemCount(
+        this.activeReservationCountsByItemId,
+        previous?.status === InventoryReservationStatus.Active
+          ? previous.selector.itemId
+          : undefined,
+        nextReservation.status === InventoryReservationStatus.Active
+          ? nextReservation.selector.itemId
+          : undefined
+      );
+    }
+    const nextCount = plan.countDelta?.count;
+    if (nextCount !== undefined) {
+      const previous = inventorySparseRecordValue(
+        base.counts.counts,
+        nextCount.countId
+      );
+      this.updateActiveItemCount(
+        this.openCountCountsByItemId,
+        previous?.status === InventoryCountStatus.Started ||
+          previous?.status === InventoryCountStatus.Observed
+          ? previous.selector.itemId
+          : undefined,
+        nextCount.status === InventoryCountStatus.Started ||
+          nextCount.status === InventoryCountStatus.Observed
+          ? nextCount.selector.itemId
+          : undefined
+      );
+    }
+  }
+
+  /** Replace one active-row item membership without confusing siblings sharing an item. */
+  private updateActiveItemCount(
+    countsByItemId: Map<string, number>,
+    previousItemId: string | undefined,
+    currentItemId: string | undefined
+  ): void {
+    if (previousItemId === currentItemId) return;
+    if (previousItemId !== undefined) {
+      const previousCount = countsByItemId.get(previousItemId);
+      if (previousCount === undefined || previousCount < 1) {
+        throw new Error("Inventory protected item scope counter disagrees with its published lifecycle.");
+      }
+      if (previousCount === 1) countsByItemId.delete(previousItemId);
+      else countsByItemId.set(previousItemId, previousCount - 1);
+    }
+    if (currentItemId !== undefined) {
+      countsByItemId.set(
+        currentItemId,
+        (countsByItemId.get(currentItemId) ?? 0) + 1
+      );
+    }
   }
 
   /** Catch the canonical proof/export world up to already-published segmented events. */
