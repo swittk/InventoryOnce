@@ -128,8 +128,8 @@ export interface InventoryMigrationOpeningStock {
 export interface InventoryMigrationDeficitStock {
   /** Stable identity inside this migration and its idempotency key. */
   readonly deficitId: string;
-  /** Exact unallocated signed position whose Issue records the deficit. */
-  readonly position: InventoryStockPositionInput;
+  /** Exact known-placed signed position whose Issue records the deficit. */
+  readonly position: InventoryStockIntakePositionInput;
   /** Positive exact magnitude issued from the empty migration target. */
   readonly amount: InventoryAmount;
   /** Optional exact retained item revision; defaults to active/package revision. */
@@ -356,6 +356,21 @@ export function defineInventoryMigration({
     }
     seenDeficitIds.add(deficit.deficitId);
     try {
+      // Migration plugins translate external legacy data, so they cannot claim
+      // InventoryOnce-owned detached/missing lifecycle identity on an opening deficit.
+      const position: InventoryStockPositionInput = deficit.position;
+      if (
+        position.placementNodeId === undefined ||
+        position.whereaboutsId !== undefined ||
+        position.whereaboutsState !== undefined ||
+        position.lastPlacementNodeId !== undefined ||
+        position.detachedAtEpochMs !== undefined ||
+        position.missingAtEpochMs !== undefined
+      ) {
+        throw new Error(
+          "Inventory migration deficit must name a known direct placement and cannot supply detached/missing whereabouts lifecycle fields."
+        );
+      }
       const event = createInventoryIssueEvent({
         catalog,
         operationId: migrationOperationId(

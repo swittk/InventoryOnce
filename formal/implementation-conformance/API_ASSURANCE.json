@@ -3,9 +3,9 @@
     "authorityMethods": 14,
     "callAndConstructSignatures": 617,
     "classMethods": 109,
-    "compilerCallGraphCallables": 3648,
-    "compilerCallGraphEdges": 9816,
-    "compilerCallGraphTestRoots": 59,
+    "compilerCallGraphCallables": 3653,
+    "compilerCallGraphEdges": 9826,
+    "compilerCallGraphTestRoots": 60,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 617,
     "directExecutableApis": 253,
@@ -11177,9 +11177,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:22917:applyInventoryMigrationPlan",
+              "id": "src/migrations.ts:23670:applyInventoryMigrationPlan",
               "kind": "FunctionDeclaration",
-              "line": 597,
+              "line": 612,
               "name": "applyInventoryMigrationPlan",
               "reason": "resolved-call"
             },
@@ -11951,9 +11951,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:25671:resumeInventoryMigrationManifest",
+              "id": "src/migrations.ts:26424:resumeInventoryMigrationManifest",
               "kind": "FunctionDeclaration",
-              "line": 676,
+              "line": 691,
               "name": "resumeInventoryMigrationManifest",
               "reason": "resolved-call"
             },
@@ -13927,9 +13927,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:25671:resumeInventoryMigrationManifest",
+              "id": "src/migrations.ts:26424:resumeInventoryMigrationManifest",
               "kind": "FunctionDeclaration",
-              "line": 676,
+              "line": 691,
               "name": "resumeInventoryMigrationManifest",
               "reason": "resolved-call"
             },
@@ -19071,7 +19071,7 @@
           "path": "src/kernel.ts"
         },
         {
-          "occurrences": 11,
+          "occurrences": 19,
           "path": "src/migrations.ts"
         },
         {
@@ -26766,7 +26766,7 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:11485:defineInventoryMigration",
+              "id": "src/migrations.ts:11492:defineInventoryMigration",
               "kind": "FunctionDeclaration",
               "line": 270,
               "name": "defineInventoryMigration",
@@ -27356,7 +27356,7 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:11485:defineInventoryMigration",
+              "id": "src/migrations.ts:11492:defineInventoryMigration",
               "kind": "FunctionDeclaration",
               "line": 270,
               "name": "defineInventoryMigration",
@@ -38207,9 +38207,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:21617:inventoryMigrationPositionsMatch",
+              "id": "src/migrations.ts:22370:inventoryMigrationPositionsMatch",
               "kind": "FunctionDeclaration",
-              "line": 557,
+              "line": 572,
               "name": "inventoryMigrationPositionsMatch",
               "reason": "resolved-call"
             },
@@ -46317,9 +46317,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:21617:inventoryMigrationPositionsMatch",
+              "id": "src/migrations.ts:22370:inventoryMigrationPositionsMatch",
               "kind": "FunctionDeclaration",
-              "line": 557,
+              "line": 572,
               "name": "inventoryMigrationPositionsMatch",
               "reason": "resolved-call"
             },
@@ -49724,9 +49724,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:22917:applyInventoryMigrationPlan",
+              "id": "src/migrations.ts:23670:applyInventoryMigrationPlan",
               "kind": "FunctionDeclaration",
-              "line": 597,
+              "line": 612,
               "name": "applyInventoryMigrationPlan",
               "reason": "resolved-call"
             }
@@ -49735,9 +49735,9 @@
             "column": 1,
             "file": "src/migrations.ts",
             "hasBody": true,
-            "id": "src/migrations.ts:22917:applyInventoryMigrationPlan",
+            "id": "src/migrations.ts:23670:applyInventoryMigrationPlan",
             "kind": "FunctionDeclaration",
-            "line": 597,
+            "line": 612,
             "name": "applyInventoryMigrationPlan"
           },
           "test": "test/containers.test.ts"
@@ -49765,9 +49765,9 @@
           "column": 1,
           "file": "src/migrations.ts",
           "hasBody": true,
-          "id": "src/migrations.ts:22917:applyInventoryMigrationPlan",
+          "id": "src/migrations.ts:23670:applyInventoryMigrationPlan",
           "kind": "FunctionDeclaration",
-          "line": 597,
+          "line": 612,
           "name": "applyInventoryMigrationPlan"
         }
       ],
@@ -50360,7 +50360,7 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:11485:defineInventoryMigration",
+              "id": "src/migrations.ts:11492:defineInventoryMigration",
               "kind": "FunctionDeclaration",
               "line": 270,
               "name": "defineInventoryMigration",
@@ -50371,7 +50371,7 @@
             "column": 1,
             "file": "src/migrations.ts",
             "hasBody": true,
-            "id": "src/migrations.ts:11485:defineInventoryMigration",
+            "id": "src/migrations.ts:11492:defineInventoryMigration",
             "kind": "FunctionDeclaration",
             "line": 270,
             "name": "defineInventoryMigration"
@@ -50400,7 +50400,7 @@
           "column": 1,
           "file": "src/migrations.ts",
           "hasBody": true,
-          "id": "src/migrations.ts:11485:defineInventoryMigration",
+          "id": "src/migrations.ts:11492:defineInventoryMigration",
           "kind": "FunctionDeclaration",
           "line": 270,
           "name": "defineInventoryMigration"
@@ -50761,9 +50761,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:19775:dryRunInventoryMigration",
+              "id": "src/migrations.ts:20528:dryRunInventoryMigration",
               "kind": "FunctionDeclaration",
-              "line": 504,
+              "line": 519,
               "name": "dryRunInventoryMigration",
               "reason": "resolved-call"
             }
@@ -50772,9 +50772,9 @@
             "column": 1,
             "file": "src/migrations.ts",
             "hasBody": true,
-            "id": "src/migrations.ts:19775:dryRunInventoryMigration",
+            "id": "src/migrations.ts:20528:dryRunInventoryMigration",
             "kind": "FunctionDeclaration",
-            "line": 504,
+            "line": 519,
             "name": "dryRunInventoryMigration"
           },
           "test": "test/containers.test.ts"
@@ -50801,9 +50801,9 @@
           "column": 1,
           "file": "src/migrations.ts",
           "hasBody": true,
-          "id": "src/migrations.ts:19775:dryRunInventoryMigration",
+          "id": "src/migrations.ts:20528:dryRunInventoryMigration",
           "kind": "FunctionDeclaration",
-          "line": 504,
+          "line": 519,
           "name": "dryRunInventoryMigration"
         }
       ],
@@ -50902,9 +50902,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:21617:inventoryMigrationPositionsMatch",
+              "id": "src/migrations.ts:22370:inventoryMigrationPositionsMatch",
               "kind": "FunctionDeclaration",
-              "line": 557,
+              "line": 572,
               "name": "inventoryMigrationPositionsMatch",
               "reason": "resolved-call"
             }
@@ -50913,9 +50913,9 @@
             "column": 1,
             "file": "src/migrations.ts",
             "hasBody": true,
-            "id": "src/migrations.ts:21617:inventoryMigrationPositionsMatch",
+            "id": "src/migrations.ts:22370:inventoryMigrationPositionsMatch",
             "kind": "FunctionDeclaration",
-            "line": 557,
+            "line": 572,
             "name": "inventoryMigrationPositionsMatch"
           },
           "test": "test/migrations.test.ts"
@@ -50942,9 +50942,9 @@
           "column": 1,
           "file": "src/migrations.ts",
           "hasBody": true,
-          "id": "src/migrations.ts:21617:inventoryMigrationPositionsMatch",
+          "id": "src/migrations.ts:22370:inventoryMigrationPositionsMatch",
           "kind": "FunctionDeclaration",
-          "line": 557,
+          "line": 572,
           "name": "inventoryMigrationPositionsMatch"
         }
       ],
@@ -51034,7 +51034,7 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:10960:inventoryMigrationProblem",
+              "id": "src/migrations.ts:10967:inventoryMigrationProblem",
               "kind": "FunctionDeclaration",
               "line": 255,
               "name": "inventoryMigrationProblem",
@@ -51045,7 +51045,7 @@
             "column": 1,
             "file": "src/migrations.ts",
             "hasBody": true,
-            "id": "src/migrations.ts:10960:inventoryMigrationProblem",
+            "id": "src/migrations.ts:10967:inventoryMigrationProblem",
             "kind": "FunctionDeclaration",
             "line": 255,
             "name": "inventoryMigrationProblem"
@@ -51074,7 +51074,7 @@
           "column": 1,
           "file": "src/migrations.ts",
           "hasBody": true,
-          "id": "src/migrations.ts:10960:inventoryMigrationProblem",
+          "id": "src/migrations.ts:10967:inventoryMigrationProblem",
           "kind": "FunctionDeclaration",
           "line": 255,
           "name": "inventoryMigrationProblem"
@@ -51176,7 +51176,7 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:10019:inventoryMigrationSnapshotSupersededDisposition",
+              "id": "src/migrations.ts:10026:inventoryMigrationSnapshotSupersededDisposition",
               "kind": "FunctionDeclaration",
               "line": 232,
               "name": "inventoryMigrationSnapshotSupersededDisposition",
@@ -51187,7 +51187,7 @@
             "column": 1,
             "file": "src/migrations.ts",
             "hasBody": true,
-            "id": "src/migrations.ts:10019:inventoryMigrationSnapshotSupersededDisposition",
+            "id": "src/migrations.ts:10026:inventoryMigrationSnapshotSupersededDisposition",
             "kind": "FunctionDeclaration",
             "line": 232,
             "name": "inventoryMigrationSnapshotSupersededDisposition"
@@ -51216,7 +51216,7 @@
           "column": 1,
           "file": "src/migrations.ts",
           "hasBody": true,
-          "id": "src/migrations.ts:10019:inventoryMigrationSnapshotSupersededDisposition",
+          "id": "src/migrations.ts:10026:inventoryMigrationSnapshotSupersededDisposition",
           "kind": "FunctionDeclaration",
           "line": 232,
           "name": "inventoryMigrationSnapshotSupersededDisposition"
@@ -51439,9 +51439,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:26849:repairInventoryMigrationManifests",
+              "id": "src/migrations.ts:27602:repairInventoryMigrationManifests",
               "kind": "FunctionDeclaration",
-              "line": 704,
+              "line": 719,
               "name": "repairInventoryMigrationManifests",
               "reason": "resolved-call"
             }
@@ -51450,9 +51450,9 @@
             "column": 1,
             "file": "src/migrations.ts",
             "hasBody": true,
-            "id": "src/migrations.ts:26849:repairInventoryMigrationManifests",
+            "id": "src/migrations.ts:27602:repairInventoryMigrationManifests",
             "kind": "FunctionDeclaration",
-            "line": 704,
+            "line": 719,
             "name": "repairInventoryMigrationManifests"
           },
           "test": "test/formal-implementation-refinement.test.ts"
@@ -51480,9 +51480,9 @@
           "column": 1,
           "file": "src/migrations.ts",
           "hasBody": true,
-          "id": "src/migrations.ts:26849:repairInventoryMigrationManifests",
+          "id": "src/migrations.ts:27602:repairInventoryMigrationManifests",
           "kind": "FunctionDeclaration",
-          "line": 704,
+          "line": 719,
           "name": "repairInventoryMigrationManifests"
         }
       ],
@@ -51574,9 +51574,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:25671:resumeInventoryMigrationManifest",
+              "id": "src/migrations.ts:26424:resumeInventoryMigrationManifest",
               "kind": "FunctionDeclaration",
-              "line": 676,
+              "line": 691,
               "name": "resumeInventoryMigrationManifest",
               "reason": "resolved-call"
             }
@@ -51585,9 +51585,9 @@
             "column": 1,
             "file": "src/migrations.ts",
             "hasBody": true,
-            "id": "src/migrations.ts:25671:resumeInventoryMigrationManifest",
+            "id": "src/migrations.ts:26424:resumeInventoryMigrationManifest",
             "kind": "FunctionDeclaration",
-            "line": 676,
+            "line": 691,
             "name": "resumeInventoryMigrationManifest"
           },
           "test": "test/migrations.test.ts"
@@ -51615,9 +51615,9 @@
           "column": 1,
           "file": "src/migrations.ts",
           "hasBody": true,
-          "id": "src/migrations.ts:25671:resumeInventoryMigrationManifest",
+          "id": "src/migrations.ts:26424:resumeInventoryMigrationManifest",
           "kind": "FunctionDeclaration",
-          "line": 676,
+          "line": 691,
           "name": "resumeInventoryMigrationManifest"
         }
       ],
@@ -52183,7 +52183,7 @@
           "path": "src/migration-plugin.ts"
         },
         {
-          "occurrences": 3,
+          "occurrences": 4,
           "path": "src/migrations.ts"
         },
         {
@@ -59545,9 +59545,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:21617:inventoryMigrationPositionsMatch",
+              "id": "src/migrations.ts:22370:inventoryMigrationPositionsMatch",
               "kind": "FunctionDeclaration",
-              "line": 557,
+              "line": 572,
               "name": "inventoryMigrationPositionsMatch",
               "reason": "resolved-call"
             },
@@ -63732,9 +63732,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:21617:inventoryMigrationPositionsMatch",
+              "id": "src/migrations.ts:22370:inventoryMigrationPositionsMatch",
               "kind": "FunctionDeclaration",
-              "line": 557,
+              "line": 572,
               "name": "inventoryMigrationPositionsMatch",
               "reason": "resolved-call"
             },
@@ -81499,6 +81499,10 @@
           "path": "src/index.ts"
         },
         {
+          "occurrences": 1,
+          "path": "src/migrations.ts"
+        },
+        {
           "occurrences": 9,
           "path": "src/model.ts"
         },
@@ -86983,6 +86987,10 @@
         {
           "occurrences": 2,
           "path": "src/index.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/migrations.ts"
         },
         {
           "occurrences": 9,
@@ -95821,9 +95829,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:22917:applyInventoryMigrationPlan",
+              "id": "src/migrations.ts:23670:applyInventoryMigrationPlan",
               "kind": "FunctionDeclaration",
-              "line": 597,
+              "line": 612,
               "name": "applyInventoryMigrationPlan",
               "reason": "resolved-call"
             },
@@ -96281,9 +96289,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:25671:resumeInventoryMigrationManifest",
+              "id": "src/migrations.ts:26424:resumeInventoryMigrationManifest",
               "kind": "FunctionDeclaration",
-              "line": 676,
+              "line": 691,
               "name": "resumeInventoryMigrationManifest",
               "reason": "resolved-call"
             },
@@ -97591,9 +97599,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:25671:resumeInventoryMigrationManifest",
+              "id": "src/migrations.ts:26424:resumeInventoryMigrationManifest",
               "kind": "FunctionDeclaration",
-              "line": 676,
+              "line": 691,
               "name": "resumeInventoryMigrationManifest",
               "reason": "resolved-call"
             },
@@ -99741,5 +99749,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "6c4c1e4931b12ab2ef14535dad54a0d70a28087837bbc83bf193ca2501b4ae6f"
+  "surfaceSha256": "65e7f72b0219bd051c0344e1e563b0f8e93909a7e5b3b9746ad79f3fdf49a67a"
 }

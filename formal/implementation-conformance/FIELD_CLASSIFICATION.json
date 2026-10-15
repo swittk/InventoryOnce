@@ -3,7 +3,7 @@
     "callableFieldSignatures": 12,
     "callableFields": 12,
     "callbackArgumentFields": 408,
-    "callbackResultFields": 451,
+    "callbackResultFields": 436,
     "fields": 2769,
     "inputFields": 2308,
     "nullableFields": 9,
@@ -31617,7 +31617,7 @@
         "callback-result",
         "input"
       ],
-      "discoveredType": "InventoryStockPositionInput",
+      "discoveredType": "InventoryStockIntakePositionInput",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/migrations.test.ts"
@@ -56566,7 +56566,6 @@
       "classification": "identity/retry-semantic",
       "declaration": "src/model.ts",
       "directions": [
-        "callback-result",
         "input",
         "output"
       ],
@@ -56591,7 +56590,6 @@
       "classification": "abstract-semantic",
       "declaration": "src/model.ts",
       "directions": [
-        "callback-result",
         "input",
         "output"
       ],
@@ -56616,7 +56614,6 @@
       "classification": "identity/retry-semantic",
       "declaration": "src/model.ts",
       "directions": [
-        "callback-result",
         "input",
         "output"
       ],
@@ -56641,7 +56638,6 @@
       "classification": "identity/retry-semantic",
       "declaration": "src/model.ts",
       "directions": [
-        "callback-result",
         "input",
         "output"
       ],
@@ -56666,7 +56662,6 @@
       "classification": "identity/retry-semantic",
       "declaration": "src/model.ts",
       "directions": [
-        "callback-result",
         "input",
         "output"
       ],
@@ -56691,7 +56686,6 @@
       "classification": "identity/retry-semantic",
       "declaration": "src/model.ts",
       "directions": [
-        "callback-result",
         "input",
         "output"
       ],
@@ -56716,7 +56710,6 @@
       "classification": "abstract-semantic",
       "declaration": "src/model.ts",
       "directions": [
-        "callback-result",
         "input",
         "output"
       ],
@@ -56741,7 +56734,6 @@
       "classification": "identity/retry-semantic",
       "declaration": "src/model.ts",
       "directions": [
-        "callback-result",
         "input",
         "output"
       ],
@@ -56766,7 +56758,6 @@
       "classification": "identity/retry-semantic",
       "declaration": "src/model.ts",
       "directions": [
-        "callback-result",
         "input",
         "output"
       ],
@@ -56791,7 +56782,6 @@
       "classification": "identity/retry-semantic",
       "declaration": "src/model.ts",
       "directions": [
-        "callback-result",
         "input",
         "output"
       ],
@@ -56816,7 +56806,6 @@
       "classification": "abstract-semantic",
       "declaration": "src/model.ts",
       "directions": [
-        "callback-result",
         "input",
         "output"
       ],
@@ -56841,7 +56830,6 @@
       "classification": "identity/retry-semantic",
       "declaration": "src/model.ts",
       "directions": [
-        "callback-result",
         "input",
         "output"
       ],
@@ -56866,7 +56854,6 @@
       "classification": "identity/retry-semantic",
       "declaration": "src/model.ts",
       "directions": [
-        "callback-result",
         "input",
         "output"
       ],
@@ -56891,7 +56878,6 @@
       "classification": "identity/retry-semantic",
       "declaration": "src/model.ts",
       "directions": [
-        "callback-result",
         "input",
         "output"
       ],
@@ -56916,7 +56902,6 @@
       "classification": "abstract-semantic",
       "declaration": "src/model.ts",
       "directions": [
-        "callback-result",
         "input",
         "output"
       ],
@@ -66295,5 +66280,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "6c4c1e4931b12ab2ef14535dad54a0d70a28087837bbc83bf193ca2501b4ae6f"
+  "surfaceSha256": "65e7f72b0219bd051c0344e1e563b0f8e93909a7e5b3b9746ad79f3fdf49a67a"
 }
