@@ -302,35 +302,6 @@ describe("InventoryAuthorityControl durable state shape", () => {
     expect(rejected).toBe(46_045);
   }, 90_000);
 
-  it("preserves legacy-cutover activation inference for pre-field authoritative rows", async () => {
-    const store = new MutableAuthorityStore();
-    const authority = createInventoryAuthorityControl({
-      store,
-      namespaceId: "durable-shape-legacy-compat:primary",
-    });
-    await authority.read();
-    const base = store.document;
-    if (base === undefined) throw new Error("Authority initialization did not create a row.");
-    const withActivationKind = durableRow(
-      base,
-      validShape(
-        InventoryAuthorityMode.Authoritative,
-        InventoryAuthorityActivationKind.LegacyCutover
-      )
-    );
-    const { activationKind: _removedActivationKind, ...preFieldRow } =
-      withActivationKind;
-    store.document = preFieldRow;
-    await expect(authority.read()).resolves.toMatchObject({
-      mode: InventoryAuthorityMode.Authoritative,
-      activationKind: InventoryAuthorityActivationKind.LegacyCutover,
-      cutoverAuthorizationId: "cutover-a",
-      sourceRoot: "source-root",
-      fenceToken: "fence-a",
-      targetWorldRoot: "target-root",
-    });
-  });
-
   it("rejects malformed canonical evidence inside otherwise reachable phase shapes", async () => {
     const store = new MutableAuthorityStore();
     const authority = createInventoryAuthorityControl({

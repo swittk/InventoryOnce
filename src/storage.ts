@@ -10,6 +10,7 @@ import {
 import {
   assertInventoryCatalogRetainsSnapshot,
   inventoryCatalogFromSnapshot,
+  inventoryCatalogSnapshot,
   type InventoryCatalogSnapshot,
 } from "./catalog.js";
 import {
@@ -1855,7 +1856,7 @@ export class InMemoryInventoryDurableStorage
     this.eventJournal.append(event);
     this.storeOperation(input.operationId, { value });
     if (mayEstablishCatalog) {
-      this.pendingSegmentedCatalog = structuredClone(input.catalog);
+      this.pendingSegmentedCatalog = inventoryCatalogSnapshot(suppliedCatalog);
     }
     await this.fire(
       InventoryStorageWriteStage.PublishWorld,

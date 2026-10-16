@@ -3,8 +3,8 @@
     "authorityMethods": 14,
     "callAndConstructSignatures": 617,
     "classMethods": 109,
-    "compilerCallGraphCallables": 3677,
-    "compilerCallGraphEdges": 9891,
+    "compilerCallGraphCallables": 3676,
+    "compilerCallGraphEdges": 9892,
     "compilerCallGraphTestRoots": 60,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 617,
@@ -57,10 +57,10 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:17108:<anonymous@454>",
+              "id": "test/authority-durable-shape.test.ts:16011:<anonymous@425>",
               "kind": "ArrowFunction",
-              "line": 454,
-              "name": "<anonymous@454>",
+              "line": 425,
+              "name": "<anonymous@425>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -206,10 +206,10 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:17108:<anonymous@454>",
+              "id": "test/authority-durable-shape.test.ts:16011:<anonymous@425>",
               "kind": "ArrowFunction",
-              "line": 454,
-              "name": "<anonymous@454>",
+              "line": 425,
+              "name": "<anonymous@425>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -351,10 +351,10 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:17108:<anonymous@454>",
+              "id": "test/authority-durable-shape.test.ts:16011:<anonymous@425>",
               "kind": "ArrowFunction",
-              "line": 454,
-              "name": "<anonymous@454>",
+              "line": 425,
+              "name": "<anonymous@425>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -492,10 +492,10 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:17108:<anonymous@454>",
+              "id": "test/authority-durable-shape.test.ts:16011:<anonymous@425>",
               "kind": "ArrowFunction",
-              "line": 454,
-              "name": "<anonymous@454>",
+              "line": 425,
+              "name": "<anonymous@425>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -637,10 +637,10 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:17108:<anonymous@454>",
+              "id": "test/authority-durable-shape.test.ts:16011:<anonymous@425>",
               "kind": "ArrowFunction",
-              "line": 454,
-              "name": "<anonymous@454>",
+              "line": 425,
+              "name": "<anonymous@425>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -782,10 +782,10 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:17108:<anonymous@454>",
+              "id": "test/authority-durable-shape.test.ts:16011:<anonymous@425>",
               "kind": "ArrowFunction",
-              "line": 454,
-              "name": "<anonymous@454>",
+              "line": 425,
+              "name": "<anonymous@425>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -927,10 +927,10 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:17108:<anonymous@454>",
+              "id": "test/authority-durable-shape.test.ts:16011:<anonymous@425>",
               "kind": "ArrowFunction",
-              "line": 454,
-              "name": "<anonymous@454>",
+              "line": 425,
+              "name": "<anonymous@425>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -1072,10 +1072,10 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:17108:<anonymous@454>",
+              "id": "test/authority-durable-shape.test.ts:16011:<anonymous@425>",
               "kind": "ArrowFunction",
-              "line": 454,
-              "name": "<anonymous@454>",
+              "line": 425,
+              "name": "<anonymous@425>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -1217,10 +1217,10 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:17108:<anonymous@454>",
+              "id": "test/authority-durable-shape.test.ts:16011:<anonymous@425>",
               "kind": "ArrowFunction",
-              "line": 454,
-              "name": "<anonymous@454>",
+              "line": 425,
+              "name": "<anonymous@425>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -1358,10 +1358,10 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:17108:<anonymous@454>",
+              "id": "test/authority-durable-shape.test.ts:16011:<anonymous@425>",
               "kind": "ArrowFunction",
-              "line": 454,
-              "name": "<anonymous@454>",
+              "line": 425,
+              "name": "<anonymous@425>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -1684,10 +1684,10 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:17108:<anonymous@454>",
+              "id": "test/authority-durable-shape.test.ts:16011:<anonymous@425>",
               "kind": "ArrowFunction",
-              "line": 454,
-              "name": "<anonymous@454>",
+              "line": 425,
+              "name": "<anonymous@425>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -1825,10 +1825,10 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:17108:<anonymous@454>",
+              "id": "test/authority-durable-shape.test.ts:16011:<anonymous@425>",
               "kind": "ArrowFunction",
-              "line": 454,
-              "name": "<anonymous@454>",
+              "line": 425,
+              "name": "<anonymous@425>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -1966,10 +1966,10 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:17108:<anonymous@454>",
+              "id": "test/authority-durable-shape.test.ts:16011:<anonymous@425>",
               "kind": "ArrowFunction",
-              "line": 454,
-              "name": "<anonymous@454>",
+              "line": 425,
+              "name": "<anonymous@425>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -5345,10 +5345,10 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:17108:<anonymous@454>",
+              "id": "test/authority-durable-shape.test.ts:16011:<anonymous@425>",
               "kind": "ArrowFunction",
-              "line": 454,
-              "name": "<anonymous@454>",
+              "line": 425,
+              "name": "<anonymous@425>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -5495,10 +5495,10 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:17108:<anonymous@454>",
+              "id": "test/authority-durable-shape.test.ts:16011:<anonymous@425>",
               "kind": "ArrowFunction",
-              "line": 454,
-              "name": "<anonymous@454>",
+              "line": 425,
+              "name": "<anonymous@425>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -5641,10 +5641,10 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:17108:<anonymous@454>",
+              "id": "test/authority-durable-shape.test.ts:16011:<anonymous@425>",
               "kind": "ArrowFunction",
-              "line": 454,
-              "name": "<anonymous@454>",
+              "line": 425,
+              "name": "<anonymous@425>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -5783,10 +5783,10 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:17108:<anonymous@454>",
+              "id": "test/authority-durable-shape.test.ts:16011:<anonymous@425>",
               "kind": "ArrowFunction",
-              "line": 454,
-              "name": "<anonymous@454>",
+              "line": 425,
+              "name": "<anonymous@425>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -5929,10 +5929,10 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:17108:<anonymous@454>",
+              "id": "test/authority-durable-shape.test.ts:16011:<anonymous@425>",
               "kind": "ArrowFunction",
-              "line": 454,
-              "name": "<anonymous@454>",
+              "line": 425,
+              "name": "<anonymous@425>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -6075,10 +6075,10 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:17108:<anonymous@454>",
+              "id": "test/authority-durable-shape.test.ts:16011:<anonymous@425>",
               "kind": "ArrowFunction",
-              "line": 454,
-              "name": "<anonymous@454>",
+              "line": 425,
+              "name": "<anonymous@425>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -6221,10 +6221,10 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:17108:<anonymous@454>",
+              "id": "test/authority-durable-shape.test.ts:16011:<anonymous@425>",
               "kind": "ArrowFunction",
-              "line": 454,
-              "name": "<anonymous@454>",
+              "line": 425,
+              "name": "<anonymous@425>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -6367,10 +6367,10 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:17108:<anonymous@454>",
+              "id": "test/authority-durable-shape.test.ts:16011:<anonymous@425>",
               "kind": "ArrowFunction",
-              "line": 454,
-              "name": "<anonymous@454>",
+              "line": 425,
+              "name": "<anonymous@425>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -6513,10 +6513,10 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:17108:<anonymous@454>",
+              "id": "test/authority-durable-shape.test.ts:16011:<anonymous@425>",
               "kind": "ArrowFunction",
-              "line": 454,
-              "name": "<anonymous@454>",
+              "line": 425,
+              "name": "<anonymous@425>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -6655,10 +6655,10 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:17108:<anonymous@454>",
+              "id": "test/authority-durable-shape.test.ts:16011:<anonymous@425>",
               "kind": "ArrowFunction",
-              "line": 454,
-              "name": "<anonymous@454>",
+              "line": 425,
+              "name": "<anonymous@425>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -6983,10 +6983,10 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:17108:<anonymous@454>",
+              "id": "test/authority-durable-shape.test.ts:16011:<anonymous@425>",
               "kind": "ArrowFunction",
-              "line": 454,
-              "name": "<anonymous@454>",
+              "line": 425,
+              "name": "<anonymous@425>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -7125,10 +7125,10 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:17108:<anonymous@454>",
+              "id": "test/authority-durable-shape.test.ts:16011:<anonymous@425>",
               "kind": "ArrowFunction",
-              "line": 454,
-              "name": "<anonymous@454>",
+              "line": 425,
+              "name": "<anonymous@425>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -7267,10 +7267,10 @@
               "column": 76,
               "file": "test/authority-durable-shape.test.ts",
               "hasBody": true,
-              "id": "test/authority-durable-shape.test.ts:17108:<anonymous@454>",
+              "id": "test/authority-durable-shape.test.ts:16011:<anonymous@425>",
               "kind": "ArrowFunction",
-              "line": 454,
-              "name": "<anonymous@454>",
+              "line": 425,
+              "name": "<anonymous@425>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -10667,9 +10667,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": false,
-              "id": "src/storage.ts:22758:abort",
+              "id": "src/storage.ts:22786:abort",
               "kind": "MethodSignature",
-              "line": 485,
+              "line": 486,
               "name": "abort",
               "reason": "resolved-call"
             },
@@ -10677,9 +10677,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:87919:abort",
+              "id": "src/storage.ts:87958:abort",
               "kind": "MethodDeclaration",
-              "line": 2109,
+              "line": 2110,
               "name": "abort",
               "reason": "interface-to-implementation"
             }
@@ -10688,9 +10688,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:87919:abort",
+            "id": "src/storage.ts:87958:abort",
             "kind": "MethodDeclaration",
-            "line": 2109,
+            "line": 2110,
             "name": "abort"
           },
           "test": "test/storage-conformance.test.ts"
@@ -10714,9 +10714,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:87919:abort",
+          "id": "src/storage.ts:87958:abort",
           "kind": "MethodDeclaration",
-          "line": 2109,
+          "line": 2110,
           "name": "abort"
         }
       ],
@@ -10835,9 +10835,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": false,
-              "id": "src/storage.ts:21813:abortMigrationManifest",
+              "id": "src/storage.ts:21841:abortMigrationManifest",
               "kind": "MethodSignature",
-              "line": 469,
+              "line": 470,
               "name": "abortMigrationManifest",
               "reason": "resolved-call"
             },
@@ -10845,9 +10845,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:46774:abortMigrationManifest",
+              "id": "src/storage.ts:46802:abortMigrationManifest",
               "kind": "MethodDeclaration",
-              "line": 1031,
+              "line": 1032,
               "name": "abortMigrationManifest",
               "reason": "interface-to-implementation"
             }
@@ -10856,9 +10856,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:46774:abortMigrationManifest",
+            "id": "src/storage.ts:46802:abortMigrationManifest",
             "kind": "MethodDeclaration",
-            "line": 1031,
+            "line": 1032,
             "name": "abortMigrationManifest"
           },
           "test": "test/storage-conformance.test.ts"
@@ -10882,9 +10882,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:46774:abortMigrationManifest",
+          "id": "src/storage.ts:46802:abortMigrationManifest",
           "kind": "MethodDeclaration",
-          "line": 1031,
+          "line": 1032,
           "name": "abortMigrationManifest"
         }
       ],
@@ -11003,9 +11003,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": false,
-              "id": "src/storage.ts:20912:begin",
+              "id": "src/storage.ts:20940:begin",
               "kind": "MethodSignature",
-              "line": 451,
+              "line": 452,
               "name": "begin",
               "reason": "resolved-call"
             },
@@ -11013,9 +11013,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:50096:begin",
+              "id": "src/storage.ts:50124:begin",
               "kind": "MethodDeclaration",
-              "line": 1124,
+              "line": 1125,
               "name": "begin",
               "reason": "interface-to-implementation"
             }
@@ -11024,9 +11024,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:50096:begin",
+            "id": "src/storage.ts:50124:begin",
             "kind": "MethodDeclaration",
-            "line": 1124,
+            "line": 1125,
             "name": "begin"
           },
           "test": "test/reservation-closure-shortage.test.ts"
@@ -11050,9 +11050,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:50096:begin",
+          "id": "src/storage.ts:50124:begin",
           "kind": "MethodDeclaration",
-          "line": 1124,
+          "line": 1125,
           "name": "begin"
         }
       ],
@@ -11187,9 +11187,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": false,
-              "id": "src/storage.ts:21255:beginMigrationManifest",
+              "id": "src/storage.ts:21283:beginMigrationManifest",
               "kind": "MethodSignature",
-              "line": 459,
+              "line": 460,
               "name": "beginMigrationManifest",
               "reason": "resolved-call"
             },
@@ -11197,9 +11197,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:37932:beginMigrationManifest",
+              "id": "src/storage.ts:37960:beginMigrationManifest",
               "kind": "MethodDeclaration",
-              "line": 798,
+              "line": 799,
               "name": "beginMigrationManifest",
               "reason": "interface-to-implementation"
             }
@@ -11208,9 +11208,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:37932:beginMigrationManifest",
+            "id": "src/storage.ts:37960:beginMigrationManifest",
             "kind": "MethodDeclaration",
-            "line": 798,
+            "line": 799,
             "name": "beginMigrationManifest"
           },
           "test": "test/containers.test.ts"
@@ -11234,9 +11234,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:37932:beginMigrationManifest",
+          "id": "src/storage.ts:37960:beginMigrationManifest",
           "kind": "MethodDeclaration",
-          "line": 798,
+          "line": 799,
           "name": "beginMigrationManifest"
         }
       ],
@@ -11349,9 +11349,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:35124:commitSegmentedPlacementChange",
+              "id": "src/storage.ts:35152:commitSegmentedPlacementChange",
               "kind": "MethodDeclaration",
-              "line": 735,
+              "line": 736,
               "name": "commitSegmentedPlacementChange",
               "reason": "resolved-call"
             }
@@ -11360,9 +11360,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:35124:commitSegmentedPlacementChange",
+            "id": "src/storage.ts:35152:commitSegmentedPlacementChange",
             "kind": "MethodDeclaration",
-            "line": 735,
+            "line": 736,
             "name": "commitSegmentedPlacementChange"
           },
           "test": "test/historical-repair.test.ts"
@@ -11390,9 +11390,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:35124:commitSegmentedPlacementChange",
+          "id": "src/storage.ts:35152:commitSegmentedPlacementChange",
           "kind": "MethodDeclaration",
-          "line": 735,
+          "line": 736,
           "name": "commitSegmentedPlacementChange"
         }
       ],
@@ -11505,9 +11505,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:35685:commitSegmentedStockEvent",
+              "id": "src/storage.ts:35713:commitSegmentedStockEvent",
               "kind": "MethodDeclaration",
-              "line": 746,
+              "line": 747,
               "name": "commitSegmentedStockEvent",
               "reason": "resolved-call"
             }
@@ -11516,9 +11516,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:35685:commitSegmentedStockEvent",
+            "id": "src/storage.ts:35713:commitSegmentedStockEvent",
             "kind": "MethodDeclaration",
-            "line": 746,
+            "line": 747,
             "name": "commitSegmentedStockEvent"
           },
           "test": "test/historical-repair.test.ts"
@@ -11546,9 +11546,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:35685:commitSegmentedStockEvent",
+          "id": "src/storage.ts:35713:commitSegmentedStockEvent",
           "kind": "MethodDeclaration",
-          "line": 746,
+          "line": 747,
           "name": "commitSegmentedStockEvent"
         }
       ],
@@ -11681,9 +11681,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": false,
-              "id": "src/storage.ts:22622:complete",
+              "id": "src/storage.ts:22650:complete",
               "kind": "MethodSignature",
-              "line": 483,
+              "line": 484,
               "name": "complete",
               "reason": "resolved-call"
             },
@@ -11691,9 +11691,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:59336:complete",
+              "id": "src/storage.ts:59364:complete",
               "kind": "MethodDeclaration",
-              "line": 1346,
+              "line": 1347,
               "name": "complete",
               "reason": "interface-to-implementation"
             }
@@ -11702,9 +11702,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:59336:complete",
+            "id": "src/storage.ts:59364:complete",
             "kind": "MethodDeclaration",
-            "line": 1346,
+            "line": 1347,
             "name": "complete"
           },
           "test": "test/reservation-closure-shortage.test.ts"
@@ -11728,9 +11728,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:59336:complete",
+          "id": "src/storage.ts:59364:complete",
           "kind": "MethodDeclaration",
-          "line": 1346,
+          "line": 1347,
           "name": "complete"
         }
       ],
@@ -11961,9 +11961,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": false,
-              "id": "src/storage.ts:21637:completeMigrationManifest",
+              "id": "src/storage.ts:21665:completeMigrationManifest",
               "kind": "MethodSignature",
-              "line": 465,
+              "line": 466,
               "name": "completeMigrationManifest",
               "reason": "resolved-call"
             },
@@ -11971,9 +11971,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:42540:completeMigrationManifest",
+              "id": "src/storage.ts:42568:completeMigrationManifest",
               "kind": "MethodDeclaration",
-              "line": 919,
+              "line": 920,
               "name": "completeMigrationManifest",
               "reason": "interface-to-implementation"
             }
@@ -11982,9 +11982,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:42540:completeMigrationManifest",
+            "id": "src/storage.ts:42568:completeMigrationManifest",
             "kind": "MethodDeclaration",
-            "line": 919,
+            "line": 920,
             "name": "completeMigrationManifest"
           },
           "test": "test/migrations.test.ts"
@@ -12008,9 +12008,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:42540:completeMigrationManifest",
+          "id": "src/storage.ts:42568:completeMigrationManifest",
           "kind": "MethodDeclaration",
-          "line": 919,
+          "line": 920,
           "name": "completeMigrationManifest"
         }
       ],
@@ -12123,9 +12123,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:49440:listApplyingMigrationManifests",
+              "id": "src/storage.ts:49468:listApplyingMigrationManifests",
               "kind": "MethodDeclaration",
-              "line": 1107,
+              "line": 1108,
               "name": "listApplyingMigrationManifests",
               "reason": "resolved-call"
             }
@@ -12134,9 +12134,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:49440:listApplyingMigrationManifests",
+            "id": "src/storage.ts:49468:listApplyingMigrationManifests",
             "kind": "MethodDeclaration",
-            "line": 1107,
+            "line": 1108,
             "name": "listApplyingMigrationManifests"
           },
           "test": "test/segmented-state.test.ts"
@@ -12164,9 +12164,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:49440:listApplyingMigrationManifests",
+          "id": "src/storage.ts:49468:listApplyingMigrationManifests",
           "kind": "MethodDeclaration",
-          "line": 1107,
+          "line": 1108,
           "name": "listApplyingMigrationManifests"
         }
       ],
@@ -12279,9 +12279,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:48823:listApplyingOperations",
+              "id": "src/storage.ts:48851:listApplyingOperations",
               "kind": "MethodDeclaration",
-              "line": 1090,
+              "line": 1091,
               "name": "listApplyingOperations",
               "reason": "resolved-call"
             }
@@ -12290,9 +12290,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:48823:listApplyingOperations",
+            "id": "src/storage.ts:48851:listApplyingOperations",
             "kind": "MethodDeclaration",
-            "line": 1090,
+            "line": 1091,
             "name": "listApplyingOperations"
           },
           "test": "test/segmented-state.test.ts"
@@ -12320,9 +12320,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:48823:listApplyingOperations",
+          "id": "src/storage.ts:48851:listApplyingOperations",
           "kind": "MethodDeclaration",
-          "line": 1090,
+          "line": 1091,
           "name": "listApplyingOperations"
         }
       ],
@@ -12455,9 +12455,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": false,
-              "id": "src/storage.ts:26651:queryInventoryEvents",
+              "id": "src/storage.ts:26679:queryInventoryEvents",
               "kind": "MethodSignature",
-              "line": 569,
+              "line": 570,
               "name": "queryInventoryEvents",
               "reason": "resolved-call"
             },
@@ -12465,9 +12465,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:36259:queryInventoryEvents",
+              "id": "src/storage.ts:36287:queryInventoryEvents",
               "kind": "MethodDeclaration",
-              "line": 757,
+              "line": 758,
               "name": "queryInventoryEvents",
               "reason": "interface-to-implementation"
             }
@@ -12476,9 +12476,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:36259:queryInventoryEvents",
+            "id": "src/storage.ts:36287:queryInventoryEvents",
             "kind": "MethodDeclaration",
-            "line": 757,
+            "line": 758,
             "name": "queryInventoryEvents"
           },
           "test": "test/event-query.test.ts"
@@ -12502,9 +12502,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:36259:queryInventoryEvents",
+          "id": "src/storage.ts:36287:queryInventoryEvents",
           "kind": "MethodDeclaration",
-          "line": 757,
+          "line": 758,
           "name": "queryInventoryEvents"
         }
       ],
@@ -12647,9 +12647,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": false,
-              "id": "src/storage.ts:26806:queryInventoryEventsByResourceKeys",
+              "id": "src/storage.ts:26834:queryInventoryEventsByResourceKeys",
               "kind": "MethodSignature",
-              "line": 571,
+              "line": 572,
               "name": "queryInventoryEventsByResourceKeys",
               "reason": "resolved-call"
             },
@@ -12657,9 +12657,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:36500:queryInventoryEventsByResourceKeys",
+              "id": "src/storage.ts:36528:queryInventoryEventsByResourceKeys",
               "kind": "MethodDeclaration",
-              "line": 764,
+              "line": 765,
               "name": "queryInventoryEventsByResourceKeys",
               "reason": "interface-to-implementation"
             }
@@ -12668,9 +12668,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:36500:queryInventoryEventsByResourceKeys",
+            "id": "src/storage.ts:36528:queryInventoryEventsByResourceKeys",
             "kind": "MethodDeclaration",
-            "line": 764,
+            "line": 765,
             "name": "queryInventoryEventsByResourceKeys"
           },
           "test": "test/historical-repair.test.ts"
@@ -12694,9 +12694,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:36500:queryInventoryEventsByResourceKeys",
+          "id": "src/storage.ts:36528:queryInventoryEventsByResourceKeys",
           "kind": "MethodDeclaration",
-          "line": 764,
+          "line": 765,
           "name": "queryInventoryEventsByResourceKeys"
         }
       ],
@@ -12809,9 +12809,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:37592:readMigrationManifest",
+              "id": "src/storage.ts:37620:readMigrationManifest",
               "kind": "MethodDeclaration",
-              "line": 790,
+              "line": 791,
               "name": "readMigrationManifest",
               "reason": "resolved-call"
             }
@@ -12820,9 +12820,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:37592:readMigrationManifest",
+            "id": "src/storage.ts:37620:readMigrationManifest",
             "kind": "MethodDeclaration",
-            "line": 790,
+            "line": 791,
             "name": "readMigrationManifest"
           },
           "test": "test/authority.test.ts"
@@ -12850,9 +12850,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:37592:readMigrationManifest",
+          "id": "src/storage.ts:37620:readMigrationManifest",
           "kind": "MethodDeclaration",
-          "line": 790,
+          "line": 791,
           "name": "readMigrationManifest"
         }
       ],
@@ -12969,9 +12969,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:37031:readOperation",
+              "id": "src/storage.ts:37059:readOperation",
               "kind": "MethodDeclaration",
-              "line": 777,
+              "line": 778,
               "name": "readOperation",
               "reason": "resolved-call"
             }
@@ -12980,9 +12980,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:37031:readOperation",
+            "id": "src/storage.ts:37059:readOperation",
             "kind": "MethodDeclaration",
-            "line": 777,
+            "line": 778,
             "name": "readOperation"
           },
           "test": "test/catalog-composition-publication.test.ts"
@@ -13010,9 +13010,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:37031:readOperation",
+          "id": "src/storage.ts:37059:readOperation",
           "kind": "MethodDeclaration",
-          "line": 777,
+          "line": 778,
           "name": "readOperation"
         }
       ],
@@ -13129,9 +13129,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:34916:readPlacementSegment",
+              "id": "src/storage.ts:34944:readPlacementSegment",
               "kind": "MethodDeclaration",
-              "line": 730,
+              "line": 731,
               "name": "readPlacementSegment",
               "reason": "resolved-call"
             }
@@ -13140,9 +13140,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:34916:readPlacementSegment",
+            "id": "src/storage.ts:34944:readPlacementSegment",
             "kind": "MethodDeclaration",
-            "line": 730,
+            "line": 731,
             "name": "readPlacementSegment"
           },
           "test": "test/historical-repair.test.ts"
@@ -13170,9 +13170,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:34916:readPlacementSegment",
+          "id": "src/storage.ts:34944:readPlacementSegment",
           "kind": "MethodDeclaration",
-          "line": 730,
+          "line": 731,
           "name": "readPlacementSegment"
         }
       ],
@@ -13273,9 +13273,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:34717:readPositionSegment",
+              "id": "src/storage.ts:34745:readPositionSegment",
               "kind": "MethodDeclaration",
-              "line": 725,
+              "line": 726,
               "name": "readPositionSegment",
               "reason": "resolved-call"
             }
@@ -13284,9 +13284,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:34717:readPositionSegment",
+            "id": "src/storage.ts:34745:readPositionSegment",
             "kind": "MethodDeclaration",
-            "line": 725,
+            "line": 726,
             "name": "readPositionSegment"
           },
           "test": "test/historical-repair.test.ts"
@@ -13314,9 +13314,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:34717:readPositionSegment",
+          "id": "src/storage.ts:34745:readPositionSegment",
           "kind": "MethodDeclaration",
-          "line": 725,
+          "line": 726,
           "name": "readPositionSegment"
         }
       ],
@@ -13403,9 +13403,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:36823:readWorld",
+              "id": "src/storage.ts:36851:readWorld",
               "kind": "MethodDeclaration",
-              "line": 771,
+              "line": 772,
               "name": "readWorld",
               "reason": "resolved-call"
             }
@@ -13414,9 +13414,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:36823:readWorld",
+            "id": "src/storage.ts:36851:readWorld",
             "kind": "MethodDeclaration",
-            "line": 771,
+            "line": 772,
             "name": "readWorld"
           },
           "test": "test/storage-conformance.test.ts"
@@ -13444,9 +13444,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:36823:readWorld",
+          "id": "src/storage.ts:36851:readWorld",
           "kind": "MethodDeclaration",
-          "line": 771,
+          "line": 772,
           "name": "readWorld"
         }
       ],
@@ -13583,9 +13583,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": false,
-              "id": "src/storage.ts:22344:writeCounts",
+              "id": "src/storage.ts:22372:writeCounts",
               "kind": "MethodSignature",
-              "line": 479,
+              "line": 480,
               "name": "writeCounts",
               "reason": "resolved-call"
             },
@@ -13593,9 +13593,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:57090:writeCounts",
+              "id": "src/storage.ts:57118:writeCounts",
               "kind": "MethodDeclaration",
-              "line": 1302,
+              "line": 1303,
               "name": "writeCounts",
               "reason": "interface-to-implementation"
             }
@@ -13604,9 +13604,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:57090:writeCounts",
+            "id": "src/storage.ts:57118:writeCounts",
             "kind": "MethodDeclaration",
-            "line": 1302,
+            "line": 1303,
             "name": "writeCounts"
           },
           "test": "test/reservation-closure-shortage.test.ts"
@@ -13630,9 +13630,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:57090:writeCounts",
+          "id": "src/storage.ts:57118:writeCounts",
           "kind": "MethodDeclaration",
-          "line": 1302,
+          "line": 1303,
           "name": "writeCounts"
         }
       ],
@@ -13765,9 +13765,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": false,
-              "id": "src/storage.ts:21957:writeEvent",
+              "id": "src/storage.ts:21985:writeEvent",
               "kind": "MethodSignature",
-              "line": 473,
+              "line": 474,
               "name": "writeEvent",
               "reason": "resolved-call"
             },
@@ -13775,9 +13775,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:53264:writeEvent",
+              "id": "src/storage.ts:53292:writeEvent",
               "kind": "MethodDeclaration",
-              "line": 1208,
+              "line": 1209,
               "name": "writeEvent",
               "reason": "interface-to-implementation"
             }
@@ -13786,9 +13786,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:53264:writeEvent",
+            "id": "src/storage.ts:53292:writeEvent",
             "kind": "MethodDeclaration",
-            "line": 1208,
+            "line": 1209,
             "name": "writeEvent"
           },
           "test": "test/reservation-closure-shortage.test.ts"
@@ -13812,9 +13812,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:53264:writeEvent",
+          "id": "src/storage.ts:53292:writeEvent",
           "kind": "MethodDeclaration",
-          "line": 1208,
+          "line": 1209,
           "name": "writeEvent"
         }
       ],
@@ -13937,9 +13937,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": false,
-              "id": "src/storage.ts:21469:writeMigrationWorld",
+              "id": "src/storage.ts:21497:writeMigrationWorld",
               "kind": "MethodSignature",
-              "line": 463,
+              "line": 464,
               "name": "writeMigrationWorld",
               "reason": "resolved-call"
             },
@@ -13947,9 +13947,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:40921:writeMigrationWorld",
+              "id": "src/storage.ts:40949:writeMigrationWorld",
               "kind": "MethodDeclaration",
-              "line": 875,
+              "line": 876,
               "name": "writeMigrationWorld",
               "reason": "interface-to-implementation"
             }
@@ -13958,9 +13958,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:40921:writeMigrationWorld",
+            "id": "src/storage.ts:40949:writeMigrationWorld",
             "kind": "MethodDeclaration",
-            "line": 875,
+            "line": 876,
             "name": "writeMigrationWorld"
           },
           "test": "test/migrations.test.ts"
@@ -13984,9 +13984,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:40921:writeMigrationWorld",
+          "id": "src/storage.ts:40949:writeMigrationWorld",
           "kind": "MethodDeclaration",
-          "line": 875,
+          "line": 876,
           "name": "writeMigrationWorld"
         }
       ],
@@ -14119,9 +14119,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": false,
-              "id": "src/storage.ts:22080:writeProjection",
+              "id": "src/storage.ts:22108:writeProjection",
               "kind": "MethodSignature",
-              "line": 475,
+              "line": 476,
               "name": "writeProjection",
               "reason": "resolved-call"
             },
@@ -14129,9 +14129,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:54504:writeProjection",
+              "id": "src/storage.ts:54532:writeProjection",
               "kind": "MethodDeclaration",
-              "line": 1233,
+              "line": 1234,
               "name": "writeProjection",
               "reason": "interface-to-implementation"
             }
@@ -14140,9 +14140,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:54504:writeProjection",
+            "id": "src/storage.ts:54532:writeProjection",
             "kind": "MethodDeclaration",
-            "line": 1233,
+            "line": 1234,
             "name": "writeProjection"
           },
           "test": "test/reservation-closure-shortage.test.ts"
@@ -14166,9 +14166,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:54504:writeProjection",
+          "id": "src/storage.ts:54532:writeProjection",
           "kind": "MethodDeclaration",
-          "line": 1233,
+          "line": 1234,
           "name": "writeProjection"
         }
       ],
@@ -14301,9 +14301,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": false,
-              "id": "src/storage.ts:22464:writeReceipt",
+              "id": "src/storage.ts:22492:writeReceipt",
               "kind": "MethodSignature",
-              "line": 481,
+              "line": 482,
               "name": "writeReceipt",
               "reason": "resolved-call"
             },
@@ -14311,9 +14311,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:58190:writeReceipt",
+              "id": "src/storage.ts:58218:writeReceipt",
               "kind": "MethodDeclaration",
-              "line": 1324,
+              "line": 1325,
               "name": "writeReceipt",
               "reason": "interface-to-implementation"
             }
@@ -14322,9 +14322,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:58190:writeReceipt",
+            "id": "src/storage.ts:58218:writeReceipt",
             "kind": "MethodDeclaration",
-            "line": 1324,
+            "line": 1325,
             "name": "writeReceipt"
           },
           "test": "test/reservation-closure-shortage.test.ts"
@@ -14348,9 +14348,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:58190:writeReceipt",
+          "id": "src/storage.ts:58218:writeReceipt",
           "kind": "MethodDeclaration",
-          "line": 1324,
+          "line": 1325,
           "name": "writeReceipt"
         }
       ],
@@ -14483,9 +14483,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": false,
-              "id": "src/storage.ts:22214:writeReservations",
+              "id": "src/storage.ts:22242:writeReservations",
               "kind": "MethodSignature",
-              "line": 477,
+              "line": 478,
               "name": "writeReservations",
               "reason": "resolved-call"
             },
@@ -14493,9 +14493,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:55871:writeReservations",
+              "id": "src/storage.ts:55899:writeReservations",
               "kind": "MethodDeclaration",
-              "line": 1270,
+              "line": 1271,
               "name": "writeReservations",
               "reason": "interface-to-implementation"
             }
@@ -14504,9 +14504,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:55871:writeReservations",
+            "id": "src/storage.ts:55899:writeReservations",
             "kind": "MethodDeclaration",
-            "line": 1270,
+            "line": 1271,
             "name": "writeReservations"
           },
           "test": "test/reservation-closure-shortage.test.ts"
@@ -14530,9 +14530,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:55871:writeReservations",
+          "id": "src/storage.ts:55899:writeReservations",
           "kind": "MethodDeclaration",
-          "line": 1270,
+          "line": 1271,
           "name": "writeReservations"
         }
       ],
@@ -16121,9 +16121,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": false,
-              "id": "src/storage.ts:26651:queryInventoryEvents",
+              "id": "src/storage.ts:26679:queryInventoryEvents",
               "kind": "MethodSignature",
-              "line": 569,
+              "line": 570,
               "name": "queryInventoryEvents",
               "reason": "resolved-call"
             },
@@ -16131,9 +16131,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:36259:queryInventoryEvents",
+              "id": "src/storage.ts:36287:queryInventoryEvents",
               "kind": "MethodDeclaration",
-              "line": 757,
+              "line": 758,
               "name": "queryInventoryEvents",
               "reason": "interface-to-implementation"
             },
@@ -16601,9 +16601,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:35685:commitSegmentedStockEvent",
+              "id": "src/storage.ts:35713:commitSegmentedStockEvent",
               "kind": "MethodDeclaration",
-              "line": 746,
+              "line": 747,
               "name": "commitSegmentedStockEvent",
               "reason": "resolved-call"
             },
@@ -16611,9 +16611,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:89803:runStorageMutationAtomically",
+              "id": "src/storage.ts:89842:runStorageMutationAtomically",
               "kind": "MethodDeclaration",
-              "line": 2157,
+              "line": 2158,
               "name": "runStorageMutationAtomically",
               "reason": "resolved-call"
             },
@@ -16621,9 +16621,9 @@
               "column": 7,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:35404:run",
+              "id": "src/storage.ts:35432:run",
               "kind": "ArrowFunction",
-              "line": 740,
+              "line": 741,
               "name": "run",
               "reason": "callback-dispatch"
             },
@@ -16631,9 +16631,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:64639:commitSegmentedPlacementChangeUnlocked",
+              "id": "src/storage.ts:64667:commitSegmentedPlacementChangeUnlocked",
               "kind": "MethodDeclaration",
-              "line": 1478,
+              "line": 1479,
               "name": "commitSegmentedPlacementChangeUnlocked",
               "reason": "resolved-call"
             },
@@ -18235,10 +18235,10 @@
               "column": 83,
               "file": "test/segmented-state.test.ts",
               "hasBody": true,
-              "id": "test/segmented-state.test.ts:25882:<anonymous@693>",
+              "id": "test/segmented-state.test.ts:26902:<anonymous@717>",
               "kind": "ArrowFunction",
-              "line": 693,
-              "name": "<anonymous@693>",
+              "line": 717,
+              "name": "<anonymous@717>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -18407,9 +18407,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:35685:commitSegmentedStockEvent",
+              "id": "src/storage.ts:35713:commitSegmentedStockEvent",
               "kind": "MethodDeclaration",
-              "line": 746,
+              "line": 747,
               "name": "commitSegmentedStockEvent",
               "reason": "resolved-call"
             },
@@ -18417,9 +18417,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:89803:runStorageMutationAtomically",
+              "id": "src/storage.ts:89842:runStorageMutationAtomically",
               "kind": "MethodDeclaration",
-              "line": 2157,
+              "line": 2158,
               "name": "runStorageMutationAtomically",
               "reason": "resolved-call"
             },
@@ -18427,9 +18427,9 @@
               "column": 7,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:35970:commitOperation",
+              "id": "src/storage.ts:35998:commitOperation",
               "kind": "ArrowFunction",
-              "line": 751,
+              "line": 752,
               "name": "commitOperation",
               "reason": "callback-dispatch"
             },
@@ -18437,9 +18437,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:72094:commitSegmentedStockEventUnlocked",
+              "id": "src/storage.ts:72122:commitSegmentedStockEventUnlocked",
               "kind": "MethodDeclaration",
-              "line": 1686,
+              "line": 1687,
               "name": "commitSegmentedStockEventUnlocked",
               "reason": "resolved-call"
             },
@@ -18897,10 +18897,10 @@
               "column": 83,
               "file": "test/segmented-state.test.ts",
               "hasBody": true,
-              "id": "test/segmented-state.test.ts:25882:<anonymous@693>",
+              "id": "test/segmented-state.test.ts:26902:<anonymous@717>",
               "kind": "ArrowFunction",
-              "line": 693,
-              "name": "<anonymous@693>",
+              "line": 717,
+              "name": "<anonymous@717>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -19169,10 +19169,10 @@
               "column": 83,
               "file": "test/segmented-state.test.ts",
               "hasBody": true,
-              "id": "test/segmented-state.test.ts:25882:<anonymous@693>",
+              "id": "test/segmented-state.test.ts:26902:<anonymous@717>",
               "kind": "ArrowFunction",
-              "line": 693,
-              "name": "<anonymous@693>",
+              "line": 717,
+              "name": "<anonymous@717>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -19325,10 +19325,10 @@
               "column": 83,
               "file": "test/segmented-state.test.ts",
               "hasBody": true,
-              "id": "test/segmented-state.test.ts:25882:<anonymous@693>",
+              "id": "test/segmented-state.test.ts:26902:<anonymous@717>",
               "kind": "ArrowFunction",
-              "line": 693,
-              "name": "<anonymous@693>",
+              "line": 717,
+              "name": "<anonymous@717>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -19637,10 +19637,10 @@
               "column": 83,
               "file": "test/segmented-state.test.ts",
               "hasBody": true,
-              "id": "test/segmented-state.test.ts:25882:<anonymous@693>",
+              "id": "test/segmented-state.test.ts:26902:<anonymous@717>",
               "kind": "ArrowFunction",
-              "line": 693,
-              "name": "<anonymous@693>",
+              "line": 717,
+              "name": "<anonymous@717>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -20019,10 +20019,10 @@
               "column": 83,
               "file": "test/segmented-state.test.ts",
               "hasBody": true,
-              "id": "test/segmented-state.test.ts:25882:<anonymous@693>",
+              "id": "test/segmented-state.test.ts:26902:<anonymous@717>",
               "kind": "ArrowFunction",
-              "line": 693,
-              "name": "<anonymous@693>",
+              "line": 717,
+              "name": "<anonymous@717>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -34591,6 +34591,10 @@
         {
           "occurrences": 4,
           "path": "src/migrations.ts"
+        },
+        {
+          "occurrences": 2,
+          "path": "src/storage.ts"
         }
       ],
       "invariants": [
@@ -35737,9 +35741,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": false,
-              "id": "src/storage.ts:26651:queryInventoryEvents",
+              "id": "src/storage.ts:26679:queryInventoryEvents",
               "kind": "MethodSignature",
-              "line": 569,
+              "line": 570,
               "name": "queryInventoryEvents",
               "reason": "resolved-call"
             },
@@ -35747,9 +35751,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:36259:queryInventoryEvents",
+              "id": "src/storage.ts:36287:queryInventoryEvents",
               "kind": "MethodDeclaration",
-              "line": 757,
+              "line": 758,
               "name": "queryInventoryEvents",
               "reason": "interface-to-implementation"
             },
@@ -51911,7 +51915,7 @@
           "path": "src/authority-cutover.ts"
         },
         {
-          "occurrences": 119,
+          "occurrences": 118,
           "path": "src/authority.ts"
         },
         {
@@ -58127,6 +58131,10 @@
         {
           "occurrences": 4,
           "path": "src/migrations.ts"
+        },
+        {
+          "occurrences": 2,
+          "path": "src/storage.ts"
         }
       ],
       "invariants": [
@@ -64512,9 +64520,9 @@
               "column": 1,
               "file": "src/authority.ts",
               "hasBody": true,
-              "id": "src/authority.ts:74126:requireInventoryAuthorityMode",
+              "id": "src/authority.ts:73459:requireInventoryAuthorityMode",
               "kind": "FunctionDeclaration",
-              "line": 2026,
+              "line": 2005,
               "name": "requireInventoryAuthorityMode",
               "reason": "resolved-call"
             }
@@ -64523,9 +64531,9 @@
             "column": 1,
             "file": "src/authority.ts",
             "hasBody": true,
-            "id": "src/authority.ts:74126:requireInventoryAuthorityMode",
+            "id": "src/authority.ts:73459:requireInventoryAuthorityMode",
             "kind": "FunctionDeclaration",
-            "line": 2026,
+            "line": 2005,
             "name": "requireInventoryAuthorityMode"
           },
           "test": "test/authority.test.ts"
@@ -64549,9 +64557,9 @@
           "column": 1,
           "file": "src/authority.ts",
           "hasBody": true,
-          "id": "src/authority.ts:74126:requireInventoryAuthorityMode",
+          "id": "src/authority.ts:73459:requireInventoryAuthorityMode",
           "kind": "FunctionDeclaration",
-          "line": 2026,
+          "line": 2005,
           "name": "requireInventoryAuthorityMode"
         }
       ],
@@ -66454,9 +66462,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:31860:InMemoryInventoryDurableStorage",
+              "id": "src/storage.ts:31888:InMemoryInventoryDurableStorage",
               "kind": "Constructor",
-              "line": 670,
+              "line": 671,
               "name": "InMemoryInventoryDurableStorage",
               "reason": "resolved-call"
             }
@@ -66465,9 +66473,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:31860:InMemoryInventoryDurableStorage",
+            "id": "src/storage.ts:31888:InMemoryInventoryDurableStorage",
             "kind": "Constructor",
-            "line": 670,
+            "line": 671,
             "name": "InMemoryInventoryDurableStorage"
           },
           "test": "test/storage-conformance.test.ts"
@@ -66495,9 +66503,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:31860:InMemoryInventoryDurableStorage",
+          "id": "src/storage.ts:31888:InMemoryInventoryDurableStorage",
           "kind": "Constructor",
-          "line": 670,
+          "line": 671,
           "name": "InMemoryInventoryDurableStorage"
         }
       ],
@@ -67064,9 +67072,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:35685:commitSegmentedStockEvent",
+              "id": "src/storage.ts:35713:commitSegmentedStockEvent",
               "kind": "MethodDeclaration",
-              "line": 746,
+              "line": 747,
               "name": "commitSegmentedStockEvent",
               "reason": "resolved-call"
             },
@@ -67074,9 +67082,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:89803:runStorageMutationAtomically",
+              "id": "src/storage.ts:89842:runStorageMutationAtomically",
               "kind": "MethodDeclaration",
-              "line": 2157,
+              "line": 2158,
               "name": "runStorageMutationAtomically",
               "reason": "resolved-call"
             },
@@ -67084,9 +67092,9 @@
               "column": 28,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:38197:beginOperation",
+              "id": "src/storage.ts:38225:beginOperation",
               "kind": "ArrowFunction",
-              "line": 802,
+              "line": 803,
               "name": "beginOperation",
               "reason": "callback-dispatch"
             },
@@ -67094,9 +67102,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:38457:beginMigrationManifestUnlocked",
+              "id": "src/storage.ts:38485:beginMigrationManifestUnlocked",
               "kind": "MethodDeclaration",
-              "line": 808,
+              "line": 809,
               "name": "beginMigrationManifestUnlocked",
               "reason": "resolved-call"
             },
@@ -67104,9 +67112,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:23845:InventoryApplyingOperationConflictError",
+              "id": "src/storage.ts:23873:InventoryApplyingOperationConflictError",
               "kind": "Constructor",
-              "line": 512,
+              "line": 513,
               "name": "InventoryApplyingOperationConflictError",
               "reason": "resolved-call"
             }
@@ -67115,9 +67123,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:23845:InventoryApplyingOperationConflictError",
+            "id": "src/storage.ts:23873:InventoryApplyingOperationConflictError",
             "kind": "Constructor",
-            "line": 512,
+            "line": 513,
             "name": "InventoryApplyingOperationConflictError"
           },
           "test": "test/historical-repair.test.ts"
@@ -67141,9 +67149,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:23845:InventoryApplyingOperationConflictError",
+          "id": "src/storage.ts:23873:InventoryApplyingOperationConflictError",
           "kind": "Constructor",
-          "line": 512,
+          "line": 513,
           "name": "InventoryApplyingOperationConflictError"
         }
       ],
@@ -67395,10 +67403,10 @@
               "column": 83,
               "file": "test/segmented-state.test.ts",
               "hasBody": true,
-              "id": "test/segmented-state.test.ts:25882:<anonymous@693>",
+              "id": "test/segmented-state.test.ts:26902:<anonymous@717>",
               "kind": "ArrowFunction",
-              "line": 693,
-              "name": "<anonymous@693>",
+              "line": 717,
+              "name": "<anonymous@717>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -67571,9 +67579,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:35685:commitSegmentedStockEvent",
+              "id": "src/storage.ts:35713:commitSegmentedStockEvent",
               "kind": "MethodDeclaration",
-              "line": 746,
+              "line": 747,
               "name": "commitSegmentedStockEvent",
               "reason": "resolved-call"
             },
@@ -67581,9 +67589,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:89803:runStorageMutationAtomically",
+              "id": "src/storage.ts:89842:runStorageMutationAtomically",
               "kind": "MethodDeclaration",
-              "line": 2157,
+              "line": 2158,
               "name": "runStorageMutationAtomically",
               "reason": "resolved-call"
             },
@@ -67591,9 +67599,9 @@
               "column": 28,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:38197:beginOperation",
+              "id": "src/storage.ts:38225:beginOperation",
               "kind": "ArrowFunction",
-              "line": 802,
+              "line": 803,
               "name": "beginOperation",
               "reason": "callback-dispatch"
             },
@@ -67601,9 +67609,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:38457:beginMigrationManifestUnlocked",
+              "id": "src/storage.ts:38485:beginMigrationManifestUnlocked",
               "kind": "MethodDeclaration",
-              "line": 808,
+              "line": 809,
               "name": "beginMigrationManifestUnlocked",
               "reason": "resolved-call"
             },
@@ -67611,9 +67619,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:23186:InventoryWorldRevisionConflictError",
+              "id": "src/storage.ts:23214:InventoryWorldRevisionConflictError",
               "kind": "Constructor",
-              "line": 496,
+              "line": 497,
               "name": "InventoryWorldRevisionConflictError",
               "reason": "resolved-call"
             }
@@ -67622,9 +67630,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:23186:InventoryWorldRevisionConflictError",
+            "id": "src/storage.ts:23214:InventoryWorldRevisionConflictError",
             "kind": "Constructor",
-            "line": 496,
+            "line": 497,
             "name": "InventoryWorldRevisionConflictError"
           },
           "test": "test/historical-repair.test.ts"
@@ -67648,9 +67656,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:23186:InventoryWorldRevisionConflictError",
+          "id": "src/storage.ts:23214:InventoryWorldRevisionConflictError",
           "kind": "Constructor",
-          "line": 496,
+          "line": 497,
           "name": "InventoryWorldRevisionConflictError"
         }
       ],
@@ -67779,9 +67787,9 @@
               "column": 1,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:94155:materializeInventoryDurableOperationWorld",
+              "id": "src/storage.ts:94194:materializeInventoryDurableOperationWorld",
               "kind": "FunctionDeclaration",
-              "line": 2272,
+              "line": 2273,
               "name": "materializeInventoryDurableOperationWorld",
               "reason": "resolved-call"
             },
@@ -67789,9 +67797,9 @@
               "column": 1,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:98257:validateInventoryDurablePlanAgainstBase",
+              "id": "src/storage.ts:98296:validateInventoryDurablePlanAgainstBase",
               "kind": "FunctionDeclaration",
-              "line": 2393,
+              "line": 2394,
               "name": "validateInventoryDurablePlanAgainstBase",
               "reason": "resolved-call"
             },
@@ -67951,9 +67959,9 @@
               "column": 1,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:94155:materializeInventoryDurableOperationWorld",
+              "id": "src/storage.ts:94194:materializeInventoryDurableOperationWorld",
               "kind": "FunctionDeclaration",
-              "line": 2272,
+              "line": 2273,
               "name": "materializeInventoryDurableOperationWorld",
               "reason": "resolved-call"
             },
@@ -67961,9 +67969,9 @@
               "column": 1,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:98257:validateInventoryDurablePlanAgainstBase",
+              "id": "src/storage.ts:98296:validateInventoryDurablePlanAgainstBase",
               "kind": "FunctionDeclaration",
-              "line": 2393,
+              "line": 2394,
               "name": "validateInventoryDurablePlanAgainstBase",
               "reason": "resolved-call"
             },
@@ -68245,9 +68253,9 @@
               "column": 1,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:93626:createInMemoryInventoryDurableStorage",
+              "id": "src/storage.ts:93665:createInMemoryInventoryDurableStorage",
               "kind": "FunctionDeclaration",
-              "line": 2258,
+              "line": 2259,
               "name": "createInMemoryInventoryDurableStorage",
               "reason": "resolved-call"
             }
@@ -68256,9 +68264,9 @@
             "column": 1,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:93626:createInMemoryInventoryDurableStorage",
+            "id": "src/storage.ts:93665:createInMemoryInventoryDurableStorage",
             "kind": "FunctionDeclaration",
-            "line": 2258,
+            "line": 2259,
             "name": "createInMemoryInventoryDurableStorage"
           },
           "test": "test/storage-conformance.test.ts"
@@ -68286,9 +68294,9 @@
           "column": 1,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:93626:createInMemoryInventoryDurableStorage",
+          "id": "src/storage.ts:93665:createInMemoryInventoryDurableStorage",
           "kind": "FunctionDeclaration",
-          "line": 2258,
+          "line": 2259,
           "name": "createInMemoryInventoryDurableStorage"
         }
       ],
@@ -70074,9 +70082,9 @@
               "column": 1,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:27039:inventoryStorageSupportsEventQuery",
+              "id": "src/storage.ts:27067:inventoryStorageSupportsEventQuery",
               "kind": "FunctionDeclaration",
-              "line": 577,
+              "line": 578,
               "name": "inventoryStorageSupportsEventQuery",
               "reason": "resolved-call"
             }
@@ -70085,9 +70093,9 @@
             "column": 1,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:27039:inventoryStorageSupportsEventQuery",
+            "id": "src/storage.ts:27067:inventoryStorageSupportsEventQuery",
             "kind": "FunctionDeclaration",
-            "line": 577,
+            "line": 578,
             "name": "inventoryStorageSupportsEventQuery"
           },
           "test": "test/event-query.test.ts"
@@ -70111,9 +70119,9 @@
           "column": 1,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:27039:inventoryStorageSupportsEventQuery",
+          "id": "src/storage.ts:27067:inventoryStorageSupportsEventQuery",
           "kind": "FunctionDeclaration",
-          "line": 577,
+          "line": 578,
           "name": "inventoryStorageSupportsEventQuery"
         }
       ],
@@ -70239,9 +70247,9 @@
               "column": 1,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:26073:inventoryStorageSupportsSegmentedPlacement",
+              "id": "src/storage.ts:26101:inventoryStorageSupportsSegmentedPlacement",
               "kind": "FunctionDeclaration",
-              "line": 556,
+              "line": 557,
               "name": "inventoryStorageSupportsSegmentedPlacement",
               "reason": "resolved-call"
             }
@@ -70250,9 +70258,9 @@
             "column": 1,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:26073:inventoryStorageSupportsSegmentedPlacement",
+            "id": "src/storage.ts:26101:inventoryStorageSupportsSegmentedPlacement",
             "kind": "FunctionDeclaration",
-            "line": 556,
+            "line": 557,
             "name": "inventoryStorageSupportsSegmentedPlacement"
           },
           "test": "test/containers.test.ts"
@@ -70276,9 +70284,9 @@
           "column": 1,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:26073:inventoryStorageSupportsSegmentedPlacement",
+          "id": "src/storage.ts:26101:inventoryStorageSupportsSegmentedPlacement",
           "kind": "FunctionDeclaration",
-          "line": 556,
+          "line": 557,
           "name": "inventoryStorageSupportsSegmentedPlacement"
         }
       ],
@@ -70873,9 +70881,9 @@
               "column": 1,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:94711:materializeInventoryDurableMigrationWorld",
+              "id": "src/storage.ts:94750:materializeInventoryDurableMigrationWorld",
               "kind": "FunctionDeclaration",
-              "line": 2287,
+              "line": 2288,
               "name": "materializeInventoryDurableMigrationWorld",
               "reason": "resolved-call"
             }
@@ -70884,9 +70892,9 @@
             "column": 1,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:94711:materializeInventoryDurableMigrationWorld",
+            "id": "src/storage.ts:94750:materializeInventoryDurableMigrationWorld",
             "kind": "FunctionDeclaration",
-            "line": 2287,
+            "line": 2288,
             "name": "materializeInventoryDurableMigrationWorld"
           },
           "test": "test/formal-public-surface-direct.test.ts"
@@ -70912,9 +70920,9 @@
           "column": 1,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:94711:materializeInventoryDurableMigrationWorld",
+          "id": "src/storage.ts:94750:materializeInventoryDurableMigrationWorld",
           "kind": "FunctionDeclaration",
-          "line": 2287,
+          "line": 2288,
           "name": "materializeInventoryDurableMigrationWorld"
         }
       ],
@@ -71024,9 +71032,9 @@
               "column": 1,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:94155:materializeInventoryDurableOperationWorld",
+              "id": "src/storage.ts:94194:materializeInventoryDurableOperationWorld",
               "kind": "FunctionDeclaration",
-              "line": 2272,
+              "line": 2273,
               "name": "materializeInventoryDurableOperationWorld",
               "reason": "resolved-call"
             }
@@ -71035,9 +71043,9 @@
             "column": 1,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:94155:materializeInventoryDurableOperationWorld",
+            "id": "src/storage.ts:94194:materializeInventoryDurableOperationWorld",
             "kind": "FunctionDeclaration",
-            "line": 2272,
+            "line": 2273,
             "name": "materializeInventoryDurableOperationWorld"
           },
           "test": "test/formal-public-surface-direct.test.ts"
@@ -71063,9 +71071,9 @@
           "column": 1,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:94155:materializeInventoryDurableOperationWorld",
+          "id": "src/storage.ts:94194:materializeInventoryDurableOperationWorld",
           "kind": "FunctionDeclaration",
-          "line": 2272,
+          "line": 2273,
           "name": "materializeInventoryDurableOperationWorld"
         }
       ],
@@ -71630,9 +71638,9 @@
               "column": 1,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:93909:validateInventoryDurableOperationBeginInput",
+              "id": "src/storage.ts:93948:validateInventoryDurableOperationBeginInput",
               "kind": "FunctionDeclaration",
-              "line": 2265,
+              "line": 2266,
               "name": "validateInventoryDurableOperationBeginInput",
               "reason": "resolved-call"
             }
@@ -71641,9 +71649,9 @@
             "column": 1,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:93909:validateInventoryDurableOperationBeginInput",
+            "id": "src/storage.ts:93948:validateInventoryDurableOperationBeginInput",
             "kind": "FunctionDeclaration",
-            "line": 2265,
+            "line": 2266,
             "name": "validateInventoryDurableOperationBeginInput"
           },
           "test": "test/formal-public-surface-direct.test.ts"
@@ -71671,9 +71679,9 @@
           "column": 1,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:93909:validateInventoryDurableOperationBeginInput",
+          "id": "src/storage.ts:93948:validateInventoryDurableOperationBeginInput",
           "kind": "FunctionDeclaration",
-          "line": 2265,
+          "line": 2266,
           "name": "validateInventoryDurableOperationBeginInput"
         }
       ],
@@ -71790,9 +71798,9 @@
               "column": 1,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:94462:validateInventoryMigrationManifestBeginInput",
+              "id": "src/storage.ts:94501:validateInventoryMigrationManifestBeginInput",
               "kind": "FunctionDeclaration",
-              "line": 2280,
+              "line": 2281,
               "name": "validateInventoryMigrationManifestBeginInput",
               "reason": "resolved-call"
             }
@@ -71801,9 +71809,9 @@
             "column": 1,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:94462:validateInventoryMigrationManifestBeginInput",
+            "id": "src/storage.ts:94501:validateInventoryMigrationManifestBeginInput",
             "kind": "FunctionDeclaration",
-            "line": 2280,
+            "line": 2281,
             "name": "validateInventoryMigrationManifestBeginInput"
           },
           "test": "test/formal-public-surface-direct.test.ts"
@@ -71831,9 +71839,9 @@
           "column": 1,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:94462:validateInventoryMigrationManifestBeginInput",
+          "id": "src/storage.ts:94501:validateInventoryMigrationManifestBeginInput",
           "kind": "FunctionDeclaration",
-          "line": 2280,
+          "line": 2281,
           "name": "validateInventoryMigrationManifestBeginInput"
         }
       ],
@@ -95070,9 +95078,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": false,
-              "id": "src/storage.ts:22758:abort",
+              "id": "src/storage.ts:22786:abort",
               "kind": "MethodSignature",
-              "line": 485,
+              "line": 486,
               "name": "abort",
               "reason": "resolved-call"
             },
@@ -95080,9 +95088,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:87919:abort",
+              "id": "src/storage.ts:87958:abort",
               "kind": "MethodDeclaration",
-              "line": 2109,
+              "line": 2110,
               "name": "abort",
               "reason": "interface-to-implementation"
             }
@@ -95091,9 +95099,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:87919:abort",
+            "id": "src/storage.ts:87958:abort",
             "kind": "MethodDeclaration",
-            "line": 2109,
+            "line": 2110,
             "name": "abort"
           },
           "test": "test/storage-conformance.test.ts"
@@ -95117,9 +95125,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:87919:abort",
+          "id": "src/storage.ts:87958:abort",
           "kind": "MethodDeclaration",
-          "line": 2109,
+          "line": 2110,
           "name": "abort"
         }
       ],
@@ -95237,9 +95245,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": false,
-              "id": "src/storage.ts:21813:abortMigrationManifest",
+              "id": "src/storage.ts:21841:abortMigrationManifest",
               "kind": "MethodSignature",
-              "line": 469,
+              "line": 470,
               "name": "abortMigrationManifest",
               "reason": "resolved-call"
             },
@@ -95247,9 +95255,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:46774:abortMigrationManifest",
+              "id": "src/storage.ts:46802:abortMigrationManifest",
               "kind": "MethodDeclaration",
-              "line": 1031,
+              "line": 1032,
               "name": "abortMigrationManifest",
               "reason": "interface-to-implementation"
             }
@@ -95258,9 +95266,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:46774:abortMigrationManifest",
+            "id": "src/storage.ts:46802:abortMigrationManifest",
             "kind": "MethodDeclaration",
-            "line": 1031,
+            "line": 1032,
             "name": "abortMigrationManifest"
           },
           "test": "test/storage-conformance.test.ts"
@@ -95284,9 +95292,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:46774:abortMigrationManifest",
+          "id": "src/storage.ts:46802:abortMigrationManifest",
           "kind": "MethodDeclaration",
-          "line": 1031,
+          "line": 1032,
           "name": "abortMigrationManifest"
         }
       ],
@@ -95404,9 +95412,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": false,
-              "id": "src/storage.ts:20912:begin",
+              "id": "src/storage.ts:20940:begin",
               "kind": "MethodSignature",
-              "line": 451,
+              "line": 452,
               "name": "begin",
               "reason": "resolved-call"
             },
@@ -95414,9 +95422,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:50096:begin",
+              "id": "src/storage.ts:50124:begin",
               "kind": "MethodDeclaration",
-              "line": 1124,
+              "line": 1125,
               "name": "begin",
               "reason": "interface-to-implementation"
             }
@@ -95425,9 +95433,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:50096:begin",
+            "id": "src/storage.ts:50124:begin",
             "kind": "MethodDeclaration",
-            "line": 1124,
+            "line": 1125,
             "name": "begin"
           },
           "test": "test/reservation-closure-shortage.test.ts"
@@ -95451,9 +95459,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:50096:begin",
+          "id": "src/storage.ts:50124:begin",
           "kind": "MethodDeclaration",
-          "line": 1124,
+          "line": 1125,
           "name": "begin"
         }
       ],
@@ -95587,9 +95595,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": false,
-              "id": "src/storage.ts:21255:beginMigrationManifest",
+              "id": "src/storage.ts:21283:beginMigrationManifest",
               "kind": "MethodSignature",
-              "line": 459,
+              "line": 460,
               "name": "beginMigrationManifest",
               "reason": "resolved-call"
             },
@@ -95597,9 +95605,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:37932:beginMigrationManifest",
+              "id": "src/storage.ts:37960:beginMigrationManifest",
               "kind": "MethodDeclaration",
-              "line": 798,
+              "line": 799,
               "name": "beginMigrationManifest",
               "reason": "interface-to-implementation"
             }
@@ -95608,9 +95616,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:37932:beginMigrationManifest",
+            "id": "src/storage.ts:37960:beginMigrationManifest",
             "kind": "MethodDeclaration",
-            "line": 798,
+            "line": 799,
             "name": "beginMigrationManifest"
           },
           "test": "test/containers.test.ts"
@@ -95634,9 +95642,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:37932:beginMigrationManifest",
+          "id": "src/storage.ts:37960:beginMigrationManifest",
           "kind": "MethodDeclaration",
-          "line": 798,
+          "line": 799,
           "name": "beginMigrationManifest"
         }
       ],
@@ -95768,9 +95776,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": false,
-              "id": "src/storage.ts:22622:complete",
+              "id": "src/storage.ts:22650:complete",
               "kind": "MethodSignature",
-              "line": 483,
+              "line": 484,
               "name": "complete",
               "reason": "resolved-call"
             },
@@ -95778,9 +95786,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:59336:complete",
+              "id": "src/storage.ts:59364:complete",
               "kind": "MethodDeclaration",
-              "line": 1346,
+              "line": 1347,
               "name": "complete",
               "reason": "interface-to-implementation"
             }
@@ -95789,9 +95797,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:59336:complete",
+            "id": "src/storage.ts:59364:complete",
             "kind": "MethodDeclaration",
-            "line": 1346,
+            "line": 1347,
             "name": "complete"
           },
           "test": "test/reservation-closure-shortage.test.ts"
@@ -95815,9 +95823,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:59336:complete",
+          "id": "src/storage.ts:59364:complete",
           "kind": "MethodDeclaration",
-          "line": 1346,
+          "line": 1347,
           "name": "complete"
         }
       ],
@@ -96047,9 +96055,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": false,
-              "id": "src/storage.ts:21637:completeMigrationManifest",
+              "id": "src/storage.ts:21665:completeMigrationManifest",
               "kind": "MethodSignature",
-              "line": 465,
+              "line": 466,
               "name": "completeMigrationManifest",
               "reason": "resolved-call"
             },
@@ -96057,9 +96065,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:42540:completeMigrationManifest",
+              "id": "src/storage.ts:42568:completeMigrationManifest",
               "kind": "MethodDeclaration",
-              "line": 919,
+              "line": 920,
               "name": "completeMigrationManifest",
               "reason": "interface-to-implementation"
             }
@@ -96068,9 +96076,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:42540:completeMigrationManifest",
+            "id": "src/storage.ts:42568:completeMigrationManifest",
             "kind": "MethodDeclaration",
-            "line": 919,
+            "line": 920,
             "name": "completeMigrationManifest"
           },
           "test": "test/migrations.test.ts"
@@ -96094,9 +96102,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:42540:completeMigrationManifest",
+          "id": "src/storage.ts:42568:completeMigrationManifest",
           "kind": "MethodDeclaration",
-          "line": 919,
+          "line": 920,
           "name": "completeMigrationManifest"
         }
       ],
@@ -96208,9 +96216,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:49440:listApplyingMigrationManifests",
+              "id": "src/storage.ts:49468:listApplyingMigrationManifests",
               "kind": "MethodDeclaration",
-              "line": 1107,
+              "line": 1108,
               "name": "listApplyingMigrationManifests",
               "reason": "resolved-call"
             }
@@ -96219,9 +96227,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:49440:listApplyingMigrationManifests",
+            "id": "src/storage.ts:49468:listApplyingMigrationManifests",
             "kind": "MethodDeclaration",
-            "line": 1107,
+            "line": 1108,
             "name": "listApplyingMigrationManifests"
           },
           "test": "test/segmented-state.test.ts"
@@ -96249,9 +96257,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:49440:listApplyingMigrationManifests",
+          "id": "src/storage.ts:49468:listApplyingMigrationManifests",
           "kind": "MethodDeclaration",
-          "line": 1107,
+          "line": 1108,
           "name": "listApplyingMigrationManifests"
         }
       ],
@@ -96363,9 +96371,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:48823:listApplyingOperations",
+              "id": "src/storage.ts:48851:listApplyingOperations",
               "kind": "MethodDeclaration",
-              "line": 1090,
+              "line": 1091,
               "name": "listApplyingOperations",
               "reason": "resolved-call"
             }
@@ -96374,9 +96382,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:48823:listApplyingOperations",
+            "id": "src/storage.ts:48851:listApplyingOperations",
             "kind": "MethodDeclaration",
-            "line": 1090,
+            "line": 1091,
             "name": "listApplyingOperations"
           },
           "test": "test/segmented-state.test.ts"
@@ -96404,9 +96412,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:48823:listApplyingOperations",
+          "id": "src/storage.ts:48851:listApplyingOperations",
           "kind": "MethodDeclaration",
-          "line": 1090,
+          "line": 1091,
           "name": "listApplyingOperations"
         }
       ],
@@ -96518,9 +96526,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:37592:readMigrationManifest",
+              "id": "src/storage.ts:37620:readMigrationManifest",
               "kind": "MethodDeclaration",
-              "line": 790,
+              "line": 791,
               "name": "readMigrationManifest",
               "reason": "resolved-call"
             }
@@ -96529,9 +96537,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:37592:readMigrationManifest",
+            "id": "src/storage.ts:37620:readMigrationManifest",
             "kind": "MethodDeclaration",
-            "line": 790,
+            "line": 791,
             "name": "readMigrationManifest"
           },
           "test": "test/authority.test.ts"
@@ -96559,9 +96567,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:37592:readMigrationManifest",
+          "id": "src/storage.ts:37620:readMigrationManifest",
           "kind": "MethodDeclaration",
-          "line": 790,
+          "line": 791,
           "name": "readMigrationManifest"
         }
       ],
@@ -96677,9 +96685,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:37031:readOperation",
+              "id": "src/storage.ts:37059:readOperation",
               "kind": "MethodDeclaration",
-              "line": 777,
+              "line": 778,
               "name": "readOperation",
               "reason": "resolved-call"
             }
@@ -96688,9 +96696,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:37031:readOperation",
+            "id": "src/storage.ts:37059:readOperation",
             "kind": "MethodDeclaration",
-            "line": 777,
+            "line": 778,
             "name": "readOperation"
           },
           "test": "test/catalog-composition-publication.test.ts"
@@ -96718,9 +96726,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:37031:readOperation",
+          "id": "src/storage.ts:37059:readOperation",
           "kind": "MethodDeclaration",
-          "line": 777,
+          "line": 778,
           "name": "readOperation"
         }
       ],
@@ -96826,9 +96834,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:36823:readWorld",
+              "id": "src/storage.ts:36851:readWorld",
               "kind": "MethodDeclaration",
-              "line": 771,
+              "line": 772,
               "name": "readWorld",
               "reason": "resolved-call"
             }
@@ -96837,9 +96845,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:36823:readWorld",
+            "id": "src/storage.ts:36851:readWorld",
             "kind": "MethodDeclaration",
-            "line": 771,
+            "line": 772,
             "name": "readWorld"
           },
           "test": "test/storage-conformance.test.ts"
@@ -96867,9 +96875,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:36823:readWorld",
+          "id": "src/storage.ts:36851:readWorld",
           "kind": "MethodDeclaration",
-          "line": 771,
+          "line": 772,
           "name": "readWorld"
         }
       ],
@@ -97005,9 +97013,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": false,
-              "id": "src/storage.ts:22344:writeCounts",
+              "id": "src/storage.ts:22372:writeCounts",
               "kind": "MethodSignature",
-              "line": 479,
+              "line": 480,
               "name": "writeCounts",
               "reason": "resolved-call"
             },
@@ -97015,9 +97023,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:57090:writeCounts",
+              "id": "src/storage.ts:57118:writeCounts",
               "kind": "MethodDeclaration",
-              "line": 1302,
+              "line": 1303,
               "name": "writeCounts",
               "reason": "interface-to-implementation"
             }
@@ -97026,9 +97034,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:57090:writeCounts",
+            "id": "src/storage.ts:57118:writeCounts",
             "kind": "MethodDeclaration",
-            "line": 1302,
+            "line": 1303,
             "name": "writeCounts"
           },
           "test": "test/reservation-closure-shortage.test.ts"
@@ -97052,9 +97060,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:57090:writeCounts",
+          "id": "src/storage.ts:57118:writeCounts",
           "kind": "MethodDeclaration",
-          "line": 1302,
+          "line": 1303,
           "name": "writeCounts"
         }
       ],
@@ -97186,9 +97194,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": false,
-              "id": "src/storage.ts:21957:writeEvent",
+              "id": "src/storage.ts:21985:writeEvent",
               "kind": "MethodSignature",
-              "line": 473,
+              "line": 474,
               "name": "writeEvent",
               "reason": "resolved-call"
             },
@@ -97196,9 +97204,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:53264:writeEvent",
+              "id": "src/storage.ts:53292:writeEvent",
               "kind": "MethodDeclaration",
-              "line": 1208,
+              "line": 1209,
               "name": "writeEvent",
               "reason": "interface-to-implementation"
             }
@@ -97207,9 +97215,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:53264:writeEvent",
+            "id": "src/storage.ts:53292:writeEvent",
             "kind": "MethodDeclaration",
-            "line": 1208,
+            "line": 1209,
             "name": "writeEvent"
           },
           "test": "test/reservation-closure-shortage.test.ts"
@@ -97233,9 +97241,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:53264:writeEvent",
+          "id": "src/storage.ts:53292:writeEvent",
           "kind": "MethodDeclaration",
-          "line": 1208,
+          "line": 1209,
           "name": "writeEvent"
         }
       ],
@@ -97357,9 +97365,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": false,
-              "id": "src/storage.ts:21469:writeMigrationWorld",
+              "id": "src/storage.ts:21497:writeMigrationWorld",
               "kind": "MethodSignature",
-              "line": 463,
+              "line": 464,
               "name": "writeMigrationWorld",
               "reason": "resolved-call"
             },
@@ -97367,9 +97375,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:40921:writeMigrationWorld",
+              "id": "src/storage.ts:40949:writeMigrationWorld",
               "kind": "MethodDeclaration",
-              "line": 875,
+              "line": 876,
               "name": "writeMigrationWorld",
               "reason": "interface-to-implementation"
             }
@@ -97378,9 +97386,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:40921:writeMigrationWorld",
+            "id": "src/storage.ts:40949:writeMigrationWorld",
             "kind": "MethodDeclaration",
-            "line": 875,
+            "line": 876,
             "name": "writeMigrationWorld"
           },
           "test": "test/migrations.test.ts"
@@ -97404,9 +97412,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:40921:writeMigrationWorld",
+          "id": "src/storage.ts:40949:writeMigrationWorld",
           "kind": "MethodDeclaration",
-          "line": 875,
+          "line": 876,
           "name": "writeMigrationWorld"
         }
       ],
@@ -97538,9 +97546,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": false,
-              "id": "src/storage.ts:22080:writeProjection",
+              "id": "src/storage.ts:22108:writeProjection",
               "kind": "MethodSignature",
-              "line": 475,
+              "line": 476,
               "name": "writeProjection",
               "reason": "resolved-call"
             },
@@ -97548,9 +97556,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:54504:writeProjection",
+              "id": "src/storage.ts:54532:writeProjection",
               "kind": "MethodDeclaration",
-              "line": 1233,
+              "line": 1234,
               "name": "writeProjection",
               "reason": "interface-to-implementation"
             }
@@ -97559,9 +97567,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:54504:writeProjection",
+            "id": "src/storage.ts:54532:writeProjection",
             "kind": "MethodDeclaration",
-            "line": 1233,
+            "line": 1234,
             "name": "writeProjection"
           },
           "test": "test/reservation-closure-shortage.test.ts"
@@ -97585,9 +97593,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:54504:writeProjection",
+          "id": "src/storage.ts:54532:writeProjection",
           "kind": "MethodDeclaration",
-          "line": 1233,
+          "line": 1234,
           "name": "writeProjection"
         }
       ],
@@ -97719,9 +97727,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": false,
-              "id": "src/storage.ts:22464:writeReceipt",
+              "id": "src/storage.ts:22492:writeReceipt",
               "kind": "MethodSignature",
-              "line": 481,
+              "line": 482,
               "name": "writeReceipt",
               "reason": "resolved-call"
             },
@@ -97729,9 +97737,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:58190:writeReceipt",
+              "id": "src/storage.ts:58218:writeReceipt",
               "kind": "MethodDeclaration",
-              "line": 1324,
+              "line": 1325,
               "name": "writeReceipt",
               "reason": "interface-to-implementation"
             }
@@ -97740,9 +97748,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:58190:writeReceipt",
+            "id": "src/storage.ts:58218:writeReceipt",
             "kind": "MethodDeclaration",
-            "line": 1324,
+            "line": 1325,
             "name": "writeReceipt"
           },
           "test": "test/reservation-closure-shortage.test.ts"
@@ -97766,9 +97774,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:58190:writeReceipt",
+          "id": "src/storage.ts:58218:writeReceipt",
           "kind": "MethodDeclaration",
-          "line": 1324,
+          "line": 1325,
           "name": "writeReceipt"
         }
       ],
@@ -97900,9 +97908,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": false,
-              "id": "src/storage.ts:22214:writeReservations",
+              "id": "src/storage.ts:22242:writeReservations",
               "kind": "MethodSignature",
-              "line": 477,
+              "line": 478,
               "name": "writeReservations",
               "reason": "resolved-call"
             },
@@ -97910,9 +97918,9 @@
               "column": 3,
               "file": "src/storage.ts",
               "hasBody": true,
-              "id": "src/storage.ts:55871:writeReservations",
+              "id": "src/storage.ts:55899:writeReservations",
               "kind": "MethodDeclaration",
-              "line": 1270,
+              "line": 1271,
               "name": "writeReservations",
               "reason": "interface-to-implementation"
             }
@@ -97921,9 +97929,9 @@
             "column": 3,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:55871:writeReservations",
+            "id": "src/storage.ts:55899:writeReservations",
             "kind": "MethodDeclaration",
-            "line": 1270,
+            "line": 1271,
             "name": "writeReservations"
           },
           "test": "test/reservation-closure-shortage.test.ts"
@@ -97947,9 +97955,9 @@
           "column": 3,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:55871:writeReservations",
+          "id": "src/storage.ts:55899:writeReservations",
           "kind": "MethodDeclaration",
-          "line": 1270,
+          "line": 1271,
           "name": "writeReservations"
         }
       ],
@@ -99497,5 +99505,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "8c43ead6a53e7fd9ecb33282a601a6f5783d71f0fd2b98bd3bda2e92ea4e77e5"
+  "surfaceSha256": "405183a1d7f68a468b3b2073f460b482c19e784d059b822ee3214569d4169dc2"
 }

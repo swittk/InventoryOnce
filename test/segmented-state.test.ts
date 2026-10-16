@@ -421,6 +421,30 @@ describe("segmented inventory position store", () => {
   });
 
 
+  it("publishes a prototype-free current catalog after its first segmented event", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage);
+    const segmentedCommit = vi.spyOn(storage, "commitSegmentedStockEvent");
+    await inventory.stock.receive({
+      operationId: "segmented-first-catalog",
+      occurredAtEpochMs: time0,
+      to: loosePosition("a"),
+      amount: stockAmount("1", "piece"),
+    });
+    expect(segmentedCommit).toHaveBeenCalledOnce();
+    const world = await storage.readWorld();
+    for (const activeByIdentity of [
+      world.catalog.activeItemRevisionIds,
+      world.catalog.activeCompositionRevisionIds,
+      world.catalog.activeTransformationRevisionIds,
+      world.catalog.activeCollectionRevisionIds,
+      world.catalog.activeFungibilityRevisionIds,
+    ]) {
+      expect(Object.getPrototypeOf(activeByIdentity)).toBe(null);
+      expect(Object.hasOwn(activeByIdentity, "constructor")).toBe(false);
+    }
+  });
+
   it("commits exact transfer without whole-world planning and lazily catches canonical world up", async () => {
     const storage = createInMemoryInventoryDurableStorage();
     const inventory = createTestInventory(storage);
