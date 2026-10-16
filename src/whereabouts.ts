@@ -319,6 +319,26 @@ function addDirectInventoryItemIds(
   }
 }
 
+/** Whether an assertion directly references this exact whereabouts cohort. */
+function inventoryEventDirectlyTouchesWhereabouts(
+  event: InventoryEventDraft,
+  whereaboutsId: string
+): boolean {
+  for (const effect of event.stockEffects) {
+    if (effect.position.whereaboutsId === whereaboutsId) return true;
+  }
+  for (const transfer of event.positiveLayerProvenanceTransfers ?? []) {
+    if (
+      transfer.from.whereaboutsId === whereaboutsId ||
+      transfer.to.whereaboutsId === whereaboutsId
+    ) return true;
+  }
+  for (const override of event.positiveLayerProvenanceOverrides ?? []) {
+    if (override.position.whereaboutsId === whereaboutsId) return true;
+  }
+  return false;
+}
+
 /** Derive one event's physical meaning for an exact whereabouts lifecycle identity. */
 function inventoryWhereaboutsActionsForEvent(
   event: InventoryEventDraft,
@@ -328,6 +348,12 @@ function inventoryWhereaboutsActionsForEvent(
   if (event.kind === InventoryEventKind.HistoricalRepair) {
     actions.add(InventoryWhereaboutsAction.HistoricallyRepaired);
     for (const assertion of event.historicalRepair?.assertions ?? []) {
+      if (!inventoryEventDirectlyTouchesWhereabouts(
+        assertion.event,
+        whereaboutsId
+      )) {
+        continue;
+      }
       for (const action of inventoryWhereaboutsActionsForEvent(
         assertion.event,
         whereaboutsId

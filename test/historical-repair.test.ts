@@ -740,6 +740,62 @@ describe("late historical repair", () => {
     ).rejects.toThrow("changed intent");
   });
 
+  it("does not fabricate a cohort reclassification from unrelated assertions in one historical repair", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receive({
+      operationId: "historical-cohort-unrelated-seed",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store"),
+      amount: stockAmount("4", "piece"),
+    });
+    const repair = await inventory.stock.recordHistorical({
+      operationId: "historical-cohort-unrelated-repair",
+      occurredAtEpochMs: time3,
+      reason: "Record one missing piece and a separate receipt from another source.",
+      assertions: [
+        {
+          assertionId: "historical-cohort-one-missing",
+          assert: (plans) =>
+            plans.markMissing({
+              occurredAtEpochMs: time1,
+              from: loosePosition("store"),
+              amount: stockAmount("1", "piece"),
+            }),
+        },
+        {
+          assertionId: "historical-unrelated-receipt",
+          assert: (plans) =>
+            plans.receive({
+              occurredAtEpochMs: time2,
+              to: loosePosition("unrelated-store"),
+              amount: stockAmount("2", "piece"),
+            }),
+        },
+      ],
+    });
+    expect(repair.event.historicalRepair?.assertions).toHaveLength(2);
+
+    const lifecycles = await inventory.read.whereaboutsHistory({
+      actions: [InventoryWhereaboutsAction.HistoricallyRepaired],
+    });
+    expect(lifecycles).toHaveLength(1);
+    const cohort = lifecycles[0];
+    if (cohort === undefined) throw new Error("Missing repaired whereabouts cohort.");
+    const repairActions = cohort.history.find(
+      (entry) => entry.event.eventId === repair.event.eventId
+    )?.actions;
+    expect(repairActions).toEqual([
+      InventoryWhereaboutsAction.HistoricallyRepaired,
+      InventoryWhereaboutsAction.MarkedMissing,
+    ]);
+    expect(
+      await inventory.read.whereaboutsHistory({
+        whereaboutsIds: [cohort.whereaboutsId],
+        actions: [InventoryWhereaboutsAction.Reclassified],
+      })
+    ).toEqual([]);
+  });
+
   it("preserves a recorded serialized deficit interval when correcting a later unrelated serial receipt under Reject", async () => {
     const storage = createInMemoryInventoryDurableStorage();
     const recorder = createTestInventory(

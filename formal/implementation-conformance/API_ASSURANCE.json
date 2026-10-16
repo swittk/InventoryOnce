@@ -3,8 +3,8 @@
     "authorityMethods": 14,
     "callAndConstructSignatures": 617,
     "classMethods": 109,
-    "compilerCallGraphCallables": 3669,
-    "compilerCallGraphEdges": 9864,
+    "compilerCallGraphCallables": 3674,
+    "compilerCallGraphEdges": 9879,
     "compilerCallGraphTestRoots": 60,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 617,
@@ -15343,7 +15343,7 @@
           "path": "src/transfers.ts"
         },
         {
-          "occurrences": 47,
+          "occurrences": 52,
           "path": "src/whereabouts.ts"
         },
         {
@@ -19077,7 +19077,7 @@
           "path": "src/usability.ts"
         },
         {
-          "occurrences": 15,
+          "occurrences": 17,
           "path": "src/whereabouts.ts"
         }
       ],
@@ -75850,7 +75850,7 @@
           "path": "src/transfers.ts"
         },
         {
-          "occurrences": 13,
+          "occurrences": 16,
           "path": "src/whereabouts.ts"
         }
       ],
@@ -78258,7 +78258,7 @@
           "path": "src/transfers.ts"
         },
         {
-          "occurrences": 47,
+          "occurrences": 52,
           "path": "src/whereabouts.ts"
         },
         {
@@ -81297,7 +81297,7 @@
           "path": "src/selectors.ts"
         },
         {
-          "occurrences": 8,
+          "occurrences": 9,
           "path": "src/whereabouts.ts"
         }
       ],
@@ -83921,7 +83921,7 @@
           "path": "src/transfers.ts"
         },
         {
-          "occurrences": 47,
+          "occurrences": 52,
           "path": "src/whereabouts.ts"
         },
         {
@@ -86787,7 +86787,7 @@
           "path": "src/selectors.ts"
         },
         {
-          "occurrences": 8,
+          "occurrences": 9,
           "path": "src/whereabouts.ts"
         }
       ],
@@ -91893,7 +91893,7 @@
           "path": "src/transfers.ts"
         },
         {
-          "occurrences": 13,
+          "occurrences": 16,
           "path": "src/whereabouts.ts"
         }
       ],
