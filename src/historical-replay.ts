@@ -818,33 +818,33 @@ function inventoryAffectedHistoricalEventIds(
       }
     }
   }
+  /** Retained event -> one already-computed set of resource dependencies. */
   const dependencyKeysByEventId = new Map<string, readonly string[]>();
+  /** Resource dependency -> unchanged event identities that directly reference it. */
+  const eventIdsByResourceKey = new Map<string, string[]>();
   for (const event of proposed) {
-    if (!changed.has(event.eventId)) {
-      dependencyKeysByEventId.set(
-        event.eventId,
-        inventoryEventDependencyKeys(event)
-      );
+    if (changed.has(event.eventId)) continue;
+    const keys = inventoryEventDependencyKeys(event);
+    dependencyKeysByEventId.set(event.eventId, keys);
+    for (const key of keys) {
+      const eventIds = eventIdsByResourceKey.get(key);
+      if (eventIds === undefined) eventIdsByResourceKey.set(key, [event.eventId]);
+      else eventIds.push(event.eventId);
     }
   }
-  let expanded = true;
-  while (expanded) {
-    expanded = false;
-    for (const event of proposed) {
-      if (changed.has(event.eventId)) continue;
-      const keys = dependencyKeysByEventId.get(event.eventId) ?? [];
-      if (
-        !keys.some(
-          /** Detect whether this event touches the already-expanded dependency cone. */
-          (key) => resourceKeys.has(key)
-        )
-      ) continue;
-      changed.add(event.eventId);
-      for (const key of keys) {
-        if (!resourceKeys.has(key)) {
-          resourceKeys.add(key);
-          expanded = true;
-        }
+  /** Newly reached resource keys, each expanded exactly once. */
+  const pendingKeys = [...resourceKeys];
+  while (pendingKeys.length > 0) {
+    const key = pendingKeys.pop()!;
+    for (const eventId of eventIdsByResourceKey.get(key) ?? []) {
+      if (changed.has(eventId)) continue;
+      changed.add(eventId);
+      // Expand only this event's new dependencies; rescanning every prior
+      // event would become quadratic for chains linked in reverse history order.
+      for (const nextKey of dependencyKeysByEventId.get(eventId) ?? []) {
+        if (resourceKeys.has(nextKey)) continue;
+        resourceKeys.add(nextKey);
+        pendingKeys.push(nextKey);
       }
     }
   }

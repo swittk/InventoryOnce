@@ -22,6 +22,9 @@ import {
   createInMemoryInventoryDurableStorage,
   type InMemoryInventoryDurableStorage,
 } from "../src/storage-api.js";
+import {
+  replayInventoryHistoricalScenario,
+} from "../src/historical-replay.js";
 import { emptyInventoryWorldState } from "../src/world.js";
 import { inventoryWhereaboutsLifecycles } from "../src/whereabouts.js";
 import {
@@ -271,6 +274,93 @@ async function benchmarkOrdinaryAppend(positionCount: number) {
 }
 
 describe("historical repair and event-query scale boundaries", () => {
+  /** An ordinary sequence of overlapping two-bin receipts can form a backward dependency cone. */
+  it("expands a backward warehouse dependency chain without repeatedly probing every prior event", () => {
+    const catalog = createTabletCatalog();
+    const eventCount = 96;
+    const events = Array.from({ length: eventCount }, (_, index) =>
+      commitInventoryEvent(
+        createInventoryReceiptManyEvent({
+          catalog,
+          operationId: `backward-dependency-receipt-${index}`,
+          occurredAtEpochMs: time0,
+          lines: [
+            {
+              to: loosePosition(`backward-bin-${index}`),
+              amount: stockAmount("1", "piece"),
+            },
+            {
+              to: loosePosition(`backward-bin-${index + 1}`),
+              amount: stockAmount("1", "piece"),
+            },
+          ],
+        }),
+        time2,
+        index + 1
+      )
+    );
+    const projection = projectInventoryEvents({
+      catalog,
+      events,
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+    });
+    const correctedRoot = events[eventCount - 1];
+    if (correctedRoot === undefined) {
+      throw new Error("Backward dependency chain lost its last receipt.");
+    }
+
+    // Count dependency-key membership probes, not noisy wall-clock timings.
+    // Previously the last changed receipt caused nearly one complete extra scan per predecessor.
+    let dependencyChecks = 0;
+    const originalHas = Set.prototype.has;
+    const probe = vi.spyOn(Set.prototype, "has").mockImplementation(
+      function (this: Set<unknown>, key: unknown): boolean {
+        if (typeof key === "string" && key.startsWith("dep:")) {
+          dependencyChecks += 1;
+        }
+        return originalHas.call(this, key);
+      }
+    );
+    let affectedEventIds: readonly string[];
+    try {
+      const replay = replayInventoryHistoricalScenario({
+        catalog,
+        projection,
+        deficitPolicy: InventoryDeficitPolicy.Reject,
+        rootReplacement: {
+          rootEventId: correctedRoot.eventId,
+          replacement: createInventoryReceiptManyEvent({
+            catalog,
+            operationId: "backward-dependency-revised-last-receipt",
+            occurredAtEpochMs: time0,
+            lines: [
+              {
+                to: loosePosition(`backward-bin-${eventCount - 1}`),
+                amount: stockAmount("2", "piece"),
+              },
+              {
+                to: loosePosition(`backward-bin-${eventCount}`),
+                amount: stockAmount("1", "piece"),
+              },
+            ],
+          }),
+        },
+      });
+      affectedEventIds = replay.impact.affectedEventIds;
+    } finally {
+      probe.mockRestore();
+    }
+    expect(affectedEventIds).toHaveLength(eventCount);
+    expect(new Set(affectedEventIds)).toEqual(new Set(events.map((event) => event.eventId)));
+    // Bounded indexed expansion costs O(events × their resource keys), not O(events²).
+    expect(dependencyChecks).toBeLessThan(eventCount * 25);
+    console.log(JSON.stringify({
+      adapter: "historical-replay-backward-dependency",
+      retainedEvents: eventCount,
+      dependencyKeyChecks: dependencyChecks,
+    }));
+  });
+
   it(
     "keeps exact event reads and correction plans independent of 10x unrelated history",
     async () => {
