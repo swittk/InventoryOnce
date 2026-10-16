@@ -856,6 +856,28 @@ describe("detached and missing stock whereabouts", () => {
     expect(
       findInventoryWhereaboutsHistory(guarded, { resolved: true })
     ).toEqual([]);
+
+    const currentOnly = {
+      ...guarded,
+      eventSequencesByWhereaboutsId: new Proxy(
+        published.eventSequencesByWhereaboutsId,
+        {
+          /** Unresolved-only reads must not enumerate all historical cohort keys. */
+          ownKeys() {
+            throw new Error("Unresolved whereabouts read scanned all retained cohorts.");
+          },
+        }
+      ),
+    };
+    expect(
+      findInventoryWhereaboutsHistory(currentOnly, { resolved: false })
+    ).toEqual([cohort]);
+    expect(
+      findInventoryWhereaboutsHistory(currentOnly, {
+        resolved: false,
+        whereaboutsIds: [cohort.whereaboutsId],
+      })
+    ).toEqual([cohort]);
   });
 
   it("reads an exact whereabouts cohort without enumerating every unrelated warehouse position", async () => {

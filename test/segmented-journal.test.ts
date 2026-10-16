@@ -10,6 +10,10 @@ import {
   type InventoryCommittedEvent,
 } from "../src/events.js";
 import {
+  inventoryEventDependencyIndexKeys,
+  inventoryEventResourceKeys,
+} from "../src/event-query.js";
+import {
   InventoryStockWhereaboutsState,
 } from "../src/model.js";
 import {
@@ -370,6 +374,122 @@ describe("segmented inventory event journal", () => {
         })
       )
     ).toThrow("must supersede");
+  });
+
+  /** Bounded pages must not enumerate all prior indexed postings on each request. */
+  it("pages overlapping resource postings without scanning retained history", () => {
+    const journal = createInMemoryInventorySegmentedEventJournal();
+    const root = committedEvent(1, { whereaboutsId: "HOT-COHORT" });
+    const second = committedEvent(2, { whereaboutsId: "HOT-COHORT" });
+    const secondKeys = new Set([
+      ...inventoryEventDependencyIndexKeys(second),
+      ...inventoryEventResourceKeys(second),
+    ]);
+    const commonKeys = [
+      ...inventoryEventDependencyIndexKeys(root),
+      ...inventoryEventResourceKeys(root),
+    ].filter((key) => secondKeys.has(key));
+    expect(commonKeys.length).toBeGreaterThanOrEqual(2);
+    const selectedKeys = [...new Set(commonKeys)].slice(0, 2);
+    for (let sequence = 1; sequence <= 1_200; sequence += 1) {
+      journal.append(committedEvent(sequence, { whereaboutsId: "HOT-COHORT" }));
+    }
+
+    // A read-only proxy on the real posting index witnesses work, not wall-clock noise.
+    const storedIndex: unknown = Reflect.get(journal, "sequencesByResourceKey");
+    if (!(storedIndex instanceof Map)) {
+      throw new Error("Expected an indexed segmented journal.");
+    }
+    let visitedPostings = 0;
+    for (const key of selectedKeys) {
+      const rows: readonly number[] | undefined = storedIndex.get(key);
+      if (rows === undefined) throw new Error("Missing retained resource posting.");
+      storedIndex.set(
+        key,
+        new Proxy(rows, {
+          get(target, property, receiver) {
+            if (typeof property === "string" && /^\d+$/.test(property)) {
+              visitedPostings += 1;
+            }
+            return Reflect.get(target, property, receiver);
+          },
+        })
+      );
+    }
+    const first = journal.queryEventsByResourceKeys({
+      resourceKeys: [...selectedKeys, selectedKeys[0]!],
+      afterRecordSequence: 600,
+      limit: 7,
+    });
+    expect(first.events.map((event) => event.recordSequence)).toEqual([
+      601, 602, 603, 604, 605, 606, 607,
+    ]);
+    expect(first.nextAfterRecordSequence).toBe(607);
+    const firstCursor = first.nextAfterRecordSequence;
+    if (firstCursor === undefined) throw new Error("Expected a resource continuation cursor.");
+    const secondPage = journal.queryEventsByResourceKeys({
+      resourceKeys: selectedKeys,
+      afterRecordSequence: firstCursor,
+      limit: 7,
+    });
+    expect(secondPage.events.map((event) => event.recordSequence)).toEqual([
+      608, 609, 610, 611, 612, 613, 614,
+    ]);
+    expect(secondPage.nextAfterRecordSequence).toBe(614);
+    // A bounded 14-result query may probe the two lists ~O(log N + limit);
+    // the old path touches all 4,800 postings for these two pages.
+    expect(visitedPostings).toBeLessThan(200);
+  });
+
+  /** Union pages preserve ordering, de-duplication, gaps and terminal cursors. */
+  it("merges sparse resource keys across multiple cursor pages", () => {
+    const journal = createInMemoryInventorySegmentedEventJournal();
+    for (let sequence = 1; sequence <= 29; sequence += 1) {
+      journal.append(committedEvent(sequence, {
+        whereaboutsId: sequence % 2 === 1 ? "ODD-COHORT" : "EVEN-COHORT",
+      }));
+    }
+    const oddKey = inventoryEventDependencyIndexKeys(
+      committedEvent(1, { whereaboutsId: "ODD-COHORT" })
+    ).find((key) => key.startsWith("dep:pool:"));
+    const evenKey = inventoryEventDependencyIndexKeys(
+      committedEvent(2, { whereaboutsId: "EVEN-COHORT" })
+    ).find((key) => key.startsWith("dep:pool:"));
+    if (oddKey === undefined || evenKey === undefined) {
+      throw new Error("Expected stable resource-pool index keys.");
+    }
+
+    const odd = journal.queryEventsByResourceKeys({
+      resourceKeys: [oddKey],
+      afterRecordSequence: 15,
+      limit: 3,
+    });
+    expect(odd.events.map((event) => event.recordSequence)).toEqual([17, 19, 21]);
+    expect(odd.nextAfterRecordSequence).toBe(21);
+
+    const union = journal.queryEventsByResourceKeys({
+      resourceKeys: [evenKey, oddKey, oddKey],
+      afterRecordSequence: 24,
+      limit: 4,
+    });
+    expect(union.events.map((event) => event.recordSequence)).toEqual([25, 26, 27, 28]);
+    expect(union.nextAfterRecordSequence).toBe(28);
+    const unionCursor = union.nextAfterRecordSequence;
+    if (unionCursor === undefined) throw new Error("Expected a union continuation cursor.");
+    const final = journal.queryEventsByResourceKeys({
+      resourceKeys: [oddKey, evenKey],
+      afterRecordSequence: unionCursor,
+      limit: 4,
+    });
+    expect(final.events.map((event) => event.recordSequence)).toEqual([29]);
+    expect(final.nextAfterRecordSequence).toBeUndefined();
+
+    const empty = journal.queryEventsByResourceKeys({
+      resourceKeys: [oddKey],
+      afterRecordSequence: 29,
+    });
+    expect(empty.events).toEqual([]);
+    expect(empty.nextAfterRecordSequence).toBeUndefined();
   });
 
   it(

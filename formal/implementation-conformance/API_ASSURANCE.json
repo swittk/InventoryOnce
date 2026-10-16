@@ -3,15 +3,15 @@
     "authorityMethods": 14,
     "callAndConstructSignatures": 617,
     "classMethods": 109,
-    "compilerCallGraphCallables": 3653,
-    "compilerCallGraphEdges": 9826,
+    "compilerCallGraphCallables": 3669,
+    "compilerCallGraphEdges": 9864,
     "compilerCallGraphTestRoots": 60,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 617,
-    "directExecutableApis": 253,
+    "directExecutableApis": 256,
     "explicitGapApis": 4,
     "facadeMethods": 135,
-    "indirectCallChainApis": 360,
+    "indirectCallChainApis": 357,
     "kernelCallables": 191,
     "maximumTypeDepth": 12,
     "migrationCallables": 15,
@@ -11339,10 +11339,10 @@
               "column": 77,
               "file": "test/historical-repair.test.ts",
               "hasBody": true,
-              "id": "test/historical-repair.test.ts:12329:<anonymous@335>",
+              "id": "test/historical-repair.test.ts:14651:<anonymous@392>",
               "kind": "ArrowFunction",
-              "line": 335,
-              "name": "<anonymous@335>",
+              "line": 392,
+              "name": "<anonymous@392>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -11495,10 +11495,10 @@
               "column": 74,
               "file": "test/historical-repair.test.ts",
               "hasBody": true,
-              "id": "test/historical-repair.test.ts:7734:<anonymous@212>",
+              "id": "test/historical-repair.test.ts:10056:<anonymous@269>",
               "kind": "ArrowFunction",
-              "line": 212,
-              "name": "<anonymous@212>",
+              "line": 269,
+              "name": "<anonymous@269>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -12607,10 +12607,10 @@
               "column": 92,
               "file": "test/historical-repair.test.ts",
               "hasBody": true,
-              "id": "test/historical-repair.test.ts:801:<anonymous@28>",
+              "id": "test/historical-repair.test.ts:901:<anonymous@29>",
               "kind": "ArrowFunction",
-              "line": 28,
-              "name": "<anonymous@28>",
+              "line": 29,
+              "name": "<anonymous@29>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -13119,10 +13119,10 @@
               "column": 77,
               "file": "test/historical-repair.test.ts",
               "hasBody": true,
-              "id": "test/historical-repair.test.ts:12329:<anonymous@335>",
+              "id": "test/historical-repair.test.ts:14651:<anonymous@392>",
               "kind": "ArrowFunction",
-              "line": 335,
-              "name": "<anonymous@335>",
+              "line": 392,
+              "name": "<anonymous@392>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -13263,10 +13263,10 @@
               "column": 73,
               "file": "test/historical-repair.test.ts",
               "hasBody": true,
-              "id": "test/historical-repair.test.ts:9549:<anonymous@261>",
+              "id": "test/historical-repair.test.ts:11871:<anonymous@318>",
               "kind": "ArrowFunction",
-              "line": 261,
-              "name": "<anonymous@261>",
+              "line": 318,
+              "name": "<anonymous@318>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -14625,29 +14625,29 @@
               "column": 47,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2829:<anonymous@98>",
+              "id": "test/segmented-journal.test.ts:2937:<anonymous@102>",
               "kind": "ArrowFunction",
-              "line": 98,
-              "name": "<anonymous@98>",
+              "line": 102,
+              "name": "<anonymous@102>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 99,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2935:<anonymous@99>",
+              "id": "test/segmented-journal.test.ts:3043:<anonymous@103>",
               "kind": "ArrowFunction",
-              "line": 99,
-              "name": "<anonymous@99>",
+              "line": 103,
+              "name": "<anonymous@103>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 3,
               "file": "src/segmented-journal.ts",
               "hasBody": true,
-              "id": "src/segmented-journal.ts:16107:append",
+              "id": "src/segmented-journal.ts:18367:append",
               "kind": "MethodDeclaration",
-              "line": 401,
+              "line": 464,
               "name": "append",
               "reason": "resolved-call"
             }
@@ -14656,9 +14656,9 @@
             "column": 3,
             "file": "src/segmented-journal.ts",
             "hasBody": true,
-            "id": "src/segmented-journal.ts:16107:append",
+            "id": "src/segmented-journal.ts:18367:append",
             "kind": "MethodDeclaration",
-            "line": 401,
+            "line": 464,
             "name": "append"
           },
           "test": "test/segmented-journal.test.ts"
@@ -14686,9 +14686,9 @@
           "column": 3,
           "file": "src/segmented-journal.ts",
           "hasBody": true,
-          "id": "src/segmented-journal.ts:16107:append",
+          "id": "src/segmented-journal.ts:18367:append",
           "kind": "MethodDeclaration",
-          "line": 401,
+          "line": 464,
           "name": "append"
         }
       ],
@@ -14841,29 +14841,29 @@
               "column": 47,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2829:<anonymous@98>",
+              "id": "test/segmented-journal.test.ts:2937:<anonymous@102>",
               "kind": "ArrowFunction",
-              "line": 98,
-              "name": "<anonymous@98>",
+              "line": 102,
+              "name": "<anonymous@102>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 99,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2935:<anonymous@99>",
+              "id": "test/segmented-journal.test.ts:3043:<anonymous@103>",
               "kind": "ArrowFunction",
-              "line": 99,
-              "name": "<anonymous@99>",
+              "line": 103,
+              "name": "<anonymous@103>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 3,
               "file": "src/segmented-journal.ts",
               "hasBody": true,
-              "id": "src/segmented-journal.ts:8385:contentRoot",
+              "id": "src/segmented-journal.ts:8690:contentRoot",
               "kind": "MethodDeclaration",
-              "line": 189,
+              "line": 197,
               "name": "contentRoot",
               "reason": "resolved-call"
             }
@@ -14872,9 +14872,9 @@
             "column": 3,
             "file": "src/segmented-journal.ts",
             "hasBody": true,
-            "id": "src/segmented-journal.ts:8385:contentRoot",
+            "id": "src/segmented-journal.ts:8690:contentRoot",
             "kind": "MethodDeclaration",
-            "line": 189,
+            "line": 197,
             "name": "contentRoot"
           },
           "test": "test/segmented-journal.test.ts"
@@ -14902,9 +14902,9 @@
           "column": 3,
           "file": "src/segmented-journal.ts",
           "hasBody": true,
-          "id": "src/segmented-journal.ts:8385:contentRoot",
+          "id": "src/segmented-journal.ts:8690:contentRoot",
           "kind": "MethodDeclaration",
-          "line": 189,
+          "line": 197,
           "name": "contentRoot"
         }
       ],
@@ -14993,29 +14993,29 @@
               "column": 47,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2829:<anonymous@98>",
+              "id": "test/segmented-journal.test.ts:2937:<anonymous@102>",
               "kind": "ArrowFunction",
-              "line": 98,
-              "name": "<anonymous@98>",
+              "line": 102,
+              "name": "<anonymous@102>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 99,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2935:<anonymous@99>",
+              "id": "test/segmented-journal.test.ts:3043:<anonymous@103>",
               "kind": "ArrowFunction",
-              "line": 99,
-              "name": "<anonymous@99>",
+              "line": 103,
+              "name": "<anonymous@103>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 3,
               "file": "src/segmented-journal.ts",
               "hasBody": true,
-              "id": "src/segmented-journal.ts:9810:currentCorrectionFor",
+              "id": "src/segmented-journal.ts:10115:currentCorrectionFor",
               "kind": "MethodDeclaration",
-              "line": 225,
+              "line": 233,
               "name": "currentCorrectionFor",
               "reason": "resolved-call"
             }
@@ -15024,9 +15024,9 @@
             "column": 3,
             "file": "src/segmented-journal.ts",
             "hasBody": true,
-            "id": "src/segmented-journal.ts:9810:currentCorrectionFor",
+            "id": "src/segmented-journal.ts:10115:currentCorrectionFor",
             "kind": "MethodDeclaration",
-            "line": 225,
+            "line": 233,
             "name": "currentCorrectionFor"
           },
           "test": "test/segmented-journal.test.ts"
@@ -15054,9 +15054,9 @@
           "column": 3,
           "file": "src/segmented-journal.ts",
           "hasBody": true,
-          "id": "src/segmented-journal.ts:9810:currentCorrectionFor",
+          "id": "src/segmented-journal.ts:10115:currentCorrectionFor",
           "kind": "MethodDeclaration",
-          "line": 225,
+          "line": 233,
           "name": "currentCorrectionFor"
         }
       ],
@@ -15145,29 +15145,29 @@
               "column": 47,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2829:<anonymous@98>",
+              "id": "test/segmented-journal.test.ts:2937:<anonymous@102>",
               "kind": "ArrowFunction",
-              "line": 98,
-              "name": "<anonymous@98>",
+              "line": 102,
+              "name": "<anonymous@102>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 99,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2935:<anonymous@99>",
+              "id": "test/segmented-journal.test.ts:3043:<anonymous@103>",
               "kind": "ArrowFunction",
-              "line": 99,
-              "name": "<anonymous@99>",
+              "line": 103,
+              "name": "<anonymous@103>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 3,
               "file": "src/segmented-journal.ts",
               "hasBody": true,
-              "id": "src/segmented-journal.ts:8745:event",
+              "id": "src/segmented-journal.ts:9050:event",
               "kind": "MethodDeclaration",
-              "line": 202,
+              "line": 210,
               "name": "event",
               "reason": "resolved-call"
             }
@@ -15176,9 +15176,9 @@
             "column": 3,
             "file": "src/segmented-journal.ts",
             "hasBody": true,
-            "id": "src/segmented-journal.ts:8745:event",
+            "id": "src/segmented-journal.ts:9050:event",
             "kind": "MethodDeclaration",
-            "line": 202,
+            "line": 210,
             "name": "event"
           },
           "test": "test/segmented-journal.test.ts"
@@ -15206,9 +15206,9 @@
           "column": 3,
           "file": "src/segmented-journal.ts",
           "hasBody": true,
-          "id": "src/segmented-journal.ts:8745:event",
+          "id": "src/segmented-journal.ts:9050:event",
           "kind": "MethodDeclaration",
-          "line": 202,
+          "line": 210,
           "name": "event"
         }
       ],
@@ -15429,29 +15429,29 @@
               "column": 47,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2829:<anonymous@98>",
+              "id": "test/segmented-journal.test.ts:2937:<anonymous@102>",
               "kind": "ArrowFunction",
-              "line": 98,
-              "name": "<anonymous@98>",
+              "line": 102,
+              "name": "<anonymous@102>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 99,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2935:<anonymous@99>",
+              "id": "test/segmented-journal.test.ts:3043:<anonymous@103>",
               "kind": "ArrowFunction",
-              "line": 99,
-              "name": "<anonymous@99>",
+              "line": 103,
+              "name": "<anonymous@103>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 3,
               "file": "src/segmented-journal.ts",
               "hasBody": true,
-              "id": "src/segmented-journal.ts:9013:eventByOperation",
+              "id": "src/segmented-journal.ts:9318:eventByOperation",
               "kind": "MethodDeclaration",
-              "line": 208,
+              "line": 216,
               "name": "eventByOperation",
               "reason": "resolved-call"
             }
@@ -15460,9 +15460,9 @@
             "column": 3,
             "file": "src/segmented-journal.ts",
             "hasBody": true,
-            "id": "src/segmented-journal.ts:9013:eventByOperation",
+            "id": "src/segmented-journal.ts:9318:eventByOperation",
             "kind": "MethodDeclaration",
-            "line": 208,
+            "line": 216,
             "name": "eventByOperation"
           },
           "test": "test/segmented-journal.test.ts"
@@ -15490,9 +15490,9 @@
           "column": 3,
           "file": "src/segmented-journal.ts",
           "hasBody": true,
-          "id": "src/segmented-journal.ts:9013:eventByOperation",
+          "id": "src/segmented-journal.ts:9318:eventByOperation",
           "kind": "MethodDeclaration",
-          "line": 208,
+          "line": 216,
           "name": "eventByOperation"
         }
       ],
@@ -15585,29 +15585,29 @@
               "column": 47,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2829:<anonymous@98>",
+              "id": "test/segmented-journal.test.ts:2937:<anonymous@102>",
               "kind": "ArrowFunction",
-              "line": 98,
-              "name": "<anonymous@98>",
+              "line": 102,
+              "name": "<anonymous@102>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 99,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2935:<anonymous@99>",
+              "id": "test/segmented-journal.test.ts:3043:<anonymous@103>",
               "kind": "ArrowFunction",
-              "line": 99,
-              "name": "<anonymous@99>",
+              "line": 103,
+              "name": "<anonymous@103>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 3,
               "file": "src/segmented-journal.ts",
               "hasBody": true,
-              "id": "src/segmented-journal.ts:9286:eventBySequence",
+              "id": "src/segmented-journal.ts:9591:eventBySequence",
               "kind": "MethodDeclaration",
-              "line": 214,
+              "line": 222,
               "name": "eventBySequence",
               "reason": "resolved-call"
             }
@@ -15616,9 +15616,9 @@
             "column": 3,
             "file": "src/segmented-journal.ts",
             "hasBody": true,
-            "id": "src/segmented-journal.ts:9286:eventBySequence",
+            "id": "src/segmented-journal.ts:9591:eventBySequence",
             "kind": "MethodDeclaration",
-            "line": 214,
+            "line": 222,
             "name": "eventBySequence"
           },
           "test": "test/segmented-journal.test.ts"
@@ -15646,9 +15646,9 @@
           "column": 3,
           "file": "src/segmented-journal.ts",
           "hasBody": true,
-          "id": "src/segmented-journal.ts:9286:eventBySequence",
+          "id": "src/segmented-journal.ts:9591:eventBySequence",
           "kind": "MethodDeclaration",
-          "line": 214,
+          "line": 222,
           "name": "eventBySequence"
         }
       ],
@@ -15741,29 +15741,29 @@
               "column": 47,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2829:<anonymous@98>",
+              "id": "test/segmented-journal.test.ts:2937:<anonymous@102>",
               "kind": "ArrowFunction",
-              "line": 98,
-              "name": "<anonymous@98>",
+              "line": 102,
+              "name": "<anonymous@102>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 99,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2935:<anonymous@99>",
+              "id": "test/segmented-journal.test.ts:3043:<anonymous@103>",
               "kind": "ArrowFunction",
-              "line": 99,
-              "name": "<anonymous@99>",
+              "line": 103,
+              "name": "<anonymous@103>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 3,
               "file": "src/segmented-journal.ts",
               "hasBody": true,
-              "id": "src/segmented-journal.ts:8236:lastRecordSequence",
+              "id": "src/segmented-journal.ts:8541:lastRecordSequence",
               "kind": "MethodDeclaration",
-              "line": 184,
+              "line": 192,
               "name": "lastRecordSequence",
               "reason": "resolved-call"
             }
@@ -15772,9 +15772,9 @@
             "column": 3,
             "file": "src/segmented-journal.ts",
             "hasBody": true,
-            "id": "src/segmented-journal.ts:8236:lastRecordSequence",
+            "id": "src/segmented-journal.ts:8541:lastRecordSequence",
             "kind": "MethodDeclaration",
-            "line": 184,
+            "line": 192,
             "name": "lastRecordSequence"
           },
           "test": "test/segmented-journal.test.ts"
@@ -15802,9 +15802,9 @@
           "column": 3,
           "file": "src/segmented-journal.ts",
           "hasBody": true,
-          "id": "src/segmented-journal.ts:8236:lastRecordSequence",
+          "id": "src/segmented-journal.ts:8541:lastRecordSequence",
           "kind": "MethodDeclaration",
-          "line": 184,
+          "line": 192,
           "name": "lastRecordSequence"
         }
       ],
@@ -15925,29 +15925,29 @@
               "column": 47,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2829:<anonymous@98>",
+              "id": "test/segmented-journal.test.ts:2937:<anonymous@102>",
               "kind": "ArrowFunction",
-              "line": 98,
-              "name": "<anonymous@98>",
+              "line": 102,
+              "name": "<anonymous@102>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 99,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2935:<anonymous@99>",
+              "id": "test/segmented-journal.test.ts:3043:<anonymous@103>",
               "kind": "ArrowFunction",
-              "line": 99,
-              "name": "<anonymous@99>",
+              "line": 103,
+              "name": "<anonymous@103>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 3,
               "file": "src/segmented-journal.ts",
               "hasBody": true,
-              "id": "src/segmented-journal.ts:22988:materialize",
+              "id": "src/segmented-journal.ts:25248:materialize",
               "kind": "MethodDeclaration",
-              "line": 602,
+              "line": 665,
               "name": "materialize",
               "reason": "resolved-call"
             }
@@ -15956,9 +15956,9 @@
             "column": 3,
             "file": "src/segmented-journal.ts",
             "hasBody": true,
-            "id": "src/segmented-journal.ts:22988:materialize",
+            "id": "src/segmented-journal.ts:25248:materialize",
             "kind": "MethodDeclaration",
-            "line": 602,
+            "line": 665,
             "name": "materialize"
           },
           "test": "test/segmented-journal.test.ts"
@@ -15986,9 +15986,9 @@
           "column": 3,
           "file": "src/segmented-journal.ts",
           "hasBody": true,
-          "id": "src/segmented-journal.ts:22988:materialize",
+          "id": "src/segmented-journal.ts:25248:materialize",
           "kind": "MethodDeclaration",
-          "line": 602,
+          "line": 665,
           "name": "materialize"
         }
       ],
@@ -16141,9 +16141,9 @@
               "column": 3,
               "file": "src/segmented-journal.ts",
               "hasBody": true,
-              "id": "src/segmented-journal.ts:10133:queryEvents",
+              "id": "src/segmented-journal.ts:10438:queryEvents",
               "kind": "MethodDeclaration",
-              "line": 233,
+              "line": 241,
               "name": "queryEvents",
               "reason": "resolved-call"
             }
@@ -16152,9 +16152,9 @@
             "column": 3,
             "file": "src/segmented-journal.ts",
             "hasBody": true,
-            "id": "src/segmented-journal.ts:10133:queryEvents",
+            "id": "src/segmented-journal.ts:10438:queryEvents",
             "kind": "MethodDeclaration",
-            "line": 233,
+            "line": 241,
             "name": "queryEvents"
           },
           "test": "test/event-query.test.ts"
@@ -16178,9 +16178,9 @@
           "column": 3,
           "file": "src/segmented-journal.ts",
           "hasBody": true,
-          "id": "src/segmented-journal.ts:10133:queryEvents",
+          "id": "src/segmented-journal.ts:10438:queryEvents",
           "kind": "MethodDeclaration",
-          "line": 233,
+          "line": 241,
           "name": "queryEvents"
         }
       ],
@@ -16262,90 +16262,40 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/historical-repair.test.ts",
+              "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test-root:test/historical-repair.test.ts",
+              "id": "test-root:test/segmented-journal.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/historical-repair.test.ts"
+              "name": "test/segmented-journal.test.ts"
             },
             {
-              "column": 36,
-              "file": "test/historical-repair.test.ts",
+              "column": 47,
+              "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/historical-repair.test.ts:702:<anonymous@27>",
+              "id": "test/segmented-journal.test.ts:2937:<anonymous@102>",
               "kind": "ArrowFunction",
-              "line": 27,
-              "name": "<anonymous@27>",
+              "line": 102,
+              "name": "<anonymous@102>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 92,
-              "file": "test/historical-repair.test.ts",
+              "column": 79,
+              "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/historical-repair.test.ts:801:<anonymous@28>",
+              "id": "test/segmented-journal.test.ts:12889:<anonymous@380>",
               "kind": "ArrowFunction",
-              "line": 28,
-              "name": "<anonymous@28>",
+              "line": 380,
+              "name": "<anonymous@380>",
               "reason": "external-callback-dispatch"
-            },
-            {
-              "column": 3,
-              "file": "src/facade.ts",
-              "hasBody": false,
-              "id": "src/facade.ts:71018:planCorrection",
-              "kind": "MethodSignature",
-              "line": 1714,
-              "name": "planCorrection",
-              "reason": "resolved-call"
-            },
-            {
-              "column": 3,
-              "file": "src/facade.ts",
-              "hasBody": true,
-              "id": "src/facade.ts:136398:planCorrection",
-              "kind": "MethodDeclaration",
-              "line": 3439,
-              "name": "planCorrection",
-              "reason": "interface-to-implementation"
-            },
-            {
-              "column": 1,
-              "file": "src/historical-dependencies.ts",
-              "hasBody": true,
-              "id": "src/historical-dependencies.ts:1204:loadInventoryHistoricalDependencies",
-              "kind": "FunctionDeclaration",
-              "line": 28,
-              "name": "loadInventoryHistoricalDependencies",
-              "reason": "resolved-call"
-            },
-            {
-              "column": 3,
-              "file": "src/storage.ts",
-              "hasBody": false,
-              "id": "src/storage.ts:26762:queryInventoryEventsByResourceKeys",
-              "kind": "MethodSignature",
-              "line": 570,
-              "name": "queryInventoryEventsByResourceKeys",
-              "reason": "resolved-call"
-            },
-            {
-              "column": 3,
-              "file": "src/storage.ts",
-              "hasBody": true,
-              "id": "src/storage.ts:36430:queryInventoryEventsByResourceKeys",
-              "kind": "MethodDeclaration",
-              "line": 763,
-              "name": "queryInventoryEventsByResourceKeys",
-              "reason": "interface-to-implementation"
             },
             {
               "column": 3,
               "file": "src/segmented-journal.ts",
               "hasBody": true,
-              "id": "src/segmented-journal.ts:13860:queryEventsByResourceKeys",
+              "id": "src/segmented-journal.ts:14165:queryEventsByResourceKeys",
               "kind": "MethodDeclaration",
-              "line": 341,
+              "line": 349,
               "name": "queryEventsByResourceKeys",
               "reason": "resolved-call"
             }
@@ -16354,17 +16304,21 @@
             "column": 3,
             "file": "src/segmented-journal.ts",
             "hasBody": true,
-            "id": "src/segmented-journal.ts:13860:queryEventsByResourceKeys",
+            "id": "src/segmented-journal.ts:14165:queryEventsByResourceKeys",
             "kind": "MethodDeclaration",
-            "line": 341,
+            "line": 349,
             "name": "queryEventsByResourceKeys"
           },
-          "test": "test/historical-repair.test.ts"
+          "test": "test/segmented-journal.test.ts"
         }
       ],
-      "directExecutableEntrypoints": [],
-      "directExecutableEvidence": [],
-      "evidenceMode": "indirect-call-chain",
+      "directExecutableEntrypoints": [
+        "test/segmented-journal.test.ts"
+      ],
+      "directExecutableEvidence": [
+        "test/segmented-journal.test.ts"
+      ],
+      "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-storage-refinement.test.ts",
         "test/storage-conformance.test.ts"
@@ -16380,9 +16334,9 @@
           "column": 3,
           "file": "src/segmented-journal.ts",
           "hasBody": true,
-          "id": "src/segmented-journal.ts:13860:queryEventsByResourceKeys",
+          "id": "src/segmented-journal.ts:14165:queryEventsByResourceKeys",
           "kind": "MethodDeclaration",
-          "line": 341,
+          "line": 349,
           "name": "queryEventsByResourceKeys"
         }
       ],
@@ -16475,29 +16429,29 @@
               "column": 47,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2829:<anonymous@98>",
+              "id": "test/segmented-journal.test.ts:2937:<anonymous@102>",
               "kind": "ArrowFunction",
-              "line": 98,
-              "name": "<anonymous@98>",
+              "line": 102,
+              "name": "<anonymous@102>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 99,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2935:<anonymous@99>",
+              "id": "test/segmented-journal.test.ts:3043:<anonymous@103>",
               "kind": "ArrowFunction",
-              "line": 99,
-              "name": "<anonymous@99>",
+              "line": 103,
+              "name": "<anonymous@103>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 3,
               "file": "src/segmented-journal.ts",
               "hasBody": true,
-              "id": "src/segmented-journal.ts:9584:sequencesForWhereabouts",
+              "id": "src/segmented-journal.ts:9889:sequencesForWhereabouts",
               "kind": "MethodDeclaration",
-              "line": 220,
+              "line": 228,
               "name": "sequencesForWhereabouts",
               "reason": "resolved-call"
             }
@@ -16506,9 +16460,9 @@
             "column": 3,
             "file": "src/segmented-journal.ts",
             "hasBody": true,
-            "id": "src/segmented-journal.ts:9584:sequencesForWhereabouts",
+            "id": "src/segmented-journal.ts:9889:sequencesForWhereabouts",
             "kind": "MethodDeclaration",
-            "line": 220,
+            "line": 228,
             "name": "sequencesForWhereabouts"
           },
           "test": "test/segmented-journal.test.ts"
@@ -16536,9 +16490,9 @@
           "column": 3,
           "file": "src/segmented-journal.ts",
           "hasBody": true,
-          "id": "src/segmented-journal.ts:9584:sequencesForWhereabouts",
+          "id": "src/segmented-journal.ts:9889:sequencesForWhereabouts",
           "kind": "MethodDeclaration",
-          "line": 220,
+          "line": 228,
           "name": "sequencesForWhereabouts"
         }
       ],
@@ -16637,10 +16591,10 @@
               "column": 74,
               "file": "test/historical-repair.test.ts",
               "hasBody": true,
-              "id": "test/historical-repair.test.ts:7734:<anonymous@212>",
+              "id": "test/historical-repair.test.ts:10056:<anonymous@269>",
               "kind": "ArrowFunction",
-              "line": 212,
-              "name": "<anonymous@212>",
+              "line": 269,
+              "name": "<anonymous@269>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -16687,9 +16641,9 @@
               "column": 3,
               "file": "src/segmented-journal.ts",
               "hasBody": true,
-              "id": "src/segmented-journal.ts:15923:validateAppend",
+              "id": "src/segmented-journal.ts:18183:validateAppend",
               "kind": "MethodDeclaration",
-              "line": 396,
+              "line": 459,
               "name": "validateAppend",
               "reason": "resolved-call"
             }
@@ -16698,9 +16652,9 @@
             "column": 3,
             "file": "src/segmented-journal.ts",
             "hasBody": true,
-            "id": "src/segmented-journal.ts:15923:validateAppend",
+            "id": "src/segmented-journal.ts:18183:validateAppend",
             "kind": "MethodDeclaration",
-            "line": 396,
+            "line": 459,
             "name": "validateAppend"
           },
           "test": "test/historical-repair.test.ts"
@@ -16724,9 +16678,9 @@
           "column": 3,
           "file": "src/segmented-journal.ts",
           "hasBody": true,
-          "id": "src/segmented-journal.ts:15923:validateAppend",
+          "id": "src/segmented-journal.ts:18183:validateAppend",
           "kind": "MethodDeclaration",
-          "line": 396,
+          "line": 459,
           "name": "validateAppend"
         }
       ],
@@ -18443,10 +18397,10 @@
               "column": 74,
               "file": "test/historical-repair.test.ts",
               "hasBody": true,
-              "id": "test/historical-repair.test.ts:7734:<anonymous@212>",
+              "id": "test/historical-repair.test.ts:10056:<anonymous@269>",
               "kind": "ArrowFunction",
-              "line": 212,
-              "name": "<anonymous@212>",
+              "line": 269,
+              "name": "<anonymous@269>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -18787,10 +18741,10 @@
               "column": 73,
               "file": "test/historical-repair.test.ts",
               "hasBody": true,
-              "id": "test/historical-repair.test.ts:9549:<anonymous@261>",
+              "id": "test/historical-repair.test.ts:11871:<anonymous@318>",
               "kind": "ArrowFunction",
-              "line": 261,
-              "name": "<anonymous@261>",
+              "line": 318,
+              "name": "<anonymous@318>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -19095,7 +19049,7 @@
           "path": "src/reservations.ts"
         },
         {
-          "occurrences": 4,
+          "occurrences": 16,
           "path": "src/segmented-journal.ts"
         },
         {
@@ -20217,10 +20171,10 @@
               "column": 73,
               "file": "test/historical-repair.test.ts",
               "hasBody": true,
-              "id": "test/historical-repair.test.ts:9549:<anonymous@261>",
+              "id": "test/historical-repair.test.ts:11871:<anonymous@318>",
               "kind": "ArrowFunction",
-              "line": 261,
-              "name": "<anonymous@261>",
+              "line": 318,
+              "name": "<anonymous@318>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -20725,10 +20679,10 @@
               "column": 73,
               "file": "test/historical-repair.test.ts",
               "hasBody": true,
-              "id": "test/historical-repair.test.ts:9549:<anonymous@261>",
+              "id": "test/historical-repair.test.ts:11871:<anonymous@318>",
               "kind": "ArrowFunction",
-              "line": 261,
-              "name": "<anonymous@261>",
+              "line": 318,
+              "name": "<anonymous@318>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -20921,9 +20875,9 @@
               "column": 1,
               "file": "src/historical-replay.ts",
               "hasBody": true,
-              "id": "src/historical-replay.ts:5078:replayInventoryHistoricalScenario",
+              "id": "src/historical-replay.ts:5042:replayInventoryHistoricalScenario",
               "kind": "FunctionDeclaration",
-              "line": 118,
+              "line": 117,
               "name": "replayInventoryHistoricalScenario",
               "reason": "resolved-call"
             },
@@ -20931,9 +20885,9 @@
               "column": 3,
               "file": "src/historical-replay.ts",
               "hasBody": true,
-              "id": "src/historical-replay.ts:2159:InventoryHistoricalReplayConflictError",
+              "id": "src/historical-replay.ts:2123:InventoryHistoricalReplayConflictError",
               "kind": "Constructor",
-              "line": 60,
+              "line": 59,
               "name": "InventoryHistoricalReplayConflictError",
               "reason": "resolved-call"
             }
@@ -20942,9 +20896,9 @@
             "column": 3,
             "file": "src/historical-replay.ts",
             "hasBody": true,
-            "id": "src/historical-replay.ts:2159:InventoryHistoricalReplayConflictError",
+            "id": "src/historical-replay.ts:2123:InventoryHistoricalReplayConflictError",
             "kind": "Constructor",
-            "line": 60,
+            "line": 59,
             "name": "InventoryHistoricalReplayConflictError"
           },
           "test": "test/traceability-corrections.test.ts"
@@ -20968,9 +20922,9 @@
           "column": 3,
           "file": "src/historical-replay.ts",
           "hasBody": true,
-          "id": "src/historical-replay.ts:2159:InventoryHistoricalReplayConflictError",
+          "id": "src/historical-replay.ts:2123:InventoryHistoricalReplayConflictError",
           "kind": "Constructor",
-          "line": 60,
+          "line": 59,
           "name": "InventoryHistoricalReplayConflictError"
         }
       ],
@@ -24833,7 +24787,7 @@
           "path": "src/fungibility.ts"
         },
         {
-          "occurrences": 4,
+          "occurrences": 5,
           "path": "src/historical-replay.ts"
         },
         {
@@ -26440,10 +26394,10 @@
               "column": 73,
               "file": "test/historical-repair.test.ts",
               "hasBody": true,
-              "id": "test/historical-repair.test.ts:9549:<anonymous@261>",
+              "id": "test/historical-repair.test.ts:11871:<anonymous@318>",
               "kind": "ArrowFunction",
-              "line": 261,
-              "name": "<anonymous@261>",
+              "line": 318,
+              "name": "<anonymous@318>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -34266,41 +34220,21 @@
               "column": 47,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2829:<anonymous@98>",
+              "id": "test/segmented-journal.test.ts:2937:<anonymous@102>",
               "kind": "ArrowFunction",
-              "line": 98,
-              "name": "<anonymous@98>",
+              "line": 102,
+              "name": "<anonymous@102>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 99,
+              "column": 79,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2935:<anonymous@99>",
+              "id": "test/segmented-journal.test.ts:12889:<anonymous@380>",
               "kind": "ArrowFunction",
-              "line": 99,
-              "name": "<anonymous@99>",
+              "line": 380,
+              "name": "<anonymous@380>",
               "reason": "external-callback-dispatch"
-            },
-            {
-              "column": 3,
-              "file": "src/segmented-journal.ts",
-              "hasBody": true,
-              "id": "src/segmented-journal.ts:16107:append",
-              "kind": "MethodDeclaration",
-              "line": 401,
-              "name": "append",
-              "reason": "resolved-call"
-            },
-            {
-              "column": 3,
-              "file": "src/segmented-journal.ts",
-              "hasBody": true,
-              "id": "src/segmented-journal.ts:18094:prepareAppend",
-              "kind": "MethodDeclaration",
-              "line": 461,
-              "name": "prepareAppend",
-              "reason": "resolved-call"
             },
             {
               "column": 1,
@@ -34882,41 +34816,21 @@
               "column": 47,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2829:<anonymous@98>",
+              "id": "test/segmented-journal.test.ts:2937:<anonymous@102>",
               "kind": "ArrowFunction",
-              "line": 98,
-              "name": "<anonymous@98>",
+              "line": 102,
+              "name": "<anonymous@102>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 99,
+              "column": 79,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2935:<anonymous@99>",
+              "id": "test/segmented-journal.test.ts:12889:<anonymous@380>",
               "kind": "ArrowFunction",
-              "line": 99,
-              "name": "<anonymous@99>",
+              "line": 380,
+              "name": "<anonymous@380>",
               "reason": "external-callback-dispatch"
-            },
-            {
-              "column": 3,
-              "file": "src/segmented-journal.ts",
-              "hasBody": true,
-              "id": "src/segmented-journal.ts:16107:append",
-              "kind": "MethodDeclaration",
-              "line": 401,
-              "name": "append",
-              "reason": "resolved-call"
-            },
-            {
-              "column": 3,
-              "file": "src/segmented-journal.ts",
-              "hasBody": true,
-              "id": "src/segmented-journal.ts:18094:prepareAppend",
-              "kind": "MethodDeclaration",
-              "line": 461,
-              "name": "prepareAppend",
-              "reason": "resolved-call"
             },
             {
               "column": 1,
@@ -34941,9 +34855,13 @@
           "test": "test/segmented-journal.test.ts"
         }
       ],
-      "directExecutableEntrypoints": [],
-      "directExecutableEvidence": [],
-      "evidenceMode": "indirect-call-chain",
+      "directExecutableEntrypoints": [
+        "test/segmented-journal.test.ts"
+      ],
+      "directExecutableEvidence": [
+        "test/segmented-journal.test.ts"
+      ],
+      "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/event-query.test.ts",
@@ -35037,10 +34955,10 @@
               "column": 92,
               "file": "test/historical-repair.test.ts",
               "hasBody": true,
-              "id": "test/historical-repair.test.ts:801:<anonymous@28>",
+              "id": "test/historical-repair.test.ts:901:<anonymous@29>",
               "kind": "ArrowFunction",
-              "line": 28,
-              "name": "<anonymous@28>",
+              "line": 29,
+              "name": "<anonymous@29>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -35186,29 +35104,29 @@
               "column": 47,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2829:<anonymous@98>",
+              "id": "test/segmented-journal.test.ts:2937:<anonymous@102>",
               "kind": "ArrowFunction",
-              "line": 98,
-              "name": "<anonymous@98>",
+              "line": 102,
+              "name": "<anonymous@102>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 99,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2935:<anonymous@99>",
+              "id": "test/segmented-journal.test.ts:3043:<anonymous@103>",
               "kind": "ArrowFunction",
-              "line": 99,
-              "name": "<anonymous@99>",
+              "line": 103,
+              "name": "<anonymous@103>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 3,
               "file": "src/segmented-journal.ts",
               "hasBody": true,
-              "id": "src/segmented-journal.ts:16107:append",
+              "id": "src/segmented-journal.ts:18367:append",
               "kind": "MethodDeclaration",
-              "line": 401,
+              "line": 464,
               "name": "append",
               "reason": "resolved-call"
             },
@@ -35216,9 +35134,9 @@
               "column": 3,
               "file": "src/segmented-journal.ts",
               "hasBody": true,
-              "id": "src/segmented-journal.ts:18094:prepareAppend",
+              "id": "src/segmented-journal.ts:20354:prepareAppend",
               "kind": "MethodDeclaration",
-              "line": 461,
+              "line": 524,
               "name": "prepareAppend",
               "reason": "resolved-call"
             },
@@ -35859,9 +35777,9 @@
               "column": 3,
               "file": "src/segmented-journal.ts",
               "hasBody": true,
-              "id": "src/segmented-journal.ts:10133:queryEvents",
+              "id": "src/segmented-journal.ts:10438:queryEvents",
               "kind": "MethodDeclaration",
-              "line": 233,
+              "line": 241,
               "name": "queryEvents",
               "reason": "resolved-call"
             },
@@ -36138,41 +36056,21 @@
               "column": 47,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2829:<anonymous@98>",
+              "id": "test/segmented-journal.test.ts:2937:<anonymous@102>",
               "kind": "ArrowFunction",
-              "line": 98,
-              "name": "<anonymous@98>",
+              "line": 102,
+              "name": "<anonymous@102>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 99,
+              "column": 79,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2935:<anonymous@99>",
+              "id": "test/segmented-journal.test.ts:12889:<anonymous@380>",
               "kind": "ArrowFunction",
-              "line": 99,
-              "name": "<anonymous@99>",
+              "line": 380,
+              "name": "<anonymous@380>",
               "reason": "external-callback-dispatch"
-            },
-            {
-              "column": 3,
-              "file": "src/segmented-journal.ts",
-              "hasBody": true,
-              "id": "src/segmented-journal.ts:16107:append",
-              "kind": "MethodDeclaration",
-              "line": 401,
-              "name": "append",
-              "reason": "resolved-call"
-            },
-            {
-              "column": 3,
-              "file": "src/segmented-journal.ts",
-              "hasBody": true,
-              "id": "src/segmented-journal.ts:18094:prepareAppend",
-              "kind": "MethodDeclaration",
-              "line": 461,
-              "name": "prepareAppend",
-              "reason": "resolved-call"
             },
             {
               "column": 1,
@@ -36197,9 +36095,13 @@
           "test": "test/segmented-journal.test.ts"
         }
       ],
-      "directExecutableEntrypoints": [],
-      "directExecutableEvidence": [],
-      "evidenceMode": "indirect-call-chain",
+      "directExecutableEntrypoints": [
+        "test/segmented-journal.test.ts"
+      ],
+      "directExecutableEvidence": [
+        "test/segmented-journal.test.ts"
+      ],
+      "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/event-query.test.ts",
@@ -36927,41 +36829,21 @@
               "column": 47,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2829:<anonymous@98>",
+              "id": "test/segmented-journal.test.ts:2937:<anonymous@102>",
               "kind": "ArrowFunction",
-              "line": 98,
-              "name": "<anonymous@98>",
+              "line": 102,
+              "name": "<anonymous@102>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 99,
+              "column": 79,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2935:<anonymous@99>",
+              "id": "test/segmented-journal.test.ts:12889:<anonymous@380>",
               "kind": "ArrowFunction",
-              "line": 99,
-              "name": "<anonymous@99>",
+              "line": 380,
+              "name": "<anonymous@380>",
               "reason": "external-callback-dispatch"
-            },
-            {
-              "column": 3,
-              "file": "src/segmented-journal.ts",
-              "hasBody": true,
-              "id": "src/segmented-journal.ts:16107:append",
-              "kind": "MethodDeclaration",
-              "line": 401,
-              "name": "append",
-              "reason": "resolved-call"
-            },
-            {
-              "column": 3,
-              "file": "src/segmented-journal.ts",
-              "hasBody": true,
-              "id": "src/segmented-journal.ts:18094:prepareAppend",
-              "kind": "MethodDeclaration",
-              "line": 461,
-              "name": "prepareAppend",
-              "reason": "resolved-call"
             },
             {
               "column": 1,
@@ -37092,41 +36974,21 @@
               "column": 47,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2829:<anonymous@98>",
+              "id": "test/segmented-journal.test.ts:2937:<anonymous@102>",
               "kind": "ArrowFunction",
-              "line": 98,
-              "name": "<anonymous@98>",
+              "line": 102,
+              "name": "<anonymous@102>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 99,
+              "column": 79,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2935:<anonymous@99>",
+              "id": "test/segmented-journal.test.ts:12889:<anonymous@380>",
               "kind": "ArrowFunction",
-              "line": 99,
-              "name": "<anonymous@99>",
+              "line": 380,
+              "name": "<anonymous@380>",
               "reason": "external-callback-dispatch"
-            },
-            {
-              "column": 3,
-              "file": "src/segmented-journal.ts",
-              "hasBody": true,
-              "id": "src/segmented-journal.ts:16107:append",
-              "kind": "MethodDeclaration",
-              "line": 401,
-              "name": "append",
-              "reason": "resolved-call"
-            },
-            {
-              "column": 3,
-              "file": "src/segmented-journal.ts",
-              "hasBody": true,
-              "id": "src/segmented-journal.ts:18094:prepareAppend",
-              "kind": "MethodDeclaration",
-              "line": 461,
-              "name": "prepareAppend",
-              "reason": "resolved-call"
             },
             {
               "column": 1,
@@ -38451,10 +38313,6 @@
         },
         {
           "occurrences": 2,
-          "path": "src/historical-replay.ts"
-        },
-        {
-          "occurrences": 2,
           "path": "src/segmented-state.ts"
         }
       ],
@@ -39015,41 +38873,21 @@
               "column": 47,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2829:<anonymous@98>",
+              "id": "test/segmented-journal.test.ts:2937:<anonymous@102>",
               "kind": "ArrowFunction",
-              "line": 98,
-              "name": "<anonymous@98>",
+              "line": 102,
+              "name": "<anonymous@102>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 99,
+              "column": 79,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2935:<anonymous@99>",
+              "id": "test/segmented-journal.test.ts:12889:<anonymous@380>",
               "kind": "ArrowFunction",
-              "line": 99,
-              "name": "<anonymous@99>",
+              "line": 380,
+              "name": "<anonymous@380>",
               "reason": "external-callback-dispatch"
-            },
-            {
-              "column": 3,
-              "file": "src/segmented-journal.ts",
-              "hasBody": true,
-              "id": "src/segmented-journal.ts:16107:append",
-              "kind": "MethodDeclaration",
-              "line": 401,
-              "name": "append",
-              "reason": "resolved-call"
-            },
-            {
-              "column": 3,
-              "file": "src/segmented-journal.ts",
-              "hasBody": true,
-              "id": "src/segmented-journal.ts:18094:prepareAppend",
-              "kind": "MethodDeclaration",
-              "line": 461,
-              "name": "prepareAppend",
-              "reason": "resolved-call"
             },
             {
               "column": 1,
@@ -40486,41 +40324,21 @@
               "column": 47,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2829:<anonymous@98>",
+              "id": "test/segmented-journal.test.ts:2937:<anonymous@102>",
               "kind": "ArrowFunction",
-              "line": 98,
-              "name": "<anonymous@98>",
+              "line": 102,
+              "name": "<anonymous@102>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 99,
+              "column": 79,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2935:<anonymous@99>",
+              "id": "test/segmented-journal.test.ts:12889:<anonymous@380>",
               "kind": "ArrowFunction",
-              "line": 99,
-              "name": "<anonymous@99>",
+              "line": 380,
+              "name": "<anonymous@380>",
               "reason": "external-callback-dispatch"
-            },
-            {
-              "column": 3,
-              "file": "src/segmented-journal.ts",
-              "hasBody": true,
-              "id": "src/segmented-journal.ts:16107:append",
-              "kind": "MethodDeclaration",
-              "line": 401,
-              "name": "append",
-              "reason": "resolved-call"
-            },
-            {
-              "column": 3,
-              "file": "src/segmented-journal.ts",
-              "hasBody": true,
-              "id": "src/segmented-journal.ts:18094:prepareAppend",
-              "kind": "MethodDeclaration",
-              "line": 461,
-              "name": "prepareAppend",
-              "reason": "resolved-call"
             },
             {
               "column": 1,
@@ -40651,41 +40469,21 @@
               "column": 47,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2829:<anonymous@98>",
+              "id": "test/segmented-journal.test.ts:2937:<anonymous@102>",
               "kind": "ArrowFunction",
-              "line": 98,
-              "name": "<anonymous@98>",
+              "line": 102,
+              "name": "<anonymous@102>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 99,
+              "column": 79,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2935:<anonymous@99>",
+              "id": "test/segmented-journal.test.ts:12889:<anonymous@380>",
               "kind": "ArrowFunction",
-              "line": 99,
-              "name": "<anonymous@99>",
+              "line": 380,
+              "name": "<anonymous@380>",
               "reason": "external-callback-dispatch"
-            },
-            {
-              "column": 3,
-              "file": "src/segmented-journal.ts",
-              "hasBody": true,
-              "id": "src/segmented-journal.ts:16107:append",
-              "kind": "MethodDeclaration",
-              "line": 401,
-              "name": "append",
-              "reason": "resolved-call"
-            },
-            {
-              "column": 3,
-              "file": "src/segmented-journal.ts",
-              "hasBody": true,
-              "id": "src/segmented-journal.ts:18094:prepareAppend",
-              "kind": "MethodDeclaration",
-              "line": 461,
-              "name": "prepareAppend",
-              "reason": "resolved-call"
             },
             {
               "column": 1,
@@ -42420,41 +42218,21 @@
               "column": 47,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2829:<anonymous@98>",
+              "id": "test/segmented-journal.test.ts:2937:<anonymous@102>",
               "kind": "ArrowFunction",
-              "line": 98,
-              "name": "<anonymous@98>",
+              "line": 102,
+              "name": "<anonymous@102>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 99,
+              "column": 79,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2935:<anonymous@99>",
+              "id": "test/segmented-journal.test.ts:12889:<anonymous@380>",
               "kind": "ArrowFunction",
-              "line": 99,
-              "name": "<anonymous@99>",
+              "line": 380,
+              "name": "<anonymous@380>",
               "reason": "external-callback-dispatch"
-            },
-            {
-              "column": 3,
-              "file": "src/segmented-journal.ts",
-              "hasBody": true,
-              "id": "src/segmented-journal.ts:16107:append",
-              "kind": "MethodDeclaration",
-              "line": 401,
-              "name": "append",
-              "reason": "resolved-call"
-            },
-            {
-              "column": 3,
-              "file": "src/segmented-journal.ts",
-              "hasBody": true,
-              "id": "src/segmented-journal.ts:18094:prepareAppend",
-              "kind": "MethodDeclaration",
-              "line": 461,
-              "name": "prepareAppend",
-              "reason": "resolved-call"
             },
             {
               "column": 1,
@@ -46181,7 +45959,7 @@
           "path": "src/fungibility.ts"
         },
         {
-          "occurrences": 6,
+          "occurrences": 8,
           "path": "src/historical-replay.ts"
         },
         {
@@ -47507,9 +47285,9 @@
               "column": 1,
               "file": "src/historical-replay.ts",
               "hasBody": true,
-              "id": "src/historical-replay.ts:5078:replayInventoryHistoricalScenario",
+              "id": "src/historical-replay.ts:5042:replayInventoryHistoricalScenario",
               "kind": "FunctionDeclaration",
-              "line": 118,
+              "line": 117,
               "name": "replayInventoryHistoricalScenario",
               "reason": "resolved-call"
             }
@@ -47518,9 +47296,9 @@
             "column": 1,
             "file": "src/historical-replay.ts",
             "hasBody": true,
-            "id": "src/historical-replay.ts:5078:replayInventoryHistoricalScenario",
+            "id": "src/historical-replay.ts:5042:replayInventoryHistoricalScenario",
             "kind": "FunctionDeclaration",
-            "line": 118,
+            "line": 117,
             "name": "replayInventoryHistoricalScenario"
           },
           "test": "test/traceability-corrections.test.ts"
@@ -47544,9 +47322,9 @@
           "column": 1,
           "file": "src/historical-replay.ts",
           "hasBody": true,
-          "id": "src/historical-replay.ts:5078:replayInventoryHistoricalScenario",
+          "id": "src/historical-replay.ts:5042:replayInventoryHistoricalScenario",
           "kind": "FunctionDeclaration",
-          "line": 118,
+          "line": 117,
           "name": "replayInventoryHistoricalScenario"
         }
       ],
@@ -54166,7 +53944,7 @@
           "path": "src/fungibility.ts"
         },
         {
-          "occurrences": 4,
+          "occurrences": 5,
           "path": "src/historical-replay.ts"
         },
         {
@@ -59789,10 +59567,6 @@
         },
         {
           "occurrences": 2,
-          "path": "src/historical-replay.ts"
-        },
-        {
-          "occurrences": 2,
           "path": "src/segmented-state.ts"
         }
       ],
@@ -63596,7 +63370,7 @@
           "path": "src/fungibility.ts"
         },
         {
-          "occurrences": 6,
+          "occurrences": 8,
           "path": "src/historical-replay.ts"
         },
         {
@@ -66831,29 +66605,29 @@
               "column": 47,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2829:<anonymous@98>",
+              "id": "test/segmented-journal.test.ts:2937:<anonymous@102>",
               "kind": "ArrowFunction",
-              "line": 98,
-              "name": "<anonymous@98>",
+              "line": 102,
+              "name": "<anonymous@102>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 99,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2935:<anonymous@99>",
+              "id": "test/segmented-journal.test.ts:3043:<anonymous@103>",
               "kind": "ArrowFunction",
-              "line": 99,
-              "name": "<anonymous@99>",
+              "line": 103,
+              "name": "<anonymous@103>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 1,
               "file": "src/segmented-journal.ts",
               "hasBody": true,
-              "id": "src/segmented-journal.ts:25534:createInMemoryInventorySegmentedEventJournal",
+              "id": "src/segmented-journal.ts:27794:createInMemoryInventorySegmentedEventJournal",
               "kind": "FunctionDeclaration",
-              "line": 681,
+              "line": 744,
               "name": "createInMemoryInventorySegmentedEventJournal",
               "reason": "resolved-call"
             },
@@ -66861,9 +66635,9 @@
               "column": 3,
               "file": "src/segmented-journal.ts",
               "hasBody": true,
-              "id": "src/segmented-journal.ts:7851:InMemoryInventorySegmentedEventJournal",
+              "id": "src/segmented-journal.ts:8156:InMemoryInventorySegmentedEventJournal",
               "kind": "Constructor",
-              "line": 174,
+              "line": 182,
               "name": "InMemoryInventorySegmentedEventJournal",
               "reason": "resolved-call"
             }
@@ -66872,9 +66646,9 @@
             "column": 3,
             "file": "src/segmented-journal.ts",
             "hasBody": true,
-            "id": "src/segmented-journal.ts:7851:InMemoryInventorySegmentedEventJournal",
+            "id": "src/segmented-journal.ts:8156:InMemoryInventorySegmentedEventJournal",
             "kind": "Constructor",
-            "line": 174,
+            "line": 182,
             "name": "InMemoryInventorySegmentedEventJournal"
           },
           "test": "test/segmented-journal.test.ts"
@@ -66898,9 +66672,9 @@
           "column": 3,
           "file": "src/segmented-journal.ts",
           "hasBody": true,
-          "id": "src/segmented-journal.ts:7851:InMemoryInventorySegmentedEventJournal",
+          "id": "src/segmented-journal.ts:8156:InMemoryInventorySegmentedEventJournal",
           "kind": "Constructor",
-          "line": 174,
+          "line": 182,
           "name": "InMemoryInventorySegmentedEventJournal"
         }
       ],
@@ -67306,10 +67080,10 @@
               "column": 74,
               "file": "test/historical-repair.test.ts",
               "hasBody": true,
-              "id": "test/historical-repair.test.ts:7734:<anonymous@212>",
+              "id": "test/historical-repair.test.ts:10056:<anonymous@269>",
               "kind": "ArrowFunction",
-              "line": 212,
-              "name": "<anonymous@212>",
+              "line": 269,
+              "name": "<anonymous@269>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -67813,10 +67587,10 @@
               "column": 74,
               "file": "test/historical-repair.test.ts",
               "hasBody": true,
-              "id": "test/historical-repair.test.ts:7734:<anonymous@212>",
+              "id": "test/historical-repair.test.ts:10056:<anonymous@269>",
               "kind": "ArrowFunction",
-              "line": 212,
-              "name": "<anonymous@212>",
+              "line": 269,
+              "name": "<anonymous@269>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -68617,29 +68391,29 @@
               "column": 47,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2829:<anonymous@98>",
+              "id": "test/segmented-journal.test.ts:2937:<anonymous@102>",
               "kind": "ArrowFunction",
-              "line": 98,
-              "name": "<anonymous@98>",
+              "line": 102,
+              "name": "<anonymous@102>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 99,
               "file": "test/segmented-journal.test.ts",
               "hasBody": true,
-              "id": "test/segmented-journal.test.ts:2935:<anonymous@99>",
+              "id": "test/segmented-journal.test.ts:3043:<anonymous@103>",
               "kind": "ArrowFunction",
-              "line": 99,
-              "name": "<anonymous@99>",
+              "line": 103,
+              "name": "<anonymous@103>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 1,
               "file": "src/segmented-journal.ts",
               "hasBody": true,
-              "id": "src/segmented-journal.ts:25534:createInMemoryInventorySegmentedEventJournal",
+              "id": "src/segmented-journal.ts:27794:createInMemoryInventorySegmentedEventJournal",
               "kind": "FunctionDeclaration",
-              "line": 681,
+              "line": 744,
               "name": "createInMemoryInventorySegmentedEventJournal",
               "reason": "resolved-call"
             }
@@ -68648,9 +68422,9 @@
             "column": 1,
             "file": "src/segmented-journal.ts",
             "hasBody": true,
-            "id": "src/segmented-journal.ts:25534:createInMemoryInventorySegmentedEventJournal",
+            "id": "src/segmented-journal.ts:27794:createInMemoryInventorySegmentedEventJournal",
             "kind": "FunctionDeclaration",
-            "line": 681,
+            "line": 744,
             "name": "createInMemoryInventorySegmentedEventJournal"
           },
           "test": "test/segmented-journal.test.ts"
@@ -68678,9 +68452,9 @@
           "column": 1,
           "file": "src/segmented-journal.ts",
           "hasBody": true,
-          "id": "src/segmented-journal.ts:25534:createInMemoryInventorySegmentedEventJournal",
+          "id": "src/segmented-journal.ts:27794:createInMemoryInventorySegmentedEventJournal",
           "kind": "FunctionDeclaration",
-          "line": 681,
+          "line": 744,
           "name": "createInMemoryInventorySegmentedEventJournal"
         }
       ],
@@ -80593,7 +80367,7 @@
           "path": "src/transfers.ts"
         },
         {
-          "occurrences": 2,
+          "occurrences": 3,
           "path": "src/whereabouts.ts"
         }
       ],
@@ -86317,7 +86091,7 @@
           "path": "src/transfers.ts"
         },
         {
-          "occurrences": 2,
+          "occurrences": 3,
           "path": "src/whereabouts.ts"
         }
       ],
@@ -90590,10 +90364,10 @@
               "column": 92,
               "file": "test/historical-repair.test.ts",
               "hasBody": true,
-              "id": "test/historical-repair.test.ts:801:<anonymous@28>",
+              "id": "test/historical-repair.test.ts:901:<anonymous@29>",
               "kind": "ArrowFunction",
-              "line": 28,
-              "name": "<anonymous@28>",
+              "line": 29,
+              "name": "<anonymous@29>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -90739,10 +90513,10 @@
               "column": 73,
               "file": "test/historical-repair.test.ts",
               "hasBody": true,
-              "id": "test/historical-repair.test.ts:9549:<anonymous@261>",
+              "id": "test/historical-repair.test.ts:11871:<anonymous@318>",
               "kind": "ArrowFunction",
-              "line": 261,
-              "name": "<anonymous@261>",
+              "line": 318,
+              "name": "<anonymous@318>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -99749,5 +99523,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "65e7f72b0219bd051c0344e1e563b0f8e93909a7e5b3b9746ad79f3fdf49a67a"
+  "surfaceSha256": "9b7effbced38179be0377691f00eaa2be0d755a75c366b8d6e49777ebb9e738c"
 }

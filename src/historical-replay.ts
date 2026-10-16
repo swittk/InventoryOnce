@@ -13,7 +13,6 @@ import {
 import {
   addInventoryMeasurements,
   inventoryMeasurementsAreZero,
-  inventoryMeasurementsFingerprint,
   negateInventoryMeasurements,
   zeroInventoryMeasurements,
   type InventoryMeasurementVector,
@@ -145,15 +144,36 @@ export function replayInventoryHistoricalScenario({
   );
   const actualDeficits = inventoryHistoricalDeficitIntervals(actualEvents);
   const proposedDeficits = inventoryHistoricalDeficitIntervals(effectiveEvents);
-  const actualDeficitFingerprints = new Set(
-    actualDeficits.map(inventoryHistoricalDeficitFingerprint)
+  const actualDeficitsByIdentity = new Map(
+    actualDeficits.map(
+      /** Key existing shortages independently of their severity and eventual resolution. */
+      (deficit) => [inventoryHistoricalDeficitIdentity(deficit), deficit]
+    )
   );
   const deficits = proposedDeficits.filter(
-    /** Retain only deficit intervals newly exposed by the proposed history. */
-    (deficit) =>
-      !actualDeficitFingerprints.has(
-        inventoryHistoricalDeficitFingerprint(deficit)
-      )
+    /** Report a genuinely new or longer/deeper interval, not an improvement. */
+    (deficit) => {
+      const previous = actualDeficitsByIdentity.get(
+        inventoryHistoricalDeficitIdentity(deficit)
+      );
+      if (previous === undefined) return true;
+      if (
+        compareQuantity(
+          deficit.maximumDeficit.primary.quantity,
+          previous.maximumDeficit.primary.quantity
+        ) > 0 ||
+        deficit.startedAtEpochMs < previous.startedAtEpochMs
+      ) {
+        return true;
+      }
+      if (deficit.endedAtEpochMs === undefined) {
+        return previous.endedAtEpochMs !== undefined;
+      }
+      return (
+        previous.endedAtEpochMs !== undefined &&
+        deficit.endedAtEpochMs > previous.endedAtEpochMs
+      );
+    }
   );
   // An existing recorded serialized shortage is retained historical truth;
   // only a newly exposed negative serialized interval is a new identity error.
@@ -710,18 +730,14 @@ function compareHistoricalDeficitInterval(
       );
 }
 
-/** Collision-free interval identity for actual-versus-proposed consequence comparison. */
-function inventoryHistoricalDeficitFingerprint(
+/** Match one retained shortage by its opening assertion, regardless of later improvement. */
+function inventoryHistoricalDeficitIdentity(
   deficit: InventoryHistoricalDeficitInterval
 ): string {
   return JSON.stringify([
     deficit.itemRevisionId,
     inventoryStockPositionIdentity(deficit.position),
-    inventoryMeasurementsFingerprint(deficit.maximumDeficit),
     deficit.startedByEventId,
-    deficit.startedAtEpochMs,
-    deficit.endedByEventId ?? null,
-    deficit.endedAtEpochMs ?? null,
   ]);
 }
 

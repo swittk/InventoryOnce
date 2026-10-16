@@ -25,6 +25,63 @@ export const FORMAL_IMPLEMENTATION_TRACE_IDS = [
 ] as const;
 
 describe("late historical repair", () => {
+  /** A smaller negative interval from the same retained issue is improvement, not new exposure. */
+  it("accepts a smaller retained deficit from the same issue root while rejecting growth", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const recorder = createTestInventory(
+      storage,
+      undefined,
+      undefined,
+      InventoryDeficitPolicy.Record
+    );
+    const root = await recorder.stock.issue({
+      operationId: "shrink-existing-deficit-root",
+      occurredAtEpochMs: time0,
+      from: loosePosition("historical-shortage"),
+      amount: stockAmount("5", "piece"),
+    });
+    const strict = createTestInventory(storage);
+    const correction = {
+      operationId: "shrink-existing-deficit-correction",
+      occurredAtEpochMs: time3,
+      correctsEventId: root.event.eventId,
+      reason: "Four pieces were actually issued, not five.",
+      replaceWith: (plans: Parameters<typeof strict.stock.correct>[0]["replaceWith"] extends
+        (plans: infer Plans) => unknown ? Plans : never) =>
+        plans.issue({
+          occurredAtEpochMs: time0,
+          from: loosePosition("historical-shortage"),
+          amount: stockAmount("4", "piece"),
+        }),
+    };
+    const proposed = await strict.stock.planCorrection(correction);
+    expect(proposed.valid).toBe(true);
+    if (!proposed.valid) throw new Error(proposed.conflict.message);
+    expect(proposed.impact.deficits).toEqual([]);
+    const committed = await strict.stock.correct(correction);
+    expect(committed.event.historicalImpact?.deficits).toEqual([]);
+    expect(
+      (await strict.read.positions({ itemId: "item-a" }))[0]?.measurements.primary.quantity.amountMinor
+    ).toBe(-4);
+    expect((await strict.stock.correct(correction)).replayed).toBe(true);
+
+    const worsening = await strict.stock.planCorrection({
+      ...correction,
+      operationId: "grow-existing-deficit-correction",
+      reason: "An inaccurate proposal that would deepen the prior deficit.",
+      replaceWith: (plans) =>
+        plans.issue({
+          occurredAtEpochMs: time0,
+          from: loosePosition("historical-shortage"),
+          amount: stockAmount("6", "piece"),
+        }),
+    });
+    expect(worsening).toMatchObject({
+      valid: false,
+      conflict: { code: "negative-stock" },
+    });
+  });
+
   it("allows a Reject-policy correction that does not change a retained recorded deficit", async () => {
     const storage = createInMemoryInventoryDurableStorage();
     const recorder = createTestInventory(

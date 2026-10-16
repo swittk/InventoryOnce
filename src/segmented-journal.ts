@@ -138,6 +138,14 @@ interface InventoryPreparedJournalAppend {
   readonly leaf: InventoryJournalRootLeaf;
 }
 
+/** One forward-only pointer into sorted resource-sequence postings. */
+interface InventoryResourcePostingCursor {
+  /** Immutable ascending record sequences for one indexed resource key. */
+  readonly rows: readonly number[];
+  /** Index of this cursor's next unconsumed sequence. */
+  index: number;
+}
+
 /** Reference append-only indexed event journal. */
 export class InMemoryInventorySegmentedEventJournal
   implements InventorySegmentedEventJournal, InventorySegmentedEventQueryReader
@@ -356,19 +364,74 @@ export class InMemoryInventorySegmentedEventJournal
         "Resource event query afterRecordSequence must be a non-negative safe integer."
       );
     }
-    const candidates = new Set<number>();
+    // Each posting list is already ascending; advance directly to the requested
+    // cursor before merging, rather than collecting/sorting all retained history.
+    const heap: InventoryResourcePostingCursor[] = [];
     for (const key of new Set(input.resourceKeys)) {
       if (key.length === 0) {
         throw new Error("Resource event query key must not be empty.");
       }
-      for (const sequence of this.sequencesByResourceKey.get(key) ?? []) {
-        if (sequence > after) candidates.add(sequence);
+      const rows = this.sequencesByResourceKey.get(key) ?? [];
+      let low = 0;
+      let high = rows.length;
+      while (low < high) {
+        const middle = Math.floor((low + high) / 2);
+        if (rows[middle]! <= after) low = middle + 1;
+        else high = middle;
       }
+      if (low === rows.length) continue;
+      const cursor: InventoryResourcePostingCursor = { rows, index: low };
+      const sequence = rows[low]!;
+      let position = heap.length;
+      while (position > 0) {
+        const parent = Math.floor((position - 1) / 2);
+        const parentCursor = heap[parent]!;
+        if (parentCursor.rows[parentCursor.index]! <= sequence) break;
+        heap[position] = parentCursor;
+        position = parent;
+      }
+      heap[position] = cursor;
     }
-    const ordered = [...candidates].sort(
-      /** Restore ascending durable order after resource-index union. */
-      (left, right) => left - right
-    );
+
+    const ordered: number[] = [];
+    // One extra distinct candidate determines whether another page exists.
+    while (heap.length > 0 && ordered.length <= limit) {
+      const first = heap[0]!;
+      const sequence = first.rows[first.index]!;
+      if (ordered[ordered.length - 1] !== sequence) ordered.push(sequence);
+
+      const nextIndex = first.index + 1;
+      let nextCursor: InventoryResourcePostingCursor;
+      if (nextIndex < first.rows.length) {
+        first.index = nextIndex;
+        nextCursor = first;
+      } else {
+        // Replace the exhausted heap root with its last cursor.
+        nextCursor = heap.pop()!;
+        if (heap.length === 0) break;
+      }
+
+      let position = 0;
+      while (2 * position + 1 < heap.length) {
+        const left = 2 * position + 1;
+        const right = left + 1;
+        let smallest = left;
+        if (
+          right < heap.length &&
+          heap[right]!.rows[heap[right]!.index]! <
+            heap[left]!.rows[heap[left]!.index]!
+        ) {
+          smallest = right;
+        }
+        if (
+          nextCursor.rows[nextCursor.index]! <=
+          heap[smallest]!.rows[heap[smallest]!.index]!
+        ) break;
+        heap[position] = heap[smallest]!;
+        position = smallest;
+      }
+      heap[position] = nextCursor;
+    }
     const events: InventoryCommittedEvent[] = [];
     for (const sequence of ordered.slice(0, limit)) {
       const eventId = this.eventIdBySequence.get(sequence);

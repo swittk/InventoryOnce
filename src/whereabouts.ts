@@ -210,10 +210,29 @@ export function findInventoryWhereaboutsHistory(
     query.actions === undefined
       ? undefined
       : normalizeWhereaboutsActions(query.actions);
+  // Unresolved cohorts necessarily own current positions; avoid replaying
+  // the entire resolved-history index before applying this cheap state filter.
+  const candidateWhereaboutsIds =
+    query.resolved === false
+      ? new Set(
+          (
+            whereaboutsIds === undefined
+              ? Object.keys(projection.positionIdsByWhereaboutsId)
+              : [...whereaboutsIds]
+          ).filter(
+            /** Only live cohorts need their indexed history materialized. */
+            (whereaboutsId) =>
+              (inventorySparseRecordValue(
+                projection.positionIdsByWhereaboutsId,
+                whereaboutsId
+              )?.length ?? 0) > 0
+          )
+        )
+      : whereaboutsIds;
   const result: InventoryWhereaboutsLifecycle[] = [];
   for (const lifecycle of inventoryWhereaboutsLifecycles(
     projection,
-    whereaboutsIds
+    candidateWhereaboutsIds
   )) {
     if (
       whereaboutsIds !== undefined &&
