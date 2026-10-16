@@ -37,8 +37,7 @@ export type InventoryHistoricalReplayConflictCode =
   | "negative-stock"
   | "serialized-deficit"
   | "missing-anchor"
-  | "duplicate-assertion"
-  | "legacy-correction";
+  | "duplicate-assertion";
 
 /** Structured historical planning failure retained by side-effect-free public plans. */
 export interface InventoryHistoricalReplayConflict {
@@ -136,10 +135,6 @@ export function replayInventoryHistoricalScenario({
       assertions,
       omittedAssertionIds,
       ...(rootReplacement === undefined ? {} : { rootReplacement }),
-      rejectLegacyCorrections:
-        rootReplacement !== undefined ||
-        assertions.length !== 0 ||
-        omittedAssertionIds.length !== 0,
     })
   );
   const actualDeficits = inventoryHistoricalDeficitIntervals(actualEvents);
@@ -267,7 +262,6 @@ function effectiveInventoryHistoryEvents({
   assertions = [],
   omittedAssertionIds = [],
   rootReplacement,
-  rejectLegacyCorrections = false,
 }: {
   /** Current projection owning the complete durable event indexes. */
   readonly projection: InventoryProjectionState;
@@ -279,8 +273,6 @@ function effectiveInventoryHistoryEvents({
   readonly omittedAssertionIds?: readonly string[];
   /** Optional retained root replacement used by correction planning. */
   readonly rootReplacement?: InventoryHistoricalRootReplacement;
-  /** Whether legacy correction envelopes lacking replacement evidence must fail closed. */
-  readonly rejectLegacyCorrections?: boolean;
 }): readonly InventoryCommittedEvent[] {
   const ordered = sourceEvents === undefined
     ? orderedProjectionEvents(projection)
@@ -290,8 +282,8 @@ function effectiveInventoryHistoryEvents({
       );
   const active = new Map<string, InventoryPendingHistoricalAssertion>();
   const ordinary: InventoryCommittedEvent[] = [];
-  const correctionByRoot = new Map<string, InventoryCommittedEvent>();
-  const legacyCorrections: InventoryCommittedEvent[] = [];
+  /** Last current-format replacement (including explicit omitted-root null) by root event. */
+  const correctionByRoot = new Map<string, InventoryEventDraft | null>();
   for (const event of ordered) {
     if (event.kind === InventoryEventKind.Correction) {
       const rootId = event.correction?.correctsEventId;
@@ -303,10 +295,13 @@ function effectiveInventoryHistoryEvents({
         });
       }
       if (event.correctionReplacement === undefined) {
-        legacyCorrections.push(event);
-      } else {
-        correctionByRoot.set(rootId, event);
+        throw new InventoryHistoricalReplayConflictError({
+          code: "invalid-history",
+          message: `Correction event '${event.eventId}' has no retained replacement evidence.`,
+          eventId: event.eventId,
+        });
       }
+      correctionByRoot.set(rootId, event.correctionReplacement);
       continue;
     }
     if (event.kind !== InventoryEventKind.HistoricalRepair) {
@@ -351,15 +346,6 @@ function effectiveInventoryHistoryEvents({
       });
     }
   }
-  if (rejectLegacyCorrections && legacyCorrections.length !== 0) {
-    const legacy = legacyCorrections[0]!;
-    throw new InventoryHistoricalReplayConflictError({
-      code: "legacy-correction",
-      message:
-        "Connected historical correction lacks retained replacement evidence; supersede/restate that correction before late-history repair.",
-      eventId: legacy.eventId,
-    });
-  }
   const base: InventoryCommittedEvent[] = [];
   let replacedRootFound = rootReplacement === undefined;
   for (const event of ordinary) {
@@ -375,17 +361,12 @@ function effectiveInventoryHistoryEvents({
       });
       continue;
     }
-    const correction = correctionByRoot.get(event.eventId);
-    if (correction === undefined) {
-      base.push(event);
-      continue;
-    }
-    const replacement = correction.correctionReplacement;
-    if (replacement === null) continue;
+    const replacement = correctionByRoot.get(event.eventId);
     if (replacement === undefined) {
       base.push(event);
       continue;
     }
+    if (replacement === null) continue;
     base.push({
       ...replacement,
       eventId: event.eventId,
@@ -401,7 +382,6 @@ function effectiveInventoryHistoryEvents({
       eventId: rootReplacement!.rootEventId,
     });
   }
-  base.push(...legacyCorrections);
   for (const assertionId of omittedAssertionIds) {
     if (!active.delete(assertionId)) {
       throw new InventoryHistoricalReplayConflictError({

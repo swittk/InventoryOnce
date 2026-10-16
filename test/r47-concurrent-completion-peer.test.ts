@@ -79,7 +79,7 @@ const phasePredicate: Record<Phase, (r: InventoryAuthorityDocument) => boolean> 
 };
 
 /** Run one legacy cutover race with either matching or foreign peer evidence. */
-async function legacyCase(phase: Phase, foreign: boolean) {
+async function canonicalCase(phase: Phase, foreign: boolean) {
   const shared = hookedStore();
   const primary = createInventoryAuthorityControl({ store: shared.store, namespaceId: "ns" });
   const secondary = createInventoryAuthorityControl({ store: shared.store, namespaceId: "ns" });
@@ -197,8 +197,8 @@ test("R47 exhausts concrete same-request and foreign completion checkpoints", as
   rows.push(await greenfieldCase(false));
   rows.push(await greenfieldCase(true));
   for (const phase of ["cert", "auth", "shadow", "dual", "fence"] as const)
-    rows.push(await legacyCase(phase, false));
+    rows.push(await canonicalCase(phase, false));
   for (const phase of ["cert", "auth", "shadow", "dual", "fence"] as const)
-    rows.push(await legacyCase(phase, true));
+    rows.push(await canonicalCase(phase, true));
   assert.equal(rows.length, 12);
 });

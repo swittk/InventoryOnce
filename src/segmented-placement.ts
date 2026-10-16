@@ -41,7 +41,7 @@ export interface ApplyInventorySegmentedPlacementChangeResult {
   readonly parentNodeId?: string;
 }
 
-/** Canonical flat placement topology materialized only for export/proof compatibility. */
+/** Canonical flat placement topology materialized for export and proof. */
 export type InventorySegmentedPlacementMaterialization = InventoryPlacementState;
 
 /** Read-only indexed placement topology contract for native/database adapters. */

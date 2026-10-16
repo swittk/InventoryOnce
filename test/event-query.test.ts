@@ -107,16 +107,14 @@ describe("indexed retained event history", () => {
         limit: 1,
       });
       expect(first.events).toHaveLength(1);
-      expect(first.nextAfterRecordSequence).toBe(
-        first.events[0]?.recordSequence
-      );
-      if (first.nextAfterRecordSequence === undefined) {
-        throw new Error("Expected another item-history page.");
+      expect(first.nextCursor).toBeDefined();
+      if (first.nextCursor === undefined) {
+        throw new Error("Expected another item-history cursor.");
       }
       const second = await inventory.read.events({
         itemIds: ["item-a"],
         limit: 1,
-        afterRecordSequence: first.nextAfterRecordSequence,
+        cursor: first.nextCursor,
       });
       expect(second.events[0]?.recordSequence).toBeGreaterThan(
         first.events[0]?.recordSequence ?? 0
@@ -367,13 +365,6 @@ describe("indexed retained event history", () => {
         direction: InventoryEventQueryDirection.Descending,
       })
     ).rejects.toThrow("does not match");
-    await expect(
-      inventory.read.events({
-        cursor: first.nextCursor,
-        itemIds: ["item-a"],
-        afterRecordSequence: 1,
-      })
-    ).rejects.toThrow("cannot be combined");
     await expect(
       inventory.read.events({
         occurredFromEpochMs: time2,

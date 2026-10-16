@@ -74,8 +74,6 @@ export interface InventoryEventQuery {
   readonly direction?: InventoryEventQueryDirection;
   /** Opaque continuation cursor binding filters, direction, and the first page's journal head. */
   readonly cursor?: string;
-  /** Legacy ascending lower cursor; incompatible with cursor/descending traversal. */
-  readonly afterRecordSequence?: number;
   /** Maximum events returned; defaults to 100 and is capped at 1,000. */
   readonly limit?: number;
 }
@@ -88,8 +86,6 @@ export interface InventoryEventPage {
   readonly events: readonly InventoryCommittedEvent[];
   /** Opaque stable-snapshot continuation cursor. */
   readonly nextCursor?: string;
-  /** Legacy ascending cursor, omitted for descending pages. */
-  readonly nextAfterRecordSequence?: number;
 }
 
 /** Normalized query plus sets used by index-backed and fallback implementations. */
@@ -183,23 +179,6 @@ export function normalizeInventoryEventQuery(
   ) throw new Error("Event query recorded-time range is reversed.");
 
   const direction = normalizeEventQueryDirection(query.direction);
-  if (query.cursor !== undefined && query.afterRecordSequence !== undefined) {
-    throw new Error(
-      "Event query cursor cannot be combined with afterRecordSequence."
-    );
-  }
-  if (
-    direction === InventoryEventQueryDirection.Descending &&
-    query.afterRecordSequence !== undefined
-  ) {
-    throw new Error(
-      "Event query afterRecordSequence is available only for ascending traversal."
-    );
-  }
-  const after = normalizeOptionalEventSequence(
-    query.afterRecordSequence,
-    "event query afterRecordSequence"
-  );
   const recordSequenceFrom =
     normalizeOptionalEventSequence(
       query.recordSequenceFrom,
@@ -259,7 +238,7 @@ export function normalizeInventoryEventQuery(
     query.cursor === undefined
       ? undefined
       : decodeInventoryEventCursor(query.cursor);
-  const cursorBoundary = cursor?.boundary ?? after;
+  const cursorBoundary = cursor?.boundary;
   if (
     cursor !== undefined &&
     (cursor.direction !== direction || cursor.fingerprint !== cursorFingerprint)
@@ -372,9 +351,6 @@ export function createInventoryEventPage(
             throughRecordSequence: window.throughRecordSequence,
             fingerprint: query.cursorFingerprint,
           }),
-          ...(query.direction === InventoryEventQueryDirection.Ascending
-            ? { nextAfterRecordSequence: last.recordSequence }
-            : {}),
         }
       : {}),
   });

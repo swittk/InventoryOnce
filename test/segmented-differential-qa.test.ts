@@ -22,12 +22,12 @@ import {
   time3,
 } from "./test-fixtures.js";
 
-/** Deliberately hide optional segmented capabilities to force the legacy durable coordinator. */
-function legacyOnlyStorage(
+/** Deliberately hide optional segmented capabilities to force the canonical durable coordinator. */
+function canonicalOnlyStorage(
   storage: InventoryDurableStorage
 ): InventoryDurableStorage {
   return new Proxy(storage, {
-    /** Preserve the same adapter semantics, exposing only the legacy interface. */
+    /** Preserve the same adapter semantics, exposing only the canonical interface. */
     get(target, property) {
       if (
         property === "commitSegmentedStockEvent" ||
@@ -66,12 +66,12 @@ function sourceOf(row: InventoryStockPosition): InventoryStockPositionInput {
 /** Run one identical frozen command through both public authority implementations. */
 async function compareCommittedCommand(
   segmented: InventoryOnce,
-  legacy: InventoryOnce,
+  canonical: InventoryOnce,
   run: (inventory: InventoryOnce) => Promise<InventoryOnceEventResult>,
   description: string
 ): Promise<void> {
   const fast = await run(segmented);
-  const slow = await run(legacy);
+  const slow = await run(canonical);
   expect(fast.event, description).toEqual(slow.event);
   expect(fast.receipt, description).toEqual(slow.receipt);
   expect(fast.replayed, description).toBe(slow.replayed);
@@ -80,14 +80,14 @@ async function compareCommittedCommand(
 /** Compare the complete ledger and projected stock after both planners publish. */
 async function compareWorlds(
   segmented: InventoryOnce,
-  legacy: InventoryOnce,
+  canonical: InventoryOnce,
   description: string
 ): Promise<void> {
   const fast = await segmented.read.world();
-  const slow = await legacy.read.world();
+  const slow = await canonical.read.world();
   expect(fast, description).toEqual(slow);
   const fastRows = await segmented.read.positions({ itemId: "item-a" });
-  const slowRows = await legacy.read.positions({ itemId: "item-a" });
+  const slowRows = await canonical.read.positions({ itemId: "item-a" });
   expect(fastRows, description).toEqual(slowRows);
   for (const placementNodeId of ["north", "south", "east", "west"]) {
     expect(
@@ -96,7 +96,7 @@ async function compareWorlds(
         placementNodeIds: [placementNodeId],
       }),
       description + " placement=" + placementNodeId
-    ).toEqual(await legacy.read.positions({
+    ).toEqual(await canonical.read.positions({
       itemId: "item-a",
       placementNodeIds: [placementNodeId],
     }));
@@ -106,14 +106,14 @@ async function compareWorlds(
 /** Require one failed public operation to leave the previous published truth unchanged. */
 async function compareRejectedCommand(
   segmented: InventoryOnce,
-  legacy: InventoryOnce,
+  canonical: InventoryOnce,
   run: (inventory: InventoryOnce) => Promise<InventoryOnceEventResult>,
   description: string
 ): Promise<void> {
   const before = await segmented.read.world();
   await expect(run(segmented), description).rejects.toThrow();
-  await expect(run(legacy), description).rejects.toThrow();
-  await compareWorlds(segmented, legacy, description);
+  await expect(run(canonical), description).rejects.toThrow();
+  await compareWorlds(segmented, canonical, description);
   expect(await segmented.read.world(), description).toEqual(before);
 }
 
@@ -139,14 +139,14 @@ async function withoutCanonicalWorldRead<Result>(
   }
 }
 
-describe("public segmented and legacy coordinator differential assurance", () => {
+describe("public segmented and canonical coordinator differential assurance", () => {
   it("keeps stock-only bulk, issue, and whereabouts commands off canonical world materialization", async () => {
     const catalog = createTabletCatalog();
     const segmentedStorage = createInMemoryInventoryDurableStorage();
-    const legacyStorage = createInMemoryInventoryDurableStorage();
+    const canonicalStorage = createInMemoryInventoryDurableStorage();
     const segmented = createTestInventory(segmentedStorage, catalog, clockAt());
-    const legacy = createTestInventory(
-      legacyOnlyStorage(legacyStorage),
+    const canonical = createTestInventory(
+      canonicalOnlyStorage(canonicalStorage),
       catalog,
       clockAt()
     );
@@ -203,7 +203,7 @@ describe("public segmented and legacy coordinator differential assurance", () =>
         segmentedStorage,
         () => command(segmented)
       );
-      const slow = await command(legacy);
+      const slow = await command(canonical);
       expect(fast.event, "hot command " + index).toEqual(slow.event);
       expect(fast.receipt, "hot command " + index).toEqual(slow.receipt);
     }
@@ -219,7 +219,7 @@ describe("public segmented and legacy coordinator differential assurance", () =>
       amount: stockAmount("1", "piece"),
     });
     await withoutCanonicalWorldRead(segmentedStorage, () => promote(segmented));
-    await promote(legacy);
+    await promote(canonical);
 
     const missing = (await segmented.read.positions({
       itemId: "item-a",
@@ -234,9 +234,9 @@ describe("public segmented and legacy coordinator differential assurance", () =>
       amount: stockAmount("1", "piece"),
     });
     await withoutCanonicalWorldRead(segmentedStorage, () => recover(segmented));
-    await recover(legacy);
+    await recover(canonical);
 
-    await compareWorlds(segmented, legacy, "stock-only hot path complete");
+    await compareWorlds(segmented, canonical, "stock-only hot path complete");
   }, 60_000);
 
   it("catches up 160 deferred stock events in one canonical snapshot without changing history", async () => {
@@ -244,14 +244,14 @@ describe("public segmented and legacy coordinator differential assurance", () =>
     const fastStorage = createInMemoryInventoryDurableStorage();
     const slowStorage = createInMemoryInventoryDurableStorage();
     const segmented = createTestInventory(fastStorage, catalog, clockAt());
-    const legacy = createTestInventory(
-      legacyOnlyStorage(slowStorage),
+    const canonical = createTestInventory(
+      canonicalOnlyStorage(slowStorage),
       catalog,
       clockAt()
     );
     await compareCommittedCommand(
       segmented,
-      legacy,
+      canonical,
       (inventory) => inventory.stock.receive({
         operationId: "deferred-seed",
         occurredAtEpochMs: time0,
@@ -265,7 +265,7 @@ describe("public segmented and legacy coordinator differential assurance", () =>
       const to = index % 2 === 0 ? "south" : "north";
       await compareCommittedCommand(
         segmented,
-        legacy,
+        canonical,
         (inventory) => inventory.stock.transfer({
           operationId: "deferred-transfer-" + index,
           occurredAtEpochMs: time0,
@@ -276,7 +276,7 @@ describe("public segmented and legacy coordinator differential assurance", () =>
         "deferred transfer " + index
       );
     }
-    await compareWorlds(segmented, legacy, "160 deferred stock transfers");
+    await compareWorlds(segmented, canonical, "160 deferred stock transfers");
     expect((await segmented.read.world()).projection.lastRecordSequence).toBe(161);
   }, 90_000);
 
@@ -285,10 +285,10 @@ describe("public segmented and legacy coordinator differential assurance", () =>
     async (seed) => {
     const catalog = createTabletCatalog();
     const segmentedStorage = createInMemoryInventoryDurableStorage();
-    const legacyStorage = createInMemoryInventoryDurableStorage();
+    const canonicalStorage = createInMemoryInventoryDurableStorage();
     const segmented = createTestInventory(segmentedStorage, catalog, clockAt());
-    const legacy = createTestInventory(
-      legacyOnlyStorage(legacyStorage),
+    const canonical = createTestInventory(
+      canonicalOnlyStorage(canonicalStorage),
       catalog,
       clockAt()
     );
@@ -308,7 +308,7 @@ describe("public segmented and legacy coordinator differential assurance", () =>
     }));
     await compareCommittedCommand(
       segmented,
-      legacy,
+      canonical,
       (inventory) => inventory.stock.receiveMany({
         operationId: "differential-seed",
         occurredAtEpochMs: time0,
@@ -316,7 +316,7 @@ describe("public segmented and legacy coordinator differential assurance", () =>
       }),
       "initial receiveMany"
     );
-    await compareWorlds(segmented, legacy, "initial receipt");
+    await compareWorlds(segmented, canonical, "initial receipt");
 
     for (let step = 0; step < 96; step += 1) {
       const operationId = "differential-step-" + String(step).padStart(3, "0");
@@ -498,23 +498,23 @@ describe("public segmented and legacy coordinator differential assurance", () =>
       exercised[method] = (exercised[method] ?? 0) + 1;
       await compareCommittedCommand(
         segmented,
-        legacy,
+        canonical,
         action,
         "seeded differential step=" + step + " method=" + method
       );
       if (step % 8 === 0 || step === 95) {
-        await compareWorlds(segmented, legacy, "after step " + step);
+        await compareWorlds(segmented, canonical, "after step " + step);
       }
     }
 
-    await compareWorlds(segmented, legacy, "full mixed operation trace");
+    await compareWorlds(segmented, canonical, "full mixed operation trace");
     expect(exercised[0]).toBeGreaterThan(0);
     expect(exercised[1]).toBeGreaterThan(0);
     expect(exercised[2]).toBeGreaterThan(0);
     expect(exercised[3]).toBeGreaterThan(0);
     expect(exercised[4]).toBeGreaterThan(0);
     expect(exercised[7]).toBeGreaterThan(0);
-    console.log(JSON.stringify({ scenario: "segmented-vs-legacy", seed, exercised }));
+    console.log(JSON.stringify({ scenario: "segmented-vs-canonical", seed, exercised }));
     const world = await segmented.read.world();
     const lastRevision = world.revision;
     const retryOperationId = "differential-final-replay";
@@ -526,20 +526,20 @@ describe("public segmented and legacy coordinator differential assurance", () =>
     };
     await compareCommittedCommand(
       segmented,
-      legacy,
+      canonical,
       (inventory) => inventory.stock.receive(retryInput),
       "new final receipt"
     );
     await compareCommittedCommand(
       segmented,
-      legacy,
+      canonical,
       (inventory) => inventory.stock.receive(retryInput),
       "exact final receipt replay"
     );
     expect((await segmented.read.world()).revision).toBe(lastRevision + 1);
     await compareRejectedCommand(
       segmented,
-      legacy,
+      canonical,
       (inventory) => inventory.stock.receive({
         ...retryInput,
         amount: stockAmount("9", "piece"),

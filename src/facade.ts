@@ -10067,7 +10067,7 @@ async function readInventorySegmentedPlacementSnapshot<Result>(
     const before = await segment.revision();
     const value = await read(segment);
     const after = await segment.revision();
-    // Legacy publication can replace the entire reference segment. Recheck the
+    // Canonical publication can replace the entire reference segment. Recheck the
     // adapter's current generation, not only a now-detached reader object.
     const latest = await storage.readPlacementSegment();
     const latestRevision = await latest.revision();

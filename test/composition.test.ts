@@ -882,7 +882,7 @@ describe("revision-frozen heterogeneous package composition", () => {
       (definition) => ({
         ...definition,
         outputs: definition.outputs.map(
-          /** Preserve source lot when available but permit legacy aggregate packs. */
+          /** Preserve source lot when present while allowing current aggregate packs without one. */
           (output) => ({
             ...output,
             lotPolicy:

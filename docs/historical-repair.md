@@ -41,7 +41,7 @@ if (!plan.valid) {
 
 A valid plan exposes the exact uncommitted correction event, the published world revision used for planning, affected event identities, affected whereabouts cohorts, and any newly exposed historical deficit intervals. `stock.correct` recalculates the plan against the current published revision before committing.
 
-New correction events retain their full replacement assertion. That lets later historical repair recompute effective history rather than stacking a stale current-state delta. Legacy correction envelopes remain readable; if a connected late repair requires replacement evidence they do not contain, planning fails closed and asks the caller to supersede/restate that correction first.
+New correction events retain their full replacement assertion. That lets later historical repair recompute effective history rather than stacking a stale current-state delta. Every retained correction uses the one current format: a complete replacement assertion or explicit `null` for an omitted physical event.
 
 ## Atomic historical assertion bundles
 
@@ -126,7 +126,7 @@ Historical repair v1 does not create, remove, or alter lot or placement-node met
 
 `read.events(query)` returns retained event envelopes in requested durable order. Filters include item, item revision, item-scoped serial/lot, placement, whereabouts cohort, event kind, correction root, occurrence time, recorded time, and durable sequence.
 
-Use `direction: InventoryEventQueryDirection.Descending` for newest-first investigation. `nextCursor` is the preferred continuation: it freezes the first page's journal head and binds the filters plus direction, so concurrent appends never leak into later pages and a cursor cannot be reused with another query. The legacy ascending `afterRecordSequence` field remains available for simple callers.
+Use `direction: InventoryEventQueryDirection.Descending` for newest-first investigation. `nextCursor` is the preferred continuation: it freezes the first page's journal head and binds the filters plus direction, so concurrent appends never leak into later pages and a cursor cannot be reused with another query. Public event history uses only the opaque `cursor` / `nextCursor` pair; the sequence-based cursor remains internal to indexed dependency discovery.
 
 Historical-repair envelopes remain the durable event returned by the query. Embedded assertions participate in kind/time/resource matching, so a search for the affected serial or missing cohort finds the envelope without pretending those assertions were independently durable rows.
 

@@ -353,6 +353,14 @@ describe("batched canonical projection catch-up", () => {
             correctsEventId: received.eventId,
             reason: "Rechecked the original stock receipt.",
           },
+          correctionReplacement: {
+            eventId: "correction-metadata-scan-replacement",
+            operationId: "correction-metadata-scan-replacement",
+            kind: InventoryEventKind.Receipt,
+            occurredAtEpochMs: time0,
+            stockEffects: received.stockEffects,
+            traceabilityChanges: [],
+          },
         },
       }),
       time0,
@@ -453,6 +461,28 @@ describe("batched canonical projection catch-up", () => {
                 ? {}
                 : { supersedesCorrectionEventId: previous.eventId }),
             },
+            correctionReplacement:
+              definitions.lots !== undefined
+                ? {
+                    eventId: "owned-metadata-replacement-" + sequence,
+                    operationId: "owned-metadata-replacement-" + sequence,
+                    kind: InventoryEventKind.LotMetadata,
+                    occurredAtEpochMs: time0,
+                    stockEffects: [],
+                    traceabilityChanges: [],
+                    lotDefinitions: definitions.lots,
+                  }
+                : definitions.nodes !== undefined
+                  ? {
+                      eventId: "owned-metadata-replacement-" + sequence,
+                      operationId: "owned-metadata-replacement-" + sequence,
+                      kind: InventoryEventKind.PlacementNodeMetadata,
+                      occurredAtEpochMs: time0,
+                      stockEffects: [],
+                      traceabilityChanges: [],
+                      placementNodeDefinitions: definitions.nodes,
+                    }
+                  : null,
             ...(definitions.lots === undefined ? {} : { lotDefinitions: definitions.lots }),
             ...(definitions.nodes === undefined ? {} : { placementNodeDefinitions: definitions.nodes }),
           },
@@ -562,8 +592,27 @@ describe("batched canonical projection catch-up", () => {
     expect(base.placementNodeIdByEmbodiedSerialIdentity[serialB]).toBe(
       "CABINET-B"
     );
-    const change = (bothToA: boolean) =>
-      commitInventoryEvent(
+    /** Represent the one current metadata correction with matching retained root replacement. */
+    const change = (bothToA: boolean) => {
+      const placementNodeDefinitions = [
+        {
+          nodeId: "CABINET-A",
+          category: "cabinet",
+          embodiedBy: {
+            itemId: "item-a",
+            serialId: bothToA ? "SERIAL-A" : "SERIAL-B",
+          },
+        },
+        {
+          nodeId: "CABINET-B",
+          category: "cabinet",
+          embodiedBy: {
+            itemId: "item-a",
+            serialId: "SERIAL-A",
+          },
+        },
+      ];
+      return commitInventoryEvent(
         defineInventoryEvent({
           catalog,
           event: {
@@ -579,29 +628,26 @@ describe("batched canonical projection catch-up", () => {
               correctsEventId: root.eventId,
               reason: "Correct which serial embodies each cabinet.",
             },
-            placementNodeDefinitions: [
-              {
-                nodeId: "CABINET-A",
-                category: "cabinet",
-                embodiedBy: {
-                  itemId: "item-a",
-                  serialId: bothToA ? "SERIAL-A" : "SERIAL-B",
-                },
-              },
-              {
-                nodeId: "CABINET-B",
-                category: "cabinet",
-                embodiedBy: {
-                  itemId: "item-a",
-                  serialId: "SERIAL-A",
-                },
-              },
-            ],
+            placementNodeDefinitions,
+            correctionReplacement: {
+              eventId: bothToA
+                ? "swap-serials-conflict-replacement"
+                : "swap-serials-replacement",
+              operationId: bothToA
+                ? "swap-serials-conflict-replacement"
+                : "swap-serials-replacement",
+              kind: InventoryEventKind.PlacementNodeMetadata,
+              occurredAtEpochMs: time0,
+              stockEffects: [],
+              traceabilityChanges: [],
+              placementNodeDefinitions,
+            },
           },
         }),
         time0,
         3
       );
+    };
     const corrected = change(false);
     const batch = applyInventoryCommittedEvents({
       catalog,

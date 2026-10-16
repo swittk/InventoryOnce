@@ -71,7 +71,7 @@ export interface InventorySegmentedEventJournalReader {
   currentCorrectionFor(
     correctedEventId: string
   ): InventorySegmentedJournalResult<InventoryCommittedEvent | undefined>;
-  /** Explicitly materialize the legacy flat journal/index projection. */
+  /** Explicitly materialize the canonical flat journal/index projection for export and proof. */
   materialize(): InventorySegmentedJournalResult<InventoryEventJournalMaterialization>;
 }
 
@@ -85,7 +85,13 @@ export interface InventorySegmentedEventResourceQuery {
   readonly limit?: number;
 }
 
-/** Optional indexed event-query surface; base journal readers remain source-compatible. */
+/** Cursor page for the internal resource-indexed historical dependency planner. */
+export interface InventorySegmentedResourceEventPage extends InventoryEventPage {
+  /** Exclusive durable sequence for the next internal dependency page. */
+  readonly nextAfterRecordSequence?: number;
+}
+
+/** Optional indexed event-query capability, separate from the canonical event journal. */
 export interface InventorySegmentedEventQueryReader {
   /** Query exact retained envelopes/events in durable order using adapter-native indexes. */
   queryEvents(
@@ -94,7 +100,7 @@ export interface InventorySegmentedEventQueryReader {
   /** Query the union of exact internal resource-index rows. */
   queryEventsByResourceKeys(
     input: InventorySegmentedEventResourceQuery
-  ): InventorySegmentedJournalResult<InventoryEventPage>;
+  ): InventorySegmentedJournalResult<InventorySegmentedResourceEventPage>;
 }
 
 /** Mutable journal contract used inside one adapter-native publication transaction. */
@@ -348,7 +354,7 @@ export class InMemoryInventorySegmentedEventJournal
   /** Query exact resource-index rows for a dependency-closure planner. */
   queryEventsByResourceKeys(
     input: InventorySegmentedEventResourceQuery
-  ): InventoryEventPage {
+  ): InventorySegmentedResourceEventPage {
     if (input.resourceKeys.length === 0) {
       throw new Error("Resource event query needs at least one resource key.");
     }
@@ -661,7 +667,7 @@ export class InMemoryInventorySegmentedEventJournal
     };
   }
 
-  /** Materialize the legacy flat event/index projection on explicit request only. */
+  /** Materialize the canonical flat event/index projection on explicit request only. */
   materialize(): InventoryEventJournalMaterialization {
     const events = createInventorySparseRecord<InventoryCommittedEvent>();
     const eventIdsBySequence = createInventorySparseRecord<string>();

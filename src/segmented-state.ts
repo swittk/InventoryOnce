@@ -78,7 +78,7 @@ export interface CommitInventorySegmentedStockEventResult {
 export interface InventorySegmentedStockEventCommitCapability {
   /**
    * Commit one eligible stock-only event atomically.
-   * Return undefined when current adapter/world state requires the legacy whole-world path.
+   * Return undefined when current adapter/world state requires the canonical whole-world coordinator.
    */
   commitSegmentedStockEvent(
     input: CommitInventorySegmentedStockEventInput
@@ -93,7 +93,7 @@ export function inventoryStorageSupportsSegmentedStockEventCommit(
   return typeof Reflect.get(value, "commitSegmentedStockEvent") === "function";
 }
 
-/** Minimal canonical materialization of the hot position/index segment for proof/export compatibility. */
+/** Canonical flat materialization of the hot position/index segment for proof and export. */
 export interface InventoryPositionSegmentMaterialization {
   /** Current non-zero stock rows keyed by exact position identity. */
   readonly positions: Readonly<Record<string, InventoryStockPosition>>;
@@ -191,7 +191,7 @@ export interface InventorySegmentedPositionReader {
   queryPositions(
     selector: InventoryStockSelector
   ): InventorySegmentedResult<readonly InventoryStockPosition[] | undefined>;
-  /** Explicitly materialize the canonical flat position/index view for export/proof compatibility. */
+  /** Explicitly materialize the canonical flat position/index view for export and proof. */
   materialize(): InventorySegmentedResult<InventoryPositionSegmentMaterialization>;
 }
 
@@ -260,7 +260,7 @@ export interface InventorySegmentedPositionStore
   replaceExactPosition(
     input: ReplaceInventorySegmentedPositionInput
   ): InventorySegmentedResult<ReplaceInventorySegmentedPositionResult>;
-  /** Materialize the canonical flat position/index view only when export/proof compatibility needs it. */
+  /** Materialize the canonical flat position/index view only when export or proof requests it. */
   materialize(): InventoryPositionSegmentMaterialization;
 }
 

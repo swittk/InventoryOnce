@@ -329,7 +329,7 @@ describe("adapter-native standalone topology events", () => {
     expect(storage.readPlacementSegment().parentNodeId("TOP-CAB")).toBe("ROOM");
   });
 
-  it("retries an async ancestry read when legacy publication replaces the segment reader", async () => {
+  it("retries an async ancestry read when canonical publication replaces the segment reader", async () => {
     const storage = createInMemoryInventoryDurableStorage();
     const inventory = createTestInventory(storage);
     await defineStandaloneNode(inventory, "A");

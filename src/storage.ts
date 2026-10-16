@@ -37,6 +37,7 @@ import {
   createInMemoryInventorySegmentedEventJournal,
   type InMemoryInventorySegmentedEventJournal,
   type InventorySegmentedEventResourceQuery,
+  type InventorySegmentedResourceEventPage,
 } from "./segmented-journal.js";
 import {
   createInMemoryInventorySegmentedPositionStore,
@@ -569,7 +570,7 @@ export interface InventoryEventQueryStorageCapability {
   /** Query internal resource-index rows for scoped historical replay. */
   queryInventoryEventsByResourceKeys(
     input: InventorySegmentedEventResourceQuery
-  ): Promise<InventoryEventPage>;
+  ): Promise<InventorySegmentedResourceEventPage>;
 }
 
 /** Detect optional indexed event-query support without changing the base adapter contract. */
@@ -681,7 +682,7 @@ export class InMemoryInventoryDurableStorage
     });
     // Do not expose the writable store through the optional read capability.
     // Cache a frozen façade whose methods look up the CURRENT backing stock
-    // segment even when legacy/migration publication replaces it.
+    // segment even when canonical or migration publication replaces it.
     this.publishedPositionReader = Object.freeze({
       /** Read the current published segment revision. */
       revision: () => this.positionSegment.revision(),
@@ -735,7 +736,7 @@ export class InMemoryInventoryDurableStorage
     input: CommitInventorySegmentedPlacementInput
   ): Promise<CommitInventorySegmentedStockEventResult | undefined> {
     const run =
-      /** Serialize one topology publication with stock, journal and legacy adapter mutations. */
+      /** Serialize one topology publication with stock, journal and canonical adapter mutations. */
       (): Promise<CommitInventorySegmentedStockEventResult | undefined> =>
         this.commitSegmentedPlacementChangeUnlocked(input);
     return this.runStorageMutationAtomically(run);
@@ -762,7 +763,7 @@ export class InMemoryInventoryDurableStorage
   /** Query exact internal resource rows without materializing canonical current state. */
   async queryInventoryEventsByResourceKeys(
     input: InventorySegmentedEventResourceQuery
-  ): Promise<InventoryEventPage> {
+  ): Promise<InventorySegmentedResourceEventPage> {
     return this.eventJournal.queryEventsByResourceKeys(input);
   }
 
@@ -1718,7 +1719,7 @@ export class InMemoryInventoryDurableStorage
     if (existing !== undefined) {
       assertSameInventoryOperationIntent(existing.value, input.intentFingerprint);
       if (existing.value.state === InventoryDurableOperationState.Completed) {
-        // Legacy receipts may own a mutable retained event; journal reads
+        // Canonical coordinator receipts may retain an event alias; journal reads
         // already return defensive copies. Never expose either archive alias.
         const event =
           existing.value.event === undefined
@@ -1873,7 +1874,7 @@ export class InMemoryInventoryDurableStorage
   private segmentedStockEventIsEligible(
     input: CommitInventorySegmentedStockEventInput
   ): boolean {
-    // The legacy failpoint harness certifies the staged repair protocol. Keep those
+    // The staged coordinator failpoint harness certifies the repair protocol. Keep those
     // deterministic stage tests on that path; segmented commit models one atomic DB transaction.
     if (this.failpoint !== undefined) return false;
     const event = input.event;

@@ -657,6 +657,14 @@ export function defineInventoryEvent({
     }
   }
   if (
+    event.kind === InventoryEventKind.Correction &&
+    event.correctionReplacement === undefined
+  ) {
+    throw new Error(
+      "Correction event requires an explicit replacement assertion or null omission."
+    );
+  }
+  if (
     event.kind !== InventoryEventKind.Correction &&
     event.correctionReplacement !== undefined
   ) {
@@ -890,11 +898,10 @@ export function inventoryEventIntentFingerprint(
           event.correction.reason,
           event.correction.supersedesCorrectionEventId ?? null,
         ],
-    event.correctionReplacement === undefined
-      ? "legacy-correction-replacement"
-      : event.correctionReplacement === null
-        ? null
-        : inventoryEventIntentFingerprint(event.correctionReplacement),
+    event.correctionReplacement === undefined ||
+    event.correctionReplacement === null
+      ? null
+      : inventoryEventIntentFingerprint(event.correctionReplacement),
     event.historicalRepair === undefined
       ? null
       : [

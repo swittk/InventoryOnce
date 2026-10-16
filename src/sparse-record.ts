@@ -207,7 +207,7 @@ export function inventorySparseRecordValue<T>(
   return inventorySparseRecordHas(record, key) ? record[key] : undefined;
 }
 
-/** Define one own enumerable sparse-record entry without invoking the legacy __proto__ setter. */
+/** Define one own enumerable sparse-record entry without invoking Object.prototype.__proto__. */
 export function setInventorySparseRecordValue<T>(
   record: Record<string, T>,
   key: string,

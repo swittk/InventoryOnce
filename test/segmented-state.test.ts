@@ -192,13 +192,13 @@ describe("segmented inventory position store", () => {
     expect(Reflect.get(reader, "applyStockEffects")).toBeUndefined();
   });
 
-  it("does not expose archived event aliases when replay switches from the legacy path", async () => {
+  it("does not expose archived event aliases when replay switches from the canonical path", async () => {
     const storage = createInMemoryInventoryDurableStorage();
     const inventory = createTestInventory(storage);
     // Serialized receipt uses canonical validation; its exact retry reaches the
     // common idempotency lookup before the segmented eligibility filter.
     const command = {
-      operationId: "replay-legacy-alias",
+      operationId: "replay-canonical-alias",
       occurredAtEpochMs: time0,
       to: loosePosition("a", { serialId: "SERIAL-REPLAY" }),
       amount: stockAmount("1", "piece"),

@@ -4,14 +4,14 @@
     "callableFields": 12,
     "callbackArgumentFields": 408,
     "callbackResultFields": 436,
-    "fields": 2769,
-    "inputFields": 2308,
+    "fields": 2771,
+    "inputFields": 2307,
     "nullableFields": 9,
     "optionalFields": 1125,
-    "outputFields": 1065,
+    "outputFields": 1068,
     "recursiveTypeReferences": 5,
     "truncatedTypes": 0,
-    "types": 459,
+    "types": 460,
     "undefinedFields": 11
   },
   "entries": {
@@ -26640,30 +26640,6 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "InventoryEventPage.nextAfterRecordSequence": {
-      "allowsNull": false,
-      "allowsUndefined": false,
-      "callSignatures": [],
-      "callable": false,
-      "classification": "identity/retry-semantic",
-      "declaration": "src/event-query.ts",
-      "directions": [
-        "output"
-      ],
-      "discoveredType": "number",
-      "executableEvidence": [
-        "test/formal-implementation-refinement.test.ts",
-        "test/formal-implementation-conformance.test.ts"
-      ],
-      "formalModels": [
-        "HistoricalRepair",
-        "CorrectionHistory",
-        "PublishedHeadCAS"
-      ],
-      "gaps": [],
-      "optional": true,
-      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
-    },
     "InventoryEventPage.nextCursor": {
       "allowsNull": false,
       "allowsUndefined": false,
@@ -26710,30 +26686,6 @@
       ],
       "gaps": [],
       "optional": false,
-      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
-    },
-    "InventoryEventQuery.afterRecordSequence": {
-      "allowsNull": false,
-      "allowsUndefined": false,
-      "callSignatures": [],
-      "callable": false,
-      "classification": "identity/retry-semantic",
-      "declaration": "src/event-query.ts",
-      "directions": [
-        "input"
-      ],
-      "discoveredType": "number",
-      "executableEvidence": [
-        "test/formal-implementation-refinement.test.ts",
-        "test/formal-implementation-conformance.test.ts"
-      ],
-      "formalModels": [
-        "HistoricalRepair",
-        "CorrectionHistory",
-        "PublishedHeadCAS"
-      ],
-      "gaps": [],
-      "optional": true,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
     "InventoryEventQuery.correctsEventIds": {
@@ -56064,6 +56016,103 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
+    "InventorySegmentedResourceEventPage.events": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "readonly InventoryCommittedEvent[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventorySegmentedResourceEventPage.nextAfterRecordSequence": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/segmented-journal.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS",
+        "ResourceDimensions",
+        "HistoricalRepair"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventorySegmentedResourceEventPage.nextCursor": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventorySegmentedResourceEventPage.throughRecordSequence": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/event-query.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
     "InventoryStockDimensionBucket.measurements": {
       "allowsNull": false,
       "allowsUndefined": false,
@@ -66275,10 +66324,10 @@
       "InventoryEventDraft|src/events.ts|15572|04849f27e95c",
       "InventoryIntentFingerprintValue|src/canonical.ts|81|409e33b74f02",
       "InventoryMetadataValue|src/model.ts|1577|5d09d8b2fba1",
-      "external:cce81cd429ac",
-      "external:f2ef35b1785c"
+      "external:696f4aebb78e",
+      "external:cce81cd429ac"
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "9b7effbced38179be0377691f00eaa2be0d755a75c366b8d6e49777ebb9e738c"
+  "surfaceSha256": "8c43ead6a53e7fd9ecb33282a601a6f5783d71f0fd2b98bd3bda2e92ea4e77e5"
 }

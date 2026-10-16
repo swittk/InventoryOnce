@@ -1553,6 +1553,7 @@ describe("retained event ownership across every lifecycle branch", () => {
     const raw: InventoryEventDraft = {
       eventId: "ownership-event", operationId: "ownership-event", kind: InventoryEventKind.Correction,
       occurredAtEpochMs: time0, metadata, correction,
+      correctionReplacement: null,
       stockEffects: [{ itemRevisionId: "item-a-v2", position: { itemId: "item-a", itemRevisionId: "item-a-v2", placementNodeId: "A" },
         measurementsDelta: measurements, evidence: { transactedMeasurements: measurements }, metadata }],
       traceabilityChanges: [],
