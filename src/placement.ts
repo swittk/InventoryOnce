@@ -53,6 +53,8 @@ export interface ApplyInventoryPlacementChangesInput {
   readonly changes: readonly InventoryPlacementChange[];
   /** Return whether one target node currently accepts direct placement. */
   readonly acceptsPlacement: (nodeId: PlacementNodeId) => boolean;
+  /** Mutate only a private batch/cold-replay forest; single-event callers keep copy-on-write. */
+  readonly mutatePrivateBatch?: boolean;
 }
 
 /** Create an empty placement forest with no hidden roots. */
@@ -103,12 +105,17 @@ export function applyInventoryPlacementChanges({
   eventId,
   changes,
   acceptsPlacement,
+  mutatePrivateBatch = false,
 }: ApplyInventoryPlacementChangesInput): InventoryPlacementState {
   if (changes.length === 0) return state;
   assertInventoryIdentity(eventId, "placement eventId");
   const normalizedChanges = changes.map(normalizeInventoryPlacementChange);
   const seenNodeIds = new Set<PlacementNodeId>();
-  const relations = cloneInventorySparseRecord(state.relationByNodeId);
+  // A batch already owns its detached maps. Clone only for public single-event replay.
+  const relations: Record<PlacementNodeId, InventoryPlacementRelation> =
+    mutatePrivateBatch
+      ? (state.relationByNodeId as Record<PlacementNodeId, InventoryPlacementRelation>)
+      : cloneInventorySparseRecord(state.relationByNodeId);
   /** Old/new parent pairs used to update only touched child-index rows. */
   const parentChanges = new Map<
     PlacementNodeId,
@@ -163,9 +170,10 @@ export function applyInventoryPlacementChanges({
     }
     assertPlacementChangeHasNoCycle(relations, change.nodeId);
   }
-  const childrenByParent = cloneInventorySparseRecord(
-    state.childNodeIdsByParentNodeId
-  );
+  const childrenByParent: Record<PlacementNodeId, readonly PlacementNodeId[]> =
+    mutatePrivateBatch
+      ? (state.childNodeIdsByParentNodeId as Record<PlacementNodeId, readonly PlacementNodeId[]>)
+      : cloneInventorySparseRecord(state.childNodeIdsByParentNodeId);
   /** Mutable child sets only for parents touched by this event. */
   const touchedChildren = new Map<PlacementNodeId, Set<PlacementNodeId>>();
   /** Return the mutable child set for one parent touched by this event. */

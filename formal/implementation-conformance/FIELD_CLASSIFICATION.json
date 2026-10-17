@@ -4,10 +4,10 @@
     "callableFields": 12,
     "callbackArgumentFields": 408,
     "callbackResultFields": 436,
-    "fields": 2771,
-    "inputFields": 2307,
+    "fields": 2772,
+    "inputFields": 2308,
     "nullableFields": 9,
-    "optionalFields": 1125,
+    "optionalFields": 1126,
     "outputFields": 1068,
     "recursiveTypeReferences": 5,
     "truncatedTypes": 0,
@@ -1217,6 +1217,29 @@
       "gaps": [],
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "ApplyInventoryPlacementChangesInput.mutatePrivateBatch": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/placement.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "boolean",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "PlacementGraph",
+        "ResourceDimensions"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
     "ApplyInventoryPlacementChangesInput.state": {
       "allowsNull": false,
@@ -66329,5 +66352,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "c1503dc260946a6268e90690de422900f2035610429c190c8920cac3c9c798e8"
+  "surfaceSha256": "53b044940bd5de393ef0b08e0f1ccb295c36681e4c77076e71e166ec6d3eaac7"
 }

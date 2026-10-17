@@ -281,6 +281,10 @@ export function applyInventoryCommittedEvents({
     return state;
   }
   let next = cloneInventoryProjectionForEventBatch(state);
+  // Placement is not copied for ordinary stock-only batches. The first real
+  // topology change uses the single-event COW rule, then its copy belongs
+  // exclusively to this batch and may be mutated for later changes.
+  let ownsPlacement = false;
   let changed = false;
   const traceabilityTail: Array<
     Pick<ApplyInventoryTraceabilityChangesInput, "eventId" | "changes">
@@ -292,8 +296,10 @@ export function applyInventoryCommittedEvents({
     const result = applyInventoryCommittedEventInternal(
       { catalog, state: next, event, deficitPolicy },
       true,
-      false
+      false,
+      ownsPlacement
     );
+    if (result.state.placement !== next.placement) ownsPlacement = true;
     next = result.state;
     changed ||= !result.replayed;
     if (!result.replayed && result.event.traceabilityChanges.length !== 0) {
@@ -360,6 +366,7 @@ function cloneInventoryProjectionForEventBatch(
     correctionEventIdByCorrectedEventId: cloneInventorySparseRecord(
       state.correctionEventIdByCorrectedEventId
     ),
+    // Placement is kept read-only until the first actual topology change.
   };
 }
 
@@ -370,7 +377,8 @@ function cloneInventoryProjectionForEventBatch(
 function applyInventoryCommittedEventInternal(
   { catalog, state, event, deficitPolicy }: ApplyInventoryCommittedEventInput,
   mutateProjection: boolean,
-  projectTraceability: boolean
+  projectTraceability: boolean,
+  ownsPlacement = mutateProjection
 ): ApplyInventoryCommittedEventResult {
   const normalizedDraft = defineInventoryEvent({ catalog, event });
   const normalizedEvent = commitInventoryEvent(
@@ -1141,6 +1149,7 @@ function applyInventoryCommittedEventInternal(
     state: state.placement,
     eventId: normalizedEvent.eventId,
     changes: normalizedEvent.placementChanges ?? [],
+    mutatePrivateBatch: ownsPlacement,
     /** Resolve destination policy from the event-final projected node metadata. */
     acceptsPlacement: (nodeId) => {
       const projected = inventorySparseRecordValue(placementNodes, nodeId);
@@ -1162,6 +1171,7 @@ function applyInventoryCommittedEventInternal(
     positivePositionIdBySerialIdentity,
     touchedEmbodiedNodeIds,
     placement,
+    mutatePrivateBatch: ownsPlacement || placement !== state.placement,
     eventId: normalizedEvent.eventId,
     ...(normalizedEvent.correction === undefined
       ? {}
@@ -1316,6 +1326,8 @@ interface ReconcileInventoryPlacementEmbodimentsInput {
   readonly touchedEmbodiedNodeIds: ReadonlySet<string>;
   /** Placement topology after explicit standalone-node changes. */
   readonly placement: InventoryPlacementState;
+  /** True only when this reducer owns the detached batch/cold-replay placement maps. */
+  readonly mutatePrivateBatch: boolean;
   /** Event responsible for any derived parent synchronization or retirement. */
   readonly eventId: string;
   /** Exact retired event being append-only corrected, when this is a correction. */
@@ -1379,6 +1391,7 @@ function reconcileInventoryPlacementEmbodiments({
   positivePositionIdBySerialIdentity,
   touchedEmbodiedNodeIds,
   placement,
+  mutatePrivateBatch,
   eventId,
   correctsEventId,
   supersedesCorrectionEventId,
@@ -1386,6 +1399,9 @@ function reconcileInventoryPlacementEmbodiments({
   retainedEvents,
 }: ReconcileInventoryPlacementEmbodimentsInput): InventoryPlacementState {
   let nextPlacement = placement;
+  // An initial copy-on-write transition creates the private batch forest;
+  // additional embodied-node moves within the same event can reuse it.
+  let ownsPlacement = mutatePrivateBatch;
   const nodeIds = [...touchedEmbodiedNodeIds];
   nodeIds.sort(compareInventoryIdentityText);
   for (const nodeId of nodeIds) {
@@ -1472,10 +1488,12 @@ function reconcileInventoryPlacementEmbodiments({
           state: nextPlacement,
           eventId,
           changes: [{ nodeId, fromParentNodeId: currentParentNodeId }],
+          mutatePrivateBatch: ownsPlacement,
           acceptsPlacement:
             /** Removing an edge while retiring a node never adds a new parent. */
             () => true,
         });
+        ownsPlacement = true;
       }
       setInventorySparseRecordValue(placementNodes, nodeId, {
         ...projected,
@@ -1520,6 +1538,7 @@ function reconcileInventoryPlacementEmbodiments({
             : { toParentNodeId: desiredParentNodeId }),
         },
       ],
+      mutatePrivateBatch: ownsPlacement,
       acceptsPlacement:
         /** Resolve one derived embodied parent against current active node policy. */
         (parentNodeId) => {
@@ -1533,6 +1552,7 @@ function reconcileInventoryPlacementEmbodiments({
         );
       },
     });
+    ownsPlacement = true;
   }
   return nextPlacement;
 }

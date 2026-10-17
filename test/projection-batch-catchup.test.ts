@@ -3,6 +3,7 @@ import {
   createInventoryReceiptEvent,
   createInventoryReceiptManyEvent,
   createInventoryPlacementNodeMetadataEvent,
+  createInventoryPlacementEvent,
   createInventoryTraceabilityEvent,
   createInventoryTransferEvent,
 } from "../src/commands.js";
@@ -147,6 +148,275 @@ describe("batched canonical projection catch-up", () => {
     expect(base.eventIdsBySequence).toEqual(baseEventIdsBefore);
     expect(batch).not.toBe(base);
     expect(batch.positions).not.toBe(base.positions);
+  });
+
+  /** Batch replay must not re-enumerate the entire prior forest for every node move. */
+  it("replays many placed-node moves with one forest copy and preserves the caller state", () => {
+    const catalog = createTabletCatalog();
+    const nodes = Array.from({ length: 640 }, (_, index) =>
+      "BATCH-NODE-" + String(index).padStart(4, "0")
+    );
+    const initial = commitInventoryEvent(
+      defineInventoryEvent({
+        catalog,
+        event: {
+          eventId: "batch-topology-seed",
+          operationId: "batch-topology-seed",
+          kind: InventoryEventKind.Placement,
+          occurredAtEpochMs: time0,
+          stockEffects: [],
+          traceabilityChanges: [],
+          placementChanges: nodes.map(
+            /** Give every current leaf one common direct parent. */
+            (nodeId) => ({ nodeId, toParentNodeId: "BATCH-ROOT" })
+          ),
+        },
+      }),
+      time0,
+      1
+    );
+    const base = projectInventoryEvents({
+      catalog,
+      events: [initial],
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+    });
+    const pending = nodes.slice(0, 30).map((nodeId, index) =>
+      commitInventoryEvent(
+        createInventoryPlacementEvent({
+          catalog,
+          operationId: "batch-topology-move-" + index,
+          occurredAtEpochMs: time0,
+          nodeId,
+          fromParentNodeId: "BATCH-ROOT",
+          toParentNodeId: "BATCH-OTHER",
+        }),
+        time0,
+        index + 2
+      )
+    );
+    const originalKeys = Object.keys;
+    let fullForestCopies = 0;
+    const keys = vi.spyOn(Object, "keys").mockImplementation(
+      /** Count whole-forest key enumerations, not irrelevant wall-clock noise. */
+      (value: object) => {
+        if (
+          value !== null &&
+          typeof value === "object" &&
+          Object.hasOwn(value, nodes[0]!) &&
+          Object.hasOwn(value, nodes[nodes.length - 1]!)
+        ) fullForestCopies += 1;
+        return originalKeys(value);
+      }
+    );
+    let batch: ReturnType<typeof applyInventoryCommittedEvents>;
+    try {
+      batch = applyInventoryCommittedEvents({
+        catalog,
+        state: base,
+        events: pending,
+        deficitPolicy: InventoryDeficitPolicy.Reject,
+      });
+    } finally {
+      keys.mockRestore();
+    }
+    expect(fullForestCopies).toBeGreaterThan(0);
+    expect(fullForestCopies).toBeLessThanOrEqual(2);
+    expect(batch.placement.relationByNodeId[nodes[0]!]?.parentNodeId).toBe("BATCH-OTHER");
+    expect(
+      batch.placement.relationByNodeId[nodes[nodes.length - 1]!]?.parentNodeId
+    ).toBe("BATCH-ROOT");
+    expect(base.placement.relationByNodeId[nodes[0]!]?.parentNodeId).toBe("BATCH-ROOT");
+    expect(base.placement.childNodeIdsByParentNodeId["BATCH-OTHER"]).toBeUndefined();
+    let sequential = base;
+    for (const event of pending) {
+      sequential = applyInventoryCommittedEvent({
+        catalog,
+        state: sequential,
+        event,
+        deficitPolicy: InventoryDeficitPolicy.Reject,
+      }).state;
+    }
+    expect(batch).toEqual(sequential);
+    expect(batch).toEqual(projectInventoryEvents({
+      catalog,
+      events: [initial, ...pending],
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+    }));
+
+    // A stock-only tail must not clone the unrelated placement forest at all.
+    const stockTail = nodes.slice(0, 24).map((nodeId, index) =>
+      commitInventoryEvent(
+        createInventoryReceiptEvent({
+          catalog,
+          operationId: "batch-topology-stock-only-" + index,
+          occurredAtEpochMs: time0,
+          to: loosePosition(nodeId),
+          amount: stockAmount("1", "piece"),
+        }),
+        time0,
+        index + 2
+      )
+    );
+    let stockOnlyForestCopies = 0;
+    const stockKeys = vi.spyOn(Object, "keys").mockImplementation(
+      /** Count full forest copies during otherwise unrelated stock arrivals. */
+      (value: object) => {
+        if (
+          value !== null &&
+          typeof value === "object" &&
+          Object.hasOwn(value, nodes[0]!) &&
+          Object.hasOwn(value, nodes[nodes.length - 1]!)
+        ) stockOnlyForestCopies += 1;
+        return originalKeys(value);
+      }
+    );
+    try {
+      const stockBatch = applyInventoryCommittedEvents({
+        catalog,
+        state: base,
+        events: stockTail,
+        deficitPolicy: InventoryDeficitPolicy.Reject,
+      });
+      expect(stockBatch.placement).toBe(base.placement);
+      expect(stockBatch.lastRecordSequence).toBe(25);
+    } finally {
+      stockKeys.mockRestore();
+    }
+    expect(stockOnlyForestCopies).toBe(0);
+    console.log(JSON.stringify({
+      scenario: "batch-placement-forest-copy",
+      retainedPlacementEdges: nodes.length,
+      appendedMoves: pending.length,
+      fullForestCopies,
+      stockOnlyForestCopies,
+    }));
+  });
+
+  /** Derived embodied-parent moves share the same private placement workspace. */
+  it("replays embodied serial moves without repeatedly copying a large placement forest", () => {
+    const catalog = createTabletCatalog();
+    const serialId = "BATCH-CARRIER-SERIAL";
+    const sourceShelf = "BATCH-SHELF-A";
+    const destinationShelf = "BATCH-SHELF-B";
+    const nodes = Array.from({ length: 400 }, (_, index) =>
+      "EMBODIED-FOREST-" + String(index).padStart(4, "0")
+    );
+    const receipt = commitInventoryEvent(
+      createInventoryReceiptEvent({
+        catalog,
+        operationId: "batch-embodied-carrier-receipt",
+        occurredAtEpochMs: time0,
+        to: loosePosition(sourceShelf, { serialId }),
+        amount: stockAmount("1", "piece"),
+      }),
+      time0,
+      1
+    );
+    const forest = commitInventoryEvent(
+      defineInventoryEvent({
+        catalog,
+        event: {
+          eventId: "batch-embodied-forest-root",
+          operationId: "batch-embodied-forest-root",
+          kind: InventoryEventKind.Placement,
+          occurredAtEpochMs: time0,
+          stockEffects: [],
+          traceabilityChanges: [],
+          placementChanges: nodes.map(
+            /** Put unrelated nodes into one retained, extensive forest. */
+            (nodeId) => ({ nodeId, toParentNodeId: "EMBODIED-FOREST-ROOT" })
+          ),
+        },
+      }),
+      time0,
+      2
+    );
+    const embodiment = commitInventoryEvent(
+      createInventoryPlacementNodeMetadataEvent({
+        catalog,
+        operationId: "batch-embodied-carrier-definition",
+        occurredAtEpochMs: time0,
+        nodeId: "BATCH-EMBODIED-NODE",
+        placementNode: {
+          category: "carrier",
+          acceptsPlacement: true,
+          embodiedBy: { itemId: "item-a", serialId },
+        },
+      }),
+      time0,
+      3
+    );
+    const seedEvents = [receipt, forest, embodiment];
+    const base = projectInventoryEvents({
+      catalog,
+      events: seedEvents,
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+    });
+    expect(
+      base.placement.relationByNodeId["BATCH-EMBODIED-NODE"]?.parentNodeId
+    ).toBe(sourceShelf);
+
+    let currentShelf = sourceShelf;
+    const pending = Array.from({ length: 16 }, (_, index) => {
+      const nextShelf = currentShelf === sourceShelf ? destinationShelf : sourceShelf;
+      const event = commitInventoryEvent(
+        createInventoryTransferEvent({
+          catalog,
+          operationId: "batch-embodied-carrier-move-" + index,
+          occurredAtEpochMs: time0,
+          from: loosePosition(currentShelf, { serialId }),
+          toPlacementNodeId: nextShelf,
+          amount: stockAmount("1", "piece"),
+        }),
+        time0,
+        index + 4
+      );
+      currentShelf = nextShelf;
+      return event;
+    });
+
+    let fullForestCopies = 0;
+    const originalKeys = Object.keys;
+    const keys = vi.spyOn(Object, "keys").mockImplementation(
+      /** Count whole-forest copies caused by otherwise-local embodied moves. */
+      (value: object) => {
+        if (
+          value !== null &&
+          typeof value === "object" &&
+          Object.hasOwn(value, nodes[0]!) &&
+          Object.hasOwn(value, nodes[nodes.length - 1]!)
+        ) fullForestCopies += 1;
+        return originalKeys(value);
+      }
+    );
+    let batch: ReturnType<typeof applyInventoryCommittedEvents>;
+    try {
+      batch = applyInventoryCommittedEvents({
+        catalog,
+        state: base,
+        events: pending,
+        deficitPolicy: InventoryDeficitPolicy.Reject,
+      });
+    } finally {
+      keys.mockRestore();
+    }
+    expect(fullForestCopies).toBeGreaterThan(0);
+    expect(fullForestCopies).toBeLessThanOrEqual(2);
+    expect(
+      batch.placement.relationByNodeId["BATCH-EMBODIED-NODE"]?.parentNodeId
+    ).toBe(sourceShelf);
+    expect(base.placement.relationByNodeId["BATCH-EMBODIED-NODE"]?.parentNodeId).toBe(sourceShelf);
+    expect(batch).toEqual(projectInventoryEvents({
+      catalog,
+      events: [...seedEvents, ...pending],
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+    }));
+    console.log(JSON.stringify({
+      scenario: "batch-embodied-placement-forest-copy",
+      retainedPlacementEdges: nodes.length + 1,
+      serializedMoves: pending.length,
+      fullForestCopies,
+    }));
   });
 
   it("rejects a newly embodied placement node without its serialized resource in mutable batch replay", () => {
