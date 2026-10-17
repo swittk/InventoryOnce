@@ -5,7 +5,6 @@ import {
   type InventoryTraceabilityRelationChange,
 } from "./events.js";
 import {
-  InventoryTraceabilityNodeKind,
   inventoryTraceabilityNodeIdentity,
   type InventoryTraceabilityNodeRef,
 } from "./model.js";
@@ -22,14 +21,10 @@ export interface InventoryTraceabilityRelation {
   readonly createdByEventId: string;
 }
 
-/** Current containment/association graph plus append-only transformation genealogy. */
+/** Current association graph plus append-only transformation genealogy. */
 export interface InventoryTraceabilityState {
   /** Effective relations keyed by stable relationship identity. */
   readonly relations: Readonly<Record<string, InventoryTraceabilityRelation>>;
-  /** Direct child container ids grouped by exact parent-container node identity. */
-  readonly containmentChildContainerIdsByParentNodeIdentity: Readonly<
-    Record<string, readonly string[]>
-  >;
 }
 
 /** Inputs for applying one event's graph changes all-or-nothing. */
@@ -44,10 +39,7 @@ export interface ApplyInventoryTraceabilityChangesInput {
 
 /** Create an empty traceability graph. */
 export function emptyInventoryTraceabilityState(): InventoryTraceabilityState {
-  return {
-    relations: {},
-    containmentChildContainerIdsByParentNodeIdentity: {},
-  };
+  return { relations: {} };
 }
 
 /** Apply graph changes atomically without mutating the caller-owned state. */
@@ -60,11 +52,87 @@ export function applyInventoryTraceabilityChanges({
   const relations: Record<string, InventoryTraceabilityRelation> = {
     ...state.relations,
   };
-  let containmentChanged = false;
+  mutateInventoryTraceabilityRelations(relations, eventId, changes);
+  return { relations };
+}
+
+/** Inputs for appending many independently validated traceability changes. */
+export interface ApplyInventoryTraceabilityChangesBatchInput {
+  /** Existing published graph; never modified. */
+  readonly state: InventoryTraceabilityState;
+  /** Committed event identities and changes in durable event order. */
+  readonly events: readonly Pick<
+    ApplyInventoryTraceabilityChangesInput,
+    "eventId" | "changes"
+  >[];
+}
+
+/**
+ * Apply one deferred batch with only one complete relations copy. Each event
+ * still enforces the same add/remove/invalidate semantics and genealogy DAG
+ * safety as a standalone graph event, rather than deferring validation until
+ * after several events could conceal an invalid intermediate graph.
+ */
+export function applyInventoryTraceabilityChangesBatch({
+  state,
+  events,
+}: ApplyInventoryTraceabilityChangesBatchInput): InventoryTraceabilityState {
+  let changesPresent = false;
+  for (const event of events) {
+    if (event.changes.length !== 0) {
+      changesPresent = true;
+      break;
+    }
+  }
+  if (!changesPresent) return state;
+  let genealogyTouched = false;
+  for (const event of events) {
+    for (const change of event.changes) {
+      if (change.kind === InventoryTraceabilityRelationKind.Genealogy) {
+        genealogyTouched = true;
+        break;
+      }
+    }
+    if (genealogyTouched) break;
+  }
+  // The ordinary single-event API verifies the entire DAG after a genealogy
+  // mutation. Batch catch-up may validate its published base once, then use
+  // an incremental adjacency index for newly added edges.
+  if (genealogyTouched) assertGenealogyHasNoCycles(state.relations);
+  const ancestry = genealogyTouched
+    ? inventoryBatchGenealogyAdjacency(state.relations)
+    : undefined;
+  const relations: Record<string, InventoryTraceabilityRelation> = {
+    ...state.relations,
+  };
+  for (const event of events) {
+    if (event.changes.length === 0) continue;
+    mutateInventoryTraceabilityRelations(
+      relations,
+      event.eventId,
+      event.changes,
+      ancestry === undefined
+    );
+    if (ancestry !== undefined) {
+      validateInventoryBatchGenealogyChanges(
+        ancestry,
+        relations,
+        event.changes
+      );
+    }
+  }
+  return { relations };
+}
+
+/** Apply one event to a private relation record, preserving standalone validation. */
+function mutateInventoryTraceabilityRelations(
+  relations: Record<string, InventoryTraceabilityRelation>,
+  eventId: string,
+  changes: readonly InventoryTraceabilityRelationChange[],
+  validateWholeGenealogy = true
+): void {
   let genealogyChanged = false;
   for (const change of changes) {
-    containmentChanged ||=
-      change.kind === InventoryTraceabilityRelationKind.Containment;
     genealogyChanged ||=
       change.kind === InventoryTraceabilityRelationKind.Genealogy;
     const identity = inventoryTraceabilityRelationIdentity(
@@ -109,41 +177,102 @@ export function applyInventoryTraceabilityChanges({
     }
     delete relations[identity];
   }
-  if (containmentChanged) assertContainmentHasOneParentAndNoCycles(relations);
-  if (genealogyChanged) assertGenealogyHasNoCycles(relations);
-  return {
-    relations,
-    containmentChildContainerIdsByParentNodeIdentity: containmentChanged
-      ? buildContainmentChildContainerIndex(relations)
-      : state.containmentChildContainerIdsByParentNodeIdentity,
-  };
+  if (genealogyChanged && validateWholeGenealogy) {
+    assertGenealogyHasNoCycles(relations);
+  }
 }
 
-/** Build direct container-child lookup while retaining the relation map as canonical graph truth. */
-export function buildContainmentChildContainerIndex(
+/** Build the current adjacency once from the already validated genealogy DAG. */
+function inventoryBatchGenealogyAdjacency(
   relations: Readonly<Record<string, InventoryTraceabilityRelation>>
-): Readonly<Record<string, readonly string[]>> {
-  const childrenByParent = new Map<string, Set<string>>();
+): Map<string, Set<string>> {
+  const adjacency = new Map<string, Set<string>>();
   for (const relation of Object.values(relations)) {
-    if (relation.kind !== InventoryTraceabilityRelationKind.Containment)
+    if (relation.kind !== InventoryTraceabilityRelationKind.Genealogy) {
       continue;
-    if (
-      relation.from.kind !== InventoryTraceabilityNodeKind.Container ||
-      relation.to.kind !== InventoryTraceabilityNodeKind.Container
-    )
+    }
+    const from = inventoryTraceabilityNodeIdentity(relation.from);
+    const to = inventoryTraceabilityNodeIdentity(relation.to);
+    const outgoing = adjacency.get(from) ?? new Set<string>();
+    outgoing.add(to);
+    adjacency.set(from, outgoing);
+  }
+  return adjacency;
+}
+
+/**
+ * Refresh all genealogy edges touched by this event from its final relations,
+ * then verify that none of its retained additions closes a directed cycle.
+ * This preserves the standalone per-event final-state semantics even when an
+ * edge was added and invalidated within the same event.
+ */
+function validateInventoryBatchGenealogyChanges(
+  adjacency: Map<string, Set<string>>,
+  relations: Readonly<Record<string, InventoryTraceabilityRelation>>,
+  changes: readonly InventoryTraceabilityRelationChange[]
+): void {
+  const additions: Array<readonly [string, string]> = [];
+  for (const change of changes) {
+    if (change.kind !== InventoryTraceabilityRelationKind.Genealogy) {
       continue;
-    const parentIdentity = inventoryTraceabilityNodeIdentity(relation.to);
-    const children = childrenByParent.get(parentIdentity) ?? new Set<string>();
-    children.add(relation.from.id);
-    childrenByParent.set(parentIdentity, children);
+    }
+    const from = inventoryTraceabilityNodeIdentity(change.from);
+    const to = inventoryTraceabilityNodeIdentity(change.to);
+    const identity = inventoryTraceabilityRelationIdentity(
+      change.kind,
+      change.from,
+      change.to
+    );
+    const current = inventorySparseRelationValue(relations, identity);
+    if (current === undefined) {
+      const outgoing = adjacency.get(from);
+      outgoing?.delete(to);
+      if (outgoing?.size === 0) adjacency.delete(from);
+    } else {
+      const outgoing = adjacency.get(from) ?? new Set<string>();
+      outgoing.add(to);
+      adjacency.set(from, outgoing);
+      if (change.action === InventoryTraceabilityRelationAction.Add) {
+        additions.push([from, to]);
+      }
+    }
   }
-  const index: Record<string, readonly string[]> = {};
-  for (const [parentIdentity, children] of childrenByParent) {
-    const ordered = [...children];
-    ordered.sort();
-    index[parentIdentity] = ordered;
+  for (const [from, to] of additions) {
+    if (inventoryGenealogyReachable(adjacency, to, from)) {
+      throw new Error("Genealogy graph contains a cycle at '" + from + "'.");
+    }
   }
-  return index;
+}
+
+/** Avoid prototype-chain collisions for graph identities from application strings. */
+function inventorySparseRelationValue(
+  relations: Readonly<Record<string, InventoryTraceabilityRelation>>,
+  identity: string
+): InventoryTraceabilityRelation | undefined {
+  return Object.prototype.hasOwnProperty.call(relations, identity)
+    ? relations[identity]
+    : undefined;
+}
+
+/** Search only edges reachable from a newly added edge's destination. */
+function inventoryGenealogyReachable(
+  adjacency: ReadonlyMap<string, ReadonlySet<string>>,
+  start: string,
+  target: string
+): boolean {
+  if (start === target) return true;
+  const visited = new Set<string>();
+  const pending = [start];
+  while (pending.length > 0) {
+    const current = pending.pop();
+    if (current === undefined || visited.has(current)) continue;
+    if (current === target) return true;
+    visited.add(current);
+    for (const next of adjacency.get(current) ?? []) {
+      if (!visited.has(next)) pending.push(next);
+    }
+  }
+  return false;
 }
 
 /** Stable identity for one relation regardless of creating event. */
@@ -201,38 +330,6 @@ export function inventoryGenealogyAncestors(
   const result = [...ancestors.values()];
   result.sort(compareNode);
   return result;
-}
-
-/** Require containment to be a forest: one parent per child and no path back to itself. */
-function assertContainmentHasOneParentAndNoCycles(
-  relations: Readonly<Record<string, InventoryTraceabilityRelation>>
-): void {
-  const parentByChild = new Map<string, string>();
-  for (const relation of Object.values(relations)) {
-    if (relation.kind !== InventoryTraceabilityRelationKind.Containment)
-      continue;
-    const child = inventoryTraceabilityNodeIdentity(relation.from);
-    const parent = inventoryTraceabilityNodeIdentity(relation.to);
-    const earlierParent = parentByChild.get(child);
-    if (earlierParent !== undefined && earlierParent !== parent) {
-      throw new Error(`Contained node '${child}' cannot have two parents.`);
-    }
-    parentByChild.set(child, parent);
-  }
-  const settled = new Set<string>();
-  for (const child of parentByChild.keys()) {
-    if (settled.has(child)) continue;
-    const path = new Set<string>();
-    let current: string | undefined = child;
-    while (current !== undefined && !settled.has(current)) {
-      if (path.has(current)) {
-        throw new Error(`Containment graph contains a cycle at '${current}'.`);
-      }
-      path.add(current);
-      current = parentByChild.get(current);
-    }
-    for (const node of path) settled.add(node);
-  }
 }
 
 /** Require transformation genealogy to remain a directed acyclic graph. */

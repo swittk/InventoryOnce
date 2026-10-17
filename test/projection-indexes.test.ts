@@ -84,7 +84,7 @@ describe("rebuildable stock performance indexes", () => {
     await inventory.stock.receive({
       operationId: "index-receive-b",
       occurredAtEpochMs: time0,
-      to: { itemId: "item-b", locationId: "store-b" },
+      to: { itemId: "item-b", placementNodeId: "store-b" },
       amount: stockAmount("3", "piece"),
     });
     const world = await inventory.read.world();
@@ -182,7 +182,7 @@ describe("rebuildable stock performance indexes", () => {
       operationId: "serial-index-transfer",
       occurredAtEpochMs: time1,
       from: loosePosition("serial-a", { serialId: "SERIAL-1" }),
-      toLocationId: "serial-b",
+      toPlacementNodeId: "serial-b",
       amount: stockAmount("1", "piece"),
     });
     const world = await inventory.read.world();
@@ -213,11 +213,11 @@ describe("rebuildable stock performance indexes", () => {
         amount: stockAmount("1", "piece"),
       });
     }
-    await inventory.traceability.aggregate({
-      operationId: "cut-post-traceability",
+    await inventory.placement.move({
+      operationId: "cut-post-placement",
       occurredAtEpochMs: time0,
-      from: { kind: InventoryTraceabilityNodeKind.Container, id: "cut-child" },
-      to: { kind: InventoryTraceabilityNodeKind.Container, id: "cut-parent" },
+      nodeId: "cut-child",
+      into: "cut-parent",
     });
     const world = await inventory.read.world();
     assertAbstractInventoryInvariants(world);
@@ -245,24 +245,17 @@ describe("rebuildable stock performance indexes", () => {
     await inventory.stock.receive({
       operationId: "rebuild-index-b",
       occurredAtEpochMs: time1,
-      to: loosePosition("rebuild-store", {
+      to: loosePosition("R2-CONTAINER", {
         lotId: "R2",
         serialId: "R2-SERIAL",
-        containerId: "R2-CONTAINER",
       }),
       amount: stockAmount("1", "piece"),
     });
-    await inventory.traceability.aggregate({
-      operationId: "rebuild-container-nesting",
+    await inventory.placement.move({
+      operationId: "rebuild-node-nesting",
       occurredAtEpochMs: time2,
-      from: {
-        kind: InventoryTraceabilityNodeKind.Container,
-        id: "R2-CONTAINER",
-      },
-      to: {
-        kind: InventoryTraceabilityNodeKind.Container,
-        id: "R2-OUTER",
-      },
+      nodeId: "R2-CONTAINER",
+      into: "R2-OUTER",
     });
     const world = await inventory.read.world();
     assertAbstractInventoryInvariants(world);
@@ -277,8 +270,8 @@ describe("rebuildable stock performance indexes", () => {
     expect(rebuilt.positionIdsByItemRevisionId).toEqual(
       world.projection.positionIdsByItemRevisionId
     );
-    expect(rebuilt.positionIdsByContainerIdentity).toEqual(
-      world.projection.positionIdsByContainerIdentity
+    expect(rebuilt.positionIdsByPlacementNodeId).toEqual(
+      world.projection.positionIdsByPlacementNodeId
     );
     expect(rebuilt.positiveLayerStartedAtEpochMsByPositionId).toEqual(
       world.projection.positiveLayerStartedAtEpochMsByPositionId
@@ -286,11 +279,11 @@ describe("rebuildable stock performance indexes", () => {
     expect(rebuilt.positivePositionIdBySerialIdentity).toEqual(
       world.projection.positivePositionIdBySerialIdentity
     );
-    expect(
-      rebuilt.traceability.containmentChildContainerIdsByParentNodeIdentity
-    ).toEqual(
-      world.projection.traceability
-        .containmentChildContainerIdsByParentNodeIdentity
+    expect(rebuilt.placement.relationByNodeId).toEqual(
+      world.projection.placement.relationByNodeId
+    );
+    expect(rebuilt.placement.childNodeIdsByParentNodeId).toEqual(
+      world.projection.placement.childNodeIdsByParentNodeId
     );
   });
 
@@ -324,7 +317,7 @@ describe("rebuildable stock performance indexes", () => {
     const plan = planInventoryAllocation({
       catalog,
       world: historyFreeWorld,
-      selector: { itemId: "item-a", locationIds: ["indexed-fifo"] },
+      selector: { itemId: "item-a", placementNodeIds: ["indexed-fifo"] },
       amount: stockAmount("1", "piece"),
       method: InventoryAllocationMethod.Fifo,
       atEpochMs: time2,
@@ -381,7 +374,7 @@ describe("rebuildable stock performance indexes", () => {
       operationId: "stress-transfer-candidate",
       occurredAtEpochMs: 1787576400000,
       from: loosePosition("stress-store", { lotId: "STRESS-15" }),
-      toLocationId: "stress-room",
+      toPlacementNodeId: "stress-room",
       amount: stockAmount("1", "piece"),
     });
     await inventory.stock.correct({
@@ -443,7 +436,7 @@ describe("rebuildable stock performance indexes", () => {
     const plan = planInventoryAllocation({
       catalog,
       world: historyFreeWorld,
-      selector: { itemId: "item-a", locationIds: ["stress-room"] },
+      selector: { itemId: "item-a", placementNodeIds: ["stress-room"] },
       amount: stockAmount("1", "piece"),
       method: InventoryAllocationMethod.Fifo,
       atEpochMs: 1787583600000,
@@ -475,7 +468,7 @@ describe("rebuildable stock performance indexes", () => {
       operationId: "fifo-merge-transfer",
       occurredAtEpochMs: time2,
       from: source,
-      toLocationId: "merge-destination",
+      toPlacementNodeId: "merge-destination",
       amount: stockAmount("2", "piece"),
     });
     const world = await inventory.read.world();
@@ -526,7 +519,7 @@ describe("rebuildable stock performance indexes", () => {
     const loose = (await inventory.read.positions({
       itemId: "item-a",
       itemRevisionIds: ["item-a-v1"],
-      locationIds: ["package-provenance"],
+      placementNodeIds: ["package-provenance"],
     }))[0];
     if (loose === undefined) throw new Error("Unpack provenance row disappeared.");
     await inventory.stock.changeStatus({

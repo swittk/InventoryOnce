@@ -197,7 +197,7 @@ describe("append-only retained catalogue publication", () => {
     const current = await extendedInventory.read.summary({
       itemId: "item-a",
       itemRevisionIds: ["item-a-v3"],
-      locationIds: ["store"],
+      placementNodeIds: ["store"],
     });
     expect(current.revisions[0]?.total.primary.quantity.amountMinor).toBe(30);
 
@@ -274,7 +274,7 @@ describe("append-only retained catalogue publication", () => {
       occurredAtEpochMs: time0,
       to: {
         itemId: oldItem.itemId,
-        locationId: "store",
+        placementNodeId: "store",
         lotId: "PUBLICATION-OLD",
       },
       amount: stockAmount("1", "piece"),
@@ -285,7 +285,7 @@ describe("append-only retained catalogue publication", () => {
       occurredAtEpochMs: time0,
       to: {
         itemId: doubleItem.itemId,
-        locationId: "store",
+        placementNodeId: "store",
         lotId: "PUBLICATION-DOUBLE",
       },
       amount: stockAmount("1", "piece"),
@@ -325,7 +325,7 @@ describe("append-only retained catalogue publication", () => {
         fungibilityRevisionId: poolV2.revisionId,
         requested: parseQuantity("2", "dose-equivalent"),
         method: InventoryAllocationMethod.Fifo,
-        scope: { locationIds: ["store"] },
+        scope: { placementNodeIds: ["store"] },
       })
     ).rejects.toThrow("publish the retained inventory catalogue first");
     expect(
@@ -352,7 +352,7 @@ describe("append-only retained catalogue publication", () => {
       requested: parseQuantity("2", "dose-equivalent"),
       method: InventoryAllocationMethod.Fifo,
       scope: {
-        locationIds: ["store"],
+        placementNodeIds: ["store"],
         lotIds: ["PUBLICATION-DOUBLE"],
       },
     });
@@ -367,7 +367,7 @@ describe("append-only retained catalogue publication", () => {
       requested: parseQuantity("1", "dose-equivalent"),
       method: InventoryAllocationMethod.Fifo,
       scope: {
-        locationIds: ["store"],
+        placementNodeIds: ["store"],
         lotIds: ["PUBLICATION-OLD"],
       },
     });

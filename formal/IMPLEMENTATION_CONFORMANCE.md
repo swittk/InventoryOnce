@@ -38,6 +38,12 @@ It also distinguishes two retry meanings:
 
 The TypeScript trace harness computes an independent abstract transition, executes the real facade, observes the result, then reads the post-state only through `readPublishedInventorySnapshot(...).summary(...)`.
 
+## Historical-repair and retained-event refinement
+
+The generated surface ledger maps `stock.planCorrection`, `stock.planHistorical`, and `stock.recordHistorical` to `HistoricalRepair`, `CorrectionHistory`, `RecordedDeficit`, `InventoryOperation`, and `PublishedHeadCAS`. `read.events` maps to the read-history family and must return one stable durable-order page without rewriting historical-repair envelopes.
+
+Executable evidence covers side-effect-free planning, atomic commit/replay, changed-intent rejection, assertion omission, missing-to-found lifecycle evidence, serialized conflict rejection, Record/Reject deficit behavior, indexed event query/pagination, direct cohort indexing, stale-head fallback, segmented publication, and 1,000-versus-10,000 unrelated-history scale boundaries. The optional adapter event-query capability accelerates planning but does not change the base durable-storage contract.
+
 ## Migration machinery
 
 `TRACE-MIGRATION-PLAN-PUBLISH-REPAIR` in `formal/implementation-conformance/TRACE_REPLAY_ASSURANCE.json`, backed by the migration and storage-refinement tests, explicitly covers:

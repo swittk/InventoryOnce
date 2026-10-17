@@ -280,7 +280,8 @@ export function observeInventoryCount(
   const observations = normalizeCountObservations(
     input.catalog,
     count,
-    input.observations
+    input.observations,
+    input.projection.placement
   );
   const normalizedInput: ObserveInventoryCountInput = {
     ...input,
@@ -661,12 +662,17 @@ export function abandonInventoryCount(
 function normalizeCountObservations(
   catalog: InventoryCatalog,
   count: InventoryCount,
-  observations: readonly InventoryCountObservationLine[]
+  observations: readonly InventoryCountObservationLine[],
+  placement: InventoryProjectionState["placement"]
 ): readonly InventoryCountObservationLine[] {
   const normalized: InventoryCountObservationLine[] = [];
   const seenPositions = new Set<string>();
   for (const observation of observations) {
-    assertPositionInsideSelector(observation.position, count.selector);
+    assertPositionInsideSelector(
+      observation.position,
+      count.selector,
+      placement
+    );
     const item = catalog.itemRevision(observation.position.itemRevisionId);
     if (item.revisionId !== count.itemRevisionId) {
       throw new Error(

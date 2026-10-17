@@ -11,7 +11,10 @@ import {
   inventoryMetadataFingerprint,
 } from "./canonical.js";
 import type { InventoryCatalog } from "./catalog.js";
-import { applyInventoryRecordedDeficitBurden } from "./deficits.js";
+import {
+  applyInventoryRecordedDeficitBurden,
+  inventorySelectedDeficitPlacementNodeIds,
+} from "./deficits.js";
 import { assertInventoryEpochMilliseconds } from "./events.js";
 import { inventoryMeasurementAt } from "./measurements.js";
 import {
@@ -112,7 +115,7 @@ export interface NewInventoryReservation {
   readonly createdAtEpochMs: number;
   /** Optional time after which the claim stops reducing availability. */
   readonly expiresAtEpochMs?: number;
-  /** Explicitly permit stock past its lot/container use-by to back this claim. */
+  /** Explicitly permit stock past its lot/placement-ancestry use-by to back this claim. */
   readonly allowExpiredStock?: boolean;
   /** Application/source row that requested this claim. */
   readonly sourceReference?: string;
@@ -515,13 +518,23 @@ export function refineInventoryReservation(
     reservation.itemRevisionId,
     input.selector
   );
-  if (!inventoryStockSelectorIsSubset(selector, reservation.selector)) {
+  if (
+    !inventoryStockSelectorIsSubset(
+      selector,
+      reservation.selector,
+      input.projection.placement
+    )
+  ) {
     throw new Error(
       "Reservation refinement must narrow, not broaden, the eligible stock scope."
     );
   }
   for (const allocation of reservation.allocations) {
-    assertPositionInsideSelector(allocation.position, selector);
+    assertPositionInsideSelector(
+      allocation.position,
+      selector,
+      input.projection.placement
+    );
   }
   const fingerprint = inventoryIntentFingerprint([
     input.reservationId,
@@ -811,7 +824,11 @@ function normalizeReservationAllocations(
     if (allocation.quantity.unit !== unit) {
       throw new Error(`Reservation allocation must use '${unit}'.`);
     }
-    assertPositionInsideSelector(allocation.position, reservation.selector);
+    assertPositionInsideSelector(
+      allocation.position,
+      reservation.selector,
+      projection.placement
+    );
     const identity = inventoryStockPositionIdentity(allocation.position);
     const earlier = grouped.get(identity);
     grouped.set(
@@ -861,6 +878,11 @@ function assertReservationAllocationCanBecomeLegalIssue(
   if (allocation.position.transferId !== undefined) {
     throw new Error("Reservation allocation cannot bind prepared or in-transit transfer stock.");
   }
+  if (allocation.position.placementNodeId === undefined) {
+    throw new Error(
+      "Reservation allocation cannot bind detached or missing stock; place it explicitly first."
+    );
+  }
   const identity = inventoryStockPositionIdentity(allocation.position);
   const projected = projection.positions[identity];
   if (projected === undefined) {
@@ -873,7 +895,7 @@ function assertReservationAllocationCanBecomeLegalIssue(
     inventoryPositionIsExpiredAt(projection, projected.key, atEpochMs)
   ) {
     throw new Error(
-      "Reservation allocation cannot use stock past its lot/container use-by unless the claim explicitly permits it."
+      "Reservation allocation cannot use stock past its lot/placement-ancestry use-by unless the claim explicitly permits it."
     );
   }
   const capacity = inventoryMeasurementAt(projected.measurements, axisId, unit);
@@ -1016,9 +1038,19 @@ function reservationPositionEligible(
   position: InventoryStockPositionKey,
   atEpochMs: number
 ): boolean {
-  if (position.transferId !== undefined) return false;
-  if (!inventoryStockPositionMatchesSelector(position, reservation.selector))
+  // Detached/missing stock remains conserved truth but cannot back an ordinary claim.
+  if (position.transferId !== undefined || position.placementNodeId === undefined) {
     return false;
+  }
+  if (
+    !inventoryStockPositionMatchesSelector(
+      position,
+      reservation.selector,
+      projection.placement
+    )
+  ) {
+    return false;
+  }
   return (
     reservation.allowExpiredStock === true ||
     !inventoryPositionIsExpiredAt(projection, position, atEpochMs)
@@ -1094,13 +1126,13 @@ function reservationGroupFeasibility(
       }
     }
   }
-  const locationIds = reservationFeasibilityLocationIds(
+  const placementNodeIds = reservationFeasibilityPlacementNodeIds(
     projection,
     reservations,
     allocationsByReservation,
     first.itemRevisionId
   );
-  const selectedLocations = new Set(locationIds);
+  const selectedLocations = new Set(placementNodeIds);
   const burdenPositions: ReservationDeficitBurdenPosition[] = [];
   for (const identity of projection.positionIdsByItemRevisionId[
     first.itemRevisionId
@@ -1111,7 +1143,10 @@ function reservationGroupFeasibility(
         `Reservation item-revision index references missing position ${identity}.`
       );
     }
-    if (!selectedLocations.has(position.key.locationId)) continue;
+    if (
+      position.key.placementNodeId === undefined ||
+      !selectedLocations.has(position.key.placementNodeId)
+    ) continue;
     const capacity = inventoryMeasurementAt(
       position.measurements,
       axis.axisId,
@@ -1175,7 +1210,7 @@ function reservationGroupFeasibility(
     itemRevisionId: first.itemRevisionId,
     axisId: axis.axisId,
     unit: axis.unit,
-    locationIds,
+    placementNodeIds,
     lines: burdenPositions.map(
       /** Non-candidate rows back deficit first; candidate order remains deterministic. */
       (position) => ({
@@ -1481,15 +1516,15 @@ function freezeReservationEligibleItemRevisions(
   });
 }
 
-/** Resolve location pools whose positive stock can back this competing claim group. */
-function reservationFeasibilityLocationIds(
+/** Resolve direct-placement pools whose positive stock can back this competing claim group. */
+function reservationFeasibilityPlacementNodeIds(
   projection: InventoryProjectionState,
   reservations: readonly InventoryReservation[],
   allocationsByReservation: readonly (readonly InventoryReservationAllocation[])[],
   revisionId: string
 ): readonly string[] {
-  const locationIds = new Set<string>();
-  let includeEveryLocation = false;
+  const placementNodeIds = new Set<string>();
+  let includeEveryPlacementNode = false;
   for (
     let reservationIndex = 0;
     reservationIndex < reservations.length;
@@ -1500,19 +1535,32 @@ function reservationFeasibilityLocationIds(
     if (reservation === undefined || allocations === undefined) continue;
     if (allocations.length > 0) {
       for (const allocation of allocations) {
-        locationIds.add(allocation.position.locationId);
+        if (allocation.position.placementNodeId !== undefined) {
+          placementNodeIds.add(allocation.position.placementNodeId);
+        }
       }
       continue;
     }
-    if (reservation.selector.locationIds === undefined) {
-      includeEveryLocation = true;
+    const exactPlacementNodeIds = reservation.selector.placementNodeIds;
+    const subtreeRootNodeIds = reservation.selector.withinPlacementNodeIds;
+    if (
+      exactPlacementNodeIds === undefined &&
+      subtreeRootNodeIds === undefined
+    ) {
+      includeEveryPlacementNode = true;
       continue;
     }
-    for (const locationId of reservation.selector.locationIds) {
-      locationIds.add(locationId);
+    // Resolve only relevant direct deficit pools; large empty subtrees do not
+    // contribute capacity and must not trigger a descendant graph walk.
+    for (const placementNodeId of inventorySelectedDeficitPlacementNodeIds(
+      projection,
+      reservation.selector,
+      revisionId
+    )) {
+      placementNodeIds.add(placementNodeId);
     }
   }
-  if (includeEveryLocation) {
+  if (includeEveryPlacementNode) {
     for (const positionIdentity of inventorySparseRecordValue(
       projection.positionIdsByItemRevisionId,
       revisionId
@@ -1523,10 +1571,12 @@ function reservationFeasibilityLocationIds(
           `Reservation item-revision index references missing position ${positionIdentity}.`
         );
       }
-      locationIds.add(position.key.locationId);
+      if (position.key.placementNodeId !== undefined) {
+        placementNodeIds.add(position.key.placementNodeId);
+      }
     }
   }
-  const ordered = [...locationIds];
+  const ordered = [...placementNodeIds];
   ordered.sort();
   return ordered;
 }

@@ -87,7 +87,7 @@ const facadeInterfaces = [
   ["InventoryOnceCollectionsApi", "collections"],
   ["InventoryOnceFungibilityApi", "fungibility"],
   ["InventoryOnceStockApi", "stock"],
-  ["InventoryOnceContainersApi", "containers"],
+  ["InventoryOncePlacementApi", "placement"],
   ["InventoryOnceLotsApi", "lots"],
   ["InventoryOnceTransfersApi", "transfers"],
   ["InventoryOnceReservationsApi", "reservations"],

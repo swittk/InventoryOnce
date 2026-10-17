@@ -20,7 +20,7 @@ import {
 import {
   createInventoryTransformationEvent,
   type InventoryCommandHeader,
-  type InventoryContainerMetadataInput,
+  type InventoryPlacementNodeMetadataInput,
   type InventoryLotMetadataInput,
   type InventoryTransformationLine,
 } from "./commands.js";
@@ -35,7 +35,7 @@ import {
   inventoryLotIdentity,
   inventoryStockPositionIdentity,
   inventoryTraceabilityNodeIdentity,
-  type ContainerId,
+  type PlacementNodeId,
   type InventoryMetadata,
   type InventoryMetadataValue,
   type InventoryQualifiedDimension,
@@ -62,16 +62,14 @@ export interface InventoryCompositionOutputPlacement {
   readonly lotId?: LotId;
   /** Exact output serial identity when required/known. */
   readonly serialId?: SerialId;
-  /** Exact output handling unit when the produced component remains contained. */
-  readonly containerId?: ContainerId;
   /** Output item-defined dimensions; never copied blindly across item revisions. */
   readonly qualifiedDimensions?: readonly InventoryQualifiedDimension[];
   /** Explicit genealogy node when the output position has several physical identities. */
   readonly traceabilityNode?: InventoryTraceabilityNodeRef;
   /** Optional metadata assertion for the selected output lot. */
   readonly lot?: InventoryLotMetadataInput;
-  /** Optional metadata assertion for the selected output container. */
-  readonly container?: InventoryContainerMetadataInput;
+  /** Optional metadata assertion for the selected output placement node. */
+  readonly placementNode?: InventoryPlacementNodeMetadataInput;
   /** Extra JSON-safe facts retained on this output line. */
   readonly metadata?: InventoryMetadata;
 }
@@ -91,7 +89,7 @@ export interface CreateInventoryCompositionOpenEventInput
   readonly outputPlacements?: Readonly<
     Record<string, InventoryCompositionOutputPlacement>
   >;
-  /** Explicit source genealogy node when source lot/serial/container is ambiguous. */
+  /** Explicit source genealogy node when source lot/serial identity is ambiguous. */
   readonly sourceTraceabilityNode?: InventoryTraceabilityNodeRef;
 }
 
@@ -136,7 +134,6 @@ export function inventoryCompositionOpenIntentFingerprint(
         outputId,
         placement.lotId ?? null,
         placement.serialId ?? null,
-        placement.containerId ?? null,
         compositionQualifiedDimensionFingerprint(
           placement.qualifiedDimensions ?? []
         ),
@@ -146,11 +143,14 @@ export function inventoryCompositionOpenIntentFingerprint(
         placement.lot?.manufacturedAtEpochMs ?? null,
         placement.lot?.expiresAtEpochMs ?? null,
         inventoryMetadataFingerprint(placement.lot?.metadata),
-        placement.container?.containerType ?? null,
-        inventoryMetadataFingerprint(placement.container?.identifiers),
-        placement.container?.openedAtEpochMs ?? null,
-        placement.container?.useByEpochMs ?? null,
-        inventoryMetadataFingerprint(placement.container?.metadata),
+        placement.placementNode?.category ?? null,
+        placement.placementNode?.acceptsPlacement ?? null,
+        placement.placementNode?.embodiedBy?.itemId ?? null,
+        placement.placementNode?.embodiedBy?.serialId ?? null,
+        inventoryMetadataFingerprint(placement.placementNode?.identifiers),
+        placement.placementNode?.openedAtEpochMs ?? null,
+        placement.placementNode?.useByEpochMs ?? null,
+        inventoryMetadataFingerprint(placement.placementNode?.metadata),
         inventoryMetadataFingerprint(placement.metadata),
       ]
     ),
@@ -209,7 +209,7 @@ export function createInventoryCompositionOpenEvent(
     input.from,
     input.sourceTraceabilityNode,
     `${input.operationId}:source`,
-    "serial-container-only"
+    true
   );
   const consume: InventoryTransformationLine = {
     position: input.from,
@@ -303,8 +303,7 @@ function createCompositionOutputLine({
   const traceabilityNode = compositionTraceabilityNode(
     position,
     placement?.traceabilityNode,
-    `${input.operationId}:output:${output.outputId}`,
-    "all-identities"
+    `${input.operationId}:output:${output.outputId}`
   );
   return {
     position,
@@ -312,9 +311,9 @@ function createCompositionOutputLine({
     amount,
     ...(traceabilityNode === undefined ? {} : { traceabilityNode }),
     ...(lot === undefined ? {} : { lot }),
-    ...(placement?.container === undefined
+    ...(placement?.placementNode === undefined
       ? {}
-      : { container: placement.container }),
+      : { placementNode: placement.placementNode }),
     metadata: {
       ...(output.metadata ?? {}),
       ...(placement?.metadata ?? {}),
@@ -355,14 +354,28 @@ function compositionOutputPosition(
   const lotId = compositionOutputLotId(source, item, output, placement);
   return {
     itemId: item.itemId,
-    locationId: source.locationId,
+    ...(source.placementNodeId === undefined
+      ? {}
+      : { placementNodeId: source.placementNodeId }),
+    ...(source.whereaboutsId === undefined
+      ? {}
+      : { whereaboutsId: source.whereaboutsId }),
+    ...(source.whereaboutsState === undefined
+      ? {}
+      : { whereaboutsState: source.whereaboutsState }),
+    ...(source.lastPlacementNodeId === undefined
+      ? {}
+      : { lastPlacementNodeId: source.lastPlacementNodeId }),
+    ...(source.detachedAtEpochMs === undefined
+      ? {}
+      : { detachedAtEpochMs: source.detachedAtEpochMs }),
+    ...(source.missingAtEpochMs === undefined
+      ? {}
+      : { missingAtEpochMs: source.missingAtEpochMs }),
     ...(lotId === undefined ? {} : { lotId }),
     ...(placement?.serialId === undefined
       ? {}
       : { serialId: placement.serialId }),
-    ...(placement?.containerId === undefined
-      ? {}
-      : { containerId: placement.containerId }),
     ...(source.statusId === undefined ? {} : { statusId: source.statusId }),
     ...(source.ownerId === undefined ? {} : { ownerId: source.ownerId }),
     ...(source.custodianId === undefined
@@ -471,50 +484,55 @@ function currentSourceLot(
 }
 
 /**
- * Supply complete genealogy: natural single identities are derived by the transformation kernel;
- * identity-free lines receive stable external nodes, while ambiguous positions require an explicit choice.
- * `all-identities` rejects any multiple identity; `serial-container-only` rejects only serial+container
- * ambiguity and otherwise keeps serial, then container, then lot precedence.
+ * Supply complete genealogy from natural serial/lot identities or one explicit node.
+ * Direct placement is topology, not implicit transformation identity; callers may name it explicitly.
  */
 function compositionTraceabilityNode(
   position: InventoryStockPositionInput,
   explicit: InventoryTraceabilityNodeRef | undefined,
   externalId: string,
-  ambiguityPolicy: "all-identities" | "serial-container-only"
+  preferSerial = false
 ): InventoryTraceabilityNodeRef | undefined {
-  if (explicit !== undefined) return explicit;
-  const identityCount =
-    (position.serialId === undefined ? 0 : 1) +
-    (position.containerId === undefined ? 0 : 1) +
-    (position.lotId === undefined ? 0 : 1);
-  const ambiguous =
-    ambiguityPolicy === "all-identities"
-      ? identityCount > 1
-      : position.serialId !== undefined && position.containerId !== undefined;
-  if (ambiguous) {
-    throw new Error(
-      "Composition line has several stock identities; name which serial, container, or lot is the genealogy node."
-    );
-  }
+  const candidates: InventoryTraceabilityNodeRef[] = [];
   if (position.serialId !== undefined) {
-    return {
+    candidates.push({
       kind: InventoryTraceabilityNodeKind.Serial,
       id: position.serialId,
-    };
-  }
-  if (position.containerId !== undefined) {
-    return {
-      kind: InventoryTraceabilityNodeKind.Container,
-      id: position.containerId,
-    };
+    });
   }
   if (position.lotId !== undefined) {
-    return {
+    candidates.push({
       kind: InventoryTraceabilityNodeKind.Lot,
       itemId: position.itemId,
       id: position.lotId,
-    };
+    });
   }
+  if (explicit !== undefined) {
+    if (explicit.kind === InventoryTraceabilityNodeKind.PlacementNode) {
+      if (explicit.id !== position.placementNodeId) {
+        throw new Error(
+          "Composition placement-node genealogy must name the line's direct placement node."
+        );
+      }
+      return explicit;
+    }
+    if (candidates.length === 0) return explicit;
+    const explicitIdentity = inventoryTraceabilityNodeIdentity(explicit);
+    for (const candidate of candidates) {
+      if (inventoryTraceabilityNodeIdentity(candidate) === explicitIdentity) {
+        return explicit;
+      }
+    }
+    throw new Error(
+      "Composition genealogy node does not match the serial or lot on its stock line."
+    );
+  }
+  if (candidates.length > 1 && !preferSerial) {
+    throw new Error(
+      "Composition line has both serial and lot identities; name the genealogy node."
+    );
+  }
+  if (candidates.length >= 1) return candidates[0];
   return {
     kind: InventoryTraceabilityNodeKind.External,
     id: `inventory:composition:${encodeURIComponent(externalId)}`,
@@ -552,11 +570,10 @@ function assertCompositionPlacementFields(
   const allowed = new Set([
     "lotId",
     "serialId",
-    "containerId",
     "qualifiedDimensions",
     "traceabilityNode",
     "lot",
-    "container",
+    "placementNode",
     "metadata",
   ]);
   for (const key of Object.keys(placement)) {

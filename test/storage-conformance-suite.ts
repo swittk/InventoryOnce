@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   InventoryAllocationMethod,
   InventoryCountStatus,
+  InventoryEventKind,
   InventoryReservationStatus,
+  InventoryWhereaboutsAction,
   InventoryTraceabilityNodeKind,
   InventoryTraceabilityRelationAction,
   InventoryTraceabilityRelationKind,
@@ -14,7 +16,6 @@ import {
 } from "../src/index.js";
 import {
   InventoryDeficitPolicy,
-  inventoryContainerIdentity,
   inventoryLotIdentity,
   inventorySerialIdentity,
   inventoryStockPositionIdentity,
@@ -172,17 +173,15 @@ const storagePlanShapes: readonly StoragePlanShape[] = Object.freeze([
       await inventory.stock.receive({
         operationId: "shape-stock",
         occurredAtEpochMs: time0,
-        to: loosePosition("stock-store", {
+        to: loosePosition("SHAPE-STOCK-CONTAINER", {
           serialId: "SHAPE-SERIAL",
-          containerId: "SHAPE-STOCK-CONTAINER",
         }),
         amount: stockAmount("1", "piece"),
       });
     },
     assertPublished: (world) => {
-      const position = loosePosition("stock-store", {
+      const position = loosePosition("SHAPE-STOCK-CONTAINER", {
         serialId: "SHAPE-SERIAL",
-        containerId: "SHAPE-STOCK-CONTAINER",
       });
       const positionId = inventoryStockPositionIdentity({
         ...position,
@@ -200,9 +199,7 @@ const storagePlanShapes: readonly StoragePlanShape[] = Object.freeze([
         [positionId]
       );
       expect(
-        world.projection.positionIdsByContainerIdentity[
-          inventoryContainerIdentity("SHAPE-STOCK-CONTAINER")
-        ]
+        world.projection.positionIdsByPlacementNodeId["SHAPE-STOCK-CONTAINER"]
       ).toEqual([positionId]);
       expect(
         world.projection.positiveLayerStartedAtEpochMsByPositionId[positionId]
@@ -214,6 +211,73 @@ const storagePlanShapes: readonly StoragePlanShape[] = Object.freeze([
       ).toBe(positionId);
       expect(Object.keys(world.reservations.reservations)).toHaveLength(0);
       expect(Object.keys(world.counts.counts)).toHaveLength(0);
+    },
+  },
+  {
+    name: "historical-repair-only",
+    operationId: "shape-historical-repair",
+    eventful: true,
+    setup: async (inventory) => {
+      await inventory.stock.receive({
+        operationId: "shape-historical-repair-seed",
+        occurredAtEpochMs: time0,
+        to: loosePosition("SHAPE-HISTORICAL-STORE"),
+        amount: stockAmount("3", "piece"),
+      });
+    },
+    run: async (inventory) => {
+      await inventory.stock.recordHistorical({
+        operationId: "shape-historical-repair",
+        occurredAtEpochMs: time3,
+        reason: "One piece was missing briefly and recovered before publication.",
+        assertions: [
+          {
+            assertionId: "shape-historical-missing",
+            assert: (plans) =>
+              plans.markMissing({
+                occurredAtEpochMs: time0 + 1,
+                from: loosePosition("SHAPE-HISTORICAL-STORE"),
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+          {
+            assertionId: "shape-historical-found",
+            assert: (plans) =>
+              plans.place({
+                occurredAtEpochMs: time0 + 2,
+                from: plans.outputOf("shape-historical-missing"),
+                into: "SHAPE-HISTORICAL-STORE",
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+    },
+    assertPublished: (world) => {
+      const event =
+        world.projection.events["inventory:event:shape-historical-repair"];
+      expect(event?.kind).toBe(InventoryEventKind.HistoricalRepair);
+      expect(event?.stockEffects).toEqual([]);
+      expect(event?.historicalRepair?.assertions).toHaveLength(2);
+      expect(event?.historicalImpact?.deficits).toEqual([]);
+      expect(world.projection.lastRecordSequence).toBe(2);
+      const position = Object.values(world.projection.positions)[0];
+      expect(position?.measurements.primary.quantity.amountMinor).toBe(3);
+    },
+    assertPublicReads: async (inventory) => {
+      expect(
+        (
+          await inventory.read.events({
+            kinds: [InventoryEventKind.HistoricalRepair],
+          })
+        ).events.map((event) => event.operationId)
+      ).toEqual(["shape-historical-repair"]);
+      const history = await inventory.read.whereaboutsHistory({
+        actions: [InventoryWhereaboutsAction.HistoricallyRepaired],
+        resolved: true,
+      });
+      expect(history).toHaveLength(1);
+      expect(history[0]?.currentPositions).toEqual([]);
     },
   },
   {
@@ -260,40 +324,81 @@ const storagePlanShapes: readonly StoragePlanShape[] = Object.freeze([
     },
   },
   {
-    name: "container-master-only",
-    operationId: "shape-container-master",
+    name: "placement-node-master-only",
+    operationId: "shape-placement-node-master",
     eventful: true,
     setup: () => Promise.resolve(),
     run: async (inventory) => {
-      await inventory.containers.define({
-        operationId: "shape-container-master",
+      await inventory.placement.define({
+        operationId: "shape-placement-node-master",
         occurredAtEpochMs: time0,
-        containerId: "SHAPE-CONTAINER",
-        container: {
-          containerType: "carton",
+        nodeId: "SHAPE-NODE",
+        placementNode: {
+          category: "carton",
           identifiers: { barcode: "SHAPE-001" },
         },
       });
     },
     assertPublished: (world) => {
-      expect(Object.values(world.projection.containers)).toEqual([
+      expect(Object.values(world.projection.placementNodes)).toEqual([
         expect.objectContaining({
           definition: expect.objectContaining({
-            containerId: "SHAPE-CONTAINER",
-            containerType: "carton",
+            nodeId: "SHAPE-NODE",
+            category: "carton",
           }),
-          rootEventId: "inventory:event:shape-container-master",
+          rootEventId: "inventory:event:shape-placement-node-master",
         }),
       ]);
       expect(
-        Object.values(world.projection.containerRootEventIdByIdentity)
-      ).toEqual(["inventory:event:shape-container-master"]);
+        Object.values(world.projection.placementNodeRootEventIdByNodeId)
+      ).toEqual(["inventory:event:shape-placement-node-master"]);
     },
     assertPublicReads: async (inventory) => {
-      expect(await inventory.read.container("SHAPE-CONTAINER")).toMatchObject({
-        definition: { containerId: "SHAPE-CONTAINER", containerType: "carton" },
-        rootEventId: "inventory:event:shape-container-master",
+      expect(await inventory.read.placementNode("SHAPE-NODE")).toMatchObject({
+        definition: { nodeId: "SHAPE-NODE", category: "carton" },
+        rootEventId: "inventory:event:shape-placement-node-master",
       });
+    },
+  },
+  {
+    name: "placement-only",
+    operationId: "shape-placement",
+    eventful: true,
+    setup: () => Promise.resolve(),
+    run: async (inventory) => {
+      await inventory.placement.move({
+        operationId: "shape-placement",
+        occurredAtEpochMs: time0,
+        nodeId: "SHAPE-CHILD",
+        into: "SHAPE-PARENT",
+      });
+    },
+    assertPublished: (world) => {
+      expect(world.projection.events["inventory:event:shape-placement"]).toMatchObject({
+        kind: "placement",
+      });
+      expect(world.projection.placement.relationByNodeId["SHAPE-CHILD"]).toEqual({
+        nodeId: "SHAPE-CHILD",
+        parentNodeId: "SHAPE-PARENT",
+        createdByEventId: "inventory:event:shape-placement",
+      });
+      expect(
+        world.projection.placement.childNodeIdsByParentNodeId["SHAPE-PARENT"]
+      ).toEqual(["SHAPE-CHILD"]);
+      expect(world.projection.eventIdsBySequence["1"]).toBe(
+        "inventory:event:shape-placement"
+      );
+      expect(world.projection.eventIdByOperationId["shape-placement"]).toBe(
+        "inventory:event:shape-placement"
+      );
+    },
+    assertPublicReads: async (inventory) => {
+      expect(await inventory.read.placementParent("SHAPE-CHILD")).toBe(
+        "SHAPE-PARENT"
+      );
+      expect(await inventory.read.placementChildren("SHAPE-PARENT")).toEqual([
+        "SHAPE-CHILD",
+      ]);
     },
   },
   {
@@ -302,15 +407,15 @@ const storagePlanShapes: readonly StoragePlanShape[] = Object.freeze([
     eventful: true,
     setup: () => Promise.resolve(),
     run: async (inventory) => {
-      await inventory.traceability.aggregate({
+      await inventory.traceability.associate({
         operationId: "shape-traceability",
         occurredAtEpochMs: time0,
         from: {
-          kind: InventoryTraceabilityNodeKind.Container,
+          kind: InventoryTraceabilityNodeKind.PlacementNode,
           id: "SHAPE-CHILD",
         },
         to: {
-          kind: InventoryTraceabilityNodeKind.Container,
+          kind: InventoryTraceabilityNodeKind.PlacementNode,
           id: "SHAPE-PARENT",
         },
       });
@@ -321,13 +426,13 @@ const storagePlanShapes: readonly StoragePlanShape[] = Object.freeze([
       ).toMatchObject({ kind: "traceability" });
       expect(Object.values(world.projection.traceability.relations)).toEqual([
         expect.objectContaining({
-          kind: InventoryTraceabilityRelationKind.Containment,
+          kind: InventoryTraceabilityRelationKind.Association,
           from: {
-            kind: InventoryTraceabilityNodeKind.Container,
+            kind: InventoryTraceabilityNodeKind.PlacementNode,
             id: "SHAPE-CHILD",
           },
           to: {
-            kind: InventoryTraceabilityNodeKind.Container,
+            kind: InventoryTraceabilityNodeKind.PlacementNode,
             id: "SHAPE-PARENT",
           },
           createdByEventId: "inventory:event:shape-traceability",
@@ -339,15 +444,6 @@ const storagePlanShapes: readonly StoragePlanShape[] = Object.freeze([
       expect(world.projection.eventIdByOperationId["shape-traceability"]).toBe(
         "inventory:event:shape-traceability"
       );
-      expect(
-        world.projection.traceability
-          .containmentChildContainerIdsByParentNodeIdentity[
-          inventoryTraceabilityNodeIdentity({
-            kind: InventoryTraceabilityNodeKind.Container,
-            id: "SHAPE-PARENT",
-          })
-        ]
-      ).toEqual(["SHAPE-CHILD"]);
     },
     assertPublicReads: async (inventory) => {
       const world = await inventory.read.world();
@@ -376,7 +472,7 @@ const storagePlanShapes: readonly StoragePlanShape[] = Object.freeze([
         reservationId: "shape-claim",
         operationId: "shape-reserve",
         itemRevisionId: "item-a-v2",
-        selector: { itemId: "item-a", locationIds: ["reserve-store"] },
+        selector: { itemId: "item-a", placementNodeIds: ["reserve-store"] },
         requested: parseQuantity("1", "piece"),
         createdAtEpochMs: time0,
       });
@@ -425,14 +521,14 @@ const storagePlanShapes: readonly StoragePlanShape[] = Object.freeze([
         reservationId: "shape-consume-claim",
         operationId: "shape-consume-reserve",
         itemRevisionId: "item-a-v2",
-        selector: { itemId: "item-a", locationIds: ["consume-store"] },
+        selector: { itemId: "item-a", placementNodeIds: ["consume-store"] },
         requested: parseQuantity("1", "piece"),
         createdAtEpochMs: time0,
       });
       const position = (
         await inventory.read.positions({
           itemId: "item-a",
-          locationIds: ["consume-store"],
+          placementNodeIds: ["consume-store"],
         })
       )[0];
       if (position === undefined)
@@ -450,7 +546,7 @@ const storagePlanShapes: readonly StoragePlanShape[] = Object.freeze([
       const position = (
         await inventory.read.positions({
           itemId: "item-a",
-          locationIds: ["consume-store"],
+          placementNodeIds: ["consume-store"],
         })
       )[0];
       if (position === undefined)
@@ -489,13 +585,13 @@ const storagePlanShapes: readonly StoragePlanShape[] = Object.freeze([
       await inventory.counts.start({
         countId: "shape-reconcile-count",
         operationId: "shape-reconcile-start",
-        selector: { itemId: "item-a", locationIds: ["count-store"] },
+        selector: { itemId: "item-a", placementNodeIds: ["count-store"] },
         startedAtEpochMs: time0,
       });
       const position = (
         await inventory.read.positions({
           itemId: "item-a",
-          locationIds: ["count-store"],
+          placementNodeIds: ["count-store"],
         })
       )[0];
       if (position === undefined)
@@ -623,7 +719,7 @@ function inventoryMigrationStorageFailurePublishesWorld(
   );
 }
 
-/** Build one reviewed migration that changes stock, catalogue, lot, container, and traceability roots. */
+/** Build one reviewed migration that changes stock, catalogue, lot, placement-node, and traceability roots. */
 function createStorageConformanceMigration() {
   const catalog = createTabletCatalog();
   const plan = defineInventoryMigration({
@@ -635,15 +731,14 @@ function createStorageConformanceMigration() {
       openingStock: [
         {
           openingId: "migration-container-stock",
-          position: loosePosition("migration-store", {
+          position: loosePosition("MIGRATION-CHILD", {
             lotId: "MIGRATION-LOT",
-            containerId: "MIGRATION-CHILD",
           }),
           amount: stockAmount("7", "piece"),
           itemRevisionId: "item-a-v2",
           lot: { manufacturedAtEpochMs: time0, expiresAtEpochMs: time3 },
-          container: {
-            containerType: "carton",
+          placementNode: {
+            category: "carton",
             identifiers: { barcode: "MIGRATION-001" },
           },
           source: { sourceType: "legacy-stock", sourceId: "migration-row-1" },
@@ -670,13 +765,13 @@ function createStorageConformanceMigration() {
           changeId: "migration-child-in-parent",
           change: {
             action: InventoryTraceabilityRelationAction.Add,
-            kind: InventoryTraceabilityRelationKind.Containment,
+            kind: InventoryTraceabilityRelationKind.Association,
             from: {
-              kind: InventoryTraceabilityNodeKind.Container,
+              kind: InventoryTraceabilityNodeKind.PlacementNode,
               id: "MIGRATION-CHILD",
             },
             to: {
-              kind: InventoryTraceabilityNodeKind.Container,
+              kind: InventoryTraceabilityNodeKind.PlacementNode,
               id: "MIGRATION-PARENT",
             },
           },
@@ -707,7 +802,7 @@ export function runInventoryDurableStorageConformanceSuite(
       );
       const selector = inventoryStockSelector("item-a", {
         itemRevisionIds: ["item-a-v2"],
-        locationIds: ["deficit-store"],
+        placementNodeIds: ["deficit-store"],
       });
       const recorded = await recordInventory.stock.issueByPolicy({
         operationId: "conformance-record-deficit",
@@ -762,7 +857,7 @@ export function runInventoryDurableStorageConformanceSuite(
         occurredAtEpochMs: time3,
         selector: inventoryStockSelector("item-a", {
           itemRevisionIds: ["item-a-v2"],
-          locationIds: ["deficit-store"],
+          placementNodeIds: ["deficit-store"],
           lotIds: ["LATE-RECEIPT"],
         }),
         amount: stockAmount("6", "piece"),
@@ -789,7 +884,7 @@ export function runInventoryDurableStorageConformanceSuite(
         occurredAtEpochMs: time3,
         selector: inventoryStockSelector("item-a", {
           itemRevisionIds: ["item-a-v2"],
-          locationIds: ["deficit-store"],
+          placementNodeIds: ["deficit-store"],
           lotIds: ["LATE-RECEIPT"],
         }),
         amount: stockAmount("6", "piece"),
@@ -1068,7 +1163,7 @@ export function runInventoryDurableStorageConformanceSuite(
           Object.values(published.projection.lotRootEventIdByIdentity)
         ).toHaveLength(1);
         expect(
-          Object.values(published.projection.containerRootEventIdByIdentity)
+          Object.values(published.projection.placementNodeRootEventIdByNodeId)
         ).toHaveLength(1);
         expect(
           Object.values(published.projection.traceability.relations)
@@ -1079,11 +1174,11 @@ export function runInventoryDurableStorageConformanceSuite(
         ).toMatchObject({
           definition: { lotId: "MIGRATION-LOT", expiresAtEpochMs: time3 },
         });
-        expect(await inventory.read.container("MIGRATION-CHILD")).toMatchObject(
+        expect(await inventory.read.placementNode("MIGRATION-CHILD")).toMatchObject(
           {
             definition: {
-              containerId: "MIGRATION-CHILD",
-              containerType: "carton",
+              nodeId: "MIGRATION-CHILD",
+              category: "carton",
             },
           }
         );

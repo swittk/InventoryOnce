@@ -9,13 +9,13 @@ Packs == {"v1-pack-1", "v1-pack-2", "v2-pack-1", "v2-pack-2"}
 PackRevisions == {"pack-v1", "pack-v2"}
 CompositionRevisions == {"composition-v1", "composition-v2"}
 Components == {"active-A", "active-B", "placebo-P", "placebo-C"}
-Locations == {"store", "room"}
+Placements == {"store", "room"}
 Opened == "opened"
 OpenOperations == {"open-1", "open-2", "open-3", "open-4"}
 OperationStates == {"none", "completed"}
 NoPack == "no-pack"
 NoRevision == "no-revision"
-NoLocation == "no-location"
+NoPlacement == "no-placement"
 NoOperation == "no-operation"
 ResourceKinds == PackRevisions \cup Components
 
@@ -61,14 +61,14 @@ InitialPotential(component) ==
   + InitialPackCount("pack-v2")
       * Composition("composition-v2", component)
 
-UnopenedPacksAt(whereState, location, revision) ==
+UnopenedPacksAt(whereState, placement, revision) ==
   {pack \in Packs:
-    /\ whereState[pack] = location
+    /\ whereState[pack] = placement
     /\ PackRevision(pack) = revision}
 
 IntactPackCount(whereState, revision) ==
   Cardinality({pack \in Packs:
-    /\ whereState[pack] \in Locations
+    /\ whereState[pack] \in Placements
     /\ PackRevision(pack) = revision})
 
 OpenedPackCount(whereState, revision) ==
@@ -93,14 +93,14 @@ CompletedOpenCount(operationStateState, operationRevisionState, revision) ==
 CompletedOpenCountAt(
   operationStateState,
   operationRevisionState,
-  operationLocationState,
-  location,
+  operationPlacementState,
+  placement,
   revision
 ) ==
   Cardinality({op \in OpenOperations:
     /\ operationStateState[op] = "completed"
     /\ operationRevisionState[op] = revision
-    /\ operationLocationState[op] = location})
+    /\ operationPlacementState[op] = placement})
 
 ProducedByCompletedOperations(
   operationStateState,
@@ -121,32 +121,32 @@ ProducedByCompletedOperations(
 ProducedAtByCompletedOperations(
   operationStateState,
   operationRevisionState,
-  operationLocationState,
-  location,
+  operationPlacementState,
+  placement,
   component
 ) ==
     CompletedOpenCountAt(
       operationStateState,
       operationRevisionState,
-      operationLocationState,
-      location,
+      operationPlacementState,
+      placement,
       "composition-v1"
     ) * Composition("composition-v1", component)
   + CompletedOpenCountAt(
       operationStateState,
       operationRevisionState,
-      operationLocationState,
-      location,
+      operationPlacementState,
+      placement,
       "composition-v2"
     ) * Composition("composition-v2", component)
 
 \* This cached read shape is derived from physical truth and never drives a write.
 ExactReport(whereState, looseState) ==
-  [location \in Locations |->
+  [placement \in Placements |->
     [kind \in ResourceKinds |->
       IF kind \in PackRevisions
-        THEN Cardinality(UnopenedPacksAt(whereState, location, kind))
-        ELSE looseState[location][kind]]]
+        THEN Cardinality(UnopenedPacksAt(whereState, placement, kind))
+        ELSE looseState[placement][kind]]]
 
 VARIABLES where,
           loose,
@@ -155,7 +155,7 @@ VARIABLES where,
           operationPack,
           operationPackageRevision,
           operationCompositionRevision,
-          operationLocation,
+          operationPlacement,
           operationOutput,
           openedBy,
           report
@@ -167,7 +167,7 @@ vars == <<where,
           operationPack,
           operationPackageRevision,
           operationCompositionRevision,
-          operationLocation,
+          operationPlacement,
           operationOutput,
           openedBy,
           report>>
@@ -175,13 +175,13 @@ vars == <<where,
 Init ==
   /\ where = [pack \in Packs |->
        IF pack \in {"v1-pack-1", "v2-pack-1"} THEN "store" ELSE "room"]
-  /\ loose = [location \in Locations |-> [component \in Components |-> 0]]
+  /\ loose = [placement \in Placements |-> [component \in Components |-> 0]]
   /\ activeRevision = "composition-v1"
   /\ operationState = [op \in OpenOperations |-> "none"]
   /\ operationPack = [op \in OpenOperations |-> NoPack]
   /\ operationPackageRevision = [op \in OpenOperations |-> NoRevision]
   /\ operationCompositionRevision = [op \in OpenOperations |-> NoRevision]
-  /\ operationLocation = [op \in OpenOperations |-> NoLocation]
+  /\ operationPlacement = [op \in OpenOperations |-> NoPlacement]
   /\ operationOutput = [op \in OpenOperations |->
        [component \in Components |-> 0]]
   /\ openedBy = [pack \in Packs |-> NoOperation]
@@ -197,15 +197,15 @@ Activate(revision) ==
                   operationPack,
                   operationPackageRevision,
                   operationCompositionRevision,
-                  operationLocation,
+                  operationPlacement,
                   operationOutput,
                   openedBy,
                   report>>
 
 Transfer(pack, destination) ==
   /\ pack \in Packs
-  /\ where[pack] \in Locations
-  /\ destination \in Locations
+  /\ where[pack] \in Placements
+  /\ destination \in Placements
   /\ destination # where[pack]
   /\ where' = [where EXCEPT ![pack] = destination]
   /\ report' = ExactReport(where', loose)
@@ -215,7 +215,7 @@ Transfer(pack, destination) ==
                   operationPack,
                   operationPackageRevision,
                   operationCompositionRevision,
-                  operationLocation,
+                  operationPlacement,
                   operationOutput,
                   openedBy>>
 
@@ -224,20 +224,20 @@ Open(op, pack) ==
   /\ pack \in Packs
   /\ operationState[op] = "none"
   /\ openedBy[pack] = NoOperation
-  /\ where[pack] \in Locations
-  /\ LET location == where[pack]
+  /\ where[pack] \in Placements
+  /\ LET placement == where[pack]
          packageRevision == PackRevision(pack)
          compositionRevision == CompositionRevisionForPack(packageRevision)
          frozenOutput == [component \in Components |->
            Composition(compositionRevision, component)]
          nextWhere == [where EXCEPT ![pack] = Opened]
          nextLoose ==
-           [candidateLocation \in Locations |->
-             IF candidateLocation = location
+           [candidatePlacement \in Placements |->
+             IF candidatePlacement = placement
                THEN [component \in Components |->
-                      loose[candidateLocation][component]
+                      loose[candidatePlacement][component]
                         + frozenOutput[component]]
-               ELSE loose[candidateLocation]]
+               ELSE loose[candidatePlacement]]
        IN /\ where' = nextWhere
           /\ loose' = nextLoose
           /\ operationOutput' = [operationOutput EXCEPT ![op] = frozenOutput]
@@ -249,20 +249,20 @@ Open(op, pack) ==
   /\ operationCompositionRevision' =
        [operationCompositionRevision EXCEPT
          ![op] = CompositionRevisionForPack(PackRevision(pack))]
-  /\ operationLocation' = [operationLocation EXCEPT ![op] = where[pack]]
+  /\ operationPlacement' = [operationPlacement EXCEPT ![op] = where[pack]]
   /\ openedBy' = [openedBy EXCEPT ![pack] = op]
   /\ UNCHANGED activeRevision
 
 Next ==
   \/ \E revision \in CompositionRevisions: Activate(revision)
-  \/ \E pack \in Packs, destination \in Locations: Transfer(pack, destination)
+  \/ \E pack \in Packs, destination \in Placements: Transfer(pack, destination)
   \/ \E op \in OpenOperations, pack \in Packs: Open(op, pack)
 
 Spec == Init /\ [][Next]_vars
 
 TypeOK ==
-  /\ where \in [Packs -> Locations \cup {Opened}]
-  /\ loose \in [Locations -> [Components -> 0..82]]
+  /\ where \in [Packs -> Placements \cup {Opened}]
+  /\ loose \in [Placements -> [Components -> 0..82]]
   /\ activeRevision \in CompositionRevisions
   /\ operationState \in [OpenOperations -> OperationStates]
   /\ operationPack \in [OpenOperations -> Packs \cup {NoPack}]
@@ -270,10 +270,10 @@ TypeOK ==
        [OpenOperations -> PackRevisions \cup {NoRevision}]
   /\ operationCompositionRevision \in
        [OpenOperations -> CompositionRevisions \cup {NoRevision}]
-  /\ operationLocation \in [OpenOperations -> Locations \cup {NoLocation}]
+  /\ operationPlacement \in [OpenOperations -> Placements \cup {NoPlacement}]
   /\ operationOutput \in [OpenOperations -> [Components -> 0..21]]
   /\ openedBy \in [Packs -> OpenOperations \cup {NoOperation}]
-  /\ report \in [Locations -> [ResourceKinds -> 0..82]]
+  /\ report \in [Placements -> [ResourceKinds -> 0..82]]
 
 SourcePackageConservationPerRevision ==
   \A revision \in PackRevisions:
@@ -287,13 +287,13 @@ FrozenCompletedOpenVector ==
            /\ operationPackageRevision[op] = PackRevision(operationPack[op])
            /\ operationCompositionRevision[op] =
                 CompositionRevisionForPack(operationPackageRevision[op])
-           /\ operationLocation[op] \in Locations
+           /\ operationPlacement[op] \in Placements
            /\ operationOutput[op] = [component \in Components |->
                 Composition(operationCompositionRevision[op], component)]
       ELSE /\ operationPack[op] = NoPack
            /\ operationPackageRevision[op] = NoRevision
            /\ operationCompositionRevision[op] = NoRevision
-           /\ operationLocation[op] = NoLocation
+           /\ operationPlacement[op] = NoPlacement
            /\ operationOutput[op] = [component \in Components |-> 0]
 
 ExactComponentProductionFromOpenedRevisions ==
@@ -306,13 +306,13 @@ ExactComponentProductionFromOpenedRevisions ==
       )
 
 ComponentsStayAtTheirOpeningLocation ==
-  \A location \in Locations, component \in Components:
-    loose[location][component] =
+  \A placement \in Placements, component \in Components:
+    loose[placement][component] =
       ProducedAtByCompletedOperations(
         operationState,
         operationCompositionRevision,
-        operationLocation,
-        location,
+        operationPlacement,
+        placement,
         component
       )
 
@@ -323,9 +323,9 @@ ComponentPotentialIsConserved ==
 
 ComponentIdentitiesNeverMerge ==
   /\ "tablet" \notin ResourceKinds
-  /\ \A location \in Locations:
-       /\ DOMAIN loose[location] = Components
-       /\ DOMAIN report[location] = ResourceKinds
+  /\ \A placement \in Placements:
+       /\ DOMAIN loose[placement] = Components
+       /\ DOMAIN report[placement] = ResourceKinds
 
 ReportIsDerivedOnly == report = ExactReport(where, loose)
 
@@ -367,7 +367,7 @@ CompletedOperationIntentStaysFrozen ==
       /\ operationPack'[op] = operationPack[op]
       /\ operationPackageRevision'[op] = operationPackageRevision[op]
       /\ operationCompositionRevision'[op] = operationCompositionRevision[op]
-      /\ operationLocation'[op] = operationLocation[op]
+      /\ operationPlacement'[op] = operationPlacement[op]
       /\ operationOutput'[op] = operationOutput[op]
 
 \* This temporal safety check is stronger than a current-state invariant: completed intent is append-only.

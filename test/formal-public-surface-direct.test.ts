@@ -117,7 +117,7 @@ describe("direct execution of otherwise family-only public helpers", () => {
     expect(
       inventoryTraceabilityRelationsOfKind(
         emptyInventoryTraceabilityState(),
-        InventoryTraceabilityRelationKind.Containment
+        InventoryTraceabilityRelationKind.Association
       )
     ).toEqual([]);
   });

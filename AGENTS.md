@@ -2,6 +2,16 @@
 
 These rules are non-negotiable for every file in this standalone repository. They intentionally mirror the PayMeOnce hardening discipline.
 
+
+## Pre-production rule: one current contract, absolutely no backward compatibility
+
+- **InventoryOnce has NEVER been deployed or consumed by any production application.** No earlier development commit, experiment, type shape, input, event format, storage representation, query cursor, API alias, or in-memory state needs backward compatibility.
+- Until an actual product uses a released version in production, every *Once package has exactly ONE current API and durable contract. Replace or delete superseded internal development behavior immediately. Do not retain deprecated aliases, legacy-format replay branches, detection/fallback decoders, duplicate version routes, old payloads, or compatibility shim tests. Do not add tests whose sole purpose is proving removed legacy fields do not exist.
+- **Only exception:** explicit adoption of already-existing external product/application data. Keep Parse/SQL/third-party legacy input readers, translated migration evidence, controlled adoption/cutover and temporary external-source parallel reads isolated in migration/authority adapters. This exception does NOT license compatibility with previous InventoryOnce or other *Once development formats.
+- Current canonical full-world commits, native segmented commits, materialization for proof/export, immutable item revision semantics, valid historical corrections and deliberate type/domain compatibility are CURRENT architectural features, not backward compatibility. Preserve their behavior and performance; do not delete them merely because a comment calls them "legacy".
+- A reviewer suggesting backward compatibility for an unreleased *Once contract is wrong. Check supported current producer reachability, then remove the obsolete code or push back in the original inline thread; never broaden support to satisfy fabricated old-version records. Never add repeated runtime validation of already typed adapter/conformant records.
+- Do not introduce new compatibility code just because future clients might exist. Any exception after a genuine production release requires explicit owner approval tied to that actual consumer and version, not speculation.
+
 ## Runtime
 - Before any `pnpm` command, use the repository `.nvmrc` when present; otherwise use a Node version allowed by `package.json#engines`.
 - Never run pnpm with `CI=true`.
@@ -30,11 +40,11 @@ These rules are non-negotiable for every file in this standalone repository. The
 - Ambiguous migration data blocks migration; never guess.
 - Formal models are release evidence, not marketing. Document exactly what each TLA+ model checks and connect it to executable refinement/failure-injection tests.
 
-## Migration and compatibility plugins
+## External-data migration and cutover plugins
 - `/migrations` is declarative adapter plumbing, not a pile of one-off scripts.
 - A plugin declares named legacy reads/queries and the typed conversion from those rows into InventoryOnce facts.
 - Query functions may know Parse/SQL/application storage. The InventoryOnce migration engine itself must not.
-- The same typed legacy read declarations should be reusable for dry-run/backfill and temporary compatibility/parallel-read paths.
+- Reuse named external-source query declarations only for dry-run/backfill and temporary external-source comparison or parallel reads during a real existing-data cutover. Never add compatibility paths for earlier InventoryOnce development versions.
 - Every migrated fact keeps source provenance.
 - Migration planning and comparison are side-effect-free. Durable apply is a separate explicit step.
 

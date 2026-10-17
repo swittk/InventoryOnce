@@ -61,14 +61,12 @@ export interface InventoryStockRevisionSummary {
   readonly deficit: InventoryMeasurementVector;
   /** Exact current positions contributing to this summary. */
   readonly positions: readonly InventoryStockPosition[];
-  /** Signed net totals grouped by location; recorded deficit rows reduce these buckets. */
-  readonly byLocation: readonly InventoryStockDimensionBucket[];
+  /** Signed net totals grouped by exact direct placement node. */
+  readonly byPlacementNode: readonly InventoryStockDimensionBucket[];
   /** Signed net totals grouped by lot identity, including deficit/no-lot buckets when present. */
   readonly byLot: readonly InventoryStockDimensionBucket[];
   /** Signed net totals grouped by exact package revision, including loose/deficit stock. */
   readonly byPackagingRevision: readonly InventoryStockDimensionBucket[];
-  /** Signed net totals grouped by container/handling-unit identity. */
-  readonly byContainer: readonly InventoryStockDimensionBucket[];
   /** Signed net totals grouped by stock status/disposition. */
   readonly byStatus: readonly InventoryStockDimensionBucket[];
   /** Signed net totals grouped by legal/economic owner. */
@@ -182,10 +180,10 @@ export function summarizeInventoryStock({
       physicalOnHand: sumRevisionPhysicalMeasurements(item, revisionPositions),
       deficit: sumRevisionDeficitMeasurements(item, revisionPositions),
       positions: revisionPositions,
-      byLocation: summarizeOptionalIdentity(
+      byPlacementNode: summarizeOptionalIdentity(
         revisionPositions,
-        /** Read one position's physical/logical location identity. */
-        (position) => position.key.locationId
+        /** Read one position's exact direct placement-node identity. */
+        (position) => position.key.placementNodeId
       ),
       byLot: summarizeOptionalIdentity(
         revisionPositions,
@@ -196,11 +194,6 @@ export function summarizeInventoryStock({
         revisionPositions,
         /** Read one position's optional exact packaging revision. */
         (position) => position.key.packagingRevisionId
-      ),
-      byContainer: summarizeOptionalIdentity(
-        revisionPositions,
-        /** Read one position's optional handling-unit identity. */
-        (position) => position.key.containerId
       ),
       byStatus: summarizeOptionalIdentity(
         revisionPositions,

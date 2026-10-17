@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   InventoryAllocationMethod,
   InventoryDeficitPolicy,
+  InventoryOptionalIdentityConstraintKind,
   InventoryReservationFeasibilityStatus,
+  InventoryStockWhereaboutsState,
   inventoryStockSelector,
   parseQuantity,
   stockAmount,
@@ -29,7 +31,7 @@ async function currentAvailability(
   const summary = await inventory.read.availability(
     inventoryStockSelector("item-a", {
       itemRevisionIds: ["item-a-v2"],
-      locationIds: ["store"],
+      withinPlacementNodeIds: ["store"],
     }),
     atEpochMs
   );
@@ -59,19 +61,24 @@ describe("truthful native availability read model", () => {
           lot: { expiresAtEpochMs: farFutureExpiry },
         },
         {
-          to: loosePosition("store", {
+          to: loosePosition("OPENED", {
             lotId: "EXPIRED",
-            containerId: "OPENED",
           }),
           amount: stockAmount("3", "piece"),
           lot: { expiresAtEpochMs: farFutureExpiry },
-          container: {
-            containerType: "opened-vial",
+          placementNode: {
+            category: "opened-vial",
             openedAtEpochMs: time0,
             useByEpochMs: useByBetweenTime1AndTime2,
           },
         },
       ],
+    });
+    await inventory.placement.move({
+      operationId: "place-opened-vial-in-store",
+      occurredAtEpochMs: time0,
+      nodeId: "OPENED",
+      into: "store",
     });
     await inventory.reservations.reserve({
       reservationId: "usable-exact",
@@ -105,7 +112,7 @@ describe("truthful native availability read model", () => {
       reservationId: "broad-claim",
       operationId: "reserve-broad",
       itemRevisionId: "item-a-v2",
-      selector: { itemId: "item-a", locationIds: ["store"] },
+      selector: { itemId: "item-a", withinPlacementNodeIds: ["store"] },
       requested: parseQuantity("1", "piece"),
       createdAtEpochMs: time1,
     });
@@ -169,7 +176,7 @@ describe("truthful native availability read model", () => {
     const exact = await inventory.read.availability(
       inventoryStockSelector("item-a", {
         itemRevisionIds: ["item-a-v2"],
-        locationIds: ["store"],
+        placementNodeIds: ["store"],
         lotIds: ["POSITIVE"],
       }),
       time2
@@ -203,6 +210,161 @@ describe("truthful native availability read model", () => {
     });
   });
 
+  it("keeps detached recorded deficit separate from unrelated placed deficit", async () => {
+    const inventory = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
+    await inventory.stock.receive({
+      operationId: "avail-absent-receive", occurredAtEpochMs: time0,
+      to: loosePosition("store-a"), amount: stockAmount("2", "piece"),
+    });
+    await inventory.stock.detach({
+      operationId: "avail-absent-detach", occurredAtEpochMs: time1,
+      from: loosePosition("store-a"), amount: stockAmount("2", "piece"),
+    });
+    const detached = (await inventory.read.whereabouts())[0]?.currentPositions[0];
+    if (detached === undefined) throw new Error("Expected detached position.");
+    await inventory.stock.issue({
+      operationId: "avail-absent-overissue", occurredAtEpochMs: time2,
+      from: detached.key, amount: stockAmount("5", "piece"),
+    });
+    await inventory.stock.issue({
+      operationId: "avail-placed-shortage", occurredAtEpochMs: time3,
+      from: loosePosition("store-b"), amount: stockAmount("7", "piece"),
+    });
+    /** Read one revision under exact placement-presence or wildcard selection. */
+    const read = async (kind?: InventoryOptionalIdentityConstraintKind) =>
+      inventory.read.availability(
+        inventoryStockSelector("item-a", {
+          itemRevisionIds: ["item-a-v2"],
+          ...(kind === undefined ? {} : { placement: { kind } }),
+        }),
+        time3
+      );
+    const absent = (await read(InventoryOptionalIdentityConstraintKind.Absent)).revisions[0];
+    const present = (await read(InventoryOptionalIdentityConstraintKind.Present)).revisions[0];
+    const broad = (await read()).revisions[0];
+    expect(absent?.deficit.primary.quantity.amountMinor).toBe(3);
+    expect(absent?.onHand.primary.quantity.amountMinor).toBe(-3);
+    expect(present?.deficit.primary.quantity.amountMinor).toBe(7);
+    expect(broad?.deficit.primary.quantity.amountMinor).toBe(10);
+  });
+
+  it("scopes recorded deficit to the selected whereabouts identities and states", async () => {
+    const inventory = createTestInventory(
+      undefined,
+      undefined,
+      undefined,
+      InventoryDeficitPolicy.Record
+    );
+    await inventory.stock.receive({
+      operationId: "whereabouts-deficit-receive-a",
+      occurredAtEpochMs: time0,
+      to: loosePosition("cohort-a-source"),
+      amount: stockAmount("2", "piece"),
+    });
+    await inventory.stock.detach({
+      operationId: "whereabouts-deficit-detach-a",
+      occurredAtEpochMs: time1,
+      from: loosePosition("cohort-a-source"),
+      amount: stockAmount("2", "piece"),
+    });
+    const detached = (await inventory.read.whereabouts())[0]?.currentPositions[0];
+    const detachedId = detached?.key.whereaboutsId;
+    if (detached === undefined || detachedId === undefined) {
+      throw new Error("Expected first detached whereabouts cohort.");
+    }
+    await inventory.stock.issue({
+      operationId: "whereabouts-deficit-overissue-a",
+      occurredAtEpochMs: time2,
+      from: detached.key,
+      amount: stockAmount("5", "piece"),
+    });
+
+    await inventory.stock.receive({
+      operationId: "whereabouts-deficit-receive-b",
+      occurredAtEpochMs: time0,
+      to: loosePosition("cohort-b-source"),
+      amount: stockAmount("1", "piece"),
+    });
+    await inventory.stock.detach({
+      operationId: "whereabouts-deficit-detach-b",
+      occurredAtEpochMs: time1,
+      from: loosePosition("cohort-b-source"),
+      amount: stockAmount("1", "piece"),
+    });
+    const second = (await inventory.read.whereabouts()).flatMap(
+      /** Locate the newly detached cohort without assuming read order. */
+      (cohort) => cohort.currentPositions
+    ).find(
+      (position) =>
+        position.key.whereaboutsId !== detachedId &&
+        position.key.whereaboutsState === InventoryStockWhereaboutsState.Detached
+    );
+    const missingId = second?.key.whereaboutsId;
+    if (second === undefined || missingId === undefined) {
+      throw new Error("Expected second detached whereabouts cohort.");
+    }
+    await inventory.stock.markMissing({
+      operationId: "whereabouts-deficit-mark-missing-b",
+      occurredAtEpochMs: time2,
+      from: second.key,
+      amount: stockAmount("1", "piece"),
+    });
+    const missing = (await inventory.read.whereabouts({
+      whereaboutsIds: [missingId],
+    }))[0]?.currentPositions[0];
+    if (missing === undefined) {
+      throw new Error("Expected second missing whereabouts cohort.");
+    }
+    await inventory.stock.issue({
+      operationId: "whereabouts-deficit-overissue-b",
+      occurredAtEpochMs: time3,
+      from: missing.key,
+      amount: stockAmount("8", "piece"),
+    });
+    await inventory.stock.issue({
+      operationId: "whereabouts-deficit-placed-shortage",
+      occurredAtEpochMs: time3,
+      from: loosePosition("other-placed-stock"),
+      amount: stockAmount("11", "piece"),
+    });
+
+    /** Read only the recorded deficit on the active item revision for one selector. */
+    const deficitFor = async (
+      constraints: Parameters<typeof inventoryStockSelector>[1]
+    ): Promise<number | undefined> => {
+      const result = await inventory.read.availability(
+        inventoryStockSelector("item-a", {
+          itemRevisionIds: ["item-a-v2"],
+          ...constraints,
+        }),
+        time3
+      );
+      return result.revisions[0]?.deficit.primary.quantity.amountMinor;
+    };
+    expect(await deficitFor({ whereaboutsIds: [detachedId] })).toBe(3);
+    expect(await deficitFor({ whereaboutsIds: [missingId] })).toBe(7);
+    expect(await deficitFor({
+      whereaboutsIds: [detachedId, missingId],
+    })).toBe(10);
+    expect(await deficitFor({
+      whereaboutsStates: [InventoryStockWhereaboutsState.Detached],
+    })).toBe(3);
+    expect(await deficitFor({
+      whereaboutsStates: [InventoryStockWhereaboutsState.Missing],
+    })).toBe(7);
+    expect(await deficitFor({
+      whereaboutsIds: [detachedId, missingId],
+      whereaboutsStates: [InventoryStockWhereaboutsState.Missing],
+    })).toBe(7);
+    expect(await deficitFor({
+      whereabouts: { kind: InventoryOptionalIdentityConstraintKind.Present },
+    })).toBe(10);
+    expect(await deficitFor({
+      whereabouts: { kind: InventoryOptionalIdentityConstraintKind.Absent },
+    })).toBe(11);
+    expect(await deficitFor({})).toBe(21);
+  });
+
   it("attributes one location deficit once across exact-lot availability rows", async () => {
     const inventory = createTestInventory(
       undefined,
@@ -234,7 +396,7 @@ describe("truthful native availability read model", () => {
     const first = await inventory.read.availability(
       inventoryStockSelector("item-a", {
         itemRevisionIds: ["item-a-v2"],
-        locationIds: ["store"],
+        placementNodeIds: ["store"],
         lotIds: ["A-FIRST"],
       }),
       time2
@@ -252,7 +414,7 @@ describe("truthful native availability read model", () => {
     const second = await inventory.read.availability(
       inventoryStockSelector("item-a", {
         itemRevisionIds: ["item-a-v2"],
-        locationIds: ["store"],
+        placementNodeIds: ["store"],
         lotIds: ["B-SECOND"],
       }),
       time2

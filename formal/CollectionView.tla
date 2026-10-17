@@ -4,7 +4,7 @@ EXTENDS FiniteSets, Naturals
 \* Grouping views are read-only taxonomies over exact item revisions, not substitution pools.
 Tokens == {"old-1", "old-2", "new-1", "new-2", "other-1", "future-1"}
 Items == {"brand-old", "brand-new", "other-ocp", "future-ocp"}
-Locations == {"store", "room"}
+Placements == {"store", "room"}
 Issued == "issued"
 ViewRevisions == {"brand-v1", "all-v1", "all-v2"}
 AllViewRevisions == {"all-v1", "all-v2"}
@@ -58,8 +58,8 @@ ActivateAllView(revision) ==
 
 Transfer(token, destination) ==
   /\ token \in Tokens
-  /\ where[token] \in Locations
-  /\ destination \in Locations
+  /\ where[token] \in Placements
+  /\ destination \in Placements
   /\ destination # where[token]
   /\ where' = [where EXCEPT ![token] = destination]
   /\ reports' = ExactReports(where')
@@ -67,20 +67,20 @@ Transfer(token, destination) ==
 
 IssueExact(token) ==
   /\ token \in Tokens
-  /\ where[token] \in Locations
+  /\ where[token] \in Placements
   /\ where' = [where EXCEPT ![token] = Issued]
   /\ reports' = ExactReports(where')
   /\ UNCHANGED activeAllViewRevision
 
 Next ==
   \/ \E revision \in AllViewRevisions: ActivateAllView(revision)
-  \/ \E token \in Tokens, destination \in Locations: Transfer(token, destination)
+  \/ \E token \in Tokens, destination \in Placements: Transfer(token, destination)
   \/ \E token \in Tokens: IssueExact(token)
 
 Spec == Init /\ [][Next]_vars
 
 TypeOK ==
-  /\ where \in [Tokens -> Locations \cup {Issued}]
+  /\ where \in [Tokens -> Placements \cup {Issued}]
   /\ activeAllViewRevision \in AllViewRevisions
   /\ reports \in [ViewRevisions -> [Items -> 0..6]]
 

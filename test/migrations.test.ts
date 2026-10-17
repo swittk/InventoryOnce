@@ -63,7 +63,7 @@ interface LegacyStockRow {
   /** Stable source row identity. */
   readonly id: string;
   /** Legacy location identity. */
-  readonly locationId: string;
+  readonly placementNodeId: string;
   /** Exact plain-decimal legacy balance. */
   readonly balance: string;
 }
@@ -147,8 +147,8 @@ function createLegacyStockQuery(): {
 } {
   let reads = 0;
   const rows: readonly LegacyStockRow[] = [
-    { id: "legacy-1", locationId: "store-a", balance: "2" },
-    { id: "legacy-2", locationId: "store-b", balance: "3" },
+    { id: "legacy-1", placementNodeId: "store-a", balance: "2" },
+    { id: "legacy-2", placementNodeId: "store-b", balance: "3" },
   ];
   const query = defineInventoryLegacyQuery<LegacyStockRow>({
     queryId: "legacy-stock",
@@ -173,7 +173,7 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
       { id: "legacy-item-a", unit: "piece" },
     ];
     const stockRows: readonly LegacyStockRow[] = [
-      { id: "legacy-stock-a", locationId: "store", balance: "4" },
+      { id: "legacy-stock-a", placementNodeId: "store", balance: "4" },
     ];
     const itemQuery = defineInventoryLegacyQuery<LegacyItemDefinitionRow>({
       queryId: "legacy-item-definitions",
@@ -216,7 +216,7 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
               openingId: row.id,
               position: {
                 itemId: item.itemId,
-                locationId: row.locationId,
+                placementNodeId: row.placementNodeId,
               },
               amount: stockAmount(row.balance, legacyItem.unit),
               itemRevisionId: item.revisionId,
@@ -247,7 +247,7 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
       key: {
         itemId: "legacy-item-a",
         itemRevisionId: "legacy-item-a-v1",
-        locationId: "store",
+        placementNodeId: "store",
       },
       measurements: {
         primary: { quantity: { amountMinor: 4, unit: "piece" } },
@@ -268,7 +268,7 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
       evidence: {
         workflowState: "pending",
         itemId: "item-a",
-        locationId: "store",
+        placementNodeId: "store",
         amount: -1,
         amountUnit: "piece",
       },
@@ -282,7 +282,7 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
         openingStock: [
           {
             openingId: "opening-a",
-            position: { itemId: "item-a", locationId: "store" },
+            position: { itemId: "item-a", placementNodeId: "store" },
             amount: stockAmount("3", "piece"),
             itemRevisionId: "item-a-v2",
             source: { sourceType: "InventoryStock", sourceId: "stock-a" },
@@ -319,7 +319,7 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
         openingStock: [
           {
             openingId: "opening-a",
-            position: { itemId: "item-a", locationId: "store" },
+            position: { itemId: "item-a", placementNodeId: "store" },
             amount: stockAmount("3", "piece"),
             itemRevisionId: "item-a-v2",
             source: { sourceType: "InventoryStock", sourceId: "stock-a" },
@@ -428,7 +428,7 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
           cutoverAtEpochMs: time0,
           openingStock: rows.map((row) => ({
             openingId: row.id,
-            position: { itemId: "item-a", locationId: row.locationId },
+            position: { itemId: "item-a", placementNodeId: row.placementNodeId },
             amount: stockAmount(row.balance, "piece"),
             itemRevisionId: "item-a-v2",
             source: { sourceType: source.query.queryId, sourceId: row.id },
@@ -469,7 +469,7 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
             position: {
               itemId: "item-a",
               itemRevisionId: "item-a-v2",
-              locationId: "store-a",
+              placementNodeId: "store-a",
             },
             measurements: scalarInventoryMeasurements(
               "pieces",
@@ -480,7 +480,7 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
             position: {
               itemId: "item-a",
               itemRevisionId: "item-a-v2",
-              locationId: "store-b",
+              placementNodeId: "store-b",
             },
             measurements: scalarInventoryMeasurements(
               "pieces",
@@ -569,10 +569,10 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
       readPage: () =>
         Promise.resolve({
           rows: [
-            { id: "row-1", locationId: "store", balance: "1" },
-            { id: "row-2", locationId: "store", balance: "1" },
-            { id: "row-3", locationId: "store", balance: "1" },
-            { id: "row-4", locationId: "store", balance: "1" },
+            { id: "row-1", placementNodeId: "store", balance: "1" },
+            { id: "row-2", placementNodeId: "store", balance: "1" },
+            { id: "row-3", placementNodeId: "store", balance: "1" },
+            { id: "row-4", placementNodeId: "store", balance: "1" },
           ],
         }),
     });
@@ -599,9 +599,9 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
             changeId: "a-in-b",
             change: {
               action: InventoryTraceabilityRelationAction.Add,
-              kind: InventoryTraceabilityRelationKind.Containment,
-              from: { kind: InventoryTraceabilityNodeKind.Container, id: "a" },
-              to: { kind: InventoryTraceabilityNodeKind.Container, id: "b" },
+              kind: InventoryTraceabilityRelationKind.Genealogy,
+              from: { kind: InventoryTraceabilityNodeKind.PlacementNode, id: "a" },
+              to: { kind: InventoryTraceabilityNodeKind.PlacementNode, id: "b" },
             },
             source: { sourceType: "legacy-edge", sourceId: "a-in-b" },
           },
@@ -609,9 +609,9 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
             changeId: "b-in-a",
             change: {
               action: InventoryTraceabilityRelationAction.Add,
-              kind: InventoryTraceabilityRelationKind.Containment,
-              from: { kind: InventoryTraceabilityNodeKind.Container, id: "b" },
-              to: { kind: InventoryTraceabilityNodeKind.Container, id: "a" },
+              kind: InventoryTraceabilityRelationKind.Genealogy,
+              from: { kind: InventoryTraceabilityNodeKind.PlacementNode, id: "b" },
+              to: { kind: InventoryTraceabilityNodeKind.PlacementNode, id: "a" },
             },
             source: { sourceType: "legacy-edge", sourceId: "b-in-a" },
           },
@@ -631,14 +631,14 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
     const openingStock: InventoryMigrationDeclaration["openingStock"] = [
       {
         openingId: "first",
-        position: { itemId: "item-a", locationId: "store-a" },
+        position: { itemId: "item-a", placementNodeId: "store-a" },
         amount: stockAmount("2", "piece"),
         itemRevisionId: "item-a-v2",
         source: { sourceType: "legacy-stock", sourceId: "first" },
       },
       {
         openingId: "second",
-        position: { itemId: "item-a", locationId: "store-b" },
+        position: { itemId: "item-a", placementNodeId: "store-b" },
         amount: stockAmount("3", "piece"),
         itemRevisionId: "item-a-v2",
         source: { sourceType: "legacy-stock", sourceId: "second" },
@@ -756,7 +756,7 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
           ...openingStock,
           {
             openingId: "third",
-            position: { itemId: "item-a", locationId: "store-c" },
+            position: { itemId: "item-a", placementNodeId: "store-c" },
             amount: stockAmount("1", "piece"),
             itemRevisionId: "item-a-v2",
             source: { sourceType: "legacy-stock", sourceId: "third" },
@@ -793,14 +793,14 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
           openingStock: [
             {
               openingId: "row-a",
-              position: { itemId: "item-a", locationId: "store-a" },
+              position: { itemId: "item-a", placementNodeId: "store-a" },
               amount: stockAmount("2", "piece"),
               itemRevisionId: "item-a-v2",
               source: { sourceType: "legacy-stock", sourceId: "row-a" },
             },
             {
               openingId: "row-b",
-              position: { itemId: "item-a", locationId: "store-b" },
+              position: { itemId: "item-a", placementNodeId: "store-b" },
               amount: stockAmount("3", "piece"),
               itemRevisionId: "item-a-v2",
               source: { sourceType: "legacy-stock", sourceId: "row-b" },
@@ -898,7 +898,7 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
           openingStock: [
             {
               openingId: "row-one",
-              position: { itemId: "item-a", locationId: "store" },
+              position: { itemId: "item-a", placementNodeId: "store" },
               amount: stockAmount("1", "piece"),
               itemRevisionId: "item-a-v2",
               source: { sourceType: "legacy-stock", sourceId: "row-one" },
@@ -959,8 +959,8 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
 
   it("blocks cross-row traceability conflicts during compilation and names the bad source row", () => {
     const catalog = createTabletCatalog();
-    const from = { kind: InventoryTraceabilityNodeKind.Container, id: "child" };
-    const to = { kind: InventoryTraceabilityNodeKind.Container, id: "parent" };
+    const from = { kind: InventoryTraceabilityNodeKind.PlacementNode, id: "child" };
+    const to = { kind: InventoryTraceabilityNodeKind.PlacementNode, id: "parent" };
     const plan = defineInventoryMigration({
       catalog,
       declaration: {
@@ -973,7 +973,7 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
             changeId: "edge-one",
             change: {
               action: InventoryTraceabilityRelationAction.Add,
-              kind: InventoryTraceabilityRelationKind.Containment,
+              kind: InventoryTraceabilityRelationKind.Association,
               from,
               to,
             },
@@ -983,7 +983,7 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
             changeId: "edge-two",
             change: {
               action: InventoryTraceabilityRelationAction.Add,
-              kind: InventoryTraceabilityRelationKind.Containment,
+              kind: InventoryTraceabilityRelationKind.Association,
               from,
               to,
             },
@@ -1013,7 +1013,7 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
         openingStock: [
           {
             openingId: "opening-one",
-            position: { itemId: "item-a", locationId: "store" },
+            position: { itemId: "item-a", placementNodeId: "store" },
             amount: stockAmount("1", "piece"),
             itemRevisionId: "item-a-v2",
             source: { sourceType: "legacy-stock", sourceId: "row-one" },
@@ -1082,13 +1082,13 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
             changeId: "same-edge",
             change: {
               action: InventoryTraceabilityRelationAction.Add,
-              kind: InventoryTraceabilityRelationKind.Containment,
+              kind: InventoryTraceabilityRelationKind.Association,
               from: {
-                kind: InventoryTraceabilityNodeKind.Container,
+                kind: InventoryTraceabilityNodeKind.PlacementNode,
                 id: "child",
               },
               to: {
-                kind: InventoryTraceabilityNodeKind.Container,
+                kind: InventoryTraceabilityNodeKind.PlacementNode,
                 id: "parent",
               },
             },
@@ -1103,11 +1103,11 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
       graphPlan
     );
     const targetInventory = createTestInventory(storage, catalog);
-    await targetInventory.traceability.aggregate({
+    await targetInventory.traceability.associate({
       operationId: "native-edge",
       occurredAtEpochMs: time0,
-      from: { kind: InventoryTraceabilityNodeKind.Container, id: "child" },
-      to: { kind: InventoryTraceabilityNodeKind.Container, id: "parent" },
+      from: { kind: InventoryTraceabilityNodeKind.PlacementNode, id: "child" },
+      to: { kind: InventoryTraceabilityNodeKind.PlacementNode, id: "parent" },
     });
     await expect(
       applyInventoryMigrationPlan({

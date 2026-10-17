@@ -306,17 +306,17 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
       operationId: "transfer-duplicate-route-lines",
       occurredAtEpochMs: time2,
       lines: [
-        { from: loosePosition("store"), toLocationId: "room-b", amount: stockAmount("1", "piece") },
-        { from: loosePosition("store"), toLocationId: "room-b", amount: stockAmount("2", "piece") },
+        { from: loosePosition("store"), toPlacementNodeId: "room-b", amount: stockAmount("1", "piece") },
+        { from: loosePosition("store"), toPlacementNodeId: "room-b", amount: stockAmount("2", "piece") },
       ],
     });
     expect(transferred.event.stockEffects).toHaveLength(2);
     expect(
-      transferred.event.stockEffects.find((effect) => effect.position.locationId === "store")
+      transferred.event.stockEffects.find((effect) => effect.position.placementNodeId === "store")
         ?.measurementsDelta.primary.quantity.amountMinor
     ).toBe(-3);
     expect(
-      transferred.event.stockEffects.find((effect) => effect.position.locationId === "room-b")
+      transferred.event.stockEffects.find((effect) => effect.position.placementNodeId === "room-b")
         ?.measurementsDelta.primary.quantity.amountMinor
     ).toBe(3);
 
@@ -333,14 +333,14 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
     expect(scrapped.event.stockEffects[0]?.measurementsDelta.primary.quantity.amountMinor).toBe(-2);
 
     const positions = await inventory.read.positions({ itemId: "item-a" });
-    const byLocation = new Map(
+    const byPlacementNode = new Map(
       positions.map((position) => [
-        position.key.locationId,
+        position.key.placementNodeId,
         position.measurements.primary.quantity.amountMinor,
       ])
     );
-    expect(byLocation.get("store")).toBe(6);
-    expect(byLocation.get("room-b")).toBe(1);
+    expect(byPlacementNode.get("store")).toBe(6);
+    expect(byPlacementNode.get("room-b")).toBe(1);
   });
 
   it("combines duplicate reclassification and transformation positions systemically", async () => {
@@ -457,8 +457,8 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
         operationId: "reject-transfer-source-split",
         occurredAtEpochMs: time1,
         lines: [
-          { from: loosePosition("store"), toLocationId: "room-b", amount: stockAmount("1", "piece") },
-          { from: loosePosition("store"), toLocationId: "room-c", amount: stockAmount("1", "piece") },
+          { from: loosePosition("store"), toPlacementNodeId: "room-b", amount: stockAmount("1", "piece") },
+          { from: loosePosition("store"), toPlacementNodeId: "room-c", amount: stockAmount("1", "piece") },
         ],
       })
     ).rejects.toThrow("disjoint one-to-one exact source/destination routes");
@@ -501,7 +501,7 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
     const received = await inventory.stock.receive({
       operationId: "receive-measured",
       occurredAtEpochMs: time0,
-      to: { itemId: "catch-item", locationId: "cold-room" },
+      to: { itemId: "catch-item", placementNodeId: "cold-room" },
       amount: measuredStockAmount("2", "piece", [
         { axisId: "weight", value: "3.40", unit: "kg" },
       ]),
@@ -509,7 +509,7 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
     await inventory.stock.issue({
       operationId: "issue-measured",
       occurredAtEpochMs: time1,
-      from: { itemId: "catch-item", locationId: "cold-room" },
+      from: { itemId: "catch-item", placementNodeId: "cold-room" },
       amount: measuredStockAmount("1", "piece", [
         { axisId: "weight", value: "1.55", unit: "kg" },
       ]),
@@ -531,7 +531,7 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
         replaceWith: (plans) =>
           plans.receive({
             occurredAtEpochMs: time0,
-            to: { itemId: "catch-item", locationId: "cold-room" },
+            to: { itemId: "catch-item", placementNodeId: "cold-room" },
             amount: measuredStockAmount("2", "piece", [
               { axisId: "weight", value: "3.50", unit: "kg" },
             ]),
@@ -546,7 +546,6 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
     const inventory = createTestInventory();
     const source = loosePosition("room-a", {
       lotId: "lot-1",
-      containerId: "transfer-container",
       statusId: "usable",
       ownerId: "owner-a",
       custodianId: "custodian-a",
@@ -558,13 +557,12 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
       occurredAtEpochMs: time0,
       to: source,
       amount: stockAmount("10", "piece"),
-      container: { containerType: "transfer-bin" },
     });
     const moved = await inventory.stock.transfer({
       operationId: "move-loose",
       occurredAtEpochMs: time1,
       from: source,
-      toLocationId: "room-b",
+      toPlacementNodeId: "room-b",
       amount: stockAmount("4", "piece"),
     });
     expect(moved.event.occurredAtEpochMs).toBe(time1);
@@ -575,9 +573,8 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
     expect(destinationEffect?.position).toMatchObject({
       itemId: "item-a",
       itemRevisionId: "item-a-v2",
-      locationId: "room-b",
+      placementNodeId: "room-b",
       lotId: "lot-1",
-      containerId: "transfer-container",
       statusId: "usable",
       ownerId: "owner-a",
       custodianId: "custodian-a",
@@ -587,13 +584,13 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
     await inventory.stock.changeStatus({
       operationId: "quarantine-moved",
       occurredAtEpochMs: time2,
-      from: { ...source, locationId: "room-b" },
+      from: { ...source, placementNodeId: "room-b" },
       toStatusId: "quarantine",
       amount: stockAmount("4", "piece"),
     });
     const quarantined = await inventory.read.positions({
       itemId: "item-a",
-      locationIds: ["room-b"],
+      placementNodeIds: ["room-b"],
       statusIds: ["quarantine"],
     });
     expect(quarantined[0]?.measurements.primary.quantity.amountMinor).toBe(4);
@@ -613,13 +610,13 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
       operationId: "move-trimmed-destination",
       occurredAtEpochMs: time1,
       from: source,
-      toLocationId: " room-b ",
+      toPlacementNodeId: " room-b ",
       amount: stockAmount("1", "piece"),
     });
     expect(
       moved.event.stockEffects.find(
         (effect) => effect.measurementsDelta.primary.quantity.amountMinor > 0
-      )?.position.locationId
+      )?.position.placementNodeId
     ).toBe("room-b");
 
     await expect(
@@ -627,10 +624,10 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
         operationId: "move-padded-same-destination",
         occurredAtEpochMs: time2,
         from: source,
-        toLocationId: " room-a ",
+        toPlacementNodeId: " room-a ",
         amount: stockAmount("1", "piece"),
       })
-    ).rejects.toThrow("source/destination locations must differ");
+    ).rejects.toThrow("source/destination direct placement nodes must differ");
 
     await expect(
       inventory.stock.receive({
@@ -680,7 +677,7 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
     expect(loose[0]?.measurements.primary.quantity.amountMinor).toBe(40);
   });
 
-  it("changes owner, custody, authority, container, and configured dimensions only through named verbs", async () => {
+  it("changes owner, custody, authority, direct placement, and configured dimensions only through named verbs", async () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "receive-for-dimensions",
@@ -717,29 +714,30 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
       custodianId: "custodian-b",
       dispositionAuthorityId: "authority-b",
     });
-    await inventory.stock.placeInContainer({
-      operationId: "place-container",
+    await inventory.stock.transfer({
+      operationId: "move-to-container-node",
       occurredAtEpochMs: time2,
       from: beforeContainer,
-      toContainerId: "container-1",
+      toPlacementNodeId: "container-1",
       amount: stockAmount("1", "piece"),
     });
     await inventory.stock.changeQualifiedDimension({
       operationId: "set-grade",
       occurredAtEpochMs: time2,
-      from: { ...beforeContainer, containerId: "container-1" },
+      from: { ...beforeContainer, placementNodeId: "container-1" },
       dimensionId: "grade",
       toValueId: "b",
       amount: stockAmount("1", "piece"),
     });
-    await inventory.stock.removeFromContainer({
-      operationId: "remove-container",
+    await inventory.stock.transfer({
+      operationId: "move-back-from-container-node",
       occurredAtEpochMs: time3,
       from: {
         ...beforeContainer,
-        containerId: "container-1",
+        placementNodeId: "container-1",
         qualifiedDimensions: [{ dimensionId: "grade", valueId: "b" }],
       },
+      toPlacementNodeId: "store",
       amount: stockAmount("1", "piece"),
     });
     const final = (await inventory.read.positions({ itemId: "item-a" }))[0];
@@ -749,7 +747,7 @@ describe("catalogue, revisions, measurements, and stock verbs", () => {
       dispositionAuthorityId: "authority-b",
       qualifiedDimensions: [{ dimensionId: "grade", valueId: "b" }],
     });
-    expect(final?.key.containerId).toBeUndefined();
+    expect(final?.key.placementNodeId).toBe("store");
   });
 
   it("replays exact intent once and rejects changed retry facts", async () => {

@@ -2,8 +2,10 @@ import { compareInventoryIdentityText } from "./ordering.js";
 import {
   cloneInventorySparseRecord,
   createInventorySparseRecord,
+  deleteInventorySparseRecordValue,
   inventorySparseRecordValue,
   setInventorySparseRecordValue,
+  updateInventorySortedIdentitySet,
 } from "./sparse-record.js";
 import { inventoryMetadataFingerprint } from "./canonical.js";
 import type { InventoryCatalog } from "./catalog.js";
@@ -13,6 +15,7 @@ import {
   defineInventoryEvent,
   inventoryEventIntentFingerprint,
   type InventoryCommittedEvent,
+  type InventoryEventDraft,
 } from "./events.js";
 import {
   addInventoryMeasurements,
@@ -22,15 +25,20 @@ import {
   zeroInventoryMeasurements,
 } from "./measurements.js";
 import {
-  inventoryContainerIdentity,
   inventoryLotIdentity,
   inventorySerialIdentity,
   inventoryStockPositionIdentity,
-  type InventoryContainerDefinition,
+  type InventoryPlacementNodeDefinition,
   type InventoryLotDefinition,
   type InventoryStockPosition,
   type InventoryStockPositionKey,
 } from "./model.js";
+import {
+  applyInventoryPlacementChanges,
+  emptyInventoryPlacementState,
+  inventoryPlacementParentNodeId,
+  type InventoryPlacementState,
+} from "./placement.js";
 import {
   compareQuantity,
   parseQuantity,
@@ -39,13 +47,16 @@ import {
   type Quantity,
 } from "./quantity.js";
 import {
+  InventoryOptionalIdentityConstraintKind,
   inventoryStockPositionMatchesNormalizedSelector,
   normalizeInventoryStockSelector,
   type InventoryStockSelector,
 } from "./selectors.js";
 import {
   applyInventoryTraceabilityChanges,
+  applyInventoryTraceabilityChangesBatch,
   emptyInventoryTraceabilityState,
+  type ApplyInventoryTraceabilityChangesInput,
   type InventoryTraceabilityState,
 } from "./traceability.js";
 import { projectInventoryTraceabilityEvents } from "./traceability-replay.js";
@@ -62,14 +73,16 @@ export enum InventoryDeficitPolicy {
   Record = "record",
 }
 
-/** Current handling-unit metadata plus the retained root assertion that owns it. */
-export interface InventoryProjectedContainerDefinition {
-  /** Current exact container metadata/use-by assertion. */
-  readonly definition: InventoryContainerDefinition;
-  /** Retained non-correction event that first established this container master. */
+/** Current placement-node metadata plus the retained root assertion that owns it. */
+export interface InventoryProjectedPlacementNodeDefinition {
+  /** Current exact placement-node metadata/use-by/embodiment assertion. */
+  readonly definition: InventoryPlacementNodeDefinition;
+  /** Retained non-correction event that first established this placement-node master. */
   readonly rootEventId: string;
   /** Latest event that established/corrected the current metadata value. */
   readonly assertedByEventId: string;
+  /** Event that ended the embodied resource and retired this node from current placement use. */
+  readonly retiredByEventId?: string;
 }
 
 /** Current lot/batch metadata plus the retained root event whose assertion may be corrected. */
@@ -92,20 +105,28 @@ export interface InventoryProjectionState {
   readonly positionIdsByItemRevisionId: Readonly<
     Record<string, readonly string[]>
   >;
-  /** Exact current position identities grouped by exact handling-unit identity. */
-  readonly positionIdsByContainerIdentity: Readonly<
+  /** Exact current position identities grouped by their direct placement node. */
+  readonly positionIdsByPlacementNodeId: Readonly<
+    Record<string, readonly string[]>
+  >;
+  /** Exact current position identities grouped by kernel-owned whereabouts cohort. */
+  readonly positionIdsByWhereaboutsId: Readonly<
     Record<string, readonly string[]>
   >;
   /** Current uninterrupted positive-layer occurrence time by exact position identity. */
   readonly positiveLayerStartedAtEpochMsByPositionId: Readonly<Record<string, number>>;
   /** Current positive exact position by item-scoped serial identity. */
   readonly positivePositionIdBySerialIdentity: Readonly<Record<string, string>>;
-  /** Current handling-unit metadata keyed by exact container identity. */
-  readonly containers: Readonly<
-    Record<string, InventoryProjectedContainerDefinition>
+  /** Current and retired placement-node metadata keyed by exact node id. */
+  readonly placementNodes: Readonly<
+    Record<string, InventoryProjectedPlacementNodeDefinition>
   >;
-  /** First retained root event that owns each container master identity. */
-  readonly containerRootEventIdByIdentity: Readonly<Record<string, string>>;
+  /** Historical/current unique embodiment binding from item-scoped serial to node id. */
+  readonly placementNodeIdByEmbodiedSerialIdentity: Readonly<
+    Record<string, string>
+  >;
+  /** First retained root event that owns each placement-node metadata identity. */
+  readonly placementNodeRootEventIdByNodeId: Readonly<Record<string, string>>;
   /** Current item-scoped lot metadata keyed by deterministic lot identity. */
   readonly lots: Readonly<Record<string, InventoryProjectedLotDefinition>>;
   /** Current lot identities grouped by item id for item-local metadata reads. */
@@ -118,13 +139,19 @@ export interface InventoryProjectionState {
   readonly events: Readonly<Record<string, InventoryCommittedEvent>>;
   /** Durable sequence -> event id index used by snapshot/replay/count semantics. */
   readonly eventIdsBySequence: Readonly<Record<string, string>>;
+  /** Whereabouts lifecycle -> durable event sequences touching that exact cohort. */
+  readonly eventSequencesByWhereaboutsId: Readonly<
+    Record<string, readonly number[]>
+  >;
   /** Operation id -> committed event id index for exact retry semantics. */
   readonly eventIdByOperationId: Readonly<Record<string, string>>;
   /** Corrected event id -> one current direct correction event id. */
   readonly correctionEventIdByCorrectedEventId: Readonly<
     Record<string, string>
   >;
-  /** Current containment/association plus append-only genealogy graph. */
+  /** Current direct-parent placement forest. */
+  readonly placement: InventoryPlacementState;
+  /** Current association plus append-only genealogy graph. */
   readonly traceability: InventoryTraceabilityState;
   /** Highest applied durable sequence; zero means no events. */
   readonly lastRecordSequence: number;
@@ -170,19 +197,23 @@ export function emptyInventoryProjectionState(): InventoryProjectionState {
     positions: {},
     positionIdsByItemId: createInventorySparseRecord(),
     positionIdsByItemRevisionId: createInventorySparseRecord(),
-    positionIdsByContainerIdentity: {},
+    positionIdsByPlacementNodeId: createInventorySparseRecord(),
+    positionIdsByWhereaboutsId: createInventorySparseRecord(),
     positiveLayerStartedAtEpochMsByPositionId: {},
     positivePositionIdBySerialIdentity: {},
-    containers: {},
-    containerRootEventIdByIdentity: {},
+    placementNodes: createInventorySparseRecord(),
+    placementNodeIdByEmbodiedSerialIdentity: createInventorySparseRecord(),
+    placementNodeRootEventIdByNodeId: createInventorySparseRecord(),
     lots: {},
     lotIdentitiesByItemId: createInventorySparseRecord(),
     lotRootEventIdByIdentity: {},
     transfers: createInventorySparseRecord(),
     events: createInventorySparseRecord(),
     eventIdsBySequence: {},
+    eventSequencesByWhereaboutsId: createInventorySparseRecord(),
     eventIdByOperationId: createInventorySparseRecord(),
     correctionEventIdByCorrectedEventId: createInventorySparseRecord(),
+    placement: emptyInventoryPlacementState(),
     traceability: emptyInventoryTraceabilityState(),
     lastRecordSequence: 0,
   };
@@ -195,6 +226,150 @@ export function applyInventoryCommittedEvent(
   return applyInventoryCommittedEventInternal(input, false, true);
 }
 
+/** Inputs for appending a committed event batch to one already published projection. */
+export interface ApplyInventoryCommittedEventsInput {
+  /** Frozen catalogue validating every appended event. */
+  readonly catalog: InventoryCatalog;
+  /** Existing immutable projection; never modified by this operation. */
+  readonly state: InventoryProjectionState;
+  /** Ordered or unordered committed events, including exact idempotent replays. */
+  readonly events: readonly InventoryCommittedEvent[];
+  /** Same explicit deficit semantics as single-event commit and cold replay. */
+  readonly deficitPolicy: InventoryDeficitPolicy;
+}
+
+/**
+ * Catch up an existing projection through many committed events atomically.
+ * Clone the flat maps once into a private workspace, then reuse the exact
+ * validated reducer in its mutable replay mode. A failure cannot expose any
+ * partial state, while N pending events avoid N growing whole-record copies.
+ */
+export function applyInventoryCommittedEvents({
+  catalog,
+  state,
+  events,
+  deficitPolicy,
+}: ApplyInventoryCommittedEventsInput): InventoryProjectionState {
+  if (events.length === 0) return state;
+  const ordered = inventoryEventsInRecordSequence(events);
+  // Exact retries must not clone a giant published projection just to prove
+  // that no new event is necessary. The ordinary single-event validator
+  // remains the authority for both replay equivalence and changed intent.
+  let allPreviouslyCommitted = true;
+  for (const event of ordered) {
+    if (
+      inventorySparseRecordValue(
+        state.eventIdByOperationId,
+        event.operationId
+      ) === undefined
+    ) {
+      allPreviouslyCommitted = false;
+      break;
+    }
+  }
+  if (allPreviouslyCommitted) {
+    for (const event of ordered) {
+      const replay = applyInventoryCommittedEventInternal(
+        { catalog, state, event, deficitPolicy },
+        false,
+        true
+      );
+      if (!replay.replayed) {
+        throw new Error("Committed batch replay unexpectedly changed the projection.");
+      }
+    }
+    return state;
+  }
+  let next = cloneInventoryProjectionForEventBatch(state);
+  // Placement is not copied for ordinary stock-only batches. The first real
+  // topology change uses the single-event COW rule, then its copy belongs
+  // exclusively to this batch and may be mutated for later changes.
+  let ownsPlacement = false;
+  let changed = false;
+  const traceabilityTail: Array<
+    Pick<ApplyInventoryTraceabilityChangesInput, "eventId" | "changes">
+  > = [];
+  for (const event of ordered) {
+    // Validate all stock/placement/transfer state via the existing exact
+    // reducer, but do not repeatedly copy the full traceability relation
+    // map while catching up a deferred event sequence.
+    const result = applyInventoryCommittedEventInternal(
+      { catalog, state: next, event, deficitPolicy },
+      true,
+      false,
+      ownsPlacement
+    );
+    if (result.state.placement !== next.placement) ownsPlacement = true;
+    next = result.state;
+    changed ||= !result.replayed;
+    if (!result.replayed && result.event.traceabilityChanges.length !== 0) {
+      traceabilityTail.push({
+        eventId: result.event.eventId,
+        changes: result.event.traceabilityChanges,
+      });
+    }
+  }
+  if (!changed) return state;
+  return {
+    ...next,
+    traceability: applyInventoryTraceabilityChangesBatch({
+      state: state.traceability,
+      events: traceabilityTail,
+    }),
+  };
+}
+
+/** Clone each mutable root once; immutable rows and sorted arrays remain shared. */
+function cloneInventoryProjectionForEventBatch(
+  state: InventoryProjectionState
+): InventoryProjectionState {
+  return {
+    ...state,
+    positions: cloneInventorySparseRecord(state.positions),
+    positionIdsByItemId: cloneInventorySparseRecord(state.positionIdsByItemId),
+    positionIdsByItemRevisionId: cloneInventorySparseRecord(
+      state.positionIdsByItemRevisionId
+    ),
+    positionIdsByPlacementNodeId: cloneInventorySparseRecord(
+      state.positionIdsByPlacementNodeId
+    ),
+    positionIdsByWhereaboutsId: cloneInventorySparseRecord(
+      state.positionIdsByWhereaboutsId
+    ),
+    positiveLayerStartedAtEpochMsByPositionId: cloneInventorySparseRecord(
+      state.positiveLayerStartedAtEpochMsByPositionId
+    ),
+    positivePositionIdBySerialIdentity: cloneInventorySparseRecord(
+      state.positivePositionIdBySerialIdentity
+    ),
+    placementNodes: cloneInventorySparseRecord(state.placementNodes),
+    placementNodeIdByEmbodiedSerialIdentity: cloneInventorySparseRecord(
+      state.placementNodeIdByEmbodiedSerialIdentity
+    ),
+    placementNodeRootEventIdByNodeId: cloneInventorySparseRecord(
+      state.placementNodeRootEventIdByNodeId
+    ),
+    lots: cloneInventorySparseRecord(state.lots),
+    lotIdentitiesByItemId: cloneInventorySparseRecord(
+      state.lotIdentitiesByItemId
+    ),
+    lotRootEventIdByIdentity: cloneInventorySparseRecord(
+      state.lotRootEventIdByIdentity
+    ),
+    transfers: cloneInventorySparseRecord(state.transfers),
+    events: cloneInventorySparseRecord(state.events),
+    eventIdsBySequence: cloneInventorySparseRecord(state.eventIdsBySequence),
+    eventSequencesByWhereaboutsId: cloneInventorySparseRecord(
+      state.eventSequencesByWhereaboutsId
+    ),
+    eventIdByOperationId: cloneInventorySparseRecord(state.eventIdByOperationId),
+    correctionEventIdByCorrectedEventId: cloneInventorySparseRecord(
+      state.correctionEventIdByCorrectedEventId
+    ),
+    // Placement is kept read-only until the first actual topology change.
+  };
+}
+
 /**
  * Shared reducer. Whole-history replay owns a fresh private projection and may mutate its maps
  * to avoid cloning every growing index once per event; live commits always use copy-on-write.
@@ -202,7 +377,8 @@ export function applyInventoryCommittedEvent(
 function applyInventoryCommittedEventInternal(
   { catalog, state, event, deficitPolicy }: ApplyInventoryCommittedEventInput,
   mutateProjection: boolean,
-  projectTraceability: boolean
+  projectTraceability: boolean,
+  ownsPlacement = mutateProjection
 ): ApplyInventoryCommittedEventResult {
   const normalizedDraft = defineInventoryEvent({ catalog, event });
   const normalizedEvent = commitInventoryEvent(
@@ -257,10 +433,37 @@ function applyInventoryCommittedEventInternal(
       `Inventory recordSequence ${normalizedEvent.recordSequence} already exists.`
     );
   }
+  /** Whether this event can change the correction ownership index. */
+  const correctionProjectionChanges = normalizedEvent.correction !== undefined;
+  /** Whether stock effects touch a serial historically/currently bound to a node. */
+  const embodiedSerialStockChanges = normalizedEvent.stockEffects.some(
+    /** Detect one serial whose lifetime or placement can change embodied topology. */
+    (effect) =>
+      effect.position.serialId !== undefined &&
+      inventorySparseRecordValue(
+        state.placementNodeIdByEmbodiedSerialIdentity,
+        inventorySerialIdentity(effect.position.itemId, effect.position.serialId)
+      ) !== undefined
+  );
+  /** Whether node metadata, embodiment lifetime, or root ownership needs a private copy. */
+  const placementNodeProjectionChanges =
+    correctionProjectionChanges ||
+    embodiedSerialStockChanges ||
+    (normalizedEvent.placementNodeDefinitions?.length ?? 0) > 0;
+  /** Whether lot metadata/root ownership needs a private copy for this event. */
+  const lotProjectionChanges =
+    correctionProjectionChanges ||
+    (normalizedEvent.lotDefinitions?.length ?? 0) > 0;
+  /** Whether any current stock/index/FIFO/serial value can change. */
+  const stockProjectionChanges =
+    normalizedEvent.stockEffects.length > 0 ||
+    (normalizedEvent.positiveLayerProvenanceOverrides?.length ?? 0) > 0;
   const correctionEventIdByCorrectedEventId: Record<string, string> =
     mutateProjection
       ? (state.correctionEventIdByCorrectedEventId as Record<string, string>)
-      : cloneInventorySparseRecord(state.correctionEventIdByCorrectedEventId);
+      : correctionProjectionChanges
+        ? cloneInventorySparseRecord(state.correctionEventIdByCorrectedEventId)
+        : (state.correctionEventIdByCorrectedEventId as Record<string, string>);
   if (normalizedEvent.correction !== undefined) {
     const correctedEventId = normalizedEvent.correction.correctsEventId;
     const correctedEvent = inventorySparseRecordValue(
@@ -301,99 +504,251 @@ function applyInventoryCommittedEventInternal(
     );
   }
 
-  /** Copy used while deriving the next all-or-nothing container-metadata projection. */
-  const containers: Record<string, InventoryProjectedContainerDefinition> =
-    mutateProjection
-      ? (state.containers as Record<
+  /** Copy used while deriving the next all-or-nothing placement-node metadata projection. */
+  const placementNodes: Record<
+    string,
+    InventoryProjectedPlacementNodeDefinition
+  > = mutateProjection
+    ? (state.placementNodes as Record<
+        string,
+        InventoryProjectedPlacementNodeDefinition
+      >)
+    : placementNodeProjectionChanges
+      ? cloneInventorySparseRecord(state.placementNodes)
+      : (state.placementNodes as Record<
           string,
-          InventoryProjectedContainerDefinition
-        >)
-      : { ...state.containers };
-  /** Retained root ownership survives when one correction temporarily omits the container master. */
-  const containerRootEventIdByIdentity: Record<string, string> =
+          InventoryProjectedPlacementNodeDefinition
+        >);
+  /** Pre-event metadata for nodes changed in this mutable batch replay step. */
+  const previousPlacementNodeById =
+    mutateProjection && placementNodeProjectionChanges
+      ? new Map<string, InventoryProjectedPlacementNodeDefinition | undefined>()
+      : undefined;
+  /** Capture only a changed node's pre-event row before mutating the shared batch workspace. */
+  const rememberPreviousPlacementNode = (nodeId: string): void => {
+    if (
+      previousPlacementNodeById !== undefined &&
+      !previousPlacementNodeById.has(nodeId)
+    ) {
+      previousPlacementNodeById.set(
+        nodeId,
+        inventorySparseRecordValue(state.placementNodes, nodeId)
+      );
+    }
+  };
+  /** Historical/current embodied serial -> node binding; retired embodiments remain reserved. */
+  const placementNodeIdByEmbodiedSerialIdentity: Record<string, string> =
     mutateProjection
-      ? (state.containerRootEventIdByIdentity as Record<string, string>)
-      : { ...state.containerRootEventIdByIdentity };
-  const correctedContainerRootEventId =
+      ? (state.placementNodeIdByEmbodiedSerialIdentity as Record<string, string>)
+      : placementNodeProjectionChanges
+        ? cloneInventorySparseRecord(
+            state.placementNodeIdByEmbodiedSerialIdentity
+          )
+        : (state.placementNodeIdByEmbodiedSerialIdentity as Record<
+            string,
+            string
+          >);
+  /** Embodied nodes whose serial or definition may need topology/lifetime reconciliation. */
+  const touchedEmbodiedNodeIds = new Set<string>();
+  /** Retained root ownership survives when one correction temporarily omits node metadata. */
+  const placementNodeRootEventIdByNodeId: Record<string, string> =
+    mutateProjection
+      ? (state.placementNodeRootEventIdByNodeId as Record<string, string>)
+      : placementNodeProjectionChanges
+        ? cloneInventorySparseRecord(state.placementNodeRootEventIdByNodeId)
+        : (state.placementNodeRootEventIdByNodeId as Record<string, string>);
+  const correctedPlacementNodeRootEventId =
     normalizedEvent.correction?.correctsEventId;
-  const replacementContainerIdentities = new Set<string>();
-  for (const definition of normalizedEvent.containerDefinitions ?? []) {
-    replacementContainerIdentities.add(
-      inventoryContainerIdentity(definition.containerId)
-    );
+  // Only the retained root and its latest superseded correction can own
+  // currently effective metadata for this root. Do not scan the warehouse.
+  const correctedMetadataSources = inventoryCorrectionMetadataSources(
+    state,
+    normalizedEvent
+  );
+  const replacementPlacementNodeIds = new Set<string>();
+  for (const definition of normalizedEvent.placementNodeDefinitions ?? []) {
+    replacementPlacementNodeIds.add(definition.nodeId);
   }
-  if (correctedContainerRootEventId !== undefined) {
-    for (const [identity, projected] of Object.entries(containers)) {
+  /** Only nodes redefined or removed by this event can change serial binding identities. */
+  const changedPlacementNodeIds = new Set(replacementPlacementNodeIds);
+  if (correctedPlacementNodeRootEventId !== undefined) {
+    const previouslyOwnedNodeIds = new Set<string>();
+    for (const sourceEvent of correctedMetadataSources) {
+      for (const definition of sourceEvent.placementNodeDefinitions ?? []) {
+        previouslyOwnedNodeIds.add(definition.nodeId);
+      }
+    }
+    for (const nodeId of previouslyOwnedNodeIds) {
+      const projected = inventorySparseRecordValue(placementNodes, nodeId);
       if (
-        projected.rootEventId === correctedContainerRootEventId &&
-        !replacementContainerIdentities.has(identity)
+        projected?.rootEventId === correctedPlacementNodeRootEventId &&
+        !replacementPlacementNodeIds.has(nodeId)
       ) {
-        delete containers[identity];
+        if (projected.retiredByEventId !== undefined) {
+          throw new Error(
+            `Retired embodied placement node '${nodeId}' cannot be erased by correction.`
+          );
+        }
+        if (projected.definition.embodiedBy !== undefined) {
+          touchedEmbodiedNodeIds.add(nodeId);
+        }
+        rememberPreviousPlacementNode(nodeId);
+        changedPlacementNodeIds.add(nodeId);
+        deleteInventorySparseRecordValue(placementNodes, nodeId);
       }
     }
   }
-  for (const definition of normalizedEvent.containerDefinitions ?? []) {
-    const identity = inventoryContainerIdentity(definition.containerId);
+  for (const definition of normalizedEvent.placementNodeDefinitions ?? []) {
+    const nodeId = definition.nodeId;
+    rememberPreviousPlacementNode(nodeId);
     const rootEventId =
-      correctedContainerRootEventId ?? normalizedEvent.eventId;
-    const existingRootEventId = containerRootEventIdByIdentity[identity];
-    const current = containers[identity];
+      correctedPlacementNodeRootEventId ?? normalizedEvent.eventId;
+    const existingRootEventId = inventorySparseRecordValue(
+      placementNodeRootEventIdByNodeId,
+      nodeId
+    );
+    const current = inventorySparseRecordValue(placementNodes, nodeId);
+    if (
+      current?.retiredByEventId !== undefined &&
+      (current.definition.embodiedBy?.itemId !== definition.embodiedBy?.itemId ||
+        current.definition.embodiedBy?.serialId !== definition.embodiedBy?.serialId)
+    ) {
+      throw new Error(
+        `Retired embodied placement node '${nodeId}' cannot change its physical embodiment.`
+      );
+    }
+    if (
+      current?.definition.embodiedBy !== undefined ||
+      definition.embodiedBy !== undefined
+    ) {
+      touchedEmbodiedNodeIds.add(nodeId);
+    }
     if (existingRootEventId === undefined) {
-      containerRootEventIdByIdentity[identity] = rootEventId;
-      containers[identity] = {
+      setInventorySparseRecordValue(
+        placementNodeRootEventIdByNodeId,
+        nodeId,
+        rootEventId
+      );
+      setInventorySparseRecordValue(placementNodes, nodeId, {
         definition,
         rootEventId,
         assertedByEventId: normalizedEvent.eventId,
-      };
+      });
       continue;
     }
     const sameDefinition =
       current !== undefined &&
-      inventoryContainerDefinitionFingerprint(current.definition) ===
-        inventoryContainerDefinitionFingerprint(definition);
-    if (correctedContainerRootEventId === undefined) {
+      inventoryPlacementNodeDefinitionFingerprint(current.definition) ===
+        inventoryPlacementNodeDefinitionFingerprint(definition);
+    if (correctedPlacementNodeRootEventId === undefined) {
       if (current === undefined) {
         throw new Error(
-          `Inventory container ${identity} was removed by correction; correct its retained root to restore it.`
+          `Inventory placement node '${nodeId}' was removed by correction; correct its retained root to restore it.`
         );
       }
       if (!sameDefinition) {
         throw new Error(
-          `Inventory container ${identity} already has different metadata; correct retained root '${existingRootEventId}'.`
+          `Inventory placement node '${nodeId}' already has different metadata; correct retained root '${existingRootEventId}'.`
         );
       }
       continue;
     }
-    if (existingRootEventId !== correctedContainerRootEventId) {
+    if (existingRootEventId !== correctedPlacementNodeRootEventId) {
       if (!sameDefinition) {
         throw new Error(
-          `Inventory container ${identity} belongs to retained root '${existingRootEventId}', not '${correctedContainerRootEventId}'.`
+          `Inventory placement node '${nodeId}' belongs to retained root '${existingRootEventId}', not '${correctedPlacementNodeRootEventId}'.`
         );
       }
       continue;
     }
-    containers[identity] = {
+    setInventorySparseRecordValue(placementNodes, nodeId, {
       definition,
       rootEventId: existingRootEventId,
       assertedByEventId: normalizedEvent.eventId,
-    };
+      ...(current?.retiredByEventId === undefined
+        ? {}
+        : { retiredByEventId: current.retiredByEventId }),
+    });
+  }
+  if (changedPlacementNodeIds.size !== 0) {
+    /** Next serial bindings wait until every affected previous binding is removed. */
+    const nextSerialByChangedNodeId = new Map<string, string>();
+    for (const nodeId of changedPlacementNodeIds) {
+      const previous =
+        previousPlacementNodeById?.has(nodeId) === true
+          ? previousPlacementNodeById.get(nodeId)
+          : inventorySparseRecordValue(state.placementNodes, nodeId);
+      const before = previous?.definition.embodiedBy;
+      const after = inventorySparseRecordValue(placementNodes, nodeId)
+        ?.definition.embodiedBy;
+      const previousSerialIdentity =
+        before === undefined
+          ? undefined
+          : inventorySerialIdentity(before.itemId, before.serialId);
+      const nextSerialIdentity =
+        after === undefined
+          ? undefined
+          : inventorySerialIdentity(after.itemId, after.serialId);
+      // A stable serial keeps its exact binding, including retired embodiments.
+      if (previousSerialIdentity === nextSerialIdentity) continue;
+      if (
+        previousSerialIdentity !== undefined &&
+        inventorySparseRecordValue(
+          placementNodeIdByEmbodiedSerialIdentity,
+          previousSerialIdentity
+        ) === nodeId
+      ) {
+        deleteInventorySparseRecordValue(
+          placementNodeIdByEmbodiedSerialIdentity,
+          previousSerialIdentity
+        );
+      }
+      if (nextSerialIdentity !== undefined) {
+        nextSerialByChangedNodeId.set(nodeId, nextSerialIdentity);
+      }
+    }
+    // Release all old bindings before adding new ones so corrected nodes can
+    // exchange serial identities without transient duplicate conflicts.
+    for (const [nodeId, serialIdentity] of nextSerialByChangedNodeId) {
+      const existingNodeId = inventorySparseRecordValue(
+        placementNodeIdByEmbodiedSerialIdentity,
+        serialIdentity
+      );
+      if (existingNodeId !== undefined && existingNodeId !== nodeId) {
+        throw new Error(
+          "Embodied serial " + serialIdentity +
+            " is already bound to placement node '" + existingNodeId + "'."
+        );
+      }
+      setInventorySparseRecordValue(
+        placementNodeIdByEmbodiedSerialIdentity,
+        serialIdentity,
+        nodeId
+      );
+    }
   }
 
   /** Copy used while deriving the next all-or-nothing lot-metadata projection. */
   const lots: Record<string, InventoryProjectedLotDefinition> = mutateProjection
     ? (state.lots as Record<string, InventoryProjectedLotDefinition>)
-    : { ...state.lots };
+    : lotProjectionChanges
+      ? cloneInventorySparseRecord(state.lots)
+      : (state.lots as Record<string, InventoryProjectedLotDefinition>);
   /** Item -> current lot identities index supports item-local lot reads without a global scan. */
   const lotIdentitiesByItemId: Record<string, readonly string[]> =
     mutateProjection
       ? (state.lotIdentitiesByItemId as Record<string, readonly string[]>)
-      : cloneInventorySparseRecord(state.lotIdentitiesByItemId);
+      : lotProjectionChanges
+        ? cloneInventorySparseRecord(state.lotIdentitiesByItemId)
+        : (state.lotIdentitiesByItemId as Record<string, readonly string[]>);
   /** One desired final membership per touched item lot-index row. */
   const lotIndexMutations = new Map<string, Map<string, boolean>>();
   /** Retained root ownership survives even when one correction temporarily omits the lot master. */
   const lotRootEventIdByIdentity: Record<string, string> = mutateProjection
     ? (state.lotRootEventIdByIdentity as Record<string, string>)
-    : { ...state.lotRootEventIdByIdentity };
+    : lotProjectionChanges
+      ? cloneInventorySparseRecord(state.lotRootEventIdByIdentity)
+      : (state.lotRootEventIdByIdentity as Record<string, string>);
   const correctedRootEventId = normalizedEvent.correction?.correctsEventId;
   const replacementLotIdentities = new Set<string>();
   for (const definition of normalizedEvent.lotDefinitions ?? []) {
@@ -402,12 +757,21 @@ function applyInventoryCommittedEventInternal(
     );
   }
   if (correctedRootEventId !== undefined) {
-    for (const [identity, projected] of Object.entries(lots)) {
+    const previouslyOwnedLotIdentities = new Set<string>();
+    for (const sourceEvent of correctedMetadataSources) {
+      for (const definition of sourceEvent.lotDefinitions ?? []) {
+        previouslyOwnedLotIdentities.add(
+          inventoryLotIdentity(definition.itemId, definition.lotId)
+        );
+      }
+    }
+    for (const identity of previouslyOwnedLotIdentities) {
+      const projected = inventorySparseRecordValue(lots, identity);
       if (
-        projected.rootEventId === correctedRootEventId &&
+        projected?.rootEventId === correctedRootEventId &&
         !replacementLotIdentities.has(identity)
       ) {
-        delete lots[identity];
+        deleteInventorySparseRecordValue(lots, identity);
         recordIndexedIdentityMutation(
           lotIndexMutations,
           projected.definition.itemId,
@@ -423,12 +787,16 @@ function applyInventoryCommittedEventInternal(
     const existingRootEventId = lotRootEventIdByIdentity[identity];
     const current = lots[identity];
     if (existingRootEventId === undefined) {
-      lotRootEventIdByIdentity[identity] = rootEventId;
-      lots[identity] = {
+      setInventorySparseRecordValue(
+        lotRootEventIdByIdentity,
+        identity,
+        rootEventId
+      );
+      setInventorySparseRecordValue(lots, identity, {
         definition,
         rootEventId,
         assertedByEventId: normalizedEvent.eventId,
-      };
+      });
       recordIndexedIdentityMutation(
         lotIndexMutations,
         definition.itemId,
@@ -462,11 +830,11 @@ function applyInventoryCommittedEventInternal(
       }
       continue;
     }
-    lots[identity] = {
+    setInventorySparseRecordValue(lots, identity, {
       definition,
       rootEventId: existingRootEventId,
       assertedByEventId: normalizedEvent.eventId,
-    };
+    });
     recordIndexedIdentityMutation(
       lotIndexMutations,
       definition.itemId,
@@ -486,46 +854,107 @@ function applyInventoryCommittedEventInternal(
   /** Copy used while deriving the next all-or-nothing stock projection. */
   const positions: Record<string, InventoryStockPosition> = mutateProjection
     ? (state.positions as Record<string, InventoryStockPosition>)
-    : { ...state.positions };
+    : stockProjectionChanges
+      ? cloneInventorySparseRecord(state.positions)
+      : (state.positions as Record<string, InventoryStockPosition>);
   /** Copy-on-write item indexes avoid scanning unrelated inventory on normal reads. */
   const positionIdsByItemId: Record<string, readonly string[]> =
     mutateProjection
       ? (state.positionIdsByItemId as Record<string, readonly string[]>)
-      : cloneInventorySparseRecord(state.positionIdsByItemId);
+      : stockProjectionChanges
+        ? cloneInventorySparseRecord(state.positionIdsByItemId)
+        : (state.positionIdsByItemId as Record<string, readonly string[]>);
   /** Copy-on-write revision indexes support revisioned collections and summaries. */
   const positionIdsByItemRevisionId: Record<string, readonly string[]> =
     mutateProjection
       ? (state.positionIdsByItemRevisionId as Record<string, readonly string[]>)
-      : cloneInventorySparseRecord(state.positionIdsByItemRevisionId);
-  /** Copy-on-write handling-unit index supports whole-container operations across item types. */
-  const positionIdsByContainerIdentity: Record<string, readonly string[]> =
+      : stockProjectionChanges
+        ? cloneInventorySparseRecord(state.positionIdsByItemRevisionId)
+        : (state.positionIdsByItemRevisionId as Record<string, readonly string[]>);
+  /** Copy-on-write direct-placement index supports subtree operations across item types. */
+  const positionIdsByPlacementNodeId: Record<string, readonly string[]> =
     mutateProjection
-      ? (state.positionIdsByContainerIdentity as Record<
+      ? (state.positionIdsByPlacementNodeId as Record<
           string,
           readonly string[]
         >)
-      : { ...state.positionIdsByContainerIdentity };
+      : stockProjectionChanges
+        ? cloneInventorySparseRecord(state.positionIdsByPlacementNodeId)
+        : (state.positionIdsByPlacementNodeId as Record<
+            string,
+            readonly string[]
+          >);
+  /** Current unresolved-cohort memberships, copied only when stock changes. */
+  const positionIdsByWhereaboutsId: Record<string, readonly string[]> =
+    mutateProjection
+      ? (state.positionIdsByWhereaboutsId as Record<string, readonly string[]>)
+      : stockProjectionChanges
+        ? cloneInventorySparseRecord(state.positionIdsByWhereaboutsId)
+        : (state.positionIdsByWhereaboutsId as Record<string, readonly string[]>);
+  /** One desired final membership per touched whereabouts cohort. */
+  const whereaboutsIndexMutations = new Map<string, Map<string, boolean>>();
   /** One desired final membership per touched item index row; applied once after all effects. */
   const itemIndexMutations = new Map<string, Map<string, boolean>>();
   /** One desired final membership per touched revision index row. */
   const revisionIndexMutations = new Map<string, Map<string, boolean>>();
-  /** One desired final membership per touched container index row. */
-  const containerIndexMutations = new Map<string, Map<string, boolean>>();
+  /** One desired final membership per touched direct-placement index row. */
+  const placementNodeIndexMutations = new Map<string, Map<string, boolean>>();
   /** O(1) FIFO provenance for each current uninterrupted positive layer. */
   const positiveLayerStartedAtEpochMsByPositionId: Record<string, number> =
     mutateProjection
       ? (state.positiveLayerStartedAtEpochMsByPositionId as Record<string, number>)
-      : { ...state.positiveLayerStartedAtEpochMsByPositionId };
+      : stockProjectionChanges
+        ? cloneInventorySparseRecord(
+            state.positiveLayerStartedAtEpochMsByPositionId
+          )
+        : (state.positiveLayerStartedAtEpochMsByPositionId as Record<
+            string,
+            number
+          >);
   /** Current serial ownership index updated only for serials touched by this event. */
   const positivePositionIdBySerialIdentity: Record<string, string> =
     mutateProjection
       ? (state.positivePositionIdBySerialIdentity as Record<string, string>)
-      : { ...state.positivePositionIdBySerialIdentity };
+      : stockProjectionChanges
+        ? cloneInventorySparseRecord(
+            state.positivePositionIdBySerialIdentity
+          )
+        : (state.positivePositionIdBySerialIdentity as Record<string, string>);
   const touchedPositionIdsBySerialIdentity = new Map<string, Set<string>>();
   /** Conserved moves carry the oldest current source/destination layer into the destination. */
   const conservedPositiveLayerStartByDestinationId =
     captureConservedPositiveLayerStarts(state, normalizedEvent);
   for (const effect of normalizedEvent.stockEffects) {
+    if (effect.position.serialId !== undefined) {
+      const serialIdentity = inventorySerialIdentity(
+        effect.position.itemId,
+        effect.position.serialId
+      );
+      const embodiedNodeId = inventorySparseRecordValue(
+        placementNodeIdByEmbodiedSerialIdentity,
+        serialIdentity
+      );
+      if (embodiedNodeId !== undefined) {
+        touchedEmbodiedNodeIds.add(embodiedNodeId);
+      }
+    }
+    const placementNode =
+      effect.position.placementNodeId === undefined
+        ? undefined
+        : inventorySparseRecordValue(
+            placementNodes,
+            effect.position.placementNodeId
+          );
+    if (placementNode?.retiredByEventId !== undefined) {
+      throw new Error(
+        `Retired placement node '${effect.position.placementNodeId}' cannot receive stock.`
+      );
+    }
+    if (placementNode?.definition.acceptsPlacement === false) {
+      throw new Error(
+        `Placement node '${effect.position.placementNodeId}' does not accept stock.`
+      );
+    }
     const identity = inventoryStockPositionIdentity(effect.position);
     const earlier = positions[identity];
     const current =
@@ -536,13 +965,27 @@ function applyInventoryCommittedEventInternal(
       next,
       `Stock position ${identity}`
     );
-    if (deficitPolicy === InventoryDeficitPolicy.Reject) {
+    // Historical planners reject newly exposed shortages; a verified correction
+    // may leave a previously recorded deficit open while improving it.
+    if (
+      deficitPolicy === InventoryDeficitPolicy.Reject &&
+      normalizedEvent.kind !== InventoryEventKind.Correction &&
+      normalizedEvent.kind !== InventoryEventKind.HistoricalRepair
+    ) {
       nonNegativeInventoryMeasurements(next, `Stock position ${identity}`);
     }
     const wasPositive = quantityIsPositive(current.primary.quantity);
     const isPositive = quantityIsPositive(next.primary.quantity);
     if (inventoryMeasurementsAreZero(next)) {
-      delete positions[identity];
+      deleteInventorySparseRecordValue(positions, identity);
+      if (effect.position.whereaboutsId !== undefined) {
+        recordIndexedIdentityMutation(
+          whereaboutsIndexMutations,
+          effect.position.whereaboutsId,
+          identity,
+          false
+        );
+      }
       recordIndexedIdentityMutation(
         itemIndexMutations,
         effect.position.itemId,
@@ -555,17 +998,28 @@ function applyInventoryCommittedEventInternal(
         identity,
         false
       );
-      if (effect.position.containerId !== undefined) {
+      if (effect.position.placementNodeId !== undefined) {
         recordIndexedIdentityMutation(
-          containerIndexMutations,
-          inventoryContainerIdentity(effect.position.containerId),
+          placementNodeIndexMutations,
+          effect.position.placementNodeId,
           identity,
           false
         );
       }
     } else {
-      positions[identity] = { key: effect.position, measurements: next };
+      setInventorySparseRecordValue(positions, identity, {
+        key: effect.position,
+        measurements: next,
+      });
       if (earlier === undefined) {
+        if (effect.position.whereaboutsId !== undefined) {
+          recordIndexedIdentityMutation(
+            whereaboutsIndexMutations,
+            effect.position.whereaboutsId,
+            identity,
+            true
+          );
+        }
         recordIndexedIdentityMutation(
           itemIndexMutations,
           effect.position.itemId,
@@ -578,10 +1032,10 @@ function applyInventoryCommittedEventInternal(
           identity,
           true
         );
-        if (effect.position.containerId !== undefined) {
+        if (effect.position.placementNodeId !== undefined) {
           recordIndexedIdentityMutation(
-            containerIndexMutations,
-            inventoryContainerIdentity(effect.position.containerId),
+            placementNodeIndexMutations,
+            effect.position.placementNodeId,
             identity,
             true
           );
@@ -589,9 +1043,16 @@ function applyInventoryCommittedEventInternal(
       }
     }
     if (!wasPositive && isPositive) {
-      positiveLayerStartedAtEpochMsByPositionId[identity] = normalizedEvent.occurredAtEpochMs;
+      setInventorySparseRecordValue(
+        positiveLayerStartedAtEpochMsByPositionId,
+        identity,
+        normalizedEvent.occurredAtEpochMs
+      );
     } else if (wasPositive && !isPositive) {
-      delete positiveLayerStartedAtEpochMsByPositionId[identity];
+      deleteInventorySparseRecordValue(
+        positiveLayerStartedAtEpochMsByPositionId,
+        identity
+      );
     }
     registerTouchedSerialPosition(
       touchedPositionIdsBySerialIdentity,
@@ -602,12 +1063,16 @@ function applyInventoryCommittedEventInternal(
   }
   applyIndexedIdentityMutations(positionIdsByItemId, itemIndexMutations);
   applyIndexedIdentityMutations(
+    positionIdsByWhereaboutsId,
+    whereaboutsIndexMutations
+  );
+  applyIndexedIdentityMutations(
     positionIdsByItemRevisionId,
     revisionIndexMutations
   );
   applyIndexedIdentityMutations(
-    positionIdsByContainerIdentity,
-    containerIndexMutations
+    positionIdsByPlacementNodeId,
+    placementNodeIndexMutations
   );
   for (const [
     identity,
@@ -622,7 +1087,11 @@ function applyInventoryCommittedEventInternal(
         `Conserved FIFO provenance destination ${identity} is not positive after its event.`
       );
     }
-    positiveLayerStartedAtEpochMsByPositionId[identity] = startedAtEpochMs;
+    setInventorySparseRecordValue(
+      positiveLayerStartedAtEpochMsByPositionId,
+      identity,
+      startedAtEpochMs
+    );
   }
   for (const override of normalizedEvent.positiveLayerProvenanceOverrides ??
     []) {
@@ -637,7 +1106,10 @@ function applyInventoryCommittedEventInternal(
           `Correction cannot remove positive-layer provenance from positive position ${identity}.`
         );
       }
-      delete positiveLayerStartedAtEpochMsByPositionId[identity];
+      deleteInventorySparseRecordValue(
+        positiveLayerStartedAtEpochMsByPositionId,
+        identity
+      );
       continue;
     }
     if (
@@ -648,13 +1120,93 @@ function applyInventoryCommittedEventInternal(
         `Correction cannot assign positive-layer provenance to non-positive position ${identity}.`
       );
     }
-    positiveLayerStartedAtEpochMsByPositionId[identity] = override.startedAtEpochMs;
+    setInventorySparseRecordValue(
+      positiveLayerStartedAtEpochMsByPositionId,
+      identity,
+      override.startedAtEpochMs
+    );
   }
   refreshTouchedSerialIndexes({
     positions,
     touchedPositionIdsBySerialIdentity,
     positivePositionIdBySerialIdentity,
   });
+  for (const change of normalizedEvent.placementChanges ?? []) {
+    const projected = inventorySparseRecordValue(placementNodes, change.nodeId);
+    if (
+      projected?.retiredByEventId === undefined &&
+      projected?.definition.embodiedBy !== undefined
+    ) {
+      throw new Error(
+        `Embodied placement node '${change.nodeId}' must move through its unique stock instance.`
+      );
+    }
+    if (projected?.retiredByEventId !== undefined) {
+      throw new Error(`Retired placement node '${change.nodeId}' cannot move.`);
+    }
+  }
+  let placement = applyInventoryPlacementChanges({
+    state: state.placement,
+    eventId: normalizedEvent.eventId,
+    changes: normalizedEvent.placementChanges ?? [],
+    mutatePrivateBatch: ownsPlacement,
+    /** Resolve destination policy from the event-final projected node metadata. */
+    acceptsPlacement: (nodeId) => {
+      const projected = inventorySparseRecordValue(placementNodes, nodeId);
+      return (
+        projected?.retiredByEventId === undefined &&
+        projected?.definition.acceptsPlacement !== false
+      );
+    },
+  });
+  placement = reconcileInventoryPlacementEmbodiments({
+    previousPlacementNodes: state.placementNodes,
+    ...(previousPlacementNodeById === undefined
+      ? {}
+      : { previousPlacementNodeById }),
+    placementNodes,
+    placementNodeIdByEmbodiedSerialIdentity,
+    positions,
+    positionIdsByPlacementNodeId,
+    positivePositionIdBySerialIdentity,
+    touchedEmbodiedNodeIds,
+    placement,
+    mutatePrivateBatch: ownsPlacement || placement !== state.placement,
+    eventId: normalizedEvent.eventId,
+    ...(normalizedEvent.correction === undefined
+      ? {}
+      : {
+          correctsEventId: normalizedEvent.correction.correctsEventId,
+          ...(normalizedEvent.correction.supersedesCorrectionEventId === undefined
+            ? {}
+            : {
+                supersedesCorrectionEventId:
+                  normalizedEvent.correction.supersedesCorrectionEventId,
+              }),
+        }),
+    ...(normalizedEvent.historicalRepair === undefined
+      ? {}
+      : { omittedHistoricalAssertionIds: normalizedEvent.historicalRepair.omittedAssertionIds }),
+    retainedEvents: state.events,
+  });
+  for (const definition of normalizedEvent.placementNodeDefinitions ?? []) {
+    if (definition.acceptsPlacement !== false) continue;
+    const directPositions =
+      inventorySparseRecordValue(
+        positionIdsByPlacementNodeId,
+        definition.nodeId
+      ) ?? [];
+    const childNodes =
+      inventorySparseRecordValue(
+        placement.childNodeIdsByParentNodeId,
+        definition.nodeId
+      ) ?? [];
+    if (directPositions.length > 0 || childNodes.length > 0) {
+      throw new Error(
+        `Placement node '${definition.nodeId}' cannot reject placement while it still has direct contents.`
+      );
+    }
+  }
   const traceability = projectTraceability
     ? applyInventoryTraceabilityChanges({
         state: state.traceability,
@@ -662,12 +1214,37 @@ function applyInventoryCommittedEventInternal(
         changes: normalizedEvent.traceabilityChanges,
       })
     : state.traceability;
+  const touchedWhereaboutsIds = inventoryWhereaboutsIdsTouchedByProjectionEvent(
+    state,
+    normalizedEvent
+  );
+  const eventSequencesByWhereaboutsId: Record<string, readonly number[]> =
+    mutateProjection
+      ? (state.eventSequencesByWhereaboutsId as Record<string, readonly number[]>)
+      : touchedWhereaboutsIds.length === 0
+        ? (state.eventSequencesByWhereaboutsId as Record<
+            string,
+            readonly number[]
+          >)
+        : cloneInventorySparseRecord(state.eventSequencesByWhereaboutsId);
+  for (const whereaboutsId of touchedWhereaboutsIds) {
+    const earlierSequences =
+      inventorySparseRecordValue(
+        eventSequencesByWhereaboutsId,
+        whereaboutsId
+      ) ?? [];
+    setInventorySparseRecordValue(
+      eventSequencesByWhereaboutsId,
+      whereaboutsId,
+      [...earlierSequences, normalizedEvent.recordSequence]
+    );
+  }
   const events: Record<string, InventoryCommittedEvent> = mutateProjection
     ? (state.events as Record<string, InventoryCommittedEvent>)
     : cloneInventorySparseRecord(state.events);
   const eventIdsBySequence: Record<string, string> = mutateProjection
     ? (state.eventIdsBySequence as Record<string, string>)
-    : { ...state.eventIdsBySequence };
+    : cloneInventorySparseRecord(state.eventIdsBySequence);
   const eventIdByOperationId: Record<string, string> = mutateProjection
     ? (state.eventIdByOperationId as Record<string, string>)
     : cloneInventorySparseRecord(state.eventIdByOperationId);
@@ -676,8 +1253,11 @@ function applyInventoryCommittedEventInternal(
     normalizedEvent.eventId,
     normalizedEvent
   );
-  eventIdsBySequence[String(normalizedEvent.recordSequence)] =
-    normalizedEvent.eventId;
+  setInventorySparseRecordValue(
+    eventIdsBySequence,
+    String(normalizedEvent.recordSequence),
+    normalizedEvent.eventId
+  );
   setInventorySparseRecordValue(
     eventIdByOperationId,
     normalizedEvent.operationId,
@@ -691,32 +1271,382 @@ function applyInventoryCommittedEventInternal(
       positions,
       positionIdsByItemId,
       positionIdsByItemRevisionId,
-      positionIdsByContainerIdentity,
+      positionIdsByPlacementNodeId,
+      positionIdsByWhereaboutsId,
       positiveLayerStartedAtEpochMsByPositionId,
       positivePositionIdBySerialIdentity,
-      containers,
-      containerRootEventIdByIdentity,
+      placementNodes,
+      placementNodeIdByEmbodiedSerialIdentity,
+      placementNodeRootEventIdByNodeId,
       lots,
       lotIdentitiesByItemId,
       lotRootEventIdByIdentity,
       transfers,
       events,
       eventIdsBySequence,
+      eventSequencesByWhereaboutsId,
       eventIdByOperationId,
       correctionEventIdByCorrectedEventId,
+      placement,
       traceability,
       lastRecordSequence: normalizedEvent.recordSequence,
     },
   };
 }
 
-/** Stable current-container comparison including identifiers and JSON-safe metadata. */
-function inventoryContainerDefinitionFingerprint(
-  definition: InventoryContainerDefinition
+/** Inputs for synchronizing active placement topology with unique embodied stock truth. */
+interface ReconcileInventoryPlacementEmbodimentsInput {
+  /** Node projection before this event, used to distinguish creation from retirement. */
+  readonly previousPlacementNodes: Readonly<
+    Record<string, InventoryProjectedPlacementNodeDefinition>
+  >;
+  /** Pre-event changed rows captured before in-place mutation of the batch workspace. */
+  readonly previousPlacementNodeById?: ReadonlyMap<
+    string,
+    InventoryProjectedPlacementNodeDefinition | undefined
+  >;
+  /** Mutable next node projection, including any metadata assertions from this event. */
+  readonly placementNodes: Record<
+    string,
+    InventoryProjectedPlacementNodeDefinition
+  >;
+  /** Historical/current item-scoped serial -> node binding. */
+  readonly placementNodeIdByEmbodiedSerialIdentity: Readonly<
+    Record<string, string>
+  >;
+  /** Complete next stock projection. */
+  readonly positions: Readonly<Record<string, InventoryStockPosition>>;
+  /** Complete next direct-stock index. */
+  readonly positionIdsByPlacementNodeId: Readonly<
+    Record<string, readonly string[]>
+  >;
+  /** Complete next positive serial index. */
+  readonly positivePositionIdBySerialIdentity: Readonly<Record<string, string>>;
+  /** Nodes whose embodiment definition or serial stock changed in this event. */
+  readonly touchedEmbodiedNodeIds: ReadonlySet<string>;
+  /** Placement topology after explicit standalone-node changes. */
+  readonly placement: InventoryPlacementState;
+  /** True only when this reducer owns the detached batch/cold-replay placement maps. */
+  readonly mutatePrivateBatch: boolean;
+  /** Event responsible for any derived parent synchronization or retirement. */
+  readonly eventId: string;
+  /** Exact retired event being append-only corrected, when this is a correction. */
+  readonly correctsEventId?: string;
+  /** Prior correction replaced by this correction of the same retained root. */
+  readonly supersedesCorrectionEventId?: string;
+  /** Exact historical assertions explicitly omitted by this repair, if any. */
+  readonly omittedHistoricalAssertionIds?: readonly string[];
+  /** Previously published events used to authenticate a retrospective omission. */
+  readonly retainedEvents: Readonly<Record<string, InventoryCommittedEvent>>;
+}
+
+/** Allow revival only when the exact retained repair's serialized retirement is omitted. */
+function historicalRepairOmitsEmbodiedRetirement({
+  omittedAssertionIds,
+  retainedEvents,
+  retirementEventId,
+  itemId,
+  serialId,
+}: {
+  /** Explicit source assertion identities removed from effective history, if any. */
+  readonly omittedAssertionIds: readonly string[] | undefined;
+  /** Previously committed envelopes, including the retirement owner. */
+  readonly retainedEvents: Readonly<Record<string, InventoryCommittedEvent>>;
+  /** Envelope that retired the embodied node. */
+  readonly retirementEventId: string;
+  /** Item identity of the embodied physical instance. */
+  readonly itemId: string;
+  /** Serial identity of the embodied physical instance. */
+  readonly serialId: string;
+}): boolean {
+  if (omittedAssertionIds === undefined || omittedAssertionIds.length === 0) {
+    return false;
+  }
+  const retiredBy = inventorySparseRecordValue(retainedEvents, retirementEventId);
+  if (retiredBy?.historicalRepair === undefined) return false;
+  const omitted = new Set(omittedAssertionIds);
+  for (const assertion of retiredBy.historicalRepair.assertions) {
+    if (!omitted.has(assertion.assertionId)) continue;
+    for (const effect of assertion.event.stockEffects) {
+      if (
+        effect.position.itemId === itemId &&
+        effect.position.serialId === serialId &&
+        effect.measurementsDelta.primary.quantity.amountMinor < 0
+      ) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/** Keep embodied node parent/lifetime derived from its one live serial resource. */
+function reconcileInventoryPlacementEmbodiments({
+  previousPlacementNodes,
+  previousPlacementNodeById,
+  placementNodes,
+  placementNodeIdByEmbodiedSerialIdentity,
+  positions,
+  positionIdsByPlacementNodeId,
+  positivePositionIdBySerialIdentity,
+  touchedEmbodiedNodeIds,
+  placement,
+  mutatePrivateBatch,
+  eventId,
+  correctsEventId,
+  supersedesCorrectionEventId,
+  omittedHistoricalAssertionIds,
+  retainedEvents,
+}: ReconcileInventoryPlacementEmbodimentsInput): InventoryPlacementState {
+  let nextPlacement = placement;
+  // An initial copy-on-write transition creates the private batch forest;
+  // additional embodied-node moves within the same event can reuse it.
+  let ownsPlacement = mutatePrivateBatch;
+  const nodeIds = [...touchedEmbodiedNodeIds];
+  nodeIds.sort(compareInventoryIdentityText);
+  for (const nodeId of nodeIds) {
+    let projected = inventorySparseRecordValue(placementNodes, nodeId);
+    const embodiment = projected?.definition.embodiedBy;
+    if (projected === undefined || embodiment === undefined) continue;
+    const serialIdentity = inventorySerialIdentity(
+      embodiment.itemId,
+      embodiment.serialId
+    );
+    const boundNodeId = inventorySparseRecordValue(
+      placementNodeIdByEmbodiedSerialIdentity,
+      serialIdentity
+    );
+    if (boundNodeId !== nodeId) {
+      throw new Error(
+        `Embodied serial ${serialIdentity} is not bound to placement node '${nodeId}'.`
+      );
+    }
+    const positivePositionId = inventorySparseRecordValue(
+      positivePositionIdBySerialIdentity,
+      serialIdentity
+    );
+    if (projected.retiredByEventId !== undefined) {
+      if (positivePositionId === undefined) continue;
+      if (
+        correctsEventId !== projected.retiredByEventId &&
+        supersedesCorrectionEventId !== projected.retiredByEventId &&
+        !historicalRepairOmitsEmbodiedRetirement({
+          omittedAssertionIds: omittedHistoricalAssertionIds,
+          retainedEvents,
+          retirementEventId: projected.retiredByEventId,
+          itemId: embodiment.itemId,
+          serialId: embodiment.serialId,
+        })
+      ) {
+        throw new Error(
+          `Retired embodied serial ${serialIdentity} cannot become current stock again without correcting its retirement event.`
+        );
+      }
+      const {
+        retiredByEventId: _retiredByEventId,
+        ...restoredProjection
+      } = projected;
+      projected = {
+        ...restoredProjection,
+        assertedByEventId: eventId,
+      };
+      setInventorySparseRecordValue(placementNodes, nodeId, projected);
+    }
+    if (positivePositionId === undefined) {
+      const previous =
+        previousPlacementNodeById?.has(nodeId) === true
+          ? previousPlacementNodeById.get(nodeId)
+          : inventorySparseRecordValue(previousPlacementNodes, nodeId);
+      if (
+        previous === undefined ||
+        previous.definition.embodiedBy === undefined ||
+        previous.retiredByEventId !== undefined
+      ) {
+        throw new Error(
+          `Placement node '${nodeId}' cannot be embodied without one live serialized resource.`
+        );
+      }
+      const directPositionIds =
+        inventorySparseRecordValue(positionIdsByPlacementNodeId, nodeId) ?? [];
+      // Recorded negative positions are contents too; the index holds every live row.
+      const childNodeIds =
+        inventorySparseRecordValue(
+          nextPlacement.childNodeIdsByParentNodeId,
+          nodeId
+        ) ?? [];
+      if (directPositionIds.length > 0 || childNodeIds.length > 0) {
+        throw new Error(
+          `Embodied placement node '${nodeId}' must be empty before its unique resource can leave or become generic.`
+        );
+      }
+      const currentParentNodeId = inventoryPlacementParentNodeId(
+        nextPlacement,
+        nodeId
+      );
+      if (currentParentNodeId !== undefined) {
+        nextPlacement = applyInventoryPlacementChanges({
+          state: nextPlacement,
+          eventId,
+          changes: [{ nodeId, fromParentNodeId: currentParentNodeId }],
+          mutatePrivateBatch: ownsPlacement,
+          acceptsPlacement:
+            /** Removing an edge while retiring a node never adds a new parent. */
+            () => true,
+        });
+        ownsPlacement = true;
+      }
+      setInventorySparseRecordValue(placementNodes, nodeId, {
+        ...projected,
+        retiredByEventId: eventId,
+      });
+      continue;
+    }
+    const position = inventorySparseRecordValue(positions, positivePositionId);
+    if (position === undefined) {
+      throw new Error(
+        `Embodied serial index ${serialIdentity} references missing stock.`
+      );
+    }
+    const desiredParentNodeId = position.key.placementNodeId;
+    if (desiredParentNodeId !== undefined) {
+      const desiredParent = inventorySparseRecordValue(
+        placementNodes,
+        desiredParentNodeId
+      );
+      if (desiredParent?.retiredByEventId !== undefined) {
+        throw new Error(
+          `Embodied placement node '${nodeId}' cannot move into retired node '${desiredParentNodeId}'.`
+        );
+      }
+    }
+    const currentParentNodeId = inventoryPlacementParentNodeId(
+      nextPlacement,
+      nodeId
+    );
+    if (currentParentNodeId === desiredParentNodeId) continue;
+    nextPlacement = applyInventoryPlacementChanges({
+      state: nextPlacement,
+      eventId,
+      changes: [
+        {
+          nodeId,
+          ...(currentParentNodeId === undefined
+            ? {}
+            : { fromParentNodeId: currentParentNodeId }),
+          ...(desiredParentNodeId === undefined
+            ? {}
+            : { toParentNodeId: desiredParentNodeId }),
+        },
+      ],
+      mutatePrivateBatch: ownsPlacement,
+      acceptsPlacement:
+        /** Resolve one derived embodied parent against current active node policy. */
+        (parentNodeId) => {
+        const parent = inventorySparseRecordValue(
+          placementNodes,
+          parentNodeId
+        );
+        return (
+          parent?.retiredByEventId === undefined &&
+          parent?.definition.acceptsPlacement !== false
+        );
+      },
+    });
+    ownsPlacement = true;
+  }
+  return nextPlacement;
+}
+
+/** Identify only metadata-owner events whose definitions can survive into a root correction. */
+function inventoryCorrectionMetadataSources(
+  state: InventoryProjectionState,
+  event: InventoryCommittedEvent
+): readonly InventoryCommittedEvent[] {
+  const correction = event.correction;
+  if (correction === undefined) return [];
+  const root = inventorySparseRecordValue(state.events, correction.correctsEventId);
+  if (root === undefined || root.kind === InventoryEventKind.Correction) {
+    throw new Error("Metadata correction lost its retained root event.");
+  }
+  const supersededId = correction.supersedesCorrectionEventId;
+  if (supersededId === undefined) return [root];
+  const superseded = inventorySparseRecordValue(state.events, supersededId);
+  if (
+    superseded === undefined ||
+    superseded.correction?.correctsEventId !== correction.correctsEventId
+  ) {
+    throw new Error("Metadata correction lost its superseded root assertion.");
+  }
+  return [root, superseded];
+}
+
+/** Return every whereabouts lifecycle identity retained by one event or its corrected root. */
+function inventoryWhereaboutsIdsTouchedByProjectionEvent(
+  state: InventoryProjectionState,
+  event: InventoryCommittedEvent
+): readonly string[] {
+  const result = new Set<string>();
+  addDirectInventoryWhereaboutsIds(result, event);
+  for (const whereaboutsId of event.historicalImpact?.whereaboutsIds ?? []) {
+    result.add(whereaboutsId);
+  }
+  for (const assertion of event.historicalRepair?.assertions ?? []) {
+    addDirectInventoryWhereaboutsIds(result, assertion.event);
+  }
+  if (event.correction !== undefined) {
+    const corrected = inventorySparseRecordValue(
+      state.events,
+      event.correction.correctsEventId
+    );
+    if (corrected === undefined) {
+      throw new Error(
+        "Whereabouts correction references missing event '" +
+          event.correction.correctsEventId +
+          "'."
+      );
+    }
+    addDirectInventoryWhereaboutsIds(result, corrected);
+  }
+  const ordered = [...result];
+  ordered.sort(compareInventoryIdentityText);
+  return ordered;
+}
+
+/** Add direct whereabouts identities retained in one event's stock/provenance evidence. */
+function addDirectInventoryWhereaboutsIds(
+  result: Set<string>,
+  event: InventoryEventDraft
+): void {
+  for (const effect of event.stockEffects) {
+    if (effect.position.whereaboutsId !== undefined) {
+      result.add(effect.position.whereaboutsId);
+    }
+  }
+  for (const transfer of event.positiveLayerProvenanceTransfers ?? []) {
+    if (transfer.from.whereaboutsId !== undefined) {
+      result.add(transfer.from.whereaboutsId);
+    }
+    if (transfer.to.whereaboutsId !== undefined) {
+      result.add(transfer.to.whereaboutsId);
+    }
+  }
+  for (const override of event.positiveLayerProvenanceOverrides ?? []) {
+    if (override.position.whereaboutsId !== undefined) {
+      result.add(override.position.whereaboutsId);
+    }
+  }
+}
+
+/** Stable current placement-node comparison including policy, identifiers, and metadata. */
+function inventoryPlacementNodeDefinitionFingerprint(
+  definition: InventoryPlacementNodeDefinition
 ): string {
   return JSON.stringify([
-    definition.containerId,
-    definition.containerType ?? null,
+    definition.nodeId,
+    definition.category ?? null,
+    definition.acceptsPlacement ?? null,
+    definition.embodiedBy?.itemId ?? null,
+    definition.embodiedBy?.serialId ?? null,
     inventoryMetadataFingerprint(definition.identifiers),
     definition.openedAtEpochMs ?? null,
     definition.useByEpochMs ?? null,
@@ -767,7 +1697,7 @@ export function projectInventoryEvents({
     ).state;
     appliedEventCount += 1;
   }
-  /** Reuse the exact replayed prefix so post-cut traceability can never leak into the historical state. */
+  /** Reuse the exact replayed prefix so post-cut graph changes can never leak into the historical state. */
   const traceabilityEvents =
     throughRecordSequence === undefined
       ? ordered
@@ -800,14 +1730,11 @@ export function findInventoryPositions(
   selector: InventoryStockSelector
 ): readonly InventoryStockPosition[] {
   const normalizedSelector = normalizeInventoryStockSelector(selector);
-  const result: Array<{
-    /** Stable identity already retained by the projection index. */
-    readonly identity: string;
-    /** Projected stock row for this identity. */
-    readonly position: InventoryStockPosition;
-  }> = [];
+  const result: InventoryStockPosition[] = [];
+  // The retained membership arrays and multi-index unions are already ordered
+  // by canonical position identity. Do not allocate pairs and sort again.
   for (const identity of candidatePositionIds(state, normalizedSelector)) {
-    const position = state.positions[identity];
+    const position = inventorySparseRecordValue(state.positions, identity);
     if (position === undefined) {
       throw new Error(
         `Inventory stock index references missing position ${identity}.`
@@ -816,56 +1743,190 @@ export function findInventoryPositions(
     if (
       inventoryStockPositionMatchesNormalizedSelector(
         position.key,
-        normalizedSelector
+        normalizedSelector,
+        state.placement
       )
     ) {
-      result.push({ identity, position });
+      result.push(position);
     }
   }
-  result.sort(
-    /** Sort once using retained identities instead of recomputing position keys. */
-    (left, right) => compareInventoryIdentityText(left.identity, right.identity)
-  );
-  return result.map(
-    /** Return the projected row after deterministic identity ordering. */
-    (entry) => entry.position
-  );
+  return result;
 }
 
-/** Select the narrowest retained position index that satisfies this selector. */
+/** Select the smallest indexed candidate set without scanning unrelated stock. */
 function candidatePositionIds(
   state: InventoryProjectionState,
   selector: InventoryStockSelector
 ): readonly string[] {
   const revisionIds = selector.itemRevisionIds;
+  let itemCandidates: readonly string[] | undefined;
+  let itemCandidateCount = 0;
   if (revisionIds === undefined) {
-    return inventorySparseRecordValue(
-      state.positionIdsByItemId,
-      selector.itemId
-    ) ?? [];
-  }
-  if (revisionIds.length === 1) {
-    const revisionId = revisionIds[0];
-    return revisionId === undefined
-      ? []
-      : inventorySparseRecordValue(
+    itemCandidates =
+      inventorySparseRecordValue(state.positionIdsByItemId, selector.itemId) ??
+      [];
+    itemCandidateCount = itemCandidates.length;
+  } else if (revisionIds.length === 1) {
+    itemCandidates =
+      inventorySparseRecordValue(
+        state.positionIdsByItemRevisionId,
+        revisionIds[0] ?? ""
+      ) ?? [];
+    itemCandidateCount = itemCandidates.length;
+  } else {
+    // Count only first. Building a multi-revision union can be much more
+    // expensive than one selective direct-placement index.
+    for (const revisionId of revisionIds) {
+      itemCandidateCount +=
+        inventorySparseRecordValue(
           state.positionIdsByItemRevisionId,
           revisionId
-        ) ?? [];
+        )?.length ?? 0;
+    }
   }
-  const candidates = new Set<string>();
-  for (const revisionId of revisionIds) {
+
+  // Exact direct placement is independent of item, but may be much narrower
+  // than an item spanning thousands of bins. Subtree predicates are applied
+  // later by the full selector matcher; the direct-placement index remains exact.
+  const directPlacementIds =
+    selector.placement?.kind === InventoryOptionalIdentityConstraintKind.Allowed
+      ? selector.placement.valueIds
+      : undefined;
+  if (directPlacementIds !== undefined) {
+    let placementCandidateCount = 0;
+    for (const nodeId of directPlacementIds) {
+      placementCandidateCount +=
+        inventorySparseRecordValue(
+          state.positionIdsByPlacementNodeId,
+          nodeId
+        )?.length ?? 0;
+    }
+    if (placementCandidateCount < itemCandidateCount) {
+      if (directPlacementIds.length === 1) {
+        return inventorySparseRecordValue(
+          state.positionIdsByPlacementNodeId,
+          directPlacementIds[0] ?? ""
+        ) ?? [];
+      }
+      const placements: string[] = [];
+      for (const nodeId of directPlacementIds) {
+        const positionIds = inventorySparseRecordValue(
+          state.positionIdsByPlacementNodeId,
+          nodeId
+        ) ?? [];
+        for (const positionId of positionIds) placements.push(positionId);
+      }
+      // A position can have only one direct placement, so these lists are
+      // disjoint; preserve canonical ordering across the selected nodes.
+      placements.sort(compareInventoryIdentityText);
+      return placements;
+    }
+  }
+
+  // For a large item inventory, a small room/cabinet subtree may provide
+  // a much narrower candidate list. Its direct-node rows are disjoint; the
+  // full selector matcher still verifies each position's current ancestry.
+  if (selector.withinPlacementNodeIds !== undefined) {
+    const subtreeCandidates = candidateSubtreePositionIds(
+      state,
+      selector.withinPlacementNodeIds,
+      itemCandidateCount
+    );
+    if (subtreeCandidates !== undefined) return subtreeCandidates;
+  }
+
+  if (itemCandidates !== undefined) return itemCandidates;
+  const candidates: string[] = [];
+  for (const revisionId of revisionIds ?? []) {
     for (const positionId of
       inventorySparseRecordValue(
         state.positionIdsByItemRevisionId,
         revisionId
       ) ?? []) {
-      candidates.add(positionId);
+      candidates.push(positionId);
     }
   }
-  const ordered = [...candidates];
-  ordered.sort();
-  return ordered;
+  // A position has exactly one item revision; no deduplication is necessary.
+  candidates.sort(compareInventoryIdentityText);
+  return candidates;
+}
+
+/** One enter/leave visit in the bounded physical placement traversal. */
+interface InventorySubtreeCandidateVisit {
+  /** Exact placement node being inspected. */
+  readonly nodeId: string;
+  /** Whether this visit finishes a node after its descendants. */
+  readonly exiting: boolean;
+}
+
+/**
+ * Enumerate selective subtree stock without traversing an arbitrarily large
+ * mostly empty topology. Once the graph/index search would cost as much as
+ * the item/revision candidates, return undefined to use that existing index.
+ */
+function candidateSubtreePositionIds(
+  state: InventoryProjectionState,
+  rootNodeIds: readonly string[],
+  itemCandidateCount: number
+): readonly string[] | undefined {
+  // With small item scopes, filtering a few rows is cheaper than graph work.
+  if (itemCandidateCount < 128) return undefined;
+  const visitedNodes = new Set<string>();
+  const ancestors = new Set<string>();
+  const candidates: string[] = [];
+  for (const rootNodeId of rootNodeIds) {
+    const pending: InventorySubtreeCandidateVisit[] = [
+      { nodeId: rootNodeId, exiting: false },
+    ];
+    while (pending.length > 0) {
+      const visit = pending.pop();
+      if (visit === undefined) break;
+      const nodeId = visit.nodeId;
+      if (visit.exiting) {
+        ancestors.delete(nodeId);
+        visitedNodes.add(nodeId);
+        continue;
+      }
+      if (ancestors.has(nodeId)) {
+        throw new Error("Placement graph contains a cycle at '" + nodeId + "'.");
+      }
+      // Several selected roots can overlap. A direct-stock identity must be
+      // considered exactly once, regardless of the number of matching roots.
+      if (visitedNodes.has(nodeId)) continue;
+      if (visitedNodes.size + ancestors.size + 1 >= itemCandidateCount) {
+        return undefined;
+      }
+      ancestors.add(nodeId);
+      const directPositions = inventorySparseRecordValue(
+        state.positionIdsByPlacementNodeId,
+        nodeId
+      ) ?? [];
+      for (const positionId of directPositions) candidates.push(positionId);
+      if (candidates.length >= itemCandidateCount) return undefined;
+      const children =
+        inventorySparseRecordValue(
+          state.placement.childNodeIdsByParentNodeId,
+          nodeId
+        ) ?? [];
+      // Do not allocate/traverse 100k sibling nodes to answer a 5k-row item
+      // query. This conservative bound affects only the chosen index path.
+      if (
+        children.length + visitedNodes.size + ancestors.size >=
+        itemCandidateCount
+      ) {
+        return undefined;
+      }
+      pending.push({ nodeId, exiting: true });
+      for (let index = children.length - 1; index >= 0; index -= 1) {
+        const child = children[index];
+        if (child !== undefined) {
+          pending.push({ nodeId: child, exiting: false });
+        }
+      }
+    }
+  }
+  candidates.sort(compareInventoryIdentityText);
+  return candidates;
 }
 
 /** Capture FIFO age before a conserved movement changes source/destination positions. */
@@ -923,20 +1984,18 @@ function applyIndexedIdentityMutations(
   mutations: ReadonlyMap<string, ReadonlyMap<string, boolean>>
 ): void {
   for (const [groupId, desiredMembership] of mutations) {
-    const next = new Set(
-      inventorySparseRecordValue(index, groupId) ?? []
+    const current = inventorySparseRecordValue(index, groupId) ?? [];
+    const ordered = updateInventorySortedIdentitySet(
+      current,
+      desiredMembership
     );
-    for (const [positionId, present] of desiredMembership) {
-      if (present) next.add(positionId);
-      else next.delete(positionId);
-    }
-    if (next.size === 0) {
-      delete index[groupId];
+    if (ordered.length === 0) {
+      deleteInventorySparseRecordValue(index, groupId);
       continue;
     }
-    const ordered = [...next];
-    ordered.sort();
-    setInventorySparseRecordValue(index, groupId, ordered);
+    if (ordered !== current) {
+      setInventorySparseRecordValue(index, groupId, ordered);
+    }
   }
 }
 
@@ -985,7 +2044,10 @@ function refreshTouchedSerialIndexes({
     serialIdentity,
     positionIds,
   ] of touchedPositionIdsBySerialIdentity) {
-    delete positivePositionIdBySerialIdentity[serialIdentity];
+    deleteInventorySparseRecordValue(
+      positivePositionIdBySerialIdentity,
+      serialIdentity
+    );
     let positivePositionId: string | undefined;
     for (const positionId of positionIds) {
       const position = positions[positionId];
@@ -1008,7 +2070,11 @@ function refreshTouchedSerialIndexes({
       positivePositionId = positionId;
     }
     if (positivePositionId !== undefined) {
-      positivePositionIdBySerialIdentity[serialIdentity] = positivePositionId;
+      setInventorySparseRecordValue(
+        positivePositionIdBySerialIdentity,
+        serialIdentity,
+        positivePositionId
+      );
     }
   }
 }

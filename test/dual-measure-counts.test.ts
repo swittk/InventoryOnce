@@ -2,6 +2,7 @@ import { assertAbstractInventoryInvariants } from "./formal-implementation-abstr
 import { describe, expect, it } from "vitest";
 
 import {
+  InventoryDeficitPolicy,
   InventoryEventKind,
   InventoryMeasurementAxisRole,
   InventoryMeasurementRequirement,
@@ -73,6 +74,113 @@ function inventoryFor(packagingRevisions: ReturnType<typeof defineInventoryPacka
   });
 }
 
+/** Create two public facades sharing current measured-item truth under different deficit policies. */
+function measuredShortageFacades() {
+  const catalog = defineInventoryCatalog({
+    itemRevisions: [measuredItem()],
+    activeItemRevisionIds: { [itemId]: itemRevisionId },
+  });
+  const storage = createInMemoryInventoryDurableStorage();
+  const clock = { nowEpochMs: () => occurredAtEpochMs + 10_000 };
+  return {
+    recorder: createInventoryOnce({
+      catalog, storage, clock, deficitPolicy: InventoryDeficitPolicy.Record,
+    }),
+    strict: createInventoryOnce({
+      catalog, storage, clock, deficitPolicy: InventoryDeficitPolicy.Reject,
+    }),
+  };
+}
+
+/** One positive transaction amount with exact piece and independently measured weight. */
+function measuredShortageAmount(pieces: string, weight: string) {
+  return measuredStockAmount(pieces, "piece", [
+    { axisId: "weight", value: weight, unit: "kg" },
+  ]);
+}
+
+describe("historical shortages on independently measured stock", () => {
+  it("rejects a historical correction deepening weight despite an unchanged piece peak", async () => {
+    const { recorder, strict } = measuredShortageFacades();
+    const position = { itemId, placementNodeId: "measured-historical-bin" };
+    await recorder.stock.issue({
+      operationId: "measured-old-issue",
+      occurredAtEpochMs,
+      from: position,
+      amount: measuredShortageAmount("5", "5"),
+    });
+    const originalReceipt = await recorder.stock.receive({
+      operationId: "measured-old-receipt",
+      occurredAtEpochMs: occurredAtEpochMs + 1_000,
+      to: position,
+      amount: measuredShortageAmount("4", "4"),
+    });
+    await recorder.stock.issue({
+      operationId: "measured-later-issue",
+      occurredAtEpochMs: occurredAtEpochMs + 2_000,
+      from: position,
+      amount: measuredShortageAmount("2", "8.25"),
+    });
+    await recorder.stock.receive({
+      operationId: "measured-settling-receipt",
+      occurredAtEpochMs: occurredAtEpochMs + 3_000,
+      to: position,
+      amount: measuredShortageAmount("5", "10.25"),
+    });
+
+    const correction = {
+      operationId: "measured-reduce-earlier-receipt",
+      correctsEventId: originalReceipt.event.eventId,
+      occurredAtEpochMs: occurredAtEpochMs + 4_000,
+      reason: "Only three pieces and three kilograms were delivered.",
+      replaceWith: (plans: Parameters<typeof strict.stock.planCorrection>[0]["replaceWith"] extends
+        (plans: infer Plans) => unknown ? Plans : never) =>
+        plans.receive({
+          occurredAtEpochMs: occurredAtEpochMs + 1_000,
+          to: position,
+          amount: measuredShortageAmount("3", "3"),
+        }),
+    };
+    // The old primary peak remains five pieces, but weight worsens from 9.25 to 10.25 kg.
+    expect(await strict.stock.planCorrection(correction)).toMatchObject({
+      valid: false,
+      conflict: { code: "negative-stock" },
+    });
+    await expect(strict.stock.correct(correction)).rejects.toThrow("negative");
+
+    const recordPlan = await recorder.stock.planCorrection({
+      ...correction,
+      operationId: "measured-record-worsened-weight",
+    });
+    expect(recordPlan.valid).toBe(true);
+    if (!recordPlan.valid) throw new Error(recordPlan.conflict.message);
+    expect(recordPlan.impact.deficits).toHaveLength(1);
+    expect(recordPlan.impact.deficits[0]?.maximumDeficit.primary.quantity.amountMinor).toBe(5);
+    expect(
+      inventoryMeasurementAt(
+        recordPlan.impact.deficits[0]!.maximumDeficit,
+        "weight",
+        unitCode("kg"),
+      ).amountMinor,
+    ).toBe(1025);
+
+    // Worsening the intermediate piece count alone stays within the old peak.
+    const safe = await strict.stock.planCorrection({
+      ...correction,
+      operationId: "measured-correction-preserves-both-peaks",
+      replaceWith: (plans) =>
+        plans.receive({
+          occurredAtEpochMs: occurredAtEpochMs + 1_000,
+          to: position,
+          amount: measuredShortageAmount("3", "4"),
+        }),
+    });
+    expect(safe.valid).toBe(true);
+    if (!safe.valid) throw new Error(safe.conflict.message);
+    expect(safe.impact.deficits).toEqual([]);
+  });
+});
+
 describe("measurement axis identity", () => {
   it("rejects surrounding whitespace instead of creating a second logical axis identity", () => {
     expect(() => inventoryMeasurement("weight ", parseQuantity("5", "kg"))).toThrow(
@@ -91,7 +199,7 @@ describe("independent physical count reconciliation", () => {
     await inventory.stock.receive({
       operationId: "measured-loose-receive",
       occurredAtEpochMs,
-      to: { itemId, locationId: "loose" },
+      to: { itemId, placementNodeId: "loose" },
       amount: measuredStockAmount("2", "piece", [
         { axisId: "weight", value: "20", unit: "kg" },
       ]),
@@ -101,7 +209,7 @@ describe("independent physical count reconciliation", () => {
       countId: "measured-loose-count",
       operationId: "measured-loose-count",
       itemRevisionId,
-      selector: { itemId, locationIds: ["loose"] },
+      selector: { itemId, placementNodeIds: ["loose"] },
       observedMeasurements: measuredVector("2", "21"),
       occurredAtEpochMs,
       reason: "Reweighed unchanged piece stock.",
@@ -116,7 +224,7 @@ describe("independent physical count reconciliation", () => {
         unitCode("kg"),
       ).amountMinor,
     ).toBe(1);
-    const [position] = await inventory.read.positions({ itemId, locationIds: ["loose"] });
+    const [position] = await inventory.read.positions({ itemId, placementNodeIds: ["loose"] });
     expect(position?.measurements.primary.quantity.amountMinor).toBe(2);
     expect(
       position === undefined
@@ -141,7 +249,7 @@ describe("independent physical count reconciliation", () => {
     await inventory.stock.receive({
       operationId: "dynamic-package-receive",
       occurredAtEpochMs,
-      to: { itemId, locationId: "dynamic-package" },
+      to: { itemId, placementNodeId: "dynamic-package" },
       amount: packageAmount(1, packaging.revisionId, [
         { axisId: "weight", value: "3", unit: "kg" },
       ]),
@@ -151,7 +259,7 @@ describe("independent physical count reconciliation", () => {
       countId: "dynamic-package-count",
       operationId: "dynamic-package-count",
       itemRevisionId,
-      selector: { itemId, locationIds: ["dynamic-package"] },
+      selector: { itemId, placementNodeIds: ["dynamic-package"] },
       observedMeasurements: measuredVector("24", "4"),
       occurredAtEpochMs,
     });
@@ -180,7 +288,7 @@ describe("independent physical count reconciliation", () => {
     await inventory.stock.receive({
       operationId: "fixed-package-receive",
       occurredAtEpochMs,
-      to: { itemId, locationId: "fixed-package" },
+      to: { itemId, placementNodeId: "fixed-package" },
       amount: packageAmount(1, packaging.revisionId),
     });
     const before = await inventory.read.world();
@@ -189,7 +297,7 @@ describe("independent physical count reconciliation", () => {
       countId: "fixed-package-count",
       operationId: "fixed-package-count",
       itemRevisionId,
-      selector: { itemId, locationIds: ["fixed-package"] },
+      selector: { itemId, placementNodeIds: ["fixed-package"] },
       observedMeasurements: measuredVector("24", "4"),
       occurredAtEpochMs,
     })).rejects.toThrow("does not match the same whole package count");
@@ -201,8 +309,8 @@ describe("independent physical count reconciliation", () => {
 describe("independent exact-axis assurance", () => {
   it("reconciles both primary and independent axes and rejects omitted or changed weight", async () => {
     const inventory = inventoryFor();
-    await inventory.stock.receive({ operationId: "oracle-measured", occurredAtEpochMs, to: { itemId, locationId: "store" }, amount: measuredStockAmount("2", "piece", [{ axisId: "weight", value: "20.25", unit: "kg" }]) });
-    await inventory.counts.replaceAbsolute({ countId: "oracle-reweigh", operationId: "oracle-reweigh", itemRevisionId, selector: { itemId, locationIds: ["store"] }, observedMeasurements: measuredVector("2", "21.125"), occurredAtEpochMs, reason: "Physical reweigh." });
+    await inventory.stock.receive({ operationId: "oracle-measured", occurredAtEpochMs, to: { itemId, placementNodeId: "store" }, amount: measuredStockAmount("2", "piece", [{ axisId: "weight", value: "20.25", unit: "kg" }]) });
+    await inventory.counts.replaceAbsolute({ countId: "oracle-reweigh", operationId: "oracle-reweigh", itemRevisionId, selector: { itemId, placementNodeIds: ["store"] }, observedMeasurements: measuredVector("2", "21.125"), occurredAtEpochMs, reason: "Physical reweigh." });
     const world = await inventory.read.world();
     expect(() => assertAbstractInventoryInvariants(world)).not.toThrow();
     const entry = Object.entries(world.projection.positions)[0];

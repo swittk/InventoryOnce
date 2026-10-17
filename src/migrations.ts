@@ -19,7 +19,7 @@ import {
   createInventoryIssueEvent,
   createInventoryOpeningEvent,
   createInventoryTraceabilityEvent,
-  type InventoryContainerMetadataInput,
+  type InventoryPlacementNodeMetadataInput,
   type InventoryLotMetadataInput,
 } from "./commands.js";
 import {
@@ -48,6 +48,7 @@ export {
 import {
   inventoryStockPositionIdentity,
   type InventoryMetadata,
+  type InventoryStockIntakePositionInput,
   type InventoryStockPositionInput,
   type InventoryStockPositionKey,
 } from "./model.js";
@@ -105,16 +106,16 @@ export interface InventoryMigrationDiagnostic {
 export interface InventoryMigrationOpeningStock {
   /** Stable identity inside this migration and its idempotency key. */
   readonly openingId: string;
-  /** Exact position before InventoryOnce injects item revision. */
-  readonly position: InventoryStockPositionInput;
+  /** Exact known-placed position before InventoryOnce injects item revision. */
+  readonly position: InventoryStockIntakePositionInput;
   /** Direct measurements or exact package count already present. */
   readonly amount: InventoryAmount;
   /** Optional exact retained item revision; defaults to active/package revision. */
   readonly itemRevisionId?: string;
   /** Optional lot metadata for `position.lotId`, reconstructed from the same legacy fact. */
   readonly lot?: InventoryLotMetadataInput;
-  /** Optional container metadata for `position.containerId`, reconstructed from the same legacy fact. */
-  readonly container?: InventoryContainerMetadataInput;
+  /** Optional metadata for `position.placementNodeId`, reconstructed from the same source fact. */
+  readonly placementNode?: InventoryPlacementNodeMetadataInput;
   /** Real-world time represented by this opening; defaults to migration cutover time. */
   readonly occurredAtEpochMs?: number;
   /** Required provenance back to the legacy row. */
@@ -127,8 +128,8 @@ export interface InventoryMigrationOpeningStock {
 export interface InventoryMigrationDeficitStock {
   /** Stable identity inside this migration and its idempotency key. */
   readonly deficitId: string;
-  /** Exact unallocated signed position whose Issue records the deficit. */
-  readonly position: InventoryStockPositionInput;
+  /** Exact known-placed signed position whose Issue records the deficit. */
+  readonly position: InventoryStockIntakePositionInput;
   /** Positive exact magnitude issued from the empty migration target. */
   readonly amount: InventoryAmount;
   /** Optional exact retained item revision; defaults to active/package revision. */
@@ -145,7 +146,7 @@ export interface InventoryMigrationDeficitStock {
 export interface InventoryMigrationTraceabilityChange {
   /** Stable identity inside this migration and its idempotency key. */
   readonly changeId: string;
-  /** Explicit containment/association/genealogy change. */
+  /** Explicit association/genealogy change. */
   readonly change: InventoryTraceabilityRelationChange;
   /** Real-world occurrence time; defaults to migration cutover time. */
   readonly occurredAtEpochMs?: number;
@@ -327,9 +328,9 @@ export function defineInventoryMigration({
           ? {}
           : { itemRevisionId: opening.itemRevisionId }),
         ...(opening.lot === undefined ? {} : { lot: opening.lot }),
-        ...(opening.container === undefined
+        ...(opening.placementNode === undefined
           ? {}
-          : { container: opening.container }),
+          : { placementNode: opening.placementNode }),
       });
       events.push(event);
       sourceByOperationId.set(event.operationId, opening.source);
@@ -355,6 +356,21 @@ export function defineInventoryMigration({
     }
     seenDeficitIds.add(deficit.deficitId);
     try {
+      // Migration plugins translate external legacy data, so they cannot claim
+      // InventoryOnce-owned detached/missing lifecycle identity on an opening deficit.
+      const position: InventoryStockPositionInput = deficit.position;
+      if (
+        position.placementNodeId === undefined ||
+        position.whereaboutsId !== undefined ||
+        position.whereaboutsState !== undefined ||
+        position.lastPlacementNodeId !== undefined ||
+        position.detachedAtEpochMs !== undefined ||
+        position.missingAtEpochMs !== undefined
+      ) {
+        throw new Error(
+          "Inventory migration deficit must name a known direct placement and cannot supply detached/missing whereabouts lifecycle fields."
+        );
+      }
       const event = createInventoryIssueEvent({
         catalog,
         operationId: migrationOperationId(

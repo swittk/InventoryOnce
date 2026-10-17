@@ -2,11 +2,15 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import { compareInventoryIdentityText } from "./ordering.js";
 import {
   assertInventoryEpochMilliseconds,
+  commitInventoryEvent,
+  defineInventoryEvent,
+  InventoryEventKind,
   type InventoryCommittedEvent,
 } from "./events.js";
 import {
   assertInventoryCatalogRetainsSnapshot,
   inventoryCatalogFromSnapshot,
+  inventoryCatalogSnapshot,
   type InventoryCatalogSnapshot,
 } from "./catalog.js";
 import {
@@ -21,7 +25,8 @@ import {
 } from "./integrity.js";
 import {
   applyInventoryCommittedEvent,
-  type InventoryDeficitPolicy,
+  applyInventoryCommittedEvents,
+  InventoryDeficitPolicy,
 } from "./projection.js";
 import { inventoryIntentFingerprint } from "./canonical.js";
 import {
@@ -29,12 +34,57 @@ import {
   type InventoryMigrationSourceDisposition,
 } from "./migration-evidence.js";
 import { emptyInventoryWorldState, type InventoryWorldState } from "./world.js";
-import { cloneInventorySparseRecord } from "./sparse-record.js";
+import {
+  createInMemoryInventorySegmentedEventJournal,
+  type InMemoryInventorySegmentedEventJournal,
+  type InventorySegmentedEventResourceQuery,
+  type InventorySegmentedResourceEventPage,
+} from "./segmented-journal.js";
+import {
+  createInMemoryInventorySegmentedPositionStore,
+  type CommitInventorySegmentedStockEventInput,
+  type CommitInventorySegmentedStockEventResult,
+  type InMemoryInventorySegmentedPositionStore,
+  type InventorySegmentedPositionStorageCapability,
+  type InventorySegmentedStockEventCommitCapability,
+} from "./segmented-state.js";
+import {
+  createInMemoryInventorySegmentedPlacementStore,
+  type InMemoryInventorySegmentedPlacementStore,
+  type InventorySegmentedPlacementReader,
+  type InventorySegmentedPlacementResult,
+} from "./segmented-placement.js";
+import { createInventoryPlacementEvent, type InventoryCommandHeader } from "./commands.js";
+import { inventoryStockPositionIdentity } from "./model.js";
+import type { InventoryStockSelector } from "./selectors.js";
+import { InventoryReservationStatus } from "./reservations.js";
+import { InventoryCountStatus } from "./counts.js";
+import type { InventoryEventPage, InventoryEventQuery } from "./event-query.js";
+import {
+  cloneInventorySparseRecord,
+  inventoryObjectIsKnownDeeplyImmutable,
+  inventorySparseRecordValue,
+  markInventoryObjectDeeplyImmutable,
+} from "./sparse-record.js";
+
+/** Synchronous reference-adapter read capability with no segment mutation methods. */
+type InMemoryInventoryPublishedPositionReader = Pick<
+  InMemoryInventorySegmentedPositionStore,
+  | "revision"
+  | "contentRoot"
+  | "position"
+  | "positivePositionBySerial"
+  | "positionsByItem"
+  | "positionsByItemRevision"
+  | "positionsByPlacement"
+  | "queryPositions"
+  | "materialize"
+>;
 
 /** Clone one published world while restoring own-only semantics for application-id dictionaries. */
 function cloneInventoryPublishedWorld(world: InventoryWorldState): InventoryWorldState {
   const cloned = structuredClone(world);
-  return {
+  const result: InventoryWorldState = {
     ...cloned,
     catalog: {
       ...cloned.catalog,
@@ -48,9 +98,32 @@ function cloneInventoryPublishedWorld(world: InventoryWorldState): InventoryWorl
       ...cloned.projection,
       positionIdsByItemId: cloneInventorySparseRecord(cloned.projection.positionIdsByItemId),
       positionIdsByItemRevisionId: cloneInventorySparseRecord(cloned.projection.positionIdsByItemRevisionId),
+      positionIdsByPlacementNodeId: cloneInventorySparseRecord(
+        cloned.projection.positionIdsByPlacementNodeId
+      ),
+      positionIdsByWhereaboutsId: cloneInventorySparseRecord(cloned.projection.positionIdsByWhereaboutsId),
+      placementNodes: cloneInventorySparseRecord(cloned.projection.placementNodes),
+      placementNodeRootEventIdByNodeId: cloneInventorySparseRecord(
+        cloned.projection.placementNodeRootEventIdByNodeId
+      ),
+      placement: {
+        ...cloned.projection.placement,
+        relationByNodeId: cloneInventorySparseRecord(
+          cloned.projection.placement.relationByNodeId
+        ),
+        childNodeIdsByParentNodeId: cloneInventorySparseRecord(
+          cloned.projection.placement.childNodeIdsByParentNodeId
+        ),
+      },
       lotIdentitiesByItemId: cloneInventorySparseRecord(cloned.projection.lotIdentitiesByItemId),
+      placementNodeIdByEmbodiedSerialIdentity: cloneInventorySparseRecord(
+        cloned.projection.placementNodeIdByEmbodiedSerialIdentity
+      ),
       transfers: cloneInventorySparseRecord(cloned.projection.transfers),
       events: cloneInventorySparseRecord(cloned.projection.events),
+      eventSequencesByWhereaboutsId: cloneInventorySparseRecord(
+        cloned.projection.eventSequencesByWhereaboutsId
+      ),
       eventIdByOperationId: cloneInventorySparseRecord(cloned.projection.eventIdByOperationId),
       correctionEventIdByCorrectedEventId: cloneInventorySparseRecord(
         cloned.projection.correctionEventIdByCorrectedEventId
@@ -65,6 +138,29 @@ function cloneInventoryPublishedWorld(world: InventoryWorldState): InventoryWorl
       operations: cloneInventorySparseRecord(cloned.counts.operations),
     },
   };
+  return result;
+}
+
+/** Deep-freeze one published world while skipping already-frozen shared subgraphs. */
+function freezeInventoryPublishedWorld(
+  world: InventoryWorldState
+): InventoryWorldState {
+  /** Pending newly-created objects whose children and own properties still need freezing. */
+  const pending: object[] = [world];
+  /** Shared/cyclic object identities are visited once during this publication. */
+  const visited = new WeakSet<object>();
+  while (pending.length > 0) {
+    const current = pending.pop();
+    if (current === undefined || visited.has(current)) continue;
+    visited.add(current);
+    if (inventoryObjectIsKnownDeeplyImmutable(current)) continue;
+    for (const value of Object.values(current)) {
+      if (value !== null && typeof value === "object") pending.push(value);
+    }
+    if (!Object.isFrozen(current)) Object.freeze(current);
+    markInventoryObjectDeeplyImmutable(current);
+  }
+  return world;
 }
 
 /** Async execution context used only to reject same-adapter mutation re-entry from failpoints. */
@@ -427,6 +523,68 @@ export class InventoryApplyingOperationConflictError extends Error {
 interface StoredInventoryOperation {
   /** Public durable row fields. */
   readonly value: InventoryDurableOperation;
+  /** Ephemeral already-validated next world reused only by this live reference adapter. */
+  readonly validatedNextWorld?: InventoryWorldState;
+}
+
+/** Exact standalone topology command accepted by an optional native placement adapter. */
+export interface CommitInventorySegmentedPlacementInput extends InventoryCommandHeader {
+  /** Stable semantic intent fingerprint generated by the façade before current-world resolution. */
+  readonly intentFingerprint: string;
+  /** Exact catalogue snapshot used to validate the topology event. */
+  readonly catalog: InventoryCatalogSnapshot;
+  /** Wall-clock commit time selected by the façade clock. */
+  readonly recordedAtEpochMs: number;
+  /** Existing independent placement node moving between known direct parents. */
+  readonly nodeId: string;
+  /** New direct parent; omission unplaces this node. */
+  readonly toParentNodeId?: string;
+  /** Optional client optimistic expectation: null asserts the source is currently root. */
+  readonly expectedParent?: string | null;
+}
+
+/** Adapter-native coherent placement reads and atomic standalone topology publication. */
+export interface InventorySegmentedPlacementStorageCapability {
+  /** Read one current indexed placement segment without materializing canonical stock. */
+  readPlacementSegment(): InventorySegmentedPlacementResult<InventorySegmentedPlacementReader>;
+  /** Publish one eligible standalone topology command or decline to the canonical coordinator. */
+  commitSegmentedPlacementChange(
+    input: CommitInventorySegmentedPlacementInput
+  ): Promise<CommitInventorySegmentedStockEventResult | undefined>;
+}
+
+/** Discover the optional placement-store capability without changing the normal application API. */
+export function inventoryStorageSupportsSegmentedPlacement(
+  value: unknown
+): value is InventorySegmentedPlacementStorageCapability {
+  if (value === null || typeof value !== "object") return false;
+  return (
+    typeof Reflect.get(value, "readPlacementSegment") === "function" &&
+    typeof Reflect.get(value, "commitSegmentedPlacementChange") === "function"
+  );
+}
+
+/** Optional adapter-native retained-event query acceleration. */
+export interface InventoryEventQueryStorageCapability {
+  /** Query one stable durable-order event page through adapter-native indexes. */
+  queryInventoryEvents(input: InventoryEventQuery): Promise<InventoryEventPage>;
+  /** Query internal resource-index rows for scoped historical replay. */
+  queryInventoryEventsByResourceKeys(
+    input: InventorySegmentedEventResourceQuery
+  ): Promise<InventorySegmentedResourceEventPage>;
+}
+
+/** Detect optional indexed event-query support without changing the base adapter contract. */
+export function inventoryStorageSupportsEventQuery(
+  value: unknown
+): value is InventoryEventQueryStorageCapability {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    typeof Reflect.get(value, "queryInventoryEvents") === "function" &&
+    typeof Reflect.get(value, "queryInventoryEventsByResourceKeys") ===
+      "function"
+  );
 }
 
 /** Inputs for the deterministic reference in-memory durable adapter. */
@@ -439,21 +597,71 @@ export interface InMemoryInventoryDurableStorageInput {
   readonly failpoint?: InventoryStorageFailpoint;
 }
 
+/** Keep only read operations on a frozen view of the adapter-owned mutable placement forest. */
+function inventoryReadonlyPlacementReader(
+  segment: InventorySegmentedPlacementReader
+): InventorySegmentedPlacementReader {
+  return Object.freeze({
+    /** Report this captured placement generation's optimistic revision. */
+    revision: () => segment.revision(),
+    /** Read its authenticated placement edge root. */
+    contentRoot: () => segment.contentRoot(),
+    /** Read one exact direct-parent edge. */
+    parentNodeId: (nodeId: string) => segment.parentNodeId(nodeId),
+    /** Read children without exposing the mutable inverse-parent index. */
+    childNodeIds: (nodeId: string) => segment.childNodeIds(nodeId),
+    /** Walk exact direct ancestors inside this segment generation. */
+    ancestry: (nodeId: string) => segment.ancestry(nodeId),
+    /** Walk one descendant subtree inside this segment generation. */
+    subtreeNodeIds: (nodeId: string) => segment.subtreeNodeIds(nodeId),
+    /** Materialize a defensive canonical topology snapshot only when requested. */
+    materialize: () => segment.materialize(),
+  });
+}
+
 /** Deterministic reference adapter proving staged values stay hidden until completion. */
 export class InMemoryInventoryDurableStorage
-  implements InventoryDurableStorage
+  implements
+    InventoryDurableStorage,
+    InventorySegmentedPositionStorageCapability,
+    InventorySegmentedStockEventCommitCapability,
+    InventorySegmentedPlacementStorageCapability,
+    InventoryEventQueryStorageCapability
 {
   /** Advertised publication guarantee. */
   readonly guarantee: InventoryStorageGuarantee;
   /** Latest fully published world. */
   private world: InventoryWorldState;
+  /** Indexed hot position segment mirroring the same published world revision. */
+  private positionSegment: InMemoryInventorySegmentedPositionStore;
+  /** Immutable read-only stock capability delegating to the current segment. */
+  private readonly publishedPositionReader: InMemoryInventoryPublishedPositionReader;
+  /** Indexed placement forest, independent of total stock-position count. */
+  private placementSegment: InMemoryInventorySegmentedPlacementStore;
+  /** Frozen read-only placement view captured from the current mutable segment. */
+  private placementReader: InventorySegmentedPlacementReader;
+  /** Append-only event authority independent of canonical flat projection materialization. */
+  private eventJournal: InMemoryInventorySegmentedEventJournal;
+  /** Catalogue first established by deferred segmented publication before canonical materialization. */
+  private pendingSegmentedCatalog: InventoryCatalogSnapshot | undefined;
   /** Durable operation rows including unpublished staged values. */
   private readonly operations = new Map<string, StoredInventoryOperation>();
+  /** Applying rows only, sharing the archived row objects for constant-time fence checks. */
+  private readonly applyingOperations = new Map<string, StoredInventoryOperation>();
+  /** Applying migration batches only; completed history is never scanned for a fence. */
+  private readonly applyingMigrationManifests = new Map<
+    string,
+    InventoryMigrationManifest
+  >();
   /** Durable whole-migration manifests kept separately from event operation rows. */
   private readonly migrationManifests = new Map<
     string,
     InventoryMigrationManifest
   >();
+  /** Number of currently active reservations per item, independent of terminal history. */
+  private activeReservationCountsByItemId = new Map<string, number>();
+  /** Number of started or observed physical counts per item, independent of terminal history. */
+  private openCountCountsByItemId = new Map<string, number>();
   /** Optional deterministic failure injector. */
   private readonly failpoint: InventoryStorageFailpoint | undefined;
   /** Serializes reference-adapter mutations so concurrent callers cannot overwrite stale state. */
@@ -463,16 +671,107 @@ export class InMemoryInventoryDurableStorage
   constructor(input: InMemoryInventoryDurableStorageInput = {}) {
     this.guarantee =
       input.guarantee ?? InventoryStorageGuarantee.OptimisticRepairable;
-    this.world = cloneInventoryPublishedWorld(
-      input.initialWorld ?? emptyInventoryWorldState()
+    this.world = freezeInventoryPublishedWorld(
+      cloneInventoryPublishedWorld(
+        input.initialWorld ?? emptyInventoryWorldState()
+      )
     );
     validatePublishedInventoryWorld(this.world);
+    this.positionSegment = createInMemoryInventorySegmentedPositionStore({
+      positions: Object.values(this.world.projection.positions),
+      revision: this.world.revision,
+    });
+    // Do not expose the writable store through the optional read capability.
+    // Cache a frozen façade whose methods look up the CURRENT backing stock
+    // segment even when canonical or migration publication replaces it.
+    this.publishedPositionReader = Object.freeze({
+      /** Read the current published segment revision. */
+      revision: () => this.positionSegment.revision(),
+      /** Read the authenticated root of current exact positions. */
+      contentRoot: () => this.positionSegment.contentRoot(),
+      /** Read one defensive copy by exact identity. */
+      position: (positionId: string) =>
+        this.positionSegment.position(positionId),
+      /** Read one positive serialized row through the exact serial index. */
+      positivePositionBySerial: (itemId: string, serialId: string) =>
+        this.positionSegment.positivePositionBySerial(itemId, serialId),
+      /** Read all current rows for one item identity. */
+      positionsByItem: (itemId: string) =>
+        this.positionSegment.positionsByItem(itemId),
+      /** Read all current rows for one item revision. */
+      positionsByItemRevision: (itemRevisionId: string) =>
+        this.positionSegment.positionsByItemRevision(itemRevisionId),
+      /** Read current direct-stock rows for one exact placement. */
+      positionsByPlacement: (placementNodeId: string) =>
+        this.positionSegment.positionsByPlacement(placementNodeId),
+      /** Query one indexed direct-position selector. */
+      queryPositions: (selector: InventoryStockSelector) =>
+        this.positionSegment.queryPositions(selector),
+      /** Explicitly clone the complete canonical position/index view. */
+      materialize: () => this.positionSegment.materialize(),
+    });
+    this.placementSegment = createInMemoryInventorySegmentedPlacementStore({
+      placement: this.world.projection.placement,
+      revision: this.world.revision,
+    });
+    this.placementReader = inventoryReadonlyPlacementReader(this.placementSegment);
+    this.eventJournal = createInMemoryInventorySegmentedEventJournal({
+      events: Object.values(this.world.projection.events),
+    });
+    this.refreshProtectedItemScopes(this.world);
     this.failpoint = input.failpoint;
   }
 
-  /** Read only the latest fully published world. */
+  /** Read the published indexed segment without exposing its mutable store. */
+  readPositionSegment(): InMemoryInventoryPublishedPositionReader {
+    return this.publishedPositionReader;
+  }
+
+  /** Read indexed direct-parent topology without exposing private mutable state. */
+  readPlacementSegment(): InventorySegmentedPlacementReader {
+    return this.placementReader;
+  }
+
+  /** Atomically commit one simple non-embodied topology change or decline to the canonical coordinator. */
+  async commitSegmentedPlacementChange(
+    input: CommitInventorySegmentedPlacementInput
+  ): Promise<CommitInventorySegmentedStockEventResult | undefined> {
+    const run =
+      /** Serialize one topology publication with stock, journal and canonical adapter mutations. */
+      (): Promise<CommitInventorySegmentedStockEventResult | undefined> =>
+        this.commitSegmentedPlacementChangeUnlocked(input);
+    return this.runStorageMutationAtomically(run);
+  }
+
+  /** Atomically commit one eligible exact transfer without materializing the whole world. */
+  async commitSegmentedStockEvent(
+    input: CommitInventorySegmentedStockEventInput
+  ): Promise<CommitInventorySegmentedStockEventResult | undefined> {
+    const commitOperation =
+      /** Serialize one atomic segmented stock-event commit behind the adapter mutation fence. */
+      (): Promise<CommitInventorySegmentedStockEventResult | undefined> =>
+        this.commitSegmentedStockEventUnlocked(input);
+    return this.runStorageMutationAtomically(commitOperation);
+  }
+
+  /** Query retained event history without materializing deferred canonical position state. */
+  async queryInventoryEvents(
+    input: InventoryEventQuery
+  ): Promise<InventoryEventPage> {
+    return this.eventJournal.queryEvents(input);
+  }
+
+  /** Query exact internal resource rows without materializing canonical current state. */
+  async queryInventoryEventsByResourceKeys(
+    input: InventorySegmentedEventResourceQuery
+  ): Promise<InventorySegmentedResourceEventPage> {
+    return this.eventJournal.queryEventsByResourceKeys(input);
+  }
+
+  /** Read the latest deeply immutable published world, materializing deferred segmented commits on demand. */
   async readWorld(): Promise<InventoryWorldState> {
-    return cloneInventoryPublishedWorld(this.world);
+    this.materializePendingSegmentedEvents();
+    return this.world;
   }
 
   /** Read one public operation row without exposing private staged snapshots. */
@@ -480,7 +779,12 @@ export class InMemoryInventoryDurableStorage
     operationId: string
   ): Promise<InventoryDurableOperation | undefined> {
     const stored = this.operations.get(operationId);
-    return stored === undefined ? undefined : structuredClone(stored.value);
+    if (stored === undefined) return undefined;
+    if (stored.value.event !== undefined) return structuredClone(stored.value);
+    const event = this.eventJournal.eventByOperation(operationId);
+    return event === undefined
+      ? structuredClone(stored.value)
+      : structuredClone({ ...stored.value, event });
   }
 
   /** Read one whole-migration manifest without exposing the stored object alias. */
@@ -505,6 +809,7 @@ export class InMemoryInventoryDurableStorage
   private async beginMigrationManifestUnlocked(
     input: BeginInventoryMigrationManifestInput
   ): Promise<BeginInventoryMigrationManifestResult> {
+    this.materializePendingSegmentedEvents();
     validateBeginInventoryMigrationManifest(input);
     await this.fire(
       InventoryStorageWriteStage.MigrationBegin,
@@ -521,14 +826,14 @@ export class InMemoryInventoryDurableStorage
       );
       return { manifest: structuredClone(existing), created: false };
     }
-    for (const manifest of this.migrationManifests.values()) {
+    for (const manifest of this.applyingMigrationManifests.values()) {
       if (manifest.state === InventoryMigrationManifestState.Applying) {
         throw new Error(
           `Inventory migration '${manifest.migrationId}' already fences this target.`
         );
       }
     }
-    for (const stored of this.operations.values()) {
+    for (const stored of this.applyingOperations.values()) {
       if (stored.value.state === InventoryDurableOperationState.Applying) {
         throw new InventoryApplyingOperationConflictError(
           stored.value.operationId
@@ -558,7 +863,7 @@ export class InMemoryInventoryDurableStorage
       worldPublished: false,
       state: InventoryMigrationManifestState.Applying,
     };
-    this.migrationManifests.set(input.migrationId, manifest);
+    this.storeMigrationManifest(input.migrationId, manifest);
     await this.fire(
       InventoryStorageWriteStage.MigrationBegin,
       "after",
@@ -602,7 +907,7 @@ export class InMemoryInventoryDurableStorage
       ...manifest,
       worldWritten: true,
     };
-    this.migrationManifests.set(migrationId, staged);
+    this.storeMigrationManifest(migrationId, staged);
     await this.fire(
       InventoryStorageWriteStage.MigrationWorld,
       "after",
@@ -659,8 +964,22 @@ export class InMemoryInventoryDurableStorage
         targetWorldRoot: inventoryWorldContentRoots(nextWorld).world,
         targetWorldRevision: nextWorld.revision,
       };
-      this.world = cloneInventoryPublishedWorld(nextWorld);
-      this.migrationManifests.set(migrationId, published);
+      const publishedWorld = freezeInventoryPublishedWorld(nextWorld);
+      this.world = publishedWorld;
+      this.positionSegment = createInMemoryInventorySegmentedPositionStore({
+        positions: Object.values(publishedWorld.projection.positions),
+        revision: publishedWorld.revision,
+      });
+      this.eventJournal = createInMemoryInventorySegmentedEventJournal({
+        events: Object.values(publishedWorld.projection.events),
+      });
+      this.placementSegment = createInMemoryInventorySegmentedPlacementStore({
+        placement: publishedWorld.projection.placement,
+        revision: publishedWorld.revision,
+      });
+      this.placementReader = inventoryReadonlyPlacementReader(this.placementSegment);
+      this.refreshProtectedItemScopes(publishedWorld);
+      this.storeMigrationManifest(migrationId, published);
       await this.fire(
         InventoryStorageWriteStage.MigrationPublishWorld,
         "after",
@@ -695,7 +1014,7 @@ export class InMemoryInventoryDurableStorage
       ...manifestWithoutPlan,
       state: InventoryMigrationManifestState.Completed,
     };
-    this.migrationManifests.set(migrationId, completed);
+    this.storeMigrationManifest(migrationId, completed);
     await this.fire(
       InventoryStorageWriteStage.MigrationCompactManifest,
       "after",
@@ -749,7 +1068,7 @@ export class InMemoryInventoryDurableStorage
       ...manifestWithoutPlan,
       state: InventoryMigrationManifestState.Aborted,
     };
-    this.migrationManifests.set(migrationId, aborted);
+    this.storeMigrationManifest(migrationId, aborted);
     await this.fire(
       InventoryStorageWriteStage.MigrationClaimAbort,
       "after",
@@ -776,7 +1095,7 @@ export class InMemoryInventoryDurableStorage
   > {
     assertPositiveSafeInteger(limit, "applying operation list limit");
     const rows: InventoryDurableOperation[] = [];
-    for (const stored of this.operations.values()) {
+    for (const stored of this.applyingOperations.values()) {
       if (stored.value.state === InventoryDurableOperationState.Applying) {
         rows.push(structuredClone(stored.value));
       }
@@ -793,7 +1112,7 @@ export class InMemoryInventoryDurableStorage
   > {
     assertPositiveSafeInteger(limit, "applying migration list limit");
     const manifests: InventoryMigrationManifest[] = [];
-    for (const manifest of this.migrationManifests.values()) {
+    for (const manifest of this.applyingMigrationManifests.values()) {
       if (manifest.state === InventoryMigrationManifestState.Applying) {
         manifests.push(structuredClone(manifest));
       }
@@ -816,6 +1135,7 @@ export class InMemoryInventoryDurableStorage
   private async beginUnlocked(
     input: BeginInventoryDurableOperationInput
   ): Promise<BeginInventoryDurableOperationResult> {
+    this.materializePendingSegmentedEvents();
     validateBeginInventoryOperation(input);
     await this.fire(
       InventoryStorageWriteStage.Begin,
@@ -835,7 +1155,7 @@ export class InMemoryInventoryDurableStorage
       );
       return { operation: structuredClone(existing.value), created: false };
     }
-    for (const stored of this.operations.values()) {
+    for (const stored of this.applyingOperations.values()) {
       if (stored.value.state === InventoryDurableOperationState.Applying) {
         throw new InventoryApplyingOperationConflictError(
           stored.value.operationId
@@ -849,7 +1169,15 @@ export class InMemoryInventoryDurableStorage
       );
     }
     this.assertNoApplyingMigrationFence();
-    validateInventoryDurablePlanAgainstBase(this.world, input.plan);
+    const validatedNextWorld = freezeInventoryPublishedWorld(
+      validateInventoryDurablePlanAgainstBase(this.world, input.plan)
+    );
+    const validatedRoots = inventoryWorldContentRoots(validatedNextWorld);
+    if (!inventoryWorldContentRootsEqual(validatedRoots, input.plan.nextRoots)) {
+      throw new Error(
+        "Frozen validated inventory world roots changed during cache admission."
+      );
+    }
     const value: InventoryDurableOperation = {
       operationId: input.operationId,
       intentFingerprint: input.intentFingerprint,
@@ -868,7 +1196,7 @@ export class InMemoryInventoryDurableStorage
       receiptWritten: false,
       worldPublished: false,
     };
-    this.operations.set(input.operationId, { value });
+    this.storeOperation(input.operationId, { value, validatedNextWorld });
     await this.fire(
       InventoryStorageWriteStage.Begin,
       "after",
@@ -897,7 +1225,7 @@ export class InMemoryInventoryDurableStorage
     }
     await this.fire(InventoryStorageWriteStage.Event, "before", operationId);
     const value = { ...stored.value, eventWritten: true };
-    this.operations.set(operationId, { ...stored, value });
+    this.storeOperation(operationId, { ...stored, value });
     await this.fire(InventoryStorageWriteStage.Event, "after", operationId);
     return structuredClone(value);
   }
@@ -930,7 +1258,7 @@ export class InMemoryInventoryDurableStorage
       operationId
     );
     const value = { ...stored.value, projectionWritten: true };
-    this.operations.set(operationId, { value });
+    this.storeOperation(operationId, { ...stored, value });
     await this.fire(
       InventoryStorageWriteStage.Projection,
       "after",
@@ -962,7 +1290,7 @@ export class InMemoryInventoryDurableStorage
       operationId
     );
     const value = { ...stored.value, reservationsWritten: true };
-    this.operations.set(operationId, { value });
+    this.storeOperation(operationId, { ...stored, value });
     await this.fire(
       InventoryStorageWriteStage.Reservations,
       "after",
@@ -988,7 +1316,7 @@ export class InMemoryInventoryDurableStorage
     requireApplyingInventoryOperationPlan(stored.value);
     await this.fire(InventoryStorageWriteStage.Counts, "before", operationId);
     const value = { ...stored.value, countsWritten: true };
-    this.operations.set(operationId, { value });
+    this.storeOperation(operationId, { ...stored, value });
     await this.fire(InventoryStorageWriteStage.Counts, "after", operationId);
     return structuredClone(value);
   }
@@ -1010,7 +1338,7 @@ export class InMemoryInventoryDurableStorage
     requireApplyingInventoryOperationPlan(stored.value);
     await this.fire(InventoryStorageWriteStage.Receipt, "before", operationId);
     const value = { ...stored.value, receiptWritten: true };
-    this.operations.set(operationId, { value });
+    this.storeOperation(operationId, { ...stored, value });
     await this.fire(InventoryStorageWriteStage.Receipt, "after", operationId);
     return structuredClone(value);
   }
@@ -1043,16 +1371,43 @@ export class InMemoryInventoryDurableStorage
         "before",
         operationId
       );
-      const nextWorld = validateInventoryDurablePlanAgainstBase(
-        this.world,
-        plan
-      );
+      const nextWorld =
+        stored.validatedNextWorld ??
+        validateInventoryDurablePlanAgainstBase(this.world, plan);
       const publishedValue: InventoryDurableOperation = {
         ...stored.value,
         worldPublished: true,
       };
-      this.world = cloneInventoryPublishedWorld(nextWorld);
-      this.operations.set(operationId, { value: publishedValue });
+      const appendEvent =
+        plan.event !== undefined &&
+        this.eventJournal.eventByOperation(plan.event.operationId) === undefined
+          ? plan.event
+          : undefined;
+      if (appendEvent !== undefined) {
+        this.eventJournal.validateAppend(appendEvent);
+      }
+      const publishedWorld = freezeInventoryPublishedWorld(nextWorld);
+      const baseWorld = this.world;
+      this.publishPositionSegment(publishedWorld, plan.event);
+      if (
+        publishedWorld.projection.placement !== this.world.projection.placement
+      ) {
+        this.placementSegment = createInMemoryInventorySegmentedPlacementStore({
+          placement: publishedWorld.projection.placement,
+          revision: publishedWorld.revision,
+        });
+        this.placementReader = inventoryReadonlyPlacementReader(this.placementSegment);
+      }
+      if (appendEvent !== undefined) {
+        this.eventJournal.append(appendEvent);
+      }
+      this.world = publishedWorld;
+      // Only changed claim/count rows affect these private item-level fences.
+      // Stock-only publication must not traverse retained terminal history.
+      if (plan.reservationDelta !== undefined || plan.countDelta !== undefined) {
+        this.updateProtectedItemScopesFromPlan(plan, baseWorld);
+      }
+      this.storeOperation(operationId, { value: publishedValue });
       await this.fire(
         InventoryStorageWriteStage.PublishWorld,
         "after",
@@ -1081,7 +1436,7 @@ export class InMemoryInventoryDurableStorage
       state: InventoryDurableOperationState.Completed,
     };
     // Completed retry evidence stays small; the published world now owns the only full snapshots.
-    this.operations.set(operationId, { value });
+    this.storeOperation(operationId, { value });
     await this.fire(
       InventoryStorageWriteStage.CompactOperation,
       "after",
@@ -1089,6 +1444,666 @@ export class InMemoryInventoryDurableStorage
     );
     await this.fire(InventoryStorageWriteStage.Complete, "after", operationId);
     return structuredClone(plan.receipt);
+  }
+
+  /** Publish only event-touched stock rows into the indexed hot-state position segment. */
+  private publishPositionSegment(
+    nextWorld: InventoryWorldState,
+    event: InventoryCommittedEvent | undefined
+  ): void {
+    const touchedPositionIds = new Set<string>();
+    for (const effect of event?.stockEffects ?? []) {
+      touchedPositionIds.add(inventoryStockPositionIdentity(effect.position));
+    }
+    const removePositionIds: string[] = [];
+    const upsertPositions = [];
+    for (const positionId of touchedPositionIds) {
+      const position = nextWorld.projection.positions[positionId];
+      if (position === undefined) {
+        if (this.positionSegment.position(positionId) !== undefined) {
+          removePositionIds.push(positionId);
+        }
+      } else {
+        upsertPositions.push(position);
+      }
+    }
+    this.positionSegment.applyDelta({
+      expectedRevision: this.positionSegment.revision(),
+      nextRevision: nextWorld.revision,
+      ...(removePositionIds.length === 0 ? {} : { removePositionIds }),
+      ...(upsertPositions.length === 0 ? {} : { upsertPositions }),
+    });
+  }
+
+  /** Commit an existing, non-embodied placement-node parent change as one indexed event. */
+  private async commitSegmentedPlacementChangeUnlocked(
+    input: CommitInventorySegmentedPlacementInput
+  ): Promise<CommitInventorySegmentedStockEventResult | undefined> {
+    if (
+      input.operationId.trim().length === 0 ||
+      input.intentFingerprint.trim().length === 0
+    ) {
+      throw new Error("Segmented placement operation identity and intent are required.");
+    }
+    assertInventoryEpochMilliseconds(
+      input.recordedAtEpochMs,
+      "segmented placement recordedAtEpochMs"
+    );
+    assertInventoryEpochMilliseconds(
+      input.occurredAtEpochMs,
+      "segmented placement occurredAtEpochMs"
+    );
+    if (input.occurredAtEpochMs > input.recordedAtEpochMs) {
+      throw new Error(
+        "placement topology change cannot occur after its durable record time."
+      );
+    }
+
+    const existing = this.operations.get(input.operationId);
+    if (existing !== undefined) {
+      assertSameInventoryOperationIntent(existing.value, input.intentFingerprint);
+      if (existing.value.state === InventoryDurableOperationState.Completed) {
+        const event =
+          existing.value.event === undefined
+            ? this.eventJournal.eventByOperation(input.operationId)
+            : structuredClone(existing.value.event);
+        if (event !== undefined) {
+          return {
+            worldRevision: existing.value.receipt.worldRevision,
+            recordedAtEpochMs: existing.value.recordedAtEpochMs,
+            event,
+            replayed: true,
+          };
+        }
+      }
+      return undefined;
+    }
+    if (this.eventJournal.eventByOperation(input.operationId) !== undefined) {
+      // Restored snapshots retain journal facts but not their original receipt
+      // revision. The canonical coordinator must resolve that replay instead.
+      return undefined;
+    }
+    if (
+      this.failpoint !== undefined ||
+      this.applyingOperations.size !== 0 ||
+      this.applyingMigrationManifests.size !== 0 ||
+      this.activeReservationCountsByItemId.size !== 0 ||
+      this.openCountCountsByItemId.size !== 0
+    ) {
+      return undefined;
+    }
+
+    const sourceNode = inventorySparseRecordValue(
+      this.world.projection.placementNodes,
+      input.nodeId
+    );
+    if (
+      sourceNode === undefined ||
+      sourceNode.retiredByEventId !== undefined ||
+      sourceNode.definition.embodiedBy !== undefined
+    ) {
+      return undefined;
+    }
+    const destinationNode =
+      input.toParentNodeId === undefined
+        ? undefined
+        : inventorySparseRecordValue(
+            this.world.projection.placementNodes,
+            input.toParentNodeId
+          );
+    if (
+      input.toParentNodeId !== undefined &&
+      (destinationNode === undefined ||
+        destinationNode.retiredByEventId !== undefined ||
+        destinationNode.definition.acceptsPlacement !== true)
+    ) {
+      return undefined;
+    }
+
+    const suppliedCatalog = inventoryCatalogFromSnapshot(input.catalog);
+    const effectiveCatalog =
+      this.pendingSegmentedCatalog ?? this.world.catalog;
+    if (effectiveCatalog.digest !== suppliedCatalog.digest) {
+      throw new Error(
+        "Inventory command uses unpublished catalogue revisions; publish the retained inventory catalogue first."
+      );
+    }
+
+    const originalParent = this.placementSegment.parentNodeId(input.nodeId);
+    if (input.expectedParent !== undefined) {
+      const expectedParentNodeId =
+        input.expectedParent === null ? undefined : input.expectedParent;
+      if (originalParent !== expectedParentNodeId) {
+        throw new Error(
+          `Placement node '${input.nodeId}' expected parent '${expectedParentNodeId ?? "<unplaced>"}', not '${originalParent ?? "<unplaced>"}'.`
+        );
+      }
+    }
+    if (originalParent === input.toParentNodeId) {
+      throw new Error(
+        input.toParentNodeId === undefined
+          ? `Placement node '${input.nodeId}' is already unplaced.`
+          : `Placement node '${input.nodeId}' is already directly in '${input.toParentNodeId}'.`
+      );
+    }
+
+    const normalizedEvent = createInventoryPlacementEvent({
+      catalog: suppliedCatalog,
+      operationId: input.operationId,
+      occurredAtEpochMs: input.occurredAtEpochMs,
+      nodeId: input.nodeId,
+      ...(originalParent === undefined
+        ? {}
+        : { fromParentNodeId: originalParent }),
+      ...(input.toParentNodeId === undefined
+        ? {}
+        : { toParentNodeId: input.toParentNodeId }),
+      ...(input.actorId === undefined ? {} : { actorId: input.actorId }),
+      ...(input.sourcePartyId === undefined
+        ? {}
+        : { sourcePartyId: input.sourcePartyId }),
+      ...(input.destinationPartyId === undefined
+        ? {}
+        : { destinationPartyId: input.destinationPartyId }),
+      ...(input.sourceReference === undefined
+        ? {}
+        : { sourceReference: input.sourceReference }),
+      ...(input.reason === undefined ? {} : { reason: input.reason }),
+      ...(input.metadata === undefined ? {} : { metadata: input.metadata }),
+    });
+    const event = commitInventoryEvent(
+      normalizedEvent,
+      input.recordedAtEpochMs,
+      this.eventJournal.lastRecordSequence() + 1
+    );
+    const earlierEvent = this.eventJournal.event(event.eventId);
+    if (earlierEvent !== undefined) {
+      throw new Error(
+        "Inventory eventId already exists under another operationId."
+      );
+    }
+
+    this.eventJournal.validateAppend(event);
+    const baseRevision = this.positionSegment.revision();
+    const placementRevision = this.placementSegment.revision();
+    await this.fire(
+      InventoryStorageWriteStage.PublishWorld,
+      "before",
+      input.operationId
+    );
+    this.placementSegment.applyChange({
+      expectedRevision: placementRevision,
+      nextRevision: placementRevision + 1,
+      eventId: event.eventId,
+      nodeId: input.nodeId,
+      ...(originalParent === undefined
+        ? {}
+        : { fromParentNodeId: originalParent }),
+      ...(input.toParentNodeId === undefined
+        ? {}
+        : { toParentNodeId: input.toParentNodeId, targetAcceptsPlacement: true }),
+    });
+    // The world revision advances even though no exact stock rows changed.
+    this.positionSegment.applyDelta({
+      expectedRevision: baseRevision,
+      nextRevision: baseRevision + 1,
+    });
+    this.eventJournal.append(event);
+    const receipt: InventoryOperationReceipt = {
+      operationId: input.operationId,
+      recordedAtEpochMs: input.recordedAtEpochMs,
+      worldRevision: baseRevision + 1,
+      eventId: event.eventId,
+    };
+    const value: InventoryDurableOperation = {
+      operationId: input.operationId,
+      intentFingerprint: input.intentFingerprint,
+      baseRevision,
+      recordedAtEpochMs: input.recordedAtEpochMs,
+      state: InventoryDurableOperationState.Completed,
+      receipt,
+      eventWritten: true,
+      projectionWritten: true,
+      reservationsWritten: true,
+      countsWritten: true,
+      receiptWritten: true,
+      worldPublished: true,
+    };
+    this.storeOperation(input.operationId, { value });
+    await this.fire(
+      InventoryStorageWriteStage.PublishWorld,
+      "after",
+      input.operationId
+    );
+    return {
+      worldRevision: receipt.worldRevision,
+      recordedAtEpochMs: input.recordedAtEpochMs,
+      event: structuredClone(event),
+      replayed: false,
+    };
+  }
+
+  /** Perform one atomic segmented transfer while the reference adapter mutation lock is held. */
+  private async commitSegmentedStockEventUnlocked(
+    input: CommitInventorySegmentedStockEventInput
+  ): Promise<CommitInventorySegmentedStockEventResult | undefined> {
+    if (input.operationId.trim().length === 0) {
+      throw new Error("Inventory operationId must not be empty.");
+    }
+    if (input.intentFingerprint.trim().length === 0) {
+      throw new Error("Inventory operation intent fingerprint must not be empty.");
+    }
+    assertInventoryEpochMilliseconds(
+      input.recordedAtEpochMs,
+      "inventory segmented stock event recordedAtEpochMs"
+    );
+    if (
+      input.expectedWorldRevision !== undefined &&
+      (!Number.isSafeInteger(input.expectedWorldRevision) ||
+        input.expectedWorldRevision < 0)
+    ) {
+      throw new Error(
+        "Segmented stock event expectedWorldRevision must be a non-negative safe integer."
+      );
+    }
+    if (
+      input.expectedRecordSequence !== undefined &&
+      (!Number.isSafeInteger(input.expectedRecordSequence) ||
+        input.expectedRecordSequence < 0)
+    ) {
+      throw new Error(
+        "Segmented stock event expectedRecordSequence must be a non-negative safe integer."
+      );
+    }
+
+    const existing = this.operations.get(input.operationId);
+    if (existing !== undefined) {
+      assertSameInventoryOperationIntent(existing.value, input.intentFingerprint);
+      if (existing.value.state === InventoryDurableOperationState.Completed) {
+        // Canonical coordinator receipts may retain an event alias; journal reads
+        // already return defensive copies. Never expose either archive alias.
+        const event =
+          existing.value.event === undefined
+            ? this.eventJournal.eventByOperation(input.operationId)
+            : structuredClone(existing.value.event);
+        if (event !== undefined) {
+          return {
+            worldRevision: existing.value.receipt.worldRevision,
+            recordedAtEpochMs: existing.value.recordedAtEpochMs,
+            event,
+            replayed: true,
+          };
+        }
+      }
+      return undefined;
+    }
+    // A restored canonical snapshot includes event idempotency, but does not
+    // include durable receipts. Let the canonical coordinator validate/replay
+    // that retained fact before any hot-row update; its receipt revision cannot
+    // be inferred from an event sequence because claim-only revisions also exist.
+    if (this.eventJournal.eventByOperation(input.operationId) !== undefined) {
+      return undefined;
+    }
+    for (const stored of this.applyingOperations.values()) {
+      if (stored.value.state === InventoryDurableOperationState.Applying) {
+        return undefined;
+      }
+    }
+    for (const manifest of this.applyingMigrationManifests.values()) {
+      if (manifest.state === InventoryMigrationManifestState.Applying) {
+        return undefined;
+      }
+    }
+    if (
+      input.expectedWorldRevision !== undefined &&
+      input.expectedWorldRevision !== this.positionSegment.revision()
+    ) {
+      return undefined;
+    }
+    if (
+      input.expectedRecordSequence !== undefined &&
+      input.expectedRecordSequence !== this.eventJournal.lastRecordSequence()
+    ) {
+      return undefined;
+    }
+    if (!this.segmentedStockEventIsEligible(input)) return undefined;
+
+    const suppliedCatalog = inventoryCatalogFromSnapshot(input.catalog);
+    const effectiveCatalog =
+      this.pendingSegmentedCatalog ?? this.world.catalog;
+    const currentRevision = this.positionSegment.revision();
+    const mayEstablishCatalog =
+      currentRevision === 0 &&
+      this.world.revision === 0 &&
+      this.eventJournal.lastRecordSequence() === 0;
+    if (!mayEstablishCatalog && effectiveCatalog.digest !== suppliedCatalog.digest) {
+      throw new Error(
+        "Inventory command uses unpublished catalogue revisions; publish the retained inventory catalogue first."
+      );
+    }
+    const catalogForEvent = mayEstablishCatalog ? input.catalog : effectiveCatalog;
+    const normalizedEvent = defineInventoryEvent({
+      catalog: inventoryCatalogFromSnapshot(catalogForEvent),
+      event: input.event,
+    });
+
+    const baseRevision = currentRevision;
+    const event = commitInventoryEvent(
+      normalizedEvent,
+      input.recordedAtEpochMs,
+      this.eventJournal.lastRecordSequence() + 1
+    );
+    const existingEvent = this.eventJournal.event(event.eventId);
+    if (
+      existingEvent !== undefined &&
+      existingEvent.operationId !== input.operationId
+    ) {
+      throw new Error(
+        "Inventory eventId already exists under another operationId."
+      );
+    }
+
+    for (const effect of event.stockEffects) {
+      const placementNodeId = effect.position.placementNodeId;
+      if (placementNodeId === undefined) continue;
+      const placementNode = inventorySparseRecordValue(
+        this.world.projection.placementNodes,
+        placementNodeId
+      );
+      if (placementNode?.retiredByEventId !== undefined) {
+        throw new Error(
+          `Retired placement node '${placementNodeId}' cannot receive stock.`
+        );
+      }
+      if (placementNode?.definition.acceptsPlacement === false) {
+        throw new Error(
+          `Placement node '${placementNodeId}' does not accept stock.`
+        );
+      }
+    }
+
+    this.eventJournal.validateAppend(event);
+    await this.fire(
+      InventoryStorageWriteStage.PublishWorld,
+      "before",
+      input.operationId
+    );
+    this.positionSegment.applyStockEffects({
+      expectedRevision: baseRevision,
+      nextRevision: baseRevision + 1,
+      stockEffects: event.stockEffects,
+    });
+    const receipt: InventoryOperationReceipt = {
+      operationId: input.operationId,
+      recordedAtEpochMs: input.recordedAtEpochMs,
+      worldRevision: baseRevision + 1,
+      eventId: event.eventId,
+    };
+    const value: InventoryDurableOperation = {
+      operationId: input.operationId,
+      intentFingerprint: input.intentFingerprint,
+      baseRevision,
+      recordedAtEpochMs: input.recordedAtEpochMs,
+      state: InventoryDurableOperationState.Completed,
+      receipt,
+      eventWritten: true,
+      projectionWritten: true,
+      reservationsWritten: true,
+      countsWritten: true,
+      receiptWritten: true,
+      worldPublished: true,
+    };
+    this.eventJournal.append(event);
+    this.storeOperation(input.operationId, { value });
+    if (mayEstablishCatalog) {
+      this.pendingSegmentedCatalog = inventoryCatalogSnapshot(suppliedCatalog);
+    }
+    await this.fire(
+      InventoryStorageWriteStage.PublishWorld,
+      "after",
+      input.operationId
+    );
+    return {
+      worldRevision: receipt.worldRevision,
+      recordedAtEpochMs: input.recordedAtEpochMs,
+      event: structuredClone(event),
+      replayed: false,
+    };
+  }
+
+  /** Return whether one stock-only event may safely use the segmented write slice. */
+  private segmentedStockEventIsEligible(
+    input: CommitInventorySegmentedStockEventInput
+  ): boolean {
+    // The staged coordinator failpoint harness certifies the repair protocol. Keep those
+    // deterministic stage tests on that path; segmented commit models one atomic DB transaction.
+    if (this.failpoint !== undefined) return false;
+    const event = input.event;
+    const historicalEnvelope =
+      event.kind === InventoryEventKind.Correction ||
+      event.kind === InventoryEventKind.HistoricalRepair;
+    if (
+      event.kind !== InventoryEventKind.Transfer &&
+      event.kind !== InventoryEventKind.Receipt &&
+      event.kind !== InventoryEventKind.Issue &&
+      event.kind !== InventoryEventKind.Reclassification &&
+      !historicalEnvelope
+    ) {
+      return false;
+    }
+    if (event.operationId !== input.operationId) return false;
+    if (
+      historicalEnvelope &&
+      (input.expectedWorldRevision === undefined ||
+        input.expectedRecordSequence === undefined)
+    ) {
+      return false;
+    }
+    if (!historicalEnvelope && event.stockEffects.length === 0) return false;
+    if (
+      event.stockEffects.some(
+        /** Keep serialized/embodied stock on the canonical path until its coupled segment exists. */
+        (effect) => effect.position.serialId !== undefined
+      )
+    ) {
+      return false;
+    }
+    if ((event.lotDefinitions?.length ?? 0) !== 0) return false;
+    if ((event.placementNodeDefinitions?.length ?? 0) !== 0) return false;
+    if ((event.placementChanges?.length ?? 0) !== 0) return false;
+    if (event.traceabilityChanges.length !== 0) return false;
+    if (
+      (event.positiveLayerProvenanceOverrides?.length ?? 0) !== 0
+    ) return false;
+    if (event.transferLifecycle !== undefined) return false;
+    if (event.correction !== undefined) {
+      // An omitted metadata/topology root has no explicit stock or placement delta.
+      // Publication must update the canonical placement/lot masters before native reads.
+      const correctedRoot = inventorySparseRecordValue(
+        this.world.projection.events,
+        event.correction.correctsEventId
+      );
+      const supersededCorrection =
+        event.correction.supersedesCorrectionEventId === undefined
+          ? undefined
+          : inventorySparseRecordValue(
+              this.world.projection.events,
+              event.correction.supersedesCorrectionEventId
+            );
+      for (const source of [correctedRoot, supersededCorrection]) {
+        if (
+          (source?.lotDefinitions?.length ?? 0) !== 0 ||
+          (source?.placementNodeDefinitions?.length ?? 0) !== 0 ||
+          (source?.placementChanges?.length ?? 0) !== 0
+        ) {
+          return false;
+        }
+      }
+    }
+    if (!historicalEnvelope && event.correction !== undefined) return false;
+    if (
+      event.kind === InventoryEventKind.Correction &&
+      event.correction === undefined
+    ) return false;
+    if (
+      event.kind === InventoryEventKind.HistoricalRepair &&
+      event.historicalRepair === undefined
+    ) return false;
+    if (event.catalogDigest !== undefined || event.catalogSnapshot !== undefined) {
+      return false;
+    }
+    // Reservation and count semantics are scoped by item. One unrelated item's
+    // claim/count must not force an independent warehouse item through full-world
+    // planning. Conservative same-item fallback remains unchanged.
+    for (const effect of event.stockEffects) {
+      if (
+        this.activeReservationCountsByItemId.has(effect.position.itemId) ||
+        this.openCountCountsByItemId.has(effect.position.itemId)
+      ) {
+        return false;
+      }
+    }
+    if (historicalEnvelope) {
+      // Historical plans may legitimately improve an existing recorded deficit.
+      // Route those rare signed rows through the canonical correction publisher.
+      for (const effect of event.stockEffects) {
+        const current = this.positionSegment.position(
+          inventoryStockPositionIdentity(effect.position)
+        );
+        if (
+          current !== undefined &&
+          current.measurements.primary.quantity.amountMinor < 0
+        ) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  /** Rebuild private protection counters on initialization and whole-world migration. */
+  private refreshProtectedItemScopes(world: InventoryWorldState): void {
+    const reservations = new Map<string, number>();
+    for (const reservation of Object.values(world.reservations.reservations)) {
+      if (reservation.status !== InventoryReservationStatus.Active) continue;
+      const itemId = reservation.selector.itemId;
+      reservations.set(itemId, (reservations.get(itemId) ?? 0) + 1);
+    }
+    const counts = new Map<string, number>();
+    for (const count of Object.values(world.counts.counts)) {
+      if (
+        count.status !== InventoryCountStatus.Started &&
+        count.status !== InventoryCountStatus.Observed
+      ) continue;
+      const itemId = count.selector.itemId;
+      counts.set(itemId, (counts.get(itemId) ?? 0) + 1);
+    }
+    this.activeReservationCountsByItemId = reservations;
+    this.openCountCountsByItemId = counts;
+  }
+
+  /** Apply the one validated claim/count lifecycle delta without traversing history. */
+  private updateProtectedItemScopesFromPlan(
+    plan: InventoryDurableOperationPlan,
+    base: InventoryWorldState
+  ): void {
+    const nextReservation = plan.reservationDelta?.reservation;
+    if (nextReservation !== undefined) {
+      const previous = inventorySparseRecordValue(
+        base.reservations.reservations,
+        nextReservation.reservationId
+      );
+      this.updateActiveItemCount(
+        this.activeReservationCountsByItemId,
+        previous?.status === InventoryReservationStatus.Active
+          ? previous.selector.itemId
+          : undefined,
+        nextReservation.status === InventoryReservationStatus.Active
+          ? nextReservation.selector.itemId
+          : undefined
+      );
+    }
+    const nextCount = plan.countDelta?.count;
+    if (nextCount !== undefined) {
+      const previous = inventorySparseRecordValue(
+        base.counts.counts,
+        nextCount.countId
+      );
+      this.updateActiveItemCount(
+        this.openCountCountsByItemId,
+        previous?.status === InventoryCountStatus.Started ||
+          previous?.status === InventoryCountStatus.Observed
+          ? previous.selector.itemId
+          : undefined,
+        nextCount.status === InventoryCountStatus.Started ||
+          nextCount.status === InventoryCountStatus.Observed
+          ? nextCount.selector.itemId
+          : undefined
+      );
+    }
+  }
+
+  /** Replace one active-row item membership without confusing siblings sharing an item. */
+  private updateActiveItemCount(
+    countsByItemId: Map<string, number>,
+    previousItemId: string | undefined,
+    currentItemId: string | undefined
+  ): void {
+    if (previousItemId === currentItemId) return;
+    if (previousItemId !== undefined) {
+      const previousCount = countsByItemId.get(previousItemId);
+      if (previousCount === undefined || previousCount < 1) {
+        throw new Error("Inventory protected item scope counter disagrees with its published lifecycle.");
+      }
+      if (previousCount === 1) countsByItemId.delete(previousItemId);
+      else countsByItemId.set(previousItemId, previousCount - 1);
+    }
+    if (currentItemId !== undefined) {
+      countsByItemId.set(
+        currentItemId,
+        (countsByItemId.get(currentItemId) ?? 0) + 1
+      );
+    }
+  }
+
+  /** Catch the canonical proof/export world up to already-published segmented events. */
+  private materializePendingSegmentedEvents(): void {
+    const firstPendingSequence =
+      this.world.projection.lastRecordSequence + 1;
+    const lastSequence = this.eventJournal.lastRecordSequence();
+    if (firstPendingSequence > lastSequence) return;
+
+    const events: InventoryCommittedEvent[] = [];
+    for (
+      let sequence = firstPendingSequence;
+      sequence <= lastSequence;
+      sequence += 1
+    ) {
+      const event = this.eventJournal.eventBySequence(sequence);
+      if (event === undefined) {
+        throw new Error(
+          `Segmented journal lost committed recordSequence ${sequence}.`
+        );
+      }
+      events.push(event);
+    }
+    const catalogSnapshot =
+      this.pendingSegmentedCatalog ?? this.world.catalog;
+    const catalog = inventoryCatalogFromSnapshot(catalogSnapshot);
+    const projection = applyInventoryCommittedEvents({
+      catalog,
+      state: this.world.projection,
+      events,
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+    });
+    this.world = freezeInventoryPublishedWorld({
+      revision: this.positionSegment.revision(),
+      catalog: catalogSnapshot,
+      projection,
+      reservations: this.world.reservations,
+      counts: this.world.counts,
+    });
+    this.pendingSegmentedCatalog = undefined;
   }
 
   /** Abort one applying plan without publishing any staged component. */
@@ -1128,7 +2143,7 @@ export class InMemoryInventoryDurableStorage
       ...operationWithoutFullPlan,
       state: InventoryDurableOperationState.Aborted,
     };
-    this.operations.set(operationId, { value });
+    this.storeOperation(operationId, { value });
     await this.fire(
       InventoryStorageWriteStage.ClaimAbort,
       "after",
@@ -1156,6 +2171,32 @@ export class InMemoryInventoryDurableStorage
     return result;
   }
 
+  /** Publish one operation row and maintain the exact Applying-only repair/fence index. */
+  private storeOperation(
+    operationId: string,
+    stored: StoredInventoryOperation
+  ): void {
+    this.operations.set(operationId, stored);
+    if (stored.value.state === InventoryDurableOperationState.Applying) {
+      this.applyingOperations.set(operationId, stored);
+    } else {
+      this.applyingOperations.delete(operationId);
+    }
+  }
+
+  /** Publish one migration row and maintain the exact Applying-only repair/fence index. */
+  private storeMigrationManifest(
+    migrationId: string,
+    manifest: InventoryMigrationManifest
+  ): void {
+    this.migrationManifests.set(migrationId, manifest);
+    if (manifest.state === InventoryMigrationManifestState.Applying) {
+      this.applyingMigrationManifests.set(migrationId, manifest);
+    } else {
+      this.applyingMigrationManifests.delete(migrationId);
+    }
+  }
+
   /** Load one operation row or fail rather than inventing repair state. */
   private requireStored(operationId: string): StoredInventoryOperation {
     const stored = this.operations.get(operationId);
@@ -1176,7 +2217,7 @@ export class InMemoryInventoryDurableStorage
 
   /** Reject every normal operation while an unpublished migration batch fences this target. */
   private assertNoApplyingMigrationFence(): void {
-    for (const manifest of this.migrationManifests.values()) {
+    for (const manifest of this.applyingMigrationManifests.values()) {
       if (manifest.state !== InventoryMigrationManifestState.Applying) continue;
       throw new Error(
         `Inventory migration '${manifest.migrationId}' fences unrelated operations.`
@@ -1379,7 +2420,8 @@ function validateInventoryDurablePlanAgainstBase(
         }).state;
   const reservations = applyInventoryReservationBookDelta(
     base.reservations,
-    plan.reservationDelta
+    plan.reservationDelta,
+    base.projection.placement
   );
   const counts = applyInventoryCountBookDelta(base.counts, plan.countDelta);
   const next: InventoryWorldState = {

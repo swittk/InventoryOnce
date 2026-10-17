@@ -22,7 +22,7 @@ function request(
     requestId,
     selector: inventoryStockSelector("item-a", {
       itemRevisionIds: ["item-a-v2"],
-      locationIds: ["store"],
+      placementNodeIds: ["store"],
     }),
     amount: stockAmount(amount, "piece"),
     itemRevisionId: "item-a-v2",
@@ -67,12 +67,12 @@ describe("policy request groups and allocation reads", () => {
 
   it("owns policy request fields without requiring structural application extensions to be cloneable", () => {
     const catalog = createTabletCatalog();
-    const callerLocationIds = ["store"];
+    const callerPlacementNodeIds = ["store"];
     const mutableRequest = {
       requestId: "request-owned",
       selector: inventoryStockSelector("item-a", {
         itemRevisionIds: ["item-a-v2"],
-        locationIds: callerLocationIds,
+        placementNodeIds: callerPlacementNodeIds,
       }),
       amount: stockAmount("1", "piece"),
       itemRevisionId: "item-a-v2",
@@ -92,12 +92,12 @@ describe("policy request groups and allocation reads", () => {
     expect(policyGroup.requests[0]).not.toBe(mutableRequest);
     expect(combinedPolicy.requests[0]).not.toBe(policyGroup.requests[0]);
     mutableRequest.requestId = "mutated-request";
-    callerLocationIds[0] = "other-location";
+    callerPlacementNodeIds[0] = "other-location";
     expect(mutableRequest.applicationCallback()).toBe("opaque-application-value");
     expect(policyGroup.requests[0]?.requestId).toBe("request-owned");
     expect(combinedPolicy.requests[0]?.requestId).toBe("request-owned");
-    expect(policyGroup.requests[0]?.selector.locationIds).toEqual(["store"]);
-    expect(combinedPolicy.requests[0]?.selector.locationIds).toEqual(["store"]);
+    expect(policyGroup.requests[0]?.selector.placementNodeIds).toEqual(["store"]);
+    expect(combinedPolicy.requests[0]?.selector.placementNodeIds).toEqual(["store"]);
     expect(policyGroup.referenceByRequestId.get("request-owned")).toBe(
       "application-owned"
     );
@@ -125,7 +125,7 @@ describe("policy request groups and allocation reads", () => {
       position: {
         itemId: "item-a",
         itemRevisionId: "item-a-v2",
-        locationId: "store",
+        placementNodeId: "store",
       },
       positionIdentity: "allocation-position-a",
       amount: stockAmount("10", "piece"),
@@ -136,7 +136,7 @@ describe("policy request groups and allocation reads", () => {
       position: {
         itemId: "item-a",
         itemRevisionId: "item-a-v2",
-        locationId: "store",
+        placementNodeId: "store",
       },
       positionIdentity: "allocation-position-b",
       amount: stockAmount("14", "piece"),

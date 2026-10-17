@@ -30,7 +30,7 @@ async function storePositions(
   return inventory.read.positions(
     inventoryStockSelector("item-a", {
       itemRevisionIds: ["item-a-v2"],
-      locationIds: ["store"],
+      placementNodeIds: ["store"],
     })
   );
 }
@@ -78,7 +78,7 @@ describe("atomic conserved split/merge/reclassification", () => {
     const summary = await inventory.read.summary({
       itemId: "item-a",
       itemRevisionIds: ["item-a-v2"],
-      locationIds: ["store"],
+      placementNodeIds: ["store"],
     });
     expect(
       summary.revisions[0]?.byStatus.map(
@@ -106,20 +106,18 @@ describe("atomic conserved split/merge/reclassification", () => {
       occurredAtEpochMs: time0,
       lines: [
         {
-          to: loosePosition("store", {
+          to: loosePosition("C-1", {
             lotId: "MERGE-LOT",
-            containerId: "C-1",
           }),
           amount: stockAmount("3", "piece"),
-          container: { containerType: "tray" },
+          placementNode: { category: "tray" },
         },
         {
-          to: loosePosition("store", {
+          to: loosePosition("C-2", {
             lotId: "MERGE-LOT",
-            containerId: "C-2",
           }),
           amount: stockAmount("2", "piece"),
-          container: { containerType: "tray" },
+          placementNode: { category: "tray" },
         },
       ],
     });
@@ -128,41 +126,41 @@ describe("atomic conserved split/merge/reclassification", () => {
       occurredAtEpochMs: time1,
       consume: [
         {
-          from: loosePosition("store", {
+          from: loosePosition("C-1", {
             lotId: "MERGE-LOT",
-            containerId: "C-1",
           }),
           amount: stockAmount("3", "piece"),
         },
         {
-          from: loosePosition("store", {
+          from: loosePosition("C-2", {
             lotId: "MERGE-LOT",
-            containerId: "C-2",
           }),
           amount: stockAmount("2", "piece"),
         },
       ],
       produce: [
         {
-          to: loosePosition("store", {
+          to: loosePosition("C-3", {
             lotId: "MERGE-LOT",
-            containerId: "C-3",
           }),
           amount: stockAmount("5", "piece"),
-          container: {
-            containerType: "procedure-kit",
+          placementNode: {
+            category: "procedure-kit",
             identifiers: { barcode: "KIT-003" },
           },
         },
       ],
       reason: "Two trays were consolidated into one kit.",
     });
-    const positions = await storePositions(inventory);
+    const positions = await inventory.read.positions({
+      itemId: "item-a",
+      placementNodeIds: ["C-3"],
+    });
     expect(positions).toHaveLength(1);
-    expect(positions[0]?.key.containerId).toBe("C-3");
+    expect(positions[0]?.key.placementNodeId).toBe("C-3");
     expect(positions[0]?.measurements.primary.quantity.amountMinor).toBe(5);
-    expect((await inventory.read.container("C-3"))?.definition).toMatchObject({
-      containerType: "procedure-kit",
+    expect((await inventory.read.placementNode("C-3"))?.definition).toMatchObject({
+      category: "procedure-kit",
       identifiers: { barcode: "KIT-003" },
     });
   });

@@ -1319,9 +1319,9 @@ function parseState(
     );
   }
   const mode = requireMode(row);
-  const activationKind = requireActivationKind(row, mode);
-  const cutoverAuthorizationId = optionalString(row, "cutoverAuthorizationId");
-  const greenfieldAuthorizationId = optionalString(
+  const activationKind = requireActivationKind(row);
+  const cutoverAuthorizationId = requireString(row, "cutoverAuthorizationId");
+  const greenfieldAuthorizationId = requireString(
     row,
     "greenfieldAuthorizationId"
   );
@@ -1641,17 +1641,11 @@ function requireStoredEpochMilliseconds(value: number | null, label: string): nu
   return requireEpochMilliseconds(value, label);
 }
 
-/** Read explicit activation provenance, inferring legacy cutover for pre-field authoritative rows. */
+/** Read the required current-format activation provenance discriminator. */
 function requireActivationKind(
-  row: InventoryAuthorityDocument,
-  mode: InventoryAuthorityMode
+  row: InventoryAuthorityDocument
 ): InventoryAuthorityActivationKind {
   const raw = row.activationKind;
-  if (raw === undefined) {
-    return mode === InventoryAuthorityMode.Authoritative
-      ? InventoryAuthorityActivationKind.LegacyCutover
-      : InventoryAuthorityActivationKind.None;
-  }
   if (
     raw !== InventoryAuthorityActivationKind.None &&
     raw !== InventoryAuthorityActivationKind.LegacyCutover &&
@@ -1662,21 +1656,6 @@ function requireActivationKind(
     );
   }
   return raw;
-}
-
-/** Read one optional durable string, defaulting a newly introduced field for old rows. */
-function optionalString(
-  row: InventoryAuthorityDocument,
-  field: string
-): string {
-  const value = row[field];
-  if (value === undefined) return "";
-  if (typeof value !== "string") {
-    throw new Error(
-      `InventoryOnce authority field '${field}' must be a string when present.`
-    );
-  }
-  return value;
 }
 
 /** Require one supported authority mode. */

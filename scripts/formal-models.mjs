@@ -2,7 +2,7 @@ import { formalCodeText } from "./formal-syntax.mjs";
 
 /** Registered InventoryOnce TLC models in deterministic execution order. */
 export const formalModels = Object.freeze(
-  ["AuthorityWriterFence", "PublishedHeadCAS", "CompositionRevision", "CollectionView", "FungibilityPool", "CatalogPublication", "ReclassificationConservation", "UseByReservation", "ResourceDimensions", "ReservationScope", "ReservationScopeAllocationReplacement", "TraceabilityContainment", "TraceabilityAssociation", "TraceabilityGraph", "PhysicalCount", "DualMeasure", "DistributedRights", "CorrectionHistory", "DurableTransferRefinement", "TransferLifecycle", "RepairLiveness", "RecordedDeficit", "SnapshotSupersededWorkflow", "InventoryOperation", "ImplementationConformance", "ReservationSafety", "PackagingIdentity"]
+  ["AuthorityWriterFence", "PublishedHeadCAS", "CompositionRevision", "CollectionView", "FungibilityPool", "CatalogPublication", "ReclassificationConservation", "UseByReservation", "ResourceDimensions", "ReservationScope", "ReservationScopeAllocationReplacement", "PlacementGraph", "TraceabilityAssociation", "TraceabilityGraph", "PhysicalCount", "DualMeasure", "DistributedRights", "CorrectionHistory", "HistoricalRepair", "DurableTransferRefinement", "TransferLifecycle", "RepairLiveness", "RecordedDeficit", "SnapshotSupersededWorkflow", "InventoryOperation", "ImplementationConformance", "ReservationSafety", "PackagingIdentity"]
 );
 
 /** Stateful API families that must retain bounded executable trace/property evidence. */
@@ -23,7 +23,8 @@ export const statefulOperationFamilyIds = Object.freeze([
   "transformation",
   "scrap",
   "correction",
-  "container-command",
+  "historical-repair",
+  "placement-command",
   "lot-command",
   "reservation",
   "count",
@@ -105,6 +106,16 @@ export const formalInvariantMutationChecks = Object.freeze([
     "OriginalHistoryIsNeverErased",
   ],
   [
+    "HistoricalRepair",
+    "HistoricalRepairPartialPublishMutation",
+    "HistoricalRepairIsAtomic",
+  ],
+  [
+    "HistoricalRepair",
+    "HistoricalRepairReverseBundleOrderMutation",
+    "SameTimeBundleOrderIsPreserved",
+  ],
+  [
     "DurableTransferRefinement",
     "DurableTransferRefinementSplitProjectionMutation",
     "ProjectionWriteIsAtomic",
@@ -123,6 +134,46 @@ export const formalInvariantMutationChecks = Object.freeze([
     "UseByReservation",
     "UseByReservationExpiredConsumptionMutation",
     "OrdinaryConsumptionWasUsable",
+  ],
+  [
+    "ReservationScope",
+    "ReservationScopeDetachAvailabilityMutation",
+    "OrdinaryDetachPreservesExactAllocations",
+  ],
+  [
+    "ResourceDimensions",
+    "ResourceDimensionsDetachIssueMutation",
+    "UnresolvedStockStillExists",
+  ],
+  [
+    "ResourceDimensions",
+    "ResourceDimensionsWhereaboutsIdentityMutation",
+    "UnresolvedWhereaboutsIdentityIsStable",
+  ],
+  [
+    "PlacementGraph",
+    "PlacementGraphCycleMutation",
+    "PlacementIsAcyclic",
+  ],
+  [
+    "PlacementGraph",
+    "PlacementGraphRejectingTargetMutation",
+    "PlacementTargetsAcceptContents",
+  ],
+  [
+    "PlacementGraph",
+    "PlacementGraphDescendantRewriteMutation",
+    "AncestorMovePreservesDirectStockAnchors",
+  ],
+  [
+    "PlacementGraph",
+    "PlacementGraphEmbodiedMoveDesyncMutation",
+    "EmbodiedResourceTracksNodeParent",
+  ],
+  [
+    "PlacementGraph",
+    "PlacementGraphUnsafeEmbodimentTerminationMutation",
+    "EmbodimentTerminationRequiresEmptyNode",
   ],
   [
     "TraceabilityGraph",

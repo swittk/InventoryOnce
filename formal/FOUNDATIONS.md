@@ -6,9 +6,9 @@ InventoryOnce is not supposed to model only the features Shinebright happens to 
 
 The model deliberately combines several mature lines of work instead of copying one ERP schema.
 
-- **SAP EWM quant semantics**: stock identity is a product plus independent stock dimensions such as location/HU, batch, owner, party entitled to dispose, and stock type; physical and available quantities are different views. This supports treating stock rows as projections over orthogonal dimensions rather than as a class hierarchy.
-- **Microsoft Dynamics reservation hierarchies**: a claim can exist at a less-specific level and later become bound to location/batch/license plate. Therefore a reservation is a constraint over eligible stock, not necessarily a pointer to one exact stock row at creation time.
-- **Oracle WMS/LPN semantics**: reservations may bind whole handling units or individual lots inside them; moving an LPN can move corresponding reservations. This argues for claims over identities/scopes rather than a second stock class.
+- **SAP EWM quant semantics**: stock identity is a product plus independent stock dimensions such as location/HU, batch, owner, party entitled to dispose, and stock type; physical and available quantities are different views. InventoryOnce retains those distinctions but models physical topology generically as direct placement plus node ancestry instead of separate hardcoded location/HU classes.
+- **Microsoft Dynamics reservation hierarchies**: a claim can exist at a less-specific level and later become bound to a placement/batch/handling identity. Therefore a reservation is a constraint over eligible stock, not necessarily a pointer to one exact stock row at creation time.
+- **Oracle WMS/LPN semantics**: reservations may bind whole handling units or individual lots inside them; moving an LPN moves its physical ancestry without inventing a second stock class. This argues for generic placement nodes plus claims over exact identities/scopes.
 - **GS1 EPCIS 2.0 / CBV**: reversible aggregation/disaggregation, durable association, irreversible transformation, observation, disposition, ownership, possession, location, and business-transfer context are distinct concepts. InventoryOnce should preserve these distinctions and be able to export/import compatible traceability facts without making EPCIS its internal database schema.
 - **GS1 GTIN Management / Healthcare GTIN Allocation**: changing declared net count or the members of a predefined assortment creates a newly identified trade-item/package configuration. Existing physical packs cannot be reinterpreted by editing today's definition.
 - **Versioned BOM/change-control practice**: heterogeneous component vectors are retained revisions/effective changes, not mutable expansion recipes applied retroactively. Opening/decomposition must use the exact composition revision attached to the physical pack.
@@ -22,13 +22,14 @@ The model deliberately combines several mature lines of work instead of copying 
 The deepest model is not `InventoryStock`, `Substock`, a SQL row, or a package. It is:
 
 1. **Resource identity**: item plus optional lot/serial and traceability identity.
-2. **Orthogonal current dimensions**: location, owner, possessor/custodian, status/disposition, container/handling unit, packaging revision, and application-defined qualified dimensions.
-3. **Quantity vector**: one required primary axis plus optional independent measured axes. Fixed-UOM conversion and catch-weight/dual-UOM are different cases.
-4. **Claims**: commitments/reservations over a set of eligible resources, possibly less specific than the eventual pick.
-5. **Containment/association graph**: reversible physical grouping or more durable installation/association.
-6. **Genealogy graph**: irreversible consume/produce relation from transformations.
-7. **Events**: explicit causes that move, relabel, aggregate, disaggregate, transform, receive, issue, count/reconcile, or correct prior assertions.
-8. **Parties/agents**: actor, owner, possessor, source/destination party, and other business context stay distinguishable.
+2. **Orthogonal current dimensions**: direct placement, whereabouts state, owner, possessor/custodian, status/disposition, packaging revision, and application-defined qualified dimensions.
+3. **Placement topology**: generic nodes with one optional direct parent and explicit acceptance policy. A node may represent any application-defined physical thing or place without kernel category behavior.
+4. **Quantity vector**: one required primary axis plus optional independent measured axes. Fixed-UOM conversion and catch-weight/dual-UOM are different cases.
+5. **Claims**: commitments/reservations over eligible, ordinarily usable resources, possibly less specific than the eventual pick.
+6. **Association graph**: reversible installation/relationship truth independent of physical placement.
+7. **Genealogy graph**: irreversible consume/produce relation from transformations.
+8. **Events**: explicit causes that place, detach, mark missing, relabel, associate, transform, receive, issue, count/reconcile, or correct prior assertions.
+9. **Parties/agents**: actor, owner, possessor, source/destination party, and other business context stay distinguishable.
 
 Current balances are projections of committed event/resource truth.
 
@@ -36,11 +37,21 @@ Current balances are projections of committed event/resource truth.
 
 ### Resource conservation and causal creation/destruction
 
-Internal movement, ownership/custody/status changes, packing, unpacking, and container moves cannot change the physical quantity vector. External receipt/issue and transformation may change per-item totals, but every increase/decrease must be attributed to an explicit event leg.
+Internal movement, ownership/custody/status changes, packing, unpacking, and placement-node moves cannot change the physical quantity vector. External receipt/issue and transformation may change per-item totals, but every increase/decrease must be attributed to an explicit event leg.
 
 ### Dimension independence
 
-A verb changes only the dimensions it names. A location transfer cannot silently change owner, lot, status, package revision, custody, or container. Ownership transfer need not imply physical movement. In-transit stock remains real stock.
+A verb changes only the dimensions it names. A direct-placement transfer cannot silently change owner, lot, status, package revision, custody, whereabouts state, or qualified dimensions. Moving an ancestor changes one parent edge and cannot rewrite descendant stock. Ownership transfer need not imply physical movement. In-transit stock remains real stock.
+
+### Placement topology, embodiment, and unresolved whereabouts
+
+Direct placement is one stock-position dimension; placement-node parentage is a separate topology. Every placed node has at most one direct parent, parents must accept placement, and ancestry is acyclic. Standalone nodes such as rooms, shelves, and bays need no inventory resource. Moving a standalone ancestor changes only that node's parent edge. Descendant stock retains its direct anchor and exact identity while its resolved ancestry changes.
+
+Fungible quantity cannot own placement topology because no exact physical unit exists for descendants to depend on. One exact physical unit may be individualized into one live serial resource, and that serial may uniquely embody one placement node. While active, the serial resource is the authority for the embodied node's parent and lifetime: moving the node moves the resource atomically, and moving/detaching/placing the resource derives the node topology. One serial cannot embody several nodes, one embodied node cannot outlive its live serial, and a generic reclassification cannot fabricate or switch embodiment.
+
+An embodied resource cannot be issued, scrapped, transformed away, or de-individualized while direct stock or child nodes depend on it. Emptying may move direct contents to another room/node without rewriting nested descendants. Once empty, destruction retires the serial/node pair; de-individualization returns one physical unit to generic quantity and also retires the old current identities. Later individualization must use a fresh identity unless append-only correction targets the exact mistaken retirement event and restores that retained physical identity.
+
+Stock may temporarily have no direct placement only through an explicit whereabouts lifecycle. Detach preserves quantity, last-known placement, time, actor/source provenance, and one stable kernel-owned cohort identity. Marking missing does not destroy stock; placing it resolves the current uncertainty; issue and scrap remain distinct terminal physical meanings. Detached/missing stock contributes to accounted on-hand truth but cannot satisfy ordinary reservations or automatic FIFO/FEFO selection until placed again. When such stock embodies a node, the node becomes unplaced/missing through the same resource truth rather than a second topology authority.
 
 ### Quantity-vector correctness
 
@@ -52,7 +63,7 @@ A clinic may physically dispense before a receipt is entered. Under explicit Rec
 
 ### Claim feasibility
 
-All active claims must have at least one feasible non-overlapping assignment to eligible on-hand resources. Refining a broad claim may narrow its eligible set but may not make the set of all claims infeasible. Consumption happens at most once.
+All active claims must have at least one feasible non-overlapping assignment to eligible, known-placed on-hand resources. Refining a broad claim may narrow its eligible set but may not make the set of all claims infeasible. Consumption happens at most once.
 
 ### Heterogeneous compositions and read-only collections
 
@@ -90,13 +101,21 @@ contextual rules rather than an unconditional item merge. InventoryOnce keeps th
 outside physical truth while retaining enough exact member/pool identity for a caller to implement them
 without rewriting stock history.
 
-### Traceability
+### Association and genealogy
 
-Aggregation/disaggregation preserves child identity and is reversible. Association is separately modeled when a relationship is more durable than temporary packing/loading. Transformation consumes input identity and creates output genealogy; consumed identities do not remain active. Graphs must remain structurally valid and non-cyclic where cycles have no physical meaning.
+Physical grouping is placement topology, not a traceability alias. Association is separately modeled for installation/relationship truth that does not define where stock is. Transformation consumes input identity and creates append-only output genealogy; consumed identities do not remain active. Association and genealogy retain their own structural invariants and cannot silently change placement.
 
 ### Physical-count correctness
 
 A cycle count is an observation against a defined snapshot/scope, not `SET balance = counted`. Reconciliation must preserve legitimate movements recorded between snapshot, observation, and finalization; otherwise a late count can erase a real transfer.
+
+### Late historical repair and correction replay
+
+Durable history is append-only. A correction retains its root and replacement assertion; a historical repair retains stable embedded assertion identities and optional omission evidence. Neither operation mutates or deletes an earlier durable row.
+
+Effective-history replay uses the same event-kind rules as live/correction projection. Exact stock effects remain exact, placement-topology source edges may rebase onto corrected earlier topology, reversible traceability removals may become no-ops, and embodied placement remains stock-derived. Fungible under-accounting may become explicit signed deficit only under Record policy; a negative serialized identity is never admitted.
+
+A repair bundle is one atomic publication. Equal-time assertions retain durable repair-envelope order and caller order inside one bundle; explicit anchors fail closed when that ordering is insufficient. Planning conflicts, stale world/journal fences, unknown anchors/assertions, and invalid downstream history leave current truth unchanged. Present-time physical re-anchoring remains the existing count lifecycle rather than a hidden historical rewrite.
 
 ### Durable operation visibility
 
@@ -112,7 +131,7 @@ No single notation is forced to do every job.
 
 - **TLA+/TLC**: temporal protocols, retries, concurrent claims, in-transit workflows, count/reconcile races, durable visibility, liveness/fairness.
 - **Finite resource/multiset models**: conservation, transformation, package/measure algebra, and dimension-preserving rewrites. TLA+ can encode these small models directly; Petri-net/multiset-rewrite literature is the semantic guide.
-- **Graph/property checks**: containment, association, serial uniqueness, genealogy and traceability. Bounded relational checking (Alloy-style reasoning) is appropriate even if implemented initially as TLA+ invariants plus exhaustive TypeScript generators.
+- **Graph/property checks**: placement parentage/capability/acyclicity, association, serial uniqueness, genealogy and traceability. Bounded relational checking (Alloy-style reasoning) is appropriate even if implemented initially as TLA+ invariants plus exhaustive TypeScript generators.
 - **Invariant-confluence/escrow analysis**: documented proof obligations for distributed/offline adapters, deciding exactly which operations require coordination.
 - **Executable refinement/property tests**: every abstract invariant must have a real TypeScript companion. Durable adapters additionally need before/after failpoints at every physical write boundary.
 
@@ -122,16 +141,18 @@ The formal runner executes the model suite exported by `scripts/formal-models.mj
 
 - `CompositionRevision`: exact heterogeneous package generations, revision-pinned opening, transfer preservation, idempotent intent, and component-vector conservation.
 - `CollectionView`: retained read-only group membership and exact member breakdowns without physical merging or substitution authority.
-- `FungibilityPool`: exact revisioned mutual interchangeability without item merging or claim reinterpretation, including location-scoped claims and reservation-safe member transfers.
-- `ResourceDimensions`: location/owner/custody/status are orthogonal and internal rewrites conserve resources.
-- `ReservationScope`: broad claims, later refinement/allocation, and global feasibility.
-- `TraceabilityGraph`: aggregation vs association vs transformation/genealogy.
+- `FungibilityPool`: exact revisioned mutual interchangeability without item merging or claim reinterpretation, including placement-scoped claims and reservation-safe member transfers.
+- `ResourceDimensions`: direct placement, detached/missing whereabouts, owner, custody, and status are orthogonal; internal rewrites conserve resources and preserve lifecycle identity.
+- `ReservationScope`: broad claims, later refinement/allocation, global feasibility, and exclusion of unplaced stock from ordinary capacity.
+- `PlacementGraph`: standalone and serial-embodied placement topology; one-parent/cycle/acceptance safety; generic↔unique conservation; one-to-one embodiment; resource-parent agreement; empty-before-retirement; fresh identity after de-individualization; and ancestor moves that preserve descendant direct anchors.
+- `TraceabilityGraph`: association vs irreversible transformation/genealogy, independent of placement.
 - `PhysicalCount`: snapshot/observation/reconciliation in the presence of legitimate concurrent movements.
 - `DualMeasure`: primary quantity plus independent catch-weight/secondary measurement.
 - `InventoryOperation`: durable idempotent all-or-nothing visibility.
 - `PackagingIdentity`: revision-frozen whole-package constraints.
 - `DistributedRights`: allocated decrement/reservation rights and free-right transfer, checking rights-to-stock backing, physical accounting, and consumption bounds. Partition/merge behavior is not yet modeled.
 - `CorrectionHistory`: immutable event correction/supersession with partial correction writes hidden until the logical correction is complete.
+- `HistoricalRepair`: append-only late assertions publish atomically, preserve original evidence, reject serialized conflicts, keep Reject-mode history non-negative, and retain explicit Record-mode deficits.
 - `DurableTransferRefinement`: the concrete crash-separated transfer protocol must implement an abstract atomic transfer under an explicit refinement mapping.
 - `RepairLiveness`: under weak fairness, pending repair work eventually reaches a terminal completed/aborted state.
 
@@ -155,7 +176,7 @@ This is intentionally a mixed bibliography: warehouse standards say which distin
 - HL7 FHIR MedicationKnowledge — ingredient, strength, dose form, intended route, and packaging are separate medication knowledge facts; a clinic must not infer therapeutic interchangeability from inventory identity alone.
 - Oracle WMS LPN reservation/handling-unit semantics — reservations over whole handling units and lot-qualified contents.
 - Coloured Petri Net and multiset-rewriting literature — resource-sensitive discrete-event semantics and exhaustive finite-state analysis.
-- Alloy/relational-modeling literature — bounded structural checking for graph-shaped identities, containment and object-centric event relationships.
+- Alloy/relational-modeling literature — bounded structural checking for graph-shaped identities, placement parentage and object-centric event relationships.
 
 These references are design input, not claims that InventoryOnce is API-compatible with any one system or standard. Where a standard gives a transport/event vocabulary, InventoryOnce should preserve enough distinctions to map cleanly without adopting that standard as its internal persistence schema.
 
@@ -166,16 +187,22 @@ The current TypeScript contracts now embody several direct consequences of these
 - **Published definitions are retained facts.** Catalogue revisions are immutable, publications carry
   their exact snapshots, active pointers move only to retained revisions, and later catalogues must
   preserve prior meaning.
-- **Reclassification is a multiset-conserving operation.** Split/merge/relot/recontainer/status changes
+- **Reclassification is a multiset-conserving operation.** Split/merge/relot/direct-placement/status changes
   are one atomic event and conserve every item and exact package bucket. Packaging conversion remains
   an explicit `pack`/`unpack` operation.
-- **Expiry is eligibility, not disappearance.** Lot expiry and container use-by make stock unusable for
+- **Expiry is eligibility, not disappearance.** Lot expiry and placement-ancestry use-by make stock unusable for
   ordinary allocation/consumption but never silently delete quantity. Physical stock, usable stock,
   expired stock, exact allocation, broad demand, and shortage are reported separately.
-- **A handling unit is not a unit of measure.** Package revisions describe exact fixed contents;
-  containers identify actual physical/logical groupings with their own lifecycle metadata.
+- **A placement node is not a unit of measure.** Package revisions describe exact fixed contents;
+  standalone nodes identify places, while an inventory holder node is explicitly embodied by one live
+  serialized resource. Fungible quantity cannot own children, and retired serial/node identities cannot
+  silently become current again.
+- **Individualization is reversible but identity-aware.** Exactly one generic physical unit may become one
+  current serial and optional placement-capable node. Once empty, de-individualization conserves quantity
+  back into the generic pool while retaining and retiring the old identity in history; later
+  individualization receives a fresh identity unless correction reverses the exact mistaken retirement.
 - **Correction is append-only.** Quantity discrepancies use movement-safe count reconciliation; wrong
-  historical assertions, lot metadata, and container metadata use retained correction chains.
+  historical assertions, lot metadata, and placement-node metadata use retained correction chains.
 - **Migration is an interpretation proof boundary.** Typed source queries produce normal opening and
   traceability facts; ambiguity blocks; dry-run binds the plan to an exact target content root; the
   whole batch publishes atomically and can be repaired without rereading legacy storage.
@@ -210,7 +237,7 @@ The formal state is not inferred informally from class names. `scripts/formal-im
 
 The refinement relation is organized around independent projections:
 
-- `abstractInventoryState` — retained catalog digest, exact buckets, lots/containers, committed events, and published revision;
+- `abstractInventoryState` — retained catalog digest, exact buckets, lots/placement nodes, serial embodiment/retirement, topology, committed events, and published revision;
 - `abstractOperationResult` — operation identity, event/receipt revision, replay, allocations, reservation/count result;
 - `abstractReservationState`, `abstractCountState`, and `abstractTraceabilityState` — the books/graphs represented by their dedicated models;
 - `abstractMigrationState` — diagnostics, frozen operation set, target publication, manifest status, and repair/abort result;

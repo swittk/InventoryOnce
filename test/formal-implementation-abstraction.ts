@@ -30,6 +30,7 @@ import type {
   InventoryTraceabilityRelation,
   InventoryTraceabilityState,
 } from "../src/traceability.js";
+import type { InventoryPlacementState } from "../src/placement.js";
 import {
   InventoryAuthorityActivationKind,
   InventoryAuthorityMode,
@@ -90,8 +91,10 @@ export interface AbstractInventoryState {
   readonly events: readonly AbstractInventoryEvent[];
   /** Current lot metadata facts without application decoration. */
   readonly lots: readonly Readonly<Record<string, unknown>>[];
-  /** Current container metadata facts without application decoration. */
-  readonly containers: readonly Readonly<Record<string, unknown>>[];
+  /** Current placement-node metadata facts without application decoration. */
+  readonly placementNodes: readonly Readonly<Record<string, unknown>>[];
+  /** Current direct-parent placement relations in child identity order. */
+  readonly placements: readonly Readonly<Record<string, unknown>>[];
   /** Current first-class physical transfer lifecycle facts. */
   readonly transfers: readonly Readonly<Record<string, unknown>>[];
 }
@@ -110,7 +113,9 @@ export interface AbstractInventoryEvent {
   readonly recordSequence: number;
   /** Exact additive/subtractive resource effects. */
   readonly effects: readonly Readonly<Record<string, unknown>>[];
-  /** Exact graph changes. */
+  /** Exact direct-parent topology changes. */
+  readonly placementChanges: readonly Readonly<Record<string, unknown>>[];
+  /** Exact association/genealogy graph changes. */
   readonly traceabilityChanges: readonly Readonly<Record<string, unknown>>[];
   /** Corrected-root identity when this is a correction. */
   readonly correctsEventId?: string;
@@ -134,9 +139,9 @@ export interface AbstractCountState {
   readonly operations: readonly Readonly<Record<string, unknown>>[];
 }
 
-/** Current graph observation used by traceability refinement. */
+/** Current association/genealogy observation used by traceability refinement. */
 export interface AbstractTraceabilityState {
-  /** Effective containment/association/genealogy relations. */
+  /** Effective association/genealogy relations. */
   readonly relations: readonly Readonly<Record<string, unknown>>[];
 }
 
@@ -246,13 +251,29 @@ export function abstractPositionKey(
   return {
     itemId: key.itemId,
     itemRevisionId: key.itemRevisionId,
-    locationId: key.locationId,
+    ...(key.placementNodeId === undefined
+      ? {}
+      : { placementNodeId: key.placementNodeId }),
+    ...(key.whereaboutsId === undefined
+      ? {}
+      : { whereaboutsId: key.whereaboutsId }),
+    ...(key.whereaboutsState === undefined
+      ? {}
+      : { whereaboutsState: key.whereaboutsState }),
+    ...(key.lastPlacementNodeId === undefined
+      ? {}
+      : { lastPlacementNodeId: key.lastPlacementNodeId }),
+    ...(key.detachedAtEpochMs === undefined
+      ? {}
+      : { detachedAtEpochMs: String(key.detachedAtEpochMs) }),
+    ...(key.missingAtEpochMs === undefined
+      ? {}
+      : { missingAtEpochMs: String(key.missingAtEpochMs) }),
     ...(key.lotId === undefined ? {} : { lotId: key.lotId }),
     ...(key.serialId === undefined ? {} : { serialId: key.serialId }),
     ...(key.packagingRevisionId === undefined
       ? {}
       : { packagingRevisionId: key.packagingRevisionId }),
-    ...(key.containerId === undefined ? {} : { containerId: key.containerId }),
     ...(key.statusId === undefined ? {} : { statusId: key.statusId }),
     ...(key.ownerId === undefined ? {} : { ownerId: key.ownerId }),
     ...(key.custodianId === undefined ? {} : { custodianId: key.custodianId }),
@@ -290,11 +311,15 @@ function abstractProjectionPositionIdentity(key: InventoryStockPositionKey): str
   return JSON.stringify([
     key.itemId,
     key.itemRevisionId,
-    key.locationId,
+    key.placementNodeId ?? null,
+    key.whereaboutsId ?? null,
+    key.whereaboutsState ?? null,
+    key.lastPlacementNodeId ?? null,
+    key.detachedAtEpochMs ?? null,
+    key.missingAtEpochMs ?? null,
     key.lotId ?? null,
     key.serialId ?? null,
     key.packagingRevisionId ?? null,
-    key.containerId ?? null,
     key.statusId ?? null,
     key.ownerId ?? null,
     key.custodianId ?? null,
@@ -320,9 +345,9 @@ function abstractBucket(
 function abstractTransfer(transfer: InventoryTransfer): Readonly<Record<string, unknown>> {
   return canonicalRecord({
     transferId: transfer.transferId,
-    sourceLocationId: transfer.sourceLocationId,
-    transitLocationId: transfer.transitLocationId,
-    destinationLocationId: transfer.destinationLocationId,
+    sourcePlacementNodeId: transfer.sourcePlacementNodeId,
+    transitPlacementNodeId: transfer.transitPlacementNodeId,
+    destinationPlacementNodeId: transfer.destinationPlacementNodeId,
     destinationCustodianId: transfer.destinationCustodianId,
     carrierCustodianId: transfer.carrierCustodianId,
     status: transfer.status,
@@ -381,6 +406,11 @@ function abstractEvent(event: InventoryCommittedEvent): AbstractInventoryEvent {
       itemRevisionId: effect.itemRevisionId,
       position: abstractPositionKey(effect.position),
       measurementsDelta: abstractMeasurements(effect.measurementsDelta),
+    })),
+    placementChanges: (event.placementChanges ?? []).map((change) => ({
+      nodeId: change.nodeId,
+      fromParentNodeId: change.fromParentNodeId ?? null,
+      toParentNodeId: change.toParentNodeId ?? null,
     })),
     traceabilityChanges: event.traceabilityChanges.map((change) => ({
       action: change.action,
@@ -451,17 +481,30 @@ export function abstractInventoryState(
   lots.sort((left, right) =>
     compareAbstractIdentityText(String(left.identity), String(right.identity))
   );
-  const containers = Object.entries(world.projection.containers).map(
-    ([identity, container]) =>
+  const placementNodes = Object.entries(world.projection.placementNodes).map(
+    ([identity, node]) =>
       canonicalRecord({
         identity,
-        definition: container.definition,
-        rootEventId: container.rootEventId,
-        assertedByEventId: container.assertedByEventId,
+        definition: node.definition,
+        rootEventId: node.rootEventId,
+        assertedByEventId: node.assertedByEventId,
+        retiredByEventId: node.retiredByEventId,
       })
   );
-  containers.sort((left, right) =>
+  placementNodes.sort((left, right) =>
     compareAbstractIdentityText(String(left.identity), String(right.identity))
+  );
+  const placements = Object.entries(
+    world.projection.placement.relationByNodeId
+  ).map(([nodeId, relation]) =>
+    canonicalRecord({
+      nodeId,
+      parentNodeId: relation.parentNodeId,
+      createdByEventId: relation.createdByEventId,
+    })
+  );
+  placements.sort((left, right) =>
+    compareAbstractIdentityText(String(left.nodeId), String(right.nodeId))
   );
   const transfers = Object.values(world.projection.transfers ?? {}).map(abstractTransfer);
   transfers.sort((left, right) =>
@@ -474,7 +517,8 @@ export function abstractInventoryState(
     buckets,
     events,
     lots,
-    containers,
+    placementNodes,
+    placements,
     transfers,
   };
 }
@@ -934,6 +978,13 @@ export function assertAbstractInventoryInvariants(
       Object.keys(world.projection.eventIdByOperationId).length !== operationIds.size) {
     throw new Error("Event indexes retain entries without a published event.");
   }
+  for (const relation of Object.values(world.projection.placement.relationByNodeId)) {
+    if (!eventIds.has(relation.createdByEventId)) {
+      throw new Error(
+        `Placement relation names missing creating event '${relation.createdByEventId}'.`
+      );
+    }
+  }
   for (const relation of Object.values(world.projection.traceability.relations)) {
     if (!eventIds.has(relation.createdByEventId)) {
       throw new Error(
@@ -944,6 +995,11 @@ export function assertAbstractInventoryInvariants(
   assertAbstractPositionIndexes(world.projection);
   assertAbstractHistoryIndexes(world.projection);
   assertAbstractCommittedStock(world.projection);
+  assertAbstractPlacementInvariants(
+    world.projection.placement,
+    world.projection.placementNodes,
+    world.projection.positions
+  );
   assertAbstractTraceabilityInvariants(world.projection.traceability);
 }
 
@@ -976,13 +1032,26 @@ function addAbstractIndexMember(groups: Map<string, string[]>, key: string, iden
 function assertAbstractPositionIndexes(p: InventoryWorldState["projection"]): void {
   assertAbstractRecordIdentities(p.positions, row => abstractProjectionPositionIdentity(row.key), "Position");
   assertAbstractRecordIdentities(p.lots, row => JSON.stringify([row.definition.itemId, row.definition.lotId]), "Lot");
-  assertAbstractRecordIdentities(p.containers, row => JSON.stringify([row.definition.containerId]), "Container");
-  const byItem = new Map<string, string[]>(), byRevision = new Map<string, string[]>(), byContainer = new Map<string, string[]>();
+  assertAbstractRecordIdentities(
+    p.placementNodes,
+    row => row.definition.nodeId,
+    "Placement node"
+  );
+  const byItem = new Map<string, string[]>(), byRevision = new Map<string, string[]>(), byPlacementNode = new Map<string, string[]>(), byWhereabouts = new Map<string, string[]>();
   const serials = new Map<string, string>(), positiveLayers = new Set<string>();
   for (const [identity, position] of Object.entries(p.positions)) {
     addAbstractIndexMember(byItem, position.key.itemId, identity);
     addAbstractIndexMember(byRevision, position.key.itemRevisionId, identity);
-    if (position.key.containerId !== undefined) addAbstractIndexMember(byContainer, JSON.stringify([position.key.containerId]), identity);
+    if (position.key.whereaboutsId !== undefined) {
+      addAbstractIndexMember(byWhereabouts, position.key.whereaboutsId, identity);
+    }
+    if (position.key.placementNodeId !== undefined) {
+      addAbstractIndexMember(
+        byPlacementNode,
+        position.key.placementNodeId,
+        identity
+      );
+    }
     if (position.measurements.primary.quantity.amountMinor > 0) {
       positiveLayers.add(identity);
       if (position.key.serialId !== undefined) serials.set(JSON.stringify([position.key.itemId, position.key.serialId]), identity);
@@ -990,8 +1059,66 @@ function assertAbstractPositionIndexes(p: InventoryWorldState["projection"]): vo
   }
   assertAbstractGroupedIndex(p.positionIdsByItemId, byItem, "Item position");
   assertAbstractGroupedIndex(p.positionIdsByItemRevisionId, byRevision, "Revision position");
-  assertAbstractGroupedIndex(p.positionIdsByContainerIdentity, byContainer, "Container position");
+  assertAbstractGroupedIndex(
+    p.positionIdsByWhereaboutsId,
+    byWhereabouts,
+    "Whereabouts cohort position"
+  );
+  assertAbstractGroupedIndex(
+    p.positionIdsByPlacementNodeId,
+    byPlacementNode,
+    "Direct placement position"
+  );
   assertAbstractScalarIndex(p.positivePositionIdBySerialIdentity, serials, "Positive serial");
+  const embodiedNodes = new Map<string, string>();
+  for (const [nodeId, projected] of Object.entries(p.placementNodes)) {
+    const embodiment = projected.definition.embodiedBy;
+    if (embodiment === undefined) continue;
+    const serialIdentity = JSON.stringify([
+      embodiment.itemId,
+      embodiment.serialId,
+    ]);
+    if (embodiedNodes.has(serialIdentity)) {
+      throw new Error("One serial embodiment is bound to more than one node.");
+    }
+    embodiedNodes.set(serialIdentity, nodeId);
+    const positivePositionId = serials.get(serialIdentity);
+    const relation = p.placement.relationByNodeId[nodeId];
+    if (projected.retiredByEventId !== undefined) {
+      if (positivePositionId !== undefined) {
+        throw new Error("Retired embodied node still has a live serial resource.");
+      }
+      if (relation !== undefined) {
+        throw new Error("Retired embodied node remains in placement topology.");
+      }
+      const childNodeIds =
+        p.placement.childNodeIdsByParentNodeId[nodeId] ?? [];
+      const directPositionIds = p.positionIdsByPlacementNodeId[nodeId] ?? [];
+      if (childNodeIds.length !== 0 || directPositionIds.length !== 0) {
+        throw new Error("Retired embodied node still has direct contents.");
+      }
+      continue;
+    }
+    if (positivePositionId === undefined) {
+      throw new Error("Active embodied node has no live serial resource.");
+    }
+    const position = p.positions[positivePositionId];
+    if (position === undefined) {
+      throw new Error("Embodied serial index references missing stock.");
+    }
+    if (relation?.parentNodeId !== position.key.placementNodeId) {
+      if (relation !== undefined || position.key.placementNodeId !== undefined) {
+        throw new Error(
+          "Embodied node parent differs from its unique resource placement."
+        );
+      }
+    }
+  }
+  assertAbstractScalarIndex(
+    p.placementNodeIdByEmbodiedSerialIdentity,
+    embodiedNodes,
+    "Embodied serial placement node"
+  );
   if (Object.keys(p.positiveLayerStartedAtEpochMsByPositionId).length !== positiveLayers.size) throw new Error("Positive layer index domain differs from positive positions.");
   for (const identity of positiveLayers) if (!Object.hasOwn(p.positiveLayerStartedAtEpochMsByPositionId, identity) || !Number.isSafeInteger(p.positiveLayerStartedAtEpochMsByPositionId[identity])) throw new Error("Positive layer index lacks a valid occurrence time.");
   const lotsByItem = new Map<string, string[]>();
@@ -1001,7 +1128,7 @@ function assertAbstractPositionIndexes(p: InventoryWorldState["projection"]): vo
 
 /** Derive retained metadata ownership and current corrections from ordered event facts, including tombstoned masters. */
 function assertAbstractHistoryIndexes(p: InventoryWorldState["projection"]): void {
-  const lotRoots = new Map<string, string>(), containerRoots = new Map<string, string>(), corrections = new Map<string, string>();
+  const lotRoots = new Map<string, string>(), placementNodeRoots = new Map<string, string>(), corrections = new Map<string, string>();
   const events = Object.values(p.events).sort((a, b) => a.recordSequence - b.recordSequence);
   for (const event of events) {
     const root = event.correction?.correctsEventId ?? event.eventId;
@@ -1010,13 +1137,18 @@ function assertAbstractHistoryIndexes(p: InventoryWorldState["projection"]): voi
       const identity = JSON.stringify([lot.itemId, lot.lotId]);
       if (!lotRoots.has(identity)) lotRoots.set(identity, root);
     }
-    for (const container of event.containerDefinitions ?? []) {
-      const identity = JSON.stringify([container.containerId]);
-      if (!containerRoots.has(identity)) containerRoots.set(identity, root);
+    for (const node of event.placementNodeDefinitions ?? []) {
+      if (!placementNodeRoots.has(node.nodeId)) {
+        placementNodeRoots.set(node.nodeId, root);
+      }
     }
   }
   assertAbstractScalarIndex(p.lotRootEventIdByIdentity, lotRoots, "Lot root ownership");
-  assertAbstractScalarIndex(p.containerRootEventIdByIdentity, containerRoots, "Container root ownership");
+  assertAbstractScalarIndex(
+    p.placementNodeRootEventIdByNodeId,
+    placementNodeRoots,
+    "Placement-node root ownership"
+  );
   assertAbstractScalarIndex(p.correctionEventIdByCorrectedEventId, corrections, "Current correction");
   assertAbstractRecordIdentities(p.transfers, row => row.transferId, "Transfer");
 }
@@ -1130,15 +1262,56 @@ function abstractOptionalIdentityMatches(value: string | undefined, kind: "prese
 }
 
 /** Independently interpret all frozen selector dimensions without calling the production matcher. */
-function abstractPositionMatchesSelector(position: InventoryStockPositionKey, selector: InventoryStockSelector): boolean {
+function abstractPositionMatchesSelector(
+  position: InventoryStockPositionKey,
+  selector: InventoryStockSelector,
+  placement?: InventoryPlacementState
+): boolean {
   if (position.itemId !== selector.itemId) return false;
   if (selector.itemRevisionIds !== undefined && selector.itemRevisionIds.length !== 0 && !selector.itemRevisionIds.includes(position.itemRevisionId)) return false;
-  if (selector.locationIds !== undefined && selector.locationIds.length !== 0 && !selector.locationIds.includes(position.locationId)) return false;
+  if (
+    selector.placement !== undefined &&
+    !abstractOptionalIdentityMatches(
+      position.placementNodeId,
+      selector.placement.kind,
+      selector.placement.valueIds
+    )
+  ) return false;
+  if (selector.placementNodeIds !== undefined && selector.placementNodeIds.length !== 0 && (position.placementNodeId === undefined || !selector.placementNodeIds.includes(position.placementNodeId))) return false;
+  if (
+    selector.whereabouts !== undefined &&
+    !abstractOptionalIdentityMatches(
+      position.whereaboutsId,
+      selector.whereabouts.kind,
+      selector.whereabouts.valueIds
+    )
+  ) return false;
+  if (selector.whereaboutsIds !== undefined && selector.whereaboutsIds.length !== 0 && (position.whereaboutsId === undefined || !selector.whereaboutsIds.includes(position.whereaboutsId))) return false;
+  if (
+    selector.whereaboutsStates !== undefined &&
+    (position.whereaboutsState === undefined ||
+      !selector.whereaboutsStates.includes(position.whereaboutsState))
+  ) return false;
+  if (selector.withinPlacementNodeIds !== undefined) {
+    if (position.placementNodeId === undefined) return false;
+    if (placement === undefined) {
+      throw new Error(
+        "Abstract subtree selector requires placement topology."
+      );
+    }
+    let matched = false;
+    for (const rootNodeId of selector.withinPlacementNodeIds) {
+      if (abstractPlacementNodeIsWithin(placement, position.placementNodeId, rootNodeId)) {
+        matched = true;
+        break;
+      }
+    }
+    if (!matched) return false;
+  }
   const identities = [
     [selector.lot, selector.lotIds, position.lotId],
     [selector.serial, selector.serialIds, position.serialId],
     [selector.packagingRevision, selector.packagingRevisionIds, position.packagingRevisionId],
-    [selector.container, selector.containerIds, position.containerId],
     [selector.status, selector.statusIds, position.statusId],
     [selector.owner, selector.ownerIds, position.ownerId],
     [selector.custodian, selector.custodianIds, position.custodianId],
@@ -1157,7 +1330,8 @@ function abstractPositionMatchesSelector(position: InventoryStockPositionKey, se
 
 /** Independently check claim lifecycle/allocation evidence. */
 export function assertAbstractReservationInvariants(
-  book: InventoryReservationBook
+  book: InventoryReservationBook,
+  placement?: InventoryPlacementState
 ): void {
   assertAbstractRecordIdentities(book.reservations, row => row.reservationId, "Reservation");
   assertAbstractRecordIdentities(book.operations, row => row.operationId, "Reservation operation");
@@ -1191,7 +1365,7 @@ export function assertAbstractReservationInvariants(
     const positions = new Set<string>();
     let allocatedTotal: AbstractExactAmount | undefined;
     for (const allocation of reservation.allocations) {
-      if (!abstractPositionMatchesSelector(allocation.position, reservation.selector)) throw new Error("Reservation allocation lies outside its frozen selector.");
+      if (!abstractPositionMatchesSelector(allocation.position, reservation.selector, placement)) throw new Error("Reservation allocation lies outside its frozen selector.");
       allocatedTotal = addAbstractExactAmount(allocatedTotal, allocation.quantity);
       if (allocation.quantity.amountMinor <= 0) {
         throw new Error(
@@ -1314,14 +1488,78 @@ function assertAbstractDirectedGraphAcyclic(
   }
 }
 
-/** Independently check effective traceability identities, indexes, and graph invariants. */
+/** Return whether one node is equal to or descends from one candidate root. */
+function abstractPlacementNodeIsWithin(
+  state: InventoryPlacementState,
+  nodeId: string,
+  rootNodeId: string
+): boolean {
+  const visited = new Set<string>();
+  let current: string | undefined = nodeId;
+  while (current !== undefined) {
+    if (current === rootNodeId) return true;
+    if (visited.has(current)) {
+      throw new Error(`Abstract placement graph contains a cycle at '${current}'.`);
+    }
+    visited.add(current);
+    current = state.relationByNodeId[current]?.parentNodeId;
+  }
+  return false;
+}
+
+/** Independently check placement identity, child-index, policy, and forest invariants. */
+export function assertAbstractPlacementInvariants(
+  state: InventoryPlacementState,
+  placementNodes: InventoryWorldState["projection"]["placementNodes"] = {},
+  positions: InventoryWorldState["projection"]["positions"] = {}
+): void {
+  const expectedChildren = new Map<string, string[]>();
+  const parentByNode = new Map<string, string>();
+  for (const [nodeId, relation] of Object.entries(state.relationByNodeId)) {
+    if (nodeId !== relation.nodeId) {
+      throw new Error(
+        "Placement relation dictionary key disagrees with its child identity."
+      );
+    }
+    if (nodeId === relation.parentNodeId) {
+      throw new Error(`Abstract placement node '${nodeId}' cannot parent itself.`);
+    }
+    parentByNode.set(nodeId, relation.parentNodeId);
+    addAbstractIndexMember(expectedChildren, relation.parentNodeId, nodeId);
+    if (placementNodes[relation.parentNodeId]?.definition.acceptsPlacement === false) {
+      throw new Error(
+        `Abstract placement parent '${relation.parentNodeId}' rejects direct placement.`
+      );
+    }
+  }
+  assertAbstractGroupedIndex(
+    state.childNodeIdsByParentNodeId,
+    expectedChildren,
+    "Placement child"
+  );
+  const outputs = new Map<string, string[]>();
+  for (const [child, parent] of parentByNode) {
+    addAbstractIndexMember(outputs, child, parent);
+  }
+  assertAbstractDirectedGraphAcyclic(outputs, "placement");
+  for (const position of Object.values(positions)) {
+    if (
+      position.key.placementNodeId !== undefined &&
+      placementNodes[position.key.placementNodeId]?.definition
+        .acceptsPlacement === false
+    ) {
+      throw new Error(
+        `Abstract direct placement node '${position.key.placementNodeId}' rejects stock.`
+      );
+    }
+  }
+}
+
+/** Independently check effective association identities and genealogy DAG invariants. */
 export function assertAbstractTraceabilityInvariants(
   state: InventoryTraceabilityState
 ): void {
-  const parentByChild = new Map<string, string>();
-  const containmentOutputs = new Map<string, string[]>();
   const genealogyOutputs = new Map<string, string[]>();
-  const containerChildrenByParent = new Map<string, string[]>();
   for (const [identity, relation] of Object.entries(state.relations)) {
     const fromIdentity = abstractTraceabilityNodeIdentity(relation.from);
     const toIdentity = abstractTraceabilityNodeIdentity(relation.to);
@@ -1335,35 +1573,10 @@ export function assertAbstractTraceabilityInvariants(
         "Traceability relation dictionary key disagrees with its primary identity."
       );
     }
-    if (relation.kind === "containment") {
-      const earlierParent = parentByChild.get(fromIdentity);
-      if (earlierParent !== undefined && earlierParent !== toIdentity) {
-        throw new Error(
-          `Abstract contained node '${fromIdentity}' cannot have two parents.`
-        );
-      }
-      parentByChild.set(fromIdentity, toIdentity);
-      addAbstractIndexMember(containmentOutputs, fromIdentity, toIdentity);
-      if (relation.from.kind === "container" && relation.to.kind === "container") {
-        addAbstractIndexMember(
-          containerChildrenByParent,
-          toIdentity,
-          relation.from.id
-        );
-      }
-    } else if (relation.kind === "genealogy") {
+    if (relation.kind === "genealogy") {
       addAbstractIndexMember(genealogyOutputs, fromIdentity, toIdentity);
     }
   }
-  assertAbstractGroupedIndex(
-    state.containmentChildContainerIdsByParentNodeIdentity,
-    containerChildrenByParent,
-    "Containment child container"
-  );
-  assertAbstractDirectedGraphAcyclic(
-    containmentOutputs,
-    "containment"
-  );
   assertAbstractDirectedGraphAcyclic(genealogyOutputs, "genealogy");
 }
 
@@ -1495,7 +1708,7 @@ export function assertStateResultRefinement(
   expectedNewRevisionDelta = 1
 ): void {
   assertAbstractInventoryInvariants(after);
-  assertAbstractReservationInvariants(after.reservations);
+  assertAbstractReservationInvariants(after.reservations, after.projection.placement);
   assertAbstractCountInvariants(after.counts);
   const observation = abstractOperationResult(result);
   const resultEvent = "event" in result ? result.event : undefined;
@@ -1665,12 +1878,12 @@ export function assertStateResultRefinement(
 export function abstractPrimaryBalance(
   world: InventoryWorldState,
   itemId: string,
-  locationId: string,
+  placementNodeId: string,
   unit: string
 ): string {
   let total = zeroQuantity(unit);
   for (const bucket of abstractInventoryState(world).buckets) {
-    if (bucket.key.itemId !== itemId || bucket.key.locationId !== locationId)
+    if (bucket.key.itemId !== itemId || bucket.key.placementNodeId !== placementNodeId)
       continue;
     const primary = bucket.measurements.find(
       (measurement) => measurement.axisId === bucket.primaryAxisId

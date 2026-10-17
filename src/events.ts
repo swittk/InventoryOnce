@@ -26,12 +26,12 @@ import {
 import {
   assertInventoryIdentity,
   InventoryTraceabilityNodeKind,
-  inventoryContainerIdentity,
+  inventoryPlacementNodeIdentity,
   inventoryLotIdentity,
   inventoryStockPositionIdentity,
   inventoryTraceabilityNodeIdentity,
   normalizeInventoryStockPositionKey,
-  type InventoryContainerDefinition,
+  type InventoryPlacementNodeDefinition,
   type InventoryLotDefinition,
   type InventoryMetadata,
   type InventoryStockPositionKey,
@@ -39,6 +39,10 @@ import {
   type ItemRevisionId,
   type PartyId,
 } from "./model.js";
+import {
+  normalizeInventoryPlacementChange,
+  type InventoryPlacementChange,
+} from "./placement.js";
 import { compareQuantity, zeroQuantity } from "./quantity.js";
 
 /** Generic reason one committed inventory event changes or annotates resource truth. */
@@ -49,9 +53,9 @@ export enum InventoryEventKind {
   Receipt = "receipt",
   /** Resource left this inventory world for use/dispense/consumption. */
   Issue = "issue",
-  /** Same resource moved between physical/logical locations. */
+  /** Same stock moved between direct placement nodes. */
   Transfer = "transfer",
-  /** Same resource changed owner/custody/status/container/other dimensions. */
+  /** Same resource changed owner/custody/status/direct placement/other dimensions. */
   Reclassification = "reclassification",
   /** Loose/inner stock became one exact intact package form. */
   Pack = "pack",
@@ -63,16 +67,20 @@ export enum InventoryEventKind {
   Scrap = "scrap",
   /** Physical-count reconciliation recorded an explicit discrepancy. */
   CountAdjustment = "count-adjustment",
-  /** Traceability graph changed without changing stock quantities. */
+  /** Generic placement topology changed without rewriting descendant stock. */
+  Placement = "placement",
+  /** Association/genealogy graph changed without changing stock quantities. */
   Traceability = "traceability",
   /** Lot/batch master metadata was asserted without changing stock quantity. */
   LotMetadata = "lot-metadata",
-  /** Handling-unit metadata/use-by facts were asserted without changing stock quantity. */
-  ContainerMetadata = "container-metadata",
+  /** Placement-node metadata/use-by facts were asserted without changing stock quantity. */
+  PlacementNodeMetadata = "placement-node-metadata",
   /** A retained item/package catalogue revision set became durable/active. */
   CatalogPublication = "catalog-publication",
   /** Append-only correction changed current truth while retaining the original event. */
   Correction = "correction",
+  /** Late-discovered historical assertions changed current truth after deterministic replay. */
+  HistoricalRepair = "historical-repair",
 }
 
 /** Reject a runtime event discriminator outside the closed durable event-kind set. */
@@ -88,11 +96,13 @@ function assertSupportedInventoryEventKind(kind: InventoryEventKind): void {
     case InventoryEventKind.Transformation:
     case InventoryEventKind.Scrap:
     case InventoryEventKind.CountAdjustment:
+    case InventoryEventKind.Placement:
     case InventoryEventKind.Traceability:
     case InventoryEventKind.LotMetadata:
-    case InventoryEventKind.ContainerMetadata:
+    case InventoryEventKind.PlacementNodeMetadata:
     case InventoryEventKind.CatalogPublication:
     case InventoryEventKind.Correction:
+    case InventoryEventKind.HistoricalRepair:
       return;
     default:
       throw new Error(`Unsupported inventory event kind '${String(kind)}'.`);
@@ -125,8 +135,6 @@ export interface InventoryStockEffect {
 
 /** Relationship category in the traceability graph. */
 export enum InventoryTraceabilityRelationKind {
-  /** Reversible child-in-container/group relationship. */
-  Containment = "containment",
   /** Longer-lived installation/association relationship. */
   Association = "association",
   /** Irreversible transformation input-to-output genealogy. */
@@ -148,7 +156,6 @@ function assertSupportedTraceabilityRelationKind(
   kind: InventoryTraceabilityRelationKind
 ): void {
   switch (kind) {
-    case InventoryTraceabilityRelationKind.Containment:
     case InventoryTraceabilityRelationKind.Association:
     case InventoryTraceabilityRelationKind.Genealogy:
       return;
@@ -177,7 +184,7 @@ function assertSupportedTraceabilityRelationAction(
 export interface InventoryTraceabilityRelationChange {
   /** Add or remove. */
   readonly action: InventoryTraceabilityRelationAction;
-  /** Containment, association, or genealogy. */
+  /** Association or genealogy. */
   readonly kind: InventoryTraceabilityRelationKind;
   /** Child/subject/transformation-input node. */
   readonly from: InventoryTraceabilityNodeRef;
@@ -195,6 +202,52 @@ export interface InventoryCorrectionReference {
   readonly reason: string;
   /** Current correction event being superseded when this is not the first correction. */
   readonly supersedesCorrectionEventId?: string;
+}
+
+/** One interval where corrected/repaired history records more outflow than accounted inflow. */
+export interface InventoryHistoricalDeficitInterval {
+  /** Frozen item revision governing the exact signed resource. */
+  readonly itemRevisionId: ItemRevisionId;
+  /** Exact signed stock bucket that became negative during historical replay. */
+  readonly position: InventoryStockPositionKey;
+  /** Largest shortage per measured axis; different axes may peak at different times. */
+  readonly maximumDeficit: InventoryMeasurementVector;
+  /** Effective assertion that first made this bucket negative. */
+  readonly startedByEventId: string;
+  /** Physical occurrence time of the deficit start. */
+  readonly startedAtEpochMs: number;
+  /** Effective assertion that returned this bucket to non-negative truth, when resolved. */
+  readonly endedByEventId?: string;
+  /** Physical occurrence time of the resolving assertion, when resolved. */
+  readonly endedAtEpochMs?: number;
+}
+
+/** Auditable consequences derived while replaying corrected or late historical truth. */
+export interface InventoryHistoricalImpact {
+  /** Effective retained/asserted events whose meaning participated in this replay. */
+  readonly affectedEventIds: readonly string[];
+  /** Whereabouts cohorts whose retained lifecycle evidence changed. */
+  readonly whereaboutsIds: readonly string[];
+  /** Newly exposed signed-deficit intervals, including intervals already resolved later. */
+  readonly deficits: readonly InventoryHistoricalDeficitInterval[];
+}
+
+/** One embedded ordinary event assertion discovered after its physical occurrence. */
+export interface InventoryHistoricalAssertion {
+  /** Stable identity inside all historical-repair envelopes. */
+  readonly assertionId: string;
+  /** Optional retained/effective event after which this assertion must be replayed. */
+  readonly afterEventId?: string;
+  /** Ordinary validated physical assertion; never another correction/repair/catalogue event. */
+  readonly event: InventoryEventDraft;
+}
+
+/** Append-only historical-repair evidence retained by one derived current-state delta. */
+export interface InventoryHistoricalRepairEvidence {
+  /** New late-discovered assertions introduced by this repair. */
+  readonly assertions: readonly InventoryHistoricalAssertion[];
+  /** Earlier embedded assertion identities removed from latest effective history. */
+  readonly omittedAssertionIds: readonly string[];
 }
 
 /** One correction-only replacement for the current positive-layer FIFO provenance. */
@@ -256,9 +309,9 @@ export type InventoryTransferLifecycleChange =
   | {
       /** Transfer-lifecycle action value retained or supplied by this record. */ readonly action: InventoryTransferLifecycleAction.Prepare;
       /** Transfer-lifecycle transferId value retained or supplied by this record. */ readonly transferId: string;
-      /** Transfer-lifecycle sourceLocationId value retained or supplied by this record. */ readonly sourceLocationId: string;
-      /** Transfer-lifecycle transitLocationId value retained or supplied by this record. */ readonly transitLocationId: string;
-      /** Transfer-lifecycle destinationLocationId value retained or supplied by this record. */ readonly destinationLocationId: string;
+      /** Transfer-lifecycle sourcePlacementNodeId value retained or supplied by this record. */ readonly sourcePlacementNodeId: string;
+      /** Transfer-lifecycle transitPlacementNodeId value retained or supplied by this record. */ readonly transitPlacementNodeId: string;
+      /** Transfer-lifecycle destinationPlacementNodeId value retained or supplied by this record. */ readonly destinationPlacementNodeId: string;
       /** Transfer-lifecycle destinationCustodianId value retained or supplied by this record. */ readonly destinationCustodianId?: PartyId;
       /** Transfer-lifecycle lines value retained or supplied by this record. */ readonly lines: readonly InventoryTransferPrepareLifecycleLine[];
     }
@@ -295,8 +348,10 @@ export interface InventoryEventDraft {
   readonly positiveLayerProvenanceOverrides?: readonly InventoryPositiveLayerProvenanceOverride[];
   /** Lot/batch facts asserted by this retained event, when known. */
   readonly lotDefinitions?: readonly InventoryLotDefinition[];
-  /** Handling-unit metadata/use-by facts asserted by this event, when known. */
-  readonly containerDefinitions?: readonly InventoryContainerDefinition[];
+  /** Generic placement-node metadata/use-by facts asserted by this event, when known. */
+  readonly placementNodeDefinitions?: readonly InventoryPlacementNodeDefinition[];
+  /** Direct-parent topology changes belonging to the same logical event. */
+  readonly placementChanges?: readonly InventoryPlacementChange[];
   /** Traceability graph changes belonging to the same logical event. */
   readonly traceabilityChanges: readonly InventoryTraceabilityRelationChange[];
   /** Optional first-class physical transfer lifecycle transition represented by this event. */
@@ -317,6 +372,12 @@ export interface InventoryEventDraft {
   readonly reason?: string;
   /** Required correction pointer for a Correction event. */
   readonly correction?: InventoryCorrectionReference;
+  /** Full replacement assertion retained for future corrected-history replay; null means omit. */
+  readonly correctionReplacement?: InventoryEventDraft | null;
+  /** Required embedded evidence for a HistoricalRepair event. */
+  readonly historicalRepair?: InventoryHistoricalRepairEvidence;
+  /** Optional typed replay consequences on a Correction/HistoricalRepair event. */
+  readonly historicalImpact?: InventoryHistoricalImpact;
   /** Extra JSON-safe application facts that do not define inventory math. */
   readonly metadata?: InventoryMetadata;
 }
@@ -335,6 +396,199 @@ export interface DefineInventoryEventInput {
   readonly catalog: InventoryCatalog;
   /** Raw event intent. */
   readonly event: InventoryEventDraft;
+}
+
+/** Normalize one append-only historical-repair envelope and its ordinary assertions. */
+function normalizeInventoryHistoricalRepairEvidence(
+  catalog: InventoryCatalog,
+  kind: InventoryEventKind,
+  repairOccurredAtEpochMs: number,
+  evidence: InventoryHistoricalRepairEvidence | undefined
+): InventoryHistoricalRepairEvidence | undefined {
+  if (evidence === undefined) return undefined;
+  if (kind !== InventoryEventKind.HistoricalRepair) {
+    throw new Error("Historical repair evidence belongs only to HistoricalRepair events.");
+  }
+  if (
+    evidence.assertions.length === 0 &&
+    evidence.omittedAssertionIds.length === 0
+  ) {
+    throw new Error(
+      "Historical repair must add or omit at least one historical assertion."
+    );
+  }
+  const assertionIds = new Set<string>();
+  const eventIds = new Set<string>();
+  const operationIds = new Set<string>();
+  const assertions: InventoryHistoricalAssertion[] = [];
+  for (const raw of evidence.assertions) {
+    assertInventoryIdentity(raw.assertionId, "historical assertionId");
+    if (assertionIds.has(raw.assertionId)) {
+      throw new Error(
+        `Historical repair repeats assertionId '${raw.assertionId}'.`
+      );
+    }
+    assertionIds.add(raw.assertionId);
+    if (raw.afterEventId !== undefined) {
+      assertInventoryIdentity(raw.afterEventId, "historical assertion afterEventId");
+    }
+    if (
+      raw.event.kind === InventoryEventKind.Correction ||
+      raw.event.kind === InventoryEventKind.HistoricalRepair ||
+      raw.event.kind === InventoryEventKind.CatalogPublication ||
+      raw.event.correction !== undefined ||
+      raw.event.historicalRepair !== undefined ||
+      raw.event.historicalImpact !== undefined ||
+      raw.event.transferLifecycle !== undefined
+    ) {
+      throw new Error(
+        "Historical assertions must be ordinary non-correction, non-repair physical/metadata/graph events."
+      );
+    }
+    if (raw.event.occurredAtEpochMs > repairOccurredAtEpochMs) {
+      throw new Error(
+        "Historical assertion cannot occur after its repair operation."
+      );
+    }
+    const event = defineInventoryEvent({ catalog, event: raw.event });
+    if (eventIds.has(event.eventId) || operationIds.has(event.operationId)) {
+      throw new Error(
+        "Historical repair assertion event/operation identities must be unique."
+      );
+    }
+    eventIds.add(event.eventId);
+    operationIds.add(event.operationId);
+    assertions.push({
+      assertionId: raw.assertionId,
+      ...(raw.afterEventId === undefined
+        ? {}
+        : { afterEventId: raw.afterEventId }),
+      event,
+    });
+  }
+  const omitted = new Set<string>();
+  for (const assertionId of evidence.omittedAssertionIds) {
+    assertInventoryIdentity(assertionId, "omitted historical assertionId");
+    if (assertionIds.has(assertionId)) {
+      throw new Error(
+        `Historical repair cannot add and omit assertion '${assertionId}' together.`
+      );
+    }
+    if (omitted.has(assertionId)) {
+      throw new Error(
+        `Historical repair repeats omitted assertionId '${assertionId}'.`
+      );
+    }
+    omitted.add(assertionId);
+  }
+  const omittedAssertionIds = [...omitted];
+  omittedAssertionIds.sort(compareInventoryIdentityText);
+  return cloneInventoryRetainedData({ assertions, omittedAssertionIds });
+}
+
+/** Normalize typed replay consequences retained on correction/repair events. */
+function normalizeInventoryHistoricalImpact(
+  catalog: InventoryCatalog,
+  kind: InventoryEventKind,
+  impact: InventoryHistoricalImpact | undefined
+): InventoryHistoricalImpact | undefined {
+  if (impact === undefined) return undefined;
+  if (
+    kind !== InventoryEventKind.Correction &&
+    kind !== InventoryEventKind.HistoricalRepair
+  ) {
+    throw new Error(
+      "Historical impact belongs only to Correction/HistoricalRepair events."
+    );
+  }
+  const affected = new Set<string>();
+  for (const eventId of impact.affectedEventIds) {
+    assertInventoryIdentity(eventId, "historical impact affected eventId");
+    affected.add(eventId);
+  }
+  const affectedEventIds = [...affected];
+  affectedEventIds.sort(compareInventoryIdentityText);
+  const whereaboutsIds = new Set<string>();
+  for (const whereaboutsId of impact.whereaboutsIds) {
+    assertInventoryIdentity(whereaboutsId, "historical impact whereaboutsId");
+    whereaboutsIds.add(whereaboutsId);
+  }
+  const orderedWhereaboutsIds = [...whereaboutsIds];
+  orderedWhereaboutsIds.sort(compareInventoryIdentityText);
+  const deficits: InventoryHistoricalDeficitInterval[] = [];
+  for (const raw of impact.deficits) {
+    assertInventoryIdentity(raw.startedByEventId, "historical deficit start eventId");
+    assertInventoryEpochMilliseconds(
+      raw.startedAtEpochMs,
+      "historical deficit startedAtEpochMs"
+    );
+    if (
+      (raw.endedByEventId === undefined) !==
+      (raw.endedAtEpochMs === undefined)
+    ) {
+      throw new Error(
+        "Historical deficit end event/time must either both be present or both be omitted."
+      );
+    }
+    if (raw.endedByEventId !== undefined) {
+      assertInventoryIdentity(raw.endedByEventId, "historical deficit end eventId");
+      assertInventoryEpochMilliseconds(
+        raw.endedAtEpochMs!,
+        "historical deficit endedAtEpochMs"
+      );
+      if (raw.endedAtEpochMs! < raw.startedAtEpochMs) {
+        throw new Error("Historical deficit cannot end before it starts.");
+      }
+    }
+    const position = normalizeInventoryStockPositionKey(raw.position);
+    const item = catalog.itemRevision(raw.itemRevisionId);
+    if (position.itemId !== item.itemId) {
+      throw new Error(
+        "Historical deficit position does not match its item revision."
+      );
+    }
+    assertPositionMatchesItem(item, position);
+    assertMeasurementsMatchItem(item, raw.maximumDeficit, true);
+    positiveInventoryMeasurements(
+      raw.maximumDeficit,
+      "Historical maximum deficit"
+    );
+    deficits.push({
+      itemRevisionId: raw.itemRevisionId,
+      position,
+      maximumDeficit: raw.maximumDeficit,
+      startedByEventId: raw.startedByEventId,
+      startedAtEpochMs: raw.startedAtEpochMs,
+      ...(raw.endedByEventId === undefined
+        ? {}
+        : {
+            endedByEventId: raw.endedByEventId,
+            endedAtEpochMs: raw.endedAtEpochMs!,
+          }),
+    });
+  }
+  deficits.sort(
+    /** Order deficit intervals by physical start, event, then position. */
+    (left, right) => {
+    const time = left.startedAtEpochMs - right.startedAtEpochMs;
+    if (time !== 0) return time;
+    const event = compareInventoryIdentityText(
+      left.startedByEventId,
+      right.startedByEventId
+    );
+    return event !== 0
+      ? event
+      : compareInventoryIdentityText(
+          inventoryStockPositionIdentity(left.position),
+          inventoryStockPositionIdentity(right.position)
+        );
+    }
+  );
+  return cloneInventoryRetainedData({
+    affectedEventIds,
+    whereaboutsIds: orderedWhereaboutsIds,
+    deficits,
+  });
 }
 
 /** Validate, merge, and deterministically sort one event intent. */
@@ -402,6 +656,80 @@ export function defineInventoryEvent({
       throw new Error("Inventory correction needs a non-empty reason.");
     }
   }
+  if (
+    event.kind === InventoryEventKind.Correction &&
+    event.correctionReplacement === undefined
+  ) {
+    throw new Error(
+      "Correction event requires an explicit replacement assertion or null omission."
+    );
+  }
+  if (
+    event.kind !== InventoryEventKind.Correction &&
+    event.correctionReplacement !== undefined
+  ) {
+    throw new Error(
+      "Only a Correction event may retain a correction replacement assertion."
+    );
+  }
+  let correctionReplacement: InventoryEventDraft | null | undefined;
+  if (event.correctionReplacement === null) {
+    correctionReplacement = null;
+  } else if (event.correctionReplacement !== undefined) {
+    const replacement = event.correctionReplacement;
+    if (
+      replacement.kind === InventoryEventKind.Correction ||
+      replacement.kind === InventoryEventKind.HistoricalRepair ||
+      replacement.kind === InventoryEventKind.CatalogPublication ||
+      replacement.correction !== undefined ||
+      replacement.correctionReplacement !== undefined ||
+      replacement.historicalRepair !== undefined ||
+      replacement.historicalImpact !== undefined ||
+      replacement.transferLifecycle !== undefined
+    ) {
+      throw new Error(
+        "Correction replacement evidence must be one ordinary non-correction assertion."
+      );
+    }
+    correctionReplacement = defineInventoryEvent({
+      catalog,
+      event: replacement,
+    });
+  }
+  if (
+    event.kind === InventoryEventKind.HistoricalRepair &&
+    event.historicalRepair === undefined
+  ) {
+    throw new Error("HistoricalRepair event needs historicalRepair evidence.");
+  }
+  if (
+    event.kind !== InventoryEventKind.HistoricalRepair &&
+    event.historicalRepair !== undefined
+  ) {
+    throw new Error(
+      "Only a HistoricalRepair event may retain historicalRepair evidence."
+    );
+  }
+  if (
+    event.historicalImpact !== undefined &&
+    event.kind !== InventoryEventKind.Correction &&
+    event.kind !== InventoryEventKind.HistoricalRepair
+  ) {
+    throw new Error(
+      "Only Correction/HistoricalRepair events may retain historical impact."
+    );
+  }
+  const historicalRepair = normalizeInventoryHistoricalRepairEvidence(
+    catalog,
+    event.kind,
+    event.occurredAtEpochMs,
+    event.historicalRepair
+  );
+  const historicalImpact = normalizeInventoryHistoricalImpact(
+    catalog,
+    event.kind,
+    event.historicalImpact
+  );
   const stockEffects = normalizeStockEffects(
     catalog,
     event.stockEffects,
@@ -424,8 +752,11 @@ export function defineInventoryEvent({
     catalog,
     event.lotDefinitions ?? []
   );
-  const containerDefinitions = normalizeContainerDefinitions(
-    event.containerDefinitions ?? []
+  const placementNodeDefinitions = normalizePlacementNodeDefinitions(
+    event.placementNodeDefinitions ?? []
+  );
+  const placementChanges = normalizePlacementChanges(
+    event.placementChanges ?? []
   );
   const traceabilityChanges = normalizeTraceabilityChanges(
     event.traceabilityChanges
@@ -452,28 +783,32 @@ export function defineInventoryEvent({
   if (
     stockEffects.length === 0 &&
     lotDefinitions.length === 0 &&
-    containerDefinitions.length === 0 &&
+    placementNodeDefinitions.length === 0 &&
+    placementChanges.length === 0 &&
     traceabilityChanges.length === 0 &&
     event.kind !== InventoryEventKind.Correction &&
+    event.kind !== InventoryEventKind.HistoricalRepair &&
     event.kind !== InventoryEventKind.CatalogPublication
   ) {
     throw new Error(
-      "Inventory event needs a stock, lot/container metadata, or traceability change."
+      "Inventory event needs a stock, metadata, placement, or traceability change."
     );
   }
   assertEventKindShape(
     event.kind,
     stockEffects,
     lotDefinitions,
-    containerDefinitions,
+    placementNodeDefinitions,
+    placementChanges,
     traceabilityChanges
   );
   assertLotDefinitionsBelongToEvent(event.kind, stockEffects, lotDefinitions);
-  assertContainerDefinitionsBelongToEvent(
+  assertPlacementNodeDefinitionsBelongToEvent(
     event.kind,
     stockEffects,
+    placementChanges,
     traceabilityChanges,
-    containerDefinitions
+    placementNodeDefinitions
   );
   // Snapshot the complete validated intent, not a hand-maintained subset of optional fact fields.
   return cloneInventoryRetainedData({
@@ -482,9 +817,15 @@ export function defineInventoryEvent({
     positiveLayerProvenanceTransfers,
     positiveLayerProvenanceOverrides,
     lotDefinitions,
-    containerDefinitions,
+    placementNodeDefinitions,
+    placementChanges,
     traceabilityChanges,
     ...(transferLifecycle === undefined ? {} : { transferLifecycle }),
+    ...(correctionReplacement === undefined
+      ? {}
+      : { correctionReplacement }),
+    ...(historicalRepair === undefined ? {} : { historicalRepair }),
+    ...(historicalImpact === undefined ? {} : { historicalImpact }),
   });
 }
 
@@ -501,6 +842,22 @@ export function commitInventoryEvent(
     throw new Error(
       "Inventory event occurredAtEpochMs cannot be after its durable recordedAtEpochMs time."
     );
+  }
+  if (
+    event.correctionReplacement !== undefined &&
+    event.correctionReplacement !== null &&
+    event.correctionReplacement.occurredAtEpochMs > recordedAtEpochMs
+  ) {
+    throw new Error(
+      "Correction replacement occurredAtEpochMs cannot be after durable correction record time."
+    );
+  }
+  for (const assertion of event.historicalRepair?.assertions ?? []) {
+    if (assertion.event.occurredAtEpochMs > recordedAtEpochMs) {
+      throw new Error(
+        "Historical assertion occurredAtEpochMs cannot be after durable repair record time."
+      );
+    }
   }
   for (const override of event.positiveLayerProvenanceOverrides ?? []) {
     if (override.startedAtEpochMs !== undefined) {
@@ -541,10 +898,46 @@ export function inventoryEventIntentFingerprint(
           event.correction.reason,
           event.correction.supersedesCorrectionEventId ?? null,
         ],
+    event.correctionReplacement === undefined ||
+    event.correctionReplacement === null
+      ? null
+      : inventoryEventIntentFingerprint(event.correctionReplacement),
+    event.historicalRepair === undefined
+      ? null
+      : [
+          event.historicalRepair.assertions.map(
+            /** Freeze one embedded assertion identity and exact event intent. */
+            (assertion) => [
+            assertion.assertionId,
+            assertion.afterEventId ?? null,
+              inventoryEventIntentFingerprint(assertion.event),
+            ]
+          ),
+          event.historicalRepair.omittedAssertionIds,
+        ],
+    event.historicalImpact === undefined
+      ? null
+      : [
+          event.historicalImpact.affectedEventIds,
+          event.historicalImpact.whereaboutsIds,
+          event.historicalImpact.deficits.map(
+            /** Freeze one typed historical-deficit interval. */
+            (deficit) => [
+            deficit.itemRevisionId,
+            inventoryStockPositionIdentity(deficit.position),
+            inventoryMeasurementsFingerprint(deficit.maximumDeficit),
+            deficit.startedByEventId,
+            deficit.startedAtEpochMs,
+            deficit.endedByEventId ?? null,
+              deficit.endedAtEpochMs ?? null,
+            ]
+          ),
+        ],
     inventoryMetadataFingerprint(event.metadata),
     inventoryTransferLifecycleFingerprint(event.transferLifecycle),
     (event.lotDefinitions ?? []).map(lotDefinitionFingerprintParts),
-    (event.containerDefinitions ?? []).map(containerDefinitionFingerprintParts),
+    (event.placementNodeDefinitions ?? []).map(placementNodeDefinitionFingerprintParts),
+    (event.placementChanges ?? []).map(placementChangeFingerprintParts),
     (event.positiveLayerProvenanceTransfers ?? []).map(
       /** Turn one conserved provenance transfer into stable fingerprint parts. */
       (transfer) => [
@@ -609,16 +1002,16 @@ function normalizeInventoryTransferLifecycleChange(
   }
   if (change.action === InventoryTransferLifecycleAction.Prepare) {
     assertInventoryIdentity(
-      change.sourceLocationId,
-      "transfer sourceLocationId"
+      change.sourcePlacementNodeId,
+      "transfer sourcePlacementNodeId"
     );
     assertInventoryIdentity(
-      change.transitLocationId,
-      "transfer transitLocationId"
+      change.transitPlacementNodeId,
+      "transfer transitPlacementNodeId"
     );
     assertInventoryIdentity(
-      change.destinationLocationId,
-      "transfer destinationLocationId"
+      change.destinationPlacementNodeId,
+      "transfer destinationPlacementNodeId"
     );
     if (change.destinationCustodianId !== undefined)
       assertInventoryIdentity(
@@ -626,12 +1019,12 @@ function normalizeInventoryTransferLifecycleChange(
         "transfer destinationCustodianId"
       );
     if (
-      change.sourceLocationId === change.transitLocationId ||
-      change.sourceLocationId === change.destinationLocationId ||
-      change.transitLocationId === change.destinationLocationId
+      change.sourcePlacementNodeId === change.transitPlacementNodeId ||
+      change.sourcePlacementNodeId === change.destinationPlacementNodeId ||
+      change.transitPlacementNodeId === change.destinationPlacementNodeId
     ) {
       throw new Error(
-        "Transfer source, transit, and destination locations must be distinct."
+        "Transfer source, transit, and destination placements must be distinct."
       );
     }
     if (change.lines.length === 0)
@@ -651,9 +1044,9 @@ function normalizeInventoryTransferLifecycleChange(
         throw new Error(
           "Transfer prepare source position must not already belong to a transfer."
         );
-      if (sourcePosition.locationId !== change.sourceLocationId)
+      if (sourcePosition.placementNodeId !== change.sourcePlacementNodeId)
         throw new Error(
-          "Transfer prepare line source location differs from transfer source."
+          "Transfer prepare line source placement differs from transfer source."
         );
       const sourceIdentity = inventoryStockPositionIdentity(sourcePosition);
       if (seenSources.has(sourceIdentity))
@@ -723,9 +1116,9 @@ function inventoryTransferLifecycleFingerprint(
     return [
       change.action,
       change.transferId,
-      change.sourceLocationId,
-      change.transitLocationId,
-      change.destinationLocationId,
+      change.sourcePlacementNodeId,
+      change.transitPlacementNodeId,
+      change.destinationPlacementNodeId,
       change.destinationCustodianId ?? null,
       change.lines.map(
         /** Process one transfer-lifecycle collection entry deterministically. */ (
@@ -772,10 +1165,11 @@ function normalizePositiveLayerProvenanceTransfers(
     kind !== InventoryEventKind.Transfer &&
     kind !== InventoryEventKind.Reclassification &&
     kind !== InventoryEventKind.Pack &&
-    kind !== InventoryEventKind.Unpack
+    kind !== InventoryEventKind.Unpack &&
+    kind !== InventoryEventKind.Placement
   ) {
     throw new Error(
-      "Only conserved transfer/reclassification/pack/unpack events may carry FIFO provenance."
+      "Only conserved transfer/reclassification/pack/unpack/placement events may carry FIFO provenance."
     );
   }
   const effectByPositionId = new Map<string, InventoryStockEffect>();
@@ -785,7 +1179,7 @@ function normalizePositiveLayerProvenanceTransfers(
       effect
     );
   }
-  const normalized: InventoryPositiveLayerProvenanceTransfer[] = [];
+  const normalized: NormalizedPositiveLayerProvenanceTransferEntry[] = [];
   const endpoints = new Set<string>();
   for (const raw of transfers) {
     const from = normalizeInventoryStockPositionKey(raw.from);
@@ -845,23 +1239,45 @@ function normalizePositiveLayerProvenanceTransfers(
         "Inventory FIFO provenance transfer must pair equal negative and positive measurement vectors."
       );
     }
-    normalized.push({ from, to });
+    normalized.push({
+      transfer: { from, to },
+      fromIdentity,
+      toIdentity,
+    });
   }
-  normalized.sort(comparePositiveLayerProvenanceTransfer);
-  return normalized;
+  normalized.sort(compareNormalizedPositiveLayerProvenanceTransfer);
+  return normalized.map(unwrapNormalizedPositiveLayerProvenanceTransfer);
 }
 
-/** Sort conserved FIFO provenance transfers by exact destination then source identity. */
-function comparePositiveLayerProvenanceTransfer(
-  left: InventoryPositiveLayerProvenanceTransfer,
-  right: InventoryPositiveLayerProvenanceTransfer
+/** One conserved FIFO transfer paired with its already validated exact sort identities. */
+interface NormalizedPositiveLayerProvenanceTransferEntry {
+  /** Freshly normalized source/destination objects kept separate from stock effects. */
+  readonly transfer: InventoryPositiveLayerProvenanceTransfer;
+  /** Collision-free source position identity computed before sorting. */
+  readonly fromIdentity: string;
+  /** Collision-free destination position identity computed before sorting. */
+  readonly toIdentity: string;
+}
+
+/** Sort conserved FIFO provenance by cached destination and source identities. */
+function compareNormalizedPositiveLayerProvenanceTransfer(
+  left: NormalizedPositiveLayerProvenanceTransferEntry,
+  right: NormalizedPositiveLayerProvenanceTransferEntry
 ): number {
-  const destinationOrder = compareInventoryIdentityText(inventoryStockPositionIdentity(
-    left.to
-  ), inventoryStockPositionIdentity(right.to));
+  const destinationOrder = compareInventoryIdentityText(
+    left.toIdentity,
+    right.toIdentity
+  );
   return destinationOrder === 0
-    ? compareInventoryIdentityText(inventoryStockPositionIdentity(left.from), inventoryStockPositionIdentity(right.from))
+    ? compareInventoryIdentityText(left.fromIdentity, right.fromIdentity)
     : destinationOrder;
+}
+
+/** Unwrap one normalized transfer after canonical ordering without changing object ownership. */
+function unwrapNormalizedPositiveLayerProvenanceTransfer(
+  entry: NormalizedPositiveLayerProvenanceTransferEntry
+): InventoryPositiveLayerProvenanceTransfer {
+  return entry.transfer;
 }
 
 /** Validate correction-only FIFO provenance replacements and return stable position ordering. */
@@ -870,9 +1286,13 @@ function normalizePositiveLayerProvenanceOverrides(
   kind: InventoryEventKind,
   overrides: readonly InventoryPositiveLayerProvenanceOverride[]
 ): readonly InventoryPositiveLayerProvenanceOverride[] {
-  if (overrides.length !== 0 && kind !== InventoryEventKind.Correction) {
+  if (
+    overrides.length !== 0 &&
+    kind !== InventoryEventKind.Correction &&
+    kind !== InventoryEventKind.HistoricalRepair
+  ) {
     throw new Error(
-      "Only a Correction event may replace positive-layer FIFO provenance."
+      "Only a Correction/HistoricalRepair event may replace positive-layer FIFO provenance."
     );
   }
   const normalized: InventoryPositiveLayerProvenanceOverride[] = [];
@@ -1060,6 +1480,7 @@ function assertLotDefinitionsBelongToEvent(
 ): void {
   if (
     kind === InventoryEventKind.Correction ||
+    kind === InventoryEventKind.HistoricalRepair ||
     kind === InventoryEventKind.LotMetadata
   )
     return;
@@ -1103,64 +1524,91 @@ function compareLotDefinition(
   return compareInventoryIdentityText(inventoryLotIdentity(left.itemId, left.lotId), inventoryLotIdentity(right.itemId, right.lotId));
 }
 
-/** Validate exact handling-unit facts and return deterministic identity ordering. */
-function normalizeContainerDefinitions(
-  definitions: readonly InventoryContainerDefinition[]
-): readonly InventoryContainerDefinition[] {
-  const normalized: InventoryContainerDefinition[] = [];
+/** Validate generic placement-node facts and return deterministic identity ordering. */
+function normalizePlacementNodeDefinitions(
+  definitions: readonly InventoryPlacementNodeDefinition[]
+): readonly InventoryPlacementNodeDefinition[] {
+  const normalized: InventoryPlacementNodeDefinition[] = [];
   const seen = new Set<string>();
   for (const raw of definitions) {
-    const identity = inventoryContainerIdentity(raw.containerId);
+    const identity = inventoryPlacementNodeIdentity(raw.nodeId);
     if (seen.has(identity)) {
       throw new Error(
-        `Inventory event repeats container definition ${identity}.`
+        `Inventory event repeats placement-node definition ${identity}.`
       );
     }
     seen.add(identity);
+    if (raw.category !== undefined && raw.category.trim().length === 0) {
+      throw new Error("Inventory placement-node category must be omitted instead of empty.");
+    }
     if (
-      raw.containerType !== undefined &&
-      raw.containerType.trim().length === 0
+      raw.acceptsPlacement !== undefined &&
+      typeof raw.acceptsPlacement !== "boolean"
     ) {
-      throw new Error(
-        "Inventory containerType must be omitted instead of empty."
+      throw new Error("Inventory placement-node acceptsPlacement must be boolean.");
+    }
+    if (raw.embodiedBy !== undefined) {
+      assertInventoryIdentity(
+        raw.embodiedBy.itemId,
+        "placement-node embodiedBy itemId"
+      );
+      assertInventoryIdentity(
+        raw.embodiedBy.serialId,
+        "placement-node embodiedBy serialId"
       );
     }
     if (raw.openedAtEpochMs !== undefined) {
-      assertInventoryEpochMilliseconds(raw.openedAtEpochMs, "container openedAtEpochMs");
+      assertInventoryEpochMilliseconds(
+        raw.openedAtEpochMs,
+        "placement-node openedAtEpochMs"
+      );
     }
     if (raw.useByEpochMs !== undefined) {
-      assertInventoryEpochMilliseconds(raw.useByEpochMs, "container useByEpochMs");
+      assertInventoryEpochMilliseconds(
+        raw.useByEpochMs,
+        "placement-node useByEpochMs"
+      );
     }
     if (
       raw.openedAtEpochMs !== undefined &&
       raw.useByEpochMs !== undefined &&
       raw.useByEpochMs <= raw.openedAtEpochMs
     ) {
-      throw new Error("Inventory container useByEpochMs must be after openedAtEpochMs.");
+      throw new Error(
+        "Inventory placement-node useByEpochMs must be after openedAtEpochMs."
+      );
     }
     normalized.push({
-      containerId: raw.containerId,
-      ...(raw.containerType === undefined
+      nodeId: raw.nodeId,
+      ...(raw.category === undefined ? {} : { category: raw.category }),
+      ...(raw.acceptsPlacement === undefined
         ? {}
-        : { containerType: raw.containerType }),
+        : { acceptsPlacement: raw.acceptsPlacement }),
+      ...(raw.embodiedBy === undefined
+        ? {}
+        : { embodiedBy: { ...raw.embodiedBy } }),
       ...(raw.identifiers === undefined
         ? {}
-        : { identifiers: normalizeContainerIdentifiers(raw.identifiers) }),
-      ...(raw.openedAtEpochMs === undefined ? {} : { openedAtEpochMs: raw.openedAtEpochMs }),
-      ...(raw.useByEpochMs === undefined ? {} : { useByEpochMs: raw.useByEpochMs }),
+        : { identifiers: normalizePlacementNodeIdentifiers(raw.identifiers) }),
+      ...(raw.openedAtEpochMs === undefined
+        ? {}
+        : { openedAtEpochMs: raw.openedAtEpochMs }),
+      ...(raw.useByEpochMs === undefined
+        ? {}
+        : { useByEpochMs: raw.useByEpochMs }),
       ...(raw.metadata === undefined ? {} : { metadata: raw.metadata }),
     });
   }
-  normalized.sort(compareContainerDefinition);
+  normalized.sort(comparePlacementNodeDefinition);
   return normalized;
 }
 
-/** Copy external container identifiers in stable key order and reject empty keys/values. */
-function normalizeContainerIdentifiers(
+/** Copy external node identifiers in stable key order and reject empty keys/values. */
+function normalizePlacementNodeIdentifiers(
   identifiers: Readonly<Record<string, string>>
 ): Readonly<Record<string, string>> {
   const keys = Object.keys(identifiers);
-  keys.sort();
+  keys.sort(compareInventoryIdentityText);
   const normalized: Record<string, string> = {};
   for (const key of keys) {
     const value = identifiers[key];
@@ -1170,7 +1618,7 @@ function normalizeContainerIdentifiers(
       value.trim().length === 0
     ) {
       throw new Error(
-        "Inventory container identifiers need non-empty keys and values."
+        "Inventory placement-node identifiers need non-empty keys and values."
       );
     }
     // Direct assignment would invoke the inherited __proto__ setter instead of preserving an own identifier.
@@ -1184,33 +1632,59 @@ function normalizeContainerIdentifiers(
   return normalized;
 }
 
-/** Normal events may assert metadata only for containers their stock/graph changes touch. */
-function assertContainerDefinitionsBelongToEvent(
+/** Normal events may assert metadata only for placement nodes they directly touch. */
+function assertPlacementNodeDefinitionsBelongToEvent(
   kind: InventoryEventKind,
   effects: readonly InventoryStockEffect[],
+  placementChanges: readonly InventoryPlacementChange[],
   traceabilityChanges: readonly InventoryTraceabilityRelationChange[],
-  definitions: readonly InventoryContainerDefinition[]
+  definitions: readonly InventoryPlacementNodeDefinition[]
 ): void {
   if (
     kind === InventoryEventKind.Correction ||
-    kind === InventoryEventKind.ContainerMetadata
-  )
+    kind === InventoryEventKind.HistoricalRepair ||
+    kind === InventoryEventKind.PlacementNodeMetadata
+  ) {
     return;
+  }
   for (const definition of definitions) {
     let found = false;
     for (const effect of effects) {
-      if (effect.position.containerId === definition.containerId) {
+      if (effect.position.placementNodeId === definition.nodeId) {
         found = true;
         break;
+      }
+    }
+    if (!found && definition.embodiedBy !== undefined) {
+      for (const effect of effects) {
+        if (
+          effect.position.itemId === definition.embodiedBy.itemId &&
+          effect.position.serialId === definition.embodiedBy.serialId
+        ) {
+          found = true;
+          break;
+        }
+      }
+    }
+    if (!found) {
+      for (const change of placementChanges) {
+        if (
+          change.nodeId === definition.nodeId ||
+          change.fromParentNodeId === definition.nodeId ||
+          change.toParentNodeId === definition.nodeId
+        ) {
+          found = true;
+          break;
+        }
       }
     }
     if (!found) {
       for (const change of traceabilityChanges) {
         if (
-          (change.from.kind === InventoryTraceabilityNodeKind.Container &&
-            change.from.id === definition.containerId) ||
-          (change.to.kind === InventoryTraceabilityNodeKind.Container &&
-            change.to.id === definition.containerId)
+          (change.from.kind === InventoryTraceabilityNodeKind.PlacementNode &&
+            change.from.id === definition.nodeId) ||
+          (change.to.kind === InventoryTraceabilityNodeKind.PlacementNode &&
+            change.to.id === definition.nodeId)
         ) {
           found = true;
           break;
@@ -1219,19 +1693,22 @@ function assertContainerDefinitionsBelongToEvent(
     }
     if (!found) {
       throw new Error(
-        "Inventory event container metadata must belong to a container touched by the same event."
+        "Inventory event placement-node metadata must belong to a node touched by the same event."
       );
     }
   }
 }
 
-/** Stable collision-free container-definition fingerprint components. */
-function containerDefinitionFingerprintParts(
-  definition: InventoryContainerDefinition
-): readonly (string | number | null)[] {
+/** Stable collision-free placement-node definition fingerprint components. */
+function placementNodeDefinitionFingerprintParts(
+  definition: InventoryPlacementNodeDefinition
+): readonly (string | number | boolean | null)[] {
   return [
-    definition.containerId,
-    definition.containerType ?? null,
+    definition.nodeId,
+    definition.category ?? null,
+    definition.acceptsPlacement ?? null,
+    definition.embodiedBy?.itemId ?? null,
+    definition.embodiedBy?.serialId ?? null,
     inventoryMetadataFingerprint(definition.identifiers),
     definition.openedAtEpochMs ?? null,
     definition.useByEpochMs ?? null,
@@ -1239,12 +1716,49 @@ function containerDefinitionFingerprintParts(
   ];
 }
 
-/** Sort exact container definitions by their collision-free identity. */
-function compareContainerDefinition(
-  left: InventoryContainerDefinition,
-  right: InventoryContainerDefinition
+/** Sort exact placement-node definitions by their collision-free identity. */
+function comparePlacementNodeDefinition(
+  left: InventoryPlacementNodeDefinition,
+  right: InventoryPlacementNodeDefinition
 ): number {
-  return compareInventoryIdentityText(inventoryContainerIdentity(left.containerId), inventoryContainerIdentity(right.containerId));
+  return compareInventoryIdentityText(
+    inventoryPlacementNodeIdentity(left.nodeId),
+    inventoryPlacementNodeIdentity(right.nodeId)
+  );
+}
+
+/** Normalize direct-parent changes and reject repeated nodes inside one event. */
+function normalizePlacementChanges(
+  changes: readonly InventoryPlacementChange[]
+): readonly InventoryPlacementChange[] {
+  const normalized: InventoryPlacementChange[] = [];
+  const seenNodeIds = new Set<string>();
+  for (const raw of changes) {
+    const change = normalizeInventoryPlacementChange(raw);
+    if (seenNodeIds.has(change.nodeId)) {
+      throw new Error(
+        `Inventory event changes placement node '${change.nodeId}' more than once.`
+      );
+    }
+    seenNodeIds.add(change.nodeId);
+    normalized.push(change);
+  }
+  normalized.sort(
+    /** Keep multi-node topology facts deterministic by stable child identity. */
+    (left, right) => compareInventoryIdentityText(left.nodeId, right.nodeId)
+  );
+  return normalized;
+}
+
+/** Stable collision-free placement transition fingerprint components. */
+function placementChangeFingerprintParts(
+  change: InventoryPlacementChange
+): readonly (string | null)[] {
+  return [
+    change.nodeId,
+    change.fromParentNodeId ?? null,
+    change.toParentNodeId ?? null,
+  ];
 }
 
 /** Validate graph changes, forbid genealogy deletion, and return stable ordering. */
@@ -1318,29 +1832,35 @@ function assertEventKindShape(
   kind: InventoryEventKind,
   effects: readonly InventoryStockEffect[],
   lotDefinitions: readonly InventoryLotDefinition[],
-  containerDefinitions: readonly InventoryContainerDefinition[],
+  placementNodeDefinitions: readonly InventoryPlacementNodeDefinition[],
+  placementChanges: readonly InventoryPlacementChange[],
   traceabilityChanges: readonly InventoryTraceabilityRelationChange[]
 ): void {
   for (const change of traceabilityChanges) {
     if (
       change.action === InventoryTraceabilityRelationAction.Invalidate &&
-      kind !== InventoryEventKind.Correction
+      kind !== InventoryEventKind.Correction &&
+      kind !== InventoryEventKind.HistoricalRepair
     ) {
       throw new Error(
-        "Only a Correction event may invalidate an earlier relation assertion."
+        "Only a Correction/HistoricalRepair event may invalidate an earlier relation assertion."
       );
     }
   }
-  if (kind === InventoryEventKind.Correction) return;
+  if (
+    kind === InventoryEventKind.Correction ||
+    kind === InventoryEventKind.HistoricalRepair
+  ) return;
   if (kind === InventoryEventKind.CatalogPublication) {
     if (
       effects.length !== 0 ||
       lotDefinitions.length !== 0 ||
-      containerDefinitions.length !== 0 ||
+      placementNodeDefinitions.length !== 0 ||
+      placementChanges.length !== 0 ||
       traceabilityChanges.length !== 0
     ) {
       throw new Error(
-        "Catalogue-publication event must contain no stock/metadata/traceability changes."
+        "Catalogue-publication event must contain no stock/metadata/placement/traceability changes."
       );
     }
     return;
@@ -1348,26 +1868,46 @@ function assertEventKindShape(
   if (kind === InventoryEventKind.LotMetadata) {
     if (
       effects.length !== 0 ||
-      containerDefinitions.length !== 0 ||
+      placementNodeDefinitions.length !== 0 ||
+      placementChanges.length !== 0 ||
       traceabilityChanges.length !== 0 ||
       lotDefinitions.length === 0
     ) {
       throw new Error(
-        "Lot-metadata event must contain lot facts and no stock/container/traceability changes."
+        "Lot-metadata event must contain lot facts and no stock/placement/traceability changes."
       );
     }
     return;
   }
-  if (kind === InventoryEventKind.ContainerMetadata) {
+  if (kind === InventoryEventKind.PlacementNodeMetadata) {
     if (
       effects.length !== 0 ||
       lotDefinitions.length !== 0 ||
+      placementChanges.length !== 0 ||
       traceabilityChanges.length !== 0 ||
-      containerDefinitions.length === 0
+      placementNodeDefinitions.length === 0
     ) {
       throw new Error(
-        "Container-metadata event must contain container facts and no stock/lot/traceability changes."
+        "Placement-node-metadata event must contain node facts and no stock/lot/topology/traceability changes."
       );
+    }
+    return;
+  }
+  if (kind === InventoryEventKind.Placement) {
+    if (
+      lotDefinitions.length !== 0 ||
+      traceabilityChanges.length !== 0 ||
+      (effects.length === 0 && placementChanges.length === 0)
+    ) {
+      throw new Error(
+        "Placement event needs stock and/or topology changes and cannot contain lot/traceability changes."
+      );
+    }
+    if (effects.length !== 0) {
+      if (effects.length < 2) {
+        throw new Error("Placement stock movement needs at least two effects.");
+      }
+      assertInternalEventConservesEachItem(effects, kind);
     }
     return;
   }
@@ -1375,14 +1915,20 @@ function assertEventKindShape(
     if (
       effects.length !== 0 ||
       lotDefinitions.length !== 0 ||
-      containerDefinitions.length !== 0 ||
+      placementNodeDefinitions.length !== 0 ||
+      placementChanges.length !== 0 ||
       traceabilityChanges.length === 0
     ) {
       throw new Error(
-        "Traceability event must contain relations and no stock/lot/container changes."
+        "Traceability event must contain association/genealogy relations and no stock/metadata/placement changes."
       );
     }
     return;
+  }
+  if (placementChanges.length !== 0) {
+    throw new Error(
+      `Inventory event '${kind}' cannot hide a placement-topology change.`
+    );
   }
   if (effects.length === 0) {
     throw new Error(`Inventory event '${kind}' needs stock effects.`);

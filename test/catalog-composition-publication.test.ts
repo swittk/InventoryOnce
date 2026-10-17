@@ -125,7 +125,7 @@ describe("composition/collection catalogue publication", () => {
       occurredAtEpochMs: time0,
       to: {
         itemId: oldPackItem.itemId,
-        locationId: "store",
+        placementNodeId: "store",
         lotId: "PUBLICATION-OLD-PACK",
       },
       amount: packageAmount(1, oldPackage.revisionId),
@@ -218,7 +218,7 @@ describe("composition/collection catalogue publication", () => {
         occurredAtEpochMs: time1,
         from: {
           itemId: oldPackItem.itemId,
-          locationId: "store",
+          placementNodeId: "store",
           lotId: "PUBLICATION-OLD-PACK",
           packagingRevisionId: oldPackage.revisionId,
         },
@@ -266,7 +266,7 @@ describe("composition/collection catalogue publication", () => {
       occurredAtEpochMs: time1,
       to: {
         itemId: newPackItem.itemId,
-        locationId: "store",
+        placementNodeId: "store",
         lotId: "PUBLICATION-NEW-PACK",
       },
       amount: packageAmount(1, newPackage.revisionId),
@@ -291,7 +291,7 @@ describe("composition/collection catalogue publication", () => {
       occurredAtEpochMs: time2,
       from: {
         itemId: oldPackItem.itemId,
-        locationId: "store",
+        placementNodeId: "store",
         lotId: "PUBLICATION-OLD-PACK",
         packagingRevisionId: oldPackage.revisionId,
       },
@@ -304,7 +304,7 @@ describe("composition/collection catalogue publication", () => {
     const componentRows = await extendedInventory.read.positions({
       itemId: component.itemId,
       itemRevisionIds: [component.revisionId],
-      locationIds: ["store"],
+      placementNodeIds: ["store"],
       lotIds: ["PUBLICATION-OLD-PACK"],
     });
     expect(componentRows[0]?.measurements.primary.quantity.amountMinor).toBe(

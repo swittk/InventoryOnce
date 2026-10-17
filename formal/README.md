@@ -1,109 +1,102 @@
 # InventoryOnce formal models
 
-The formal suite is a forward design constitution plus implementation-level evidence for the
-InventoryOnce TypeScript core. It separates:
+The formal suite is a forward design constitution plus implementation-level evidence for the InventoryOnce TypeScript core. It separates:
 
 1. **safety** — bad inventory states are unreachable;
 2. **refinement** — crash-separated durable behavior maps to the intended atomic operation;
 3. **liveness** — pending repair eventually terminates under explicit fairness assumptions;
-4. **future constraints** — mature semantic families modeled before production adapters implement them.
+4. **future constraints** — mature semantic families may be modeled before every production adapter implements them.
 
 Run every registered model/property with:
 
 ```bash
 source ~/.nvm/nvm.sh
-if [[ -f .nvmrc ]]; then nvm use; else nvm use 22; fi  # fallback must satisfy package.json#engines
+if [[ -f .nvmrc ]]; then nvm use; else nvm use 22; fi
 pnpm formal
 ```
 
-The runner uses the package-pinned `tla2tools.jar`, one unique metadata directory per model process, and
-keeps a failed model directory so a counterexample can be inspected. It also runs thirteen deliberately bad
-transitions: four snapshot-supersession mutations, one cross-transfer receive mutation, one correction-history
-erasure mutation, one split durable-transfer projection mutation, four use-by/reservation guard mutations, one
-duplicate traceability-production mutation, and one implementation-conformance result-delta mutation. TLC must
-reject every one through its named unchanged safety invariant.
+The runner pins `tla2tools.jar`, uses collision-safe metadata directories, retains failed-state metadata, and content-addresses successful proofs. It currently checks **27 positive models**, **21 deliberately invalid mutation configurations**, and **one positive reachability witness**. A mutation check passes only when TLC finds the exact named invariant violation.
 
 ## Registered TLC checks
 
 ### Implemented semantics and executable companions
 
-| Model                          | Formal responsibility                                                                                                                                                                                                                                                               | TypeScript evidence                                                                                       |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `CatalogPublication`           | retained revision sets only grow; active pointers name retained revisions; published snapshots remain replayable; revision meaning never changes; one operation identity freezes one publication                                                                                    | `catalog-publication.test.ts`, catalogue snapshot validation, intent fingerprints                         |
-| `ReclassificationConservation` | split, merge, and movement conserve quantity per item and per exact packaging bucket                                                                                                                                                                                                | `reclassification.test.ts`, `createInventoryReclassificationManyEvent`, event-shape guards                |
-| `UseByReservation`             | normal allocation/consumption excludes expired resources; time or physical loss may create a visible shortage; explicit allow-expired policy remains distinct                                                                                                                       | `availability.test.ts`, `policy-operations.test.ts`, `reservations-counts.test.ts`                        |
-| `InventoryOperation`           | Begin freezes stock, catalogue, lot, container, traceability, reservation, and count roots; staged writes remain hidden; publication changes every root together; later compaction drops only the repair plan and cannot abort the visible world                                    | storage conformance/failpoint suite                                                                       |
-| `PublishedHeadCAS`             | two writers may plan from one published head, but only one compare-and-swap Begin may claim that base; stale work cannot publish over the winner; exact retry stutters; committed history and visible revision stay aligned; once a fence is claimed, repair eventually clears it under weak fairness | durable begin validators/materializers, memory conformance tests, and the contract later adapters must meet |
-| `ReservationSafety`            | one exact reservation cannot be overallocated, consumed twice, or silently reused with changed lifecycle intent                                                                                                                                                                     | reservation tests and façade fingerprints                                                                 |
-| `PackagingIdentity`            | distinct package revisions remain separate even when two revisions contain the same 20-unit quantity; location movement preserves each exact revision and intact 20/24-unit package quantities stay whole                                                                             | catalogue/stock tests and package event validation                                                        |
-| `DurableTransferRefinement`    | concrete event/projection/reservation/count/receipt writes stutter until completion, which refines one abstract atomic transfer                                                                                                                                                     | storage conformance suite and `AbstractTransfer` mapping                                                  |
-| `TransferLifecycle`            | prepared, dispatched, partial-receipt, completed-receipt, and release transitions conserve one transfer independently; cross-transfer receipt cannot consume another transfer’s in-transit stock                                                                               | `transfer-lifecycle.test.ts`, transfer lifecycle event/projection refinement                              |
-| `RepairLiveness`               | under weak fairness, a pending frozen plan eventually publishes/compacts or aborts before publication; repair needs no original planner                                                                                                                                             | generic operation/migration repair tests                                                                  |
-| `CorrectionHistory`            | original history persists; incomplete correction storage does not replace current truth; completed correction advances current meaning atomically                                                                                                                                   | correction tests and append-only projection indexes                                                       |
-| `PhysicalCount`                | snapshot → observation → discrepancy reconciliation preserves legitimate movements during counting                                                                                                                                                                                  | count lifecycle tests                                                                                     |
-| `TraceabilityGraph`            | containment is acyclic; aggregation, association, and irreversible genealogy remain distinct                                                                                                                                                                                        | traceability/correction tests                                                                             |
-| `AuthorityWriterFence`         | explicitly authorized cutover fencing cannot overlap admitted legacy physical writers; activation provenance stays exact and greenfield activation cannot fabricate legacy evidence                                                                                                | `authority.test.ts`, authority control/cutover compare-and-set tests                                      |
-| `SnapshotSupersededWorkflow`   | migration-only snapshot-superseded legacy workflow rows remain audit evidence, generate no physical event or guessed terminal outcome, and cannot resume after the authoritative snapshot/fence transition                                                                          | migration/storage refinement plus four deliberate mutation configs                                        |
-| `RecordedDeficit`              | Record mode keeps genuine shortfall as a signed non-allocatable liability while Reject mode stutters; exact replay preserves the frozen deficit/shortfall and receipts never turn deficit into physical stock                                                                         | policy-operation, migration, projection, and replay tests                                                  |
-| `ImplementationConformance`    | bounded state/result correspondence for representative public calls, exact replay, changed-intent rejection, and the generated API/field/trace/gap evidence bridge                                                                                                                  | generated assurance audit plus executable refinement/conformance tests                                     |
+| Model | Formal responsibility | TypeScript evidence |
+| --- | --- | --- |
+| `CatalogPublication` | retained revision sets only grow; active pointers name retained revisions; published snapshots remain replayable; one operation identity freezes one publication | catalogue publication/retention tests and intent fingerprints |
+| `ReclassificationConservation` | split, merge, relot, status/direct-placement changes conserve quantity per item and exact package bucket | reclassification tests and event-shape guards |
+| `UseByReservation` | normal allocation/consumption excludes expired resources; explicit allow-expired policy stays distinct; time or physical loss may create visible shortage | availability, policy, and reservation tests |
+| `ResourceDimensions` | direct placement, owner, custody, status, transit, and detached/missing whereabouts remain orthogonal; detach/place/missing conserve quantity and stable lifecycle identity | whereabouts, transfer, availability, correction, and count tests |
+| `ReservationScope` | broad claims can narrow/bind while all active claims remain feasible; unplaced stock is accounted but unavailable; ordinary detach cannot strand an exact allocation | reservation/whereabouts feasibility tests plus bad-detach mutation |
+| `ReservationScopeAllocationReplacement` | replacing exact allocation preserves the globally feasible claim book rather than transiently double-allocating | reservation allocation replacement tests |
+| `PlacementGraph` | standalone and serial-embodied nodes; one-parent/acceptance/acyclicity; generic↔unique conservation; one-to-one embodiment; resource-parent agreement; empty-before-retirement; retired-identity non-revival; and ancestor moves that preserve descendant direct stock anchors | cabinet lifecycle/correction/contents tests, embodied move scale regression, and desynchronization/nonempty-retirement mutations |
+| `TraceabilityAssociation` | reversible association remains independent from physical placement and transformation genealogy | association/correction tests |
+| `TraceabilityGraph` | irreversible production genealogy is acyclic and one physical identity cannot be produced twice | transformation/traceability tests plus duplicate-production mutation |
+| `PhysicalCount` | snapshot → observation → discrepancy reconciliation preserves legitimate movements during counting | count lifecycle and absolute-count tests |
+| `InventoryOperation` | Begin freezes stock, catalogue, lot, placement-node, traceability, reservation, and count roots; staged writes stay hidden; publication changes every root atomically | storage conformance/failpoint suite |
+| `PublishedHeadCAS` | only one writer may claim a published base revision; stale work cannot overwrite the winner; repair eventually clears a claimed fence under weak fairness | durable begin validators/materializers and storage conformance |
+| `ReservationSafety` | one exact reservation cannot be overallocated, consumed twice, or replayed with changed intent | reservation tests and façade fingerprints |
+| `PackagingIdentity` | exact package revisions remain separate even with equal scalar counts; direct-placement movement preserves revision identity and whole-package quanta | catalogue/stock/package tests |
+| `DurableTransferRefinement` | crash-separated writes stutter until completion and refine one abstract atomic transfer | storage conformance and `AbstractTransfer` mapping |
+| `TransferLifecycle` | prepare, dispatch, partial/full receive, completion, and release conserve one isolated transfer | transfer lifecycle tests and isolation mutation |
+| `RepairLiveness` | under weak fairness a pending frozen plan eventually publishes/compacts or aborts before publication | generic operation/migration repair tests |
+| `CorrectionHistory` | original history persists; incomplete correction storage cannot replace current truth; completion advances current meaning atomically | correction tests and retained-current-head indexes |
+| `HistoricalRepair` | late assertions publish all-or-nothing, preserve original evidence, reject serialized conflicts, and expose permitted fungible deficits | historical-repair/event-query/scale tests plus segmented failover paths |
+| `AuthorityWriterFence` | cutover fencing cannot overlap admitted legacy writers; activation provenance remains exact | authority/cutover tests |
+| `SnapshotSupersededWorkflow` | snapshot-superseded source rows remain audit evidence, create no physical event or guessed outcome, and cannot resume after the fence | migration/storage refinement plus four mutations |
+| `RecordedDeficit` | Record mode keeps genuine shortfall as signed non-allocatable liability while Reject mode stutters; replay preserves the frozen shortfall | policy, migration, projection, and replay tests |
+| `ImplementationConformance` | bounded state/result correspondence for representative public calls and generated API/field/trace/gap evidence | generated assurance plus executable refinement tests |
 
-### Mature-system constraints ahead of some production adapters
+### Mature-system constraints retained by the core
 
-| Model                 | Design constraint                                                                                                                                                                                                                                                                                                                                        |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CompositionRevision` | two exact heterogeneous package generations coexist across two locations; transfer preserves source revision; opening consumes one intact pack and produces its revision-frozen vector at that location; durable retry identity, source counts, component totals, distinct item axes, and a derived exact report stay safe across active-pointer changes |
-| `CollectionView`      | “same brand” and “all OCPs” are immutable read-only membership revisions; reports retain exact item identity; changing the active view cannot rewrite retained views or authorize substitution                                                                                                                                                           |
-| `FungibilityPool`     | mutual interchangeability is an explicit immutable pool revision with exact common-basis weights; underlying item identity never merges; pool totals remain derived views; active-pointer changes cannot reinterpret frozen claims; direct issue preserves claim feasibility                                                                             |
-| `ResourceDimensions`  | location, owner, custody/possession, status, and in-transit state are orthogonal; only explicit receipt/issue changes total active resources                                                                                                                                                                                                             |
-| `ReservationScope`    | broad claims can narrow and bind while all active claims remain simultaneously feasible; allocated stock cannot fall outside a refined scope; physical loss creates an explicit shortage report                                                                                                                                                          |
-| `DualMeasure`         | primary handling count and independently measured quantity are separate exact axes; one scalar unit is not the deepest inventory ontology                                                                                                                                                                                                                |
-| `DistributedRights`   | escrow free/held rights back remaining physical stock, giving a formal direction for safe offline/distributed reservation and consumption                                                                                                                                                                                                                |
+| Model | Design constraint |
+| --- | --- |
+| `CompositionRevision` | exact heterogeneous package generations coexist across placements; transfer preserves source revision; opening produces its revision-frozen vector at the source direct placement; durable retry intent and component conservation survive active-pointer changes |
+| `CollectionView` | immutable taxonomy/group revisions retain exact member identity and never authorize substitution |
+| `FungibilityPool` | mutual interchangeability is an explicit immutable pool revision; member identity never merges; placement-scoped claims and member movements remain reservation-safe |
+| `DualMeasure` | primary handling count and independently measured quantity are separate exact axes |
+| `DistributedRights` | escrow free/held rights back remaining physical stock and constrain future offline/distributed implementations |
 
-`AbstractTransfer` is imported by `DurableTransferRefinement`; it is the abstract specification rather
-than a separate runner entry.
+`AbstractTransfer` is imported by `DurableTransferRefinement`; it is an abstract specification rather than a separate runner entry.
 
 ## Latest bounded exploration sizes
 
-The exact seed/fingerprint values vary by run. The latest complete run explored:
+The exact seed and fingerprint values vary by run. The latest complete run explored:
 
-| Model/property                 | Generated states | Distinct states | Complete graph depth |
-| ------------------------------ | ---------------: | --------------: | -------------------: |
-| `AuthorityWriterFence`         |       12,393,407 |       2,594,448 |                   35 |
-| `PublishedHeadCAS`             |            4,284 |           1,871 |                   24 |
-| `CompositionRevision`          |           50,849 |           6,688 |                   10 |
-| `CollectionView`               |           13,123 |           1,458 |                   10 |
-| `FungibilityPool`              |        1,337,922 |         113,054 |                   15 |
-| `CatalogPublication`           |           88,723 |          52,552 |                    5 |
-| `ReclassificationConservation` |           34,201 |             900 |                    8 |
-| `UseByReservation`             |              728 |             278 |                    9 |
-| `ResourceDimensions`           |           19,849 |           2,016 |                   12 |
-| `ReservationScope`             |            2,101 |             548 |                    7 |
-| `TraceabilityGraph`            |          212,193 |           1,036 |                   13 |
-| `PhysicalCount`                |            3,268 |           1,134 |                   14 |
-| `DualMeasure`                  |              213 |              43 |                    7 |
-| `DistributedRights`            |              351 |              70 |                    7 |
-| `CorrectionHistory`            |                8 |               7 |                    6 |
-| `DurableTransferRefinement`    |                7 |               6 |                    5 |
-| `TransferLifecycle`             |            4,321 |             929 |                    8 |
-| `RepairLiveness`               |              540 |             265 |                   13 |
-| `RecordedDeficit`              |           21,342 |           2,313 |                    9 |
-| `SnapshotSupersededWorkflow`   |               54 |              25 |                    8 |
-| `InventoryOperation`           |           22,689 |           3,889 |                   12 |
-| `ImplementationConformance`    |          390,895 |           6,488 |                    5 |
-| `ReservationSafety`            |               41 |              25 |                    5 |
-| `PackagingIdentity`            |            1,831 |             383 |                   18 |
+| Model/property | Generated states | Distinct states | Complete graph depth |
+| --- | ---: | ---: | ---: |
+| `AuthorityWriterFence` | 12,393,407 | 2,594,448 | 35 |
+| `PublishedHeadCAS` | 4,284 | 1,871 | 24 |
+| `CompositionRevision` | 33,441 | 6,688 | 10 |
+| `CollectionView` | 13,123 | 1,458 | 9 |
+| `FungibilityPool` | 1,337,922 | 113,054 | 14 |
+| `CatalogPublication` | 88,723 | 52,552 | 5 |
+| `ReclassificationConservation` | 34,201 | 900 | 7 |
+| `UseByReservation` | 1,810 | 558 | 11 |
+| `ResourceDimensions` | 180,145 | 12,816 | 14 |
+| `ReservationScope` | 3,701 | 788 | 7 |
+| `ReservationScopeAllocationReplacement` | 2,361 | 548 | 7 |
+| `PlacementGraph` | 87,339,921 | 20,116 | 16 |
+| `TraceabilityAssociation` | 49,153 | 4,096 | 13 |
+| `TraceabilityGraph` | 1,729 | 320 | 10 |
+| `PhysicalCount` | 5,272 | 1,794 | 16 |
+| `DualMeasure` | 213 | 43 | 7 |
+| `DistributedRights` | 351 | 70 | 7 |
+| `CorrectionHistory` | 8 | 7 | 6 |
+| `HistoricalRepair` | 10,387 | 913 | 9 |
+| `DurableTransferRefinement` | 7 | 6 | 5 |
+| `TransferLifecycle` | 4,321 | 929 | 7 |
+| `RepairLiveness` | 540 | 265 | 13 |
+| `RecordedDeficit` | 21,342 | 2,313 | 8 |
+| `SnapshotSupersededWorkflow` | 162 | 75 | 10 |
+| `InventoryOperation` | 22,689 | 3,889 | 11 |
+| `ImplementationConformance` | 172,510 | 6,481 | 5 |
+| `ReservationSafety` | 41 | 25 | 5 |
+| `PackagingIdentity` | 6,001 | 995 | 17 |
 
 All reachable states in those finite configurations were checked by TLC.
 
-The normal safe-model rows above stay the positive system runs. Thirteen extra mutation configs cover four
-snapshot-supersession violations (resume after disposition, physical disposition event, guessed completed
-outcome, and source movement after capture), one cross-transfer receive that violates transfer isolation, one
-correction-history erasure, one split durable-transfer projection, four use-by controls (epoch-zero reservation
-evidence, stale shortage report, expired ordinary allocation, and expired ordinary consumption), one duplicate
-traceability production, and one implementation-conformance replacement-delta mismatch. The traceability control
-uses a ghost production counter so a second production of the same set-valued identity is observable and must
-violate `ProducedIdentityWasCreatedOnce`. Those runs pass only when TLC finds the exact expected invariant
-violation; they are not folded into the safe models' state counts.
+The 22 negative controls cover four snapshot-supersession violations, cross-transfer receipt, correction-history erasure, partial historical-repair publication, split durable publication, four use-by/reservation failures, reservation detach that strands an allocation, detach incorrectly becoming issue, unstable whereabouts identity, placement cycle, rejecting placement target, descendant rewrite during ancestor movement, embodied-resource/node parent desynchronization, nonempty embodiment termination, duplicate genealogy production, and implementation-conformance result-delta mismatch. The positive reachability witness separately proves that a nonzero frozen snapshot state is reachable. Negative controls are not folded into the positive state counts.
 
 ## What the claims mean
 
@@ -137,21 +130,21 @@ borrowing the `DistributedRights` result as marketing.
 
 `CompositionRevision` uses the motivating calendar-pack generations directly: one exact v1 pack opens
 into 21 active-A plus 7 placebo-P units, while one exact v2 pack opens into 20 active-A, 5 active-B,
-and 3 placebo-C units. The finite configuration has two physical packs of each revision, two locations,
+and 3 placebo-C units. The finite configuration has two physical packs of each revision, two placements,
 and four durable opening identities. TLC explores active-pointer changes, arbitrary unopened-pack
 transfers, independent opening order, and exact retries rather than one scripted sequence.
 
 Every physical pack permanently retains its exact package revision, which points to one exact immutable
-composition revision. Opening consumes exactly one pack token, freezes its package/composition/location/
+composition revision. Opening consumes exactly one pack token, freezes its package/composition/placement/
 output intent under one operation identity, and adds exactly that composition's vector at the pack's
-current location. A retry transition exists only when every frozen field matches; a changed pack,
-package revision, composition revision, or location has no accepted transition. The active composition
+current placement. A retry transition exists only when every frozen field matches; a changed pack,
+package revision, composition revision, or placement has no accepted transition. The active composition
 pointer is never consulted for opening arithmetic.
 
 The configured invariants check the registered v1/v2 vector fields explicitly, then check non-negative bounded types, intact-plus-opened source conservation per
 revision, one completed operation per opened pack, at most one opening contribution per operation ID,
 exact loose production from completed v1/v2 operations, exact production at each recorded opening
-location, component potential conservation, and separate active-A/active-B/placebo-P/placebo-C buckets.
+placement, component potential conservation, and separate active-A/active-B/placebo-P/placebo-C buckets.
 The model has no synthetic `tablet` resource bucket. Its `report` variable is constrained to the exact
 derived physical view after every transfer/open and cannot drive a physical transition. The temporal
 property `CompletedOperationIntentNeverChanges` checks that completed durable intent remains append-only
@@ -183,6 +176,22 @@ revision-pinned decomposition/transformation, not as a mutable `box` conversion.
 revision the UI chooses by default; it never merges physical identity or grants fungibility. Any scalar
 roll-up requires an explicitly compatible measure or basis outside the membership relation itself.
 
+### Append-only historical repair
+
+`HistoricalRepair` models an application learning several earlier physical assertions after later inventory events already exist. The repair either publishes every assertion as one new visible revision or publishes none. Original durable evidence remains retained. A serialized conflict cannot publish; Reject mode cannot publish a signed deficit; Record mode retains the exact requested deficit rather than silently manufacturing missing stock. Same-time assertions retain caller order inside their atomic repair bundle.
+
+The TypeScript implementation refines this with `stock.planHistorical`, `stock.recordHistorical`, `stock.planCorrection`, typed historical-deficit intervals, stable embedded assertion identities, optional durable anchors, indexed dependency-cone replay, and exact world/journal fencing. Existing normal APIs remain unchanged. `counts.reconcile` remains the mechanism for establishing present physical reality without repairing older history.
+
+`HistoricalRepairPartialPublishMutation` deliberately exposes only one assertion from a two-assertion bundle; `HistoricalRepairIsAtomic` must reject it. `HistoricalRepairReverseBundleOrderMutation` publishes a two-assertion bundle in reverse caller order; `SameTimeBundleOrderIsPreserved` must reject it.
+
+### Placement embodiment and reversible individualization
+
+`PlacementGraph` keeps standalone places and inventory-embodied holders distinct without reintroducing a second container authority. Rooms/shelves/bays are ordinary standalone nodes. A cabinet/trolley/tote may instead be embodied by one live serialized resource. The resource placement is authoritative for the node parent; moving it cannot rewrite descendant direct anchors. A fungible quantity cannot embody anything because it has no stable physical identity.
+
+The finite model conserves a fixed total of generic plus active unique resources. `Individualize` removes one generic unit and activates a fresh serial; `Embody` binds that serial one-to-one with a node whose current parent agrees with the serial placement. `DeindividualizeEmbodied` requires zero direct stock, zero child nodes, and zero other active-resource contents before returning one generic unit and retiring both current identities. Normal transitions never revive retired serials or nodes. Append-only correction of a mistaken terminal assertion is tested executable behavior outside that ordinary lifecycle transition system.
+
+Two deliberate mutations independently prove the bridge is real rather than convention: one moves an embodied resource without its node and violates `EmbodiedResourceTracksNodeParent`; the other terminates a nonempty embodiment and violates `EmbodimentTerminationRequiresEmptyNode`. The TypeScript companion additionally rejects duplicate embodiment, missing embodied serials, nonempty scrap/de-individualization, stock placed into retired nodes, and silent old-ID reuse. `placement.moveContents` supplies the one-call evacuation path before retirement.
+
 ### Fungibility versus substitution
 
 `FungibilityPool` models only explicit **mutual interchangeability** under one immutable pool revision.
@@ -190,7 +199,7 @@ Every member retains its exact item identity; a pool is a derived common-basis v
 fulfillment scope, not a stock merge or item reclassification. One revision deliberately gives a member
 a two-to-one basis weight, while an older revision excludes that member. Claims freeze the exact pool
 revision used when created, so changing the active pointer cannot reinterpret an allocation. One claim
-is store-only while another may be fulfilled across locations. Direct pool issue and location transfer
+is store-only while another may be fulfilled across placements. Direct pool issue and direct-placement transfer
 may use only unallocated tokens and must leave all existing scoped claims feasible; exactly allocated
 tokens cannot move underneath their claim.
 

@@ -1,5 +1,23 @@
-/** Return a lowercase SHA-256 digest without adding a runtime dependency or Node-only API. */
+/** Optional synchronous native SHA-256 available on supported Node runtimes. */
+const inventoryNativeCrypto =
+  typeof process !== "undefined" &&
+  typeof process.getBuiltinModule === "function"
+    ? process.getBuiltinModule("node:crypto")
+    : undefined;
+
+/** Return one lowercase SHA-256 digest using native crypto when available. */
 export function inventorySha256(text: string): string {
+  if (inventoryNativeCrypto !== undefined) {
+    return inventoryNativeCrypto
+      .createHash("sha256")
+      .update(text, "utf8")
+      .digest("hex");
+  }
+  return inventoryPortableSha256(text);
+}
+
+/** Portable SHA-256 fallback for browser/RN/embedded runtimes without synchronous native crypto. */
+function inventoryPortableSha256(text: string): string {
   const bytes = new TextEncoder().encode(text);
   const bitLength = BigInt(bytes.length) * 8n;
   const paddedLength = Math.ceil((bytes.length + 9) / 64) * 64;

@@ -31,7 +31,7 @@ describe("generic InventoryOnce read model", () => {
       "surrounding whitespace"
     );
     expect(() =>
-      inventoryStockSelector("item-a", { locationIds: [" store "] })
+      inventoryStockSelector("item-a", { placementNodeIds: [" store "] })
     ).toThrow("surrounding whitespace");
     expect(() =>
       inventoryStockSelector("item-a", { lotIds: [" LOT-A "] })
@@ -45,7 +45,7 @@ describe("generic InventoryOnce read model", () => {
     await inventory.stock.receive({
       operationId: "receive-old-boxes",
       occurredAtEpochMs: time0,
-      to: { itemId: "item-a", locationId: "store", lotId: "old-lot" },
+      to: { itemId: "item-a", placementNodeId: "store", lotId: "old-lot" },
       amount: packageAmount(2, "item-a-box-20-v1"),
       itemRevisionId: "item-a-v1",
     });
@@ -54,7 +54,7 @@ describe("generic InventoryOnce read model", () => {
       occurredAtEpochMs: time1,
       to: {
         itemId: "item-a",
-        locationId: "store",
+        placementNodeId: "store",
         lotId: "new-lot",
         statusId: "usable",
       },
@@ -66,7 +66,7 @@ describe("generic InventoryOnce read model", () => {
       occurredAtEpochMs: time2,
       to: {
         itemId: "item-a",
-        locationId: "store",
+        placementNodeId: "store",
         lotId: "new-lot",
         statusId: "usable",
       },
@@ -75,7 +75,7 @@ describe("generic InventoryOnce read model", () => {
     });
 
     const summary = await inventory.read.summary(
-      inventoryStockSelector("item-a", { locationIds: ["store"] })
+      inventoryStockSelector("item-a", { placementNodeIds: ["store"] })
     );
     expect(
       summary.revisions.map((revision) => revision.itemRevisionId)
@@ -109,7 +109,7 @@ describe("generic InventoryOnce read model", () => {
       ])
     ).toEqual([["usable", 27]]);
     expect(
-      current.byLocation.map((bucket) => [
+      current.byPlacementNode.map((bucket) => [
         bucket.valueId,
         primaryMinor(bucket.measurements),
       ])
@@ -128,7 +128,7 @@ describe("generic InventoryOnce read model", () => {
       occurredAtEpochMs: time0,
       from: {
         itemId: "item-a",
-        locationId: "store",
+        placementNodeId: "store",
         lotId: "__untracked__",
       },
       amount: stockAmount("5", "piece"),
@@ -136,12 +136,12 @@ describe("generic InventoryOnce read model", () => {
     await inventory.stock.receive({
       operationId: "read-model-positive-lot",
       occurredAtEpochMs: time1,
-      to: { itemId: "item-a", locationId: "store", lotId: "POSITIVE" },
+      to: { itemId: "item-a", placementNodeId: "store", lotId: "POSITIVE" },
       amount: stockAmount("10", "piece"),
     });
 
     const summary = await inventory.read.summary(
-      inventoryStockSelector("item-a", { locationIds: ["store"] })
+      inventoryStockSelector("item-a", { placementNodeIds: ["store"] })
     );
     const revision = summary.revisions[0];
     if (revision === undefined) throw new Error("Missing deficit revision.");
@@ -165,7 +165,7 @@ describe("generic InventoryOnce read model", () => {
     const received = await inventory.stock.receive({
       operationId: "read-event-by-operation",
       occurredAtEpochMs: time0,
-      to: { itemId: "item-a", locationId: "store" },
+      to: { itemId: "item-a", placementNodeId: "store" },
       amount: stockAmount("1", "piece"),
     });
     const world = await inventory.read.world();
@@ -226,7 +226,7 @@ describe("generic InventoryOnce read model", () => {
   it("returns a schema-correct zero summary for an active revision with no matching physical stock", async () => {
     const inventory = createTestInventory();
     const summary = await inventory.read.summary(
-      inventoryStockSelector("item-a", { locationIds: ["empty-store"] })
+      inventoryStockSelector("item-a", { placementNodeIds: ["empty-store"] })
     );
     expect(summary.revisions).toHaveLength(1);
     const revision = summary.revisions[0];

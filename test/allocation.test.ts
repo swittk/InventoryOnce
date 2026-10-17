@@ -31,7 +31,7 @@ function candidate({
   const position: InventoryStockPositionKey = {
     itemId: "item-a",
     itemRevisionId: "item-a-v2",
-    locationId: "store",
+    placementNodeId: "store",
     lotId,
   };
   return {

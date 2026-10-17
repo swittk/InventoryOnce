@@ -9,7 +9,10 @@ import {
   type InventoryStockPositionKey,
   type ItemRevisionId,
 } from "./model.js";
-import type { InventoryProjectionState } from "./projection.js";
+import {
+  findInventoryPositions,
+  type InventoryProjectionState,
+} from "./projection.js";
 import { inventorySparseRecordValue } from "./sparse-record.js";
 import {
   inventoryStockSelector,
@@ -31,7 +34,7 @@ import {
 /** Reserved untracked lot identity used by ordinary policy shortfall when no explicit deficit position is supplied. */
 export const INVENTORY_RECORDED_DEFICIT_LOT_ID = "__inventory_deficit__";
 
-/** One positive capacity row that may be burdened by recorded location-level deficit. */
+/** One positive capacity row that may be burdened by recorded direct-placement-pool deficit. */
 export interface InventoryDeficitCapacityLine {
   /** Exact positive physical position supplying this capacity. */
   readonly position: InventoryStockPositionKey;
@@ -41,11 +44,11 @@ export interface InventoryDeficitCapacityLine {
   readonly allocationIncrement?: Quantity;
 }
 
-/** Exact capacities after every selected location's recorded deficit has first priority. */
+/** Exact capacities after every selected direct placement's recorded deficit has first priority. */
 export interface InventoryDeficitCapacityAdjustment {
   /** Adjusted non-negative capacity by exact physical position identity. */
   readonly capacityByPositionIdentity: ReadonlyMap<string, Quantity>;
-  /** Total positive deficit magnitude recorded in the selected location pools. */
+  /** Total positive deficit magnitude recorded in the selected direct-placement pools. */
   readonly recordedDeficit: Quantity;
   /** Deficit still not backed by any supplied positive capacity. */
   readonly uncoveredDeficit: Quantity;
@@ -61,26 +64,64 @@ export interface ApplyInventoryRecordedDeficitBurdenInput {
   readonly axisId: string;
   /** Exact unit used by every capacity/deficit quantity. */
   readonly unit: UnitCode;
-  /** Selected pools; deficit never crosses location boundaries. */
-  readonly locationIds: readonly string[];
+  /** Selected pools; deficit never crosses direct-placement boundaries. */
+  readonly placementNodeIds: readonly string[];
   /** Positive capacities in deterministic burden order, reduced without going negative. */
   readonly lines: readonly InventoryDeficitCapacityLine[];
 }
 
 /**
- * Broaden one caller selector to the location-level pool that owns recorded deficit.
+ * Broaden one caller selector to the direct-placement pool that owns recorded deficit.
  * Lot/package/serial/owner constraints choose what the caller may consume; they do not split
  * one item's shortage into separate liabilities that can be bypassed or paid repeatedly.
  */
 export function inventoryRecordedDeficitPoolSelector(
   selector: InventoryStockSelector,
   itemRevisionId: ItemRevisionId,
-  locationIds: readonly string[]
+  placementNodeIds: readonly string[]
 ): InventoryStockSelector {
   return inventoryStockSelector(selector.itemId, {
     itemRevisionIds: [itemRevisionId],
-    ...(locationIds.length === 0 ? {} : { locationIds }),
+    // Keep subtree ancestry as a predicate: expanding every descendant into
+    // Allowed values turns one warehouse read into quadratic list matching.
+    ...(selector.placementNodeIds === undefined &&
+    selector.withinPlacementNodeIds !== undefined
+      ? { withinPlacementNodeIds: selector.withinPlacementNodeIds }
+      : placementNodeIds.length === 0
+        ? {}
+        : { placementNodeIds }),
   });
+}
+
+/**
+ * Limit deficit pools to direct nodes holding this item revision, without
+ * traversing unrelated empty descendants. Include roots so an empty subtree
+ * never becomes the unconstrained empty-list wildcard.
+ */
+export function inventorySelectedDeficitPlacementNodeIds(
+  projection: InventoryProjectionState,
+  selector: InventoryStockSelector,
+  itemRevisionId: ItemRevisionId
+): readonly string[] {
+  if (selector.placementNodeIds !== undefined) return selector.placementNodeIds;
+  const roots = selector.withinPlacementNodeIds;
+  if (roots === undefined) return [];
+  const selected = new Set<string>(roots);
+  // Reuse the projection's bounded subtree-vs-item index chooser: a small
+  // subtree of a huge item must not scan every unrelated item position,
+  // while a huge empty subtree must not walk all unrelated placement nodes.
+  const occupied = findInventoryPositions(
+    projection,
+    inventoryStockSelector(selector.itemId, {
+      itemRevisionIds: [itemRevisionId],
+      withinPlacementNodeIds: roots,
+    })
+  );
+  for (const position of occupied) {
+    const nodeId = position.key.placementNodeId;
+    if (nodeId !== undefined) selected.add(nodeId);
+  }
+  return [...selected].sort();
 }
 
 /** Return whether one signed projected position is an explicit recorded deficit. */
@@ -103,7 +144,7 @@ export function inventoryPositionDeficitMeasurements(
 }
 
 /**
- * Give durable deficit first claim on positive capacity in the same item-revision/location pool.
+ * Give durable deficit first claim on positive capacity in the same item-revision/direct-placement pool.
  * The burden is a conservative read/allocation calculation; it never writes synthetic lot history.
  */
 export function applyInventoryRecordedDeficitBurden({
@@ -111,10 +152,10 @@ export function applyInventoryRecordedDeficitBurden({
   itemRevisionId,
   axisId,
   unit,
-  locationIds,
+  placementNodeIds,
   lines,
 }: ApplyInventoryRecordedDeficitBurdenInput): InventoryDeficitCapacityAdjustment {
-  const selectedLocations = normalizeLocationIds(locationIds);
+  const selectedLocations = normalizePlacementNodeIds(placementNodeIds);
   const allLocationsSelected = selectedLocations.size === 0;
   const deficitByLocation = recordedDeficitByLocation(
     projection,
@@ -138,10 +179,11 @@ export function applyInventoryRecordedDeficitBurden({
     }
     if (
       !allLocationsSelected &&
-      !selectedLocations.has(line.position.locationId)
+      (line.position.placementNodeId === undefined ||
+        !selectedLocations.has(line.position.placementNodeId))
     ) {
       throw new Error(
-        "Inventory deficit capacity line belongs to an unselected location."
+        "Inventory deficit capacity line belongs to an unselected direct placement."
       );
     }
     requirePositiveCapacity(line.capacity, unit, "Inventory deficit capacity");
@@ -159,23 +201,26 @@ export function applyInventoryRecordedDeficitBurden({
       );
     }
     capacityByPositionIdentity.set(identity, line.capacity);
-    const locationLines = linesByLocation.get(line.position.locationId) ?? [];
+    const poolIdentity = allLocationsSelected
+      ? inventoryDeficitPhysicalPoolIdentity(line.position)
+      : line.position.placementNodeId!;
+    const locationLines = linesByLocation.get(poolIdentity) ?? [];
     locationLines.push(line);
-    linesByLocation.set(line.position.locationId, locationLines);
+    linesByLocation.set(poolIdentity, locationLines);
   }
 
   let burdenLocations: ReadonlySet<string> = selectedLocations;
   if (allLocationsSelected) {
     const allLocations = new Set<string>();
-    for (const locationId of deficitByLocation.keys()) allLocations.add(locationId);
-    for (const locationId of linesByLocation.keys()) allLocations.add(locationId);
+    for (const placementNodeId of deficitByLocation.keys()) allLocations.add(placementNodeId);
+    for (const placementNodeId of linesByLocation.keys()) allLocations.add(placementNodeId);
     burdenLocations = new Set([...allLocations].sort());
   }
 
   let uncoveredDeficit = zeroQuantity(unit);
-  for (const locationId of burdenLocations) {
-    let remaining = deficitByLocation.get(locationId) ?? zeroQuantity(unit);
-    const locationLines = linesByLocation.get(locationId) ?? [];
+  for (const placementNodeId of burdenLocations) {
+    let remaining = deficitByLocation.get(placementNodeId) ?? zeroQuantity(unit);
+    const locationLines = linesByLocation.get(placementNodeId) ?? [];
     for (const line of locationLines) {
       if (
         compareQuantity(remaining, zeroQuantity(unit, remaining.decimals)) <= 0
@@ -206,7 +251,7 @@ export function applyInventoryRecordedDeficitBurden({
   };
 }
 
-/** Collect positive deficit magnitude by exact location without assigning it to lots. */
+/** Collect positive deficit magnitude by exact direct placement without assigning it to lots. */
 function recordedDeficitByLocation(
   projection: InventoryProjectionState,
   itemRevisionId: ItemRevisionId,
@@ -227,7 +272,8 @@ function recordedDeficitByLocation(
     }
     if (
       selectedLocations !== undefined &&
-      !selectedLocations.has(position.key.locationId)
+      (position.key.placementNodeId === undefined ||
+        !selectedLocations.has(position.key.placementNodeId))
     ) continue;
     if (!inventoryPositionIsDeficit(position)) continue;
     const signed = inventoryMeasurementAt(position.measurements, axisId, unit);
@@ -235,15 +281,29 @@ function recordedDeficitByLocation(
       continue;
     }
     const magnitude = negateQuantity(signed);
+    const poolIdentity =
+      selectedLocations === undefined
+        ? inventoryDeficitPhysicalPoolIdentity(position.key)
+        : position.key.placementNodeId!;
     result.set(
-      position.key.locationId,
-      addQuantity(
-        result.get(position.key.locationId) ?? zeroQuantity(unit),
-        magnitude
-      )
+      poolIdentity,
+      addQuantity(result.get(poolIdentity) ?? zeroQuantity(unit), magnitude)
     );
   }
   return result;
+}
+
+/** Stable internal physical-pool identity for broad deficit accounting without inventing a placement. */
+function inventoryDeficitPhysicalPoolIdentity(
+  position: InventoryStockPositionKey
+): string {
+  if (position.placementNodeId !== undefined) {
+    return JSON.stringify(["placement", position.placementNodeId]);
+  }
+  if (position.whereaboutsId === undefined) {
+    throw new Error("Unplaced inventory deficit/capacity lost whereabouts identity.");
+  }
+  return JSON.stringify(["whereabouts", position.whereaboutsId]);
 }
 
 /** Reduce one positive capacity by deficit while respecting intact allocation increments. */
@@ -297,19 +357,19 @@ function floorQuantityToIncrement(
   });
 }
 
-/** Normalize, sort, and reject duplicate/empty location identities. */
-function normalizeLocationIds(values: readonly string[]): ReadonlySet<string> {
+/** Normalize, sort, and reject duplicate/empty direct-placement identities. */
+function normalizePlacementNodeIds(values: readonly string[]): ReadonlySet<string> {
   const normalized = [...values];
   normalized.sort();
   const result = new Set<string>();
   for (const value of normalized) {
     if (value.trim().length === 0 || value !== value.trim()) {
       throw new Error(
-        "Inventory deficit location identity must be non-empty and trimmed."
+        "Inventory deficit direct-placement identity must be non-empty and trimmed."
       );
     }
     if (result.has(value)) {
-      throw new Error(`Inventory deficit repeats location '${value}'.`);
+      throw new Error(`Inventory deficit repeats direct placement '${value}'.`);
     }
     result.add(value);
   }

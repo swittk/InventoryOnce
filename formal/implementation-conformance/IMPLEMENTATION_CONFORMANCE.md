@@ -4,34 +4,34 @@ This file is generated from the exact TypeScript surface plus the checked API, f
 
 Use the repository `.nvmrc` when one exists; otherwise run the assurance command with a Node version permitted by `package.json#engines`. Edit only checked source/manifests, run `pnpm assurance:generate` when generated evidence must change, then run `pnpm assurance --write-report`.
 
-Surface SHA-256: `a0ad0a8c9090b01275089b6f5f31076e90ce5b2783bbb1742dbef96ac61dee1e`
+Surface SHA-256: `53b044940bd5de393ef0b08e0f1ccb295c36681e4c77076e71e166ec6d3eaac7`
 
 ## Mechanically covered surface
 
-- Grouped façade/read methods: 117
+- Grouped façade/read methods: 135
 - Authority-port methods: 14
 - Durable-storage-port methods: 17
-- Public exported class methods: 71
-- Root callable exports: 98
-- Storage callable exports: 23
+- Public exported class methods: 109
+- Root callable exports: 100
+- Storage callable exports: 36
 - Migration callable exports: 15
-- Kernel callable exports: 155
-- Reachable public data types: 377
-- Classified public fields: 2288
-- Input-reachable fields: 1964
-- Output-reachable fields: 849
-- Callback-argument-reachable fields: 342
-- Callback-result-reachable fields: 401
-- Callable-field overload signatures: 10
-- Optional fields: 906
-- Explicit undefined-union fields: 2
-- Explicit nullable fields: 4
-- Public call/construct overload signatures: 510
-- Directly executed public APIs: 200
-- Public APIs exercised through tested internal call chains: 306
+- Kernel callable exports: 191
+- Reachable public data types: 460
+- Classified public fields: 2772
+- Input-reachable fields: 2308
+- Output-reachable fields: 1068
+- Callback-argument-reachable fields: 408
+- Callback-result-reachable fields: 436
+- Callable-field overload signatures: 12
+- Optional fields: 1126
+- Explicit undefined-union fields: 11
+- Explicit nullable fields: 9
+- Public call/construct overload signatures: 617
+- Directly executed public APIs: 257
+- Public APIs exercised through tested internal call chains: 356
 - Explicit-gap public APIs: 4
 - Unreferenced public APIs: 0
-- Explicit recursive type edges: 3
+- Explicit recursive type edges: 5
 - Silently truncated types: 0
 
 Any added/removed method, callable export, class method, type field, field type, or declaration location fails the audit until the checked correspondence is updated.
@@ -40,7 +40,7 @@ Any added/removed method, callable export, class method, type field, field type,
 
 | Family | API entries | Formal models | Status | Gaps |
 |---|---:|---|---|---|
-| allocation-helper | 6 | ReservationScope, ReservationSafety, UseByReservation, PackagingIdentity, FungibilityPool | covered | — |
+| allocation-helper | 6 | ReservationScope, ReservationSafety, UseByReservation, PlacementGraph, PackagingIdentity, FungibilityPool, ResourceDimensions | covered | — |
 | authority-control | 31 | AuthorityWriterFence | covered | — |
 | authority-cutover | 4 | AuthorityWriterFence, CatalogPublication, PublishedHeadCAS, RepairLiveness, SnapshotSupersededWorkflow | covered | GAP-LEGACY-SOURCE-INTERPRETATION |
 | catalog-definition | 76 | CatalogPublication, PackagingIdentity, CompositionRevision, CollectionView, FungibilityPool | covered | GAP-HASH-COLLISION-ASSUMPTION |
@@ -48,45 +48,47 @@ Any added/removed method, callable export, class method, type field, field type,
 | collection-read | 4 | CollectionView | covered | — |
 | composition-open | 3 | CompositionRevision, PackagingIdentity, ReclassificationConservation, DualMeasure, TraceabilityGraph, InventoryOperation | covered | — |
 | composition-read | 3 | CompositionRevision | covered | — |
-| container-command | 8 | ResourceDimensions, TraceabilityGraph, UseByReservation, CorrectionHistory, InventoryOperation | covered | GAP-TRACEABILITY-ADVERSARIAL-GRAPH-SEARCH |
-| correction | 2 | CorrectionHistory, InventoryOperation, PublishedHeadCAS | covered | GAP-COUNT-CORRECTION-HISTORY-REPLAY |
-| count | 11 | PhysicalCount, InventoryOperation, PublishedHeadCAS | covered | GAP-COUNT-CORRECTION-HISTORY-REPLAY |
-| dimension-reclassification | 21 | ResourceDimensions, ReclassificationConservation, InventoryOperation | covered | — |
-| durable-protocol | 43 | InventoryOperation, PublishedHeadCAS, RepairLiveness, DurableTransferRefinement, SnapshotSupersededWorkflow | covered | GAP-DB-IMPLEMENTATION-UNBOUNDED, GAP-PRODUCTION-STORAGE-SCALE-GC, GAP-HASH-COLLISION-ASSUMPTION |
+| correction | 4 | CorrectionHistory, InventoryOperation, PublishedHeadCAS | covered | GAP-COUNT-CORRECTION-HISTORY-REPLAY |
+| count | 11 | PhysicalCount, InventoryOperation, PublishedHeadCAS, ResourceDimensions | covered | GAP-COUNT-CORRECTION-HISTORY-REPLAY |
+| dimension-reclassification | 30 | ResourceDimensions, ReclassificationConservation, InventoryOperation, PlacementGraph | covered | — |
+| durable-protocol | 93 | InventoryOperation, PublishedHeadCAS, RepairLiveness, DurableTransferRefinement, SnapshotSupersededWorkflow | covered | GAP-DB-IMPLEMENTATION-UNBOUNDED, GAP-PRODUCTION-STORAGE-SCALE-GC, GAP-HASH-COLLISION-ASSUMPTION |
 | external-plugin-boundary | 4 | CatalogPublication | explicit-gap | GAP-EXTERNAL-MIGRATION-CALLBACKS, GAP-LEGACY-SOURCE-INTERPRETATION |
 | facade-construction | 2 | InventoryOperation | covered | GAP-EXTERNAL-CLOCK, GAP-DB-IMPLEMENTATION-UNBOUNDED |
 | fungibility-movement | 3 | FungibilityPool, ReservationScope, ReservationSafety, UseByReservation, InventoryOperation, PublishedHeadCAS | covered | GAP-FUNGIBILITY-EXACT-SEARCH-BOUND |
 | fungibility-read | 12 | FungibilityPool, UseByReservation | covered | GAP-FUNGIBILITY-EXACT-SEARCH-BOUND |
-| identity-normalization | 22 | ResourceDimensions, TraceabilityGraph, SnapshotSupersededWorkflow | covered | — |
+| historical-repair | 6 | HistoricalRepair, CorrectionHistory, RecordedDeficit, InventoryOperation, PublishedHeadCAS | covered | — |
+| identity-normalization | 22 | ResourceDimensions, PlacementGraph, TraceabilityGraph, SnapshotSupersededWorkflow | covered | — |
 | lot-command | 3 | UseByReservation, CorrectionHistory, InventoryOperation | covered | — |
-| migration-definition | 8 | CatalogPublication, TraceabilityGraph, ReclassificationConservation, SnapshotSupersededWorkflow, CompositionRevision | covered | GAP-LEGACY-SOURCE-INTERPRETATION, GAP-EXTERNAL-MIGRATION-CALLBACKS |
-| migration-publication | 3 | CatalogPublication, InventoryOperation, PublishedHeadCAS, RepairLiveness, TraceabilityGraph, SnapshotSupersededWorkflow | covered | GAP-LEGACY-SOURCE-INTERPRETATION, GAP-DB-IMPLEMENTATION-UNBOUNDED |
+| migration-definition | 8 | CatalogPublication, PlacementGraph, TraceabilityGraph, ReclassificationConservation, SnapshotSupersededWorkflow, CompositionRevision | covered | GAP-LEGACY-SOURCE-INTERPRETATION, GAP-EXTERNAL-MIGRATION-CALLBACKS |
+| migration-publication | 3 | CatalogPublication, InventoryOperation, PublishedHeadCAS, RepairLiveness, PlacementGraph, TraceabilityGraph, SnapshotSupersededWorkflow | covered | GAP-LEGACY-SOURCE-INTERPRETATION, GAP-DB-IMPLEMENTATION-UNBOUNDED |
 | operation-result-helper | 11 | InventoryOperation, PublishedHeadCAS | covered | — |
 | packaging-reclassification | 4 | PackagingIdentity, ReclassificationConservation, DualMeasure, InventoryOperation | covered | — |
+| placement-command | 18 | PlacementGraph, ResourceDimensions, UseByReservation, CorrectionHistory, InventoryOperation | covered | — |
 | pure-exact-value | 90 | DualMeasure, PackagingIdentity | covered | — |
-| read-current | 27 | PublishedHeadCAS, ResourceDimensions, UseByReservation, ReservationScope, CollectionView, FungibilityPool | covered | — |
-| read-snapshot | 18 | PublishedHeadCAS | covered | GAP-DB-IMPLEMENTATION-UNBOUNDED |
+| read-current | 34 | PublishedHeadCAS, ResourceDimensions, PlacementGraph, UseByReservation, ReservationScope, CollectionView, FungibilityPool, CorrectionHistory | covered | — |
+| read-history | 18 | HistoricalRepair, CorrectionHistory, PublishedHeadCAS | covered | — |
+| read-snapshot | 24 | PublishedHeadCAS, PlacementGraph | covered | GAP-DB-IMPLEMENTATION-UNBOUNDED |
 | reservation | 19 | ReservationSafety, ReservationScope, UseByReservation, InventoryOperation | covered | — |
 | scrap | 5 | InventoryOperation, PackagingIdentity, DualMeasure, ReservationSafety, UseByReservation | covered | — |
 | stock-issue | 4 | InventoryOperation, PackagingIdentity, DualMeasure, ReservationSafety, UseByReservation | covered | — |
 | stock-policy-issue | 2 | InventoryOperation, ReservationScope, ReservationSafety, UseByReservation, PackagingIdentity, RecordedDeficit, FungibilityPool | covered | — |
-| stock-policy-transfer | 2 | ResourceDimensions, DurableTransferRefinement, ReservationScope, ReservationSafety, UseByReservation, InventoryOperation, FungibilityPool | covered | — |
-| stock-receipt | 5 | InventoryOperation, PublishedHeadCAS, PackagingIdentity, DualMeasure, ResourceDimensions | covered | — |
-| stock-transfer | 2 | ResourceDimensions, DurableTransferRefinement, InventoryOperation, PackagingIdentity | covered | — |
-| storage-integrity | 14 | InventoryOperation, PublishedHeadCAS | covered | GAP-HASH-COLLISION-ASSUMPTION |
-| traceability | 11 | TraceabilityGraph, InventoryOperation | covered | GAP-TRACEABILITY-ADVERSARIAL-GRAPH-SEARCH |
+| stock-policy-transfer | 2 | ResourceDimensions, PlacementGraph, DurableTransferRefinement, ReservationScope, ReservationSafety, UseByReservation, InventoryOperation, FungibilityPool | covered | — |
+| stock-receipt | 5 | InventoryOperation, PublishedHeadCAS, PackagingIdentity, DualMeasure, ResourceDimensions, PlacementGraph | covered | — |
+| stock-transfer | 2 | ResourceDimensions, PlacementGraph, DurableTransferRefinement, InventoryOperation, PackagingIdentity | covered | — |
+| storage-integrity | 15 | InventoryOperation, PublishedHeadCAS | covered | GAP-HASH-COLLISION-ASSUMPTION |
+| traceability | 9 | TraceabilityGraph, TraceabilityAssociation, InventoryOperation | covered | GAP-GRAPH-ADVERSARIAL-SEARCH |
 | transfer-lifecycle | 11 | TransferLifecycle, ResourceDimensions, ReservationSafety, InventoryOperation, DurableTransferRefinement, PublishedHeadCAS, PackagingIdentity, FungibilityPool | covered | — |
-| transformation | 2 | TraceabilityGraph, ReclassificationConservation, DualMeasure, InventoryOperation | covered | GAP-TRACEABILITY-ADVERSARIAL-GRAPH-SEARCH |
+| transformation | 2 | TraceabilityGraph, ReclassificationConservation, DualMeasure, InventoryOperation | covered | GAP-GRAPH-ADVERSARIAL-SEARCH |
 | transformation-read | 7 | CatalogPublication, PublishedHeadCAS, ReclassificationConservation, DualMeasure | covered | — |
 
 ## Field classification
 
 | Classification | Fields |
 |---|---:|
-| abstract-semantic | 1102 |
-| application decoration | 5 |
-| identity/retry-semantic | 659 |
-| observational/audit-only | 505 |
+| abstract-semantic | 1333 |
+| application decoration | 11 |
+| identity/retry-semantic | 828 |
+| observational/audit-only | 583 |
 | unsupported/unmodelled | 17 |
 
 ## Kernel reference-adapter seam
@@ -114,6 +116,7 @@ The finite refinement suite runs the core façade against the memory reference a
 | GAP-EXTERNAL-MIGRATION-CALLBACKS | application-boundary | InventoryOnce cannot formally prove arbitrary application-owned query, bundle, or declaration callbacks. | Bound query paging, require deterministic plugin output, retain source provenance, run the produced declaration through normal validation, and separately test each production plugin. |
 | GAP-EXTERNAL-POLICY-CALLBACKS | explicit-public-kernel-boundary | Public low-level allocation/catalog callbacks can encode arbitrary application policy that is not represented by the finite TLA state machines. | Production application code should prefer declarative grouped APIs; callback output must pass exact validators and dedicated application tests, and callbacks must be deterministic for retry. |
 | GAP-FUNGIBILITY-EXACT-SEARCH-BOUND | bounded-combinatorial-performance-caveat | Fungibility allocation uses exact bounded integer search with reservation-feasibility acceptance. Hypothetical states now use sparse overlays and do not clone unrelated projection rows, but adversarial candidate/increment combinations may still explore up to the configured 100,000 search-state ceiling and then fail closed. | Keep the hard search-state ceiling and sparse-overlay regression, monitor real pool candidate cardinality/package increments, partition unusually broad pools/scopes, and add a specialized optimizer only if measured clinic workloads approach the bound. |
+| GAP-GRAPH-ADVERSARIAL-SEARCH | bounded-graph-performance-caveat | Placement topology, association, and genealogy replay use bounded graph walks. Independent broad histories remain near-linear, but adding one structural edge must still prove parent/ancestor or genealogy reachability invariants. Very deep placement chains or dense genealogy DAGs can therefore exceed linear time. | Keep the 250-to-1,000-edge replay regressions and the ancestor-move scale regression, measure real topology depth/density, and add bounded ancestor/topological indexes or explicit safety ceilings before supporting very large industrial graphs. |
 | GAP-HASH-COLLISION-ASSUMPTION | cryptographic-assumption | Content roots and intent digests assume collision resistance of the selected hash and canonical encoding. | Keep canonical encoding tests, immutable blob verification, and fail closed on digest/root mismatch. |
 | GAP-HISTORICAL-RESERVATION-RECONSTRUCTION-SCAN | bounded-history-performance-caveat | Historical as-of reservation reads reconstruct lifecycle state from retained reservation operations. Current/live reads and exact feasibility are indexed, but very long historical operation books can make retrospective reports scale with retained claim history. | Measure historical-report workloads on real clinics, retain paging/retention observability, and introduce reservation checkpoints or lifecycle snapshots before unbounded history makes retrospective reads operationally expensive. |
 | GAP-JAVASCRIPT-RUNTIME | tested-not-proved | Executable refinement evidence runs the real TypeScript/JavaScript implementation but is not a machine-checked semantic proof of the JavaScript runtime. | Use strict TypeScript, exact arithmetic, exhaustive finite traces, mutation/retry tests, and supported Node versions. |
@@ -121,7 +124,6 @@ The finite refinement suite runs the core façade against the memory reference a
 | GAP-PRODUCTION-STORAGE-SCALE-GC | production-scale-caveat | The current adapter stores complete content-addressed world snapshots and lacks accepted production GC/segmentation evidence at broad scale. | Measure write amplification/retention on real clinic workloads and approve safe GC, segmentation, or checkpointing before broad production scale. |
 | GAP-TEST-FAILPOINT-HOOK | test-only-unmodelled-input | Failure-injection callbacks are test controls, not production inventory semantics. | Classify them unsupported/unmodelled and use them only to exercise modeled crash boundaries. |
 | GAP-TLC-BOUNDED-DOMAINS | accepted-release-limit | Every TLC result is finite-domain model checking, not a theorem over arbitrary identities, quantities, traces, TypeScript, or databases. | Keep exact model constants/counts in reports and pair each claimed model with executable refinement/property tests. |
-| GAP-TRACEABILITY-ADVERSARIAL-GRAPH-SEARCH | bounded-graph-performance-caveat | Whole-history graph replay now uses one private sequential builder and is near-linear for broad independent containment/genealogy graphs, but each newly added structural edge must still prove no ancestor/reachability path exists. Adversarial very deep containment chains or dense genealogy DAGs can therefore exceed linear time. | Keep the 250-to-1,000-edge replay regressions, measure real clinic graph depth/density, and introduce bounded topological/ancestor indexing or explicit safety ceilings before supporting very large industrial traceability graphs. |
 
 ## Proof boundary
 

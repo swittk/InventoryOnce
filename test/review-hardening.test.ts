@@ -107,7 +107,7 @@ describe("collision-free retry identity", () => {
     const base = {
       itemId: "item-a",
       itemRevisionId: "item-a-v2",
-      locationId: "store",
+      placementNodeId: "store",
     };
     const withEmptyDimensions = { ...base, qualifiedDimensions: [] };
     expect(normalizeInventoryStockPositionKey(withEmptyDimensions)).toEqual(base);
@@ -120,14 +120,14 @@ describe("collision-free retry identity", () => {
     const callerKey = {
       itemId: "item-a",
       itemRevisionId: "item-a-v2",
-      locationId: "store",
+      placementNodeId: "store",
     };
     const normalized = normalizeInventoryStockPositionKey(callerKey);
     const retainedIdentity = inventoryStockPositionIdentity(normalized);
 
-    callerKey.locationId = "other-store";
+    callerKey.placementNodeId = "other-store";
 
-    expect(normalized.locationId).toBe("store");
+    expect(normalized.placementNodeId).toBe("store");
     expect(inventoryStockPositionIdentity(normalized)).toBe(retainedIdentity);
   });
 
@@ -136,7 +136,7 @@ describe("collision-free retry identity", () => {
     const normalized = normalizeInventoryStockPositionKey({
       itemId: "item-a",
       itemRevisionId: "item-a-v2",
-      locationId: "store",
+      placementNodeId: "store",
       qualifiedDimensions: [callerDimension],
     });
     const retainedIdentity = inventoryStockPositionIdentity(normalized);
@@ -188,7 +188,7 @@ describe("collision-free retry identity", () => {
       itemRevisionId: "item-a-v2",
       axisId: "pieces",
       unit: unitCode("piece"),
-      locationIds: [],
+      placementNodeIds: [],
       lines: [
         { position: positionA, capacity: parseQuantity("3", "piece") },
         { position: positionB, capacity: parseQuantity("4", "piece") },
@@ -212,7 +212,7 @@ describe("collision-free retry identity", () => {
       itemRevisionId: "item-a-v2",
       axisId: "pieces",
       unit: unitCode("piece"),
-      locationIds: ["store-a"],
+      placementNodeIds: ["store-a"],
       lines: [{ position: positionA, capacity: parseQuantity("3", "piece") }],
     });
     expect(storeAOnly.recordedDeficit.amountMinor).toBe(1);
@@ -223,10 +223,10 @@ describe("collision-free retry identity", () => {
         itemRevisionId: "item-a-v2",
         axisId: "pieces",
         unit: unitCode("piece"),
-        locationIds: ["store-a"],
+        placementNodeIds: ["store-a"],
         lines: [{ position: positionB, capacity: parseQuantity("4", "piece") }],
       })
-    ).toThrow("unselected location");
+    ).toThrow("unselected direct placement");
   });
 
   it("floors recorded-deficit capacity to exact BigInt allocation increments", async () => {
@@ -251,7 +251,7 @@ describe("collision-free retry identity", () => {
       itemRevisionId: "item-a-v2",
       axisId: "pieces",
       unit: unitCode("piece"),
-      locationIds: ["store"],
+      placementNodeIds: ["store"],
       lines: [
         {
           position,
@@ -426,7 +426,7 @@ describe("durable planner output guards", () => {
       book: world.reservations,
       operationId: "malicious-refine-output",
       reservationId: "planner-guard-claim",
-      selector: { itemId: "item-a", locationIds: ["store"] },
+      selector: { itemId: "item-a", placementNodeIds: ["store"] },
       occurredAtEpochMs: time2,
     });
     /** Fake planner row that changes a creation-time rule during a later lifecycle action. */
@@ -463,7 +463,7 @@ describe("durable planner output guards", () => {
       reservationId: "selector-guard-claim",
       operationId: "create-selector-guard-claim",
       itemRevisionId: "item-a-v2",
-      selector: { itemId: "item-a", locationIds: ["store"] },
+      selector: { itemId: "item-a", placementNodeIds: ["store"] },
       requested: parseQuantity("1", "piece"),
       createdAtEpochMs: time1,
     });
@@ -474,7 +474,7 @@ describe("durable planner output guards", () => {
       book: world.reservations,
       operationId: "widened-refine-output",
       reservationId: "selector-guard-claim",
-      selector: { itemId: "item-a", locationIds: ["store"] },
+      selector: { itemId: "item-a", placementNodeIds: ["store"] },
       occurredAtEpochMs: time2,
     });
     const widenedReservation = {
@@ -515,7 +515,7 @@ describe("durable planner output guards", () => {
         reservationId,
         operationId: "consumption-evidence-create",
         itemRevisionId: "item-a-v2",
-        selector: { itemId: "item-a", locationIds: ["store"] },
+        selector: { itemId: "item-a", placementNodeIds: ["store"] },
         requested: parseQuantity("1", "piece"),
         createdAtEpochMs: time1,
       },
@@ -544,7 +544,7 @@ describe("durable planner output guards", () => {
       book: created.book,
       operationId: "consumption-evidence-refine",
       reservationId,
-      selector: { itemId: "item-a", locationIds: ["store"] },
+      selector: { itemId: "item-a", placementNodeIds: ["store"] },
       occurredAtEpochMs: time2,
     });
     const refineDelta = createInventoryReservationBookDelta(
@@ -690,7 +690,7 @@ describe("package and serial reservation granularity", () => {
     }))[0];
     const loose = (await inventory.read.positions({
       itemId: "item-a",
-      locationIds: ["loose-store"],
+      placementNodeIds: ["loose-store"],
     }))[0];
     if (position === undefined || loose === undefined) {
       throw new Error("Expected intact and loose package-allocation stock.");
@@ -833,7 +833,7 @@ describe("package and serial reservation granularity", () => {
       selector: {
         itemId: "item-a",
         itemRevisionIds: ["item-a-v1"],
-        locationIds: ["store"],
+        placementNodeIds: ["store"],
         packagingRevisionIds: ["item-a-box-20-v1"],
       },
       requested: parseQuantity("1000", "piece"),
@@ -842,7 +842,7 @@ describe("package and serial reservation granularity", () => {
     const availability = await inventory.read.availability({
       itemId: "item-a",
       itemRevisionIds: ["item-a-v1"],
-      locationIds: ["store"],
+      placementNodeIds: ["store"],
       packagingRevisionIds: ["item-a-box-20-v1"],
     });
     expect(availability.reservationFeasibility.status).toBe(
@@ -872,7 +872,7 @@ describe("package and serial reservation granularity", () => {
       reservationId: "store-a-package-claim",
       operationId: "reserve-store-a-packages",
       itemRevisionId: "item-a-v1",
-      selector: { itemId: "item-a", locationIds: ["store-a"] },
+      selector: { itemId: "item-a", placementNodeIds: ["store-a"] },
       requested: parseQuantity("600", "piece"),
       createdAtEpochMs: time1,
     });
@@ -955,7 +955,7 @@ describe("historical reservation authority and one-revision counts", () => {
     await expect(inventory.reservations.refine({
       operationId: "refine-before-create",
       reservationId: "historical-claim",
-      selector: { itemId: "item-a", locationIds: ["store"] },
+      selector: { itemId: "item-a", placementNodeIds: ["store"] },
       occurredAtEpochMs: time0,
     })).rejects.toThrow("before creation");
     await inventory.reservations.release({
@@ -971,7 +971,7 @@ describe("historical reservation authority and one-revision counts", () => {
     await expect(inventory.reservations.refine({
       operationId: "backdated-refine",
       reservationId: "historical-claim",
-      selector: { itemId: "item-a", locationIds: ["store"] },
+      selector: { itemId: "item-a", placementNodeIds: ["store"] },
       occurredAtEpochMs: time1,
     })).rejects.toThrow("no longer active");
   });
@@ -1078,14 +1078,14 @@ describe("historical reservation authority and one-revision counts", () => {
     await inventory.stock.receive({
       operationId: "receive-mixed-old-piece",
       occurredAtEpochMs: time0,
-      to: { itemId: "mixed-item", locationId: "store" },
+      to: { itemId: "mixed-item", placementNodeId: "store" },
       itemRevisionId: pieceV1.revisionId,
       amount: stockAmount("1", "piece"),
     });
     await inventory.stock.receive({
       operationId: "receive-mixed-current-volume",
       occurredAtEpochMs: time0,
-      to: { itemId: "mixed-item", locationId: "store" },
+      to: { itemId: "mixed-item", placementNodeId: "store" },
       itemRevisionId: volumeV2.revisionId,
       amount: stockAmount("10", "mL"),
     });
@@ -1395,7 +1395,7 @@ describe("retained catalogue alias safety", () => {
     const received = await inventory.stock.receive({
       operationId: "alias-receipt",
       occurredAtEpochMs: time0,
-      to: { itemId: "alias-item", locationId: "store" },
+      to: { itemId: "alias-item", placementNodeId: "store" },
       amount: packageAmount(1, "alias-box-v1"),
     });
 
@@ -1480,10 +1480,10 @@ describe("runtime amount discriminator family", () => {
       for (const run of [
         () => inventory.stock.receive({ operationId: "bad-amount", occurredAtEpochMs: time0, to: loosePosition("store"), amount }),
         () => inventory.stock.issue({ operationId: "bad-amount", occurredAtEpochMs: time0, from: loosePosition("store"), amount }),
-        () => inventory.stock.transfer({ operationId: "bad-amount", occurredAtEpochMs: time0, from: loosePosition("store"), toLocationId: "other", amount }),
-        () => inventory.read.planAllocation({ selector: { itemId: "item-a", locationIds: ["store"] }, amount, method: InventoryAllocationMethod.Fifo, atEpochMs: time0 }),
-        () => inventory.stock.issueByPolicy({ operationId: "bad-amount", occurredAtEpochMs: time0, selector: { itemId: "item-a", locationIds: ["store"] }, amount, method: InventoryAllocationMethod.Fifo }),
-        () => inventory.stock.transferByPolicy({ operationId: "bad-amount", occurredAtEpochMs: time0, selector: { itemId: "item-a", locationIds: ["store"] }, toLocationId: "other", amount, method: InventoryAllocationMethod.Fifo }),
+        () => inventory.stock.transfer({ operationId: "bad-amount", occurredAtEpochMs: time0, from: loosePosition("store"), toPlacementNodeId: "other", amount }),
+        () => inventory.read.planAllocation({ selector: { itemId: "item-a", placementNodeIds: ["store"] }, amount, method: InventoryAllocationMethod.Fifo, atEpochMs: time0 }),
+        () => inventory.stock.issueByPolicy({ operationId: "bad-amount", occurredAtEpochMs: time0, selector: { itemId: "item-a", placementNodeIds: ["store"] }, amount, method: InventoryAllocationMethod.Fifo }),
+        () => inventory.stock.transferByPolicy({ operationId: "bad-amount", occurredAtEpochMs: time0, selector: { itemId: "item-a", placementNodeIds: ["store"] }, toPlacementNodeId: "other", amount, method: InventoryAllocationMethod.Fifo }),
       ]) {
         await expect(run()).rejects.toThrow("Inventory amount kind is invalid");
         expect(await storage.readWorld()).toEqual(before);
@@ -1522,7 +1522,7 @@ describe("durable content-root representation independence", () => {
       reservationId: "digest-order-reservation",
       operationId: "digest-order-reserve",
       itemRevisionId: "item-a-v2",
-      selector: { itemId: "item-a", locationIds: ["store"] },
+      selector: { itemId: "item-a", placementNodeIds: ["store"] },
       requested: parseQuantity("1", "piece"),
       createdAtEpochMs: time1,
     });
@@ -1530,7 +1530,7 @@ describe("durable content-root representation independence", () => {
       countId: "digest-order-count",
       operationId: "digest-order-count-start",
       itemRevisionId: "item-a-v2",
-      selector: { itemId: "item-a", locationIds: ["store"] },
+      selector: { itemId: "item-a", placementNodeIds: ["store"] },
       startedAtEpochMs: time2,
     });
     const original = await inventory.read.world();
@@ -1553,7 +1553,8 @@ describe("retained event ownership across every lifecycle branch", () => {
     const raw: InventoryEventDraft = {
       eventId: "ownership-event", operationId: "ownership-event", kind: InventoryEventKind.Correction,
       occurredAtEpochMs: time0, metadata, correction,
-      stockEffects: [{ itemRevisionId: "item-a-v2", position: { itemId: "item-a", itemRevisionId: "item-a-v2", locationId: "A" },
+      correctionReplacement: null,
+      stockEffects: [{ itemRevisionId: "item-a-v2", position: { itemId: "item-a", itemRevisionId: "item-a-v2", placementNodeId: "A" },
         measurementsDelta: measurements, evidence: { transactedMeasurements: measurements }, metadata }],
       traceabilityChanges: [],
     };
@@ -1571,7 +1572,7 @@ describe("retained event ownership across every lifecycle branch", () => {
     const catalog = createTabletCatalog();
     const inventory = createTestInventory(undefined, catalog);
     await inventory.stock.receive({ operationId: "seed", occurredAtEpochMs: time0, to: loosePosition("A"), amount: stockAmount("2", "piece") });
-    const prepared = await inventory.transfers.prepare({ operationId: "prepare", occurredAtEpochMs: time0, transferId: "ownership-transfer", transitLocationId: "T", destinationLocationId: "B",
+    const prepared = await inventory.transfers.prepare({ operationId: "prepare", occurredAtEpochMs: time0, transferId: "ownership-transfer", transitPlacementNodeId: "T", destinationPlacementNodeId: "B",
       lines: [{ lineId: "line", from: loosePosition("A"), amount: stockAmount("2", "piece") }] });
     let event: InventoryEventDraft = prepared.event;
     if (action === InventoryTransferLifecycleAction.Dispatch || action === InventoryTransferLifecycleAction.Receive) {
@@ -1587,7 +1588,7 @@ describe("retained event ownership across every lifecycle branch", () => {
     if (change === undefined) throw new Error("The real lifecycle operation must produce its lifecycle evidence.");
     const measurements = { primary: { axisId: "pieces", quantity: { amountMinor: 2, decimals: 0, unit: unitCode("piece") } }, independent: [] };
     const first = change.action === InventoryTransferLifecycleAction.Prepare || change.action === InventoryTransferLifecycleAction.Receive ? change.lines[0] : undefined;
-    const line = { ...first, lineId: "line", sourcePosition: { itemId: "item-a", itemRevisionId: "item-a-v2", locationId: "A" }, preparedMeasurements: measurements, receivedMeasurements: measurements };
+    const line = { ...first, lineId: "line", sourcePosition: { itemId: "item-a", itemRevisionId: "item-a-v2", placementNodeId: "A" }, preparedMeasurements: measurements, receivedMeasurements: measurements };
     const lifecycle = { ...change, lines: [line] };
     const retained = defineInventoryEvent({ catalog, event: { ...event, transferLifecycle: lifecycle } });
     const fingerprint = inventoryEventIntentFingerprint(retained);
@@ -1600,7 +1601,7 @@ describe("retained event ownership across every lifecycle branch", () => {
   it("commits a detached record rather than retaining a caller-created draft graph", () => {
     const metadata = { list: ["before"] };
     const event: InventoryEventDraft = { eventId: "commit-copy", operationId: "commit-copy", kind: InventoryEventKind.Receipt,
-      occurredAtEpochMs: time0, metadata, stockEffects: [{ itemRevisionId: "item-a-v2", position: { itemId: "item-a", itemRevisionId: "item-a-v2", locationId: "A" }, measurementsDelta: { primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") }, independent: [] } }], traceabilityChanges: [] };
+      occurredAtEpochMs: time0, metadata, stockEffects: [{ itemRevisionId: "item-a-v2", position: { itemId: "item-a", itemRevisionId: "item-a-v2", placementNodeId: "A" }, measurementsDelta: { primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") }, independent: [] } }], traceabilityChanges: [] };
     const committed = commitInventoryEvent(event, time1, 1);
     metadata.list[0] = "after";
     expect(committed.metadata).toEqual({ list: ["before"] });

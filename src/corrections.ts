@@ -8,7 +8,6 @@ import {
 import {
   InventoryEventKind,
   InventoryTraceabilityRelationAction,
-  commitInventoryEvent,
   defineInventoryEvent,
   type InventoryCommittedEvent,
   type InventoryEventDraft,
@@ -28,14 +27,18 @@ import {
 } from "./model.js";
 import {
   InventoryDeficitPolicy,
-  projectInventoryEvents,
   type InventoryProjectionState,
 } from "./projection.js";
+import type {
+  InventoryPlacementChange,
+  InventoryPlacementRelation,
+} from "./placement.js";
 import {
   inventoryTraceabilityRelationIdentity,
   type InventoryTraceabilityRelation,
 } from "./traceability.js";
 import { inventorySparseRecordValue } from "./sparse-record.js";
+import { replayInventoryHistoricalScenario } from "./historical-replay.js";
 
 /** Inputs for replacing one retained event assertion without deleting/revising history. */
 export interface CreateInventoryCorrectionInput extends InventoryCommandHeader {
@@ -47,6 +50,8 @@ export interface CreateInventoryCorrectionInput extends InventoryCommandHeader {
   readonly correctsEventId: string;
   /** Fully declarative replacement event, or omission when the root assertion never happened. */
   readonly replacement?: InventoryEventDraft;
+  /** Optional indexed transitive event component; omission replays complete retained history. */
+  readonly historyEvents?: readonly InventoryCommittedEvent[];
 }
 
 /**
@@ -77,6 +82,11 @@ export function createInventoryCorrectionEvent(
       "Catalogue publication is append-only definition history; publish a later retained catalogue instead of correcting it."
     );
   }
+  if (original.kind === InventoryEventKind.HistoricalRepair) {
+    throw new Error(
+      "Historical-repair envelopes are superseded through recordHistorical assertion omission/replacement, not generic correction."
+    );
+  }
   if (original.transferLifecycle !== undefined) {
     throw new Error(
       "Physical transfer lifecycle events cannot be corrected through generic event replacement; use transfer lifecycle commands instead."
@@ -102,6 +112,11 @@ export function createInventoryCorrectionEvent(
       "Correction replacement cannot be a catalogue publication; publish retained definitions separately."
     );
   }
+  if (input.replacement?.kind === InventoryEventKind.HistoricalRepair) {
+    throw new Error(
+      "Correction replacement cannot be a historical-repair envelope."
+    );
+  }
   if (input.replacement?.transferLifecycle !== undefined) {
     throw new Error(
       "Generic correction replacement cannot introduce physical transfer lifecycle truth."
@@ -119,25 +134,21 @@ export function createInventoryCorrectionEvent(
       "Inventory correction replacement cannot occur after the retained root event was durably recorded."
     );
   }
-  const desiredProjection = projectHistoryWithReplacement(
-    input.catalog,
-    input.projection,
-    original.eventId,
-    replacement,
-    deficitPolicy
-  );
-  const stockEffects = createCorrectionStockEffects(
-    input.projection.positions,
-    desiredProjection.positions
-  );
-  const positiveLayerProvenanceOverrides =
-    createCorrectionPositiveLayerProvenanceOverrides(
-      input.projection,
-      desiredProjection
-    );
-  const traceabilityChanges = createCorrectionTraceabilityChanges(
-    input.projection.traceability.relations,
-    desiredProjection.traceability.relations
+  const replay = replayInventoryHistoricalScenario({
+    catalog: input.catalog,
+    projection: input.projection,
+    deficitPolicy,
+    rootReplacement: {
+      rootEventId: original.eventId,
+      ...(replacement === undefined ? {} : { replacement }),
+    },
+    ...(input.historyEvents === undefined
+      ? {}
+      : { sourceEvents: input.historyEvents }),
+  });
+  const delta = createInventoryProjectionDelta(
+    replay.actualProjection,
+    replay.projection
   );
   const sourcePartyId = input.sourcePartyId ?? replacement?.sourcePartyId;
   const destinationPartyId =
@@ -149,11 +160,13 @@ export function createInventoryCorrectionEvent(
       operationId: input.operationId,
       kind: InventoryEventKind.Correction,
       occurredAtEpochMs: input.occurredAtEpochMs,
-      stockEffects,
-      positiveLayerProvenanceOverrides,
+      stockEffects: delta.stockEffects,
+      positiveLayerProvenanceOverrides:
+        delta.positiveLayerProvenanceOverrides,
       lotDefinitions: replacement?.lotDefinitions ?? [],
-      containerDefinitions: replacement?.containerDefinitions ?? [],
-      traceabilityChanges,
+      placementNodeDefinitions: replacement?.placementNodeDefinitions ?? [],
+      placementChanges: delta.placementChanges,
+      traceabilityChanges: delta.traceabilityChanges,
       ...(input.actorId === undefined ? {} : { actorId: input.actorId }),
       ...(sourcePartyId === undefined ? {} : { sourcePartyId }),
       ...(destinationPartyId === undefined ? {} : { destinationPartyId }),
@@ -168,6 +181,8 @@ export function createInventoryCorrectionEvent(
           ? {}
           : { supersedesCorrectionEventId: currentCorrectionEventId }),
       },
+      correctionReplacement: replacement ?? null,
+      historicalImpact: replay.impact,
       metadata: {
         ...(input.metadata ?? {}),
         correctedKind: original.kind,
@@ -184,156 +199,45 @@ export function createInventoryCorrectionEvent(
   });
 }
 
-/** Replay retained history as though the root event had always been the replacement assertion. */
-function projectHistoryWithReplacement(
-  catalog: InventoryCatalog,
-  projection: InventoryProjectionState,
-  rootEventId: string,
-  replacement: InventoryEventDraft | undefined,
-  deficitPolicy: InventoryDeficitPolicy
-): InventoryProjectionState {
-  const root = inventorySparseRecordValue(projection.events, rootEventId);
-  if (root === undefined)
-    throw new Error("Correction root event disappeared during planning.");
-  const replacementAtRoot =
-    replacement === undefined
-      ? undefined
-      : {
-          ...replacement,
-          eventId: root.eventId,
-          operationId: root.operationId,
-        };
-  const hypothetical: InventoryCommittedEvent[] = [];
-  // Effective relation creators for the hypothetical history built below.
-  const hypotheticalRelationCreatorById = new Map<string, string>();
-  // Traceability rows can become semantic no-ops after an earlier replacement; their
-  // correction chain must disappear from the same hypothetical history as well.
-  const droppedTraceabilityEventIds = new Set<string>();
-  let nextSequence = 1;
-  for (
-    let recordSequence = 1;
-    recordSequence <= projection.lastRecordSequence;
-    recordSequence += 1
-  ) {
-    const eventId = projection.eventIdsBySequence[String(recordSequence)];
-    if (eventId === undefined) {
-      throw new Error(
-        `Correction history is missing recordSequence ${recordSequence}.`
-      );
-    }
-    const event = inventorySparseRecordValue(projection.events, eventId);
-    if (event === undefined || event.recordSequence !== recordSequence) {
-      throw new Error(
-        `Correction history index disagrees at recordSequence ${recordSequence}.`
-      );
-    }
-    if (event.correction?.correctsEventId === rootEventId) continue;
-    const correctedEvent =
-      event.correction === undefined
-        ? undefined
-        : inventorySparseRecordValue(
-            projection.events,
-            event.correction.correctsEventId
-          );
-    if (
-      (event.correction !== undefined &&
-        droppedTraceabilityEventIds.has(event.correction.correctsEventId)) ||
-      correctedEvent?.kind === InventoryEventKind.LotMetadata ||
-      correctedEvent?.kind === InventoryEventKind.ContainerMetadata
-    ) {
-      continue;
-    }
-    if (event.eventId === rootEventId && replacementAtRoot === undefined)
-      continue;
-    const draft = event.eventId === rootEventId ? replacementAtRoot : event;
-    if (draft === undefined) continue;
-    // The effective replacement kind controls whether this retained assertion is metadata-only.
-    // A corrected metadata root may legitimately become a physical stock/graph assertion.
-    if (
-      draft.kind === InventoryEventKind.LotMetadata ||
-      draft.kind === InventoryEventKind.ContainerMetadata
-    ) {
-      continue;
-    }
-    // Lot-master replacement is carried directly by the correction event; stock/graph replay must not
-    // reinterpret later duplicate lot confirmations as competing roots.
-    const stockAndGraphDraft: InventoryEventDraft = {
-      ...draft,
-      lotDefinitions: [],
-      containerDefinitions: [],
-    };
-    const reconciledTraceabilityChanges =
-      reconcileHypotheticalTraceabilityChanges(
-        stockAndGraphDraft.traceabilityChanges,
-        stockAndGraphDraft.eventId,
-        hypotheticalRelationCreatorById
-      );
-    if (
-      stockAndGraphDraft.kind === InventoryEventKind.Traceability &&
-      reconciledTraceabilityChanges.length === 0
-    ) {
-      droppedTraceabilityEventIds.add(event.eventId);
-      continue;
-    }
-    hypothetical.push(
-      commitInventoryEvent(
-        reconciledTraceabilityChanges === stockAndGraphDraft.traceabilityChanges
-          ? stockAndGraphDraft
-          : {
-              ...stockAndGraphDraft,
-              traceabilityChanges: reconciledTraceabilityChanges,
-            },
-        event.recordedAtEpochMs,
-        nextSequence
-      )
-    );
-    nextSequence += 1;
-  }
-  return projectInventoryEvents({
-    catalog,
-    events: hypothetical,
-    deficitPolicy,
-  });
+/** Complete current-projection delta shared by correction and historical-repair envelopes. */
+export interface InventoryProjectionDelta {
+  /** Signed current stock delta from actual to desired projection. */
+  readonly stockEffects: readonly InventoryStockEffect[];
+  /** Exact FIFO layer provenance replacements for touched current positions. */
+  readonly positiveLayerProvenanceOverrides: readonly InventoryPositiveLayerProvenanceOverride[];
+  /** Current topology changes not already derived from embodied stock movement. */
+  readonly placementChanges: readonly InventoryPlacementChange[];
+  /** Current reversible relation changes from actual to desired graph. */
+  readonly traceabilityChanges: readonly InventoryTraceabilityRelationChange[];
 }
 
-/** Reconcile relation removals that became unnecessary only because earlier corrected history changed. */
-function reconcileHypotheticalTraceabilityChanges(
-  changes: readonly InventoryTraceabilityRelationChange[],
-  eventId: string,
-  relationCreatorById: Map<string, string>
-): readonly InventoryTraceabilityRelationChange[] {
-  let filtered: InventoryTraceabilityRelationChange[] | undefined;
-  for (let index = 0; index < changes.length; index += 1) {
-    const change = changes[index];
-    if (change === undefined) continue;
-    const identity = inventoryTraceabilityRelationIdentity(
-      change.kind,
-      change.from,
-      change.to
-    );
-    const earlierCreator = relationCreatorById.get(identity);
-    if (change.action === InventoryTraceabilityRelationAction.Add) {
-      // Preserve duplicate adds for the strict projector to reject; only valid adds advance the local fact map.
-      if (earlierCreator === undefined) relationCreatorById.set(identity, eventId);
-      if (filtered !== undefined) filtered.push(change);
-      continue;
-    }
-    if (earlierCreator === undefined) {
-      // This removal was valid in retained history but is now unnecessary because the
-      // corrected hypothetical history no longer contains the relation it targeted.
-      filtered ??= changes.slice(0, index);
-      continue;
-    }
-    if (
-      change.action !== InventoryTraceabilityRelationAction.Invalidate ||
-      change.invalidatesCreatedByEventId === earlierCreator
-    ) {
-      relationCreatorById.delete(identity);
-    }
-    // Preserve wrong-creator invalidations for the strict projector to reject.
-    if (filtered !== undefined) filtered.push(change);
-  }
-  return filtered ?? changes;
+/** Derive one exact current-state delta without mutating either projection. */
+export function createInventoryProjectionDelta(
+  actual: InventoryProjectionState,
+  desired: InventoryProjectionState
+): InventoryProjectionDelta {
+  return {
+    stockEffects: createCorrectionStockEffects(
+      actual.positions,
+      desired.positions
+    ),
+    positiveLayerProvenanceOverrides:
+      createCorrectionPositiveLayerProvenanceOverrides(actual, desired),
+    placementChanges: createCorrectionPlacementChanges(
+      actual.placement.relationByNodeId,
+      desired.placement.relationByNodeId,
+      /** Embodied parents are always derived from their one serialized stock row. */
+      (nodeId) =>
+        inventorySparseRecordValue(actual.placementNodes, nodeId)?.definition
+          .embodiedBy !== undefined ||
+        inventorySparseRecordValue(desired.placementNodes, nodeId)?.definition
+          .embodiedBy !== undefined
+    ),
+    traceabilityChanges: createCorrectionTraceabilityChanges(
+      actual.traceability.relations,
+      desired.traceability.relations
+    ),
+  };
 }
 
 /** Replace FIFO positive-layer provenance so correction equals hypothetical retained-history replay. */
@@ -416,6 +320,39 @@ function createCorrectionStockEffects(
   }
   effects.sort(compareCorrectionStockEffect);
   return effects;
+}
+
+/** Create exact direct-parent transitions that make current placement equal hypothetical replay. */
+function createCorrectionPlacementChanges(
+  actual: Readonly<Record<string, InventoryPlacementRelation>>,
+  desired: Readonly<Record<string, InventoryPlacementRelation>>,
+  parentIsDerived: (nodeId: string) => boolean
+): readonly InventoryPlacementChange[] {
+  const nodeIds = new Set<string>([
+    ...Object.keys(actual),
+    ...Object.keys(desired),
+  ]);
+  const orderedNodeIds = [...nodeIds];
+  orderedNodeIds.sort(compareInventoryIdentityText);
+  const changes: InventoryPlacementChange[] = [];
+  for (const nodeId of orderedNodeIds) {
+    const actualParentNodeId = actual[nodeId]?.parentNodeId;
+    const desiredParentNodeId = desired[nodeId]?.parentNodeId;
+    if (actualParentNodeId === desiredParentNodeId) continue;
+    // An embodied node's parent is derived from its unique stock position.
+    // Explicit placement changes would violate the same invariant the projection enforces.
+    if (parentIsDerived(nodeId)) continue;
+    changes.push({
+      nodeId,
+      ...(actualParentNodeId === undefined
+        ? {}
+        : { fromParentNodeId: actualParentNodeId }),
+      ...(desiredParentNodeId === undefined
+        ? {}
+        : { toParentNodeId: desiredParentNodeId }),
+    });
+  }
+  return changes;
 }
 
 /** Create relation changes that make current graph equal the hypothetical replacement graph. */

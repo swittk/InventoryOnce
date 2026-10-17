@@ -15,6 +15,7 @@ import {
 } from "./catalog.js";
 import { inventoryMetadataFingerprint } from "./canonical.js";
 import { compareInventoryIdentityText } from "./ordering.js";
+import { parseQuantity, quantityEq } from "./quantity.js";
 import {
   InventoryEventKind,
   InventoryTraceabilityRelationAction,
@@ -33,20 +34,24 @@ import {
   type InventoryMeasurementVector,
 } from "./measurements.js";
 import {
+  InventoryStockWhereaboutsState,
   InventoryTraceabilityNodeKind,
-  inventoryContainerIdentity,
+  inventoryPlacementNodeIdentity,
   inventoryLotIdentity,
   inventoryStockPositionIdentity,
   inventoryTraceabilityNodeIdentity,
   normalizeInventoryStockPositionKey,
-  type InventoryContainerDefinition,
+  type InventoryPlacementNodeDefinition,
+  type InventoryPlacementNodeEmbodiment,
   type InventoryLotDefinition,
   type InventoryMetadata,
+  type InventoryStockIntakePositionInput,
   type InventoryStockPositionInput,
   type InventoryStockPositionKey,
   type InventoryTraceabilityNodeRef,
   type PartyId,
 } from "./model.js";
+import type { InventoryPlacementChange } from "./placement.js";
 
 /** Common immutable identity/provenance supplied to every application command. */
 export interface InventoryCommandHeader {
@@ -78,17 +83,21 @@ export interface InventoryLotMetadataInput {
   readonly metadata?: InventoryMetadata;
 }
 
-/** Optional identifying/lifecycle metadata asserted for one exact handling unit. */
-export interface InventoryContainerMetadataInput {
-  /** Plain application-defined kind such as vial, syringe, carton, tray, or pallet. */
-  readonly containerType?: string;
-  /** GTIN/SSCC/barcode/vendor identifiers resolving this exact container. */
+/** Optional metadata and placement policy asserted for one generic node. */
+export interface InventoryPlacementNodeMetadataInput {
+  /** Application-defined category with no kernel behavior. */
+  readonly category?: string;
+  /** Whether stock or child nodes may be placed directly here; omission means allowed. */
+  readonly acceptsPlacement?: boolean;
+  /** Optional unique inventory resource whose lifetime and placement own this node. */
+  readonly embodiedBy?: InventoryPlacementNodeEmbodiment;
+  /** Barcode/vendor/application identifiers resolving this exact node. */
   readonly identifiers?: Readonly<Record<string, string>>;
-  /** Time this exact container was physically opened/prepared when known. */
+  /** Time this node was physically opened/prepared when meaningful. */
   readonly openedAtEpochMs?: number;
-  /** Container-specific use-by time. */
+  /** Node-specific use-by time applied through placement ancestry. */
   readonly useByEpochMs?: number;
-  /** Extra JSON-safe metadata that does not change container identity. */
+  /** Extra JSON-safe metadata that does not change identity or topology. */
   readonly metadata?: InventoryMetadata;
 }
 
@@ -97,15 +106,15 @@ export interface CreateInventoryOpeningInput extends InventoryCommandHeader {
   /** Frozen catalogue used to resolve exact item/package definitions. */
   readonly catalog: InventoryCatalog;
   /** Exact opening position; package identity is added from package amount. */
-  readonly to: InventoryStockPositionInput;
+  readonly to: InventoryStockIntakePositionInput;
   /** Exact direct measurements or whole package count already present. */
   readonly amount: InventoryAmount;
   /** Optional exact item revision; defaults to active/package revision. */
   readonly itemRevisionId?: string;
   /** Optional metadata for `to.lotId`; requires the destination to name a lot. */
   readonly lot?: InventoryLotMetadataInput;
-  /** Optional metadata for `to.containerId`; requires the destination to name a container. */
-  readonly container?: InventoryContainerMetadataInput;
+  /** Optional metadata for `to.placementNodeId`; requires the destination to name a placementNode. */
+  readonly placementNode?: InventoryPlacementNodeMetadataInput;
 }
 
 /** Inputs for receiving stock from outside this inventory world. */
@@ -113,15 +122,15 @@ export interface CreateInventoryReceiptInput extends InventoryCommandHeader {
   /** Frozen catalogue used to resolve active item/package definitions. */
   readonly catalog: InventoryCatalog;
   /** Exact destination position; package identity is added from package amount. */
-  readonly to: InventoryStockPositionInput;
+  readonly to: InventoryStockIntakePositionInput;
   /** Direct measurements or exact whole package count received. */
   readonly amount: InventoryAmount;
   /** Optional exact item revision; defaults to the active revision. */
   readonly itemRevisionId?: string;
   /** Optional metadata for `to.lotId`; requires the destination to name a lot. */
   readonly lot?: InventoryLotMetadataInput;
-  /** Optional metadata for `to.containerId`; requires the destination to name a container. */
-  readonly container?: InventoryContainerMetadataInput;
+  /** Optional metadata for `to.placementNodeId`; requires the destination to name a placementNode. */
+  readonly placementNode?: InventoryPlacementNodeMetadataInput;
 }
 
 /** Inputs for issuing/dispensing stock out of this inventory world. */
@@ -136,14 +145,14 @@ export interface CreateInventoryIssueInput extends InventoryCommandHeader {
   readonly itemRevisionId?: string;
 }
 
-/** Inputs for moving unchanged stock between locations. */
+/** Inputs for moving unchanged stock between direct placement nodes. */
 export interface CreateInventoryTransferInput extends InventoryCommandHeader {
   /** Frozen catalogue used to resolve active item/package definitions. */
   readonly catalog: InventoryCatalog;
-  /** Exact source position; every non-location dimension is preserved automatically. */
+  /** Exact source position; every non-placement dimension is preserved automatically. */
   readonly from: InventoryStockPositionInput;
-  /** Destination location only—other dimensions cannot be silently changed. */
-  readonly toLocationId: string;
+  /** Destination direct placement node only—other dimensions cannot be silently changed. */
+  readonly toPlacementNodeId: string;
   /** Direct measurements or exact whole package count moved. */
   readonly amount: InventoryAmount;
   /** Optional exact item revision; defaults to active/package revision. */
@@ -163,8 +172,81 @@ export interface CreateInventoryReclassificationInput
   readonly amount: InventoryAmount;
   /** Optional exact item revision; defaults to active/package revision. */
   readonly itemRevisionId?: string;
-  /** Optional metadata for `to.containerId` when this change introduces/confirms a container. */
-  readonly container?: InventoryContainerMetadataInput;
+  /** Optional metadata for `to.placementNodeId` when this change introduces/confirms a placementNode. */
+  readonly placementNode?: InventoryPlacementNodeMetadataInput;
+}
+
+/** Inputs for explicitly detaching known-placed stock without issuing it. */
+export interface CreateInventoryDetachInput extends InventoryCommandHeader {
+  /** Frozen catalogue used to resolve the source item/package definition. */
+  readonly catalog: InventoryCatalog;
+  /** Exact currently placed source position. */
+  readonly from: InventoryStockPositionInput;
+  /** Exact amount becoming intentionally unplaced. */
+  readonly amount: InventoryAmount;
+  /** Optional exact item revision; defaults to active/package revision. */
+  readonly itemRevisionId?: string;
+}
+
+/** Inputs for explicitly placing currently detached/missing stock. */
+export interface CreateInventoryPlaceInput extends InventoryCommandHeader {
+  /** Frozen catalogue used to resolve the source item/package definition. */
+  readonly catalog: InventoryCatalog;
+  /** Exact detached/missing source position. */
+  readonly from: InventoryStockPositionInput;
+  /** Known direct placement becoming current. */
+  readonly into: string;
+  /** Exact amount being placed. */
+  readonly amount: InventoryAmount;
+  /** Optional exact item revision; defaults to active/package revision. */
+  readonly itemRevisionId?: string;
+}
+
+/** Inputs for explicitly escalating placed/detached stock to genuinely missing. */
+export interface CreateInventoryMarkMissingInput extends InventoryCommandHeader {
+  /** Frozen catalogue used to resolve the source item/package definition. */
+  readonly catalog: InventoryCatalog;
+  /** Exact placed or detached source position. */
+  readonly from: InventoryStockPositionInput;
+  /** Exact amount becoming genuinely missing. */
+  readonly amount: InventoryAmount;
+  /** Optional exact item revision; defaults to active/package revision. */
+  readonly itemRevisionId?: string;
+}
+
+/** Optional placement-node role created while one fungible unit becomes unique. */
+export interface InventoryIndividualizedPlacementNodeInput
+  extends Omit<InventoryPlacementNodeMetadataInput, "embodiedBy"> {
+  /** Global placement-node identity; omission reuses the new serial identity. */
+  readonly nodeId?: string;
+}
+
+/** Inputs for splitting one exact physical unit into a new current serial identity. */
+export interface CreateInventoryIndividualizeInput extends InventoryCommandHeader {
+  /** Frozen catalogue used to resolve the source item/package definition. */
+  readonly catalog: InventoryCatalog;
+  /** Exact non-serialized source position. */
+  readonly from: InventoryStockPositionInput;
+  /** Exact measurements representing one physical resource. */
+  readonly amount: InventoryAmount;
+  /** New current serial identity for the separated physical resource. */
+  readonly serialId: string;
+  /** Optional exact item revision; defaults to active/package revision. */
+  readonly itemRevisionId?: string;
+  /** Optional placement-node role embodied by the new serial resource. */
+  readonly asPlacementNode?: InventoryIndividualizedPlacementNodeInput;
+}
+
+/** Inputs for merging one exact serialized resource back into fungible stock. */
+export interface CreateInventoryDeindividualizeInput extends InventoryCommandHeader {
+  /** Frozen catalogue used to resolve the source item/package definition. */
+  readonly catalog: InventoryCatalog;
+  /** Exact serialized source position. */
+  readonly from: InventoryStockPositionInput;
+  /** Exact measurements of the one serialized resource. */
+  readonly amount: InventoryAmount;
+  /** Optional exact item revision; defaults to active/package revision. */
+  readonly itemRevisionId?: string;
 }
 
 /** One exact source line in an atomic conserved reclassification. */
@@ -189,8 +271,8 @@ export interface InventoryReclassificationDestinationLine {
   readonly itemRevisionId?: string;
   /** Optional metadata for `to.lotId`. */
   readonly lot?: InventoryLotMetadataInput;
-  /** Optional metadata for `to.containerId`. */
-  readonly container?: InventoryContainerMetadataInput;
+  /** Optional metadata for `to.placementNodeId`. */
+  readonly placementNode?: InventoryPlacementNodeMetadataInput;
   /** Extra JSON-safe facts about this destination line. */
   readonly metadata?: InventoryMetadata;
 }
@@ -208,16 +290,16 @@ export interface CreateInventoryReclassificationManyInput
 
 /** One destination line in an atomic multi-item receipt. */
 export interface InventoryReceiptLine {
-  /** Exact destination position before package identity is resolved from amount. */
-  readonly to: InventoryStockPositionInput;
+  /** Exact placed destination position before package identity is resolved from amount. */
+  readonly to: InventoryStockIntakePositionInput;
   /** Direct measurements or exact whole package count received. */
   readonly amount: InventoryAmount;
   /** Optional exact item revision; defaults to active/package revision. */
   readonly itemRevisionId?: string;
   /** Optional metadata for `to.lotId`. */
   readonly lot?: InventoryLotMetadataInput;
-  /** Optional metadata for `to.containerId`. */
-  readonly container?: InventoryContainerMetadataInput;
+  /** Optional metadata for `to.placementNodeId`. */
+  readonly placementNode?: InventoryPlacementNodeMetadataInput;
   /** Extra JSON-safe facts about this physical line. */
   readonly metadata?: InventoryMetadata;
 }
@@ -253,10 +335,10 @@ export interface CreateInventoryIssueManyInput extends InventoryCommandHeader {
 
 /** One source/destination line in an atomic multi-position transfer. */
 export interface InventoryTransferLine {
-  /** Exact source position; every non-location dimension is preserved. */
+  /** Exact source position; every non-placement dimension is preserved. */
   readonly from: InventoryStockPositionInput;
-  /** Destination location for this exact line. */
-  readonly toLocationId: string;
+  /** Destination direct placement node for this exact line. */
+  readonly toPlacementNodeId: string;
   /** Direct measurements or exact whole package count moved. */
   readonly amount: InventoryAmount;
   /** Optional exact item revision; defaults to active/package revision. */
@@ -332,10 +414,10 @@ export interface CreateInventoryUnpackInput extends InventoryCommandHeader {
     /** Physical unit. */
     readonly unit: string;
   }[];
-  /** Optional exact destination container for the unpacked/loose contents. */
-  readonly toContainerId?: string;
-  /** Optional metadata for `toContainerId`. */
-  readonly container?: InventoryContainerMetadataInput;
+  /** Optional exact destination placementNode for the unpacked/loose contents. */
+  readonly toPlacementNodeId?: string;
+  /** Optional metadata for `toPlacementNodeId`. */
+  readonly placementNode?: InventoryPlacementNodeMetadataInput;
 }
 
 /** One input/output line of an explicit inventory transformation. */
@@ -346,12 +428,12 @@ export interface InventoryTransformationLine {
   readonly amount: InventoryAmount;
   /** Optional exact item revision; defaults to active/package revision. */
   readonly itemRevisionId?: string;
-  /** Optional serial/container/lot/external identity used for genealogy. */
+  /** Optional serial/placementNode/lot/external identity used for genealogy. */
   readonly traceabilityNode?: InventoryTraceabilityNodeRef;
   /** Optional metadata for `position.lotId`, normally used on produced outputs. */
   readonly lot?: InventoryLotMetadataInput;
-  /** Optional metadata for `position.containerId`, normally used on produced outputs. */
-  readonly container?: InventoryContainerMetadataInput;
+  /** Optional metadata for `position.placementNodeId`, normally used on produced outputs. */
+  readonly placementNode?: InventoryPlacementNodeMetadataInput;
   /** Extra JSON-safe facts about this line. */
   readonly metadata?: InventoryMetadata;
 }
@@ -392,15 +474,31 @@ export interface CreateInventoryLotMetadataInput
   readonly lot: InventoryLotMetadataInput;
 }
 
-/** Inputs for asserting handling-unit metadata without changing physical quantity. */
-export interface CreateInventoryContainerMetadataInput
+/** Inputs for asserting placement-node metadata without changing stock or topology. */
+export interface CreateInventoryPlacementNodeMetadataInput
   extends InventoryCommandHeader {
   /** Frozen catalogue retained for the common event-validation boundary. */
   readonly catalog: InventoryCatalog;
-  /** Stable exact handling-unit identity. */
-  readonly containerId: string;
-  /** Current metadata/use-by assertion for this container. */
-  readonly container: InventoryContainerMetadataInput;
+  /** Stable generic placement-node identity. */
+  readonly nodeId: string;
+  /** Current metadata/policy assertion for this node. */
+  readonly placementNode: InventoryPlacementNodeMetadataInput;
+}
+
+/** Inputs for one direct-parent topology change. */
+export interface CreateInventoryPlacementInput extends InventoryCommandHeader {
+  /** Frozen catalogue retained for the common event-validation boundary. */
+  readonly catalog: InventoryCatalog;
+  /** Node whose direct placement changes. */
+  readonly nodeId: string;
+  /** Exact current direct parent, omitted when currently unplaced. */
+  readonly fromParentNodeId?: string;
+  /** New direct parent, omitted to make this node unplaced. */
+  readonly toParentNodeId?: string;
+  /** Optional metadata/policy assertion for the moved node. */
+  readonly node?: InventoryPlacementNodeMetadataInput;
+  /** Optional metadata/policy assertion for the destination parent. */
+  readonly parent?: InventoryPlacementNodeMetadataInput;
 }
 
 /** Inputs for publishing the façade's retained item/package catalogue without moving stock. */
@@ -419,10 +517,33 @@ export interface CreateInventoryTraceabilityInput
   readonly changes: readonly InventoryTraceabilityRelationChange[];
 }
 
+/** Intake cannot invent or merge kernel-owned detached/missing whereabouts lifecycles. */
+function assertInventoryIntakeHasKnownPlacement(
+  position: InventoryStockPositionInput,
+  label: string
+): asserts position is InventoryStockIntakePositionInput {
+  if (
+    position.whereaboutsId !== undefined ||
+    position.whereaboutsState !== undefined ||
+    position.lastPlacementNodeId !== undefined ||
+    position.detachedAtEpochMs !== undefined ||
+    position.missingAtEpochMs !== undefined
+  ) {
+    throw new Error(
+      label +
+        " cannot supply detached/missing whereabouts lifecycle fields; receive/open stock at a known placement and use stock.detach/markMissing explicitly."
+    );
+  }
+  if (position.placementNodeId === undefined) {
+    throw new Error(label + " must name a current direct placement.");
+  }
+}
+
 /** Create a validated opening event for pre-existing stock adoption/import. */
 export function createInventoryOpeningEvent(
   input: CreateInventoryOpeningInput
 ): InventoryEventDraft {
+  assertInventoryIntakeHasKnownPlacement(input.to, "Inventory opening");
   const item = findCommandItem(
     input.catalog,
     input.to,
@@ -438,7 +559,7 @@ export function createInventoryOpeningEvent(
     [positiveEffect(item, to, resolved)],
     [],
     lotDefinitionsForPosition(to, input.lot),
-    containerDefinitionsForPosition(to, input.container)
+    placementNodeDefinitionsForPosition(to, input.placementNode)
   );
 }
 
@@ -446,6 +567,7 @@ export function createInventoryOpeningEvent(
 export function createInventoryReceiptEvent(
   input: CreateInventoryReceiptInput
 ): InventoryEventDraft {
+  assertInventoryIntakeHasKnownPlacement(input.to, "Inventory receipt");
   const item = findCommandItem(
     input.catalog,
     input.to,
@@ -461,7 +583,7 @@ export function createInventoryReceiptEvent(
     [positiveEffect(item, to, resolved)],
     [],
     lotDefinitionsForPosition(to, input.lot),
-    containerDefinitionsForPosition(to, input.container)
+    placementNodeDefinitionsForPosition(to, input.placementNode)
   );
 }
 
@@ -486,16 +608,21 @@ export function createInventoryIssueEvent(
   ]);
 }
 
-/** Create a location-only transfer event that copies every other stock dimension automatically. */
+/** Create a direct-placement-only transfer event that copies every other stock dimension automatically. */
 export function createInventoryTransferEvent(
   input: CreateInventoryTransferInput
 ): InventoryEventDraft {
-  const toLocationId = input.toLocationId.trim();
-  if (toLocationId.length === 0)
-    throw new Error("toLocationId must not be empty.");
-  if (input.from.locationId === toLocationId) {
+  const toPlacementNodeId = input.toPlacementNodeId.trim();
+  if (toPlacementNodeId.length === 0)
+    throw new Error("toPlacementNodeId must not be empty.");
+  if (input.from.placementNodeId === undefined) {
     throw new Error(
-      "Inventory transfer source/destination locations must differ."
+      "Inventory transfer source must have a current placement; use stock.place for detached/missing stock."
+    );
+  }
+  if (input.from.placementNodeId === toPlacementNodeId) {
+    throw new Error(
+      "Inventory transfer source/destination direct placement nodes must differ."
     );
   }
   const item = findCommandItem(
@@ -512,7 +639,7 @@ export function createInventoryTransferEvent(
   );
   const to = normalizeInventoryStockPositionKey({
     ...from,
-    locationId: toLocationId,
+    placementNodeId: toPlacementNodeId,
   });
   return withPositiveLayerProvenanceTransfers(
     input.catalog,
@@ -547,11 +674,12 @@ export function createInventoryReceiptManyEvent(
   assertNonEmptyMovementLines(input.lines, "receipt");
   // Duplicate exact destinations are one physical effect, not an application-side stock engine.
   const groupedEffects = new Map<string, GroupedInventoryReceiptLine>();
-  /** Lot masters deduplicated across lines such as the same lot received into two locations. */
+  /** Lot masters deduplicated across lines such as the same lot received into two direct placements. */
   const lotDefinitions = new Map<string, InventoryLotDefinition>();
-  /** Container masters deduplicated across lines such as several items received in one carton. */
-  const containerDefinitions = new Map<string, InventoryContainerDefinition>();
+  /** Placement-node definitions deduplicated across lines such as several items received in one carton. */
+  const placementNodeDefinitions = new Map<string, InventoryPlacementNodeDefinition>();
   for (const line of input.lines) {
+    assertInventoryIntakeHasKnownPlacement(line.to, "Inventory receipt line");
     const item = findCommandItem(
       input.catalog,
       line.to,
@@ -565,7 +693,7 @@ export function createInventoryReceiptManyEvent(
       item.revisionId
     );
     collectLotDefinition(lotDefinitions, position, line.lot);
-    collectContainerDefinition(containerDefinitions, position, line.container);
+    collectPlacementNodeDefinition(placementNodeDefinitions, position, line.placementNode);
     const identity = inventoryStockPositionIdentity(position);
     const earlier = groupedEffects.get(identity);
     if (earlier === undefined) {
@@ -628,7 +756,7 @@ export function createInventoryReceiptManyEvent(
     stockEffects,
     [],
     sortedLotDefinitions(lotDefinitions),
-    sortedContainerDefinitions(containerDefinitions)
+    sortedPlacementNodeDefinitions(placementNodeDefinitions)
   );
 }
 
@@ -689,7 +817,7 @@ interface GroupedInventoryOutgoingLine {
 
 /** One exact one-to-one transfer route accumulated from duplicate batch lines. */
 interface GroupedInventoryTransferLine extends GroupedInventoryOutgoingLine {
-  /** Exact destination preserving every non-location stock dimension. */
+  /** Exact destination preserving every non-placement stock dimension. */
   readonly destination: InventoryStockPositionKey;
 }
 
@@ -697,7 +825,7 @@ interface GroupedInventoryTransferLine extends GroupedInventoryOutgoingLine {
 interface GroupedInventoryTransformationLine {
   /** Grouped physical amount and metadata for this exact position. */
   readonly movement: GroupedInventoryOutgoingLine;
-  /** Effective serial/container/lot/external genealogy identity after inference. */
+  /** Effective serial/placementNode/lot/external genealogy identity after inference. */
   readonly genealogyNode?: InventoryTraceabilityNodeRef;
 }
 
@@ -879,13 +1007,18 @@ export function createInventoryTransferManyEvent(
   // One-to-one FIFO provenance cannot represent a source split, destination merge, or route cycle.
   const endpointRoutes = new Map<string, string>();
   for (const line of input.lines) {
-    const toLocationId = line.toLocationId.trim();
-    if (toLocationId.length === 0) {
-      throw new Error("Transfer line toLocationId must not be empty.");
+    const toPlacementNodeId = line.toPlacementNodeId.trim();
+    if (toPlacementNodeId.length === 0) {
+      throw new Error("Transfer line toPlacementNodeId must not be empty.");
     }
-    if (line.from.locationId === toLocationId) {
+    if (line.from.placementNodeId === undefined) {
       throw new Error(
-        "Transfer line source/destination locations must differ."
+        "Transfer line source must have a current placement; use stock.place for detached/missing stock."
+      );
+    }
+    if (line.from.placementNodeId === toPlacementNodeId) {
+      throw new Error(
+        "Transfer line source/destination direct placement nodes must differ."
       );
     }
     const item = findCommandItem(
@@ -902,7 +1035,7 @@ export function createInventoryTransferManyEvent(
     );
     const to = normalizeInventoryStockPositionKey({
       ...from,
-      locationId: toLocationId,
+      placementNodeId: toPlacementNodeId,
     });
     const fromIdentity = inventoryStockPositionIdentity(from);
     const toIdentity = inventoryStockPositionIdentity(to);
@@ -949,21 +1082,72 @@ export function createInventoryTransferManyEvent(
     );
     provenanceTransfers.push({ from: line.position, to: line.destination });
   }
-  return withPositiveLayerProvenanceTransfers(
-    input.catalog,
-    createMovementEvent(
-      input.catalog,
-      InventoryEventKind.Transfer,
-      input,
-      stockEffects
-    ),
-    provenanceTransfers
+  // This movement already has exact one-to-one FIFO provenance. Construct
+  // and validate the complete event once rather than validating 20k stock
+  // effects, appending provenance, and validating all 20k effects again.
+  return defineInventoryEvent({
+    catalog: input.catalog,
+    event: {
+      ...movementEventDraft(
+        InventoryEventKind.Transfer,
+        input,
+        stockEffects
+      ),
+      positiveLayerProvenanceTransfers: provenanceTransfers,
+    },
+  });
+}
+
+/** Create an ordinary dimension-only reclassification that preserves whereabouts. */
+export function createInventoryReclassificationEvent(
+  input: CreateInventoryReclassificationInput
+): InventoryEventDraft {
+  return createInventoryReclassificationEventInternal(input, false);
+}
+
+/** Create an explicit known-placement -> detached lifecycle transition. */
+export function createInventoryDetachEvent(
+  input: CreateInventoryDetachInput
+): InventoryEventDraft {
+  return createInventoryReclassificationEventInternal(
+    {
+      ...input,
+      to: inventoryDetachedCommandPosition(input),
+    },
+    true
   );
 }
 
-/** Create an explicit dimension-only reclassification event. */
-export function createInventoryReclassificationEvent(
-  input: CreateInventoryReclassificationInput
+/** Create an explicit detached/missing -> known-placement lifecycle transition. */
+export function createInventoryPlaceEvent(
+  input: CreateInventoryPlaceInput
+): InventoryEventDraft {
+  return createInventoryReclassificationEventInternal(
+    {
+      ...input,
+      to: inventoryPlacedCommandPosition(input),
+    },
+    true
+  );
+}
+
+/** Create an explicit placed/detached -> missing lifecycle transition. */
+export function createInventoryMarkMissingEvent(
+  input: CreateInventoryMarkMissingInput
+): InventoryEventDraft {
+  return createInventoryReclassificationEventInternal(
+    {
+      ...input,
+      to: inventoryMissingCommandPosition(input),
+    },
+    true
+  );
+}
+
+/** Shared single-line reducer; only explicit lifecycle verbs may bypass preservation. */
+function createInventoryReclassificationEventInternal(
+  input: CreateInventoryReclassificationInput,
+  allowWhereaboutsTransition: boolean
 ): InventoryEventDraft {
   const item = findCommandItem(
     input.catalog,
@@ -978,6 +1162,9 @@ export function createInventoryReclassificationEvent(
     item.revisionId
   );
   const to = positionWithAmountPackaging(input.to, resolved, item.revisionId);
+  if (!allowWhereaboutsTransition) {
+    assertInventoryReclassificationPreservesWhereabouts(from, to);
+  }
   if (from.itemId !== to.itemId) {
     throw new Error(
       "Reclassification cannot change item identity; use transformation."
@@ -995,7 +1182,104 @@ export function createInventoryReclassificationEvent(
       ],
       [],
       [],
-      containerDefinitionsForPosition(to, input.container)
+      placementNodeDefinitionsForPosition(to, input.placementNode)
+    ),
+    [{ from, to }]
+  );
+}
+
+/** Split one exact physical unit out of fungible stock and optionally embody a node. */
+export function createInventoryIndividualizeEvent(
+  input: CreateInventoryIndividualizeInput
+): InventoryEventDraft {
+  if (input.from.serialId !== undefined) {
+    throw new Error("Individualize source must not already have a serial identity.");
+  }
+  const item = findCommandItem(
+    input.catalog,
+    input.from,
+    input.amount,
+    input.itemRevisionId
+  );
+  const resolved = resolveInventoryAmount(input.catalog, item, input.amount);
+  if (
+    !quantityEq(
+      resolved.measurements.primary.quantity,
+      parseQuantity("1", resolved.measurements.primary.quantity.unit)
+    )
+  ) {
+    throw new Error("Individualize must split exactly one primary resource.");
+  }
+  const from = positionWithAmountPackaging(
+    input.from,
+    resolved,
+    item.revisionId
+  );
+  const to = normalizeInventoryStockPositionKey({
+    ...from,
+    serialId: input.serialId,
+  });
+  const placementNodeDefinitions: InventoryPlacementNodeDefinition[] = [];
+  if (input.asPlacementNode !== undefined) {
+    const { nodeId = input.serialId, ...metadata } = input.asPlacementNode;
+    placementNodeDefinitions.push({
+      nodeId,
+      ...metadata,
+      embodiedBy: { itemId: from.itemId, serialId: input.serialId },
+    });
+  }
+  return withPositiveLayerProvenanceTransfers(
+    input.catalog,
+    createMovementEvent(
+      input.catalog,
+      InventoryEventKind.Reclassification,
+      input,
+      [negativeEffect(item, from, resolved), positiveEffect(item, to, resolved)],
+      [],
+      [],
+      placementNodeDefinitions
+    ),
+    [{ from, to }]
+  );
+}
+
+/** Merge one exact serialized resource back into otherwise identical fungible stock. */
+export function createInventoryDeindividualizeEvent(
+  input: CreateInventoryDeindividualizeInput
+): InventoryEventDraft {
+  const serialId = input.from.serialId;
+  if (serialId === undefined) {
+    throw new Error("Deindividualize source must name one serial identity.");
+  }
+  const item = findCommandItem(
+    input.catalog,
+    input.from,
+    input.amount,
+    input.itemRevisionId
+  );
+  const resolved = resolveInventoryAmount(input.catalog, item, input.amount);
+  if (
+    !quantityEq(
+      resolved.measurements.primary.quantity,
+      parseQuantity("1", resolved.measurements.primary.quantity.unit)
+    )
+  ) {
+    throw new Error("Deindividualize must merge exactly one primary resource.");
+  }
+  const from = positionWithAmountPackaging(
+    input.from,
+    resolved,
+    item.revisionId
+  );
+  const { serialId: _serialId, ...withoutSerial } = from;
+  const to = normalizeInventoryStockPositionKey(withoutSerial);
+  return withPositiveLayerProvenanceTransfers(
+    input.catalog,
+    createMovementEvent(
+      input.catalog,
+      InventoryEventKind.Reclassification,
+      input,
+      [negativeEffect(item, from, resolved), positiveEffect(item, to, resolved)]
     ),
     [{ from, to }]
   );
@@ -1013,8 +1297,8 @@ export function createInventoryReclassificationManyEvent(
   const sourceIdentities = new Set<string>();
   /** Lot masters asserted by destination lines and deduplicated for this event. */
   const lotDefinitions = new Map<string, InventoryLotDefinition>();
-  /** Container masters asserted by destination lines and deduplicated for this event. */
-  const containerDefinitions = new Map<string, InventoryContainerDefinition>();
+  /** Placement-node definitions asserted by destination lines and deduplicated for this event. */
+  const placementNodeDefinitions = new Map<string, InventoryPlacementNodeDefinition>();
   for (const line of input.consume) {
     const item = findCommandItem(
       input.catalog,
@@ -1060,7 +1344,7 @@ export function createInventoryReclassificationManyEvent(
       );
     }
     collectLotDefinition(lotDefinitions, to, line.lot);
-    collectContainerDefinition(containerDefinitions, to, line.container);
+    collectPlacementNodeDefinition(placementNodeDefinitions, to, line.placementNode);
     const earlier = groupedDestinations.get(identity);
     groupedDestinations.set(
       identity,
@@ -1077,6 +1361,22 @@ export function createInventoryReclassificationManyEvent(
   }
   const sourceEntries = [...groupedSources.entries()];
   const destinationEntries = [...groupedDestinations.entries()];
+  assertInventoryReclassificationManyPreservesWhereabouts(
+    sourceEntries.map(
+      /** Project one grouped source into lifecycle-conservation evidence. */
+      ([, line]) => ({
+        position: line.position,
+        measurements: line.measurements,
+      })
+    ),
+    destinationEntries.map(
+      /** Project one grouped destination into lifecycle-conservation evidence. */
+      ([, line]) => ({
+        position: line.position,
+        measurements: line.measurements,
+      })
+    )
+  );
   sourceEntries.sort(compareGroupedInventoryOutgoingEntry);
   destinationEntries.sort(compareGroupedInventoryOutgoingEntry);
   const stockEffects: InventoryStockEffect[] = [];
@@ -1111,7 +1411,7 @@ export function createInventoryReclassificationManyEvent(
       stockEffects,
       [],
       sortedLotDefinitions(lotDefinitions),
-      sortedContainerDefinitions(containerDefinitions)
+      sortedPlacementNodeDefinitions(placementNodeDefinitions)
     ),
     pairwiseReclassificationProvenanceTransfers(
       provenanceSources,
@@ -1183,11 +1483,11 @@ export function createInventoryUnpackEvent(
   });
   const loose = removePackagingRevision(from);
   const to =
-    input.toContainerId === undefined
+    input.toPlacementNodeId === undefined
       ? loose
       : normalizeInventoryStockPositionKey({
           ...loose,
-          containerId: input.toContainerId,
+          placementNodeId: input.toPlacementNodeId,
         });
   return withPositiveLayerProvenanceTransfers(
     input.catalog,
@@ -1201,7 +1501,7 @@ export function createInventoryUnpackEvent(
       ],
       [],
       [],
-      containerDefinitionsForPosition(to, input.container)
+      placementNodeDefinitionsForPosition(to, input.placementNode)
     ),
     [{ from, to }]
   );
@@ -1222,8 +1522,8 @@ export function createInventoryTransformationEvent(
   const consumedIdentities = new Set<string>();
   /** Lot masters asserted by consumed/produced lines and deduplicated for this event. */
   const lotDefinitions = new Map<string, InventoryLotDefinition>();
-  /** Container masters asserted by consumed/produced lines and deduplicated for this event. */
-  const containerDefinitions = new Map<string, InventoryContainerDefinition>();
+  /** Placement-node definitions asserted by consumed/produced lines and deduplicated for this event. */
+  const placementNodeDefinitions = new Map<string, InventoryPlacementNodeDefinition>();
   for (const line of input.consume) {
     const item = findCommandItem(
       input.catalog,
@@ -1240,7 +1540,7 @@ export function createInventoryTransformationEvent(
     const identity = inventoryStockPositionIdentity(position);
     consumedIdentities.add(identity);
     collectLotDefinition(lotDefinitions, position, line.lot);
-    collectContainerDefinition(containerDefinitions, position, line.container);
+    collectPlacementNodeDefinition(placementNodeDefinitions, position, line.placementNode);
     const genealogyNode = findTransformationGenealogyNodeForLine({
       position,
       ...(line.traceabilityNode === undefined
@@ -1288,7 +1588,7 @@ export function createInventoryTransformationEvent(
       );
     }
     collectLotDefinition(lotDefinitions, position, line.lot);
-    collectContainerDefinition(containerDefinitions, position, line.container);
+    collectPlacementNodeDefinition(placementNodeDefinitions, position, line.placementNode);
     const genealogyNode = findTransformationGenealogyNodeForLine({
       position,
       ...(line.traceabilityNode === undefined
@@ -1318,6 +1618,16 @@ export function createInventoryTransformationEvent(
   }
   const consumedEntries = [...groupedConsumed.entries()];
   const producedEntries = [...groupedProduced.entries()];
+  assertInventoryTransformationWhereaboutsInheritance(
+    consumedEntries.map(
+      /** Project one consumed line to the exact whereabouts-bearing position. */
+      ([, line]) => line.movement.position
+    ),
+    producedEntries.map(
+      /** Project one produced line to the exact whereabouts-bearing position. */
+      ([, line]) => line.movement.position
+    )
+  );
   consumedEntries.sort(compareGroupedInventoryTransformationEntry);
   producedEntries.sort(compareGroupedInventoryTransformationEntry);
   const stockEffects: InventoryStockEffect[] = [];
@@ -1368,7 +1678,7 @@ export function createInventoryTransformationEvent(
     stockEffects,
     traceabilityChanges,
     sortedLotDefinitions(lotDefinitions),
-    sortedContainerDefinitions(containerDefinitions)
+    sortedPlacementNodeDefinitions(placementNodeDefinitions)
   );
 }
 
@@ -1486,18 +1796,58 @@ export function createInventoryLotMetadataEvent(
   );
 }
 
-/** Create one handling-unit metadata assertion event without changing physical stock. */
-export function createInventoryContainerMetadataEvent(
-  input: CreateInventoryContainerMetadataInput
+/** Create one placement-node metadata assertion without changing stock or topology. */
+export function createInventoryPlacementNodeMetadataEvent(
+  input: CreateInventoryPlacementNodeMetadataInput
 ): InventoryEventDraft {
   return createMovementEvent(
     input.catalog,
-    InventoryEventKind.ContainerMetadata,
+    InventoryEventKind.PlacementNodeMetadata,
     input,
     [],
     [],
     [],
-    [{ containerId: input.containerId, ...input.container }]
+    [{ nodeId: input.nodeId, ...input.placementNode }]
+  );
+}
+
+/** Create one direct-parent topology transition without rewriting descendant stock. */
+export function createInventoryPlacementEvent(
+  input: CreateInventoryPlacementInput
+): InventoryEventDraft {
+  const definitions: InventoryPlacementNodeDefinition[] = [];
+  if (input.node !== undefined) {
+    definitions.push({ nodeId: input.nodeId, ...input.node });
+  }
+  if (input.parent !== undefined) {
+    if (input.toParentNodeId === undefined) {
+      throw new Error(
+        "Placement parent metadata requires a destination parent node."
+      );
+    }
+    definitions.push({ nodeId: input.toParentNodeId, ...input.parent });
+  }
+  return createMovementEvent(
+    input.catalog,
+    InventoryEventKind.Placement,
+    input,
+    [],
+    [],
+    [],
+    definitions,
+    undefined,
+    undefined,
+    [
+      {
+        nodeId: input.nodeId,
+        ...(input.fromParentNodeId === undefined
+          ? {}
+          : { fromParentNodeId: input.fromParentNodeId }),
+        ...(input.toParentNodeId === undefined
+          ? {}
+          : { toParentNodeId: input.toParentNodeId }),
+      },
+    ]
   );
 }
 
@@ -1512,6 +1862,219 @@ export function createInventoryTraceabilityEvent(
     [],
     input.changes
   );
+}
+
+/** Stable unresolved-whereabouts tuple; placed stock has no lifecycle tuple. */
+function inventoryWhereaboutsLifecycleIdentity(
+  position: InventoryStockPositionKey
+): string | undefined {
+  if (position.whereaboutsId === undefined) return undefined;
+  return JSON.stringify([
+    position.whereaboutsId,
+    position.whereaboutsState ?? null,
+    position.lastPlacementNodeId ?? null,
+    position.detachedAtEpochMs ?? null,
+    position.missingAtEpochMs ?? null,
+  ]);
+}
+
+/** Kernel-owned unresolved lifecycle identity derived from one explicit physical operation. */
+function inventoryWhereaboutsIdForCommand(operationId: string): string {
+  return "inventory:whereabouts:" + encodeURIComponent(operationId);
+}
+
+/** Require one lifecycle command to name a structurally valid source object. */
+function requireInventoryWhereaboutsCommandSource(
+  value: InventoryStockPositionInput | undefined,
+  label: string
+): InventoryStockPositionInput {
+  if (value === undefined || value === null || typeof value !== "object") {
+    throw new Error(label + " must name an exact source position.");
+  }
+  return value;
+}
+
+/** Build a canonical detached destination from one known-placed source. */
+function inventoryDetachedCommandPosition(
+  input: CreateInventoryDetachInput
+): InventoryStockPositionInput {
+  const from = requireInventoryWhereaboutsCommandSource(input.from, "Detach source");
+  const placementNodeId = from.placementNodeId;
+  if (placementNodeId === undefined) {
+    throw new Error("Detach source must currently have a placement.");
+  }
+  const {
+    placementNodeId: _placementNodeId,
+    whereaboutsId: _whereaboutsId,
+    whereaboutsState: _whereaboutsState,
+    lastPlacementNodeId: _lastPlacementNodeId,
+    detachedAtEpochMs: _detachedAtEpochMs,
+    missingAtEpochMs: _missingAtEpochMs,
+    ...rest
+  } = from;
+  return {
+    ...rest,
+    whereaboutsId: inventoryWhereaboutsIdForCommand(input.operationId),
+    whereaboutsState: InventoryStockWhereaboutsState.Detached,
+    lastPlacementNodeId: placementNodeId,
+    detachedAtEpochMs: input.occurredAtEpochMs,
+  };
+}
+
+/** Build a canonical known-placement destination from detached/missing stock. */
+function inventoryPlacedCommandPosition(
+  input: CreateInventoryPlaceInput
+): InventoryStockPositionInput {
+  const from = requireInventoryWhereaboutsCommandSource(input.from, "Place source");
+  if (from.placementNodeId !== undefined) {
+    throw new Error("Place source must currently be detached or missing.");
+  }
+  if (from.whereaboutsId === undefined || from.whereaboutsState === undefined) {
+    throw new Error("Place source has no unresolved whereabouts lifecycle.");
+  }
+  const into = typeof input.into === "string" ? input.into.trim() : "";
+  if (into.length === 0) throw new Error("Place destination must not be empty.");
+  const {
+    whereaboutsId: _whereaboutsId,
+    whereaboutsState: _whereaboutsState,
+    lastPlacementNodeId: _lastPlacementNodeId,
+    detachedAtEpochMs: _detachedAtEpochMs,
+    missingAtEpochMs: _missingAtEpochMs,
+    ...rest
+  } = from;
+  return { ...rest, placementNodeId: into };
+}
+
+/** Build a canonical missing destination from known-placed or detached stock. */
+function inventoryMissingCommandPosition(
+  input: CreateInventoryMarkMissingInput
+): InventoryStockPositionInput {
+  const from = requireInventoryWhereaboutsCommandSource(
+    input.from,
+    "Mark-missing source"
+  );
+  if (from.whereaboutsState === InventoryStockWhereaboutsState.Missing) {
+    throw new Error("Stock is already marked missing.");
+  }
+  if (from.placementNodeId !== undefined) {
+    const {
+      placementNodeId,
+      whereaboutsId: _whereaboutsId,
+      whereaboutsState: _whereaboutsState,
+      lastPlacementNodeId: _lastPlacementNodeId,
+      detachedAtEpochMs: _detachedAtEpochMs,
+      missingAtEpochMs: _missingAtEpochMs,
+      ...rest
+    } = from;
+    return {
+      ...rest,
+      whereaboutsId: inventoryWhereaboutsIdForCommand(input.operationId),
+      whereaboutsState: InventoryStockWhereaboutsState.Missing,
+      lastPlacementNodeId: placementNodeId,
+      detachedAtEpochMs: input.occurredAtEpochMs,
+      missingAtEpochMs: input.occurredAtEpochMs,
+    };
+  }
+  if (
+    from.whereaboutsId === undefined ||
+    from.whereaboutsState !== InventoryStockWhereaboutsState.Detached ||
+    from.lastPlacementNodeId === undefined ||
+    from.detachedAtEpochMs === undefined
+  ) {
+    throw new Error(
+      "Mark-missing source must be placed or intentionally detached stock."
+    );
+  }
+  return {
+    ...from,
+    whereaboutsState: InventoryStockWhereaboutsState.Missing,
+    missingAtEpochMs: input.occurredAtEpochMs,
+  };
+}
+
+/** Ordinary reclassification cannot start, resolve, switch, or mutate whereabouts. */
+function assertInventoryReclassificationPreservesWhereabouts(
+  from: InventoryStockPositionKey,
+  to: InventoryStockPositionKey
+): void {
+  if (
+    inventoryWhereaboutsLifecycleIdentity(from) ===
+    inventoryWhereaboutsLifecycleIdentity(to)
+  ) {
+    return;
+  }
+  throw new Error(
+    "Generic reclassification cannot change a whereabouts lifecycle; use stock.detach, stock.markMissing, or stock.place."
+  );
+}
+
+/** Conserved split/merge reclassification cannot move quantity between whereabouts cohorts. */
+function assertInventoryReclassificationManyPreservesWhereabouts(
+  sources: readonly InventoryProvenanceLine[],
+  destinations: readonly InventoryProvenanceLine[]
+): void {
+  const sourceTotals = inventoryWhereaboutsMeasurementTotals(sources);
+  const destinationTotals = inventoryWhereaboutsMeasurementTotals(destinations);
+  if (sourceTotals.size !== destinationTotals.size) {
+    throw new Error(
+      "Generic reclassification cannot create or resolve detached/missing whereabouts cohorts."
+    );
+  }
+  for (const [identity, sourceMeasurements] of sourceTotals) {
+    const destinationMeasurements = destinationTotals.get(identity);
+    if (
+      destinationMeasurements === undefined ||
+      !inventoryMeasurementsEqual(sourceMeasurements, destinationMeasurements)
+    ) {
+      throw new Error(
+        "Generic reclassification must preserve each detached/missing whereabouts cohort exactly."
+      );
+    }
+  }
+}
+
+/** Aggregate unresolved measurements by item/revision plus exact lifecycle tuple. */
+function inventoryWhereaboutsMeasurementTotals(
+  lines: readonly InventoryProvenanceLine[]
+): ReadonlyMap<string, InventoryMeasurementVector> {
+  const totals = new Map<string, InventoryMeasurementVector>();
+  for (const line of lines) {
+    const lifecycle = inventoryWhereaboutsLifecycleIdentity(line.position);
+    if (lifecycle === undefined) continue;
+    const key = JSON.stringify([
+      line.position.itemId,
+      line.position.itemRevisionId,
+      lifecycle,
+    ]);
+    const earlier = totals.get(key);
+    totals.set(
+      key,
+      earlier === undefined
+        ? line.measurements
+        : addInventoryMeasurements(earlier, line.measurements)
+    );
+  }
+  return totals;
+}
+
+/** Transformation outputs may inherit unresolved truth only from consumed stock. */
+function assertInventoryTransformationWhereaboutsInheritance(
+  consumed: readonly InventoryStockPositionKey[],
+  produced: readonly InventoryStockPositionKey[]
+): void {
+  const consumedLifecycles = new Set<string>();
+  for (const position of consumed) {
+    const lifecycle = inventoryWhereaboutsLifecycleIdentity(position);
+    if (lifecycle !== undefined) consumedLifecycles.add(lifecycle);
+  }
+  for (const position of produced) {
+    const lifecycle = inventoryWhereaboutsLifecycleIdentity(position);
+    if (lifecycle !== undefined && !consumedLifecycles.has(lifecycle)) {
+      throw new Error(
+        "Transformation output cannot invent or switch a detached/missing whereabouts lifecycle."
+      );
+    }
+  }
 }
 
 /** One resolved line used only to identify exact one-to-one conserved reclassifications. */
@@ -1569,37 +2132,64 @@ function createMovementEvent(
   stockEffects: readonly InventoryStockEffect[],
   traceabilityChanges: readonly InventoryTraceabilityRelationChange[] = [],
   lotDefinitions: readonly InventoryLotDefinition[] = [],
-  containerDefinitions: readonly InventoryContainerDefinition[] = [],
+  placementNodeDefinitions: readonly InventoryPlacementNodeDefinition[] = [],
   catalogDigest?: string,
-  catalogSnapshot?: InventoryCatalogSnapshot
+  catalogSnapshot?: InventoryCatalogSnapshot,
+  placementChanges: readonly InventoryPlacementChange[] = []
 ): InventoryEventDraft {
   return defineInventoryEvent({
     catalog,
-    event: {
-      eventId: inventoryEventIdForOperation(header.operationId),
-      operationId: header.operationId,
+    event: movementEventDraft(
       kind,
-      occurredAtEpochMs: header.occurredAtEpochMs,
+      header,
       stockEffects,
-      lotDefinitions,
-      containerDefinitions,
       traceabilityChanges,
-      ...(catalogDigest === undefined ? {} : { catalogDigest }),
-      ...(catalogSnapshot === undefined ? {} : { catalogSnapshot }),
-      ...(header.actorId === undefined ? {} : { actorId: header.actorId }),
-      ...(header.sourcePartyId === undefined
-        ? {}
-        : { sourcePartyId: header.sourcePartyId }),
-      ...(header.destinationPartyId === undefined
-        ? {}
-        : { destinationPartyId: header.destinationPartyId }),
-      ...(header.sourceReference === undefined
-        ? {}
-        : { sourceReference: header.sourceReference }),
-      ...(header.reason === undefined ? {} : { reason: header.reason }),
-      ...(header.metadata === undefined ? {} : { metadata: header.metadata }),
-    },
+      lotDefinitions,
+      placementNodeDefinitions,
+      catalogDigest,
+      catalogSnapshot,
+      placementChanges
+    ),
   });
+}
+
+/** Build the event's exact unvalidated fields for one final normalized validation. */
+function movementEventDraft(
+  kind: InventoryEventKind,
+  header: InventoryCommandHeader,
+  stockEffects: readonly InventoryStockEffect[],
+  traceabilityChanges: readonly InventoryTraceabilityRelationChange[] = [],
+  lotDefinitions: readonly InventoryLotDefinition[] = [],
+  placementNodeDefinitions: readonly InventoryPlacementNodeDefinition[] = [],
+  catalogDigest?: string,
+  catalogSnapshot?: InventoryCatalogSnapshot,
+  placementChanges: readonly InventoryPlacementChange[] = []
+): InventoryEventDraft {
+  return {
+    eventId: inventoryEventIdForOperation(header.operationId),
+    operationId: header.operationId,
+    kind,
+    occurredAtEpochMs: header.occurredAtEpochMs,
+    stockEffects,
+    lotDefinitions,
+    placementNodeDefinitions,
+    placementChanges,
+    traceabilityChanges,
+    ...(catalogDigest === undefined ? {} : { catalogDigest }),
+    ...(catalogSnapshot === undefined ? {} : { catalogSnapshot }),
+    ...(header.actorId === undefined ? {} : { actorId: header.actorId }),
+    ...(header.sourcePartyId === undefined
+      ? {}
+      : { sourcePartyId: header.sourcePartyId }),
+    ...(header.destinationPartyId === undefined
+      ? {}
+      : { destinationPartyId: header.destinationPartyId }),
+    ...(header.sourceReference === undefined
+      ? {}
+      : { sourceReference: header.sourceReference }),
+    ...(header.reason === undefined ? {} : { reason: header.reason }),
+    ...(header.metadata === undefined ? {} : { metadata: header.metadata }),
+  };
 }
 
 /** Reject malformed or empty batch commands so one operation identity always means a real physical fact. */
@@ -1679,47 +2269,50 @@ function lotDefinitionsForPosition(
   return [{ itemId: position.itemId, lotId: position.lotId, ...lot }];
 }
 
-/** Add one optional container assertion while allowing identical same-container lines. */
-function collectContainerDefinition(
-  definitions: Map<string, InventoryContainerDefinition>,
+/** Add one optional placementNode assertion while allowing identical same-placementNode lines. */
+function collectPlacementNodeDefinition(
+  definitions: Map<string, InventoryPlacementNodeDefinition>,
   position: InventoryStockPositionKey,
-  container: InventoryContainerMetadataInput | undefined
+  placementNode: InventoryPlacementNodeMetadataInput | undefined
 ): void {
-  const candidates = containerDefinitionsForPosition(position, container);
+  const candidates = placementNodeDefinitionsForPosition(position, placementNode);
   const definition = candidates[0];
   if (definition === undefined) return;
-  const identity = inventoryContainerIdentity(definition.containerId);
+  const identity = inventoryPlacementNodeIdentity(definition.nodeId);
   const existing = definitions.get(identity);
   if (
     existing !== undefined &&
-    inventoryContainerDefinitionCommandFingerprint(existing) !==
-      inventoryContainerDefinitionCommandFingerprint(definition)
+    inventoryPlacementNodeDefinitionCommandFingerprint(existing) !==
+      inventoryPlacementNodeDefinitionCommandFingerprint(definition)
   ) {
     throw new Error(
-      `Event lines disagree about container metadata for ${identity}.`
+      `Event lines disagree about placementNode metadata for ${identity}.`
     );
   }
   definitions.set(identity, definition);
 }
 
-/** Return container assertions in deterministic exact identity order. */
-function sortedContainerDefinitions(
-  definitions: ReadonlyMap<string, InventoryContainerDefinition>
-): readonly InventoryContainerDefinition[] {
+/** Return placementNode assertions in deterministic exact identity order. */
+function sortedPlacementNodeDefinitions(
+  definitions: ReadonlyMap<string, InventoryPlacementNodeDefinition>
+): readonly InventoryPlacementNodeDefinition[] {
   const entries = [...definitions.entries()];
-  entries.sort(compareContainerDefinitionEntry);
-  const result: InventoryContainerDefinition[] = [];
+  entries.sort(comparePlacementNodeDefinitionEntry);
+  const result: InventoryPlacementNodeDefinition[] = [];
   for (const entry of entries) result.push(entry[1]);
   return result;
 }
 
-/** Stable same-event container metadata comparison. */
-function inventoryContainerDefinitionCommandFingerprint(
-  definition: InventoryContainerDefinition
+/** Stable same-event placementNode metadata comparison. */
+function inventoryPlacementNodeDefinitionCommandFingerprint(
+  definition: InventoryPlacementNodeDefinition
 ): string {
   return JSON.stringify([
-    definition.containerId,
-    definition.containerType ?? null,
+    definition.nodeId,
+    definition.category ?? null,
+    definition.acceptsPlacement ?? null,
+    definition.embodiedBy?.itemId ?? null,
+    definition.embodiedBy?.serialId ?? null,
     inventoryMetadataFingerprint(definition.identifiers),
     definition.openedAtEpochMs ?? null,
     definition.useByEpochMs ?? null,
@@ -1727,26 +2320,24 @@ function inventoryContainerDefinitionCommandFingerprint(
   ]);
 }
 
-/** Sort exact container-definition map entries by identity key. */
-function compareContainerDefinitionEntry(
-  left: readonly [string, InventoryContainerDefinition],
-  right: readonly [string, InventoryContainerDefinition]
+/** Sort exact placementNode-definition map entries by identity key. */
+function comparePlacementNodeDefinitionEntry(
+  left: readonly [string, InventoryPlacementNodeDefinition],
+  right: readonly [string, InventoryPlacementNodeDefinition]
 ): number {
   return compareInventoryIdentityText(left[0], right[0]);
 }
 
-/** Build one typed container assertion from a container-qualified stock position. */
-function containerDefinitionsForPosition(
+/** Build one typed placementNode assertion from a placementNode-qualified stock position. */
+function placementNodeDefinitionsForPosition(
   position: InventoryStockPositionKey,
-  container: InventoryContainerMetadataInput | undefined
-): readonly InventoryContainerDefinition[] {
-  if (container === undefined) return [];
-  if (position.containerId === undefined) {
-    throw new Error(
-      "Inventory container metadata requires the stock position to name containerId."
-    );
+  placementNode: InventoryPlacementNodeMetadataInput | undefined
+): readonly InventoryPlacementNodeDefinition[] {
+  if (placementNode === undefined) return [];
+  if (position.placementNodeId === undefined) {
+    throw new Error("Placement-node metadata requires a placed stock position.");
   }
-  return [{ containerId: position.containerId, ...container }];
+  return [{ nodeId: position.placementNodeId, ...placementNode }];
 }
 
 /** Stable event id derived from one operation id without exposing event-id bookkeeping to callers. */
@@ -1892,7 +2483,7 @@ interface InventoryTransformationGenealogyLine {
   readonly explicitNode?: InventoryTraceabilityNodeRef;
 }
 
-/** Build complete lineage edges from exact serial/container/lot identities or checked external mappings. */
+/** Build complete lineage edges from exact serial/placementNode/lot identities or checked external mappings. */
 function createTransformationGenealogy(
   consume: readonly InventoryTransformationGenealogyLine[],
   produce: readonly InventoryTransformationGenealogyLine[]
@@ -1908,7 +2499,7 @@ function createTransformationGenealogy(
       "Transformation lineage must name nodes on every input and output, or none."
     );
   }
-  // Several stock locations may describe one physical lot/container node. Form the product of identity sets, not line slots.
+  // Several stock positions may describe one physical lot/node. Form the product of identity sets, not line slots.
   const uniqueConsumedNodes = uniqueTransformationGenealogyNodes(consumedNodes);
   const uniqueProducedNodes = uniqueTransformationGenealogyNodes(producedNodes);
   const changes: InventoryTraceabilityRelationChange[] = [];
@@ -1952,12 +2543,6 @@ function findTransformationGenealogyNodeForLine(
       id: line.position.serialId,
     });
   }
-  if (line.position.containerId !== undefined) {
-    candidates.push({
-      kind: InventoryTraceabilityNodeKind.Container,
-      id: line.position.containerId,
-    });
-  }
   if (line.position.lotId !== undefined) {
     candidates.push({
       kind: InventoryTraceabilityNodeKind.Lot,
@@ -1967,6 +2552,14 @@ function findTransformationGenealogyNodeForLine(
   }
   const explicitNode = line.explicitNode;
   if (explicitNode !== undefined) {
+    if (explicitNode.kind === InventoryTraceabilityNodeKind.PlacementNode) {
+      if (explicitNode.id !== line.position.placementNodeId) {
+        throw new Error(
+          "Transformation placement-node genealogy must name the stock line's direct placement node."
+        );
+      }
+      return explicitNode;
+    }
     if (candidates.length === 0) return explicitNode;
     const explicitIdentity = inventoryTraceabilityNodeIdentity(explicitNode);
     for (const candidate of candidates) {
@@ -1975,13 +2568,13 @@ function findTransformationGenealogyNodeForLine(
       }
     }
     throw new Error(
-      "Transformation genealogy node does not match the serial, container, or lot on its stock line."
+      "Transformation genealogy node does not match the serial or lot on its stock line."
     );
   }
   if (candidates.length === 0) return undefined;
   if (candidates.length > 1) {
     throw new Error(
-      "Transformation line has several stock identities; name which serial, container, or lot is the genealogy node."
+      "Transformation line has several stock identities; name which serial or lot is the genealogy node."
     );
   }
   return candidates[0];

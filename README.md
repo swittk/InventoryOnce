@@ -1,23 +1,28 @@
 # InventoryOnce
 
-`@inventoryonce/core` is a framework-free inventory truth package with zero runtime dependencies. It records what physically happened, keeps current stock rebuildable from committed events, and gives normal application code small grouped APIs instead of journal legs or balance edits.
+`@inventoryonce/core` is a framework-free inventory truth package with zero runtime dependencies. It records what physically happened, keeps current stock rebuildable from committed events, and gives normal application code small verb-grouped APIs instead of journal legs, graph deltas, or balance edits.
 
 ## Implemented truth
 
 - Every stock position names an immutable item revision. Package-shaped stock also names the exact immutable package revision. Heterogeneous package compositions, read-only collections, and mutual-fungibility pools are separate immutable catalogue revisions. Catalogue construction deep-copies and freezes caller-owned revision values so later alias mutation cannot change replay.
 - Quantity is an exact vector: one primary stock axis plus independently measured axes such as actual weight. No epsilon math or guessed unit conversion is used.
-- Event `occurredAtEpochMs` is the real-world time as safe-integer epoch milliseconds. Durable `recordedAtEpochMs` and `recordSequence` say when/where the record was stored.
-- Location, lot, serial, package revision, container, status, owner, custodian, disposition authority, and configured extra dimensions remain independent position fields.
-- Containment, association, and transformation genealogy are different graph relationships.
-- Corrections append a delta and point to the retained root event. They never edit or delete earlier events.
-- Broad reservations are checked together. Divisible rows use exact max-flow; a merged row containing many equal intact packages/serial pieces stays one integer-capacity group instead of one search node per piece. The solver bounds real competing assignments, not ordinary package count. Allocation may bind a claim to exact positions later, but it cannot bind part of one intact package or serial row.
-- Count work is snapshot → observation → reconcile. One count is frozen to one item revision, and InventoryOnce freezes the current record sequence when the observation is stored. Reconciliation applies the discrepancy at observation time, so later legitimate movement stays intact. `counts.replaceAbsolute(...)` is the one-call exact-bucket convenience: it freezes a selector to one full position identity, preflights the same lifecycle invariants, then durably resumes those normal stages after a crash.
+- Event `occurredAtEpochMs` is the real-world time as safe-integer epoch milliseconds. Durable `recordedAtEpochMs` and `recordSequence` say when and where the fact was stored.
+- A stock position has one optional **direct placement node**. Placement nodes are generic application identities: the kernel does not know or special-case rooms, shelves, boxes, trolleys, vehicles, people, or any other domain noun.
+- A node may accept direct placement and may itself be placed beneath another accepting node. A standalone room/shelf/bay needs no inventory stock. A node representing a cabinet/trolley/tote may instead be **embodied by one live serialized inventory resource**; its parent and lifetime are then derived from that resource, while descendants retain their direct anchors.
+- Fungible quantity cannot own placement children. `stock.individualize(...)` splits exactly one physical unit into a new serial and can atomically make that instance a placement-capable node. Once empty, `stock.deindividualize(...)` merges it back into fungible stock and permanently retires the old current serial/node identity; a later unit receives a fresh identity. Exact correction of the mistaken retirement event is the only normal way to revive that identity.
+- Intentionally detached or genuinely missing stock remains conserved/accounted inventory with a kernel-owned whereabouts lifecycle, last-known placement, times, actor/source provenance, and append-only outcome history. It is not ordinary usable/reservable/automatically allocatable stock until placed again. `issue` means it left the inventory world; `scrap` means it was destroyed.
+- Placement, association, and transformation genealogy are different structures with different invariants. Placement has one parent and no cycles; association is reversible relationship truth; genealogy is append-only production lineage.
+- Corrections append a delta and point to the retained root event. They never edit or delete earlier events. `stock.planCorrection(...)` runs the same replay without writing; new corrections retain their replacement assertion so later historical repair can recompute current truth rather than stack a stale delta.
+- Late-discovered historical facts are opt-in. `stock.planHistorical(...)` / `stock.recordHistorical(...)` atomically replay existing physical verbs at their occurrence time while retaining one append-only repair envelope at the durable record time. Applications that never call these methods keep the same normal API and hot path.
+- `read.events(...)` provides indexed, paginated retained-event history. Embedded historical assertions participate in resource/kind/time matching without becoming independent durable records.
+- Broad reservations are checked together. Divisible rows use exact max-flow; a merged row containing many equal intact packages/serial pieces stays one integer-capacity group instead of one search node per piece. Allocation may bind a claim to exact positions later, but it cannot bind part of one intact package or serial row.
+- Count work is snapshot → observation → reconcile. One count is frozen to one item revision and record sequence. Reconciliation applies only the discrepancy that existed at observation time, so later legitimate movement stays intact. `counts.replaceAbsolute(...)` is the one-call exact-bucket convenience built on the same lifecycle.
 
-There is no `Substock` type. A legacy child row has to become an exact package revision, a normal position, a container, or transformation output.
+There is no `Substock` type and no second container/location authority. A place is a standalone placement node; an inventoried physical holder is one placement node explicitly embodied by one live serial resource. Stock, package, lot, status, owner, custodian, disposition authority, and configured extra dimensions remain independent facts, while embodiment is the enforced bridge between unique stock identity and topology.
 
 ## Normal API
 
-Create a retained catalogue, provide a durable storage adapter, then use the grouped façade:
+Create a retained catalogue, provide a durable storage adapter, then use physical verbs:
 
 ```ts
 const itemV1 = defineScalarInventoryItem({
@@ -47,47 +52,215 @@ await inventory.catalog.publish({
   occurredAtEpochMs: catalogueApprovedAtEpochMs,
 });
 
+await inventory.placement.define({
+  operationId: "define-carrier-a",
+  occurredAtEpochMs: setupAtEpochMs,
+  nodeId: "carrier-a",
+  placementNode: {
+    category: "application-defined-storage-unit",
+    acceptsPlacement: true,
+  },
+});
+
 await inventory.stock.receive({
   operationId: delivery.id,
   occurredAtEpochMs: delivery.receivedAtEpochMs,
   to: {
     itemId: "item-a",
-    locationId: "store",
+    placementNodeId: "carrier-a",
     lotId: delivery.lotId,
   },
   amount: packageAmount(3, "item-a-box-20-v1"),
 });
 
-await inventory.stock.transfer({
-  operationId: transfer.id,
-  occurredAtEpochMs: transfer.movedAtEpochMs,
+// One topology event moves the carrier and everything already beneath it.
+await inventory.placement.move({
+  operationId: "move-carrier-a",
+  occurredAtEpochMs: movedAtEpochMs,
+  nodeId: "carrier-a",
+  into: "room-2",
+  destination: { acceptsPlacement: true },
+});
+
+// Partial stock can be taken out without pretending it left inventory.
+const detached = await inventory.stock.detach({
+  operationId: "take-one-package-out",
+  occurredAtEpochMs: takenAtEpochMs,
   from: {
     itemId: "item-a",
-    locationId: "store",
+    placementNodeId: "carrier-a",
     lotId: delivery.lotId,
   },
-  toLocationId: "room-2",
   amount: packageAmount(1, "item-a-box-20-v1"),
 });
+
+// Use this detach's kernel-owned cohort identity, not the first unresolved stock
+// elsewhere in the warehouse.
+const detachedWhereaboutsId = detached.event.stockEffects.find(
+  (effect) => effect.position.whereaboutsId !== undefined
+)?.position.whereaboutsId;
+if (detachedWhereaboutsId === undefined) {
+  throw new Error("Detach did not create a whereabouts cohort.");
+}
+const [unresolved] = (await inventory.read.whereabouts({
+  whereaboutsIds: [detachedWhereaboutsId],
+})).flatMap((lifecycle) => lifecycle.currentPositions);
+if (unresolved !== undefined) {
+  await inventory.stock.place({
+    operationId: "put-package-on-shelf",
+    occurredAtEpochMs: placedAtEpochMs,
+    from: unresolved.key,
+    into: "shelf-c13",
+    amount: packageAmount(1, "item-a-box-20-v1"),
+  });
+}
 ```
+
+A fungible physical holder can become unique and placement-capable without application-side graph bookkeeping:
+
+```ts
+await inventory.stock.receive({
+  operationId: "receive-cabinets",
+  occurredAtEpochMs,
+  to: { itemId: "cabinet", placementNodeId: "store" },
+  amount: stockAmount("20", "piece"),
+});
+
+await inventory.stock.receive({
+  operationId: "receive-kit",
+  occurredAtEpochMs,
+  to: { itemId: "kit", placementNodeId: "store" },
+  amount: stockAmount("1", "piece"),
+});
+
+await inventory.stock.individualize({
+  operationId: "individualize-cabinet-17",
+  occurredAtEpochMs,
+  from: { itemId: "cabinet", placementNodeId: "store" },
+  amount: stockAmount("1", "piece"),
+  serialId: "CAB-17",
+  asPlacementNode: {
+    category: "cabinet",
+    acceptsPlacement: true,
+  },
+});
+
+await inventory.stock.transfer({
+  operationId: "put-kit-in-cabinet-17",
+  occurredAtEpochMs,
+  from: { itemId: "kit", placementNodeId: "store" },
+  toPlacementNodeId: "CAB-17",
+  amount: stockAmount("1", "piece"),
+});
+
+// This moves cabinet stock to room-2; topology follows the resource automatically.
+await inventory.placement.move({
+  operationId: "move-cabinet-17",
+  occurredAtEpochMs,
+  nodeId: "CAB-17",
+  into: "room-2",
+});
+
+// Empty all direct stock and child nodes before retirement or de-individualization.
+await inventory.placement.moveContents({
+  operationId: "empty-cabinet-17",
+  occurredAtEpochMs,
+  nodeId: "CAB-17",
+  into: "room-2",
+});
+
+await inventory.stock.deindividualize({
+  operationId: "return-cabinet-17-to-generic-pool",
+  occurredAtEpochMs,
+  from: {
+    itemId: "cabinet",
+    serialId: "CAB-17",
+    placementNodeId: "room-2",
+  },
+  amount: stockAmount("1", "piece"),
+});
+```
+
+The old `CAB-17` serial/node remains in retained history but cannot receive stock or be silently reused. Another cabinet may later be individualized under a fresh identity such as `CAB-42`.
 
 The façade groups are:
 
 - `catalog`: publish the complete retained item/package/composition/collection/fungibility revision set before commands use an appended revision.
 - `compositions`: read exact/active heterogeneous package definitions and atomically open whole exact source packages into their frozen output vectors.
+- `transformations`: define, preview, and run reusable revision-frozen physical transformations.
 - `collections`: read exact/active “same brand”, “All OCPs”, or other taxonomy revisions; summarize exact members and only explicitly declared scalar roll-ups.
-- `fungibility`: read exact/active pool definitions, summarize common-basis stock, preview FIFO/FEFO member selection, and issue/transfer/scrap exact member rows through one frozen pool revision.
-- `stock`: receive, issue, transfer, status/owner/custodian/authority/container/dimension changes, pack, unpack, transform, scrap, correct.
-- `containers`: transfer, issue, scrap, change/clear status for a whole handling unit; define and append-only correct exact container metadata.
+- `fungibility`: summarize explicit mutual-substitution pools and issue/transfer/scrap exact member rows through one frozen pool revision.
+- `stock`: receive, issue, transfer, detach, place, mark missing, individualize/de-individualize physical units, change independent dimensions, pack, unpack, transform, scrap, and correct.
+- `placement`: define/correct standalone or embodied nodes, move/unplace one node, evacuate direct contents, and explicitly issue/scrap/re-status all current subtree contents when that is the physical action.
 - `lots`: define and append-only correct item-scoped lot metadata.
-- `reservations`: reserve, refine, allocate, release, expire, consume.
-- `counts`: replace one exact absolute bucket through the native lifecycle, or start, observe, reconcile, and abandon longer-running count work.
-- `traceability`: aggregate, disaggregate, associate, disassociate. Transformation genealogy comes from `stock.transform`.
-- `read`: world, positions, summary, availability, allocation preview, package revisions, lot/container masters, event, reservation, count, reservation feasibility.
+- `transfers`: prepare, dispatch, partially/fully receive, or release one time-separated physical transfer.
+- `reservations`: reserve, refine, allocate, release, expire, and consume.
+- `counts`: replace one exact absolute bucket or use the longer start/observe/reconcile/abandon lifecycle.
+- `traceability`: associate and disassociate; transformation genealogy comes from `stock.transform`.
+- `read`: coherent snapshots, positions, whereabouts/history, summaries, availability, allocation previews, placement topology, catalogue revisions, events, reservations, counts, and feasibility.
 
-The same `operationId` always freezes the same complete intent. An exact retry returns the earlier result. A changed retry fails before planning/writing.
+The same `operationId` always freezes the same complete intent. An exact retry returns the earlier result. A changed retry fails before planning or writing.
 
-Whole-container commands load the exact current rows inside the durable planning fence. A container nested through the current containment graph moves with its outer container, and stock keeps its item revision, lot, serial, package revision, direct container, owner/custodian/authority, qualified dimensions, and every independent measurement. Every content row must currently be in one location; split-location rows are dirty physical truth and block the command. A current exact reservation allocation on a row that would move, change status, issue, or scrap also blocks the whole-container command. Release, consume, or reallocate that claim first. Broad claims are rechecked against the resulting world; explicit scrap may still record real physical shortage truth.
+### Placement and whereabouts semantics
+
+For a standalone place, `placement.move({ nodeId, into })` changes only the node's direct parent. For an embodied node, the same call moves its unique stock instance and derives the node parent from that stock placement atomically. InventoryOnce discovers the current parent inside the durable planning fence, checks optional `expectedParent`, target capability, embodiment ownership, one-parent ownership, and cycles. Descendant stock retains the same exact position identities and direct anchors.
+
+An embodied resource cannot be issued, scrapped, transformed away, or de-individualized while its node has direct stock or child nodes. `placement.moveContents({ nodeId, into })` evacuates every direct stock row and direct child node as one event; nested descendants remain under their immediate child. Once empty, destruction retires the node with the resource, while de-individualization returns one unit to fungible stock and retires the old serial/node identity. Rebuildable parent/child, direct-stock, serial, and embodiment indexes accelerate these checks without becoming another source of physical truth.
+
+`stock.detach(...)` removes an exact quantity from its known direct placement while keeping it in current inventory. `stock.markMissing(...)` records that the unresolved cohort is genuinely missing. `stock.place(...)` gives detached/missing stock a new known direct placement. InventoryOnce derives and preserves the lifecycle identity; callers do not invent graph edges or cohort IDs.
+
+`read.whereabouts()` returns current unresolved lifecycles with origin provenance. `read.whereaboutsHistory()` also returns resolved lifecycles, including later placement, issue, scrap, count adjustment, correction, or historical-repair events. Broad on-hand reporting includes unresolved stock as accounted truth, while ordinary usable availability, reservations, and FIFO/FEFO picking exclude it until placement is known again.
+
+### Corrections and late historical evidence
+
+Normal applications keep using the existing verbs. Historical capabilities are additive and do not run on ordinary current reads/writes.
+
+```ts
+const correction = await inventory.stock.planCorrection({
+  operationId: "correct-receipt",
+  occurredAtEpochMs: learnedAt,
+  correctsEventId: receipt.event.eventId,
+  reason: "The receipt contained five pieces.",
+  replaceWith: plans => plans.receive({
+    occurredAtEpochMs: originalReceiptAt,
+    to: originalPosition,
+    amount: stockAmount("5", "piece"),
+  }),
+});
+```
+
+For evidence learned late, one repair may assert several existing physical verbs atomically. `outputOf(...)` safely carries kernel-owned cohort identity from an earlier assertion:
+
+```ts
+await inventory.stock.recordHistorical({
+  operationId: "cart-loss-audit",
+  occurredAtEpochMs: learnedAt,
+  reason: "Two pieces were missing and later recovered.",
+  assertions: [
+    {
+      assertionId: "missing-two",
+      assert: plans => plans.markMissing({
+        occurredAtEpochMs: missingAt,
+        from: sourcePosition,
+        amount: stockAmount("2", "piece"),
+      }),
+    },
+    {
+      assertionId: "found-two",
+      assert: plans => plans.place({
+        occurredAtEpochMs: foundAt,
+        from: plans.outputOf("missing-two"),
+        into: "store",
+        amount: stockAmount("2", "piece"),
+      }),
+    },
+  ],
+});
+```
+
+Fungible under-accounting may become a typed recorded-deficit interval only under `InventoryDeficitPolicy.Record`; serialized negative identity is always rejected. Present-time physical truth remains the existing count lifecycle. See [`docs/historical-repair.md`](docs/historical-repair.md) and [`docs/performance-and-indexing.md`](docs/performance-and-indexing.md).
+
+Retained history is paged with `read.events(...)`. Use its opaque `nextCursor` for a stable traversal that excludes concurrent appends; set `direction: InventoryEventQueryDirection.Descending` for newest-first investigation. Equal-time assertions inside one repair retain caller order, while `afterEventId` supplies an explicit anchor when needed.
 
 ## Package and measurement truth
 
@@ -127,7 +300,7 @@ await inventory.compositions.open({
   occurredAtEpochMs: opening.occurredAtEpochMs,
   from: {
     itemId: "brand-x-pack",
-    locationId: "store",
+    placementNodeId: "store",
     lotId: "LOT-OLD",
     packagingRevisionId: "brand-x-calendar-pack-v1",
   },
@@ -137,11 +310,11 @@ await inventory.compositions.open({
 
 That one event consumes one intact v1 pack and produces exactly 21 active-A plus 7 placebo-A tablets,
 even when v2 is currently active. Several packs scale the full vector exactly. Opening always preserves
-the source package location, status, owner, custodian, and disposition authority; moving or changing those
-facts is a separate explicit operation. Each frozen output definition also declares one lot policy:
+the source package direct placement, status, owner, custodian, and disposition authority; moving or changing
+those facts is a separate explicit operation. Each frozen output definition also declares one lot policy:
 `none`, strict source-lot inheritance, source-lot inheritance when present, or an explicit output lot.
 The opening call may supply only the identities required by that frozen policy plus output serial,
-container, qualified dimensions, metadata, and genealogy. Unknown placement fields are rejected even for
+direct placement, qualified dimensions, metadata, and genealogy. Unknown placement fields are rejected even for
 plain JavaScript callers, so opening cannot hide a transfer or reclassification. Composition output
 definitions may themselves produce exact packaged items, but package-to-package composition cycles are
 rejected.
@@ -168,7 +341,7 @@ All OCPs view v2
 ```
 
 `inventory.collections.summary(...)` returns every exact member row, including zero rows under a
-location/status/owner scope. A single total is returned only when the collection revision explicitly
+placement/status/owner scope. A single total is returned only when the collection revision explicitly
 defines compatible reference conversions, for example one `pack` from each member contributing one
 `pack-count`. Member contributions remain visible beside the total. Changing the active collection
 revision never changes retained v1 membership or its historical/read semantics.
@@ -213,8 +386,8 @@ Pool allocation searches FIFO/FEFO candidates across members and accepts only a 
 leaves all existing item reservations feasible at durable record time. Physical use-by remains evaluated
 at event occurrence time, but backdating cannot bypass a claim already present when the operation commits.
 Transfer previews/commands simulate the destination as well as the source removal, so a broad claim may
-remain feasible across locations while an exactly allocated source row cannot move underneath its claim.
-The emitted event still names the actual selected item revision, package, lot, serial, and container; the
+remain feasible across placement scopes while an exactly allocated source row cannot move underneath its claim.
+The emitted event still names the actual selected item revision, package, lot, serial, and direct placement; the
 pool revision/common-basis quantities are retained as audit evidence, not as synthetic pooled stock.
 
 Exact allocation search has a deterministic 100,000-state safety ceiling. Adversarial or unusually large
@@ -256,7 +429,7 @@ and durably publishes several derived indexes with the same world revision:
 - current positive position by item-scoped serial identity.
 
 Normal item/collection reads therefore inspect only that item's positions. Reservation feasibility uses
-revision-local positions. FIFO/FEFO planning reads the projected layer timestamp and current lot/container
+revision-local positions. FIFO/FEFO planning reads the projected layer timestamp and current lot/placement-ancestry
 use-by instead of replaying all events once per candidate. Serial uniqueness is refreshed only for serials
 touched by the atomic event. The indexes are included in content-root/conformance checks and are rebuilt
 from the immutable event stream in replay tests, so they remain cache/projection truth rather than a
@@ -273,7 +446,8 @@ const summary = snapshot.summary(selector);
 const availability = snapshot.availability(selector, at);
 const packages = snapshot.packagingRevisions({ itemId });
 const lots = snapshot.lots(itemId);
-const containers = snapshot.containers();
+const placementNodes = snapshot.placementNodes();
+const ancestry = snapshot.placementAncestry("carrier-a");
 ```
 
 The snapshot also exposes collection/fungibility summaries, composition revisions, allocation previews,
@@ -283,7 +457,7 @@ facts with names, pricing policy, organization scope, permissions, or transport 
 inventory arithmetic or issuing N+1 inventory reads.
 
 The deterministic projection-index tests exercise a fixed 32-candidate run through positive-layer reset,
-location transfer, a same-quantity backdated correction, full event rebuild, and FIFO planning with the
+direct-placement transfer, a same-quantity backdated correction, full event rebuild, and FIFO planning with the
 retained event records made unreadable. This is a guard against history replay in the candidate loop, not
 a flaky wall-clock benchmark.
 
@@ -293,7 +467,7 @@ a flaky wall-clock benchmark.
 
 Before `begin`, the pure planner computes and validates the complete next world: optional committed event, projection, reservation book, count book, and receipt. `begin` atomically says whether this caller created the row or found an exact retry, and freezes that full plan under one operation ID and base world revision. Event/projection/reservation/count/receipt writes may happen separately, but staged values stay invisible. `complete` publishes the full world revision at once.
 
-Because the complete plan is durable while an operation is applying, `repairInventoryDurableOperations` can finish it without the original command planner. Completion first publishes the world head, then retains the small receipt and optional event needed for exact retry while dropping the full repair plan. A crash between those writes leaves a visible world plus an applying plan that repair only needs to compact. Abort first atomically claims the same publication fence; only the abort claimant may write terminal abort history, while a publication compare-and-set requires that no abort claim exists. Abort is terminal and drops the same heavy values while publishing none of them. The reusable conformance suite injects failures immediately before and after Begin/Event/Projection/Reservations/Counts/Receipt/PublishWorld/CompactOperation/Complete/ClaimAbort/Abort and the corresponding migration boundaries over stock, catalogue-only, lot-master-only, container-master-only, traceability-only, reservation, count, reservation-consume, and count-reconcile plans. It compares the repaired world to the plan's exact content roots, checks normal public reads and terminal compaction, and proves broken adapters that drop catalogue/projection/book rows or required projection indexes are caught.
+Because the complete plan is durable while an operation is applying, `repairInventoryDurableOperations` can finish it without the original command planner. Completion first publishes the world head, then retains the small receipt and optional event needed for exact retry while dropping the full repair plan. A crash between those writes leaves a visible world plus an applying plan that repair only needs to compact. Abort first atomically claims the same publication fence; only the abort claimant may write terminal abort history, while a publication compare-and-set requires that no abort claim exists. Abort is terminal and drops the same heavy values while publishing none of them. The reusable conformance suite injects failures immediately before and after Begin/Event/Projection/Reservations/Counts/Receipt/PublishWorld/CompactOperation/Complete/ClaimAbort/Abort and the corresponding migration boundaries over stock, catalogue-only, lot-master-only, placement-node-master-only, placement-only, traceability-only, reservation, count, reservation-consume, and count-reconcile plans. It compares the repaired world to the plan's exact content roots, checks normal public reads and terminal compaction, and proves broken adapters that drop catalogue/projection/book rows or required projection indexes are caught.
 
 The included memory adapter is the executable reference, not a production database adapter. A real adapter must pass the same conformance/failpoint suite and provide its advertised atomic or repairable publication guarantee.
 
@@ -310,7 +484,7 @@ Compilation replays the full ordered event set through the real projection/graph
 ## Export boundaries
 
 - Package root: grouped façade, catalogue/amount/measurement/selector values, and read-result types.
-- `/kernel`: event builders, reducers, exact allocation/feasibility/count/correction/traceability machinery.
+- `/kernel`: event builders, reducers, exact placement/allocation/feasibility/count/correction/traceability machinery.
 - `/storage`: durable plan/storage/coordinator/repair contract.
 - `/migrations`: typed legacy query/plugin, dry-run, comparison, and durable apply contract.
 
@@ -330,7 +504,7 @@ The audit enumerates every public API and semantic field, validates every refere
 
 ## Formal boundary and future work
 
-`pnpm formal` checks bounded TLA+ models for heterogeneous composition revisions, read-only collection views, explicit revision-frozen fungibility, resource dimensions, broad reservations (including shortage after explicit physical loss), graph meanings, movement-safe counts, dual measurements, distributed rights, correction history, complete-plan durable publication, refinement, repair liveness, and package identity.
+`pnpm formal` checks bounded TLA+ models for generic placement topology, ancestor-move stability, detached/missing resource dimensions, heterogeneous composition revisions, read-only collection views, explicit revision-frozen fungibility, broad reservations (including unavailable unplaced stock and shortage after explicit physical loss), association/genealogy meanings, movement-safe counts, dual measurements, distributed rights, correction history, complete-plan durable publication, refinement, repair liveness, and package identity.
 
 The composition and collection models were committed before their TypeScript surfaces. `CompositionRevision`
 uses the exact 21+7 and 20+5+3 generations and proves revision-pinned opening, transfer preservation,

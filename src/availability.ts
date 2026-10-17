@@ -6,6 +6,7 @@ import type {
 import {
   applyInventoryRecordedDeficitBurden,
   inventoryRecordedDeficitPoolSelector,
+  inventorySelectedDeficitPlacementNodeIds,
   inventoryPositionDeficitMeasurements,
   inventoryPositionIsDeficit,
 } from "./deficits.js";
@@ -50,6 +51,7 @@ import {
   inventoryStockPositionMatchesSelector,
   inventoryStockSelectorIdentity,
   normalizeInventoryStockSelector,
+  InventoryOptionalIdentityConstraintKind,
   type InventoryStockSelector,
 } from "./selectors.js";
 import {
@@ -61,7 +63,7 @@ import {
 export interface InventoryPositionAvailability {
   /** Exact current stock position. */
   readonly position: InventoryStockPosition;
-  /** Earliest lot expiry or container use-by when known. */
+  /** Earliest lot expiry or placement-ancestry use-by when known. */
   readonly effectiveUseByEpochMs?: number;
   /** True when this position is unusable at the requested authority time. */
   readonly expired: boolean;
@@ -85,7 +87,7 @@ export interface InventoryAvailabilityRevisionSummary {
   readonly itemRevisionId: ItemRevisionId;
   /** Signed net truth: positive physical stock minus recorded deficit. */
   readonly onHand: InventoryMeasurementVector;
-  /** Positive physical on-hand only, including expired stock. */
+  /** Positive accounted stock, including expired and unresolved whereabouts. */
   readonly physicalOnHand: InventoryMeasurementVector;
   /** Positive magnitude of every recorded deficit in this revision/scope. */
   readonly deficit: InventoryMeasurementVector;
@@ -93,9 +95,9 @@ export interface InventoryAvailabilityRevisionSummary {
   readonly usableOnHand: InventoryMeasurementVector;
   /** Positive deficit burden assigned across usable physical rows. */
   readonly usableDeficit: InventoryMeasurementVector;
-  /** Positive non-expired physical stock only. */
+  /** Positive known-placed, non-transfer, non-expired physical stock only. */
   readonly usablePhysicalOnHand: InventoryMeasurementVector;
-  /** Positive physical measurements past lot/container use-by. */
+  /** Positive physical measurements past lot/placement-ancestry use-by. */
   readonly expiredOnHand: InventoryMeasurementVector;
   /** Item-defined axis on which reservations compete. */
   readonly reservationAxisId: string;
@@ -133,7 +135,7 @@ export interface InventoryAvailabilitySummary {
 export interface SummarizeInventoryAvailabilityInput {
   /** Frozen catalogue defining measurement/reservation axes. */
   readonly catalog: InventoryCatalog;
-  /** Current physical/event/lot/container projection. */
+  /** Current physical/event/lot/placement projection. */
   readonly projection: InventoryProjectionState;
   /** Current reservation lifecycle book. */
   readonly reservations: InventoryReservationBook;
@@ -240,7 +242,7 @@ function selectedRevisionIds(
 interface SummarizeAvailabilityRevisionInput {
   /** Frozen catalogue defining measurement/reservation axes. */
   readonly catalog: InventoryCatalog;
-  /** Current physical/event/lot/container projection. */
+  /** Current physical/event/lot/placement projection. */
   readonly projection: InventoryProjectionState;
   /** Normalized read selector. */
   readonly selector: InventoryStockSelector;
@@ -271,7 +273,7 @@ function summarizeAvailabilityRevision({
   let expiredOnHand = zeroInventoryMeasurementsForItem(item);
   let exactlyAllocatedUsable = zeroQuantity(reservationAxis.unit);
   let exactlyAllocatedExpired = zeroQuantity(reservationAxis.unit);
-  const locationIds = availabilityPoolLocationIds(
+  const placementNodeIds = inventorySelectedDeficitPlacementNodeIds(
     projection,
     selector,
     revisionId
@@ -279,7 +281,7 @@ function summarizeAvailabilityRevision({
   const deficitPoolSelector = inventoryRecordedDeficitPoolSelector(
     selector,
     revisionId,
-    locationIds
+    placementNodeIds
   );
   const poolPositions = [
     ...findInventoryPositions(projection, deficitPoolSelector),
@@ -309,6 +311,10 @@ function summarizeAvailabilityRevision({
     const deficitMeasurements = inventoryPositionDeficitMeasurements(position);
     const expired =
       !isDeficit && inventoryPositionIsExpiredAt(projection, position.key, atEpochMs);
+    const ordinarilyUsable =
+      position.key.placementNodeId !== undefined &&
+      position.key.transferId === undefined &&
+      !expired;
     if (!isDeficit) {
       physicalOnHand = addInventoryMeasurements(
         physicalOnHand,
@@ -319,7 +325,7 @@ function summarizeAvailabilityRevision({
           expiredOnHand,
           position.measurements
         );
-      } else {
+      } else if (ordinarilyUsable) {
         usablePhysicalOnHand = addInventoryMeasurements(
           usablePhysicalOnHand,
           position.measurements
@@ -346,7 +352,7 @@ function summarizeAvailabilityRevision({
       ) > 0
         ? physicalCapacity
         : zeroQuantity(reservationAxis.unit, physicalCapacity.decimals);
-    const rawUnallocated = expired || position.key.transferId !== undefined
+    const rawUnallocated = !ordinarilyUsable
       ? zeroQuantity(reservationAxis.unit)
       : nonNegativeQuantityDifference(
           positiveCapacity,
@@ -387,7 +393,12 @@ function summarizeAvailabilityRevision({
   }> = [];
   for (const position of poolPositions) {
     if (inventoryPositionIsDeficit(position)) continue;
-    if (position.key.transferId !== undefined) continue;
+    if (
+      position.key.transferId !== undefined ||
+      position.key.placementNodeId === undefined
+    ) {
+      continue;
+    }
     if (inventoryPositionIsExpiredAt(projection, position.key, atEpochMs)) continue;
     const physicalCapacity = inventoryMeasurementAt(
       position.measurements,
@@ -424,13 +435,14 @@ function summarizeAvailabilityRevision({
     itemRevisionId: revisionId,
     axisId: reservationAxis.axisId,
     unit: reservationAxis.unit,
-    locationIds,
+    placementNodeIds,
     lines: positiveCapacityLines,
   });
   const deficit = availabilitySelectedDeficitBurdenMeasurements({
     projection,
     item,
-    locationIds,
+    selector,
+    placementNodeIds,
     poolPositions,
     selectedPositions: positions,
     atEpochMs,
@@ -439,7 +451,8 @@ function summarizeAvailabilityRevision({
   const usableDeficit = availabilitySelectedDeficitBurdenMeasurements({
     projection,
     item,
-    locationIds,
+    selector,
+    placementNodeIds,
     poolPositions,
     selectedPositions: positions,
     atEpochMs,
@@ -496,43 +509,20 @@ function summarizeAvailabilityRevision({
 /** Private position row retained until pool-level deficit burden is known. */
 interface MutableInventoryPositionAvailability
   extends Omit<InventoryPositionAvailability, "unallocatedUsablePhysical"> {
-  /** Positive claim-adjusted capacity before location-level deficit burden. */
+  /** Positive claim-adjusted capacity before direct-placement-pool deficit burden. */
   readonly rawUnallocatedUsablePhysical: Quantity;
 }
 
-/** Resolve every location pool selected for this item revision. */
-function availabilityPoolLocationIds(
-  projection: InventoryProjectionState,
-  selector: InventoryStockSelector,
-  revisionId: ItemRevisionId
-): readonly string[] {
-  if (selector.locationIds !== undefined) return selector.locationIds;
-  const locationIds = new Set<string>();
-  for (const positionIdentity of inventorySparseRecordValue(
-    projection.positionIdsByItemRevisionId,
-    revisionId
-  ) ?? []) {
-    const position = projection.positions[positionIdentity];
-    if (position === undefined) {
-      throw new Error(
-        `Inventory availability index references missing position '${positionIdentity}'.`
-      );
-    }
-    locationIds.add(position.key.locationId);
-  }
-  const ordered = [...locationIds];
-  ordered.sort();
-  return ordered;
-}
-
-/** Inputs for attributing one location-pool deficit to a selected physical subset. */
+/** Inputs for attributing one direct-placement-pool deficit to a selected physical subset. */
 interface AvailabilitySelectedDeficitBurdenInput {
   /** Current signed physical projection. */
   readonly projection: InventoryProjectionState;
   /** Exact item revision and all configured measurement axes. */
   readonly item: InventoryItemDefinitionRevision;
-  /** Location pools owning the deficit. */
-  readonly locationIds: readonly string[];
+  /** Normalized selector; placement and whereabouts scope recorded deficit rows. */
+  readonly selector: InventoryStockSelector;
+  /** Direct-placement pools owning the deficit. */
+  readonly placementNodeIds: readonly string[];
   /** Deterministically ordered positive/negative positions in the whole pool. */
   readonly poolPositions: readonly InventoryStockPosition[];
   /** Exact positions selected by the caller. */
@@ -550,14 +540,20 @@ interface AvailabilitySelectedDeficitBurdenInput {
 function availabilitySelectedDeficitBurdenMeasurements({
   projection,
   item,
-  locationIds,
+  selector,
+  placementNodeIds,
   poolPositions,
   selectedPositions,
   atEpochMs,
   usableOnly,
 }: AvailabilitySelectedDeficitBurdenInput): InventoryMeasurementVector {
   if (selectedPositions.some(inventoryPositionIsDeficit)) {
-    return availabilityPoolDeficitMeasurements(projection, item, locationIds);
+    return availabilityPoolDeficitMeasurements(
+      projection,
+      item,
+      placementNodeIds,
+      selector
+    );
   }
   const selectedPositionIds = new Set(
     selectedPositions.map(
@@ -570,7 +566,7 @@ function availabilitySelectedDeficitBurdenMeasurements({
     availabilitySelectedDeficitAxisBurden({
       projection,
       itemRevisionId: item.revisionId,
-      locationIds,
+      placementNodeIds,
       poolPositions,
       selectedPositionIds,
       axisId: item.primaryAxis.axisId,
@@ -586,7 +582,7 @@ function availabilitySelectedDeficitBurdenMeasurements({
       quantity: availabilitySelectedDeficitAxisBurden({
         projection,
         itemRevisionId: item.revisionId,
-        locationIds,
+        placementNodeIds,
         poolPositions,
         selectedPositionIds,
         axisId: axis.axisId,
@@ -605,8 +601,8 @@ interface AvailabilitySelectedDeficitAxisBurdenInput {
   readonly projection: InventoryProjectionState;
   /** Exact item revision owning the axis. */
   readonly itemRevisionId: ItemRevisionId;
-  /** Location pools owning the deficit. */
-  readonly locationIds: readonly string[];
+  /** Direct-placement pools owning the deficit. */
+  readonly placementNodeIds: readonly string[];
   /** Whole deterministic positive/negative position pool. */
   readonly poolPositions: readonly InventoryStockPosition[];
   /** Exact positive positions selected by the caller. */
@@ -625,7 +621,7 @@ interface AvailabilitySelectedDeficitAxisBurdenInput {
 function availabilitySelectedDeficitAxisBurden({
   projection,
   itemRevisionId,
-  locationIds,
+  placementNodeIds,
   poolPositions,
   selectedPositionIds,
   axisId,
@@ -644,7 +640,9 @@ function availabilitySelectedDeficitAxisBurden({
     if (inventoryPositionIsDeficit(position)) continue;
     if (
       usableOnly &&
-      inventoryPositionIsExpiredAt(projection, position.key, atEpochMs)
+      (position.key.placementNodeId === undefined ||
+        position.key.transferId !== undefined ||
+        inventoryPositionIsExpiredAt(projection, position.key, atEpochMs))
     ) {
       continue;
     }
@@ -665,7 +663,7 @@ function availabilitySelectedDeficitAxisBurden({
     itemRevisionId,
     axisId,
     unit,
-    locationIds,
+    placementNodeIds,
     lines,
   });
   let selectedBurden = zeroQuantity(unit);
@@ -681,13 +679,26 @@ function availabilitySelectedDeficitAxisBurden({
   return selectedBurden;
 }
 
-/** Sum positive deficit magnitude across the pools used by allocation. */
+/** Sum deficits in selected placement/whereabouts pools without narrowing by lot or owner. */
 function availabilityPoolDeficitMeasurements(
   projection: InventoryProjectionState,
   item: InventoryItemDefinitionRevision,
-  locationIds: readonly string[]
+  placementNodeIds: readonly string[],
+  selector: InventoryStockSelector
 ): InventoryMeasurementVector {
-  const selectedLocations = new Set(locationIds);
+  const selectedLocations = new Set(placementNodeIds);
+  // Explicit absence/presence cannot be inferred from an empty placement-node set.
+  const absentOnly =
+    selector.placement?.kind === InventoryOptionalIdentityConstraintKind.Absent;
+  const presentOnly =
+    selector.placement?.kind === InventoryOptionalIdentityConstraintKind.Present;
+  // A cohort-scoped read may share a revision with thousands of unrelated
+  // cohorts; the allowed IDs are indexed once, not linearly searched per row.
+  const whereabouts = selector.whereabouts;
+  const allowedWhereaboutsIds =
+    whereabouts?.kind === InventoryOptionalIdentityConstraintKind.Allowed
+      ? new Set(whereabouts.valueIds)
+      : undefined;
   let deficit = zeroInventoryMeasurementsForItem(item);
   for (const positionIdentity of inventorySparseRecordValue(
     projection.positionIdsByItemRevisionId,
@@ -699,9 +710,30 @@ function availabilityPoolDeficitMeasurements(
         `Inventory availability index references missing position '${positionIdentity}'.`
       );
     }
-    if (!selectedLocations.has(position.key.locationId)) continue;
+    const nodeId = position.key.placementNodeId;
+    if (
+      (absentOnly && nodeId !== undefined) ||
+      (presentOnly && nodeId === undefined) ||
+      (placementNodeIds.length > 0 &&
+        (nodeId === undefined || !selectedLocations.has(nodeId)))
+    ) continue;
     const measurements = inventoryPositionDeficitMeasurements(position);
     if (measurements === undefined) continue;
+    // Cohort checks are needed only for negative rows. Keep ordinary
+    // positive stock rows on the existing cheap placement/deficit path.
+    const { whereaboutsId, whereaboutsState } = position.key;
+    if (
+      (whereabouts?.kind === InventoryOptionalIdentityConstraintKind.Absent &&
+        whereaboutsId !== undefined) ||
+      (whereabouts?.kind === InventoryOptionalIdentityConstraintKind.Present &&
+        whereaboutsId === undefined) ||
+      (allowedWhereaboutsIds !== undefined &&
+        (whereaboutsId === undefined ||
+          !allowedWhereaboutsIds.has(whereaboutsId))) ||
+      (selector.whereaboutsStates !== undefined &&
+        (whereaboutsState === undefined ||
+          !selector.whereaboutsStates.includes(whereaboutsState)))
+    ) continue;
     deficit = addInventoryMeasurements(deficit, measurements);
   }
   return deficit;
@@ -828,7 +860,8 @@ function indexAvailabilityReservations({
         projection.positions[identity] === undefined &&
         inventoryStockPositionMatchesNormalizedSelector(
           allocation.position,
-          normalizedSelector
+          normalizedSelector,
+          projection.placement
         )
       ) {
         unbackedQuantity = addQuantity(unbackedQuantity, allocation.quantity);
@@ -888,7 +921,8 @@ function reservationTouchesPositions(
     if (
       !inventoryStockPositionMatchesNormalizedSelector(
         position.key,
-        normalizedSelector
+        normalizedSelector,
+        projection.placement
       )
     ) {
       continue;

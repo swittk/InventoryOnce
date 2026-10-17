@@ -71,8 +71,8 @@ describe("string-keyed inventory records", () => {
   it("preserves own-only book maps after ordinary publication and replay", async () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({ operationId: "book-map-stock", occurredAtEpochMs: time0, to: loosePosition("store"), amount: stockAmount("2", "piece") });
-    const reserve = { reservationId: "book-map-claim", operationId: "book-map-reserve", itemRevisionId: "item-a-v2", selector: { itemId: "item-a", locationIds: ["store"] }, requested: parseQuantity("1", "piece"), createdAtEpochMs: time1 };
-    const count = { countId: "book-map-count", operationId: "book-map-start", itemRevisionId: "item-a-v2", selector: { itemId: "item-a", locationIds: ["store"] }, startedAtEpochMs: time1 };
+    const reserve = { reservationId: "book-map-claim", operationId: "book-map-reserve", itemRevisionId: "item-a-v2", selector: { itemId: "item-a", placementNodeIds: ["store"] }, requested: parseQuantity("1", "piece"), createdAtEpochMs: time1 };
+    const count = { countId: "book-map-count", operationId: "book-map-start", itemRevisionId: "item-a-v2", selector: { itemId: "item-a", placementNodeIds: ["store"] }, startedAtEpochMs: time1 };
     for (let replay = 0; replay < 2; replay += 1) {
       await inventory.reservations.reserve(reserve);
       await inventory.counts.start(count);
@@ -120,13 +120,13 @@ describe("string-keyed inventory records", () => {
     await inventory.stock.receive({
       operationId: "prototype-index-receive",
       occurredAtEpochMs: time0,
-      to: { itemId: "valueOf", locationId: "store" },
+      to: { itemId: "valueOf", placementNodeId: "store" },
       amount: stockAmount("2", "piece"),
     });
     const positions = await inventory.read.positions({
       itemId: "valueOf",
       itemRevisionIds: ["toLocaleString"],
-      locationIds: ["store"],
+      placementNodeIds: ["store"],
     });
     expect(positions).toHaveLength(1);
     expect(positions[0]?.key.itemId).toBe("valueOf");
@@ -140,7 +140,7 @@ describe("string-keyed inventory records", () => {
           requestId: "first",
           selector: inventoryStockSelector("valueOf", {
             itemRevisionIds: ["toLocaleString"],
-            locationIds: ["store"],
+            placementNodeIds: ["store"],
           }),
           amount: stockAmount("1", "piece"),
           method: InventoryAllocationMethod.Fifo,
@@ -149,7 +149,7 @@ describe("string-keyed inventory records", () => {
           requestId: "second",
           selector: inventoryStockSelector("valueOf", {
             itemRevisionIds: ["toLocaleString"],
-            locationIds: ["store"],
+            placementNodeIds: ["store"],
           }),
           amount: stockAmount("1", "piece"),
           method: InventoryAllocationMethod.Fifo,
@@ -161,7 +161,7 @@ describe("string-keyed inventory records", () => {
       await inventory.read.positions({
         itemId: "valueOf",
         itemRevisionIds: ["toLocaleString"],
-        locationIds: ["store"],
+        placementNodeIds: ["store"],
       })
     ).toEqual([]);
   });
@@ -239,7 +239,7 @@ describe("string-keyed inventory records", () => {
     });
     await expect(inventory.reservations.reserve({
       reservationId: "toString", operationId: "reserve-prototype-name",
-      itemRevisionId: "item-a-v2", selector: { itemId: "item-a", locationIds: ["store"] },
+      itemRevisionId: "item-a-v2", selector: { itemId: "item-a", placementNodeIds: ["store"] },
       requested: parseQuantity("1", "piece"), createdAtEpochMs: time1,
     })).resolves.toMatchObject({ reservation: { reservationId: "toString" } });
   });
@@ -248,7 +248,7 @@ describe("string-keyed inventory records", () => {
     const inventory = createTestInventory();
     await expect(inventory.counts.start({
       countId: "hasOwnProperty", operationId: "count-prototype-name",
-      itemRevisionId: "item-a-v2", selector: { itemId: "item-a", locationIds: ["store"] },
+      itemRevisionId: "item-a-v2", selector: { itemId: "item-a", placementNodeIds: ["store"] },
       startedAtEpochMs: time1,
     })).resolves.toMatchObject({ count: { countId: "hasOwnProperty" } });
   });
@@ -261,7 +261,7 @@ describe("string-keyed inventory records", () => {
     });
     await expect(inventory.transfers.prepare({
       operationId: "prepare-prototype-name", occurredAtEpochMs: time1, transferId: "constructor",
-      transitLocationId: "TRANSIT", destinationLocationId: "B",
+      transitPlacementNodeId: "TRANSIT", destinationPlacementNodeId: "B",
       lines: [{ lineId: "line", from: loosePosition("A"), amount: stockAmount("1", "piece") }],
     })).resolves.toMatchObject({ transfer: { transferId: "constructor" } });
   });
@@ -295,14 +295,14 @@ describe("retained book ownership and sparse dictionaries", () => {
     const catalog = createTabletCatalog(), inventory = createTestInventory(undefined, catalog);
     const world = await inventory.read.world(), metadata = { entries: [{ label: "before" }] };
     const started = startInventoryCount({ catalog, projection: world.projection, book: emptyInventoryCountBook(), countId: "count", operationId: "start", selector: inventoryStockSelector("item-a"), startedAtEpochMs: time0, metadata });
-    const position = { itemId: "item-a", itemRevisionId: "item-a-v2", locationId: "A" };
+    const position = { itemId: "item-a", itemRevisionId: "item-a-v2", placementNodeId: "A" };
     const measuredQuantity = { ...parseQuantity("2", "piece") };
     const measurements = { primary: { axisId: "pieces", quantity: measuredQuantity }, independent: [] };
     const observed = observeInventoryCount({ catalog, projection: world.projection, book: started.book, countId: "count", operationId: "observe", observedAtEpochMs: time1, observations: [{ position, measurements }] });
-    position.locationId = "B"; measuredQuantity.amountMinor = 3; metadata.entries[0]!.label = "after";
+    position.placementNodeId = "B"; measuredQuantity.amountMinor = 3; metadata.entries[0]!.label = "after";
     expect(started.count.metadata).toEqual({ entries: [{ label: "before" }] });
     expect(observed.count.metadata).toEqual({ entries: [{ label: "before" }] });
-    expect(observed.count.observations[0]?.position.locationId).toBe("A");
+    expect(observed.count.observations[0]?.position.placementNodeId).toBe("A");
     expect(observed.count.observations[0]?.measurements.primary.quantity.amountMinor).toBe(2);
   });
 
@@ -313,12 +313,12 @@ describe("retained book ownership and sparse dictionaries", () => {
     const requested = { ...parseQuantity("2", "piece") }, metadata = { nested: ["before"] };
     const created = createInventoryReservation({ catalog, projection: world.projection, book: emptyInventoryReservationBook(), nowEpochMs: time1,
       reservation: { reservationId: "claim", operationId: "create", itemRevisionId: "item-a-v2", selector: inventoryStockSelector("item-a"), requested, createdAtEpochMs: time1, metadata } });
-    const position = { itemId: "item-a", itemRevisionId: "item-a-v2", locationId: "A" };
+    const position = { itemId: "item-a", itemRevisionId: "item-a-v2", placementNodeId: "A" };
     const amount = { ...parseQuantity(rows === 1 ? "2" : "1", "piece") };
     const allocation = { position, quantity: amount };
     const allocated = allocateInventoryReservation({ catalog, projection: world.projection, book: created.book, reservationId: "claim", operationId: "allocate", occurredAtEpochMs: time1, allocations: rows === 1 ? [allocation] : [allocation, allocation] });
     const released = releaseInventoryReservation({ book: allocated.book, reservationId: "claim", operationId: "release", occurredAtEpochMs: time1 });
-    requested.amountMinor = 8; metadata.nested[0] = "after"; position.locationId = "B"; amount.amountMinor = 9;
+    requested.amountMinor = 8; metadata.nested[0] = "after"; position.placementNodeId = "B"; amount.amountMinor = 9;
     for (const result of [created, allocated, released]) {
       expect(result.reservation.requested.amountMinor).toBe(2);
       expect(result.reservation.metadata).toEqual({ nested: ["before"] });
@@ -327,7 +327,7 @@ describe("retained book ownership and sparse dictionaries", () => {
       expect(Object.getPrototypeOf(result.book.reservations)).toBeNull();
       expect(Object.getPrototypeOf(result.book.operations)).toBeNull();
     }
-    expect(allocated.reservation.allocations[0]?.position.locationId).toBe("A");
+    expect(allocated.reservation.allocations[0]?.position.placementNodeId).toBe("A");
     expect(allocated.reservation.allocations[0]?.quantity.amountMinor).toBe(2);
     expect(allocated.book.operations["allocate"]?.reservationAfter).toEqual(allocated.reservation);
   });

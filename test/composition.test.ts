@@ -4,6 +4,7 @@ import {
   InventoryCompositionOutputLotPolicy,
   InventoryEventKind,
   InventoryTraceabilityNodeKind,
+  InventoryWhereaboutsAction,
   createInventoryOnce,
   defineInventoryComposition,
   defineInventoryCatalog,
@@ -194,7 +195,7 @@ interface ItemQuantityQuery {
   /** Exact item revision identity. */
   readonly itemRevisionId: string;
   /** Exact stock location identity. */
-  readonly locationId: string;
+  readonly placementNodeId: string;
   /** Exact lot identity. */
   readonly lotId: string;
 }
@@ -204,13 +205,13 @@ async function itemQuantity({
   inventory,
   itemId,
   itemRevisionId,
-  locationId,
+  placementNodeId,
   lotId,
 }: ItemQuantityQuery): Promise<number> {
   const positions = await inventory.read.positions({
     itemId,
     itemRevisionIds: [itemRevisionId],
-    locationIds: [locationId],
+    placementNodeIds: [placementNodeId],
     lotIds: [lotId],
   });
   let total = 0;
@@ -246,20 +247,19 @@ describe("revision-frozen heterogeneous package composition", () => {
       occurredAtEpochMs: time0,
       to: {
         itemId: fixture.oldPackItem.itemId,
-        locationId: "store",
+        placementNodeId: "OLD-OCP-CARTON",
         lotId: "OLD-OCP-LOT",
-        containerId: "OLD-OCP-CARTON",
       },
       amount: packageAmount(1, fixture.oldPack.revisionId),
       lot: { expiresAtEpochMs: 1830297600000 },
-      container: { containerType: "calendar-pack-carton" },
+      placementNode: { category: "calendar-pack-carton" },
     });
     await inventory.stock.receive({
       operationId: "receive-new-ocp-pack",
       occurredAtEpochMs: time0,
       to: {
         itemId: fixture.newPackItem.itemId,
-        locationId: "store",
+        placementNodeId: "store",
         lotId: "NEW-OCP-LOT",
       },
       amount: packageAmount(1, fixture.newPack.revisionId),
@@ -270,12 +270,11 @@ describe("revision-frozen heterogeneous package composition", () => {
       occurredAtEpochMs: time1,
       from: {
         itemId: fixture.oldPackItem.itemId,
-        locationId: "store",
+        placementNodeId: "OLD-OCP-CARTON",
         lotId: "OLD-OCP-LOT",
         packagingRevisionId: fixture.oldPack.revisionId,
-        containerId: "OLD-OCP-CARTON",
       },
-      toLocationId: "room",
+      toPlacementNodeId: "room",
       amount: packageAmount(1, fixture.oldPack.revisionId),
     });
 
@@ -284,10 +283,9 @@ describe("revision-frozen heterogeneous package composition", () => {
       occurredAtEpochMs: time2,
       from: {
         itemId: fixture.oldPackItem.itemId,
-        locationId: "room",
+        placementNodeId: "room",
         lotId: "OLD-OCP-LOT",
         packagingRevisionId: fixture.oldPack.revisionId,
-        containerId: "OLD-OCP-CARTON",
       },
       packageCount: 1,
       reason: "The calendar pack was opened for loose dispensing.",
@@ -304,8 +302,8 @@ describe("revision-frozen heterogeneous package composition", () => {
     expect(opened.event.traceabilityChanges).toHaveLength(2);
     expect(
       opened.event.traceabilityChanges.every(
-        /** Prefer the exact source container over its additional lot identity. */
-        (change) => change.from.kind === InventoryTraceabilityNodeKind.Container
+        /** Direct placement is topology; source genealogy follows the exact source lot. */
+        (change) => change.from.kind === InventoryTraceabilityNodeKind.Lot
       )
     ).toBe(true);
     expect(replayed.replayed).toBe(true);
@@ -315,7 +313,7 @@ describe("revision-frozen heterogeneous package composition", () => {
         inventory: inventory,
         itemId: "active-a",
         itemRevisionId: "active-a-v1",
-        locationId: "room",
+        placementNodeId: "room",
         lotId: "OLD-OCP-LOT",
       })
     ).toBe(21);
@@ -324,7 +322,7 @@ describe("revision-frozen heterogeneous package composition", () => {
         inventory: inventory,
         itemId: "placebo-a",
         itemRevisionId: "placebo-a-v1",
-        locationId: "room",
+        placementNodeId: "room",
         lotId: "OLD-OCP-LOT",
       })
     ).toBe(7);
@@ -333,7 +331,7 @@ describe("revision-frozen heterogeneous package composition", () => {
         inventory: inventory,
         itemId: "active-b",
         itemRevisionId: "active-b-v1",
-        locationId: "room",
+        placementNodeId: "room",
         lotId: "OLD-OCP-LOT",
       })
     ).toBe(0);
@@ -344,7 +342,7 @@ describe("revision-frozen heterogeneous package composition", () => {
     const newPackRows = await inventory.read.positions({
       itemId: fixture.newPackItem.itemId,
       itemRevisionIds: [fixture.newPackItem.revisionId],
-      locationIds: ["store"],
+      placementNodeIds: ["store"],
       packagingRevisionIds: [fixture.newPack.revisionId],
     });
     expect(newPackRows[0]?.measurements.primary.quantity.amountMinor).toBe(1);
@@ -369,7 +367,7 @@ describe("revision-frozen heterogeneous package composition", () => {
       occurredAtEpochMs: time0,
       to: {
         itemId: fixture.newPackItem.itemId,
-        locationId: "store",
+        placementNodeId: "store",
         lotId: "NEW-TWO",
       },
       amount: packageAmount(2, fixture.newPack.revisionId),
@@ -379,7 +377,7 @@ describe("revision-frozen heterogeneous package composition", () => {
       occurredAtEpochMs: time1,
       from: {
         itemId: fixture.newPackItem.itemId,
-        locationId: "store",
+        placementNodeId: "store",
         lotId: "NEW-TWO",
         packagingRevisionId: fixture.newPack.revisionId,
       },
@@ -390,7 +388,7 @@ describe("revision-frozen heterogeneous package composition", () => {
         inventory: inventory,
         itemId: "active-a",
         itemRevisionId: "active-a-v1",
-        locationId: "store",
+        placementNodeId: "store",
         lotId: "NEW-TWO",
       })
     ).toBe(40);
@@ -399,7 +397,7 @@ describe("revision-frozen heterogeneous package composition", () => {
         inventory: inventory,
         itemId: "active-b",
         itemRevisionId: "active-b-v1",
-        locationId: "store",
+        placementNodeId: "store",
         lotId: "NEW-TWO",
       })
     ).toBe(10);
@@ -408,7 +406,7 @@ describe("revision-frozen heterogeneous package composition", () => {
         inventory: inventory,
         itemId: "placebo-b",
         itemRevisionId: "placebo-b-v1",
-        locationId: "store",
+        placementNodeId: "store",
         lotId: "NEW-TWO",
       })
     ).toBe(6);
@@ -629,7 +627,7 @@ describe("revision-frozen heterogeneous package composition", () => {
       occurredAtEpochMs: time0,
       to: {
         itemId: fixture.oldPackItem.itemId,
-        locationId: "store",
+        placementNodeId: "store",
         lotId: "PLACEMENT-GUARD-LOT",
         statusId: "usable",
         ownerId: "clinic-owner",
@@ -640,7 +638,7 @@ describe("revision-frozen heterogeneous package composition", () => {
     });
     const hiddenRelocation = {
       metadata: { attemptedRelocation: true },
-      locationId: "room",
+      placementNodeId: "room",
     };
     await expect(
       inventory.compositions.open({
@@ -648,7 +646,7 @@ describe("revision-frozen heterogeneous package composition", () => {
         occurredAtEpochMs: time1,
         from: {
           itemId: fixture.oldPackItem.itemId,
-          locationId: "store",
+          placementNodeId: "store",
           lotId: "PLACEMENT-GUARD-LOT",
           packagingRevisionId: fixture.oldPack.revisionId,
           statusId: "usable",
@@ -659,7 +657,7 @@ describe("revision-frozen heterogeneous package composition", () => {
         packageCount: 1,
         outputPlacements: { "active-a": hiddenRelocation },
       })
-    ).rejects.toThrow("unsupported field 'locationId'");
+    ).rejects.toThrow("unsupported field 'placementNodeId'");
 
     // Put active-a on the prototype so compositions.open proves it reads only own placement properties.
     const inheritedPlacements = Object.create({
@@ -670,7 +668,7 @@ describe("revision-frozen heterogeneous package composition", () => {
       occurredAtEpochMs: time2,
       from: {
         itemId: fixture.oldPackItem.itemId,
-        locationId: "store",
+        placementNodeId: "store",
         lotId: "PLACEMENT-GUARD-LOT",
         packagingRevisionId: fixture.oldPack.revisionId,
         statusId: "usable",
@@ -683,11 +681,11 @@ describe("revision-frozen heterogeneous package composition", () => {
     });
     const outputs = await inventory.read.positions({
       itemId: "active-a",
-      locationIds: ["store"],
+      placementNodeIds: ["store"],
       lotIds: ["PLACEMENT-GUARD-LOT"],
     });
     expect(outputs[0]?.key).toMatchObject({
-      locationId: "store",
+      placementNodeId: "store",
       statusId: "usable",
       ownerId: "clinic-owner",
       custodianId: "clinic-custodian",
@@ -696,7 +694,7 @@ describe("revision-frozen heterogeneous package composition", () => {
     expect(
       await inventory.read.positions({
         itemId: "active-a",
-        locationIds: ["room"],
+        placementNodeIds: ["room"],
       })
     ).toEqual([]);
   });
@@ -713,7 +711,7 @@ describe("revision-frozen heterogeneous package composition", () => {
       occurredAtEpochMs: time0,
       to: {
         itemId: fixture.newPackItem.itemId,
-        locationId: "store",
+        placementNodeId: "store",
         lotId: "AMBIGUOUS-SOURCE-LOT",
       },
       amount: packageAmount(1, fixture.newPack.revisionId),
@@ -725,7 +723,7 @@ describe("revision-frozen heterogeneous package composition", () => {
         occurredAtEpochMs: time1,
         from: {
           itemId: fixture.newPackItem.itemId,
-          locationId: "store",
+          placementNodeId: "store",
           lotId: "AMBIGUOUS-SOURCE-LOT",
           packagingRevisionId: fixture.newPack.revisionId,
         },
@@ -733,14 +731,13 @@ describe("revision-frozen heterogeneous package composition", () => {
         outputPlacements: {
           "active-a": {
             serialId: "AMBIGUOUS-SERIAL",
-            containerId: "AMBIGUOUS-CONTAINER",
           },
         },
       })
-    ).rejects.toThrow(/several stock identities/i);
+    ).rejects.toThrow(/both serial and lot identities/i);
   });
 
-  it("requires an explicit genealogy choice when the source has several physical identities", async () => {
+  it("prefers source serial identity when a package also has a lot", async () => {
     const fixture = ocpCatalog();
     const inventory = createInventoryOnce({
       catalog: fixture.catalog,
@@ -748,48 +745,107 @@ describe("revision-frozen heterogeneous package composition", () => {
       clock: clockAt(time3),
     });
     await inventory.stock.receive({
-      operationId: "receive-ambiguous-source-pack",
+      operationId: "receive-serial-lot-source-pack",
       occurredAtEpochMs: time0,
       to: {
         itemId: fixture.newPackItem.itemId,
-        locationId: "store",
-        lotId: "AMBIGUOUS-SOURCE-LOT",
-        serialId: "AMBIGUOUS-SOURCE-SERIAL",
-        containerId: "AMBIGUOUS-SOURCE-CONTAINER",
+        placementNodeId: "SERIAL-LOT-SOURCE-CONTAINER",
+        lotId: "SERIAL-LOT-SOURCE-LOT",
+        serialId: "SERIAL-LOT-SOURCE-SERIAL",
       },
       amount: packageAmount(1, fixture.newPack.revisionId),
       lot: { expiresAtEpochMs: 1861920000000 },
-      container: { containerType: "calendar-pack" },
+      placementNode: { category: "calendar-pack" },
     });
-    const from = {
-      itemId: fixture.newPackItem.itemId,
-      locationId: "store",
-      lotId: "AMBIGUOUS-SOURCE-LOT",
-      serialId: "AMBIGUOUS-SOURCE-SERIAL",
-      containerId: "AMBIGUOUS-SOURCE-CONTAINER",
-      packagingRevisionId: fixture.newPack.revisionId,
-    };
-    await expect(
-      inventory.compositions.open({
-        operationId: "reject-ambiguous-source-pack",
-        occurredAtEpochMs: time1,
-        from,
-        packageCount: 1,
-      })
-    ).rejects.toThrow(/several stock identities/i);
 
-    await expect(
-      inventory.compositions.open({
-        operationId: "open-explicit-ambiguous-source-pack",
-        occurredAtEpochMs: time2,
-        from,
-        packageCount: 1,
-        sourceTraceabilityNode: {
-          kind: InventoryTraceabilityNodeKind.Container,
-          id: "AMBIGUOUS-SOURCE-CONTAINER",
-        },
+    const opened = await inventory.compositions.open({
+      operationId: "open-serial-lot-source-pack",
+      occurredAtEpochMs: time1,
+      from: {
+        itemId: fixture.newPackItem.itemId,
+        placementNodeId: "SERIAL-LOT-SOURCE-CONTAINER",
+        lotId: "SERIAL-LOT-SOURCE-LOT",
+        serialId: "SERIAL-LOT-SOURCE-SERIAL",
+        packagingRevisionId: fixture.newPack.revisionId,
+      },
+      packageCount: 1,
+    });
+    const sources = opened.event.traceabilityChanges.map(
+      /** Inspect the genealogy source identity, not just successful opening. */
+      (change) => change.from
+    );
+    expect(sources).toContainEqual({
+      kind: InventoryTraceabilityNodeKind.Serial,
+      id: "SERIAL-LOT-SOURCE-SERIAL",
+    });
+    expect(sources.some(
+      /** Source lot must not compete with the preferred serialized identity. */
+      (source) => source.kind === InventoryTraceabilityNodeKind.Lot
+    )).toBe(false);
+  });
+
+  it("keeps opening detached stock as reclassification instead of a second detach", async () => {
+    const fixture = ocpCatalog();
+    const inventory = createInventoryOnce({
+      catalog: fixture.catalog,
+      storage: createInMemoryInventoryDurableStorage(),
+      clock: clockAt(time3),
+    });
+    await inventory.stock.receive({
+      operationId: "receive-detached-composition-source",
+      occurredAtEpochMs: time0,
+      to: {
+        itemId: fixture.oldPackItem.itemId,
+        placementNodeId: "DETACHED-COMPOSITION-SOURCE",
+        lotId: "DETACHED-COMPOSITION-LOT",
+      },
+      amount: packageAmount(1, fixture.oldPack.revisionId),
+      lot: { expiresAtEpochMs: 1830297600000 },
+    });
+    await inventory.stock.detach({
+      operationId: "detach-composition-source",
+      occurredAtEpochMs: time1,
+      from: {
+        itemId: fixture.oldPackItem.itemId,
+        placementNodeId: "DETACHED-COMPOSITION-SOURCE",
+        lotId: "DETACHED-COMPOSITION-LOT",
+        packagingRevisionId: fixture.oldPack.revisionId,
+      },
+      amount: packageAmount(1, fixture.oldPack.revisionId),
+    });
+    const lifecycle = (await inventory.read.whereabouts())[0];
+    const source = lifecycle?.currentPositions[0];
+    if (lifecycle === undefined || source === undefined) {
+      throw new Error("Expected detached composition source.");
+    }
+
+    await inventory.compositions.open({
+      operationId: "open-detached-composition-source",
+      occurredAtEpochMs: time2,
+      from: {
+        ...source.key,
+        packagingRevisionId: fixture.oldPack.revisionId,
+      },
+      packageCount: 1,
+    });
+
+    const history = (
+      await inventory.read.whereaboutsHistory({
+        whereaboutsIds: [lifecycle.whereaboutsId],
       })
-    ).resolves.toBeDefined();
+    )[0];
+    if (history === undefined) {
+      throw new Error("Expected detached composition lifecycle history.");
+    }
+    const actions = history.history.flatMap((entry) => entry.actions);
+    expect(
+      actions.filter((action) => action === InventoryWhereaboutsAction.Detached)
+    ).toHaveLength(1);
+    expect(
+      history.history.find(
+        (entry) => entry.event.operationId === "open-detached-composition-source"
+      )?.actions
+    ).toEqual([InventoryWhereaboutsAction.Reclassified]);
   });
 
   it("enforces strict, optional, and explicit lot policies without guessing", async () => {
@@ -804,7 +860,7 @@ describe("revision-frozen heterogeneous package composition", () => {
       occurredAtEpochMs: time0,
       to: {
         itemId: fixture.oldPackItem.itemId,
-        locationId: "store",
+        placementNodeId: "store",
       },
       amount: packageAmount(1, fixture.oldPack.revisionId),
     });
@@ -814,7 +870,7 @@ describe("revision-frozen heterogeneous package composition", () => {
         occurredAtEpochMs: time1,
         from: {
           itemId: fixture.oldPackItem.itemId,
-          locationId: "store",
+          placementNodeId: "store",
           packagingRevisionId: fixture.oldPack.revisionId,
         },
         packageCount: 1,
@@ -826,7 +882,7 @@ describe("revision-frozen heterogeneous package composition", () => {
       (definition) => ({
         ...definition,
         outputs: definition.outputs.map(
-          /** Preserve source lot when available but permit legacy aggregate packs. */
+          /** Preserve source lot when present while allowing current aggregate packs without one. */
           (output) => ({
             ...output,
             lotPolicy:
@@ -853,7 +909,7 @@ describe("revision-frozen heterogeneous package composition", () => {
       occurredAtEpochMs: time0,
       to: {
         itemId: fixture.oldPackItem.itemId,
-        locationId: "store",
+        placementNodeId: "store",
       },
       amount: packageAmount(1, fixture.oldPack.revisionId),
     });
@@ -862,14 +918,14 @@ describe("revision-frozen heterogeneous package composition", () => {
       occurredAtEpochMs: time1,
       from: {
         itemId: fixture.oldPackItem.itemId,
-        locationId: "store",
+        placementNodeId: "store",
         packagingRevisionId: fixture.oldPack.revisionId,
       },
       packageCount: 1,
     });
     const unqualifiedOutputs = await optionalInventory.read.positions({
       itemId: "active-a",
-      locationIds: ["store"],
+      placementNodeIds: ["store"],
     });
     expect(unqualifiedOutputs[0]?.key.lotId).toBeUndefined();
     expect(
@@ -909,7 +965,7 @@ describe("revision-frozen heterogeneous package composition", () => {
       occurredAtEpochMs: time0,
       to: {
         itemId: fixture.oldPackItem.itemId,
-        locationId: "store",
+        placementNodeId: "store",
       },
       amount: packageAmount(1, fixture.oldPack.revisionId),
     });
@@ -918,7 +974,7 @@ describe("revision-frozen heterogeneous package composition", () => {
       occurredAtEpochMs: time1,
       from: {
         itemId: fixture.oldPackItem.itemId,
-        locationId: "store",
+        placementNodeId: "store",
         packagingRevisionId: fixture.oldPack.revisionId,
       },
       packageCount: 1,
@@ -941,7 +997,7 @@ describe("revision-frozen heterogeneous package composition", () => {
         inventory: explicitInventory,
         itemId: "active-a",
         itemRevisionId: "active-a-v1",
-        locationId: "store",
+        placementNodeId: "store",
         lotId: "ACTIVE-OUTPUT-LOT",
       })
     ).toBe(21);
@@ -950,7 +1006,7 @@ describe("revision-frozen heterogeneous package composition", () => {
         inventory: explicitInventory,
         itemId: "placebo-a",
         itemRevisionId: "placebo-a-v1",
-        locationId: "store",
+        placementNodeId: "store",
         lotId: "PLACEBO-OUTPUT-LOT",
       })
     ).toBe(7);

@@ -22,6 +22,7 @@ import {
 import {
   applyInventoryRecordedDeficitBurden,
   inventoryRecordedDeficitPoolSelector,
+  inventorySelectedDeficitPlacementNodeIds,
 } from "./deficits.js";
 import { assertInventoryEpochMilliseconds } from "./events.js";
 import {
@@ -113,7 +114,7 @@ export interface InventoryPolicyAllocationPlan {
   readonly shortfall: Quantity;
   /** Normal exact amount that can record this shortfall as an Issue, when nonzero. */
   readonly shortfallAmount?: InventoryAmount;
-  /** Existing positive deficit magnitude burdening the selected location pools. */
+  /** Existing positive deficit magnitude burdening the selected direct-placement pools. */
   readonly recordedDeficit: Quantity;
   /** Existing deficit still unbacked after all selected positive capacity. */
   readonly uncoveredDeficit: Quantity;
@@ -134,7 +135,7 @@ export interface PlanInventoryAllocationInput
   readonly catalog: InventoryCatalog;
   /** Fully published world used for physical stock and exact claim allocations. */
   readonly world: InventoryWorldState;
-  /** Physical authority time used for lot/container expiry. */
+  /** Physical authority time used for lot/placement-ancestry expiry. */
   readonly atEpochMs: number;
   /** Claim-book authority time; defaults to `at` for pure previews. */
   readonly reservationAtEpochMs?: number;
@@ -173,7 +174,7 @@ export function planInventoryAllocation({
     resolved.measurements.primary.quantity,
     "Inventory allocation request"
   );
-  const deficitLocationIds = selectedPolicyLocationIds(
+  const deficitPlacementNodeIds = inventorySelectedDeficitPlacementNodeIds(
     world.projection,
     selected.selector,
     selected.item.revisionId
@@ -181,7 +182,7 @@ export function planInventoryAllocation({
   const deficitPoolSelector = inventoryRecordedDeficitPoolSelector(
     selected.selector,
     selected.item.revisionId,
-    deficitLocationIds
+    deficitPlacementNodeIds
   );
   const candidateResult = createPolicyAllocationCandidates({
     catalog,
@@ -197,7 +198,7 @@ export function planInventoryAllocation({
   const deficitAdjusted = applyPolicyAllocationDeficitBurden({
     projection: world.projection,
     selector: selected.selector,
-    locationIds: deficitLocationIds,
+    placementNodeIds: deficitPlacementNodeIds,
     item: selected.item,
     method,
     atEpochMs,
@@ -209,7 +210,7 @@ export function planInventoryAllocation({
     candidates: deficitAdjusted.candidates,
     method,
     nowEpochMs: atEpochMs,
-    // Expired rows were removed before assigning the location-level deficit burden.
+    // Expired rows were removed before assigning the direct-placement-pool deficit burden.
     allowExpired: true,
   });
   // Final allocation lines assembled from the reviewed candidate/result pairing.
@@ -297,7 +298,7 @@ interface PolicyAllocationCandidates {
   readonly unallocatedReservationsPresent: boolean;
 }
 
-/** Positive policy candidates after durable deficit has first claim on each location pool. */
+/** Positive policy candidates after durable deficit has first claim on each direct-placement pool. */
 interface DeficitAdjustedPolicyAllocationCandidates {
   /** Remaining positive physical candidates in deterministic policy order. */
   readonly candidates: readonly InventoryAllocationCandidate[];
@@ -306,7 +307,7 @@ interface DeficitAdjustedPolicyAllocationCandidates {
     string,
     InventoryAllocationCandidate
   >;
-  /** Existing deficit magnitude in all selected location pools. */
+  /** Existing deficit magnitude in all selected direct-placement pools. */
   readonly recordedDeficit: Quantity;
   /** Existing deficit still unbacked after every eligible pool candidate. */
   readonly uncoveredDeficit: Quantity;
@@ -318,10 +319,10 @@ interface DeficitAdjustedPolicyAllocationCandidates {
 interface ApplyPolicyAllocationDeficitBurdenInput {
   /** Current signed physical projection. */
   readonly projection: InventoryProjectionState;
-  /** Exact caller selector applied after the location pool pays its deficit once. */
+  /** Exact caller selector applied after the direct-placement pool pays its deficit once. */
   readonly selector: InventoryStockSelector;
-  /** Location pools owning this request and their deficit. */
-  readonly locationIds: readonly string[];
+  /** Direct-placement pools owning this request and their deficit. */
+  readonly placementNodeIds: readonly string[];
   /** Exact item revision/primary axis. */
   readonly item: InventoryItemDefinitionRevision;
   /** FIFO/FEFO order used to burden positive rows deterministically. */
@@ -330,19 +331,19 @@ interface ApplyPolicyAllocationDeficitBurdenInput {
   readonly atEpochMs: number;
   /** Whether expired rows may back deficit and remain allocatable. */
   readonly allowExpiredLots: boolean;
-  /** Positive claim-adjusted candidates across the whole location pool. */
+  /** Positive claim-adjusted candidates across the whole direct-placement pool. */
   readonly poolCandidates: readonly InventoryAllocationCandidate[];
 }
 
 /**
- * Pay each location's signed deficit once across its whole eligible revision pool, then apply the
+ * Pay each direct placement's signed deficit once across its whole eligible revision pool, then apply the
  * caller's lot/package/ownership selector. This blocks exact-lot bypass without charging the same
  * deficit again every time a different exact row is selected.
  */
 function applyPolicyAllocationDeficitBurden({
   projection,
   selector,
-  locationIds,
+  placementNodeIds,
   item,
   method,
   atEpochMs,
@@ -352,7 +353,7 @@ function applyPolicyAllocationDeficitBurden({
   const normalizedSelector = normalizeInventoryStockSelector(selector);
   // Remember whether policy filtering hid otherwise selector-matching expired stock.
   let expiredStockWasExcluded = false;
-  // Candidate buffer retained in policy order before location deficit burden is applied.
+  // Candidate buffer retained in policy order before direct-placement deficit burden is applied.
   const ordered: InventoryAllocationCandidate[] = [];
   for (const candidate of poolCandidates) {
     const expired =
@@ -361,7 +362,8 @@ function applyPolicyAllocationDeficitBurden({
       if (
         inventoryStockPositionMatchesNormalizedSelector(
           candidate.position,
-          normalizedSelector
+          normalizedSelector,
+          projection.placement
         )
       ) {
         expiredStockWasExcluded = true;
@@ -379,7 +381,7 @@ function applyPolicyAllocationDeficitBurden({
     itemRevisionId: item.revisionId,
     axisId: item.primaryAxis.axisId,
     unit: item.primaryAxis.unit,
-    locationIds,
+    placementNodeIds,
     lines: ordered.map(
       /** Preserve policy order while exposing only positive candidate capacity. */
       (candidate) => ({
@@ -391,7 +393,7 @@ function applyPolicyAllocationDeficitBurden({
       })
     ),
   });
-  // Candidate buffer after selector matching and one-time location deficit burden.
+  // Candidate buffer after selector matching and one-time direct-placement deficit burden.
   const adjusted: InventoryAllocationCandidate[] = [];
   // Exact lookup used to reconcile allocator output back to the adjusted candidate metadata.
   const byPositionIdentity = new Map<string, InventoryAllocationCandidate>();
@@ -399,7 +401,8 @@ function applyPolicyAllocationDeficitBurden({
     if (
       !inventoryStockPositionMatchesNormalizedSelector(
         candidate.position,
-        normalizedSelector
+        normalizedSelector,
+        projection.placement
       )
     ) {
       continue;
@@ -430,31 +433,6 @@ function applyPolicyAllocationDeficitBurden({
     uncoveredDeficit: burden.uncoveredDeficit,
     expiredStockWasExcluded,
   };
-}
-
-/** Resolve every location whose signed pool is selected by this policy request. */
-function selectedPolicyLocationIds(
-  projection: InventoryProjectionState,
-  selector: InventoryStockSelector,
-  itemRevisionId: ItemRevisionId
-): readonly string[] {
-  if (selector.locationIds !== undefined) return selector.locationIds;
-  const locationIds = new Set<string>();
-  for (const positionIdentity of inventorySparseRecordValue(
-    projection.positionIdsByItemRevisionId,
-    itemRevisionId
-  ) ?? []) {
-    const position = projection.positions[positionIdentity];
-    if (position === undefined) {
-      throw new Error(
-        `Inventory policy item-revision index references missing position '${positionIdentity}'.`
-      );
-    }
-    locationIds.add(position.key.locationId);
-  }
-  const ordered = [...locationIds];
-  ordered.sort();
-  return ordered;
 }
 
 /** Inputs for constructing one exact policy-allocation candidate snapshot. */
@@ -606,12 +584,18 @@ function createPolicyAllocationCandidates({
         `Inventory allocation item-revision index references missing position ${positionIdentity}.`
       );
     }
-    // Prepared/in-transit stock is conserved truth but not ordinary allocatable stock.
-    if (position.key.transferId !== undefined) continue;
+    // Prepared/in-transit/detached/missing stock is conserved truth, not ordinary allocatable stock.
+    if (
+      position.key.transferId !== undefined ||
+      position.key.placementNodeId === undefined
+    ) {
+      continue;
+    }
     if (
       !inventoryStockPositionMatchesNormalizedSelector(
         position.key,
-        normalizedSelector
+        normalizedSelector,
+        projection.placement
       )
     ) {
       continue;
