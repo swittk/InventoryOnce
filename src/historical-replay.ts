@@ -532,20 +532,28 @@ function reconcileInventoryHistoricalGraphEvents(
       event.eventId,
       relationCreatorById
     );
+    const redundantPlacement =
+      event.kind === InventoryEventKind.Placement &&
+      placementChanges.length === 0 &&
+      event.stockEffects.length === 0;
     if (
-      (event.kind === InventoryEventKind.Placement &&
-        placementChanges.length === 0 &&
-        event.stockEffects.length === 0) ||
+      (redundantPlacement &&
+        (event.placementNodeDefinitions?.length ?? 0) === 0) ||
       (event.kind === InventoryEventKind.Traceability &&
         traceabilityChanges.length === 0)
     ) {
       droppedGraphEventIds.add(event.eventId);
       continue;
     }
+    // A redundant move may still establish durable placement-node metadata.
+    const kind = redundantPlacement
+      ? InventoryEventKind.PlacementNodeMetadata
+      : event.kind;
     reconciled.push(
       commitInventoryEvent(
         {
           ...event,
+          kind,
           placementChanges,
           traceabilityChanges,
         },

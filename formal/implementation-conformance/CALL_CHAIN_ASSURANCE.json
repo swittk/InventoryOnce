@@ -1,7 +1,7 @@
 {
   "counts": {
-    "callables": 3698,
-    "edges": 9952,
+    "callables": 3700,
+    "edges": 9961,
     "publicEntries": 617,
     "publicEntriesWithTargets": 617,
     "publicEntriesWithWitnesses": 617,
@@ -5660,20 +5660,20 @@
                 "column": 36,
                 "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/historical-repair.test.ts:702:<anonymous@27>",
+                "id": "test/historical-repair.test.ts:1010:<anonymous@31>",
                 "kind": "ArrowFunction",
-                "line": 27,
-                "name": "<anonymous@27>",
+                "line": 31,
+                "name": "<anonymous@31>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 77,
                 "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/historical-repair.test.ts:14651:<anonymous@392>",
+                "id": "test/historical-repair.test.ts:18847:<anonymous@506>",
                 "kind": "ArrowFunction",
-                "line": 392,
-                "name": "<anonymous@392>",
+                "line": 506,
+                "name": "<anonymous@506>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -5731,20 +5731,20 @@
                 "column": 36,
                 "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/historical-repair.test.ts:702:<anonymous@27>",
+                "id": "test/historical-repair.test.ts:1010:<anonymous@31>",
                 "kind": "ArrowFunction",
-                "line": 27,
-                "name": "<anonymous@27>",
+                "line": 31,
+                "name": "<anonymous@31>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 74,
                 "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/historical-repair.test.ts:10056:<anonymous@269>",
+                "id": "test/historical-repair.test.ts:14252:<anonymous@383>",
                 "kind": "ArrowFunction",
-                "line": 269,
-                "name": "<anonymous@269>",
+                "line": 383,
+                "name": "<anonymous@383>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -6490,20 +6490,20 @@
                 "column": 36,
                 "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/historical-repair.test.ts:702:<anonymous@27>",
+                "id": "test/historical-repair.test.ts:1010:<anonymous@31>",
                 "kind": "ArrowFunction",
-                "line": 27,
-                "name": "<anonymous@27>",
+                "line": 31,
+                "name": "<anonymous@31>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 77,
                 "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/historical-repair.test.ts:14651:<anonymous@392>",
+                "id": "test/historical-repair.test.ts:18847:<anonymous@506>",
                 "kind": "ArrowFunction",
-                "line": 392,
-                "name": "<anonymous@392>",
+                "line": 506,
+                "name": "<anonymous@506>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -6561,20 +6561,20 @@
                 "column": 36,
                 "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/historical-repair.test.ts:702:<anonymous@27>",
+                "id": "test/historical-repair.test.ts:1010:<anonymous@31>",
                 "kind": "ArrowFunction",
-                "line": 27,
-                "name": "<anonymous@27>",
+                "line": 31,
+                "name": "<anonymous@31>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 73,
                 "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/historical-repair.test.ts:11871:<anonymous@318>",
+                "id": "test/historical-repair.test.ts:16067:<anonymous@432>",
                 "kind": "ArrowFunction",
-                "line": 318,
-                "name": "<anonymous@318>",
+                "line": 432,
+                "name": "<anonymous@432>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -8110,20 +8110,20 @@
                 "column": 36,
                 "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/historical-repair.test.ts:702:<anonymous@27>",
+                "id": "test/historical-repair.test.ts:1010:<anonymous@31>",
                 "kind": "ArrowFunction",
-                "line": 27,
-                "name": "<anonymous@27>",
+                "line": 31,
+                "name": "<anonymous@31>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 74,
                 "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/historical-repair.test.ts:10056:<anonymous@269>",
+                "id": "test/historical-repair.test.ts:14252:<anonymous@383>",
                 "kind": "ArrowFunction",
-                "line": 269,
-                "name": "<anonymous@269>",
+                "line": 383,
+                "name": "<anonymous@383>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -8870,20 +8870,20 @@
                 "column": 36,
                 "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/historical-repair.test.ts:702:<anonymous@27>",
+                "id": "test/historical-repair.test.ts:1010:<anonymous@31>",
                 "kind": "ArrowFunction",
-                "line": 27,
-                "name": "<anonymous@27>",
+                "line": 31,
+                "name": "<anonymous@31>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 74,
                 "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/historical-repair.test.ts:10056:<anonymous@269>",
+                "id": "test/historical-repair.test.ts:14252:<anonymous@383>",
                 "kind": "ArrowFunction",
-                "line": 269,
-                "name": "<anonymous@269>",
+                "line": 383,
+                "name": "<anonymous@383>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -9052,20 +9052,20 @@
                 "column": 36,
                 "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/historical-repair.test.ts:702:<anonymous@27>",
+                "id": "test/historical-repair.test.ts:1010:<anonymous@31>",
                 "kind": "ArrowFunction",
-                "line": 27,
-                "name": "<anonymous@27>",
+                "line": 31,
+                "name": "<anonymous@31>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 73,
                 "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/historical-repair.test.ts:11871:<anonymous@318>",
+                "id": "test/historical-repair.test.ts:16067:<anonymous@432>",
                 "kind": "ArrowFunction",
-                "line": 318,
-                "name": "<anonymous@318>",
+                "line": 432,
+                "name": "<anonymous@432>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -9680,20 +9680,20 @@
                 "column": 36,
                 "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/historical-repair.test.ts:702:<anonymous@27>",
+                "id": "test/historical-repair.test.ts:1010:<anonymous@31>",
                 "kind": "ArrowFunction",
-                "line": 27,
-                "name": "<anonymous@27>",
+                "line": 31,
+                "name": "<anonymous@31>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 73,
                 "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/historical-repair.test.ts:11871:<anonymous@318>",
+                "id": "test/historical-repair.test.ts:16067:<anonymous@432>",
                 "kind": "ArrowFunction",
-                "line": 318,
-                "name": "<anonymous@318>",
+                "line": 432,
+                "name": "<anonymous@432>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -9842,20 +9842,20 @@
                 "column": 36,
                 "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/historical-repair.test.ts:702:<anonymous@27>",
+                "id": "test/historical-repair.test.ts:1010:<anonymous@31>",
                 "kind": "ArrowFunction",
-                "line": 27,
-                "name": "<anonymous@27>",
+                "line": 31,
+                "name": "<anonymous@31>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 73,
                 "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/historical-repair.test.ts:11871:<anonymous@318>",
+                "id": "test/historical-repair.test.ts:16067:<anonymous@432>",
                 "kind": "ArrowFunction",
-                "line": 318,
-                "name": "<anonymous@318>",
+                "line": 432,
+                "name": "<anonymous@432>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -10418,31 +10418,31 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/projection-batch-catchup.test.ts",
+                "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/projection-batch-catchup.test.ts",
+                "id": "test-root:test/historical-repair.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/projection-batch-catchup.test.ts"
+                "name": "test/historical-repair.test.ts"
               },
               {
-                "column": 51,
-                "file": "test/projection-batch-catchup.test.ts",
+                "column": 36,
+                "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/projection-batch-catchup.test.ts:3226:<anonymous@108>",
+                "id": "test/historical-repair.test.ts:1010:<anonymous@31>",
                 "kind": "ArrowFunction",
-                "line": 108,
-                "name": "<anonymous@108>",
+                "line": 31,
+                "name": "<anonymous@31>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 87,
-                "file": "test/projection-batch-catchup.test.ts",
+                "column": 94,
+                "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/projection-batch-catchup.test.ts:3320:<anonymous@109>",
+                "id": "test/historical-repair.test.ts:1198:<anonymous@33>",
                 "kind": "ArrowFunction",
-                "line": 109,
-                "name": "<anonymous@109>",
+                "line": 33,
+                "name": "<anonymous@33>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -10456,7 +10456,7 @@
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/projection-batch-catchup.test.ts"
+            "test": "test/historical-repair.test.ts"
           }
         }
       ]
@@ -11704,31 +11704,31 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/projection-batch-catchup.test.ts",
+                "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/projection-batch-catchup.test.ts",
+                "id": "test-root:test/historical-repair.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/projection-batch-catchup.test.ts"
+                "name": "test/historical-repair.test.ts"
               },
               {
-                "column": 51,
-                "file": "test/projection-batch-catchup.test.ts",
+                "column": 36,
+                "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/projection-batch-catchup.test.ts:3226:<anonymous@108>",
+                "id": "test/historical-repair.test.ts:1010:<anonymous@31>",
                 "kind": "ArrowFunction",
-                "line": 108,
-                "name": "<anonymous@108>",
+                "line": 31,
+                "name": "<anonymous@31>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 92,
-                "file": "test/projection-batch-catchup.test.ts",
+                "column": 94,
+                "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/projection-batch-catchup.test.ts:4971:<anonymous@154>",
+                "id": "test/historical-repair.test.ts:1198:<anonymous@33>",
                 "kind": "ArrowFunction",
-                "line": 154,
-                "name": "<anonymous@154>",
+                "line": 33,
+                "name": "<anonymous@33>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -11742,7 +11742,7 @@
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/projection-batch-catchup.test.ts"
+            "test": "test/historical-repair.test.ts"
           }
         }
       ]
@@ -12473,31 +12473,31 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/traceability-corrections.test.ts",
+                "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/traceability-corrections.test.ts",
+                "id": "test-root:test/historical-repair.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/traceability-corrections.test.ts"
+                "name": "test/historical-repair.test.ts"
               },
               {
-                "column": 59,
-                "file": "test/traceability-corrections.test.ts",
+                "column": 36,
+                "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-corrections.test.ts:49412:<anonymous@1432>",
+                "id": "test/historical-repair.test.ts:1010:<anonymous@31>",
                 "kind": "ArrowFunction",
-                "line": 1432,
-                "name": "<anonymous@1432>",
+                "line": 31,
+                "name": "<anonymous@31>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 91,
-                "file": "test/traceability-corrections.test.ts",
+                "column": 94,
+                "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-corrections.test.ts:54541:<anonymous@1584>",
+                "id": "test/historical-repair.test.ts:1198:<anonymous@33>",
                 "kind": "ArrowFunction",
-                "line": 1584,
-                "name": "<anonymous@1584>",
+                "line": 33,
+                "name": "<anonymous@33>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -12511,7 +12511,7 @@
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/traceability-corrections.test.ts"
+            "test": "test/historical-repair.test.ts"
           }
         }
       ]
@@ -12909,20 +12909,20 @@
                 "column": 36,
                 "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/historical-repair.test.ts:702:<anonymous@27>",
+                "id": "test/historical-repair.test.ts:1010:<anonymous@31>",
                 "kind": "ArrowFunction",
-                "line": 27,
-                "name": "<anonymous@27>",
+                "line": 31,
+                "name": "<anonymous@31>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 73,
                 "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/historical-repair.test.ts:11871:<anonymous@318>",
+                "id": "test/historical-repair.test.ts:16067:<anonymous@432>",
                 "kind": "ArrowFunction",
-                "line": 318,
-                "name": "<anonymous@318>",
+                "line": 432,
+                "name": "<anonymous@432>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -13687,41 +13687,31 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/projection-batch-catchup.test.ts",
+                "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/projection-batch-catchup.test.ts",
+                "id": "test-root:test/historical-repair.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/projection-batch-catchup.test.ts"
+                "name": "test/historical-repair.test.ts"
               },
               {
-                "column": 51,
-                "file": "test/projection-batch-catchup.test.ts",
+                "column": 36,
+                "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/projection-batch-catchup.test.ts:3226:<anonymous@108>",
+                "id": "test/historical-repair.test.ts:1010:<anonymous@31>",
                 "kind": "ArrowFunction",
-                "line": 108,
-                "name": "<anonymous@108>",
+                "line": 31,
+                "name": "<anonymous@31>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 92,
-                "file": "test/projection-batch-catchup.test.ts",
+                "column": 94,
+                "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/projection-batch-catchup.test.ts:4971:<anonymous@154>",
+                "id": "test/historical-repair.test.ts:1198:<anonymous@33>",
                 "kind": "ArrowFunction",
-                "line": 154,
-                "name": "<anonymous@154>",
-                "reason": "external-callback-dispatch"
-              },
-              {
-                "column": 44,
-                "file": "test/projection-batch-catchup.test.ts",
-                "hasBody": true,
-                "id": "test/projection-batch-catchup.test.ts:5902:<anonymous@183>",
-                "kind": "ArrowFunction",
-                "line": 183,
-                "name": "<anonymous@183>",
+                "line": 33,
+                "name": "<anonymous@33>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -13735,7 +13725,7 @@
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/projection-batch-catchup.test.ts"
+            "test": "test/historical-repair.test.ts"
           }
         }
       ]
@@ -13839,31 +13829,31 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/traceability-corrections.test.ts",
+                "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/traceability-corrections.test.ts",
+                "id": "test-root:test/historical-repair.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/traceability-corrections.test.ts"
+                "name": "test/historical-repair.test.ts"
               },
               {
-                "column": 59,
-                "file": "test/traceability-corrections.test.ts",
+                "column": 36,
+                "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-corrections.test.ts:49412:<anonymous@1432>",
+                "id": "test/historical-repair.test.ts:1010:<anonymous@31>",
                 "kind": "ArrowFunction",
-                "line": 1432,
-                "name": "<anonymous@1432>",
+                "line": 31,
+                "name": "<anonymous@31>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 91,
-                "file": "test/traceability-corrections.test.ts",
+                "column": 94,
+                "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-corrections.test.ts:54541:<anonymous@1584>",
+                "id": "test/historical-repair.test.ts:1198:<anonymous@33>",
                 "kind": "ArrowFunction",
-                "line": 1584,
-                "name": "<anonymous@1584>",
+                "line": 33,
+                "name": "<anonymous@33>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -13887,7 +13877,7 @@
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/traceability-corrections.test.ts"
+            "test": "test/historical-repair.test.ts"
           }
         }
       ]
@@ -17558,9 +17548,9 @@
                 "column": 1,
                 "file": "src/historical-replay.ts",
                 "hasBody": true,
-                "id": "src/historical-replay.ts:31460:inventoryAffectedHistoricalEventIds",
+                "id": "src/historical-replay.ts:31774:inventoryAffectedHistoricalEventIds",
                 "kind": "FunctionDeclaration",
-                "line": 842,
+                "line": 850,
                 "name": "inventoryAffectedHistoricalEventIds",
                 "reason": "resolved-call"
               },
@@ -17699,31 +17689,31 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/traceability-corrections.test.ts",
+                "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/traceability-corrections.test.ts",
+                "id": "test-root:test/historical-repair.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/traceability-corrections.test.ts"
+                "name": "test/historical-repair.test.ts"
               },
               {
-                "column": 59,
-                "file": "test/traceability-corrections.test.ts",
+                "column": 36,
+                "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-corrections.test.ts:49412:<anonymous@1432>",
+                "id": "test/historical-repair.test.ts:1010:<anonymous@31>",
                 "kind": "ArrowFunction",
-                "line": 1432,
-                "name": "<anonymous@1432>",
+                "line": 31,
+                "name": "<anonymous@31>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 91,
-                "file": "test/traceability-corrections.test.ts",
+                "column": 94,
+                "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/traceability-corrections.test.ts:54541:<anonymous@1584>",
+                "id": "test/historical-repair.test.ts:1198:<anonymous@33>",
                 "kind": "ArrowFunction",
-                "line": 1584,
-                "name": "<anonymous@1584>",
+                "line": 33,
+                "name": "<anonymous@33>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -17747,7 +17737,7 @@
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/traceability-corrections.test.ts"
+            "test": "test/historical-repair.test.ts"
           }
         }
       ]
@@ -34461,20 +34451,20 @@
                 "column": 36,
                 "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/historical-repair.test.ts:702:<anonymous@27>",
+                "id": "test/historical-repair.test.ts:1010:<anonymous@31>",
                 "kind": "ArrowFunction",
-                "line": 27,
-                "name": "<anonymous@27>",
+                "line": 31,
+                "name": "<anonymous@31>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 74,
                 "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/historical-repair.test.ts:10056:<anonymous@269>",
+                "id": "test/historical-repair.test.ts:14252:<anonymous@383>",
                 "kind": "ArrowFunction",
-                "line": 269,
-                "name": "<anonymous@269>",
+                "line": 383,
+                "name": "<anonymous@383>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -34744,20 +34734,20 @@
                 "column": 36,
                 "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/historical-repair.test.ts:702:<anonymous@27>",
+                "id": "test/historical-repair.test.ts:1010:<anonymous@31>",
                 "kind": "ArrowFunction",
-                "line": 27,
-                "name": "<anonymous@27>",
+                "line": 31,
+                "name": "<anonymous@31>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 74,
                 "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/historical-repair.test.ts:10056:<anonymous@269>",
+                "id": "test/historical-repair.test.ts:14252:<anonymous@383>",
                 "kind": "ArrowFunction",
-                "line": 269,
-                "name": "<anonymous@269>",
+                "line": 383,
+                "name": "<anonymous@383>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -45890,20 +45880,20 @@
                 "column": 36,
                 "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/historical-repair.test.ts:702:<anonymous@27>",
+                "id": "test/historical-repair.test.ts:1010:<anonymous@31>",
                 "kind": "ArrowFunction",
-                "line": 27,
-                "name": "<anonymous@27>",
+                "line": 31,
+                "name": "<anonymous@31>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 73,
                 "file": "test/historical-repair.test.ts",
                 "hasBody": true,
-                "id": "test/historical-repair.test.ts:11871:<anonymous@318>",
+                "id": "test/historical-repair.test.ts:16067:<anonymous@432>",
                 "kind": "ArrowFunction",
-                "line": 318,
-                "name": "<anonymous@318>",
+                "line": 432,
+                "name": "<anonymous@432>",
                 "reason": "external-callback-dispatch"
               },
               {

@@ -8,7 +8,11 @@ import {
   stockAmount,
 } from "../src/index.js";
 import { createInMemoryInventoryDurableStorage } from "../src/storage-api.js";
-import { projectInventoryEvents } from "../src/projection.js";
+import { applyInventoryCommittedEvent, projectInventoryEvents } from "../src/projection.js";
+import { createInventoryPlacementEvent } from "../src/commands.js";
+import { commitInventoryEvent } from "../src/events.js";
+import { createInventoryCorrectionEvent } from "../src/corrections.js";
+import { replayInventoryHistoricalScenario } from "../src/historical-replay.js";
 import {
   createTabletCatalog,
   createTestInventory,
@@ -25,6 +29,116 @@ export const FORMAL_IMPLEMENTATION_TRACE_IDS = [
 ] as const;
 
 describe("late historical repair", () => {
+  /** A later redundant move still contributes its retained parent-node definition. */
+  it("preserves placement metadata when an earlier correction makes a later move redundant", () => {
+    const catalog = createTabletCatalog();
+    const early = commitInventoryEvent(
+      createInventoryPlacementEvent({
+        catalog,
+        operationId: "metadata-replay-initial-placement",
+        occurredAtEpochMs: time0,
+        nodeId: "METADATA-REPLAY-BOX",
+        toParentNodeId: "METADATA-REPLAY-OLD",
+      }),
+      time0,
+      1
+    );
+    const later = commitInventoryEvent(
+      createInventoryPlacementEvent({
+        catalog,
+        operationId: "metadata-replay-later-move",
+        occurredAtEpochMs: time1,
+        nodeId: "METADATA-REPLAY-BOX",
+        fromParentNodeId: "METADATA-REPLAY-OLD",
+        toParentNodeId: "METADATA-REPLAY-NEW",
+        parent: {
+          category: "shelf",
+          acceptsPlacement: true,
+        },
+      }),
+      time1,
+      2
+    );
+    const projection = projectInventoryEvents({
+      catalog,
+      events: [early, later],
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+    });
+    expect(
+      projection.placementNodes["METADATA-REPLAY-NEW"]?.definition.category
+    ).toBe("shelf");
+
+    // The corrected earlier move now places the box directly in the later target.
+    const replacement = createInventoryPlacementEvent({
+      catalog,
+      operationId: "metadata-replay-corrected-initial-placement",
+      occurredAtEpochMs: time0,
+      nodeId: "METADATA-REPLAY-BOX",
+      toParentNodeId: "METADATA-REPLAY-NEW",
+    });
+    const replay = replayInventoryHistoricalScenario({
+      catalog,
+      projection,
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+      rootReplacement: {
+        rootEventId: early.eventId,
+        replacement,
+      },
+    });
+    const retained = replay.effectiveEvents.find(
+      /** Identify the later metadata assertion even if its move was rebased away. */
+      (event) => event.eventId === later.eventId
+    );
+    expect(retained?.kind).toBe(InventoryEventKind.PlacementNodeMetadata);
+    expect(retained?.placementChanges).toEqual([]);
+    expect(retained?.placementNodeDefinitions).toEqual(later.placementNodeDefinitions);
+    expect(
+      replay.projection.placementNodes["METADATA-REPLAY-NEW"]?.definition.category
+    ).toBe("shelf");
+    expect(
+      replay.projection.placementNodeRootEventIdByNodeId["METADATA-REPLAY-NEW"]
+    ).toBe(later.eventId);
+    expect(
+      replay.projection.placement.relationByNodeId["METADATA-REPLAY-BOX"]?.parentNodeId
+    ).toBe("METADATA-REPLAY-NEW");
+    expect(
+      projection.placement.relationByNodeId["METADATA-REPLAY-BOX"]?.parentNodeId
+    ).toBe("METADATA-REPLAY-NEW");
+
+    // The same current kernel correction planner must retain that separate
+    // later metadata root when deriving and applying the published delta.
+    const correction = commitInventoryEvent(
+      createInventoryCorrectionEvent({
+        catalog,
+        projection,
+        operationId: "metadata-replay-root-correction",
+        occurredAtEpochMs: time3,
+        correctsEventId: early.eventId,
+        reason: "The original box was placed directly into the new shelf.",
+        replacement,
+      }, InventoryDeficitPolicy.Reject),
+      time3,
+      3
+    );
+    const published = applyInventoryCommittedEvent({
+      catalog,
+      state: projection,
+      event: correction,
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+    }).state;
+    expect(
+      published.placementNodes["METADATA-REPLAY-NEW"]?.definition.category
+    ).toBe("shelf");
+    expect(
+      published.placementNodeRootEventIdByNodeId["METADATA-REPLAY-NEW"]
+    ).toBe(later.eventId);
+    expect(published).toEqual(projectInventoryEvents({
+      catalog,
+      events: [early, later, correction],
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+    }));
+  });
+
   /** A smaller negative interval from the same retained issue is improvement, not new exposure. */
   it("accepts a smaller retained deficit from the same issue root while rejecting growth", async () => {
     const storage = createInMemoryInventoryDurableStorage();
