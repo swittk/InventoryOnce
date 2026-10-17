@@ -1,7 +1,7 @@
 {
   "counts": {
-    "callables": 3676,
-    "edges": 9892,
+    "callables": 3686,
+    "edges": 9918,
     "publicEntries": 617,
     "publicEntriesWithTargets": 617,
     "publicEntriesWithWitnesses": 617,
@@ -6226,31 +6226,31 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/historical-repair.test.ts",
+                "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/historical-repair.test.ts",
+                "id": "test-root:test/dual-measure-counts.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/historical-repair.test.ts"
+                "name": "test/dual-measure-counts.test.ts"
               },
               {
-                "column": 36,
-                "file": "test/historical-repair.test.ts",
+                "column": 66,
+                "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test/historical-repair.test.ts:702:<anonymous@27>",
+                "id": "test/dual-measure-counts.test.ts:3413:<anonymous@102>",
                 "kind": "ArrowFunction",
-                "line": 27,
-                "name": "<anonymous@27>",
+                "line": 102,
+                "name": "<anonymous@102>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 92,
-                "file": "test/historical-repair.test.ts",
+                "column": 90,
+                "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test/historical-repair.test.ts:901:<anonymous@29>",
+                "id": "test/dual-measure-counts.test.ts:3510:<anonymous@103>",
                 "kind": "ArrowFunction",
-                "line": 29,
-                "name": "<anonymous@29>",
+                "line": 103,
+                "name": "<anonymous@103>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -6304,7 +6304,7 @@
                 "reason": "interface-to-implementation"
               }
             ],
-            "test": "test/historical-repair.test.ts"
+            "test": "test/dual-measure-counts.test.ts"
           }
         }
       ]
@@ -9920,9 +9920,9 @@
           "column": 3,
           "file": "src/historical-replay.ts",
           "hasBody": true,
-          "id": "src/historical-replay.ts:2099:InventoryHistoricalReplayConflictError",
+          "id": "src/historical-replay.ts:2184:InventoryHistoricalReplayConflictError",
           "kind": "Constructor",
-          "line": 58,
+          "line": 61,
           "name": "InventoryHistoricalReplayConflictError"
         }
       ],
@@ -9933,9 +9933,9 @@
             "column": 3,
             "file": "src/historical-replay.ts",
             "hasBody": true,
-            "id": "src/historical-replay.ts:2099:InventoryHistoricalReplayConflictError",
+            "id": "src/historical-replay.ts:2184:InventoryHistoricalReplayConflictError",
             "kind": "Constructor",
-            "line": 58,
+            "line": 61,
             "name": "InventoryHistoricalReplayConflictError"
           },
           "witness": {
@@ -9973,9 +9973,9 @@
                 "column": 1,
                 "file": "src/historical-replay.ts",
                 "hasBody": true,
-                "id": "src/historical-replay.ts:5018:replayInventoryHistoricalScenario",
+                "id": "src/historical-replay.ts:5103:replayInventoryHistoricalScenario",
                 "kind": "FunctionDeclaration",
-                "line": 116,
+                "line": 119,
                 "name": "replayInventoryHistoricalScenario",
                 "reason": "resolved-call"
               },
@@ -9983,9 +9983,9 @@
                 "column": 3,
                 "file": "src/historical-replay.ts",
                 "hasBody": true,
-                "id": "src/historical-replay.ts:2099:InventoryHistoricalReplayConflictError",
+                "id": "src/historical-replay.ts:2184:InventoryHistoricalReplayConflictError",
                 "kind": "Constructor",
-                "line": 58,
+                "line": 61,
                 "name": "InventoryHistoricalReplayConflictError",
                 "reason": "resolved-call"
               }
@@ -10913,7 +10913,7 @@
           "column": 1,
           "file": "src/events.ts",
           "hasBody": true,
-          "id": "src/events.ts:80162:assertInventoryEpochMilliseconds",
+          "id": "src/events.ts:80177:assertInventoryEpochMilliseconds",
           "kind": "FunctionDeclaration",
           "line": 2135,
           "name": "assertInventoryEpochMilliseconds"
@@ -10926,7 +10926,7 @@
             "column": 1,
             "file": "src/events.ts",
             "hasBody": true,
-            "id": "src/events.ts:80162:assertInventoryEpochMilliseconds",
+            "id": "src/events.ts:80177:assertInventoryEpochMilliseconds",
             "kind": "FunctionDeclaration",
             "line": 2135,
             "name": "assertInventoryEpochMilliseconds"
@@ -10976,7 +10976,7 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:80162:assertInventoryEpochMilliseconds",
+                "id": "src/events.ts:80177:assertInventoryEpochMilliseconds",
                 "kind": "FunctionDeclaration",
                 "line": 2135,
                 "name": "assertInventoryEpochMilliseconds",
@@ -11280,20 +11280,20 @@
                 "column": 55,
                 "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test/dual-measure-counts.test.ts:3014:<anonymous@88>",
+                "id": "test/dual-measure-counts.test.ts:7192:<anonymous@196>",
                 "kind": "ArrowFunction",
-                "line": 88,
-                "name": "<anonymous@88>",
+                "line": 196,
+                "name": "<anonymous@196>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 92,
                 "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test/dual-measure-counts.test.ts:4608:<anonymous@128>",
+                "id": "test/dual-measure-counts.test.ts:8786:<anonymous@236>",
                 "kind": "ArrowFunction",
-                "line": 128,
-                "name": "<anonymous@128>",
+                "line": 236,
+                "name": "<anonymous@236>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -11462,7 +11462,7 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:26572:defineInventoryEvent",
+                "id": "src/events.ts:26587:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
                 "line": 595,
                 "name": "defineInventoryEvent",
@@ -11472,7 +11472,7 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:22920:normalizeInventoryHistoricalImpact",
+                "id": "src/events.ts:22935:normalizeInventoryHistoricalImpact",
                 "kind": "FunctionDeclaration",
                 "line": 490,
                 "name": "normalizeInventoryHistoricalImpact",
@@ -11644,7 +11644,7 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:26572:defineInventoryEvent",
+                "id": "src/events.ts:26587:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
                 "line": 595,
                 "name": "defineInventoryEvent",
@@ -11654,7 +11654,7 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:53815:normalizeStockEffects",
+                "id": "src/events.ts:53830:normalizeStockEffects",
                 "kind": "FunctionDeclaration",
                 "line": 1348,
                 "name": "normalizeStockEffects",
@@ -11682,7 +11682,7 @@
           "column": 1,
           "file": "src/events.ts",
           "hasBody": true,
-          "id": "src/events.ts:34479:commitInventoryEvent",
+          "id": "src/events.ts:34494:commitInventoryEvent",
           "kind": "FunctionDeclaration",
           "line": 833,
           "name": "commitInventoryEvent"
@@ -11695,7 +11695,7 @@
             "column": 1,
             "file": "src/events.ts",
             "hasBody": true,
-            "id": "src/events.ts:34479:commitInventoryEvent",
+            "id": "src/events.ts:34494:commitInventoryEvent",
             "kind": "FunctionDeclaration",
             "line": 833,
             "name": "commitInventoryEvent"
@@ -11735,7 +11735,7 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:34479:commitInventoryEvent",
+                "id": "src/events.ts:34494:commitInventoryEvent",
                 "kind": "FunctionDeclaration",
                 "line": 833,
                 "name": "commitInventoryEvent",
@@ -15407,7 +15407,7 @@
           "column": 1,
           "file": "src/events.ts",
           "hasBody": true,
-          "id": "src/events.ts:26572:defineInventoryEvent",
+          "id": "src/events.ts:26587:defineInventoryEvent",
           "kind": "FunctionDeclaration",
           "line": 595,
           "name": "defineInventoryEvent"
@@ -15420,7 +15420,7 @@
             "column": 1,
             "file": "src/events.ts",
             "hasBody": true,
-            "id": "src/events.ts:26572:defineInventoryEvent",
+            "id": "src/events.ts:26587:defineInventoryEvent",
             "kind": "FunctionDeclaration",
             "line": 595,
             "name": "defineInventoryEvent"
@@ -15460,7 +15460,7 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:26572:defineInventoryEvent",
+                "id": "src/events.ts:26587:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
                 "line": 595,
                 "name": "defineInventoryEvent",
@@ -15663,20 +15663,20 @@
                 "column": 55,
                 "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test/dual-measure-counts.test.ts:3014:<anonymous@88>",
+                "id": "test/dual-measure-counts.test.ts:7192:<anonymous@196>",
                 "kind": "ArrowFunction",
-                "line": 88,
-                "name": "<anonymous@88>",
+                "line": 196,
+                "name": "<anonymous@196>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 92,
                 "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test/dual-measure-counts.test.ts:4608:<anonymous@128>",
+                "id": "test/dual-measure-counts.test.ts:8786:<anonymous@236>",
                 "kind": "ArrowFunction",
-                "line": 128,
-                "name": "<anonymous@128>",
+                "line": 236,
+                "name": "<anonymous@236>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -17558,9 +17558,9 @@
                 "column": 1,
                 "file": "src/historical-replay.ts",
                 "hasBody": true,
-                "id": "src/historical-replay.ts:5018:replayInventoryHistoricalScenario",
+                "id": "src/historical-replay.ts:5103:replayInventoryHistoricalScenario",
                 "kind": "FunctionDeclaration",
-                "line": 116,
+                "line": 119,
                 "name": "replayInventoryHistoricalScenario",
                 "reason": "resolved-call"
               },
@@ -17568,9 +17568,9 @@
                 "column": 1,
                 "file": "src/historical-replay.ts",
                 "hasBody": true,
-                "id": "src/historical-replay.ts:29019:inventoryAffectedHistoricalEventIds",
+                "id": "src/historical-replay.ts:31460:inventoryAffectedHistoricalEventIds",
                 "kind": "FunctionDeclaration",
-                "line": 768,
+                "line": 842,
                 "name": "inventoryAffectedHistoricalEventIds",
                 "reason": "resolved-call"
               },
@@ -17768,7 +17768,7 @@
           "column": 1,
           "file": "src/events.ts",
           "hasBody": true,
-          "id": "src/events.ts:36399:inventoryEventIntentFingerprint",
+          "id": "src/events.ts:36414:inventoryEventIntentFingerprint",
           "kind": "FunctionDeclaration",
           "line": 879,
           "name": "inventoryEventIntentFingerprint"
@@ -17781,7 +17781,7 @@
             "column": 1,
             "file": "src/events.ts",
             "hasBody": true,
-            "id": "src/events.ts:36399:inventoryEventIntentFingerprint",
+            "id": "src/events.ts:36414:inventoryEventIntentFingerprint",
             "kind": "FunctionDeclaration",
             "line": 879,
             "name": "inventoryEventIntentFingerprint"
@@ -17821,7 +17821,7 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:36399:inventoryEventIntentFingerprint",
+                "id": "src/events.ts:36414:inventoryEventIntentFingerprint",
                 "kind": "FunctionDeclaration",
                 "line": 879,
                 "name": "inventoryEventIntentFingerprint",
@@ -18982,23 +18982,23 @@
                 "name": "test/dual-measure-counts.test.ts"
               },
               {
-                "column": 55,
+                "column": 66,
                 "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test/dual-measure-counts.test.ts:3014:<anonymous@88>",
+                "id": "test/dual-measure-counts.test.ts:3413:<anonymous@102>",
                 "kind": "ArrowFunction",
-                "line": 88,
-                "name": "<anonymous@88>",
+                "line": 102,
+                "name": "<anonymous@102>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 72,
+                "column": 90,
                 "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test/dual-measure-counts.test.ts:3093:<anonymous@89>",
+                "id": "test/dual-measure-counts.test.ts:3510:<anonymous@103>",
                 "kind": "ArrowFunction",
-                "line": 89,
-                "name": "<anonymous@89>",
+                "line": 103,
+                "name": "<anonymous@103>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -19319,7 +19319,7 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:36399:inventoryEventIntentFingerprint",
+                "id": "src/events.ts:36414:inventoryEventIntentFingerprint",
                 "kind": "FunctionDeclaration",
                 "line": 879,
                 "name": "inventoryEventIntentFingerprint",
@@ -19329,7 +19329,7 @@
                 "column": 13,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:37981:<anonymous@925>",
+                "id": "src/events.ts:37996:<anonymous@925>",
                 "kind": "ArrowFunction",
                 "line": 925,
                 "name": "<anonymous@925>",
@@ -23125,20 +23125,20 @@
                 "column": 55,
                 "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test/dual-measure-counts.test.ts:3014:<anonymous@88>",
+                "id": "test/dual-measure-counts.test.ts:7192:<anonymous@196>",
                 "kind": "ArrowFunction",
-                "line": 88,
-                "name": "<anonymous@88>",
+                "line": 196,
+                "name": "<anonymous@196>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 92,
                 "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test/dual-measure-counts.test.ts:4608:<anonymous@128>",
+                "id": "test/dual-measure-counts.test.ts:8786:<anonymous@236>",
                 "kind": "ArrowFunction",
-                "line": 128,
-                "name": "<anonymous@128>",
+                "line": 236,
+                "name": "<anonymous@236>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -23540,7 +23540,7 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:26572:defineInventoryEvent",
+                "id": "src/events.ts:26587:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
                 "line": 595,
                 "name": "defineInventoryEvent",
@@ -23550,7 +23550,7 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:53815:normalizeStockEffects",
+                "id": "src/events.ts:53830:normalizeStockEffects",
                 "kind": "FunctionDeclaration",
                 "line": 1348,
                 "name": "normalizeStockEffects",
@@ -24054,9 +24054,9 @@
           "column": 1,
           "file": "src/historical-replay.ts",
           "hasBody": true,
-          "id": "src/historical-replay.ts:5018:replayInventoryHistoricalScenario",
+          "id": "src/historical-replay.ts:5103:replayInventoryHistoricalScenario",
           "kind": "FunctionDeclaration",
-          "line": 116,
+          "line": 119,
           "name": "replayInventoryHistoricalScenario"
         }
       ],
@@ -24067,9 +24067,9 @@
             "column": 1,
             "file": "src/historical-replay.ts",
             "hasBody": true,
-            "id": "src/historical-replay.ts:5018:replayInventoryHistoricalScenario",
+            "id": "src/historical-replay.ts:5103:replayInventoryHistoricalScenario",
             "kind": "FunctionDeclaration",
-            "line": 116,
+            "line": 119,
             "name": "replayInventoryHistoricalScenario"
           },
           "witness": {
@@ -24107,9 +24107,9 @@
                 "column": 1,
                 "file": "src/historical-replay.ts",
                 "hasBody": true,
-                "id": "src/historical-replay.ts:5018:replayInventoryHistoricalScenario",
+                "id": "src/historical-replay.ts:5103:replayInventoryHistoricalScenario",
                 "kind": "FunctionDeclaration",
-                "line": 116,
+                "line": 119,
                 "name": "replayInventoryHistoricalScenario",
                 "reason": "resolved-call"
               }
@@ -26955,20 +26955,20 @@
                 "column": 55,
                 "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test/dual-measure-counts.test.ts:3014:<anonymous@88>",
+                "id": "test/dual-measure-counts.test.ts:7192:<anonymous@196>",
                 "kind": "ArrowFunction",
-                "line": 88,
-                "name": "<anonymous@88>",
+                "line": 196,
+                "name": "<anonymous@196>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 92,
                 "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test/dual-measure-counts.test.ts:4608:<anonymous@128>",
+                "id": "test/dual-measure-counts.test.ts:8786:<anonymous@236>",
                 "kind": "ArrowFunction",
-                "line": 128,
-                "name": "<anonymous@128>",
+                "line": 236,
+                "name": "<anonymous@236>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -27056,7 +27056,7 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:26572:defineInventoryEvent",
+                "id": "src/events.ts:26587:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
                 "line": 595,
                 "name": "defineInventoryEvent",
@@ -27066,7 +27066,7 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:22920:normalizeInventoryHistoricalImpact",
+                "id": "src/events.ts:22935:normalizeInventoryHistoricalImpact",
                 "kind": "FunctionDeclaration",
                 "line": 490,
                 "name": "normalizeInventoryHistoricalImpact",
@@ -27238,7 +27238,7 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:26572:defineInventoryEvent",
+                "id": "src/events.ts:26587:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
                 "line": 595,
                 "name": "defineInventoryEvent",
@@ -27248,7 +27248,7 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:53815:normalizeStockEffects",
+                "id": "src/events.ts:53830:normalizeStockEffects",
                 "kind": "FunctionDeclaration",
                 "line": 1348,
                 "name": "normalizeStockEffects",
@@ -28434,20 +28434,20 @@
                 "column": 55,
                 "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test/dual-measure-counts.test.ts:3014:<anonymous@88>",
+                "id": "test/dual-measure-counts.test.ts:7192:<anonymous@196>",
                 "kind": "ArrowFunction",
-                "line": 88,
-                "name": "<anonymous@88>",
+                "line": 196,
+                "name": "<anonymous@196>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 92,
                 "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test/dual-measure-counts.test.ts:4608:<anonymous@128>",
+                "id": "test/dual-measure-counts.test.ts:8786:<anonymous@236>",
                 "kind": "ArrowFunction",
-                "line": 128,
-                "name": "<anonymous@128>",
+                "line": 236,
+                "name": "<anonymous@236>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -30154,23 +30154,23 @@
                 "name": "test/dual-measure-counts.test.ts"
               },
               {
-                "column": 55,
+                "column": 66,
                 "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test/dual-measure-counts.test.ts:3014:<anonymous@88>",
+                "id": "test/dual-measure-counts.test.ts:3413:<anonymous@102>",
                 "kind": "ArrowFunction",
-                "line": 88,
-                "name": "<anonymous@88>",
+                "line": 102,
+                "name": "<anonymous@102>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 72,
+                "column": 90,
                 "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test/dual-measure-counts.test.ts:3093:<anonymous@89>",
+                "id": "test/dual-measure-counts.test.ts:3510:<anonymous@103>",
                 "kind": "ArrowFunction",
-                "line": 89,
-                "name": "<anonymous@89>",
+                "line": 103,
+                "name": "<anonymous@103>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -30491,7 +30491,7 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:36399:inventoryEventIntentFingerprint",
+                "id": "src/events.ts:36414:inventoryEventIntentFingerprint",
                 "kind": "FunctionDeclaration",
                 "line": 879,
                 "name": "inventoryEventIntentFingerprint",
@@ -30501,7 +30501,7 @@
                 "column": 13,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:37981:<anonymous@925>",
+                "id": "src/events.ts:37996:<anonymous@925>",
                 "kind": "ArrowFunction",
                 "line": 925,
                 "name": "<anonymous@925>",
@@ -32232,20 +32232,20 @@
                 "column": 55,
                 "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test/dual-measure-counts.test.ts:3014:<anonymous@88>",
+                "id": "test/dual-measure-counts.test.ts:7192:<anonymous@196>",
                 "kind": "ArrowFunction",
-                "line": 88,
-                "name": "<anonymous@88>",
+                "line": 196,
+                "name": "<anonymous@196>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 92,
                 "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test/dual-measure-counts.test.ts:4608:<anonymous@128>",
+                "id": "test/dual-measure-counts.test.ts:8786:<anonymous@236>",
                 "kind": "ArrowFunction",
-                "line": 128,
-                "name": "<anonymous@128>",
+                "line": 236,
+                "name": "<anonymous@236>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -32718,7 +32718,7 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:26572:defineInventoryEvent",
+                "id": "src/events.ts:26587:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
                 "line": 595,
                 "name": "defineInventoryEvent",
@@ -32728,7 +32728,7 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:53815:normalizeStockEffects",
+                "id": "src/events.ts:53830:normalizeStockEffects",
                 "kind": "FunctionDeclaration",
                 "line": 1348,
                 "name": "normalizeStockEffects",
@@ -38257,20 +38257,20 @@
                 "column": 55,
                 "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test/dual-measure-counts.test.ts:3014:<anonymous@88>",
+                "id": "test/dual-measure-counts.test.ts:7192:<anonymous@196>",
                 "kind": "ArrowFunction",
-                "line": 88,
-                "name": "<anonymous@88>",
+                "line": 196,
+                "name": "<anonymous@196>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 72,
                 "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test/dual-measure-counts.test.ts:3093:<anonymous@89>",
+                "id": "test/dual-measure-counts.test.ts:7271:<anonymous@197>",
                 "kind": "ArrowFunction",
-                "line": 89,
-                "name": "<anonymous@89>",
+                "line": 197,
+                "name": "<anonymous@197>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -45808,31 +45808,31 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/historical-repair.test.ts",
+                "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/historical-repair.test.ts",
+                "id": "test-root:test/dual-measure-counts.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/historical-repair.test.ts"
+                "name": "test/dual-measure-counts.test.ts"
               },
               {
-                "column": 36,
-                "file": "test/historical-repair.test.ts",
+                "column": 66,
+                "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test/historical-repair.test.ts:702:<anonymous@27>",
+                "id": "test/dual-measure-counts.test.ts:3413:<anonymous@102>",
                 "kind": "ArrowFunction",
-                "line": 27,
-                "name": "<anonymous@27>",
+                "line": 102,
+                "name": "<anonymous@102>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 92,
-                "file": "test/historical-repair.test.ts",
+                "column": 90,
+                "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test/historical-repair.test.ts:901:<anonymous@29>",
+                "id": "test/dual-measure-counts.test.ts:3510:<anonymous@103>",
                 "kind": "ArrowFunction",
-                "line": 29,
-                "name": "<anonymous@29>",
+                "line": 103,
+                "name": "<anonymous@103>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -45856,7 +45856,7 @@
                 "reason": "interface-to-implementation"
               }
             ],
-            "test": "test/historical-repair.test.ts"
+            "test": "test/dual-measure-counts.test.ts"
           }
         }
       ]
@@ -49618,5 +49618,5 @@
     }
   },
   "schemaVersion": 1,
-  "surfaceSha256": "405183a1d7f68a468b3b2073f460b482c19e784d059b822ee3214569d4169dc2"
+  "surfaceSha256": "c1503dc260946a6268e90690de422900f2035610429c190c8920cac3c9c798e8"
 }

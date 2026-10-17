@@ -12,9 +12,12 @@ import {
 } from "./events.js";
 import {
   addInventoryMeasurements,
+  inventoryMeasurementAt,
+  inventoryMeasurementVector,
   inventoryMeasurementsAreZero,
   negateInventoryMeasurements,
   zeroInventoryMeasurements,
+  type InventoryMeasurement,
   type InventoryMeasurementVector,
 } from "./measurements.js";
 import {
@@ -153,10 +156,10 @@ export function replayInventoryHistoricalScenario({
       );
       if (previous === undefined) return true;
       if (
-        compareQuantity(
-          deficit.maximumDeficit.primary.quantity,
-          previous.maximumDeficit.primary.quantity
-        ) > 0 ||
+        historicalDeficitMagnitudeIncreased(
+          previous.maximumDeficit,
+          deficit.maximumDeficit
+        ) ||
         deficit.startedAtEpochMs < previous.startedAtEpochMs
       ) {
         return true;
@@ -222,13 +225,16 @@ export function replayInventoryHistoricalScenario({
       const before = inventorySparseRecordValue(
         actualProjection.positions,
         positionId
-      )?.measurements.primary.quantity;
+      )?.measurements;
       const after = inventorySparseRecordValue(
         desired.positions,
         positionId
-      )?.measurements.primary.quantity;
-      if (after !== undefined &&
-        (before === undefined || compareQuantity(after, before) < 0)) {
+      )?.measurements;
+      if (
+        after !== undefined &&
+        (before === undefined ||
+          historicalSignedBalanceDecreased(before, after))
+      ) {
         throw new InventoryHistoricalReplayConflictError({
           code: "negative-stock",
           message: "Historical replay would deepen an existing recorded shortage.",
@@ -604,6 +610,76 @@ function reconcileHistoricalTraceabilityChanges(
   return filtered ?? changes;
 }
 
+/** True when any measured axis reaches a deeper shortage, including optional axes. */
+function historicalDeficitMagnitudeIncreased(
+  earlier: InventoryMeasurementVector,
+  proposed: InventoryMeasurementVector
+): boolean {
+  if (compareQuantity(proposed.primary.quantity, earlier.primary.quantity) > 0) {
+    return true;
+  }
+  for (const measured of proposed.independent) {
+    const previous = inventoryMeasurementAt(
+      earlier,
+      measured.axisId,
+      measured.quantity.unit
+    );
+    if (compareQuantity(measured.quantity, previous) > 0) return true;
+  }
+  return false;
+}
+
+/** Keep each axis's largest historical deficit even when the axes peak at different times. */
+function historicalMaximumDeficitMeasurements(
+  earlier: InventoryMeasurementVector,
+  proposed: InventoryMeasurementVector
+): InventoryMeasurementVector {
+  const primaryIncreased =
+    compareQuantity(proposed.primary.quantity, earlier.primary.quantity) > 0;
+  const primary = primaryIncreased ? proposed.primary : earlier.primary;
+  // Most stocked items have only the primary axis; don't allocate a map for those.
+  if (earlier.independent.length === 0 && proposed.independent.length === 0) {
+    return primaryIncreased ? proposed : earlier;
+  }
+  const maximumByAxis = new Map<string, InventoryMeasurement>();
+  for (const measured of earlier.independent) {
+    maximumByAxis.set(measured.axisId, measured);
+  }
+  let changed = primaryIncreased;
+  for (const measured of proposed.independent) {
+    const previous = maximumByAxis.get(measured.axisId);
+    if (
+      previous === undefined ||
+      compareQuantity(measured.quantity, previous.quantity) > 0
+    ) {
+      maximumByAxis.set(measured.axisId, measured);
+      changed = true;
+    }
+  }
+  return changed
+    ? inventoryMeasurementVector(primary, [...maximumByAxis.values()])
+    : earlier;
+}
+
+/** True when a currently open deficit loses stock on any measured axis. */
+function historicalSignedBalanceDecreased(
+  earlier: InventoryMeasurementVector,
+  proposed: InventoryMeasurementVector
+): boolean {
+  if (compareQuantity(proposed.primary.quantity, earlier.primary.quantity) < 0) {
+    return true;
+  }
+  for (const measured of proposed.independent) {
+    const previous = inventoryMeasurementAt(
+      earlier,
+      measured.axisId,
+      measured.quantity.unit
+    );
+    if (compareQuantity(measured.quantity, previous) < 0) return true;
+  }
+  return false;
+}
+
 /** Derive every negative-balance interval without manufacturing missing physical stock. */
 function inventoryHistoricalDeficitIntervals(
   events: readonly InventoryCommittedEvent[]
@@ -668,13 +744,11 @@ function inventoryHistoricalDeficitIntervals(
             startedByEventId: event.eventId,
             startedAtEpochMs: event.occurredAtEpochMs,
           });
-        } else if (
-          compareQuantity(
-            magnitude.primary.quantity,
-            current.maximumDeficit.primary.quantity
-          ) > 0
-        ) {
-          current.maximumDeficit = magnitude;
+        } else {
+          current.maximumDeficit = historicalMaximumDeficitMeasurements(
+            current.maximumDeficit,
+            magnitude
+          );
         }
       } else if (current !== undefined) {
         result.push({

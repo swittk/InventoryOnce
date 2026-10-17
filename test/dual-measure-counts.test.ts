@@ -2,6 +2,7 @@ import { assertAbstractInventoryInvariants } from "./formal-implementation-abstr
 import { describe, expect, it } from "vitest";
 
 import {
+  InventoryDeficitPolicy,
   InventoryEventKind,
   InventoryMeasurementAxisRole,
   InventoryMeasurementRequirement,
@@ -72,6 +73,113 @@ function inventoryFor(packagingRevisions: ReturnType<typeof defineInventoryPacka
     clock: { nowEpochMs: () => occurredAtEpochMs },
   });
 }
+
+/** Create two public facades sharing current measured-item truth under different deficit policies. */
+function measuredShortageFacades() {
+  const catalog = defineInventoryCatalog({
+    itemRevisions: [measuredItem()],
+    activeItemRevisionIds: { [itemId]: itemRevisionId },
+  });
+  const storage = createInMemoryInventoryDurableStorage();
+  const clock = { nowEpochMs: () => occurredAtEpochMs + 10_000 };
+  return {
+    recorder: createInventoryOnce({
+      catalog, storage, clock, deficitPolicy: InventoryDeficitPolicy.Record,
+    }),
+    strict: createInventoryOnce({
+      catalog, storage, clock, deficitPolicy: InventoryDeficitPolicy.Reject,
+    }),
+  };
+}
+
+/** One positive transaction amount with exact piece and independently measured weight. */
+function measuredShortageAmount(pieces: string, weight: string) {
+  return measuredStockAmount(pieces, "piece", [
+    { axisId: "weight", value: weight, unit: "kg" },
+  ]);
+}
+
+describe("historical shortages on independently measured stock", () => {
+  it("rejects a historical correction deepening weight despite an unchanged piece peak", async () => {
+    const { recorder, strict } = measuredShortageFacades();
+    const position = { itemId, placementNodeId: "measured-historical-bin" };
+    await recorder.stock.issue({
+      operationId: "measured-old-issue",
+      occurredAtEpochMs,
+      from: position,
+      amount: measuredShortageAmount("5", "5"),
+    });
+    const originalReceipt = await recorder.stock.receive({
+      operationId: "measured-old-receipt",
+      occurredAtEpochMs: occurredAtEpochMs + 1_000,
+      to: position,
+      amount: measuredShortageAmount("4", "4"),
+    });
+    await recorder.stock.issue({
+      operationId: "measured-later-issue",
+      occurredAtEpochMs: occurredAtEpochMs + 2_000,
+      from: position,
+      amount: measuredShortageAmount("2", "8.25"),
+    });
+    await recorder.stock.receive({
+      operationId: "measured-settling-receipt",
+      occurredAtEpochMs: occurredAtEpochMs + 3_000,
+      to: position,
+      amount: measuredShortageAmount("5", "10.25"),
+    });
+
+    const correction = {
+      operationId: "measured-reduce-earlier-receipt",
+      correctsEventId: originalReceipt.event.eventId,
+      occurredAtEpochMs: occurredAtEpochMs + 4_000,
+      reason: "Only three pieces and three kilograms were delivered.",
+      replaceWith: (plans: Parameters<typeof strict.stock.planCorrection>[0]["replaceWith"] extends
+        (plans: infer Plans) => unknown ? Plans : never) =>
+        plans.receive({
+          occurredAtEpochMs: occurredAtEpochMs + 1_000,
+          to: position,
+          amount: measuredShortageAmount("3", "3"),
+        }),
+    };
+    // The old primary peak remains five pieces, but weight worsens from 9.25 to 10.25 kg.
+    expect(await strict.stock.planCorrection(correction)).toMatchObject({
+      valid: false,
+      conflict: { code: "negative-stock" },
+    });
+    await expect(strict.stock.correct(correction)).rejects.toThrow("negative");
+
+    const recordPlan = await recorder.stock.planCorrection({
+      ...correction,
+      operationId: "measured-record-worsened-weight",
+    });
+    expect(recordPlan.valid).toBe(true);
+    if (!recordPlan.valid) throw new Error(recordPlan.conflict.message);
+    expect(recordPlan.impact.deficits).toHaveLength(1);
+    expect(recordPlan.impact.deficits[0]?.maximumDeficit.primary.quantity.amountMinor).toBe(5);
+    expect(
+      inventoryMeasurementAt(
+        recordPlan.impact.deficits[0]!.maximumDeficit,
+        "weight",
+        unitCode("kg"),
+      ).amountMinor,
+    ).toBe(1025);
+
+    // Worsening the intermediate piece count alone stays within the old peak.
+    const safe = await strict.stock.planCorrection({
+      ...correction,
+      operationId: "measured-correction-preserves-both-peaks",
+      replaceWith: (plans) =>
+        plans.receive({
+          occurredAtEpochMs: occurredAtEpochMs + 1_000,
+          to: position,
+          amount: measuredShortageAmount("3", "4"),
+        }),
+    });
+    expect(safe.valid).toBe(true);
+    if (!safe.valid) throw new Error(safe.conflict.message);
+    expect(safe.impact.deficits).toEqual([]);
+  });
+});
 
 describe("measurement axis identity", () => {
   it("rejects surrounding whitespace instead of creating a second logical axis identity", () => {

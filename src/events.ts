@@ -210,7 +210,7 @@ export interface InventoryHistoricalDeficitInterval {
   readonly itemRevisionId: ItemRevisionId;
   /** Exact signed stock bucket that became negative during historical replay. */
   readonly position: InventoryStockPositionKey;
-  /** Largest positive deficit magnitude reached inside this interval. */
+  /** Largest shortage per measured axis; different axes may peak at different times. */
   readonly maximumDeficit: InventoryMeasurementVector;
   /** Effective assertion that first made this bucket negative. */
   readonly startedByEventId: string;
