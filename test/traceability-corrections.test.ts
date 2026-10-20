@@ -3,6 +3,9 @@ import {
   InventoryAllocationMethod,
   InventoryDeficitPolicy,
   InventoryEventKind,
+  createInventoryOnce,
+  defineScalarInventoryItem,
+  extendInventoryCatalog,
   InventoryTraceabilityNodeKind,
   InventoryTraceabilityRelationAction,
   InventoryTraceabilityRelationKind,
@@ -1378,6 +1381,79 @@ describe("append-only corrections", () => {
             ],
           }),
       });
+      correctedRootKinds.add(root.event.kind);
+    }
+
+    {
+      // Revision transitions have their own history-preserving replacement
+      // builder. Correcting one should preserve the already accounted target
+      // stock rather than manufacture or discard it during historical replay.
+      const catalog = createTabletCatalog();
+      const extendedCatalog = extendInventoryCatalog({
+        catalog,
+        itemRevisions: [defineScalarInventoryItem({
+          itemId: "item-a",
+          revisionId: "item-a-v3-transition-correction",
+          axisId: "pieces",
+          unit: "piece",
+          qualifiedDimensions: [
+            { dimensionId: "grade", description: "Retained physical grade." },
+          ],
+        })],
+        activeItemRevisionIds: {
+          "item-a": "item-a-v3-transition-correction",
+        },
+      });
+      const storage = createInMemoryInventoryDurableStorage();
+      const original = createInventoryOnce({
+        catalog, storage, clock: clockAt(time3),
+      });
+      await original.catalog.publish({
+        operationId: "publish-original-correction-item",
+        occurredAtEpochMs: time0,
+      });
+      await original.stock.receive({
+        operationId: "seed-transition-correction",
+        occurredAtEpochMs: time0,
+        to: loosePosition("transition-correction-store"),
+        amount: stockAmount("2", "piece"),
+      });
+      const inventory = createInventoryOnce({
+        catalog: extendedCatalog, storage, clock: clockAt(time3),
+      });
+      await inventory.catalog.publish({
+        operationId: "publish-transition-correction-target",
+        occurredAtEpochMs: time1,
+      });
+      const approved = await inventory.stock.planRevisionTransition({
+        itemId: "item-a",
+        fromRevisionId: "item-a-v2",
+        toRevisionId: "item-a-v3-transition-correction",
+        conversion: { sourceAmount: "1", targetAmount: "1" },
+      });
+      expect(approved.applicable).toBe(true);
+      const root = await inventory.stock.transitionRevision({
+        operationId: "transition-correction-root",
+        occurredAtEpochMs: time2,
+        plan: approved,
+      });
+      expect(root.event.kind).toBe(InventoryEventKind.RevisionTransition);
+      const correction = await inventory.stock.correct({
+        operationId: "correct-transition-root",
+        occurredAtEpochMs: time3,
+        correctsEventId: root.event.eventId,
+        reason: "The prospective revision transition was verified.",
+        replaceWith: (plans) => plans.revisionTransition({
+          occurredAtEpochMs: time2,
+          plan: approved,
+        }),
+      });
+      expect(correction.event.kind).toBe(InventoryEventKind.Correction);
+      expect((await inventory.read.positions({
+        itemId: "item-a",
+        itemRevisionIds: ["item-a-v3-transition-correction"],
+      })).map((position) => position.measurements.primary.quantity.amountMinor))
+        .toEqual([2]);
       correctedRootKinds.add(root.event.kind);
     }
 

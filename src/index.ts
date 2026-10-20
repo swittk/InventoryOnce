@@ -10,6 +10,13 @@ export * from "./amounts.js";
 export * from "./catalog.js";
 /** Native scalar unit/package revision selection, append, and activation lifecycle. */
 export * from "./catalog-lifecycle.js";
+/** Exact prospective item-definition transition previews and conversion blocker values. */
+export type {
+  InventoryRevisionTransitionBlocker,
+  InventoryRevisionTransitionPlan,
+  InventoryRevisionTransitionRequest,
+  InventoryRevisionTransitionUnitMapping,
+} from "./revision-transitions.js";
 /** Exact primary plus independently measured quantity-vector values/helpers. */
 export * from "./measurements.js";
 /** Exact finite-decimal quantity values/helpers. */
@@ -82,6 +89,7 @@ export type {
   InventoryHistoricalDeficitInterval,
   InventoryHistoricalImpact,
   InventoryMeasurementEvidence,
+  InventoryRevisionTransitionEvidence,
   InventoryTraceabilityRelationChange,
 } from "./events.js";
 /** Public generic placement topology values. */

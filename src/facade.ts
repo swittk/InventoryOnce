@@ -84,6 +84,7 @@ import {
   createInventoryReceiptManyEvent,
   createInventoryReclassificationEvent,
   createInventoryReclassificationManyEvent,
+  createInventoryRevisionTransitionEvent,
   createInventoryScrapEvent,
   createInventoryScrapManyEvent,
   createInventoryTraceabilityEvent,
@@ -118,6 +119,13 @@ import {
   type InventoryLotMetadataInput,
   type InventoryTransformationLine,
 } from "./commands.js";
+import {
+  assertInventoryRevisionTransitionPlanIntent,
+  inventoryRevisionTransitionPlansEqual,
+  planInventoryRevisionTransition,
+  type InventoryRevisionTransitionPlan,
+  type InventoryRevisionTransitionRequest,
+} from "./revision-transitions.js";
 import { createInventoryCorrectionEvent } from "./corrections.js";
 import {
   InventoryHistoricalReplayConflictError,
@@ -614,6 +622,12 @@ export type InventoryOnceReclassifyManyInput = Omit<
   CreateInventoryReclassificationManyInput,
   "catalog"
 >;
+/** Commit a frozen preview against exactly the world that was reviewed. */
+export interface InventoryOnceTransitionRevisionInput extends InventoryCommandHeader {
+  /** Complete preview whose source rows and mapping were reviewed before commit. */
+  readonly plan: InventoryRevisionTransitionPlan;
+}
+
 /** Split one exact fungible unit into a new current serial identity. */
 export type InventoryOnceIndividualizeInput = Omit<
   CreateInventoryIndividualizeInput,
@@ -1138,6 +1152,10 @@ export interface InventoryOnceReplacementPlans {
   /** Plan a replacement atomic conserved split/merge/reclassification. */
   reclassifyMany(
     input: Omit<InventoryOnceReclassifyManyInput, "operationId">
+  ): InventoryOnceReplacementPlan;
+  /** Replace an earlier prospective definition transition using one previously reviewed exact plan. */
+  revisionTransition(
+    input: Omit<InventoryOnceTransitionRevisionInput, "operationId">
   ): InventoryOnceReplacementPlan;
   /** Plan a replacement pack assertion. */
   pack(
@@ -1683,6 +1701,14 @@ export interface InventoryOnceStockApi {
   /** Atomically split, merge, relot, replace direct placement, or otherwise reclassify conserved stock. */
   reclassifyMany(
     input: InventoryOnceReclassifyManyInput
+  ): Promise<InventoryOnceEventResult>;
+  /** Preview a prospective stock-definition transition without modifying stock or definitions. */
+  planRevisionTransition(
+    request: InventoryRevisionTransitionRequest
+  ): Promise<InventoryRevisionTransitionPlan>;
+  /** Atomically apply a reviewed exact world-fenced definition transition as a distinct accounting fact. */
+  transitionRevision(
+    input: InventoryOnceTransitionRevisionInput
   ): Promise<InventoryOnceEventResult>;
   /** Convert loose/inner stock into exact intact package stock. */
   pack(input: InventoryOncePackInput): Promise<InventoryOnceEventResult>;
@@ -3172,6 +3198,65 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
         catalog,
       })
     );
+  }
+
+  /** Preview the current complete old-revision rows and dependent blockers. */
+  async planRevisionTransition(
+    request: InventoryRevisionTransitionRequest
+  ): Promise<InventoryRevisionTransitionPlan> {
+    const { storage } = requireInventoryOnceInternals(this.owner);
+    return planInventoryRevisionTransition(await storage.readWorld(), request);
+  }
+
+  /** Apply one exact, reviewed revision transition with normal atomic/idempotent durability. */
+  async transitionRevision(
+    input: InventoryOnceTransitionRevisionInput
+  ): Promise<InventoryOnceEventResult> {
+    const internals = requireInventoryOnceInternals(this.owner);
+    if (!input.plan.applicable) {
+      throw new Error("Revision-transition preview is blocked; resolve its reported dependencies first.");
+    }
+    // Retained operation replay bypasses the world-planning callback. Validate
+    // the plan's own untrusted request/evidence relationship even on retries.
+    assertInventoryRevisionTransitionPlanIntent(input.plan, internals.catalog);
+    const event = createInventoryRevisionTransitionEvent({
+      ...input,
+      catalog: internals.catalog,
+      transition: input.plan.evidence,
+      lines: input.plan.lines,
+    });
+    const result = await commitInventoryOperation({
+      catalog: internals.catalog,
+      storage: internals.storage,
+      operationId: input.operationId,
+      intentFingerprint: inventoryEventIntentFingerprint(event),
+      clock: internals.clock,
+      deficitPolicy: internals.deficitPolicy,
+      /** Only newly committed intents replan under the current world lock.
+       * An already completed exact retry is recognized before this callback.
+       */
+      plan: ({ world }) => {
+        if (world.revision !== input.plan.worldRevision) {
+          throw new Error(
+            "Revision-transition preview is stale; re-preview after the current inventory world changed."
+          );
+        }
+        const fresh = planInventoryRevisionTransition(
+          world,
+          input.plan.request
+        );
+        if (!inventoryRevisionTransitionPlansEqual(input.plan, fresh)) {
+          throw new Error(
+            "Revision-transition preview no longer matches exact current stock and dependencies."
+          );
+        }
+        return {
+          event,
+          reservationProtection: InventoryReservationProtection.ProtectClaims,
+        };
+      },
+    });
+    return createInventoryOnceEventResult(result);
   }
 
   /** Convert loose/inner stock into exact intact package stock. */
@@ -5979,6 +6064,21 @@ class InventoryOnceReplacementPlansImplementation
         ...input,
         catalog: this.catalog,
         operationId: this.operationId,
+      })
+    );
+  }
+
+  /** Replace one recorded accounting conversion, retaining source-revision audit identity. */
+  revisionTransition(
+    input: Omit<InventoryOnceTransitionRevisionInput, "operationId">
+  ): InventoryOnceReplacementPlan {
+    return new InventoryOnceReplacementPlanImplementation(
+      createInventoryRevisionTransitionEvent({
+        ...input,
+        catalog: this.catalog,
+        operationId: this.operationId,
+        transition: input.plan.evidence,
+        lines: input.plan.lines,
       })
     );
   }

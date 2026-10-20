@@ -25,6 +25,7 @@ The runner pins `tla2tools.jar`, uses collision-safe metadata directories, retai
 | --- | --- | --- |
 | `CatalogPublication` | retained revision sets only grow; active pointers name retained revisions; published snapshots remain replayable; one operation identity freezes one publication | catalogue publication/retention tests and intent fingerprints |
 | `ReclassificationConservation` | split, merge, relot, status/direct-placement changes conserve quantity per item and exact package bucket | reclassification tests and event-shape guards |
+| RevisionTransition | finite old/new definition switch with exact primary-unit accounting, world-fenced preview, retained original receipt, active claim and transfer blockers | test/revision-transition.test.ts |
 | `UseByReservation` | normal allocation/consumption excludes expired resources; explicit allow-expired policy stays distinct; time or physical loss may create visible shortage | availability, policy, and reservation tests |
 | `ResourceDimensions` | direct placement, owner, custody, status, transit, and detached/missing whereabouts remain orthogonal; detach/place/missing conserve quantity and stable lifecycle identity | whereabouts, transfer, availability, correction, and count tests |
 | `ReservationScope` | broad claims can narrow/bind while all active claims remain feasible; unplaced stock is accounted but unavailable; ordinary detach cannot strand an exact allocation | reservation/whereabouts feasibility tests plus bad-detach mutation |

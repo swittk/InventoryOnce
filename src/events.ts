@@ -43,7 +43,15 @@ import {
   normalizeInventoryPlacementChange,
   type InventoryPlacementChange,
 } from "./placement.js";
-import { compareQuantity, zeroQuantity } from "./quantity.js";
+import {
+  compareQuantity,
+  negateQuantity,
+  positiveQuantity,
+  quantityEq,
+  zeroQuantity,
+  type Quantity,
+} from "./quantity.js";
+import { convertInventoryRevisionQuantity } from "./revision-transition-math.js";
 
 /** Generic reason one committed inventory event changes or annotates resource truth. */
 export enum InventoryEventKind {
@@ -57,6 +65,8 @@ export enum InventoryEventKind {
   Transfer = "transfer",
   /** Same resource changed owner/custody/status/direct placement/other dimensions. */
   Reclassification = "reclassification",
+  /** One accounted resource moved between immutable item-definition revisions with explicit unit equivalence. */
+  RevisionTransition = "revision-transition",
   /** Loose/inner stock became one exact intact package form. */
   Pack = "pack",
   /** Intact package stock became loose/inner stock. */
@@ -91,6 +101,7 @@ function assertSupportedInventoryEventKind(kind: InventoryEventKind): void {
     case InventoryEventKind.Issue:
     case InventoryEventKind.Transfer:
     case InventoryEventKind.Reclassification:
+    case InventoryEventKind.RevisionTransition:
     case InventoryEventKind.Pack:
     case InventoryEventKind.Unpack:
     case InventoryEventKind.Transformation:
@@ -107,6 +118,24 @@ function assertSupportedInventoryEventKind(kind: InventoryEventKind): void {
     default:
       throw new Error(`Unsupported inventory event kind '${String(kind)}'.`);
   }
+}
+
+/** Frozen meaning of one prospective redefinition of physically unchanged stock. */
+export interface InventoryRevisionTransitionEvidence {
+  /** Stable inventory item across both revisions; no physical substitution is implied. */
+  readonly itemId: string;
+  /** Retained item revision whose quantities are being reinterpreted from this point onward. */
+  readonly fromRevisionId: string;
+  /** Already published destination item revision. */
+  readonly toRevisionId: string;
+  /** Exact old-unit amount declared equivalent to targetUnit. */
+  readonly sourceUnit: Quantity;
+  /** Exact new-unit amount declared equivalent to sourceUnit. */
+  readonly targetUnit: Quantity;
+  /** World revision whose precise live positions and dependencies were reviewed. */
+  readonly expectedWorldRevision: number;
+  /** Canonical selector identity, keeping exact retry intent distinct even if positions match. */
+  readonly selectorIdentity: string;
 }
 
 /** Original human/package measurement retained beside exact item-axis truth. */
@@ -344,6 +373,8 @@ export interface InventoryEventDraft {
   readonly stockEffects: readonly InventoryStockEffect[];
   /** Conserved source-to-destination movements that retain FIFO layer age. */
   readonly positiveLayerProvenanceTransfers?: readonly InventoryPositiveLayerProvenanceTransfer[];
+  /** Required exact unit/revision evidence for a revision-transition event. */
+  readonly revisionTransition?: InventoryRevisionTransitionEvidence;
   /** Correction-only FIFO provenance replacements derived from hypothetical retained-history replay. */
   readonly positiveLayerProvenanceOverrides?: readonly InventoryPositiveLayerProvenanceOverride[];
   /** Lot/batch facts asserted by this retained event, when known. */
@@ -802,6 +833,13 @@ export function defineInventoryEvent({
     placementChanges,
     traceabilityChanges
   );
+  assertInventoryRevisionTransitionEvidence(
+    catalog,
+    event.kind,
+    event.revisionTransition,
+    stockEffects,
+    positiveLayerProvenanceTransfers
+  );
   assertLotDefinitionsBelongToEvent(event.kind, stockEffects, lotDefinitions);
   assertPlacementNodeDefinitionsBelongToEvent(
     event.kind,
@@ -934,6 +972,25 @@ export function inventoryEventIntentFingerprint(
           ),
         ],
     inventoryMetadataFingerprint(event.metadata),
+    event.revisionTransition === undefined
+      ? null
+      : [
+          event.revisionTransition.itemId,
+          event.revisionTransition.fromRevisionId,
+          event.revisionTransition.toRevisionId,
+          event.revisionTransition.expectedWorldRevision,
+          event.revisionTransition.selectorIdentity,
+          [
+            event.revisionTransition.sourceUnit.amountMinor,
+            event.revisionTransition.sourceUnit.decimals,
+            event.revisionTransition.sourceUnit.unit,
+          ],
+          [
+            event.revisionTransition.targetUnit.amountMinor,
+            event.revisionTransition.targetUnit.decimals,
+            event.revisionTransition.targetUnit.unit,
+          ],
+        ],
     inventoryTransferLifecycleFingerprint(event.transferLifecycle),
     (event.lotDefinitions ?? []).map(lotDefinitionFingerprintParts),
     (event.placementNodeDefinitions ?? []).map(placementNodeDefinitionFingerprintParts),
@@ -1164,6 +1221,7 @@ function normalizePositiveLayerProvenanceTransfers(
     transfers.length !== 0 &&
     kind !== InventoryEventKind.Transfer &&
     kind !== InventoryEventKind.Reclassification &&
+    kind !== InventoryEventKind.RevisionTransition &&
     kind !== InventoryEventKind.Pack &&
     kind !== InventoryEventKind.Unpack &&
     kind !== InventoryEventKind.Placement
@@ -1204,7 +1262,8 @@ function normalizePositiveLayerProvenanceTransfers(
       from.itemId !== fromItem.itemId ||
       to.itemId !== toItem.itemId ||
       from.itemId !== to.itemId ||
-      from.itemRevisionId !== to.itemRevisionId
+      (kind !== InventoryEventKind.RevisionTransition &&
+        from.itemRevisionId !== to.itemRevisionId)
     ) {
       throw new Error(
         "Inventory FIFO provenance transfer cannot change item identity or revision."
@@ -1228,12 +1287,13 @@ function normalizePositiveLayerProvenanceTransfers(
         toEffect.measurementsDelta.primary.quantity,
         zeroQuantity(toEffect.measurementsDelta.primary.quantity.unit)
       ) <= 0 ||
-      !inventoryMeasurementsAreZero(
-        addInventoryMeasurements(
-          fromEffect.measurementsDelta,
-          toEffect.measurementsDelta
-        )
-      )
+      (kind !== InventoryEventKind.RevisionTransition &&
+        !inventoryMeasurementsAreZero(
+          addInventoryMeasurements(
+            fromEffect.measurementsDelta,
+            toEffect.measurementsDelta
+          )
+        ))
     ) {
       throw new Error(
         "Inventory FIFO provenance transfer must pair equal negative and positive measurement vectors."
@@ -1278,6 +1338,96 @@ function unwrapNormalizedPositiveLayerProvenanceTransfer(
   entry: NormalizedPositiveLayerProvenanceTransferEntry
 ): InventoryPositiveLayerProvenanceTransfer {
   return entry.transfer;
+}
+
+/** Prove every cross-revision stock effect belongs to one complete, exact pair. */
+function assertInventoryRevisionTransitionEvidence(
+  catalog: InventoryCatalog,
+  kind: InventoryEventKind,
+  evidence: InventoryRevisionTransitionEvidence | undefined,
+  effects: readonly InventoryStockEffect[],
+  transfers: readonly InventoryPositiveLayerProvenanceTransfer[]
+): void {
+  if (kind !== InventoryEventKind.RevisionTransition) {
+    if (evidence !== undefined) {
+      throw new Error("Revision-transition evidence belongs only to RevisionTransition events.");
+    }
+    return;
+  }
+  if (evidence === undefined || transfers.length === 0 ||
+    effects.length !== transfers.length * 2) {
+    throw new Error("Revision-transition needs complete one-to-one source/destination evidence.");
+  }
+  const fromItem = catalog.itemRevision(evidence.fromRevisionId);
+  const toItem = catalog.itemRevision(evidence.toRevisionId);
+  if (evidence.fromRevisionId === evidence.toRevisionId ||
+    fromItem.itemId !== evidence.itemId ||
+    toItem.itemId !== evidence.itemId) {
+    throw new Error("Revision-transition must retain one item across two distinct item revisions.");
+  }
+  positiveQuantity(evidence.sourceUnit, "Revision-transition source-unit equivalence");
+  positiveQuantity(evidence.targetUnit, "Revision-transition target-unit equivalence");
+  if (!Number.isSafeInteger(evidence.expectedWorldRevision) ||
+    evidence.expectedWorldRevision < 0 || evidence.selectorIdentity.length === 0) {
+    throw new Error("Revision-transition needs an exact reviewed world revision and selector identity.");
+  }
+  if (fromItem.primaryAxis.unit !== evidence.sourceUnit.unit ||
+    toItem.primaryAxis.unit !== evidence.targetUnit.unit) {
+    throw new Error("Revision-transition conversion units must match the frozen item revisions.");
+  }
+  // The paired FIFO continuity marker is also the pairing proof. It must cover every effect.
+  const effectById = new Map<string, InventoryStockEffect>();
+  for (const effect of effects) {
+    effectById.set(inventoryStockPositionIdentity(effect.position), effect);
+  }
+  for (const transfer of transfers) {
+    const from = transfer.from;
+    const to = transfer.to;
+    if (from.itemId !== evidence.itemId || to.itemId !== evidence.itemId ||
+      from.itemRevisionId !== evidence.fromRevisionId ||
+      to.itemRevisionId !== evidence.toRevisionId ||
+      from.packagingRevisionId !== undefined ||
+      to.packagingRevisionId !== undefined ||
+      from.transferId !== undefined ||
+      to.transferId !== undefined ||
+      from.whereaboutsId !== undefined ||
+      to.whereaboutsId !== undefined ||
+      inventoryStockPositionIdentity({
+        ...from,
+        itemRevisionId: evidence.toRevisionId,
+      }) !== inventoryStockPositionIdentity(to)) {
+      throw new Error("Revision-transition must preserve each unwrapped stock position identity.");
+    }
+    const fromEffect = effectById.get(inventoryStockPositionIdentity(from));
+    const toEffect = effectById.get(inventoryStockPositionIdentity(to));
+    if (fromEffect === undefined || toEffect === undefined) {
+      throw new Error("Revision-transition evidence references missing stock effects.");
+    }
+    const source = negateQuantity(fromEffect.measurementsDelta.primary.quantity);
+    const expected = convertInventoryRevisionQuantity(
+      source,
+      evidence.sourceUnit,
+      evidence.targetUnit
+    );
+    if (!quantityEq(expected, toEffect.measurementsDelta.primary.quantity) ||
+      fromEffect.measurementsDelta.primary.axisId !== fromItem.primaryAxis.axisId ||
+      toEffect.measurementsDelta.primary.axisId !== toItem.primaryAxis.axisId ||
+      fromEffect.measurementsDelta.independent.length !== toEffect.measurementsDelta.independent.length) {
+      throw new Error("Revision-transition changes physical amounts without its exact unit equivalence.");
+    }
+    for (let i = 0; i < fromEffect.measurementsDelta.independent.length; i += 1) {
+      const oldAxis = fromEffect.measurementsDelta.independent[i];
+      const newAxis = toEffect.measurementsDelta.independent[i];
+      if (oldAxis === undefined || newAxis === undefined ||
+        oldAxis.axisId !== newAxis.axisId ||
+        !quantityEq(
+          negateQuantity(oldAxis.quantity),
+          newAxis.quantity
+        )) {
+        throw new Error("Revision-transition changes an independently measured axis.");
+      }
+    }
+  }
 }
 
 /** Validate correction-only FIFO provenance replacements and return stable position ordering. */
@@ -1955,6 +2105,17 @@ function assertEventKindShape(
     assertInternalEventConservesEachItem(effects, kind);
     if (kind === InventoryEventKind.Reclassification) {
       assertReclassificationPreservesPackagingBuckets(effects);
+    }
+    return;
+  }
+  if (kind === InventoryEventKind.RevisionTransition) {
+    if (
+      effects.length < 2 ||
+      lotDefinitions.length !== 0 ||
+      placementNodeDefinitions.length !== 0 ||
+      traceabilityChanges.length !== 0
+    ) {
+      throw new Error("Revision-transition events need only paired stock effects.");
     }
     return;
   }
