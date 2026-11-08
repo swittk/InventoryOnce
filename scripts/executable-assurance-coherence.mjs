@@ -388,7 +388,13 @@ export function assertExecutableAssuranceMatchesManifests(
       mismatches.push("packageTraceTests: executable assurance trace-test list must contain unique nonempty paths");
     }
     const expectedTraceTests = executableAssuranceTraceTests(input.traces);
-    if (JSON.stringify(executable.packageTraceTests) !== JSON.stringify(expectedTraceTests)) {
+    if (
+      !Array.isArray(executable.packageTraceTests) ||
+      executable.packageTraceTests.length !== expectedTraceTests.length ||
+      executable.packageTraceTests.some(
+        (file, index) => file !== expectedTraceTests[index]
+      )
+    ) {
       mismatches.push("packageTraceTests: executable assurance report does not contain the exact authoritative trace-test selection");
     }
     if (!Array.isArray(executable.steps) || executable.steps.length === 0) {

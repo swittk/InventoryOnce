@@ -8,6 +8,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
+import { isDeepStrictEqual } from "node:util";
 import { formalCodeText } from "./formal-syntax.mjs";
 import { readAssuranceFile } from "./assurance-files.mjs";
 
@@ -281,7 +282,7 @@ export function readFormalProofCache(cacheDirectory, descriptor) {
     typeof value !== "object" ||
     value.schemaVersion !== FORMAL_PROOF_CACHE_SCHEMA_VERSION ||
     value.cacheKey !== key ||
-    JSON.stringify(value.descriptor) !== JSON.stringify(descriptor) ||
+    !isDeepStrictEqual(value.descriptor, descriptor) ||
     value.status !== "verified"
   ) {
     return undefined;

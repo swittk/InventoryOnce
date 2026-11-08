@@ -686,7 +686,12 @@ test("strict source references reuse the exact compiler execution gate used by t
   assert.match(checker, /formal-implementation-vitest-semantics\.cjs/u);
   assert.match(checker, /!compilerCallCanExecute\(ts, node\)/u);
   assert.doesNotMatch(checker, /function isStaticallyUnreachable/u);
-  assert.match(JSON.stringify(manifest.bundles), /scripts\/formal-implementation-vitest-semantics\.cjs/u);
+  assert(
+    manifest.bundles.sources.some(
+      (row) => row.file === "scripts/formal-implementation-vitest-semantics.cjs"
+    ),
+    "Compact support manifest lost the shared Vitest semantics module."
+  );
 });
 
 

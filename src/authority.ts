@@ -1747,7 +1747,7 @@ function parseMismatchEvidence(
     });
   }
   const normalized = [...evidence].sort(compareMismatchEvidence);
-  if (JSON.stringify(normalized) !== value) {
+  if (serializeSortedMismatchEvidence(normalized) !== value) {
     throw new Error(
       "InventoryOnce DualRun mismatch evidence is not canonical."
     );
@@ -1759,7 +1759,26 @@ function parseMismatchEvidence(
 function serializeMismatchEvidence(
   evidence: readonly InventoryDualRunMismatchEvidence[]
 ): string {
-  return JSON.stringify([...evidence].sort(compareMismatchEvidence));
+  return serializeSortedMismatchEvidence(
+    [...evidence].sort(compareMismatchEvidence)
+  );
+}
+
+/** Encode already-sorted mismatch evidence without repeating normalization work. */
+function serializeSortedMismatchEvidence(
+  evidence: readonly InventoryDualRunMismatchEvidence[]
+): string {
+  return `[${evidence.map(serializeMismatchEvidenceEntry).join(",")}]`;
+}
+
+/** Encode one mismatch-evidence row with fixed field order and JSON string escaping. */
+function serializeMismatchEvidenceEntry(
+  evidence: InventoryDualRunMismatchEvidence
+): string {
+  return `{"commandId":${JSON.stringify(evidence.commandId)},` +
+    `"legacyIntentDigest":${JSON.stringify(evidence.legacyIntentDigest)},` +
+    `"authoritativeIntentDigest":${JSON.stringify(evidence.authoritativeIntentDigest)},` +
+    `"recordedAtEpochMs":${evidence.recordedAtEpochMs}}`;
 }
 
 /** Locale-independent lexicographic code-unit ordering for durable canonical serializers. */
@@ -1837,7 +1856,22 @@ function normalizeActiveWriters(
 function serializeActiveWriters(
   writers: readonly InventoryLegacyWriterAdmission[]
 ): string {
-  return JSON.stringify(normalizeActiveWriters(writers));
+  return serializeNormalizedActiveWriters(normalizeActiveWriters(writers));
+}
+
+/** Encode already-normalized active writers without repeating validation or sorting. */
+function serializeNormalizedActiveWriters(
+  writers: readonly InventoryLegacyWriterAdmission[]
+): string {
+  return `[${writers.map(serializeActiveWriter).join(",")}]`;
+}
+
+/** Encode one active writer row with fixed field order and JSON string escaping. */
+function serializeActiveWriter(
+  writer: InventoryLegacyWriterAdmission
+): string {
+  return `{"writerToken":${JSON.stringify(writer.writerToken)},` +
+    `"attemptToken":${JSON.stringify(writer.attemptToken)}}`;
 }
 
 /** Parse and require canonical durable active-writer JSON. */
@@ -1873,7 +1907,7 @@ function parseActiveWriters(
     });
   }
   const normalized = normalizeActiveWriters(writers);
-  if (JSON.stringify(normalized) !== value) {
+  if (serializeNormalizedActiveWriters(normalized) !== value) {
     throw new Error(
       "InventoryOnce active legacy writer JSON is not canonical."
     );

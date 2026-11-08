@@ -438,7 +438,7 @@ var require_formal_implementation_surface = __commonJS({
         ["InventoryOnceCollectionsApi", "collections"],
         ["InventoryOnceFungibilityApi", "fungibility"],
         ["InventoryOnceStockApi", "stock"],
-        ["InventoryOnceContainersApi", "containers"],
+        ["InventoryOncePlacementApi", "placement"],
         ["InventoryOnceLotsApi", "lots"],
         ["InventoryOnceTransfersApi", "transfers"],
         ["InventoryOnceReservationsApi", "reservations"],
@@ -12338,8 +12338,9 @@ import path30 from "node:path";
 
 // experiments/tla-conformance/migration-helper-causal-r7/causal-runtime-verifier.mjs
 import assert29 from "node:assert/strict";
+import { isDeepStrictEqual } from "node:util";
 function same(left, right) {
-  return JSON.stringify(left) === JSON.stringify(right);
+  return isDeepStrictEqual(left, right);
 }
 function verifyQueryRun(run, expectedEntrypoint) {
   assert29.equal(run.entrypoint, expectedEntrypoint);
@@ -17090,7 +17091,9 @@ function assertExecutableAssuranceMatchesManifests(input2) {
       mismatches.push("packageTraceTests: executable assurance trace-test list must contain unique nonempty paths");
     }
     const expectedTraceTests = executableAssuranceTraceTests(input2.traces);
-    if (JSON.stringify(executable.packageTraceTests) !== JSON.stringify(expectedTraceTests)) {
+    if (!Array.isArray(executable.packageTraceTests) || executable.packageTraceTests.length !== expectedTraceTests.length || executable.packageTraceTests.some(
+      (file, index) => file !== expectedTraceTests[index]
+    )) {
       mismatches.push("packageTraceTests: executable assurance report does not contain the exact authoritative trace-test selection");
     }
     if (!Array.isArray(executable.steps) || executable.steps.length === 0) {

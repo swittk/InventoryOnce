@@ -8,6 +8,7 @@ import { createRequire } from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { gzipSync } from "node:zlib";
 import { performance } from "node:perf_hooks";
+import { isDeepStrictEqual } from "node:util";
 import { assertCompactAssuranceCertificate } from "./executable-assurance-coherence.mjs";
 import { verifyCurrentReviewLiveSource } from "../experiments/tla-conformance/final-convergence/current-review-assurance.mjs";
 import { assuranceRepositoryPath, readAssuranceFile, readCompactArchive, materializeAssuranceFiles, claimAssuranceWorkspace, withAssuranceReadSession, withAssuranceFileObservation, runWithoutAssuranceFileObservation } from "./assurance-files.mjs";
@@ -250,7 +251,7 @@ function captureSupport(root, manifest) {
     files.add(file);
   }
   const rows = [...files].sort(compare).map(file => { const bytes=ordinaryBytes(root,file); return {file,sha256:sha(bytes),bytes:bytes.length}; });
-  if (JSON.stringify(rows) === JSON.stringify(manifest.archive.files)) return false;
+  if (isDeepStrictEqual(rows, manifest.archive.files)) return false;
   const tar = spawnSync("tar",["--format=gnu","--sort=name","--mtime=@0","--owner=0","--group=0","--numeric-owner","--null","-T","-","-cf","-"],{cwd:root,input:Buffer.from(rows.map(row=>row.file).join("\0")+"\0"),maxBuffer:128*1024*1024});
   assert.equal(tar.status,0,tar.stderr?.toString());
   const bytes = gzipSync(tar.stdout,{level:6});
@@ -404,7 +405,7 @@ function child(root,command,args,logPath) {
 async function certify(root,manifest,anchor) {
   cleanTree(root);
   const prior=trustedManifest(root,anchor),closure=JSON.parse(ordinaryBytes(root,CLOSURE));
-  if(prior!==undefined && prior.certification.inputKey===closure.inputKey && JSON.stringify(manifestSemanticCore(prior))===JSON.stringify(manifestSemanticCore(manifest))){
+  if(prior!==undefined && prior.certification.inputKey===closure.inputKey && isDeepStrictEqual(manifestSemanticCore(prior),manifestSemanticCore(manifest))){
     await withSupport(root,manifest,async()=>{ assertClosure(root,closure,manifest); verifyCurrentReviewLiveSource(root); });
     console.log(JSON.stringify({status:"COMPACT_CERTIFICATE_REUSED",inputKey:closure.inputKey,evidenceCommit:anchor,compilerPasses:0}));return;
   }
@@ -463,7 +464,7 @@ export async function runCompactCommand({moduleUrl,mode,certificateCommit}={}) {
       try{
         const closure=JSON.parse(ordinaryBytes(root,CLOSURE));
         const compilerRootSet = compactCompilerSourceSetIdentity(root);
-        if(prior.certification.inputKey===closure.inputKey && closure.compilerRootSet?.key===compilerRootSet.key && JSON.stringify(manifestSemanticCore(prior))===JSON.stringify(manifestSemanticCore(manifest))){
+        if(prior.certification.inputKey===closure.inputKey && closure.compilerRootSet?.key===compilerRootSet.key && isDeepStrictEqual(manifestSemanticCore(prior),manifestSemanticCore(manifest))){
           await withSupport(root,manifest,async()=>{ assertClosure(root,closure,manifest); verifyCurrentReviewLiveSource(root); });
           console.log(JSON.stringify({status:"COMPACT_CURRENTIZATION_REUSED",inputKey:closure.inputKey,compilerPasses:0,elapsedMs:Math.round(performance.now()-started)}));return;
         }

@@ -9,6 +9,7 @@ import type { InventoryRevisionTransitionEvidence } from "./events.js";
 import {
   inventoryMeasurement,
   inventoryMeasurementVector,
+  inventoryMeasurementsEqual,
   positiveInventoryMeasurements,
   type InventoryMeasurementVector,
 } from "./measurements.js";
@@ -346,19 +347,42 @@ export function inventoryRevisionTransitionPlansEqual(
   left: InventoryRevisionTransitionPlan,
   right: InventoryRevisionTransitionPlan
 ): boolean {
+  const leftEvidence = left.evidence;
+  const rightEvidence = right.evidence;
   if (
     left.worldRevision !== right.worldRevision ||
-    !left.applicable || !right.applicable ||
+    !left.applicable ||
+    !right.applicable ||
     left.lines.length !== right.lines.length ||
-    JSON.stringify(left.evidence) !== JSON.stringify(right.evidence)
-  ) return false;
-  for (let i = 0; i < left.lines.length; i += 1) {
-    const from = left.lines[i];
-    const to = right.lines[i];
-    if (from === undefined || to === undefined ||
-      inventoryStockPositionIdentity(from.from) !== inventoryStockPositionIdentity(to.from) ||
-      JSON.stringify(from.sourceMeasurements) !== JSON.stringify(to.sourceMeasurements) ||
-      JSON.stringify(from.targetMeasurements) !== JSON.stringify(to.targetMeasurements)) return false;
+    leftEvidence.itemId !== rightEvidence.itemId ||
+    leftEvidence.fromRevisionId !== rightEvidence.fromRevisionId ||
+    leftEvidence.toRevisionId !== rightEvidence.toRevisionId ||
+    leftEvidence.expectedWorldRevision !== rightEvidence.expectedWorldRevision ||
+    leftEvidence.selectorIdentity !== rightEvidence.selectorIdentity ||
+    !quantityEq(leftEvidence.sourceUnit, rightEvidence.sourceUnit) ||
+    !quantityEq(leftEvidence.targetUnit, rightEvidence.targetUnit)
+  ) {
+    return false;
+  }
+  for (let index = 0; index < left.lines.length; index += 1) {
+    const leftLine = left.lines[index];
+    const rightLine = right.lines[index];
+    if (
+      leftLine === undefined ||
+      rightLine === undefined ||
+      inventoryStockPositionIdentity(leftLine.from) !==
+        inventoryStockPositionIdentity(rightLine.from) ||
+      !inventoryMeasurementsEqual(
+        leftLine.sourceMeasurements,
+        rightLine.sourceMeasurements
+      ) ||
+      !inventoryMeasurementsEqual(
+        leftLine.targetMeasurements,
+        rightLine.targetMeasurements
+      )
+    ) {
+      return false;
+    }
   }
   return true;
 }

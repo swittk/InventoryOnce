@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from "node:util";
 import type {
   InventoryCommittedEvent,
   InventoryCount,
@@ -1730,16 +1731,22 @@ export function assertStateResultRefinement(
   }
   if (result.replayed) {
     if (
-      JSON.stringify(abstractInventoryState(before)) !==
-      JSON.stringify(abstractInventoryState(after))
+      !isDeepStrictEqual(
+        abstractInventoryState(before),
+        abstractInventoryState(after)
+      )
     ) {
       throw new Error("Exact replay changed abstract physical state.");
     }
     if (
-      JSON.stringify(abstractReservationState(before.reservations)) !==
-        JSON.stringify(abstractReservationState(after.reservations)) ||
-      JSON.stringify(abstractCountState(before.counts)) !==
-        JSON.stringify(abstractCountState(after.counts))
+      !isDeepStrictEqual(
+        abstractReservationState(before.reservations),
+        abstractReservationState(after.reservations)
+      ) ||
+      !isDeepStrictEqual(
+        abstractCountState(before.counts),
+        abstractCountState(after.counts)
+      )
     ) {
       throw new Error("Exact replay changed an abstract lifecycle book.");
     }
@@ -1763,8 +1770,10 @@ export function assertStateResultRefinement(
     if (
       publishedEvent === undefined ||
       !("event" in result) ||
-      JSON.stringify(canonicalValue(publishedEvent)) !==
-        JSON.stringify(canonicalValue(result.event))
+      !isDeepStrictEqual(
+        canonicalValue(publishedEvent),
+        canonicalValue(result.event)
+      )
     ) {
       throw new Error("Result event disagrees with published event truth.");
     }
@@ -1778,8 +1787,10 @@ export function assertStateResultRefinement(
     if (
       publishedReservation === undefined ||
       !("reservation" in result) ||
-      JSON.stringify(canonicalValue(publishedReservation)) !==
-        JSON.stringify(canonicalValue(result.reservation))
+      !isDeepStrictEqual(
+        canonicalValue(publishedReservation),
+        canonicalValue(result.reservation)
+      )
     ) {
       throw new Error("Result reservation disagrees with published reservation truth.");
     }
@@ -1808,8 +1819,10 @@ export function assertStateResultRefinement(
     if (
       publishedCount === undefined ||
       !("count" in result) ||
-      JSON.stringify(canonicalValue(publishedCount)) !==
-        JSON.stringify(canonicalValue(result.count))
+      !isDeepStrictEqual(
+        canonicalValue(publishedCount),
+        canonicalValue(result.count)
+      )
     ) {
       throw new Error("Result count disagrees with published count truth.");
     }
@@ -1838,8 +1851,10 @@ export function assertStateResultRefinement(
     if (
       publishedTransfer === undefined ||
       !("transfer" in result) ||
-      JSON.stringify(canonicalValue(publishedTransfer)) !==
-        JSON.stringify(canonicalValue(result.transfer))
+      !isDeepStrictEqual(
+        canonicalValue(publishedTransfer),
+        canonicalValue(result.transfer)
+      )
     ) {
       throw new Error("Result transfer disagrees with published transfer truth.");
     }
@@ -1849,8 +1864,10 @@ export function assertStateResultRefinement(
       result.event.metadata?.inventoryOncePolicyDeficit
     );
     if (
-      JSON.stringify(metadata) !==
-      JSON.stringify(abstractPolicyDeficitMetadata(result.deficit))
+      !isDeepStrictEqual(
+        metadata,
+        abstractPolicyDeficitMetadata(result.deficit)
+      )
     ) {
       throw new Error("Result deficit disagrees with immutable event evidence.");
     }
@@ -1860,14 +1877,18 @@ export function assertStateResultRefinement(
       result.event.metadata?.inventoryOncePolicyBatch
     );
     if (
-      JSON.stringify(metadata) !==
-      JSON.stringify(abstractPolicyBatchMetadata(result.allocations))
+      !isDeepStrictEqual(
+        metadata,
+        abstractPolicyBatchMetadata(result.allocations)
+      )
     ) {
       throw new Error("Policy allocations disagree with immutable event evidence.");
     }
     if (
-      JSON.stringify(result.allocationGroups.map(abstractPolicyAllocationGroup)) !==
-      JSON.stringify(abstractExpectedPolicyAllocationGroups(result.allocations))
+      !isDeepStrictEqual(
+        result.allocationGroups.map(abstractPolicyAllocationGroup),
+        abstractExpectedPolicyAllocationGroups(result.allocations)
+      )
     ) {
       throw new Error("Policy allocation groups disagree with exact allocations.");
     }

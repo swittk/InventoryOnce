@@ -273,5 +273,9 @@ export function assertFormalPositiveReachabilityRegistration(
     }
     return `${config}.cfg`;
   }).sort();
-  if (new Set(registered).size !== registered.length || JSON.stringify(expected) !== JSON.stringify(registered)) throw new Error("Positive formal witness registration is incomplete or duplicated.");
+  if (
+    new Set(registered).size !== registered.length ||
+    expected.length !== registered.length ||
+    expected.some((file, index) => file !== registered[index])
+  ) throw new Error("Positive formal witness registration is incomplete or duplicated.");
 }

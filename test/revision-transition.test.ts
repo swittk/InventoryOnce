@@ -463,6 +463,84 @@ describe("prospective item-revision transition", () => {
     expect(receipt.event.kind).toBe(InventoryEventKind.RevisionTransition);
   });
 
+  it("accepts semantically identical reviewed plans regardless of property insertion order", async () => {
+    const { oldInventory, inventory } = await loadedRevisionInventory();
+    await oldInventory.stock.receive({
+      operationId: "receive-reordered-preview-stock",
+      occurredAtEpochMs: time1,
+      to: { itemId: "box", placementNodeId: "reordered-room" },
+      amount: stockAmount("20", "piece"),
+    });
+    await inventory.catalog.publish({
+      operationId: "publish-reordered-preview-target",
+      occurredAtEpochMs: time2,
+    });
+    const preview = await inventory.stock.planRevisionTransition({
+      itemId: "box",
+      fromRevisionId: "box-count-v1",
+      toRevisionId: "box-count-v2",
+      conversion: tenPieceConversion,
+    });
+    if (!preview.applicable || preview.lines[0] === undefined) {
+      throw new Error("Expected an applicable revision-transition preview.");
+    }
+    const sourceLine = preview.lines[0];
+    const reorderedPlan = {
+      applicable: preview.applicable,
+      blockers: preview.blockers,
+      lines: [{
+        targetMeasurements: {
+          independent: [...sourceLine.targetMeasurements.independent],
+          primary: {
+            quantity: {
+              unit: sourceLine.targetMeasurements.primary.quantity.unit,
+              decimals: sourceLine.targetMeasurements.primary.quantity.decimals,
+              amountMinor: sourceLine.targetMeasurements.primary.quantity.amountMinor,
+            },
+            axisId: sourceLine.targetMeasurements.primary.axisId,
+          },
+        },
+        sourceMeasurements: {
+          independent: [...sourceLine.sourceMeasurements.independent],
+          primary: {
+            quantity: {
+              unit: sourceLine.sourceMeasurements.primary.quantity.unit,
+              decimals: sourceLine.sourceMeasurements.primary.quantity.decimals,
+              amountMinor: sourceLine.sourceMeasurements.primary.quantity.amountMinor,
+            },
+            axisId: sourceLine.sourceMeasurements.primary.axisId,
+          },
+        },
+        from: { ...sourceLine.from },
+      }],
+      evidence: {
+        targetUnit: {
+          unit: preview.evidence.targetUnit.unit,
+          decimals: preview.evidence.targetUnit.decimals,
+          amountMinor: preview.evidence.targetUnit.amountMinor,
+        },
+        sourceUnit: {
+          unit: preview.evidence.sourceUnit.unit,
+          decimals: preview.evidence.sourceUnit.decimals,
+          amountMinor: preview.evidence.sourceUnit.amountMinor,
+        },
+        selectorIdentity: preview.evidence.selectorIdentity,
+        expectedWorldRevision: preview.evidence.expectedWorldRevision,
+        toRevisionId: preview.evidence.toRevisionId,
+        fromRevisionId: preview.evidence.fromRevisionId,
+        itemId: preview.evidence.itemId,
+      },
+      request: preview.request,
+      worldRevision: preview.worldRevision,
+    };
+    const receipt = await inventory.stock.transitionRevision({
+      operationId: "commit-reordered-preview",
+      occurredAtEpochMs: time3,
+      plan: reorderedPlan,
+    });
+    expect(receipt.event.kind).toBe(InventoryEventKind.RevisionTransition);
+  });
+
   it("rejects tampered previews and freezes selector intent for retries", async () => {
     const { oldInventory, inventory, storage } = await loadedRevisionInventory();
     await oldInventory.stock.receive({

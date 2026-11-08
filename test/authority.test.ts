@@ -35,6 +35,29 @@ const FORMAL_IMPLEMENTATION_TRACE_IDS = [
 
 void FORMAL_IMPLEMENTATION_TRACE_IDS;
 
+/** Compare one flat authority schema without depending on object key insertion order. */
+function authorityFieldsEqual(
+  left: InventoryAuthorityFields,
+  right: InventoryAuthorityFields
+): boolean {
+  const leftKeys = Object.keys(left).sort();
+  const rightKeys = Object.keys(right).sort();
+  if (leftKeys.length !== rightKeys.length) return false;
+  for (let index = 0; index < leftKeys.length; index += 1) {
+    const leftKey = leftKeys[index];
+    const rightKey = rightKeys[index];
+    if (
+      leftKey === undefined ||
+      rightKey === undefined ||
+      leftKey !== rightKey ||
+      left[leftKey] !== right[rightKey]
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
 /** Stable certification time. */
 const time0 = 1787702400000;
 /** Stable DualRun/fence time. */
@@ -107,7 +130,7 @@ class TestAuthorityStore implements InventoryAuthorityStateStore {
   async ensure(fields: InventoryAuthorityFields): Promise<void> {
     if (
       this.database.fields !== undefined &&
-      JSON.stringify(this.database.fields) !== JSON.stringify(fields)
+      !authorityFieldsEqual(this.database.fields, fields)
     ) {
       throw new Error("Authority test schema changed.");
     }
