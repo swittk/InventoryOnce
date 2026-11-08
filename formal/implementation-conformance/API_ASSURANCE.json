@@ -3,7 +3,7 @@
     "authorityMethods": 14,
     "callAndConstructSignatures": 620,
     "classMethods": 109,
-    "compilerCallGraphCallables": 3752,
+    "compilerCallGraphCallables": 3751,
     "compilerCallGraphEdges": 10205,
     "compilerCallGraphTestRoots": 61,
     "compilerCallGraphUnresolvedApis": 0,

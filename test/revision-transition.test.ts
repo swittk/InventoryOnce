@@ -879,12 +879,11 @@ describe("prospective item-revision transition", () => {
       to: { itemId: "box", placementNodeId: "room" },
       amount: stockAmount("20", "piece"),
     });
-    const preview = await inventory.stock.planRevisionTransition({
+    await expect(inventory.stock.planRevisionTransition({
       itemId: "box",
       fromRevisionId: "box-count-v1",
       toRevisionId: "box-count-v2",
       conversion: tenPieceConversion,
-    }).catch(() => undefined);
-    expect(preview).toBeUndefined();
+    })).rejects.toThrow(/Unknown inventory item revision 'box-count-v2'/);
   });
 });
