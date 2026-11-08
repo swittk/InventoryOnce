@@ -297,6 +297,121 @@ describe("prospective item-revision transition", () => {
     expect(released.applicable).toBe(true);
   });
 
+  it("blocks started and observed counts but permits abandoned and completed counts", async () => {
+    const { oldInventory, inventory } = await loadedRevisionInventory();
+    await oldInventory.stock.receive({
+      operationId: "receive-counted-old-revision-stock",
+      occurredAtEpochMs: time1,
+      to: { itemId: "box", placementNodeId: "count-room" },
+      amount: stockAmount("20", "piece"),
+    });
+    await inventory.catalog.publish({
+      operationId: "publish-revision-before-physical-count",
+      occurredAtEpochMs: time2,
+    });
+    const position = (await inventory.read.positions({
+      itemId: "box", itemRevisionIds: ["box-count-v1"],
+    }))[0];
+    if (position === undefined) throw new Error("Counted source stock was not received.");
+    const request = {
+      itemId: "box",
+      fromRevisionId: "box-count-v1",
+      toRevisionId: "box-count-v2",
+      conversion: tenPieceConversion,
+    };
+    const countSelector = {
+      itemId: "box",
+      itemRevisionIds: ["box-count-v1"],
+      placementNodeIds: ["count-room"],
+    };
+    const previewBeforeCount = await inventory.stock.planRevisionTransition(request);
+    expect(previewBeforeCount.applicable).toBe(true);
+    await inventory.counts.start({
+      countId: "old-revision-count-abandoned",
+      operationId: "start-old-revision-count",
+      itemRevisionId: "box-count-v1",
+      selector: countSelector,
+      startedAtEpochMs: time2,
+    });
+    await expect(inventory.stock.transitionRevision({
+      operationId: "reject-stale-before-count-preview",
+      occurredAtEpochMs: time3,
+      plan: previewBeforeCount,
+    })).rejects.toThrow(/stale/i);
+    const started = await inventory.stock.planRevisionTransition(request);
+    expect(started.applicable).toBe(false);
+    expect(started.blockers).toContainEqual(expect.objectContaining({
+      code: "active-count",
+      message: expect.stringContaining("old-revision-count-abandoned"),
+    }));
+    await expect(inventory.stock.transitionRevision({
+      operationId: "reject-transition-during-started-count",
+      occurredAtEpochMs: time3,
+      plan: started,
+    })).rejects.toThrow(/blocked/i);
+    await inventory.counts.observe({
+      operationId: "observe-old-revision-count",
+      countId: "old-revision-count-abandoned",
+      observedAtEpochMs: time2,
+      observations: [{
+        position: position.key,
+        measurements: position.measurements,
+      }],
+    });
+    const observed = await inventory.stock.planRevisionTransition(request);
+    expect(observed.applicable).toBe(false);
+    expect(observed.blockers).toContainEqual(expect.objectContaining({
+      code: "active-count",
+      message: expect.stringContaining("old-revision-count-abandoned"),
+    }));
+    await inventory.counts.abandon({
+      operationId: "abandon-old-revision-count",
+      countId: "old-revision-count-abandoned",
+      occurredAtEpochMs: time3,
+      reason: "No longer needed before the definition transition.",
+    });
+    expect((await inventory.stock.planRevisionTransition(request)).applicable).toBe(true);
+
+    await inventory.counts.start({
+      countId: "old-revision-count-completed",
+      operationId: "start-old-revision-count-for-completion",
+      itemRevisionId: "box-count-v1",
+      selector: countSelector,
+      startedAtEpochMs: time3,
+    });
+    await inventory.counts.observe({
+      operationId: "observe-old-revision-count-for-completion",
+      countId: "old-revision-count-completed",
+      observedAtEpochMs: time3,
+      observations: [{
+        position: position.key,
+        measurements: position.measurements,
+      }],
+    });
+    expect((await inventory.stock.planRevisionTransition(request)).blockers)
+      .toContainEqual(expect.objectContaining({
+        code: "active-count",
+        message: expect.stringContaining("old-revision-count-completed"),
+      }));
+    await inventory.counts.reconcile({
+      operationId: "reconcile-old-revision-count",
+      countId: "old-revision-count-completed",
+      completedAtEpochMs: time3,
+      reason: "Observed stock matches the current balance.",
+    });
+    const completed = await inventory.stock.planRevisionTransition(request);
+    expect(completed.applicable).toBe(true);
+    expect(completed.blockers).toEqual([]);
+    await inventory.stock.transitionRevision({
+      operationId: "transition-after-physical-counts-completed",
+      occurredAtEpochMs: time3,
+      plan: completed,
+    });
+    expect((await inventory.read.positions({
+      itemId: "box", itemRevisionIds: ["box-count-v1"],
+    }))).toHaveLength(0);
+  });
+
   it("blocks a prepared transfer until its old-revision commitment is released", async () => {
     const { oldInventory, inventory } = await loadedRevisionInventory();
     await oldInventory.stock.receive({

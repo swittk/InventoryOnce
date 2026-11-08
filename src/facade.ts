@@ -6072,6 +6072,12 @@ class InventoryOnceReplacementPlansImplementation
   revisionTransition(
     input: Omit<InventoryOnceTransitionRevisionInput, "operationId">
   ): InventoryOnceReplacementPlan {
+    if (!input.plan.applicable) {
+      throw new Error("Revision-transition preview is blocked; resolve its reported dependencies first.");
+    }
+    // Replacement builders accept caller-owned plans too. Validate their
+    // approved request against frozen ratio/selector evidence before replay.
+    assertInventoryRevisionTransitionPlanIntent(input.plan, this.catalog);
     return new InventoryOnceReplacementPlanImplementation(
       createInventoryRevisionTransitionEvent({
         ...input,

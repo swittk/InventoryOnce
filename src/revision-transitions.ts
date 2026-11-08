@@ -18,6 +18,7 @@ import {
   type InventoryStockPositionKey,
 } from "./model.js";
 import { findInventoryPositions } from "./projection.js";
+import { InventoryCountStatus } from "./counts.js";
 import { InventoryReservationStatus } from "./reservations.js";
 import { compareQuantity, parseQuantity, positiveQuantity, quantityEq, zeroQuantity } from "./quantity.js";
 import { convertInventoryRevisionQuantity } from "./revision-transition-math.js";
@@ -178,6 +179,19 @@ export function planInventoryRevisionTransition(
           "' before transitioning its item revision.",
       });
     }
+  }
+  // Counts freeze the item revision and observed position identities. Moving
+  // those stock rows before reconciliation would strand the count's scope or
+  // manufacture a false discrepancy, even when its observation is not complete.
+  for (const count of Object.values(world.counts.counts)) {
+    if (count.itemRevisionId !== request.fromRevisionId ||
+      (count.status !== InventoryCountStatus.Started &&
+        count.status !== InventoryCountStatus.Observed)) continue;
+    blockers.push({
+      code: "active-count",
+      message: "Reconcile or abandon open count '" + count.countId +
+        "' before changing its item revision.",
+    });
   }
   // A prepared/partially received transfer retains source revision and exact
   // measurements. Converting the stock mid-lifecycle would strand its receipt.

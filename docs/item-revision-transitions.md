@@ -43,7 +43,7 @@ The complete reviewed world is fenced by world revision; stale previews fail and
 - The exact conversion must terminate within supported quantity scale/safe integer bounds; each serialized unit must remain exactly **one** primary target unit.
 - New tracking requirements cannot invent missing lots/serials or discard existing ones; incompatible qualified dimensions block.
 - An intact package still references its old package revision. Unpack or explicitly reconcile such stock first; do not silently rewrite old package definitions.
-- Detached/missing whereabouts, active transfer lifecycles and their stock, and current reservations on the old item revision must be resolved.
+- Detached/missing whereabouts, active transfer lifecycles and their stock, current reservations, and open physical counts on the old item revision must be resolved. A count in Started or Observed state blocks the transition; a Completed or Abandoned count does not.
 - Independently measured axes must have matching identity, unit and requirement. Additional explicit measured-axis conversion is not inferred.
 - Negative deficits and nonpositive stock positions cannot be silently converted.
 
@@ -55,16 +55,16 @@ This prospective operation changes the definition of existing stock *from now on
 
 A genuinely misrecorded original receipt can also be corrected directly,
 rather than transitioning current stock. For example, after publishing the
-actual target revision, use \`stock.correct({ correctsEventId, reason,
+actual target revision, use `stock.correct({ correctsEventId, reason,
 replaceWith: plans => plans.receive({ itemRevisionId: "box-box-v2",
-amount: stockAmount("10", "box"), ... }) })\` when the earlier receipt
+amount: stockAmount("10", "box"), ... }) })` when the earlier receipt
 incorrectly asserted 100 pieces but the physical truth was always 10 boxes.
 The original root remains in the retained event history; correction replay
 checks subsequent dependent history and rejects incoherent downstream effects.
 A previously recorded revision-transition event likewise has a dedicated
-\`plans.revisionTransition({ occurredAtEpochMs, plan })\` replacement method,
+`plans.revisionTransition({ occurredAtEpochMs, plan })` replacement method,
 using the previously reviewed exact plan rather than signed journal legs.
 
 ## Assurance scope
 
-The executable test suite covers exact 100→10 conversion, phasing by lot, historical retention, FIFO continuity, serialized holders, active reservations, stale previews, changed retries and critical blockers. The finite TLA+ RevisionTransition model checks common-basis conservation, immutable original receipt truth, world-fenced preview, dependency blockers and at-most-once atomic conversion. The bounded model does not prove all TypeScript, adapter or external application cases.
+The executable test suite covers exact 100→10 conversion, phasing by lot, historical retention, FIFO continuity, serialized holders, active reservations, stale previews, changed retries and critical blockers. The finite TLA+ RevisionTransition model checks common-basis conservation, immutable original receipt truth, world-fenced preview, dependency blockers and at-most-once atomic conversion. Open-count gating and completed/abandoned lifecycle behavior are exercised by the public API regression suite; the finite model covers reservation/transfer blockers but does not model count lifecycle states. The bounded model does not prove all TypeScript, adapter or external application cases.

@@ -1438,6 +1438,45 @@ describe("append-only corrections", () => {
         plan: approved,
       });
       expect(root.event.kind).toBe(InventoryEventKind.RevisionTransition);
+      // Corrections must not bypass the same rejected-preview and frozen
+      // selector/ratio checks used by ordinary transition commits.
+      const blocked = {
+        ...approved,
+        applicable: false,
+        blockers: [{
+          code: "active-reservation",
+          message: "Source stock is still reserved.",
+        }],
+      };
+      await expect(inventory.stock.correct({
+        operationId: "reject-blocked-transition-correction",
+        occurredAtEpochMs: time3,
+        correctsEventId: root.event.eventId,
+        reason: "The source is reserved and cannot be reinterpreted.",
+        replaceWith: (plans) => plans.revisionTransition({
+          occurredAtEpochMs: time2,
+          plan: blocked,
+        }),
+      })).rejects.toThrow(/blocked/i);
+      const editedRequest = {
+        ...approved,
+        request: {
+          ...approved.request,
+          conversion: { sourceAmount: "2", targetAmount: "1" },
+        },
+      };
+      await expect(inventory.stock.correct({
+        operationId: "reject-edited-transition-correction",
+        occurredAtEpochMs: time3,
+        correctsEventId: root.event.eventId,
+        reason: "A changed ratio cannot reuse an approved preview.",
+        replaceWith: (plans) => plans.revisionTransition({
+          occurredAtEpochMs: time2,
+          plan: editedRequest,
+        }),
+      })).rejects.toThrow(/approved|ratio|differs/i);
+      expect(await storage.readOperation("reject-blocked-transition-correction")).toBeUndefined();
+      expect(await storage.readOperation("reject-edited-transition-correction")).toBeUndefined();
       const correction = await inventory.stock.correct({
         operationId: "correct-transition-root",
         occurredAtEpochMs: time3,
