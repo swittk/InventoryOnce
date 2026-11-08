@@ -297,69 +297,6 @@ describe("prospective item-revision transition", () => {
     expect(released.applicable).toBe(true);
   });
 
-  it("keeps prospective revision transitions out of historical assertion bundles", async () => {
-    const { oldInventory, inventory } = await loadedRevisionInventory();
-    await oldInventory.stock.receive({
-      operationId: "receive-stock-before-historical-transition-attempt",
-      occurredAtEpochMs: time1,
-      to: { itemId: "box", placementNodeId: "warehouse" },
-      amount: stockAmount("20", "piece"),
-    });
-    await inventory.catalog.publish({
-      operationId: "publish-target-before-historical-transition-attempt",
-      occurredAtEpochMs: time2,
-    });
-    const preview = await inventory.stock.planRevisionTransition({
-      itemId: "box",
-      fromRevisionId: "box-count-v1",
-      toRevisionId: "box-count-v2",
-      conversion: tenPieceConversion,
-    });
-    expect(preview.applicable).toBe(true);
-
-    await inventory.reservations.reserve({
-      reservationId: "claim-after-transition-preview",
-      operationId: "reserve-after-transition-preview",
-      itemRevisionId: "box-count-v1",
-      selector: { itemId: "box", itemRevisionIds: ["box-count-v1"] },
-      requested: parseQuantity("5", "piece"),
-      createdAtEpochMs: time2,
-    });
-
-    await expect(inventory.stock.recordHistorical({
-      operationId: "reject-historical-revision-transition",
-      occurredAtEpochMs: time3,
-      assertions: [{
-        assertionId: "late-prospective-transition",
-        assert: (plans) =>
-          // @ts-expect-error Revision transitions are prospective, not historical assertions.
-          plans.revisionTransition({ occurredAtEpochMs: time2, plan: preview }),
-      }],
-    })).rejects.toThrow(/prospective.*historical assertions/i);
-
-    const source = await inventory.read.positions({
-      itemId: "box",
-      itemRevisionIds: ["box-count-v1"],
-    });
-    expect(source).toHaveLength(1);
-    expect(source[0]?.measurements.primary.quantity).toMatchObject({
-      amountMinor: 20,
-      unit: "piece",
-    });
-    expect(await inventory.read.positions({
-      itemId: "box",
-      itemRevisionIds: ["box-count-v2"],
-    })).toHaveLength(0);
-
-    await inventory.reservations.release({
-      operationId: "release-claim-after-rejected-historical-transition",
-      reservationId: "claim-after-transition-preview",
-      occurredAtEpochMs: time3,
-    });
-    expect((await inventory.stock.planRevisionTransition(preview.request)).applicable)
-      .toBe(true);
-  });
-
   it("blocks started and observed counts but permits abandoned and completed counts", async () => {
     const { oldInventory, inventory } = await loadedRevisionInventory();
     await oldInventory.stock.receive({

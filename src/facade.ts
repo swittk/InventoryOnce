@@ -6389,14 +6389,6 @@ function buildInventoryHistoricalAssertions(
         "Historical assertion cannot use omit(); omit an earlier assertionId instead."
       );
     }
-    // Revision transitions reinterpret current accounted stock under a newly
-    // published definition. They are prospective by contract, not missing
-    // historical physical facts, so historical replay must never embed one.
-    if (event.kind === InventoryEventKind.RevisionTransition) {
-      throw new Error(
-        "Revision transitions are prospective and cannot be inserted as historical assertions; use stock.transitionRevision for current stock or stock.correct to correct an existing transition."
-      );
-    }
     result.push({
       assertionId: assertion.assertionId,
       ...(assertion.afterEventId === undefined

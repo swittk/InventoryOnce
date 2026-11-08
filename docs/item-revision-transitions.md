@@ -65,11 +65,11 @@ A previously recorded revision-transition event likewise has a dedicated
 `plans.revisionTransition({ occurredAtEpochMs, plan })` replacement method,
 using the previously reviewed exact plan rather than signed journal legs.
 
-`stock.recordHistorical` deliberately does **not** expose `revisionTransition`.
-A revision transition is a current-stock accounting decision against a reviewed
-published world, not a missing physical fact that can be inserted into earlier
-effective history. This also prevents an old preview from being replayed after
-reservations, counts, transfers, or stock positions have changed. Historical
+The typed `stock.recordHistorical` assertion-planner contract deliberately does
+**not** expose `revisionTransition`. A revision transition is a current-stock
+accounting decision against a reviewed published world, not a missing physical
+fact to insert into earlier effective history. InventoryOnce does not add a
+runtime guard for callers that bypass the public TypeScript contract. Historical
 mistakes should be expressed as the actual missing/correct physical assertions;
 an already-recorded transition itself can still be corrected append-only with
 `stock.correct`.
