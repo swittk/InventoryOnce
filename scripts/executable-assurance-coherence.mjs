@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
 
 /**
  * @typedef {object} ApiAssuranceManifest
@@ -435,62 +434,3 @@ export function assertExecutableAssuranceMatchesManifests(
   }
   return expected;
 }
-/** Fail closed unless one pinned compact certificate contains the exact three semantic verdicts. */
-export function assertCompactAssuranceCertificate(certification, {
-  /** Certified tree head obtained from the immutable evidence commit parent. */
-  head,
-  /** Content identity read from that independently pinned tree's closure. */
-  inputKey,
-  /** Compiler-discovered callable surface read from that pinned closure. */
-  surfaceDigest,
-}) {
-  assert.match(head, /^[a-f0-9]{40}$/u, "Independent compact tested head is invalid.");
-  assert.match(inputKey, /^[a-f0-9]{64}$/u, "Independent compact closure key is invalid.");
-  assert.match(surfaceDigest, /^[a-f0-9]{64}$/u, "Independent compact surface digest is invalid.");
-  assert.equal(certification?.schemaVersion,1,"Pinned compact certificate has an unsupported schema.");
-  assert.match(certification.certifiedHead,/^[a-f0-9]{40}$/u,"Pinned compact certificate head is invalid.");
-  assert.match(certification.inputKey,/^[a-f0-9]{64}$/u,"Pinned compact certificate input key is invalid.");
-  assert.equal(certification.certifiedHead, head, "Compact certificate tested the wrong head.");
-  assert.equal(certification.inputKey, inputKey, "Compact certificate names the wrong independent closure.");
-  assert(Array.isArray(certification.processes),"Pinned compact certificate process evidence is missing.");
-  assert.deepEqual(certification.processes.map(row=>row.mode).sort(),["registry","selftest","verify"], "Pinned compact certificate does not carry exactly one registry, selftest, and verify process.");
-  for(const row of certification.processes){
-    assert.equal(row.exitCode,0,`Pinned compact certificate ${row.mode} process did not exit cleanly.`);
-    assert.equal(row.signal,null,`Pinned compact certificate ${row.mode} process was signalled.`);
-    assert.equal(row.stderr,"",`Pinned compact certificate ${row.mode} emitted stderr.`);
-    assert.match(row.stdoutSha256,/^[a-f0-9]{64}$/u);
-    assert.match(row.stderrSha256,/^[a-f0-9]{64}$/u);
-    assert.equal(compactOutputSha256(row.stdout),row.stdoutSha256,"Immutable certificate output hash is invalid.");
-    assert.equal(compactOutputSha256(row.stderr),row.stderrSha256,"Immutable certificate error hash is invalid.");
-    assert.equal(row.inputKey,certification.inputKey);
-    assert.equal(row.head,certification.certifiedHead);
-    const lines=row.stdout.trim().split(/\r?\n/u).filter(Boolean);
-    assert.equal(lines.length,1,`Pinned compact certificate ${row.mode} emitted unexpected stdout.`);
-    const emitted=JSON.parse(lines[0]);
-    assert.deepEqual(row.report,emitted,`Pinned compact certificate ${row.mode} report differs from exact stdout.`);
-    assert.equal(row.report.mode,row.mode);
-    assert.equal(row.report.inputKey,certification.inputKey);
-    assert.equal(row.report.head,certification.certifiedHead);
-    assert.equal(row.report.compilerPasses,1);
-    if(row.mode==="registry"){
-      assert.equal(row.report.status,"FINAL_535_REGISTRY_BUILT","Pinned compact certificate registry status is invalid.");
-      assert.deepEqual(row.report.counts,{A:121,B:58,V:309,HARD_RED:47},"Pinned compact registry partition is invalid.");
-    }else if(row.mode==="selftest"){
-      assert.equal(row.report.status,"FINAL_CONVERGENCE_ADVERSARIAL_PASS","Pinned compact certificate selftest status is invalid.");
-      assert.equal(row.report.valueRows,309);assert.equal(row.report.producerRows,179);
-      assert.equal(row.report.surfaceDigest, surfaceDigest, "Compact process surface differs from its independent certified closure.");
-      assert.deepEqual(row.report.controls,{honestValueAccepted:true,wrongValueModeRejected:true,resignedValueTamperRejected:true,honestAandBAccepted:true,wrongProducerModeRejected:true,resignedProducerTamperRejected:true,immutableHistoricalAuthorityTamperRejected:true,sameMtimeEvidenceDriftRejected:true},"Pinned compact certificate adversarial controls are incomplete.");
-    }else{
-      assert.equal(row.report.status,"FINAL_BINDER_GREEN","Pinned compact certificate verifier status is invalid.");
-      assert.equal(row.report.surfaceDigest, surfaceDigest, "Compact process surface differs from its independent certified closure.");
-      assert.equal(row.report.callables,535);assert.equal(row.report.diagnostics,47);
-      assert.deepEqual(row.report.byCode,{EXPLICIT_HARD_RED:47});assert.equal(row.report.hardRed,47);
-      assert.equal(row.report.unexpected,0);assert.deepEqual(row.report.unexpectedRows,[]);
-      assert.equal(row.report.valueAccepted,309);assert.equal(row.report.producerAccepted,179);assert.equal(row.report.strictAccepted,488);
-    }
-  }
-  return certification;
-}
-
-/** Hash the exact process output, never the reserialized claimed report. */
-function compactOutputSha256(value) { return createHash("sha256").update(value).digest("hex"); }
