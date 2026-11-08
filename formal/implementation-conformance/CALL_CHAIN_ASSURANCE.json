@@ -10913,9 +10913,9 @@
           "column": 1,
           "file": "src/events.ts",
           "hasBody": true,
-          "id": "src/events.ts:87447:assertInventoryEpochMilliseconds",
+          "id": "src/events.ts:87391:assertInventoryEpochMilliseconds",
           "kind": "FunctionDeclaration",
-          "line": 2296,
+          "line": 2292,
           "name": "assertInventoryEpochMilliseconds"
         }
       ],
@@ -10926,9 +10926,9 @@
             "column": 1,
             "file": "src/events.ts",
             "hasBody": true,
-            "id": "src/events.ts:87447:assertInventoryEpochMilliseconds",
+            "id": "src/events.ts:87391:assertInventoryEpochMilliseconds",
             "kind": "FunctionDeclaration",
-            "line": 2296,
+            "line": 2292,
             "name": "assertInventoryEpochMilliseconds"
           },
           "witness": {
@@ -10976,9 +10976,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:87447:assertInventoryEpochMilliseconds",
+                "id": "src/events.ts:87391:assertInventoryEpochMilliseconds",
                 "kind": "FunctionDeclaration",
-                "line": 2296,
+                "line": 2292,
                 "name": "assertInventoryEpochMilliseconds",
                 "reason": "resolved-call"
               }
@@ -11654,9 +11654,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:60769:normalizeStockEffects",
+                "id": "src/events.ts:60713:normalizeStockEffects",
                 "kind": "FunctionDeclaration",
-                "line": 1498,
+                "line": 1494,
                 "name": "normalizeStockEffects",
                 "reason": "resolved-call"
               },
@@ -23621,9 +23621,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:60769:normalizeStockEffects",
+                "id": "src/events.ts:60713:normalizeStockEffects",
                 "kind": "FunctionDeclaration",
-                "line": 1498,
+                "line": 1494,
                 "name": "normalizeStockEffects",
                 "reason": "resolved-call"
               },
@@ -27319,9 +27319,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:60769:normalizeStockEffects",
+                "id": "src/events.ts:60713:normalizeStockEffects",
                 "kind": "FunctionDeclaration",
-                "line": 1498,
+                "line": 1494,
                 "name": "normalizeStockEffects",
                 "reason": "resolved-call"
               },
@@ -32799,9 +32799,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:60769:normalizeStockEffects",
+                "id": "src/events.ts:60713:normalizeStockEffects",
                 "kind": "FunctionDeclaration",
-                "line": 1498,
+                "line": 1494,
                 "name": "normalizeStockEffects",
                 "reason": "resolved-call"
               },

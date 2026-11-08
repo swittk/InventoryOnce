@@ -1404,11 +1404,7 @@ function assertInventoryRevisionTransitionEvidence(
       throw new Error("Revision-transition evidence references missing stock effects.");
     }
     const source = negateQuantity(fromEffect.measurementsDelta.primary.quantity);
-    const expected = convertInventoryRevisionQuantity(
-      source,
-      evidence.sourceUnit,
-      evidence.targetUnit
-    );
+    const expected = convertInventoryRevisionQuantity(source, evidence);
     if (!quantityEq(expected, toEffect.measurementsDelta.primary.quantity) ||
       fromEffect.measurementsDelta.primary.axisId !== fromItem.primaryAxis.axisId ||
       toEffect.measurementsDelta.primary.axisId !== toItem.primaryAxis.axisId ||

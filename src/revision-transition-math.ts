@@ -5,12 +5,21 @@ import {
   type Quantity,
 } from "./quantity.js";
 
+/** Exact source/target unit ratio for one revision-transition conversion. */
+export interface InventoryRevisionQuantityConversion {
+  /** Positive source-revision quantity exactly equivalent to targetUnit. */
+  readonly sourceUnit: Quantity;
+  /** Positive target-revision quantity exactly equivalent to sourceUnit. */
+  readonly targetUnit: Quantity;
+}
+
 /** Compute an exact unit conversion without floating point, guessing, or rounding. */
 export function convertInventoryRevisionQuantity(
   current: Quantity,
-  sourceUnit: Quantity,
-  targetUnit: Quantity,
+  conversion: InventoryRevisionQuantityConversion,
 ): Quantity {
+  const sourceUnit = conversion.sourceUnit;
+  const targetUnit = conversion.targetUnit;
   positiveQuantity(current, "Revision-transition source quantity");
   positiveQuantity(sourceUnit, "Revision-transition source-unit ratio");
   positiveQuantity(targetUnit, "Revision-transition target-unit ratio");

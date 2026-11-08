@@ -18015,6 +18015,10 @@
           "path": "src/reservations.ts"
         },
         {
+          "occurrences": 3,
+          "path": "src/revision-transition-math.ts"
+        },
+        {
           "occurrences": 22,
           "path": "src/revision-transitions.ts"
         },
@@ -20385,6 +20389,10 @@
         {
           "occurrences": 11,
           "path": "src/reservations.ts"
+        },
+        {
+          "occurrences": 3,
+          "path": "src/revision-transition-math.ts"
         },
         {
           "occurrences": 22,
@@ -22858,9 +22866,9 @@
               "column": 1,
               "file": "src/events.ts",
               "hasBody": true,
-              "id": "src/events.ts:87447:assertInventoryEpochMilliseconds",
+              "id": "src/events.ts:87391:assertInventoryEpochMilliseconds",
               "kind": "FunctionDeclaration",
-              "line": 2296,
+              "line": 2292,
               "name": "assertInventoryEpochMilliseconds",
               "reason": "resolved-call"
             }
@@ -22869,9 +22877,9 @@
             "column": 1,
             "file": "src/events.ts",
             "hasBody": true,
-            "id": "src/events.ts:87447:assertInventoryEpochMilliseconds",
+            "id": "src/events.ts:87391:assertInventoryEpochMilliseconds",
             "kind": "FunctionDeclaration",
-            "line": 2296,
+            "line": 2292,
             "name": "assertInventoryEpochMilliseconds"
           },
           "test": "test/allocation.test.ts"
@@ -22892,9 +22900,9 @@
           "column": 1,
           "file": "src/events.ts",
           "hasBody": true,
-          "id": "src/events.ts:87447:assertInventoryEpochMilliseconds",
+          "id": "src/events.ts:87391:assertInventoryEpochMilliseconds",
           "kind": "FunctionDeclaration",
-          "line": 2296,
+          "line": 2292,
           "name": "assertInventoryEpochMilliseconds"
         }
       ],
@@ -24140,9 +24148,9 @@
               "column": 1,
               "file": "src/events.ts",
               "hasBody": true,
-              "id": "src/events.ts:60769:normalizeStockEffects",
+              "id": "src/events.ts:60713:normalizeStockEffects",
               "kind": "FunctionDeclaration",
-              "line": 1498,
+              "line": 1494,
               "name": "normalizeStockEffects",
               "reason": "resolved-call"
             },
@@ -46242,7 +46250,7 @@
           "path": "src/reservations.ts"
         },
         {
-          "occurrences": 6,
+          "occurrences": 8,
           "path": "src/revision-transition-math.ts"
         },
         {
@@ -46535,9 +46543,9 @@
               "column": 1,
               "file": "src/events.ts",
               "hasBody": true,
-              "id": "src/events.ts:60769:normalizeStockEffects",
+              "id": "src/events.ts:60713:normalizeStockEffects",
               "kind": "FunctionDeclaration",
-              "line": 1498,
+              "line": 1494,
               "name": "normalizeStockEffects",
               "reason": "resolved-call"
             },
@@ -53605,9 +53613,9 @@
               "column": 1,
               "file": "src/events.ts",
               "hasBody": true,
-              "id": "src/events.ts:60769:normalizeStockEffects",
+              "id": "src/events.ts:60713:normalizeStockEffects",
               "kind": "FunctionDeclaration",
-              "line": 1498,
+              "line": 1494,
               "name": "normalizeStockEffects",
               "reason": "resolved-call"
             },
@@ -63731,7 +63739,7 @@
           "path": "src/reservations.ts"
         },
         {
-          "occurrences": 6,
+          "occurrences": 8,
           "path": "src/revision-transition-math.ts"
         },
         {
@@ -64024,9 +64032,9 @@
               "column": 1,
               "file": "src/events.ts",
               "hasBody": true,
-              "id": "src/events.ts:60769:normalizeStockEffects",
+              "id": "src/events.ts:60713:normalizeStockEffects",
               "kind": "FunctionDeclaration",
-              "line": 1498,
+              "line": 1494,
               "name": "normalizeStockEffects",
               "reason": "resolved-call"
             },

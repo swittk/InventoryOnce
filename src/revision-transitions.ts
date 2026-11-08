@@ -104,8 +104,7 @@ function transitionedMeasurements(
   positiveInventoryMeasurements(source, "Revision-transition source stock");
   const targetAmount = convertInventoryRevisionQuantity(
     source.primary.quantity,
-    evidence.sourceUnit,
-    evidence.targetUnit
+    evidence
   );
   return inventoryMeasurementVector(
     inventoryMeasurement(target.primaryAxis.axisId, targetAmount),
