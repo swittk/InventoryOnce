@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "archive": {
     "file": "experiments/tla-conformance/final-convergence/compact-support.tar.gz",
-    "sha256": "db6d478a22048f574b8312da05659e5cbaddf464eff530cf701018c260c87bb2",
-    "bytes": 1471206,
+    "sha256": "3904fa8518bc114334fb05d397f1c3cd1b66681540cda8d9bb58d7edf7473195",
+    "bytes": 1471198,
     "files": [
       {
         "file": "experiments/tla-conformance/astra-authority-control-r8/family.mjs",
@@ -192,8 +192,8 @@
       },
       {
         "file": "experiments/tla-conformance/migration-helper-causal-r7/causal-runtime-verifier.mjs",
-        "sha256": "758ada846f8cf30110548931a826c3998d9328a713bc62ea84cda5e0cdc9de44",
-        "bytes": 2469
+        "sha256": "9ea9c57fbbbe973c27d621f14db11da443ff0076436f1bd47f65d506dadbd0e5",
+        "bytes": 2438
       },
       {
         "file": "experiments/tla-conformance/migration-helper-causal-r7/independent-v9-laws.mjs",
@@ -448,8 +448,8 @@
       {
         "mode": "unified",
         "file": "experiments/tla-conformance/final-convergence/compact-final-verify.mjs",
-        "sha256": "aa6bb840418c3a8e7a778d8223be31a50c0e6ac07cd870a542baf5c17eb032d2",
-        "bytes": 949726
+        "sha256": "3f02c7deeb72b7c061ac871ec62775c14fa75d7f41dc522a2289da139d55c949",
+        "bytes": 949565
       }
     ],
     "sources": [
@@ -580,8 +580,8 @@
       },
       {
         "file": "experiments/tla-conformance/migration-helper-causal-r7/causal-runtime-verifier.mjs",
-        "sha256": "758ada846f8cf30110548931a826c3998d9328a713bc62ea84cda5e0cdc9de44",
-        "bytes": 2469
+        "sha256": "9ea9c57fbbbe973c27d621f14db11da443ff0076436f1bd47f65d506dadbd0e5",
+        "bytes": 2438
       },
       {
         "file": "experiments/tla-conformance/migration-helper-causal-r7/independent-v9-laws.mjs",
@@ -740,13 +740,13 @@
       },
       {
         "file": "scripts/executable-assurance-coherence.mjs",
-        "sha256": "d2606fc5daf5cf40997a5d1a36347a36f6a5163e20885618ca55a2efbeb1a119",
-        "bytes": 28987
+        "sha256": "b43c430d56d0639d5868b1e339f7789e8b12467df14436b72e94aed6c5d4d407",
+        "bytes": 28827
       },
       {
         "file": "scripts/formal-implementation-surface.cjs",
-        "sha256": "cd13a5776ef24e2552964ab61ed306daf56c9b0d37a86289121092d9ea4739f6",
-        "bytes": 23472
+        "sha256": "889352b2b4ad28444e22ba8f528be70557325318d681f5c3760c47ca937fca87",
+        "bytes": 23474
       },
       {
         "file": "scripts/formal-implementation-vitest-semantics.cjs",
