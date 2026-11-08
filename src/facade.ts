@@ -1236,14 +1236,18 @@ export type InventoryOnceCorrectionPlan =
   | InventoryOnceValidCorrectionPlan
   | InventoryOnceInvalidCorrectionPlan;
 
-/** Existing physical-verb planner plus safe references to prior bundle assertions. */
-export interface InventoryOnceHistoricalAssertionPlans
-  extends InventoryOnceReplacementPlans {
+/** Historical physical-verb planner plus safe references to prior bundle assertions.
+ * Prospective item-revision transitions are intentionally excluded from late-history assertions.
+ */
+export type InventoryOnceHistoricalAssertionPlans = Omit<
+  InventoryOnceReplacementPlans,
+  "revisionTransition"
+> & {
   /** Read one prior assertion's exact consumed/source position by negative-effect order. */
   inputOf(assertionId: string, index?: number): InventoryStockPositionInput;
   /** Read one prior assertion's exact produced/destination position by positive-effect order. */
   outputOf(assertionId: string, index?: number): InventoryStockPositionInput;
-}
+};
 
 /** One stable ordinary assertion to insert into effective physical history. */
 export interface InventoryOnceHistoricalAssertionInput {
@@ -6383,6 +6387,14 @@ function buildInventoryHistoricalAssertions(
     if (event === undefined) {
       throw new Error(
         "Historical assertion cannot use omit(); omit an earlier assertionId instead."
+      );
+    }
+    // Revision transitions reinterpret current accounted stock under a newly
+    // published definition. They are prospective by contract, not missing
+    // historical physical facts, so historical replay must never embed one.
+    if (event.kind === InventoryEventKind.RevisionTransition) {
+      throw new Error(
+        "Revision transitions are prospective and cannot be inserted as historical assertions; use stock.transitionRevision for current stock or stock.correct to correct an existing transition."
       );
     }
     result.push({

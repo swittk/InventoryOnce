@@ -65,6 +65,15 @@ A previously recorded revision-transition event likewise has a dedicated
 `plans.revisionTransition({ occurredAtEpochMs, plan })` replacement method,
 using the previously reviewed exact plan rather than signed journal legs.
 
+`stock.recordHistorical` deliberately does **not** expose `revisionTransition`.
+A revision transition is a current-stock accounting decision against a reviewed
+published world, not a missing physical fact that can be inserted into earlier
+effective history. This also prevents an old preview from being replayed after
+reservations, counts, transfers, or stock positions have changed. Historical
+mistakes should be expressed as the actual missing/correct physical assertions;
+an already-recorded transition itself can still be corrected append-only with
+`stock.correct`.
+
 ## Assurance scope
 
 The executable test suite covers exact 100→10 conversion, phasing by lot, historical retention, FIFO continuity, serialized holders, active reservations, stale previews, changed retries and critical blockers. The finite TLA+ RevisionTransition model checks common-basis conservation, immutable original receipt truth, world-fenced preview, dependency blockers and at-most-once atomic conversion. Open-count gating and completed/abandoned lifecycle behavior are exercised by the public API regression suite; the finite model covers reservation/transfer blockers but does not model count lifecycle states. The bounded model does not prove all TypeScript, adapter or external application cases.
