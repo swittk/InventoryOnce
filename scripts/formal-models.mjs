@@ -2,7 +2,7 @@ import { formalCodeText } from "./formal-syntax.mjs";
 
 /** Registered InventoryOnce TLC models in deterministic execution order. */
 export const formalModels = Object.freeze(
-  ["AuthorityWriterFence", "PublishedHeadCAS", "CompositionRevision", "CollectionView", "FungibilityPool", "CatalogPublication", "ReclassificationConservation", "UseByReservation", "ResourceDimensions", "ReservationScope", "ReservationScopeAllocationReplacement", "PlacementGraph", "TraceabilityAssociation", "TraceabilityGraph", "PhysicalCount", "DualMeasure", "DistributedRights", "CorrectionHistory", "HistoricalRepair", "DurableTransferRefinement", "TransferLifecycle", "RepairLiveness", "RecordedDeficit", "SnapshotSupersededWorkflow", "InventoryOperation", "ImplementationConformance", "ReservationSafety", "PackagingIdentity"]
+  ["AuthorityWriterFence", "PublishedHeadCAS", "CompositionRevision", "CollectionView", "FungibilityPool", "CatalogPublication", "ReclassificationConservation", "RevisionTransition", "UseByReservation", "ResourceDimensions", "ReservationScope", "ReservationScopeAllocationReplacement", "PlacementGraph", "TraceabilityAssociation", "TraceabilityGraph", "PhysicalCount", "DualMeasure", "DistributedRights", "CorrectionHistory", "HistoricalRepair", "DurableTransferRefinement", "TransferLifecycle", "RepairLiveness", "RecordedDeficit", "SnapshotSupersededWorkflow", "InventoryOperation", "ImplementationConformance", "ReservationSafety", "PackagingIdentity"]
 );
 
 /** Stateful API families that must retain bounded executable trace/property evidence. */
@@ -19,6 +19,7 @@ export const statefulOperationFamilyIds = Object.freeze([
   "stock-policy-transfer",
   "transfer-lifecycle",
   "dimension-reclassification",
+  "revision-transition",
   "packaging-reclassification",
   "transformation",
   "scrap",
@@ -272,5 +273,9 @@ export function assertFormalPositiveReachabilityRegistration(
     }
     return `${config}.cfg`;
   }).sort();
-  if (new Set(registered).size !== registered.length || JSON.stringify(expected) !== JSON.stringify(registered)) throw new Error("Positive formal witness registration is incomplete or duplicated.");
+  if (
+    new Set(registered).size !== registered.length ||
+    expected.length !== registered.length ||
+    expected.some((file, index) => file !== registered[index])
+  ) throw new Error("Positive formal witness registration is incomplete or duplicated.");
 }

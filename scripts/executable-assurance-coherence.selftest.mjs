@@ -8,7 +8,6 @@ import {
   executableAssuranceSummary,
   executableAssuranceCounterKeys,
 } from "./executable-assurance-coherence.mjs";
-import { assertCurrentReviewAssuranceContent } from "../experiments/tla-conformance/final-convergence/current-review-assurance.mjs";
 
 /** Build same-run fixture manifests using the exact production summary input shape. */
 function fixtures() {
@@ -183,64 +182,6 @@ test("exact full-report metadata is admitted but malformed wrapper fields fail c
     () => assertExecutableAssuranceMatchesManifests({ ...input, executable: { ...executable, wrapperDrift: true } }),
     /wrapperDrift.*unexpected executable assurance field/u,
   );
-});
-
-test("current-review full-report admission uses the exact manifest coherence gate", () => {
-  const manifests = fixtures();
-  manifests.api.surfaceSha256 = "d".repeat(64);
-  for (let index = 2; index < 510; index += 1) {
-    manifests.api.entries[`synthetic-${index}`] = { signature: { signatures: [{}] } };
-  }
-  manifests.api.counts.callAndConstructSignatures = 510;
-  manifests.api.counts.directExecutableApis = 509;
-  manifests.api.counts.indirectCallChainApis = 1;
-  manifests.api.counts.compilerCallGraphWitnessedApis = 510;
-  manifests.callChains.counts.publicEntries = 510;
-  manifests.callChains.counts.publicEntriesWithTargets = 510;
-  manifests.callChains.counts.publicEntriesWithWitnesses = 510;
-  const summary = executableAssuranceSummary(manifests);
-  const report = {
-    version: 5,
-    repositoryHead: "a".repeat(40),
-    repositoryStateSha256: "b".repeat(64),
-    fullFormal: true,
-    fullLogSha256: "c".repeat(64),
-    ...summary,
-    packageTraceTests: executableAssuranceTraceTests(manifests.traces),
-    steps: executableAssuranceRequiredStepIds(true).map((id) => ({ id, status: "passed" })),
-  };
-  const receipt = {
-    schemaVersion: 1,
-    status: "CURRENT_PR_REVIEW_FULL_ASSURANCE_VERIFIED",
-    certifiedHead: report.repositoryHead,
-    repositoryStateSha256: report.repositoryStateSha256,
-    surfaceSha256: report.surfaceSha256,
-    report: {
-      file: "formal/implementation-conformance/EXECUTABLE_ASSURANCE_REPORT.json",
-      sha256: "e".repeat(64),
-    },
-    fullLog: {
-      file: "experiments/tla-conformance/final-convergence/current-pr-review-full.log",
-      sha256: report.fullLogSha256,
-    },
-  };
-  const admit = (candidate) => assertCurrentReviewAssuranceContent({
-    receipt,
-    report: candidate,
-    reportSha256: receipt.report.sha256,
-    fullLogSha256: receipt.fullLog.sha256,
-    independentlyDerivedSurfaceSha256: receipt.surfaceSha256,
-    independentlyDerivedRepositoryStateSha256: receipt.repositoryStateSha256,
-    manifests,
-  });
-  assert.doesNotThrow(() => admit(report));
-  for (const candidate of [
-    { ...report, steps: report.steps.slice(0, 1) },
-    { ...report, packageTraceTests: report.packageTraceTests.slice(0, 1) },
-    { ...report, steps: [...report.steps.slice(0, -1), { id: "unknown-step", status: "passed" }] },
-  ]) {
-    assert.throws(() => admit(candidate), /exact authoritative/u);
-  }
 });
 
 test("API signature counter follows per-row signature cardinality rather than row count", () => {

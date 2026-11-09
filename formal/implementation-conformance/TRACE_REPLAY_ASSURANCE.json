@@ -845,6 +845,45 @@
       ],
       "status": "covered"
     },
+    "TRACE-ITEM-REVISION-TRANSITION-EXACT": {
+      "adapters": [
+        "memory"
+      ],
+      "apiEntries": [
+        "entrypoint.kernel.createInventoryRevisionTransitionEvent",
+        "facade.stock.planRevisionTransition",
+        "facade.stock.transitionRevision"
+      ],
+      "evidence": [
+        "test/revision-transition.test.ts"
+      ],
+      "failpoints": [],
+      "finiteDomain": "A published old/new item-revision pair, exact ten-piece-to-one-box unit ratio, active reservation and transfer blockers, committed retained receipt, and world-fenced preview for a finite series of stock rows.",
+      "invariants": [
+        "OriginalReceiptNeverRewritten",
+        "ExactPhysicalQuantityConserved",
+        "TargetDefinitionMustBePublished",
+        "TransitionOccursAtMostOnce",
+        "PartialWritesStayInvisible",
+        "ActiveIsRetained"
+      ],
+      "models": [
+        "RevisionTransition",
+        "CatalogPublication",
+        "InventoryOperation",
+        "PublishedHeadCAS",
+        "ReservationScope"
+      ],
+      "operationFamilies": [
+        "revision-transition"
+      ],
+      "refinementMode": "bounded-property",
+      "resultProjection": "One committed revision-transition event atomically consumes exact old-revision positions and creates equivalent new-revision positions; old history remains unchanged.",
+      "stateProjection": [
+        "retained catalogue and current exact positions, active reservations and transfer lifecycles, immutable historical receipt and reviewed world revision"
+      ],
+      "status": "covered"
+    },
     "TRACE-LOT-METADATA-CORRECTION": {
       "adapters": [
         "memory"

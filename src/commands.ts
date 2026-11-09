@@ -23,6 +23,7 @@ import {
   defineInventoryEvent,
   type InventoryEventDraft,
   type InventoryMeasurementEvidence,
+  type InventoryRevisionTransitionEvidence,
   type InventoryPositiveLayerProvenanceTransfer,
   type InventoryStockEffect,
   type InventoryTraceabilityRelationChange,
@@ -286,6 +287,26 @@ export interface CreateInventoryReclassificationManyInput
   readonly consume: readonly InventoryReclassificationSourceLine[];
   /** Non-empty exact destination lines; total measurements must equal sources per item/package revision. */
   readonly produce: readonly InventoryReclassificationDestinationLine[];
+}
+
+/** One explicitly paired old/new stock position in a revision-transition preview. */
+export interface InventoryRevisionTransitionLine {
+  /** Exact live stock position under the retained source item revision. */
+  readonly from: InventoryStockPositionKey;
+  /** Entire exact positive vector currently accounted under the source revision. */
+  readonly sourceMeasurements: InventoryMeasurementVector;
+  /** Exact positive vector under the target revision, with explicit converted primary quantity. */
+  readonly targetMeasurements: InventoryMeasurementVector;
+}
+
+/** Commit one stock-definition change without calling a clerical correction a physical transformation. */
+export interface CreateInventoryRevisionTransitionInput extends InventoryCommandHeader {
+  /** Current full item catalogue retaining both old and target definitions. */
+  readonly catalog: InventoryCatalog;
+  /** Frozen exact conversion/revision meaning published before this operation. */
+  readonly transition: InventoryRevisionTransitionEvidence;
+  /** Complete one-to-one positions validated by the user's exact-world preview. */
+  readonly lines: readonly InventoryRevisionTransitionLine[];
 }
 
 /** One destination line in an atomic multi-item receipt. */
@@ -1418,6 +1439,54 @@ export function createInventoryReclassificationManyEvent(
       provenanceDestinations
     )
   );
+}
+
+/** Construct one atomic, separately typed revision transition from exact paired positions. */
+export function createInventoryRevisionTransitionEvent(
+  input: CreateInventoryRevisionTransitionInput
+): InventoryEventDraft {
+  assertNonEmptyMovementLines(input.lines, "revision-transition");
+  const stockEffects: InventoryStockEffect[] = [];
+  const transfers: InventoryPositiveLayerProvenanceTransfer[] = [];
+  for (const line of input.lines) {
+    const from = normalizeInventoryStockPositionKey(line.from);
+    if (from.itemId !== input.transition.itemId ||
+      from.itemRevisionId !== input.transition.fromRevisionId) {
+      throw new Error("Revision-transition source position differs from the declared source revision.");
+    }
+    const to = normalizeInventoryStockPositionKey({
+      ...from,
+      itemRevisionId: input.transition.toRevisionId,
+    });
+    // Effects are deliberately different item revisions; generic same-revision
+    // reclassification would reject this and physical transformation would
+    // incorrectly assert production genealogy for unchanged physical stock.
+    stockEffects.push({
+      itemRevisionId: from.itemRevisionId,
+      position: from,
+      measurementsDelta: negateInventoryMeasurements(line.sourceMeasurements),
+      evidence: { transactedMeasurements: line.sourceMeasurements },
+    });
+    stockEffects.push({
+      itemRevisionId: to.itemRevisionId,
+      position: to,
+      measurementsDelta: line.targetMeasurements,
+      evidence: { transactedMeasurements: line.targetMeasurements },
+    });
+    transfers.push({ from, to });
+  }
+  return defineInventoryEvent({
+    catalog: input.catalog,
+    event: {
+      ...movementEventDraft(
+        InventoryEventKind.RevisionTransition,
+        input,
+        stockEffects,
+      ),
+      revisionTransition: input.transition,
+      positiveLayerProvenanceTransfers: transfers,
+    },
+  });
 }
 
 /** Create an explicit loose/inner -> intact-package event. */

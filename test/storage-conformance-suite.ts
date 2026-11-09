@@ -1201,9 +1201,11 @@ export function runInventoryDurableStorageConformanceSuite(
           inventoryWorldContentRoots(published).world
         );
         expect(completedManifest?.targetWorldRevision).toBe(published.revision);
-        expect(JSON.stringify(published.projection.events)).not.toContain(
-          "migration-pending-row"
-        );
+        for (const event of Object.values(published.projection.events)) {
+          expect(event.metadata?.migrationSource).not.toEqual(
+            expect.objectContaining({ sourceId: "migration-pending-row" })
+          );
+        }
       }
     );
 

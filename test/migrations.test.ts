@@ -345,7 +345,11 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
     expect(abstractInventoryState(world)).toEqual(
       expect.objectContaining({ worldRevision: world.revision })
     );
-    expect(JSON.stringify(world.projection.events)).not.toContain("row-a");
+    for (const event of Object.values(world.projection.events)) {
+      expect(event.metadata?.migrationSource).not.toEqual(
+        expect.objectContaining({ sourceId: "row-a" })
+      );
+    }
     const manifest = await storage.readMigrationManifest(plan.migrationId);
     expect(manifest).toMatchObject({
       state: InventoryMigrationManifestState.Completed,

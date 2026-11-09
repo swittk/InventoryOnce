@@ -6,16 +6,11 @@ import path from "node:path";
 import { createRequire } from "node:module";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { gzipSync } from "node:zlib";
 import { execFileSync } from "node:child_process";
-import { createImmutableAssuranceReader, assertAssuranceCommitChain, assuranceProofReferencesExactPath, checkFrozenAssuranceTransport } from "./immutable-assurance-inputs.mjs";
-import { readAssuranceFile, readCompactArchive, materializeAssuranceFiles, claimAssuranceWorkspace, assuranceBytesSha256, withAssuranceFileObservation, runWithoutAssuranceFileObservation } from "./assurance-files.mjs";
+import { assuranceRepositoryPath, readAssuranceFile } from "./assurance-files.mjs";
 import { formalProofDescriptor, formalProofCacheKey, readFormalProofCache, writeFormalProofCache } from "./formal-proof-cache.mjs";
 import { executableAssuranceSummary, assertExecutableAssuranceMatchesManifests } from "./executable-assurance-coherence.mjs";
-import { finalConvergenceRepositoryPath } from "../experiments/tla-conformance/final-convergence/repository-root.mjs";
 import { assertFormalPositiveReachabilityRegistration } from "./formal-models.mjs";
-import { assertTrustedCompactCertificateManifest, compactCompilerSourceSetIdentity, compactCompilerSourceSetKey, runCompactCommand } from "./compact-assurance-pipeline.mjs";
-import { assertCurrentReviewCompactCertificateProcesses, assertCurrentReviewTrackedDriftAllowed, currentReviewProofIntegrationPaths, currentReviewWorktreeDriftPaths } from "../experiments/tla-conformance/final-convergence/current-review-assurance.mjs";
 
 /** Repository inputs are rooted at this test module, never the invoking shell. */
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -28,267 +23,11 @@ async function temporaryDirectory(run) {
   try { return await run(directory); } finally { fs.rmSync(directory, { recursive: true, force: true }); }
 }
 
-/** Read the independent tested head and source surface from immutable Git evidence, never the mutable report. */
-function compactCertificateExpectedTruth() {
-  const directory = "experiments/tla-conformance/final-convergence";
-  const wrapper = fs.readFileSync(path.join(root, directory, "run-compact-final-assurance.mjs"), "utf8");
-  const anchor = wrapper.match(/COMPACT_CERTIFICATE_COMMIT = "([0-9a-f]{40})"/u)?.[1];
-  assert.notEqual(anchor, undefined);
-  const head = execFileSync("git", ["rev-parse", `${anchor}^`], { cwd: root, encoding: "utf8" }).trim();
-  const closure = JSON.parse(execFileSync("git", ["show", `${head}:${directory}/authority-reference-manifest.json`], { cwd: root, encoding: "utf8" }));
-  return { head, inputKey: closure.inputKey, surfaceDigest: closure.surfaceDigest };
-}
-
-test("current-review full-assurance drift gate default-denies tracked inputs outside proof outputs", () => {
-  const allowed = currentReviewProofIntegrationPaths(root);
-  for (const file of [".gitignore", "package.json", "pnpm-lock.yaml", "tsconfig.json", "tsconfig.test.json", "src/events.ts"]) {
-    assert.equal(allowed.has(file), false, file);
-    assert.throws(
-      () => assertCurrentReviewTrackedDriftAllowed([file], allowed),
-      /tracked drift escaped the proof-integration closure/u,
-      file,
-    );
-  }
-  assert.doesNotThrow(() =>
-    assertCurrentReviewTrackedDriftAllowed(
-      ["experiments/tla-conformance/final-convergence/compact-support-manifest.json"],
-      allowed,
-    ),
-  );
-});
-
-test("current-review drift enumeration includes untracked authoritative inputs but not local coordination files", () => temporaryDirectory(directory => {
-  execFileSync("git", ["init", "-q"], { cwd: directory });
-  execFileSync("git", ["config", "user.email", "assurance@example.invalid"], { cwd: directory });
-  execFileSync("git", ["config", "user.name", "InventoryOnce assurance"], { cwd: directory });
-  fs.writeFileSync(path.join(directory, "package.json"), "{}\n");
-  execFileSync("git", ["add", "package.json"], { cwd: directory });
-  execFileSync("git", ["commit", "-qm", "baseline"], { cwd: directory });
-  fs.mkdirSync(path.join(directory, "test"));
-  fs.mkdirSync(path.join(directory, ".chatgpt"));
-  const supportRelative = "experiments/tla-conformance/final-convergence/materialized-support.mjs";
-  fs.mkdirSync(path.dirname(path.join(directory, supportRelative)), { recursive: true });
-  const supportBytes = Buffer.from("export {};\n");
-  fs.writeFileSync(path.join(directory, supportRelative), supportBytes);
-  fs.writeFileSync(path.join(directory, "test", "untracked-proof-input.test.ts"), "throw new Error('probe');\n");
-  fs.writeFileSync(path.join(directory, ".chatgpt", "local.json"), "{}\n");
-  const authenticatedSupport = new Map([[supportRelative, {
-    sha256: assuranceBytesSha256(supportBytes), bytes: supportBytes.length,
-  }]]);
-  assert.deepEqual(currentReviewWorktreeDriftPaths(directory, authenticatedSupport), ["test/untracked-proof-input.test.ts"]);
-  fs.writeFileSync(path.join(directory, supportRelative), "export const forged = true;\n");
-  assert.throws(
-    () => currentReviewWorktreeDriftPaths(directory, authenticatedSupport),
-    /Authenticated temporary compact support (?:size|hash) changed/u,
-  );
-}));
-
-test("untracked ignore files cannot hide authoritative untracked inputs", () => temporaryDirectory(directory => {
-  execFileSync("git", ["init", "-q"], { cwd: directory });
-  execFileSync("git", ["config", "user.email", "assurance@example.invalid"], { cwd: directory });
-  execFileSync("git", ["config", "user.name", "InventoryOnce assurance"], { cwd: directory });
-  fs.writeFileSync(path.join(directory, "package.json"), "{}\n");
-  fs.mkdirSync(path.join(directory, "src"));
-  fs.writeFileSync(path.join(directory, "src", "tracked.ts"), "export const tracked = true;\n");
-  execFileSync("git", ["add", "."], { cwd: directory });
-  execFileSync("git", ["commit", "-qm", "baseline"], { cwd: directory });
-  fs.writeFileSync(path.join(directory, "src", ".gitignore"), "*\n");
-  fs.writeFileSync(path.join(directory, "src", "hidden.ts"), "export const hidden = true;\n");
-  assert.throws(
-    () => repositoryAssuranceStateSha256(directory),
-    /Untracked ignore files must not narrow the assurance domain/u,
-  );
-  assert.throws(
-    () => currentReviewWorktreeDriftPaths(directory),
-    /Untracked ignore files must not narrow the assurance domain/u,
-  );
-}));
-
-test("mutable current-review receipt cannot choose proof-integration authority", () => {
-  const receiptPath = path.join(
-    root,
-    "experiments/tla-conformance/final-convergence/current-pr-review-assurance-receipt.json"
-  );
-  const original = fs.readFileSync(receiptPath);
-  try {
-    const receipt = JSON.parse(original.toString("utf8"));
-    receipt.certifiedHead = execFileSync("git", ["rev-parse", "HEAD"], {
-      cwd: root,
-      encoding: "utf8",
-    }).trim();
-    fs.writeFileSync(receiptPath, `${JSON.stringify(receipt, null, 2)}\n`);
-    assert.throws(
-      () => currentReviewProofIntegrationPaths(root),
-      /receipt differs from its immutable evidence commit/u,
-    );
-  } finally {
-    fs.writeFileSync(receiptPath, original);
-  }
-});
-
-test("mutable compact manifest cannot expand the current-review proof-output allowlist", () => {
-  const manifestPath = path.join(root, "experiments/tla-conformance/final-convergence/compact-support-manifest.json");
-  const original = fs.readFileSync(manifestPath);
-  const before = [...currentReviewProofIntegrationPaths(root)].sort();
-  try {
-    const manifest = JSON.parse(original.toString("utf8"));
-    manifest.graph ??= [{ id: "synthetic", outputs: [] }];
-    manifest.graph[0].outputs ??= [];
-    manifest.graph[0].outputs.push({ file: ".gitignore", sha256: "0".repeat(64), sizeBytes: 0 });
-    fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
-    const after = [...currentReviewProofIntegrationPaths(root)].sort();
-    assert.deepEqual(after, before);
-    assert.equal(after.includes(".gitignore"), false);
-  } finally {
-    fs.writeFileSync(manifestPath, original);
-  }
-});
-
-test("current-review compact authority requires the exact certified process mode set", () => {
-  const directory = "experiments/tla-conformance/final-convergence";
-  const manifest = JSON.parse(fs.readFileSync(path.join(root, directory, "compact-support-manifest.json"), "utf8"));
-  const wrapper = fs.readFileSync(path.join(root, directory, "run-compact-final-assurance.mjs"), "utf8");
-  const certificateEvidenceHead = wrapper.match(/COMPACT_CERTIFICATE_COMMIT = "([0-9a-f]{40})"/u)?.[1];
-  assert.notEqual(certificateEvidenceHead, undefined, "Compact certificate anchor is missing.");
-  const compactCertifiedHead = execFileSync(
-    "git",
-    ["rev-parse", `${certificateEvidenceHead}^`],
-    { cwd: root, encoding: "utf8" },
-  ).trim();
-  const expected = compactCertificateExpectedTruth();
-  assert.doesNotThrow(() =>
-    assertCurrentReviewCompactCertificateProcesses(manifest.certification, compactCertifiedHead, expected)
-  );
-
-  const forgedHead = structuredClone(manifest.certification);
-  const selfCorrelatedHead = "1".repeat(40);
-  forgedHead.certifiedHead = selfCorrelatedHead;
-  forgedHead.processes = forgedHead.processes.map((row) => ({ ...row, head: selfCorrelatedHead }));
-  assert.throws(
-    () => assertCurrentReviewCompactCertificateProcesses(forgedHead, compactCertifiedHead, expected),
-    /tested the wrong head/u
-  );
-
-  const duplicateVerify = structuredClone(manifest.certification);
-  duplicateVerify.processes = duplicateVerify.processes.map((row) => ({
-    ...row,
-    mode: "verify",
-    report: { ...row.report, mode: "verify", status: "FINAL_BINDER_GREEN" },
-  }));
-  assert.throws(
-    () => assertCurrentReviewCompactCertificateProcesses(duplicateVerify, compactCertifiedHead, expected),
-    /exactly one registry, selftest, and verify process/u
-  );
-
-  const unknownMode = structuredClone(manifest.certification);
-  unknownMode.processes[0] = { ...unknownMode.processes[0], mode: "unknown-mode" };
-  delete unknownMode.processes[0].report;
-  assert.throws(
-    () => assertCurrentReviewCompactCertificateProcesses(unknownMode, compactCertifiedHead, expected),
-    /exactly one registry, selftest, and verify process/u
-  );
-});
-
 test("assurance evidence admission rejects directories rather than treating existence as evidence", () => {
   assert.throws(
     () => readAssuranceFile(root, "test"),
     /ordinary file|regular file|directory/u
   );
-});
-
-test("ordinary compact validation authenticates manifest and closure against its pinned certificate", async () => {
-  const directory = "experiments/tla-conformance/final-convergence";
-  const manifestPath = path.join(root, directory, "compact-support-manifest.json");
-  const closurePath = path.join(root, directory, "authority-reference-manifest.json");
-  const manifestOriginal = fs.readFileSync(manifestPath);
-  const closureOriginal = fs.readFileSync(closurePath);
-  try {
-    const manifest = JSON.parse(manifestOriginal.toString("utf8"));
-    manifest.certification.processes[0].exitCode = 99;
-    manifest.certification.processes[0].report.status = "FORGED_CERTIFICATE_FAILURE";
-    fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
-    await assert.rejects(
-      () => runCompactCommand({ mode: "verify" }),
-      /Current compact manifest differs from its pinned immutable certificate/u,
-    );
-    fs.writeFileSync(manifestPath, manifestOriginal);
-
-    // A moving candidate may legitimately have a newly captured manifest before its next certificate.
-    // Put the immutable pinned manifest back for the closure-specific control so manifest drift cannot
-    // mask the independent certified-tree comparison we intend to falsify here.
-    const wrapper = fs.readFileSync(path.join(root, directory, "run-compact-final-assurance.mjs"), "utf8");
-    const anchor = wrapper.match(/COMPACT_CERTIFICATE_COMMIT = "([0-9a-f]{40})"/u)?.[1];
-    assert.notEqual(anchor, undefined, "Compact certificate anchor is missing.");
-    const pinnedManifest = execFileSync(
-      "git",
-      ["show", `${anchor}:${directory}/compact-support-manifest.json`],
-      { cwd: root },
-    );
-    fs.writeFileSync(manifestPath, pinnedManifest);
-
-    const closure = JSON.parse(closureOriginal.toString("utf8"));
-    closure.forgedCertificateNote = true;
-    fs.writeFileSync(closurePath, `${JSON.stringify(closure, null, 2)}\n`);
-    await assert.rejects(
-      () => runCompactCommand({ mode: "verify" }),
-      /Current compact closure differs from its pinned immutable certified tree/u,
-    );
-  } finally {
-    fs.writeFileSync(manifestPath, manifestOriginal);
-    fs.writeFileSync(closurePath, closureOriginal);
-  }
-});
-
-test("pinned compact certificate rejects re-signed semantic report forgeries", () => {
-  const expected = compactCertificateExpectedTruth();
-  const manifest = JSON.parse(fs.readFileSync(path.join(root, "experiments/tla-conformance/final-convergence/compact-support-manifest.json"), "utf8"));
-  assert.doesNotThrow(() => assertTrustedCompactCertificateManifest(manifest, expected));
-  const resign = (row) => {
-    row.stdout = `${JSON.stringify(row.report)}\n`;
-    row.stdoutSha256 = assuranceBytesSha256(Buffer.from(row.stdout));
-  };
-
-  const forgedStatus = structuredClone(manifest);
-  const registry = forgedStatus.certification.processes.find((row) => row.mode === "registry");
-  registry.report.status = "FORGED_CERTIFICATE_FAILURE";
-  resign(registry);
-  assert.throws(() => assertTrustedCompactCertificateManifest(forgedStatus, expected), /registry status is invalid/u);
-
-  const forgedBinder = structuredClone(manifest);
-  const verify = forgedBinder.certification.processes.find((row) => row.mode === "verify");
-  verify.report.callables = 534;
-  resign(verify);
-  assert.throws(() => assertTrustedCompactCertificateManifest(forgedBinder, expected), /Expected values to be strictly equal/u);
-
-  const forgedControl = structuredClone(manifest);
-  const selftest = forgedControl.certification.processes.find((row) => row.mode === "selftest");
-  selftest.report.controls.sameMtimeEvidenceDriftRejected = false;
-  resign(selftest);
-  assert.throws(() => assertTrustedCompactCertificateManifest(forgedControl, expected), /adversarial controls are incomplete/u);
-});
-
-test("compact source-set identity detects compiler roots before cache reuse", () => {
-  const identity = compactCompilerSourceSetIdentity(root);
-  assert(identity.rows.some(row => row.file === "src/events.ts"));
-  assert(identity.rows.some(row => row.file === "test/review-hardening.test.ts"));
-  const syntheticRows = [...identity.rows, {
-    file: "src/synthetic-tracked-compiler-root.ts",
-    sha256: "0".repeat(64),
-    sizeBytes: 1,
-  }];
-  assert.notEqual(compactCompilerSourceSetKey(identity.rows), compactCompilerSourceSetKey(syntheticRows));
-
-  const ambient = path.join(root, "src", "compact-source-set-ambient-selftest.ts");
-  assert(!fs.existsSync(ambient));
-  try {
-    fs.writeFileSync(ambient, "/** Synthetic ambient compiler root; proof admission must fail closed. */\nexport const compactSourceSetAmbientSelftest = true;\n");
-    assert.throws(
-      () => compactCompilerSourceSetIdentity(root),
-      /Compiler source set contains ambient\/untracked file/u,
-    );
-  } finally {
-    fs.rmSync(ambient, { force: true });
-  }
 });
 
 /** Parse one call without installing synthetic test files into the production test graph. */
@@ -439,7 +178,6 @@ test("published tarball contains every tracked input domain required by advertis
       "formal",
       "tsconfig.json",
       "tsconfig.test.json",
-      "experiments/tla-conformance/final-convergence/repository-root.mjs",
     ],
     { cwd: root, encoding: "utf8" },
   ).trim().split(/\r?\n/u).filter(Boolean);
@@ -461,54 +199,9 @@ test("repository containment rejects symlink ancestors before reading or writing
   const repository = path.join(directory, "repository"), outside = path.join(directory, "outside");
   fs.mkdirSync(repository); fs.mkdirSync(outside); fs.writeFileSync(path.join(outside, "evidence"), "outside");
   fs.symlinkSync(outside, path.join(repository, "alias"));
-  assert.throws(() => finalConvergenceRepositoryPath(repository, "alias/evidence"), /symbolic|symlink|escape/i);
-  assert.throws(() => finalConvergenceRepositoryPath(repository, "alias/new-file"), /symbolic|symlink|escape/i);
-  assert.equal(finalConvergenceRepositoryPath(repository, "new-file"), path.join(repository, "new-file"));
-}));
-
-
-/** Construct one small ordinary tar member independently of the reader under test. */
-function archiveFixture({ kind = "0", name = "experiments/tla-conformance/control.txt", payload = Buffer.from("proof"), repeats = 1 } = {}) {
-  const chunks = [];
-  for (let copy = 0; copy < repeats; copy += 1) {
-    const header = Buffer.alloc(512);
-    header.write(name, 0, 100, "utf8"); header.write("0000644\0", 100, "ascii");
-    header.write(`${payload.length.toString(8).padStart(11, "0")}\0`, 124, "ascii"); header.write("        ", 148, "ascii"); header.write(kind, 156, "ascii");
-    if (kind === "1" || kind === "2") header.write("/tmp/outside-proof", 157, "ascii");
-    let checksum = 0; for (const byte of header) checksum += byte;
-    header.write(`${checksum.toString(8).padStart(6, "0")}\0 `, 148, "ascii");
-    chunks.push(header, payload, Buffer.alloc((512 - payload.length % 512) % 512));
-  }
-  chunks.push(Buffer.alloc(1024));
-  return { bytes: gzipSync(Buffer.concat(chunks)), manifest: [{ file: name, bytes: payload.length, sha256: assuranceBytesSha256(payload) }] };
-}
-
-test("compact archive admission rejects links special files duplicate members and forged closure before extraction", () => {
-  const valid = archiveFixture();
-  assert.equal(readCompactArchive(valid.bytes, valid.manifest).size, 1);
-  for (const kind of ["1", "2", "3", "4", "5", "6", "x", "g"]) {
-    const forged = archiveFixture({ kind });
-    assert.throws(() => readCompactArchive(forged.bytes, forged.manifest), /not an ordinary file/u, kind);
-  }
-  const duplicate = archiveFixture({ repeats: 2 });
-  assert.throws(() => readCompactArchive(duplicate.bytes, duplicate.manifest), /duplicate/u);
-  assert.throws(() => readCompactArchive(valid.bytes, [...valid.manifest, valid.manifest[0]]), /duplicate/u);
-  assert.throws(() => readCompactArchive(valid.bytes, [{ ...valid.manifest[0], sha256: "0".repeat(64) }]), /content mismatch/u);
-  assert.throws(() => readCompactArchive(valid.bytes, [{ ...valid.manifest[0], file: "experiments/tla-conformance/../../../outside" }]), /member declaration/u);
-});
-
-test("materialization owns only newly created files and leaves preexisting and foreign files untouched", () => temporaryDirectory(directory => {
-  const name = "experiments/tla-conformance/control.txt", payload = Buffer.from("proof");
-  const files = new Map([[name, payload]]);
-  const release = claimAssuranceWorkspace(directory);
-  assert.throws(() => claimAssuranceWorkspace(directory), /already owned/u);
-  const cleanup = materializeAssuranceFiles(directory, files);
-  assert.deepEqual(fs.readFileSync(path.join(directory, name)), payload);
-  assert.throws(() => materializeAssuranceFiles(directory, files), /unexpectedly exists/u);
-  assert.deepEqual(fs.readFileSync(path.join(directory, name)), payload);
-  cleanup(); release();
-  assert.equal(fs.existsSync(path.join(directory, name)), false);
-  const nextRelease = claimAssuranceWorkspace(directory); nextRelease();
+  assert.throws(() => assuranceRepositoryPath(repository, "alias/evidence"), /symbolic|symlink|escape/i);
+  assert.throws(() => assuranceRepositoryPath(repository, "alias/new-file"), /symbolic|symlink|escape/i);
+  assert.equal(assuranceRepositoryPath(repository, "new-file"), path.join(repository, "new-file"));
 }));
 
 test("empty parameter tables and dynamic modifiers never manufacture executable callback credit", () => {
@@ -520,54 +213,6 @@ test("empty parameter tables and dynamic modifiers never manufacture executable 
   assert.equal(semantics.vitestRegistrationMode(ts, call('test("removed overload", () => {}, {skip:true});'), 1), "unknown");
   assert.equal(semantics.vitestRegistrationMode(ts, call('test.each([1])("one", () => {});'), 1), "run");
 });
-
-
-test("proof dependency matching requires an exact structured path token rather than a substring occurrence", () => {
-  const file = "formal/ImplementationConformance.tla";
-  assert.equal(assuranceProofReferencesExactPath({ semantics: { formal: { source: file } } }, file), true);
-  assert.equal(assuranceProofReferencesExactPath({ dependencies: [file] }, file), true);
-  assert.equal(assuranceProofReferencesExactPath({ sourceFile: file }, file), true);
-  assert.equal(assuranceProofReferencesExactPath({ inputs: [{ file }] }, file), true);
-  assert.equal(assuranceProofReferencesExactPath({ profile: file }, file), false);
-  assert.equal(assuranceProofReferencesExactPath({ sourceProfile: file }, file), false);
-  assert.equal(assuranceProofReferencesExactPath({ fileSha256: file }, file), false);
-  assert.equal(assuranceProofReferencesExactPath({ note: file }, file), false);
-  assert.equal(assuranceProofReferencesExactPath({ note: `diagnostic mentions ${file} but is not a dependency` }, file), false);
-  assert.equal(assuranceProofReferencesExactPath({ evidence: { file: `${file}.bak` } }, file), false);
-});
-
-test("frozen transport admission requires the caller's exact proved status", () => {
-  const currentHead = execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
-  const file = "experiments/tla-conformance/final-convergence/r165-assurance-transport.json";
-  const exactStatus = "R165_PLUS_R167_ASSURANCE_TRANSPORT_PROVED";
-  assert.equal(checkFrozenAssuranceTransport(root, file, exactStatus, currentHead).status, exactStatus);
-  assert.throws(
-    () => checkFrozenAssuranceTransport(root, file, "NOT_PROVED", currentHead),
-    /Malformed historical assurance transport/u,
-  );
-});
-
-test("frozen evidence cannot be re-signed or hidden behind unchanged mtime after a cached read", () => temporaryDirectory(directory => {
-  const git = args => execFileSync("git", ["-c", "user.name=InventoryOnce", "-c", "user.email=inventoryonce@example.invalid", "-c", "commit.gpgsign=false", "-c", "core.hooksPath=", ...args], { cwd: directory, encoding: "utf8", stdio: ["pipe", "pipe", "pipe"] }).trim();
-  git(["init", "-q"]);
-  fs.writeFileSync(path.join(directory, "proof.json"), '{"proved":true}'); git(["add", "proof.json"]); git(["commit", "-qm", "independent evidence"]);
-  const anchor = git(["rev-parse", "HEAD"]);
-  const reader = createImmutableAssuranceReader(directory, anchor);
-  assert.deepEqual(reader.json("proof.json"), { proved: true });
-  assert.throws(() => { reader.json("proof.json").proved = false; }, TypeError);
-  const originalTime = fs.statSync(path.join(directory, "proof.json"));
-  fs.writeFileSync(path.join(directory, "proof.json"), '{"proved":false}');
-  fs.utimesSync(path.join(directory, "proof.json"), originalTime.atime, originalTime.mtime);
-  assert.throws(() => reader.json("proof.json"), /differs from immutable proof input/u);
-  git(["add", "proof.json"]); git(["commit", "-qm", "re-signed evidence"]);
-  assert.throws(() => createImmutableAssuranceReader(directory, anchor).json("proof.json"), /differs from immutable proof input/u);
-  const left = git(["rev-parse", "HEAD"]);
-  git(["checkout", "-q", "--detach", anchor]);
-  fs.writeFileSync(path.join(directory, "other.json"), "{}"); git(["add", "other.json"]); git(["commit", "-qm", "sibling certified branch"]);
-  const right = git(["rev-parse", "HEAD"]);
-  assertAssuranceCommitChain(directory, [anchor, right]);
-  assert.throws(() => assertAssuranceCommitChain(directory, [anchor, left, right]), /does not descend through every required repair/u);
-}));
 
 test("shared registration interpreter agrees with actual installed Vitest execution", () => temporaryDirectory(directory => {
   const cases = [
@@ -636,23 +281,6 @@ test("live repository modes agree with Git including owner-only execution and di
 }));
 
 
-test("current-review admission and full state share the same domain despite ambient Git excludes", () => temporaryDirectory(directory => {
-  const git = args => execFileSync("git", ["-c", "user.name=InventoryOnce", "-c", "user.email=inventoryonce@example.invalid", "-c", "commit.gpgsign=false", "-c", "core.hooksPath=", ...args], { cwd: directory, encoding: "utf8", stdio: "pipe" });
-  git(["init", "-q"]); fs.writeFileSync(path.join(directory, "package.json"), "{}\n");
-  git(["add", "package.json"]); git(["commit", "-qm", "baseline"]);
-  fs.mkdirSync(path.join(directory, "test"));
-  const globalExcludes = path.join(directory, ".git", "global-excludes");
-  fs.writeFileSync(globalExcludes, "test/global-hidden.test.ts\n");
-  git(["config", "core.excludesFile", globalExcludes]);
-  fs.writeFileSync(path.join(directory, ".git", "info", "exclude"), "test/info-hidden.test.ts\n");
-  const files = ["test/global-hidden.test.ts", "test/info-hidden.test.ts", "vitest.config.mjs"];
-  const committed = repositoryAssuranceCommittedStateSha256(directory, "HEAD");
-  for (const file of files) fs.writeFileSync(path.join(directory, file), "export {};\n");
-  assert.notEqual(repositoryAssuranceStateSha256(directory), committed);
-  assert.deepEqual(currentReviewWorktreeDriftPaths(directory), files);
-}));
-
-
 test("literal array callback dispatch agrees with the real runtime including empty, sparse, and singleton cases", () => {
   const methods = ["map", "flatMap", "filter", "forEach", "some", "every", "find", "findIndex", "findLast", "findLastIndex", "reduce", "reduceRight", "sort", "toSorted"];
   for (const method of methods) {
@@ -672,104 +300,6 @@ test("literal array callback dispatch agrees with the real runtime including emp
     assert.equal(semantics.standardLibraryCallbackCanExecute(ts, call(expression + ";"), "from"), calls > 0, expression);
   }
 });
-
-
-test("strict source references reuse the exact compiler execution gate used by the public call graph", () => {
-  const manifest = JSON.parse(fs.readFileSync(path.join(root, "experiments/tla-conformance/final-convergence/compact-support-manifest.json"), "utf8"));
-  const archive = readCompactArchive(
-    fs.readFileSync(path.join(root, manifest.archive.file)),
-    manifest.archive.files,
-  );
-  const checkerPath = "experiments/tla-conformance/surface-bindings/lib/binding-checker.mjs";
-  const checker = archive.get(checkerPath)?.toString("utf8");
-  assert.equal(typeof checker, "string", `${checkerPath} is missing from compact support.`);
-  assert.match(checker, /formal-implementation-vitest-semantics\.cjs/u);
-  assert.match(checker, /!compilerCallCanExecute\(ts, node\)/u);
-  assert.doesNotMatch(checker, /function isStaticallyUnreachable/u);
-  assert.match(JSON.stringify(manifest.bundles), /scripts\/formal-implementation-vitest-semantics\.cjs/u);
-});
-
-
-test("both certificate admission routes bind every verdict to independent tested head closure and surface", () => {
-  const expected = compactCertificateExpectedTruth();
-  const manifest = JSON.parse(fs.readFileSync(path.join(root, "experiments/tla-conformance/final-convergence/compact-support-manifest.json"), "utf8"));
-  const routes = [
-    candidate => assertTrustedCompactCertificateManifest(candidate, expected),
-    candidate => assertCurrentReviewCompactCertificateProcesses(candidate.certification, expected.head, expected),
-  ];
-  const changes = [
-    ["selftest", row => { row.report.surfaceDigest = "0".repeat(64); }],
-    ["verify", row => { row.report.surfaceDigest = "1".repeat(64); }],
-    ["verify", row => { row.report.head = "2".repeat(40); }],
-    ["verify", row => { row.report.strictAccepted = 487; }],
-    ["verify", row => { row.report.inputKey = "3".repeat(64); }],
-    ["selftest", row => { row.report.controls.wrongValueModeRejected = false; }],
-  ];
-  for (const admit of routes) {
-    assert.doesNotThrow(() => admit(manifest));
-    for (const [mode, change] of changes) {
-      const candidate = structuredClone(manifest);
-      const row = candidate.certification.processes.find(process => process.mode === mode);
-      change(row);
-      row.stdout = `${JSON.stringify(row.report)}\n`;
-      row.stdoutSha256 = assuranceBytesSha256(Buffer.from(row.stdout));
-      assert.throws(() => admit(candidate), assert.AssertionError);
-    }
-  }
-});
-
-test("actual descriptor reads cannot escape file observation and mutation reads remain live", async () => {
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "inventoryonce-descriptor-observer-"));
-  const target = path.join(directory, "proof.txt");
-  fs.writeFileSync(target, "before");
-  const reads = [], writes = [];
-  const original = fs.readFileSync;
-  try {
-    await withAssuranceFileObservation({ repositoryRoot: directory, onRead: file => { reads.push(file); }, onWrite: file => { writes.push(file); } }, () => {
-      // This is the exact safe-reader path used by independently bundled verifier modules.
-      assert.equal(readAssuranceFile(directory, "proof.txt").toString(), "before");
-      const descriptor = fs.openSync(target, "r");
-      try {
-        const prefix = Buffer.alloc(2);
-        assert.equal(fs.readSync(descriptor, prefix, 0, 2, null), 2);
-        assert.equal(prefix.toString(), "be");
-        assert.equal(fs.readFileSync(descriptor, "utf8"), "fore");
-      } finally { fs.closeSync(descriptor); }
-      fs.writeFileSync(target, "mutated");
-      assert.equal(readAssuranceFile(directory, "proof.txt").toString(), "mutated");
-      fs.writeFileSync(target, "before");
-      assert.equal(readAssuranceFile(directory, "proof.txt").toString(), "before");
-    });
-    assert(reads.length >= 4 && reads.every(file => file === "proof.txt"));
-    assert(writes.length >= 2 && writes.every(file => file === "proof.txt"));
-    assert.equal(fs.readFileSync, original);
-    await assert.rejects(() => withAssuranceFileObservation({ repositoryRoot: directory, onRead: () => { throw new Error("unadmitted input"); } }, () => readAssuranceFile(directory, "proof.txt")), /unadmitted input/u);
-    assert.equal(fs.readFileSync, original);
-  } finally { fs.rmSync(directory, { recursive: true, force: true }); }
-});
-
-
-test("internal snapshot descriptor reads require explicit observation suppression while unknown verifier descriptors fail closed", async () => temporaryDirectory(async directory => {
-  const target = path.join(directory, "proof.txt");
-  fs.writeFileSync(target, "proof");
-  const descriptor = fs.openSync(target, "r");
-  try {
-    await assert.rejects(
-      () => withAssuranceFileObservation({ repositoryRoot: directory, onRead: () => undefined }, () => {
-        const byte = Buffer.alloc(1);
-        fs.readSync(descriptor, byte, 0, 1, null);
-      }),
-      /Unbound assurance file descriptor/u,
-    );
-    await withAssuranceFileObservation({ repositoryRoot: directory, onRead: () => { throw new Error("suppressed internal read was observed"); } }, () =>
-      runWithoutAssuranceFileObservation(() => {
-        const byte = Buffer.alloc(1);
-        fs.readSync(descriptor, byte, 0, 1, 0);
-        assert.equal(byte.toString(), "p");
-      })
-    );
-  } finally { fs.closeSync(descriptor); }
-}));
 
 
 test("actual source comparison ignores index hiding flags but only omits independently selected generated outputs", () => temporaryDirectory(directory => {

@@ -5,6 +5,7 @@
 ## Implemented truth
 
 - Every stock position names an immutable item revision. Package-shaped stock also names the exact immutable package revision. Heterogeneous package compositions, read-only collections, and mutual-fungibility pools are separate immutable catalogue revisions. Catalogue construction deep-copies and freezes caller-owned revision values so later alias mutation cannot change replay.
+- Item definitions remain immutable, but item configurations can be revised by publishing a newer active definition and explicitly transitioning current stock with the exact `stock.planRevisionTransition` / `stock.transitionRevision` workflow; historical receipts are not rewritten. See [prospective item-revision transitions](docs/item-revision-transitions.md).
 - Quantity is an exact vector: one primary stock axis plus independently measured axes such as actual weight. No epsilon math or guessed unit conversion is used.
 - Event `occurredAtEpochMs` is the real-world time as safe-integer epoch milliseconds. Durable `recordedAtEpochMs` and `recordSequence` say when and where the fact was stored.
 - A stock position has one optional **direct placement node**. Placement nodes are generic application identities: the kernel does not know or special-case rooms, shelves, boxes, trolleys, vehicles, people, or any other domain noun.
