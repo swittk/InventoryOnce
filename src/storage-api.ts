@@ -18,12 +18,16 @@ export {
   type InventoryHistoricalDependencyReader,
   type LoadInventoryHistoricalDependencyComponentInput,
 } from "./historical-dependencies.js";
-/** Prepare the normal issue batch and read its exact picks from an event. */
+/** Prepare ordinary stock movements on a scoped read and decode saved batch picks. */
 export {
   inventoryPolicyBatchAllocationsFromEvent,
   prepareInventoryPolicyIssueBatch,
+  prepareInventoryPolicyScrap,
+  prepareInventoryPolicyTransferBatch,
   readInventoryPolicyBatchResult,
   type InventoryPolicyBatchPlanningScope,
   type PrepareInventoryPolicyIssueBatchInput,
+  type PrepareInventoryPolicyScrapInput,
+  type PrepareInventoryPolicyTransferBatchInput,
   type PreparedInventoryPolicyIssueBatch,
 } from "./facade.js";

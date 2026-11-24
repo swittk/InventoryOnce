@@ -4,7 +4,7 @@ This file is generated from the exact TypeScript surface plus the checked API, f
 
 Use the repository `.nvmrc` when one exists; otherwise run the assurance command with a Node version permitted by `package.json#engines`. Edit only checked source/manifests, run `pnpm assurance:generate` when generated evidence must change, then run `pnpm assurance --write-report`.
 
-Surface SHA-256: `9d9444399f98b1145cadbe84038f01c310334ba65e3f7562d6f0da8108d2e4fc`
+Surface SHA-256: `d0a547fd1ed2d1b32814623d8d72022facb28ef2a5a6db1b174a981401f675a5`
 
 ## Mechanically covered surface
 
@@ -12,13 +12,13 @@ Surface SHA-256: `9d9444399f98b1145cadbe84038f01c310334ba65e3f7562d6f0da8108d2e4
 - Authority-port methods: 14
 - Durable-storage-port methods: 17
 - Public exported class methods: 109
-- Root callable exports: 104
-- Storage callable exports: 40
+- Root callable exports: 106
+- Storage callable exports: 42
 - Migration callable exports: 15
 - Kernel callable exports: 193
-- Reachable public data types: 484
-- Classified public fields: 2876
-- Input-reachable fields: 2402
+- Reachable public data types: 486
+- Classified public fields: 2882
+- Input-reachable fields: 2408
 - Output-reachable fields: 1113
 - Callback-argument-reachable fields: 417
 - Callback-result-reachable fields: 471
@@ -26,8 +26,8 @@ Surface SHA-256: `9d9444399f98b1145cadbe84038f01c310334ba65e3f7562d6f0da8108d2e4
 - Optional fields: 1151
 - Explicit undefined-union fields: 11
 - Explicit nullable fields: 9
-- Public call/construct overload signatures: 629
-- Directly executed public APIs: 267
+- Public call/construct overload signatures: 633
+- Directly executed public APIs: 271
 - Public APIs exercised through tested internal call chains: 358
 - Explicit-gap public APIs: 4
 - Unreferenced public APIs: 0
@@ -40,7 +40,7 @@ Any added/removed method, callable export, class method, type field, field type,
 
 | Family | API entries | Formal models | Status | Gaps |
 |---|---:|---|---|---|
-| allocation-helper | 8 | ReservationScope, ReservationSafety, UseByReservation, PlacementGraph, PackagingIdentity, FungibilityPool, ResourceDimensions | covered | — |
+| allocation-helper | 12 | ReservationScope, ReservationSafety, UseByReservation, PlacementGraph, PackagingIdentity, FungibilityPool, ResourceDimensions | covered | — |
 | authority-control | 31 | AuthorityWriterFence | covered | — |
 | authority-cutover | 4 | AuthorityWriterFence, CatalogPublication, PublishedHeadCAS, RepairLiveness, SnapshotSupersededWorkflow | covered | GAP-LEGACY-SOURCE-INTERPRETATION |
 | catalog-definition | 76 | CatalogPublication, PackagingIdentity, CompositionRevision, CollectionView, FungibilityPool | covered | GAP-HASH-COLLISION-ASSUMPTION |
@@ -86,7 +86,7 @@ Any added/removed method, callable export, class method, type field, field type,
 
 | Classification | Fields |
 |---|---:|
-| abstract-semantic | 1395 |
+| abstract-semantic | 1401 |
 | application decoration | 13 |
 | identity/retry-semantic | 852 |
 | observational/audit-only | 595 |

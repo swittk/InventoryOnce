@@ -1867,3 +1867,8 @@ The R105 portable-current-input authority and final publication both continue to
 - Stock inspection and the lot picker need physical capacity, lot and placement expiry, and active holds on their exact current positions. They do not display the reservation feasibility report.
 - The scoped reducer takes those exact allocation rows and the whole affected deficit pool. It uses the full availability reducer's existing signed stock and deficit math. It does not open the claim book or synthesize missing broad and unbacked claim facts.
 - Full reservation reads still compute their complete feasibility report and retain their original output.
+
+2026-11-24 - Prepare normal transfer and scrap from exact stock pools
+
+- The stock adapter already supplies pinned pools for a policy issue. Export the same facade preparation for transfer batches and physical scrap so those commands also use its exact intent, allocator, deficit rules and event.
+- The facade keeps its previous command paths. The new planner takes only projection, claim state and recording time. An adapter must still commit the returned event against the revision it read.

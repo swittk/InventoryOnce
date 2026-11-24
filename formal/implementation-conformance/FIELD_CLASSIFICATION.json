@@ -4,14 +4,14 @@
     "callableFields": 15,
     "callbackArgumentFields": 417,
     "callbackResultFields": 471,
-    "fields": 2876,
-    "inputFields": 2402,
+    "fields": 2882,
+    "inputFields": 2408,
     "nullableFields": 9,
     "optionalFields": 1151,
     "outputFields": 1113,
     "recursiveTypeReferences": 5,
     "truncatedTypes": 0,
-    "types": 484,
+    "types": 486,
     "undefinedFields": 11
   },
   "entries": {
@@ -65012,6 +65012,144 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
+    "PrepareInventoryPolicyScrapInput.catalog": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryCatalog",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "PrepareInventoryPolicyScrapInput.deficitPolicy": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryDeficitPolicy",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "PrepareInventoryPolicyScrapInput.input": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryOncePolicyMovementInput",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "PrepareInventoryPolicyTransferBatchInput.catalog": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryCatalog",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "PrepareInventoryPolicyTransferBatchInput.deficitPolicy": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryDeficitPolicy",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "PrepareInventoryPolicyTransferBatchInput.input": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryOnceTransferManyByPolicyInput",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
     "PreparedInventoryPolicyIssueBatch.intentFingerprint": {
       "allowsNull": false,
       "allowsUndefined": false,
@@ -68873,5 +69011,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "9d9444399f98b1145cadbe84038f01c310334ba65e3f7562d6f0da8108d2e4fc"
+  "surfaceSha256": "d0a547fd1ed2d1b32814623d8d72022facb28ef2a5a6db1b174a981401f675a5"
 }

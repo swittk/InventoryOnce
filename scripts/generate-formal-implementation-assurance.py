@@ -133,7 +133,7 @@ def root_family(name,decl):
  if decl == 'src/authority-cutover.ts': return 'authority-cutover'
  if 'Authority' in name or 'authority' in name: return 'authority-control'
  # The indexed batch seam plans stock without committing it. Replay still decodes the same event.
- if name == 'prepareInventoryPolicyIssueBatch': return 'allocation-helper'
+ if name in {'prepareInventoryPolicyIssueBatch','prepareInventoryPolicyTransferBatch','prepareInventoryPolicyScrap'}: return 'allocation-helper'
  if name in {'inventoryPolicyBatchAllocationsFromEvent','readInventoryPolicyBatchResult'}: return 'operation-result-helper'
  if name == 'readPublishedInventorySnapshot': return 'read-snapshot'
  if name in {'readPublishedInventoryCatalog','findInventoryEventByOperationId'}: return 'read-current'
@@ -155,7 +155,7 @@ def root_family(name,decl):
 # Map one storage export to durable-protocol or storage-integrity assurance.
 def storage_export_family(name):
  # Preview and replay use the same decoder for exact policy result evidence.
- if name == 'prepareInventoryPolicyIssueBatch': return 'allocation-helper'
+ if name in {'prepareInventoryPolicyIssueBatch','prepareInventoryPolicyTransferBatch','prepareInventoryPolicyScrap'}: return 'allocation-helper'
  if name in {'inventoryPolicyBatchAllocationsFromEvent','readInventoryPolicyBatchResult'}: return 'operation-result-helper'
  # The adapter supplies pages. Core still owns the historical dependency walk.
  if name == 'loadInventoryHistoricalDependencyComponent': return 'historical-repair'

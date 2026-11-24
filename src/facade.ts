@@ -4122,12 +4122,32 @@ export function readInventoryPolicyBatchResult(
   };
 }
 
-/** One policy issue batch prepared for exact retry before any stock is read. */
+/** Exact policy intent and planner shared by the facade and scoped storage adapters. */
 export interface PreparedInventoryPolicyIssueBatch {
   /** Frozen command identity, including request order and scopes. */
   readonly intentFingerprint: string;
   /** Freeze exact picks against the stock, placement, and claims at one published fence. */
   plan(scope: InventoryPolicyBatchPlanningScope): InventoryOperationPlan;
+}
+
+/** The transfer command and definitions before the adapter reads its exact stock pools. */
+export interface PrepareInventoryPolicyTransferBatchInput {
+  /** Catalogue used to interpret the request and its exact packages. */
+  readonly catalog: InventoryCatalog;
+  /** Original ordered transfer requests and their common destination. */
+  readonly input: InventoryOnceTransferManyByPolicyInput;
+  /** Stock accounting mode used by the facade for this command. */
+  readonly deficitPolicy: InventoryDeficitPolicy;
+}
+
+/** The scrap command and definitions before exact stock is selected. */
+export interface PrepareInventoryPolicyScrapInput {
+  /** Catalogue used to validate the frozen item revision and amount. */
+  readonly catalog: InventoryCatalog;
+  /** Original request, including its destruction reason. */
+  readonly input: InventoryOnceScrapByPolicyInput;
+  /** Stock accounting mode used by the facade for this command. */
+  readonly deficitPolicy: InventoryDeficitPolicy;
 }
 
 /** Exact policy stock pools at one published revision. */
@@ -4161,6 +4181,35 @@ export function prepareInventoryPolicyIssueBatch({
   return prepareInventoryPolicyBatch(
     catalog,
     InventoryPolicyMovementKind.Issue,
+    input,
+    deficitPolicy
+  );
+}
+
+/** Prepare the facade's transfer batch for an adapter that supplies only the selected stock pools. */
+export function prepareInventoryPolicyTransferBatch({
+  catalog,
+  input,
+  deficitPolicy,
+}: PrepareInventoryPolicyTransferBatchInput): PreparedInventoryPolicyIssueBatch {
+  return prepareInventoryPolicyBatch(
+    catalog,
+    InventoryPolicyMovementKind.Transfer,
+    input,
+    deficitPolicy,
+    input.toPlacementNodeId
+  );
+}
+
+/** Prepare policy scrap with the same reason, scope checks and event as the facade. */
+export function prepareInventoryPolicyScrap({
+  catalog,
+  input,
+  deficitPolicy,
+}: PrepareInventoryPolicyScrapInput): PreparedInventoryPolicyIssueBatch {
+  return prepareInventoryPolicyMovement(
+    catalog,
+    InventoryPolicyMovementKind.Scrap,
     input,
     deficitPolicy
   );
@@ -5345,12 +5394,48 @@ async function commitInventoryPolicyMovement(
   toPlacementNodeId?: string
 ): Promise<InventoryOnceEventResult> {
   const internals = requireInventoryOnceInternals(owner);
-  assertPolicyMovementRequest(
+  const prepared = prepareInventoryPolicyMovement(
+    internals.catalog,
     kind,
     input,
-    toPlacementNodeId,
-    internals.deficitPolicy
+    internals.deficitPolicy,
+    toPlacementNodeId
   );
+  const result = await commitInventoryOperation({
+    catalog: internals.catalog,
+    storage: internals.storage,
+    operationId: input.operationId,
+    intentFingerprint: prepared.intentFingerprint,
+    clock: internals.clock,
+    deficitPolicy: internals.deficitPolicy,
+    /** Select and freeze physical lines against this operation's pinned facts. */
+    plan: ({ world, recordedAtEpochMs }) =>
+      prepared.plan({
+        projection: world.projection,
+        reservations: world.reservations,
+        recordedAtEpochMs,
+      }),
+  });
+  const eventResult = createInventoryOnceEventResult(result);
+  const deficit = inventoryPolicyDeficitFromEvent(
+    internals.catalog,
+    eventResult.event
+  );
+  return {
+    ...eventResult,
+    ...(deficit === undefined ? {} : { deficit }),
+  };
+}
+
+/** Freeze one policy command before a facade or adapter supplies its selected stock. */
+function prepareInventoryPolicyMovement(
+  catalog: InventoryCatalog,
+  kind: InventoryPolicyMovementKind,
+  input: InventoryOncePolicyMovementInput,
+  deficitPolicy: InventoryDeficitPolicy,
+  toPlacementNodeId?: string
+): PreparedInventoryPolicyIssueBatch {
+  assertPolicyMovementRequest(kind, input, toPlacementNodeId, deficitPolicy);
   const intentFingerprint = inventoryIntentFingerprint([
     `inventory-policy-${kind}`,
     input.operationId,
@@ -5370,23 +5455,18 @@ async function commitInventoryPolicyMovement(
     policyDeficitPositionFingerprint(input.deficitPosition),
     toPlacementNodeId ?? null,
   ]);
-  const result = await commitInventoryOperation({
-    catalog: internals.catalog,
-    storage: internals.storage,
-    operationId: input.operationId,
+  return {
     intentFingerprint,
-    clock: internals.clock,
-    deficitPolicy: internals.deficitPolicy,
     /** Select and freeze exact physical lines from the current world used by this durable plan. */
-    plan: ({ world, recordedAtEpochMs }) => {
+    plan: ({ projection, reservations, recordedAtEpochMs }) => {
       assertInventoryLifecycleTimeWasRecorded(
         input.occurredAtEpochMs,
         recordedAtEpochMs,
         `${kind} policy movement`
       );
       const allocation = planInventoryAllocation({
-        catalog: internals.catalog,
-        world,
+        catalog,
+        world: { projection, reservations },
         selector: input.selector,
         amount: input.amount,
         method: input.method,
@@ -5402,16 +5482,16 @@ async function commitInventoryPolicyMovement(
         allowAllocatedStock: true,
       });
       const deficit = policyRecordedDeficit({
-        catalog: internals.catalog,
+        catalog,
         kind,
-        deficitPolicy: internals.deficitPolicy,
+        deficitPolicy,
         input,
         allocation,
-        projection: world.projection,
+        projection,
       });
       return {
         event: createPolicyMovementEvent(
-          internals.catalog,
+          catalog,
           kind,
           input,
           allocation.lines,
@@ -5426,15 +5506,6 @@ async function commitInventoryPolicyMovement(
           : {}),
       };
     },
-  });
-  const eventResult = createInventoryOnceEventResult(result);
-  const deficit = inventoryPolicyDeficitFromEvent(
-    internals.catalog,
-    eventResult.event
-  );
-  return {
-    ...eventResult,
-    ...(deficit === undefined ? {} : { deficit }),
   };
 }
 

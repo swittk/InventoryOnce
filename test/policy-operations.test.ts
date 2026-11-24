@@ -20,6 +20,8 @@ import { commitInventoryEvent } from "../src/kernel.js";
 import {
   inventoryPolicyBatchAllocationsFromEvent,
   prepareInventoryPolicyIssueBatch,
+  prepareInventoryPolicyScrap,
+  prepareInventoryPolicyTransferBatch,
   readInventoryPolicyBatchResult,
 } from "../src/storage-api.js";
 import {
@@ -59,6 +61,46 @@ async function quantityByLot(
 }
 
 describe("native FIFO/FEFO movement policy", () => {
+  it("freezes the same transfer and scrap from scoped facts and the facade", async () => {
+    const catalog = createTabletCatalog();
+    const inventory = createTestInventory(undefined, catalog);
+    await inventory.stock.receive({
+      operationId: "scoped-policy-source",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store", { lotId: "SCOPED-LOT" }),
+      amount: stockAmount("8", "piece"),
+    });
+    const source = {
+      selector: inventoryStockSelector("item-a", { placementNodeIds: ["store"] }),
+      amount: stockAmount("2", "piece"),
+      method: InventoryAllocationMethod.Fifo,
+    };
+    const transfer = {
+      operationId: "scoped-policy-transfer",
+      occurredAtEpochMs: time1,
+      requests: [{ requestId: "one", ...source }],
+      toPlacementNodeId: "destination",
+    };
+    const { projection, reservations } = await inventory.read.world();
+    const transferPlan = prepareInventoryPolicyTransferBatch({
+      catalog, input: transfer, deficitPolicy: InventoryDeficitPolicy.Reject,
+    }).plan({ projection, reservations, recordedAtEpochMs: time3 });
+    const moved = await inventory.stock.transferManyByPolicy(transfer);
+    expect(commitInventoryEvent(transferPlan.event!, moved.event.recordedAtEpochMs, moved.event.recordSequence))
+      .toEqual(moved.event);
+
+    const scrap = {
+      ...source, operationId: "scoped-policy-scrap", occurredAtEpochMs: time2, reason: "Damaged at the store",
+    };
+    const afterTransfer = await inventory.read.world();
+    const scrapPlan = prepareInventoryPolicyScrap({
+      catalog, input: scrap, deficitPolicy: InventoryDeficitPolicy.Reject,
+    }).plan({ projection: afterTransfer.projection, reservations: afterTransfer.reservations, recordedAtEpochMs: time3 });
+    const disposed = await inventory.stock.scrapByPolicy(scrap);
+    expect(commitInventoryEvent(scrapPlan.event!, disposed.event.recordedAtEpochMs, disposed.event.recordSequence))
+      .toEqual(disposed.event);
+  });
+
   it("previews and atomically issues FEFO across exact lots", async () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
