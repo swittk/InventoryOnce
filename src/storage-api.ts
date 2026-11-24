@@ -31,3 +31,9 @@ export {
   type PrepareInventoryPolicyTransferBatchInput,
   type PreparedInventoryPolicyIssueBatch,
 } from "./facade.js";
+/** Finish a physical count using the adapter's observation-time exact bucket. */
+export {
+  createInventoryExactCountReconciliationPlan,
+  exactCountSelectorForPosition,
+  type CreateInventoryExactCountReconciliationPlanInput,
+} from "./counts.js";

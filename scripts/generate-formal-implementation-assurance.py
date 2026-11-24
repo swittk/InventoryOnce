@@ -154,6 +154,7 @@ def root_family(name,decl):
 
 # Map one storage export to durable-protocol or storage-integrity assurance.
 def storage_export_family(name):
+ if name in {'createInventoryExactCountReconciliationPlan','exactCountSelectorForPosition'}: return 'count'
  # Preview and replay use the same decoder for exact policy result evidence.
  if name in {'prepareInventoryPolicyIssueBatch','prepareInventoryPolicyTransferBatch','prepareInventoryPolicyScrap'}: return 'allocation-helper'
  if name in {'inventoryPolicyBatchAllocationsFromEvent','readInventoryPolicyBatchResult'}: return 'operation-result-helper'

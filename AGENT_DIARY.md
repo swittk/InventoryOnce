@@ -1872,3 +1872,8 @@ The R105 portable-current-input authority and final publication both continue to
 
 - The stock adapter already supplies pinned pools for a policy issue. Export the same facade preparation for transfer batches and physical scrap so those commands also use its exact intent, allocator, deficit rules and event.
 - The facade keeps its previous command paths. The new planner takes only projection, claim state and recording time. An adapter must still commit the returned event against the revision it read.
+
+2026-11-24 - Count one exact bucket and record physical shortage
+
+- Count discrepancy math now also takes one exact bucket's signed stock at the observation time. The adapter proves the position against the saved selector. The full core facade and indexed completion use the same lifecycle checks, subtraction and event builder.
+- In Record mode, ordinary policy scrap can use the same signed unallocated source as issue. Scrap keeps the signed shortage with the reason. A native transfer still needs a positive source for its carried FIFO age. Its shortfall path remains open. Reject mode and exact stock identity and increment checks still apply.

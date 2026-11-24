@@ -10,6 +10,7 @@ import {
   assertMeasurementsMatchItem,
   assertPositionMatchesItem,
   type InventoryCatalog,
+  type InventoryItemDefinitionRevision,
 } from "./catalog.js";
 import {
   inventoryIntentFingerprint,
@@ -34,6 +35,8 @@ import {
 } from "./measurements.js";
 import {
   inventoryStockPositionIdentity,
+  normalizeInventoryStockPositionKey,
+  type InventoryStockPosition,
   type InventoryMetadata,
   type InventoryStockPositionKey,
   type PartyId,
@@ -47,6 +50,9 @@ import {
 } from "./projection.js";
 import {
   assertPositionInsideSelector,
+  InventoryOptionalIdentityConstraintKind,
+  type InventoryOptionalIdentityConstraint,
+  type InventoryQualifiedDimensionConstraint,
   inventoryStockSelectorIdentity,
   normalizeInventoryStockSelector,
   type InventoryStockSelector,
@@ -327,14 +333,10 @@ export function observeInventoryCount(
   return { book, count: value, replayed: false };
 }
 
-/** Inputs for deriving one movement-safe count reconciliation plan. */
-export interface CreateInventoryCountReconciliationPlanInput {
-  /** Frozen catalogue. */
+/** Shared command, frozen definitions and saved count for reconciliation. */
+interface CountReconciliationInput {
+  /** Frozen catalogue used to create the adjustment. */
   readonly catalog: InventoryCatalog;
-  /** Full committed event history needed to project the physical observation-time cut. */
-  readonly events: readonly InventoryCommittedEvent[];
-  /** Projection deficit rule used for historical replay. */
-  readonly deficitPolicy: InventoryDeficitPolicy;
   /** Current count book. */
   readonly book: InventoryCountBook;
   /** Stable completion retry identity. */
@@ -347,6 +349,22 @@ export interface CreateInventoryCountReconciliationPlanInput {
   readonly actorId?: PartyId;
   /** Optional human reconciliation reason. */
   readonly reason?: string;
+}
+
+/** Reconcile with core's occurrence-time replay of the whole supplied journal. */
+export interface CreateInventoryCountReconciliationPlanInput extends CountReconciliationInput {
+  /** Committed events available at this published fence. */
+  readonly events: readonly InventoryCommittedEvent[];
+  /** Projection deficit rule used for historical replay. */
+  readonly deficitPolicy: InventoryDeficitPolicy;
+}
+
+/** Reconcile one exact bucket with measurements the indexed adapter read at observation. */
+export interface CreateInventoryExactCountReconciliationPlanInput extends CountReconciliationInput {
+  /** The only bucket the saved count selector can include. */
+  readonly position: InventoryStockPositionKey;
+  /** Signed stock at observation. Omit for a bucket with no stock then. */
+  readonly expectedAtObservation?: InventoryMeasurementVector;
 }
 
 /** Side-effect-free count completion plan; event is absent when observation already matched truth. */
@@ -364,6 +382,40 @@ export interface InventoryCountReconciliationPlan {
 /** Derive observed-minus-expected-at-observation, never current-balance replacement. */
 export function createInventoryCountReconciliationPlan(
   input: CreateInventoryCountReconciliationPlanInput
+): InventoryCountReconciliationPlan {
+  return createCountReconciliationPlan(input,
+    /** Replay the occurrence-time stock for this saved selector. */
+    (count, observedAtEpochMs) => {
+    // A movement that occurred before observation can be recorded after the count.
+    const projection = projectInventoryEventsAtOrBefore(
+      input.catalog, input.events, input.deficitPolicy, observedAtEpochMs
+    );
+    return findInventoryPositions(projection, count.selector);
+  });
+}
+
+/** Give the same count reducer the observation-time stock from one exact position seek. */
+export function createInventoryExactCountReconciliationPlan(
+  input: CreateInventoryExactCountReconciliationPlanInput
+): InventoryCountReconciliationPlan {
+  return createCountReconciliationPlan(input,
+    /** Confirm the indexed bucket is the only position this count can include. */
+    (count) => {
+    const item = input.catalog.itemRevision(count.itemRevisionId);
+    const selector = exactCountSelectorForPosition(item, input.position);
+    if (inventoryStockSelectorIdentity(count.selector) !== inventoryStockSelectorIdentity(selector)) {
+      throw new Error("Count selector does not match the supplied exact position.");
+    }
+    return input.expectedAtObservation === undefined
+      ? []
+      : [{ key: input.position, measurements: input.expectedAtObservation }];
+  });
+}
+
+/** Check the lifecycle once and derive the same exact adjustment from either observation reader. */
+function createCountReconciliationPlan(
+  input: CountReconciliationInput,
+  findExpectedPositions: (count: InventoryCount, observedAtEpochMs: number) => readonly InventoryStockPosition[]
 ): InventoryCountReconciliationPlan {
   assertInventoryEpochMilliseconds(input.completedAtEpochMs, "count completedAtEpochMs");
   const count = inventorySparseRecordValue(input.book.counts, input.countId);
@@ -395,17 +447,7 @@ export function createInventoryCountReconciliationPlan(
       "Count reconciliation cannot happen before the observation."
     );
   }
-  // Record order alone is wrong when an earlier physical movement arrives after the observation row.
-  const expectedProjection = projectInventoryEventsAtOrBefore(
-    input.catalog,
-    input.events,
-    input.deficitPolicy,
-    count.observedAtEpochMs
-  );
-  const expectedPositions = findInventoryPositions(
-    expectedProjection,
-    count.selector
-  );
+  const expectedPositions = findExpectedPositions(count, count.observedAtEpochMs);
   const expectedByPosition = new Map<string, InventoryMeasurementVector>();
   for (const position of expectedPositions) {
     expectedByPosition.set(
@@ -491,6 +533,67 @@ export function createInventoryCountReconciliationPlan(
     ...(event === undefined ? {} : { event }),
     replayed: false,
   };
+}
+
+/** Build one selector that matches only the supplied exact stock-position identity. */
+export function exactCountSelectorForPosition(
+  item: InventoryItemDefinitionRevision,
+  rawPosition: InventoryStockPositionKey
+): InventoryStockSelector {
+  const position = normalizeInventoryStockPositionKey(rawPosition);
+  const valueByDimensionId = new Map<string, string>();
+  for (const dimension of position.qualifiedDimensions ?? []) {
+    valueByDimensionId.set(dimension.dimensionId, dimension.valueId);
+  }
+  const qualifiedDimensions: InventoryQualifiedDimensionConstraint[] = [];
+  for (const definition of item.qualifiedDimensions) {
+    const valueId = valueByDimensionId.get(definition.dimensionId);
+    qualifiedDimensions.push(
+      valueId === undefined
+        ? {
+            dimensionId: definition.dimensionId,
+            kind: InventoryOptionalIdentityConstraintKind.Absent,
+          }
+        : {
+            dimensionId: definition.dimensionId,
+            kind: InventoryOptionalIdentityConstraintKind.Allowed,
+            valueIds: [valueId],
+          }
+    );
+  }
+  return normalizeInventoryStockSelector({
+    itemId: position.itemId,
+    itemRevisionIds: [position.itemRevisionId],
+    placement: exactOptionalIdentityConstraint(position.placementNodeId),
+    whereabouts: exactOptionalIdentityConstraint(position.whereaboutsId),
+    ...(position.whereaboutsState === undefined
+      ? {}
+      : { whereaboutsStates: [position.whereaboutsState] }),
+    lot: exactOptionalIdentityConstraint(position.lotId),
+    serial: exactOptionalIdentityConstraint(position.serialId),
+    packagingRevision: exactOptionalIdentityConstraint(
+      position.packagingRevisionId
+    ),
+    status: exactOptionalIdentityConstraint(position.statusId),
+    owner: exactOptionalIdentityConstraint(position.ownerId),
+    custodian: exactOptionalIdentityConstraint(position.custodianId),
+    dispositionAuthority: exactOptionalIdentityConstraint(
+      position.dispositionAuthorityId
+    ),
+    ...(qualifiedDimensions.length === 0 ? {} : { qualifiedDimensions }),
+  });
+}
+
+/** Build one exact allowed-value or explicit-absence selector rule. */
+function exactOptionalIdentityConstraint(
+  value: string | undefined
+): InventoryOptionalIdentityConstraint {
+  return value === undefined
+    ? { kind: InventoryOptionalIdentityConstraintKind.Absent }
+    : {
+        kind: InventoryOptionalIdentityConstraintKind.Allowed,
+        valueIds: [value],
+      };
 }
 
 /** Replay every fact that physically occurred by the observation, including late durable rows. */
@@ -723,7 +826,7 @@ function observationFingerprint(
 
 /** Stable completion intent fingerprint independent of the derived discrepancy event. */
 function countCompletionFingerprint(
-  input: CreateInventoryCountReconciliationPlanInput,
+  input: CountReconciliationInput,
   count: InventoryCount
 ): string {
   return inventoryIntentFingerprint([

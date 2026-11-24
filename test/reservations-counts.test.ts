@@ -5,13 +5,17 @@ import {
   InventoryOptionalIdentityConstraintKind,
   InventoryReservationFeasibilityStatus,
   InventoryReservationStatus,
+  inventoryCatalogFromSnapshot,
   parseQuantity,
   stockAmount,
 } from "../src/index.js";
 import {
   createInMemoryInventoryDurableStorage,
+  createInventoryExactCountReconciliationPlan,
+  exactCountSelectorForPosition,
   InventoryStorageWriteStage,
 } from "../src/storage-api.js";
+import { createInventoryCountReconciliationPlan } from "../src/counts.js";
 import { inventoryReservationsAt } from "../src/reservations.js";
 import {
   createTestInventory,
@@ -511,10 +515,13 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
       to: loosePosition("a"),
       amount: stockAmount("10", "piece"),
     });
+    const opened = await inventory.read.world();
+    const catalog = inventoryCatalogFromSnapshot(opened.catalog);
+    const position = Object.values(opened.projection.positions)[0]!.key;
     await inventory.counts.start({
       countId: "count-a",
       operationId: "count-start",
-      selector: { itemId: "item-a", placementNodeIds: ["a"] },
+      selector: exactCountSelectorForPosition(catalog.itemRevision(position.itemRevisionId), position),
       startedAtEpochMs: time0,
     });
     await inventory.stock.transfer({
@@ -556,12 +563,23 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
       toPlacementNodeId: "b",
       amount: stockAmount("1", "piece"),
     });
-    const reconciled = await inventory.counts.reconcile({
+    const command = {
       operationId: "count-reconcile",
       countId: "count-a",
       completedAtEpochMs: time3,
       reason: "One piece was missing at observation.",
+    };
+    const beforeReconciliation = await inventory.read.world();
+    const cut = createInventoryExactCountReconciliationPlan({
+      ...command, catalog, book: beforeReconciliation.counts, position,
+      expectedAtObservation: aAtObservation.measurements,
     });
+    expect(cut).toEqual(createInventoryCountReconciliationPlan({
+      ...command, catalog, book: beforeReconciliation.counts,
+      events: Object.values(beforeReconciliation.projection.events),
+      deficitPolicy: InventoryDeficitPolicy.Record,
+    }));
+    const reconciled = await inventory.counts.reconcile(command);
 
     expect(reconciled.count.status).toBe(InventoryCountStatus.Completed);
     expect(

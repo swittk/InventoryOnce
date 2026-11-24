@@ -692,6 +692,30 @@ describe("native FIFO/FEFO movement policy", () => {
     });
   });
 
+  it("records ordinary scrap when the exact source is short under Record mode", async () => {
+    const inventory = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
+    await inventory.stock.receive({
+      operationId: "scrap-with-shortfall-receipt",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store", { lotId: "KNOWN" }),
+      amount: stockAmount("1", "piece"),
+    });
+    const command = {
+      operationId: "scrap-with-shortage",
+      occurredAtEpochMs: time1,
+      selector: inventoryStockSelector("item-a", { placementNodeIds: ["store"] }),
+      amount: stockAmount("3", "piece"),
+      method: InventoryAllocationMethod.Fifo,
+      reason: "The pieces were physically destroyed.",
+    };
+    const scrap = await inventory.stock.scrapByPolicy(command);
+    expect(scrap.event.stockEffects.map(({ position, measurementsDelta }) =>
+      [position.lotId, measurementsDelta.primary.quantity.amountMinor]
+    )).toEqual(expect.arrayContaining([["KNOWN", -1], ["__inventory_deficit__", -2]]));
+    expect(await inventory.stock.scrapByPolicy(command)).toEqual({ ...scrap, replayed: true });
+    expect(await quantityByLot(inventory, "store")).toEqual({ __inventory_deficit__: -2 });
+  });
+
   it("rejects a later batch shortfall without publishing earlier request effects", async () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({

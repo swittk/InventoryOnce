@@ -4,7 +4,7 @@ This file is generated from the exact TypeScript surface plus the checked API, f
 
 Use the repository `.nvmrc` when one exists; otherwise run the assurance command with a Node version permitted by `package.json#engines`. Edit only checked source/manifests, run `pnpm assurance:generate` when generated evidence must change, then run `pnpm assurance --write-report`.
 
-Surface SHA-256: `d0a547fd1ed2d1b32814623d8d72022facb28ef2a5a6db1b174a981401f675a5`
+Surface SHA-256: `e17d26abd7beeb1d77e65445d018806ccbdc881c98794d4c6ef60265dbade368`
 
 ## Mechanically covered surface
 
@@ -13,22 +13,22 @@ Surface SHA-256: `d0a547fd1ed2d1b32814623d8d72022facb28ef2a5a6db1b174a981401f675
 - Durable-storage-port methods: 17
 - Public exported class methods: 109
 - Root callable exports: 106
-- Storage callable exports: 42
+- Storage callable exports: 44
 - Migration callable exports: 15
-- Kernel callable exports: 193
-- Reachable public data types: 486
-- Classified public fields: 2882
-- Input-reachable fields: 2408
+- Kernel callable exports: 195
+- Reachable public data types: 487
+- Classified public fields: 2891
+- Input-reachable fields: 2417
 - Output-reachable fields: 1113
 - Callback-argument-reachable fields: 417
 - Callback-result-reachable fields: 471
 - Callable-field overload signatures: 15
-- Optional fields: 1151
+- Optional fields: 1154
 - Explicit undefined-union fields: 11
 - Explicit nullable fields: 9
-- Public call/construct overload signatures: 633
-- Directly executed public APIs: 271
-- Public APIs exercised through tested internal call chains: 358
+- Public call/construct overload signatures: 637
+- Directly executed public APIs: 277
+- Public APIs exercised through tested internal call chains: 356
 - Explicit-gap public APIs: 4
 - Unreferenced public APIs: 0
 - Explicit recursive type edges: 5
@@ -49,7 +49,7 @@ Any added/removed method, callable export, class method, type field, field type,
 | composition-open | 3 | CompositionRevision, PackagingIdentity, ReclassificationConservation, DualMeasure, TraceabilityGraph, InventoryOperation | covered | — |
 | composition-read | 3 | CompositionRevision | covered | — |
 | correction | 4 | CorrectionHistory, InventoryOperation, PublishedHeadCAS | covered | GAP-COUNT-CORRECTION-HISTORY-REPLAY |
-| count | 11 | PhysicalCount, InventoryOperation, PublishedHeadCAS, ResourceDimensions | covered | GAP-COUNT-CORRECTION-HISTORY-REPLAY |
+| count | 15 | PhysicalCount, InventoryOperation, PublishedHeadCAS, ResourceDimensions | covered | GAP-COUNT-CORRECTION-HISTORY-REPLAY |
 | dimension-reclassification | 30 | ResourceDimensions, ReclassificationConservation, InventoryOperation, PlacementGraph | covered | — |
 | durable-protocol | 93 | InventoryOperation, PublishedHeadCAS, RepairLiveness, DurableTransferRefinement, SnapshotSupersededWorkflow | covered | GAP-DB-IMPLEMENTATION-UNBOUNDED, GAP-PRODUCTION-STORAGE-SCALE-GC, GAP-HASH-COLLISION-ASSUMPTION |
 | external-plugin-boundary | 4 | CatalogPublication | explicit-gap | GAP-EXTERNAL-MIGRATION-CALLBACKS, GAP-LEGACY-SOURCE-INTERPRETATION |
@@ -86,10 +86,10 @@ Any added/removed method, callable export, class method, type field, field type,
 
 | Classification | Fields |
 |---|---:|
-| abstract-semantic | 1401 |
+| abstract-semantic | 1406 |
 | application decoration | 13 |
-| identity/retry-semantic | 852 |
-| observational/audit-only | 595 |
+| identity/retry-semantic | 854 |
+| observational/audit-only | 597 |
 | unsupported/unmodelled | 21 |
 
 ## Kernel reference-adapter seam

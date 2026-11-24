@@ -61,6 +61,7 @@ import {
   abandonInventoryCount,
   completeInventoryCount,
   createInventoryCountReconciliationPlan,
+  exactCountSelectorForPosition,
   observeInventoryCount,
   startInventoryCount,
   type AbandonInventoryCountInput,
@@ -262,12 +263,9 @@ import {
 } from "./reservations.js";
 import {
   assertPositionInsideSelector,
-  InventoryOptionalIdentityConstraintKind,
   inventoryStockPositionMatchesNormalizedSelector,
   inventoryStockSelectorIdentity,
   normalizeInventoryStockSelector,
-  type InventoryOptionalIdentityConstraint,
-  type InventoryQualifiedDimensionConstraint,
   type InventoryStockSelector,
 } from "./selectors.js";
 import {
@@ -5015,10 +5013,8 @@ function inventoryPolicyDeficitFromEvent(
 ): InventoryOnceRecordedDeficit | undefined {
   const encoded = event.metadata?.[inventoryPolicyDeficitMetadataKey];
   if (encoded === undefined) return undefined;
-  if (event.kind !== InventoryEventKind.Issue) {
-    throw new Error(
-      "Inventory policy deficit evidence belongs only to an Issue event."
-    );
+  if (event.kind !== InventoryEventKind.Issue && event.kind !== InventoryEventKind.Scrap) {
+    throw new Error("Inventory policy deficit evidence requires an outgoing stock movement.");
   }
   const evidence = policyBatchDeficitFromMetadata(encoded);
   const effect = event.stockEffects.find(
@@ -5529,14 +5525,9 @@ function assertPolicyMovementRequest(
       "Inventory policy metadata cannot replace core allocation/deficit evidence."
     );
   }
-  if (
-    input.deficitPosition !== undefined &&
-    (kind !== InventoryPolicyMovementKind.Issue ||
-      deficitPolicy !== InventoryDeficitPolicy.Record)
-  ) {
-    throw new Error(
-      "Inventory deficitPosition is accepted only by policy Issue under Record mode."
-    );
+  if (input.deficitPosition !== undefined &&
+      (deficitPolicy !== InventoryDeficitPolicy.Record || kind === InventoryPolicyMovementKind.Transfer)) {
+    throw new Error("Inventory deficitPosition requires policy issue or scrap in Record mode.");
   }
   if (input.deficitPosition?.serialId !== undefined) {
     throw new Error(
@@ -5607,7 +5598,7 @@ function assertPolicyAllocationComplete(
 interface PolicyRecordedDeficitInput {
   /** Frozen catalogue used to resolve amount/package/position identity. */
   readonly catalog: InventoryCatalog;
-  /** Physical policy verb. */
+  /** The physical verb determines whether there is a destination with carried FIFO age. */
   readonly kind: InventoryPolicyMovementKind;
   /** Configured ordinary negative-stock rule. */
   readonly deficitPolicy: InventoryDeficitPolicy;
@@ -5619,7 +5610,7 @@ interface PolicyRecordedDeficitInput {
   readonly projection: InventoryProjectionState;
 }
 
-/** Return one normal Issue line for recordable shortfall, or enforce Reject/other verbs unchanged. */
+/** Record genuine shortfall at an exact unallocated source, or report it in Reject mode. */
 function policyRecordedDeficit({
   catalog,
   kind,
@@ -5629,10 +5620,8 @@ function policyRecordedDeficit({
   projection,
 }: PolicyRecordedDeficitInput): InventoryPolicyRecordedDeficit | undefined {
   if (allocation.shortfall.amountMinor === 0) return undefined;
-  if (
-    kind !== InventoryPolicyMovementKind.Issue ||
-    deficitPolicy !== InventoryDeficitPolicy.Record
-  ) {
+  // A native transfer still carries the age of an actual positive source into the destination.
+  if (kind === InventoryPolicyMovementKind.Transfer || deficitPolicy !== InventoryDeficitPolicy.Record) {
     assertPolicyAllocationComplete(allocation);
     return undefined;
   }
@@ -5769,30 +5758,6 @@ function createPolicyMovementEvent(
   deficit: InventoryPolicyRecordedDeficit | undefined
 ): InventoryEventDraft {
   const header = inventoryCommandHeaderFromPolicyInput(input);
-  if (kind === InventoryPolicyMovementKind.Issue) {
-    return createInventoryIssueManyEvent({
-      catalog,
-      ...header,
-      metadata: {
-        ...(header.metadata ?? {}),
-        ...(deficit === undefined
-          ? {}
-          : {
-              [inventoryPolicyDeficitMetadataKey]: policyDeficitMetadataValue(
-                deficit.evidence
-              ),
-            }),
-      },
-      lines: combinePolicyBatchExactLines(
-        catalog,
-        lines,
-        deficit === undefined ? [] : [deficit.line]
-      ),
-    });
-  }
-  if (deficit !== undefined) {
-    throw new Error("Only policy Issue may record deficit.");
-  }
   if (kind === InventoryPolicyMovementKind.Transfer) {
     if (toPlacementNodeId === undefined) {
       throw new Error("Policy transfer lost destination direct placement.");
@@ -5801,19 +5766,24 @@ function createPolicyMovementEvent(
       catalog,
       ...header,
       lines: lines.map(
-        /** Add the one explicit destination while preserving each selected source identity. */
-        (line) => ({
-          ...policyIssueLine(line),
-          toPlacementNodeId,
-        })
+        /** Add only the destination while preserving the real source's FIFO age. */
+        (line) => ({ ...policyIssueLine(line), toPlacementNodeId })
       ),
     });
   }
-  return createInventoryScrapManyEvent({
-    catalog,
+  const movementHeader = deficit === undefined ? header : {
     ...header,
-    lines: lines.map(policyIssueLine),
-  });
+    metadata: {
+      ...header.metadata,
+      [inventoryPolicyDeficitMetadataKey]: policyDeficitMetadataValue(deficit.evidence),
+    },
+  };
+  const exactLines = kind === InventoryPolicyMovementKind.Scrap && deficit === undefined
+    ? lines.map(policyIssueLine)
+    : combinePolicyBatchExactLines(catalog, lines, deficit === undefined ? [] : [deficit.line]);
+  return kind === InventoryPolicyMovementKind.Issue
+    ? createInventoryIssueManyEvent({ catalog, ...movementHeader, lines: exactLines })
+    : createInventoryScrapManyEvent({ catalog, ...movementHeader, lines: exactLines });
 }
 
 /** Strip allocation-only fields while retaining the normal immutable command header. */
@@ -9453,67 +9423,6 @@ function assertAbsoluteCountPositionMatchesItem(
       "Absolute count position package differs from its frozen item revision."
     );
   }
-}
-
-/** Build one selector that matches only the supplied exact stock-position identity. */
-function exactCountSelectorForPosition(
-  item: InventoryItemDefinitionRevision,
-  rawPosition: InventoryStockPositionKey
-): InventoryStockSelector {
-  const position = normalizeInventoryStockPositionKey(rawPosition);
-  const valueByDimensionId = new Map<string, string>();
-  for (const dimension of position.qualifiedDimensions ?? []) {
-    valueByDimensionId.set(dimension.dimensionId, dimension.valueId);
-  }
-  const qualifiedDimensions: InventoryQualifiedDimensionConstraint[] = [];
-  for (const definition of item.qualifiedDimensions) {
-    const valueId = valueByDimensionId.get(definition.dimensionId);
-    qualifiedDimensions.push(
-      valueId === undefined
-        ? {
-            dimensionId: definition.dimensionId,
-            kind: InventoryOptionalIdentityConstraintKind.Absent,
-          }
-        : {
-            dimensionId: definition.dimensionId,
-            kind: InventoryOptionalIdentityConstraintKind.Allowed,
-            valueIds: [valueId],
-          }
-    );
-  }
-  return normalizeInventoryStockSelector({
-    itemId: position.itemId,
-    itemRevisionIds: [position.itemRevisionId],
-    placement: exactOptionalIdentityConstraint(position.placementNodeId),
-    whereabouts: exactOptionalIdentityConstraint(position.whereaboutsId),
-    ...(position.whereaboutsState === undefined
-      ? {}
-      : { whereaboutsStates: [position.whereaboutsState] }),
-    lot: exactOptionalIdentityConstraint(position.lotId),
-    serial: exactOptionalIdentityConstraint(position.serialId),
-    packagingRevision: exactOptionalIdentityConstraint(
-      position.packagingRevisionId
-    ),
-    status: exactOptionalIdentityConstraint(position.statusId),
-    owner: exactOptionalIdentityConstraint(position.ownerId),
-    custodian: exactOptionalIdentityConstraint(position.custodianId),
-    dispositionAuthority: exactOptionalIdentityConstraint(
-      position.dispositionAuthorityId
-    ),
-    ...(qualifiedDimensions.length === 0 ? {} : { qualifiedDimensions }),
-  });
-}
-
-/** Build one exact allowed-value or explicit-absence selector rule. */
-function exactOptionalIdentityConstraint(
-  value: string | undefined
-): InventoryOptionalIdentityConstraint {
-  return value === undefined
-    ? { kind: InventoryOptionalIdentityConstraintKind.Absent }
-    : {
-        kind: InventoryOptionalIdentityConstraintKind.Allowed,
-        valueIds: [value],
-      };
 }
 
 /** Encode one exact position as JSON-safe count metadata without losing empty-vs-omitted dimensions. */
