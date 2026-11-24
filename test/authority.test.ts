@@ -12,11 +12,14 @@ import {
   type InventoryAuthorityDocument,
   type InventoryAuthorityFields,
   type InventoryAuthorityStateStore,
+  type InventoryIndexedOpeningTarget,
 } from "../src/index.js";
 import {
   InventoryMigrationSourceDispositionKind,
   defineInventoryMigration,
+  resumeInventoryMigrationManifest,
 } from "../src/migrations-api.js";
+import { inventorySha256 } from "../src/digest.js";
 import { InMemoryInventoryDurableStorage } from "../src/storage.js";
 import {
   InventoryStorageWriteStage,
@@ -415,6 +418,40 @@ describe("portable InventoryOnce authority controller", () => {
         activatedAtEpochMs: time2,
       })
     ).rejects.toThrow("differs from activation evidence");
+  });
+
+  it("greenfield bootstrap reads the vacant indexed head and joins an exact retry without reopening it", async () => {
+    const authority = createInventoryAuthorityControl({
+      store: new TestAuthorityStore(), namespaceId: "indexed-greenfield:primary",
+    });
+    /** A claimed opening is invisible but already owns this namespace. */
+    let unclaimed = false;
+    /** An exact activation retry must use its retained root even after native stock changes. */
+    let targetReads = 0;
+    const request = {
+      authority,
+      emptyTarget: {
+        async isUnclaimedGreenfieldTarget() {
+          targetReads += 1;
+          return unclaimed;
+        },
+      },
+      authorizationId: "indexed-greenfield-owner",
+      adapterCertificationDigest: "indexed-greenfield-adapter",
+      clock: { nowEpochMs: () => time2 },
+    };
+    await expect(bootstrapGreenfieldInventoryAuthority(request)).rejects.toThrow("unclaimed empty indexed head");
+    expect((await authority.read()).mode).toBe(InventoryAuthorityMode.Legacy);
+    unclaimed = true;
+    const accepted = await bootstrapGreenfieldInventoryAuthority(request);
+    expect(accepted).toMatchObject({ targetWorldRevision: 0, authority: { mode: InventoryAuthorityMode.Authoritative } });
+    unclaimed = false;
+    expect(await bootstrapGreenfieldInventoryAuthority(request)).toEqual(accepted);
+    expect(targetReads).toBe(2);
+    await expect(bootstrapGreenfieldInventoryAuthority({
+      ...request, authorizationId: "different-owner",
+    })).rejects.toThrow(/does not match this greenfield bootstrap/);
+    expect(targetReads).toBe(2);
   });
 
   it("does not reinterpret retained legacy-cutover authorization as greenfield authority", async () => {
@@ -889,6 +926,98 @@ describe("portable InventoryOnce authority controller", () => {
         authorizationId: "changed-cutover-authorization",
       })
     ).rejects.toThrow("authorization differs from this retry");
+  });
+
+  it("keeps the indexed opening fenced until its published proof matches and reuses the fence record time", async () => {
+    const authority = createInventoryAuthorityControl({
+      store: new TestAuthorityStore(), namespaceId: "indexed-cutover:primary",
+    });
+    const migrationId = "indexed-cutover-migration";
+    const storage = createInMemoryInventoryDurableStorage();
+    /** Keep the native begin input that the first accepted opening used. */
+    const recordedTimes: number[] = [];
+    /** Fail the first proof lookup after the frozen plan has reached the durable store. */
+    let firstProof = true;
+    /** The exact native plan retained before later retries advance the wall clock. */
+    let retainedInput: Parameters<InventoryIndexedOpeningTarget["publishLegacyOpening"]>[0] | undefined;
+    const openingTarget: InventoryIndexedOpeningTarget = {
+      async publishLegacyOpening(input) {
+        retainedInput ??= input;
+        const event = input.plan.events[0];
+        if (event === undefined) throw new Error("Expected the opening stock event.");
+        recordedTimes.push(event.recordedAtEpochMs);
+        await storage.beginMigrationManifest(input);
+        const manifest = await resumeInventoryMigrationManifest(storage, input.migrationId);
+        return {
+          migrationId: manifest.migrationId,
+          sourcePlanHash: inventorySha256(manifest.planDigest),
+          durablePlanDigest: input.plan.durablePlanDigest,
+          targetWorldRoot: input.plan.nextRoots.world,
+          revision: input.baseRevision + 1,
+        };
+      },
+      async readLegacyOpeningEvidence(id) {
+        const manifest = await storage.readMigrationManifest(id);
+        if (manifest?.targetWorldRevision === undefined || manifest.targetWorldRoot === undefined)
+          return undefined;
+        const input = retainedInput;
+        if (input === undefined) throw new Error("Expected a frozen opening before reading proof.");
+        const targetWorldRoot = firstProof ? "wrong published root" : manifest.targetWorldRoot;
+        firstProof = false;
+        return {
+          migrationId: manifest.migrationId,
+          sourcePlanHash: inventorySha256(manifest.planDigest),
+          durablePlanDigest: input.plan.durablePlanDigest,
+          targetWorldRoot,
+          revision: manifest.targetWorldRevision,
+        };
+      },
+    };
+    const catalog = createTabletCatalog();
+    const common = {
+      authority,
+      openingTarget,
+      migrationId,
+      fenceToken: "indexed-cutover-fence",
+      authorizationId: "indexed-cutover-authorization",
+      adapterCertificationDigest: "indexed-adapter",
+      cutoverAtEpochMs: time1,
+      compileSource: async (cutoverAtEpochMs: number) => ({
+        catalog,
+        plan: defineInventoryMigration({
+          catalog,
+          declaration: {
+            migrationId,
+            sourceSystem: "legacy-stock",
+            cutoverAtEpochMs,
+            openingStock: [{
+              openingId: "indexed-opening-row",
+              position: { itemId: "item-a", placementNodeId: "store" },
+              itemRevisionId: "item-a-v2",
+              amount: stockAmount("2", "piece"),
+              source: { sourceType: "legacy-stock", sourceId: "opening-1" },
+            }],
+          },
+        }),
+      }),
+      drainLegacyWriters: async () => {},
+    };
+
+    await expect(cutoverInventoryAuthority({
+      ...common, clock: { nowEpochMs: () => time2 },
+    })).rejects.toThrow("no matching published indexed opening");
+    expect((await authority.read()).mode).toBe(InventoryAuthorityMode.Fencing);
+
+    const retry = { ...common, clock: { nowEpochMs: () => time2 + 1000 } };
+    const accepted = await cutoverInventoryAuthority(retry);
+    expect(accepted.targetWorldRevision).toBe(1);
+    expect(accepted.authority.mode).toBe(InventoryAuthorityMode.Authoritative);
+    expect(recordedTimes).toEqual([time2, time2]);
+    expect(await cutoverInventoryAuthority(retry)).toEqual(accepted);
+    expect(recordedTimes).toHaveLength(2);
+    // A later worker must match the original activation root even if the target port returns another one.
+    firstProof = true;
+    await expect(cutoverInventoryAuthority(retry)).rejects.toThrow("authoritative cutover evidence differs");
   });
 
   it("accepts semantically identical migration dispositions from adapters with different object key order", async () => {

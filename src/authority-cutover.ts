@@ -6,10 +6,15 @@ import {
   type InventoryAuthorityState,
 } from "./authority.js";
 import { inventoryIntentFingerprint } from "./canonical.js";
+import { inventorySha256 } from "./digest.js";
 import type { InventoryClock } from "./coordinator.js";
 import { inventoryWorldContentRoots } from "./integrity.js";
 import { inventoryMigrationSourceDispositionFingerprint } from "./migration-evidence.js";
 import type { InventoryMigrationSourcePlan } from "./migration-plugin.js";
+import {
+  createInventoryMigrationManifestBeginInput,
+  inventoryMigrationPlanDigest,
+} from "./migration-prepare.js";
 import {
   InventoryMigrationPlanStatus,
   applyInventoryMigrationPlan,
@@ -17,6 +22,7 @@ import {
 } from "./migrations.js";
 import {
   InventoryMigrationManifestState,
+  type BeginInventoryMigrationManifestInput,
   type InventoryDurableStorage,
 } from "./storage.js";
 import { emptyInventoryWorldState, type InventoryWorldState } from "./world.js";
@@ -27,6 +33,8 @@ export interface CutoverInventoryAuthorityInput {
   readonly authority: InventoryAuthorityControlPort;
   /** Durable inventory storage receiving the migration target world. */
   readonly storage: InventoryDurableStorage;
+  /** A world-backed cutover has exactly one target. */
+  readonly openingTarget?: never;
   /** Stable durable migration identity. */
   readonly migrationId: string;
   /** Stable fence/retry token for this cutover. */
@@ -48,6 +56,36 @@ export interface CutoverInventoryAuthorityInput {
   /** Durable certification/activation clock. */
   readonly clock: InventoryClock;
 }
+
+/** Published opening facts that can be checked without reading the target world. */
+export interface InventoryPublishedOpeningEvidence {
+  /** Exact migration whose source was fenced. */
+  readonly migrationId: string;
+  /** SHA-256 over the compiled source plan digest. */
+  readonly sourcePlanHash: string;
+  /** Core's digest over the complete frozen native plan including its catalogue and recorded times. */
+  readonly durablePlanDigest: string;
+  /** Exact content root of the opened stock, catalogue and journal. */
+  readonly targetWorldRoot: string;
+  /** Single published target revision, starting from empty. */
+  readonly revision: number;
+}
+
+/** Storage boundary for one indexed opening under the existing publication head. */
+export interface InventoryIndexedOpeningTarget {
+  /** Read proof from the already-published head. A claimed but incomplete opening has no visible proof. */
+  readLegacyOpeningEvidence(migrationId: string): Promise<InventoryPublishedOpeningEvidence | undefined>;
+  /** Atomically publish or join the exact frozen opening, and finish an interrupted exact retry. */
+  publishLegacyOpening(input: BeginInventoryMigrationManifestInput): Promise<InventoryPublishedOpeningEvidence>;
+}
+
+/** Run the existing authority cutover with a target that never materializes its persisted world. */
+export type CutoverIndexedInventoryAuthorityInput = Omit<CutoverInventoryAuthorityInput, "storage" | "openingTarget"> & {
+  /** The sole target receiving and proving the opening publication. */
+  readonly openingTarget: InventoryIndexedOpeningTarget;
+  /** An indexed cutover cannot choose a separate world-backed target. */
+  readonly storage?: never;
+};
 
 /** Exact source/target evidence accepted by the native authority switch. */
 export interface CutoverInventoryAuthorityResult {
@@ -71,6 +109,8 @@ export interface BootstrapGreenfieldInventoryAuthorityInput {
   readonly authority: InventoryAuthorityControlPort;
   /** Durable inventory storage whose current published world must be exactly empty. */
   readonly storage: InventoryDurableStorage;
+  /** A world-backed bootstrap uses one target. */
+  readonly emptyTarget?: never;
   /** Exact adapter certification accepted by this deployment. */
   readonly adapterCertificationDigest: string;
   /** Explicit operator/deployment authorization for greenfield authority. */
@@ -78,6 +118,22 @@ export interface BootstrapGreenfieldInventoryAuthorityInput {
   /** Durable certification/activation clock. */
   readonly clock: InventoryClock;
 }
+
+/** Indexed storage can prove its initial head without building an inventory world. */
+export interface InventoryUnclaimedGreenfieldTarget {
+  /** True only at the original, unclaimed head. A staged publication or nonzero revision is not empty. */
+  isUnclaimedGreenfieldTarget(): Promise<boolean>;
+}
+
+/** Bootstrap the same authority from an indexed head whose original stock namespace is vacant. */
+export type BootstrapIndexedGreenfieldInventoryAuthorityInput = Omit<
+  BootstrapGreenfieldInventoryAuthorityInput, "storage" | "emptyTarget"
+> & {
+  /** The indexed store that owns this namespace. */
+  readonly emptyTarget: InventoryUnclaimedGreenfieldTarget;
+  /** An indexed bootstrap cannot select another physical target. */
+  readonly storage?: never;
+};
 
 /** Exact evidence retained by one greenfield authority bootstrap. */
 export interface BootstrapGreenfieldInventoryAuthorityResult {
@@ -95,8 +151,8 @@ export interface BootstrapGreenfieldInventoryAuthorityResult {
 interface CompletedInventoryCutoverValidationInput {
   /** Authority state returned by the latest port observation. */
   readonly authority: InventoryAuthorityState;
-  /** Durable inventory storage containing the independently completed migration. */
-  readonly storage: InventoryDurableStorage;
+  /** Read and verify only the selected target's completed opening. */
+  readonly readCompletedTarget: ReadCompletedInventoryCutoverTarget;
   /** Exact migration identity requested by this outer cutover. */
   readonly migrationId: string;
   /** Exact fence identity requested by this outer cutover. */
@@ -120,6 +176,12 @@ interface CompletedInventoryCutoverTargetEvidence {
   /** Exact revision of the migration world that became visible. */
   readonly targetWorldRevision: number;
 }
+
+/** Check the completed target against the independently compiled source and retained fence time. */
+type ReadCompletedInventoryCutoverTarget = (
+  compiled: InventoryMigrationSourcePlan,
+  authority: InventoryAuthorityState,
+) => Promise<CompletedInventoryCutoverTargetEvidence>;
 
 /** Join only an already-authoritative state that independently proves this exact cutover request. */
 async function completedInventoryCutoverResult(
@@ -174,18 +236,7 @@ async function completedInventoryCutoverResult(
     input.sourceRevision,
     cutoverAtEpochMs,
   );
-  const dryRun = dryRunInventoryMigration({
-    catalog: compiled.catalog,
-    plan: compiled.plan,
-    targetWorld: emptyInventoryWorldState(),
-  });
-  const manifest = await input.storage.readMigrationManifest(input.migrationId);
-  const durableTarget = assertCompletedInventoryCutoverManifest(
-    manifest,
-    compiled,
-    dryRun,
-    input.migrationId,
-  );
+  const durableTarget = await input.readCompletedTarget(compiled, authority);
   const retained = inventoryAuthorityCutoverResult(authority);
   assertInventoryCutoverResultMatches(retained, {
     authorizationId: input.authorizationId,
@@ -223,13 +274,17 @@ function completedGreenfieldBootstrapResult(
  * Certify and atomically activate one genuinely empty stream without legacy-source fiction.
  * Exact retries after later native publications use the retained activation evidence.
  */
-export async function bootstrapGreenfieldInventoryAuthority({
-  authority: authorityControl,
-  storage,
-  adapterCertificationDigest: rawCertificationDigest,
-  authorizationId: rawAuthorizationId,
-  clock,
-}: BootstrapGreenfieldInventoryAuthorityInput): Promise<BootstrapGreenfieldInventoryAuthorityResult> {
+export async function bootstrapGreenfieldInventoryAuthority(
+  input: BootstrapGreenfieldInventoryAuthorityInput | BootstrapIndexedGreenfieldInventoryAuthorityInput,
+): Promise<BootstrapGreenfieldInventoryAuthorityResult> {
+  const {
+    authority: authorityControl,
+    storage,
+    emptyTarget,
+    adapterCertificationDigest: rawCertificationDigest,
+    authorizationId: rawAuthorizationId,
+    clock,
+  } = input;
   const certificationDigest = requireCutoverText(
     rawCertificationDigest,
     "greenfield adapterCertificationDigest",
@@ -278,8 +333,16 @@ export async function bootstrapGreenfieldInventoryAuthority({
       "InventoryOnce greenfield authority certification differs from durable evidence.",
     );
   }
-  const target = await storage.readWorld();
-  const targetWorldRoot = assertExactEmptyGreenfieldTarget(target);
+  // An indexed namespace can prove revision-zero vacancy from its only publication head.
+  let targetWorldRoot: string;
+  if (emptyTarget === undefined) {
+    targetWorldRoot = assertExactEmptyGreenfieldTarget(await storage.readWorld());
+  } else {
+    if (!await emptyTarget.isUnclaimedGreenfieldTarget()) {
+      throw new Error("InventoryOnce greenfield authority requires an unclaimed empty indexed head.");
+    }
+    targetWorldRoot = inventoryWorldContentRoots(emptyInventoryWorldState()).world;
+  }
   const activated = await authorityControl.activateGreenfield({
     authorizationId,
     certificationDigest,
@@ -302,19 +365,23 @@ export async function bootstrapGreenfieldInventoryAuthority({
  * Certify, shadow, dual-run, fence, double-read, migrate, and activate one authority stream.
  * Applications own authorization, source compilation, and writer-drain implementations.
  */
-export async function cutoverInventoryAuthority({
-  authority: authorityControl,
-  storage,
-  migrationId: rawMigrationId,
-  fenceToken: rawFenceToken,
-  authorizationId: rawAuthorizationId,
-  adapterCertificationDigest: rawCertificationDigest,
-  cutoverAtEpochMs: explicitCutoverAtEpochMs,
-  sourceRevision = 0,
-  compileSource,
-  drainLegacyWriters,
-  clock,
-}: CutoverInventoryAuthorityInput): Promise<CutoverInventoryAuthorityResult> {
+export async function cutoverInventoryAuthority(
+  input: CutoverInventoryAuthorityInput | CutoverIndexedInventoryAuthorityInput,
+): Promise<CutoverInventoryAuthorityResult> {
+  const {
+    authority: authorityControl,
+    storage,
+    openingTarget,
+    migrationId: rawMigrationId,
+    fenceToken: rawFenceToken,
+    authorizationId: rawAuthorizationId,
+    adapterCertificationDigest: rawCertificationDigest,
+    cutoverAtEpochMs: explicitCutoverAtEpochMs,
+    sourceRevision = 0,
+    compileSource,
+    drainLegacyWriters,
+    clock,
+  } = input;
   const migrationId = requireCutoverText(rawMigrationId, "migrationId");
   const fenceToken = requireCutoverText(rawFenceToken, "fenceToken");
   const authorizationId = requireCutoverText(
@@ -329,12 +396,28 @@ export async function cutoverInventoryAuthority({
 
   let authority = await authorityControl.read();
   const authorityStream = establishAuthorityPortStream(authority, "cutover initial read");
+  /** The selected adapter proves the opening independently of the authority row. */
+  const readCompletedTarget: ReadCompletedInventoryCutoverTarget = async (compiled, observed) => {
+    if (openingTarget !== undefined) {
+      // Authority already binds the exact target root and activation time. Compare the
+      // independent published proof against that retained root without replaying the opening.
+      assertInventoryMigrationPlanDigest(compiled.plan);
+      const proof = await readIndexedInventoryOpeningProof(openingTarget, compiled.plan);
+      return { targetWorldRoot: proof.targetWorldRoot, targetWorldRevision: proof.revision };
+    }
+    const dryRun = dryRunInventoryMigration({
+      catalog: compiled.catalog, plan: compiled.plan, targetWorld: emptyInventoryWorldState(),
+    });
+    return assertCompletedInventoryCutoverManifest(
+      await storage.readMigrationManifest(migrationId), compiled, dryRun, migrationId,
+    );
+  };
   const resolveConcurrentCompletion = /** Replay an already-completed concurrent cutover only when it matches this exact attempt. */ (
     observed: InventoryAuthorityState,
   ): Promise<CutoverInventoryAuthorityResult | undefined> =>
     completedInventoryCutoverResult({
       authority: observed,
-      storage,
+      readCompletedTarget,
       migrationId,
       fenceToken,
       authorizationId,
@@ -453,22 +536,8 @@ export async function cutoverInventoryAuthority({
     sourceRevision,
   });
   acceptAuthorityPortState(authorityStream, fenced, "fence claim");
-  // Fence ownership is already durable. Resolve migration state before entering any path that may release it.
-  const manifest = await storage.readMigrationManifest(migrationId);
-  const fenceReturnedAuthoritative =
-    fenced.mode === InventoryAuthorityMode.Authoritative;
-  if (fenceReturnedAuthoritative) {
-    const dryRun = dryRunInventoryMigration({
-      catalog: first.catalog,
-      plan: first.plan,
-      targetWorld: emptyInventoryWorldState(),
-    });
-    const durableTarget = assertCompletedInventoryCutoverManifest(
-      manifest,
-      first,
-      dryRun,
-      migrationId,
-    );
+  if (fenced.mode === InventoryAuthorityMode.Authoritative) {
+    const durableTarget = await readCompletedTarget(first, fenced);
     const retained = inventoryAuthorityCutoverResult(fenced);
     assertInventoryCutoverResultMatches(retained, {
       authorizationId,
@@ -494,6 +563,8 @@ export async function cutoverInventoryAuthority({
     sourcePlanDigest: first.plan.planDigest,
     sourceCatalogDigest: first.catalog.digest,
   });
+  // The world-backed adapter can retain an explicitly aborted manifest. Indexed claims always finish.
+  const manifest = storage === undefined ? undefined : await storage.readMigrationManifest(migrationId);
   if (manifest?.state === InventoryMigrationManifestState.Aborted) {
     throw new Error(
       "The InventoryOnce migration identity was previously aborted.",
@@ -510,30 +581,17 @@ export async function cutoverInventoryAuthority({
   assertInventoryMigrationReady(second);
   assertInventoryCutoverSourceMatchesRequest(second, migrationId, cutoverAtEpochMs);
   assertSameInventoryMigrationSource(first, second);
-  const targetBefore = await storage.readWorld();
-  if (manifest === undefined)
-    assertEmptyInventoryAuthorityTarget(targetBefore);
-  const dryRun = dryRunInventoryMigration({
-    catalog: second.catalog,
-    plan: second.plan,
-    targetWorld:
-      manifest === undefined ? targetBefore : emptyInventoryWorldState(),
-  });
-  const targetAfter = await applyInventoryMigrationPlan({
-    catalog: second.catalog,
-    storage,
-    plan: second.plan,
-    dryRun,
-    clock,
-  });
-  const targetWorldRoot = inventoryWorldContentRoots(targetAfter).world;
+  const target = openingTarget === undefined
+    ? await publishWorldBackedInventoryOpening(storage, manifest, second, clock)
+    : await publishIndexedInventoryOpening(openingTarget, second, fenced);
+  const { targetWorldRoot, targetWorldRevision } = target;
   const activated = await authorityControl.activate({
     fenceToken,
     sourcePlanDigest: second.plan.planDigest,
     sourceCatalogDigest: second.catalog.digest,
     sourceRoot,
     targetWorldRoot,
-    targetWorldRevision: targetAfter.revision,
+    targetWorldRevision,
     activatedAtEpochMs: clock.nowEpochMs(),
   });
   const result = inventoryAuthorityCutoverResult(activated);
@@ -547,10 +605,84 @@ export async function cutoverInventoryAuthority({
     sourcePlanDigest: second.plan.planDigest,
     sourceCatalogDigest: second.catalog.digest,
     targetWorldRoot,
-    targetWorldRevision: targetAfter.revision,
+    targetWorldRevision,
   });
   acceptAuthorityPortState(authorityStream, activated, "legacy activation");
   return result;
+}
+
+/** Publish the reviewed opening through the existing world-backed migration adapter. */
+async function publishWorldBackedInventoryOpening(
+  storage: InventoryDurableStorage,
+  manifest: Awaited<ReturnType<InventoryDurableStorage["readMigrationManifest"]>>,
+  compiled: InventoryMigrationSourcePlan,
+  clock: InventoryClock,
+): Promise<CompletedInventoryCutoverTargetEvidence> {
+  const targetBefore = await storage.readWorld();
+  if (manifest === undefined) assertEmptyInventoryAuthorityTarget(targetBefore);
+  const dryRun = dryRunInventoryMigration({
+    catalog: compiled.catalog,
+    plan: compiled.plan,
+    targetWorld: manifest === undefined ? targetBefore : emptyInventoryWorldState(),
+  });
+  const target = await applyInventoryMigrationPlan({ ...compiled, storage, dryRun, clock });
+  return { targetWorldRoot: inventoryWorldContentRoots(target).world, targetWorldRevision: target.revision };
+}
+
+/** Rebuild the exact opening accepted by this fence, including one record time across processes. */
+function freezeIndexedInventoryOpening(
+  compiled: InventoryMigrationSourcePlan,
+  authority: InventoryAuthorityState,
+): BeginInventoryMigrationManifestInput {
+  assertInventoryMigrationPlanDigest(compiled.plan);
+  const recordedAtEpochMs = authority.fenceStartedAtEpochMs;
+  requireCutoverEpochMilliseconds(recordedAtEpochMs, "indexed opening fence time");
+  return createInventoryMigrationManifestBeginInput(
+    compiled.catalog, emptyInventoryWorldState(), compiled.plan, recordedAtEpochMs,
+  );
+}
+
+/** Read proof from the published head before allowing activation to cross the writer fence. */
+async function publishIndexedInventoryOpening(
+  target: InventoryIndexedOpeningTarget,
+  compiled: InventoryMigrationSourcePlan,
+  authority: InventoryAuthorityState,
+): Promise<CompletedInventoryCutoverTargetEvidence> {
+  const frozen = freezeIndexedInventoryOpening(compiled, authority);
+  await target.publishLegacyOpening(frozen);
+  const proof = await readIndexedInventoryOpeningProof(target, compiled.plan);
+  // Before activation, the new opening must still match every frozen field, including its durable event times.
+  if (
+    proof.durablePlanDigest !== frozen.plan.durablePlanDigest ||
+    proof.targetWorldRoot !== frozen.plan.nextRoots.world
+  ) {
+    throw new Error("InventoryOnce cutover has no matching published indexed opening.");
+  }
+  return { targetWorldRoot: proof.targetWorldRoot, targetWorldRevision: proof.revision };
+}
+
+/** Read one indexed opening proof for the exact current source plan. */
+async function readIndexedInventoryOpeningProof(
+  target: InventoryIndexedOpeningTarget,
+  plan: InventoryMigrationSourcePlan["plan"],
+): Promise<InventoryPublishedOpeningEvidence> {
+  const proof = await target.readLegacyOpeningEvidence(plan.migrationId);
+  if (
+    proof === undefined ||
+    proof.migrationId !== plan.migrationId ||
+    proof.sourcePlanHash !== inventorySha256(plan.planDigest) ||
+    proof.revision !== 1
+  ) {
+    throw new Error("InventoryOnce cutover has no matching published indexed opening.");
+  }
+  return proof;
+}
+
+/** Verify that the reviewed source commitment covers the compiled contents. */
+function assertInventoryMigrationPlanDigest(plan: InventoryMigrationSourcePlan["plan"]): void {
+  if (inventoryMigrationPlanDigest(plan) !== plan.planDigest) {
+    throw new Error("Inventory migration plan changed after compilation.");
+  }
 }
 
 /** Reuse one durable timestamp across retries and concurrent process contenders. */

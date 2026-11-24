@@ -9,13 +9,13 @@ import {
   inventoryMetadataFingerprint,
   type InventoryIntentFingerprintValue,
 } from "./canonical.js";
-import { inventorySha256 } from "./digest.js";
 import { compareInventoryIdentityText } from "./ordering.js";
 import { type InventoryClock } from "./coordinator.js";
+import { inventoryWorldContentRoots } from "./integrity.js";
 import {
-  inventoryDurableMigrationPlanDigest,
-  inventoryWorldContentRoots,
-} from "./integrity.js";
+  createInventoryMigrationManifestBeginInput,
+  inventoryMigrationPlanDigest,
+} from "./migration-prepare.js";
 import {
   createInventoryIssueEvent,
   createInventoryOpeningEvent,
@@ -26,7 +26,6 @@ import {
 import {
   assertInventoryEpochMilliseconds,
   commitInventoryEvent,
-  inventoryEventIntentFingerprint,
   type InventoryCommittedEvent,
   type InventoryEventDraft,
   type InventoryTraceabilityRelationChange,
@@ -59,7 +58,6 @@ import {
 } from "./projection.js";
 import {
   InventoryMigrationManifestState,
-  type InventoryDurableMigrationPlan,
   type InventoryDurableStorage,
   type InventoryMigrationManifest,
 } from "./storage.js";
@@ -663,27 +661,10 @@ export async function applyInventoryMigrationPlan({
       "Inventory migration target changed after the reviewed dry-run."
     );
   }
-  const recordedAtEpochMs = clock.nowEpochMs();
-  assertInventoryEpochMilliseconds(
-    recordedAtEpochMs,
-    "inventory migration durable record time"
+  // Freeze and validate the target before the durable Applying fence exists.
+  await storage.beginMigrationManifest(
+    createInventoryMigrationManifestBeginInput(catalog, targetWorld, plan, clock.nowEpochMs()),
   );
-  // Build and validate every committed event/next root before the Applying fence exists.
-  const durablePlan = createDurableInventoryMigrationPlan(
-    catalog,
-    targetWorld,
-    plan,
-    recordedAtEpochMs
-  );
-  await storage.beginMigrationManifest({
-    migrationId: plan.migrationId,
-    planDigest: plan.planDigest,
-    baseRevision: targetWorld.revision,
-    baseWorldRoot: durablePlan.baseWorldRoot,
-    operationIds,
-    sourceDispositions: plan.sourceDispositions,
-    plan: durablePlan,
-  });
   await resumeInventoryMigrationManifest(storage, plan.migrationId);
   return storage.readWorld();
 }
@@ -906,107 +887,6 @@ function compareInventoryMigrationSourceDisposition(
   right: InventoryMigrationSourceDisposition
 ): number {
   return compareInventoryIdentityText(left.dispositionId, right.dispositionId);
-}
-
-/** Hash the exact plan fingerprint so cutover can bind it without storing the source rows again. */
-function inventoryMigrationPlanDigest(
-  plan: Omit<InventoryMigrationPlan, "planDigest"> | InventoryMigrationPlan
-): string {
-  return inventorySha256(inventoryIntentFingerprint([
-    plan.migrationId,
-    plan.sourceSystem,
-    plan.sourceVersion ?? null,
-    plan.cutoverAtEpochMs,
-    plan.status,
-    plan.events.map(inventoryEventIntentFingerprint),
-    plan.sourceDispositions.map(inventoryMigrationSourceDispositionFingerprint),
-    plan.diagnostics.map(
-      /** Keep every reviewed warning/error/source row inside the compiled-plan identity. */
-      (diagnostic) => [
-        diagnostic.severity,
-        diagnostic.code,
-        diagnostic.message,
-        diagnostic.source === undefined
-          ? null
-          : [
-              diagnostic.source.sourceType,
-              diagnostic.source.sourceId,
-              diagnostic.source.note ?? null,
-            ],
-        diagnostic.resolution ?? null,
-      ]
-    ),
-    inventoryMetadataFingerprint(plan.metadata),
-  ]));
-}
-
-/** Build the complete committed event batch and exact next roots before durable begin. */
-function createDurableInventoryMigrationPlan(
-  catalog: InventoryCatalog,
-  baseWorld: InventoryWorldState,
-  plan: InventoryMigrationPlan,
-  recordedAtEpochMs: number
-): InventoryDurableMigrationPlan {
-  let world = baseWorld;
-  assertInventoryCatalogRetainsSnapshot(catalog, world.catalog);
-  const catalogSnapshot = inventoryCatalogSnapshot(catalog);
-  /** Complete committed event batch retained for restart repair. */
-  const committedEvents: InventoryCommittedEvent[] = [];
-  for (const event of plan.events) {
-    try {
-      const committed = commitInventoryEvent(
-        event,
-        recordedAtEpochMs,
-        world.projection.lastRecordSequence + 1
-      );
-      committedEvents.push(committed);
-      const projection = applyInventoryCommittedEvent({
-        catalog,
-        state: world.projection,
-        event: committed,
-        deficitPolicy: InventoryDeficitPolicy.Record,
-      }).state;
-      world = {
-        // The event stream advances inside one unpublished batch; the world revision advances once.
-        revision: baseWorld.revision + 1,
-        catalog: catalogSnapshot,
-        projection,
-        reservations: world.reservations,
-        counts: world.counts,
-      };
-    } catch (error) {
-      throw new Error(
-        `Migration '${plan.migrationId}' cannot start because '${event.operationId}' fails against current target truth: ` +
-          `${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-  const baseWorldRoot = inventoryWorldContentRoots(baseWorld).world;
-  const nextWorld: InventoryWorldState = {
-    ...world,
-    revision: baseWorld.revision + 1,
-    catalog: catalogSnapshot,
-  };
-  const nextRoots = inventoryWorldContentRoots(nextWorld);
-  const durablePlanWithoutDigest: Omit<
-    InventoryDurableMigrationPlan,
-    "durablePlanDigest"
-  > = {
-    format: "inventoryonce-migration-plan-v1",
-    baseWorldRoot,
-    catalog: catalogSnapshot,
-    catalogRoot: catalogSnapshot.digest,
-    deficitPolicy: InventoryDeficitPolicy.Record,
-    events: committedEvents,
-    sourceDispositions: structuredClone(plan.sourceDispositions),
-    nextRoots,
-  };
-  return {
-    ...durablePlanWithoutDigest,
-    durablePlanDigest: inventoryDurableMigrationPlanDigest(
-      durablePlanWithoutDigest
-    ),
-  };
 }
 
 /** Reject changed compiled rows on completed or applying migration retries. */

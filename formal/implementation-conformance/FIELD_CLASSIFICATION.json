@@ -1,17 +1,17 @@
 {
   "counts": {
-    "callableFieldSignatures": 13,
-    "callableFields": 13,
+    "callableFieldSignatures": 15,
+    "callableFields": 15,
     "callbackArgumentFields": 417,
     "callbackResultFields": 471,
-    "fields": 2827,
-    "inputFields": 2369,
+    "fields": 2851,
+    "inputFields": 2393,
     "nullableFields": 9,
-    "optionalFields": 1143,
+    "optionalFields": 1151,
     "outputFields": 1097,
     "recursiveTypeReferences": 5,
     "truncatedTypes": 0,
-    "types": 473,
+    "types": 479,
     "undefinedFields": 11
   },
   "entries": {
@@ -2584,6 +2584,28 @@
       "optional": false,
       "rationale": "Injected clock implementation is an environment assumption; canonical emitted times remain modeled inputs."
     },
+    "BootstrapGreenfieldInventoryAuthorityInput.emptyTarget": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/authority-cutover.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "never",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/authority.test.ts"
+      ],
+      "formalModels": [
+        "AuthorityWriterFence"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
     "BootstrapGreenfieldInventoryAuthorityInput.storage": {
       "allowsNull": false,
       "allowsUndefined": false,
@@ -2693,6 +2715,140 @@
       "gaps": [],
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "BootstrapIndexedGreenfieldInventoryAuthorityInput.adapterCertificationDigest": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/authority-cutover.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/authority.test.ts"
+      ],
+      "formalModels": [
+        "AuthorityWriterFence"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "BootstrapIndexedGreenfieldInventoryAuthorityInput.authority": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/authority-cutover.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryAuthorityControlPort",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/authority.test.ts"
+      ],
+      "formalModels": [
+        "AuthorityWriterFence"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "BootstrapIndexedGreenfieldInventoryAuthorityInput.authorizationId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/authority-cutover.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/authority.test.ts"
+      ],
+      "formalModels": [
+        "AuthorityWriterFence"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "BootstrapIndexedGreenfieldInventoryAuthorityInput.clock": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "unsupported/unmodelled",
+      "declaration": "src/authority-cutover.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryClock",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/authority.test.ts"
+      ],
+      "formalModels": [
+        "AuthorityWriterFence"
+      ],
+      "gaps": [
+        "GAP-EXTERNAL-CLOCK"
+      ],
+      "optional": false,
+      "rationale": "Injected clock implementation is an environment assumption; canonical emitted times remain modeled inputs."
+    },
+    "BootstrapIndexedGreenfieldInventoryAuthorityInput.emptyTarget": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/authority-cutover.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryUnclaimedGreenfieldTarget",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/authority.test.ts"
+      ],
+      "formalModels": [
+        "AuthorityWriterFence"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "BootstrapIndexedGreenfieldInventoryAuthorityInput.storage": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/authority-cutover.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "never",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/authority.test.ts"
+      ],
+      "formalModels": [
+        "AuthorityWriterFence"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Injected protocol implementation must refine the modeled durable/authority port and pass the shared conformance suite."
     },
     "CertifyInventoryAdapterInput.certificationDigest": {
       "allowsNull": false,
@@ -13614,6 +13770,292 @@
       "optional": true,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
+    "CutoverIndexedInventoryAuthorityInput.adapterCertificationDigest": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/authority-cutover.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/authority.test.ts"
+      ],
+      "formalModels": [
+        "AuthorityWriterFence"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "CutoverIndexedInventoryAuthorityInput.authority": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/authority-cutover.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryAuthorityControlPort",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/authority.test.ts"
+      ],
+      "formalModels": [
+        "AuthorityWriterFence"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "CutoverIndexedInventoryAuthorityInput.authorizationId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/authority-cutover.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/authority.test.ts"
+      ],
+      "formalModels": [
+        "AuthorityWriterFence"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "CutoverIndexedInventoryAuthorityInput.clock": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "unsupported/unmodelled",
+      "declaration": "src/authority-cutover.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryClock",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/authority.test.ts"
+      ],
+      "formalModels": [
+        "AuthorityWriterFence"
+      ],
+      "gaps": [
+        "GAP-EXTERNAL-CLOCK"
+      ],
+      "optional": false,
+      "rationale": "Injected clock implementation is an environment assumption; canonical emitted times remain modeled inputs."
+    },
+    "CutoverIndexedInventoryAuthorityInput.compileSource": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [
+        {
+          "parameters": [
+            {
+              "name": "cutoverAtEpochMs",
+              "optional": false,
+              "type": "number"
+            }
+          ],
+          "result": "Promise<InventoryMigrationSourcePlan>"
+        }
+      ],
+      "callable": true,
+      "classification": "unsupported/unmodelled",
+      "declaration": "src/authority-cutover.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "(cutoverAtEpochMs: number) => Promise<InventoryMigrationSourcePlan>",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/authority.test.ts"
+      ],
+      "formalModels": [
+        "AuthorityWriterFence"
+      ],
+      "gaps": [
+        "GAP-EXTERNAL-MIGRATION-CALLBACKS"
+      ],
+      "optional": false,
+      "rationale": "Executable callback behavior is supplied by an external/test boundary and is not itself a finite InventoryOnce state field."
+    },
+    "CutoverIndexedInventoryAuthorityInput.cutoverAtEpochMs": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/authority-cutover.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/authority.test.ts"
+      ],
+      "formalModels": [
+        "AuthorityWriterFence"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "CutoverIndexedInventoryAuthorityInput.drainLegacyWriters": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [
+        {
+          "parameters": [],
+          "result": "Promise<void>"
+        }
+      ],
+      "callable": true,
+      "classification": "unsupported/unmodelled",
+      "declaration": "src/authority-cutover.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "() => Promise<void>",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/authority.test.ts"
+      ],
+      "formalModels": [
+        "AuthorityWriterFence"
+      ],
+      "gaps": [
+        "GAP-EXTERNAL-MIGRATION-CALLBACKS"
+      ],
+      "optional": false,
+      "rationale": "Executable callback behavior is supplied by an external/test boundary and is not itself a finite InventoryOnce state field."
+    },
+    "CutoverIndexedInventoryAuthorityInput.fenceToken": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/authority-cutover.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/authority.test.ts"
+      ],
+      "formalModels": [
+        "AuthorityWriterFence"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "CutoverIndexedInventoryAuthorityInput.migrationId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/authority-cutover.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/authority.test.ts"
+      ],
+      "formalModels": [
+        "AuthorityWriterFence"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "CutoverIndexedInventoryAuthorityInput.openingTarget": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/authority-cutover.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryIndexedOpeningTarget",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/authority.test.ts"
+      ],
+      "formalModels": [
+        "AuthorityWriterFence"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "CutoverIndexedInventoryAuthorityInput.sourceRevision": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/authority-cutover.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/authority.test.ts"
+      ],
+      "formalModels": [
+        "AuthorityWriterFence"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "CutoverIndexedInventoryAuthorityInput.storage": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/authority-cutover.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "never",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/authority.test.ts"
+      ],
+      "formalModels": [
+        "AuthorityWriterFence"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Injected protocol implementation must refine the modeled durable/authority port and pass the shared conformance suite."
+    },
     "CutoverInventoryAuthorityInput.adapterCertificationDigest": {
       "allowsNull": false,
       "allowsUndefined": false,
@@ -13833,6 +14275,28 @@
       "gaps": [],
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "CutoverInventoryAuthorityInput.openingTarget": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/authority-cutover.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "never",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/authority.test.ts"
+      ],
+      "formalModels": [
+        "AuthorityWriterFence"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
     "CutoverInventoryAuthorityInput.sourceRevision": {
       "allowsNull": false,
@@ -66386,6 +66850,94 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
+    "anonymous@src/authority-cutover.ts:131:5.emptyTarget": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/authority-cutover.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryUnclaimedGreenfieldTarget",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/authority.test.ts"
+      ],
+      "formalModels": [
+        "AuthorityWriterFence"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "anonymous@src/authority-cutover.ts:131:5.storage": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/authority-cutover.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "never",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/authority.test.ts"
+      ],
+      "formalModels": [
+        "AuthorityWriterFence"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Injected protocol implementation must refine the modeled durable/authority port and pass the shared conformance suite."
+    },
+    "anonymous@src/authority-cutover.ts:83:121.openingTarget": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/authority-cutover.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryIndexedOpeningTarget",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/authority.test.ts"
+      ],
+      "formalModels": [
+        "AuthorityWriterFence"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "anonymous@src/authority-cutover.ts:83:121.storage": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/authority-cutover.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "never",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/authority.test.ts"
+      ],
+      "formalModels": [
+        "AuthorityWriterFence"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Injected protocol implementation must refine the modeled durable/authority port and pass the shared conformance suite."
+    },
     "anonymous@src/catalog.ts:3054:13.lotId": {
       "allowsNull": false,
       "allowsUndefined": false,
@@ -67536,7 +68088,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/migrations.ts:233:72.dispositionId": {
+    "anonymous@src/migrations.ts:231:72.dispositionId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -67560,7 +68112,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/migrations.ts:233:72.evidence": {
+    "anonymous@src/migrations.ts:231:72.evidence": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -67585,7 +68137,7 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/migrations.ts:233:72.reason": {
+    "anonymous@src/migrations.ts:231:72.reason": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -67610,7 +68162,7 @@
       "optional": false,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "anonymous@src/migrations.ts:233:72.snapshotAtEpochMs": {
+    "anonymous@src/migrations.ts:231:72.snapshotAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -67634,7 +68186,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/migrations.ts:233:72.source": {
+    "anonymous@src/migrations.ts:231:72.source": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -67711,7 +68263,7 @@
   },
   "schemaVersion": 2,
   "surfaceDiagnostics": {
-    "maximumTypeDepth": 12,
+    "maximumTypeDepth": 13,
     "recursiveTypeReferences": [
       "InventoryEventDraft|src/events.ts|16892|04849f27e95c",
       "InventoryIntentFingerprintValue|src/canonical.ts|81|409e33b74f02",
@@ -67721,5 +68273,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "9a0423cefdf33346222735f8f44f71da5b76b36c7bf6a06aa7b51c6b49519a4b"
+  "surfaceSha256": "83d42e7407155e7274598c6e6df79680e185232b18f45cc1a71270725f15db13"
 }

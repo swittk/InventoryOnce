@@ -1848,3 +1848,16 @@ The R105 portable-current-input authority and final publication both continue to
 
 - External cutover was saving the normalized source plan text as a digest, both directly and inside the source root. A 160-event clinic fixture with 132 source dispositions produced 351,807 bytes before either authority transition.
 - Hash the same normalized plan, including movement, disposition and diagnostics. The authority keeps a 64-byte commitment. Frozen event order, source evidence and the reviewed target root stay separately checked.
+
+
+2026-11-24 - Prove the indexed opening inside legacy cutover
+
+- Cutover can use an indexed opening target with the same legacy source reads, writer drain, authority transitions and activation CAS. It selects one target when called. The indexed branch reads the published proof without opening a target world.
+- The first retained fence time freezes the opening event clocks across retries. Core checks the source commitment, frozen native plan, target root and target revision before activating. A missing or changed proof keeps the authority fenced.
+- An already-activated retry checks the independently published proof against the root in authority. There is no second opening replay after activation. Before activation, core still checks the full frozen plan digest and exact target root.
+
+
+2026-11-24 - Greenfield authority from the original indexed head
+
+- Core can certify and activate the same greenfield transition with an indexed vacancy proof. The adapter must prove that nothing was published and no staged publication owns the head. Core derives the exact genesis world commitment.
+- An already activated retry compares its retained evidence. It does not reread stock that may have been published since activation.

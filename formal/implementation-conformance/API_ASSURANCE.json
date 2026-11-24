@@ -3,8 +3,8 @@
     "authorityMethods": 14,
     "callAndConstructSignatures": 627,
     "classMethods": 109,
-    "compilerCallGraphCallables": 3770,
-    "compilerCallGraphEdges": 10261,
+    "compilerCallGraphCallables": 3791,
+    "compilerCallGraphEdges": 10298,
     "compilerCallGraphTestRoots": 61,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 627,
@@ -13,10 +13,10 @@
     "facadeMethods": 137,
     "indirectCallChainApis": 358,
     "kernelCallables": 192,
-    "maximumTypeDepth": 12,
+    "maximumTypeDepth": 13,
     "migrationCallables": 15,
-    "reachableFields": 2827,
-    "reachableTypes": 473,
+    "reachableFields": 2851,
+    "reachableTypes": 479,
     "recursiveTypeReferences": 5,
     "rootCallables": 103,
     "storageCallables": 40,
@@ -11115,8 +11115,8 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 1,
-          "path": "src/migrations.ts"
+          "occurrences": 2,
+          "path": "src/migration-prepare.ts"
         },
         {
           "occurrences": 1,
@@ -11225,9 +11225,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:23734:applyInventoryMigrationPlan",
+              "id": "src/migrations.ts:23692:applyInventoryMigrationPlan",
               "kind": "FunctionDeclaration",
-              "line": 613,
+              "line": 611,
               "name": "applyInventoryMigrationPlan",
               "reason": "resolved-call"
             },
@@ -11785,7 +11785,7 @@
       "inputMapping": "Base revision/root, intent fingerprint, complete next-world plan, component roots, operation ID, and failpoint stage map to applying/published/completed/aborted protocol state.",
       "internalReferences": [
         {
-          "occurrences": 4,
+          "occurrences": 5,
           "path": "src/authority-cutover.ts"
         },
         {
@@ -11858,7 +11858,7 @@
         },
         {
           "occurrences": 1,
-          "path": "src/migrations.ts"
+          "path": "src/migration-prepare.ts"
         },
         {
           "occurrences": 1,
@@ -12003,9 +12003,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:26488:resumeInventoryMigrationManifest",
+              "id": "src/migrations.ts:26000:resumeInventoryMigrationManifest",
               "kind": "FunctionDeclaration",
-              "line": 692,
+              "line": 673,
               "name": "resumeInventoryMigrationManifest",
               "reason": "resolved-call"
             },
@@ -12805,20 +12805,20 @@
               "column": 57,
               "file": "test/authority.test.ts",
               "hasBody": true,
-              "id": "test/authority.test.ts:6443:<anonymous@191>",
+              "id": "test/authority.test.ts:6569:<anonymous@194>",
               "kind": "ArrowFunction",
-              "line": 191,
-              "name": "<anonymous@191>",
+              "line": 194,
+              "name": "<anonymous@194>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 93,
               "file": "test/authority.test.ts",
               "hasBody": true,
-              "id": "test/authority.test.ts:21516:<anonymous@577>",
+              "id": "test/authority.test.ts:23250:<anonymous@614>",
               "kind": "ArrowFunction",
-              "line": 577,
-              "name": "<anonymous@577>",
+              "line": 614,
+              "name": "<anonymous@614>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -12875,7 +12875,7 @@
       "inputMapping": "Base revision/root, intent fingerprint, complete next-world plan, component roots, operation ID, and failpoint stage map to applying/published/completed/aborted protocol state.",
       "internalReferences": [
         {
-          "occurrences": 3,
+          "occurrences": 4,
           "path": "src/authority-cutover.ts"
         },
         {
@@ -13943,9 +13943,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:26488:resumeInventoryMigrationManifest",
+              "id": "src/migrations.ts:26000:resumeInventoryMigrationManifest",
               "kind": "FunctionDeclaration",
-              "line": 692,
+              "line": 673,
               "name": "resumeInventoryMigrationManifest",
               "reason": "resolved-call"
             },
@@ -15235,6 +15235,10 @@
           "path": "src/amounts.ts"
         },
         {
+          "occurrences": 1,
+          "path": "src/authority-cutover.ts"
+        },
+        {
           "occurrences": 2,
           "path": "src/availability.ts"
         },
@@ -15307,7 +15311,11 @@
           "path": "src/migration-plugin.ts"
         },
         {
-          "occurrences": 34,
+          "occurrences": 7,
+          "path": "src/migration-prepare.ts"
+        },
+        {
+          "occurrences": 26,
           "path": "src/migrations.ts"
         },
         {
@@ -15867,7 +15875,11 @@
           "path": "src/integrity.ts"
         },
         {
-          "occurrences": 3,
+          "occurrences": 1,
+          "path": "src/migration-prepare.ts"
+        },
+        {
+          "occurrences": 2,
           "path": "src/migrations.ts"
         },
         {
@@ -17895,7 +17907,7 @@
           "path": "src/amounts.ts"
         },
         {
-          "occurrences": 29,
+          "occurrences": 35,
           "path": "src/authority-cutover.ts"
         },
         {
@@ -17975,7 +17987,11 @@
           "path": "src/measurement-schema.ts"
         },
         {
-          "occurrences": 21,
+          "occurrences": 6,
+          "path": "src/migration-prepare.ts"
+        },
+        {
+          "occurrences": 15,
           "path": "src/migrations.ts"
         },
         {
@@ -20271,7 +20287,7 @@
           "path": "src/amounts.ts"
         },
         {
-          "occurrences": 29,
+          "occurrences": 35,
           "path": "src/authority-cutover.ts"
         },
         {
@@ -20351,7 +20367,11 @@
           "path": "src/measurement-schema.ts"
         },
         {
-          "occurrences": 21,
+          "occurrences": 6,
+          "path": "src/migration-prepare.ts"
+        },
+        {
+          "occurrences": 15,
           "path": "src/migrations.ts"
         },
         {
@@ -20626,7 +20646,11 @@
           "path": "src/migration-plugin.ts"
         },
         {
-          "occurrences": 6,
+          "occurrences": 3,
+          "path": "src/migration-prepare.ts"
+        },
+        {
+          "occurrences": 5,
           "path": "src/migrations.ts"
         },
         {
@@ -21906,7 +21930,11 @@
           "path": "src/coordinator.ts"
         },
         {
-          "occurrences": 4,
+          "occurrences": 2,
+          "path": "src/migration-prepare.ts"
+        },
+        {
+          "occurrences": 3,
           "path": "src/migrations.ts"
         },
         {
@@ -22746,7 +22774,11 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 3,
+          "occurrences": 2,
+          "path": "src/migration-prepare.ts"
+        },
+        {
+          "occurrences": 2,
           "path": "src/migrations.ts"
         },
         {
@@ -22921,7 +22953,11 @@
           "path": "src/fungibility.ts"
         },
         {
-          "occurrences": 4,
+          "occurrences": 2,
+          "path": "src/migration-prepare.ts"
+        },
+        {
+          "occurrences": 3,
           "path": "src/migrations.ts"
         },
         {
@@ -24324,7 +24360,11 @@
           "path": "src/historical-replay.ts"
         },
         {
-          "occurrences": 4,
+          "occurrences": 2,
+          "path": "src/migration-prepare.ts"
+        },
+        {
+          "occurrences": 3,
           "path": "src/migrations.ts"
         },
         {
@@ -26766,9 +26806,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:11556:defineInventoryMigration",
+              "id": "src/migrations.ts:11514:defineInventoryMigration",
               "kind": "FunctionDeclaration",
-              "line": 271,
+              "line": 269,
               "name": "defineInventoryMigration",
               "reason": "resolved-call"
             },
@@ -27356,9 +27396,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:11556:defineInventoryMigration",
+              "id": "src/migrations.ts:11514:defineInventoryMigration",
               "kind": "FunctionDeclaration",
-              "line": 271,
+              "line": 269,
               "name": "defineInventoryMigration",
               "reason": "resolved-call"
             },
@@ -34778,7 +34818,11 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 4,
+          "occurrences": 2,
+          "path": "src/migration-prepare.ts"
+        },
+        {
+          "occurrences": 3,
           "path": "src/migrations.ts"
         },
         {
@@ -35648,7 +35692,7 @@
         },
         {
           "occurrences": 2,
-          "path": "src/migrations.ts"
+          "path": "src/migration-prepare.ts"
         },
         {
           "occurrences": 5,
@@ -36901,7 +36945,11 @@
           "path": "src/measurements.ts"
         },
         {
-          "occurrences": 7,
+          "occurrences": 2,
+          "path": "src/migration-prepare.ts"
+        },
+        {
+          "occurrences": 6,
           "path": "src/migrations.ts"
         },
         {
@@ -38248,9 +38296,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:22434:inventoryMigrationPositionsMatch",
+              "id": "src/migrations.ts:22392:inventoryMigrationPositionsMatch",
               "kind": "FunctionDeclaration",
-              "line": 573,
+              "line": 571,
               "name": "inventoryMigrationPositionsMatch",
               "reason": "resolved-call"
             },
@@ -38667,7 +38715,11 @@
           "path": "src/migration-evidence.ts"
         },
         {
-          "occurrences": 3,
+          "occurrences": 2,
+          "path": "src/migration-prepare.ts"
+        },
+        {
+          "occurrences": 2,
           "path": "src/migrations.ts"
         },
         {
@@ -46322,9 +46374,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:22434:inventoryMigrationPositionsMatch",
+              "id": "src/migrations.ts:22392:inventoryMigrationPositionsMatch",
               "kind": "FunctionDeclaration",
-              "line": 573,
+              "line": 571,
               "name": "inventoryMigrationPositionsMatch",
               "reason": "resolved-call"
             },
@@ -49735,9 +49787,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:23734:applyInventoryMigrationPlan",
+              "id": "src/migrations.ts:23692:applyInventoryMigrationPlan",
               "kind": "FunctionDeclaration",
-              "line": 613,
+              "line": 611,
               "name": "applyInventoryMigrationPlan",
               "reason": "resolved-call"
             }
@@ -49746,9 +49798,9 @@
             "column": 1,
             "file": "src/migrations.ts",
             "hasBody": true,
-            "id": "src/migrations.ts:23734:applyInventoryMigrationPlan",
+            "id": "src/migrations.ts:23692:applyInventoryMigrationPlan",
             "kind": "FunctionDeclaration",
-            "line": 613,
+            "line": 611,
             "name": "applyInventoryMigrationPlan"
           },
           "test": "test/containers.test.ts"
@@ -49776,9 +49828,9 @@
           "column": 1,
           "file": "src/migrations.ts",
           "hasBody": true,
-          "id": "src/migrations.ts:23734:applyInventoryMigrationPlan",
+          "id": "src/migrations.ts:23692:applyInventoryMigrationPlan",
           "kind": "FunctionDeclaration",
-          "line": 613,
+          "line": 611,
           "name": "applyInventoryMigrationPlan"
         }
       ],
@@ -50371,9 +50423,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:11556:defineInventoryMigration",
+              "id": "src/migrations.ts:11514:defineInventoryMigration",
               "kind": "FunctionDeclaration",
-              "line": 271,
+              "line": 269,
               "name": "defineInventoryMigration",
               "reason": "resolved-call"
             }
@@ -50382,9 +50434,9 @@
             "column": 1,
             "file": "src/migrations.ts",
             "hasBody": true,
-            "id": "src/migrations.ts:11556:defineInventoryMigration",
+            "id": "src/migrations.ts:11514:defineInventoryMigration",
             "kind": "FunctionDeclaration",
-            "line": 271,
+            "line": 269,
             "name": "defineInventoryMigration"
           },
           "test": "test/containers.test.ts"
@@ -50411,9 +50463,9 @@
           "column": 1,
           "file": "src/migrations.ts",
           "hasBody": true,
-          "id": "src/migrations.ts:11556:defineInventoryMigration",
+          "id": "src/migrations.ts:11514:defineInventoryMigration",
           "kind": "FunctionDeclaration",
-          "line": 271,
+          "line": 269,
           "name": "defineInventoryMigration"
         }
       ],
@@ -50772,9 +50824,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:20592:dryRunInventoryMigration",
+              "id": "src/migrations.ts:20550:dryRunInventoryMigration",
               "kind": "FunctionDeclaration",
-              "line": 520,
+              "line": 518,
               "name": "dryRunInventoryMigration",
               "reason": "resolved-call"
             }
@@ -50783,9 +50835,9 @@
             "column": 1,
             "file": "src/migrations.ts",
             "hasBody": true,
-            "id": "src/migrations.ts:20592:dryRunInventoryMigration",
+            "id": "src/migrations.ts:20550:dryRunInventoryMigration",
             "kind": "FunctionDeclaration",
-            "line": 520,
+            "line": 518,
             "name": "dryRunInventoryMigration"
           },
           "test": "test/containers.test.ts"
@@ -50812,16 +50864,16 @@
           "column": 1,
           "file": "src/migrations.ts",
           "hasBody": true,
-          "id": "src/migrations.ts:20592:dryRunInventoryMigration",
+          "id": "src/migrations.ts:20550:dryRunInventoryMigration",
           "kind": "FunctionDeclaration",
-          "line": 520,
+          "line": 518,
           "name": "dryRunInventoryMigration"
         }
       ],
       "inputMapping": "Typed query/plugin declarations and opening/placement/traceability facts map to a deterministic finite migration declaration and diagnostics.",
       "internalReferences": [
         {
-          "occurrences": 5,
+          "occurrences": 4,
           "path": "src/authority-cutover.ts"
         },
         {
@@ -50913,9 +50965,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:22434:inventoryMigrationPositionsMatch",
+              "id": "src/migrations.ts:22392:inventoryMigrationPositionsMatch",
               "kind": "FunctionDeclaration",
-              "line": 573,
+              "line": 571,
               "name": "inventoryMigrationPositionsMatch",
               "reason": "resolved-call"
             }
@@ -50924,9 +50976,9 @@
             "column": 1,
             "file": "src/migrations.ts",
             "hasBody": true,
-            "id": "src/migrations.ts:22434:inventoryMigrationPositionsMatch",
+            "id": "src/migrations.ts:22392:inventoryMigrationPositionsMatch",
             "kind": "FunctionDeclaration",
-            "line": 573,
+            "line": 571,
             "name": "inventoryMigrationPositionsMatch"
           },
           "test": "test/migrations.test.ts"
@@ -50953,9 +51005,9 @@
           "column": 1,
           "file": "src/migrations.ts",
           "hasBody": true,
-          "id": "src/migrations.ts:22434:inventoryMigrationPositionsMatch",
+          "id": "src/migrations.ts:22392:inventoryMigrationPositionsMatch",
           "kind": "FunctionDeclaration",
-          "line": 573,
+          "line": 571,
           "name": "inventoryMigrationPositionsMatch"
         }
       ],
@@ -51045,9 +51097,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:11031:inventoryMigrationProblem",
+              "id": "src/migrations.ts:10989:inventoryMigrationProblem",
               "kind": "FunctionDeclaration",
-              "line": 256,
+              "line": 254,
               "name": "inventoryMigrationProblem",
               "reason": "resolved-call"
             }
@@ -51056,9 +51108,9 @@
             "column": 1,
             "file": "src/migrations.ts",
             "hasBody": true,
-            "id": "src/migrations.ts:11031:inventoryMigrationProblem",
+            "id": "src/migrations.ts:10989:inventoryMigrationProblem",
             "kind": "FunctionDeclaration",
-            "line": 256,
+            "line": 254,
             "name": "inventoryMigrationProblem"
           },
           "test": "test/formal-public-surface-completion.test.ts"
@@ -51085,9 +51137,9 @@
           "column": 1,
           "file": "src/migrations.ts",
           "hasBody": true,
-          "id": "src/migrations.ts:11031:inventoryMigrationProblem",
+          "id": "src/migrations.ts:10989:inventoryMigrationProblem",
           "kind": "FunctionDeclaration",
-          "line": 256,
+          "line": 254,
           "name": "inventoryMigrationProblem"
         }
       ],
@@ -51187,9 +51239,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:10090:inventoryMigrationSnapshotSupersededDisposition",
+              "id": "src/migrations.ts:10048:inventoryMigrationSnapshotSupersededDisposition",
               "kind": "FunctionDeclaration",
-              "line": 233,
+              "line": 231,
               "name": "inventoryMigrationSnapshotSupersededDisposition",
               "reason": "resolved-call"
             }
@@ -51198,9 +51250,9 @@
             "column": 1,
             "file": "src/migrations.ts",
             "hasBody": true,
-            "id": "src/migrations.ts:10090:inventoryMigrationSnapshotSupersededDisposition",
+            "id": "src/migrations.ts:10048:inventoryMigrationSnapshotSupersededDisposition",
             "kind": "FunctionDeclaration",
-            "line": 233,
+            "line": 231,
             "name": "inventoryMigrationSnapshotSupersededDisposition"
           },
           "test": "test/formal-implementation-refinement.test.ts"
@@ -51227,9 +51279,9 @@
           "column": 1,
           "file": "src/migrations.ts",
           "hasBody": true,
-          "id": "src/migrations.ts:10090:inventoryMigrationSnapshotSupersededDisposition",
+          "id": "src/migrations.ts:10048:inventoryMigrationSnapshotSupersededDisposition",
           "kind": "FunctionDeclaration",
-          "line": 233,
+          "line": 231,
           "name": "inventoryMigrationSnapshotSupersededDisposition"
         }
       ],
@@ -51450,9 +51502,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:27666:repairInventoryMigrationManifests",
+              "id": "src/migrations.ts:27178:repairInventoryMigrationManifests",
               "kind": "FunctionDeclaration",
-              "line": 720,
+              "line": 701,
               "name": "repairInventoryMigrationManifests",
               "reason": "resolved-call"
             }
@@ -51461,9 +51513,9 @@
             "column": 1,
             "file": "src/migrations.ts",
             "hasBody": true,
-            "id": "src/migrations.ts:27666:repairInventoryMigrationManifests",
+            "id": "src/migrations.ts:27178:repairInventoryMigrationManifests",
             "kind": "FunctionDeclaration",
-            "line": 720,
+            "line": 701,
             "name": "repairInventoryMigrationManifests"
           },
           "test": "test/formal-implementation-refinement.test.ts"
@@ -51491,9 +51543,9 @@
           "column": 1,
           "file": "src/migrations.ts",
           "hasBody": true,
-          "id": "src/migrations.ts:27666:repairInventoryMigrationManifests",
+          "id": "src/migrations.ts:27178:repairInventoryMigrationManifests",
           "kind": "FunctionDeclaration",
-          "line": 720,
+          "line": 701,
           "name": "repairInventoryMigrationManifests"
         }
       ],
@@ -51585,9 +51637,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:26488:resumeInventoryMigrationManifest",
+              "id": "src/migrations.ts:26000:resumeInventoryMigrationManifest",
               "kind": "FunctionDeclaration",
-              "line": 692,
+              "line": 673,
               "name": "resumeInventoryMigrationManifest",
               "reason": "resolved-call"
             }
@@ -51596,9 +51648,9 @@
             "column": 1,
             "file": "src/migrations.ts",
             "hasBody": true,
-            "id": "src/migrations.ts:26488:resumeInventoryMigrationManifest",
+            "id": "src/migrations.ts:26000:resumeInventoryMigrationManifest",
             "kind": "FunctionDeclaration",
-            "line": 692,
+            "line": 673,
             "name": "resumeInventoryMigrationManifest"
           },
           "test": "test/migrations.test.ts"
@@ -51626,9 +51678,9 @@
           "column": 1,
           "file": "src/migrations.ts",
           "hasBody": true,
-          "id": "src/migrations.ts:26488:resumeInventoryMigrationManifest",
+          "id": "src/migrations.ts:26000:resumeInventoryMigrationManifest",
           "kind": "FunctionDeclaration",
-          "line": 692,
+          "line": 673,
           "name": "resumeInventoryMigrationManifest"
         }
       ],
@@ -52006,7 +52058,11 @@
           "path": "src/migration-plugin.ts"
         },
         {
-          "occurrences": 6,
+          "occurrences": 3,
+          "path": "src/migration-prepare.ts"
+        },
+        {
+          "occurrences": 5,
           "path": "src/migrations.ts"
         },
         {
@@ -52095,20 +52151,20 @@
               "column": 57,
               "file": "test/authority.test.ts",
               "hasBody": true,
-              "id": "test/authority.test.ts:6443:<anonymous@191>",
+              "id": "test/authority.test.ts:6569:<anonymous@194>",
               "kind": "ArrowFunction",
-              "line": 191,
-              "name": "<anonymous@191>",
+              "line": 194,
+              "name": "<anonymous@194>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 74,
               "file": "test/authority.test.ts",
               "hasBody": true,
-              "id": "test/authority.test.ts:16509:<anonymous@450>",
+              "id": "test/authority.test.ts:18243:<anonymous@487>",
               "kind": "ArrowFunction",
-              "line": 450,
-              "name": "<anonymous@450>",
+              "line": 487,
+              "name": "<anonymous@487>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -52170,7 +52226,7 @@
       "inputMapping": "Catalogue, storage, clock, and deficit policy bind the implementation environment without publishing stock.",
       "internalReferences": [
         {
-          "occurrences": 51,
+          "occurrences": 54,
           "path": "src/authority-cutover.ts"
         },
         {
@@ -52850,7 +52906,11 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 3,
+          "occurrences": 2,
+          "path": "src/migration-prepare.ts"
+        },
+        {
+          "occurrences": 2,
           "path": "src/migrations.ts"
         },
         {
@@ -53721,9 +53781,9 @@
               "column": 1,
               "file": "src/authority-cutover.ts",
               "hasBody": true,
-              "id": "src/authority-cutover.ts:9295:bootstrapGreenfieldInventoryAuthority",
+              "id": "src/authority-cutover.ts:12127:bootstrapGreenfieldInventoryAuthority",
               "kind": "FunctionDeclaration",
-              "line": 226,
+              "line": 277,
               "name": "bootstrapGreenfieldInventoryAuthority",
               "reason": "resolved-call"
             }
@@ -53732,9 +53792,9 @@
             "column": 1,
             "file": "src/authority-cutover.ts",
             "hasBody": true,
-            "id": "src/authority-cutover.ts:9295:bootstrapGreenfieldInventoryAuthority",
+            "id": "src/authority-cutover.ts:12127:bootstrapGreenfieldInventoryAuthority",
             "kind": "FunctionDeclaration",
-            "line": 226,
+            "line": 277,
             "name": "bootstrapGreenfieldInventoryAuthority"
           },
           "test": "test/authority-arbitrary-port.test.ts"
@@ -53761,9 +53821,9 @@
           "column": 1,
           "file": "src/authority-cutover.ts",
           "hasBody": true,
-          "id": "src/authority-cutover.ts:9295:bootstrapGreenfieldInventoryAuthority",
+          "id": "src/authority-cutover.ts:12127:bootstrapGreenfieldInventoryAuthority",
           "kind": "FunctionDeclaration",
-          "line": 226,
+          "line": 277,
           "name": "bootstrapGreenfieldInventoryAuthority"
         }
       ],
@@ -53800,9 +53860,9 @@
           {
             "parameters": [
               {
-                "name": "__0",
+                "name": "input",
                 "optional": false,
-                "type": "BootstrapGreenfieldInventoryAuthorityInput"
+                "type": "BootstrapGreenfieldInventoryAuthorityInput | BootstrapIndexedGreenfieldInventoryAuthorityInput"
               }
             ],
             "result": "Promise<BootstrapGreenfieldInventoryAuthorityResult>"
@@ -54705,20 +54765,20 @@
               "column": 57,
               "file": "test/authority.test.ts",
               "hasBody": true,
-              "id": "test/authority.test.ts:6443:<anonymous@191>",
+              "id": "test/authority.test.ts:6569:<anonymous@194>",
               "kind": "ArrowFunction",
-              "line": 191,
-              "name": "<anonymous@191>",
+              "line": 194,
+              "name": "<anonymous@194>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 74,
               "file": "test/authority.test.ts",
               "hasBody": true,
-              "id": "test/authority.test.ts:16509:<anonymous@450>",
+              "id": "test/authority.test.ts:18243:<anonymous@487>",
               "kind": "ArrowFunction",
-              "line": 450,
-              "name": "<anonymous@450>",
+              "line": 487,
+              "name": "<anonymous@487>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -54858,9 +54918,9 @@
               "column": 1,
               "file": "src/authority-cutover.ts",
               "hasBody": true,
-              "id": "src/authority-cutover.ts:11919:cutoverInventoryAuthority",
+              "id": "src/authority-cutover.ts:15255:cutoverInventoryAuthority",
               "kind": "FunctionDeclaration",
-              "line": 305,
+              "line": 368,
               "name": "cutoverInventoryAuthority",
               "reason": "resolved-call"
             }
@@ -54869,9 +54929,9 @@
             "column": 1,
             "file": "src/authority-cutover.ts",
             "hasBody": true,
-            "id": "src/authority-cutover.ts:11919:cutoverInventoryAuthority",
+            "id": "src/authority-cutover.ts:15255:cutoverInventoryAuthority",
             "kind": "FunctionDeclaration",
-            "line": 305,
+            "line": 368,
             "name": "cutoverInventoryAuthority"
           },
           "test": "test/authority-arbitrary-port.test.ts"
@@ -54898,9 +54958,9 @@
           "column": 1,
           "file": "src/authority-cutover.ts",
           "hasBody": true,
-          "id": "src/authority-cutover.ts:11919:cutoverInventoryAuthority",
+          "id": "src/authority-cutover.ts:15255:cutoverInventoryAuthority",
           "kind": "FunctionDeclaration",
-          "line": 305,
+          "line": 368,
           "name": "cutoverInventoryAuthority"
         }
       ],
@@ -54937,9 +54997,9 @@
           {
             "parameters": [
               {
-                "name": "__0",
+                "name": "input",
                 "optional": false,
-                "type": "CutoverInventoryAuthorityInput"
+                "type": "CutoverInventoryAuthorityInput | CutoverIndexedInventoryAuthorityInput"
               }
             ],
             "result": "Promise<CutoverInventoryAuthorityResult>"
@@ -57866,9 +57926,9 @@
               "column": 1,
               "file": "src/authority-cutover.ts",
               "hasBody": true,
-              "id": "src/authority-cutover.ts:11919:cutoverInventoryAuthority",
+              "id": "src/authority-cutover.ts:15255:cutoverInventoryAuthority",
               "kind": "FunctionDeclaration",
-              "line": 305,
+              "line": 368,
               "name": "cutoverInventoryAuthority",
               "reason": "resolved-call"
             },
@@ -57876,9 +57936,9 @@
               "column": 1,
               "file": "src/authority-cutover.ts",
               "hasBody": true,
-              "id": "src/authority-cutover.ts:36079:inventoryAuthorityCutoverResult",
+              "id": "src/authority-cutover.ts:43291:inventoryAuthorityCutoverResult",
               "kind": "FunctionDeclaration",
-              "line": 947,
+              "line": 1079,
               "name": "inventoryAuthorityCutoverResult",
               "reason": "resolved-call"
             }
@@ -57887,9 +57947,9 @@
             "column": 1,
             "file": "src/authority-cutover.ts",
             "hasBody": true,
-            "id": "src/authority-cutover.ts:36079:inventoryAuthorityCutoverResult",
+            "id": "src/authority-cutover.ts:43291:inventoryAuthorityCutoverResult",
             "kind": "FunctionDeclaration",
-            "line": 947,
+            "line": 1079,
             "name": "inventoryAuthorityCutoverResult"
           },
           "test": "test/authority-arbitrary-port.test.ts"
@@ -57912,9 +57972,9 @@
           "column": 1,
           "file": "src/authority-cutover.ts",
           "hasBody": true,
-          "id": "src/authority-cutover.ts:36079:inventoryAuthorityCutoverResult",
+          "id": "src/authority-cutover.ts:43291:inventoryAuthorityCutoverResult",
           "kind": "FunctionDeclaration",
-          "line": 947,
+          "line": 1079,
           "name": "inventoryAuthorityCutoverResult"
         }
       ],
@@ -58020,9 +58080,9 @@
               "column": 1,
               "file": "src/authority-cutover.ts",
               "hasBody": true,
-              "id": "src/authority-cutover.ts:9295:bootstrapGreenfieldInventoryAuthority",
+              "id": "src/authority-cutover.ts:12127:bootstrapGreenfieldInventoryAuthority",
               "kind": "FunctionDeclaration",
-              "line": 226,
+              "line": 277,
               "name": "bootstrapGreenfieldInventoryAuthority",
               "reason": "resolved-call"
             },
@@ -58030,9 +58090,9 @@
               "column": 1,
               "file": "src/authority-cutover.ts",
               "hasBody": true,
-              "id": "src/authority-cutover.ts:42577:inventoryAuthorityGreenfieldResult",
+              "id": "src/authority-cutover.ts:49789:inventoryAuthorityGreenfieldResult",
               "kind": "FunctionDeclaration",
-              "line": 1105,
+              "line": 1237,
               "name": "inventoryAuthorityGreenfieldResult",
               "reason": "resolved-call"
             }
@@ -58041,9 +58101,9 @@
             "column": 1,
             "file": "src/authority-cutover.ts",
             "hasBody": true,
-            "id": "src/authority-cutover.ts:42577:inventoryAuthorityGreenfieldResult",
+            "id": "src/authority-cutover.ts:49789:inventoryAuthorityGreenfieldResult",
             "kind": "FunctionDeclaration",
-            "line": 1105,
+            "line": 1237,
             "name": "inventoryAuthorityGreenfieldResult"
           },
           "test": "test/authority-arbitrary-port.test.ts"
@@ -58066,9 +58126,9 @@
           "column": 1,
           "file": "src/authority-cutover.ts",
           "hasBody": true,
-          "id": "src/authority-cutover.ts:42577:inventoryAuthorityGreenfieldResult",
+          "id": "src/authority-cutover.ts:49789:inventoryAuthorityGreenfieldResult",
           "kind": "FunctionDeclaration",
-          "line": 1105,
+          "line": 1237,
           "name": "inventoryAuthorityGreenfieldResult"
         }
       ],
@@ -58400,7 +58460,11 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 4,
+          "occurrences": 2,
+          "path": "src/migration-prepare.ts"
+        },
+        {
+          "occurrences": 3,
           "path": "src/migrations.ts"
         },
         {
@@ -59592,9 +59656,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:22434:inventoryMigrationPositionsMatch",
+              "id": "src/migrations.ts:22392:inventoryMigrationPositionsMatch",
               "kind": "FunctionDeclaration",
-              "line": 573,
+              "line": 571,
               "name": "inventoryMigrationPositionsMatch",
               "reason": "resolved-call"
             },
@@ -64085,9 +64149,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:22434:inventoryMigrationPositionsMatch",
+              "id": "src/migrations.ts:22392:inventoryMigrationPositionsMatch",
               "kind": "FunctionDeclaration",
-              "line": 573,
+              "line": 571,
               "name": "inventoryMigrationPositionsMatch",
               "reason": "resolved-call"
             },
@@ -65241,20 +65305,20 @@
               "column": 57,
               "file": "test/authority.test.ts",
               "hasBody": true,
-              "id": "test/authority.test.ts:6443:<anonymous@191>",
+              "id": "test/authority.test.ts:6569:<anonymous@194>",
               "kind": "ArrowFunction",
-              "line": 191,
-              "name": "<anonymous@191>",
+              "line": 194,
+              "name": "<anonymous@194>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 66,
               "file": "test/authority.test.ts",
               "hasBody": true,
-              "id": "test/authority.test.ts:36199:<anonymous@960>",
+              "id": "test/authority.test.ts:42201:<anonymous@1089>",
               "kind": "ArrowFunction",
-              "line": 960,
-              "name": "<anonymous@960>",
+              "line": 1089,
+              "name": "<anonymous@1089>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -69940,7 +70004,7 @@
       "inputMapping": "World/catalog/projection/reservation/count roots and deltas map to canonical abstract component identities.",
       "internalReferences": [
         {
-          "occurrences": 7,
+          "occurrences": 8,
           "path": "src/authority-cutover.ts"
         },
         {
@@ -70332,7 +70396,7 @@
       "internalReferences": [
         {
           "occurrences": 2,
-          "path": "src/migrations.ts"
+          "path": "src/migration-prepare.ts"
         },
         {
           "occurrences": 2,
@@ -71643,7 +71707,7 @@
       "inputMapping": "World/catalog/projection/reservation/count roots and deltas map to canonical abstract component identities.",
       "internalReferences": [
         {
-          "occurrences": 6,
+          "occurrences": 7,
           "path": "src/authority-cutover.ts"
         },
         {
@@ -71651,7 +71715,11 @@
           "path": "src/coordinator.ts"
         },
         {
-          "occurrences": 5,
+          "occurrences": 3,
+          "path": "src/migration-prepare.ts"
+        },
+        {
+          "occurrences": 3,
           "path": "src/migrations.ts"
         },
         {
@@ -73829,7 +73897,7 @@
       "inputMapping": "Published catalogue snapshot and operation identity map to retained meanings and one abstract publication step.",
       "internalReferences": [
         {
-          "occurrences": 1,
+          "occurrences": 2,
           "path": "src/authority-cutover.ts"
         },
         {
@@ -75831,7 +75899,7 @@
         },
         {
           "occurrences": 1,
-          "path": "src/migrations.ts"
+          "path": "src/migration-prepare.ts"
         },
         {
           "occurrences": 1,
@@ -76549,7 +76617,7 @@
           "path": "src/allocation.ts"
         },
         {
-          "occurrences": 28,
+          "occurrences": 44,
           "path": "src/authority-cutover.ts"
         },
         {
@@ -76581,7 +76649,11 @@
           "path": "src/migration-plugin.ts"
         },
         {
-          "occurrences": 64,
+          "occurrences": 23,
+          "path": "src/migration-prepare.ts"
+        },
+        {
+          "occurrences": 43,
           "path": "src/migrations.ts"
         },
         {
@@ -79460,6 +79532,10 @@
           "path": "src/amounts.ts"
         },
         {
+          "occurrences": 1,
+          "path": "src/authority-cutover.ts"
+        },
+        {
           "occurrences": 2,
           "path": "src/availability.ts"
         },
@@ -79532,7 +79608,11 @@
           "path": "src/migration-plugin.ts"
         },
         {
-          "occurrences": 34,
+          "occurrences": 7,
+          "path": "src/migration-prepare.ts"
+        },
+        {
+          "occurrences": 26,
           "path": "src/migrations.ts"
         },
         {
@@ -79820,7 +79900,11 @@
           "path": "src/kernel.ts"
         },
         {
-          "occurrences": 19,
+          "occurrences": 5,
+          "path": "src/migration-prepare.ts"
+        },
+        {
+          "occurrences": 16,
           "path": "src/migrations.ts"
         },
         {
@@ -82961,7 +83045,7 @@
       "inputMapping": "Selector/identity/direct-placement/subtree/time fields map to a query over one fully published abstract world.",
       "internalReferences": [
         {
-          "occurrences": 27,
+          "occurrences": 37,
           "path": "src/authority-cutover.ts"
         },
         {
@@ -83005,7 +83089,11 @@
           "path": "src/integrity.ts"
         },
         {
-          "occurrences": 35,
+          "occurrences": 12,
+          "path": "src/migration-prepare.ts"
+        },
+        {
+          "occurrences": 25,
           "path": "src/migrations.ts"
         },
         {
@@ -84114,7 +84202,7 @@
       "inputMapping": "Reservation identity, revision, broad selector, requested quantity, lifecycle time, allocations, and fulfillment map to one claim lifecycle transition.",
       "internalReferences": [
         {
-          "occurrences": 4,
+          "occurrences": 3,
           "path": "src/authority-cutover.ts"
         },
         {
@@ -85167,6 +85255,10 @@
           "path": "src/amounts.ts"
         },
         {
+          "occurrences": 1,
+          "path": "src/authority-cutover.ts"
+        },
+        {
           "occurrences": 2,
           "path": "src/availability.ts"
         },
@@ -85239,7 +85331,11 @@
           "path": "src/migration-plugin.ts"
         },
         {
-          "occurrences": 34,
+          "occurrences": 7,
+          "path": "src/migration-prepare.ts"
+        },
+        {
+          "occurrences": 26,
           "path": "src/migrations.ts"
         },
         {
@@ -85517,7 +85613,11 @@
           "path": "src/kernel.ts"
         },
         {
-          "occurrences": 19,
+          "occurrences": 5,
+          "path": "src/migration-prepare.ts"
+        },
+        {
+          "occurrences": 16,
           "path": "src/migrations.ts"
         },
         {
@@ -95135,12 +95235,20 @@
       "inputMapping": "Transfer identity, source/transit/destination, exact lines, custody, receipt quantities, and immutable operation intent map to one time-separated physical transfer lifecycle.",
       "internalReferences": [
         {
+          "occurrences": 1,
+          "path": "src/authority-cutover.ts"
+        },
+        {
           "occurrences": 6,
           "path": "src/events.ts"
         },
         {
           "occurrences": 3,
           "path": "src/facade.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/migrations.ts"
         },
         {
           "occurrences": 8,
@@ -95485,7 +95593,7 @@
       "inputMapping": "Transfer identity, source/transit/destination, exact lines, custody, receipt quantities, and immutable operation intent map to one time-separated physical transfer lifecycle.",
       "internalReferences": [
         {
-          "occurrences": 4,
+          "occurrences": 3,
           "path": "src/authority-cutover.ts"
         },
         {
@@ -96501,7 +96609,7 @@
           "path": "src/allocation.ts"
         },
         {
-          "occurrences": 28,
+          "occurrences": 44,
           "path": "src/authority-cutover.ts"
         },
         {
@@ -96533,7 +96641,11 @@
           "path": "src/migration-plugin.ts"
         },
         {
-          "occurrences": 64,
+          "occurrences": 23,
+          "path": "src/migration-prepare.ts"
+        },
+        {
+          "occurrences": 43,
           "path": "src/migrations.ts"
         },
         {
@@ -97197,8 +97309,8 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 1,
-          "path": "src/migrations.ts"
+          "occurrences": 2,
+          "path": "src/migration-prepare.ts"
         },
         {
           "occurrences": 1,
@@ -97306,9 +97418,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:23734:applyInventoryMigrationPlan",
+              "id": "src/migrations.ts:23692:applyInventoryMigrationPlan",
               "kind": "FunctionDeclaration",
-              "line": 613,
+              "line": 611,
               "name": "applyInventoryMigrationPlan",
               "reason": "resolved-call"
             },
@@ -97553,7 +97665,7 @@
       "inputMapping": "Base revision/root, intent fingerprint, complete next-world plan, component roots, operation ID, and failpoint stage map to applying/published/completed/aborted protocol state.",
       "internalReferences": [
         {
-          "occurrences": 4,
+          "occurrences": 5,
           "path": "src/authority-cutover.ts"
         },
         {
@@ -97626,7 +97738,7 @@
         },
         {
           "occurrences": 1,
-          "path": "src/migrations.ts"
+          "path": "src/migration-prepare.ts"
         },
         {
           "occurrences": 1,
@@ -97770,9 +97882,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:26488:resumeInventoryMigrationManifest",
+              "id": "src/migrations.ts:26000:resumeInventoryMigrationManifest",
               "kind": "FunctionDeclaration",
-              "line": 692,
+              "line": 673,
               "name": "resumeInventoryMigrationManifest",
               "reason": "resolved-call"
             },
@@ -98231,20 +98343,20 @@
               "column": 57,
               "file": "test/authority.test.ts",
               "hasBody": true,
-              "id": "test/authority.test.ts:6443:<anonymous@191>",
+              "id": "test/authority.test.ts:6569:<anonymous@194>",
               "kind": "ArrowFunction",
-              "line": 191,
-              "name": "<anonymous@191>",
+              "line": 194,
+              "name": "<anonymous@194>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 93,
               "file": "test/authority.test.ts",
               "hasBody": true,
-              "id": "test/authority.test.ts:21516:<anonymous@577>",
+              "id": "test/authority.test.ts:23250:<anonymous@614>",
               "kind": "ArrowFunction",
-              "line": 577,
-              "name": "<anonymous@577>",
+              "line": 614,
+              "name": "<anonymous@614>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -98301,7 +98413,7 @@
       "inputMapping": "Base revision/root, intent fingerprint, complete next-world plan, component roots, operation ID, and failpoint stage map to applying/published/completed/aborted protocol state.",
       "internalReferences": [
         {
-          "occurrences": 3,
+          "occurrences": 4,
           "path": "src/authority-cutover.ts"
         },
         {
@@ -99080,9 +99192,9 @@
               "column": 1,
               "file": "src/migrations.ts",
               "hasBody": true,
-              "id": "src/migrations.ts:26488:resumeInventoryMigrationManifest",
+              "id": "src/migrations.ts:26000:resumeInventoryMigrationManifest",
               "kind": "FunctionDeclaration",
-              "line": 692,
+              "line": 673,
               "name": "resumeInventoryMigrationManifest",
               "reason": "resolved-call"
             },
@@ -101250,7 +101362,7 @@
   },
   "schemaVersion": 2,
   "surfaceDiagnostics": {
-    "maximumTypeDepth": 12,
+    "maximumTypeDepth": 13,
     "recursiveTypeReferences": [
       "InventoryEventDraft|src/events.ts|16892|04849f27e95c",
       "InventoryIntentFingerprintValue|src/canonical.ts|81|409e33b74f02",
@@ -101260,5 +101372,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "9a0423cefdf33346222735f8f44f71da5b76b36c7bf6a06aa7b51c6b49519a4b"
+  "surfaceSha256": "83d42e7407155e7274598c6e6df79680e185232b18f45cc1a71270725f15db13"
 }
