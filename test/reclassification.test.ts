@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   InventoryEventKind,
+  InventoryReservationFeasibilityStatus,
   inventoryStockSelector,
   packageAmount,
   parseQuantity,
@@ -268,7 +269,7 @@ describe("atomic conserved split/merge/reclassification", () => {
     ).rejects.toThrow("use pack/unpack instead");
   });
 
-  it("protects exact reservations from ordinary reclassification", async () => {
+  it("records reclassification and reports the exact reservation now short", async () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "receive-reservation-reclassification",
@@ -299,34 +300,35 @@ describe("atomic conserved split/merge/reclassification", () => {
         },
       ],
     });
-    await expect(
-      inventory.stock.reclassifyMany({
-        operationId: "move-reserved-position",
-        occurredAtEpochMs: time2,
-        consume: [
-          {
-            from: loosePosition("store", { lotId: "RESERVED-LOT" }),
-            amount: stockAmount("2", "piece"),
-          },
-        ],
-        produce: [
-          {
-            to: loosePosition("store", {
-              lotId: "RESERVED-LOT",
-              statusId: "quarantine",
-            }),
-            amount: stockAmount("2", "piece"),
-          },
-        ],
-      })
-    ).rejects.toThrow("cannot all be fulfilled simultaneously");
+    await inventory.stock.reclassifyMany({
+      operationId: "move-reserved-position",
+      occurredAtEpochMs: time2,
+      consume: [
+        {
+          from: loosePosition("store", { lotId: "RESERVED-LOT" }),
+          amount: stockAmount("2", "piece"),
+        },
+      ],
+      produce: [
+        {
+          to: loosePosition("store", {
+            lotId: "RESERVED-LOT",
+            statusId: "quarantine",
+          }),
+          amount: stockAmount("2", "piece"),
+        },
+      ],
+    });
     const retained = await storePositions(inventory);
     expect(retained).toHaveLength(1);
     const retainedPosition = retained[0];
     if (retainedPosition === undefined) {
-      throw new Error("Reserved position disappeared after rejected reclassification.");
+      throw new Error("Reclassified physical stock disappeared.");
     }
-    expect(retainedPosition.key.statusId).toBeUndefined();
+    expect(retainedPosition.key.statusId).toBe("quarantine");
     expect(retainedPosition.measurements.primary.quantity.amountMinor).toBe(2);
+    const report = await inventory.read.reservationFeasibility();
+    expect(report.status).toBe(InventoryReservationFeasibilityStatus.Shortage);
+    expect(report.groups[0]).toMatchObject({ reservationIds: ["reclassification-claim"], shortage: { amountMinor: 1 } });
   });
 });

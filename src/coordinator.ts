@@ -348,14 +348,15 @@ function createDurableOperationPlan({
       });
   }
   if (
+    reservationDelta !== undefined &&
     (logicalPlan.reservationProtection ??
       InventoryReservationProtection.ProtectClaims) ===
       InventoryReservationProtection.ProtectClaims &&
     !closesReservationWithoutPhysicalEvent &&
     !consumptionDoesNotIncreaseShortage
   ) {
-    // Ordinary commands protect the claim book that exists when durable truth is recorded.
-    // Backdating occurredAtEpochMs must not bypass a reservation created before this commit.
+    // An explicit claim action must respect the claim book at durable recording time.
+    // A stock-only event records physical truth and has no claim delta to validate.
     assertInventoryReservationsFeasible({
       catalog,
       projection,

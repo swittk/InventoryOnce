@@ -12,3 +12,17 @@ export * from "./coordinator.js";
 export * from "./integrity.js";
 /** Published world shape persisted by a durable adapter. */
 export * from "./world.js";
+/** Transitive historical replay for adapters that page retained dependency postings. */
+export {
+  loadInventoryHistoricalDependencyComponent,
+  type InventoryHistoricalDependencyReader,
+  type LoadInventoryHistoricalDependencyComponentInput,
+} from "./historical-dependencies.js";
+/** Prepare the normal issue batch from stock and claims read at one storage revision. */
+export {
+  prepareInventoryPolicyIssueBatch,
+  readInventoryPolicyBatchResult,
+  type InventoryPolicyBatchPlanningScope,
+  type PrepareInventoryPolicyIssueBatchInput,
+  type PreparedInventoryPolicyIssueBatch,
+} from "./facade.js";

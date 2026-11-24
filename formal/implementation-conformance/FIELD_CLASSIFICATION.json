@@ -1,17 +1,17 @@
 {
   "counts": {
-    "callableFieldSignatures": 12,
-    "callableFields": 12,
+    "callableFieldSignatures": 13,
+    "callableFields": 13,
     "callbackArgumentFields": 417,
-    "callbackResultFields": 444,
-    "fields": 2820,
-    "inputFields": 2356,
+    "callbackResultFields": 471,
+    "fields": 2827,
+    "inputFields": 2369,
     "nullableFields": 9,
-    "optionalFields": 1142,
-    "outputFields": 1096,
+    "optionalFields": 1143,
+    "outputFields": 1097,
     "recursiveTypeReferences": 5,
     "truncatedTypes": 0,
-    "types": 469,
+    "types": 473,
     "undefinedFields": 11
   },
   "entries": {
@@ -22605,6 +22605,7 @@
       "declaration": "src/events.ts",
       "directions": [
         "callback-argument",
+        "callback-result",
         "input",
         "output"
       ],
@@ -22630,6 +22631,7 @@
       "declaration": "src/events.ts",
       "directions": [
         "callback-argument",
+        "callback-result",
         "input",
         "output"
       ],
@@ -22655,6 +22657,7 @@
       "declaration": "src/events.ts",
       "directions": [
         "callback-argument",
+        "callback-result",
         "input",
         "output"
       ],
@@ -22680,6 +22683,7 @@
       "declaration": "src/events.ts",
       "directions": [
         "callback-argument",
+        "callback-result",
         "input",
         "output"
       ],
@@ -22705,6 +22709,7 @@
       "declaration": "src/events.ts",
       "directions": [
         "callback-argument",
+        "callback-result",
         "input",
         "output"
       ],
@@ -22730,6 +22735,7 @@
       "declaration": "src/events.ts",
       "directions": [
         "callback-argument",
+        "callback-result",
         "input",
         "output"
       ],
@@ -22755,6 +22761,7 @@
       "declaration": "src/events.ts",
       "directions": [
         "callback-argument",
+        "callback-result",
         "input",
         "output"
       ],
@@ -22780,6 +22787,7 @@
       "declaration": "src/events.ts",
       "directions": [
         "callback-argument",
+        "callback-result",
         "input",
         "output"
       ],
@@ -22805,6 +22813,7 @@
       "declaration": "src/events.ts",
       "directions": [
         "callback-argument",
+        "callback-result",
         "input",
         "output"
       ],
@@ -22830,6 +22839,7 @@
       "declaration": "src/events.ts",
       "directions": [
         "callback-argument",
+        "callback-result",
         "input",
         "output"
       ],
@@ -22855,6 +22865,7 @@
       "declaration": "src/events.ts",
       "directions": [
         "callback-argument",
+        "callback-result",
         "input",
         "output"
       ],
@@ -22880,6 +22891,7 @@
       "declaration": "src/events.ts",
       "directions": [
         "callback-argument",
+        "callback-result",
         "input",
         "output"
       ],
@@ -22907,6 +22919,7 @@
       "declaration": "src/events.ts",
       "directions": [
         "callback-argument",
+        "callback-result",
         "input",
         "output"
       ],
@@ -22932,6 +22945,7 @@
       "declaration": "src/events.ts",
       "directions": [
         "callback-argument",
+        "callback-result",
         "input",
         "output"
       ],
@@ -22957,6 +22971,7 @@
       "declaration": "src/events.ts",
       "directions": [
         "callback-argument",
+        "callback-result",
         "input",
         "output"
       ],
@@ -22982,6 +22997,7 @@
       "declaration": "src/events.ts",
       "directions": [
         "callback-argument",
+        "callback-result",
         "input",
         "output"
       ],
@@ -23007,6 +23023,7 @@
       "declaration": "src/events.ts",
       "directions": [
         "callback-argument",
+        "callback-result",
         "input",
         "output"
       ],
@@ -23032,6 +23049,7 @@
       "declaration": "src/events.ts",
       "directions": [
         "callback-argument",
+        "callback-result",
         "input",
         "output"
       ],
@@ -23057,6 +23075,7 @@
       "declaration": "src/events.ts",
       "directions": [
         "callback-argument",
+        "callback-result",
         "input",
         "output"
       ],
@@ -23082,6 +23101,7 @@
       "declaration": "src/events.ts",
       "directions": [
         "callback-argument",
+        "callback-result",
         "input",
         "output"
       ],
@@ -23107,6 +23127,7 @@
       "declaration": "src/events.ts",
       "directions": [
         "callback-argument",
+        "callback-result",
         "input",
         "output"
       ],
@@ -23132,6 +23153,7 @@
       "declaration": "src/events.ts",
       "directions": [
         "callback-argument",
+        "callback-result",
         "input",
         "output"
       ],
@@ -23157,6 +23179,7 @@
       "declaration": "src/events.ts",
       "directions": [
         "callback-argument",
+        "callback-result",
         "input",
         "output"
       ],
@@ -23182,6 +23205,7 @@
       "declaration": "src/events.ts",
       "directions": [
         "callback-argument",
+        "callback-result",
         "input",
         "output"
       ],
@@ -23207,6 +23231,7 @@
       "declaration": "src/events.ts",
       "directions": [
         "callback-argument",
+        "callback-result",
         "input",
         "output"
       ],
@@ -23232,6 +23257,7 @@
       "declaration": "src/events.ts",
       "directions": [
         "callback-argument",
+        "callback-result",
         "input",
         "output"
       ],
@@ -23257,6 +23283,7 @@
       "declaration": "src/events.ts",
       "directions": [
         "callback-argument",
+        "callback-result",
         "input",
         "output"
       ],
@@ -39138,6 +39165,7 @@
       "classification": "abstract-semantic",
       "declaration": "src/facade.ts",
       "directions": [
+        "input",
         "output"
       ],
       "discoveredType": "InventoryOnceRecordedDeficit",
@@ -39162,6 +39190,7 @@
       "classification": "abstract-semantic",
       "declaration": "src/facade.ts",
       "directions": [
+        "input",
         "output"
       ],
       "discoveredType": "InventoryCommittedEvent",
@@ -39185,6 +39214,7 @@
       "classification": "abstract-semantic",
       "declaration": "src/facade.ts",
       "directions": [
+        "input",
         "output"
       ],
       "discoveredType": "InventoryOperationReceipt",
@@ -39208,6 +39238,7 @@
       "classification": "identity/retry-semantic",
       "declaration": "src/facade.ts",
       "directions": [
+        "input",
         "output"
       ],
       "discoveredType": "boolean",
@@ -45859,6 +45890,7 @@
       "classification": "abstract-semantic",
       "declaration": "src/facade.ts",
       "directions": [
+        "input",
         "output"
       ],
       "discoveredType": "InventoryAmount",
@@ -45883,6 +45915,7 @@
       "classification": "abstract-semantic",
       "declaration": "src/facade.ts",
       "directions": [
+        "input",
         "output"
       ],
       "discoveredType": "InventoryStockPositionKey",
@@ -45907,6 +45940,7 @@
       "classification": "abstract-semantic",
       "declaration": "src/facade.ts",
       "directions": [
+        "input",
         "output"
       ],
       "discoveredType": "Quantity",
@@ -62305,6 +62339,92 @@
       "optional": true,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
+    "LoadInventoryHistoricalDependencyComponentInput.assertionIds": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/historical-dependencies.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "readonly string[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "RecordedDeficit",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "LoadInventoryHistoricalDependencyComponentInput.readEvents": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [
+        {
+          "parameters": [
+            {
+              "name": "resourceKeys",
+              "optional": false,
+              "type": "readonly string[]"
+            }
+          ],
+          "result": "AsyncIterable<InventoryCommittedEvent | undefined>"
+        }
+      ],
+      "callable": true,
+      "classification": "abstract-semantic",
+      "declaration": "src/historical-dependencies.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryHistoricalDependencyReader",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "RecordedDeficit",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Adapter conformance requires complete matching event postings at the frozen published revision, or an explicit fence change."
+    },
+    "LoadInventoryHistoricalDependencyComponentInput.seedEvents": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/historical-dependencies.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "readonly InventoryEventDraft[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "HistoricalRepair",
+        "CorrectionHistory",
+        "RecordedDeficit",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
     "MarkInventoryCompatibilityProjectionFailureInput.error": {
       "allowsNull": false,
       "allowsUndefined": false,
@@ -63636,7 +63756,7 @@
       "directions": [
         "input"
       ],
-      "discoveredType": "InventoryWorldState",
+      "discoveredType": "Pick<InventoryWorldState, \"projection\" | \"reservations\">",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/formal-implementation-conformance.test.ts"
@@ -63902,6 +64022,98 @@
       "gaps": [],
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "PrepareInventoryPolicyIssueBatchInput.catalog": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryCatalog",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "PrepareInventoryPolicyIssueBatchInput.deficitPolicy": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryDeficitPolicy",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "PrepareInventoryPolicyIssueBatchInput.input": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryOncePolicyBatchInput",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "PreparedInventoryPolicyIssueBatch.intentFingerprint": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
     "ProjectInventoryEventsInput.catalog": {
       "allowsNull": false,
@@ -66771,7 +66983,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/facade.ts:785:5.deficitPosition": {
+    "anonymous@src/facade.ts:786:5.deficitPosition": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -66796,7 +67008,7 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/facade.ts:785:5.groupId": {
+    "anonymous@src/facade.ts:786:5.groupId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -66820,7 +67032,7 @@
       "optional": true,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/facade.ts:785:5.requestId": {
+    "anonymous@src/facade.ts:786:5.requestId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -67509,5 +67721,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "7e20051c3bc9eed0cbf41c26a5a27283e09827de83491aba2a002624ed8e4c36"
+  "surfaceSha256": "cb7c338ec747dc486a9146a82d5e330ab0568f8c9fc3153066f50aa11ca76b9c"
 }

@@ -133,8 +133,8 @@ export interface PlanInventoryAllocationInput
   extends InventoryAllocationPolicyRequest {
   /** Frozen catalogue used to resolve item/package/axis semantics. */
   readonly catalog: InventoryCatalog;
-  /** Fully published world used for physical stock and exact claim allocations. */
-  readonly world: InventoryWorldState;
+  /** Physical stock and exact claim allocations at the same published fence. */
+  readonly world: Pick<InventoryWorldState, "projection" | "reservations">;
   /** Physical authority time used for lot/placement-ancestry expiry. */
   readonly atEpochMs: number;
   /** Claim-book authority time; defaults to `at` for pure previews. */
@@ -558,11 +558,10 @@ function createPolicyAllocationCandidates({
   const candidates: InventoryAllocationCandidate[] = [];
   // Exact-position lookup shared with the later allocation-result reconciliation pass.
   const byPositionIdentity = new Map<string, InventoryAllocationCandidate>();
-  // Reservation book frozen to the same authority time as this candidate plan.
-  const historicalReservations = inventoryReservationsAt(
-    reservations,
-    reservationAtEpochMs
-  );
+  // Only a claim-aware preview reconstructs reservations. Physical stock selection uses all its stock.
+  const historicalReservations = allowAllocatedStock
+    ? []
+    : inventoryReservationsAt(reservations, reservationAtEpochMs);
   // Build exact claim pressure once. Re-scanning every reservation for every candidate is quadratic.
   const reservationSummary = createExactPrimaryReservationSummary({
     reservations: historicalReservations,

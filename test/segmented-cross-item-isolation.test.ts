@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   defineScalarInventoryItem,
   extendInventoryCatalog,
+  InventoryReservationFeasibilityStatus,
   parseQuantity,
   stockAmount,
 } from "../src/index.js";
@@ -82,51 +83,40 @@ describe("segmented writes with unrelated reservation/count scopes", () => {
       readWorld.mockRestore();
     }
 
-    await expect(
-      inventory.stock.transfer({
-        operationId: "item-b-bound-claim-must-block",
-        occurredAtEpochMs: time2,
-        from: itemBPosition,
-        toPlacementNodeId: "b-destination",
-        amount: stockAmount("1", "piece"),
-      })
-    ).rejects.toThrow("cannot all be fulfilled simultaneously");
+    await inventory.stock.transfer({
+      operationId: "item-b-bound-claim-transfer",
+      occurredAtEpochMs: time2,
+      from: itemBPosition,
+      toPlacementNodeId: "b-destination",
+      amount: stockAmount("1", "piece"),
+    });
+    expect((await inventory.read.reservationFeasibility()).groups[0]).toMatchObject({ shortage: { amountMinor: 1 } });
 
-    // One atomic batch touching both items must use the canonical claim check.
-    // It must not commit the unrelated A leg if the protected B leg is invalid.
-    await expect(
-      inventory.stock.transferMany({
-        operationId: "mixed-item-bound-claim-must-block",
-        occurredAtEpochMs: time2,
-        lines: [
-          {
-            from: loosePosition("a-source"),
-            toPlacementNodeId: "a-destination",
-            amount: stockAmount("1", "piece"),
-          },
-          {
-            from: itemBPosition,
-            toPlacementNodeId: "b-destination",
-            amount: stockAmount("1", "piece"),
-          },
-        ],
-      })
-    ).rejects.toThrow("cannot all be fulfilled simultaneously");
-    expect(
-      storage.readPositionSegment().positionsByPlacement("a-source")[0]
-        ?.measurements.primary.quantity.amountMinor
-    ).toBe(1);
+    // Both physical legs commit together even when the existing B claim becomes shorter.
+    await inventory.stock.transferMany({
+      operationId: "mixed-item-bound-claim-transfer",
+      occurredAtEpochMs: time2,
+      lines: [
+        {
+          from: loosePosition("a-source"),
+          toPlacementNodeId: "a-destination",
+          amount: stockAmount("1", "piece"),
+        },
+        {
+          from: itemBPosition,
+          toPlacementNodeId: "b-destination",
+          amount: stockAmount("1", "piece"),
+        },
+      ],
+    });
+    expect(storage.readPositionSegment().positionsByPlacement("a-source")).toEqual([]);
 
     const world = await originalReadWorld();
-    expect(world.revision).toBe(before + 1);
-    expect(
-      (
-        await inventory.read.positions({
-          itemId: "item-b",
-          placementNodeIds: ["b-source"],
-        })
-      )[0]?.measurements.primary.quantity.amountMinor
-    ).toBe(2);
+    expect(world.revision).toBe(before + 3);
+    expect(await inventory.read.positions({ itemId: "item-b", placementNodeIds: ["b-source"] })).toEqual([]);
+    const report = await inventory.read.reservationFeasibility();
+    expect(report.status).toBe(InventoryReservationFeasibilityStatus.Shortage);
+    expect(report.groups[0]).toMatchObject({ reservationIds: ["item-b-placement-bound-claim"], shortage: { amountMinor: 2 } });
   });
 
   it("keeps an unrelated item B count snapshot from forcing item A through whole-world publication", async () => {

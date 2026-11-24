@@ -1823,3 +1823,17 @@ The R105 portable-current-input authority and final publication both continue to
 - Rejected CodeRabbit inline 4508044440 and its duplicate storage-conformance nit asking to restore whole-event JSON string searches for superseded migration row ids. The owner explicitly removed project-wide JSON.stringify comparison/search assertions in d74adba. Migration event raw source provenance is the typed metadata.migrationSource field already asserted by both tests; sourceReference is a fingerprint and does not retain the raw row id. No brittle whole-object serialization scan was reintroduced.
 - Accepted the valid maintainability point that sourceUnit and targetUnit were interchangeable positional Quantity arguments. convertInventoryRevisionQuantity now receives current plus a documented InventoryRevisionQuantityConversion carrier, and both current callers pass the already-existing InventoryRevisionTransitionEvidence object directly. This prevents source/target swaps with no new per-call object allocation.
 - Did not convert assertInventoryRevisionTransitionEvidence to an object-argument wrapper: its arguments are already distinct compiler-checked types, while a wrapper would allocate on every normalized event path without fixing a demonstrated ambiguity.
+
+2026-11-24 - Indexed issue batch planning
+- The clinic preview was building in-memory storage to run a normal issue batch. The batch implementation now exposes its existing command fingerprint, pure planner and replay decoder to a durable adapter. The facade uses the same functions.
+- An indexed caller has to supply exact positive start times, lot and placement expiry, direct-placement deficit pools and claim state under a single revision. A subset with missing claim pressure is unsafe. The durable scope loader and final claim gate still need wiring before use.
+
+2026-11-24 - Record ordinary physical stock even when a claim gets short
+- Owner decision #596 removes the whole claim-book feasibility veto from stock-only operations. The coordinator still checks explicit claim changes and verifies a consume against its exact allocated issue.
+- Ordinary FIFO/FEFO and fungible movement can draw physically present held stock. Claim-aware read/allocation requests keep their reservation checks. A shortage stays visible on the claim.
+
+2026-11-24 - Page the correction dependency component
+
+- The facade and pinned indexed adapters now use the same transitive history walk. The adapter streams matching event rows for each group of core dependency keys. When the facade's read crosses its published sequence, it discards the partial component so the old caller can replan.
+- An indexed database can feed the walk from bounded postings without constructing a world. The correction planner still replays the connected events and keeps their exact durable event order and original evidence.
+- The full suite still had seven old expectations that a short claim blocks ordinary movement. Tests now check the actual stock and the retained shortage after receive, issue, scrap, transfer, unpack, reclassification and detach. Explicit new or changed claims still check their feasibility.

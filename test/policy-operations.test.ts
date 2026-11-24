@@ -16,7 +16,10 @@ import {
   stockAmount,
   unitCode,
 } from "../src/index.js";
+import { commitInventoryEvent } from "../src/kernel.js";
+import { prepareInventoryPolicyIssueBatch, readInventoryPolicyBatchResult } from "../src/storage-api.js";
 import {
+  createTabletCatalog,
   createTestInventory,
   loosePosition,
   time0,
@@ -531,9 +534,27 @@ describe("native FIFO/FEFO movement policy", () => {
       ],
     };
 
+    const { projection, reservations } = await inventory.read.world();
+    const prepared = prepareInventoryPolicyIssueBatch({
+      catalog: createTabletCatalog(),
+      input: command,
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+    });
+    // An indexed caller only needs the retained scope, never its event map.
+    const planned = prepared.plan({
+      projection: { ...projection, events: {}, eventIdsBySequence: {}, eventIdByOperationId: {} },
+      reservations,
+      recordedAtEpochMs: time3,
+    });
+    if (!planned.event) throw new Error("Batch planner omitted the issue event.");
+    const plannedEvent = commitInventoryEvent(planned.event, time3, 2);
     const issued = await inventory.stock.issueManyByPolicy(command);
     const replayed = await inventory.stock.issueManyByPolicy(command);
 
+    expect(plannedEvent).toEqual(issued.event);
+    expect(readInventoryPolicyBatchResult(createTabletCatalog(), {
+      event: plannedEvent, receipt: issued.receipt, replayed: true,
+    })).toEqual(replayed);
     expect(issued.event.stockEffects).toHaveLength(1);
     expect(issued.event.stockEffects[0]?.position.packagingRevisionId).toBe(
       "item-a-box-24-v1"
@@ -1115,28 +1136,57 @@ describe("native policy and reservation safety", () => {
       ],
     });
 
-    await expect(
-      inventory.stock.scrapByPolicy({
-        operationId: "scrap-protected-shortfall",
-        occurredAtEpochMs: time2,
-        selector: inventoryStockSelector("item-a", { lotIds: ["DAMAGED"] }),
-        amount: stockAmount("2", "piece"),
-        method: InventoryAllocationMethod.Fifo,
-        reason: "Both pieces were physically destroyed.",
-      })
-    ).rejects.toThrow("shortfall");
-
     await inventory.stock.scrapByPolicy({
       operationId: "scrap-allocated-physical-truth",
       occurredAtEpochMs: time2,
       selector: inventoryStockSelector("item-a", { lotIds: ["DAMAGED"] }),
       amount: stockAmount("2", "piece"),
       method: InventoryAllocationMethod.Fifo,
-      allowAllocatedStock: true,
       reason: "Both pieces were physically destroyed.",
     });
     const report = await inventory.read.reservationFeasibility(time2);
     expect(report.status).toBe(InventoryReservationFeasibilityStatus.Shortage);
     expect(report.groups[0]?.shortage.amountMinor).toBe(1);
   });
+  it("records a cart move and ordinary issue while held stock becomes short", async () => {
+    const inventory = createTestInventory();
+    await inventory.placement.move({
+      operationId: "place-physical-cart",
+      occurredAtEpochMs: time0,
+      nodeId: "cart",
+      into: "source",
+      expectedParent: null,
+    });
+    await inventory.stock.receive({
+      operationId: "receive-on-physical-cart",
+      occurredAtEpochMs: time0,
+      to: loosePosition("cart", { lotId: "held-in-cart" }),
+      amount: stockAmount("2", "piece"),
+    });
+    await inventory.reservations.reserve({
+      reservationId: "held-at-source",
+      operationId: "reserve-at-source",
+      itemRevisionId: "item-a-v2",
+      selector: inventoryStockSelector("item-a", { withinPlacementNodeIds: ["source"] }),
+      requested: parseQuantity("2", "piece"),
+      createdAtEpochMs: time1,
+    });
+    await inventory.placement.move({
+      operationId: "move-physical-cart",
+      occurredAtEpochMs: time2,
+      nodeId: "cart",
+      expectedParent: "source",
+      into: "destination",
+    });
+    await inventory.stock.issue({
+      operationId: "physical-issue-after-cart-move",
+      occurredAtEpochMs: time2,
+      from: loosePosition("cart", { lotId: "held-in-cart" }),
+      amount: stockAmount("1", "piece"),
+    });
+    expect((await inventory.read.reservationFeasibility(time3)).status)
+      .toBe(InventoryReservationFeasibilityStatus.Shortage);
+    expect(await quantityByLot(inventory, "cart")).toEqual({ "held-in-cart": 1 });
+  });
+
 });

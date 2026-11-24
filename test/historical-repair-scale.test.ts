@@ -20,6 +20,7 @@ import {
 } from "../src/projection.js";
 import {
   createInMemoryInventoryDurableStorage,
+  loadInventoryHistoricalDependencyComponent,
   type InMemoryInventoryDurableStorage,
 } from "../src/storage-api.js";
 import {
@@ -92,6 +93,29 @@ function createHistoricalScaleWarehouse(
     rootEventId: events[0]!.eventId,
   };
 }
+
+describe("pinned historical resource pages", () => {
+  it("keeps the exact root and discards partial history if its authority fence changes", async () => {
+    const { storage, rootEventId } = createHistoricalScaleWarehouse(4);
+    const resourceKey = "dep:event:" + rootEventId;
+    const page = await storage.queryInventoryEventsByResourceKeys({
+      resourceKeys: [resourceKey],
+      limit: 1,
+    });
+    expect(page.throughRecordSequence).toBe(4);
+    expect(page.events.map(({ eventId }) => eventId)).toEqual([rootEventId]);
+    const [root] = page.events;
+    const component = await loadInventoryHistoricalDependencyComponent({
+      seedEvents: [root!],
+      /** The indexed read loses its fence after the first retained event. */
+      async *readEvents() {
+        yield root;
+        yield undefined;
+      },
+    });
+    expect(component).toBeUndefined();
+  });
+});
 
 /** Median of ascending samples, sufficient for noisy local CI clocks. */
 function median(samples: readonly number[]): number {

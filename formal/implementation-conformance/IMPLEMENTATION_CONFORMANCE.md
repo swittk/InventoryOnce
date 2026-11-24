@@ -4,7 +4,7 @@ This file is generated from the exact TypeScript surface plus the checked API, f
 
 Use the repository `.nvmrc` when one exists; otherwise run the assurance command with a Node version permitted by `package.json#engines`. Edit only checked source/manifests, run `pnpm assurance:generate` when generated evidence must change, then run `pnpm assurance --write-report`.
 
-Surface SHA-256: `7e20051c3bc9eed0cbf41c26a5a27283e09827de83491aba2a002624ed8e4c36`
+Surface SHA-256: `cb7c338ec747dc486a9146a82d5e330ab0568f8c9fc3153066f50aa11ca76b9c`
 
 ## Mechanically covered surface
 
@@ -12,23 +12,23 @@ Surface SHA-256: `7e20051c3bc9eed0cbf41c26a5a27283e09827de83491aba2a002624ed8e4c
 - Authority-port methods: 14
 - Durable-storage-port methods: 17
 - Public exported class methods: 109
-- Root callable exports: 100
-- Storage callable exports: 36
+- Root callable exports: 102
+- Storage callable exports: 39
 - Migration callable exports: 15
 - Kernel callable exports: 192
-- Reachable public data types: 469
-- Classified public fields: 2820
-- Input-reachable fields: 2356
-- Output-reachable fields: 1096
+- Reachable public data types: 473
+- Classified public fields: 2827
+- Input-reachable fields: 2369
+- Output-reachable fields: 1097
 - Callback-argument-reachable fields: 417
-- Callback-result-reachable fields: 444
-- Callable-field overload signatures: 12
-- Optional fields: 1142
+- Callback-result-reachable fields: 471
+- Callable-field overload signatures: 13
+- Optional fields: 1143
 - Explicit undefined-union fields: 11
 - Explicit nullable fields: 9
-- Public call/construct overload signatures: 620
-- Directly executed public APIs: 257
-- Public APIs exercised through tested internal call chains: 359
+- Public call/construct overload signatures: 625
+- Directly executed public APIs: 263
+- Public APIs exercised through tested internal call chains: 358
 - Explicit-gap public APIs: 4
 - Unreferenced public APIs: 0
 - Explicit recursive type edges: 5
@@ -40,7 +40,7 @@ Any added/removed method, callable export, class method, type field, field type,
 
 | Family | API entries | Formal models | Status | Gaps |
 |---|---:|---|---|---|
-| allocation-helper | 6 | ReservationScope, ReservationSafety, UseByReservation, PlacementGraph, PackagingIdentity, FungibilityPool, ResourceDimensions | covered | — |
+| allocation-helper | 8 | ReservationScope, ReservationSafety, UseByReservation, PlacementGraph, PackagingIdentity, FungibilityPool, ResourceDimensions | covered | — |
 | authority-control | 31 | AuthorityWriterFence | covered | — |
 | authority-cutover | 4 | AuthorityWriterFence, CatalogPublication, PublishedHeadCAS, RepairLiveness, SnapshotSupersededWorkflow | covered | GAP-LEGACY-SOURCE-INTERPRETATION |
 | catalog-definition | 76 | CatalogPublication, PackagingIdentity, CompositionRevision, CollectionView, FungibilityPool | covered | GAP-HASH-COLLISION-ASSUMPTION |
@@ -56,12 +56,12 @@ Any added/removed method, callable export, class method, type field, field type,
 | facade-construction | 2 | InventoryOperation | covered | GAP-EXTERNAL-CLOCK, GAP-DB-IMPLEMENTATION-UNBOUNDED |
 | fungibility-movement | 3 | FungibilityPool, ReservationScope, ReservationSafety, UseByReservation, InventoryOperation, PublishedHeadCAS | covered | GAP-FUNGIBILITY-EXACT-SEARCH-BOUND |
 | fungibility-read | 12 | FungibilityPool, UseByReservation | covered | GAP-FUNGIBILITY-EXACT-SEARCH-BOUND |
-| historical-repair | 6 | HistoricalRepair, CorrectionHistory, RecordedDeficit, InventoryOperation, PublishedHeadCAS | covered | — |
+| historical-repair | 7 | HistoricalRepair, CorrectionHistory, RecordedDeficit, InventoryOperation, PublishedHeadCAS | covered | — |
 | identity-normalization | 22 | ResourceDimensions, PlacementGraph, TraceabilityGraph, SnapshotSupersededWorkflow | covered | — |
 | lot-command | 3 | UseByReservation, CorrectionHistory, InventoryOperation | covered | — |
 | migration-definition | 8 | CatalogPublication, PlacementGraph, TraceabilityGraph, ReclassificationConservation, SnapshotSupersededWorkflow, CompositionRevision | covered | GAP-LEGACY-SOURCE-INTERPRETATION, GAP-EXTERNAL-MIGRATION-CALLBACKS |
 | migration-publication | 3 | CatalogPublication, InventoryOperation, PublishedHeadCAS, RepairLiveness, PlacementGraph, TraceabilityGraph, SnapshotSupersededWorkflow | covered | GAP-LEGACY-SOURCE-INTERPRETATION, GAP-DB-IMPLEMENTATION-UNBOUNDED |
-| operation-result-helper | 11 | InventoryOperation, PublishedHeadCAS | covered | — |
+| operation-result-helper | 13 | InventoryOperation, PublishedHeadCAS | covered | — |
 | packaging-reclassification | 4 | PackagingIdentity, ReclassificationConservation, DualMeasure, InventoryOperation | covered | — |
 | placement-command | 18 | PlacementGraph, ResourceDimensions, UseByReservation, CorrectionHistory, InventoryOperation | covered | — |
 | pure-exact-value | 90 | DualMeasure, PackagingIdentity | covered | — |
@@ -86,9 +86,9 @@ Any added/removed method, callable export, class method, type field, field type,
 
 | Classification | Fields |
 |---|---:|
-| abstract-semantic | 1357 |
+| abstract-semantic | 1362 |
 | application decoration | 13 |
-| identity/retry-semantic | 838 |
+| identity/retry-semantic | 840 |
 | observational/audit-only | 595 |
 | unsupported/unmodelled | 17 |
 

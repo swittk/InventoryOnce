@@ -263,7 +263,7 @@ describe("broad reservations and physical truth", () => {
     });
   });
 
-  it("ordinary movement protects claims while explicit scrap reports the resulting shortage", async () => {
+  it("ordinary issue and scrap record physical stock and report resulting claim shortages", async () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "receive-three",
@@ -279,20 +279,19 @@ describe("broad reservations and physical truth", () => {
       requested: parseQuantity("2", "piece"),
       createdAtEpochMs: time1,
     });
-    await expect(
-      inventory.stock.issue({
-        operationId: "ordinary-issue-two",
-        occurredAtEpochMs: time2,
-        from: loosePosition("store"),
-        amount: stockAmount("2", "piece"),
-      })
-    ).rejects.toThrow("cannot all be fulfilled");
-    await inventory.stock.scrap({
-      operationId: "physical-scrap-two",
+    await inventory.stock.issue({
+      operationId: "ordinary-issue-two",
       occurredAtEpochMs: time2,
       from: loosePosition("store"),
       amount: stockAmount("2", "piece"),
-      reason: "Two pieces were physically destroyed.",
+    });
+    expect((await inventory.read.reservationFeasibility()).groups[0]).toMatchObject({ shortage: { amountMinor: 1 } });
+    await inventory.stock.scrap({
+      operationId: "physical-scrap-one",
+      occurredAtEpochMs: time2,
+      from: loosePosition("store"),
+      amount: stockAmount("1", "piece"),
+      reason: "The last piece was physically destroyed.",
     });
 
     const report = await inventory.read.reservationFeasibility();
@@ -300,8 +299,8 @@ describe("broad reservations and physical truth", () => {
     expect(report.groups[0]).toMatchObject({
       reservationIds: ["claim-two"],
       requested: { amountMinor: 2 },
-      fulfillable: { amountMinor: 1 },
-      shortage: { amountMinor: 1 },
+      fulfillable: { amountMinor: 0 },
+      shortage: { amountMinor: 2 },
     });
   });
 

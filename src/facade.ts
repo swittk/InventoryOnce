@@ -55,6 +55,7 @@ import {
   InventoryReservationProtection,
   commitInventoryOperation,
   type InventoryClock,
+  type InventoryOperationPlan,
 } from "./coordinator.js";
 import {
   abandonInventoryCount,
@@ -3775,9 +3776,8 @@ async function commitInventoryFungibilityMovement(
         ...(input.allowExpiredLots === undefined
           ? {}
           : { allowExpiredLots: input.allowExpiredLots }),
-        ...(input.allowAllocatedStock === undefined
-          ? {}
-          : { allowAllocatedStock: input.allowAllocatedStock }),
+        // A physical movement can leave a claim short. Planning a claim still checks its capacity.
+        allowAllocatedStock: true,
       });
       assertFungibilityAllocationComplete(allocation);
       return {
@@ -4078,12 +4078,103 @@ async function commitInventoryPolicyBatch(
     throw new Error("Inventory policy batch supports only issue or transfer.");
   }
   const internals = requireInventoryOnceInternals(owner);
-  assertInventoryPolicyBatchInput(
+  const prepared = prepareInventoryPolicyBatch(
+    internals.catalog,
     kind,
     input,
-    toPlacementNodeId,
-    internals.deficitPolicy
+    internals.deficitPolicy,
+    toPlacementNodeId
   );
+  const result = await commitInventoryOperation({
+    catalog: internals.catalog,
+    storage: internals.storage,
+    operationId: input.operationId,
+    intentFingerprint: prepared.intentFingerprint,
+    clock: internals.clock,
+    deficitPolicy: internals.deficitPolicy,
+    /** Use the stock and claim facts from the revision the coordinator just read. */
+    plan: ({ world, recordedAtEpochMs }) =>
+      prepared.plan({
+        projection: world.projection,
+        reservations: world.reservations,
+        recordedAtEpochMs,
+      }),
+  });
+  return readInventoryPolicyBatchResult(
+    internals.catalog,
+    createInventoryOnceEventResult(result)
+  );
+}
+
+/** Rebuild the exact allocation result of an indexed issue publication or retry. */
+export function readInventoryPolicyBatchResult(
+  catalog: InventoryCatalog,
+  eventResult: InventoryOnceEventResult
+): InventoryOncePolicyBatchResult {
+  const allocations = inventoryPolicyBatchAllocationsFromEvent(
+    catalog,
+    eventResult.event
+  );
+  return {
+    ...eventResult,
+    allocations,
+    allocationGroups: inventoryPolicyBatchAllocationGroups(allocations),
+  };
+}
+
+/** One policy issue batch prepared for exact retry before any stock is read. */
+export interface PreparedInventoryPolicyIssueBatch {
+  /** Frozen command identity, including request order and scopes. */
+  readonly intentFingerprint: string;
+  /** Freeze exact picks against the stock, placement, and claims at one published fence. */
+  plan(scope: InventoryPolicyBatchPlanningScope): InventoryOperationPlan;
+}
+
+/** Exact policy stock pools at one published revision. */
+export interface InventoryPolicyBatchPlanningScope
+  extends Pick<InventoryWorldState, "projection" | "reservations"> {
+  /** Durable recording time used to check occurrence time and active claims. */
+  readonly recordedAtEpochMs: number;
+}
+
+/** Frozen command inputs shared by the durable facade and indexed issue adapter. */
+export interface PrepareInventoryPolicyIssueBatchInput {
+  /** Catalogue used to interpret the supplied item/package revision IDs. */
+  readonly catalog: InventoryCatalog;
+  /** Original policy batch command, before picking any stock. */
+  readonly input: InventoryOnceIssueManyByPolicyInput;
+  /** Whether a genuine physical shortfall can become signed stock. */
+  readonly deficitPolicy: InventoryDeficitPolicy;
+}
+
+/**
+ * Prepare the facade's issue batch for an indexed adapter. It must supply every
+ * position in the requested deficit pools, exact positive origins, and lot and
+ * ancestor expiry facts. Physical picks leave any claims in place for reporting.
+ * The adapter must commit the result with the same revision.
+ */
+export function prepareInventoryPolicyIssueBatch({
+  catalog,
+  input,
+  deficitPolicy,
+}: PrepareInventoryPolicyIssueBatchInput): PreparedInventoryPolicyIssueBatch {
+  return prepareInventoryPolicyBatch(
+    catalog,
+    InventoryPolicyMovementKind.Issue,
+    input,
+    deficitPolicy
+  );
+}
+
+/** Freeze the same input fingerprint and planner for the facade and the indexed writer. */
+function prepareInventoryPolicyBatch(
+  catalog: InventoryCatalog,
+  kind: InventoryPolicyMovementKind,
+  input: InventoryOncePolicyBatchInput,
+  deficitPolicy: InventoryDeficitPolicy,
+  toPlacementNodeId?: string
+): PreparedInventoryPolicyIssueBatch {
+  assertInventoryPolicyBatchInput(kind, input, toPlacementNodeId, deficitPolicy);
   const intentFingerprint = inventoryIntentFingerprint([
     `inventory-policy-batch-${kind}`,
     input.operationId,
@@ -4097,118 +4188,124 @@ async function commitInventoryPolicyBatch(
     input.requests.map(policyBatchRequestFingerprint),
     toPlacementNodeId ?? null,
   ]);
-  const result = await commitInventoryOperation({
-    catalog: internals.catalog,
-    storage: internals.storage,
-    operationId: input.operationId,
-    intentFingerprint,
-    clock: internals.clock,
-    deficitPolicy: internals.deficitPolicy,
-    /** Freeze every allocation from one published revision before anything becomes visible. */
-    plan: ({ world, recordedAtEpochMs }) => {
-      assertInventoryLifecycleTimeWasRecorded(
-        input.occurredAtEpochMs,
-        recordedAtEpochMs,
-        `${kind} policy batch`
-      );
-      const planningPositions: Record<string, InventoryStockPosition> = {
-        ...world.projection.positions,
-      };
-      const planningPositionIdsByItemRevisionId =
-        createInventorySparseRecord<readonly string[]>();
-      for (const [revisionId, positionIds] of Object.entries(
-        world.projection.positionIdsByItemRevisionId
-      )) {
-        setInventorySparseRecordValue(
-          planningPositionIdsByItemRevisionId,
-          revisionId,
-          [...positionIds]
-        );
-      }
-      const planningWorld: InventoryWorldState = {
-        ...world,
-        projection: {
-          ...world.projection,
-          positions: planningPositions,
-          positionIdsByItemRevisionId: planningPositionIdsByItemRevisionId,
-        },
-      };
-      const allocations: InventoryOncePolicyBatchAllocation[] = [];
-      const selectedLines: InventoryPolicyAllocationLine[] = [];
-      const deficitLines: CreateInventoryIssueManyInput["lines"][number][] = [];
-      let recordedDeficit = false;
-      for (const request of input.requests) {
-        const allocation = planInventoryAllocation({
-          catalog: internals.catalog,
-          world: planningWorld,
-          selector: request.selector,
-          amount: request.amount,
-          method: request.method,
-          atEpochMs: input.occurredAtEpochMs,
-          reservationAtEpochMs: recordedAtEpochMs,
-          ...(request.itemRevisionId === undefined
-            ? {}
-            : { itemRevisionId: request.itemRevisionId }),
-          ...(request.allowExpiredLots === undefined
-            ? {}
-            : { allowExpiredLots: request.allowExpiredLots }),
-        });
-        const deficit = policyRecordedDeficit({
-          catalog: internals.catalog,
-          kind,
-          deficitPolicy: internals.deficitPolicy,
-          input: policyMovementInputFromBatchRequest(input, request),
-          allocation,
-          projection: planningWorld.projection,
-        });
-        allocations.push(
-          policyBatchAllocation(request, allocation.lines, deficit?.evidence)
-        );
-        for (const line of allocation.lines) selectedLines.push(line);
-        applyPolicyAllocationToPlanningPositions(
-          internals.catalog,
-          planningPositions,
-          allocation.lines
-        );
-        if (deficit !== undefined) {
-          recordedDeficit = true;
-          deficitLines.push(deficit.line);
-          applyPolicyDeficitToPlanningProjection(
-            internals.catalog,
-            planningPositions,
-            planningPositionIdsByItemRevisionId,
-            deficit.evidence
-          );
-        }
-      }
-      return {
-        event: createPolicyBatchMovementEvent(
-          internals.catalog,
-          kind,
-          input,
-          allocations,
-          selectedLines,
-          deficitLines,
-          toPlacementNodeId
-        ),
-        ...(recordedDeficit
-          ? {
-              reservationProtection:
-                InventoryReservationProtection.RecordPhysicalTruth,
-            }
-          : {}),
-      };
-    },
-  });
-  const eventResult = createInventoryOnceEventResult(result);
-  const allocations = inventoryPolicyBatchAllocationsFromEvent(
-    internals.catalog,
-    eventResult.event
-  );
   return {
-    ...eventResult,
-    allocations,
-    allocationGroups: inventoryPolicyBatchAllocationGroups(allocations),
+    intentFingerprint,
+    /** Freeze exact picks once the caller supplies one coherent set of facts. */
+    plan: ({ projection, reservations, recordedAtEpochMs }) =>
+      planInventoryPolicyBatchAtScope(
+        catalog,
+        kind,
+        input,
+        deficitPolicy,
+        { projection, reservations, recordedAtEpochMs },
+        toPlacementNodeId
+      ),
+  };
+}
+
+/** Freeze the issue or transfer plan without reading or writing storage. */
+function planInventoryPolicyBatchAtScope(
+  catalog: InventoryCatalog,
+  kind: InventoryPolicyMovementKind,
+  input: InventoryOncePolicyBatchInput,
+  deficitPolicy: InventoryDeficitPolicy,
+  { projection, reservations, recordedAtEpochMs }: InventoryPolicyBatchPlanningScope,
+  toPlacementNodeId?: string
+): InventoryOperationPlan {
+  assertInventoryLifecycleTimeWasRecorded(
+    input.occurredAtEpochMs,
+    recordedAtEpochMs,
+    `${kind} policy batch`
+  );
+  // Keep successive request picks private to this batch and to the supplied scope.
+  const planningPositions: Record<string, InventoryStockPosition> = {
+    ...projection.positions,
+  };
+  // A recorded shortfall can add one position to a revision index for the next request.
+  const planningPositionIdsByItemRevisionId =
+    createInventorySparseRecord<readonly string[]>();
+  for (const [revisionId, positionIds] of Object.entries(
+    projection.positionIdsByItemRevisionId
+  )) {
+    setInventorySparseRecordValue(
+      planningPositionIdsByItemRevisionId,
+      revisionId,
+      positionIds
+    );
+  }
+  const planningWorld: Pick<InventoryWorldState, "projection" | "reservations"> = {
+    reservations,
+    projection: {
+      ...projection,
+      positions: planningPositions,
+      positionIdsByItemRevisionId: planningPositionIdsByItemRevisionId,
+    },
+  };
+  const allocations: InventoryOncePolicyBatchAllocation[] = [];
+  const selectedLines: InventoryPolicyAllocationLine[] = [];
+  const deficitLines: CreateInventoryIssueManyInput["lines"][number][] = [];
+  let recordedDeficit = false;
+  for (const request of input.requests) {
+    const allocation = planInventoryAllocation({
+      catalog,
+      world: planningWorld,
+      selector: request.selector,
+      amount: request.amount,
+      method: request.method,
+      atEpochMs: input.occurredAtEpochMs,
+      reservationAtEpochMs: recordedAtEpochMs,
+      allowAllocatedStock: true,
+      ...(request.itemRevisionId === undefined
+        ? {}
+        : { itemRevisionId: request.itemRevisionId }),
+      ...(request.allowExpiredLots === undefined
+        ? {}
+        : { allowExpiredLots: request.allowExpiredLots }),
+    });
+    const deficit = policyRecordedDeficit({
+      catalog,
+      kind,
+      deficitPolicy,
+      input: policyMovementInputFromBatchRequest(input, request),
+      allocation,
+      projection: planningWorld.projection,
+    });
+    allocations.push(
+      policyBatchAllocation(request, allocation.lines, deficit?.evidence)
+    );
+    for (const line of allocation.lines) selectedLines.push(line);
+    applyPolicyAllocationToPlanningPositions(
+      catalog,
+      planningPositions,
+      allocation.lines
+    );
+    if (deficit !== undefined) {
+      recordedDeficit = true;
+      deficitLines.push(deficit.line);
+      applyPolicyDeficitToPlanningProjection(
+        catalog,
+        planningPositions,
+        planningPositionIdsByItemRevisionId,
+        deficit.evidence
+      );
+    }
+  }
+  return {
+    event: createPolicyBatchMovementEvent(
+      catalog,
+      kind,
+      input,
+      allocations,
+      selectedLines,
+      deficitLines,
+      toPlacementNodeId
+    ),
+    ...(recordedDeficit
+      ? {
+          reservationProtection:
+            InventoryReservationProtection.RecordPhysicalTruth,
+        }
+      : {}),
   };
 }
 
@@ -5301,9 +5398,8 @@ async function commitInventoryPolicyMovement(
         ...(input.allowExpiredLots === undefined
           ? {}
           : { allowExpiredLots: input.allowExpiredLots }),
-        ...(input.allowAllocatedStock === undefined
-          ? {}
-          : { allowAllocatedStock: input.allowAllocatedStock }),
+        // This command records stock that physically moved, even when it was held.
+        allowAllocatedStock: true,
       });
       const deficit = policyRecordedDeficit({
         catalog: internals.catalog,

@@ -1001,7 +1001,7 @@ describe("derived pool summaries and exact member movements", () => {
     );
   });
 
-  it("checks the current claim set at record time even for a backdated pool issue", async () => {
+  it("records a backdated pool issue and keeps the later claim visible", async () => {
     const catalog = fungibilityCatalog();
     const inventory = createInventoryOnce({
       catalog,
@@ -1029,23 +1029,21 @@ describe("derived pool summaries and exact member movements", () => {
       createdAtEpochMs: time2,
     });
 
-    await expect(
-      inventory.fungibility.issue({
-        operationId: "backdated-pool-issue",
-        occurredAtEpochMs: time1,
-        fungibilityRevisionId: "brand-pool-v1",
-        requested: parseQuantity("1", "dose-equivalent"),
-        method: InventoryAllocationMethod.Fifo,
-        scope: { placementNodeIds: ["store"] },
-      })
-    ).rejects.toThrow("violate current reservation claims");
-    expect(
-      (await inventory.read.positions({ itemId: "old-brand" }))[0]?.measurements
-        .primary.quantity.amountMinor
-    ).toBe(1);
+    await inventory.fungibility.issue({
+      operationId: "backdated-pool-issue",
+      occurredAtEpochMs: time1,
+      fungibilityRevisionId: "brand-pool-v1",
+      requested: parseQuantity("1", "dose-equivalent"),
+      method: InventoryAllocationMethod.Fifo,
+      scope: { placementNodeIds: ["store"] },
+    });
+    expect(await inventory.read.positions({ itemId: "old-brand" })).toEqual([]);
+    expect((await inventory.read.reservationFeasibility(time3)).status).toBe(
+      InventoryReservationFeasibilityStatus.Shortage
+    );
   });
 
-  it("skips a FIFO-preferred member needed by a broad item claim and selects a safe substitute", async () => {
+  it("keeps the preview claim-aware while the physical issue records FIFO stock", async () => {
     const catalog = fungibilityCatalog();
     const inventory = createInventoryOnce({
       catalog,
@@ -1100,17 +1098,14 @@ describe("derived pool summaries and exact member movements", () => {
       method: InventoryAllocationMethod.Fifo,
       scope: { placementNodeIds: ["store"] },
     });
-    expect(issued.event.stockEffects[0]?.position.itemId).toBe("new-brand");
-    expect(
-      (await inventory.read.positions({ itemId: "old-brand" }))[0]?.measurements
-        .primary.quantity.amountMinor
-    ).toBe(1);
+    expect(issued.event.stockEffects[0]?.position.itemId).toBe("old-brand");
+    expect(await inventory.read.positions({ itemId: "old-brand" })).toEqual([]);
     expect((await inventory.read.reservationFeasibility(time3)).status).toBe(
-      InventoryReservationFeasibilityStatus.Feasible
+      InventoryReservationFeasibilityStatus.Shortage
     );
   });
 
-  it("avoids exactly allocated member stock and chooses another fungible member", async () => {
+  it("records FIFO stock that an exact claim was holding", async () => {
     const catalog = fungibilityCatalog();
     const inventory = createInventoryOnce({
       catalog,
@@ -1174,11 +1169,8 @@ describe("derived pool summaries and exact member movements", () => {
       method: InventoryAllocationMethod.Fifo,
       scope: { placementNodeIds: ["store"] },
     });
-    expect(issued.event.stockEffects[0]?.position.itemId).toBe("new-brand");
-    expect(
-      (await inventory.read.positions({ itemId: "old-brand" }))[0]?.measurements
-        .primary.quantity.amountMinor
-    ).toBe(1);
-    expect(await inventory.read.positions({ itemId: "new-brand" })).toEqual([]);
+    expect(issued.event.stockEffects[0]?.position.itemId).toBe("old-brand");
+    expect(await inventory.read.positions({ itemId: "old-brand" })).toEqual([]);
+    expect(await inventory.read.positions({ itemId: "new-brand" })).toHaveLength(1);
   });
 });
