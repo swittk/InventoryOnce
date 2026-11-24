@@ -4,7 +4,7 @@ This file is generated from the exact TypeScript surface plus the checked API, f
 
 Use the repository `.nvmrc` when one exists; otherwise run the assurance command with a Node version permitted by `package.json#engines`. Edit only checked source/manifests, run `pnpm assurance:generate` when generated evidence must change, then run `pnpm assurance --write-report`.
 
-Surface SHA-256: `83d42e7407155e7274598c6e6df79680e185232b18f45cc1a71270725f15db13`
+Surface SHA-256: `9d9444399f98b1145cadbe84038f01c310334ba65e3f7562d6f0da8108d2e4fc`
 
 ## Mechanically covered surface
 
@@ -12,22 +12,22 @@ Surface SHA-256: `83d42e7407155e7274598c6e6df79680e185232b18f45cc1a71270725f15db
 - Authority-port methods: 14
 - Durable-storage-port methods: 17
 - Public exported class methods: 109
-- Root callable exports: 103
+- Root callable exports: 104
 - Storage callable exports: 40
 - Migration callable exports: 15
-- Kernel callable exports: 192
-- Reachable public data types: 479
-- Classified public fields: 2851
-- Input-reachable fields: 2393
-- Output-reachable fields: 1097
+- Kernel callable exports: 193
+- Reachable public data types: 484
+- Classified public fields: 2876
+- Input-reachable fields: 2402
+- Output-reachable fields: 1113
 - Callback-argument-reachable fields: 417
 - Callback-result-reachable fields: 471
 - Callable-field overload signatures: 15
 - Optional fields: 1151
 - Explicit undefined-union fields: 11
 - Explicit nullable fields: 9
-- Public call/construct overload signatures: 627
-- Directly executed public APIs: 265
+- Public call/construct overload signatures: 629
+- Directly executed public APIs: 267
 - Public APIs exercised through tested internal call chains: 358
 - Explicit-gap public APIs: 4
 - Unreferenced public APIs: 0
@@ -65,7 +65,7 @@ Any added/removed method, callable export, class method, type field, field type,
 | packaging-reclassification | 4 | PackagingIdentity, ReclassificationConservation, DualMeasure, InventoryOperation | covered | — |
 | placement-command | 18 | PlacementGraph, ResourceDimensions, UseByReservation, CorrectionHistory, InventoryOperation | covered | — |
 | pure-exact-value | 90 | DualMeasure, PackagingIdentity | covered | — |
-| read-current | 34 | PublishedHeadCAS, ResourceDimensions, PlacementGraph, UseByReservation, ReservationScope, CollectionView, FungibilityPool, CorrectionHistory | covered | — |
+| read-current | 36 | PublishedHeadCAS, ResourceDimensions, PlacementGraph, UseByReservation, ReservationScope, CollectionView, FungibilityPool, CorrectionHistory | covered | — |
 | read-history | 18 | HistoricalRepair, CorrectionHistory, PublishedHeadCAS | covered | — |
 | read-snapshot | 24 | PublishedHeadCAS, PlacementGraph | covered | GAP-DB-IMPLEMENTATION-UNBOUNDED |
 | reservation | 19 | ReservationSafety, ReservationScope, UseByReservation, InventoryOperation | covered | — |
@@ -86,9 +86,9 @@ Any added/removed method, callable export, class method, type field, field type,
 
 | Classification | Fields |
 |---|---:|
-| abstract-semantic | 1375 |
+| abstract-semantic | 1395 |
 | application decoration | 13 |
-| identity/retry-semantic | 847 |
+| identity/retry-semantic | 852 |
 | observational/audit-only | 595 |
 | unsupported/unmodelled | 21 |
 

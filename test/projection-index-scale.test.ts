@@ -8,6 +8,7 @@ import {
   InventoryDeficitPolicy,
   inventoryStockSelector,
   stockAmount,
+  summarizeInventoryPhysicalAvailability,
 } from "../src/index.js";
 import { summarizeInventoryAvailability } from "../src/availability.js";
 import { inventorySelectedDeficitPlacementNodeIds } from "../src/deficits.js";
@@ -598,21 +599,33 @@ describe("projection index real-world scale", () => {
           allocationReads += 1;
         }
       );
-      const summary = summarizeInventoryAvailability({
+      const input = {
         catalog: createTabletCatalog(),
         projection: world.projection,
-        reservations: world.reservations,
         selector: inventoryStockSelector("item-a", {
           itemRevisionIds: ["item-a-v2"],
           placementNodeIds: ["scale-store"],
         }),
         atEpochMs: 1787702400000,
-      });
+      };
+      const summary = summarizeInventoryAvailability({ ...input, reservations: world.reservations });
       expect(summary.revisions[0]?.positions).toHaveLength(positionCount);
       expect(summary.revisions[0]?.exactlyAllocatedUsable.amountMinor).toBe(
         positionCount
       );
-      return allocationReads;
+      const fullReadCount = allocationReads;
+      // The scoped reader uses only active saved allocation rows and skips the global book.
+      const exactAllocations = Object.values(world.reservations.reservations).flatMap(({ reservationId, allocations }) =>
+        allocations.map(({ position, quantity }) => ({
+          reservationId, positionId: inventoryStockPositionIdentity(position), quantity,
+        }))
+      );
+      const scoped = summarizeInventoryPhysicalAvailability({ ...input, exactAllocations });
+      for (const [index, entry] of scoped.revisions.entries()) {
+        const { broadRequested, broadReservationIds, unbackedExactlyAllocated, unbackedReservationIds, ...fullPhysical } = summary.revisions[index]!;
+        expect(entry).toEqual(fullPhysical);
+      }
+      return fullReadCount;
     };
 
     const baselineReads = await measureAllocationReads(32);
@@ -715,7 +728,8 @@ describe("projection index real-world scale", () => {
     expect(picking).not.toContain("exactPrimaryReservedAtPosition(");
     expect(picking).not.toContain("Object.values(world.projection.events)");
     expect(availability).toContain("indexAvailabilityReservations({");
-    expect(availability).toContain("exactAllocationsByPositionIdentity.get(");
+    expect(availability).toContain("selectedAllocations.get(");
+    expect(availability).toContain("poolAllocations.get(");
     expect(availability).not.toContain("exactAllocationsAtPosition(");
     expect(reservations).toContain("if (broadReservations.length === 0)");
     expect(reservations).toContain("exactReservationGroupFeasibility({");

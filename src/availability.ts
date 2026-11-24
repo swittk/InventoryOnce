@@ -1,3 +1,4 @@
+import { assertInventoryEpochMilliseconds } from "./events.js";
 import { compareInventoryIdentityText } from "./ordering.js";
 import type {
   InventoryCatalog,
@@ -238,6 +239,72 @@ function selectedRevisionIds(
   return ordered;
 }
 
+/** Inventory quantity and expiry without a reservation-feasibility report. */
+export interface InventoryPhysicalAvailabilitySummary {
+  /** Time used for expiry and the exact allocation read. */
+  readonly atEpochMs: number;
+  /** Exact stock per retained item revision. */
+  readonly revisions: readonly InventoryPhysicalAvailabilityRevisionSummary[];
+}
+
+/** Stock values backed by physical positions and exact active allocations only. */
+export type InventoryPhysicalAvailabilityRevisionSummary = Omit<
+  InventoryAvailabilityRevisionSummary,
+  "unbackedExactlyAllocated" | "unbackedReservationIds" | "broadRequested" | "broadReservationIds"
+>;
+
+/** One saved allocation visible at the caller's stock revision and time. */
+export interface InventoryActivePositionAllocation {
+  /** Identity from inventoryStockPositionIdentity for this exact stock bucket. */
+  readonly positionId: string;
+  /** Stable claim that put aside the stock. */
+  readonly reservationId: string;
+  /** Positive quantity on this item's reservation axis. */
+  readonly quantity: Quantity;
+}
+
+/** Scope loaded by a durable reader at one published revision. */
+export type SummarizeInventoryPhysicalAvailabilityInput = Omit<SummarizeInventoryAvailabilityInput, "reservations"> & {
+  /** Active exact allocations for the loaded positions, including other lots in each selected deficit pool. */
+  readonly exactAllocations: readonly InventoryActivePositionAllocation[];
+};
+
+/** Use the same stock reducer when a caller wants physical capacity and exact holds for one scope. */
+export function summarizeInventoryPhysicalAvailability({
+  catalog, projection, selector: rawSelector, atEpochMs, exactAllocations,
+}: SummarizeInventoryPhysicalAvailabilityInput): InventoryPhysicalAvailabilitySummary {
+  assertInventoryEpochMilliseconds(atEpochMs, "physical availability time");
+  const selector = normalizeInventoryStockSelector(rawSelector);
+  const positionsByRevision = selectedPositionsByRevision(projection, selector);
+  /** Group the supplied active holds once, even when several belong to one position. */
+  const allocationsByPosition = new Map<string, MutableExactAllocationSummary>();
+  for (const { positionId, reservationId, quantity } of exactAllocations) {
+    const previous = allocationsByPosition.get(positionId);
+    if (previous) {
+      previous.quantity = addQuantity(previous.quantity, quantity);
+      previous.reservationIds.add(reservationId);
+    } else {
+      allocationsByPosition.set(positionId, { quantity, reservationIds: new Set([reservationId]) });
+    }
+  }
+  const exactAllocationIndex = new Map<string, ExactAllocationSummary>();
+  for (const [positionId, { quantity, reservationIds }] of allocationsByPosition) {
+    exactAllocationIndex.set(positionId, { quantity, reservationIds: [...reservationIds].sort() });
+  }
+  const revisions = selectedRevisionIds(catalog, selector, positionsByRevision).map(
+    /** Use the same physical reducer and exact holds for each retained stock unit. */
+    (revisionId) =>
+    summarizePhysicalAvailabilityRevision(
+      prepareAvailabilityRevision({
+        catalog, projection, selector, revisionId, atEpochMs,
+        positions: positionsByRevision.get(revisionId) ?? [],
+      }),
+      exactAllocationIndex, exactAllocationIndex,
+    )
+  );
+  return { atEpochMs, revisions };
+}
+
 /** Inputs for building one exact revision availability summary. */
 interface SummarizeAvailabilityRevisionInput {
   /** Frozen catalogue defining measurement/reservation axes. */
@@ -248,62 +315,63 @@ interface SummarizeAvailabilityRevisionInput {
   readonly selector: InventoryStockSelector;
   /** Selected current positions for this revision. */
   readonly positions: readonly InventoryStockPosition[];
-  /** Active claim rows reconstructed at the authority time. */
-  readonly activeReservations: readonly InventoryReservation[];
   /** Exact frozen item revision. */
   readonly revisionId: ItemRevisionId;
   /** Authority time for expiry and claim lifecycle. */
   readonly atEpochMs: number;
 }
 
-/** Build one exact revision summary from physical positions and active claim rows. */
-function summarizeAvailabilityRevision({
-  catalog,
-  projection,
-  selector,
-  positions,
-  activeReservations,
-  revisionId,
-  atEpochMs,
-}: SummarizeAvailabilityRevisionInput): InventoryAvailabilityRevisionSummary {
+/** Determine the whole affected deficit pool before applying exact reservations. */
+function prepareAvailabilityRevision({
+  catalog, projection, selector, positions, revisionId, atEpochMs,
+}: SummarizeAvailabilityRevisionInput) {
   const item = catalog.itemRevision(revisionId);
   const reservationAxis = catalog.measurementAxis(item, item.reservationAxisId);
+  const placementNodeIds = inventorySelectedDeficitPlacementNodeIds(projection, selector, revisionId);
+  const deficitPoolSelector = inventoryRecordedDeficitPoolSelector(selector, revisionId, placementNodeIds);
+  const poolPositions = [...findInventoryPositions(projection, deficitPoolSelector)];
+  return {
+    item, reservationAxis, placementNodeIds, deficitPoolSelector, poolPositions,
+    projection, selector, positions, revisionId, atEpochMs,
+  };
+}
+
+/** Build stock values plus the broad and unbacked facts for a full availability report. */
+function summarizeAvailabilityRevision(input: SummarizeAvailabilityRevisionInput & {
+  /** Real active claims from the reservation book at this authority time. */
+  readonly activeReservations: readonly InventoryReservation[];
+}): InventoryAvailabilityRevisionSummary {
+  const scope = prepareAvailabilityRevision(input);
+  const { projection, revisionId, atEpochMs, activeReservations } = input;
+  const unit = scope.reservationAxis.unit;
+  const reservationIndex = indexAvailabilityReservations({
+    activeReservations, projection, selector: scope.selector, positions: scope.positions, revisionId, unit, atEpochMs,
+  });
+  const poolReservationIndex = indexAvailabilityReservations({
+    activeReservations, projection, selector: scope.deficitPoolSelector, positions: scope.poolPositions, revisionId, unit, atEpochMs,
+  });
+  return {
+    ...summarizePhysicalAvailabilityRevision(scope, reservationIndex.exactAllocationsByPositionIdentity, poolReservationIndex.exactAllocationsByPositionIdentity),
+    unbackedExactlyAllocated: reservationIndex.unbacked.quantity,
+    unbackedReservationIds: reservationIndex.unbacked.reservationIds,
+    broadRequested: reservationIndex.broadRequested,
+    broadReservationIds: reservationIndex.broadReservationIds,
+  };
+}
+
+/** Use one implementation for physical quantities, expiry and deficit burden in either read. */
+function summarizePhysicalAvailabilityRevision(
+  {
+    item, reservationAxis, placementNodeIds, poolPositions, projection, selector, positions, revisionId, atEpochMs,
+  }: ReturnType<typeof prepareAvailabilityRevision>,
+  selectedAllocations: ReadonlyMap<string, ExactAllocationSummary>,
+  poolAllocations: ReadonlyMap<string, ExactAllocationSummary>,
+): InventoryPhysicalAvailabilityRevisionSummary {
   let physicalOnHand = zeroInventoryMeasurementsForItem(item);
   let usablePhysicalOnHand = zeroInventoryMeasurementsForItem(item);
   let expiredOnHand = zeroInventoryMeasurementsForItem(item);
   let exactlyAllocatedUsable = zeroQuantity(reservationAxis.unit);
   let exactlyAllocatedExpired = zeroQuantity(reservationAxis.unit);
-  const placementNodeIds = inventorySelectedDeficitPlacementNodeIds(
-    projection,
-    selector,
-    revisionId
-  );
-  const deficitPoolSelector = inventoryRecordedDeficitPoolSelector(
-    selector,
-    revisionId,
-    placementNodeIds
-  );
-  const poolPositions = [
-    ...findInventoryPositions(projection, deficitPoolSelector),
-  ];
-  const reservationIndex = indexAvailabilityReservations({
-    activeReservations,
-    projection,
-    selector,
-    positions,
-    revisionId,
-    unit: reservationAxis.unit,
-    atEpochMs,
-  });
-  const poolReservationIndex = indexAvailabilityReservations({
-    activeReservations,
-    projection,
-    selector: deficitPoolSelector,
-    positions: poolPositions,
-    revisionId,
-    unit: reservationAxis.unit,
-    atEpochMs,
-  });
   const pendingPositions: MutableInventoryPositionAvailability[] = [];
 
   for (const position of positions) {
@@ -333,7 +401,7 @@ function summarizeAvailabilityRevision({
       }
     }
     const exactAllocations =
-      reservationIndex.exactAllocationsByPositionIdentity.get(
+      selectedAllocations.get(
         inventoryStockPositionIdentity(position.key)
       ) ?? {
         quantity: zeroQuantity(reservationAxis.unit),
@@ -414,7 +482,7 @@ function summarizeAvailabilityRevision({
       continue;
     }
     const exactAllocations =
-      poolReservationIndex.exactAllocationsByPositionIdentity.get(
+      poolAllocations.get(
         inventoryStockPositionIdentity(position.key)
       ) ?? {
         quantity: zeroQuantity(reservationAxis.unit),
@@ -498,10 +566,6 @@ function summarizeAvailabilityRevision({
     exactlyAllocatedUsable,
     exactlyAllocatedExpired,
     unallocatedUsablePhysical,
-    unbackedExactlyAllocated: reservationIndex.unbacked.quantity,
-    unbackedReservationIds: reservationIndex.unbacked.reservationIds,
-    broadRequested: reservationIndex.broadRequested,
-    broadReservationIds: reservationIndex.broadReservationIds,
     positions: positionSummaries,
   };
 }

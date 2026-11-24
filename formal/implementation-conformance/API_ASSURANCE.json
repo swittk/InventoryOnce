@@ -1,24 +1,24 @@
 {
   "counts": {
     "authorityMethods": 14,
-    "callAndConstructSignatures": 627,
+    "callAndConstructSignatures": 629,
     "classMethods": 109,
-    "compilerCallGraphCallables": 3791,
-    "compilerCallGraphEdges": 10298,
+    "compilerCallGraphCallables": 3797,
+    "compilerCallGraphEdges": 10312,
     "compilerCallGraphTestRoots": 61,
     "compilerCallGraphUnresolvedApis": 0,
-    "compilerCallGraphWitnessedApis": 627,
-    "directExecutableApis": 265,
+    "compilerCallGraphWitnessedApis": 629,
+    "directExecutableApis": 267,
     "explicitGapApis": 4,
     "facadeMethods": 137,
     "indirectCallChainApis": 358,
-    "kernelCallables": 192,
+    "kernelCallables": 193,
     "maximumTypeDepth": 13,
     "migrationCallables": 15,
-    "reachableFields": 2851,
-    "reachableTypes": 479,
+    "reachableFields": 2876,
+    "reachableTypes": 484,
     "recursiveTypeReferences": 5,
-    "rootCallables": 103,
+    "rootCallables": 104,
     "storageCallables": 40,
     "storageMethods": 17,
     "truncatedTypes": 0,
@@ -1567,7 +1567,7 @@
           "path": "src/authority.ts"
         },
         {
-          "occurrences": 7,
+          "occurrences": 9,
           "path": "src/availability.ts"
         },
         {
@@ -4202,20 +4202,20 @@
               "column": 65,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:28289:<anonymous@768>",
+              "id": "test/projection-index-scale.test.ts:29186:<anonymous@782>",
               "kind": "ArrowFunction",
-              "line": 768,
-              "name": "<anonymous@768>",
+              "line": 782,
+              "name": "<anonymous@782>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 94,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:28390:<anonymous@769>",
+              "id": "test/projection-index-scale.test.ts:29287:<anonymous@783>",
               "kind": "ArrowFunction",
-              "line": 769,
-              "name": "<anonymous@769>",
+              "line": 783,
+              "name": "<anonymous@783>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -6889,7 +6889,7 @@
           "path": "src/authority.ts"
         },
         {
-          "occurrences": 7,
+          "occurrences": 9,
           "path": "src/availability.ts"
         },
         {
@@ -9528,20 +9528,20 @@
               "column": 65,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:28289:<anonymous@768>",
+              "id": "test/projection-index-scale.test.ts:29186:<anonymous@782>",
               "kind": "ArrowFunction",
-              "line": 768,
-              "name": "<anonymous@768>",
+              "line": 782,
+              "name": "<anonymous@782>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 94,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:28390:<anonymous@769>",
+              "id": "test/projection-index-scale.test.ts:29287:<anonymous@783>",
               "kind": "ArrowFunction",
-              "line": 769,
-              "name": "<anonymous@769>",
+              "line": 783,
+              "name": "<anonymous@783>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -17915,7 +17915,7 @@
           "path": "src/authority.ts"
         },
         {
-          "occurrences": 14,
+          "occurrences": 16,
           "path": "src/availability.ts"
         },
         {
@@ -19009,7 +19009,7 @@
           "path": "src/allocation.ts"
         },
         {
-          "occurrences": 72,
+          "occurrences": 73,
           "path": "src/availability.ts"
         },
         {
@@ -20295,7 +20295,7 @@
           "path": "src/authority.ts"
         },
         {
-          "occurrences": 14,
+          "occurrences": 16,
           "path": "src/availability.ts"
         },
         {
@@ -21485,7 +21485,7 @@
           "path": "src/allocation.ts"
         },
         {
-          "occurrences": 8,
+          "occurrences": 9,
           "path": "src/availability.ts"
         },
         {
@@ -22930,6 +22930,10 @@
         },
         {
           "occurrences": 2,
+          "path": "src/availability.ts"
+        },
+        {
+          "occurrences": 2,
           "path": "src/coordinator.ts"
         },
         {
@@ -23357,20 +23361,20 @@
               "column": 65,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:28289:<anonymous@768>",
+              "id": "test/projection-index-scale.test.ts:29186:<anonymous@782>",
               "kind": "ArrowFunction",
-              "line": 768,
-              "name": "<anonymous@768>",
+              "line": 782,
+              "name": "<anonymous@782>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 94,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:28390:<anonymous@769>",
+              "id": "test/projection-index-scale.test.ts:29287:<anonymous@783>",
               "kind": "ArrowFunction",
-              "line": 769,
-              "name": "<anonymous@769>",
+              "line": 783,
+              "name": "<anonymous@783>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -28851,20 +28855,20 @@
               "column": 65,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:28289:<anonymous@768>",
+              "id": "test/projection-index-scale.test.ts:29186:<anonymous@782>",
               "kind": "ArrowFunction",
-              "line": 768,
-              "name": "<anonymous@768>",
+              "line": 782,
+              "name": "<anonymous@782>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 94,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:28390:<anonymous@769>",
+              "id": "test/projection-index-scale.test.ts:29287:<anonymous@783>",
               "kind": "ArrowFunction",
-              "line": 769,
-              "name": "<anonymous@769>",
+              "line": 783,
+              "name": "<anonymous@783>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -32851,20 +32855,20 @@
               "column": 65,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:28289:<anonymous@768>",
+              "id": "test/projection-index-scale.test.ts:29186:<anonymous@782>",
               "kind": "ArrowFunction",
-              "line": 768,
-              "name": "<anonymous@768>",
+              "line": 782,
+              "name": "<anonymous@782>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 94,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:28390:<anonymous@769>",
+              "id": "test/projection-index-scale.test.ts:29287:<anonymous@783>",
               "kind": "ArrowFunction",
-              "line": 769,
-              "name": "<anonymous@769>",
+              "line": 783,
+              "name": "<anonymous@783>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -33684,20 +33688,20 @@
               "column": 65,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:28289:<anonymous@768>",
+              "id": "test/projection-index-scale.test.ts:29186:<anonymous@782>",
               "kind": "ArrowFunction",
-              "line": 768,
-              "name": "<anonymous@768>",
+              "line": 782,
+              "name": "<anonymous@782>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 91,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:34445:<anonymous@937>",
+              "id": "test/projection-index-scale.test.ts:35342:<anonymous@951>",
               "kind": "ArrowFunction",
-              "line": 937,
-              "name": "<anonymous@937>",
+              "line": 951,
+              "name": "<anonymous@951>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -33851,20 +33855,20 @@
               "column": 65,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:28289:<anonymous@768>",
+              "id": "test/projection-index-scale.test.ts:29186:<anonymous@782>",
               "kind": "ArrowFunction",
-              "line": 768,
-              "name": "<anonymous@768>",
+              "line": 782,
+              "name": "<anonymous@782>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 94,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:28390:<anonymous@769>",
+              "id": "test/projection-index-scale.test.ts:29287:<anonymous@783>",
               "kind": "ArrowFunction",
-              "line": 769,
-              "name": "<anonymous@769>",
+              "line": 783,
+              "name": "<anonymous@783>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -34161,20 +34165,20 @@
               "column": 47,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:13002:<anonymous@386>",
+              "id": "test/projection-index-scale.test.ts:13044:<anonymous@387>",
               "kind": "ArrowFunction",
-              "line": 386,
-              "name": "<anonymous@386>",
+              "line": 387,
+              "name": "<anonymous@387>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 95,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:19893:<anonymous@559>",
+              "id": "test/projection-index-scale.test.ts:19935:<anonymous@560>",
               "kind": "ArrowFunction",
-              "line": 559,
-              "name": "<anonymous@559>",
+              "line": 560,
+              "name": "<anonymous@560>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -39413,20 +39417,20 @@
               "column": 65,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:28289:<anonymous@768>",
+              "id": "test/projection-index-scale.test.ts:29186:<anonymous@782>",
               "kind": "ArrowFunction",
-              "line": 768,
-              "name": "<anonymous@768>",
+              "line": 782,
+              "name": "<anonymous@782>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 91,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:34445:<anonymous@937>",
+              "id": "test/projection-index-scale.test.ts:35342:<anonymous@951>",
               "kind": "ArrowFunction",
-              "line": 937,
-              "name": "<anonymous@937>",
+              "line": 951,
+              "name": "<anonymous@951>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -39752,20 +39756,20 @@
               "column": 65,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:28289:<anonymous@768>",
+              "id": "test/projection-index-scale.test.ts:29186:<anonymous@782>",
               "kind": "ArrowFunction",
-              "line": 768,
-              "name": "<anonymous@768>",
+              "line": 782,
+              "name": "<anonymous@782>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 88,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:36901:<anonymous@1003>",
+              "id": "test/projection-index-scale.test.ts:37798:<anonymous@1017>",
               "kind": "ArrowFunction",
-              "line": 1003,
-              "name": "<anonymous@1003>",
+              "line": 1017,
+              "name": "<anonymous@1017>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -39893,20 +39897,20 @@
               "column": 47,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:13002:<anonymous@386>",
+              "id": "test/projection-index-scale.test.ts:13044:<anonymous@387>",
               "kind": "ArrowFunction",
-              "line": 386,
-              "name": "<anonymous@386>",
+              "line": 387,
+              "name": "<anonymous@387>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 95,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:19893:<anonymous@559>",
+              "id": "test/projection-index-scale.test.ts:19935:<anonymous@560>",
               "kind": "ArrowFunction",
-              "line": 559,
-              "name": "<anonymous@559>",
+              "line": 560,
+              "name": "<anonymous@560>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -40067,29 +40071,29 @@
               "column": 65,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:28289:<anonymous@768>",
+              "id": "test/projection-index-scale.test.ts:29186:<anonymous@782>",
               "kind": "ArrowFunction",
-              "line": 768,
-              "name": "<anonymous@768>",
+              "line": 782,
+              "name": "<anonymous@782>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 94,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:28390:<anonymous@769>",
+              "id": "test/projection-index-scale.test.ts:29287:<anonymous@783>",
               "kind": "ArrowFunction",
-              "line": 769,
-              "name": "<anonymous@769>",
+              "line": 783,
+              "name": "<anonymous@783>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 1,
               "file": "src/availability.ts",
               "hasBody": true,
-              "id": "src/availability.ts:6501:summarizeInventoryAvailability",
+              "id": "src/availability.ts:6565:summarizeInventoryAvailability",
               "kind": "FunctionDeclaration",
-              "line": 149,
+              "line": 150,
               "name": "summarizeInventoryAvailability",
               "reason": "resolved-call"
             },
@@ -40097,10 +40101,20 @@
               "column": 1,
               "file": "src/availability.ts",
               "hasBody": true,
-              "id": "src/availability.ts:10355:summarizeAvailabilityRevision",
+              "id": "src/availability.ts:14443:summarizeAvailabilityRevision",
               "kind": "FunctionDeclaration",
-              "line": 260,
+              "line": 340,
               "name": "summarizeAvailabilityRevision",
+              "reason": "resolved-call"
+            },
+            {
+              "column": 1,
+              "file": "src/availability.ts",
+              "hasBody": true,
+              "id": "src/availability.ts:15801:summarizePhysicalAvailabilityRevision",
+              "kind": "FunctionDeclaration",
+              "line": 363,
+              "name": "summarizePhysicalAvailabilityRevision",
               "reason": "resolved-call"
             },
             {
@@ -40247,29 +40261,29 @@
               "column": 65,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:28289:<anonymous@768>",
+              "id": "test/projection-index-scale.test.ts:29186:<anonymous@782>",
               "kind": "ArrowFunction",
-              "line": 768,
-              "name": "<anonymous@768>",
+              "line": 782,
+              "name": "<anonymous@782>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 94,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:28390:<anonymous@769>",
+              "id": "test/projection-index-scale.test.ts:29287:<anonymous@783>",
               "kind": "ArrowFunction",
-              "line": 769,
-              "name": "<anonymous@769>",
+              "line": 783,
+              "name": "<anonymous@783>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 1,
               "file": "src/availability.ts",
               "hasBody": true,
-              "id": "src/availability.ts:6501:summarizeInventoryAvailability",
+              "id": "src/availability.ts:6565:summarizeInventoryAvailability",
               "kind": "FunctionDeclaration",
-              "line": 149,
+              "line": 150,
               "name": "summarizeInventoryAvailability",
               "reason": "resolved-call"
             },
@@ -40997,20 +41011,20 @@
               "column": 65,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:28289:<anonymous@768>",
+              "id": "test/projection-index-scale.test.ts:29186:<anonymous@782>",
               "kind": "ArrowFunction",
-              "line": 768,
-              "name": "<anonymous@768>",
+              "line": 782,
+              "name": "<anonymous@782>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 94,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:28390:<anonymous@769>",
+              "id": "test/projection-index-scale.test.ts:29287:<anonymous@783>",
               "kind": "ArrowFunction",
-              "line": 769,
-              "name": "<anonymous@769>",
+              "line": 783,
+              "name": "<anonymous@783>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -41067,7 +41081,7 @@
           "path": "src/allocation.ts"
         },
         {
-          "occurrences": 8,
+          "occurrences": 9,
           "path": "src/availability.ts"
         },
         {
@@ -41217,20 +41231,20 @@
               "column": 65,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:28289:<anonymous@768>",
+              "id": "test/projection-index-scale.test.ts:29186:<anonymous@782>",
               "kind": "ArrowFunction",
-              "line": 768,
-              "name": "<anonymous@768>",
+              "line": 782,
+              "name": "<anonymous@782>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 91,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:34445:<anonymous@937>",
+              "id": "test/projection-index-scale.test.ts:35342:<anonymous@951>",
               "kind": "ArrowFunction",
-              "line": 937,
-              "name": "<anonymous@937>",
+              "line": 951,
+              "name": "<anonymous@951>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -44812,7 +44826,7 @@
       "inputMapping": "Identity, direct-placement, ancestry-selector, and traceability fields map to finite model atoms and exact set constraints.",
       "internalReferences": [
         {
-          "occurrences": 4,
+          "occurrences": 5,
           "path": "src/availability.ts"
         },
         {
@@ -45360,20 +45374,20 @@
               "column": 47,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:13002:<anonymous@386>",
+              "id": "test/projection-index-scale.test.ts:13044:<anonymous@387>",
               "kind": "ArrowFunction",
-              "line": 386,
-              "name": "<anonymous@386>",
+              "line": 387,
+              "name": "<anonymous@387>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 95,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:19893:<anonymous@559>",
+              "id": "test/projection-index-scale.test.ts:19935:<anonymous@560>",
               "kind": "ArrowFunction",
-              "line": 559,
-              "name": "<anonymous@559>",
+              "line": 560,
+              "name": "<anonymous@560>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -46186,7 +46200,7 @@
           "path": "src/amounts.ts"
         },
         {
-          "occurrences": 22,
+          "occurrences": 32,
           "path": "src/availability.ts"
         },
         {
@@ -48682,29 +48696,29 @@
               "column": 65,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:28289:<anonymous@768>",
+              "id": "test/projection-index-scale.test.ts:29186:<anonymous@782>",
               "kind": "ArrowFunction",
-              "line": 768,
-              "name": "<anonymous@768>",
+              "line": 782,
+              "name": "<anonymous@782>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 94,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:28390:<anonymous@769>",
+              "id": "test/projection-index-scale.test.ts:29287:<anonymous@783>",
               "kind": "ArrowFunction",
-              "line": 769,
-              "name": "<anonymous@769>",
+              "line": 783,
+              "name": "<anonymous@783>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 1,
               "file": "src/availability.ts",
               "hasBody": true,
-              "id": "src/availability.ts:6501:summarizeInventoryAvailability",
+              "id": "src/availability.ts:6565:summarizeInventoryAvailability",
               "kind": "FunctionDeclaration",
-              "line": 149,
+              "line": 150,
               "name": "summarizeInventoryAvailability",
               "reason": "resolved-call"
             }
@@ -48713,9 +48727,9 @@
             "column": 1,
             "file": "src/availability.ts",
             "hasBody": true,
-            "id": "src/availability.ts:6501:summarizeInventoryAvailability",
+            "id": "src/availability.ts:6565:summarizeInventoryAvailability",
             "kind": "FunctionDeclaration",
-            "line": 149,
+            "line": 150,
             "name": "summarizeInventoryAvailability"
           },
           "test": "test/projection-index-scale.test.ts"
@@ -48742,9 +48756,9 @@
           "column": 1,
           "file": "src/availability.ts",
           "hasBody": true,
-          "id": "src/availability.ts:6501:summarizeInventoryAvailability",
+          "id": "src/availability.ts:6565:summarizeInventoryAvailability",
           "kind": "FunctionDeclaration",
-          "line": 149,
+          "line": 150,
           "name": "summarizeInventoryAvailability"
         }
       ],
@@ -49077,6 +49091,156 @@
       "stateProjection": [
         "abstractInventoryState",
         "abstractReservationState"
+      ],
+      "status": "covered"
+    },
+    "entrypoint.kernel.summarizeInventoryPhysicalAvailability": {
+      "adapterCoverage": [
+        "memory"
+      ],
+      "callChainWitnesses": [
+        {
+          "chain": [
+            {
+              "column": 1,
+              "file": "test/projection-index-scale.test.ts",
+              "hasBody": true,
+              "id": "test-root:test/projection-index-scale.test.ts",
+              "kind": "TestRoot",
+              "line": 1,
+              "name": "test/projection-index-scale.test.ts"
+            },
+            {
+              "column": 47,
+              "file": "test/projection-index-scale.test.ts",
+              "hasBody": true,
+              "id": "test/projection-index-scale.test.ts:13044:<anonymous@387>",
+              "kind": "ArrowFunction",
+              "line": 387,
+              "name": "<anonymous@387>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 89,
+              "file": "test/projection-index-scale.test.ts",
+              "hasBody": true,
+              "id": "test/projection-index-scale.test.ts:20877:<anonymous@588>",
+              "kind": "ArrowFunction",
+              "line": 588,
+              "name": "<anonymous@588>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 36,
+              "file": "test/projection-index-scale.test.ts",
+              "hasBody": true,
+              "id": "test/projection-index-scale.test.ts:21011:measureAllocationReads",
+              "kind": "ArrowFunction",
+              "line": 590,
+              "name": "measureAllocationReads",
+              "reason": "resolved-call"
+            },
+            {
+              "column": 1,
+              "file": "src/availability.ts",
+              "hasBody": true,
+              "id": "src/availability.ts:11072:summarizeInventoryPhysicalAvailability",
+              "kind": "FunctionDeclaration",
+              "line": 273,
+              "name": "summarizeInventoryPhysicalAvailability",
+              "reason": "resolved-call"
+            }
+          ],
+          "target": {
+            "column": 1,
+            "file": "src/availability.ts",
+            "hasBody": true,
+            "id": "src/availability.ts:11072:summarizeInventoryPhysicalAvailability",
+            "kind": "FunctionDeclaration",
+            "line": 273,
+            "name": "summarizeInventoryPhysicalAvailability"
+          },
+          "test": "test/projection-index-scale.test.ts"
+        }
+      ],
+      "directExecutableEntrypoints": [
+        "test/projection-index-scale.test.ts"
+      ],
+      "directExecutableEvidence": [
+        "test/projection-index-scale.test.ts"
+      ],
+      "evidenceMode": "direct-executable",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/read-model.test.ts",
+        "test/read-snapshot.test.ts",
+        "test/availability.test.ts",
+        "test/containers.test.ts"
+      ],
+      "family": "read-current",
+      "gaps": [],
+      "implementationTargets": [
+        {
+          "column": 1,
+          "file": "src/availability.ts",
+          "hasBody": true,
+          "id": "src/availability.ts:11072:summarizeInventoryPhysicalAvailability",
+          "kind": "FunctionDeclaration",
+          "line": 273,
+          "name": "summarizeInventoryPhysicalAvailability"
+        }
+      ],
+      "inputMapping": "Selector/identity/direct-placement/subtree/time fields map to a query over one fully published abstract world.",
+      "internalReferences": [],
+      "invariants": [
+        "HeadReferencesCompleteWorld",
+        "ReportMatchesCurrentTruth",
+        "CurrentPhysicalStateIsExclusive",
+        "UnresolvedStockStillExists",
+        "PlacementIsAcyclic",
+        "AncestorMovePreservesDirectStockAnchors",
+        "ReportsMatchExactPhysicalIdentity",
+        "PoolReportMatchesExactPhysicalTruth",
+        "ReportMatchesCurrentPhysicalTruth",
+        "OriginalHistoryIsNeverErased"
+      ],
+      "models": [
+        "PublishedHeadCAS",
+        "ResourceDimensions",
+        "PlacementGraph",
+        "UseByReservation",
+        "ReservationScope",
+        "CollectionView",
+        "FungibilityPool",
+        "CorrectionHistory"
+      ],
+      "rejectionRelation": "Unknown identity or invalid selector/time rejects; reads never fall back to staged or compatibility truth.",
+      "resultMapping": "Read result maps to exact current positions, placement ancestry, summaries, availability, plans, metadata, claims, counts, or events from one world revision.",
+      "retryRelation": "Reads are side-effect-free; repeated reads without publication are equal.",
+      "signature": {
+        "callSignatures": [
+          {
+            "parameters": [
+              {
+                "name": "__0",
+                "optional": false,
+                "type": "SummarizeInventoryPhysicalAvailabilityInput"
+              }
+            ],
+            "result": "InventoryPhysicalAvailabilitySummary"
+          }
+        ],
+        "callable": true,
+        "constructSignatures": [],
+        "constructable": false,
+        "declaration": "src/availability.ts",
+        "name": "summarizeInventoryPhysicalAvailability"
+      },
+      "stateProjection": [
+        "abstractInventoryState",
+        "abstractReservationState",
+        "abstractCountState",
+        "abstractTraceabilityState"
       ],
       "status": "covered"
     },
@@ -52592,7 +52756,7 @@
           "path": "src/allocation.ts"
         },
         {
-          "occurrences": 8,
+          "occurrences": 9,
           "path": "src/availability.ts"
         },
         {
@@ -57630,20 +57794,20 @@
               "column": 47,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:13002:<anonymous@386>",
+              "id": "test/projection-index-scale.test.ts:13044:<anonymous@387>",
               "kind": "ArrowFunction",
-              "line": 386,
-              "name": "<anonymous@386>",
+              "line": 387,
+              "name": "<anonymous@387>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 95,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:19893:<anonymous@559>",
+              "id": "test/projection-index-scale.test.ts:19935:<anonymous@560>",
               "kind": "ArrowFunction",
-              "line": 559,
-              "name": "<anonymous@559>",
+              "line": 560,
+              "name": "<anonymous@560>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -60386,20 +60550,20 @@
               "column": 47,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:13002:<anonymous@386>",
+              "id": "test/projection-index-scale.test.ts:13044:<anonymous@387>",
               "kind": "ArrowFunction",
-              "line": 386,
-              "name": "<anonymous@386>",
+              "line": 387,
+              "name": "<anonymous@387>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 95,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:19893:<anonymous@559>",
+              "id": "test/projection-index-scale.test.ts:19935:<anonymous@560>",
               "kind": "ArrowFunction",
-              "line": 559,
-              "name": "<anonymous@559>",
+              "line": 560,
+              "name": "<anonymous@560>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -60560,29 +60724,29 @@
               "column": 65,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:28289:<anonymous@768>",
+              "id": "test/projection-index-scale.test.ts:29186:<anonymous@782>",
               "kind": "ArrowFunction",
-              "line": 768,
-              "name": "<anonymous@768>",
+              "line": 782,
+              "name": "<anonymous@782>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 94,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:28390:<anonymous@769>",
+              "id": "test/projection-index-scale.test.ts:29287:<anonymous@783>",
               "kind": "ArrowFunction",
-              "line": 769,
-              "name": "<anonymous@769>",
+              "line": 783,
+              "name": "<anonymous@783>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 1,
               "file": "src/availability.ts",
               "hasBody": true,
-              "id": "src/availability.ts:6501:summarizeInventoryAvailability",
+              "id": "src/availability.ts:6565:summarizeInventoryAvailability",
               "kind": "FunctionDeclaration",
-              "line": 149,
+              "line": 150,
               "name": "summarizeInventoryAvailability",
               "reason": "resolved-call"
             },
@@ -60590,10 +60754,20 @@
               "column": 1,
               "file": "src/availability.ts",
               "hasBody": true,
-              "id": "src/availability.ts:10355:summarizeAvailabilityRevision",
+              "id": "src/availability.ts:14443:summarizeAvailabilityRevision",
               "kind": "FunctionDeclaration",
-              "line": 260,
+              "line": 340,
               "name": "summarizeAvailabilityRevision",
+              "reason": "resolved-call"
+            },
+            {
+              "column": 1,
+              "file": "src/availability.ts",
+              "hasBody": true,
+              "id": "src/availability.ts:15801:summarizePhysicalAvailabilityRevision",
+              "kind": "FunctionDeclaration",
+              "line": 363,
+              "name": "summarizePhysicalAvailabilityRevision",
               "reason": "resolved-call"
             },
             {
@@ -62872,20 +63046,20 @@
               "column": 47,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:13002:<anonymous@386>",
+              "id": "test/projection-index-scale.test.ts:13044:<anonymous@387>",
               "kind": "ArrowFunction",
-              "line": 386,
-              "name": "<anonymous@386>",
+              "line": 387,
+              "name": "<anonymous@387>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 95,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:19893:<anonymous@559>",
+              "id": "test/projection-index-scale.test.ts:19935:<anonymous@560>",
               "kind": "ArrowFunction",
-              "line": 559,
-              "name": "<anonymous@559>",
+              "line": 560,
+              "name": "<anonymous@560>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -63961,7 +64135,7 @@
           "path": "src/amounts.ts"
         },
         {
-          "occurrences": 22,
+          "occurrences": 32,
           "path": "src/availability.ts"
         },
         {
@@ -66302,29 +66476,29 @@
               "column": 65,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:28289:<anonymous@768>",
+              "id": "test/projection-index-scale.test.ts:29186:<anonymous@782>",
               "kind": "ArrowFunction",
-              "line": 768,
-              "name": "<anonymous@768>",
+              "line": 782,
+              "name": "<anonymous@782>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 94,
               "file": "test/projection-index-scale.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:28390:<anonymous@769>",
+              "id": "test/projection-index-scale.test.ts:29287:<anonymous@783>",
               "kind": "ArrowFunction",
-              "line": 769,
-              "name": "<anonymous@769>",
+              "line": 783,
+              "name": "<anonymous@783>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 1,
               "file": "src/availability.ts",
               "hasBody": true,
-              "id": "src/availability.ts:6501:summarizeInventoryAvailability",
+              "id": "src/availability.ts:6565:summarizeInventoryAvailability",
               "kind": "FunctionDeclaration",
-              "line": 149,
+              "line": 150,
               "name": "summarizeInventoryAvailability",
               "reason": "resolved-call"
             }
@@ -66333,9 +66507,9 @@
             "column": 1,
             "file": "src/availability.ts",
             "hasBody": true,
-            "id": "src/availability.ts:6501:summarizeInventoryAvailability",
+            "id": "src/availability.ts:6565:summarizeInventoryAvailability",
             "kind": "FunctionDeclaration",
-            "line": 149,
+            "line": 150,
             "name": "summarizeInventoryAvailability"
           },
           "test": "test/projection-index-scale.test.ts"
@@ -66362,9 +66536,9 @@
           "column": 1,
           "file": "src/availability.ts",
           "hasBody": true,
-          "id": "src/availability.ts:6501:summarizeInventoryAvailability",
+          "id": "src/availability.ts:6565:summarizeInventoryAvailability",
           "kind": "FunctionDeclaration",
-          "line": 149,
+          "line": 150,
           "name": "summarizeInventoryAvailability"
         }
       ],
@@ -66570,6 +66744,156 @@
       "stateProjection": [
         "abstractInventoryState",
         "abstractReservationState"
+      ],
+      "status": "covered"
+    },
+    "entrypoint.root.summarizeInventoryPhysicalAvailability": {
+      "adapterCoverage": [
+        "memory"
+      ],
+      "callChainWitnesses": [
+        {
+          "chain": [
+            {
+              "column": 1,
+              "file": "test/projection-index-scale.test.ts",
+              "hasBody": true,
+              "id": "test-root:test/projection-index-scale.test.ts",
+              "kind": "TestRoot",
+              "line": 1,
+              "name": "test/projection-index-scale.test.ts"
+            },
+            {
+              "column": 47,
+              "file": "test/projection-index-scale.test.ts",
+              "hasBody": true,
+              "id": "test/projection-index-scale.test.ts:13044:<anonymous@387>",
+              "kind": "ArrowFunction",
+              "line": 387,
+              "name": "<anonymous@387>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 89,
+              "file": "test/projection-index-scale.test.ts",
+              "hasBody": true,
+              "id": "test/projection-index-scale.test.ts:20877:<anonymous@588>",
+              "kind": "ArrowFunction",
+              "line": 588,
+              "name": "<anonymous@588>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 36,
+              "file": "test/projection-index-scale.test.ts",
+              "hasBody": true,
+              "id": "test/projection-index-scale.test.ts:21011:measureAllocationReads",
+              "kind": "ArrowFunction",
+              "line": 590,
+              "name": "measureAllocationReads",
+              "reason": "resolved-call"
+            },
+            {
+              "column": 1,
+              "file": "src/availability.ts",
+              "hasBody": true,
+              "id": "src/availability.ts:11072:summarizeInventoryPhysicalAvailability",
+              "kind": "FunctionDeclaration",
+              "line": 273,
+              "name": "summarizeInventoryPhysicalAvailability",
+              "reason": "resolved-call"
+            }
+          ],
+          "target": {
+            "column": 1,
+            "file": "src/availability.ts",
+            "hasBody": true,
+            "id": "src/availability.ts:11072:summarizeInventoryPhysicalAvailability",
+            "kind": "FunctionDeclaration",
+            "line": 273,
+            "name": "summarizeInventoryPhysicalAvailability"
+          },
+          "test": "test/projection-index-scale.test.ts"
+        }
+      ],
+      "directExecutableEntrypoints": [
+        "test/projection-index-scale.test.ts"
+      ],
+      "directExecutableEvidence": [
+        "test/projection-index-scale.test.ts"
+      ],
+      "evidenceMode": "direct-executable",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/read-model.test.ts",
+        "test/read-snapshot.test.ts",
+        "test/availability.test.ts",
+        "test/containers.test.ts"
+      ],
+      "family": "read-current",
+      "gaps": [],
+      "implementationTargets": [
+        {
+          "column": 1,
+          "file": "src/availability.ts",
+          "hasBody": true,
+          "id": "src/availability.ts:11072:summarizeInventoryPhysicalAvailability",
+          "kind": "FunctionDeclaration",
+          "line": 273,
+          "name": "summarizeInventoryPhysicalAvailability"
+        }
+      ],
+      "inputMapping": "Selector/identity/direct-placement/subtree/time fields map to a query over one fully published abstract world.",
+      "internalReferences": [],
+      "invariants": [
+        "HeadReferencesCompleteWorld",
+        "ReportMatchesCurrentTruth",
+        "CurrentPhysicalStateIsExclusive",
+        "UnresolvedStockStillExists",
+        "PlacementIsAcyclic",
+        "AncestorMovePreservesDirectStockAnchors",
+        "ReportsMatchExactPhysicalIdentity",
+        "PoolReportMatchesExactPhysicalTruth",
+        "ReportMatchesCurrentPhysicalTruth",
+        "OriginalHistoryIsNeverErased"
+      ],
+      "models": [
+        "PublishedHeadCAS",
+        "ResourceDimensions",
+        "PlacementGraph",
+        "UseByReservation",
+        "ReservationScope",
+        "CollectionView",
+        "FungibilityPool",
+        "CorrectionHistory"
+      ],
+      "rejectionRelation": "Unknown identity or invalid selector/time rejects; reads never fall back to staged or compatibility truth.",
+      "resultMapping": "Read result maps to exact current positions, placement ancestry, summaries, availability, plans, metadata, claims, counts, or events from one world revision.",
+      "retryRelation": "Reads are side-effect-free; repeated reads without publication are equal.",
+      "signature": {
+        "callSignatures": [
+          {
+            "parameters": [
+              {
+                "name": "__0",
+                "optional": false,
+                "type": "SummarizeInventoryPhysicalAvailabilityInput"
+              }
+            ],
+            "result": "InventoryPhysicalAvailabilitySummary"
+          }
+        ],
+        "callable": true,
+        "constructSignatures": [],
+        "constructable": false,
+        "declaration": "src/availability.ts",
+        "name": "summarizeInventoryPhysicalAvailability"
+      },
+      "stateProjection": [
+        "abstractInventoryState",
+        "abstractReservationState",
+        "abstractCountState",
+        "abstractTraceabilityState"
       ],
       "status": "covered"
     },
@@ -74429,7 +74753,7 @@
       "inputMapping": "Collection revision and optional scope map to frozen member identities and selector constraints.",
       "internalReferences": [
         {
-          "occurrences": 8,
+          "occurrences": 7,
           "path": "src/availability.ts"
         },
         {
@@ -76999,7 +77323,7 @@
       "inputMapping": "Pool revision, exact basis quantity, scope, method, and eligibility flags map to revision-frozen member candidates.",
       "internalReferences": [
         {
-          "occurrences": 8,
+          "occurrences": 7,
           "path": "src/availability.ts"
         },
         {
@@ -79092,7 +79416,7 @@
       "inputMapping": "Selector/identity/direct-placement/subtree/time fields map to a query over one fully published abstract world.",
       "internalReferences": [
         {
-          "occurrences": 10,
+          "occurrences": 12,
           "path": "src/availability.ts"
         },
         {
@@ -79841,6 +80165,10 @@
         },
         {
           "occurrences": 1,
+          "path": "src/availability.ts"
+        },
+        {
+          "occurrences": 1,
           "path": "src/commands.ts"
         },
         {
@@ -80351,6 +80679,10 @@
         {
           "occurrences": 1,
           "path": "src/allocation.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/availability.ts"
         },
         {
           "occurrences": 1,
@@ -81705,7 +82037,7 @@
           "path": "src/authority-cutover.ts"
         },
         {
-          "occurrences": 31,
+          "occurrences": 36,
           "path": "src/availability.ts"
         },
         {
@@ -81950,7 +82282,7 @@
       "inputMapping": "Selector/identity/direct-placement/subtree/time fields map to a query over one fully published abstract world.",
       "internalReferences": [
         {
-          "occurrences": 32,
+          "occurrences": 35,
           "path": "src/availability.ts"
         },
         {
@@ -82506,7 +82838,7 @@
       "inputMapping": "Selector/identity/direct-placement/subtree/time fields map to a query over one fully published abstract world.",
       "internalReferences": [
         {
-          "occurrences": 8,
+          "occurrences": 7,
           "path": "src/availability.ts"
         },
         {
@@ -84525,7 +84857,7 @@
       "inputMapping": "One public snapshot freezes one published world revision including stock, placement topology, catalogue, claims, and counts.",
       "internalReferences": [
         {
-          "occurrences": 10,
+          "occurrences": 12,
           "path": "src/availability.ts"
         },
         {
@@ -85554,6 +85886,10 @@
         },
         {
           "occurrences": 1,
+          "path": "src/availability.ts"
+        },
+        {
+          "occurrences": 1,
           "path": "src/commands.ts"
         },
         {
@@ -86223,6 +86559,10 @@
         {
           "occurrences": 1,
           "path": "src/allocation.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/availability.ts"
         },
         {
           "occurrences": 1,
@@ -87489,7 +87829,7 @@
           "path": "src/authority-cutover.ts"
         },
         {
-          "occurrences": 31,
+          "occurrences": 36,
           "path": "src/availability.ts"
         },
         {
@@ -87723,7 +88063,7 @@
       "inputMapping": "One public snapshot freezes one published world revision including stock, placement topology, catalogue, claims, and counts.",
       "internalReferences": [
         {
-          "occurrences": 32,
+          "occurrences": 35,
           "path": "src/availability.ts"
         },
         {
@@ -88067,7 +88407,7 @@
       "inputMapping": "One public snapshot freezes one published world revision including stock, placement topology, catalogue, claims, and counts.",
       "internalReferences": [
         {
-          "occurrences": 8,
+          "occurrences": 7,
           "path": "src/availability.ts"
         },
         {
@@ -101372,5 +101712,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "83d42e7407155e7274598c6e6df79680e185232b18f45cc1a71270725f15db13"
+  "surfaceSha256": "9d9444399f98b1145cadbe84038f01c310334ba65e3f7562d6f0da8108d2e4fc"
 }

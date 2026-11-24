@@ -4,14 +4,14 @@
     "callableFields": 15,
     "callbackArgumentFields": 417,
     "callbackResultFields": 471,
-    "fields": 2851,
-    "inputFields": 2393,
+    "fields": 2876,
+    "inputFields": 2402,
     "nullableFields": 9,
     "optionalFields": 1151,
-    "outputFields": 1097,
+    "outputFields": 1113,
     "recursiveTypeReferences": 5,
     "truncatedTypes": 0,
-    "types": 479,
+    "types": 484,
     "undefinedFields": 11
   },
   "entries": {
@@ -17841,6 +17841,78 @@
       "gaps": [],
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryActivePositionAllocation.positionId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/availability.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "UseByReservation",
+        "ReservationScope",
+        "PackagingIdentity"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryActivePositionAllocation.quantity": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/availability.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "Quantity",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "UseByReservation",
+        "ReservationScope",
+        "PackagingIdentity"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryActivePositionAllocation.reservationId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/availability.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "UseByReservation",
+        "ReservationScope",
+        "PackagingIdentity"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
     "InventoryAllocation.position": {
       "allowsNull": false,
@@ -52165,6 +52237,390 @@
       "optional": false,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
+    "InventoryPhysicalAvailabilityRevisionSummary.deficit": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/availability.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "InventoryMeasurementVector",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "RecordedDeficit",
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryPhysicalAvailabilityRevisionSummary.exactlyAllocatedExpired": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/availability.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "Quantity",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "UseByReservation",
+        "ReservationScope",
+        "PackagingIdentity"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryPhysicalAvailabilityRevisionSummary.exactlyAllocatedUsable": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/availability.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "Quantity",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "UseByReservation",
+        "ReservationScope",
+        "PackagingIdentity"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryPhysicalAvailabilityRevisionSummary.expiredOnHand": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/availability.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "InventoryMeasurementVector",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "UseByReservation",
+        "ReservationScope",
+        "PackagingIdentity"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryPhysicalAvailabilityRevisionSummary.itemId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/availability.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "UseByReservation",
+        "ReservationScope",
+        "PackagingIdentity"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryPhysicalAvailabilityRevisionSummary.itemRevisionId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/availability.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "UseByReservation",
+        "ReservationScope",
+        "PackagingIdentity"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryPhysicalAvailabilityRevisionSummary.onHand": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/availability.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "InventoryMeasurementVector",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "UseByReservation",
+        "ReservationScope",
+        "PackagingIdentity"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryPhysicalAvailabilityRevisionSummary.physicalOnHand": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/availability.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "InventoryMeasurementVector",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "UseByReservation",
+        "ReservationScope",
+        "PackagingIdentity"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryPhysicalAvailabilityRevisionSummary.positions": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/availability.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "readonly InventoryPositionAvailability[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "UseByReservation",
+        "ReservationScope",
+        "PackagingIdentity"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryPhysicalAvailabilityRevisionSummary.reservationAxisId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/availability.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "UseByReservation",
+        "ReservationScope",
+        "PackagingIdentity"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "InventoryPhysicalAvailabilityRevisionSummary.unallocatedUsablePhysical": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/availability.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "Quantity",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "UseByReservation",
+        "ReservationScope",
+        "PackagingIdentity"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryPhysicalAvailabilityRevisionSummary.usableDeficit": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/availability.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "InventoryMeasurementVector",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "UseByReservation",
+        "ReservationScope",
+        "PackagingIdentity"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryPhysicalAvailabilityRevisionSummary.usableOnHand": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/availability.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "InventoryMeasurementVector",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "UseByReservation",
+        "ReservationScope",
+        "PackagingIdentity"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryPhysicalAvailabilityRevisionSummary.usablePhysicalOnHand": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/availability.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "InventoryMeasurementVector",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "UseByReservation",
+        "ReservationScope",
+        "PackagingIdentity"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryPhysicalAvailabilitySummary.atEpochMs": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/availability.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "UseByReservation",
+        "ReservationScope",
+        "PackagingIdentity"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventoryPhysicalAvailabilitySummary.revisions": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/availability.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "readonly InventoryPhysicalAvailabilityRevisionSummary[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "UseByReservation",
+        "ReservationScope",
+        "PackagingIdentity"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
     "InventoryPlacementChange.fromParentNodeId": {
       "allowsNull": false,
       "allowsUndefined": false,
@@ -66727,6 +67183,126 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
+    "SummarizeInventoryPhysicalAvailabilityInput.atEpochMs": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/availability.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "UseByReservation",
+        "ReservationScope",
+        "PackagingIdentity"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "SummarizeInventoryPhysicalAvailabilityInput.catalog": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/availability.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryCatalog",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "UseByReservation",
+        "ReservationScope",
+        "PackagingIdentity"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "SummarizeInventoryPhysicalAvailabilityInput.exactAllocations": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/availability.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "readonly InventoryActivePositionAllocation[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "UseByReservation",
+        "ReservationScope",
+        "PackagingIdentity"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "SummarizeInventoryPhysicalAvailabilityInput.projection": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/availability.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryProjectionState",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "UseByReservation",
+        "ReservationScope",
+        "PackagingIdentity"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "SummarizeInventoryPhysicalAvailabilityInput.selector": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/availability.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryStockSelector",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "UseByReservation",
+        "ReservationScope",
+        "PackagingIdentity"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
     "SummarizeInventoryStockInput.catalog": {
       "allowsNull": false,
       "allowsUndefined": false,
@@ -66937,6 +67513,30 @@
       "gaps": [],
       "optional": true,
       "rationale": "Injected protocol implementation must refine the modeled durable/authority port and pass the shared conformance suite."
+    },
+    "anonymous@src/availability.ts:267:119.exactAllocations": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/availability.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "readonly InventoryActivePositionAllocation[]",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "UseByReservation",
+        "ReservationScope",
+        "PackagingIdentity"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
     "anonymous@src/catalog.ts:3054:13.lotId": {
       "allowsNull": false,
@@ -68273,5 +68873,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "83d42e7407155e7274598c6e6df79680e185232b18f45cc1a71270725f15db13"
+  "surfaceSha256": "9d9444399f98b1145cadbe84038f01c310334ba65e3f7562d6f0da8108d2e4fc"
 }

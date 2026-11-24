@@ -1861,3 +1861,9 @@ The R105 portable-current-input authority and final publication both continue to
 
 - Core can certify and activate the same greenfield transition with an indexed vacancy proof. The adapter must prove that nothing was published and no staged publication owns the head. Core derives the exact genesis world commitment.
 - An already activated retry compares its retained evidence. It does not reread stock that may have been published since activation.
+
+2026-11-24 - Read physical availability from exact active holds
+
+- Stock inspection and the lot picker need physical capacity, lot and placement expiry, and active holds on their exact current positions. They do not display the reservation feasibility report.
+- The scoped reducer takes those exact allocation rows and the whole affected deficit pool. It uses the full availability reducer's existing signed stock and deficit math. It does not open the claim book or synthesize missing broad and unbacked claim facts.
+- Full reservation reads still compute their complete feasibility report and retain their original output.
