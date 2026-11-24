@@ -150,6 +150,7 @@ import {
 import {
   assertInventoryEpochMilliseconds,
   InventoryEventKind,
+  INVENTORY_UNALLOCATED_TRANSFER_TO,
   InventoryTraceabilityRelationAction,
   InventoryTraceabilityRelationKind,
   defineInventoryEvent,
@@ -4311,7 +4312,6 @@ function planInventoryPolicyBatchAtScope(
     });
     const deficit = policyRecordedDeficit({
       catalog,
-      kind,
       deficitPolicy,
       input: policyMovementInputFromBatchRequest(input, request),
       allocation,
@@ -4609,11 +4609,6 @@ function createPolicyBatchMovementEvent(
   deficitLines: readonly CreateInventoryIssueManyInput["lines"][number][],
   toPlacementNodeId: string | undefined
 ): InventoryEventDraft {
-  const exactLines = combinePolicyBatchExactLines(
-    catalog,
-    selectedLines,
-    deficitLines
-  );
   const header: InventoryCommandHeader = {
     ...inventoryCommandHeaderFromPolicyInput(input),
     metadata: {
@@ -4625,23 +4620,100 @@ function createPolicyBatchMovementEvent(
     return createInventoryIssueManyEvent({
       catalog,
       ...header,
-      lines: exactLines,
+      lines: combinePolicyBatchExactLines(catalog, selectedLines, deficitLines),
     });
   }
   if (kind === InventoryPolicyMovementKind.Transfer) {
     if (toPlacementNodeId === undefined) {
       throw new Error("Policy transfer batch lost destination direct placement.");
     }
-    return createInventoryTransferManyEvent({
-      catalog,
-      ...header,
-      lines: exactLines.map(
-        /** Apply the shared destination after every source allocation is frozen. */
-        (line) => ({ ...line, toPlacementNodeId })
-      ),
+    return createPolicyTransferEvent({
+      catalog, header, toPlacementNodeId, selectedLines, deficitLines,
     });
   }
   throw new Error("Inventory policy batch cannot create a scrap event.");
+}
+
+/** Prepared actual picks and recorded source shortfalls sharing one destination. */
+interface CreatePolicyTransferEventInput {
+  /** Catalogue containing every selected item and package revision. */
+  readonly catalog: InventoryCatalog;
+  /** Saved caller intent, including the exact allocation evidence. */
+  readonly header: InventoryCommandHeader;
+  /** Real destination at which staff placed all reported pieces. */
+  readonly toPlacementNodeId: string;
+  /** Actual picked stock, retaining its lot and original FIFO age. */
+  readonly selectedLines: readonly InventoryPolicyAllocationLine[];
+  /** Exact signed source shortages with no lot or FIFO age to carry. */
+  readonly deficitLines: readonly CreateInventoryIssueManyInput["lines"][number][];
+}
+
+/** Keep actual picked lots and add unlabelled stock for the quantity reported but missing from the source. */
+function createPolicyTransferEvent({
+  catalog, header, toPlacementNodeId, selectedLines, deficitLines,
+}: CreatePolicyTransferEventInput): InventoryEventDraft {
+  const destinationNodeId = toPlacementNodeId.trim();
+  const backedLines = combinePolicyBatchExactLines(catalog, selectedLines).map(
+    /** Put the selected stock into the same exact destination without changing its identity. */
+    (line) => ({ ...line, toPlacementNodeId: destinationNodeId })
+  );
+  if (deficitLines.length === 0) {
+    return createInventoryTransferManyEvent({ catalog, ...header, lines: backedLines });
+  }
+  const backed = backedLines.length === 0 ? undefined
+    : createInventoryTransferManyEvent({ catalog, ...header, lines: backedLines });
+  const shortage = createInventoryIssueManyEvent({
+    catalog, ...header, lines: combinePolicyExactIssueLines(catalog, deficitLines),
+  });
+  /** Merge the effect when backed and unallocated pieces arrive at the same unlabelled position. */
+  const effects = new Map<string, InventoryStockEffect>();
+  for (const effect of backed?.stockEffects ?? []) effects.set(inventoryStockPositionIdentity(effect.position), effect);
+  for (const effect of shortage.stockEffects) {
+    effects.set(inventoryStockPositionIdentity(effect.position), {
+      ...effect,
+      metadata: { ...effect.metadata, [INVENTORY_UNALLOCATED_TRANSFER_TO]: destinationNodeId },
+    });
+    // The reserved lot is the source's signed balance, not a label on goods at the destination.
+    const { lotId: _shortageLot, ...source } = effect.position;
+    const position = normalizeInventoryStockPositionKey({ ...source, placementNodeId: destinationNodeId });
+    const identity = inventoryStockPositionIdentity(position);
+    const received = negateInventoryMeasurements(effect.measurementsDelta);
+    const earlier = effects.get(identity);
+    effects.set(identity, earlier === undefined
+      ? { ...effect, position, measurementsDelta: received }
+      : combinePolicyTransferReceipt(earlier, effect, received));
+  }
+  return defineInventoryEvent({
+    catalog,
+    event: {
+      ...header,
+      eventId: inventoryEventIdForOperation(header.operationId),
+      kind: InventoryEventKind.Transfer,
+      stockEffects: [...effects.values()],
+      traceabilityChanges: [],
+      positiveLayerProvenanceTransfers: backed?.positiveLayerProvenanceTransfers ?? [],
+    },
+  });
+}
+
+/** Keep the whole measured vector and exact package count when two arrivals share a position. */
+function combinePolicyTransferReceipt(
+  earlier: InventoryStockEffect, source: InventoryStockEffect, received: InventoryMeasurementVector
+): InventoryStockEffect {
+  const combined = addInventoryMeasurements(earlier.measurementsDelta, received);
+  const earlierCount = earlier.evidence?.packageCount;
+  const additionalCount = source.evidence?.packageCount;
+  return {
+    ...earlier,
+    measurementsDelta: combined,
+    evidence: {
+      transactedMeasurements: combined,
+      ...(earlier.position.packagingRevisionId === undefined ? {}
+        : { packagingRevisionId: earlier.position.packagingRevisionId }),
+      ...(earlierCount === undefined || additionalCount === undefined ? {}
+        : { packageCount: String(BigInt(earlierCount) + BigInt(additionalCount)) }),
+    },
+  };
 }
 
 /** Sum repeated source positions so one event still has one effect per position. */
@@ -5013,7 +5085,8 @@ function inventoryPolicyDeficitFromEvent(
 ): InventoryOnceRecordedDeficit | undefined {
   const encoded = event.metadata?.[inventoryPolicyDeficitMetadataKey];
   if (encoded === undefined) return undefined;
-  if (event.kind !== InventoryEventKind.Issue && event.kind !== InventoryEventKind.Scrap) {
+  if (event.kind !== InventoryEventKind.Issue && event.kind !== InventoryEventKind.Scrap &&
+      event.kind !== InventoryEventKind.Transfer) {
     throw new Error("Inventory policy deficit evidence requires an outgoing stock movement.");
   }
   const evidence = policyBatchDeficitFromMetadata(encoded);
@@ -5479,7 +5552,6 @@ function prepareInventoryPolicyMovement(
       });
       const deficit = policyRecordedDeficit({
         catalog,
-        kind,
         deficitPolicy,
         input,
         allocation,
@@ -5527,7 +5599,7 @@ function assertPolicyMovementRequest(
   }
   if (input.deficitPosition !== undefined &&
       (deficitPolicy !== InventoryDeficitPolicy.Record || kind === InventoryPolicyMovementKind.Transfer)) {
-    throw new Error("Inventory deficitPosition requires policy issue or scrap in Record mode.");
+    throw new Error("Policy issue or scrap requires Record mode for an explicit deficitPosition.");
   }
   if (input.deficitPosition?.serialId !== undefined) {
     throw new Error(
@@ -5598,8 +5670,6 @@ function assertPolicyAllocationComplete(
 interface PolicyRecordedDeficitInput {
   /** Frozen catalogue used to resolve amount/package/position identity. */
   readonly catalog: InventoryCatalog;
-  /** The physical verb determines whether there is a destination with carried FIFO age. */
-  readonly kind: InventoryPolicyMovementKind;
   /** Configured ordinary negative-stock rule. */
   readonly deficitPolicy: InventoryDeficitPolicy;
   /** Caller command including optional explicit deficit position. */
@@ -5613,15 +5683,13 @@ interface PolicyRecordedDeficitInput {
 /** Record genuine shortfall at an exact unallocated source, or report it in Reject mode. */
 function policyRecordedDeficit({
   catalog,
-  kind,
   deficitPolicy,
   input,
   allocation,
   projection,
 }: PolicyRecordedDeficitInput): InventoryPolicyRecordedDeficit | undefined {
   if (allocation.shortfall.amountMinor === 0) return undefined;
-  // A native transfer still carries the age of an actual positive source into the destination.
-  if (kind === InventoryPolicyMovementKind.Transfer || deficitPolicy !== InventoryDeficitPolicy.Record) {
+  if (deficitPolicy !== InventoryDeficitPolicy.Record) {
     assertPolicyAllocationComplete(allocation);
     return undefined;
   }
@@ -5758,19 +5826,6 @@ function createPolicyMovementEvent(
   deficit: InventoryPolicyRecordedDeficit | undefined
 ): InventoryEventDraft {
   const header = inventoryCommandHeaderFromPolicyInput(input);
-  if (kind === InventoryPolicyMovementKind.Transfer) {
-    if (toPlacementNodeId === undefined) {
-      throw new Error("Policy transfer lost destination direct placement.");
-    }
-    return createInventoryTransferManyEvent({
-      catalog,
-      ...header,
-      lines: lines.map(
-        /** Add only the destination while preserving the real source's FIFO age. */
-        (line) => ({ ...policyIssueLine(line), toPlacementNodeId })
-      ),
-    });
-  }
   const movementHeader = deficit === undefined ? header : {
     ...header,
     metadata: {
@@ -5778,6 +5833,15 @@ function createPolicyMovementEvent(
       [inventoryPolicyDeficitMetadataKey]: policyDeficitMetadataValue(deficit.evidence),
     },
   };
+  if (kind === InventoryPolicyMovementKind.Transfer) {
+    if (toPlacementNodeId === undefined) {
+      throw new Error("Policy transfer lost destination direct placement.");
+    }
+    return createPolicyTransferEvent({
+      catalog, header: movementHeader, toPlacementNodeId, selectedLines: lines,
+      deficitLines: deficit === undefined ? [] : [deficit.line],
+    });
+  }
   const exactLines = kind === InventoryPolicyMovementKind.Scrap && deficit === undefined
     ? lines.map(policyIssueLine)
     : combinePolicyBatchExactLines(catalog, lines, deficit === undefined ? [] : [deficit.line]);

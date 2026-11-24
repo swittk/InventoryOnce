@@ -1877,3 +1877,9 @@ The R105 portable-current-input authority and final publication both continue to
 
 - Count discrepancy math now also takes one exact bucket's signed stock at the observation time. The adapter proves the position against the saved selector. The full core facade and indexed completion use the same lifecycle checks, subtraction and event builder.
 - In Record mode, ordinary policy scrap can use the same signed unallocated source as issue. Scrap keeps the signed shortage with the reason. A native transfer still needs a positive source for its carried FIFO age. Its shortfall path remains open. Reject mode and exact stock identity and increment checks still apply.
+
+2026-11-24 - Ordinary transfer of more stock than the source recorded
+
+- A policy transfer in Record mode keeps the real picks and creates a signed unallocated source for the shortfall. The destination gets the shortage unlabelled. It keeps the frozen package revision if the reported movement was by intact package.
+- FIFO age still comes only from an actual picked position. If real unlabelled and unallocated pieces reach the same bucket, the event holds one combined stock effect and separate source evidence for each part.
+- Backed transfers and Reject mode keep their original paths. Required identity, expiry and legal package increments still apply.

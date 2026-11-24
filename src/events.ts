@@ -1,3 +1,4 @@
+import { INVENTORY_RECORDED_DEFICIT_LOT_ID } from "./deficits.js";
 import { cloneInventoryRetainedData } from "./sparse-record.js";
 import { compareInventoryIdentityText } from "./ordering.js";
 import {
@@ -52,6 +53,9 @@ import {
   type Quantity,
 } from "./quantity.js";
 import { convertInventoryRevisionQuantity } from "./revision-transition-math.js";
+
+/** Destination on a signed transfer source that had no recorded stock or FIFO age. */
+export const INVENTORY_UNALLOCATED_TRANSFER_TO = "inventoryOnceUnallocatedTransferTo";
 
 /** Generic reason one committed inventory event changes or annotates resource truth. */
 export enum InventoryEventKind {
@@ -1231,11 +1235,23 @@ function normalizePositiveLayerProvenanceTransfers(
     );
   }
   const effectByPositionId = new Map<string, InventoryStockEffect>();
+  /** Signed source parts arriving without recorded FIFO age. Allocate only for an actual short transfer. */
+  let unallocatedByDestination: Map<string, InventoryMeasurementVector> | undefined;
   for (const effect of effects) {
-    effectByPositionId.set(
-      inventoryStockPositionIdentity(effect.position),
-      effect
-    );
+    effectByPositionId.set(inventoryStockPositionIdentity(effect.position), effect);
+    const node = effect.metadata?.[INVENTORY_UNALLOCATED_TRANSFER_TO];
+    if (kind !== InventoryEventKind.Transfer || typeof node !== "string") continue;
+    const { lotId, ...source } = effect.position;
+    if (lotId !== INVENTORY_RECORDED_DEFICIT_LOT_ID || source.placementNodeId === undefined ||
+        source.placementNodeId === node || source.serialId !== undefined ||
+        effect.measurementsDelta.primary.quantity.amountMinor >= 0) {
+      throw new Error("Unallocated transfer must name a signed shortage at a different source placement.");
+    }
+    const destination = inventoryStockPositionIdentity({ ...source, placementNodeId: node });
+    unallocatedByDestination ??= new Map();
+    const earlier = unallocatedByDestination.get(destination);
+    unallocatedByDestination.set(destination, earlier === undefined ? effect.measurementsDelta
+      : addInventoryMeasurements(earlier, effect.measurementsDelta));
   }
   const normalized: NormalizedPositiveLayerProvenanceTransferEntry[] = [];
   const endpoints = new Set<string>();
@@ -1278,6 +1294,10 @@ function normalizePositiveLayerProvenanceTransfers(
         "Inventory FIFO provenance transfer must reference positions changed by the same event."
       );
     }
+    const unallocated = unallocatedByDestination?.get(toIdentity);
+    const outgoing = unallocated === undefined ? fromEffect.measurementsDelta
+      : addInventoryMeasurements(fromEffect.measurementsDelta, unallocated);
+    unallocatedByDestination?.delete(toIdentity);
     if (
       compareQuantity(
         fromEffect.measurementsDelta.primary.quantity,
@@ -1290,7 +1310,7 @@ function normalizePositiveLayerProvenanceTransfers(
       (kind !== InventoryEventKind.RevisionTransition &&
         !inventoryMeasurementsAreZero(
           addInventoryMeasurements(
-            fromEffect.measurementsDelta,
+            outgoing,
             toEffect.measurementsDelta
           )
         ))
@@ -1304,6 +1324,14 @@ function normalizePositiveLayerProvenanceTransfers(
       fromIdentity,
       toIdentity,
     });
+  }
+  // If no real pick arrived at this destination, all its added quantity must come from the signed source.
+  for (const [positionId, outgoing] of unallocatedByDestination ?? []) {
+    const received = effectByPositionId.get(positionId);
+    if (received === undefined ||
+        !inventoryMeasurementsAreZero(addInventoryMeasurements(outgoing, received.measurementsDelta))) {
+      throw new Error("Unallocated transfer quantity must match the unlabelled destination.");
+    }
   }
   normalized.sort(compareNormalizedPositiveLayerProvenanceTransfer);
   return normalized.map(unwrapNormalizedPositiveLayerProvenanceTransfer);

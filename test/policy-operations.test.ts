@@ -3,6 +3,7 @@ import {
   InventoryAllocationMethod,
   InventoryAmountKind,
   InventoryDeficitPolicy,
+  InventoryEventKind,
   InventoryMeasurementAxisRole,
   InventoryMeasurementRequirement,
   InventoryReservationFeasibilityStatus,
@@ -16,7 +17,7 @@ import {
   stockAmount,
   unitCode,
 } from "../src/index.js";
-import { commitInventoryEvent } from "../src/kernel.js";
+import { commitInventoryEvent, inventoryStockPositionIdentity, INVENTORY_UNALLOCATED_TRANSFER_TO } from "../src/kernel.js";
 import {
   inventoryPolicyBatchAllocationsFromEvent,
   prepareInventoryPolicyIssueBatch,
@@ -690,6 +691,91 @@ describe("native FIFO/FEFO movement policy", () => {
     expect(await quantityByLot(inventory, "store")).toEqual({
       __inventory_deficit__: -3,
     });
+  });
+
+  it("moves the real picks and the unallocated remainder in one transfer, retaining only the real FIFO age", async () => {
+    const inventory = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
+    await inventory.stock.receiveMany({
+      operationId: "transfer-shortage-receipt",
+      occurredAtEpochMs: time0,
+      lines: [
+        { to: loosePosition("store"), amount: stockAmount("1", "piece") },
+        { to: loosePosition("store", { lotId: "KNOWN" }), amount: stockAmount("1", "piece") },
+      ],
+    });
+    const command = {
+      operationId: "transfer-shortage-mixed",
+      occurredAtEpochMs: time1,
+      toPlacementNodeId: "destination",
+      requests: [{
+        requestId: "transfer-line",
+        selector: inventoryStockSelector("item-a", { placementNodeIds: ["store"] }),
+        amount: stockAmount("4", "piece"),
+        method: InventoryAllocationMethod.Fifo,
+      }],
+    };
+    const result = await inventory.stock.transferManyByPolicy(command);
+    expect(result.event.kind).toBe(InventoryEventKind.Transfer);
+    expect(result.allocations[0]?.lines).toHaveLength(2);
+    expect(result.allocations[0]?.deficit?.primary.amountMinor).toBe(2);
+    expect(result.event.stockEffects.find(({ position }) => position.lotId === "__inventory_deficit__"))
+      .toMatchObject({ metadata: { [INVENTORY_UNALLOCATED_TRANSFER_TO]: "destination" } });
+    expect(result.event.positiveLayerProvenanceTransfers).toHaveLength(2);
+    expect(await inventory.stock.transferManyByPolicy(command)).toEqual({ ...result, replayed: true });
+    expect(await quantityByLot(inventory, "store")).toEqual({ __inventory_deficit__: -2 });
+    expect(await quantityByLot(inventory, "destination")).toEqual({ KNOWN: 1, "no-lot": 3 });
+    const unlabelled = (await inventory.read.positions({ itemId: "item-a", placementNodeIds: ["destination"] }))
+      .find(({ key }) => key.lotId === undefined);
+    const world = await inventory.read.world();
+    expect(world.projection.positiveLayerStartedAtEpochMsByPositionId[inventoryStockPositionIdentity(unlabelled!.key)])
+      .toBe(time0);
+  });
+
+  it("merges shortfall from empty rooms without inventing a lot or source age", async () => {
+    const inventory = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
+    const result = await inventory.stock.transferManyByPolicy({
+      operationId: "transfer-shortage-two-sources",
+      occurredAtEpochMs: time1,
+      toPlacementNodeId: "destination",
+      requests: ["empty-one", "empty-two"].map((placementNodeId) => ({
+        requestId: placementNodeId,
+        selector: inventoryStockSelector("item-a", { placementNodeIds: [placementNodeId] }),
+        amount: stockAmount("2", "piece"),
+        method: InventoryAllocationMethod.Fifo,
+      })),
+    });
+    expect(result.event.kind).toBe(InventoryEventKind.Transfer);
+    expect(result.event.stockEffects).toHaveLength(3);
+    expect(result.event.positiveLayerProvenanceTransfers).toEqual([]);
+    expect(await quantityByLot(inventory, "destination")).toEqual({ "no-lot": 4 });
+    expect(await quantityByLot(inventory, "empty-one")).toEqual({ __inventory_deficit__: -2 });
+    expect(await quantityByLot(inventory, "empty-two")).toEqual({ __inventory_deficit__: -2 });
+  });
+
+  it("keeps the exact package count when a picked box and an unallocated box share an arrival", async () => {
+    const inventory = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
+    const packagingRevisionId = "item-a-box-24-v1";
+    await inventory.stock.receive({
+      operationId: "transfer-shortage-package-stock",
+      occurredAtEpochMs: time0,
+      to: loosePosition("store"),
+      amount: packageAmount(1, packagingRevisionId),
+    });
+    const result = await inventory.stock.transferByPolicy({
+      operationId: "transfer-shortage-package",
+      occurredAtEpochMs: time1,
+      toPlacementNodeId: " destination ",
+      selector: inventoryStockSelector("item-a", { placementNodeIds: ["store"] }),
+      amount: packageAmount(2, packagingRevisionId),
+      method: InventoryAllocationMethod.Fifo,
+    });
+    expect(result.deficit?.primary.amountMinor).toBe(24);
+    expect(result.event.stockEffects.find(({ position }) => position.placementNodeId === "destination"))
+      .toMatchObject({
+        position: { packagingRevisionId },
+        measurementsDelta: { primary: { quantity: { amountMinor: 48 } } },
+        evidence: { packagingRevisionId, packageCount: "2" },
+      });
   });
 
   it("records ordinary scrap when the exact source is short under Record mode", async () => {
