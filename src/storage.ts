@@ -57,7 +57,6 @@ import {
 import { createInventoryPlacementEvent, type InventoryCommandHeader } from "./commands.js";
 import { inventoryStockPositionIdentity } from "./model.js";
 import type { InventoryStockSelector } from "./selectors.js";
-import { InventoryReservationStatus } from "./reservations.js";
 import { InventoryCountStatus } from "./counts.js";
 import type { InventoryEventPage, InventoryEventQuery } from "./event-query.js";
 import {
@@ -658,8 +657,6 @@ export class InMemoryInventoryDurableStorage
     string,
     InventoryMigrationManifest
   >();
-  /** Number of currently active reservations per item, independent of terminal history. */
-  private activeReservationCountsByItemId = new Map<string, number>();
   /** Number of started or observed physical counts per item, independent of terminal history. */
   private openCountCountsByItemId = new Map<string, number>();
   /** Optional deterministic failure injector. */
@@ -718,7 +715,7 @@ export class InMemoryInventoryDurableStorage
     this.eventJournal = createInMemoryInventorySegmentedEventJournal({
       events: Object.values(this.world.projection.events),
     });
-    this.refreshProtectedItemScopes(this.world);
+    this.refreshOpenCountScopes(this.world);
     this.failpoint = input.failpoint;
   }
 
@@ -978,7 +975,7 @@ export class InMemoryInventoryDurableStorage
         revision: publishedWorld.revision,
       });
       this.placementReader = inventoryReadonlyPlacementReader(this.placementSegment);
-      this.refreshProtectedItemScopes(publishedWorld);
+      this.refreshOpenCountScopes(publishedWorld);
       this.storeMigrationManifest(migrationId, published);
       await this.fire(
         InventoryStorageWriteStage.MigrationPublishWorld,
@@ -1402,10 +1399,9 @@ export class InMemoryInventoryDurableStorage
         this.eventJournal.append(appendEvent);
       }
       this.world = publishedWorld;
-      // Only changed claim/count rows affect these private item-level fences.
-      // Stock-only publication must not traverse retained terminal history.
-      if (plan.reservationDelta !== undefined || plan.countDelta !== undefined) {
-        this.updateProtectedItemScopesFromPlan(plan, baseWorld);
+      // Only a changed count row affects the open-count index.
+      if (plan.countDelta !== undefined) {
+        this.updateOpenCountScopeFromPlan(plan, baseWorld);
       }
       this.storeOperation(operationId, { value: publishedValue });
       await this.fire(
@@ -1527,7 +1523,6 @@ export class InMemoryInventoryDurableStorage
       this.failpoint !== undefined ||
       this.applyingOperations.size !== 0 ||
       this.applyingMigrationManifests.size !== 0 ||
-      this.activeReservationCountsByItemId.size !== 0 ||
       this.openCountCountsByItemId.size !== 0
     ) {
       return undefined;
@@ -1683,7 +1678,7 @@ export class InMemoryInventoryDurableStorage
     };
   }
 
-  /** Perform one atomic segmented transfer while the reference adapter mutation lock is held. */
+  /** Perform one atomic segmented stock write while the reference adapter mutation lock is held. */
   private async commitSegmentedStockEventUnlocked(
     input: CommitInventorySegmentedStockEventInput
   ): Promise<CommitInventorySegmentedStockEventResult | undefined> {
@@ -1822,6 +1817,17 @@ export class InMemoryInventoryDurableStorage
       }
     }
 
+    if (input.deficitPolicy === InventoryDeficitPolicy.Record) {
+      // Signed recording still requires real positive stock for each named FIFO source.
+      for (const transfer of event.positiveLayerProvenanceTransfers ?? []) {
+        const sourceId = inventoryStockPositionIdentity(transfer.from);
+        const source = this.positionSegment.position(sourceId);
+        if (source === undefined || source.measurements.primary.quantity.amountMinor <= 0) {
+          throw new Error(`Conserved FIFO provenance source ${sourceId} is not currently positive.`);
+        }
+      }
+    }
+
     this.eventJournal.validateAppend(event);
     await this.fire(
       InventoryStorageWriteStage.PublishWorld,
@@ -1832,6 +1838,7 @@ export class InMemoryInventoryDurableStorage
       expectedRevision: baseRevision,
       nextRevision: baseRevision + 1,
       stockEffects: event.stockEffects,
+      deficitPolicy: input.deficitPolicy,
     });
     const receipt: InventoryOperationReceipt = {
       operationId: input.operationId,
@@ -1887,6 +1894,7 @@ export class InMemoryInventoryDurableStorage
       event.kind !== InventoryEventKind.Receipt &&
       event.kind !== InventoryEventKind.Issue &&
       event.kind !== InventoryEventKind.Reclassification &&
+      event.kind !== InventoryEventKind.Scrap &&
       !historicalEnvelope
     ) {
       return false;
@@ -1952,14 +1960,10 @@ export class InMemoryInventoryDurableStorage
     if (event.catalogDigest !== undefined || event.catalogSnapshot !== undefined) {
       return false;
     }
-    // Reservation and count semantics are scoped by item. One unrelated item's
-    // claim/count must not force an independent warehouse item through full-world
-    // planning. Conservative same-item fallback remains unchanged.
+    // Keep the existing canonical path for stock that intersects an open count.
+    // Ordinary effects do not change claims or require claim feasibility.
     for (const effect of event.stockEffects) {
-      if (
-        this.activeReservationCountsByItemId.has(effect.position.itemId) ||
-        this.openCountCountsByItemId.has(effect.position.itemId)
-      ) {
+      if (this.openCountCountsByItemId.has(effect.position.itemId)) {
         return false;
       }
     }
@@ -1981,14 +1985,8 @@ export class InMemoryInventoryDurableStorage
     return true;
   }
 
-  /** Rebuild private protection counters on initialization and whole-world migration. */
-  private refreshProtectedItemScopes(world: InventoryWorldState): void {
-    const reservations = new Map<string, number>();
-    for (const reservation of Object.values(world.reservations.reservations)) {
-      if (reservation.status !== InventoryReservationStatus.Active) continue;
-      const itemId = reservation.selector.itemId;
-      reservations.set(itemId, (reservations.get(itemId) ?? 0) + 1);
-    }
+  /** Index open counts on initialization and whole-world migration. */
+  private refreshOpenCountScopes(world: InventoryWorldState): void {
     const counts = new Map<string, number>();
     for (const count of Object.values(world.counts.counts)) {
       if (
@@ -1998,31 +1996,14 @@ export class InMemoryInventoryDurableStorage
       const itemId = count.selector.itemId;
       counts.set(itemId, (counts.get(itemId) ?? 0) + 1);
     }
-    this.activeReservationCountsByItemId = reservations;
     this.openCountCountsByItemId = counts;
   }
 
-  /** Apply the one validated claim/count lifecycle delta without traversing history. */
-  private updateProtectedItemScopesFromPlan(
+  /** Apply one validated count lifecycle change without traversing count history. */
+  private updateOpenCountScopeFromPlan(
     plan: InventoryDurableOperationPlan,
     base: InventoryWorldState
   ): void {
-    const nextReservation = plan.reservationDelta?.reservation;
-    if (nextReservation !== undefined) {
-      const previous = inventorySparseRecordValue(
-        base.reservations.reservations,
-        nextReservation.reservationId
-      );
-      this.updateActiveItemCount(
-        this.activeReservationCountsByItemId,
-        previous?.status === InventoryReservationStatus.Active
-          ? previous.selector.itemId
-          : undefined,
-        nextReservation.status === InventoryReservationStatus.Active
-          ? nextReservation.selector.itemId
-          : undefined
-      );
-    }
     const nextCount = plan.countDelta?.count;
     if (nextCount !== undefined) {
       const previous = inventorySparseRecordValue(
@@ -2094,7 +2075,8 @@ export class InMemoryInventoryDurableStorage
       catalog,
       state: this.world.projection,
       events,
-      deficitPolicy: InventoryDeficitPolicy.Reject,
+      // The published journal can contain signed effects accepted under Record.
+      deficitPolicy: InventoryDeficitPolicy.Record,
     });
     this.world = freezeInventoryPublishedWorld({
       revision: this.positionSegment.revision(),

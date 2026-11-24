@@ -139,7 +139,12 @@ export const formalInvariantMutationChecks = Object.freeze([
   [
     "ReservationScope",
     "ReservationScopeDetachAvailabilityMutation",
-    "OrdinaryDetachPreservesExactAllocations",
+    "ReportMatchesCurrentPhysicalTruth",
+  ],
+  [
+    "ReservationScope",
+    "ReservationScopeDoubleAllocationMutation",
+    "ActiveExactAllocationsAreDisjoint",
   ],
   [
     "ResourceDimensions",
@@ -250,6 +255,8 @@ export function assertFormalMutationRegistrationConsistency(
 
 /** Named false absence claims that ordinary positive models must refute with concrete reachable states. */
 export const formalPositiveReachabilityChecks = Object.freeze([
+  ["ReservationScope", "ReservationScopeDetachedHoldWitness", "ExactHoldAlwaysAvailable"],
+  ["FungibilityPool", "FungibilityPoolStrandedHoldWitness", "AllocatedClaimNeverStrandedByTransfer"],
   ["SnapshotSupersededWorkflow", "SnapshotSupersededWorkflowNonzeroWitness", "NonzeroSnapshotIsUnreachable"],
 ]);
 

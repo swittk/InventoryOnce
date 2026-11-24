@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   InventoryEventKind,
+  InventoryReservationFeasibilityStatus,
   inventoryStockSelector,
   packageAmount,
   parseQuantity,
@@ -268,7 +269,7 @@ describe("atomic conserved split/merge/reclassification", () => {
     ).rejects.toThrow("use pack/unpack instead");
   });
 
-  it("protects exact reservations from ordinary reclassification", async () => {
+  it("records ordinary reclassification and retains exact reservations", async () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "receive-reservation-reclassification",
@@ -299,34 +300,25 @@ describe("atomic conserved split/merge/reclassification", () => {
         },
       ],
     });
-    await expect(
-      inventory.stock.reclassifyMany({
-        operationId: "move-reserved-position",
-        occurredAtEpochMs: time2,
-        consume: [
-          {
-            from: loosePosition("store", { lotId: "RESERVED-LOT" }),
-            amount: stockAmount("2", "piece"),
-          },
-        ],
-        produce: [
-          {
-            to: loosePosition("store", {
-              lotId: "RESERVED-LOT",
-              statusId: "quarantine",
-            }),
-            amount: stockAmount("2", "piece"),
-          },
-        ],
-      })
-    ).rejects.toThrow("cannot all be fulfilled simultaneously");
-    const retained = await storePositions(inventory);
-    expect(retained).toHaveLength(1);
-    const retainedPosition = retained[0];
-    if (retainedPosition === undefined) {
-      throw new Error("Reserved position disappeared after rejected reclassification.");
-    }
-    expect(retainedPosition.key.statusId).toBeUndefined();
-    expect(retainedPosition.measurements.primary.quantity.amountMinor).toBe(2);
+    await inventory.stock.reclassifyMany({
+      operationId: "move-reserved-position",
+      occurredAtEpochMs: time2,
+      consume: [{
+        from: loosePosition("store", { lotId: "RESERVED-LOT" }),
+        amount: stockAmount("2", "piece"),
+      }],
+      produce: [{
+        to: loosePosition("store", { lotId: "RESERVED-LOT", statusId: "quarantine" }),
+        amount: stockAmount("2", "piece"),
+      }],
+    });
+    expect(await storePositions(inventory)).toMatchObject([{
+      key: { statusId: "quarantine" },
+      measurements: { primary: { quantity: { amountMinor: 2 } } },
+    }]);
+    expect((await inventory.read.reservation("reclassification-claim"))?.allocations[0]?.position)
+      .toEqual(position.key);
+    expect((await inventory.read.reservationFeasibility(time2)).status)
+      .toBe(InventoryReservationFeasibilityStatus.Shortage);
   });
 });

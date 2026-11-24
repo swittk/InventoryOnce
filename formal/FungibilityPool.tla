@@ -56,23 +56,17 @@ ClaimAllocations(c, revision, amount, where) ==
 
 ClaimChoices(c, where, state, revision, amount, allocation) ==
   IF state[c] = "allocated"
-    THEN {allocation[c]}
+    THEN {selected \in {allocation[c]}:
+           \A token \in selected: where[token] \in EligibleLocations(c)}
   ELSE IF state[c] = "active"
     THEN ClaimAllocations(c, revision[c], amount[c], where)
   ELSE {EmptyAllocation}
 
-PairwiseDisjoint(assignments) ==
-  \A left, right \in Claims:
-    left # right => assignments[left] \cap assignments[right] = {}
-
+\* With two claims, two disjoint valid choices are exactly a feasible assignment.
 FeasibleFor(where, state, revision, amount, allocation) ==
-  \E assignments \in [Claims -> SUBSET Tokens]:
-    /\ \A c \in Claims:
-         assignments[c] \in ClaimChoices(c, where, state, revision, amount, allocation)
-    /\ PairwiseDisjoint(assignments)
-
-AllocatedTokens(state, allocation) ==
-  UNION {allocation[c]: c \in {candidate \in Claims: state[candidate] = "allocated"}}
+  \E left \in ClaimChoices("c1", where, state, revision, amount, allocation),
+     right \in ClaimChoices("c2", where, state, revision, amount, allocation):
+    left \cap right = {}
 
 VARIABLES where,
           activeRevision,
@@ -80,7 +74,8 @@ VARIABLES where,
           claimRevision,
           claimAmount,
           allocation,
-          poolReport
+          poolReport,
+          claimsFeasible
 
 vars == <<where,
           activeRevision,
@@ -88,7 +83,8 @@ vars == <<where,
           claimRevision,
           claimAmount,
           allocation,
-          poolReport>>
+          poolReport,
+          claimsFeasible>>
 
 Init ==
   /\ where = [t \in Tokens |-> IF t \in {"old-1", "new-1", "double-1"}
@@ -100,6 +96,7 @@ Init ==
   /\ claimAmount = [c \in Claims |-> 0]
   /\ allocation = [c \in Claims |-> EmptyAllocation]
   /\ poolReport = [revision \in Revisions |-> PoolTotal(revision, where)]
+  /\ claimsFeasible = TRUE
 
 Activate(revision) ==
   /\ revision \in Revisions
@@ -110,7 +107,8 @@ Activate(revision) ==
                   claimRevision,
                   claimAmount,
                   allocation,
-                  poolReport>>
+                  poolReport,
+                  claimsFeasible>>
 
 Reserve(c, requestedAmount) ==
   /\ c \in Claims
@@ -125,6 +123,7 @@ Reserve(c, requestedAmount) ==
           /\ claimRevision' = nextRevision
           /\ claimAmount' = nextAmount
           /\ allocation' = nextAllocation
+  /\ claimsFeasible' = TRUE
   /\ UNCHANGED <<where, activeRevision, poolReport>>
 
 Allocate(c, selected) ==
@@ -141,6 +140,7 @@ Allocate(c, selected) ==
        IN /\ FeasibleFor(where, nextState, claimRevision, claimAmount, nextAllocation)
           /\ claimState' = nextState
           /\ allocation' = nextAllocation
+  /\ claimsFeasible' = TRUE
   /\ UNCHANGED <<where,
                   activeRevision,
                   claimRevision,
@@ -152,6 +152,7 @@ Release(c) ==
   /\ ActiveClaim(claimState, c)
   /\ claimState' = [claimState EXCEPT ![c] = "released"]
   /\ allocation' = [allocation EXCEPT ![c] = EmptyAllocation]
+  /\ claimsFeasible' = FeasibleFor(where, claimState', claimRevision, claimAmount, allocation')
   /\ UNCHANGED <<where,
                   activeRevision,
                   claimRevision,
@@ -162,11 +163,12 @@ Consume(c) ==
   /\ c \in Claims
   /\ claimState[c] = "allocated"
   /\ allocation[c] # {}
-  /\ allocation[c] \subseteq OnHand(where)
+  /\ \A token \in allocation[c]: where[token] \in EligibleLocations(c)
   /\ where' = [t \in Tokens |-> IF t \in allocation[c] THEN Issued ELSE where[t]]
   /\ claimState' = [claimState EXCEPT ![c] = "consumed"]
   /\ poolReport' = [revision \in Revisions |-> PoolTotal(revision, where')]
-  /\ FeasibleFor(where', claimState', claimRevision, claimAmount, allocation)
+  /\ claimsFeasible' = FeasibleFor(where', claimState', claimRevision, claimAmount, allocation)
+  /\ claimsFeasible => claimsFeasible'
   /\ UNCHANGED <<activeRevision,
                   claimRevision,
                   claimAmount,
@@ -174,19 +176,11 @@ Consume(c) ==
 
 Transfer(token, destination) ==
   /\ token \in OnHand(where)
-  /\ token \notin AllocatedTokens(claimState, allocation)
   /\ destination \in Locations
   /\ destination # where[token]
-  /\ LET nextWhere == [where EXCEPT ![token] = destination]
-       IN FeasibleFor(
-            nextWhere,
-            claimState,
-            claimRevision,
-            claimAmount,
-            allocation
-          )
   /\ where' = [where EXCEPT ![token] = destination]
   /\ poolReport' = [revision \in Revisions |-> PoolTotal(revision, where')]
+  /\ claimsFeasible' = FeasibleFor(where', claimState, claimRevision, claimAmount, allocation)
   /\ UNCHANGED <<activeRevision,
                   claimState,
                   claimRevision,
@@ -196,12 +190,10 @@ Transfer(token, destination) ==
 DirectIssue(revision, selected) ==
   /\ revision \in Revisions
   /\ selected \in PoolAllocations(revision, 1, where)
-  /\ selected \cap AllocatedTokens(claimState, allocation) = {}
-  /\ LET nextWhere == [t \in Tokens |-> IF t \in selected THEN Issued ELSE where[t]]
-       IN FeasibleFor(nextWhere, claimState, claimRevision, claimAmount, allocation)
   /\ where' = [t \in Tokens |-> IF t \in selected THEN Issued ELSE where[t]]
   /\ poolReport' = [candidateRevision \in Revisions |->
                       PoolTotal(candidateRevision, where')]
+  /\ claimsFeasible' = FeasibleFor(where', claimState, claimRevision, claimAmount, allocation)
   /\ UNCHANGED <<activeRevision,
                   claimState,
                   claimRevision,
@@ -230,6 +222,7 @@ TypeOK ==
   /\ claimAmount \in [Claims -> 0..2]
   /\ allocation \in [Claims -> SUBSET Tokens]
   /\ poolReport \in [Revisions -> 0..7]
+  /\ claimsFeasible \in BOOLEAN
 
 PoolReportMatchesExactPhysicalTruth ==
   \A revision \in Revisions:
@@ -254,9 +247,9 @@ AllocatedClaimsMatchFrozenRevisionBasis ==
     claimState[c] = "allocated" =>
       Basis(claimRevision[c], allocation[c]) = claimAmount[c]
 
-AllocatedClaimsRemainInEligibleLocations ==
+FeasibleExactClaimsHaveEligibleStock ==
   \A c \in Claims:
-    claimState[c] = "allocated" =>
+    claimsFeasible /\ claimState[c] = "allocated" =>
       \A token \in allocation[c]: where[token] \in EligibleLocations(c)
 
 ActiveAllocationsRemainDisjoint ==
@@ -266,11 +259,17 @@ ActiveAllocationsRemainDisjoint ==
     claimState[right] = "allocated" =>
       allocation[left] \cap allocation[right] = {}
 
-IssuedTokensCannotBackActiveClaims ==
+IssuedTokensCannotBackFeasibleClaims ==
   \A c \in Claims:
-    ActiveClaim(claimState, c) => allocation[c] \subseteq OnHand(where)
+    claimsFeasible /\ ActiveClaim(claimState, c) => allocation[c] \subseteq OnHand(where)
 
-AllActiveClaimsRemainFeasible ==
-  FeasibleFor(where, claimState, claimRevision, claimAmount, allocation)
+ClaimReportMatchesCurrentPhysicalTruth ==
+  claimsFeasible = FeasibleFor(where, claimState, claimRevision, claimAmount, allocation)
+
+\* Negated in the reachability check: an exact allocated token can be recorded out of scope.
+AllocatedClaimNeverStrandedByTransfer ==
+  \A c \in Claims:
+    claimState[c] = "allocated" /\ allocation[c] \subseteq OnHand(where) =>
+      \A token \in allocation[c]: where[token] \in EligibleLocations(c)
 
 =============================================================================

@@ -87,7 +87,7 @@ export interface InventoryOperationPlan {
   readonly reservationId?: string;
   /** Count identity changed by this operation. */
   readonly countId?: string;
-  /** Default protects claims; counts/corrections/scrap may record shortage truth. */
+  /** Override claim protection for a deliberate coordinator operation. Ordinary recording leaves claims intact. */
   readonly reservationProtection?: InventoryReservationProtection;
 }
 
@@ -348,14 +348,13 @@ function createDurableOperationPlan({
       });
   }
   if (
-    (logicalPlan.reservationProtection ??
-      InventoryReservationProtection.ProtectClaims) ===
-      InventoryReservationProtection.ProtectClaims &&
+    (logicalPlan.reservationProtection === InventoryReservationProtection.ProtectClaims ||
+      (logicalPlan.reservationProtection === undefined && reservationDelta !== undefined)) &&
     !closesReservationWithoutPhysicalEvent &&
     !consumptionDoesNotIncreaseShortage
   ) {
-    // Ordinary commands protect the claim book that exists when durable truth is recorded.
-    // Backdating occurredAtEpochMs must not bypass a reservation created before this commit.
+    // Explicit claims use the durable record time, even when their action is backdated.
+    // Physical-only recording leaves retained claims and their derived shortages intact.
     assertInventoryReservationsFeasible({
       catalog,
       projection,

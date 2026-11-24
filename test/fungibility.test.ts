@@ -1001,7 +1001,7 @@ describe("derived pool summaries and exact member movements", () => {
     );
   });
 
-  it("checks the current claim set at record time even for a backdated pool issue", async () => {
+  it("publishes a backdated pool issue and retains the later claim as short", async () => {
     const catalog = fungibilityCatalog();
     const inventory = createInventoryOnce({
       catalog,
@@ -1029,20 +1029,18 @@ describe("derived pool summaries and exact member movements", () => {
       createdAtEpochMs: time2,
     });
 
-    await expect(
-      inventory.fungibility.issue({
-        operationId: "backdated-pool-issue",
-        occurredAtEpochMs: time1,
-        fungibilityRevisionId: "brand-pool-v1",
-        requested: parseQuantity("1", "dose-equivalent"),
-        method: InventoryAllocationMethod.Fifo,
-        scope: { placementNodeIds: ["store"] },
-      })
-    ).rejects.toThrow("violate current reservation claims");
-    expect(
-      (await inventory.read.positions({ itemId: "old-brand" }))[0]?.measurements
-        .primary.quantity.amountMinor
-    ).toBe(1);
+    await inventory.fungibility.issue({
+      operationId: "backdated-pool-issue",
+      occurredAtEpochMs: time1,
+      fungibilityRevisionId: "brand-pool-v1",
+      requested: parseQuantity("1", "dose-equivalent"),
+      method: InventoryAllocationMethod.Fifo,
+      scope: { placementNodeIds: ["store"] },
+    });
+    expect(await inventory.read.positions({ itemId: "old-brand" })).toEqual([]);
+    expect((await inventory.read.reservationFeasibility(time3)).groups[0]).toMatchObject({
+      reservationIds: ["later-old-claim"], shortage: { amountMinor: 1 },
+    });
   });
 
   it("skips a FIFO-preferred member needed by a broad item claim and selects a safe substitute", async () => {

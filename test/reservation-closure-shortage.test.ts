@@ -204,18 +204,16 @@ describe("reservation closure through an existing shortage", () => {
     expect(await inventory.read.world()).toEqual(latestWorld);
   });
 
-  it("keeps receive, reserve, refine, and issue protection active during shortage", async () => {
+  it("publishes physical changes during shortage and keeps new and refined claims protected", async () => {
     const { inventory } = await createReservationShortageFixture();
     const before = await inventory.read.world();
 
-    await expect(
-      inventory.stock.receive({
-        operationId: "closure:unrelated-receive",
-        occurredAtEpochMs: time2,
-        to: loosePosition("u2"),
-        amount: stockAmount("1", "piece"),
-      })
-    ).rejects.toThrow("cannot all be fulfilled");
+    await inventory.stock.receive({
+      operationId: "closure:unrelated-receive",
+      occurredAtEpochMs: time2,
+      to: loosePosition("u2"),
+      amount: stockAmount("1", "piece"),
+    });
     await expect(
       inventory.reservations.reserve({
         reservationId: "c3",
@@ -234,15 +232,15 @@ describe("reservation closure through an existing shortage", () => {
         occurredAtEpochMs: time2,
       })
     ).rejects.toThrow("cannot all be fulfilled");
-    await expect(
-      inventory.stock.issue({
-        operationId: "closure:unrelated-issue",
-        occurredAtEpochMs: time2,
-        from: loosePosition("u2"),
-        amount: stockAmount("1", "piece"),
-      })
-    ).rejects.toThrow("cannot all be fulfilled");
-    expect(await inventory.read.world()).toEqual(before);
+    await inventory.stock.issue({
+      operationId: "closure:unrelated-issue",
+      occurredAtEpochMs: time2,
+      from: loosePosition("u2"),
+      amount: stockAmount("1", "piece"),
+    });
+    const after = await inventory.read.world();
+    expect(after.revision).toBe(before.revision + 2);
+    expect(after.reservations).toEqual(before.reservations);
   });
 
   it("rejects a forged release plan that changes an unrelated reservation row", async () => {

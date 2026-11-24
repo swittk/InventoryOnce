@@ -141,9 +141,9 @@ The formal runner executes the model suite exported by `scripts/formal-models.mj
 
 - `CompositionRevision`: exact heterogeneous package generations, revision-pinned opening, transfer preservation, idempotent intent, and component-vector conservation.
 - `CollectionView`: retained read-only group membership and exact member breakdowns without physical merging or substitution authority.
-- `FungibilityPool`: exact revisioned mutual interchangeability without item merging or claim reinterpretation, including placement-scoped claims and reservation-safe member transfers.
+- `FungibilityPool`: exact revisioned mutual interchangeability without item merging or claim reinterpretation, including placement-scoped claims and truthful movement that can strand a retained hold.
 - `ResourceDimensions`: direct placement, detached/missing whereabouts, owner, custody, and status are orthogonal; internal rewrites conserve resources and preserve lifecycle identity.
-- `ReservationScope`: broad claims, later refinement/allocation, global feasibility, and exclusion of unplaced stock from ordinary capacity.
+- `ReservationScope`: broad claims, later refinement/allocation with simultaneous feasibility, and retained hold evidence when detached stock leaves ordinary capacity.
 - `PlacementGraph`: standalone and serial-embodied placement topology; one-parent/cycle/acceptance safety; generic↔unique conservation; one-to-one embodiment; resource-parent agreement; empty-before-retirement; fresh identity after de-individualization; and ancestor moves that preserve descendant direct anchors.
 - `TraceabilityGraph`: association vs irreversible transformation/genealogy, independent of placement.
 - `PhysicalCount`: snapshot/observation/reconciliation in the presence of legitimate concurrent movements.

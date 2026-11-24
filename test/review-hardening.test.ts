@@ -725,7 +725,7 @@ describe("package and serial reservation granularity", () => {
     })).toEqual([]);
   });
 
-  it("lets only one competing claim own one package and blocks unpacking its exact allocation", async () => {
+  it("rejects a competing package claim and retains the exact hold after unpacking", async () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "receive-competing-box",
@@ -760,12 +760,17 @@ describe("package and serial reservation granularity", () => {
       occurredAtEpochMs: time2,
       allocations: [{ position: position.key, quantity: parseQuantity("20", "piece") }],
     });
-    await expect(inventory.stock.unpack({
+    await inventory.stock.unpack({
       operationId: "unpack-allocated-box",
       occurredAtEpochMs: time2,
       from: position.key,
       packageCount: 1,
-    })).rejects.toThrow("cannot all be fulfilled");
+    });
+    expect((await inventory.read.reservationFeasibility(time2)).groups[0]).toMatchObject({
+      reservationIds: ["first-box-claim"], shortage: { amountMinor: 20 },
+    });
+    expect((await inventory.read.reservation("first-box-claim"))?.allocations[0]?.position)
+      .toEqual(position.key);
   });
 
   it("defines one serial identity as exactly one primary resource", async () => {

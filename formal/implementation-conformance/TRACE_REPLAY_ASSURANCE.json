@@ -685,12 +685,12 @@
         "test/fungibility.test.ts"
       ],
       "failpoints": [],
-      "finiteDomain": "Revision-frozen pool issue and transfer over finite member items/lots with replay and reservation conflicts.",
+      "finiteDomain": "Revision-frozen pool issue and transfer over finite member items/lots with replay, retained holds and derived shortages.",
       "invariants": [
         "PoolViewsConserveActualIssuedTokens",
         "ActiveAllocationsRemainDisjoint",
-        "IssuedTokensCannotBackActiveClaims",
-        "AllActiveClaimsRemainFeasible",
+        "IssuedTokensCannotBackFeasibleClaims",
+        "ClaimReportMatchesCurrentPhysicalTruth",
         "OrdinaryAllocationWasUsable",
         "PartialWritesStayInvisible"
       ],
@@ -2229,7 +2229,7 @@
         "NoOverReservation",
         "NoDoubleConsume",
         "AllocatedClaimsRespectScope",
-        "ShortageRequiresExplicitPhysicalLoss",
+        "ShortageRequiresCapacityReduction",
         "ConsumedClaimHasEvidence",
         "ReleasedOrExpiredWasNeverConsumed",
         "VisibleQuantityConserved",
@@ -2252,7 +2252,7 @@
         "scrap"
       ],
       "refinementMode": "bounded-property",
-      "resultProjection": "No over-reservation or double consume; destructive effects are explicit and exact.",
+      "resultProjection": "No over-reservation or double consume; physical effects and staged recovery preserve retained claims and report shortages.",
       "stateProjection": [
         "reservation book, physical positions, issue/scrap event results"
       ],
@@ -2488,7 +2488,7 @@
         "IntentNeverChanges",
         "OwnershipIsOrthogonal",
         "TransitCustodyDoesNotChangeOwnership",
-        "AllActiveClaimsRemainFeasible",
+        "ClaimReportMatchesCurrentPhysicalTruth",
         "PartialWritesRefineToStuttering"
       ],
       "models": [

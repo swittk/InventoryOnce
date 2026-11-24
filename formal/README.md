@@ -15,7 +15,7 @@ if [[ -f .nvmrc ]]; then nvm use; else nvm use 22; fi
 pnpm formal
 ```
 
-The runner pins `tla2tools.jar`, uses collision-safe metadata directories, retains failed-state metadata, and content-addresses successful proofs. It currently checks **27 positive models**, **21 deliberately invalid mutation configurations**, and **one positive reachability witness**. A mutation check passes only when TLC finds the exact named invariant violation.
+The runner pins `tla2tools.jar`, uses collision-safe metadata directories, retains failed-state metadata, and content-addresses successful proofs. It currently checks **29 positive models**, **24 deliberately invalid mutation configurations**, and **three positive reachability witnesses**. A mutation check passes only when TLC finds the exact named invariant violation.
 
 ## Registered TLC checks
 
@@ -28,7 +28,7 @@ The runner pins `tla2tools.jar`, uses collision-safe metadata directories, retai
 | RevisionTransition | finite old/new definition switch with exact primary-unit accounting, world-fenced preview, retained original receipt, active claim and transfer blockers | test/revision-transition.test.ts |
 | `UseByReservation` | normal allocation/consumption excludes expired resources; explicit allow-expired policy stays distinct; time or physical loss may create visible shortage | availability, policy, and reservation tests |
 | `ResourceDimensions` | direct placement, owner, custody, status, transit, and detached/missing whereabouts remain orthogonal; detach/place/missing conserve quantity and stable lifecycle identity | whereabouts, transfer, availability, correction, and count tests |
-| `ReservationScope` | broad claims can narrow/bind while all active claims remain feasible; unplaced stock is accounted but unavailable; ordinary detach cannot strand an exact allocation | reservation/whereabouts feasibility tests plus bad-detach mutation |
+| `ReservationScope` | explicit reserve/refine/allocate require simultaneous feasibility; ordinary detach preserves accounted stock and claim evidence while reducing available capacity | reservation/whereabouts feasibility tests, double-allocation mutation and detached-hold witness |
 | `ReservationScopeAllocationReplacement` | replacing exact allocation preserves the globally feasible claim book rather than transiently double-allocating | reservation allocation replacement tests |
 | `PlacementGraph` | standalone and serial-embodied nodes; one-parent/acceptance/acyclicity; generic↔unique conservation; one-to-one embodiment; resource-parent agreement; empty-before-retirement; retired-identity non-revival; and ancestor moves that preserve descendant direct stock anchors | cabinet lifecycle/correction/contents tests, embodied move scale regression, and desynchronization/nonempty-retirement mutations |
 | `TraceabilityAssociation` | reversible association remains independent from physical placement and transformation genealogy | association/correction tests |
@@ -54,7 +54,7 @@ The runner pins `tla2tools.jar`, uses collision-safe metadata directories, retai
 | --- | --- |
 | `CompositionRevision` | exact heterogeneous package generations coexist across placements; transfer preserves source revision; opening produces its revision-frozen vector at the source direct placement; durable retry intent and component conservation survive active-pointer changes |
 | `CollectionView` | immutable taxonomy/group revisions retain exact member identity and never authorize substitution |
-| `FungibilityPool` | mutual interchangeability is an explicit immutable pool revision; member identity never merges; placement-scoped claims and member movements remain reservation-safe |
+| `FungibilityPool` | mutual interchangeability is an explicit immutable pool revision; member identity never merges; placement-scoped claims keep their exact allocations while independently recorded movement may cause shortage |
 | `DualMeasure` | primary handling count and independently measured quantity are separate exact axes |
 | `DistributedRights` | escrow free/held rights back remaining physical stock and constrain future offline/distributed implementations |
 
@@ -70,12 +70,12 @@ The exact seed and fingerprint values vary by run. The latest complete run explo
 | `PublishedHeadCAS` | 4,284 | 1,871 | 24 |
 | `CompositionRevision` | 33,441 | 6,688 | 10 |
 | `CollectionView` | 13,123 | 1,458 | 9 |
-| `FungibilityPool` | 1,337,922 | 113,054 | 14 |
+| `FungibilityPool` | 3,281,128 | 281,616 | 15 |
 | `CatalogPublication` | 88,723 | 52,552 | 5 |
 | `ReclassificationConservation` | 34,201 | 900 | 7 |
 | `UseByReservation` | 1,810 | 558 | 11 |
 | `ResourceDimensions` | 180,145 | 12,816 | 14 |
-| `ReservationScope` | 3,701 | 788 | 7 |
+| `ReservationScope` | 6,753 | 1,302 | 9 |
 | `ReservationScopeAllocationReplacement` | 2,361 | 548 | 7 |
 | `PlacementGraph` | 87,339,921 | 20,116 | 16 |
 | `TraceabilityAssociation` | 49,153 | 4,096 | 13 |
@@ -97,7 +97,7 @@ The exact seed and fingerprint values vary by run. The latest complete run explo
 
 All reachable states in those finite configurations were checked by TLC.
 
-The 22 negative controls cover four snapshot-supersession violations, cross-transfer receipt, correction-history erasure, partial historical-repair publication, split durable publication, four use-by/reservation failures, reservation detach that strands an allocation, detach incorrectly becoming issue, unstable whereabouts identity, placement cycle, rejecting placement target, descendant rewrite during ancestor movement, embodied-resource/node parent desynchronization, nonempty embodiment termination, duplicate genealogy production, and implementation-conformance result-delta mismatch. The positive reachability witness separately proves that a nonzero frozen snapshot state is reachable. Negative controls are not folded into the positive state counts.
+The negative controls cover four snapshot-supersession violations, cross-transfer receipt, correction-history erasure, partial historical-repair publication, split durable publication, four use-by/reservation failures, explicit double allocation of one token, a stale claim report after detach, detach incorrectly becoming issue, unstable whereabouts identity, placement cycle, rejecting placement target, descendant rewrite during ancestor movement, embodied-resource/node parent desynchronization, nonempty embodiment termination, duplicate genealogy production, and implementation-conformance result-delta mismatch. Positive reachability checks witness a nonzero frozen snapshot, a short exact hold after ordinary detach, and a stranded exact pool claim after physical transfer. Negative controls are not folded into the positive state counts.
 
 ## What the claims mean
 
@@ -200,9 +200,10 @@ Every member retains its exact item identity; a pool is a derived common-basis v
 fulfillment scope, not a stock merge or item reclassification. One revision deliberately gives a member
 a two-to-one basis weight, while an older revision excludes that member. Claims freeze the exact pool
 revision used when created, so changing the active pointer cannot reinterpret an allocation. One claim
-is store-only while another may be fulfilled across placements. Direct pool issue and direct-placement transfer
-may use only unallocated tokens and must leave all existing scoped claims feasible; exactly allocated
-tokens cannot move underneath their claim.
+is store-only while another may be fulfilled across placements. Direct physical issue and transfer can
+use a held token while leaving the exact claim binding in place. Claim feasibility is recomputed from
+the token locations. Explicit reserve and allocation require feasible disjoint assignments, and
+consumption requires the exact allocated tokens in the claim scope.
 
 The model intentionally does not make one-way supersession, priority substitution, or clinical
 therapeutic equivalence implicit. Those require an explicit caller policy that selects a retained pool

@@ -3,11 +3,13 @@ import type { InventoryCatalogSnapshot } from "./catalog.js";
 import { inventorySha256 } from "./digest.js";
 import {
   addInventoryMeasurements,
+  assertInventoryMeasurementsFollowPrimarySign,
   inventoryMeasurementsAreZero,
   inventoryMeasurementsFingerprint,
   nonNegativeInventoryMeasurements,
   zeroInventoryMeasurements,
 } from "./measurements.js";
+import { InventoryDeficitPolicy } from "./projection.js";
 import {
   inventorySerialIdentity,
   inventoryStockPositionIdentity,
@@ -42,6 +44,8 @@ export interface ApplyInventorySegmentedStockEffectsInput {
   readonly nextRevision: number;
   /** Complete signed exact-position effects from one validated inventory event. */
   readonly stockEffects: readonly InventoryStockEffect[];
+  /** Whether this command may leave a signed physical deficit. */
+  readonly deficitPolicy: InventoryDeficitPolicy;
 }
 
 /** Inputs for one adapter-native stock-only event commit. */
@@ -58,7 +62,9 @@ export interface CommitInventorySegmentedStockEventInput {
   readonly expectedWorldRevision?: number;
   /** Optional exact event-journal head used to derive a historical event. */
   readonly expectedRecordSequence?: number;
-  /** Already domain-validated transfer event draft. */
+  /** Whether this command may leave a signed physical deficit. */
+  readonly deficitPolicy: InventoryDeficitPolicy;
+  /** Already domain-validated stock event draft. */
   readonly event: InventoryEventDraft;
 }
 
@@ -85,7 +91,7 @@ export interface InventorySegmentedStockEventCommitCapability {
   ): InventorySegmentedResult<CommitInventorySegmentedStockEventResult | undefined>;
 }
 
-/** Return whether storage exposes the optional exact-transfer segmented commit capability. */
+/** Return whether storage exposes the optional segmented stock commit capability. */
 export function inventoryStorageSupportsSegmentedStockEventCommit(
   value: unknown
 ): value is InventorySegmentedStockEventCommitCapability {
@@ -687,6 +693,7 @@ export class InMemoryInventorySegmentedPositionStore
   applyStockEffects(
     input: ApplyInventorySegmentedStockEffectsInput
   ): ApplyInventorySegmentedPositionDeltaResult {
+    // Compute the complete changed set before mutating the published index.
     const nextRows = new Map<string, InventoryStockPosition | undefined>();
     for (const effect of input.stockEffects) {
       const positionId = inventoryStockPositionIdentity(effect.position);
@@ -697,10 +704,11 @@ export class InMemoryInventorySegmentedPositionStore
       const baseMeasurements =
         earlier?.measurements ??
         zeroInventoryMeasurements(effect.measurementsDelta);
-      const measurements = nonNegativeInventoryMeasurements(
-        addInventoryMeasurements(baseMeasurements, effect.measurementsDelta),
-        "Inventory segmented stock effect"
-      );
+      const measurements = addInventoryMeasurements(baseMeasurements, effect.measurementsDelta);
+      assertInventoryMeasurementsFollowPrimarySign(measurements, `Stock position ${positionId}`);
+      if (input.deficitPolicy === InventoryDeficitPolicy.Reject) {
+        nonNegativeInventoryMeasurements(measurements, `Stock position ${positionId}`);
+      }
       nextRows.set(
         positionId,
         inventoryMeasurementsAreZero(measurements)

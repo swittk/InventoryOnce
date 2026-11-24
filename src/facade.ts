@@ -170,6 +170,7 @@ import {
   type InventoryFungibilityReservationEffect,
   type InventoryFungibilityScope,
   type InventoryFungibilitySummary,
+  type PlanInventoryFungibilityAllocationInput,
 } from "./fungibility.js";
 import {
   addInventoryMeasurements,
@@ -243,6 +244,7 @@ import {
   type InventoryAllocationPolicyRequest,
   type InventoryPolicyAllocationLine,
   type InventoryPolicyAllocationPlan,
+  type PlanInventoryAllocationInput,
 } from "./picking.js";
 import {
   allocateInventoryReservation,
@@ -2118,14 +2120,10 @@ function requireInventoryOnceInternals(
 async function commitInventoryEventDraft(
   owner: InventoryOnce,
   event: InventoryEventDraft,
-  reservationProtection = InventoryReservationProtection.ProtectClaims,
   validateWorld?: (world: InventoryWorldState) => void
 ): Promise<InventoryOnceEventResult> {
   const internals = requireInventoryOnceInternals(owner);
-  if (
-    validateWorld === undefined &&
-    reservationProtection === InventoryReservationProtection.ProtectClaims
-  ) {
+  if (validateWorld === undefined) {
     const segmented = await commitInventorySegmentedStockEventIfEligible(
       owner,
       event
@@ -2142,7 +2140,7 @@ async function commitInventoryEventDraft(
     /** Freeze this already-built event against the current published world. */
     plan: ({ world }) => {
       validateWorld?.(world);
-      return { event, reservationProtection };
+      return { event };
     },
   });
   return createInventoryOnceEventResult(result);
@@ -2154,10 +2152,7 @@ async function commitInventorySegmentedStockEventIfEligible(
   event: InventoryEventDraft
 ): Promise<InventoryOnceEventResult | undefined> {
   const internals = requireInventoryOnceInternals(owner);
-  if (
-    internals.deficitPolicy !== InventoryDeficitPolicy.Reject ||
-    !inventoryStorageSupportsSegmentedStockEventCommit(internals.storage)
-  ) {
+  if (!inventoryStorageSupportsSegmentedStockEventCommit(internals.storage)) {
     return undefined;
   }
   const recordedAtEpochMs = internals.clock.nowEpochMs();
@@ -2166,6 +2161,7 @@ async function commitInventorySegmentedStockEventIfEligible(
     operationId: event.operationId,
     intentFingerprint: inventoryEventIntentFingerprint(event),
     recordedAtEpochMs,
+    deficitPolicy: internals.deficitPolicy,
     event,
   });
   if (committed === undefined) return undefined;
@@ -2216,6 +2212,7 @@ async function commitInventorySegmentedHistoricalEventIfEligible(
     recordedAtEpochMs,
     expectedWorldRevision: world.revision,
     expectedRecordSequence: world.projection.lastRecordSequence,
+    deficitPolicy: internals.deficitPolicy,
     event,
   });
   if (committed === undefined) return undefined;
@@ -2293,9 +2290,13 @@ async function commitInventoryTransferOperation(
     intentFingerprint,
     clock: internals.clock,
     deficitPolicy: internals.deficitPolicy,
-    plan: /** Process one transfer-lifecycle collection entry deterministically. */ ({
+    /** Retain the claim rules for the explicit prepare/dispatch/receive workflow. */
+    plan: ({
       world,
-    }) => ({ event: planEvent(world) }),
+    }) => ({
+      event: planEvent(world),
+      reservationProtection: InventoryReservationProtection.ProtectClaims,
+    }),
   });
   const event = result.event;
   if (event === undefined)
@@ -3301,7 +3302,6 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
     return commitInventoryEventDraft(
       this.owner,
       event,
-      InventoryReservationProtection.ProtectClaims,
       /** Check the frozen world before consuming a traceability identity. */
       (world) => assertTransformationInputsAreDetached(world, event)
     );
@@ -3317,8 +3317,7 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
       createInventoryScrapEvent({
         ...input,
         catalog,
-      }),
-      InventoryReservationProtection.RecordPhysicalTruth
+      })
     );
   }
 
@@ -3332,8 +3331,7 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
       createInventoryScrapManyEvent({
         ...input,
         catalog,
-      }),
-      InventoryReservationProtection.RecordPhysicalTruth
+      })
     );
   }
 
@@ -3517,8 +3515,6 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
       /** Replan the exact dependency cone against the won published revision. */
       plan: async ({ world, recordedAtEpochMs }) => ({
         event: await planEvent(world, recordedAtEpochMs),
-        reservationProtection:
-          InventoryReservationProtection.RecordPhysicalTruth,
       }),
     });
     return createInventoryOnceEventResult(result);
@@ -3681,8 +3677,6 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
       /** Recalculate the exact dependency cone against the won published revision. */
       plan: async ({ world, recordedAtEpochMs }) => ({
         event: await planEvent(world, recordedAtEpochMs),
-        reservationProtection:
-          InventoryReservationProtection.RecordPhysicalTruth,
       }),
     });
     return createInventoryOnceEventResult(result);
@@ -3762,7 +3756,8 @@ async function commitInventoryFungibilityMovement(
         recordedAtEpochMs,
         `${kind} fungibility movement`
       );
-      const allocation = planInventoryFungibilityAllocation({
+      /** Prefer the existing claim-preserving assignment when one is available. */
+      const planning: PlanInventoryFungibilityAllocationInput = {
         catalog: internals.catalog,
         world,
         fungibilityRevisionId: input.fungibilityRevisionId,
@@ -3778,7 +3773,12 @@ async function commitInventoryFungibilityMovement(
         ...(input.allowAllocatedStock === undefined
           ? {}
           : { allowAllocatedStock: input.allowAllocatedStock }),
-      });
+      };
+      const preferred = planInventoryFungibilityAllocation(planning);
+      // A physical report may use held stock when a claim-preserving pick cannot fill it.
+      const allocation = preferred.shortfall.amountMinor === 0 || planning.allowAllocatedStock
+        ? preferred
+        : planInventoryFungibilityAllocation({ ...planning, allowAllocatedStock: true });
       assertFungibilityAllocationComplete(allocation);
       return {
         event: createFungibilityMovementEvent(
@@ -3788,12 +3788,6 @@ async function commitInventoryFungibilityMovement(
           allocation,
           toPlacementNodeId
         ),
-        ...(kind === InventoryFungibilityMovementKind.Scrap
-          ? {
-              reservationProtection:
-                InventoryReservationProtection.RecordPhysicalTruth,
-            }
-          : {}),
       };
     },
   });
@@ -4136,9 +4130,8 @@ async function commitInventoryPolicyBatch(
       const allocations: InventoryOncePolicyBatchAllocation[] = [];
       const selectedLines: InventoryPolicyAllocationLine[] = [];
       const deficitLines: CreateInventoryIssueManyInput["lines"][number][] = [];
-      let recordedDeficit = false;
       for (const request of input.requests) {
-        const allocation = planInventoryAllocation({
+        const allocation = planInventoryAllocationForRecording({
           catalog: internals.catalog,
           world: planningWorld,
           selector: request.selector,
@@ -4171,7 +4164,6 @@ async function commitInventoryPolicyBatch(
           allocation.lines
         );
         if (deficit !== undefined) {
-          recordedDeficit = true;
           deficitLines.push(deficit.line);
           applyPolicyDeficitToPlanningProjection(
             internals.catalog,
@@ -4191,12 +4183,6 @@ async function commitInventoryPolicyBatch(
           deficitLines,
           toPlacementNodeId
         ),
-        ...(recordedDeficit
-          ? {
-              reservationProtection:
-                InventoryReservationProtection.RecordPhysicalTruth,
-            }
-          : {}),
       };
     },
   });
@@ -5287,7 +5273,7 @@ async function commitInventoryPolicyMovement(
         recordedAtEpochMs,
         `${kind} policy movement`
       );
-      const allocation = planInventoryAllocation({
+      const allocation = planInventoryAllocationForRecording({
         catalog: internals.catalog,
         world,
         selector: input.selector,
@@ -5322,12 +5308,6 @@ async function commitInventoryPolicyMovement(
           toPlacementNodeId,
           deficit
         ),
-        ...(kind === InventoryPolicyMovementKind.Scrap || deficit !== undefined
-          ? {
-              reservationProtection:
-                InventoryReservationProtection.RecordPhysicalTruth,
-            }
-          : {}),
       };
     },
   });
@@ -5340,6 +5320,20 @@ async function commitInventoryPolicyMovement(
     ...eventResult,
     ...(deficit === undefined ? {} : { deficit }),
   };
+}
+
+/** Prefer stock free of exact holds, then use actual held stock if it covers more of the physical report. */
+function planInventoryAllocationForRecording(
+  input: PlanInventoryAllocationInput
+): InventoryPolicyAllocationPlan {
+  const preferred = planInventoryAllocation(input);
+  if (input.allowAllocatedStock || preferred.shortfall.amountMinor === 0) {
+    return preferred;
+  }
+  const physical = planInventoryAllocation({ ...input, allowAllocatedStock: true });
+  return compareQuantity(physical.shortfall, preferred.shortfall) < 0
+    ? physical
+    : preferred;
 }
 
 /** Reject unsafe policy combinations before planning or writing. */
@@ -6727,7 +6721,6 @@ async function commitInventoryPlacementTopologyChange(
     inventoryMetadataFingerprint(input.metadata),
   ]);
   if (
-    internals.deficitPolicy === InventoryDeficitPolicy.Reject &&
     input.node === undefined &&
     destinationMetadata === undefined &&
     inventoryStorageSupportsSegmentedPlacement(internals.storage)
@@ -7186,12 +7179,6 @@ async function commitInventoryPlacementContentsOperation(
       );
       return {
         event,
-        ...(kind === InventoryPlacementContentsOperationKind.Scrap
-          ? {
-              reservationProtection:
-                InventoryReservationProtection.RecordPhysicalTruth,
-            }
-          : {}),
       };
     },
   });
@@ -8887,7 +8874,6 @@ class InventoryOnceCountsImplementation implements InventoryOnceCountsApi {
         return {
           countResult: started,
           countId: input.countId,
-          reservationProtection: InventoryReservationProtection.RecordPhysicalTruth,
         };
       },
     });
@@ -8932,7 +8918,6 @@ class InventoryOnceCountsImplementation implements InventoryOnceCountsApi {
         return {
           countResult: observed,
           countId: input.countId,
-          reservationProtection: InventoryReservationProtection.RecordPhysicalTruth,
         };
       },
     });
@@ -8990,8 +8975,6 @@ class InventoryOnceCountsImplementation implements InventoryOnceCountsApi {
           ...(plan.event === undefined ? {} : { event: plan.event }),
           countResult: completed,
           countId: input.countId,
-          reservationProtection:
-            InventoryReservationProtection.RecordPhysicalTruth,
         };
       },
     });
@@ -9030,7 +9013,6 @@ class InventoryOnceCountsImplementation implements InventoryOnceCountsApi {
         return {
           countResult: abandoned,
           countId: input.countId,
-          reservationProtection: InventoryReservationProtection.RecordPhysicalTruth,
         };
       },
     });
@@ -9196,7 +9178,6 @@ async function commitAbsoluteCountStart({
       return {
         countResult: started,
         countId: input.countId,
-        reservationProtection: InventoryReservationProtection.RecordPhysicalTruth,
       };
     },
   });

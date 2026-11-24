@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 import {
   defineScalarInventoryItem,
   extendInventoryCatalog,
+  InventoryDeficitPolicy,
+  InventoryReservationFeasibilityStatus,
   parseQuantity,
   stockAmount,
 } from "../src/index.js";
@@ -39,95 +41,61 @@ const itemBPosition = {
 } as const;
 
 describe("segmented writes with unrelated reservation/count scopes", () => {
-  it("does not let one item B reservation force unrelated item A stock onto whole-world publication", async () => {
-    const storage = createInMemoryInventoryDurableStorage();
-    const inventory = createTestInventory(storage, twoItemCatalog());
-    await inventory.stock.receive({
-      operationId: "unrelated-claim-a-receive",
-      occurredAtEpochMs: time0,
-      to: loosePosition("a-source"),
-      amount: stockAmount("2", "piece"),
-    });
-    await inventory.stock.receive({
-      operationId: "unrelated-claim-b-receive",
-      occurredAtEpochMs: time0,
-      to: itemBPosition,
-      amount: stockAmount("2", "piece"),
-    });
-    await inventory.reservations.reserve({
-      reservationId: "item-b-placement-bound-claim",
-      operationId: "item-b-claim-create",
-      itemRevisionId: "item-b-v1",
-      selector: { itemId: "item-b", placementNodeIds: ["b-source"] },
-      requested: parseQuantity("2", "piece"),
-      createdAtEpochMs: time1,
-    });
-    const before = storage.readPositionSegment().revision();
-    const originalReadWorld = storage.readWorld.bind(storage);
-    const readWorld = vi.spyOn(storage, "readWorld").mockImplementation(async () => {
-      throw new Error("Unrelated item A transfer invoked whole-world fallback.");
-    });
-    try {
-      const moved = await inventory.stock.transfer({
-        operationId: "unrelated-claim-a-move",
-        occurredAtEpochMs: time2,
-        from: loosePosition("a-source"),
-        toPlacementNodeId: "a-destination",
-        amount: stockAmount("1", "piece"),
+  it.each([InventoryDeficitPolicy.Reject, InventoryDeficitPolicy.Record])(
+    "publishes affected and unrelated transfers with live claims under %s",
+    async (deficitPolicy) => {
+      const storage = createInMemoryInventoryDurableStorage();
+      const inventory = createTestInventory(storage, twoItemCatalog(), undefined, deficitPolicy);
+      const sourceA = loosePosition("a-source");
+      for (const [operationId, to] of [["receive-a", sourceA], ["receive-b", itemBPosition]] as const) {
+        await inventory.stock.receive({
+          operationId, to, occurredAtEpochMs: time0, amount: stockAmount("2", "piece"),
+        });
+      }
+      await inventory.reservations.reserve({
+        reservationId: "claim-b", operationId: "create-claim-b",
+        itemRevisionId: "item-b-v1",
+        selector: { itemId: "item-b", placementNodeIds: ["b-source"] },
+        requested: parseQuantity("2", "piece"), createdAtEpochMs: time1,
       });
-      expect(moved.replayed).toBe(false);
-      expect(readWorld).not.toHaveBeenCalled();
-      expect(storage.readPositionSegment().revision()).toBe(before + 1);
-    } finally {
-      readWorld.mockRestore();
-    }
-
-    await expect(
-      inventory.stock.transfer({
-        operationId: "item-b-bound-claim-must-block",
-        occurredAtEpochMs: time2,
-        from: itemBPosition,
-        toPlacementNodeId: "b-destination",
-        amount: stockAmount("1", "piece"),
-      })
-    ).rejects.toThrow("cannot all be fulfilled simultaneously");
-
-    // One atomic batch touching both items must use the canonical claim check.
-    // It must not commit the unrelated A leg if the protected B leg is invalid.
-    await expect(
-      inventory.stock.transferMany({
-        operationId: "mixed-item-bound-claim-must-block",
+      const before = storage.readPositionSegment().revision();
+      const readWorld = vi.spyOn(storage, "readWorld").mockRejectedValue(
+        new Error("Physical movement invoked whole-world fallback."),
+      );
+      /** The command moves both items atomically while making only B's claim short. */
+      const command = {
+        operationId: "two-item-transfer",
         occurredAtEpochMs: time2,
         lines: [
           {
-            from: loosePosition("a-source"),
-            toPlacementNodeId: "a-destination",
+            from: sourceA, toPlacementNodeId: "a-destination",
             amount: stockAmount("1", "piece"),
           },
           {
-            from: itemBPosition,
-            toPlacementNodeId: "b-destination",
+            from: itemBPosition, toPlacementNodeId: "b-destination",
             amount: stockAmount("1", "piece"),
           },
         ],
-      })
-    ).rejects.toThrow("cannot all be fulfilled simultaneously");
-    expect(
-      storage.readPositionSegment().positionsByPlacement("a-source")[0]
-        ?.measurements.primary.quantity.amountMinor
-    ).toBe(1);
+      };
+      try {
+        const moved = await inventory.stock.transferMany(command);
+        expect(moved.replayed).toBe(false);
+        expect(await inventory.stock.transferMany(command)).toEqual({ ...moved, replayed: true });
+        expect(readWorld).not.toHaveBeenCalled();
+        expect(storage.readPositionSegment().revision()).toBe(before + 1);
+      } finally {
+        readWorld.mockRestore();
+      }
 
-    const world = await originalReadWorld();
-    expect(world.revision).toBe(before + 1);
-    expect(
-      (
-        await inventory.read.positions({
-          itemId: "item-b",
-          placementNodeIds: ["b-source"],
-        })
-      )[0]?.measurements.primary.quantity.amountMinor
-    ).toBe(2);
-  });
+      const report = await inventory.read.reservationFeasibility();
+      expect(report.status).toBe(InventoryReservationFeasibilityStatus.Shortage);
+      expect(report.groups[0]).toMatchObject({
+        reservationIds: ["claim-b"], shortage: { amountMinor: 1 },
+      });
+      expect(storage.readPositionSegment().positionsByPlacement("a-source")[0]
+        ?.measurements.primary.quantity.amountMinor).toBe(1);
+    },
+  );
 
   it("keeps an unrelated item B count snapshot from forcing item A through whole-world publication", async () => {
     const storage = createInMemoryInventoryDurableStorage();
@@ -238,53 +206,25 @@ describe("segmented writes with unrelated reservation/count scopes", () => {
       ?.measurements.primary.quantity.amountMinor).toBe(2);
   });
 
-  it("keeps the second reservation protected when the first of two closes", async () => {
+  it("keeps signed Record effects visible in indexed and materialized reads", async () => {
     const storage = createInMemoryInventoryDurableStorage();
-    const inventory = createTestInventory(storage);
-    await inventory.stock.receive({
-      operationId: "paired-reserve-receive", occurredAtEpochMs: time0,
-      to: loosePosition("store"), amount: stockAmount("4", "piece"),
-    });
-    for (const reservationId of ["paired-first", "paired-second"]) {
-      await inventory.reservations.reserve({
-        reservationId, operationId: reservationId + "-create",
-        itemRevisionId: "item-a-v2", selector: { itemId: "item-a" },
-        requested: parseQuantity("1", "piece"), createdAtEpochMs: time1,
-      });
-    }
-    await inventory.reservations.release({
-      operationId: "paired-first-close", reservationId: "paired-first",
-      occurredAtEpochMs: time2,
-    });
-    const spy = vi.spyOn(storage, "readWorld").mockRejectedValue(
-      new Error("Remaining claim requires canonical evaluation.")
-    );
-    try {
-      await expect(inventory.stock.transfer({
-        operationId: "paired-move-blocked", occurredAtEpochMs: time3,
-        from: loosePosition("store"), toPlacementNodeId: "room",
-        amount: stockAmount("1", "piece"),
-      })).rejects.toThrow("Remaining claim requires canonical evaluation.");
-    } finally {
-      spy.mockRestore();
-    }
-    await inventory.reservations.release({
-      operationId: "paired-second-close", reservationId: "paired-second",
-      occurredAtEpochMs: time3,
-    });
+    const inventory = createTestInventory(storage, undefined, undefined, InventoryDeficitPolicy.Record);
     const readWorld = vi.spyOn(storage, "readWorld").mockRejectedValue(
-      new Error("Terminal claim forced canonical fallback.")
+      new Error("A signed exact issue invoked whole-world fallback."),
     );
     try {
-      await inventory.stock.transfer({
-        operationId: "paired-move-after-close", occurredAtEpochMs: time3,
-        from: loosePosition("store"), toPlacementNodeId: "room",
-        amount: stockAmount("1", "piece"),
+      await inventory.stock.issue({
+        operationId: "exact-short-issue", occurredAtEpochMs: time0,
+        from: loosePosition("store"), amount: stockAmount("2", "piece"),
       });
       expect(readWorld).not.toHaveBeenCalled();
     } finally {
       readWorld.mockRestore();
     }
+    const indexed = await inventory.read.positions({ itemId: "item-a" });
+    expect(indexed[0]?.measurements.primary.quantity.amountMinor).toBe(-2);
+    const world = await storage.readWorld();
+    expect(Object.values(world.projection.positions)).toEqual(indexed);
   });
 
   it("does not let a released historical reservation permanently disable the item fast path", async () => {

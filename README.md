@@ -383,11 +383,11 @@ so incompatible package/reference ratios cannot produce fractional packages. Ind
 or otherwise unusual mappings remain valid for exact summaries, but callers must supply explicit
 measured movement lines instead of asking the allocator to guess a split.
 
-Pool allocation searches FIFO/FEFO candidates across members and accepts only a complete assignment that
-leaves all existing item reservations feasible at durable record time. Physical use-by remains evaluated
-at event occurrence time, but backdating cannot bypass a claim already present when the operation commits.
-Transfer previews/commands simulate the destination as well as the source removal, so a broad claim may
-remain feasible across placement scopes while an exactly allocated source row cannot move underneath its claim.
+Pool allocation searches FIFO/FEFO candidates across members. The reservation-aware preview simulates
+source removal and transfer arrivals against claims active at the selected reservation time. Ordinary
+physical commands prefer a complete assignment that preserves those claims at durable record time and
+use the physical assignment when no claim-preserving assignment can fill the report. Physical use-by
+is evaluated at event occurrence time.
 The emitted event still names the actual selected item revision, package, lot, serial, and direct placement; the
 pool revision/common-basis quantities are retained as audit evidence, not as synthetic pooled stock.
 
@@ -416,7 +416,7 @@ Migration may therefore preserve coherent clinic truth such as positive tracked 
 
 ## Reservations after physical loss
 
-Normal issues/transfers/reclassifications and new claims are rejected if they would make the active claim set infeasible. Count reconciliation, correction, and scrap record explicit physical truth even when reality makes claims short.
+Ordinary issues, transfers, reclassifications, cart moves, counts, corrections, and scrap record what happened even when claims become or remain short. Policy recording prefers unallocated stock when it can fill the request. Claims and exact allocation evidence stay in place. Explicit reserve, refine, and allocate still require feasible claims, and consumption still requires the exact recorded fulfillment.
 
 Call `inventory.read.reservationFeasibility()` after those operations. It checks current published stock against claims active at the authority clock time. Pass an exact time as `inventory.read.reservationFeasibility(at)` to use reservation creation, expiry, and terminal-status intervals at that time; this does not rewind the stock projection. It returns each competing item/axis group with exact `requested`, maximum `fulfillable`, and `shortage` quantities plus the affected reservation IDs. Lifecycle commands cannot be dated before creation/an earlier lifecycle change or after their durable record time. Late physical truth must come through scrap, count reconciliation, or correction instead of backdating the current claim book.
 
@@ -505,7 +505,7 @@ The audit enumerates every public API and semantic field, validates every refere
 
 ## Formal boundary and future work
 
-`pnpm formal` checks bounded TLA+ models for generic placement topology, ancestor-move stability, detached/missing resource dimensions, heterogeneous composition revisions, read-only collection views, explicit revision-frozen fungibility, broad reservations (including unavailable unplaced stock and shortage after explicit physical loss), association/genealogy meanings, movement-safe counts, dual measurements, distributed rights, correction history, complete-plan durable publication, refinement, repair liveness, and package identity.
+`pnpm formal` checks bounded TLA+ models for generic placement topology, ancestor-move stability, detached/missing resource dimensions, heterogeneous composition revisions, read-only collection views, explicit revision-frozen fungibility, broad reservations (including unavailable unplaced stock and shortage after ordinary physical recording), association/genealogy meanings, movement-safe counts, dual measurements, distributed rights, correction history, complete-plan durable publication, refinement, repair liveness, and package identity.
 
 The composition and collection models were committed before their TypeScript surfaces. `CompositionRevision`
 uses the exact 21+7 and 20+5+3 generations and proves revision-pinned opening, transfer preservation,
@@ -518,8 +518,7 @@ The fungibility model was likewise committed before the TypeScript surface. The 
 executable companions for revisioned definitions, exact common-basis summaries, reservation-aware
 FIFO/FEFO selection, and issue/transfer/scrap events that retain member identity. Broad reservations
 whose own claim is directly denominated in a fungibility-pool basis remain a modeled future extension;
-current pool movements protect the existing item-reservation book rather than pretending one item claim
-is a cross-item pool claim. One-way/priority/clinical substitution remains outside mutual fungibility.
+current pool movements retain the existing item-reservation book and its exact item claims. One-way/priority/clinical substitution remains outside mutual fungibility.
 
 Most single-authority semantics above now have TypeScript companions. `DistributedRights` remains a future design constraint for offline/multi-writer stock. The TLA+ models are bounded state machines, not a proof of arbitrary TypeScript or arbitrary database code. See `formal/README.md`, `formal/FOUNDATIONS.md`, and `formal/TOOLING.md` for the exact claims.
 

@@ -124,7 +124,7 @@ export interface InventoryPolicyAllocationPlan {
   readonly incrementBlockedStock: boolean;
   /** True when an exact physical assignment was rejected by a whole-plan acceptance rule. */
   readonly allocationConstraintBlockedStock: boolean;
-  /** True when active broad claims remain protected only by final global feasibility checking. */
+  /** True when this revision has active broad claims without exact positions. */
   readonly unallocatedReservationsPresent: boolean;
 }
 
@@ -141,10 +141,7 @@ export interface PlanInventoryAllocationInput
   readonly reservationAtEpochMs?: number;
 }
 
-/**
- * Plan exact FIFO/FEFO lines without mutating storage or inventing stock.
- * Broad unallocated claims remain protected by the committing operation's global feasibility check.
- */
+/** Plan exact FIFO/FEFO lines using existing holds without mutating storage or inventing stock. */
 export function planInventoryAllocation({
   catalog,
   world,
