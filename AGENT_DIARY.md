@@ -1842,3 +1842,9 @@ The R105 portable-current-input authority and final publication both continue to
 
 - The indexed planner creates the same event evidence a published issue retains. Export its existing decoder through storage so preview callers can read exact picks before any receipt exists.
 - The facade replay path shares this decoder, including exact package picks and per-request allocations.
+
+
+2026-11-24 - Keep the external migration commitment small
+
+- External cutover was saving the normalized source plan text as a digest, both directly and inside the source root. A 160-event clinic fixture with 132 source dispositions produced 351,807 bytes before either authority transition.
+- Hash the same normalized plan, including movement, disposition and diagnostics. The authority keeps a 64-byte commitment. Frozen event order, source evidence and the reviewed target root stay separately checked.

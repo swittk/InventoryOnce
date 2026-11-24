@@ -67536,7 +67536,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/migrations.ts:232:72.dispositionId": {
+    "anonymous@src/migrations.ts:233:72.dispositionId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -67560,7 +67560,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/migrations.ts:232:72.evidence": {
+    "anonymous@src/migrations.ts:233:72.evidence": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -67585,7 +67585,7 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/migrations.ts:232:72.reason": {
+    "anonymous@src/migrations.ts:233:72.reason": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -67610,7 +67610,7 @@
       "optional": false,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "anonymous@src/migrations.ts:232:72.snapshotAtEpochMs": {
+    "anonymous@src/migrations.ts:233:72.snapshotAtEpochMs": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -67634,7 +67634,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/migrations.ts:232:72.source": {
+    "anonymous@src/migrations.ts:233:72.source": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -67721,5 +67721,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "a57285da98556945ebd8184bc48e4aa40c3776052133aeda58f8952fd15f778f"
+  "surfaceSha256": "9a0423cefdf33346222735f8f44f71da5b76b36c7bf6a06aa7b51c6b49519a4b"
 }

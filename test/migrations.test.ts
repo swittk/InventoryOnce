@@ -327,6 +327,8 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
         ],
       },
     });
+    // Authority stores this digest while the migration is fenced, regardless of source row count.
+    expect(plan.planDigest).toMatch(/^[a-f0-9]{64}$/);
     expect(samePhysicalWithoutDisposition.planDigest).not.toBe(plan.planDigest);
 
     const storage = createInMemoryInventoryDurableStorage();
