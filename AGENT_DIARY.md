@@ -1883,3 +1883,8 @@ The R105 portable-current-input authority and final publication both continue to
 - A policy transfer in Record mode keeps the real picks and creates a signed unallocated source for the shortfall. The destination gets the shortage unlabelled. It keeps the frozen package revision if the reported movement was by intact package.
 - FIFO age still comes only from an actual picked position. If real unlabelled and unallocated pieces reach the same bucket, the event holds one combined stock effect and separate source evidence for each part.
 - Backed transfers and Reject mode keep their original paths. Required identity, expiry and legal package increments still apply.
+
+2026-11-24 - Share the direct placement contents planner with indexed storage
+
+- The facade and indexed adapter use one builder to move positive rows directly in the source node and reparent its immediate children. Stock inside each child keeps its own placement. A live serialized child follows its stock effect, so its edge is derived by core.
+- The adapter supplies exact definitions and the destination path at the same revision as the direct rows. It supplies the current bucket for any live child serial. The existing core checks reject a destination inside the source and a child whose serial is anchored somewhere else.

@@ -4,7 +4,7 @@ This file is generated from the exact TypeScript surface plus the checked API, f
 
 Use the repository `.nvmrc` when one exists; otherwise run the assurance command with a Node version permitted by `package.json#engines`. Edit only checked source/manifests, run `pnpm assurance:generate` when generated evidence must change, then run `pnpm assurance --write-report`.
 
-Surface SHA-256: `9b3523451f0fa7c89039e01f14ebd4631c5fbe97922cf54a22d6ec28901b4d21`
+Surface SHA-256: `3a7c8f28510c8cee9391c511f4a1398800a24f610468906d07fddbd5d10ede20`
 
 ## Mechanically covered surface
 
@@ -12,13 +12,13 @@ Surface SHA-256: `9b3523451f0fa7c89039e01f14ebd4631c5fbe97922cf54a22d6ec28901b4d
 - Authority-port methods: 14
 - Durable-storage-port methods: 17
 - Public exported class methods: 109
-- Root callable exports: 106
-- Storage callable exports: 44
+- Root callable exports: 107
+- Storage callable exports: 45
 - Migration callable exports: 15
 - Kernel callable exports: 195
-- Reachable public data types: 487
-- Classified public fields: 2891
-- Input-reachable fields: 2417
+- Reachable public data types: 488
+- Classified public fields: 2895
+- Input-reachable fields: 2421
 - Output-reachable fields: 1113
 - Callback-argument-reachable fields: 417
 - Callback-result-reachable fields: 471
@@ -26,8 +26,8 @@ Surface SHA-256: `9b3523451f0fa7c89039e01f14ebd4631c5fbe97922cf54a22d6ec28901b4d
 - Optional fields: 1154
 - Explicit undefined-union fields: 11
 - Explicit nullable fields: 9
-- Public call/construct overload signatures: 637
-- Directly executed public APIs: 277
+- Public call/construct overload signatures: 639
+- Directly executed public APIs: 279
 - Public APIs exercised through tested internal call chains: 356
 - Explicit-gap public APIs: 4
 - Unreferenced public APIs: 0
@@ -63,7 +63,7 @@ Any added/removed method, callable export, class method, type field, field type,
 | migration-publication | 3 | CatalogPublication, InventoryOperation, PublishedHeadCAS, RepairLiveness, PlacementGraph, TraceabilityGraph, SnapshotSupersededWorkflow | covered | GAP-LEGACY-SOURCE-INTERPRETATION, GAP-DB-IMPLEMENTATION-UNBOUNDED |
 | operation-result-helper | 15 | InventoryOperation, PublishedHeadCAS | covered | — |
 | packaging-reclassification | 4 | PackagingIdentity, ReclassificationConservation, DualMeasure, InventoryOperation | covered | — |
-| placement-command | 18 | PlacementGraph, ResourceDimensions, UseByReservation, CorrectionHistory, InventoryOperation | covered | — |
+| placement-command | 20 | PlacementGraph, ResourceDimensions, UseByReservation, CorrectionHistory, InventoryOperation | covered | — |
 | pure-exact-value | 90 | DualMeasure, PackagingIdentity | covered | — |
 | read-current | 36 | PublishedHeadCAS, ResourceDimensions, PlacementGraph, UseByReservation, ReservationScope, CollectionView, FungibilityPool, CorrectionHistory | covered | — |
 | read-history | 18 | HistoricalRepair, CorrectionHistory, PublishedHeadCAS | covered | — |
@@ -86,10 +86,10 @@ Any added/removed method, callable export, class method, type field, field type,
 
 | Classification | Fields |
 |---|---:|
-| abstract-semantic | 1406 |
+| abstract-semantic | 1409 |
 | application decoration | 13 |
 | identity/retry-semantic | 854 |
-| observational/audit-only | 597 |
+| observational/audit-only | 598 |
 | unsupported/unmodelled | 21 |
 
 ## Kernel reference-adapter seam

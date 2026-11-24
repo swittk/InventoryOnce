@@ -31,6 +31,11 @@ export {
   type PrepareInventoryPolicyTransferBatchInput,
   type PreparedInventoryPolicyIssueBatch,
 } from "./facade.js";
+/** Plan the existing direct-contents command from the adapter's fenced stock and topology facts. */
+export {
+  createInventoryDirectContentsMoveEvent,
+  type CreateInventoryDirectContentsMoveEventInput,
+} from "./facade.js";
 /** Finish a physical count using the adapter's observation-time exact bucket. */
 export {
   createInventoryExactCountReconciliationPlan,

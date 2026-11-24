@@ -130,6 +130,7 @@ def facade_family(key):
 # Map one root export to the formal assurance family that owns its behavior.
 def root_family(name,decl):
  if name in {'InventoryOnce','createInventoryOnce'}: return 'facade-construction'
+ if name == 'createInventoryDirectContentsMoveEvent': return 'placement-command'
  if decl == 'src/authority-cutover.ts': return 'authority-cutover'
  if 'Authority' in name or 'authority' in name: return 'authority-control'
  # The indexed batch seam plans stock without committing it. Replay still decodes the same event.
@@ -154,6 +155,7 @@ def root_family(name,decl):
 
 # Map one storage export to durable-protocol or storage-integrity assurance.
 def storage_export_family(name):
+ if name == 'createInventoryDirectContentsMoveEvent': return 'placement-command'
  if name in {'createInventoryExactCountReconciliationPlan','exactCountSelectorForPosition'}: return 'count'
  # Preview and replay use the same decoder for exact policy result evidence.
  if name in {'prepareInventoryPolicyIssueBatch','prepareInventoryPolicyTransferBatch','prepareInventoryPolicyScrap'}: return 'allocation-helper'

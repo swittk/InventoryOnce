@@ -15,7 +15,11 @@ import {
   defineInventoryMigration,
   dryRunInventoryMigration,
 } from "../src/migrations-api.js";
-import { createInMemoryInventoryDurableStorage } from "../src/storage-api.js";
+import { commitInventoryEvent } from "../src/kernel.js";
+import {
+  createInMemoryInventoryDurableStorage,
+  createInventoryDirectContentsMoveEvent,
+} from "../src/storage-api.js";
 import {
   clockAt,
   createTabletCatalog,
@@ -73,7 +77,8 @@ async function quantityAtNode(
 
 describe("generic placement topology", () => {
   it("keeps stock-bearing placement moveContents during correction history replay", async () => {
-    const inventory = createTestInventory();
+    const catalog = createTabletCatalog();
+    const inventory = createTestInventory(undefined, catalog);
     const receipt = await inventory.stock.receive({
       operationId: "correction-move-contents-receive",
       occurredAtEpochMs: time0,
@@ -81,12 +86,21 @@ describe("generic placement topology", () => {
       amount: stockAmount("2", "piece"),
       placementNode: { category: "cart", acceptsPlacement: true },
     });
-    const moved = await inventory.placement.moveContents({
+    /** Give the adapter planner the same direct contents the facade reads. */
+    const input = {
       operationId: "correction-move-contents-empty-cart",
       occurredAtEpochMs: time1,
       nodeId: "CART",
       into: "ROOM",
+    };
+    const { positions, placementNodes, positivePositionIdBySerialIdentity, positionIdsByPlacementNodeId, placement } =
+      (await inventory.read.world()).projection;
+    const draft = createInventoryDirectContentsMoveEvent({
+      catalog, input, recordedAtEpochMs: time3,
+      projection: { positions, placementNodes, positivePositionIdBySerialIdentity, positionIdsByPlacementNodeId, placement },
     });
+    const moved = await inventory.placement.moveContents(input);
+    expect(moved.event).toEqual(commitInventoryEvent(draft, moved.event.recordedAtEpochMs, moved.event.recordSequence));
     expect(moved.event.kind).toBe(InventoryEventKind.Placement);
     expect(moved.event.stockEffects).toHaveLength(2);
     expect(moved.event.placementChanges).toEqual([]);

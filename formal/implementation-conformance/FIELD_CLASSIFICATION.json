@@ -4,14 +4,14 @@
     "callableFields": 15,
     "callbackArgumentFields": 417,
     "callbackResultFields": 471,
-    "fields": 2891,
-    "inputFields": 2417,
+    "fields": 2895,
+    "inputFields": 2421,
     "nullableFields": 9,
     "optionalFields": 1154,
     "outputFields": 1113,
     "recursiveTypeReferences": 5,
     "truncatedTypes": 0,
-    "types": 487,
+    "types": 488,
     "undefinedFields": 11
   },
   "entries": {
@@ -5856,6 +5856,98 @@
       ],
       "gaps": [],
       "optional": true,
+      "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "CreateInventoryDirectContentsMoveEventInput.catalog": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryCatalog",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "CreateInventoryDirectContentsMoveEventInput.input": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "InventoryOnceMovePlacementContentsInput",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "CreateInventoryDirectContentsMoveEventInput.projection": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "Pick<InventoryProjectionState, \"placement\" | \"placementNodes\" | \"positions\" | \"positionIdsByPlacementNodeId\" | \"positivePositionIdBySerialIdentity\">",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "CreateInventoryDirectContentsMoveEventInput.recordedAtEpochMs": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "observational/audit-only",
+      "declaration": "src/facade.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
     "CreateInventoryExactCountReconciliationPlanInput.actorId": {
@@ -69209,5 +69301,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "9b3523451f0fa7c89039e01f14ebd4631c5fbe97922cf54a22d6ec28901b4d21"
+  "surfaceSha256": "3a7c8f28510c8cee9391c511f4a1398800a24f610468906d07fddbd5d10ede20"
 }

@@ -6997,7 +6997,7 @@ async function commitInventoryPlacementTopologyChange(
         );
       }
       const embodiedPosition = inventoryEmbodiedPlacementNodePosition(
-        world,
+        world.projection,
         input.nodeId
       );
       if (embodiedPosition !== undefined) {
@@ -7101,11 +7101,7 @@ async function commitInventoryPlacementDirectContentsMove(
   input: InventoryOnceMovePlacementContentsInput
 ): Promise<InventoryOnceEventResult> {
   const internals = requireInventoryOnceInternals(owner);
-  inventoryPlacementNodeIdentity(input.nodeId);
-  inventoryPlacementNodeIdentity(input.into);
-  if (input.nodeId === input.into) {
-    throw new Error("Placement contents destination must differ from its source node.");
-  }
+  assertInventoryDirectContentsMoveEndpoints(input);
   const intentFingerprint = inventoryIntentFingerprint([
     "placement-move-contents",
     input.operationId,
@@ -7126,131 +7122,162 @@ async function commitInventoryPlacementDirectContentsMove(
     intentFingerprint,
     clock: internals.clock,
     deficitPolicy: internals.deficitPolicy,
-    /** Select exact direct contents and child nodes from one fenced published world. */
-    plan: ({ world, recordedAtEpochMs }) => {
-      assertInventoryLifecycleTimeWasRecorded(
-        input.occurredAtEpochMs,
+    /** The facade and scoped adapters plan the same event from their fenced facts. */
+    plan: ({ world, recordedAtEpochMs }) => ({
+      event: createInventoryDirectContentsMoveEvent({
+        catalog: internals.catalog,
+        input,
+        projection: world.projection,
         recordedAtEpochMs,
-        "placement contents move"
-      );
-      if (
-        inventoryPlacementNodeIsWithin(
-          world.projection.placement,
-          input.into,
-          input.nodeId
-        )
-      ) {
-        throw new Error(
-          "Placement contents destination cannot be the source node or one of its descendants."
-        );
-      }
-      const positions = inventoryDirectPositivePositionsAtNode(
-        world,
-        input.nodeId
-      );
-      const childNodeIds =
-        inventorySparseRecordValue(
-          world.projection.placement.childNodeIdsByParentNodeId,
-          input.nodeId
-        ) ?? [];
-      const placementChanges: InventoryPlacementChange[] = [];
-      for (const childNodeId of childNodeIds) {
-        const embodiedPosition = inventoryEmbodiedPlacementNodePosition(
-          world,
-          childNodeId
-        );
-        if (embodiedPosition !== undefined) {
-          if (embodiedPosition.key.placementNodeId !== input.nodeId) {
-            throw new Error(
-              `Embodied child node '${childNodeId}' disagrees with its unique stock placement.`
-            );
-          }
-          continue;
-        }
-        placementChanges.push({
-          nodeId: childNodeId,
-          fromParentNodeId: input.nodeId,
-          toParentNodeId: input.into,
-        });
-      }
-      if (positions.length === 0 && placementChanges.length === 0) {
-        throw new Error(
-          `Inventory placement node '${input.nodeId}' has no direct contents to move.`
-        );
-      }
-      const header = inventoryCommandHeaderFromPlacementInput(input);
-      const stockEvent =
-        positions.length === 0
-          ? undefined
-          : createInventoryTransferManyEvent({
-              catalog: internals.catalog,
-              ...header,
-              lines: positions.map(
-                /** Move one complete current direct row to the shared destination. */
-                (position) => {
-                  const source = placementContentsSourceLine(
-                    internals.catalog,
-                    position
-                  );
-                  return {
-                    ...source,
-                    toPlacementNodeId: input.into,
-                  };
-                }
-              ),
-            });
-      const event: InventoryEventDraft =
-        stockEvent === undefined
-          ? {
-              eventId: inventoryEventIdForOperation(input.operationId),
-              operationId: input.operationId,
-              kind: InventoryEventKind.Placement,
-              occurredAtEpochMs: input.occurredAtEpochMs,
-              stockEffects: [],
-              placementChanges,
-              traceabilityChanges: [],
-              ...(input.actorId === undefined ? {} : { actorId: input.actorId }),
-              ...(input.sourcePartyId === undefined
-                ? {}
-                : { sourcePartyId: input.sourcePartyId }),
-              ...(input.destinationPartyId === undefined
-                ? {}
-                : { destinationPartyId: input.destinationPartyId }),
-              ...(input.sourceReference === undefined
-                ? {}
-                : { sourceReference: input.sourceReference }),
-              ...(input.reason === undefined ? {} : { reason: input.reason }),
-              ...(input.metadata === undefined
-                ? {}
-                : { metadata: input.metadata }),
-            }
-          : {
-              ...stockEvent,
-              kind: InventoryEventKind.Placement,
-              placementChanges,
-            };
-      return {
-        event: defineInventoryEvent({ catalog: internals.catalog, event }),
-      };
-    },
+      }),
+    }),
   });
   return createInventoryOnceEventResult(result);
 }
 
+/** The direct stock, child edges and serial facts used to empty a placement node. */
+export interface CreateInventoryDirectContentsMoveEventInput {
+  /** Catalogue containing the exact definitions used by the direct stock rows. */
+  readonly catalog: InventoryCatalog;
+  /** Original command before looking up stock or children. */
+  readonly input: InventoryOnceMovePlacementContentsInput;
+  /** Direct stock and children at one revision, including destination ancestry and child serial positions. */
+  readonly projection: Pick<InventoryProjectionState,
+    "placement" | "placementNodes" | "positionIdsByPlacementNodeId" | "positions" | "positivePositionIdBySerialIdentity">;
+  /** Recording clock at the same revision as the supplied contents. */
+  readonly recordedAtEpochMs: number;
+}
+
+/** Plan a direct-node contents move from one fenced source and destination path. */
+export function createInventoryDirectContentsMoveEvent({
+  catalog, input, projection, recordedAtEpochMs,
+}: CreateInventoryDirectContentsMoveEventInput): InventoryEventDraft {
+  assertInventoryDirectContentsMoveEndpoints(input);
+  assertInventoryLifecycleTimeWasRecorded(
+    input.occurredAtEpochMs,
+    recordedAtEpochMs,
+    "placement contents move"
+  );
+  if (
+    inventoryPlacementNodeIsWithin(
+      projection.placement,
+      input.into,
+      input.nodeId
+    )
+  ) {
+    throw new Error(
+      "Placement contents destination cannot be the source node or one of its descendants."
+    );
+  }
+  /** These rows can move as stock; rows inside attached child nodes stay there. */
+  const positions = inventoryDirectPositivePositionsAtNode(projection, input.nodeId);
+  /** Reparent only the direct children of the emptied node. */
+  const childNodeIds =
+    inventorySparseRecordValue(
+      projection.placement.childNodeIdsByParentNodeId,
+      input.nodeId
+    ) ?? [];
+  /** The stock move carries serialized children, so only ordinary children need explicit edges. */
+  const placementChanges: InventoryPlacementChange[] = [];
+  for (const childNodeId of childNodeIds) {
+    const embodiedPosition = inventoryEmbodiedPlacementNodePosition(projection, childNodeId);
+    if (embodiedPosition !== undefined) {
+      if (embodiedPosition.key.placementNodeId !== input.nodeId) {
+        throw new Error(
+          `Embodied child node '${childNodeId}' disagrees with its unique stock placement.`
+        );
+      }
+      continue;
+    }
+    placementChanges.push({
+      nodeId: childNodeId,
+      fromParentNodeId: input.nodeId,
+      toParentNodeId: input.into,
+    });
+  }
+  if (positions.length === 0 && placementChanges.length === 0) {
+    throw new Error(
+      `Inventory placement node '${input.nodeId}' has no direct contents to move.`
+    );
+  }
+  const header = inventoryCommandHeaderFromPlacementInput(input);
+  /** Use the existing transfer builder to carry the exact package, quantities and receipt provenance. */
+  const stockEvent =
+    positions.length === 0
+      ? undefined
+      : createInventoryTransferManyEvent({
+          catalog,
+          ...header,
+          lines: positions.map(
+            /** Move one complete current direct row to the shared destination. */
+            (position) => {
+              const source = placementContentsSourceLine(
+                catalog,
+                position
+              );
+              return {
+                ...source,
+                toPlacementNodeId: input.into,
+              };
+            }
+          ),
+        });
+  const event: InventoryEventDraft =
+    stockEvent === undefined
+      ? {
+          eventId: inventoryEventIdForOperation(input.operationId),
+          operationId: input.operationId,
+          kind: InventoryEventKind.Placement,
+          occurredAtEpochMs: input.occurredAtEpochMs,
+          stockEffects: [],
+          placementChanges,
+          traceabilityChanges: [],
+          ...(input.actorId === undefined ? {} : { actorId: input.actorId }),
+          ...(input.sourcePartyId === undefined
+            ? {}
+            : { sourcePartyId: input.sourcePartyId }),
+          ...(input.destinationPartyId === undefined
+            ? {}
+            : { destinationPartyId: input.destinationPartyId }),
+          ...(input.sourceReference === undefined
+            ? {}
+            : { sourceReference: input.sourceReference }),
+          ...(input.reason === undefined ? {} : { reason: input.reason }),
+          ...(input.metadata === undefined
+            ? {}
+            : { metadata: input.metadata }),
+        }
+      : {
+          ...stockEvent,
+          kind: InventoryEventKind.Placement,
+          placementChanges,
+        };
+  return defineInventoryEvent({ catalog, event });
+}
+
+/** Reject a missing or identical endpoint before the facade opens an operation or an adapter builds a draft. */
+function assertInventoryDirectContentsMoveEndpoints(input: InventoryOnceMovePlacementContentsInput): void {
+  inventoryPlacementNodeIdentity(input.nodeId);
+  inventoryPlacementNodeIdentity(input.into);
+  if (input.nodeId === input.into) {
+    throw new Error("Placement contents destination must differ from its source node.");
+  }
+}
+
 /** Return every positive stock row anchored directly at one exact node. */
 function inventoryDirectPositivePositionsAtNode(
-  world: InventoryWorldState,
+  projection: CreateInventoryDirectContentsMoveEventInput["projection"],
   nodeId: string
 ): readonly InventoryStockPosition[] {
   const result: InventoryStockPosition[] = [];
   const positionIds =
     inventorySparseRecordValue(
-      world.projection.positionIdsByPlacementNodeId,
+      projection.positionIdsByPlacementNodeId,
       nodeId
     ) ?? [];
   for (const positionId of positionIds) {
     const position = inventorySparseRecordValue(
-      world.projection.positions,
+      projection.positions,
       positionId
     );
     if (position === undefined) {
@@ -7267,11 +7294,11 @@ function inventoryDirectPositivePositionsAtNode(
 
 /** Resolve the one live stock row that physically embodies a current node. */
 function inventoryEmbodiedPlacementNodePosition(
-  world: InventoryWorldState,
+  projection: CreateInventoryDirectContentsMoveEventInput["projection"],
   nodeId: string
 ): InventoryStockPosition | undefined {
   const projected = inventorySparseRecordValue(
-    world.projection.placementNodes,
+    projection.placementNodes,
     nodeId
   );
   const embodiment = projected?.definition.embodiedBy;
@@ -7283,7 +7310,7 @@ function inventoryEmbodiedPlacementNodePosition(
     embodiment.serialId
   );
   const positionId = inventorySparseRecordValue(
-    world.projection.positivePositionIdBySerialIdentity,
+    projection.positivePositionIdBySerialIdentity,
     serialIdentity
   );
   if (positionId === undefined) {
@@ -7292,7 +7319,7 @@ function inventoryEmbodiedPlacementNodePosition(
     );
   }
   const position = inventorySparseRecordValue(
-    world.projection.positions,
+    projection.positions,
     positionId
   );
   if (position === undefined) {

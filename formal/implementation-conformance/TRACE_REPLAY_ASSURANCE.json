@@ -1101,6 +1101,8 @@
         "entrypoint.kernel.inventoryPlacementParentNodeId",
         "entrypoint.kernel.inventoryPlacementSubtreeNodeIds",
         "entrypoint.kernel.normalizeInventoryPlacementChange",
+        "entrypoint.root.createInventoryDirectContentsMoveEvent",
+        "entrypoint.storage.createInventoryDirectContentsMoveEvent",
         "facade.placement.changeContentsStatus",
         "facade.placement.clearContentsStatus",
         "facade.placement.correct",
