@@ -1888,3 +1888,7 @@ The R105 portable-current-input authority and final publication both continue to
 
 - The facade and indexed adapter use one builder to move positive rows directly in the source node and reparent its immediate children. Stock inside each child keeps its own placement. A live serialized child follows its stock effect, so its edge is derived by core.
 - The adapter supplies exact definitions and the destination path at the same revision as the direct rows. It supplies the current bucket for any live child serial. The existing core checks reject a destination inside the source and a child whose serial is anchored somewhere else.
+
+2026-11-25 - Private npm release 0.1.3
+
+- Release tested indexed-adapter core source 3e505336 through the existing private registry. No clinical or storage semantics change in the release commit. ShineBright must consume the registry version, not a Git dependency or local tarball.

@@ -1,6 +1,6 @@
 {
   "name": "@inventoryonce/core",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Framework-free exact inventory events, projections, claims, counts, traceability, and durable repair",
   "type": "module",
   "main": "./dist/index.js",
