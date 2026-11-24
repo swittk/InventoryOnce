@@ -1,14 +1,14 @@
 {
   "counts": {
     "authorityMethods": 14,
-    "callAndConstructSignatures": 625,
+    "callAndConstructSignatures": 627,
     "classMethods": 109,
     "compilerCallGraphCallables": 3770,
-    "compilerCallGraphEdges": 10259,
+    "compilerCallGraphEdges": 10260,
     "compilerCallGraphTestRoots": 61,
     "compilerCallGraphUnresolvedApis": 0,
-    "compilerCallGraphWitnessedApis": 625,
-    "directExecutableApis": 263,
+    "compilerCallGraphWitnessedApis": 627,
+    "directExecutableApis": 265,
     "explicitGapApis": 4,
     "facadeMethods": 137,
     "indirectCallChainApis": 358,
@@ -18,8 +18,8 @@
     "reachableFields": 2827,
     "reachableTypes": 473,
     "recursiveTypeReferences": 5,
-    "rootCallables": 102,
-    "storageCallables": 39,
+    "rootCallables": 103,
+    "storageCallables": 40,
     "storageMethods": 17,
     "truncatedTypes": 0,
     "unreferencedPublicApis": 0
@@ -15347,6 +15347,10 @@
           "path": "src/sparse-record.ts"
         },
         {
+          "occurrences": 1,
+          "path": "src/storage-api.ts"
+        },
+        {
           "occurrences": 141,
           "path": "src/storage.ts"
         },
@@ -18019,10 +18023,6 @@
           "path": "src/sparse-record.ts"
         },
         {
-          "occurrences": 1,
-          "path": "src/storage-api.ts"
-        },
-        {
           "occurrences": 60,
           "path": "src/storage.ts"
         },
@@ -20397,10 +20397,6 @@
         {
           "occurrences": 7,
           "path": "src/sparse-record.ts"
-        },
-        {
-          "occurrences": 1,
-          "path": "src/storage-api.ts"
         },
         {
           "occurrences": 60,
@@ -60170,6 +60166,142 @@
       ],
       "status": "covered"
     },
+    "entrypoint.root.inventoryPolicyBatchAllocationsFromEvent": {
+      "adapterCoverage": [
+        "memory"
+      ],
+      "callChainWitnesses": [
+        {
+          "chain": [
+            {
+              "column": 1,
+              "file": "test/policy-operations.test.ts",
+              "hasBody": true,
+              "id": "test-root:test/policy-operations.test.ts",
+              "kind": "TestRoot",
+              "line": 1,
+              "name": "test/policy-operations.test.ts"
+            },
+            {
+              "column": 46,
+              "file": "test/policy-operations.test.ts",
+              "hasBody": true,
+              "id": "test/policy-operations.test.ts:1759:<anonymous@61>",
+              "kind": "ArrowFunction",
+              "line": 61,
+              "name": "<anonymous@61>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 79,
+              "file": "test/policy-operations.test.ts",
+              "hasBody": true,
+              "id": "test/policy-operations.test.ts:17874:<anonymous@510>",
+              "kind": "ArrowFunction",
+              "line": 510,
+              "name": "<anonymous@510>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 1,
+              "file": "src/facade.ts",
+              "hasBody": true,
+              "id": "src/facade.ts:186627:inventoryPolicyBatchAllocationsFromEvent",
+              "kind": "FunctionDeclaration",
+              "line": 4829,
+              "name": "inventoryPolicyBatchAllocationsFromEvent",
+              "reason": "resolved-call"
+            }
+          ],
+          "target": {
+            "column": 1,
+            "file": "src/facade.ts",
+            "hasBody": true,
+            "id": "src/facade.ts:186627:inventoryPolicyBatchAllocationsFromEvent",
+            "kind": "FunctionDeclaration",
+            "line": 4829,
+            "name": "inventoryPolicyBatchAllocationsFromEvent"
+          },
+          "test": "test/policy-operations.test.ts"
+        }
+      ],
+      "directExecutableEntrypoints": [
+        "test/policy-operations.test.ts"
+      ],
+      "directExecutableEvidence": [
+        "test/policy-operations.test.ts"
+      ],
+      "evidenceMode": "direct-executable",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/allocation-results.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "family": "operation-result-helper",
+      "gaps": [],
+      "implementationTargets": [
+        {
+          "column": 1,
+          "file": "src/facade.ts",
+          "hasBody": true,
+          "id": "src/facade.ts:186627:inventoryPolicyBatchAllocationsFromEvent",
+          "kind": "FunctionDeclaration",
+          "line": 4829,
+          "name": "inventoryPolicyBatchAllocationsFromEvent"
+        }
+      ],
+      "inputMapping": "Operation/request/group references map to deterministic result partitioning and retained event identity.",
+      "internalReferences": [
+        {
+          "occurrences": 2,
+          "path": "src/facade.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/storage-api.ts"
+        }
+      ],
+      "invariants": [
+        "FrozenIntentNeverChanges",
+        "RetryOutcomeMatchesFrozenIntent",
+        "OnePublicationPerOperation"
+      ],
+      "models": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "rejectionRelation": "Missing/duplicate/foreign request evidence rejects before application consumption.",
+      "resultMapping": "Result preserves operation/group/request identities, exact allocations, event, receipt, and replay observation.",
+      "retryRelation": "Equal frozen references regroup equal evidence; unknown or duplicate references reject.",
+      "signature": {
+        "callSignatures": [
+          {
+            "parameters": [
+              {
+                "name": "catalog",
+                "optional": false,
+                "type": "InventoryCatalog"
+              },
+              {
+                "name": "event",
+                "optional": false,
+                "type": "InventoryCommittedEvent"
+              }
+            ],
+            "result": "readonly InventoryOncePolicyBatchAllocation[]"
+          }
+        ],
+        "callable": true,
+        "constructSignatures": [],
+        "constructable": false,
+        "declaration": "src/facade.ts",
+        "name": "inventoryPolicyBatchAllocationsFromEvent"
+      },
+      "stateProjection": [
+        "abstractOperationResult"
+      ],
+      "status": "covered"
+    },
     "entrypoint.root.inventoryPositionEffectiveUseByEpochMs": {
       "adapterCoverage": [
         "memory"
@@ -63290,20 +63422,20 @@
               "column": 46,
               "file": "test/policy-operations.test.ts",
               "hasBody": true,
-              "id": "test/policy-operations.test.ts:1710:<anonymous@57>",
+              "id": "test/policy-operations.test.ts:1759:<anonymous@61>",
               "kind": "ArrowFunction",
-              "line": 57,
-              "name": "<anonymous@57>",
+              "line": 61,
+              "name": "<anonymous@61>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 79,
               "file": "test/policy-operations.test.ts",
               "hasBody": true,
-              "id": "test/policy-operations.test.ts:17825:<anonymous@506>",
+              "id": "test/policy-operations.test.ts:17874:<anonymous@510>",
               "kind": "ArrowFunction",
-              "line": 506,
-              "name": "<anonymous@506>",
+              "line": 510,
+              "name": "<anonymous@510>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -64697,20 +64829,20 @@
               "column": 46,
               "file": "test/policy-operations.test.ts",
               "hasBody": true,
-              "id": "test/policy-operations.test.ts:1710:<anonymous@57>",
+              "id": "test/policy-operations.test.ts:1759:<anonymous@61>",
               "kind": "ArrowFunction",
-              "line": 57,
-              "name": "<anonymous@57>",
+              "line": 61,
+              "name": "<anonymous@61>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 79,
               "file": "test/policy-operations.test.ts",
               "hasBody": true,
-              "id": "test/policy-operations.test.ts:17825:<anonymous@506>",
+              "id": "test/policy-operations.test.ts:17874:<anonymous@510>",
               "kind": "ArrowFunction",
-              "line": 506,
-              "name": "<anonymous@506>",
+              "line": 510,
+              "name": "<anonymous@510>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -70371,6 +70503,138 @@
       ],
       "status": "covered"
     },
+    "entrypoint.storage.inventoryPolicyBatchAllocationsFromEvent": {
+      "adapterCoverage": [
+        "memory"
+      ],
+      "callChainWitnesses": [
+        {
+          "chain": [
+            {
+              "column": 1,
+              "file": "test/policy-operations.test.ts",
+              "hasBody": true,
+              "id": "test-root:test/policy-operations.test.ts",
+              "kind": "TestRoot",
+              "line": 1,
+              "name": "test/policy-operations.test.ts"
+            },
+            {
+              "column": 46,
+              "file": "test/policy-operations.test.ts",
+              "hasBody": true,
+              "id": "test/policy-operations.test.ts:1759:<anonymous@61>",
+              "kind": "ArrowFunction",
+              "line": 61,
+              "name": "<anonymous@61>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 79,
+              "file": "test/policy-operations.test.ts",
+              "hasBody": true,
+              "id": "test/policy-operations.test.ts:17874:<anonymous@510>",
+              "kind": "ArrowFunction",
+              "line": 510,
+              "name": "<anonymous@510>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 1,
+              "file": "src/facade.ts",
+              "hasBody": true,
+              "id": "src/facade.ts:186627:inventoryPolicyBatchAllocationsFromEvent",
+              "kind": "FunctionDeclaration",
+              "line": 4829,
+              "name": "inventoryPolicyBatchAllocationsFromEvent",
+              "reason": "resolved-call"
+            }
+          ],
+          "target": {
+            "column": 1,
+            "file": "src/facade.ts",
+            "hasBody": true,
+            "id": "src/facade.ts:186627:inventoryPolicyBatchAllocationsFromEvent",
+            "kind": "FunctionDeclaration",
+            "line": 4829,
+            "name": "inventoryPolicyBatchAllocationsFromEvent"
+          },
+          "test": "test/policy-operations.test.ts"
+        }
+      ],
+      "directExecutableEntrypoints": [
+        "test/policy-operations.test.ts"
+      ],
+      "directExecutableEvidence": [
+        "test/policy-operations.test.ts"
+      ],
+      "evidenceMode": "direct-executable",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/allocation-results.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "family": "operation-result-helper",
+      "gaps": [],
+      "implementationTargets": [
+        {
+          "column": 1,
+          "file": "src/facade.ts",
+          "hasBody": true,
+          "id": "src/facade.ts:186627:inventoryPolicyBatchAllocationsFromEvent",
+          "kind": "FunctionDeclaration",
+          "line": 4829,
+          "name": "inventoryPolicyBatchAllocationsFromEvent"
+        }
+      ],
+      "inputMapping": "Operation/request/group references map to deterministic result partitioning and retained event identity.",
+      "internalReferences": [
+        {
+          "occurrences": 2,
+          "path": "src/facade.ts"
+        }
+      ],
+      "invariants": [
+        "FrozenIntentNeverChanges",
+        "RetryOutcomeMatchesFrozenIntent",
+        "OnePublicationPerOperation"
+      ],
+      "models": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "rejectionRelation": "Missing/duplicate/foreign request evidence rejects before application consumption.",
+      "resultMapping": "Result preserves operation/group/request identities, exact allocations, event, receipt, and replay observation.",
+      "retryRelation": "Equal frozen references regroup equal evidence; unknown or duplicate references reject.",
+      "signature": {
+        "callSignatures": [
+          {
+            "parameters": [
+              {
+                "name": "catalog",
+                "optional": false,
+                "type": "InventoryCatalog"
+              },
+              {
+                "name": "event",
+                "optional": false,
+                "type": "InventoryCommittedEvent"
+              }
+            ],
+            "result": "readonly InventoryOncePolicyBatchAllocation[]"
+          }
+        ],
+        "callable": true,
+        "constructSignatures": [],
+        "constructable": false,
+        "declaration": "src/storage-api.ts",
+        "name": "inventoryPolicyBatchAllocationsFromEvent"
+      },
+      "stateProjection": [
+        "abstractOperationResult"
+      ],
+      "status": "covered"
+    },
     "entrypoint.storage.inventoryProjectionDigest": {
       "adapterCoverage": [
         "memory"
@@ -71898,20 +72162,20 @@
               "column": 46,
               "file": "test/policy-operations.test.ts",
               "hasBody": true,
-              "id": "test/policy-operations.test.ts:1710:<anonymous@57>",
+              "id": "test/policy-operations.test.ts:1759:<anonymous@61>",
               "kind": "ArrowFunction",
-              "line": 57,
-              "name": "<anonymous@57>",
+              "line": 61,
+              "name": "<anonymous@61>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 79,
               "file": "test/policy-operations.test.ts",
               "hasBody": true,
-              "id": "test/policy-operations.test.ts:17825:<anonymous@506>",
+              "id": "test/policy-operations.test.ts:17874:<anonymous@510>",
               "kind": "ArrowFunction",
-              "line": 506,
-              "name": "<anonymous@506>",
+              "line": 510,
+              "name": "<anonymous@510>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -72036,20 +72300,20 @@
               "column": 46,
               "file": "test/policy-operations.test.ts",
               "hasBody": true,
-              "id": "test/policy-operations.test.ts:1710:<anonymous@57>",
+              "id": "test/policy-operations.test.ts:1759:<anonymous@61>",
               "kind": "ArrowFunction",
-              "line": 57,
-              "name": "<anonymous@57>",
+              "line": 61,
+              "name": "<anonymous@61>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 79,
               "file": "test/policy-operations.test.ts",
               "hasBody": true,
-              "id": "test/policy-operations.test.ts:17825:<anonymous@506>",
+              "id": "test/policy-operations.test.ts:17874:<anonymous@510>",
               "kind": "ArrowFunction",
-              "line": 506,
-              "name": "<anonymous@506>",
+              "line": 510,
+              "name": "<anonymous@510>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -79308,6 +79572,10 @@
           "path": "src/sparse-record.ts"
         },
         {
+          "occurrences": 1,
+          "path": "src/storage-api.ts"
+        },
+        {
           "occurrences": 141,
           "path": "src/storage.ts"
         },
@@ -83316,20 +83584,20 @@
               "column": 50,
               "file": "test/policy-operations.test.ts",
               "hasBody": true,
-              "id": "test/policy-operations.test.ts:28405:<anonymous@815>",
+              "id": "test/policy-operations.test.ts:28706:<anonymous@822>",
               "kind": "ArrowFunction",
-              "line": 815,
-              "name": "<anonymous@815>",
+              "line": 822,
+              "name": "<anonymous@822>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 98,
               "file": "test/policy-operations.test.ts",
               "hasBody": true,
-              "id": "test/policy-operations.test.ts:30488:<anonymous@877>",
+              "id": "test/policy-operations.test.ts:30789:<anonymous@884>",
               "kind": "ArrowFunction",
-              "line": 877,
-              "name": "<anonymous@877>",
+              "line": 884,
+              "name": "<anonymous@884>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -85009,6 +85277,10 @@
         {
           "occurrences": 1,
           "path": "src/sparse-record.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/storage-api.ts"
         },
         {
           "occurrences": 141,
@@ -92716,20 +92988,20 @@
               "column": 50,
               "file": "test/policy-operations.test.ts",
               "hasBody": true,
-              "id": "test/policy-operations.test.ts:28405:<anonymous@815>",
+              "id": "test/policy-operations.test.ts:28706:<anonymous@822>",
               "kind": "ArrowFunction",
-              "line": 815,
-              "name": "<anonymous@815>",
+              "line": 822,
+              "name": "<anonymous@822>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 94,
               "file": "test/policy-operations.test.ts",
               "hasBody": true,
-              "id": "test/policy-operations.test.ts:38897:<anonymous@1106>",
+              "id": "test/policy-operations.test.ts:39198:<anonymous@1113>",
               "kind": "ArrowFunction",
-              "line": 1106,
-              "name": "<anonymous@1106>",
+              "line": 1113,
+              "name": "<anonymous@1113>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -100988,5 +101260,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "cb7c338ec747dc486a9146a82d5e330ab0568f8c9fc3153066f50aa11ca76b9c"
+  "surfaceSha256": "a57285da98556945ebd8184bc48e4aa40c3776052133aeda58f8952fd15f778f"
 }

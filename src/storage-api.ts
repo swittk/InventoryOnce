@@ -18,8 +18,9 @@ export {
   type InventoryHistoricalDependencyReader,
   type LoadInventoryHistoricalDependencyComponentInput,
 } from "./historical-dependencies.js";
-/** Prepare the normal issue batch from stock and claims read at one storage revision. */
+/** Prepare the normal issue batch and read its exact picks from an event. */
 export {
+  inventoryPolicyBatchAllocationsFromEvent,
   prepareInventoryPolicyIssueBatch,
   readInventoryPolicyBatchResult,
   type InventoryPolicyBatchPlanningScope,

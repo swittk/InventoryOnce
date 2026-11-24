@@ -17,7 +17,11 @@ import {
   unitCode,
 } from "../src/index.js";
 import { commitInventoryEvent } from "../src/kernel.js";
-import { prepareInventoryPolicyIssueBatch, readInventoryPolicyBatchResult } from "../src/storage-api.js";
+import {
+  inventoryPolicyBatchAllocationsFromEvent,
+  prepareInventoryPolicyIssueBatch,
+  readInventoryPolicyBatchResult,
+} from "../src/storage-api.js";
 import {
   createTabletCatalog,
   createTestInventory,
@@ -548,10 +552,13 @@ describe("native FIFO/FEFO movement policy", () => {
     });
     if (!planned.event) throw new Error("Batch planner omitted the issue event.");
     const plannedEvent = commitInventoryEvent(planned.event, time3, 2);
+    const previewAllocations = inventoryPolicyBatchAllocationsFromEvent(createTabletCatalog(), plannedEvent);
+    expect((await inventory.read.world()).projection.lastRecordSequence).toBe(1);
     const issued = await inventory.stock.issueManyByPolicy(command);
     const replayed = await inventory.stock.issueManyByPolicy(command);
 
     expect(plannedEvent).toEqual(issued.event);
+    expect(previewAllocations).toEqual(issued.allocations);
     expect(readInventoryPolicyBatchResult(createTabletCatalog(), {
       event: plannedEvent, receipt: issued.receipt, replayed: true,
     })).toEqual(replayed);

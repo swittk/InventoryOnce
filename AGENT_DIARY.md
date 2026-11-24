@@ -1837,3 +1837,8 @@ The R105 portable-current-input authority and final publication both continue to
 - The facade and pinned indexed adapters now use the same transitive history walk. The adapter streams matching event rows for each group of core dependency keys. When the facade's read crosses its published sequence, it discards the partial component so the old caller can replan.
 - An indexed database can feed the walk from bounded postings without constructing a world. The correction planner still replays the connected events and keeps their exact durable event order and original evidence.
 - The full suite still had seven old expectations that a short claim blocks ordinary movement. Tests now check the actual stock and the retained shortage after receive, issue, scrap, transfer, unpack, reclassification and detach. Explicit new or changed claims still check their feasibility.
+
+2026-11-24 - Decode read-only batch picks
+
+- The indexed planner creates the same event evidence a published issue retains. Export its existing decoder through storage so preview callers can read exact picks before any receipt exists.
+- The facade replay path shares this decoder, including exact package picks and per-request allocations.

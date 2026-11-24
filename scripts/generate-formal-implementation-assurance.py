@@ -134,7 +134,7 @@ def root_family(name,decl):
  if 'Authority' in name or 'authority' in name: return 'authority-control'
  # The indexed batch seam plans stock without committing it. Replay still decodes the same event.
  if name == 'prepareInventoryPolicyIssueBatch': return 'allocation-helper'
- if name == 'readInventoryPolicyBatchResult': return 'operation-result-helper'
+ if name in {'inventoryPolicyBatchAllocationsFromEvent','readInventoryPolicyBatchResult'}: return 'operation-result-helper'
  if name == 'readPublishedInventorySnapshot': return 'read-snapshot'
  if name in {'readPublishedInventoryCatalog','findInventoryEventByOperationId'}: return 'read-current'
  if name.startswith(('publishInventoryCatalog','ensureInventoryScalarCatalogRevision')): return 'catalog-publication'
@@ -154,9 +154,9 @@ def root_family(name,decl):
 
 # Map one storage export to durable-protocol or storage-integrity assurance.
 def storage_export_family(name):
- # Use the same proof families for both paths to the pure batch planner and replay decoder.
+ # Preview and replay use the same decoder for exact policy result evidence.
  if name == 'prepareInventoryPolicyIssueBatch': return 'allocation-helper'
- if name == 'readInventoryPolicyBatchResult': return 'operation-result-helper'
+ if name in {'inventoryPolicyBatchAllocationsFromEvent','readInventoryPolicyBatchResult'}: return 'operation-result-helper'
  # The adapter supplies pages. Core still owns the historical dependency walk.
  if name == 'loadInventoryHistoricalDependencyComponent': return 'historical-repair'
  if any(k in name for k in ('Digest','ContentRoot','Delta','materialize','emptyInventoryWorldState')): return 'storage-integrity'

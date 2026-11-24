@@ -1,10 +1,10 @@
 {
   "counts": {
     "callables": 3770,
-    "edges": 10259,
-    "publicEntries": 625,
-    "publicEntriesWithTargets": 625,
-    "publicEntriesWithWitnesses": 625,
+    "edges": 10260,
+    "publicEntries": 627,
+    "publicEntriesWithTargets": 627,
+    "publicEntriesWithWitnesses": 627,
     "testRoots": 61,
     "unresolvedPublicEntries": 0
   },
@@ -30706,6 +30706,77 @@
         }
       ]
     },
+    "entrypoint.root.inventoryPolicyBatchAllocationsFromEvent": {
+      "targets": [
+        {
+          "column": 1,
+          "file": "src/facade.ts",
+          "hasBody": true,
+          "id": "src/facade.ts:186627:inventoryPolicyBatchAllocationsFromEvent",
+          "kind": "FunctionDeclaration",
+          "line": 4829,
+          "name": "inventoryPolicyBatchAllocationsFromEvent"
+        }
+      ],
+      "unresolvedTargets": [],
+      "witnesses": [
+        {
+          "target": {
+            "column": 1,
+            "file": "src/facade.ts",
+            "hasBody": true,
+            "id": "src/facade.ts:186627:inventoryPolicyBatchAllocationsFromEvent",
+            "kind": "FunctionDeclaration",
+            "line": 4829,
+            "name": "inventoryPolicyBatchAllocationsFromEvent"
+          },
+          "witness": {
+            "chain": [
+              {
+                "column": 1,
+                "file": "test/policy-operations.test.ts",
+                "hasBody": true,
+                "id": "test-root:test/policy-operations.test.ts",
+                "kind": "TestRoot",
+                "line": 1,
+                "name": "test/policy-operations.test.ts"
+              },
+              {
+                "column": 46,
+                "file": "test/policy-operations.test.ts",
+                "hasBody": true,
+                "id": "test/policy-operations.test.ts:1759:<anonymous@61>",
+                "kind": "ArrowFunction",
+                "line": 61,
+                "name": "<anonymous@61>",
+                "reason": "external-callback-dispatch"
+              },
+              {
+                "column": 79,
+                "file": "test/policy-operations.test.ts",
+                "hasBody": true,
+                "id": "test/policy-operations.test.ts:17874:<anonymous@510>",
+                "kind": "ArrowFunction",
+                "line": 510,
+                "name": "<anonymous@510>",
+                "reason": "external-callback-dispatch"
+              },
+              {
+                "column": 1,
+                "file": "src/facade.ts",
+                "hasBody": true,
+                "id": "src/facade.ts:186627:inventoryPolicyBatchAllocationsFromEvent",
+                "kind": "FunctionDeclaration",
+                "line": 4829,
+                "name": "inventoryPolicyBatchAllocationsFromEvent",
+                "reason": "resolved-call"
+              }
+            ],
+            "test": "test/policy-operations.test.ts"
+          }
+        }
+      ]
+    },
     "entrypoint.root.inventoryPositionEffectiveUseByEpochMs": {
       "targets": [
         {
@@ -32415,20 +32486,20 @@
                 "column": 46,
                 "file": "test/policy-operations.test.ts",
                 "hasBody": true,
-                "id": "test/policy-operations.test.ts:1710:<anonymous@57>",
+                "id": "test/policy-operations.test.ts:1759:<anonymous@61>",
                 "kind": "ArrowFunction",
-                "line": 57,
-                "name": "<anonymous@57>",
+                "line": 61,
+                "name": "<anonymous@61>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 79,
                 "file": "test/policy-operations.test.ts",
                 "hasBody": true,
-                "id": "test/policy-operations.test.ts:17825:<anonymous@506>",
+                "id": "test/policy-operations.test.ts:17874:<anonymous@510>",
                 "kind": "ArrowFunction",
-                "line": 506,
-                "name": "<anonymous@506>",
+                "line": 510,
+                "name": "<anonymous@510>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -33124,20 +33195,20 @@
                 "column": 46,
                 "file": "test/policy-operations.test.ts",
                 "hasBody": true,
-                "id": "test/policy-operations.test.ts:1710:<anonymous@57>",
+                "id": "test/policy-operations.test.ts:1759:<anonymous@61>",
                 "kind": "ArrowFunction",
-                "line": 57,
-                "name": "<anonymous@57>",
+                "line": 61,
+                "name": "<anonymous@61>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 79,
                 "file": "test/policy-operations.test.ts",
                 "hasBody": true,
-                "id": "test/policy-operations.test.ts:17825:<anonymous@506>",
+                "id": "test/policy-operations.test.ts:17874:<anonymous@510>",
                 "kind": "ArrowFunction",
-                "line": 506,
-                "name": "<anonymous@506>",
+                "line": 510,
+                "name": "<anonymous@510>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -36063,6 +36134,77 @@
         }
       ]
     },
+    "entrypoint.storage.inventoryPolicyBatchAllocationsFromEvent": {
+      "targets": [
+        {
+          "column": 1,
+          "file": "src/facade.ts",
+          "hasBody": true,
+          "id": "src/facade.ts:186627:inventoryPolicyBatchAllocationsFromEvent",
+          "kind": "FunctionDeclaration",
+          "line": 4829,
+          "name": "inventoryPolicyBatchAllocationsFromEvent"
+        }
+      ],
+      "unresolvedTargets": [],
+      "witnesses": [
+        {
+          "target": {
+            "column": 1,
+            "file": "src/facade.ts",
+            "hasBody": true,
+            "id": "src/facade.ts:186627:inventoryPolicyBatchAllocationsFromEvent",
+            "kind": "FunctionDeclaration",
+            "line": 4829,
+            "name": "inventoryPolicyBatchAllocationsFromEvent"
+          },
+          "witness": {
+            "chain": [
+              {
+                "column": 1,
+                "file": "test/policy-operations.test.ts",
+                "hasBody": true,
+                "id": "test-root:test/policy-operations.test.ts",
+                "kind": "TestRoot",
+                "line": 1,
+                "name": "test/policy-operations.test.ts"
+              },
+              {
+                "column": 46,
+                "file": "test/policy-operations.test.ts",
+                "hasBody": true,
+                "id": "test/policy-operations.test.ts:1759:<anonymous@61>",
+                "kind": "ArrowFunction",
+                "line": 61,
+                "name": "<anonymous@61>",
+                "reason": "external-callback-dispatch"
+              },
+              {
+                "column": 79,
+                "file": "test/policy-operations.test.ts",
+                "hasBody": true,
+                "id": "test/policy-operations.test.ts:17874:<anonymous@510>",
+                "kind": "ArrowFunction",
+                "line": 510,
+                "name": "<anonymous@510>",
+                "reason": "external-callback-dispatch"
+              },
+              {
+                "column": 1,
+                "file": "src/facade.ts",
+                "hasBody": true,
+                "id": "src/facade.ts:186627:inventoryPolicyBatchAllocationsFromEvent",
+                "kind": "FunctionDeclaration",
+                "line": 4829,
+                "name": "inventoryPolicyBatchAllocationsFromEvent",
+                "reason": "resolved-call"
+              }
+            ],
+            "test": "test/policy-operations.test.ts"
+          }
+        }
+      ]
+    },
     "entrypoint.storage.inventoryProjectionDigest": {
       "targets": [
         {
@@ -36942,20 +37084,20 @@
                 "column": 46,
                 "file": "test/policy-operations.test.ts",
                 "hasBody": true,
-                "id": "test/policy-operations.test.ts:1710:<anonymous@57>",
+                "id": "test/policy-operations.test.ts:1759:<anonymous@61>",
                 "kind": "ArrowFunction",
-                "line": 57,
-                "name": "<anonymous@57>",
+                "line": 61,
+                "name": "<anonymous@61>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 79,
                 "file": "test/policy-operations.test.ts",
                 "hasBody": true,
-                "id": "test/policy-operations.test.ts:17825:<anonymous@506>",
+                "id": "test/policy-operations.test.ts:17874:<anonymous@510>",
                 "kind": "ArrowFunction",
-                "line": 506,
-                "name": "<anonymous@506>",
+                "line": 510,
+                "name": "<anonymous@510>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -37013,20 +37155,20 @@
                 "column": 46,
                 "file": "test/policy-operations.test.ts",
                 "hasBody": true,
-                "id": "test/policy-operations.test.ts:1710:<anonymous@57>",
+                "id": "test/policy-operations.test.ts:1759:<anonymous@61>",
                 "kind": "ArrowFunction",
-                "line": 57,
-                "name": "<anonymous@57>",
+                "line": 61,
+                "name": "<anonymous@61>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 79,
                 "file": "test/policy-operations.test.ts",
                 "hasBody": true,
-                "id": "test/policy-operations.test.ts:17825:<anonymous@506>",
+                "id": "test/policy-operations.test.ts:17874:<anonymous@510>",
                 "kind": "ArrowFunction",
-                "line": 506,
-                "name": "<anonymous@506>",
+                "line": 510,
+                "name": "<anonymous@510>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -42177,20 +42319,20 @@
                 "column": 50,
                 "file": "test/policy-operations.test.ts",
                 "hasBody": true,
-                "id": "test/policy-operations.test.ts:28405:<anonymous@815>",
+                "id": "test/policy-operations.test.ts:28706:<anonymous@822>",
                 "kind": "ArrowFunction",
-                "line": 815,
-                "name": "<anonymous@815>",
+                "line": 822,
+                "name": "<anonymous@822>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 98,
                 "file": "test/policy-operations.test.ts",
                 "hasBody": true,
-                "id": "test/policy-operations.test.ts:30488:<anonymous@877>",
+                "id": "test/policy-operations.test.ts:30789:<anonymous@884>",
                 "kind": "ArrowFunction",
-                "line": 877,
-                "name": "<anonymous@877>",
+                "line": 884,
+                "name": "<anonymous@884>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -46833,20 +46975,20 @@
                 "column": 50,
                 "file": "test/policy-operations.test.ts",
                 "hasBody": true,
-                "id": "test/policy-operations.test.ts:28405:<anonymous@815>",
+                "id": "test/policy-operations.test.ts:28706:<anonymous@822>",
                 "kind": "ArrowFunction",
-                "line": 815,
-                "name": "<anonymous@815>",
+                "line": 822,
+                "name": "<anonymous@822>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 94,
                 "file": "test/policy-operations.test.ts",
                 "hasBody": true,
-                "id": "test/policy-operations.test.ts:38897:<anonymous@1106>",
+                "id": "test/policy-operations.test.ts:39198:<anonymous@1113>",
                 "kind": "ArrowFunction",
-                "line": 1106,
-                "name": "<anonymous@1106>",
+                "line": 1113,
+                "name": "<anonymous@1113>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -50156,5 +50298,5 @@
     }
   },
   "schemaVersion": 1,
-  "surfaceSha256": "cb7c338ec747dc486a9146a82d5e330ab0568f8c9fc3153066f50aa11ca76b9c"
+  "surfaceSha256": "a57285da98556945ebd8184bc48e4aa40c3776052133aeda58f8952fd15f778f"
 }

@@ -4,7 +4,7 @@ This file is generated from the exact TypeScript surface plus the checked API, f
 
 Use the repository `.nvmrc` when one exists; otherwise run the assurance command with a Node version permitted by `package.json#engines`. Edit only checked source/manifests, run `pnpm assurance:generate` when generated evidence must change, then run `pnpm assurance --write-report`.
 
-Surface SHA-256: `cb7c338ec747dc486a9146a82d5e330ab0568f8c9fc3153066f50aa11ca76b9c`
+Surface SHA-256: `a57285da98556945ebd8184bc48e4aa40c3776052133aeda58f8952fd15f778f`
 
 ## Mechanically covered surface
 
@@ -12,8 +12,8 @@ Surface SHA-256: `cb7c338ec747dc486a9146a82d5e330ab0568f8c9fc3153066f50aa11ca76b
 - Authority-port methods: 14
 - Durable-storage-port methods: 17
 - Public exported class methods: 109
-- Root callable exports: 102
-- Storage callable exports: 39
+- Root callable exports: 103
+- Storage callable exports: 40
 - Migration callable exports: 15
 - Kernel callable exports: 192
 - Reachable public data types: 473
@@ -26,8 +26,8 @@ Surface SHA-256: `cb7c338ec747dc486a9146a82d5e330ab0568f8c9fc3153066f50aa11ca76b
 - Optional fields: 1143
 - Explicit undefined-union fields: 11
 - Explicit nullable fields: 9
-- Public call/construct overload signatures: 625
-- Directly executed public APIs: 263
+- Public call/construct overload signatures: 627
+- Directly executed public APIs: 265
 - Public APIs exercised through tested internal call chains: 358
 - Explicit-gap public APIs: 4
 - Unreferenced public APIs: 0
@@ -61,7 +61,7 @@ Any added/removed method, callable export, class method, type field, field type,
 | lot-command | 3 | UseByReservation, CorrectionHistory, InventoryOperation | covered | — |
 | migration-definition | 8 | CatalogPublication, PlacementGraph, TraceabilityGraph, ReclassificationConservation, SnapshotSupersededWorkflow, CompositionRevision | covered | GAP-LEGACY-SOURCE-INTERPRETATION, GAP-EXTERNAL-MIGRATION-CALLBACKS |
 | migration-publication | 3 | CatalogPublication, InventoryOperation, PublishedHeadCAS, RepairLiveness, PlacementGraph, TraceabilityGraph, SnapshotSupersededWorkflow | covered | GAP-LEGACY-SOURCE-INTERPRETATION, GAP-DB-IMPLEMENTATION-UNBOUNDED |
-| operation-result-helper | 13 | InventoryOperation, PublishedHeadCAS | covered | — |
+| operation-result-helper | 15 | InventoryOperation, PublishedHeadCAS | covered | — |
 | packaging-reclassification | 4 | PackagingIdentity, ReclassificationConservation, DualMeasure, InventoryOperation | covered | — |
 | placement-command | 18 | PlacementGraph, ResourceDimensions, UseByReservation, CorrectionHistory, InventoryOperation | covered | — |
 | pure-exact-value | 90 | DualMeasure, PackagingIdentity | covered | — |

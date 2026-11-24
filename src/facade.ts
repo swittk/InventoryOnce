@@ -4825,8 +4825,8 @@ function policyBatchQuantityMetadataValue(
   };
 }
 
-/** Recover and verify exact policy allocations from a committed/replayed event. */
-function inventoryPolicyBatchAllocationsFromEvent(
+/** Recover exact policy picks from a preview, published event or replay. */
+export function inventoryPolicyBatchAllocationsFromEvent(
   catalog: InventoryCatalog,
   event: InventoryCommittedEvent
 ): readonly InventoryOncePolicyBatchAllocation[] {
