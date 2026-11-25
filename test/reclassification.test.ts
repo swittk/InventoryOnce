@@ -51,10 +51,10 @@ describe("atomic conserved split/merge/reclassification", () => {
       consume: [{ from: first, amount }, { from: second, amount }],
       produce: [{ to: firstDestination, amount }, { to: secondDestination, amount }],
     });
-    expect(moved.event.stockEffects.map((effect) => effect.measurementsDelta.primary.quantity.amountMinor)).toEqual([
-      -Number.MAX_SAFE_INTEGER, -Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER,
-    ]);
     const balance = parseQuantity(String(Number.MAX_SAFE_INTEGER), "piece");
+    const debit = parseQuantity(String(-Number.MAX_SAFE_INTEGER), "piece");
+    expect(moved.event.stockEffects.map((effect) => effect.measurementsDelta.primary.quantity))
+      .toEqual([debit, debit, balance, balance]);
     expect(await inventory.read.positions({ itemId: "item-a" })).toMatchObject([
       { key: firstDestination, measurements: { primary: { quantity: balance } } },
       { key: secondDestination, measurements: { primary: { quantity: balance } } },
@@ -338,7 +338,7 @@ describe("atomic conserved split/merge/reclassification", () => {
     });
     expect(await storePositions(inventory)).toMatchObject([{
       key: { statusId: "quarantine" },
-      measurements: { primary: { quantity: { amountMinor: 2 } } },
+      measurements: { primary: { quantity: parseQuantity("2", "piece") } },
     }]);
     expect((await inventory.read.reservation("reclassification-claim"))?.allocations[0]?.position)
       .toEqual(position.key);

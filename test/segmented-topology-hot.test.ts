@@ -61,7 +61,7 @@ describe("adapter-native standalone topology events", () => {
     const report = await inventory.read.reservationFeasibility(time2);
     expect(report.status).toBe(InventoryReservationFeasibilityStatus.Shortage);
     expect(report.groups[0]).toMatchObject({
-      reservationIds: ["cart-store-claim"], shortage: { amountMinor: 2 },
+      reservationIds: ["cart-store-claim"], shortage: parseQuantity("2", "piece"),
     });
   });
 

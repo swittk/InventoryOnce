@@ -1935,3 +1935,8 @@ The R105 portable-current-input authority and final publication both continue to
 
 - A partial allocation reports an increment blocker only when a bounded trial with relaxed increments finds a better storable assignment under the same acceptance rule.
 - A measured report can retain a compatible whole witness and record its exact remainder when another measured row is too large to witness the remainder. The picker leaves that row whole and does not infer fractional measurements.
+
+## 2026-11-26 — bounded exact picks and settlement facts
+
+- Exact allocation solves the current increment and suffix divisor together. A partial branch can skip a range when no reachable shortfall can fit storage, and the search budget includes pruning steps. A storage-driven FIFO deviation carries an increment diagnostic only if relaxing increments admits an earlier accepted plan.
+- Policy settlement uses the widened signed pool's expiry evidence for an existing positive row, including stock hidden by a lot selector. Ordered batches index newly introduced deficits by direct placement, and fungibility materializes only the quantities its plan returns.

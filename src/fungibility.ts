@@ -42,7 +42,7 @@ import {
 import {
   inventoryAllocationPoolFromWorld,
   inventoryAmountForPrimaryAllocation,
-  planInventoryAllocationInPool,
+  planWorkingInventoryAllocation,
   resolveAllocationItemAndSelector,
   type InventoryPolicyAllocationLine,
 } from "./picking.js";
@@ -408,7 +408,8 @@ function planInventoryFungibilityAllocationWithHolds({
     if (physicalTotal.amountMinor === 0) continue;
     const amount = stockAmount(quantityToDecimalString(physicalTotal), physicalTotal.unit);
     const selection = resolveAllocationItemAndSelector(catalog, selector, amount, item.revisionId);
-    const memberPlan = planInventoryAllocationInPool({
+    // Only the chosen lines and flags contribute to the common-basis plan.
+    const memberPlan = planWorkingInventoryAllocation({
       catalog,
       selection,
       pool: inventoryAllocationPoolFromWorld(world, selection, reservationAtEpochMs),

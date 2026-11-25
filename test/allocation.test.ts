@@ -281,6 +281,63 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
     });
     expect(result.allocations).toEqual([{ position: whole.position, quantity: requested }]);
     expect(result.shortfall).toEqual(parseQuantity("0", "kg"));
+    expect(result.incrementBlockedStock).toBe(true);
+  });
+
+  it("does not blame an unrelated increment for a storage-driven exact FIFO choice", () => {
+    const requested = parseQuantity(String(Number.MAX_SAFE_INTEGER), "kg");
+    const rows = ["1.1", String(Number.MAX_SAFE_INTEGER), "0.1"];
+    const candidates = rows.map((amount, index) => {
+      const available = parseQuantity(amount, "kg");
+      return candidate({
+        lotId: String(index), receivedAtEpochMs: time0 + index, expiresAtEpochMs: time3,
+        extra: { available, ...(index === 2 ? { allocationIncrement: available } : {}) },
+      });
+    });
+    const result = allocateInventory({
+      requested, candidates, method: InventoryAllocationMethod.Fifo, nowEpochMs: time2,
+    });
+    expect(result.allocations.map(({ position, quantity }) => [position.lotId, quantity])).toEqual([
+      ["0", parseQuantity("1.0", "kg")],
+      ["1", parseQuantity(String(Number.MAX_SAFE_INTEGER - 1), "kg")],
+    ]);
+    expect(result.shortfall).toEqual(parseQuantity("0", "kg"));
+    expect(result.incrementBlockedStock).toBe(false);
+  });
+
+  it("skips a band of partial picks that cannot leave a storable remainder", () => {
+    const requested = parseQuantity(String(Number.MAX_SAFE_INTEGER), "kg");
+    const candidates = ["1.800001", "0.000001"].map((amount, index) => candidate({
+      lotId: String(index), receivedAtEpochMs: time0 + index, expiresAtEpochMs: time3,
+      extra: { available: parseQuantity(amount, "kg") },
+    }));
+    const result = allocateInventoryUpTo({
+      requested, candidates, method: InventoryAllocationMethod.Fifo, nowEpochMs: time2,
+    });
+    expect(result.allocations.map(({ position, quantity }) => [position.lotId, quantity])).toEqual([
+      ["0", parseQuantity("1.000000", "kg")],
+    ]);
+    expect(result.shortfall).toEqual(parseQuantity(String(Number.MAX_SAFE_INTEGER - 1), "kg"));
+  });
+
+  it("rules out an exact increment residue outside millions of possible picks", () => {
+    const requested = parseQuantity("5000000090000000", "piece");
+    const candidates = [100_000_001, 100_000_000].map((increment, index) => candidate({
+      lotId: String(index), receivedAtEpochMs: time0 + index, expiresAtEpochMs: time3,
+      extra: {
+        available: parseQuantity(String(increment * 50_000_000), "piece"),
+        allocationIncrement: parseQuantity(String(increment), "piece"),
+      },
+    }));
+    const result = allocateInventory({
+      requested, candidates, method: InventoryAllocationMethod.Fifo, nowEpochMs: time2,
+      /** An exact assignment would satisfy this whole-plan constraint. */
+      acceptAllocations: () => true,
+    });
+    expect(result.allocations).toEqual([]);
+    expect(result.shortfall).toEqual(requested);
+    expect(result.incrementBlockedStock).toBe(true);
+    expect(result.allocationConstraintBlockedStock).toBe(false);
   });
 
   it("bounds a partial search by the capacity allowed by row increments", () => {

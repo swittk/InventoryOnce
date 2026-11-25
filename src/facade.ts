@@ -4373,8 +4373,8 @@ interface PolicyPoolAfterPriorRequestsInput {
   readonly pool: InventoryScopedStockPool;
   /** All exact rows changed by earlier requests in the batch. */
   readonly changed: ReadonlyMap<string, InventoryPolicyWorkingRow>;
-  /** Newly introduced deficit rows for this pool's revision. */
-  readonly addedDeficits: ReadonlyMap<string, InventoryPolicyWorkingRow> | undefined;
+  /** Newly introduced deficit candidates for this revision and direct placement constraint. */
+  readonly addedDeficits: Iterable<InventoryPolicyWorkingRow>;
   /** Signed pool selector used to admit new rows. */
   readonly selector: InventoryStockSelector;
 }
@@ -4394,10 +4394,31 @@ function policyPoolAfterPriorRequests({
     // Prior requests change balances. The published pool still owns age and expiry.
     positions.push({ ...row, position: next.position });
   }
-  for (const row of addedDeficits?.values() ?? []) {
+  for (const row of addedDeficits) {
     if (inventoryScopedStockMatches(row.position.key, selector, row.ancestry)) positions.push(row);
   }
   return { positions, reservations: pool.reservations };
+}
+
+/** Newly introduced batch deficits grouped by exact position and direct placement. */
+interface PolicyBatchDeficitRows {
+  /** All rows for one revision, including stock without a direct placement. */
+  readonly all: Map<string, InventoryPolicyWorkingRow>;
+  /** Direct nodes with new rows, for pools that name one or more exact nodes. */
+  readonly byPlacement: Map<string, Map<string, InventoryPolicyWorkingRow>>;
+}
+
+/** Select candidate deficits without walking earlier requests from other bins. */
+function* policyBatchDeficitCandidates(
+  deficits: PolicyBatchDeficitRows | undefined,
+  placementNodeIds: readonly string[] | undefined
+): IterableIterator<InventoryPolicyWorkingRow> {
+  if (deficits === undefined) return;
+  if (placementNodeIds === undefined) {
+    yield* deficits.all.values();
+    return;
+  }
+  for (const nodeId of placementNodeIds) yield* deficits.byPlacement.get(nodeId)?.values() ?? [];
 }
 
 /** Apply a debit to one unpublished row. All individual axes stay exact until commit. */
@@ -4468,8 +4489,8 @@ async function commitInventoryPolicyBatch(
       const pools = new Map<string, InventoryScopedStockPool>();
       /** Exact rows changed by earlier requests in this same logical event. */
       const changed = new Map<string, InventoryPolicyWorkingRow>();
-      /** Newly negative rows not present in the original pool, grouped by item revision. */
-      const addedDeficits = new Map<string, Map<string, InventoryPolicyWorkingRow>>();
+      /** Newly negative rows absent from the published pools, grouped by revision and placement. */
+      const addedDeficits = new Map<string, PolicyBatchDeficitRows>();
       const allocations: InventoryOncePolicyBatchAllocation[] = [];
       const selectedLines: InventoryPolicyAllocationLine[] = [];
       const deficitLines: CreateInventoryIssueManyInput["lines"][number][] = [];
@@ -4486,7 +4507,8 @@ async function commitInventoryPolicyBatch(
         }
         const revisionId = selection.item.revisionId;
         const pool = policyPoolAfterPriorRequests({
-          pool: initialPool, changed, addedDeficits: addedDeficits.get(revisionId), selector: poolSelector,
+          pool: initialPool, changed, selector: poolSelector,
+          addedDeficits: policyBatchDeficitCandidates(addedDeficits.get(revisionId), poolSelector.placementNodeIds),
         });
         const allocation = planInventoryAllocationForRecording({
           catalog: internals.catalog,
@@ -4504,13 +4526,8 @@ async function commitInventoryPolicyBatch(
           deficitPolicy: internals.deficitPolicy,
           input: policyMovementInputFromBatchRequest(input, request),
           allocation,
-          /** Test the current proposed shortage row without materializing any unpublished axes. */
-          hasPositivePrimary: async (id) => {
-            const position = changed.get(id)?.position ?? currentRows.get(id)?.position ?? await source.position(id);
-            return position !== undefined &&
-              inventoryPolicyPositionMeasurement(position, selection.item.primaryAxis.axisId,
-                selection.item.primaryAxis.unit).amountMinor > 0n;
-          },
+          /** Use the widened signed pool's current row and its retained expiry. */
+          settlementRow: (id) => currentRows.get(id),
           ancestry: source.ancestry,
         });
         allocations.push(
@@ -4542,13 +4559,22 @@ async function commitInventoryPolicyBatch(
               ? [] : await source.ancestry(position.placementNodeId)),
           };
           changed.set(id, deficitRow);
-          if (published === undefined || addedDeficits.get(revisionId)?.has(id)) {
+          if (published === undefined || addedDeficits.get(revisionId)?.all.has(id)) {
             let revisionDeficits = addedDeficits.get(revisionId);
             if (revisionDeficits === undefined) {
-              revisionDeficits = new Map();
+              revisionDeficits = { all: new Map(), byPlacement: new Map() };
               addedDeficits.set(revisionId, revisionDeficits);
             }
-            revisionDeficits.set(id, deficitRow);
+            revisionDeficits.all.set(id, deficitRow);
+            const nodeId = position.placementNodeId;
+            if (nodeId !== undefined) {
+              let placementDeficits = revisionDeficits.byPlacement.get(nodeId);
+              if (placementDeficits === undefined) {
+                placementDeficits = new Map();
+                revisionDeficits.byPlacement.set(nodeId, placementDeficits);
+              }
+              placementDeficits.set(id, deficitRow);
+            }
           }
         }
       }
@@ -5454,8 +5480,11 @@ async function commitInventoryPolicyMovement(
         deficitPolicy: internals.deficitPolicy,
         input,
         allocation,
-        /** A single operation only needs the sign of the published stock row. */
-        hasPositivePrimary: async (id) => ((await source.position(id))?.measurements.primary.quantity.amountMinor ?? 0) > 0,
+        /** The widened signed pool includes any existing row at the accepted settlement position. */
+        settlementRow: (id) => pool.positions.find(
+          /** Match the exact signed position, including dimensions omitted by the widened selector. */
+          (row) => inventoryStockPositionIdentity(row.position.key) === id
+        ),
         ancestry: source.ancestry,
       });
       return createPolicyMovementEvent(
@@ -5632,8 +5661,8 @@ interface PolicyRecordedDeficitInput {
   readonly input: InventoryOncePolicyMovementInput;
   /** Exact native allocation/shortfall result. */
   readonly allocation: InventoryWorkingPolicyAllocationPlan;
-  /** Look up whether the proposed shortfall source currently holds positive stock. */
-  hasPositivePrimary(positionId: string): Promise<boolean>;
+  /** Current exact settlement balance and expiry from the signed allocation pool. */
+  settlementRow(positionId: string): InventoryPolicyWorkingRow | undefined;
   /** Resolve exact placement ancestry from the signed planning view. */
   readonly ancestry: InventoryPolicyStockSource["ancestry"];
 }
@@ -5645,7 +5674,7 @@ async function policyRecordedDeficit({
   deficitPolicy,
   input,
   allocation,
-  hasPositivePrimary,
+  settlementRow,
   ancestry: readAncestry,
 }: PolicyRecordedDeficitInput): Promise<InventoryPolicyRecordedDeficit | undefined> {
   if (allocation.shortfall.amountMinor === 0) return undefined;
@@ -5690,7 +5719,10 @@ async function policyRecordedDeficit({
   if (!inventoryScopedStockMatches(position, placementScope, ancestry)) {
     throw new Error("Inventory policy deficit position is outside the selected placement scope or whereabouts.");
   }
-  if (await hasPositivePrimary(inventoryStockPositionIdentity(position))) {
+  const row = settlementRow(inventoryStockPositionIdentity(position));
+  if (row !== undefined && inventoryPolicyPositionMeasurement(
+    row.position, item.primaryAxis.axisId, item.primaryAxis.unit
+  ).amountMinor > 0n) {
     if (!unwitnessed) {
       throw new Error("Inventory policy deficit position currently contains allocatable physical stock.");
     }
@@ -5699,6 +5731,11 @@ async function policyRecordedDeficit({
     const { lot: _lot, lotIds: _lotIds, ...settlementScope } = allocation.selector;
     if (!inventoryScopedStockMatches(position, settlementScope, ancestry)) {
       throw new Error("Inventory policy deficit position contains positive stock outside the selected stock scope.");
+    }
+    // The lot filter may have hidden this row from allocation, but settling its physical stock still requires the expiry override.
+    if (!input.allowExpiredLots && row.effectiveUseByEpochMs !== undefined &&
+        row.effectiveUseByEpochMs <= input.occurredAtEpochMs) {
+      assertPolicyAllocationComplete({ ...allocation, expiredStockWasExcluded: true });
     }
   }
   const { itemRevisionId, ...exactFrom } = position;

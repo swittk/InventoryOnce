@@ -821,8 +821,8 @@ describe("indexed stock planning and availability", () => {
     });
     expect(result.event.unwitnessedStockMovements).toMatchObject([{
       measurements: {
-        primary: { quantity: { amountMinor: remaining } },
-        independent: [{ axisId: "weight", quantity: { amountMinor: 5 } }],
+        primary: { quantity: parseQuantity(String(remaining), "piece") },
+        independent: [{ axisId: "weight", quantity: parseQuantity("5", "kg") }],
       },
     }]);
     expect(await inventory.read.positions({ itemId: "measured", lotIds: ["heavy"] })).toMatchObject([
@@ -891,8 +891,8 @@ describe("indexed stock planning and availability", () => {
     });
     expect(result.event.unwitnessedStockMovements).toMatchObject([{
       measurements: {
-        primary: { quantity: { amountMinor: 3 } },
-        independent: [{ axisId: "weight", quantity: { amountMinor: 30 } }],
+        primary: { quantity: parseQuantity("3", "piece") },
+        independent: [{ axisId: "weight", quantity: parseQuantity("30", "kg") }],
       },
     }]);
     expect(result.event.stockEffects).toHaveLength(2);
@@ -917,8 +917,8 @@ describe("indexed stock planning and availability", () => {
     });
     expect(result.event.unwitnessedStockMovements).toMatchObject([{
       measurements: {
-        primary: { quantity: { amountMinor: Number.MAX_SAFE_INTEGER - 1, decimals: 0 } },
-        independent: [{ axisId: "weight", quantity: { amountMinor: 20 } }],
+        primary: { quantity: parseQuantity(String(Number.MAX_SAFE_INTEGER - 1), "piece") },
+        independent: [{ axisId: "weight", quantity: parseQuantity("20", "kg") }],
       },
     }]);
   });
@@ -943,8 +943,8 @@ describe("indexed stock planning and availability", () => {
     expect(knownArrivals.map((effect) => effect.position.lotId).sort()).toEqual(["first", "second"]);
     expect(result.event.unwitnessedStockMovements).toMatchObject([{
       measurements: {
-        primary: { quantity: { amountMinor: Number.MAX_SAFE_INTEGER - 3, decimals: 0 } },
-        independent: [{ axisId: "weight", quantity: { amountMinor: 1 } }],
+        primary: { quantity: parseQuantity(String(Number.MAX_SAFE_INTEGER - 3), "piece") },
+        independent: [{ axisId: "weight", quantity: parseQuantity("1", "kg") }],
       },
     }]);
   });
@@ -978,8 +978,8 @@ describe("indexed stock planning and availability", () => {
     expect(knownArrivals.map((effect) => effect.position.lotId)).toEqual(hasLaterWitness ? ["whole"] : []);
     expect(result.event.unwitnessedStockMovements).toMatchObject([{
       measurements: {
-        primary: { quantity: { amountMinor: Number.MAX_SAFE_INTEGER - (hasLaterWitness ? 1 : 0), decimals: 0 } },
-        independent: [{ axisId: "weight", quantity: { amountMinor: hasLaterWitness ? 2 : 3 } }],
+        primary: { quantity: parseQuantity(String(Number.MAX_SAFE_INTEGER - (hasLaterWitness ? 1 : 0)), "piece") },
+        independent: [{ axisId: "weight", quantity: parseQuantity(hasLaterWitness ? "2" : "3", "kg") }],
       },
     }]);
   });
@@ -1555,6 +1555,47 @@ describe("indexed stock planning and availability", () => {
     const allowed = await report(true);
     expect(allowed.event.stockEffects[0]?.position.lotId).toBe("expiring");
     expect(allowed.event.unwitnessedStockMovements).toBeUndefined();
+  });
+
+  it.each([
+    { kind: "transfer", canonical: false },
+    { kind: "batch", canonical: false },
+    { kind: "scrap", canonical: false },
+    { kind: "transfer", canonical: true },
+  ])("requires an expiry override for unlabelled $kind settlement (canonical: $canonical)", async ({ kind, canonical }) => {
+    const storage = createInMemoryInventoryDurableStorage(canonical ? { failpoint: () => undefined } : {});
+    const inventory = createTestInventory(storage, undefined, clockAt(time3), InventoryDeficitPolicy.Record);
+    const source = loosePosition("store");
+    await inventory.stock.receive({
+      operationId: "expiring-unlabelled-stock", occurredAtEpochMs: time0,
+      to: source, amount: stockAmount("2", "piece"),
+      placementNode: { useByEpochMs: time2 },
+    });
+    const before = storage.readSegmentedStockHead();
+    /** Report a lot that was not present, so the unlabelled position can settle the debit. */
+    const report = (allowExpiredLots: boolean) => {
+      const request = {
+        method: InventoryAllocationMethod.Fifo,
+        selector: inventoryStockSelector("item-a", { placementNodeIds: ["store"], lotIds: ["missing"] }),
+        amount: stockAmount("1", "piece"), allowExpiredLots,
+      };
+      const header = { operationId: "settle-expired-unlabelled", occurredAtEpochMs: time2 };
+      if (kind === "batch") return inventory.stock.transferManyByPolicy({
+        ...header, toPlacementNodeId: "destination", requests: [{ ...request, requestId: "report" }],
+      });
+      if (kind === "scrap") return inventory.stock.scrapByPolicy({ ...header, ...request, reason: "Physical disposal" });
+      return inventory.stock.transferByPolicy({ ...header, ...request, toPlacementNodeId: "destination" });
+    };
+    await expect(report(false)).rejects.toThrow("excluding expired stock");
+    expect(storage.readSegmentedStockHead()).toEqual(before);
+    expect(await report(true)).toMatchObject({
+      event: { unwitnessedStockMovements: [{
+        from: source, measurements: { primary: { quantity: parseQuantity("1", "piece") } },
+      }] },
+    });
+    expect(await inventory.read.positions(selector)).toMatchObject([{
+      key: source, measurements: { primary: { quantity: parseQuantity("1", "piece") } },
+    }]);
   });
 
   it("records a policy transfer and scrap shortfall through the native fence", async () => {

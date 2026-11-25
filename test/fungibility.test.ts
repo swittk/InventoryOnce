@@ -542,6 +542,47 @@ describe("derived pool summaries and exact member movements", () => {
     expect(tooLarge.shortfall.amountMinor).toBe(9);
   });
 
+  it("uses eligible stock when other member placements have an unstorable combined deficit", async () => {
+    const inventory = createInventoryOnce({
+      catalog: fungibilityCatalog(),
+      storage: createInMemoryInventoryDurableStorage(),
+      clock: clockAt(time3),
+      deficitPolicy: InventoryDeficitPolicy.Record,
+    });
+    for (const { placement, value } of [
+      { placement: "missing-large", value: String(Number.MAX_SAFE_INTEGER) },
+      { placement: "missing-small", value: "0.1" },
+    ]) {
+      await inventory.stock.issueByPolicy({
+        operationId: placement, occurredAtEpochMs: time0,
+        selector: inventoryStockSelector("old-brand", { placementNodeIds: [placement] }),
+        itemRevisionId: "old-brand-v1", amount: stockAmount(value, "piece"),
+        method: InventoryAllocationMethod.Fifo,
+      });
+    }
+    await receiveMember({
+      inventory, operationId: "receive-outside-member-shortage", itemId: "old-brand",
+      itemRevisionId: "old-brand-v1", lotId: "LIVE", quantity: "2", occurredAtEpochMs: time1,
+    });
+    const request = {
+      fungibilityRevisionId: "brand-pool-v1", requested: parseQuantity("1", "dose-equivalent"),
+      method: InventoryAllocationMethod.Fifo,
+    };
+    const preview = await inventory.fungibility.plan({ ...request, atEpochMs: time2 });
+    expect(preview.lines).toMatchObject([{
+      position: { lotId: "LIVE", placementNodeId: "store" },
+      memberQuantity: parseQuantity("1", "piece"),
+    }]);
+    expect(await inventory.fungibility.issue({
+      ...request, operationId: "issue-outside-member-shortage", occurredAtEpochMs: time2,
+    })).toMatchObject({
+      event: { stockEffects: [{
+        position: { lotId: "LIVE", placementNodeId: "store" },
+        measurementsDelta: { primary: { quantity: parseQuantity("-1", "piece") } },
+      }] },
+    });
+  });
+
   it("pins operations to the supplied revision even when a newer pool is active", async () => {
     const catalog = fungibilityCatalog("brand-pool-v2");
     const inventory = createInventoryOnce({

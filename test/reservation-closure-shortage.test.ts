@@ -296,6 +296,10 @@ describe("reservation closure through an existing shortage", () => {
     for (const nodeId of ["unrelated-a", "unrelated-b"]) {
       await inventory.stock.issue({ operationId: `deficit-${nodeId}`, occurredAtEpochMs: time2,
         from: loosePosition(nodeId), amount: stockAmount(String(Number.MAX_SAFE_INTEGER), "piece") });
+      expect(await inventory.read.positions({ itemId: "item-a", placementNodeIds: [nodeId] })).toMatchObject([{
+        key: { placementNodeId: nodeId },
+        measurements: { primary: { quantity: parseQuantity(String(-Number.MAX_SAFE_INTEGER), "piece") } },
+      }]);
     }
     expect((await inventory.read.reservationFeasibility(time2)).groups).toMatchObject([{
       reservationIds: ["intersection"], shortage: parseQuantity("1", "piece"),

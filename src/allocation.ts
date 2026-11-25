@@ -5,6 +5,7 @@ import {
   type InventoryStockPositionKey,
 } from "./model.js";
 import {
+  compareQuantity,
   integerAtDecimals,
   positiveQuantity,
   quantity,
@@ -173,11 +174,7 @@ function allocateInventoryCandidates({
       expiredStockWasExcluded,
       incrementBlockedStock: assessIncrementBlockage && (assignment.shortfall.amountMinor > 0
         ? partialAllocationHasBlockedIncrement(searchInput, assignment.shortfall)
-        : eligible.some(
-            /** Only an indivisible increment can make an exact-plan deviation increment-driven. */
-            (candidate) => candidate.allocationIncrement !== undefined
-          ) &&
-          exactAllocationsDoNotFollowGreedyPrefix(requested, eligible, assignment.allocations)),
+        : exactAllocationHasBlockedIncrement(searchInput, assignment.allocations)),
       allocationConstraintBlockedStock: false,
     };
   }
@@ -238,7 +235,7 @@ function allocateInventoryCandidates({
       allocations: storable.allocations,
       shortfall: storable.shortfall,
       expiredStockWasExcluded,
-      incrementBlockedStock: partialAllocationHasBlockedIncrement(searchInput, storable.shortfall),
+      incrementBlockedStock: assessIncrementBlockage && partialAllocationHasBlockedIncrement(searchInput, storable.shortfall),
       allocationConstraintBlockedStock: false,
     };
   }
@@ -249,6 +246,39 @@ function allocateInventoryCandidates({
     incrementBlockedStock,
     allocationConstraintBlockedStock: false,
   };
+}
+
+/** Confirm that relaxing increments admits an earlier accepted full plan. */
+function exactAllocationHasBlockedIncrement(
+  input: Pick<SearchInventoryAllocationsInput, "requested" | "candidates" | "acceptAllocations">,
+  allocations: readonly InventoryAllocation[]
+): boolean {
+  if (!input.candidates.some(
+    /** Only an indivisible row gives the relaxed trial a different choice. */
+    (candidate) => candidate.allocationIncrement !== undefined
+  ) ||
+      !exactAllocationsDoNotFollowGreedyPrefix(input.requested, input.candidates, allocations)) return false;
+  const relaxed = searchInventoryAllocations({ ...input, acceptPartial: false, ignoreIncrements: true });
+  if (relaxed === undefined) return false;
+  /** Search results preserve each original candidate key, including its place in the policy order. */
+  const originalPicks = new Map(allocations.map(
+    /** Index each selected amount in the original plan. */
+    ({ position, quantity }) => [position, quantity]
+  ));
+  const relaxedPicks = new Map(relaxed.allocations.map(
+    /** Index each selected amount after relaxing increments. */
+    ({ position, quantity }) => [position, quantity]
+  ));
+  for (const { position } of input.candidates) {
+    const original = originalPicks.get(position);
+    const alternative = relaxedPicks.get(position);
+    if (original === undefined && alternative === undefined) continue;
+    if (original === undefined) return true;
+    if (alternative === undefined) return false;
+    const comparison = compareQuantity(alternative, original);
+    if (comparison !== 0) return comparison > 0;
+  }
+  return false;
 }
 
 /** Report increment blockage only if relaxing increments improves an accepted, storable assignment. */
@@ -355,7 +385,7 @@ function searchInventoryAllocations({
     }
   }
   if (candidates.length > MAXIMUM_EXACT_ALLOCATION_DEPTH) {
-    if (improveOnShortfall !== undefined) return undefined;
+    if (ignoreIncrements) return undefined;
     throw new Error(
       "Exact allocation exceeded its safe search bound; narrow the candidates or request."
     );
@@ -407,38 +437,58 @@ function searchInventoryAllocations({
     const maximum = capacity < remainingMinor ? capacity : remainingMinor;
     const laterCapacity = suffixCapacity[index + 1] ?? 0n;
     const laterDivisor = suffixDivisor[index + 1] ?? 0n;
-    const terminalPartial = acceptPartial && index === candidates.length - 1;
+    /** A zero-capacity suffix can only accept a zero pending amount. */
+    const exactDivisor = acceptPartial ? undefined : (laterDivisor === 0n ? remainingMinor + 1n : laterDivisor);
+    const terminalPartial = acceptPartial && laterCapacity === 0n;
     let take = (maximum / increment) * increment;
     while (take >= 0n) {
-      if (storableQuantityScale(take, decimals) === undefined ||
+      exploredChoices += 1;
+      if (exploredChoices > MAXIMUM_EXACT_ALLOCATION_STATES) {
+        // A diagnostic without a proven improvement must leave the accepted plan usable.
+        if (ignoreIncrements) return true;
+        throw new Error(
+          "Exact allocation exceeded its safe search bound; narrow the candidates or request."
+        );
+      }
+      if (exactDivisor !== undefined || storableQuantityScale(take, decimals) === undefined ||
           (terminalPartial && storableQuantityScale(remainingMinor - take, decimals) === undefined)) {
-        // Skip impossible storage digits before they consume the bounded search budget.
+        // Exact branches solve the suffix congruence and pick storage divisibility together.
         const next = largestStorableAllocationTake({
           limit: take,
           increment,
-          ...(terminalPartial ? { remaining: remainingMinor } : {}),
+          ...(terminalPartial || exactDivisor !== undefined ? { remaining: remainingMinor } : {}),
+          ...(exactDivisor === undefined ? {} : { suffixDivisor: exactDivisor }),
         });
         if (next === undefined) break;
         take = next;
       }
       const pending = remainingMinor - take;
-      const laterLimit = pending < laterCapacity ? pending : laterCapacity;
-      const laterUsable = laterDivisor === 0n ? 0n : laterLimit - laterLimit % laterDivisor;
-      if (pending - laterUsable >= (acceptPartial ? bestRemainingMinor : 1n)) {
-        // Decreasing this pick only makes the gap larger until another suffix increment can fit.
-        if (laterUsable === laterCapacity) break;
-        const nextLimit = remainingMinor - laterUsable - laterDivisor;
-        if (nextLimit < 0n) break;
-        take = nextLimit - nextLimit % increment;
-        continue;
-      }
-      exploredChoices += 1;
-      if (exploredChoices > MAXIMUM_EXACT_ALLOCATION_STATES) {
-        // A diagnostic without a proven improvement must leave the accepted plan usable.
-        if (improveOnShortfall !== undefined) return true;
-        throw new Error(
-          "Exact allocation exceeded its safe search bound; narrow the candidates or request."
-        );
+      if (acceptPartial) {
+        const laterLimit = pending < laterCapacity ? pending : laterCapacity;
+        const floor = pending - laterLimit;
+        if (!terminalPartial && floor > MAXIMUM_STORED_QUANTITY_MINOR) {
+          // This lower bound rises as picks decrease. Jump to where the interval first reaches a storable remainder.
+          const factor = allocationStorageFactor(floor);
+          const firstStorable = ((floor + factor - 1n) / factor) * factor;
+          if (firstStorable >= bestRemainingMinor) break;
+          if (firstStorable > pending) {
+            const limit = remainingMinor - firstStorable;
+            if (limit < 0n) break;
+            take = limit - limit % increment;
+            continue;
+          }
+        }
+        const laterUsable = laterDivisor === 0n ? 0n : laterLimit - laterLimit % laterDivisor;
+        if (pending - laterUsable >= bestRemainingMinor) {
+          // Decreasing this pick only makes the gap larger until another suffix increment can fit.
+          if (laterUsable === laterCapacity) break;
+          const nextLimit = remainingMinor - laterUsable - laterDivisor;
+          if (nextLimit < 0n) break;
+          take = nextLimit - nextLimit % increment;
+          continue;
+        }
+      } else if (pending > laterCapacity) {
+        break;
       }
       chosenMinor[index] = take;
       if (findExactSuffix(index + 1, remainingMinor - take)) return true;
@@ -468,22 +518,27 @@ interface StorableAllocationTakeInput {
   readonly limit: bigint;
   /** Allowed increment on the same scale. */
   readonly increment: bigint;
-  /** Amount still requested when the remaining shortfall must also fit storage. */
+  /** Amount still requested when the remainder must fit storage or a suffix divisor. */
   readonly remaining?: bigint;
+  /** Required remainder divisor for an exact suffix. */
+  readonly suffixDivisor?: bigint;
 }
 
 /** Find the largest exact allowed pick, including the final shortfall when requested. */
-function largestStorableAllocationTake({ limit, increment, remaining }: StorableAllocationTakeInput): bigint | undefined {
+function largestStorableAllocationTake({ limit, increment, remaining, suffixDivisor }: StorableAllocationTakeInput): bigint | undefined {
+  const storeShortfall = remaining !== undefined && suffixDivisor === undefined;
   while (limit >= 0n) {
     const takeFactor = allocationStorageFactor(limit);
-    const shortfallFactor = remaining === undefined ? 1n : allocationStorageFactor(remaining - limit);
+    const shortfallFactor = storeShortfall ? allocationStorageFactor(remaining - limit) : 1n;
     // Descending past either boundary changes the scale requirement, so solve one range at a time.
     const takeFloor = takeFactor === 1n ? 0n : MAXIMUM_STORED_QUANTITY_MINOR * (takeFactor / 10n) + 1n;
-    const shortfallFloor = remaining === undefined ? 0n : remaining - MAXIMUM_STORED_QUANTITY_MINOR * shortfallFactor;
+    const shortfallFloor = storeShortfall ? remaining - MAXIMUM_STORED_QUANTITY_MINOR * shortfallFactor : 0n;
     const floor = takeFloor > shortfallFloor ? takeFloor : shortfallFloor;
     const stride = takeFactor === 1n ? increment
       : (increment / allocationModularCoefficients(increment, takeFactor).divisor) * takeFactor;
-    const take = largestAllocationMultipleWithRemainder({ limit, stride, remaining: remaining ?? 0n, factor: shortfallFactor });
+    const take = largestAllocationMultipleWithRemainder({
+      limit, stride, remaining: remaining ?? 0n, factor: suffixDivisor ?? shortfallFactor,
+    });
     if (take !== undefined && take >= floor) return take;
     limit = floor - 1n;
   }
