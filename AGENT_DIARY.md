@@ -1892,3 +1892,8 @@ The R105 portable-current-input authority and final publication both continue to
 ## 2026-11-25 — exact FIFO remainders
 
 - Greedy picks and the exact allocator's FIFO prefix check keep temporary remainders as wide digits. Two fractional lots can leave an exactly storable shortfall even when the intermediate remainder after the first lot exceeds the storage scale.
+
+## 2026-11-25 — representable allocation trials
+
+- The bounded search uses only storable trial line quantities and final residuals. Incompatible trials leave the search free to find a later exact witness. Both exact and partial searches stop trying smaller choices when the remaining rows cannot improve the result.
+- An unstorable greedy split falls back to the same bounded search. When no known lot can fit, Record can retain the reported movement without inventing lot evidence.

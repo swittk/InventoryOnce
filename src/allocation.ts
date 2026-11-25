@@ -9,7 +9,6 @@ import {
   integerAtDecimals,
   positiveQuantity,
   quantity,
-  safeNumber,
   zeroQuantity,
   type Quantity,
 } from "./quantity.js";
@@ -83,6 +82,9 @@ export const MAXIMUM_EXACT_ALLOCATION_STATES = 100_000;
 
 /** Maximum recursive exact-search depth before callers must narrow the candidate set. */
 const MAXIMUM_EXACT_ALLOCATION_DEPTH = 5_000;
+
+/** The signed digits allowed in a stored quantity. */
+const MAXIMUM_STORABLE_ALLOCATION_MINOR = BigInt(Number.MAX_SAFE_INTEGER);
 
 /** Pick FIFO/FEFO stock without inventing synthetic lots or hiding expiry/shortfall policy. */
 export function allocateInventory(input: AllocateInventoryInput): InventoryAllocationResult {
@@ -184,23 +186,38 @@ function allocateInventoryCandidates({
   };
   let incrementBlockedStock = false;
   const allocations: InventoryAllocation[] = [];
+  /** A greedy prefix may take an amount that is too precise to store. */
+  let greedyPicksFit = true;
   for (const candidate of eligible) {
     if (remaining.minor === 0n) break;
     const choice = takeGreedyInventoryAllocation(remaining, candidate);
     if (choice.incrementBlocked) incrementBlockedStock = true;
     if (choice.minor === 0n) continue;
-    allocations.push({
-      position: candidate.position,
-      quantity: inventoryAllocationQuantityAtStorableScale(
-        choice.minor, choice.decimals, requested.unit, "Greedy allocation quantity"
-      ),
-    });
+    const quantity = inventoryAllocationQuantityIfStorable(choice.minor, choice.decimals, requested.unit);
+    if (quantity === undefined) {
+      greedyPicksFit = false;
+      break;
+    }
+    allocations.push({ position: candidate.position, quantity });
+  }
+  const shortfall = greedyPicksFit
+    ? inventoryAllocationQuantityIfStorable(remaining.minor, remaining.decimals, requested.unit)
+    : undefined;
+  if (shortfall === undefined) {
+    // Preserve the ordinary greedy result when it fits. The bounded search handles other exact splits.
+    const storable = searchInventoryAllocations({ requested, candidates: eligible, acceptPartial: true });
+    if (storable === undefined) throw new Error("Allocation has no storable result.");
+    return {
+      allocations: storable.allocations,
+      shortfall: storable.shortfall,
+      expiredStockWasExcluded,
+      incrementBlockedStock: partialAllocationHasBlockedIncrement(eligible, storable),
+      allocationConstraintBlockedStock: false,
+    };
   }
   return {
     allocations,
-    shortfall: inventoryAllocationQuantityAtStorableScale(
-      remaining.minor, remaining.decimals, requested.unit, "Allocation shortfall"
-    ),
+    shortfall,
     expiredStockWasExcluded,
     incrementBlockedStock,
     allocationConstraintBlockedStock: false,
@@ -291,34 +308,25 @@ function searchInventoryAllocations({
   /** Failed index/remainder pairs already exhausted by the bounded search. */
   const failedStates = new Set<string>();
   let exploredChoices = 0;
-  /** Best coherent partial result so far. Equal quantities keep the first policy choice. */
-  let bestPartial: InventoryAllocationAssignment | undefined;
+  /** Best coherent result so far. Equal quantities keep the first policy choice. */
+  let bestAssignment: InventoryAllocationAssignment | undefined;
   let bestRemainingMinor = requestedMinor + 1n;
 
   /** Search larger amounts from earlier rows first, giving deterministic FIFO/FEFO preference. */
   const findExactSuffix = (index: number, remainingMinor: bigint): boolean => {
-    if (remainingMinor === 0n) {
-      return (
-        acceptAllocations === undefined ||
-        acceptAllocations(
-          materializeExactAllocations(candidates, chosenMinor, decimals)
-        )
-      );
-    }
-    if (index >= candidates.length) {
-      if (acceptPartial && remainingMinor < bestRemainingMinor) {
-        const allocations = materializeExactAllocations(candidates, chosenMinor, decimals);
-        if (acceptAllocations === undefined || acceptAllocations(allocations)) {
-          bestRemainingMinor = remainingMinor;
-          bestPartial = {
-            allocations,
-            shortfall: inventoryAllocationQuantityAtStorableScale(
-              remainingMinor, decimals, requested.unit, "Allocation shortfall"
-            ),
-          };
-        }
-      }
-      return false;
+    const complete = remainingMinor === 0n;
+    if (complete || index >= candidates.length) {
+      if (!complete && (!acceptPartial || remainingMinor >= bestRemainingMinor)) return false;
+      // A trial can leave a shortfall that cannot be emitted, even though a later trial fits.
+      const shortfall = complete
+        ? zeroQuantity(requested.unit, requested.decimals)
+        : inventoryAllocationQuantityIfStorable(remainingMinor, decimals, requested.unit);
+      if (shortfall === undefined) return false;
+      const allocations = materializeExactAllocations(candidates, chosenMinor, decimals);
+      if (acceptAllocations !== undefined && !acceptAllocations(allocations)) return false;
+      bestRemainingMinor = remainingMinor;
+      bestAssignment = { allocations, shortfall };
+      return complete;
     }
     const capacityFromHere = suffixCapacity[index] ?? 0n;
     if (acceptPartial ? remainingMinor - capacityFromHere >= bestRemainingMinor : capacityFromHere < remainingMinor) {
@@ -333,16 +341,20 @@ function searchInventoryAllocations({
     const laterCapacity = suffixCapacity[index + 1] ?? 0n;
     let take = (maximum / increment) * increment;
     while (take >= 0n) {
-      // Lower choices can only tie or worsen this bound. Keep the first witness on ties.
-      if (acceptPartial && remainingMinor - take - laterCapacity >= bestRemainingMinor) break;
+      // Lower choices cannot make up an uncovered amount or improve the best partial witness.
+      const unfillable = remainingMinor - take - laterCapacity;
+      if (acceptPartial ? unfillable >= bestRemainingMinor : unfillable > 0n) break;
       exploredChoices += 1;
       if (exploredChoices > MAXIMUM_EXACT_ALLOCATION_STATES) {
         throw new Error(
           "Exact allocation exceeded its safe search bound; narrow the candidates or request."
         );
       }
-      chosenMinor[index] = take;
-      if (findExactSuffix(index + 1, remainingMinor - take)) return true;
+      // Skip picks that cannot be stored before memoizing suffixes by remainder.
+      if (inventoryAllocationStorableDecimals(take, decimals) !== undefined) {
+        chosenMinor[index] = take;
+        if (findExactSuffix(index + 1, remainingMinor - take)) return true;
+      }
       if (take === 0n) break;
       take -= increment;
     }
@@ -351,23 +363,37 @@ function searchInventoryAllocations({
     return false;
   };
 
-  if (!findExactSuffix(0, requestedMinor)) return bestPartial;
-  return {
-    allocations: materializeExactAllocations(candidates, chosenMinor, decimals),
-    shortfall: zeroQuantity(requested.unit, requested.decimals),
-  };
+  findExactSuffix(0, requestedMinor);
+  return bestAssignment;
 }
 
-/** Drop exact trailing zeros only if the supplied digits need a smaller storage scale. */
-export function inventoryAllocationQuantityAtStorableScale(
-  digits: bigint, decimals: number, unit: Quantity["unit"], label: string
-): Quantity {
-  const limit = BigInt(Number.MAX_SAFE_INTEGER);
-  while ((digits > limit || digits < -limit) && decimals > 0 && digits % 10n === 0n) {
+/** Find the first exact storage scale, keeping precision unless trailing zeros must go. */
+function inventoryAllocationStorableDecimals(digits: bigint, decimals: number): number | undefined {
+  while (digits > MAXIMUM_STORABLE_ALLOCATION_MINOR || digits < -MAXIMUM_STORABLE_ALLOCATION_MINOR) {
+    if (decimals === 0 || digits % 10n !== 0n) return undefined;
     digits /= 10n;
     decimals -= 1;
   }
-  return quantity({ amountMinor: safeNumber(digits, label), decimals, unit });
+  return decimals;
+}
+
+/** Materialize a trial amount only when it fits the storage range exactly. */
+export function inventoryAllocationQuantityIfStorable(
+  digits: bigint, decimals: number, unit: Quantity["unit"]
+): Quantity | undefined {
+  const scale = inventoryAllocationStorableDecimals(digits, decimals);
+  if (scale === undefined) return undefined;
+  const minor = scale === decimals ? digits : digits / (10n ** BigInt(decimals - scale));
+  return quantity({ amountMinor: Number(minor), decimals: scale, unit });
+}
+
+/** Enforce the storage range for an amount that must be returned. */
+function inventoryAllocationQuantityAtStorableScale(
+  digits: bigint, decimals: number, unit: Quantity["unit"], label: string
+): Quantity {
+  const value = inventoryAllocationQuantityIfStorable(digits, decimals, unit);
+  if (value === undefined) throw new Error(`${label} exceeds the safe integer storage range.`);
+  return value;
 }
 
 /** Temporary exact digits on the allocation's common unit. */

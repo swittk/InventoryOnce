@@ -201,6 +201,24 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
     expect(result.incrementBlockedStock).toBe(false);
   });
 
+  it("skips an unstorable exact trial to use a later whole quantity", () => {
+    const requested = parseQuantity(String(Number.MAX_SAFE_INTEGER), "kg");
+    const fractional = parseQuantity("1.1", "kg");
+    const early = candidate({
+      lotId: "fractional", receivedAtEpochMs: time0, expiresAtEpochMs: time3,
+      extra: { available: fractional, allocationIncrement: fractional },
+    });
+    const whole = candidate({
+      lotId: "whole", receivedAtEpochMs: time1, expiresAtEpochMs: time3,
+      extra: { available: requested },
+    });
+    const result = allocateInventory({
+      requested, candidates: [early, whole], method: InventoryAllocationMethod.Fifo, nowEpochMs: time2,
+    });
+    expect(result.allocations).toEqual([{ position: whole.position, quantity: requested }]);
+    expect(result.shortfall).toEqual(parseQuantity("0", "kg"));
+  });
+
   it("rejects an invalid requested decimal scale before returning shortfall", () => {
     const requested = { ...parseQuantity("1", "piece"), decimals: 19 };
     expect(() =>

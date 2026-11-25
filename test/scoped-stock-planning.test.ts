@@ -395,6 +395,41 @@ describe("indexed stock planning and availability", () => {
     }]);
   });
 
+  it.each([true, false])("records a measured report with an unstorable trial (later witness: %s)", async (hasLaterWitness) => {
+    const inventory = createTestInventory(undefined, measuredItemCatalog("pieces"), undefined, InventoryDeficitPolicy.Record);
+    const fractional = { lotId: "fractional", pieces: "1.9", weight: "1", occurredAtEpochMs: time1 };
+    const lots = hasLaterWitness
+      ? [
+          { lotId: "heavy", pieces: "1.1", weight: "40", occurredAtEpochMs: time0 },
+          fractional,
+          { lotId: "whole", pieces: "1.0", weight: "1", occurredAtEpochMs: time2 },
+        ]
+      : [fractional];
+    for (const { lotId, pieces, weight, occurredAtEpochMs } of lots) {
+      await inventory.stock.receive({
+        operationId: `receive-${lotId}-measured`, occurredAtEpochMs,
+        to: { itemId: "measured", placementNodeId: "store", lotId },
+        amount: measuredStockAmount(pieces, "piece", [{ axisId: "weight", value: weight, unit: "kg" }]),
+      });
+    }
+    const result = await inventory.stock.transferByPolicy({
+      operationId: "record-later-witness-with-safe-remainder", occurredAtEpochMs: time3,
+      toPlacementNodeId: "destination",
+      selector: { itemId: "measured", placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo,
+      amount: measuredStockAmount(String(Number.MAX_SAFE_INTEGER), "piece", [{ axisId: "weight", value: "3", unit: "kg" }]),
+    });
+    const knownArrivals = result.event.stockEffects.filter((effect) =>
+      effect.position.placementNodeId === "destination" && effect.position.lotId !== undefined
+    );
+    expect(knownArrivals.map((effect) => effect.position.lotId)).toEqual(hasLaterWitness ? ["whole"] : []);
+    expect(result.event.unwitnessedStockMovements).toMatchObject([{
+      measurements: {
+        primary: { quantity: { amountMinor: Number.MAX_SAFE_INTEGER - (hasLaterWitness ? 1 : 0), decimals: 0 } },
+        independent: [{ axisId: "weight", quantity: { amountMinor: hasLaterWitness ? 2 : 3 } }],
+      },
+    }]);
+  });
+
   it.each([
     { verb: "transfer", held: true },
     { verb: "scrap", held: true },

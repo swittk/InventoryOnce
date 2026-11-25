@@ -3,7 +3,7 @@ import {
   allocateInventory,
   allocateInventoryUpTo,
   compareInventoryAllocationCandidates,
-  inventoryAllocationQuantityAtStorableScale,
+  inventoryAllocationQuantityIfStorable,
   InventoryAllocationMethod,
   type AllocateInventoryInput,
   type InventoryAllocation,
@@ -445,21 +445,16 @@ export function inventoryPolicyMovementRemainder({
   for (const axis of report.independent) {
     const remaining = reported.get(axis.axisId);
     if (remaining === undefined) throw new Error("Measured inventory report lost a reported axis.");
-    let { minor, decimals } = remaining;
+    const { minor, decimals } = remaining;
     if (primaryMinor === 0n && minor !== 0n) return undefined;
-    while (minor > BigInt(Number.MAX_SAFE_INTEGER) && decimals > 0 && minor % 10n === 0n) {
-      minor /= 10n;
-      decimals -= 1;
-    }
-    if (minor > BigInt(Number.MAX_SAFE_INTEGER)) return undefined;
-    independent.push({
-      axisId: axis.axisId,
-      quantity: quantity({ amountMinor: Number(minor), decimals, unit: axis.quantity.unit }),
-    });
+    const amount = inventoryAllocationQuantityIfStorable(minor, decimals, axis.quantity.unit);
+    if (amount === undefined) return undefined;
+    independent.push({ axisId: axis.axisId, quantity: amount });
   }
-  const primary = inventoryAllocationQuantityAtStorableScale(
-    primaryMinor, primaryDecimals, reportedPrimary.unit, "Reported primary remainder"
+  const primary = inventoryAllocationQuantityIfStorable(
+    primaryMinor, primaryDecimals, reportedPrimary.unit
   );
+  if (primary === undefined) return undefined;
   return { primary: { axisId: report.primary.axisId, quantity: primary }, independent };
 }
 

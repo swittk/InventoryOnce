@@ -1,7 +1,7 @@
 {
   "counts": {
-    "callables": 3942,
-    "edges": 10887,
+    "callables": 3948,
+    "edges": 10899,
     "publicEntries": 632,
     "publicEntriesWithTargets": 632,
     "publicEntriesWithWitnesses": 632,
@@ -6744,10 +6744,10 @@
                 "column": 96,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:52719:<anonymous@971>",
+                "id": "test/scoped-stock-planning.test.ts:54748:<anonymous@1006>",
                 "kind": "ArrowFunction",
-                "line": 971,
-                "name": "<anonymous@971>",
+                "line": 1006,
+                "name": "<anonymous@1006>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -10590,9 +10590,9 @@
           "column": 1,
           "file": "src/allocation.ts",
           "hasBody": true,
-          "id": "src/allocation.ts:3623:allocateInventory",
+          "id": "src/allocation.ts:3740:allocateInventory",
           "kind": "FunctionDeclaration",
-          "line": 88,
+          "line": 90,
           "name": "allocateInventory"
         }
       ],
@@ -10603,9 +10603,9 @@
             "column": 1,
             "file": "src/allocation.ts",
             "hasBody": true,
-            "id": "src/allocation.ts:3623:allocateInventory",
+            "id": "src/allocation.ts:3740:allocateInventory",
             "kind": "FunctionDeclaration",
-            "line": 88,
+            "line": 90,
             "name": "allocateInventory"
           },
           "witness": {
@@ -10643,9 +10643,9 @@
                 "column": 1,
                 "file": "src/allocation.ts",
                 "hasBody": true,
-                "id": "src/allocation.ts:3623:allocateInventory",
+                "id": "src/allocation.ts:3740:allocateInventory",
                 "kind": "FunctionDeclaration",
-                "line": 88,
+                "line": 90,
                 "name": "allocateInventory",
                 "reason": "resolved-call"
               }
@@ -12120,9 +12120,9 @@
           "column": 1,
           "file": "src/allocation.ts",
           "hasBody": true,
-          "id": "src/allocation.ts:20966:compareInventoryAllocationCandidates",
+          "id": "src/allocation.ts:22745:compareInventoryAllocationCandidates",
           "kind": "FunctionDeclaration",
-          "line": 503,
+          "line": 529,
           "name": "compareInventoryAllocationCandidates"
         }
       ],
@@ -12133,9 +12133,9 @@
             "column": 1,
             "file": "src/allocation.ts",
             "hasBody": true,
-            "id": "src/allocation.ts:20966:compareInventoryAllocationCandidates",
+            "id": "src/allocation.ts:22745:compareInventoryAllocationCandidates",
             "kind": "FunctionDeclaration",
-            "line": 503,
+            "line": 529,
             "name": "compareInventoryAllocationCandidates"
           },
           "witness": {
@@ -12173,9 +12173,9 @@
                 "column": 1,
                 "file": "src/allocation.ts",
                 "hasBody": true,
-                "id": "src/allocation.ts:3623:allocateInventory",
+                "id": "src/allocation.ts:3740:allocateInventory",
                 "kind": "FunctionDeclaration",
-                "line": 88,
+                "line": 90,
                 "name": "allocateInventory",
                 "reason": "resolved-call"
               },
@@ -12183,9 +12183,9 @@
                 "column": 1,
                 "file": "src/allocation.ts",
                 "hasBody": true,
-                "id": "src/allocation.ts:4109:allocateInventoryCandidates",
+                "id": "src/allocation.ts:4226:allocateInventoryCandidates",
                 "kind": "FunctionDeclaration",
-                "line": 98,
+                "line": 100,
                 "name": "allocateInventoryCandidates",
                 "reason": "resolved-call"
               },
@@ -12193,9 +12193,9 @@
                 "column": 37,
                 "file": "src/allocation.ts",
                 "hasBody": true,
-                "id": "src/allocation.ts:4985:compareEligibleCandidates",
+                "id": "src/allocation.ts:5102:compareEligibleCandidates",
                 "kind": "ArrowFunction",
-                "line": 121,
+                "line": 123,
                 "name": "compareEligibleCandidates",
                 "reason": "external-callback-dispatch"
               },
@@ -12203,9 +12203,9 @@
                 "column": 1,
                 "file": "src/allocation.ts",
                 "hasBody": true,
-                "id": "src/allocation.ts:20966:compareInventoryAllocationCandidates",
+                "id": "src/allocation.ts:22745:compareInventoryAllocationCandidates",
                 "kind": "FunctionDeclaration",
-                "line": 503,
+                "line": 529,
                 "name": "compareInventoryAllocationCandidates",
                 "reason": "resolved-call"
               }
@@ -17285,9 +17285,9 @@
           "column": 1,
           "file": "src/picking.ts",
           "hasBody": true,
-          "id": "src/picking.ts:39760:inventoryAmountForPrimaryAllocation",
+          "id": "src/picking.ts:39619:inventoryAmountForPrimaryAllocation",
           "kind": "FunctionDeclaration",
-          "line": 972,
+          "line": 967,
           "name": "inventoryAmountForPrimaryAllocation"
         }
       ],
@@ -17298,9 +17298,9 @@
             "column": 1,
             "file": "src/picking.ts",
             "hasBody": true,
-            "id": "src/picking.ts:39760:inventoryAmountForPrimaryAllocation",
+            "id": "src/picking.ts:39619:inventoryAmountForPrimaryAllocation",
             "kind": "FunctionDeclaration",
-            "line": 972,
+            "line": 967,
             "name": "inventoryAmountForPrimaryAllocation"
           },
           "witness": {
@@ -17368,9 +17368,9 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:39760:inventoryAmountForPrimaryAllocation",
+                "id": "src/picking.ts:39619:inventoryAmountForPrimaryAllocation",
                 "kind": "FunctionDeclaration",
-                "line": 972,
+                "line": 967,
                 "name": "inventoryAmountForPrimaryAllocation",
                 "reason": "resolved-call"
               }
@@ -17804,10 +17804,10 @@
                 "column": 96,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:52719:<anonymous@971>",
+                "id": "test/scoped-stock-planning.test.ts:54748:<anonymous@1006>",
                 "kind": "ArrowFunction",
-                "line": 971,
-                "name": "<anonymous@971>",
+                "line": 1006,
+                "name": "<anonymous@1006>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -19089,10 +19089,10 @@
                 "column": 96,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:52719:<anonymous@971>",
+                "id": "test/scoped-stock-planning.test.ts:54748:<anonymous@1006>",
                 "kind": "ArrowFunction",
-                "line": 971,
-                "name": "<anonymous@971>",
+                "line": 1006,
+                "name": "<anonymous@1006>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -20537,7 +20537,7 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:6154:planInventoryAllocation",
+                "id": "src/picking.ts:6149:planInventoryAllocation",
                 "kind": "FunctionDeclaration",
                 "line": 152,
                 "name": "planInventoryAllocation",
@@ -20547,7 +20547,7 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:6692:inventoryAllocationPoolFromWorld",
+                "id": "src/picking.ts:6687:inventoryAllocationPoolFromWorld",
                 "kind": "FunctionDeclaration",
                 "line": 168,
                 "name": "inventoryAllocationPoolFromWorld",
@@ -20557,7 +20557,7 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:7192:inventoryStockPoolRowsFromProjection",
+                "id": "src/picking.ts:7187:inventoryStockPoolRowsFromProjection",
                 "kind": "FunctionDeclaration",
                 "line": 182,
                 "name": "inventoryStockPoolRowsFromProjection",
@@ -23319,7 +23319,7 @@
           "column": 1,
           "file": "src/picking.ts",
           "hasBody": true,
-          "id": "src/picking.ts:6154:planInventoryAllocation",
+          "id": "src/picking.ts:6149:planInventoryAllocation",
           "kind": "FunctionDeclaration",
           "line": 152,
           "name": "planInventoryAllocation"
@@ -23332,7 +23332,7 @@
             "column": 1,
             "file": "src/picking.ts",
             "hasBody": true,
-            "id": "src/picking.ts:6154:planInventoryAllocation",
+            "id": "src/picking.ts:6149:planInventoryAllocation",
             "kind": "FunctionDeclaration",
             "line": 152,
             "name": "planInventoryAllocation"
@@ -23372,7 +23372,7 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:6154:planInventoryAllocation",
+                "id": "src/picking.ts:6149:planInventoryAllocation",
                 "kind": "FunctionDeclaration",
                 "line": 152,
                 "name": "planInventoryAllocation",
@@ -24963,7 +24963,7 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:6154:planInventoryAllocation",
+                "id": "src/picking.ts:6149:planInventoryAllocation",
                 "kind": "FunctionDeclaration",
                 "line": 152,
                 "name": "planInventoryAllocation",
@@ -24973,7 +24973,7 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:9254:planInventoryAllocationInPool",
+                "id": "src/picking.ts:9249:planInventoryAllocationInPool",
                 "kind": "FunctionDeclaration",
                 "line": 225,
                 "name": "planInventoryAllocationInPool",
@@ -24983,9 +24983,9 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:29648:createPolicyAllocationCandidates",
+                "id": "src/picking.ts:29507:createPolicyAllocationCandidates",
                 "kind": "FunctionDeclaration",
-                "line": 715,
+                "line": 710,
                 "name": "createPolicyAllocationCandidates",
                 "reason": "resolved-call"
               },
@@ -29693,9 +29693,9 @@
           "column": 1,
           "file": "src/picking.ts",
           "hasBody": true,
-          "id": "src/picking.ts:39760:inventoryAmountForPrimaryAllocation",
+          "id": "src/picking.ts:39619:inventoryAmountForPrimaryAllocation",
           "kind": "FunctionDeclaration",
-          "line": 972,
+          "line": 967,
           "name": "inventoryAmountForPrimaryAllocation"
         }
       ],
@@ -29706,9 +29706,9 @@
             "column": 1,
             "file": "src/picking.ts",
             "hasBody": true,
-            "id": "src/picking.ts:39760:inventoryAmountForPrimaryAllocation",
+            "id": "src/picking.ts:39619:inventoryAmountForPrimaryAllocation",
             "kind": "FunctionDeclaration",
-            "line": 972,
+            "line": 967,
             "name": "inventoryAmountForPrimaryAllocation"
           },
           "witness": {
@@ -29776,9 +29776,9 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:39760:inventoryAmountForPrimaryAllocation",
+                "id": "src/picking.ts:39619:inventoryAmountForPrimaryAllocation",
                 "kind": "FunctionDeclaration",
-                "line": 972,
+                "line": 967,
                 "name": "inventoryAmountForPrimaryAllocation",
                 "reason": "resolved-call"
               }
@@ -30202,10 +30202,10 @@
                 "column": 96,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:52719:<anonymous@971>",
+                "id": "test/scoped-stock-planning.test.ts:54748:<anonymous@1006>",
                 "kind": "ArrowFunction",
-                "line": 971,
-                "name": "<anonymous@971>",
+                "line": 1006,
+                "name": "<anonymous@1006>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -30384,10 +30384,10 @@
                 "column": 96,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:52719:<anonymous@971>",
+                "id": "test/scoped-stock-planning.test.ts:54748:<anonymous@1006>",
                 "kind": "ArrowFunction",
-                "line": 971,
-                "name": "<anonymous@971>",
+                "line": 1006,
+                "name": "<anonymous@1006>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -31225,7 +31225,7 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:6154:planInventoryAllocation",
+                "id": "src/picking.ts:6149:planInventoryAllocation",
                 "kind": "FunctionDeclaration",
                 "line": 152,
                 "name": "planInventoryAllocation",
@@ -31235,7 +31235,7 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:6692:inventoryAllocationPoolFromWorld",
+                "id": "src/picking.ts:6687:inventoryAllocationPoolFromWorld",
                 "kind": "FunctionDeclaration",
                 "line": 168,
                 "name": "inventoryAllocationPoolFromWorld",
@@ -31245,7 +31245,7 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:7192:inventoryStockPoolRowsFromProjection",
+                "id": "src/picking.ts:7187:inventoryStockPoolRowsFromProjection",
                 "kind": "FunctionDeclaration",
                 "line": 182,
                 "name": "inventoryStockPoolRowsFromProjection",
@@ -32508,7 +32508,7 @@
           "column": 1,
           "file": "src/picking.ts",
           "hasBody": true,
-          "id": "src/picking.ts:6154:planInventoryAllocation",
+          "id": "src/picking.ts:6149:planInventoryAllocation",
           "kind": "FunctionDeclaration",
           "line": 152,
           "name": "planInventoryAllocation"
@@ -32521,7 +32521,7 @@
             "column": 1,
             "file": "src/picking.ts",
             "hasBody": true,
-            "id": "src/picking.ts:6154:planInventoryAllocation",
+            "id": "src/picking.ts:6149:planInventoryAllocation",
             "kind": "FunctionDeclaration",
             "line": 152,
             "name": "planInventoryAllocation"
@@ -32561,7 +32561,7 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:6154:planInventoryAllocation",
+                "id": "src/picking.ts:6149:planInventoryAllocation",
                 "kind": "FunctionDeclaration",
                 "line": 152,
                 "name": "planInventoryAllocation",
@@ -34061,7 +34061,7 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:6154:planInventoryAllocation",
+                "id": "src/picking.ts:6149:planInventoryAllocation",
                 "kind": "FunctionDeclaration",
                 "line": 152,
                 "name": "planInventoryAllocation",
@@ -34071,7 +34071,7 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:9254:planInventoryAllocationInPool",
+                "id": "src/picking.ts:9249:planInventoryAllocationInPool",
                 "kind": "FunctionDeclaration",
                 "line": 225,
                 "name": "planInventoryAllocationInPool",
@@ -34081,9 +34081,9 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:29648:createPolicyAllocationCandidates",
+                "id": "src/picking.ts:29507:createPolicyAllocationCandidates",
                 "kind": "FunctionDeclaration",
-                "line": 715,
+                "line": 710,
                 "name": "createPolicyAllocationCandidates",
                 "reason": "resolved-call"
               },
@@ -37230,10 +37230,10 @@
                 "column": 96,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:47140:<anonymous@866>",
+                "id": "test/scoped-stock-planning.test.ts:49169:<anonymous@901>",
                 "kind": "ArrowFunction",
-                "line": 866,
-                "name": "<anonymous@866>",
+                "line": 901,
+                "name": "<anonymous@901>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -50263,5 +50263,5 @@
     }
   },
   "schemaVersion": 1,
-  "surfaceSha256": "2e8fefe6add445db93d1f2b703fa404668a315f39c8e4dbcb9e0d9c5c720c376"
+  "surfaceSha256": "b9a6428d9d84f98354e92387c5bb5b4dbe29aca5517f15ebf7d595ba23350021"
 }
