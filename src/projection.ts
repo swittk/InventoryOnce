@@ -44,10 +44,10 @@ import {
 import {
   compareQuantity,
   parseQuantity,
-  quantityEq,
   zeroQuantity,
   type Quantity,
 } from "./quantity.js";
+import { assertInventoryActiveSerialQuantity } from "./stock-amount-rules.js";
 import {
   InventoryOptionalIdentityConstraintKind,
   inventoryStockPositionMatchesNormalizedSelector,
@@ -1957,11 +1957,7 @@ function refreshTouchedSerialIndexes({
       if (position === undefined) continue;
       const primary = position.measurements.primary.quantity;
       if (!quantityIsPositive(primary)) continue;
-      if (!quantityEq(primary, parseQuantity("1", primary.unit))) {
-        throw new Error(
-          `Active serial ${serialIdentity} must represent exactly one primary resource.`
-        );
-      }
+      assertInventoryActiveSerialQuantity(serialIdentity, primary);
       if (
         positivePositionId !== undefined &&
         positivePositionId !== positionId

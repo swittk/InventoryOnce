@@ -1946,3 +1946,9 @@ The R105 portable-current-input authority and final publication both continue to
 - A storable greedy plan can fill a large candidate pool without recursive search. A relaxed increment trial that cannot build an exact movement line leaves the accepted physical plan usable.
 - Both storage write paths bind reported-transfer replay evidence to the actual intent and published revision. The segmented position reducer accepts the same signed balance changes as canonical projection after historical validation.
 - Policy batches reuse exact-position keys within each pool. Fungibility converts eligible member rows individually, so a small request can use stock even when the member's summed capacity cannot be stored.
+
+## 2026-11-26 — exact allocation gaps and reported effects
+
+- The allocator skips gaps between reachable sums when the suffix contains two whole-only rows. Fungibility converts legal member increments first and keeps any remainder in the physical stock row.
+- Exact transfers treat absent optional measurements as zero. A tie between preferred and physical witnesses retains a proven split requirement. A mixed posting carries effect metadata only when the metadata describes the entire quantity.
+- Canonical and native stock publication share the one-primary-resource rule for positive serial positions. Native contents moves check the final rows before publishing either stock or placement changes.

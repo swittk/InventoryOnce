@@ -410,6 +410,28 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
     expect(result.shortfall).toEqual(parseQuantity("1.999999", "kg"));
   });
 
+  it.each(["exact", "best", "partial"])("skips gaps between reachable whole suffix sums for an %s search", (mode) => {
+    const candidates = ["200000", "250000", "250001"].map((value, index) => {
+      const available = parseQuantity(value, "piece");
+      return candidate({
+        lotId: String(index), receivedAtEpochMs: time0 + index, expiresAtEpochMs: time3,
+        extra: { available, ...(index === 0 ? {} : { allocationIncrement: available }) },
+      });
+    });
+    const input = {
+      requested: parseQuantity("500001", "piece"), candidates, method: InventoryAllocationMethod.Fifo, nowEpochMs: time2,
+    };
+    const result = mode === "exact" ? allocateInventory(input) : allocateInventoryUpTo({
+      ...input, assessIncrementBlockage: false,
+      /** Permit the exact suffix or require the best earlier partial witness. */
+      acceptAllocations: (lines) => mode === "best" || lines[0]?.position.lotId === "0",
+    });
+    expect(result.allocations.map((line) => [line.position.lotId, line.quantity])).toEqual(mode !== "partial"
+      ? [["1", parseQuantity("250000", "piece")], ["2", parseQuantity("250001", "piece")]]
+      : [["0", parseQuantity("200000", "piece")], ["2", parseQuantity("250001", "piece")]]);
+    expect(result.shortfall).toEqual(parseQuantity(mode === "partial" ? "50000" : "0", "piece"));
+  });
+
   it.each([false, true])("bounds partial search by reachable increment residues with a unit row %s", (unitRow) => {
     const requested = parseQuantity("200003", "piece");
     const whole = parseQuantity("2", "piece");

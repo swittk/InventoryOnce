@@ -201,18 +201,18 @@ describe("collision-free retry identity", () => {
         { position: positionB, capacity: parseQuantity("4", "piece") },
       ],
     });
-    expect(allLocations.recordedDeficit.amountMinor).toBe(6n);
-    expect(allLocations.uncoveredDeficit.amountMinor).toBe(3n);
+    expect(allLocations.recordedDeficit).toEqual({ amountMinor: 6n, decimals: 0, unit: "piece" });
+    expect(allLocations.uncoveredDeficit).toEqual({ amountMinor: 3n, decimals: 0, unit: "piece" });
     expect(
       allLocations.capacityByPositionIdentity.get(
         inventoryStockPositionIdentity(positionA)
-      )?.amountMinor
-    ).toBe(2n);
+      )
+    ).toEqual({ amountMinor: 2n, decimals: 0, unit: "piece" });
     expect(
       allLocations.capacityByPositionIdentity.get(
         inventoryStockPositionIdentity(positionB)
-      )?.amountMinor
-    ).toBe(2n);
+      )
+    ).toEqual({ amountMinor: 2n, decimals: 0, unit: "piece" });
 
     const storeAOnly = applyInventoryRecordedDeficitBurden({
       projection: world.projection,
@@ -222,8 +222,8 @@ describe("collision-free retry identity", () => {
       placementNodeIds: ["store-a"],
       lines: [{ position: positionA, capacity: parseQuantity("3", "piece") }],
     });
-    expect(storeAOnly.recordedDeficit.amountMinor).toBe(1n);
-    expect(storeAOnly.uncoveredDeficit.amountMinor).toBe(0n);
+    expect(storeAOnly.recordedDeficit).toEqual({ amountMinor: 1n, decimals: 0, unit: "piece" });
+    expect(storeAOnly.uncoveredDeficit).toEqual({ amountMinor: 0n, decimals: 0, unit: "piece" });
     expect(() =>
       applyInventoryRecordedDeficitBurden({
         projection: world.projection,
@@ -270,9 +270,9 @@ describe("collision-free retry identity", () => {
     expect(
       adjusted.capacityByPositionIdentity.get(
         inventoryStockPositionIdentity(position)
-      )?.amountMinor
-    ).toBe(4n);
-    expect(adjusted.uncoveredDeficit.amountMinor).toBe(0n);
+      )
+    ).toEqual({ amountMinor: 4n, decimals: 0, unit: "piece" });
+    expect(adjusted.uncoveredDeficit).toEqual({ amountMinor: 0n, decimals: 0, unit: "piece" });
   });
   it("rejects storage mutation re-entry from an async failpoint instead of deadlocking", async () => {
     let storage: InventoryDurableStorage | undefined;

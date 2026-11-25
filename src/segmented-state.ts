@@ -1,5 +1,6 @@
 import type { InMemoryInventorySegmentedPlacementStore } from "./segmented-placement.js";
 import { candidateSubtreePositionIds } from "./stock-scope.js";
+import { assertInventoryActiveSerialQuantity } from "./stock-amount-rules.js";
 import { assertInventoryStockAgeOverride, captureConservedPositiveLayerStarts, inventoryConservedArrivalCanSettleDeficit } from "./stock-age.js";
 import { inventoryIntentFingerprint } from "./canonical.js";
 import type { InventoryCatalogSnapshot } from "./catalog.js";
@@ -810,6 +811,13 @@ export class InMemoryInventorySegmentedPositionStore
     );
     for (const [positionId, position] of nextRows) {
       const positive = position !== undefined && position.measurements.primary.quantity.amountMinor > 0;
+      const serialId = position?.key.serialId;
+      if (positive && serialId !== undefined) {
+        // Validate the planner-produced event's final stock before publishing either stock or edges.
+        assertInventoryActiveSerialQuantity(
+          inventorySerialIdentity(position.key.itemId, serialId), position.measurements.primary.quantity
+        );
+      }
       if (positiveLayerStarts.has(positionId)) {
         if (!positive) {
           if (!inventoryConservedArrivalCanSettleDeficit(input.event)) {

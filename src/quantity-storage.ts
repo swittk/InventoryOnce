@@ -21,7 +21,7 @@ export interface InventoryWorkingQuantity {
   readonly unit: Quantity["unit"];
 }
 
-/** Align working digits to a common scale without narrowing them. */
+/** Align working digits to an equal or greater scale without narrowing them. */
 export function workingQuantityAtDecimals(value: InventoryWorkingQuantity, decimals: number): bigint {
   return BigInt(value.amountMinor) * 10n ** BigInt(decimals - value.decimals);
 }
@@ -34,7 +34,7 @@ export function compareWorkingQuantities(left: InventoryWorkingQuantity, right: 
   return difference < 0n ? -1 : difference > 0n ? 1 : 0;
 }
 
-/** Subtract a known same-unit amount from a private working balance. */
+/** Subtract a private balance whose caller has already matched the units. */
 export function subtractWorkingQuantity(left: InventoryWorkingQuantity, right: InventoryWorkingQuantity): InventoryWorkingQuantity {
   const total: ExactQuantityDigits = { minor: BigInt(left.amountMinor), decimals: left.decimals };
   addExactQuantityDigits(total, -BigInt(right.amountMinor), right.decimals);

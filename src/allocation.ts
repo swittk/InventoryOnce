@@ -357,11 +357,24 @@ function searchInventoryAllocations({
   /** Capacity and common divisibility of all selectable rows at or after each index. */
   const suffixCapacity: bigint[] = new Array(candidates.length + 1).fill(0n);
   const suffixDivisor: bigint[] = new Array(candidates.length + 1).fill(0n);
+  /** Exact capacity sums for suffixes with two selectable whole-only rows. */
+  const suffixWholeSums: (readonly bigint[] | undefined)[] = [];
+  /** Build the few reachable sums until the suffix needs the general capacity and divisor bounds. */
+  let wholeSums: readonly bigint[] | undefined = [0n];
   for (let index = candidates.length - 1; index >= 0; index -= 1) {
     const capacity = capacityMinor[index] ?? 0n;
     const increment = incrementMinor[index] ?? 1n;
     // Stock below the next whole increment cannot improve a suffix assignment.
     const selectable = capacity - capacity % increment;
+    if (wholeSums?.length === 4) suffixWholeSums[index + 1] = wholeSums;
+    if (wholeSums !== undefined && selectable !== 0n) {
+      wholeSums = selectable === increment && wholeSums.length < 4
+        ? [...wholeSums, ...wholeSums.map(
+            /** Include each sum that takes this whole row. */
+            (sum) => sum + selectable
+          )]
+        : undefined;
+    }
     suffixCapacity[index] = (suffixCapacity[index + 1] ?? 0n) + selectable;
     const laterDivisor = suffixDivisor[index + 1] ?? 0n;
     suffixDivisor[index] = selectable === 0n ? laterDivisor :
@@ -467,6 +480,7 @@ function searchInventoryAllocations({
     const maximum = capacity < remainingMinor ? capacity : remainingMinor;
     const laterCapacity = suffixCapacity[index + 1] ?? 0n;
     const laterDivisor = suffixDivisor[index + 1] ?? 0n;
+    const laterWholeSums = suffixWholeSums[index + 1];
     /** A zero-capacity suffix can only accept a zero pending amount. */
     const exactDivisor = acceptPartial ? undefined : (laterDivisor === 0n ? remainingMinor + 1n : laterDivisor);
     const terminalPartial = acceptPartial && laterCapacity === 0n;
@@ -493,8 +507,22 @@ function searchInventoryAllocations({
         take = next;
       }
       const pending = remainingMinor - take;
+      if (pending > laterCapacity && !acceptPartial) break;
+      const laterLimit = pending < laterCapacity ? pending : laterCapacity;
+      /** Greatest reachable or relaxed suffix amount now, and the first amount worth revisiting. */
+      let laterUsable = 0n;
+      let nextUsable = laterCapacity;
+      if (laterWholeSums !== undefined) {
+        // These rows have only a few subsets. The common divisor alone can overstate capacity between them.
+        for (const sum of laterWholeSums) {
+          if (sum <= pending && sum > laterUsable) laterUsable = sum;
+          if (sum > pending && sum < nextUsable) nextUsable = sum;
+        }
+      } else if (acceptPartial && laterDivisor !== 0n) {
+        laterUsable = laterLimit - laterLimit % laterDivisor;
+        nextUsable = laterUsable + laterDivisor;
+      }
       if (acceptPartial) {
-        const laterLimit = pending < laterCapacity ? pending : laterCapacity;
         const floor = pending - laterLimit;
         if (!terminalPartial && floor > MAXIMUM_STORED_QUANTITY_MINOR) {
           // This lower bound rises as picks decrease. Jump to where the interval first reaches a storable remainder.
@@ -508,17 +536,17 @@ function searchInventoryAllocations({
             continue;
           }
         }
-        const laterUsable = laterDivisor === 0n ? 0n : laterLimit - laterLimit % laterDivisor;
-        if (pending - laterUsable >= bestRemainingMinor) {
-          // Decreasing this pick only makes the gap larger until another suffix increment can fit.
-          if (laterUsable === laterCapacity) break;
-          const nextLimit = remainingMinor - laterUsable - laterDivisor;
-          if (nextLimit < 0n) break;
-          take = nextLimit - nextLimit % increment;
-          continue;
-        }
-      } else if (pending > laterCapacity) {
-        break;
+      }
+      const cannotImprove = acceptPartial
+        ? pending - laterUsable >= bestRemainingMinor
+        : laterWholeSums !== undefined && pending !== laterUsable;
+      if (cannotImprove) {
+        // Decreasing this pick only makes the gap larger until another suffix amount can fit.
+        if (laterUsable === laterCapacity) break;
+        const nextLimit = remainingMinor - nextUsable;
+        if (nextLimit < 0n) break;
+        take = nextLimit - nextLimit % increment;
+        continue;
       }
       chosenMinor[index] = take;
       if (findExactSuffix(index + 1, remainingMinor - take)) return true;

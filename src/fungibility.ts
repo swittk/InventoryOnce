@@ -1,10 +1,9 @@
 import { positionHasUnfixedIndependentMeasuredContents as hasUnfixedIndependentMeasuredContents } from "./stock-amount-rules.js";
 import {
-  allocateInventory,
+  allocateWorkingInventory,
   inventoryAllocationCandidateCapacity,
   InventoryAllocationMethod,
   type InventoryAllocation,
-  type InventoryAllocationCandidate,
   type InventoryWorkingAllocationCandidate,
 } from "./allocation.js";
 import {
@@ -56,6 +55,7 @@ import {
 import {
   compareQuantity,
   convertQuantityByReferenceExact,
+  integerAtDecimals,
   leastCommonQuantityMultiple,
   positiveQuantity,
   quantity,
@@ -375,7 +375,7 @@ function planInventoryFungibilityAllocationWithHolds({
     );
   }
   // Common-basis candidates retained across all member planning passes.
-  const candidates: InventoryAllocationCandidate[] = [];
+  const candidates: InventoryWorkingAllocationCandidate[] = [];
   // Per-position member evidence retained to map allocator output back to source identity.
   const evidenceByPosition = new Map<
     string,
@@ -421,7 +421,6 @@ function planInventoryFungibilityAllocationWithHolds({
       addFungibilityCandidate({
         catalog,
         world,
-        definition,
         member,
         item,
         source,
@@ -447,7 +446,7 @@ function planInventoryFungibilityAllocationWithHolds({
     }
     return earlierShortages;
   };
-  const allocated = allocateInventory({
+  const allocated = allocateWorkingInventory({
     requested,
     candidates,
     method,
@@ -804,8 +803,6 @@ interface AddFungibilityCandidateInput {
   readonly catalog: InventoryCatalog;
   /** Current published world containing the exact source position. */
   readonly world: InventoryWorldState;
-  /** Exact pool revision used for common-basis units. */
-  readonly definition: InventoryFungibilityPoolDefinitionRevision;
   /** Exact member conversion. */
   readonly member: InventoryFungibilityMemberDefinition;
   /** Exact member item revision. */
@@ -815,7 +812,7 @@ interface AddFungibilityCandidateInput {
   /** Largest storable legal pick from this one member position. */
   readonly memberAvailable: Quantity;
   /** Mutable candidate array owned by the current planning call. */
-  readonly candidates: InventoryAllocationCandidate[];
+  readonly candidates: InventoryWorkingAllocationCandidate[];
   /** Mutable evidence map owned by the current planning call. */
   readonly evidenceByPosition: Map<
     string,
@@ -827,7 +824,6 @@ interface AddFungibilityCandidateInput {
 function addFungibilityCandidate({
   catalog,
   world,
-  definition,
   member,
   item,
   source,
@@ -842,26 +838,24 @@ function addFungibilityCandidate({
       "Fungibility member candidate disappeared from the reviewed world."
     );
   }
-  const poolAvailable = convertQuantityByReferenceExact(
-    memberAvailable,
-    member.memberQuantity,
-    member.poolQuantity
-  );
-  if (poolAvailable.unit !== definition.basisUnit) {
-    throw new Error(
-      "Fungibility member conversion produced a different pool basis unit."
-    );
-  }
-  const allocationIncrement = fungibilityAllocationIncrement({
+  const memberIncrement = fungibilityMemberAllocationIncrement({
     catalog,
     position,
     member,
     item,
-    fullPoolQuantity: poolAvailable,
+    memberAvailable,
   });
-  const candidate: InventoryAllocationCandidate = {
+  // Only whole legal member increments belong to this candidate. The physical remainder stays in stock.
+  const decimals = Math.max(memberAvailable.decimals, memberIncrement.decimals);
+  const increments = integerAtDecimals(memberAvailable, decimals) / integerAtDecimals(memberIncrement, decimals);
+  if (increments === 0n) return;
+  const allocationIncrement = convertQuantityByReferenceExact(memberIncrement, member.memberQuantity, member.poolQuantity);
+  const candidate: InventoryWorkingAllocationCandidate = {
     position: source.position,
-    available: poolAvailable,
+    available: {
+      ...allocationIncrement,
+      amountMinor: BigInt(allocationIncrement.amountMinor) * increments,
+    },
     receivedAtEpochMs: source.receivedAtEpochMs,
     ...(source.expiresAtEpochMs === undefined
       ? {}
@@ -877,8 +871,8 @@ function addFungibilityCandidate({
   });
 }
 
-/** Return the smallest legal common-basis pick for one member position. */
-function fungibilityAllocationIncrement(input: {
+/** Find the smallest member pick that preserves physical increments and converts to whole pool references. */
+function fungibilityMemberAllocationIncrement(input: {
   /** Frozen catalogue containing the exact package revision. */
   readonly catalog: InventoryCatalog;
   /** Current exact physical position. */
@@ -887,8 +881,8 @@ function fungibilityAllocationIncrement(input: {
   readonly member: InventoryFungibilityMemberDefinition;
   /** Exact member item revision. */
   readonly item: InventoryItemDefinitionRevision;
-  /** Exact converted capacity of this source in common-basis units. */
-  readonly fullPoolQuantity: Quantity;
+  /** Member-side capacity of this source position. */
+  readonly memberAvailable: Quantity;
 }): Quantity {
   if (
     input.position.key.serialId !== undefined ||
@@ -899,13 +893,13 @@ function fungibilityAllocationIncrement(input: {
     )
   ) {
     return leastCommonQuantityMultiple(
-      input.member.poolQuantity,
-      input.fullPoolQuantity
+      input.member.memberQuantity,
+      input.memberAvailable
     );
   }
   const packagingRevisionId = input.position.key.packagingRevisionId;
   if (packagingRevisionId === undefined) {
-    return input.member.poolQuantity;
+    return input.member.memberQuantity;
   }
   const packaging = input.catalog.packagingRevision(packagingRevisionId);
   const onePackageMemberQuantity = inventoryMeasurementAt(
@@ -913,14 +907,9 @@ function fungibilityAllocationIncrement(input: {
     input.member.measurementAxisId,
     input.member.memberQuantity.unit
   );
-  const packagePoolQuantity = convertQuantityByReferenceExact(
-    onePackageMemberQuantity,
-    input.member.memberQuantity,
-    input.member.poolQuantity
-  );
   return leastCommonQuantityMultiple(
-    input.member.poolQuantity,
-    packagePoolQuantity
+    input.member.memberQuantity,
+    onePackageMemberQuantity
   );
 }
 

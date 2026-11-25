@@ -340,8 +340,8 @@ describe("atomic conserved split/merge/reclassification", () => {
       key: { statusId: "quarantine" },
       measurements: { primary: { quantity: parseQuantity("2", "piece") } },
     }]);
-    expect((await inventory.read.reservation("reclassification-claim"))?.allocations[0]?.position)
-      .toEqual(position.key);
+    expect((await inventory.read.reservation("reclassification-claim"))?.allocations)
+      .toEqual([{ position: position.key, quantity: parseQuantity("1", "piece") }]);
     expect((await inventory.read.reservationFeasibility(time2)).status)
       .toBe(InventoryReservationFeasibilityStatus.Shortage);
   });

@@ -8,6 +8,14 @@ import {
 } from "./catalog.js";
 import type { InventoryStockPosition } from "./model.js";
 import { inventoryMeasurementAt } from "./measurements.js";
+import { parseQuantity, quantityEq, type Quantity } from "./quantity.js";
+
+/** Require one primary resource for a positive serialized position. */
+export function assertInventoryActiveSerialQuantity(serialIdentity: string, primary: Quantity): void {
+  if (!quantityEq(primary, parseQuantity("1", primary.unit))) {
+    throw new Error(`Active serial ${serialIdentity} must represent exactly one primary resource.`);
+  }
+}
 
 /** Reject unsupported wire discriminators before any amount-specific catalogue lookup or durable planning. */
 export function assertInventoryAmountKind(amount: InventoryAmount): void {

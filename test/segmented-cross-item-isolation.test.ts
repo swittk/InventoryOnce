@@ -78,18 +78,22 @@ describe("segmented writes with unrelated reservation/count scopes", () => {
         ],
       };
       try {
-        const amounts = () => {
+        /** Read every row at each placement to verify the exact routes on publication and replay. */
+        const rows = () => {
           const segment = storage.readPositionSegment();
           return ["a-source", "b-source", "a-destination", "b-destination"].map(
-            (nodeId) => segment.positionsByPlacement(nodeId)[0]?.measurements.primary.quantity
+            (nodeId) => segment.positionsByPlacement(nodeId).map(({ key, measurements }) => [
+              key.itemRevisionId, measurements.primary.quantity,
+            ])
           );
         };
         const moved = await inventory.stock.transferMany(command);
         expect(moved.replayed).toBe(false);
-        const expected = Array.from({ length: 4 }, () => parseQuantity("1", "piece"));
-        expect(amounts()).toEqual(expected);
+        const one = parseQuantity("1", "piece");
+        const expected = [[["item-a-v2", one]], [["item-b-v1", one]], [["item-a-v2", one]], [["item-b-v1", one]]];
+        expect(rows()).toEqual(expected);
         expect(await inventory.stock.transferMany(command)).toEqual({ ...moved, replayed: true });
-        expect(amounts()).toEqual(expected);
+        expect(rows()).toEqual(expected);
         expect(readWorld).not.toHaveBeenCalled();
         expect(storage.readPositionSegment().revision()).toBe(before + 1);
       } finally {

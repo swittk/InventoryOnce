@@ -216,7 +216,12 @@ it("reconciles a subtree count after an edge-only contents move on both storage 
   expect(await native.read.world()).toEqual(await canonical.read.world());
 });
 
-it.each(["node", "contents"])("keeps an embodied edge and serial unchanged when a %s move would erase its positive row", async (move) => {
+it.each([
+  { move: "node", deficit: "1", error: "is not positive after its event" },
+  { move: "contents", deficit: "1", error: "is not positive after its event" },
+  { move: "node", deficit: "0.5", error: "must represent exactly one primary resource" },
+  { move: "contents", deficit: "0.5", error: "must represent exactly one primary resource" },
+])("keeps an embodied edge and serial unchanged after a $move move into a $deficit deficit", async ({ move, deficit, error }) => {
   const catalog = createTabletCatalog();
   for (const storage of [
     createInMemoryInventoryDurableStorage(),
@@ -226,7 +231,7 @@ it.each(["node", "contents"])("keeps an embodied edge and serial unchanged when 
     const amount = stockAmount("1", "piece");
     await inventory.stock.issue({
       operationId: "serial-destination-deficit", occurredAtEpochMs: time0,
-      from: loosePosition("destination", { serialId: "deficit-case" }), amount,
+      from: loosePosition("destination", { serialId: "deficit-case" }), amount: stockAmount(deficit, "piece"),
     });
     await inventory.stock.receive({
       operationId: "receive-deficit-case", occurredAtEpochMs: time0,
@@ -245,7 +250,7 @@ it.each(["node", "contents"])("keeps an embodied edge and serial unchanged when 
       nodeId: move === "node" ? "deficit-case" : "source", into: "destination",
     };
     await expect(move === "node" ? inventory.placement.move(command) : inventory.placement.moveContents(command))
-      .rejects.toThrow("is not positive after its event");
+      .rejects.toThrow(error);
     expect(await inventory.read.placementAncestry("deficit-case")).toEqual(["deficit-case", "source"]);
     expect(await inventory.read.world()).toEqual(before);
     expect(storage.readSegmentedStockHead()).toEqual(beforeStock);

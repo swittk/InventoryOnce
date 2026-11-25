@@ -2723,7 +2723,7 @@ class InventoryOnceTransformationsImplementation
   }
 }
 
-/** True when every required measurement axis is covered by current stock. */
+/** Compare required measurement axes, treating a missing independent measurement as zero. */
 function inventoryMeasurementsCoverRequired(
   available: InventoryMeasurementVector,
   required: InventoryMeasurementVector
@@ -2738,11 +2738,11 @@ function inventoryMeasurementsCoverRequired(
       /** Match the same independently measured axis before comparing exact quantity. */
       (candidate) => candidate.axisId === needed.axisId
     );
-    if (
-      current === undefined ||
-      compareQuantity(current.quantity, needed.quantity) < 0
-    )
+    if (current === undefined) {
+      if (needed.quantity.amountMinor > 0) return false;
+    } else if (compareQuantity(current.quantity, needed.quantity) < 0) {
       return false;
+    }
   }
   return true;
 }
@@ -5535,12 +5535,18 @@ function planInventoryAllocationForRecording(
       ...input, allowAllocatedStock: true, recordingAttempt: "all-physical",
     });
     const physicalResidual = measured ? remainderOf(physical) : undefined;
+    const shortfallComparison = compareQuantity(physical.shortfall, preferred.shortfall);
     // A coherent partial witness is better than a fuller count that contradicts the report.
     if ((!measured || physicalResidual !== undefined) &&
         ((measured && residual === undefined) ||
-          compareQuantity(physical.shortfall, preferred.shortfall) < 0)) {
+          shortfallComparison < 0)) {
       selected = physical;
       residual = physicalResidual;
+    }
+    // Keep the preferred witness on a tie while retaining a proven split requirement in the physical pool.
+    if (shortfallComparison === 0 && physical.incrementBlockedStock &&
+        (!measured || physicalResidual !== undefined) && !selected.incrementBlockedStock) {
+      selected = { ...selected, incrementBlockedStock: true };
     }
     // Holds can hide expired stock in the preferred pass, even on a shortfall tie.
     if (physical.expiredStockWasExcluded && !selected.expiredStockWasExcluded) {
@@ -5931,7 +5937,7 @@ function inventoryCommandHeaderFromPolicyInput(
 /** Freeze the documented header fields before awaiting native planning reads. */
 function snapshotInventoryScopedMovementHeader(input: InventoryCommandHeader): InventoryCommandHeader {
   const { metadata, ...header } = inventoryCommandHeaderFromPolicyInput(input);
-  return metadata === undefined ? header : { ...header, metadata: structuredClone(metadata) };
+  return metadata === undefined ? header : { ...header, metadata: structuredClone({ ...metadata }) };
 }
 
 /** Capture the typed policy command without copying application-owned extensions. */

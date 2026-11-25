@@ -33,6 +33,8 @@ interface ReportedPosting {
   combined?: InventoryMeasurementTotals;
   /** Whole package count when supplied by every merged part. */
   packageCount: bigint | undefined;
+  /** Whether any of the combined quantity has no witnessed effect metadata. */
+  includesUnwitnessed: boolean;
 }
 
 /** One exact reported portion for which the planner found no witnessed source stock. */
@@ -106,7 +108,7 @@ export function createInventoryRecordedMovement({
     for (const effect of portion.stockEffects) {
       if (effect.measurementsDelta.primary.quantity.amountMinor < 0) source = effect;
       else destination = effect;
-      addReportedPosting(effects, effect);
+      addReportedPosting(effects, effect, true);
     }
     if (source === undefined) throw new Error("Recorded movement lost its signed source.");
     unwitnessedStockMovements.push({
@@ -131,12 +133,14 @@ export function createInventoryRecordedMovement({
 }
 
 /** Accumulate same-direction portions without storing an intermediate posting. */
-function addReportedPosting(effects: Map<string, ReportedPosting>, effect: InventoryStockEffect): void {
+function addReportedPosting(
+  effects: Map<string, ReportedPosting>, effect: InventoryStockEffect, unwitnessed = false,
+): void {
   const id = inventoryStockPositionIdentity(effect.position);
   const current = effects.get(id);
   const count = effect.evidence?.packageCount;
   if (current === undefined) {
-    effects.set(id, { effect, packageCount: count === undefined ? undefined : BigInt(count) });
+    effects.set(id, { effect, packageCount: count === undefined ? undefined : BigInt(count), includesUnwitnessed: unwitnessed });
     return;
   }
   const first = current.effect.measurementsDelta;
@@ -148,17 +152,20 @@ function addReportedPosting(effects: Map<string, ReportedPosting>, effect: Inven
     addInventoryMeasurementTotals(current.combined, first);
   }
   addInventoryMeasurementTotals(current.combined, effect.measurementsDelta);
+  current.includesUnwitnessed ||= unwitnessed;
   current.packageCount = current.packageCount === undefined || count === undefined
     ? undefined
     : current.packageCount + BigInt(count);
 }
 
-/** Keep witnessed metadata and store only the final signed sum and evidence. */
-function materializeReportedPosting({ effect, combined, packageCount }: ReportedPosting): InventoryStockEffect {
+/** Store the final signed sum and metadata that applies to the complete posting. */
+function materializeReportedPosting({ effect, combined, packageCount, includesUnwitnessed }: ReportedPosting): InventoryStockEffect {
   if (combined === undefined) return effect;
+  const { metadata, ...posting } = effect;
   const measurementsDelta = materializeInventoryMeasurementTotals(combined, effect.measurementsDelta.primary.axisId);
   return {
-    ...effect,
+    ...posting,
+    ...(includesUnwitnessed || metadata === undefined ? {} : { metadata }),
     measurementsDelta,
     evidence: {
       transactedMeasurements: measurementsDelta.primary.quantity.amountMinor < 0 ? negateInventoryMeasurements(measurementsDelta) : measurementsDelta,

@@ -750,7 +750,8 @@ describe("derived pool summaries and exact member movements", () => {
     ).toBe(2);
   });
 
-  it("uses the exact least-common quantum of pool references and intact packages", async () => {
+  it.each(["1.5", "1"])("uses only exact subsets of loose and intact rows with a %s pool reference",
+    async (poolQuantity) => {
     const packaged = defineScalarInventoryItem({
       itemId: "awkward-packaged",
       revisionId: "awkward-packaged-v1",
@@ -777,7 +778,7 @@ describe("derived pool summaries and exact member movements", () => {
         {
           item: packaged,
           memberQuantity: "3",
-          poolQuantity: "1.5",
+          poolQuantity,
         },
         { item: alternative },
       ],
@@ -798,30 +799,26 @@ describe("derived pool summaries and exact member movements", () => {
       clock: clockAt(time3),
     });
     await inventory.stock.receive({
-      operationId: "receive-three-two-piece-packs",
+      operationId: "receive-two-piece-packs",
       occurredAtEpochMs: time0,
       to: { itemId: packaged.itemId, placementNodeId: "store" },
-      amount: packageAmount(3, pack2.revisionId),
+      amount: packageAmount(4, pack2.revisionId),
     });
 
     const blocked = await inventory.fungibility.plan({
       fungibilityRevisionId: pool.revisionId,
-      requested: parseQuantity("1.5", "equivalent"),
+      requested: parseQuantity(poolQuantity, "equivalent"),
       method: InventoryAllocationMethod.Fifo,
       scope: { placementNodeIds: ["store"] },
       atEpochMs: time1,
     });
     expect(blocked.lines).toEqual([]);
-    expect(blocked.shortfall).toMatchObject({
-      amountMinor: 15,
-      decimals: 1,
-      unit: "equivalent",
-    });
+    expect(blocked.shortfall).toEqual(parseQuantity(poolQuantity, "equivalent"));
     expect(blocked.incrementBlockedStock).toBe(true);
 
     const legal = await inventory.fungibility.plan({
       fungibilityRevisionId: pool.revisionId,
-      requested: parseQuantity("3", "equivalent"),
+      requested: parseQuantity(poolQuantity === "1" ? "2" : "3", "equivalent"),
       method: InventoryAllocationMethod.Fifo,
       scope: { placementNodeIds: ["store"] },
       atEpochMs: time1,
@@ -831,6 +828,24 @@ describe("derived pool summaries and exact member movements", () => {
       count: 3,
       packagingRevisionId: pack2.revisionId,
     });
+    expect(legal.lines[0]?.memberQuantity).toEqual(parseQuantity("6", "piece"));
+    await inventory.stock.receive({
+      operationId: "receive-loose-remainder", occurredAtEpochMs: time0,
+      to: { itemId: packaged.itemId, placementNodeId: "loose-store" },
+      amount: stockAmount("10", "piece"),
+    });
+    const loose = await inventory.fungibility.plan({
+      fungibilityRevisionId: pool.revisionId,
+      requested: parseQuantity(poolQuantity, "equivalent"),
+      method: InventoryAllocationMethod.Fifo,
+      scope: { placementNodeIds: ["loose-store"] },
+      atEpochMs: time1,
+    });
+    expect(loose.lines).toMatchObject([{
+      memberQuantity: parseQuantity("3", "piece"),
+      poolQuantity: parseQuantity(poolQuantity, "equivalent"),
+    }]);
+    expect(loose.shortfall).toEqual(parseQuantity(poolQuantity === "1" ? "0" : "0.0", "equivalent"));
   });
 
   it("splits package-fixed independent measurements consistently with ordinary allocation", async () => {
@@ -1078,6 +1093,8 @@ describe("derived pool summaries and exact member movements", () => {
       expect.objectContaining({ reservationIds: ["weighed-hold"], shortage: parseQuantity("0", "kg") }),
     ]));
     const physical = await inventory.fungibility.transfer({ ...command, operationId: "move-held-member" });
+    expect(physical.event.stockEffects.map((effect) => effect.measurementsDelta.primary.quantity))
+      .toEqual([parseQuantity("4", "piece"), parseQuantity("-4", "piece")]);
     expect(physical.event.stockEffects.map((effect) => effect.measurementsDelta.independent[0]?.quantity))
       .toEqual([parseQuantity("8", "kg"), parseQuantity("-8", "kg")]);
     expect((await inventory.read.reservationFeasibility(time2)).groups).toEqual(expect.arrayContaining([
