@@ -1,3 +1,6 @@
+import type { InMemoryInventorySegmentedPlacementStore } from "./segmented-placement.js";
+import { candidateSubtreePositionIds, inventoryScopedStockMatches } from "./stock-scope.js";
+import { captureConservedPositiveLayerStarts } from "./stock-age.js";
 import { inventoryIntentFingerprint } from "./canonical.js";
 import type { InventoryCatalogSnapshot } from "./catalog.js";
 import { inventorySha256 } from "./digest.js";
@@ -18,7 +21,6 @@ import {
 import type {
   InventoryCommittedEvent,
   InventoryEventDraft,
-  InventoryStockEffect,
 } from "./events.js";
 import {
   cloneInventoryRetainedData,
@@ -27,7 +29,6 @@ import {
 } from "./sparse-record.js";
 import {
   InventoryOptionalIdentityConstraintKind,
-  inventoryStockPositionMatchesNormalizedSelector,
   normalizeInventoryStockSelector,
   type InventoryOptionalIdentityConstraint,
   type InventoryStockSelector,
@@ -42,8 +43,8 @@ export interface ApplyInventorySegmentedStockEffectsInput {
   readonly expectedRevision: number;
   /** Next published revision after applying the event. */
   readonly nextRevision: number;
-  /** Complete signed exact-position effects from one validated inventory event. */
-  readonly stockEffects: readonly InventoryStockEffect[];
+  /** Committed event whose signed effects and FIFO origins publish together. */
+  readonly event: InventoryCommittedEvent;
   /** Whether this command may leave a signed physical deficit. */
   readonly deficitPolicy: InventoryDeficitPolicy;
 }
@@ -131,6 +132,8 @@ export interface ApplyInventorySegmentedPositionDeltaInput {
   readonly removePositionIds?: readonly string[];
   /** Complete current rows to insert or replace by their deterministic identities. */
   readonly upsertPositions?: readonly InventoryStockPosition[];
+  /** Exact FIFO starts for changed positive rows, including provenance-only corrections. */
+  readonly positiveLayerStarts?: ReadonlyMap<string, number>;
 }
 
 /** Result of one atomic segmented position delta. */
@@ -274,6 +277,8 @@ export interface InventorySegmentedPositionStore
 export interface CreateInMemoryInventorySegmentedPositionStoreInput {
   /** Initial current positions; duplicates by exact identity are rejected. */
   readonly positions?: readonly InventoryStockPosition[];
+  /** FIFO starts retained by the initial committed projection. */
+  readonly positiveLayerStarts?: Readonly<Record<string, number>>;
   /** Initial segment revision, normally inherited from the published inventory revision. */
   readonly revision?: number;
 }
@@ -371,6 +376,8 @@ export class InMemoryInventorySegmentedPositionStore
   >();
   /** Item-scoped serial -> exact positive position identity. */
   private readonly positivePositionIdBySerialIdentity = new Map<string, string>();
+  /** Start of the current positive layer for each policy-eligible position. */
+  private readonly positiveLayerStarts = new Map<string, number>();
   /** Current optimistic transaction revision. */
   private currentRevision: number;
   /** Order-independent primary 256-bit leaf aggregate. */
@@ -398,6 +405,8 @@ export class InMemoryInventorySegmentedPositionStore
       this.positions.set(identity, retained);
       this.addIndexes(identity, retained);
       this.addRootLeaf(identity, retained);
+      const start = input.positiveLayerStarts?.[identity];
+      if (start !== undefined) this.positiveLayerStarts.set(identity, start);
     }
   }
 
@@ -437,6 +446,11 @@ export class InMemoryInventorySegmentedPositionStore
     return positionId === undefined ? undefined : this.position(positionId);
   }
 
+  /** Read one current positive layer start without consulting the event journal. */
+  positiveLayerStart(positionId: string): number | undefined {
+    return this.positiveLayerStarts.get(positionId);
+  }
+
   /** Read current rows for one item through the item index. */
   positionsByItem(itemId: string): readonly InventoryStockPosition[] {
     return this.positionsForIds(this.positionIdsByItemId.get(itemId));
@@ -462,10 +476,11 @@ export class InMemoryInventorySegmentedPositionStore
 
   /** Execute one direct-position selector from the narrowest retained adapter index. */
   queryPositions(
-    selector: InventoryStockSelector
+    selector: InventoryStockSelector,
+    placement?: InMemoryInventorySegmentedPlacementStore
   ): readonly InventoryStockPosition[] | undefined {
     const normalized = normalizeInventoryStockSelector(selector);
-    if (normalized.withinPlacementNodeIds !== undefined) return undefined;
+    if (normalized.withinPlacementNodeIds !== undefined && placement === undefined) return undefined;
 
     let candidate = inventorySegmentedSetCandidate(
       this.positionIdsByItemId.get(normalized.itemId)
@@ -566,8 +581,18 @@ export class InMemoryInventorySegmentedPositionStore
       );
     }
 
-    const ids = [...candidate.identities()];
-    ids.sort();
+    const subtreeIds = placement === undefined || normalized.withinPlacementNodeIds === undefined
+      ? undefined
+      : candidateSubtreePositionIds({
+          /** Read the local postings without loading full stock rows. */
+          positionIds: (nodeId) => {
+            const ids = this.positionIdsByPlacementNodeId.get(nodeId);
+            return { size: ids?.size ?? 0, ids: ids ?? [] };
+          },
+          /** Read only the immediate child edges of the visited node. */
+          childNodeIds: (nodeId) => placement.childNodeIds(nodeId),
+        }, normalized.withinPlacementNodeIds, candidate.size);
+    const ids = subtreeIds ?? [...candidate.identities()].sort();
     const result: InventoryStockPosition[] = [];
     for (const positionId of ids) {
       const position = this.positions.get(positionId);
@@ -576,12 +601,13 @@ export class InMemoryInventorySegmentedPositionStore
           `Inventory segmented selector index references missing position '${positionId}'.`
         );
       }
-      if (
-        inventoryStockPositionMatchesNormalizedSelector(
-          position.key,
-          normalized
-        )
-      ) {
+      if (inventoryScopedStockMatches(
+        position.key,
+        normalized,
+        normalized.withinPlacementNodeIds === undefined || position.key.placementNodeId === undefined
+          ? []
+          : placement?.ancestry(position.key.placementNodeId) ?? []
+      )) {
         result.push(cloneInventoryRetainedData(position));
       }
     }
@@ -677,6 +703,18 @@ export class InMemoryInventorySegmentedPositionStore
       this.addRootLeaf(positionId, position);
     }
 
+    // Ages belong to the same published generation as their exact stock rows.
+    for (const positionId of explicitRemovals) this.positiveLayerStarts.delete(positionId);
+    for (const [positionId, position] of upserts) {
+      if (position.measurements.primary.quantity.amountMinor <= 0) {
+        this.positiveLayerStarts.delete(positionId);
+      }
+    }
+    if (input.positiveLayerStarts !== undefined) {
+      for (const [positionId, start] of input.positiveLayerStarts) {
+        this.positiveLayerStarts.set(positionId, start);
+      }
+    }
     this.currentRevision = input.nextRevision;
     const removedPositionIds = [...explicitRemovals];
     removedPositionIds.sort();
@@ -695,7 +733,7 @@ export class InMemoryInventorySegmentedPositionStore
   ): ApplyInventorySegmentedPositionDeltaResult {
     // Compute the complete changed set before mutating the published index.
     const nextRows = new Map<string, InventoryStockPosition | undefined>();
-    for (const effect of input.stockEffects) {
+    for (const effect of input.event.stockEffects) {
       const positionId = inventoryStockPositionIdentity(effect.position);
       const earlier =
         nextRows.has(positionId)
@@ -720,6 +758,21 @@ export class InMemoryInventorySegmentedPositionStore
       );
     }
 
+    const positiveLayerStarts = captureConservedPositiveLayerStarts(
+      input.event,
+      /** Read only the affected source and destination ages at the current revision. */
+      (positionId) => this.positiveLayerStarts.get(positionId)
+    );
+    for (const [positionId, position] of nextRows) {
+      const positive = position !== undefined && position.measurements.primary.quantity.amountMinor > 0;
+      if (positiveLayerStarts.has(positionId)) {
+        if (!positive) {
+          throw new Error(`Conserved FIFO provenance destination ${positionId} is not positive after its event.`);
+        }
+      } else if (positive && !this.positiveLayerStarts.has(positionId)) {
+        positiveLayerStarts.set(positionId, input.event.occurredAtEpochMs);
+      }
+    }
     const removePositionIds: string[] = [];
     const upsertPositions: InventoryStockPosition[] = [];
     for (const [positionId, position] of nextRows) {
@@ -729,6 +782,7 @@ export class InMemoryInventorySegmentedPositionStore
     return this.applyDelta({
       expectedRevision: input.expectedRevision,
       nextRevision: input.nextRevision,
+      positiveLayerStarts,
       ...(removePositionIds.length === 0 ? {} : { removePositionIds }),
       ...(upsertPositions.length === 0 ? {} : { upsertPositions }),
     });

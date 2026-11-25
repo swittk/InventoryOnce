@@ -76,6 +76,9 @@ export function formalConfigCheckNames(config) {
 /** Expected counterexamples as module, config, and the exact invariant TLC must reject. */
 export const formalInvariantMutationChecks = Object.freeze([
   ["UseByReservation", "UseByReservationEpochZeroMutation", "AllocationEvidenceIsPaired"],
+  ["PublishedHeadCAS", "PublishedHeadCASNativeStaleMutation", "HeadFollowsPublishedAttempts"],
+  ["RecordedDeficit", "RecordedDeficitFabricatedTransferMutation", "TransferArrivalsMatchSeparateWitnesses"],
+  ["PlacementGraph", "PlacementGraphDirectContentsSplitMutation", "EmbodiedResourceTracksNodeParent"],
   [
     "SnapshotSupersededWorkflow",
     "SnapshotSupersededWorkflowResumeMutation",
@@ -257,6 +260,7 @@ export function assertFormalMutationRegistrationConsistency(
 export const formalPositiveReachabilityChecks = Object.freeze([
   ["ReservationScope", "ReservationScopeDetachedHoldWitness", "ExactHoldAlwaysAvailable"],
   ["FungibilityPool", "FungibilityPoolStrandedHoldWitness", "AllocatedClaimNeverStrandedByTransfer"],
+  ["RecordedDeficit", "RecordedDeficitMixedTransferWitness", "MixedTransferIsUnreachable"],
   ["SnapshotSupersededWorkflow", "SnapshotSupersededWorkflowNonzeroWitness", "NonzeroSnapshotIsUnreachable"],
 ]);
 

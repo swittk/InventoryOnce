@@ -208,6 +208,8 @@ For a standalone place, `placement.move({ nodeId, into })` changes only the node
 
 An embodied resource cannot be issued, scrapped, transformed away, or de-individualized while its node has direct stock or child nodes. `placement.moveContents({ nodeId, into })` evacuates every direct stock row and direct child node as one event; nested descendants remain under their immediate child. Once empty, destruction retires the node with the resource, while de-individualization returns one unit to fungible stock and retires the old serial/node identity. Rebuildable parent/child, direct-stock, serial, and embodiment indexes accelerate these checks without becoming another source of physical truth.
 
+On indexed storage, moving direct contents reads the source's exact rows and immediate child bindings plus the destination's ancestry. Stock, independently moved child edges, and edges driven by embodied serials publish together in the same event and revision.
+
 `stock.detach(...)` removes an exact quantity from its known direct placement while keeping it in current inventory. `stock.markMissing(...)` records that the unresolved cohort is genuinely missing. `stock.place(...)` gives detached/missing stock a new known direct placement. InventoryOnce derives and preserves the lifecycle identity; callers do not invent graph edges or cohort IDs.
 
 `read.whereabouts()` returns current unresolved lifecycles with origin provenance. `read.whereaboutsHistory()` also returns resolved lifecycles, including later placement, issue, scrap, count adjustment, correction, or historical-repair events. Broad on-hand reporting includes unresolved stock as accounted truth, while ordinary usable availability, reservations, and FIFO/FEFO picking exclude it until placement is known again.
@@ -412,6 +414,8 @@ A clinic may explicitly configure `InventoryDeficitPolicy.Record`. In that mode,
 - remains visible after later receipts until an explicit correction/count/business action resolves the liability;
 - retains the same operation identity, changed-intent rejection, publication, repair, and audit semantics as every other InventoryOnce operation.
 
+In Record mode, a reported transfer may contain both a witnessed part and an unwitnessed shortage. The witnessed part retains its real position identity, source FIFO age, and line evidence. `event.unwitnessedStockMovements` identifies the exact signed source and unlabelled arrival for the remainder. It carries no lot, serial, source-age or cost evidence. Policy scrap keeps the reported reason and records its unwitnessed quantity at an unlabelled signed source. When witnessed and unwitnessed quantities share an exact row, the stock effect is their total and any line evidence applies to the witnessed remainder after subtracting the typed unwitnessed portion. The existing tracking and intact-package requirements still apply.
+
 Migration may therefore preserve coherent clinic truth such as positive tracked lots plus a negative `__untracked__` row when their signed sum equals the parent balance. A negative opening is not synthesized as a receipt: it compiles to an explicit Issue deficit event. Unit identity, algebra, and unresolved workflow rows still fail closed.
 
 ## Reservations after physical loss
@@ -421,6 +425,15 @@ Ordinary issues, transfers, reclassifications, cart moves, counts, corrections, 
 Call `inventory.read.reservationFeasibility()` after those operations. It checks current published stock against claims active at the authority clock time. Pass an exact time as `inventory.read.reservationFeasibility(at)` to use reservation creation, expiry, and terminal-status intervals at that time; this does not rewind the stock projection. It returns each competing item/axis group with exact `requested`, maximum `fulfillable`, and `shortage` quantities plus the affected reservation IDs. Lifecycle commands cannot be dated before creation/an earlier lifecycle change or after their durable record time. Late physical truth must come through scrap, count reconciliation, or correction instead of backdating the current claim book.
 
 ## Rebuildable performance indexes
+
+Indexed adapters can serve ordinary FIFO/FEFO planning and stock summaries from the selected physical
+pools at one published revision. A batch plans its requests in order and commits one event and one
+receipt. Current exact holds, lot expiry, ancestor use-by and FIFO origins stay with the affected
+positions. Repeating an operation returns its frozen allocation evidence, even after the chosen stock
+has moved. The `/storage` helper `readInventoryScopedStockAvailability` exposes exact physical,
+expired, deficit and held capacity for a selected item revision. The full availability report still
+includes broad and unbacked claims and global feasibility.
+
 
 Correctness does not require hot reads to replay or scan the complete journal. The projection rebuilds
 and durably publishes several derived indexes with the same world revision:

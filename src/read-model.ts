@@ -141,7 +141,15 @@ export function summarizeInventoryStock({
   selector: rawSelector,
 }: SummarizeInventoryStockInput): InventoryStockSummary {
   const selector = normalizeInventoryStockSelector(rawSelector);
-  const positions = findInventoryPositions(projection, selector);
+  return summarizeInventoryStockPositions(catalog, selector, findInventoryPositions(projection, selector));
+}
+
+/** Aggregate rows already selected at one published stock revision. */
+export function summarizeInventoryStockPositions(
+  catalog: InventoryCatalog,
+  selector: InventoryStockSelector,
+  positions: readonly InventoryStockPosition[]
+): InventoryStockSummary {
   const positionsByRevision = new Map<
     ItemRevisionId,
     InventoryStockPosition[]

@@ -2,30 +2,33 @@
 EXTENDS Integers, FiniteSets
 
 MaxQuantity == 3
-IssueQuantities == 1..2
+MovementQuantities == 1..2
+Verbs == {"issue", "scrap", "transfer"}
+NoVerb == "none"
+NoArrivals == <<0, 0>>
 OperationIds == {"op-a", "op-b"}
 Modes == {"record", "reject"}
 NoOperation == "none"
 NoMode == "none"
-NoIntent == <<NoMode, 0>>
-IntentValues == {NoIntent} \union (Modes \X IssueQuantities)
+NoIntent == <<NoMode, 0, NoVerb>>
+IntentValues == {NoIntent} \union (Modes \X MovementQuantities \X Verbs)
 Outcomes == {"none", "receipt", "record-full", "record-shortage",
              "reject-full", "reject-shortage", "replay", "changed-intent"}
 
 Min(left, right) == IF left <= right THEN left ELSE right
 Max(left, right) == IF left >= right THEN left ELSE right
 Available(physicalValue, deficitValue) == Max(physicalValue - deficitValue, 0)
-Intent(mode, quantity) == <<mode, quantity>>
+Intent(mode, quantity, verb) == <<mode, quantity, verb>>
 
 VARIABLES physical, deficit, signedNet, beforePhysical, beforeDeficit,
           beforeSignedNet, intentByOperation, resultShortfallByOperation,
           lastOperation, lastMode, lastRequested, lastShortfall, lastOutcome,
-          lastReplayed, lastChangedIntentRejected
+          lastReplayed, lastChangedIntentRejected, lastVerb, arrivals, beforeArrivals
 
 vars == <<physical, deficit, signedNet, beforePhysical, beforeDeficit,
           beforeSignedNet, intentByOperation, resultShortfallByOperation,
           lastOperation, lastMode, lastRequested, lastShortfall, lastOutcome,
-          lastReplayed, lastChangedIntentRejected>>
+          lastReplayed, lastChangedIntentRejected, lastVerb, arrivals, beforeArrivals>>
 
 Seen(op) == intentByOperation[op] # NoIntent
 
@@ -45,15 +48,18 @@ Init ==
   /\ lastOutcome = "none"
   /\ lastReplayed = FALSE
   /\ lastChangedIntentRejected = FALSE
+  /\ lastVerb = NoVerb
+  /\ arrivals = NoArrivals
+  /\ beforeArrivals = NoArrivals
 
 Fresh(op) == op \in OperationIds /\ ~Seen(op)
-SameIntent(op, mode, quantity) ==
-  Seen(op) /\ intentByOperation[op] = Intent(mode, quantity)
-ChangedIntent(op, mode, quantity) ==
-  Seen(op) /\ intentByOperation[op] # Intent(mode, quantity)
+SameIntent(op, mode, quantity, verb) ==
+  Seen(op) /\ intentByOperation[op] = Intent(mode, quantity, verb)
+ChangedIntent(op, mode, quantity, verb) ==
+  Seen(op) /\ intentByOperation[op] # Intent(mode, quantity, verb)
 
 Receipt(quantity) ==
-  /\ quantity \in IssueQuantities
+  /\ quantity \in MovementQuantities
   /\ physical + quantity <= MaxQuantity
   /\ beforePhysical' = physical
   /\ beforeDeficit' = deficit
@@ -63,6 +69,9 @@ Receipt(quantity) ==
   /\ signedNet' = physical' - deficit'
   /\ lastOperation' = NoOperation
   /\ lastMode' = NoMode
+  /\ lastVerb' = NoVerb
+  /\ beforeArrivals' = arrivals
+  /\ UNCHANGED arrivals
   /\ lastRequested' = quantity
   /\ lastShortfall' = 0
   /\ lastOutcome' = "receipt"
@@ -70,13 +79,13 @@ Receipt(quantity) ==
   /\ lastChangedIntentRejected' = FALSE
   /\ UNCHANGED <<intentByOperation, resultShortfallByOperation>>
 
-RecordIssue(op, quantity) ==
+RecordMovement(op, quantity, verb, fabricate) ==
   LET available == Available(physical, deficit)
       allocated == Min(quantity, available)
       shortfall == quantity - allocated
   IN
     /\ Fresh(op)
-    /\ quantity \in IssueQuantities
+    /\ quantity \in MovementQuantities
     /\ deficit + shortfall <= MaxQuantity
     /\ beforePhysical' = physical
     /\ beforeDeficit' = deficit
@@ -85,11 +94,18 @@ RecordIssue(op, quantity) ==
     /\ deficit' = deficit + shortfall
     /\ signedNet' = physical' - deficit'
     /\ intentByOperation' = [intentByOperation EXCEPT
-         ![op] = Intent("record", quantity)]
+         ![op] = Intent("record", quantity, verb)]
     /\ resultShortfallByOperation' = [resultShortfallByOperation EXCEPT
          ![op] = shortfall]
     /\ lastOperation' = op
     /\ lastMode' = "record"
+    /\ lastVerb' = verb
+    /\ beforeArrivals' = arrivals
+    /\ arrivals' = IF verb = "transfer"
+                      THEN IF fabricate
+                           THEN <<arrivals[1] + quantity, arrivals[2]>>
+                           ELSE <<arrivals[1] + allocated, arrivals[2] + shortfall>>
+                      ELSE arrivals
     /\ lastRequested' = quantity
     /\ lastShortfall' = shortfall
     /\ lastOutcome' = IF shortfall = 0 THEN "record-full"
@@ -97,16 +113,21 @@ RecordIssue(op, quantity) ==
     /\ lastReplayed' = FALSE
     /\ lastChangedIntentRejected' = FALSE
 
-RejectIssue(op, quantity) ==
+RejectMovement(op, quantity, verb) ==
   LET available == Available(physical, deficit)
       shortfall == Max(quantity - available, 0)
   IN
     /\ Fresh(op)
-    /\ quantity \in IssueQuantities
+    /\ quantity \in MovementQuantities
     /\ beforePhysical' = physical
     /\ beforeDeficit' = deficit
     /\ beforeSignedNet' = signedNet
     /\ lastMode' = "reject"
+    /\ lastVerb' = verb
+    /\ beforeArrivals' = arrivals
+    /\ arrivals' = IF verb = "transfer" /\ shortfall = 0
+                      THEN <<arrivals[1] + quantity, arrivals[2]>>
+                      ELSE arrivals
     /\ lastRequested' = quantity
     /\ lastShortfall' = shortfall
     /\ lastReplayed' = FALSE
@@ -116,7 +137,7 @@ RejectIssue(op, quantity) ==
                /\ deficit' = deficit
                /\ signedNet' = physical' - deficit'
                /\ intentByOperation' = [intentByOperation EXCEPT
-                    ![op] = Intent("reject", quantity)]
+                    ![op] = Intent("reject", quantity, verb)]
                /\ resultShortfallByOperation' = [resultShortfallByOperation EXCEPT
                     ![op] = 0]
                /\ lastOperation' = op
@@ -129,15 +150,18 @@ RejectIssue(op, quantity) ==
                /\ UNCHANGED <<intentByOperation,
                                resultShortfallByOperation>>
 
-Replay(op, mode, quantity) ==
+Replay(op, mode, quantity, verb) ==
   /\ mode \in Modes
-  /\ quantity \in IssueQuantities
-  /\ SameIntent(op, mode, quantity)
+  /\ quantity \in MovementQuantities
+  /\ SameIntent(op, mode, quantity, verb)
   /\ beforePhysical' = physical
   /\ beforeDeficit' = deficit
   /\ beforeSignedNet' = signedNet
   /\ lastOperation' = op
   /\ lastMode' = mode
+  /\ lastVerb' = verb
+  /\ beforeArrivals' = arrivals
+  /\ UNCHANGED arrivals
   /\ lastRequested' = quantity
   /\ lastShortfall' = resultShortfallByOperation[op]
   /\ lastOutcome' = "replay"
@@ -146,15 +170,18 @@ Replay(op, mode, quantity) ==
   /\ UNCHANGED <<physical, deficit, signedNet, intentByOperation,
                   resultShortfallByOperation>>
 
-RejectChangedIntent(op, mode, quantity) ==
+RejectChangedIntent(op, mode, quantity, verb) ==
   /\ mode \in Modes
-  /\ quantity \in IssueQuantities
-  /\ ChangedIntent(op, mode, quantity)
+  /\ quantity \in MovementQuantities
+  /\ ChangedIntent(op, mode, quantity, verb)
   /\ beforePhysical' = physical
   /\ beforeDeficit' = deficit
   /\ beforeSignedNet' = signedNet
   /\ lastOperation' = op
   /\ lastMode' = mode
+  /\ lastVerb' = verb
+  /\ beforeArrivals' = arrivals
+  /\ UNCHANGED arrivals
   /\ lastRequested' = quantity
   /\ lastShortfall' = resultShortfallByOperation[op]
   /\ lastOutcome' = "changed-intent"
@@ -163,18 +190,19 @@ RejectChangedIntent(op, mode, quantity) ==
   /\ UNCHANGED <<physical, deficit, signedNet, intentByOperation,
                   resultShortfallByOperation>>
 
-Next ==
-  \/ \E quantity \in IssueQuantities: Receipt(quantity)
-  \/ \E op \in OperationIds, quantity \in IssueQuantities:
-       RecordIssue(op, quantity)
-  \/ \E op \in OperationIds, quantity \in IssueQuantities:
-       RejectIssue(op, quantity)
+Next(fabricate) ==
+  \/ \E quantity \in MovementQuantities: Receipt(quantity)
+  \/ \E op \in OperationIds, quantity \in MovementQuantities, verb \in Verbs:
+       RecordMovement(op, quantity, verb, fabricate)
+  \/ \E op \in OperationIds, quantity \in MovementQuantities, verb \in Verbs:
+       RejectMovement(op, quantity, verb)
   \/ \E op \in OperationIds, mode \in Modes,
-        quantity \in IssueQuantities: Replay(op, mode, quantity)
+        quantity \in MovementQuantities, verb \in Verbs: Replay(op, mode, quantity, verb)
   \/ \E op \in OperationIds, mode \in Modes,
-        quantity \in IssueQuantities: RejectChangedIntent(op, mode, quantity)
+        quantity \in MovementQuantities, verb \in Verbs: RejectChangedIntent(op, mode, quantity, verb)
 
-Spec == Init /\ [][Next]_vars
+Spec == Init /\ [][Next(FALSE)]_vars
+FabricatedTransferMutationSpec == Init /\ [][Next(TRUE)]_vars
 
 TypeOK ==
   /\ physical \in 0..MaxQuantity
@@ -192,6 +220,9 @@ TypeOK ==
   /\ lastOutcome \in Outcomes
   /\ lastReplayed \in BOOLEAN
   /\ lastChangedIntentRejected \in BOOLEAN
+  /\ lastVerb \in Verbs \union {NoVerb}
+  /\ arrivals \in (0..4) \X (0..4)
+  /\ beforeArrivals \in (0..4) \X (0..4)
 
 SignedNetIsPhysicalMinusDeficit == signedNet = physical - deficit
 
@@ -230,7 +261,7 @@ RecordShortageIsExplicit ==
     /\ Seen(lastOperation)
     /\ lastMode = "record"
     /\ lastShortfall > 0
-    /\ intentByOperation[lastOperation] = Intent(lastMode, lastRequested)
+    /\ intentByOperation[lastOperation] = Intent(lastMode, lastRequested, lastVerb)
     /\ resultShortfallByOperation[lastOperation] = lastShortfall
     /\ deficit = beforeDeficit + lastShortfall
     /\ signedNet = beforeSignedNet - lastRequested
@@ -262,7 +293,7 @@ ReplayPreservesTruthAndResult ==
     /\ signedNet = beforeSignedNet
     /\ lastOperation \in OperationIds
     /\ Seen(lastOperation)
-    /\ intentByOperation[lastOperation] = Intent(lastMode, lastRequested)
+    /\ intentByOperation[lastOperation] = Intent(lastMode, lastRequested, lastVerb)
     /\ lastShortfall = resultShortfallByOperation[lastOperation]
 
 ChangedIntentRejectsAndStutters ==
@@ -274,7 +305,22 @@ ChangedIntentRejectsAndStutters ==
     /\ signedNet = beforeSignedNet
     /\ lastOperation \in OperationIds
     /\ Seen(lastOperation)
-    /\ intentByOperation[lastOperation] # Intent(lastMode, lastRequested)
+    /\ intentByOperation[lastOperation] # Intent(lastMode, lastRequested, lastVerb)
     /\ lastShortfall = resultShortfallByOperation[lastOperation]
+
+\* A transfer publishes the two arrival portions with the signed source in one step.
+\* Other verbs, rejected attempts, and retries cannot add destination stock.
+TransferArrivalsMatchSeparateWitnesses ==
+  IF lastVerb = "transfer" /\ lastOutcome \in {"record-full", "record-shortage", "reject-full"}
+  THEN /\ arrivals[1] - beforeArrivals[1] = beforePhysical - physical
+       /\ arrivals[2] - beforeArrivals[2] = lastShortfall
+       /\ arrivals[1] + arrivals[2] - beforeArrivals[1] - beforeArrivals[2]
+          = beforeSignedNet - signedNet
+  ELSE arrivals = beforeArrivals
+
+\* The ordinary model must admit one witnessed transfer mixed with unknown arrival.
+MixedTransferIsUnreachable ==
+  ~(lastVerb = "transfer" /\ lastOutcome = "record-shortage" /\
+    arrivals[1] > beforeArrivals[1] /\ arrivals[2] > beforeArrivals[2])
 
 =============================================================================

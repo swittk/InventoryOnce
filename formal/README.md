@@ -15,7 +15,7 @@ if [[ -f .nvmrc ]]; then nvm use; else nvm use 22; fi
 pnpm formal
 ```
 
-The runner pins `tla2tools.jar`, uses collision-safe metadata directories, retains failed-state metadata, and content-addresses successful proofs. It currently checks **29 positive models**, **24 deliberately invalid mutation configurations**, and **three positive reachability witnesses**. A mutation check passes only when TLC finds the exact named invariant violation.
+The runner pins `tla2tools.jar`, uses collision-safe metadata directories, retains failed-state metadata, and content-addresses successful proofs. It currently checks **29 positive models**, **25 deliberately invalid mutation configurations**, and **three positive reachability witnesses**. A mutation check passes only when TLC finds the exact named invariant violation.
 
 ## Registered TLC checks
 
@@ -67,7 +67,7 @@ The exact seed and fingerprint values vary by run. The latest complete run explo
 | Model/property | Generated states | Distinct states | Complete graph depth |
 | --- | ---: | ---: | ---: |
 | `AuthorityWriterFence` | 12,393,407 | 2,594,448 | 35 |
-| `PublishedHeadCAS` | 4,284 | 1,871 | 24 |
+| `PublishedHeadCAS` | 4,302 | 1,871 | 24 |
 | `CompositionRevision` | 33,441 | 6,688 | 10 |
 | `CollectionView` | 13,123 | 1,458 | 9 |
 | `FungibilityPool` | 3,281,128 | 281,616 | 15 |
@@ -211,13 +211,24 @@ revision or exact substitute; normal stock events continue to record the item ac
 
 ### Recorded deficits
 
-`RecordedDeficit.tla` distinguishes allocatable physical stock from a signed recorded liability. Its bounded operation model covers Record and Reject issue modes, receipts after a deficit, frozen operation intent/result shortfall, exact replay, and changed-intent rejection. Checked invariants require signed net to equal physical minus deficit and bound every issue physical decrement by the pre-step available capacity, so recorded deficit cannot fund allocation; they also preserve Reject-mode shortage stutter and require replay to return the frozen shortfall without changing truth.
+`RecordedDeficit.tla` distinguishes allocatable physical stock from a signed recorded liability. Its bounded operation model covers Record and Reject for issue, transfer, and scrap, receipts after a deficit, frozen operation intent/result shortfall, exact replay, and changed-intent rejection. Checked invariants require signed net to equal physical minus deficit, bound each physical decrement by pre-step available capacity, and require transfer arrival to match the witnessed decrement plus the unlabelled shortfall in the same step. The fabricated-arrival mutation credits the entire transfer to witnessed stock and must fail `TransferArrivalsMatchSeparateWitnesses`. A positive reachability witness requires a mixed transfer to occur in the ordinary model.
 
 Executable refinement in the TypeScript façade reconstructs `InventoryOnceEventResult.deficit` from immutable event metadata/effects and checks it after restart with the memory reference adapter. Migration uses the same signed Issue semantics for coherent negative `__untracked__` rows rather than inventing opening receipts. Mongo/SQLite adapter checks belong to the backend/data slice.
 
 ### Published-head compare-and-swap
 
 `PublishedHeadCAS` isolates the production storage-adapter obligation that an in-memory mutex cannot prove.
+The native path also publishes an indexed plan and its completed receipt as a single transition.
+An attempt from the losing revision cannot overwrite the winner. The registered stale-native-plan
+mutation removes that comparison and is rejected by `HeadFollowsPublishedAttempts`.
+`test/scoped-stock-planning.test.ts` exercises replanning, a failure before publication and loss of a
+reply after publication on the memory reference adapter.
+
+`PlacementGraph` checks atomic direct contents movement as a transition over the exact source rows,
+immediate child edges, and unique resource anchors. The split-embodiment mutation changes a child's
+parent without moving the stock instance that drives it. `test/containers.test.ts` compares native and
+canonical composite results and checks interruption before publication and retry after a lost reply.
+
 Two writers read the same published revision, independently freeze exact next-world plans, and race to
 Begin. A compare-and-swap claim on the published head permits at most one winner; the loser becomes stale
 and cannot publish over that winner. Exact retry of the winning operation stutters, `Publish` advances

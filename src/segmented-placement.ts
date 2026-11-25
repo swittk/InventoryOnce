@@ -2,6 +2,7 @@ import { inventoryIntentFingerprint } from "./canonical.js";
 import { inventorySha256 } from "./digest.js";
 import {
   normalizeInventoryPlacementChange,
+  type InventoryPlacementChange,
   type InventoryPlacementRelation,
   type InventoryPlacementState,
 } from "./placement.js";
@@ -297,57 +298,13 @@ export class InMemoryInventorySegmentedPlacementStore
             parentNodeId: change.toParentNodeId,
             createdByEventId: input.eventId,
           };
-    if (current !== undefined) this.removeRootLeaf(current);
-    if (replacement === undefined) {
-      this.relationByNodeId.delete(change.nodeId);
-    } else {
-      this.relationByNodeId.set(change.nodeId, replacement);
-    }
-    if (change.fromParentNodeId !== undefined) {
-      removePlacementChild(
-        this.childNodeIdsByParentNodeId,
-        change.fromParentNodeId,
-        change.nodeId
-      );
-    }
-    if (change.toParentNodeId !== undefined) {
-      addPlacementChild(
-        this.childNodeIdsByParentNodeId,
-        change.toParentNodeId,
-        change.nodeId
-      );
-    }
-
+    this.replaceRelation(change.nodeId, current, replacement);
     try {
       this.assertNoCycle(change.nodeId);
     } catch (error) {
-      if (change.toParentNodeId !== undefined) {
-        removePlacementChild(
-          this.childNodeIdsByParentNodeId,
-          change.toParentNodeId,
-          change.nodeId
-        );
-      }
-      if (change.fromParentNodeId !== undefined) {
-        addPlacementChild(
-          this.childNodeIdsByParentNodeId,
-          change.fromParentNodeId,
-          change.nodeId
-        );
-      }
-      // The candidate replacement root leaf is only added after successful
-      // cycle admission below. Removing it here would corrupt the authenticated
-      // aggregate on a rejected move (while restoring the correct topology).
-      if (current === undefined) {
-        this.relationByNodeId.delete(change.nodeId);
-      } else {
-        this.relationByNodeId.set(change.nodeId, current);
-        this.addRootLeaf(current);
-      }
+      this.replaceRelation(change.nodeId, replacement, current);
       throw error;
     }
-
-    if (replacement !== undefined) this.addRootLeaf(replacement);
     this.currentRevision = input.nextRevision;
     return {
       revision: this.currentRevision,
@@ -356,6 +313,60 @@ export class InMemoryInventorySegmentedPlacementStore
         ? {}
         : { parentNodeId: replacement.parentNodeId }),
     };
+  }
+
+  /**
+   * Prepare immediate sibling edge changes for a direct-contents transaction.
+   * The returned publisher performs only prevalidated index writes under the adapter lock.
+   */
+  prepareDirectContentsEdges(
+    eventId: string,
+    changes: readonly InventoryPlacementChange[]
+  ): () => void {
+    const first = changes[0];
+    const source = first?.fromParentNodeId;
+    const destination = first?.toParentNodeId;
+    if (source === undefined || destination === undefined || this.ancestry(destination).includes(source)) {
+      throw new Error("Placement contents require a common source and a destination outside its subtree.");
+    }
+    const originals: InventoryPlacementRelation[] = [];
+    for (const change of changes) {
+      const current = this.relationByNodeId.get(change.nodeId);
+      if (change.fromParentNodeId !== source || change.toParentNodeId !== destination || current?.parentNodeId !== source) {
+        throw new Error("Placement contents move no longer matches its direct source edges.");
+      }
+      originals.push(current);
+    }
+    /** Publish the prepared siblings without revisiting ancestry or descendants. */
+    return () => {
+      for (const current of originals) {
+        this.replaceRelation(current.nodeId, current, {
+          nodeId: current.nodeId,
+          parentNodeId: destination,
+          createdByEventId: eventId,
+        });
+      }
+      this.currentRevision += 1;
+    };
+  }
+
+  /** Update an exact edge and its authenticated leaf and inverse child postings together. */
+  private replaceRelation(
+    nodeId: string,
+    from: InventoryPlacementRelation | undefined,
+    to: InventoryPlacementRelation | undefined
+  ): void {
+    if (from !== undefined) {
+      this.removeRootLeaf(from);
+      removePlacementChild(this.childNodeIdsByParentNodeId, from.parentNodeId, nodeId);
+    }
+    if (to === undefined) {
+      this.relationByNodeId.delete(nodeId);
+    } else {
+      this.relationByNodeId.set(nodeId, to);
+      addPlacementChild(this.childNodeIdsByParentNodeId, to.parentNodeId, nodeId);
+      this.addRootLeaf(to);
+    }
   }
 
   /** Materialize the canonical flat placement state only on explicit request. */

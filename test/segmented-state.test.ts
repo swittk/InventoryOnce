@@ -372,7 +372,7 @@ describe("segmented inventory position store", () => {
     await expectSegmentMatchesPublishedWorld(storage);
   });
 
-  it("serves simple facade position reads without touching the canonical whole-world fallback", async () => {
+  it("serves exact and subtree positions without materializing the world", async () => {
     const storage = createInMemoryInventoryDurableStorage();
     const inventory = createTestInventory(storage);
     await inventory.stock.receiveMany({
@@ -412,12 +412,11 @@ describe("segmented inventory position store", () => {
     expect(byRevision).toHaveLength(1);
     expect(byRevision[0]?.key.placementNodeId).toBe("room");
 
-    await expect(
-      inventory.read.positions({
-        itemId: "item-a",
-        withinPlacementNodeIds: ["store"],
-      })
-    ).rejects.toThrow("canonical whole-world fallback was touched");
+    const subtree = await inventory.read.positions({
+      itemId: "item-a",
+      withinPlacementNodeIds: ["store"],
+    });
+    expect(subtree).toMatchObject([{ key: { lotId: "READ-A", placementNodeId: "store" } }]);
   });
 
 

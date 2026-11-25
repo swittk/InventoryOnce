@@ -292,7 +292,7 @@ describe("formal implementation conformance manifest", () => {
     expect(summary.recursiveTypeReferences).toBeGreaterThanOrEqual(3);
     expect(summary.truncatedTypes).toBe(0);
     expect(summary.criticalKernelCalls).toBe(4);
-    expect(summary.boundedTraceEntries).toBe(28);
+    expect(summary.boundedTraceEntries).toBe(29);
     expect(summary.tracedPublicApis).toBeGreaterThanOrEqual(457);
     expect(summary.explicitGaps).toBeGreaterThanOrEqual(13);
     expect(summary.apiEntries - summary.tracedPublicApis).toBe(

@@ -1,3 +1,6 @@
+import { InventoryStockClaimIndex } from "./stock-claim-index.js";
+import { inventoryEffectiveUseByFromAncestry } from "./usability.js";
+import type { InventoryScopedStockPool, InventoryScopedStockPosition } from "./stock-scope.js";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { compareInventoryIdentityText } from "./ordering.js";
 import {
@@ -47,6 +50,7 @@ import {
   type InMemoryInventorySegmentedPositionStore,
   type InventorySegmentedPositionStorageCapability,
   type InventorySegmentedStockEventCommitCapability,
+  type InventorySegmentedResult,
 } from "./segmented-state.js";
 import {
   createInMemoryInventorySegmentedPlacementStore,
@@ -55,7 +59,8 @@ import {
   type InventorySegmentedPlacementResult,
 } from "./segmented-placement.js";
 import { createInventoryPlacementEvent, type InventoryCommandHeader } from "./commands.js";
-import { inventoryStockPositionIdentity } from "./model.js";
+import { inventoryLotIdentity, inventorySerialIdentity, inventoryStockPositionIdentity, type InventoryStockPosition } from "./model.js";
+import type { InventoryPlacementChange } from "./placement.js";
 import type { InventoryStockSelector } from "./selectors.js";
 import { InventoryCountStatus } from "./counts.js";
 import type { InventoryEventPage, InventoryEventQuery } from "./event-query.js";
@@ -563,6 +568,69 @@ export function inventoryStorageSupportsSegmentedPlacement(
   );
 }
 
+/** Published stock-planning fence, shared with the native position and journal transaction. */
+export interface InventorySegmentedStockHead {
+  /** The same monotonic publication revision used by stock and claims. */
+  readonly worldRevision: number;
+  /** Last published journal sequence at this revision. */
+  readonly recordSequence: number;
+  /** Published retained catalogue, with an empty snapshot at genesis. */
+  readonly catalog: InventoryCatalogSnapshot;
+}
+
+/** An indexed read of one exact revision's complete requested physical pools. */
+export interface ReadInventorySegmentedStockPoolInput {
+  /** Broadened selector covering every signed row in the requested pools. */
+  readonly selector: InventoryStockSelector;
+  /** Exact retained item revision addressed by the pool selector. */
+  readonly itemRevisionId: string;
+  /** Set for physical availability, which needs holds only on the returned positions. */
+  readonly exactHoldsOnly?: boolean;
+  /** Authority time at which claim evidence is resolved. */
+  readonly reservationAtEpochMs: number;
+}
+
+/** Indexed facts needed to plan the existing direct-contents move. */
+export interface InventorySegmentedDirectContents {
+  /** Exact signed positions anchored immediately at the source. */
+  readonly positions: readonly InventoryStockPosition[];
+  /** Immediate source children and their live stock embodiments. */
+  readonly children: readonly InventorySegmentedDirectChild[];
+  /** Destination followed by its current ancestors. */
+  readonly destinationAncestry: readonly string[];
+}
+
+/** One direct child and its exact positive serial, when stock embodies the node. */
+export interface InventorySegmentedDirectChild {
+  /** Child identity in the current forest. */
+  readonly nodeId: string;
+  /** Live exact position driving the child's parent edge, when embodied. */
+  readonly embodiedPosition?: InventoryStockPosition;
+}
+
+/** Indexed stock planning reads behind the existing native stock publication fence. */
+export interface InventorySegmentedStockPlanningCapability
+  extends InventorySegmentedStockEventCommitCapability,
+    InventorySegmentedPositionStorageCapability,
+    Pick<InventorySegmentedPlacementStorageCapability, "readPlacementSegment"> {
+  /** Read the latest published fence. Callers confirm it after multi-read planning. */
+  readSegmentedStockHead(): InventorySegmentedResult<InventorySegmentedStockHead>;
+  /**
+   * Read current pool rows and their real claim, ancestry, age and expiry evidence together.
+   * Include all exact holds on these rows and enough broad evidence to exclude one own claim.
+   */
+  readSegmentedStockPool(input: ReadInventorySegmentedStockPoolInput): InventorySegmentedResult<InventoryScopedStockPool>;
+  /** Read exact source rows, direct children and destination ancestry under the same fence. */
+  readSegmentedDirectContents(nodeId: string, into: string): InventorySegmentedResult<InventorySegmentedDirectContents>;
+}
+
+/** Discover optional indexed planning on the existing durable storage adapter. */
+export function inventoryStorageSupportsSegmentedStockPlanning(
+  storage: InventoryDurableStorage
+): storage is InventoryDurableStorage & InventorySegmentedStockPlanningCapability {
+  return typeof Reflect.get(storage, "readSegmentedStockPool") === "function";
+}
+
 /** Optional adapter-native retained-event query acceleration. */
 export interface InventoryEventQueryStorageCapability {
   /** Query one stable durable-order event page through adapter-native indexes. */
@@ -623,8 +691,7 @@ export class InMemoryInventoryDurableStorage
   implements
     InventoryDurableStorage,
     InventorySegmentedPositionStorageCapability,
-    InventorySegmentedStockEventCommitCapability,
-    InventorySegmentedPlacementStorageCapability,
+    InventorySegmentedStockPlanningCapability,
     InventoryEventQueryStorageCapability
 {
   /** Advertised publication guarantee. */
@@ -657,6 +724,8 @@ export class InMemoryInventoryDurableStorage
     string,
     InventoryMigrationManifest
   >();
+  /** Current exact claim postings and revision-local lifecycle lookup for policy reads. */
+  private stockClaims: InventoryStockClaimIndex;
   /** Number of started or observed physical counts per item, independent of terminal history. */
   private openCountCountsByItemId = new Map<string, number>();
   /** Optional deterministic failure injector. */
@@ -676,6 +745,7 @@ export class InMemoryInventoryDurableStorage
     validatePublishedInventoryWorld(this.world);
     this.positionSegment = createInMemoryInventorySegmentedPositionStore({
       positions: Object.values(this.world.projection.positions),
+      positiveLayerStarts: this.world.projection.positiveLayerStartedAtEpochMsByPositionId,
       revision: this.world.revision,
     });
     // Do not expose the writable store through the optional read capability.
@@ -703,7 +773,7 @@ export class InMemoryInventoryDurableStorage
         this.positionSegment.positionsByPlacement(placementNodeId),
       /** Query one indexed direct-position selector. */
       queryPositions: (selector: InventoryStockSelector) =>
-        this.positionSegment.queryPositions(selector),
+        this.positionSegment.queryPositions(selector, this.placementSegment),
       /** Explicitly clone the complete canonical position/index view. */
       materialize: () => this.positionSegment.materialize(),
     });
@@ -715,6 +785,7 @@ export class InMemoryInventoryDurableStorage
     this.eventJournal = createInMemoryInventorySegmentedEventJournal({
       events: Object.values(this.world.projection.events),
     });
+    this.stockClaims = new InventoryStockClaimIndex(this.world.reservations);
     this.refreshOpenCountScopes(this.world);
     this.failpoint = input.failpoint;
   }
@@ -727,6 +798,72 @@ export class InMemoryInventoryDurableStorage
   /** Read indexed direct-parent topology without exposing private mutable state. */
   readPlacementSegment(): InventorySegmentedPlacementReader {
     return this.placementReader;
+  }
+
+  /** Return the live published revision, journal sequence and retained catalogue without catch-up. */
+  readSegmentedStockHead(): InventorySegmentedStockHead {
+    return {
+      worldRevision: this.positionSegment.revision(),
+      recordSequence: this.eventJournal.lastRecordSequence(),
+      catalog: this.pendingSegmentedCatalog ?? this.world.catalog,
+    };
+  }
+
+  /** Gather only the rows and immediate edges participating in one composite move. */
+  readSegmentedDirectContents(nodeId: string, into: string): InventorySegmentedDirectContents {
+    const children: InventorySegmentedDirectChild[] = [];
+    for (const childId of this.placementSegment.childNodeIds(nodeId)) {
+      const projected = inventorySparseRecordValue(this.world.projection.placementNodes, childId);
+      const embodiment = projected?.definition.embodiedBy;
+      if (embodiment === undefined || projected?.retiredByEventId !== undefined) {
+        children.push({ nodeId: childId });
+      } else {
+        const position = this.positionSegment.positivePositionBySerial(embodiment.itemId, embodiment.serialId);
+        if (position === undefined) throw new Error(`Embodied placement node '${childId}' has no live serialized stock instance.`);
+        children.push({ nodeId: childId, embodiedPosition: position });
+      }
+    }
+    return {
+      positions: this.positionSegment.positionsByPlacement(nodeId),
+      children,
+      destinationAncestry: this.placementSegment.ancestry(into),
+    };
+  }
+
+  /** Read only matching stock postings and their indexed claim and expiry evidence. */
+  readSegmentedStockPool(input: ReadInventorySegmentedStockPoolInput): InventoryScopedStockPool {
+    const positions = this.positionSegment.queryPositions(input.selector, this.placementSegment) ?? [];
+    const rows: InventoryScopedStockPosition[] = [];
+    // Metadata-only changes publish canonically, so these retained facts are already current.
+    const { lots, placementNodes } = this.world.projection;
+    const ancestries = new Map<string, readonly string[]>();
+    for (const position of positions) {
+      const { placementNodeId, lotId, itemId } = position.key;
+      let ancestry: readonly string[] = [];
+      if (placementNodeId !== undefined) {
+        ancestry = ancestries.get(placementNodeId) ?? this.placementSegment.ancestry(placementNodeId);
+        ancestries.set(placementNodeId, ancestry);
+      }
+      const lotExpires = lotId === undefined
+        ? undefined
+        : inventorySparseRecordValue(lots, inventoryLotIdentity(itemId, lotId))?.definition.expiresAtEpochMs;
+      const effectiveUseByEpochMs = inventoryEffectiveUseByFromAncestry(
+        lotExpires, ancestry,
+        /** Read the current policy of each exact ancestor from the published metadata masters. */
+        (nodeId) => inventorySparseRecordValue(placementNodes, nodeId)?.definition.useByEpochMs
+      );
+      const layerStartedAtEpochMs = this.positionSegment.positiveLayerStart(inventoryStockPositionIdentity(position.key));
+      rows.push({
+        position,
+        ancestry,
+        ...(layerStartedAtEpochMs === undefined ? {} : { layerStartedAtEpochMs }),
+        ...(effectiveUseByEpochMs === undefined ? {} : { effectiveUseByEpochMs }),
+      });
+    }
+    return {
+      positions: rows,
+      reservations: this.stockClaims.forPool(input.itemRevisionId, positions, input.reservationAtEpochMs, input.exactHoldsOnly ?? false),
+    };
   }
 
   /** Atomically commit one simple non-embodied topology change or decline to the canonical coordinator. */
@@ -965,6 +1102,7 @@ export class InMemoryInventoryDurableStorage
       this.world = publishedWorld;
       this.positionSegment = createInMemoryInventorySegmentedPositionStore({
         positions: Object.values(publishedWorld.projection.positions),
+        positiveLayerStarts: publishedWorld.projection.positiveLayerStartedAtEpochMsByPositionId,
         revision: publishedWorld.revision,
       });
       this.eventJournal = createInMemoryInventorySegmentedEventJournal({
@@ -975,6 +1113,7 @@ export class InMemoryInventoryDurableStorage
         revision: publishedWorld.revision,
       });
       this.placementReader = inventoryReadonlyPlacementReader(this.placementSegment);
+      this.stockClaims = new InventoryStockClaimIndex(publishedWorld.reservations);
       this.refreshOpenCountScopes(publishedWorld);
       this.storeMigrationManifest(migrationId, published);
       await this.fire(
@@ -1399,6 +1538,12 @@ export class InMemoryInventoryDurableStorage
         this.eventJournal.append(appendEvent);
       }
       this.world = publishedWorld;
+      if (plan.reservationDelta !== undefined) {
+        this.stockClaims.publish(
+          plan.reservationDelta.operation,
+          baseWorld.reservations.reservations[plan.reservationDelta.reservation.reservationId]
+        );
+      }
       // Only a changed count row affects the open-count index.
       if (plan.countDelta !== undefined) {
         this.updateOpenCountScopeFromPlan(plan, baseWorld);
@@ -1451,9 +1596,15 @@ export class InMemoryInventoryDurableStorage
     for (const effect of event?.stockEffects ?? []) {
       touchedPositionIds.add(inventoryStockPositionIdentity(effect.position));
     }
+    for (const override of event?.positiveLayerProvenanceOverrides ?? []) {
+      touchedPositionIds.add(inventoryStockPositionIdentity(override.position));
+    }
+    const positiveLayerStarts = new Map<string, number>();
     const removePositionIds: string[] = [];
     const upsertPositions = [];
     for (const positionId of touchedPositionIds) {
+      const start = nextWorld.projection.positiveLayerStartedAtEpochMsByPositionId[positionId];
+      if (start !== undefined) positiveLayerStarts.set(positionId, start);
       const position = nextWorld.projection.positions[positionId];
       if (position === undefined) {
         if (this.positionSegment.position(positionId) !== undefined) {
@@ -1466,6 +1617,7 @@ export class InMemoryInventoryDurableStorage
     this.positionSegment.applyDelta({
       expectedRevision: this.positionSegment.revision(),
       nextRevision: nextWorld.revision,
+      positiveLayerStarts,
       ...(removePositionIds.length === 0 ? {} : { removePositionIds }),
       ...(upsertPositions.length === 0 ? {} : { upsertPositions }),
     });
@@ -1817,18 +1969,10 @@ export class InMemoryInventoryDurableStorage
       }
     }
 
-    if (input.deficitPolicy === InventoryDeficitPolicy.Record) {
-      // Signed recording still requires real positive stock for each named FIFO source.
-      for (const transfer of event.positiveLayerProvenanceTransfers ?? []) {
-        const sourceId = inventoryStockPositionIdentity(transfer.from);
-        const source = this.positionSegment.position(sourceId);
-        if (source === undefined || source.measurements.primary.quantity.amountMinor <= 0) {
-          throw new Error(`Conserved FIFO provenance source ${sourceId} is not currently positive.`);
-        }
-      }
-    }
-
     this.eventJournal.validateAppend(event);
+    const publishContentsEdges = event.kind === InventoryEventKind.Placement
+      ? this.prepareSegmentedDirectContentsEdges(event)
+      : undefined;
     await this.fire(
       InventoryStorageWriteStage.PublishWorld,
       "before",
@@ -1837,9 +1981,11 @@ export class InMemoryInventoryDurableStorage
     this.positionSegment.applyStockEffects({
       expectedRevision: baseRevision,
       nextRevision: baseRevision + 1,
-      stockEffects: event.stockEffects,
+      event,
       deficitPolicy: input.deficitPolicy,
     });
+    // Every edge is prepared before stock can change. Readers see both or neither.
+    publishContentsEdges?.();
     const receipt: InventoryOperationReceipt = {
       operationId: input.operationId,
       recordedAtEpochMs: input.recordedAtEpochMs,
@@ -1878,7 +2024,37 @@ export class InMemoryInventoryDurableStorage
     };
   }
 
-  /** Return whether one stock-only event may safely use the segmented write slice. */
+  /** Prepare explicit sibling moves and the same edges implied by embodied serial transfers. */
+  private prepareSegmentedDirectContentsEdges(event: InventoryCommittedEvent): (() => void) | undefined {
+    const changes: InventoryPlacementChange[] = [...(event.placementChanges ?? [])];
+    for (const route of event.positiveLayerProvenanceTransfers ?? []) {
+      const serialId = route.from.serialId;
+      if (serialId === undefined) continue;
+      const nodeId = inventorySparseRecordValue(
+        this.world.projection.placementNodeIdByEmbodiedSerialIdentity,
+        inventorySerialIdentity(route.from.itemId, serialId)
+      );
+      if (nodeId === undefined) continue;
+      const fromParentNodeId = route.from.placementNodeId;
+      const toParentNodeId = route.to.placementNodeId;
+      if (fromParentNodeId === undefined || toParentNodeId === undefined) {
+        throw new Error("An embodied direct contents move requires exact source and destination placements.");
+      }
+      changes.push({ nodeId, fromParentNodeId, toParentNodeId });
+    }
+    for (const change of changes) {
+      const source = inventorySparseRecordValue(this.world.projection.placementNodes, change.nodeId);
+      const destination = change.toParentNodeId === undefined ? undefined :
+        inventorySparseRecordValue(this.world.projection.placementNodes, change.toParentNodeId);
+      if (source?.retiredByEventId !== undefined || destination?.retiredByEventId !== undefined ||
+          destination?.definition.acceptsPlacement === false) {
+        throw new Error(`Placement node '${change.toParentNodeId}' cannot accept moved direct contents.`);
+      }
+    }
+    return changes.length === 0 ? undefined : this.placementSegment.prepareDirectContentsEdges(event.eventId, changes);
+  }
+
+  /** Return whether one event can publish through the existing segmented write fence. */
   private segmentedStockEventIsEligible(
     input: CommitInventorySegmentedStockEventInput
   ): boolean {
@@ -1886,6 +2062,8 @@ export class InMemoryInventoryDurableStorage
     // deterministic stage tests on that path; segmented commit models one atomic DB transaction.
     if (this.failpoint !== undefined) return false;
     const event = input.event;
+    const compositeContents = event.kind === InventoryEventKind.Placement &&
+      input.expectedWorldRevision !== undefined && input.expectedRecordSequence !== undefined;
     const historicalEnvelope =
       event.kind === InventoryEventKind.Correction ||
       event.kind === InventoryEventKind.HistoricalRepair;
@@ -1895,7 +2073,7 @@ export class InMemoryInventoryDurableStorage
       event.kind !== InventoryEventKind.Issue &&
       event.kind !== InventoryEventKind.Reclassification &&
       event.kind !== InventoryEventKind.Scrap &&
-      !historicalEnvelope
+      !historicalEnvelope && !compositeContents
     ) {
       return false;
     }
@@ -1907,10 +2085,10 @@ export class InMemoryInventoryDurableStorage
     ) {
       return false;
     }
-    if (!historicalEnvelope && event.stockEffects.length === 0) return false;
+    if (!historicalEnvelope && !compositeContents && event.stockEffects.length === 0) return false;
     if (
-      event.stockEffects.some(
-        /** Keep serialized/embodied stock on the canonical path until its coupled segment exists. */
+      !compositeContents && event.stockEffects.some(
+        /** Other serialized writes retain their canonical lifetime and metadata checks. */
         (effect) => effect.position.serialId !== undefined
       )
     ) {
@@ -1918,7 +2096,7 @@ export class InMemoryInventoryDurableStorage
     }
     if ((event.lotDefinitions?.length ?? 0) !== 0) return false;
     if ((event.placementNodeDefinitions?.length ?? 0) !== 0) return false;
-    if ((event.placementChanges?.length ?? 0) !== 0) return false;
+    if (!compositeContents && (event.placementChanges?.length ?? 0) !== 0) return false;
     if (event.traceabilityChanges.length !== 0) return false;
     if (
       (event.positiveLayerProvenanceOverrides?.length ?? 0) !== 0
