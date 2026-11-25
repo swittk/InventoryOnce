@@ -81,6 +81,31 @@ it("declines standalone unplacement and independent routes through the stock com
   expect(storage.readPlacementSegment().parentNodeId("child")).toBeUndefined();
 });
 
+it("replays a contents move published between the operation lookup and head read", async () => {
+  const storage = createInMemoryInventoryDurableStorage();
+  const inventory = createTestInventory(storage);
+  await inventory.stock.receive({
+    operationId: "receive-contents-race", occurredAtEpochMs: time0,
+    to: loosePosition("source"), amount: stockAmount("1", "piece"),
+  });
+  const command = {
+    operationId: "contents-race", occurredAtEpochMs: time1, nodeId: "source", into: "destination",
+  };
+  const baseline = storage.readSegmentedStockHead();
+  const readOperation = storage.readOperation.bind(storage);
+  vi.spyOn(storage, "readOperation").mockImplementationOnce(async (operationId) => {
+    const prior = await readOperation(operationId);
+    await inventory.placement.moveContents(command);
+    return prior;
+  });
+  const readWorld = vi.spyOn(storage, "readWorld");
+  const replay = await inventory.placement.moveContents(command);
+  expect(replay.replayed).toBe(true);
+  expect(replay.receipt.worldRevision).toBe(baseline.worldRevision + 1);
+  expect(storage.readSegmentedStockHead().worldRevision).toBe(baseline.worldRevision + 1);
+  expect(readWorld).not.toHaveBeenCalled();
+});
+
 it("publishes direct stock, standalone children, and embodied children at one native fence", async () => {
   const storage = createInMemoryInventoryDurableStorage();
   // A failpoint routes reference writes through the canonical staged coordinator.

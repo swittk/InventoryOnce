@@ -1,5 +1,5 @@
 import { InventoryStockClaimIndex } from "./stock-claim-index.js";
-import { inventoryEffectiveUseByFromAncestry } from "./usability.js";
+import { inventoryEffectiveUseByFromAncestry, inventoryLotAndPlacementUseBy } from "./usability.js";
 import type { InventoryScopedStockPool, InventoryScopedStockPosition } from "./stock-scope.js";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { compareInventoryIdentityText } from "./ordering.js";
@@ -617,6 +617,14 @@ export interface InventorySegmentedDirectChild {
   readonly embodiedPosition?: InventoryStockPosition;
 }
 
+/** Shared placement facts for a signed stock pool at one published revision. */
+interface InventoryStockPoolPlacementFacts {
+  /** Direct placement and its ancestors at the published revision. */
+  readonly ancestry: readonly string[];
+  /** Earliest validated placement use-by, if any. */
+  readonly useByEpochMs: number | undefined;
+}
+
 /** Indexed stock planning reads behind the existing native stock publication fence. */
 export interface InventorySegmentedStockPlanningCapability
   extends InventorySegmentedStockEventCommitCapability,
@@ -848,26 +856,31 @@ export class InMemoryInventoryDurableStorage
     const rows: InventoryScopedStockPosition[] = [];
     // Metadata-only changes publish canonically, so these retained facts are already current.
     const { lots, placementNodes } = this.world.projection;
-    const ancestries = new Map<string, readonly string[]>();
+    /** Shared ancestry and validated placement cutoff for all lots at a direct node. */
+    const placementFacts = new Map<string, InventoryStockPoolPlacementFacts>();
     for (const position of positions) {
       const { placementNodeId, lotId, itemId } = position.key;
-      let ancestry: readonly string[] = [];
-      if (placementNodeId !== undefined) {
-        ancestry = ancestries.get(placementNodeId) ?? this.placementSegment.ancestry(placementNodeId);
-        ancestries.set(placementNodeId, ancestry);
+      let placement = placementNodeId === undefined ? undefined : placementFacts.get(placementNodeId);
+      if (placementNodeId !== undefined && placement === undefined) {
+        const ancestry = this.placementSegment.ancestry(placementNodeId);
+        placement = {
+          ancestry,
+          useByEpochMs: inventoryEffectiveUseByFromAncestry(
+            undefined, ancestry,
+            /** Read the current policy of each exact ancestor from the published metadata masters. */
+            (nodeId) => inventorySparseRecordValue(placementNodes, nodeId)?.definition.useByEpochMs
+          ),
+        };
+        placementFacts.set(placementNodeId, placement);
       }
       const lotExpires = lotId === undefined
         ? undefined
         : inventorySparseRecordValue(lots, inventoryLotIdentity(itemId, lotId))?.definition.expiresAtEpochMs;
-      const effectiveUseByEpochMs = inventoryEffectiveUseByFromAncestry(
-        lotExpires, ancestry,
-        /** Read the current policy of each exact ancestor from the published metadata masters. */
-        (nodeId) => inventorySparseRecordValue(placementNodes, nodeId)?.definition.useByEpochMs
-      );
+      const effectiveUseByEpochMs = inventoryLotAndPlacementUseBy(lotExpires, placement?.useByEpochMs);
       const layerStartedAtEpochMs = this.positionSegment.positiveLayerStart(inventoryStockPositionIdentity(position.key));
       rows.push({
         position,
-        ancestry,
+        ancestry: placement?.ancestry ?? [],
         ...(layerStartedAtEpochMs === undefined ? {} : { layerStartedAtEpochMs }),
         ...(effectiveUseByEpochMs === undefined ? {} : { effectiveUseByEpochMs }),
       });

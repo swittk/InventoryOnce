@@ -1867,3 +1867,8 @@ The R105 portable-current-input authority and final publication both continue to
 
 - A hold remains visible on its exact deficit row without contributing to usable allocations. Physical policy movements prefer unheld rows and can then use held measured stock without converting between independent axes.
 - Ordered batch debits retain the published position's FIFO and use-by facts. Command snapshots copy typed request fields, and subtree reads check membership once per direct node.
+
+## 2026-11-25 — replay and measured movement evidence
+
+- Scoped planning rechecks the operation after a rejected plan so a concurrent same-intent publication can replay. Preview freezes its request before reading the stock head and uses one claim time for the pool and planner.
+- Physical recording subtracts witnessed vectors from the reported measurements before writing a residual. Deficit pools retain placement constraints, and a recorded shortfall needs a source inside the selected subtree. Lots sharing a direct node use one validated ancestor cutoff per read.

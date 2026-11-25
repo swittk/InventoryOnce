@@ -83,6 +83,7 @@ export function inventoryRecordedDeficitPoolSelector(
     itemRevisionIds: [itemRevisionId],
     // Direct and subtree predicates intersect. Keep ancestry as a predicate
     // so a warehouse read need not enumerate every descendant.
+    ...(selector.placement === undefined ? {} : { placement: selector.placement }),
     ...(selector.placementNodeIds === undefined ? {} : { placementNodeIds: selector.placementNodeIds }),
     ...(selector.withinPlacementNodeIds === undefined ? {} : { withinPlacementNodeIds: selector.withinPlacementNodeIds }),
   });

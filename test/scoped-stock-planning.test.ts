@@ -175,7 +175,7 @@ describe("indexed stock planning and availability", () => {
     }
   );
 
-  it("keeps FIFO and use-by when an explicit report debits a row outside the first pool", async () => {
+  it("keeps an explicit deficit report inside its selected placement subtree", async () => {
     const storage = createInMemoryInventoryDurableStorage();
     const inventory = createTestInventory(storage, undefined, undefined, InventoryDeficitPolicy.Record);
     await inventory.stock.receive({
@@ -186,7 +186,7 @@ describe("indexed stock planning and availability", () => {
       operationId: "younger-labelled", occurredAtEpochMs: time1,
       to: loosePosition("store", { lotId: "young" }), amount: stockAmount("3", "piece"),
     });
-    const result = await inventory.stock.transferManyByPolicy({
+    await expect(inventory.stock.transferManyByPolicy({
       operationId: "report-then-pick", occurredAtEpochMs: time2, toPlacementNodeId: "destination",
       requests: [
         {
@@ -199,12 +199,106 @@ describe("indexed stock planning and availability", () => {
           selector, amount: stockAmount("1", "piece"),
         },
       ],
+    })).rejects.toThrow("outside the selected placement scope");
+    expect(await inventory.read.positions({ itemId: "item-a", placementNodeIds: ["destination"] })).toEqual([]);
+    expect((await inventory.read.positions(selector)).map((position) => position.measurements.primary.quantity.amountMinor).sort()).toEqual([3, 5]);
+  });
+
+  it.each(["transfer", "scrap"] as const)(
+    "records the exact measured residual for a policy %s",
+    async (verb) => {
+      const inventory = createTestInventory(undefined, measuredItemCatalog("pieces"), undefined, InventoryDeficitPolicy.Record);
+      const request = {
+        selector: { itemId: "measured", placementNodeIds: ["store"] },
+        method: InventoryAllocationMethod.Fifo,
+        occurredAtEpochMs: time2,
+      };
+      await inventory.stock.receive({
+        operationId: "receive-known-measurements", occurredAtEpochMs: time0,
+        to: { itemId: "measured", placementNodeId: "store", lotId: "known" },
+        amount: measuredStockAmount("1", "piece", [{ axisId: "weight", value: "10", unit: "kg" }]),
+      });
+      const report = {
+        ...request, operationId: "measure-residual",
+        amount: measuredStockAmount("3", "piece", [{ axisId: "weight", value: "30", unit: "kg" }]),
+      };
+      const result = verb === "transfer"
+        ? await inventory.stock.transferByPolicy({ ...report, toPlacementNodeId: "destination" })
+        : await inventory.stock.scrapByPolicy({ ...report, reason: "Physical destruction" });
+      expect(result.event.unwitnessedStockMovements).toMatchObject([{
+        measurements: {
+          primary: { quantity: { amountMinor: 2 } },
+          independent: [{ axisId: "weight", quantity: { amountMinor: 20 } }],
+        },
+      }]);
+      expect(result.event.stockEffects.some((effect) =>
+        effect.position.lotId === "known" && effect.measurementsDelta.independent[0]?.quantity.amountMinor === -10
+      )).toBe(true);
+    }
+  );
+
+  it("rejects an independent difference when the primary count has no residual", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage, measuredItemCatalog("pieces"), undefined, InventoryDeficitPolicy.Record);
+    await inventory.stock.receive({
+      operationId: "receive-light", occurredAtEpochMs: time0,
+      to: { itemId: "measured", placementNodeId: "store" },
+      amount: measuredStockAmount("2", "piece", [{ axisId: "weight", value: "3", unit: "kg" }]),
     });
-    expect(result.allocations[0]?.deficit?.primary.amountMinor).toBe(2);
-    expect(result.allocations[1]?.lines).toMatchObject([{
-      position: { placementNodeId: "store" }, layerStartedAtEpochMs: time0, expiresAtEpochMs: time3,
-    }]);
-    expect(result.allocations[1]?.lines[0]?.position.lotId).toBeUndefined();
+    const before = storage.readSegmentedStockHead();
+    await expect(inventory.stock.transferByPolicy({
+      operationId: "report-heavier", occurredAtEpochMs: time2, toPlacementNodeId: "destination",
+      selector: { itemId: "measured", placementNodeIds: ["store"] },
+      method: InventoryAllocationMethod.Fifo,
+      amount: measuredStockAmount("2", "piece", [{ axisId: "weight", value: "5", unit: "kg" }]),
+    })).rejects.toThrow("Reported physical movement remainder");
+    expect(storage.readSegmentedStockHead()).toEqual(before);
+  });
+
+  it("excludes placed deficits from a preview for explicitly unplaced stock", async () => {
+    const inventory = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
+    await inventory.stock.issue({
+      operationId: "placed-shortage", occurredAtEpochMs: time1, from: loosePosition("store"),
+      amount: stockAmount("2", "piece"),
+    });
+    const request = {
+      method: InventoryAllocationMethod.Fifo, amount: stockAmount("1", "piece"), atEpochMs: time2,
+    };
+    const unplaced = await inventory.read.planAllocation({
+      ...request,
+      selector: { itemId: "item-a", placement: { kind: InventoryOptionalIdentityConstraintKind.Absent } },
+    });
+    expect(unplaced.recordedDeficit.amountMinor).toBe(0);
+    const unrestricted = await inventory.read.planAllocation({ ...request, selector: { itemId: "item-a" } });
+    expect(unrestricted.recordedDeficit.amountMinor).toBe(2);
+  });
+
+  it("keeps preview quantity and claim time fixed across the scoped pool read", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage);
+    await receiveKnownLots(inventory);
+    await inventory.reservations.reserve({
+      operationId: "reserve-at-preview-time", reservationId: "preview-hold", itemRevisionId: "item-a-v2",
+      selector: { ...selector, lotIds: ["old"] }, requested: parseQuantity("2", "piece"), createdAtEpochMs: time2,
+    });
+    await inventory.reservations.allocateByPolicy({
+      operationId: "allocate-at-preview-time", reservationId: "preview-hold",
+      occurredAtEpochMs: time2, method: InventoryAllocationMethod.Fifo,
+    });
+    const request = {
+      selector, method: InventoryAllocationMethod.Fifo, atEpochMs: time2,
+      reservationAtEpochMs: time2, amount: stockAmount("1", "piece"),
+    };
+    const readPool = storage.readSegmentedStockPool.bind(storage);
+    const pool = vi.spyOn(storage, "readSegmentedStockPool").mockImplementationOnce((input) => {
+      request.reservationAtEpochMs = time1;
+      request.amount = stockAmount("2", "piece");
+      return readPool(input);
+    });
+    const plan = await inventory.read.planAllocation(request);
+    expect(pool).toHaveBeenCalledWith(expect.objectContaining({ reservationAtEpochMs: time2 }));
+    expect(plan.requestedPrimary.amountMinor).toBe(1);
+    expect(plan.lines).toMatchObject([{ position: { lotId: "young" } }]);
   });
 
   it("snapshots only typed command fields through native physical planning", async () => {

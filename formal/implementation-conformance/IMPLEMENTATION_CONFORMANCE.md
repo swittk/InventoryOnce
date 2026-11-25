@@ -4,7 +4,7 @@ This file is generated from the exact TypeScript surface plus the checked API, f
 
 Use the repository `.nvmrc` when one exists; otherwise run the assurance command with a Node version permitted by `package.json#engines`. Edit only checked source/manifests, run `pnpm assurance:generate` when generated evidence must change, then run `pnpm assurance --write-report`.
 
-Surface SHA-256: `4f5b059abb31782335b973355e0b772ec6b79ac3b214233522ee231a8e068660`
+Surface SHA-256: `987695d3eabd3eaed7c69569daa8bc3089b6f92d51d4b852eba2ff06626bbae6`
 
 ## Mechanically covered surface
 
@@ -12,10 +12,10 @@ Surface SHA-256: `4f5b059abb31782335b973355e0b772ec6b79ac3b214233522ee231a8e0686
 - Authority-port methods: 14
 - Durable-storage-port methods: 17
 - Public exported class methods: 115
-- Root callable exports: 101
+- Root callable exports: 102
 - Storage callable exports: 38
 - Migration callable exports: 15
-- Kernel callable exports: 193
+- Kernel callable exports: 194
 - Reachable public data types: 482
 - Classified public fields: 2876
 - Input-reachable fields: 2381
@@ -26,9 +26,9 @@ Surface SHA-256: `4f5b059abb31782335b973355e0b772ec6b79ac3b214233522ee231a8e0686
 - Optional fields: 1151
 - Explicit undefined-union fields: 11
 - Explicit nullable fields: 9
-- Public call/construct overload signatures: 630
+- Public call/construct overload signatures: 632
 - Directly executed public APIs: 257
-- Public APIs exercised through tested internal call chains: 369
+- Public APIs exercised through tested internal call chains: 371
 - Explicit-gap public APIs: 4
 - Unreferenced public APIs: 0
 - Explicit recursive type edges: 5
@@ -65,7 +65,7 @@ Any added/removed method, callable export, class method, type field, field type,
 | packaging-reclassification | 4 | PackagingIdentity, ReclassificationConservation, DualMeasure, InventoryOperation | covered | — |
 | placement-command | 18 | PlacementGraph, ResourceDimensions, UseByReservation, CorrectionHistory, InventoryOperation | covered | — |
 | pure-exact-value | 90 | DualMeasure, PackagingIdentity | covered | — |
-| read-current | 37 | PublishedHeadCAS, ResourceDimensions, PlacementGraph, UseByReservation, ReservationScope, CollectionView, FungibilityPool, CorrectionHistory | covered | — |
+| read-current | 39 | PublishedHeadCAS, ResourceDimensions, PlacementGraph, UseByReservation, ReservationScope, CollectionView, FungibilityPool, CorrectionHistory | covered | — |
 | read-history | 18 | HistoricalRepair, CorrectionHistory, PublishedHeadCAS | covered | — |
 | read-snapshot | 24 | PublishedHeadCAS, PlacementGraph | covered | GAP-DB-IMPLEMENTATION-UNBOUNDED |
 | reservation | 19 | ReservationSafety, ReservationScope, UseByReservation, InventoryOperation | covered | — |

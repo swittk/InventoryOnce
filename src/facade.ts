@@ -151,6 +151,7 @@ import {
 } from "./event-query.js";
 import {
   INVENTORY_RECORDED_DEFICIT_LOT_ID,
+  inventoryRecordedDeficitPoolSelector,
   inventoryPositionIsDeficit,
 } from "./deficits.js";
 import {
@@ -182,6 +183,7 @@ import {
 } from "./fungibility.js";
 import {
   addInventoryMeasurements,
+  assertInventoryMeasurementsFollowPrimarySign,
   inventoryMeasurementAt,
   inventoryMeasurementsEqual,
   inventoryMeasurementsAreZero,
@@ -4102,16 +4104,24 @@ async function commitInventoryReportedExactTransfer(
     operationId: event.operationId,
     intentFingerprint: inventoryEventIntentFingerprint(event),
     /** Split only the exact positive witnesses from the signed report. */
-    plan: (source) => planRecordedExactTransfer(internals.catalog, event, source.position),
+    plan: (source) => planRecordedExactTransfer({ catalog: internals.catalog, event, readPosition: source.position }),
   });
 }
 
+/** One exact reported transfer and the source facts at its publication fence. */
+interface PlanRecordedExactTransferInput {
+  /** Retained definitions used to interpret exact amounts. */
+  readonly catalog: InventoryCatalog;
+  /** Normalized caller intent before partitioning witnessed and unknown stock. */
+  readonly event: InventoryEventDraft;
+  /** Read exact positions at the revision used for publication. */
+  readonly readPosition: InventoryPolicyStockSource["position"];
+}
+
 /** Partition normalized one-to-one transfer routes using exact current source quantities. */
-async function planRecordedExactTransfer(
-  catalog: InventoryCatalog,
-  event: InventoryEventDraft,
-  readPosition: InventoryPolicyStockSource["position"]
-): Promise<InventoryEventDraft> {
+async function planRecordedExactTransfer({
+  catalog, event, readPosition,
+}: PlanRecordedExactTransferInput): Promise<InventoryEventDraft> {
   const sourceEffects = new Map<string, InventoryStockEffect>();
   for (const effect of event.stockEffects) {
     if (effect.measurementsDelta.primary.quantity.amountMinor < 0) {
@@ -4287,6 +4297,11 @@ async function commitInventoryScopedMovement({
       try {
         event = await plan(source, recordedAtEpochMs);
       } catch (error) {
+        // The matching operation can publish between the first lookup and the head read.
+        if ((await storage.readOperation(operationId)) !== undefined) {
+          if (attempt < 7) continue;
+          break;
+        }
         // A shortfall or other domain error from mixed generations is not authoritative.
         if ((await storage.readSegmentedStockHead()).worldRevision !== head.worldRevision) {
           if (attempt < 7) continue;
@@ -4463,6 +4478,7 @@ async function commitInventoryPolicyBatch(
           allocation,
           /** A prior pick/deficit takes precedence over the originally published stock row. */
           position: (id) => changed.get(id)?.position ?? currentRows.get(id)?.position ?? source.position(id),
+          ancestry: source.ancestry,
         });
         allocations.push(
           policyBatchAllocation(request, allocation.lines, deficit?.evidence)
@@ -5569,6 +5585,7 @@ async function commitInventoryPolicyMovement(
         input,
         allocation,
         position: source.position,
+        ancestry: source.ancestry,
       });
       return createPolicyMovementEvent(
         internals.catalog, kind, input, allocation.lines, toPlacementNodeId, deficit
@@ -5589,15 +5606,47 @@ async function commitInventoryPolicyMovement(
 function planInventoryAllocationForRecording(
   input: PlanInventoryAllocationInPoolInput
 ): InventoryPolicyAllocationPlan {
-  if (input.allowAllocatedStock) return planInventoryAllocationInPool(input);
-  const preferred = planInventoryAllocationInPool({ ...input, preferUnheldForRecording: true });
-  if (preferred.shortfall.amountMinor === 0) {
-    return preferred;
+  let selected = planInventoryAllocationInPool({
+    ...input,
+    recordingAttempt: input.allowAllocatedStock ? "all-physical" : "prefer-unheld",
+  });
+  if (!input.allowAllocatedStock && selected.shortfall.amountMinor !== 0) {
+    const physical = planInventoryAllocationInPool({
+      ...input, allowAllocatedStock: true, recordingAttempt: "all-physical",
+    });
+    if (compareQuantity(physical.shortfall, selected.shortfall) < 0) selected = physical;
   }
-  const physical = planInventoryAllocationInPool({ ...input, allowAllocatedStock: true });
-  return compareQuantity(physical.shortfall, preferred.shortfall) < 0
-    ? physical
-    : preferred;
+  if (input.amount.independent.length === 0) return selected;
+
+  const item = input.selection.item;
+  let remaining = selected.requestedMeasurements;
+  for (const line of selected.lines) {
+    remaining = subtractInventoryMeasurements(
+      remaining, resolveInventoryAmount(input.catalog, item, line.amount).measurements
+    );
+  }
+  // Only axes named by the report or fixed by its package constrain the residual.
+  const reportedAxes = new Set<string>();
+  for (const axis of selected.requestedMeasurements.independent) reportedAxes.add(axis.axisId);
+  /** Independent residuals whose axes were supplied by the command or its package. */
+  const independent: InventoryMeasurementVector["independent"][number][] = [];
+  for (const axis of remaining.independent) {
+    if (reportedAxes.has(axis.axisId)) independent.push(axis);
+  }
+  const residual = {
+    primary: remaining.primary,
+    independent,
+  };
+  assertInventoryMeasurementsFollowPrimarySign(residual, "Reported physical movement remainder");
+  if (inventoryMeasurementsAreZero(residual)) return selected;
+  const position = {
+    itemId: item.itemId,
+    itemRevisionId: item.revisionId,
+    ...(input.amount.kind === InventoryAmountKind.Package
+      ? { packagingRevisionId: input.amount.packagingRevisionId }
+      : {}),
+  };
+  return { ...selected, shortfallAmount: transferAmountForVector(input.catalog, position, residual) };
 }
 
 /** Reject unsafe policy combinations before planning or writing. */
@@ -5710,6 +5759,8 @@ interface PolicyRecordedDeficitInput {
   readonly allocation: InventoryPolicyAllocationPlan;
   /** Look up the dedicated Issue deficit position before assigning a signed liability. */
   readonly position: InventoryPolicyStockSource["position"];
+  /** Resolve exact placement ancestry from the signed planning view. */
+  readonly ancestry: InventoryPolicyStockSource["ancestry"];
 }
 
 /** Resolve the exact signed source for a recordable physical shortfall. */
@@ -5720,6 +5771,7 @@ async function policyRecordedDeficit({
   input,
   allocation,
   position: readPosition,
+  ancestry: readAncestry,
 }: PolicyRecordedDeficitInput): Promise<InventoryPolicyRecordedDeficit | undefined> {
   if (allocation.shortfall.amountMinor === 0) return undefined;
   if (deficitPolicy !== InventoryDeficitPolicy.Record) {
@@ -5754,6 +5806,13 @@ async function policyRecordedDeficit({
       : { packagingRevisionId: resolved.packaging.revisionId }),
   });
   assertPositionMatchesItem(item, position);
+  const placementScope = inventoryRecordedDeficitPoolSelector(allocation.selector, item.revisionId);
+  const ancestry = placementScope.withinPlacementNodeIds === undefined || position.placementNodeId === undefined
+    ? []
+    : await readAncestry(position.placementNodeId);
+  if (!inventoryScopedStockMatches(position, placementScope, ancestry)) {
+    throw new Error("Inventory policy deficit position is outside the selected placement scope.");
+  }
   // Policy Issue uses a dedicated deficit bucket. Transfer and scrap use
   // the unlabelled stock key itself, so their signed posting may settle there.
   if (!unwitnessed) {
@@ -5789,15 +5848,6 @@ function resolvePolicyDeficitPosition(
     if (explicit.itemId !== item.itemId) {
       throw new Error(
         "Inventory policy deficit position belongs to another item."
-      );
-    }
-    if (
-      normalizedSelector.placementNodeIds !== undefined &&
-      (explicit.placementNodeId === undefined ||
-        !normalizedSelector.placementNodeIds.includes(explicit.placementNodeId))
-    ) {
-      throw new Error(
-        "Inventory policy deficit position is outside the selected placement scope."
       );
     }
     if (explicit.serialId !== undefined) {
@@ -5965,6 +6015,14 @@ function snapshotInventoryScopedMovementHeader(input: InventoryCommandHeader): I
 function snapshotInventoryPolicyMovement(input: InventoryOncePolicyMovementInput): InventoryOncePolicyMovementInput {
   return {
     ...snapshotInventoryScopedMovementHeader(input),
+    ...snapshotInventoryAllocationRequest(input),
+    ...(input.deficitPosition === undefined ? {} : { deficitPosition: snapshotInventoryPolicyDeficitPosition(input.deficitPosition) }),
+  };
+}
+
+/** Freeze public selection, amount, and options without forwarding internal planner options. */
+function snapshotInventoryAllocationRequest(input: InventoryAllocationPolicyRequest): InventoryAllocationPolicyRequest {
+  return {
     selector: normalizeInventoryStockSelector(input.selector),
     amount: snapshotInventoryPolicyAmount(input.amount),
     method: input.method,
@@ -5972,7 +6030,6 @@ function snapshotInventoryPolicyMovement(input: InventoryOncePolicyMovementInput
     ...(input.allowExpiredLots === undefined ? {} : { allowExpiredLots: input.allowExpiredLots }),
     ...(input.allowAllocatedStock === undefined ? {} : { allowAllocatedStock: input.allowAllocatedStock }),
     ...(input.reservationId === undefined ? {} : { reservationId: input.reservationId }),
-    ...(input.deficitPosition === undefined ? {} : { deficitPosition: snapshotInventoryPolicyDeficitPosition(input.deficitPosition) }),
   };
 }
 
@@ -10551,48 +10608,42 @@ class InventoryOnceReadImplementation implements InventoryOnceReadApi {
   ): Promise<InventoryPolicyAllocationPlan> {
     const internals = requireInventoryOnceInternals(this.owner);
     const storage = internals.storage;
+    const { selector, itemRevisionId, ...request } = snapshotInventoryAllocationRequest(input);
+    const requestedAt = input.atEpochMs;
+    const requestedReservationAt = input.reservationAtEpochMs;
     if (inventoryStorageSupportsSegmentedStockPlanning(storage)) {
       for (let attempt = 0; attempt < 3; attempt += 1) {
         const head = await storage.readSegmentedStockHead();
         // Default time must include claims already visible in this revision.
-        const atEpochMs = input.atEpochMs ?? internals.clock.nowEpochMs();
+        const atEpochMs = requestedAt ?? internals.clock.nowEpochMs();
+        const reservationAtEpochMs = requestedReservationAt ?? atEpochMs;
         const catalog = head.worldRevision === 0
           ? internals.catalog
           : inventoryCatalogFromSnapshot(head.catalog);
         assertInventoryCatalogRetainsSnapshot(internals.catalog, head.catalog);
         const selection = resolveAllocationItemAndSelector(
-          catalog, input.selector, input.amount, input.itemRevisionId
+          catalog, selector, request.amount, itemRevisionId
         );
-        const source = segmentedPolicyStockSource(storage, input.reservationAtEpochMs ?? atEpochMs);
+        const source = segmentedPolicyStockSource(storage, reservationAtEpochMs);
         const pool = await source.pool(selection);
         if ((await storage.readSegmentedStockHead()).worldRevision !== head.worldRevision) continue;
-        return planInventoryAllocationInPool({ ...input, catalog, selection, pool, atEpochMs });
+        return planInventoryAllocationInPool({ ...request, catalog, selection, pool, atEpochMs, reservationAtEpochMs });
       }
       throw new Error("Inventory allocation could not read a current stock revision.");
     }
     const world = await this.world();
     return planInventoryAllocation({
+      ...request,
       catalog: inventoryCatalogForPublishedWorld(world, internals.catalog),
       world,
-      selector: input.selector,
-      amount: input.amount,
-      method: input.method,
-      atEpochMs: input.atEpochMs ?? internals.clock.nowEpochMs(),
-      ...(input.reservationAtEpochMs === undefined
+      selector,
+      atEpochMs: requestedAt ?? internals.clock.nowEpochMs(),
+      ...(requestedReservationAt === undefined
         ? {}
-        : { reservationAtEpochMs: input.reservationAtEpochMs }),
-      ...(input.itemRevisionId === undefined
+        : { reservationAtEpochMs: requestedReservationAt }),
+      ...(itemRevisionId === undefined
         ? {}
-        : { itemRevisionId: input.itemRevisionId }),
-      ...(input.allowExpiredLots === undefined
-        ? {}
-        : { allowExpiredLots: input.allowExpiredLots }),
-      ...(input.reservationId === undefined
-        ? {}
-        : { reservationId: input.reservationId }),
-      ...(input.allowAllocatedStock === undefined
-        ? {}
-        : { allowAllocatedStock: input.allowAllocatedStock }),
+        : { itemRevisionId }),
     });
   }
 

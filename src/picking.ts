@@ -209,8 +209,8 @@ export interface PlanInventoryAllocationInPoolInput
   readonly selection: ResolvedAllocationSelection;
   /** Complete signed pool rows and claim states at the requested reservation time. */
   readonly pool: InventoryScopedStockPool;
-  /** Set for the preferred unheld attempt before considering all physical stock. */
-  readonly preferUnheldForRecording?: boolean;
+  /** A physical attempt defers measured residuals until the witness plan is chosen. */
+  readonly recordingAttempt?: "prefer-unheld" | "all-physical";
 }
 
 /** Plan exact FIFO/FEFO picks over one complete signed stock pool. */
@@ -224,7 +224,7 @@ export function planInventoryAllocationInPool({
   allowExpiredLots = false,
   reservationId,
   allowAllocatedStock = false,
-  preferUnheldForRecording = false,
+  recordingAttempt,
   reservationAtEpochMs = atEpochMs,
 }: PlanInventoryAllocationInPoolInput): InventoryPolicyAllocationPlan {
   assertInventoryEpochMilliseconds(atEpochMs, "inventory allocation authority time");
@@ -244,7 +244,7 @@ export function planInventoryAllocationInPool({
     reservationAtEpochMs,
     ...(reservationId === undefined ? {} : { reservationId }),
     allowAllocatedStock,
-    keepIndependentHoldsWhole: preferUnheldForRecording,
+    keepIndependentHoldsWhole: recordingAttempt === "prefer-unheld",
   });
   const deficitAdjusted = applyPolicyAllocationDeficitBurden({
     selector: selected.selector,
@@ -295,10 +295,8 @@ export function planInventoryAllocationInPool({
         : { expiresAtEpochMs: candidate.expiresAtEpochMs }),
     });
   }
-  // Only the final physical attempt needs to express any independently
-  // measured shortfall. The preferred result can first try the held rows.
-  const retryMeasuredShortfall = preferUnheldForRecording && amount.independent.length > 0 &&
-    !quantityEq(allocated.shortfall, requestedPrimary);
+  // Recording computes the exact independent residual from the chosen witnesses.
+  const deferMeasuredShortfall = recordingAttempt !== undefined && amount.independent.length > 0;
   return {
     selector: selected.selector,
     itemRevisionId: selected.item.revisionId,
@@ -306,7 +304,7 @@ export function planInventoryAllocationInPool({
     requestedMeasurements: resolved.measurements,
     lines,
     shortfall: allocated.shortfall,
-    ...(allocated.shortfall.amountMinor === 0 || retryMeasuredShortfall
+    ...(allocated.shortfall.amountMinor === 0 || deferMeasuredShortfall
       ? {}
       : {
           shortfallAmount: inventoryAmountForPolicyShortfall({

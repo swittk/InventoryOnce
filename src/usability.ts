@@ -35,10 +35,7 @@ export function inventoryEffectiveUseByFromAncestry(
   ancestry: readonly string[],
   nodeUseBy: (nodeId: string) => number | undefined
 ): number | undefined {
-  let earliest = lotExpiresAtEpochMs;
-  if (earliest !== undefined) {
-    assertInventoryEpochMilliseconds(earliest, "lot expiresAtEpochMs");
-  }
+  let earliest: number | undefined;
   for (const nodeId of ancestry) {
     const nodeUseByEpochMs = nodeUseBy(nodeId);
     if (nodeUseByEpochMs === undefined) continue;
@@ -50,7 +47,19 @@ export function inventoryEffectiveUseByFromAncestry(
       earliest = nodeUseByEpochMs;
     }
   }
-  return earliest;
+  return inventoryLotAndPlacementUseBy(lotExpiresAtEpochMs, earliest);
+}
+
+/** Combine lot expiry with a placement cutoff already validated for this snapshot. */
+export function inventoryLotAndPlacementUseBy(
+  lotExpiresAtEpochMs: number | undefined,
+  placementUseByEpochMs: number | undefined
+): number | undefined {
+  if (lotExpiresAtEpochMs === undefined) return placementUseByEpochMs;
+  assertInventoryEpochMilliseconds(lotExpiresAtEpochMs, "lot expiresAtEpochMs");
+  return placementUseByEpochMs === undefined
+    ? lotExpiresAtEpochMs
+    : Math.min(lotExpiresAtEpochMs, placementUseByEpochMs);
 }
 
 /** Return whether one position is expired at the supplied time; expiry is inclusive at effective use-by. */
