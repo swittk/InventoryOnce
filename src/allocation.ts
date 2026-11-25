@@ -12,6 +12,7 @@ import {
   zeroQuantity,
   type Quantity,
 } from "./quantity.js";
+import { MAXIMUM_STORED_QUANTITY_MINOR, storableQuantityScale } from "./quantity-storage.js";
 
 /** Supported deterministic automatic stock-picking orders. */
 export enum InventoryAllocationMethod {
@@ -73,7 +74,7 @@ export interface InventoryAllocationResult {
   readonly expiredStockWasExcluded: boolean;
   /** True when candidate stock existed but indivisible increments prevented using it. */
   readonly incrementBlockedStock: boolean;
-  /** True when an exact physical assignment existed but the whole-plan acceptance rule rejected it. */
+  /** True when the whole-plan rule rejected every allowed assignment despite an exact physical assignment. */
   readonly allocationConstraintBlockedStock: boolean;
 }
 
@@ -82,9 +83,6 @@ export const MAXIMUM_EXACT_ALLOCATION_STATES = 100_000;
 
 /** Maximum recursive exact-search depth before callers must narrow the candidate set. */
 const MAXIMUM_EXACT_ALLOCATION_DEPTH = 5_000;
-
-/** The signed digits allowed in a stored quantity. */
-const MAXIMUM_STORABLE_ALLOCATION_MINOR = BigInt(Number.MAX_SAFE_INTEGER);
 
 /** Pick FIFO/FEFO stock without inventing synthetic lots or hiding expiry/shortfall policy. */
 export function allocateInventory(input: AllocateInventoryInput): InventoryAllocationResult {
@@ -339,8 +337,15 @@ function searchInventoryAllocations({
     const increment = incrementMinor[index] ?? 1n;
     const maximum = capacity < remainingMinor ? capacity : remainingMinor;
     const laterCapacity = suffixCapacity[index + 1] ?? 0n;
+    const terminalPartial = acceptPartial && index === candidates.length - 1;
     let take = (maximum / increment) * increment;
     while (take >= 0n) {
+      if (terminalPartial && (storableQuantityScale(take, decimals) === undefined ||
+          storableQuantityScale(remainingMinor - take, decimals) === undefined)) {
+        const next = largestStorableTerminalTake(take, remainingMinor, increment);
+        if (next === undefined) break;
+        take = next;
+      }
       // Lower choices cannot make up an uncovered amount or improve the best partial witness.
       const unfillable = remainingMinor - take - laterCapacity;
       if (acceptPartial ? unfillable >= bestRemainingMinor : unfillable > 0n) break;
@@ -351,7 +356,7 @@ function searchInventoryAllocations({
         );
       }
       // Skip picks that cannot be stored before memoizing suffixes by remainder.
-      if (inventoryAllocationStorableDecimals(take, decimals) !== undefined) {
+      if (terminalPartial || storableQuantityScale(take, decimals) !== undefined) {
         chosenMinor[index] = take;
         if (findExactSuffix(index + 1, remainingMinor - take)) return true;
       }
@@ -367,21 +372,77 @@ function searchInventoryAllocations({
   return bestAssignment;
 }
 
-/** Find the first exact storage scale, keeping precision unless trailing zeros must go. */
-function inventoryAllocationStorableDecimals(digits: bigint, decimals: number): number | undefined {
-  while (digits > MAXIMUM_STORABLE_ALLOCATION_MINOR || digits < -MAXIMUM_STORABLE_ALLOCATION_MINOR) {
-    if (decimals === 0 || digits % 10n !== 0n) return undefined;
-    digits /= 10n;
-    decimals -= 1;
+/** Return the smallest power of ten that can bring nonnegative digits into storage range. */
+function allocationStorageFactor(minor: bigint): bigint {
+  let factor = 1n;
+  while (minor > MAXIMUM_STORED_QUANTITY_MINOR * factor) factor *= 10n;
+  return factor;
+}
+
+/** Find the largest final pick whose line and shortfall both fit at an exact scale. */
+function largestStorableTerminalTake(limit: bigint, remaining: bigint, increment: bigint): bigint | undefined {
+  while (limit >= 0n) {
+    const takeFactor = allocationStorageFactor(limit);
+    const shortfallFactor = allocationStorageFactor(remaining - limit);
+    // Descending past either boundary changes the scale requirement, so solve one range at a time.
+    const takeFloor = takeFactor === 1n ? 0n : MAXIMUM_STORED_QUANTITY_MINOR * (takeFactor / 10n) + 1n;
+    const shortfallFloor = remaining - MAXIMUM_STORED_QUANTITY_MINOR * shortfallFactor;
+    const floor = takeFloor > shortfallFloor ? takeFloor : shortfallFloor;
+    const stride = takeFactor === 1n ? increment
+      : (increment / allocationModularCoefficients(increment, takeFactor).divisor) * takeFactor;
+    const take = largestAllocationMultipleWithRemainder(limit, stride, remaining, shortfallFactor);
+    if (take !== undefined && take >= floor) return take;
+    limit = floor - 1n;
   }
-  return decimals;
+  return undefined;
+}
+
+/** Exact divisor and coefficient relating a stride to a required modulus. */
+interface AllocationModularCoefficients {
+  /** Greatest common divisor of the stride and the modulus. */
+  readonly divisor: bigint;
+  /** Factor multiplying the stride in the integer combination equal to the divisor. */
+  readonly coefficient: bigint;
+}
+
+/** Find the greatest common divisor and the stride's coefficient using Euclidean division. */
+function allocationModularCoefficients(stride: bigint, modulus: bigint): AllocationModularCoefficients {
+  let divisor = modulus;
+  let remainder = stride % modulus;
+  let coefficient = 0n;
+  let nextCoefficient = 1n;
+  while (remainder !== 0n) {
+    const quotient = divisor / remainder;
+    const rest = divisor % remainder;
+    divisor = remainder;
+    remainder = rest;
+    const next = coefficient - quotient * nextCoefficient;
+    coefficient = nextCoefficient;
+    nextCoefficient = next;
+  }
+  return { divisor, coefficient };
+}
+
+/** Find the greatest allowed multiple leaving a shortfall divisible by the storage factor. */
+function largestAllocationMultipleWithRemainder(
+  limit: bigint, stride: bigint, remaining: bigint, factor: bigint
+): bigint | undefined {
+  if (factor === 1n) return limit - (limit % stride);
+  const { divisor, coefficient } = allocationModularCoefficients(stride, factor);
+  if (remaining % divisor !== 0n) return undefined;
+  const modulus = factor / divisor;
+  const signedOffset = (coefficient * (remaining / divisor)) % modulus;
+  const offset = (signedOffset < 0n ? signedOffset + modulus : signedOffset) * stride;
+  if (offset > limit) return undefined;
+  const period = modulus * stride;
+  return offset + ((limit - offset) / period) * period;
 }
 
 /** Materialize a trial amount only when it fits the storage range exactly. */
 export function inventoryAllocationQuantityIfStorable(
   digits: bigint, decimals: number, unit: Quantity["unit"]
 ): Quantity | undefined {
-  const scale = inventoryAllocationStorableDecimals(digits, decimals);
+  const scale = storableQuantityScale(digits, decimals);
   if (scale === undefined) return undefined;
   const minor = scale === decimals ? digits : digits / (10n ** BigInt(decimals - scale));
   return quantity({ amountMinor: Number(minor), decimals: scale, unit });

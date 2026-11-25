@@ -790,7 +790,7 @@ export function defineInventoryEvent({
       event.kind,
       event.positiveLayerProvenanceTransfers ?? [],
       stockEffects,
-      unwitnessed?.effects
+      unwitnessed?.witnessedEffects
     );
   const positiveLayerProvenanceOverrides =
     normalizePositiveLayerProvenanceOverrides(
@@ -1238,12 +1238,12 @@ function inventoryTransferLifecycleFingerprint(
   return [change.action, change.transferId];
 }
 
-/** Normalized unwitnessed routes and their signed contribution to each exact stock effect. */
+/** Normalized unwitnessed routes and the witnessed remainder of each affected posting. */
 interface NormalizedUnwitnessedStockMovements {
   /** Individual reports retained for exact audit and costing. */
   readonly movements: readonly InventoryUnwitnessedStockMovement[];
-  /** Signed contribution per exact position, used to verify witnessed FIFO rights. */
-  readonly effects: ReadonlyMap<string, InventoryMeasurementVector>;
+  /** Validated signed witness per affected position, used to verify FIFO provenance. */
+  readonly witnessedEffects: ReadonlyMap<string, InventoryMeasurementVector>;
 }
 
 /** Validate only typed unwitnessed routes and their partition of the event's concrete postings. */
@@ -1290,6 +1290,8 @@ function normalizeUnwitnessedStockMovements(
   for (const effect of stockEffects) {
     stockById.set(inventoryStockPositionIdentity(effect.position), effect.measurementsDelta);
   }
+  /** Keep the exact partition so FIFO checks use the same validated digits. */
+  const witnessedEffects = new Map<string, InventoryMeasurementVector>();
   for (const [id, portion] of effects) {
     const total = stockById.get(id);
     if (total === undefined || primarySign(total) !== primarySign(portion)) {
@@ -1300,8 +1302,9 @@ function normalizeUnwitnessedStockMovements(
     if (!inventoryMeasurementsAreZero(witnessed) && primarySign(witnessed) !== primarySign(total)) {
       throw new Error("Unwitnessed movement exceeds its signed stock effect.");
     }
+    witnessedEffects.set(id, witnessed);
   }
-  return { movements, effects };
+  return { movements, witnessedEffects };
 }
 
 /** Sum one explicitly signed part of an unwitnessed route by its exact position. */
@@ -1324,7 +1327,7 @@ function normalizePositiveLayerProvenanceTransfers(
   kind: InventoryEventKind,
   transfers: readonly InventoryPositiveLayerProvenanceTransfer[],
   effects: readonly InventoryStockEffect[],
-  unwitnessed?: ReadonlyMap<string, InventoryMeasurementVector>
+  witnessedEffects?: ReadonlyMap<string, InventoryMeasurementVector>
 ): readonly InventoryPositiveLayerProvenanceTransfer[] {
   if (
     transfers.length !== 0 &&
@@ -1387,14 +1390,8 @@ function normalizePositiveLayerProvenanceTransfers(
         "Inventory FIFO provenance transfer must reference positions changed by the same event."
       );
     }
-    const fromUnknown = unwitnessed?.get(fromIdentity);
-    const toUnknown = unwitnessed?.get(toIdentity);
-    const fromWitness = fromUnknown === undefined
-      ? fromEffect.measurementsDelta
-      : subtractInventoryMeasurements(fromEffect.measurementsDelta, fromUnknown);
-    const toWitness = toUnknown === undefined
-      ? toEffect.measurementsDelta
-      : subtractInventoryMeasurements(toEffect.measurementsDelta, toUnknown);
+    const fromWitness = witnessedEffects?.get(fromIdentity) ?? fromEffect.measurementsDelta;
+    const toWitness = witnessedEffects?.get(toIdentity) ?? toEffect.measurementsDelta;
     if (
       compareQuantity(
         fromWitness.primary.quantity,

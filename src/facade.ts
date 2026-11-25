@@ -5809,12 +5809,18 @@ async function policyRecordedDeficit({
     ...(packagingRevisionId === undefined ? {} : { packagingRevisionId }),
   });
   assertPositionMatchesItem(item, position);
-  const placementScope = inventoryRecordedDeficitPoolSelector(allocation.selector, item.revisionId);
+  // A deficit can span lot and owner identities, but the posted location must satisfy the requested whereabouts.
+  const { whereabouts, whereaboutsStates } = allocation.selector;
+  const placementScope: InventoryStockSelector = {
+    ...inventoryRecordedDeficitPoolSelector(allocation.selector, item.revisionId),
+    ...(whereabouts === undefined ? {} : { whereabouts }),
+    ...(whereaboutsStates === undefined ? {} : { whereaboutsStates }),
+  };
   const ancestry = placementScope.withinPlacementNodeIds === undefined || position.placementNodeId === undefined
     ? []
     : await readAncestry(position.placementNodeId);
   if (!inventoryScopedStockMatches(position, placementScope, ancestry)) {
-    throw new Error("Inventory policy deficit position is outside the selected placement scope.");
+    throw new Error("Inventory policy deficit position is outside the selected placement scope or whereabouts.");
   }
   // Policy Issue uses a dedicated deficit bucket. Transfer and scrap use
   // the unlabelled stock key itself, so their signed posting may settle there.

@@ -542,7 +542,13 @@ describe("adapter-native standalone topology events", () => {
       readWorld.mockRestore();
     }
     expect(await inventory.read.placementParent("CART")).toBe("ROOM");
-    expect((await inventory.read.reservationFeasibility(time2)).status)
-      .toBe(InventoryReservationFeasibilityStatus.Feasible);
+    expect(await inventory.read.reservationFeasibility(time2)).toMatchObject({
+      status: InventoryReservationFeasibilityStatus.Feasible,
+      groups: [{
+        reservationIds: ["topology-hot-claim"],
+        requested: parseQuantity("1", "piece"),
+        shortage: parseQuantity("0", "piece"),
+      }],
+    });
   });
 });

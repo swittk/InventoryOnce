@@ -1897,3 +1897,8 @@ The R105 portable-current-input authority and final publication both continue to
 
 - The bounded search uses only storable trial line quantities and final residuals. Incompatible trials leave the search free to find a later exact witness. Both exact and partial searches stop trying smaller choices when the remaining rows cannot improve the result.
 - An unstorable greedy split falls back to the same bounded search. When no known lot can fit, Record can retain the reported movement without inventing lot evidence.
+
+## 2026-11-25 — exact terminal trials and recorded postings
+
+- Terminal allocation choices skip ranges where the pick or final shortfall cannot fit at an exact scale. The jump respects both storage divisibility and the row's allocation increment.
+- Quantity sums and differences can remove trailing zeros when storage requires it. Mixed witnessed and unwitnessed postings reuse the validated split for FIFO provenance. A recorded shortfall's posting still has to match any explicit whereabouts selection.

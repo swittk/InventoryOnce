@@ -744,11 +744,13 @@ describe("segmented inventory position store", () => {
     positions.push(segmentedPosition({ placementNodeId: "outside", lotId: "stock" }));
     const store = createInMemoryInventorySegmentedPositionStore({ positions });
     const parent = vi.spyOn(placement, "parentNodeId");
-    expect(store.queryPositions({
+    const selected = store.queryPositions({
       itemId: "item-a", withinPlacementNodeIds: ["root", "chain-40"], lotIds: ["stock"],
-    }, placement)).toHaveLength(depth);
-    expect(parent).toHaveBeenCalledTimes(depth);
-    expect(parent).toHaveBeenCalledWith("outside");
+    }, placement);
+    const chainNodes = Array.from({ length: depth }, (_, index) => `chain-${index}`);
+    expect(selected?.map((row) => row.key.placementNodeId).sort()).toEqual([...chainNodes].sort());
+    expect(parent.mock.calls.map(([node]) => node).sort())
+      .toEqual([...chainNodes.filter((node) => node !== "chain-40"), "outside"].sort());
   });
 
   it("trusts indexed subtree membership and still applies direct stock filters", () => {
@@ -768,12 +770,14 @@ describe("segmented inventory position store", () => {
       positions.push(segmentedPosition({ placementNodeId: `outside-${index}`, lotId: "selected" }));
     }
     const store = createInMemoryInventorySegmentedPositionStore({ positions });
-    const ancestry = vi.spyOn(placement, "ancestry");
+    const parent = vi.spyOn(placement, "parentNodeId");
     const selected = store.queryPositions({
       itemId: "item-a", withinPlacementNodeIds: ["root", "child-4"], lotIds: ["selected"],
     }, placement);
     expect(selected?.map((row) => row.key.lotId)).toEqual(Array(20).fill("selected"));
-    expect(ancestry).not.toHaveBeenCalled();
+    expect(selected?.map((row) => row.key.placementNodeId).sort())
+      .toEqual(Array.from({ length: 20 }, (_, index) => `child-${index}`).sort());
+    expect(parent).not.toHaveBeenCalled();
   });
 
   it("preserves the FIFO origin of a same-position positive replacement", () => {

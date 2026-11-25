@@ -219,6 +219,51 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
     expect(result.shortfall).toEqual(parseQuantity("0", "kg"));
   });
 
+  it.each([
+    { increment: undefined, picked: "1.000000", missing: "9007199254740990" },
+    { increment: "0.000008", picked: "1.000000", missing: "9007199254740990" },
+    { increment: "0.000003", picked: undefined, missing: "9007199254740991" },
+  ])("skips terminal picks with unstorable shortfalls at increment $increment", ({ increment, picked, missing }) => {
+    const result = allocateInventoryUpTo({
+      requested: parseQuantity("9007199254740991", "kg"),
+      candidates: [candidate({
+        lotId: "fractional", receivedAtEpochMs: time0, expiresAtEpochMs: time3,
+        extra: {
+          available: parseQuantity("1.999999", "kg"),
+          ...(increment === undefined ? {} : { allocationIncrement: parseQuantity(increment, "kg") }),
+        },
+      })],
+      method: InventoryAllocationMethod.Fifo,
+      nowEpochMs: time2,
+    });
+    expect(result.allocations.map((line) => line.quantity)).toEqual(
+      picked === undefined ? [] : [parseQuantity(picked, "kg")],
+    );
+    expect(result.shortfall).toEqual(parseQuantity(missing, "kg"));
+  });
+
+  it("aligns the final pick with the remainder left by a fractional FIFO prefix", () => {
+    const early = parseQuantity("0.1", "kg");
+    const result = allocateInventoryUpTo({
+      requested: parseQuantity("9007199254740991", "kg"),
+      candidates: [
+        candidate({
+          lotId: "early", receivedAtEpochMs: time0, expiresAtEpochMs: time3,
+          extra: { available: early, allocationIncrement: early },
+        }),
+        candidate({
+          lotId: "last", receivedAtEpochMs: time1, expiresAtEpochMs: time3,
+          extra: { available: parseQuantity("1.999999", "kg"), allocationIncrement: parseQuantity("0.000008", "kg") },
+        }),
+      ],
+      method: InventoryAllocationMethod.Fifo, nowEpochMs: time2,
+    });
+    expect(result.allocations.map((line) => line.quantity)).toEqual([
+      parseQuantity("0.100000", "kg"), parseQuantity("1.900000", "kg"),
+    ]);
+    expect(result.shortfall).toEqual(parseQuantity("9007199254740989", "kg"));
+  });
+
   it("rejects an invalid requested decimal scale before returning shortfall", () => {
     const requested = { ...parseQuantity("1", "piece"), decimals: 19 };
     expect(() =>

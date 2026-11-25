@@ -1,4 +1,6 @@
 /** Exact physical-quantity arithmetic. InventoryOnce never uses epsilon comparisons. */
+import { storableQuantityScale } from "./quantity-storage.js";
+
 declare const unitCodeBrand: unique symbol;
 
 /** Largest decimal scale accepted for one durable physical quantity. */
@@ -127,28 +129,27 @@ export function quantityEq(left: Quantity, right: Quantity): boolean {
 export function addQuantity(left: Quantity, right: Quantity): Quantity {
   assertSameUnit(left, right);
   const decimals = Math.max(left.decimals, right.decimals);
-  return quantity({
-    amountMinor: safeNumber(
-      integerAtDecimals(left, decimals) + integerAtDecimals(right, decimals),
-      "Quantity addition",
-    ),
-    decimals,
-    unit: left.unit,
-  });
+  return quantityAtStorableScale(
+    integerAtDecimals(left, decimals) + integerAtDecimals(right, decimals),
+    decimals, left.unit, "Quantity addition",
+  );
 }
 
 /** Subtract two exact same-unit quantities without discarding decimal digits. */
 export function subtractQuantity(left: Quantity, right: Quantity): Quantity {
   assertSameUnit(left, right);
   const decimals = Math.max(left.decimals, right.decimals);
-  return quantity({
-    amountMinor: safeNumber(
-      integerAtDecimals(left, decimals) - integerAtDecimals(right, decimals),
-      "Quantity subtraction",
-    ),
-    decimals,
-    unit: left.unit,
-  });
+  return quantityAtStorableScale(
+    integerAtDecimals(left, decimals) - integerAtDecimals(right, decimals),
+    decimals, left.unit, "Quantity subtraction",
+  );
+}
+
+/** Convert an exact sum or difference without discarding nonzero digits. */
+function quantityAtStorableScale(minor: bigint, decimals: number, unit: UnitCode, label: string): Quantity {
+  const scale = storableQuantityScale(minor, decimals) ?? decimals;
+  const digits = scale === decimals ? minor : minor / powerOfTen(decimals - scale);
+  return quantity({ amountMinor: safeNumber(digits, label), decimals: scale, unit });
 }
 
 /** Flip the sign of one exact quantity without changing its unit/scale. */

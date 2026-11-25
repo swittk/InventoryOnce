@@ -9,6 +9,7 @@ import {
   InventoryMeasurementAxisRole,
   InventoryMeasurementRequirement,
   InventoryOptionalIdentityConstraintKind,
+  InventoryStockWhereaboutsState,
   InventoryTrackingRequirement,
   inventoryStockSelector,
   measuredStockAmount,
@@ -117,15 +118,18 @@ describe("indexed stock planning and availability", () => {
     const result = await report;
     expect(result.event.unwitnessedStockMovements).toMatchObject([{
       measurements: {
-        primary: { quantity: { amountMinor: 2 } },
-        independent: [{ axisId: "weight", quantity: { amountMinor: 2 } }],
+        primary: { quantity: parseQuantity("2", "piece") },
+        independent: [{ axisId: "weight", quantity: parseQuantity("2", "kg") }],
       },
     }]);
     const rows = await inventory.read.positions({ itemId: item.itemId, placementNodeIds: ["destination"] });
     expect(rows.map((row) => [
-      row.key.lotId, row.measurements.primary.quantity.amountMinor,
-      row.measurements.independent[0]?.quantity.amountMinor,
-    ])).toEqual([["weighed", 4, 5], [undefined, 2, 2]]);
+      row.key.lotId, row.measurements.primary.quantity,
+      row.measurements.independent[0]?.quantity,
+    ])).toEqual([
+      ["weighed", parseQuantity("4", "piece"), parseQuantity("5", "kg")],
+      [undefined, parseQuantity("2", "piece"), parseQuantity("2", "kg")],
+    ]);
   });
 
   it.each([
@@ -672,6 +676,46 @@ describe("indexed stock planning and availability", () => {
     ]);
     expect((await inventory.stock.transferManyByPolicy(command)).event).toEqual(result.event);
     expect(readWorld).not.toHaveBeenCalled();
+  });
+
+  it("rejects a placed policy shortfall when the selector requires missing stock", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage, undefined, undefined, InventoryDeficitPolicy.Record);
+    const before = storage.readSegmentedStockHead();
+    await expect(inventory.stock.transferByPolicy({
+      operationId: "missing-stock-shortfall", occurredAtEpochMs: time2, toPlacementNodeId: "destination",
+      selector: { ...selector, whereaboutsStates: [InventoryStockWhereaboutsState.Missing] },
+      method: InventoryAllocationMethod.Fifo, amount: stockAmount("1", "piece"),
+    })).rejects.toThrow("outside the selected placement scope");
+    expect(storage.readSegmentedStockHead()).toEqual(before);
+    expect(await inventory.read.positions({ itemId: "item-a" })).toEqual([]);
+  });
+
+  it("merges mixed-scale postings and retains the exact witnessed FIFO route", async () => {
+    const inventory = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
+    const witnessed = "9007199254740990";
+    const total = "9007199254740991";
+    await inventory.stock.receive({
+      operationId: "mixed-scale-batch-source", occurredAtEpochMs: time0,
+      to: loosePosition("store"), amount: stockAmount(witnessed, "piece"),
+    });
+    const result = await inventory.stock.transferManyByPolicy({
+      operationId: "mixed-scale-batch-transfer", occurredAtEpochMs: time2, toPlacementNodeId: "destination",
+      requests: [
+        { requestId: "witnessed", selector, amount: stockAmount(witnessed, "piece"), method: InventoryAllocationMethod.Fifo },
+        { requestId: "unwitnessed", selector, amount: stockAmount("1.0", "piece"), method: InventoryAllocationMethod.Fifo },
+      ],
+    });
+    expect(result.event.unwitnessedStockMovements).toMatchObject([
+      { measurements: { primary: { quantity: parseQuantity("1.0", "piece") } } },
+    ]);
+    expect(result.event.positiveLayerProvenanceTransfers).toMatchObject([
+      { from: { placementNodeId: "store" }, to: { placementNodeId: "destination" } },
+    ]);
+    expect(result.event.stockEffects.map((effect) => effect.evidence?.transactedMeasurements?.primary.quantity))
+      .toEqual([parseQuantity(total, "piece"), parseQuantity(total, "piece")]);
+    expect((await inventory.read.positions({ itemId: "item-a", placementNodeIds: ["destination"] }))[0]
+      ?.measurements.primary.quantity).toEqual(parseQuantity(total, "piece"));
   });
 
   it("retains the witnessed leg when the destination balance absorbs it", async () => {

@@ -218,16 +218,18 @@ describe("segmented writes with unrelated reservation/count scopes", () => {
     const readWorld = vi.spyOn(storage, "readWorld").mockRejectedValue(
       new Error("A signed exact issue invoked whole-world fallback."),
     );
+    /** The signed stock read must succeed through the segmented index. */
+    let indexed: Awaited<ReturnType<typeof inventory.read.positions>>;
     try {
       await inventory.stock.issue({
         operationId: "exact-short-issue", occurredAtEpochMs: time0,
         from: loosePosition("store"), amount: stockAmount("2", "piece"),
       });
+      indexed = await inventory.read.positions({ itemId: "item-a" });
       expect(readWorld).not.toHaveBeenCalled();
     } finally {
       readWorld.mockRestore();
     }
-    const indexed = await inventory.read.positions({ itemId: "item-a" });
     expect(indexed[0]?.measurements.primary.quantity.amountMinor).toBe(-2);
     const world = await storage.readWorld();
     expect(Object.values(world.projection.positions)).toEqual(indexed);
