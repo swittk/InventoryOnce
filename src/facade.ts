@@ -4450,13 +4450,9 @@ function debitPolicyBatchPosition(
 async function commitInventoryPolicyBatch(
   owner: InventoryOnce,
   kind: InventoryPolicyMovementKind,
-  original: InventoryOncePolicyBatchInput,
+  input: InventoryOncePolicyBatchInput,
   toPlacementNodeId?: string
 ): Promise<InventoryOncePolicyBatchResult> {
-  const input: InventoryOncePolicyBatchInput = {
-    ...snapshotInventoryScopedMovementHeader(original),
-    requests: original.requests.map(snapshotInventoryPolicyBatchRequest),
-  };
   if (
     kind !== InventoryPolicyMovementKind.Issue &&
     kind !== InventoryPolicyMovementKind.Transfer
@@ -5426,10 +5422,9 @@ function requirePolicyBatchMetadataString(
 async function commitInventoryPolicyMovement(
   owner: InventoryOnce,
   kind: InventoryPolicyMovementKind,
-  original: InventoryOncePolicyMovementInput,
+  input: InventoryOncePolicyMovementInput,
   toPlacementNodeId?: string
 ): Promise<InventoryOnceEventResult> {
-  const input = snapshotInventoryPolicyMovement(original);
   const internals = requireInventoryOnceInternals(owner);
   assertPolicyMovementRequest(
     kind,
@@ -5931,34 +5926,6 @@ function inventoryCommandHeaderFromPolicyInput(
       : { sourceReference: input.sourceReference }),
     ...(input.reason === undefined ? {} : { reason: input.reason }),
     ...(input.metadata === undefined ? {} : { metadata: input.metadata }),
-  };
-}
-
-/** Freeze the documented header fields before awaiting native planning reads. */
-function snapshotInventoryScopedMovementHeader(input: InventoryCommandHeader): InventoryCommandHeader {
-  const { metadata, ...header } = inventoryCommandHeaderFromPolicyInput(input);
-  return metadata === undefined ? header : { ...header, metadata: structuredClone({ ...metadata }) };
-}
-
-/** Capture the typed policy command without copying application-owned extensions. */
-function snapshotInventoryPolicyMovement(input: InventoryOncePolicyMovementInput): InventoryOncePolicyMovementInput {
-  return {
-    ...snapshotInventoryScopedMovementHeader(input),
-    ...snapshotInventoryAllocationRequest(input),
-    ...(input.deficitPosition === undefined ? {} : { deficitPosition: snapshotInventoryPolicyDeficitPosition(input.deficitPosition) }),
-  };
-}
-
-/** Freeze public selection, amount, and options without forwarding internal planner options. */
-function snapshotInventoryAllocationRequest(input: InventoryAllocationPolicyRequest): InventoryAllocationPolicyRequest {
-  return {
-    selector: normalizeInventoryStockSelector(input.selector),
-    amount: snapshotInventoryPolicyAmount(input.amount),
-    method: input.method,
-    ...(input.itemRevisionId === undefined ? {} : { itemRevisionId: input.itemRevisionId }),
-    ...(input.allowExpiredLots === undefined ? {} : { allowExpiredLots: input.allowExpiredLots }),
-    ...(input.allowAllocatedStock === undefined ? {} : { allowAllocatedStock: input.allowAllocatedStock }),
-    ...(input.reservationId === undefined ? {} : { reservationId: input.reservationId }),
   };
 }
 
@@ -7187,14 +7154,9 @@ async function commitInventoryPlacementTopologyChange(
 /** Empty one node into another as one stock-plus-topology fact. */
 async function commitInventoryPlacementDirectContentsMove(
   owner: InventoryOnce,
-  original: InventoryOnceMovePlacementContentsInput
+  input: InventoryOnceMovePlacementContentsInput
 ): Promise<InventoryOnceEventResult> {
   const internals = requireInventoryOnceInternals(owner);
-  const input: InventoryOnceMovePlacementContentsInput = {
-    ...snapshotInventoryScopedMovementHeader(original),
-    nodeId: original.nodeId,
-    into: original.into,
-  };
   inventoryPlacementNodeIdentity(input.nodeId);
   inventoryPlacementNodeIdentity(input.into);
   if (input.nodeId === input.into) {
@@ -10537,9 +10499,18 @@ class InventoryOnceReadImplementation implements InventoryOnceReadApi {
   ): Promise<InventoryPolicyAllocationPlan> {
     const internals = requireInventoryOnceInternals(this.owner);
     const storage = internals.storage;
-    const { selector, itemRevisionId, ...request } = snapshotInventoryAllocationRequest(input);
-    const requestedAt = input.atEpochMs;
-    const requestedReservationAt = input.reservationAtEpochMs;
+    const {
+      selector, itemRevisionId, amount, method, allowExpiredLots, allowAllocatedStock, reservationId,
+      atEpochMs: requestedAt, reservationAtEpochMs: requestedReservationAt,
+    } = input;
+    /** Public allocation options shared by the native and canonical planners. */
+    const request = {
+      amount,
+      method,
+      ...(allowExpiredLots === undefined ? {} : { allowExpiredLots }),
+      ...(allowAllocatedStock === undefined ? {} : { allowAllocatedStock }),
+      ...(reservationId === undefined ? {} : { reservationId }),
+    };
     if (inventoryStorageSupportsSegmentedStockPlanning(storage)) {
       for (let attempt = 0; attempt < 3; attempt += 1) {
         const head = await storage.readSegmentedStockHead();
@@ -10551,7 +10522,7 @@ class InventoryOnceReadImplementation implements InventoryOnceReadApi {
           : inventoryCatalogFromSnapshot(head.catalog);
         assertInventoryCatalogRetainsSnapshot(internals.catalog, head.catalog);
         const selection = resolveAllocationItemAndSelector(
-          catalog, selector, request.amount, itemRevisionId
+          catalog, selector, amount, itemRevisionId
         );
         const source = segmentedPolicyStockSource(storage, reservationAtEpochMs);
         const pool = await source.pool(selection);

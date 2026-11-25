@@ -25,7 +25,6 @@ import {
   type InventorySegmentedStockPlanningCapability,
 } from "../src/storage-api.js";
 import { createInventoryTransferManyEvent, defineInventoryEvent, planInventoryAllocation } from "../src/kernel.js";
-import { inventoryReportedTransferReplayMetadataKey } from "../src/reported-transfer-replay.js";
 import {
   clockAt,
   createTabletCatalog,
@@ -1137,7 +1136,7 @@ describe("indexed stock planning and availability", () => {
     expect(readWorld).not.toHaveBeenCalled();
   });
 
-  it("keeps preview quantity and claim time fixed across the scoped pool read", async () => {
+  it("selects stock using the requested reservation time", async () => {
     const storage = createInMemoryInventoryDurableStorage();
     const inventory = createTestInventory(storage);
     await receiveKnownLots(inventory);
@@ -1153,60 +1152,10 @@ describe("indexed stock planning and availability", () => {
       selector, method: InventoryAllocationMethod.Fifo, atEpochMs: time2,
       reservationAtEpochMs: time2, amount: stockAmount("1", "piece"),
     };
-    const readPool = storage.readSegmentedStockPool.bind(storage);
-    const pool = vi.spyOn(storage, "readSegmentedStockPool").mockImplementationOnce((input) => {
-      request.reservationAtEpochMs = time1;
-      request.amount = stockAmount("2", "piece");
-      return readPool(input);
-    });
-    const plan = await inventory.read.planAllocation(request);
-    expect(pool).toHaveBeenCalledWith(expect.objectContaining({ reservationAtEpochMs: time2 }));
-    expect(plan.requestedPrimary.amountMinor).toBe(1);
-    expect(plan.lines).toMatchObject([{ position: { lotId: "young" } }]);
-  });
-
-  it("snapshots only typed command fields through native physical planning", async () => {
-    const inventory = createTestInventory();
-    await receiveKnownLots(inventory);
-    const batch = issueCommand();
-    const [first, second] = batch.requests;
-    if (first === undefined || second === undefined) throw new Error("Missing batch requests.");
-    const extended = { ...first, applicationCallback: () => undefined };
-    const result = await inventory.stock.issueManyByPolicy(new Proxy({
-      ...batch, requests: [extended, second],
-    }, {}));
-    expect(result.allocations).toHaveLength(2);
-    const movement = {
-      operationId: "extended-policy", occurredAtEpochMs: time2, selector,
-      amount: stockAmount("1", "piece"), method: InventoryAllocationMethod.Fifo,
-      toPlacementNodeId: "destination", applicationCallback: () => undefined,
-    };
-    await inventory.stock.transferByPolicy(new Proxy(movement, {}));
-    const contents = {
-      operationId: "extended-contents", occurredAtEpochMs: time2,
-      nodeId: "destination", into: "final", applicationCallback: () => undefined,
-    };
-    await inventory.placement.moveContents(new Proxy(contents, {}));
-    expect(await inventory.read.positions({ itemId: "item-a", placementNodeIds: ["final"] })).toHaveLength(1);
-  });
-
-  it("snapshots policy metadata fields before awaiting stock and replay", async () => {
-    const storage = createInMemoryInventoryDurableStorage();
-    const inventory = createTestInventory(storage);
-    await receiveKnownLots(inventory);
-    const ticket = { number: "T1" };
-    const metadata = new Proxy({ ticket }, {});
-    const batch = { ...issueCommand(), metadata };
-    const readPool = storage.readSegmentedStockPool.bind(storage);
-    vi.spyOn(storage, "readSegmentedStockPool").mockImplementationOnce((input) => {
-      ticket.number = "T2";
-      return readPool(input);
-    });
-    const result = await inventory.stock.issueManyByPolicy(batch);
-    expect(result.event.metadata?.ticket).toEqual({ number: "T1" });
-    expect(await inventory.stock.issueManyByPolicy({ ...batch, metadata: { ticket: { number: "T1" } } }))
-      .toMatchObject({ replayed: true, event: result.event });
-    await expect(inventory.stock.issueManyByPolicy(batch)).rejects.toThrow(/intent/i);
+    const beforeHold = await inventory.read.planAllocation({ ...request, reservationAtEpochMs: time1 });
+    const atHold = await inventory.read.planAllocation(request);
+    expect(beforeHold.lines).toMatchObject([{ position: { lotId: "old" }, allocatedPrimary: parseQuantity("1", "piece") }]);
+    expect(atHold.lines).toMatchObject([{ position: { lotId: "young" }, allocatedPrimary: parseQuantity("1", "piece") }]);
   });
 
   it.each(["0", "1"])("treats an absent optional axis as zero for a report of $weight kg", async (weight) => {
@@ -1611,41 +1560,6 @@ describe("indexed stock planning and availability", () => {
     }
   });
 
-  it.each(["intent", "revision"])("rejects transfer replay evidence with a mismatched %s", async (mismatch) => {
-    const catalog = createTabletCatalog();
-    const storage = createInMemoryInventoryDurableStorage();
-    const inventory = createTestInventory(storage, catalog);
-    await inventory.stock.receive({
-      operationId: "replay-evidence-stock", occurredAtEpochMs: time0,
-      to: loosePosition("store"), amount: stockAmount("2", "piece"),
-    });
-    const before = storage.readSegmentedStockHead();
-    const intentFingerprint = "actual-transfer-intent";
-    const operationId = "mismatched-transfer-evidence";
-    const draft = createInventoryTransferManyEvent({
-      catalog, operationId, occurredAtEpochMs: time1,
-      lines: [{
-        from: loosePosition("store"), toPlacementNodeId: "destination", amount: stockAmount("1", "piece"),
-      }],
-    });
-    await expect(storage.commitSegmentedStockEvent({
-      catalog: inventoryCatalogSnapshot(catalog), operationId, intentFingerprint, recordedAtEpochMs: time2,
-      expectedWorldRevision: before.worldRevision, expectedRecordSequence: before.recordSequence,
-      deficitPolicy: InventoryDeficitPolicy.Reject,
-      event: {
-        ...draft,
-        metadata: {
-          [inventoryReportedTransferReplayMetadataKey]: {
-            intentFingerprint: mismatch === "intent" ? "different-transfer-intent" : intentFingerprint,
-            worldRevision: before.worldRevision + (mismatch === "revision" ? 2 : 1),
-          },
-        },
-      },
-    })).rejects.toThrow("replay evidence must match its durable intent and revision");
-    expect(storage.readSegmentedStockHead()).toEqual(before);
-    expect(await storage.readOperation(operationId)).toBeUndefined();
-  });
-
   it("replays a serialized reported transfer after reopening the exact journal", async () => {
     const inventory = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
     const serial = loosePosition("store", { serialId: "one" });
@@ -1817,7 +1731,7 @@ describe("indexed stock planning and availability", () => {
     expect(await native.read.world()).toEqual(await canonical.read.world());
   });
 
-  it("replans a stale batch, and freezes nested intent before asynchronous reads", async () => {
+  it("replans a stale batch and rejects a changed retry", async () => {
     const storage = createInMemoryInventoryDurableStorage();
     const inventory = createTestInventory(storage);
     await receiveKnownLots(inventory);
@@ -1830,18 +1744,19 @@ describe("indexed stock planning and availability", () => {
       });
       return commit(plan);
     });
-    const input = issueCommand();
-    input.requests.pop();
-    const firstRequest = input.requests[0];
+    const batch = issueCommand();
+    const [firstRequest] = batch.requests;
     if (firstRequest === undefined) throw new Error("Expected the retained request.");
-    const executing = inventory.stock.issueManyByPolicy(input);
-    firstRequest.amount = stockAmount("1", "piece");
-    const result = await executing;
+    const input = { ...batch, requests: [firstRequest] };
+    const result = await inventory.stock.issueManyByPolicy(input);
     expect(result.allocations).toMatchObject([{
       requestId: "first", lines: [{ position: { lotId: "young" }, allocatedPrimary: parseQuantity("2", "piece") }],
     }]);
     expect(write).toHaveBeenCalledTimes(3);
-    await expect(inventory.stock.issueManyByPolicy(input)).rejects.toThrow("changed intent");
+    expect(await inventory.stock.issueManyByPolicy(input)).toEqual({ ...result, replayed: true });
+    await expect(inventory.stock.issueManyByPolicy({
+      ...input, requests: [{ ...firstRequest, amount: stockAmount("1", "piece") }],
+    })).rejects.toThrow("changed intent");
     expect(readWorld).not.toHaveBeenCalled();
   });
 

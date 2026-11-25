@@ -60,14 +60,6 @@ interface InventorySubtreeStockIndexes {
   childNodeIds(nodeId: string): InventorySubtreeStockPostings;
 }
 
-/** One enter/leave visit in the bounded physical placement traversal. */
-interface InventorySubtreeCandidateVisit {
-  /** Exact placement node being inspected. */
-  readonly nodeId: string;
-  /** Whether this visit finishes a node after its descendants. */
-  readonly exiting: boolean;
-}
-
 /**
  * Enumerate selective subtree stock without traversing an arbitrarily large
  * mostly empty topology. Once the graph/index search would cost as much as
@@ -80,50 +72,36 @@ export function candidateSubtreePositionIds(
 ): readonly string[] | undefined {
   // With small item scopes, filtering a few rows is cheaper than graph work.
   if (itemCandidateCount < 128) return undefined;
-  /** Completed placement nodes, counted once even when roots overlap. */
+  /** Placement nodes already inspected, counted once even when roots overlap. */
   const visitedNodes = new Set<string>();
-  /** Placement nodes on the active path, counted in the traversal budget. */
-  const ancestors = new Set<string>();
   /** Exact stock postings collected across the visited subtree. */
   const candidates: string[] = [];
   for (const rootNodeId of rootNodeIds) {
-    const pending: InventorySubtreeCandidateVisit[] = [
-      { nodeId: rootNodeId, exiting: false },
-    ];
+    /** Children still to inspect in the published placement graph. */
+    const pending = [rootNodeId];
     while (pending.length > 0) {
-      const visit = pending.pop();
-      if (visit === undefined) break;
-      const nodeId = visit.nodeId;
-      if (visit.exiting) {
-        ancestors.delete(nodeId);
-        visitedNodes.add(nodeId);
-        continue;
-      }
-      if (ancestors.has(nodeId)) {
-        throw new Error("Placement graph contains a cycle at '" + nodeId + "'.");
-      }
+      const nodeId = pending.pop();
+      if (nodeId === undefined) break;
       // Several selected roots can overlap. A direct-stock identity must be
       // considered exactly once, regardless of the number of matching roots.
       if (visitedNodes.has(nodeId)) continue;
-      if (visitedNodes.size + ancestors.size + 1 >= itemCandidateCount) {
+      if (visitedNodes.size + 1 >= itemCandidateCount) {
         return undefined;
       }
-      ancestors.add(nodeId);
+      visitedNodes.add(nodeId);
       const directPositions = indexes.positionIds(nodeId);
       if (candidates.length + directPositions.size >= itemCandidateCount) return undefined;
       for (const positionId of directPositions.ids) candidates.push(positionId);
       const children = indexes.childNodeIds(nodeId);
-      // Pending includes both queued siblings and exit markers for ancestors.
       // Check the complete worklist before iterating the child postings.
       if (
-        children.size + pending.length + visitedNodes.size + 1 >=
+        children.size + pending.length + visitedNodes.size >=
         itemCandidateCount
       ) {
         return undefined;
       }
-      pending.push({ nodeId, exiting: true });
       for (const child of children.ids) {
-        pending.push({ nodeId: child, exiting: false });
+        pending.push(child);
       }
     }
   }

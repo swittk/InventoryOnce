@@ -45,8 +45,8 @@ function inventorySegmentedNodeIsInSubtree(
 ): boolean {
   const alreadySelected = membership.get(nodeId);
   if (alreadySelected !== undefined) return alreadySelected;
-  /** Unanswered nodes on this walk, also used to detect a cycle. */
-  const visited = new Set<string>();
+  /** Uncached nodes whose answers come from the next known ancestor. */
+  const visited: string[] = [];
   let current: string | undefined = nodeId;
   let selected = false;
   while (current !== undefined) {
@@ -55,10 +55,7 @@ function inventorySegmentedNodeIsInSubtree(
       selected = cached;
       break;
     }
-    if (visited.has(current)) {
-      throw new Error(`Segmented placement graph contains a cycle at '${current}'.`);
-    }
-    visited.add(current);
+    visited.push(current);
     current = placement.parentNodeId(current);
   }
   for (const node of visited) membership.set(node, selected);
