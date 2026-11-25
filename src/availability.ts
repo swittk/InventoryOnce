@@ -281,7 +281,7 @@ function summarizeAvailabilityRevision({
   });
   const signedRows = inventoryStockPoolRowsFromProjection(
     projection,
-    inventoryRecordedDeficitPoolSelector(selector, revisionId, selector.placementNodeIds ?? [])
+    inventoryRecordedDeficitPoolSelector(selector, revisionId)
   );
   return {
     ...summarizeInventoryPhysicalAvailability({

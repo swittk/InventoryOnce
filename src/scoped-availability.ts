@@ -39,7 +39,7 @@ export async function readInventoryScopedStockAvailability({
       throw new Error("Inventory availability item revision is outside the selector.");
     }
     const pool = await storage.readSegmentedStockPool({
-      selector: inventoryRecordedDeficitPoolSelector(selector, itemRevisionId, selector.placementNodeIds ?? []),
+      selector: inventoryRecordedDeficitPoolSelector(selector, itemRevisionId),
       itemRevisionId,
       reservationAtEpochMs: atEpochMs,
       exactHoldsOnly: true,

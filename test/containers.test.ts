@@ -15,6 +15,12 @@ import {
   defineInventoryMigration,
   dryRunInventoryMigration,
 } from "../src/migrations-api.js";
+import {
+  createInventoryPlacementEvent,
+  defineInventoryEvent,
+  inventoryCatalogSnapshot,
+  inventoryEventIntentFingerprint,
+} from "../src/kernel.js";
 import { createInMemoryInventoryDurableStorage } from "../src/storage-api.js";
 import {
   clockAt,
@@ -32,8 +38,52 @@ export const FORMAL_IMPLEMENTATION_TRACE_IDS = [
   "TRACE-PLACEMENT-COMMAND-ATOMIC",
 ] as const;
 
+it("declines standalone unplacement and independent routes through the stock commit hook", async () => {
+  const storage = createInMemoryInventoryDurableStorage();
+  const catalog = createTabletCatalog();
+  const inventory = createTestInventory(storage, catalog);
+  await inventory.placement.move({
+    operationId: "place-before-unplace", occurredAtEpochMs: time0,
+    nodeId: "child", into: "parent",
+  });
+  await inventory.placement.move({
+    operationId: "place-independent-child", occurredAtEpochMs: time0,
+    nodeId: "other-child", into: "other-parent",
+  });
+  const before = storage.readSegmentedStockHead();
+  const event = createInventoryPlacementEvent({
+    catalog, operationId: "unplace-child", occurredAtEpochMs: time1,
+    nodeId: "child", fromParentNodeId: "parent",
+  });
+  const independent = defineInventoryEvent({
+    catalog,
+    event: {
+      ...event, eventId: "independent-moves", operationId: "independent-moves",
+      placementChanges: [
+        { nodeId: "child", fromParentNodeId: "parent", toParentNodeId: "next-parent" },
+        { nodeId: "other-child", fromParentNodeId: "other-parent", toParentNodeId: "next-other-parent" },
+      ],
+    },
+  });
+  for (const draft of [event, independent]) {
+    expect(await storage.commitSegmentedStockEvent({
+      catalog: inventoryCatalogSnapshot(catalog), operationId: draft.operationId,
+      intentFingerprint: inventoryEventIntentFingerprint(draft), recordedAtEpochMs: time2,
+      expectedWorldRevision: before.worldRevision, expectedRecordSequence: before.recordSequence,
+      deficitPolicy: InventoryDeficitPolicy.Reject, event: draft,
+    })).toBeUndefined();
+  }
+  expect(storage.readSegmentedStockHead()).toEqual(before);
+  await inventory.placement.unplace({
+    operationId: event.operationId, occurredAtEpochMs: time1,
+    nodeId: "child", expectedParent: "parent",
+  });
+  expect(storage.readPlacementSegment().parentNodeId("child")).toBeUndefined();
+});
+
 it("publishes direct stock, standalone children, and embodied children at one native fence", async () => {
   const storage = createInMemoryInventoryDurableStorage();
+  // A failpoint routes reference writes through the canonical staged coordinator.
   const canonicalStorage = createInMemoryInventoryDurableStorage({ failpoint: () => undefined });
   const catalog = createHeterogeneousPlacementCatalog();
   const native = createTestInventory(storage, catalog);
@@ -58,7 +108,9 @@ it("publishes direct stock, standalone children, and embodied children at one na
   }
   const readWorld = vi.spyOn(storage, "readWorld").mockRejectedValue(new Error("whole world"));
   const before = storage.readSegmentedStockHead();
-  const direct = storage.readSegmentedDirectContents("source", "destination");
+  const direct = storage.readSegmentedDirectContents({
+    sourceNodeId: "source", destinationNodeId: "destination",
+  });
   expect(direct.positions).toHaveLength(2);
   expect(direct.children).toMatchObject([{ nodeId: "case", embodiedPosition: { key: { serialId: "case" } } }, { nodeId: "standalone" }]);
   const input = { operationId: "empty-composite", occurredAtEpochMs: time2, nodeId: "source", into: "destination" };

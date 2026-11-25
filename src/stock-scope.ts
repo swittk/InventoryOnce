@@ -44,17 +44,20 @@ export function inventoryScopedStockMatches(
   return false;
 }
 
+/** Exact posting identities and their count, available before traversal. */
+export interface InventorySubtreeStockPostings {
+  /** Number of direct posts at this node. */
+  readonly size: number;
+  /** Exact posting identities in adapter order. */
+  readonly ids: Iterable<string>;
+}
+
 /** Exact direct stock postings and direct-child indexes used by a bounded subtree query. */
 interface InventorySubtreeStockIndexes {
-  /** Read the local stock posting list without materializing its positions. */
-  positionIds(nodeId: string): {
-    /** Number of direct positions at this node. */
-    readonly size: number;
-    /** Exact posting identities in adapter order. */
-    readonly ids: Iterable<string>;
-  };
-  /** Read only the immediate children of this node. */
-  childNodeIds(nodeId: string): readonly string[];
+  /** Read direct stock identities without materializing positions. */
+  positionIds(nodeId: string): InventorySubtreeStockPostings;
+  /** Read immediate child postings without copying or sorting them. */
+  childNodeIds(nodeId: string): InventorySubtreeStockPostings;
 }
 
 /** One enter/leave visit in the bounded physical placement traversal. */
@@ -106,22 +109,18 @@ export function candidateSubtreePositionIds(
       const directPositions = indexes.positionIds(nodeId);
       if (candidates.length + directPositions.size >= itemCandidateCount) return undefined;
       for (const positionId of directPositions.ids) candidates.push(positionId);
-      if (candidates.length >= itemCandidateCount) return undefined;
       const children = indexes.childNodeIds(nodeId);
-      // Do not allocate/traverse 100k sibling nodes to answer a 5k-row item
-      // query. This conservative bound affects only the chosen index path.
+      // Pending includes both queued siblings and exit markers for ancestors.
+      // Check the complete worklist before iterating the child postings.
       if (
-        children.length + visitedNodes.size + ancestors.size >=
+        children.size + pending.length + visitedNodes.size + 1 >=
         itemCandidateCount
       ) {
         return undefined;
       }
       pending.push({ nodeId, exiting: true });
-      for (let index = children.length - 1; index >= 0; index -= 1) {
-        const child = children[index];
-        if (child !== undefined) {
-          pending.push({ nodeId: child, exiting: false });
-        }
+      for (const child of children.ids) {
+        pending.push({ nodeId: child, exiting: false });
       }
     }
   }

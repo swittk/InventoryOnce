@@ -713,6 +713,29 @@ describe("segmented inventory position store", () => {
     expect(storage.readPositionSegment().revision()).toBe(beforeRevision + 1);
   });
 
+  it("preserves the FIFO origin of a same-position positive replacement", () => {
+    const stock = segmentedPosition({ placementNodeId: "store", lotId: "aged" });
+    const id = inventoryStockPositionIdentity(stock.key);
+    const store = createInMemoryInventorySegmentedPositionStore({
+      positions: [stock], positiveLayerStarts: { [id]: time0 }, revision: 1,
+    });
+    store.replaceExactPosition({
+      expectedRevision: 1,
+      fromPositionId: id,
+      to: {
+        ...stock,
+        measurements: {
+          ...stock.measurements,
+          primary: { ...stock.measurements.primary, quantity: parseQuantity("2", "piece") },
+        },
+      },
+    });
+    expect(store.positiveLayerStart(id)).toBe(time0);
+    expect(store.position(id)?.measurements.primary.quantity.amountMinor).toBe(2);
+    store.applyDelta({ expectedRevision: 2, nextRevision: 3, removePositionIds: [id] });
+    expect(store.positiveLayerStart(id)).toBeUndefined();
+  });
+
   it("updates one exact row and all indexes without materializing a whole world", () => {
     const stock = segmentedPosition({
       placementNodeId: "store",

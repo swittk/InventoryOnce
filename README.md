@@ -433,8 +433,9 @@ pools at one published revision. A batch plans its requests in order and commits
 receipt. Current exact holds, lot expiry, ancestor use-by and FIFO origins stay with the affected
 positions. Repeating an operation returns its frozen allocation evidence, even after the chosen stock
 has moved. The `/storage` helper `readInventoryScopedStockAvailability` exposes exact physical,
-expired, deficit and held capacity for a selected item revision. The full availability report still
-includes broad and unbacked claims and global feasibility.
+expired, deficit and held capacity for a selected item revision. The scale measurements for scoped
+availability cover that helper. The public `inventory.read.availability` report reads the full published
+world so it can include broad and unbacked claims and global feasibility.
 
 
 Correctness does not require hot reads to replay or scan the complete journal. The projection rebuilds

@@ -77,19 +77,14 @@ export interface ApplyInventoryRecordedDeficitBurdenInput {
  */
 export function inventoryRecordedDeficitPoolSelector(
   selector: InventoryStockSelector,
-  itemRevisionId: ItemRevisionId,
-  placementNodeIds: readonly string[]
+  itemRevisionId: ItemRevisionId
 ): InventoryStockSelector {
   return inventoryStockSelector(selector.itemId, {
     itemRevisionIds: [itemRevisionId],
-    // Keep subtree ancestry as a predicate: expanding every descendant into
-    // Allowed values turns one warehouse read into quadratic list matching.
-    ...(selector.placementNodeIds === undefined &&
-    selector.withinPlacementNodeIds !== undefined
-      ? { withinPlacementNodeIds: selector.withinPlacementNodeIds }
-      : placementNodeIds.length === 0
-        ? {}
-        : { placementNodeIds }),
+    // Direct and subtree predicates intersect. Keep ancestry as a predicate
+    // so a warehouse read need not enumerate every descendant.
+    ...(selector.placementNodeIds === undefined ? {} : { placementNodeIds: selector.placementNodeIds }),
+    ...(selector.withinPlacementNodeIds === undefined ? {} : { withinPlacementNodeIds: selector.withinPlacementNodeIds }),
   });
 }
 
@@ -103,19 +98,15 @@ export function inventorySelectedDeficitPlacementNodeIds(
   selector: InventoryStockSelector,
   itemRevisionId: ItemRevisionId
 ): readonly string[] {
-  if (selector.placementNodeIds !== undefined) return selector.placementNodeIds;
   const roots = selector.withinPlacementNodeIds;
-  if (roots === undefined) return [];
-  const selected = new Set<string>(roots);
+  if (roots === undefined) return selector.placementNodeIds ?? [];
+  const selected = new Set<string>(selector.placementNodeIds === undefined ? roots : []);
   // Reuse the projection's bounded subtree-vs-item index chooser: a small
   // subtree of a huge item must not scan every unrelated item position,
   // while a huge empty subtree must not walk all unrelated placement nodes.
   const occupied = findInventoryPositions(
     projection,
-    inventoryStockSelector(selector.itemId, {
-      itemRevisionIds: [itemRevisionId],
-      withinPlacementNodeIds: roots,
-    })
+    inventoryRecordedDeficitPoolSelector(selector, itemRevisionId)
   );
   for (const position of occupied) {
     const nodeId = position.key.placementNodeId;

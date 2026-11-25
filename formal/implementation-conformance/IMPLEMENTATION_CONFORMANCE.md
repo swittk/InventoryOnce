@@ -4,31 +4,31 @@ This file is generated from the exact TypeScript surface plus the checked API, f
 
 Use the repository `.nvmrc` when one exists; otherwise run the assurance command with a Node version permitted by `package.json#engines`. Edit only checked source/manifests, run `pnpm assurance:generate` when generated evidence must change, then run `pnpm assurance --write-report`.
 
-Surface SHA-256: `de52a07f0f8c737a4c199bb46063caf12cc5fb168ce939c3a1bfff1822bb1d63`
+Surface SHA-256: `c5e931dbe4e9d77058c97445396aba8c76bdfcf9446f90d7e0ca6120b4ad9994`
 
 ## Mechanically covered surface
 
 - Grouped façade/read methods: 137
 - Authority-port methods: 14
 - Durable-storage-port methods: 17
-- Public exported class methods: 114
+- Public exported class methods: 115
 - Root callable exports: 101
 - Storage callable exports: 38
 - Migration callable exports: 15
 - Kernel callable exports: 193
-- Reachable public data types: 480
-- Classified public fields: 2872
-- Input-reachable fields: 2379
-- Output-reachable fields: 1135
+- Reachable public data types: 482
+- Classified public fields: 2876
+- Input-reachable fields: 2381
+- Output-reachable fields: 1137
 - Callback-argument-reachable fields: 422
 - Callback-result-reachable fields: 448
 - Callable-field overload signatures: 12
 - Optional fields: 1151
 - Explicit undefined-union fields: 11
 - Explicit nullable fields: 9
-- Public call/construct overload signatures: 629
-- Directly executed public APIs: 254
-- Public APIs exercised through tested internal call chains: 371
+- Public call/construct overload signatures: 630
+- Directly executed public APIs: 256
+- Public APIs exercised through tested internal call chains: 370
 - Explicit-gap public APIs: 4
 - Unreferenced public APIs: 0
 - Explicit recursive type edges: 5
@@ -51,7 +51,7 @@ Any added/removed method, callable export, class method, type field, field type,
 | correction | 4 | CorrectionHistory, InventoryOperation, PublishedHeadCAS | covered | GAP-COUNT-CORRECTION-HISTORY-REPLAY |
 | count | 11 | PhysicalCount, InventoryOperation, PublishedHeadCAS, ResourceDimensions | covered | GAP-COUNT-CORRECTION-HISTORY-REPLAY |
 | dimension-reclassification | 30 | ResourceDimensions, ReclassificationConservation, InventoryOperation, PlacementGraph | covered | — |
-| durable-protocol | 99 | InventoryOperation, PublishedHeadCAS, RepairLiveness, DurableTransferRefinement, SnapshotSupersededWorkflow | covered | GAP-DB-IMPLEMENTATION-UNBOUNDED, GAP-PRODUCTION-STORAGE-SCALE-GC, GAP-HASH-COLLISION-ASSUMPTION |
+| durable-protocol | 100 | InventoryOperation, PublishedHeadCAS, RepairLiveness, DurableTransferRefinement, SnapshotSupersededWorkflow | covered | GAP-DB-IMPLEMENTATION-UNBOUNDED, GAP-PRODUCTION-STORAGE-SCALE-GC, GAP-HASH-COLLISION-ASSUMPTION |
 | external-plugin-boundary | 4 | CatalogPublication | explicit-gap | GAP-EXTERNAL-MIGRATION-CALLBACKS, GAP-LEGACY-SOURCE-INTERPRETATION |
 | facade-construction | 2 | InventoryOperation | covered | GAP-EXTERNAL-CLOCK, GAP-DB-IMPLEMENTATION-UNBOUNDED |
 | fungibility-movement | 3 | FungibilityPool, ReservationScope, ReservationSafety, UseByReservation, InventoryOperation, PublishedHeadCAS | covered | GAP-FUNGIBILITY-EXACT-SEARCH-BOUND |
@@ -86,9 +86,9 @@ Any added/removed method, callable export, class method, type field, field type,
 
 | Classification | Fields |
 |---|---:|
-| abstract-semantic | 1400 |
+| abstract-semantic | 1402 |
 | application decoration | 13 |
-| identity/retry-semantic | 847 |
+| identity/retry-semantic | 849 |
 | observational/audit-only | 595 |
 | unsupported/unmodelled | 17 |
 

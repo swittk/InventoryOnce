@@ -9,6 +9,7 @@ import {
   defineInventoryEvent,
   InventoryEventKind,
   type InventoryCommittedEvent,
+  type InventoryEventDraft,
 } from "./events.js";
 import {
   assertInventoryCatalogRetainsSnapshot,
@@ -600,6 +601,14 @@ export interface InventorySegmentedDirectContents {
   readonly destinationAncestry: readonly string[];
 }
 
+/** Endpoints for reading the current facts of a direct-contents move. */
+export interface ReadInventorySegmentedDirectContentsInput {
+  /** Placement whose direct stock and child edges are moving. */
+  readonly sourceNodeId: string;
+  /** New placement whose current ancestry determines whether the move is legal. */
+  readonly destinationNodeId: string;
+}
+
 /** One direct child and its exact positive serial, when stock embodies the node. */
 export interface InventorySegmentedDirectChild {
   /** Child identity in the current forest. */
@@ -621,7 +630,7 @@ export interface InventorySegmentedStockPlanningCapability
    */
   readSegmentedStockPool(input: ReadInventorySegmentedStockPoolInput): InventorySegmentedResult<InventoryScopedStockPool>;
   /** Read exact source rows, direct children and destination ancestry under the same fence. */
-  readSegmentedDirectContents(nodeId: string, into: string): InventorySegmentedResult<InventorySegmentedDirectContents>;
+  readSegmentedDirectContents(input: ReadInventorySegmentedDirectContentsInput): InventorySegmentedResult<InventorySegmentedDirectContents>;
 }
 
 /** Discover optional indexed planning on the existing durable storage adapter. */
@@ -810,9 +819,12 @@ export class InMemoryInventoryDurableStorage
   }
 
   /** Gather only the rows and immediate edges participating in one composite move. */
-  readSegmentedDirectContents(nodeId: string, into: string): InventorySegmentedDirectContents {
+  readSegmentedDirectContents({
+    sourceNodeId,
+    destinationNodeId,
+  }: ReadInventorySegmentedDirectContentsInput): InventorySegmentedDirectContents {
     const children: InventorySegmentedDirectChild[] = [];
-    for (const childId of this.placementSegment.childNodeIds(nodeId)) {
+    for (const childId of this.placementSegment.childNodeIds(sourceNodeId)) {
       const projected = inventorySparseRecordValue(this.world.projection.placementNodes, childId);
       const embodiment = projected?.definition.embodiedBy;
       if (embodiment === undefined || projected?.retiredByEventId !== undefined) {
@@ -824,9 +836,9 @@ export class InMemoryInventoryDurableStorage
       }
     }
     return {
-      positions: this.positionSegment.positionsByPlacement(nodeId),
+      positions: this.positionSegment.positionsByPlacement(sourceNodeId),
       children,
-      destinationAncestry: this.placementSegment.ancestry(into),
+      destinationAncestry: this.placementSegment.ancestry(destinationNodeId),
     };
   }
 
@@ -1538,10 +1550,13 @@ export class InMemoryInventoryDurableStorage
         this.eventJournal.append(appendEvent);
       }
       this.world = publishedWorld;
-      if (plan.reservationDelta !== undefined) {
+      const publishedReservation = plan.reservationDelta === undefined ? undefined :
+        inventorySparseRecordValue(publishedWorld.reservations.operations, plan.reservationDelta.operation.operationId);
+      if (publishedReservation !== undefined) {
+        // Retain the published immutable evidence, not the applying plan's staged copy.
         this.stockClaims.publish(
-          plan.reservationDelta.operation,
-          baseWorld.reservations.reservations[plan.reservationDelta.reservation.reservationId]
+          publishedReservation,
+          inventorySparseRecordValue(baseWorld.reservations.reservations, publishedReservation.reservationId)
         );
       }
       // Only a changed count row affects the open-count index.
@@ -2063,7 +2078,8 @@ export class InMemoryInventoryDurableStorage
     if (this.failpoint !== undefined) return false;
     const event = input.event;
     const compositeContents = event.kind === InventoryEventKind.Placement &&
-      input.expectedWorldRevision !== undefined && input.expectedRecordSequence !== undefined;
+      input.expectedWorldRevision !== undefined && input.expectedRecordSequence !== undefined &&
+      inventorySegmentedEventMovesDirectContents(event);
     const historicalEnvelope =
       event.kind === InventoryEventKind.Correction ||
       event.kind === InventoryEventKind.HistoricalRepair;
@@ -2414,6 +2430,25 @@ export class InMemoryInventoryDurableStorage
 
 /** Resolve the serialized mutation barrier after either a successful or failed adapter mutation. */
 function finishInventoryStorageMutationSection(): void {}
+
+/** Check which normalized placement events fit the native sibling-relocation transaction. */
+function inventorySegmentedEventMovesDirectContents(event: InventoryEventDraft): boolean {
+  const changes = event.placementChanges ?? [];
+  const routes = event.positiveLayerProvenanceTransfers ?? [];
+  const source = changes[0]?.fromParentNodeId ?? routes[0]?.from.placementNodeId;
+  const destination = changes[0]?.toParentNodeId ?? routes[0]?.to.placementNodeId;
+  if (source === undefined || destination === undefined || event.stockEffects.length !== routes.length * 2) {
+    return false;
+  }
+  for (const change of changes) {
+    if (change.fromParentNodeId !== source || change.toParentNodeId !== destination) return false;
+  }
+  for (const route of routes) {
+    if (route.from.placementNodeId !== source || route.to.placementNodeId !== destination ||
+        route.from.serialId !== route.to.serialId) return false;
+  }
+  return true;
+}
 
 /** Create one isolated reference adapter with staged-publication semantics. */
 export function createInMemoryInventoryDurableStorage(

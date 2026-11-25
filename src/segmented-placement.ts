@@ -10,6 +10,7 @@ import {
   createInventorySparseRecord,
   setInventorySparseRecordValue,
 } from "./sparse-record.js";
+import type { InventorySubtreeStockPostings } from "./stock-scope.js";
 
 /** Adapter-local placement reads may be synchronous or asynchronous. */
 export type InventorySegmentedPlacementResult<T> = T | Promise<T>;
@@ -203,6 +204,12 @@ export class InMemoryInventorySegmentedPlacementStore
     ];
     result.sort();
     return result;
+  }
+
+  /** Expose the local child count and iterator for a synchronous bounded query. */
+  childPostings(nodeId: string): InventorySubtreeStockPostings {
+    const children = this.childNodeIdsByParentNodeId.get(nodeId);
+    return { size: children?.size ?? 0, ids: children?.values() ?? [] };
   }
 
   /** Read one node and all direct ancestors. */

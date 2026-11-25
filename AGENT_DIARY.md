@@ -1855,3 +1855,10 @@ The R105 portable-current-input authority and final publication both continue to
 - A reported transfer or scrap debits the actual unlabelled key when its source has no witnessed lot. The immutable event keeps the unwitnessed quantity even if the source row stays positive. An ordered batch reads that lower balance with its existing FIFO and expiry facts. A direct transfer can settle an existing destination deficit while retaining the witnessed route, with FIFO age only on a positive balance.
 - RecordedDeficit checks same-key settlement and still rejects a fabricated witnessed arrival. PlacementGraph reuses its finite acyclic parent relation and refreshes the saved anchor snapshot after a direct move. The action property still checks the complete stock and edge transition. The revised models completed focused cold checks, with the expected counterexamples for their negative and reachability controls.
 - The previous committed checkpoint passed strict types, package and executable tests, the documentation guard, and build. Its cold run was superseded for these changes. The final candidate requires one complete cold run bound to its committed source.
+
+## 2026-11-25 — scoped planning correctness refinements
+
+- A direct placement list and an ancestor filter now intersect before summing recorded deficits. The index checks current worklist size and direct child counts before reading child identities.
+- Exact Record transfers require the witnessed source to cover all measured axes. A partial witness uses the whole source only if the requested vector leaves a representable remainder. No weight or other independent axis is estimated from the primary count.
+- Same-position positive replacements carry the existing FIFO age. Scoped claim reads retain immutable published evidence, restrict historical exact holds to the selected pool, and sample the default preview time after observing the published revision.
+- The direct-contents stock hook declines standalone unplacement. Its contract still expects domain-validated events and publishes prepared edges inside the same adapter transaction as stock.

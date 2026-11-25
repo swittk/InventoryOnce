@@ -31,6 +31,7 @@ import {
   projectInventoryEvents,
 } from "../src/projection.js";
 import { parseQuantity } from "../src/quantity.js";
+import { candidateSubtreePositionIds } from "../src/stock-scope.js";
 import {
   createInventoryReservation,
   emptyInventoryReservationBook,
@@ -932,6 +933,30 @@ describe("canonical projection exact-placement index locality", () => {
     expect(feasibility.status).toBe(InventoryReservationFeasibilityStatus.Feasible);
     expect(feasibility.groups[0]?.fulfillable.amountMinor).toBe(1);
     expect(descendantIndexProbes).toBeLessThan(40);
+  });
+
+  it("checks the child budget before consuming queued sibling postings", () => {
+    const children = Array.from({ length: 70 }, (_, index) => `empty-${index}`);
+    const rootChildren = [...children, "branch"];
+    const branchChildren = children.map((nodeId) => `branch-${nodeId}`);
+    let visitedChildPostings = 0;
+    const candidates = candidateSubtreePositionIds({
+      positionIds: () => ({ size: 0, ids: [] }),
+      childNodeIds: (nodeId) => {
+        const postings = nodeId === "root" ? rootChildren : nodeId === "branch" ? branchChildren : [];
+        return {
+          size: postings.length,
+          ids: (function* () {
+            for (const posting of postings) {
+              visitedChildPostings += 1;
+              yield posting;
+            }
+          })(),
+        };
+      },
+    }, ["root"], 128);
+    expect(candidates).toBeUndefined();
+    expect(visitedChildPostings).toBe(rootChildren.length);
   });
 
   it("falls back to the item index before traversing 100,000 irrelevant placement nodes", () => {

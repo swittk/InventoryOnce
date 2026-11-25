@@ -141,15 +141,25 @@ export function summarizeInventoryStock({
   selector: rawSelector,
 }: SummarizeInventoryStockInput): InventoryStockSummary {
   const selector = normalizeInventoryStockSelector(rawSelector);
-  return summarizeInventoryStockPositions(catalog, selector, findInventoryPositions(projection, selector));
+  return summarizeInventoryStockPositions({
+    catalog, selector, positions: findInventoryPositions(projection, selector),
+  });
+}
+
+/** Physical summary inputs already resolved at one published revision. */
+interface SummarizeInventoryStockPositionsInput {
+  /** Catalogue published at the same revision as the stock rows. */
+  readonly catalog: InventoryCatalog;
+  /** Normalized selector used to obtain the rows. */
+  readonly selector: InventoryStockSelector;
+  /** Rows prefiltered by the selector, including placement ancestry if requested. */
+  readonly positions: readonly InventoryStockPosition[];
 }
 
 /** Aggregate rows already selected at one published stock revision. */
-export function summarizeInventoryStockPositions(
-  catalog: InventoryCatalog,
-  selector: InventoryStockSelector,
-  positions: readonly InventoryStockPosition[]
-): InventoryStockSummary {
+export function summarizeInventoryStockPositions({
+  catalog, selector, positions,
+}: SummarizeInventoryStockPositionsInput): InventoryStockSummary {
   const positionsByRevision = new Map<
     ItemRevisionId,
     InventoryStockPosition[]

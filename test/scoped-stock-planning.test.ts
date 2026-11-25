@@ -1,16 +1,24 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  defineInventoryCatalog,
+  defineInventoryItem,
   InventoryAllocationMethod,
   InventoryDeficitPolicy,
+  InventoryMeasurementAxisRole,
+  InventoryMeasurementRequirement,
   InventoryOptionalIdentityConstraintKind,
+  InventoryTrackingRequirement,
   inventoryStockSelector,
+  measuredStockAmount,
   packageAmount,
   parseQuantity,
   stockAmount,
+  unitCode,
 } from "../src/index.js";
 import {
   createInMemoryInventoryDurableStorage,
   readInventoryScopedStockAvailability,
+  type InventorySegmentedStockPlanningCapability,
 } from "../src/storage-api.js";
 import {
   clockAt,
@@ -57,6 +65,61 @@ function issueCommand() {
 }
 
 describe("indexed stock planning and availability", () => {
+  it.each([
+    { pieces: "10", weight: "5", accepted: false },
+    { pieces: "4", weight: "8", accepted: false },
+    { pieces: "4", weight: "5", accepted: true },
+  ])("preserves exact witnesses from $pieces pieces and $weight kg", async ({ pieces, weight, accepted }) => {
+    const item = defineInventoryItem({
+      itemId: "measured", revisionId: "measured-v1",
+      primaryAxis: {
+        axisId: "pieces", role: InventoryMeasurementAxisRole.Primary,
+        unit: unitCode("piece"), requirement: InventoryMeasurementRequirement.Required,
+      },
+      independentAxes: [{
+        axisId: "weight", role: InventoryMeasurementAxisRole.Independent,
+        unit: unitCode("kg"), requirement: InventoryMeasurementRequirement.Required,
+      }],
+      reservationAxisId: "pieces",
+      tracking: { lot: InventoryTrackingRequirement.Optional, serial: InventoryTrackingRequirement.Optional },
+      qualifiedDimensions: [],
+    });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item], activeItemRevisionIds: { measured: item.revisionId },
+    });
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage, catalog, undefined, InventoryDeficitPolicy.Record);
+    const from = { itemId: item.itemId, placementNodeId: "store", lotId: "weighed" };
+    await inventory.stock.receive({
+      operationId: "receive-measured-source", occurredAtEpochMs: time0, to: from,
+      amount: measuredStockAmount(pieces, "piece", [{ axisId: "weight", value: weight, unit: "kg" }]),
+    });
+    const before = storage.readSegmentedStockHead();
+    const report = inventory.stock.transfer({
+      operationId: "report-measured-move", occurredAtEpochMs: time1,
+      from, toPlacementNodeId: "destination",
+      amount: measuredStockAmount("6", "piece", [{ axisId: "weight", value: "7", unit: "kg" }]),
+    });
+    if (!accepted) {
+      await expect(report).rejects.toThrow("cannot partition independent measurements");
+      expect(storage.readSegmentedStockHead()).toEqual(before);
+      expect(await storage.readOperation("report-measured-move")).toBeUndefined();
+      return;
+    }
+    const result = await report;
+    expect(result.event.unwitnessedStockMovements).toMatchObject([{
+      measurements: {
+        primary: { quantity: { amountMinor: 2 } },
+        independent: [{ axisId: "weight", quantity: { amountMinor: 2 } }],
+      },
+    }]);
+    const rows = await inventory.read.positions({ itemId: item.itemId, placementNodeIds: ["destination"] });
+    expect(rows.map((row) => [
+      row.key.lotId, row.measurements.primary.quantity.amountMinor,
+      row.measurements.independent[0]?.quantity.amountMinor,
+    ])).toEqual([["weighed", 4, 5], [undefined, 2, 2]]);
+  });
+
   it.each(["exact transfer", "policy transfer", "policy scrap"])(
     "settles an unlabelled remainder against one signed row for %s",
     async (verb) => {
@@ -396,6 +459,98 @@ describe("indexed stock planning and availability", () => {
     expect(scoped.unallocatedUsablePhysical.amountMinor).toBe(1);
     expect(scoped.deficit.primary.quantity.amountMinor).toBe(1);
     expect(readWorld).not.toHaveBeenCalled();
+  });
+
+  it("excludes deficits at direct placements outside the requested subtree", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const catalog = createTabletCatalog();
+    const inventory = createTestInventory(storage, catalog, undefined, InventoryDeficitPolicy.Record);
+    await inventory.placement.move({
+      operationId: "place-inside", occurredAtEpochMs: time0, nodeId: "inside", into: "root",
+    });
+    for (const [bin, count] of [["inside", "2"], ["outside", "5"]] as const) {
+      await inventory.stock.issue({
+        operationId: `short-${bin}`, occurredAtEpochMs: time1,
+        from: loosePosition(bin), amount: stockAmount(count, "piece"),
+      });
+    }
+    const intersection = inventoryStockSelector("item-a", {
+      itemRevisionIds: ["item-a-v2"],
+      placementNodeIds: ["inside", "outside"],
+      withinPlacementNodeIds: ["root"],
+    });
+    const full = (await inventory.read.availability(intersection, time2)).revisions[0];
+    expect(full?.deficit.primary.quantity.amountMinor).toBe(2);
+    const readWorld = vi.spyOn(storage, "readWorld").mockRejectedValue(new Error("whole world"));
+    const scoped = await readInventoryScopedStockAvailability({
+      storage, catalog, selector: intersection, itemRevisionId: "item-a-v2", atEpochMs: time2,
+    });
+    expect(scoped.deficit.primary.quantity.amountMinor).toBe(2);
+    expect(readWorld).not.toHaveBeenCalled();
+  });
+
+  it("publishes immutable pool claims and returns only local exact holds at historical times", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage);
+    for (const bin of ["store", "other"]) {
+      await inventory.stock.receive({
+        operationId: `stock-${bin}`, occurredAtEpochMs: time0,
+        to: loosePosition(bin), amount: stockAmount("3", "piece"),
+      });
+      await inventory.reservations.reserve({
+        operationId: `claim-${bin}`, reservationId: bin, itemRevisionId: "item-a-v2",
+        selector: { itemId: "item-a", placementNodeIds: [bin] },
+        requested: parseQuantity("1", "piece"), createdAtEpochMs: time1,
+      });
+      await inventory.reservations.allocateByPolicy({
+        operationId: `allocate-${bin}`, reservationId: bin,
+        occurredAtEpochMs: time1, method: InventoryAllocationMethod.Fifo,
+      });
+    }
+    await inventory.reservations.reserve({
+      operationId: "claim-broad", reservationId: "broad", itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a" }, requested: parseQuantity("1", "piece"), createdAtEpochMs: time1,
+    });
+    const request = { selector, itemRevisionId: "item-a-v2", exactHoldsOnly: true, reservationAtEpochMs: time1 };
+    const current = storage.readSegmentedStockPool(request).reservations[0];
+    const allocation = current?.allocations[0];
+    expect(current?.reservationId).toBe("store");
+    expect(allocation).toBeDefined();
+    expect(Object.isFrozen(allocation?.position)).toBe(true);
+    await inventory.reservations.release({
+      operationId: "close-other", reservationId: "other", occurredAtEpochMs: time2,
+    });
+    const earlier = storage.readSegmentedStockPool(request);
+    expect(earlier.reservations).toEqual([current]);
+    expect(Object.isFrozen(earlier.reservations[0]?.allocations[0]?.quantity)).toBe(true);
+  });
+
+  it("samples default preview time after reading the published claim revision", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    let now = time1;
+    const inventory = createTestInventory(storage, undefined, { nowEpochMs: () => now });
+    await receiveKnownLots(inventory);
+    const readHead = storage.readSegmentedStockHead.bind(storage);
+    const planning: InventorySegmentedStockPlanningCapability = storage;
+    vi.spyOn(planning, "readSegmentedStockHead").mockImplementationOnce(async () => {
+      // The async adapter yields while another client publishes a newer hold.
+      now = time2;
+      await inventory.reservations.reserve({
+        operationId: "claim-preview", reservationId: "preview", itemRevisionId: "item-a-v2",
+        selector: { itemId: "item-a", lotIds: ["old"] },
+        requested: parseQuantity("2", "piece"), createdAtEpochMs: time2,
+      });
+      await inventory.reservations.allocateByPolicy({
+        operationId: "allocate-preview", reservationId: "preview", occurredAtEpochMs: time2,
+        method: InventoryAllocationMethod.Fifo,
+      });
+      return readHead();
+    });
+    const request = { selector, amount: stockAmount("1", "piece"), method: InventoryAllocationMethod.Fifo };
+    const current = await inventory.read.planAllocation(request);
+    expect(current.lines[0]?.position.lotId).toBe("young");
+    const historical = await inventory.read.planAllocation({ ...request, atEpochMs: time1 });
+    expect(historical.lines[0]?.position.lotId).toBe("old");
   });
 
   it("keeps current and earlier exact holds distinct after a claim closes", async () => {

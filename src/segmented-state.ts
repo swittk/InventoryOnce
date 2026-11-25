@@ -49,7 +49,7 @@ export interface ApplyInventorySegmentedStockEffectsInput {
   readonly deficitPolicy: InventoryDeficitPolicy;
 }
 
-/** Inputs for one adapter-native stock-only event commit. */
+/** Inputs for one adapter-native stock or direct-contents event commit. */
 export interface CommitInventorySegmentedStockEventInput {
   /** Exact retained catalogue snapshot used to validate this event. */
   readonly catalog: InventoryCatalogSnapshot;
@@ -61,7 +61,7 @@ export interface CommitInventorySegmentedStockEventInput {
   readonly recordedAtEpochMs: number;
   /** Optional exact published world revision used to derive a state-dependent event. */
   readonly expectedWorldRevision?: number;
-  /** Optional exact event-journal head used to derive a historical event. */
+  /** Optional exact event-journal head used to derive a state-dependent event. */
   readonly expectedRecordSequence?: number;
   /** Whether this command may leave a signed physical deficit. */
   readonly deficitPolicy: InventoryDeficitPolicy;
@@ -590,7 +590,7 @@ export class InMemoryInventorySegmentedPositionStore
             return { size: ids?.size ?? 0, ids: ids ?? [] };
           },
           /** Read only the immediate child edges of the visited node. */
-          childNodeIds: (nodeId) => placement.childNodeIds(nodeId),
+          childNodeIds: (nodeId) => placement.childPostings(nodeId),
         }, normalized.withinPlacementNodeIds, candidate.size);
     const ids = subtreeIds ?? [...candidate.identities()].sort();
     const result: InventoryStockPosition[] = [];
@@ -704,7 +704,10 @@ export class InMemoryInventorySegmentedPositionStore
     }
 
     // Ages belong to the same published generation as their exact stock rows.
-    for (const positionId of explicitRemovals) this.positiveLayerStarts.delete(positionId);
+    for (const positionId of explicitRemovals) {
+      // A same-key positive replacement preserves the uninterrupted layer.
+      if (!upserts.has(positionId)) this.positiveLayerStarts.delete(positionId);
+    }
     for (const [positionId, position] of upserts) {
       if (position.measurements.primary.quantity.amountMinor <= 0) {
         this.positiveLayerStarts.delete(positionId);

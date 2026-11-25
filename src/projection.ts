@@ -1843,9 +1843,11 @@ function candidatePositionIds(
           const ids = inventorySparseRecordValue(state.positionIdsByPlacementNodeId, nodeId) ?? [];
           return { size: ids.length, ids };
         },
-        /** Read only the immediate children of the visited node. */
-        childNodeIds: (nodeId) =>
-          inventorySparseRecordValue(state.placement.childNodeIdsByParentNodeId, nodeId) ?? [],
+        /** Read immediate child postings without copying the published array. */
+        childNodeIds: (nodeId) => {
+          const ids = inventorySparseRecordValue(state.placement.childNodeIdsByParentNodeId, nodeId) ?? [];
+          return { size: ids.length, ids };
+        },
       },
       selector.withinPlacementNodeIds,
       itemCandidateCount

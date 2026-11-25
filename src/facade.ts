@@ -2020,7 +2020,7 @@ export interface InventoryOnceReadApi {
   events(input?: InventoryEventQuery): Promise<InventoryEventPage>;
   /** Read one revision-safe physical summary with package/lot/direct-placement/status/party breakdowns. */
   summary(selector: InventoryStockSelector): Promise<InventoryStockSummary>;
-  /** Read truthful physical/use-by/exact-allocation/broad-claim availability facts. */
+  /** Read the full published world to report physical availability and global claim feasibility. */
   availability(
     selector: InventoryStockSelector,
     atEpochMs?: number
@@ -4130,9 +4130,15 @@ async function planRecordedExactTransfer(
     const requested = negateInventoryMeasurements(effect.measurementsDelta);
     const current = await readPosition(sourceId);
     const backed = current !== undefined && current.measurements.primary.quantity.amountMinor > 0;
-    const fullyWitnessed = backed && compareQuantity(
-      current.measurements.primary.quantity, requested.primary.quantity
-    ) >= 0;
+    const fullyWitnessed = backed && inventoryMeasurementsCoverRequired(current.measurements, requested);
+    // Independently measured axes cannot be apportioned from the primary
+    // count. A partial witness must be the whole source, with a valid remainder.
+    if (backed && !fullyWitnessed && (
+      compareQuantity(requested.primary.quantity, current.measurements.primary.quantity) <= 0 ||
+      !inventoryMeasurementsCoverRequired(requested, current.measurements)
+    )) {
+      throw new Error("Reported transfer cannot partition independent measurements into an exact witness and remainder.");
+    }
     const { itemRevisionId, ...from } = route.from;
     const witnessedMeasurements = fullyWitnessed ? requested : backed ? current.measurements : undefined;
     if (witnessedMeasurements !== undefined) {
@@ -4227,7 +4233,8 @@ function segmentedPolicyStockSource(
     /** Read live ancestry through the same published topology index. */
     ancestry: async (nodeId) => (await storage.readPlacementSegment()).ancestry(nodeId),
     /** Read direct rows and child bindings from the adapter's current indexes. */
-    directContents: (nodeId, into) => storage.readSegmentedDirectContents(nodeId, into),
+    directContents: (sourceNodeId, destinationNodeId) =>
+      storage.readSegmentedDirectContents({ sourceNodeId, destinationNodeId }),
   };
 }
 
@@ -4328,13 +4335,22 @@ async function commitInventoryScopedMovement({
   }));
 }
 
+/** Overlay facts from earlier requests onto one distinct original batch pool. */
+interface PolicyPoolAfterPriorRequestsInput {
+  /** Original published stock and claim facts for this pool. */
+  readonly pool: InventoryScopedStockPool;
+  /** All exact rows changed by earlier requests in the batch. */
+  readonly changed: ReadonlyMap<string, InventoryScopedStockPosition>;
+  /** Newly introduced deficit rows for this pool's revision. */
+  readonly addedDeficits: ReadonlyMap<string, InventoryScopedStockPosition> | undefined;
+  /** Signed pool selector used to admit new rows. */
+  readonly selector: InventoryStockSelector;
+}
+
 /** Apply shared ordered-request changes to one pool without copying unrelated positions. */
-function policyPoolAfterPriorRequests(
-  pool: InventoryScopedStockPool,
-  changed: ReadonlyMap<string, InventoryScopedStockPosition>,
-  addedDeficits: ReadonlyMap<string, InventoryScopedStockPosition> | undefined,
-  selector: InventoryStockSelector
-): InventoryScopedStockPool {
+function policyPoolAfterPriorRequests({
+  pool, changed, addedDeficits, selector,
+}: PolicyPoolAfterPriorRequestsInput): InventoryScopedStockPool {
   if (changed.size === 0) return pool;
   const positions: InventoryScopedStockPosition[] = [];
   for (const row of pool.positions) {
@@ -4412,9 +4428,9 @@ async function commitInventoryPolicyBatch(
           pools.set(poolId, initialPool);
         }
         const revisionId = selection.item.revisionId;
-        const pool = policyPoolAfterPriorRequests(
-          initialPool, changed, addedDeficits.get(revisionId), poolSelector
-        );
+        const pool = policyPoolAfterPriorRequests({
+          pool: initialPool, changed, addedDeficits: addedDeficits.get(revisionId), selector: poolSelector,
+        });
         const allocation = planInventoryAllocationForRecording({
           catalog: internals.catalog,
           selection, pool, amount: request.amount, method: request.method,
@@ -10461,7 +10477,7 @@ class InventoryOnceReadImplementation implements InventoryOnceReadApi {
         if ((await storage.readSegmentedStockHead()).worldRevision !== head.worldRevision) continue;
         assertInventoryCatalogRetainsSnapshot(internals.catalog, head.catalog);
         const catalog = head.worldRevision === 0 ? internals.catalog : inventoryCatalogFromSnapshot(head.catalog);
-        return summarizeInventoryStockPositions(catalog, normalized, positions);
+        return summarizeInventoryStockPositions({ catalog, selector: normalized, positions });
       }
     }
     const world = await this.world();
@@ -10494,10 +10510,11 @@ class InventoryOnceReadImplementation implements InventoryOnceReadApi {
   ): Promise<InventoryPolicyAllocationPlan> {
     const internals = requireInventoryOnceInternals(this.owner);
     const storage = internals.storage;
-    const atEpochMs = input.atEpochMs ?? internals.clock.nowEpochMs();
     if (inventoryStorageSupportsSegmentedStockPlanning(storage)) {
       for (let attempt = 0; attempt < 3; attempt += 1) {
         const head = await storage.readSegmentedStockHead();
+        // Default time must include claims already visible in this revision.
+        const atEpochMs = input.atEpochMs ?? internals.clock.nowEpochMs();
         const catalog = head.worldRevision === 0
           ? internals.catalog
           : inventoryCatalogFromSnapshot(head.catalog);
@@ -10519,7 +10536,7 @@ class InventoryOnceReadImplementation implements InventoryOnceReadApi {
       selector: input.selector,
       amount: input.amount,
       method: input.method,
-      atEpochMs,
+      atEpochMs: input.atEpochMs ?? internals.clock.nowEpochMs(),
       ...(input.reservationAtEpochMs === undefined
         ? {}
         : { reservationAtEpochMs: input.reservationAtEpochMs }),

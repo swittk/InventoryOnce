@@ -4,14 +4,14 @@
     "callableFields": 12,
     "callbackArgumentFields": 422,
     "callbackResultFields": 448,
-    "fields": 2872,
-    "inputFields": 2379,
+    "fields": 2876,
+    "inputFields": 2381,
     "nullableFields": 9,
     "optionalFields": 1151,
-    "outputFields": 1135,
+    "outputFields": 1137,
     "recursiveTypeReferences": 5,
     "truncatedTypes": 0,
-    "types": 480,
+    "types": 482,
     "undefinedFields": 11
   },
   "entries": {
@@ -60625,6 +60625,52 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
+    "InventorySubtreeStockPostings.ids": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/stock-scope.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "Iterable<string>",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
+    "InventorySubtreeStockPostings.size": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/stock-scope.ts",
+      "directions": [
+        "output"
+      ],
+      "discoveredType": "number",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
     "InventoryTraceabilityNodeRef.id": {
       "allowsNull": false,
       "allowsUndefined": false,
@@ -65833,6 +65879,54 @@
       "optional": false,
       "rationale": "Injected protocol implementation must refine the modeled durable/authority port and pass the shared conformance suite."
     },
+    "ReadInventorySegmentedDirectContentsInput.destinationNodeId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/storage.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-storage-refinement.test.ts",
+        "test/storage-conformance.test.ts"
+      ],
+      "formalModels": [
+        "PlacementGraph",
+        "PublishedHeadCAS",
+        "InventoryOperation"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
+    "ReadInventorySegmentedDirectContentsInput.sourceNodeId": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "identity/retry-semantic",
+      "declaration": "src/storage.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-storage-refinement.test.ts",
+        "test/storage-conformance.test.ts"
+      ],
+      "formalModels": [
+        "PlacementGraph",
+        "PublishedHeadCAS",
+        "InventoryOperation"
+      ],
+      "gaps": [],
+      "optional": false,
+      "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
+    },
     "ReadInventorySegmentedStockPoolInput.exactHoldsOnly": {
       "allowsNull": false,
       "allowsUndefined": false,
@@ -68765,5 +68859,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "de52a07f0f8c737a4c199bb46063caf12cc5fb168ce939c3a1bfff1822bb1d63"
+  "surfaceSha256": "c5e931dbe4e9d77058c97445396aba8c76bdfcf9446f90d7e0ca6120b4ad9994"
 }

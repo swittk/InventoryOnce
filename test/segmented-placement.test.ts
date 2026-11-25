@@ -149,6 +149,12 @@ describe("adapter-native segmented placement forest", () => {
     expect(moved.revision).toBe(11);
     expect(store.parentNodeId("b")).toBe("room");
     expect(store.childNodeIds("room")).toEqual(["a", "b"]);
+    const roomChildren = store.childPostings("room");
+    expect(roomChildren.size).toBe(2);
+    expect(new Set(roomChildren.ids)).toEqual(new Set(["a", "b"]));
+    const oldParentChildren = store.childPostings("a");
+    expect(oldParentChildren.size).toBe(0);
+    expect([...oldParentChildren.ids]).toEqual([]);
     expect(store.ancestry("c")).toEqual(["c", "b", "room"]);
     expect(store.contentRoot()).not.toBe(originalRoot);
     expect(store.materialize().relationByNodeId["b"]?.createdByEventId).toBe(

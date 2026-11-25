@@ -199,9 +199,7 @@ export function inventoryStockPoolRowsFromProjection(
 export function inventoryAllocationPoolSelector(
   selection: ResolvedAllocationSelection
 ): InventoryStockSelector {
-  return inventoryRecordedDeficitPoolSelector(
-    selection.selector, selection.item.revisionId, selection.selector.placementNodeIds ?? []
-  );
+  return inventoryRecordedDeficitPoolSelector(selection.selector, selection.item.revisionId);
 }
 
 /** The same synchronous policy reducer can use a canonical or indexed pool. */

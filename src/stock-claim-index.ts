@@ -50,11 +50,24 @@ export class InventoryStockClaimIndex {
           latest.set(operation.reservationId, operation);
         }
       }
-      return Array.from(
-        latest.values(),
-        /** Return the exact claim state frozen by the selected lifecycle action. */
-        (operation) => operation.reservationAfter
-      );
+      const positionIds = new Set<string>();
+      for (const position of positions) {
+        positionIds.add(inventoryStockPositionIdentity(position.key));
+      }
+      const reservations: InventoryReservation[] = [];
+      for (const { reservationAfter: reservation } of latest.values()) {
+        if (reservation.status !== InventoryReservationStatus.Active) continue;
+        if (reservation.allocations.length === 0) {
+          if (!exactHoldsOnly) reservations.push(reservation);
+          continue;
+        }
+        for (const allocation of reservation.allocations) {
+          if (!positionIds.has(inventoryStockPositionIdentity(allocation.position))) continue;
+          reservations.push(reservation);
+          break;
+        }
+      }
+      return reservations;
     }
     const reservations = new Map<string, InventoryReservation>();
     if (!exactHoldsOnly) {

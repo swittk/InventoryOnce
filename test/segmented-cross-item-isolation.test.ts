@@ -78,9 +78,17 @@ describe("segmented writes with unrelated reservation/count scopes", () => {
         ],
       };
       try {
+        const amounts = () => {
+          const segment = storage.readPositionSegment();
+          return ["a-source", "b-source", "a-destination", "b-destination"].map(
+            (nodeId) => segment.positionsByPlacement(nodeId)[0]?.measurements.primary.quantity.amountMinor
+          );
+        };
         const moved = await inventory.stock.transferMany(command);
         expect(moved.replayed).toBe(false);
+        expect(amounts()).toEqual([1, 1, 1, 1]);
         expect(await inventory.stock.transferMany(command)).toEqual({ ...moved, replayed: true });
+        expect(amounts()).toEqual([1, 1, 1, 1]);
         expect(readWorld).not.toHaveBeenCalled();
         expect(storage.readPositionSegment().revision()).toBe(before + 1);
       } finally {
@@ -92,8 +100,6 @@ describe("segmented writes with unrelated reservation/count scopes", () => {
       expect(report.groups[0]).toMatchObject({
         reservationIds: ["claim-b"], shortage: { amountMinor: 1 },
       });
-      expect(storage.readPositionSegment().positionsByPlacement("a-source")[0]
-        ?.measurements.primary.quantity.amountMinor).toBe(1);
     },
   );
 
